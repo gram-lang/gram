@@ -23,7 +23,7 @@ Right now, GRAM is a **monorepo** organized in a `packages/` directory containin
 ## 🤝 How to Contribute
 
 ### Reporting Bugs
-If you find a bug (parser error, wrong highlighting, etc.), please create a **GitHub Issue** comprising:
+If you find a bug (parser error, wrong highlighting, etc.), please create a **Codeberg Issue** comprising:
 *   A clear title and description.
 *   Steps to reproduce (a snippet of the code causing the issue is huge help!).
 *   Expected vs. actual behavior.
