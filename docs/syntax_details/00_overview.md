@@ -2,22 +2,42 @@
 
 Below is the specification for defining a recipe in Gram.
 
-### Metadata
+### 1. Metadata (Frontmatter)
+A **YAML** block at the start of the file.
+The parser accepts **any** key-value pair. You can add custom fields for your own needs.
 
-Every `.gram` file must start with a YAML Frontmatter block. This block defines the static data of the recipe.
+However, some keys have specific effects in the GRAM Compiler:
+
+**Functional Keys (Compiler Behavior):**
+*   `densities`: Overrides for mass conversion (See [Mass Unification](../compiler_features/01_mass_unification.md)).
+*   `portions`: Number of servings for Nutritional Analysis (See [Nutrition](../compiler_features/03_nutritional_estimation.md)).
+
+**Recommended Informational Keys (Display):**
+*   `title`: The recipe name.
+*   `originalTitle`: Using original language (e.g., Japanese, Italian).
+*   `description`: Short summary (used for SEO meta tags).
+*   `tags`: List of categories or keywords.
+*   `category`: Main category (e.g. "Dessert", "Main Course").
+*   `author`: Name or list of names.
+*   `source`: URL(s) to the original recipe.
+*   `date`, `lastUpdated`: YYYY-MM-DD.
+*   `size`: Serving size description or dimensions (e.g. "20x20cm mold").
 
 ```yaml
 ---
 title: 'Matcha Brownies'
-originalTitle: '抹茶ブラウニー'                                 -- optional
-date: '2024-09-08'                                            -- YYYY-MM-DD format
-lastUpdated: '2024-12-06'                                     -- optional
+originalTitle: '抹茶ブラウニー'
 description: 'A simple Japanese-style matcha brownie...'
+author: ["Auguste Kerflec"]
+tags: ['brownie', 'matcha']
 category: 'Dessert'
-size: '20x20cm'                                               -- Serving size or dimensions
-author: ["Auguste Kerflec", "Another Author"]                 -- List of authors
-source: ['https://url.com/recipe','https://url.com/recipe']   -- List of source URLs
-tags: ['brownie', 'matcha', 'japanese', 'cake', 'healthy']    -- List of tags
+source: ['https://example.com/matcha-brownie']
+size: '20x20cm'
+
+# Functional Fields
+portions: 4
+densities:
+  - flour: 0.55
 ---
 ```
 

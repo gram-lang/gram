@@ -1,6 +1,6 @@
 # Yield Management (Waste Factor)
 
-The GRAM Compiler includes a **Yield Management** system to distinguish between the **Net Mass** (what goes into the recipe) and the **Purchasing Mass** (Gross Mass - what you need to buy).
+The compiler includes a **Yield Management** system to distinguish between the **Net Mass** (what goes into the recipe) and the **Purchasing Mass** (Gross Mass - what you need to buy).
 
 ## Concept
 

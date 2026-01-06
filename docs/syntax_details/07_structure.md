@@ -4,7 +4,7 @@ How to organize a complete `.gram` file.
 
 ## 1. Metadata (Frontmatter)
 
-The file must start with a YAML block delimited by `---`.
+We recommand that the file starts with a YAML block delimited by `---`.
 
 ```yaml
 ---
@@ -33,7 +33,7 @@ Sections divide the recipe into major logical parts.
 
 *   **Retro-planning**: `{T-time}`. Indicates this section must be done in advance.
     *   `## Marinade {T-12h}` (12 hours before start).
-*   **Output**: `->&variable`. (See Variables doc).
+*   **Output**: `->&variable{}`. (See Variables doc).
 
 ## 3. Steps
 

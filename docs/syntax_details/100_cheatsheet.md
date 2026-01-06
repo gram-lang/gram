@@ -30,25 +30,25 @@ Placed right after the `@`.
 * **Action**: `[Verb]` at start of step (ex: `[Mix]...`).
 * **Comments**: `// comment` (end of line) or `/* block */`.
 
-### 5. Other Elements
-* **Cookware**: `#bowl{}` (Fixed), `#ramekins{4}` (Scalable), `#pan{=1}` (Forced Fixed).
+### 5. Other Elements & Metadata
+*   **Cookware**: `#bowl{}` (Fixed), `#ramekins{4}` (Scalable), `#pan{=1}` (Forced Fixed).
     * *Dimensions/Material*: ALWAYS in `()` AFTER. `#mold{}(20cm)` (NOT `#mold{20cm}`).
 * **Timers**: 
     * `~{20min}` (Blocking/Active).
     * `~{1h}&` (Async/Background - e.g. baking, resting).
+    * Range: `~{20-30min}`.
 * **Metrics**: The compiler automatically calculates **Active Work**, **Total Duration**, and **Estimated Prep Time** (Mise en place).
 * **Temperatures**: `!{180°C}` (Unit mandatory: °C, °F).
+    * Range: `!{180-200°C}`.
 * **Intermediate Preparations**:
     * *Definition*: At end of paragraph `->&dough{}` or title `## Title ->&dough{}`.
     * *Usage*: `Let the &dough{} rest.` or `Use &dough{100g}.` (No `@`, not in shopping list).
 * **Retro-planning**:
     * *Definition*: At end of title only `## Title {T-2d}`.
     * *Usage*: Supports only `d` (days), `h` (hours) or `m` / `min` (minutes).
----
-
-**"Crash Test" Tip:**
-* `@butter{}` -> Ingredient.
-* `#bowl{}(large)` -> Cookware (Dimension in parens).
-* `~{10min}` -> Timer (Always with unit).
-* `!{200°C}` -> Temperature.
-* `&dough{}` -> Intermediate Result.
+* **Metadata (Frontmatter)**:
+  ```yaml
+  densities:
+    - flour: 0.55 # g/ml
+  portions: 4 servings
+  ```

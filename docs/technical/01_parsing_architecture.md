@@ -110,55 +110,7 @@ The parser **MUST** enforce strict units for Timers and Temperatures to ensure c
 
 ## 4. Data Logic: Shopping List Scope (The "Aggregator")
 
-**Goal:** Generate `shopping_list`.
-
-This is the most complex part. The parser must traverse all ingredients from all sections and apply the following reduction rules.
-
-### 4.1. Hybrid Aggregation (Consolidated List)
-*   **Rule:** Merge multiple lines for the same ingredient into a single entry.
-*   **Structure:**
-    *   `[Certain Mass]`: Sum of all absolute, convertible quantities (g, kg, ml).
-    *   `[Variable Parts]`: List of all non-additive, mixed units, or relative quantities.
-*   **Output Format:** Structured Object.
-    *   `qty`: The numeric certain mass.
-    *   `unit`: The unit of the certain mass (e.g., 'g').
-    *   `variable_entries`: Array of strings for the remaining parts.
-    *   *Note:* The final display string reference (e.g. "Sucre : 70g + (50% de @farine)") is constructed by the **Renderer** (Client), not the Parser.
-
-### 4.2. Alternatives Handling (GROUP)
-*   **Trigger:** Detection of the `|` symbol between ingredients.
-*   **Action:** Create a `type: alternative` entry.
-*   **Constraint:** Alternatives are **never** merged with single ingredients.
-
-### 4.3. Composite & Source Handling (MAX / DRIVER-PASSENGER)
-*   **Trigger:** Detection of the `<@parent` syntax.
-*   **Logic:**
-    1.  Group all ingredients sharing the same `@parent` name.
-    2.  Apply **MAX Integration Rule** on the declared parent quantities.
-    3.  See Specs for full Driver/Passenger details.
-
-### 4.4. Reference Handling (`&`)
-*   **Rule 1 (Intermediate):** If the name matches a defined `->&prep`, **ignore** completely in shopping list (it's a text reference).
-*   **Rule 2 (Raw Ingredient):** If the name matches a raw ingredient (e.g., `@&butter` referring to `@butter`):
-    *   **Validation:** Check if ingredient exists in Registry.
-    *   **Quantity:**
-        *   If quantity is absolute (`{50g}`): **ADD** to the `Certain Mass`.
-        *   If quantity is missing (`{}`): **IGNORE** (flow instruction only).
-
-### 4.5. Validation & "Linter" Logic
-The aggregator acts as a validator for complex dependencies:
-
-1.  **Circular References (Infinite Loop):**
-    *   Detects if dependency graph contains cycles (e.g. A depends on B, B depends on A).
-    *   **Action:** Displays `⚠️ Ref. Circulaire` in the variable part.
-
-2.  **Ghost References (Null Pointer):**
-    *   Detects if a relative quantity targets a non-existent source.
-    *   **Action:** Displays `❓ (Source introuvable)`.
-
-3.  **Scope Conflicts (Global Variables):**
-    *   Detects if a global variable (defined in Section Title `->&var`) is redefined.
-    *   **Action:** Adds a critical warning `SCOPE_CONFLICT`.
+The logic for generating the shopping list (Aggregation, Alternatives, Ghost detection...) has been moved to **[Shopping List Generation](../compiler_features/05_shopping_list_logic.md)**.
 
 ---
 
@@ -202,31 +154,8 @@ Alternatives retain a typed structure:
 ---
 
 ## 7. Time Metrics & Scheduling Logic
-The compiler performs a simplified Critical Path Method (CPM) analysis to generate three key metrics.
 
-### 7.1. Active vs Total Time
-*   **Default cost:** Any step without a timer costs **2 minutes** of Active Time (reading, mixing).
-*   **Synchronous Timer (`~{10m}`)**: Adds to both **Active Time** and **Total Time**. Stops the clock until done.
-*   **Asynchronous Timer (`~{1h}&`)**: 
-    *   Adds **0** to Active Time.
-    *   Starts a "Background Task" that runs parallel to subsequent steps.
-    *   **Total Time** is calculated as `Max(Cursor, Background_End)`.
-
-### 7.2. Estimated Preparation Time (Mise en Place)
-An automated estimation of the "hidden work" before cooking starts.
-
-**Formula:**
-`Total Prep = Base Cost + Usage Cost`
-
-1.  **Base Cost:** 
-    *   **+1 min** per unique Ingredient in Registry.
-    *   **+1 min** per unique Cookware in Registry.
-2.  **Usage Cost:**
-    *   Iterates through every step content.
-    *   **+2 min** if an ingredient has a specific preparation (e.g., `(chopped)`).
-3.  **Alternative Rule (Max Strategy):**
-    *   In a choice (`@A|@B`), the system calculates the prep cost for each option and takes the **MAXIMUM**.
-    *   *Rationale:* We estimate for the "worst case" scenario to ensure the user has enough time.
+The logic for calculating active time, total time, and estimating prep time has been moved to **[Time Metrics & Scheduling](../compiler_features/04_time_and_scheduling.md)**.
 
 ---
 

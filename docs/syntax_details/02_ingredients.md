@@ -55,7 +55,7 @@ Even if `@butter{20g}` and `@&butter{20g}` both add 20g to the shopping list, th
     *   `@butter{}` -> "I need some butter." -> Adds a ghost entry to shopping list.
     *   `@&butter{}` -> "Use the butter defined earlier." -> **No effect** on shopping list. 
 
-**Best Practice:** Use simple declaration (`@name`) only for the *first* time an ingredient appears. Use reference (`@&name`) for *all subsequent uses*.
+**Best Practice:** Use simple declaration (`@name{}`) only for the *first* time an ingredient appears. Use reference (`@&name{}`) for *all subsequent uses*.
 
 ## Aliases (Renaming)
 
