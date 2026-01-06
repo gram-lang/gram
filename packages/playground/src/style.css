@@ -437,10 +437,16 @@ code {
 }
 
 /* Lists in Preview */
-.preview-output ul, .preview-output ol {
+.preview-output ul {
   padding-left: 1rem;
   margin-bottom: 1rem;
 }
+
+.preview-output ol{
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
 .preview-output li {
   margin-bottom: 0.25rem;
 }
