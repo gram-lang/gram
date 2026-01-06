@@ -18,7 +18,9 @@ The root object contains the following keys:
   "warnings": [ ... ],     // Parsing warnings (if any)
   "metrics": {             // Optimization & Gantt Data
      "totalTime": 120,     // Total duration (critical path) in minutes
-     "activeTime": 45      // Active work time in minutes
+     "activeTime": 45,     // Active work time in minutes
+     "totalMass": 1250,    // Total input mass in grams
+     "massStatus": "estimated" // 'precise' | 'estimated' | 'incomplete'
   }
 }
 ```
@@ -68,6 +70,9 @@ Whenever an ingredient or utensil is **used** (in a step or list), strictly mini
 | `modifiers` | `string[]` | Array of flags: `"optional"`, `"reference"`, `"hidden"`, `"bakers_percentage"`. |
 | `fixed` | `boolean` | Transformation flag. **Ingredients**: `true` if fixed (default false). **Cookware**: `false` if scalable (default true). |
 | `hidden` | `boolean` | `true` if marked with `-`. |
+| `normalizedMass` | `number` | *Mass Unification*. The calculated mass in grams. |
+| `isEstimate` | `boolean` | *Mass Unification*. `true` if mass was derived from density/average (not explicit weight). |
+| `conversionMethod`| `string` | *Mass Unification*. Source of mass: `'physical'`, `'density'`, `'unit_weight'`, `'explicit'`, `'default'`. |
 | `formula` | `object` | *Optional*. Contains raw relative formula data: `{ raw, target, percent, isGhost }`. `isGhost` is true if the target reference was not found. |
 
 **Note:** The `type` property (e.g. `"ingredient"`) is **removed** from these objects to save space. The context (list it appears in) implies the type.
@@ -140,6 +145,7 @@ The structure is optimized for display.
 | `id` | `string` | Semantic ID. |
 | `qty` | `number` | The "Certain Mass", useful for scaling/graphing. (Replaces `total_mass`) |
 | `unit` | `string` | The unit for the certain mass (usually 'g'). |
+| `normalizedMass` | `number` | *New*: The aggregated mass in grams. |
 | `variable_entries`| `string[]`| The list of logic strings (mixed units, relative quantities) that couldn't be summed into the main mass. |
 
 

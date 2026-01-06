@@ -19,7 +19,7 @@ Applies to ingredients mixed in the current step.
 ```gram
 Mix @flour{} and @water{}. ->&dough{}
 ```
-Here, `&dough` is a virtual variable containing the sum of the masses of flour and water.
+Here, `&dough{}` is a virtual variable containing the sum of the masses of flour and water.
 
 #### B. Global Scope (End of Section Title)
 Applies conceptually to the entire section.
@@ -27,7 +27,7 @@ Applies conceptually to the entire section.
 ```gram
 ## Pastry Cream ->&cream{}
 ```
-Here, the entire result of the "Pastry Cream" section will be accessible elsewhere as `&cream`.
+Here, the entire result of the "Pastry Cream" section will be accessible elsewhere as `&cream{}`.
 
 ---
 
@@ -43,15 +43,15 @@ To use an intermediate preparation, simply call it by its name (without `@`).
     *   `&dough{}`: "Take the dough" (Instruction).
     *   `&dough{200g}`: "Take 200g of the dough" (Precision).
 
-**Important Note:** Intermediate references (`&name`) **NEVER** appear in the shopping list. They serve only:
+**Important Note:** Intermediate references (`&name{}`) **NEVER** appear in the shopping list. They serve only:
 1.  Instruction flow.
 2.  Relative quantity calculation (e.g., `@salt{1% &dough}`).
 
 ## Logic Rules
 
-1.  **Dependency.** If you declare `->&A`, you MUST use it somewhere in a future step. Otherwise, the parser will emit an "Unused Intermediate" warning.
+1.  **Dependency.** If you declare `->&A{}`, you MUST use it somewhere in a future step. Otherwise, the parser will emit an "Unused Intermediate" warning.
 2.  **Complexity.** A variable "carries" with it the sum of the masses of its components.
-    *   If `&A` = 100g Flour + 50g Water.
+    *   If `&A{}` = 100g Flour + 50g Water.
     *   Then Mass(&A) = 150g.
 
 ## Best Practices (Chaining)
@@ -59,9 +59,11 @@ To use an intermediate preparation, simply call it by its name (without `@`).
 Create a logical chain so the system understands the recipe evolution.
 
 ```gram
-1. [Mix] Dry -> &dry_mix
-2. [Mix] Wet -> &wet_mix
-3. [Combine] &dry_mix + &wet_mix -> &final_dough
+[Mix] Dry -> &dry_mix{}
+
+[Mix] Wet -> &wet_mix{}
+
+[Combine] &dry_mix{} + &wet_mix{} -> &final_dough{}
 ```
 
 This ensures accurate dependency graph generation.

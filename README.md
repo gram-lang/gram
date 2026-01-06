@@ -41,6 +41,7 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
     *   **References (`@&`)**: Reuse previously measured ingredients without doubling the shopping list amount.
     *   **Intermediate Preparations (`->&dough`)**: Chain recipe parts like variables.
     *   **Relative Quantities**: Define `@water{60% @flour}` for dynamic bakers math.
+    *   **Mass Unification**: Automatically converts volumes and units to grams (e.g., `1 cup flour` -> `125g`).
     *   **Composites**: Handle "Zest of 1 lemon" and "Juice of 1 lemon" implying "Buy 1 Lemon".
 
 ---

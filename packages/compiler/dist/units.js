@@ -2,8 +2,32 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.quantityToMinutes = exports.getMass = exports.normalizeUnit = exports.UNIT_CONVERSIONS = void 0;
 exports.UNIT_CONVERSIONS = {
-    mass: { base: 'g', map: { kg: 1000, mg: 0.001, g: 1 } },
-    volume: { base: 'ml', map: { l: 1000, liter: 1000, litre: 1000, dl: 100, cl: 10, ml: 1 } }
+    mass: {
+        base: 'g',
+        map: {
+            g: 1, gram: 1, grams: 1, gramme: 1, grammes: 1,
+            kg: 1000, kilogram: 1000, kilograms: 1000,
+            mg: 0.001, milligram: 0.001, milligrams: 0.001,
+            oz: 28.3495, ounce: 28.3495, ounces: 28.3495,
+            lb: 453.592, lbs: 453.592, pound: 453.592, pounds: 453.592
+        }
+    },
+    volume: {
+        base: 'ml',
+        map: {
+            ml: 1, milliliter: 1, milliliters: 1,
+            l: 1000, liter: 1000, liters: 1000, litre: 1000, litres: 1000,
+            cl: 10, centiliter: 10,
+            dl: 100, deciliter: 100,
+            tsp: 4.9289, teaspoon: 4.9289, teaspoons: 4.9289,
+            tbsp: 14.7868, tablespoon: 14.7868, tablespoons: 14.7868,
+            cup: 236.588, cups: 236.588,
+            pint: 473.176,
+            quart: 946.353,
+            gallon: 3785.41,
+            'fl oz': 29.5735, 'fluid ounce': 29.5735
+        }
+    }
 };
 const normalizeUnit = (quantityObj, unit) => {
     if (!quantityObj)

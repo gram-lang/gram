@@ -14,6 +14,7 @@
     <!-- Highlight.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
     <div class="container">
@@ -70,6 +71,10 @@
                                 <option value="markdown">Markdown</option>
                                 <option value="preview">Preview (HTML)</option>
                             </select>
+                            <div id="mass-toggle-container" style="display: none; align-items: center; gap: 0.5rem; margin-left: 0.5rem; border-left: 1px solid var(--border); padding-left: 0.75rem;">
+                                <input type="checkbox" id="show-mass" checked style="cursor: pointer;">
+                                <label for="show-mass" style="font-size: 0.8rem; cursor: pointer; color: var(--muted-foreground); user-select: none;">Show Mass</label>
+                            </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center;">

@@ -167,6 +167,7 @@ export interface Context {
     usedIntermediates: Set<string>;
     variableWeights: Map<string, VariableWeight>;
     globalScopes: Map<string, string>;
+    densityOverrides: Record<string, number>;
 }
 
 export interface Usage {
@@ -189,6 +190,39 @@ export interface Usage {
     type?: string; 
     options?: any[]; // For alternatives
     name?: string; // Optional name cache
+    // Mass Unification
+    normalizedMass?: number;
+    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
+    isEstimate?: boolean;
+}
+
+export interface MassMetrics {
+    totalMass: number;
+    massStatus: 'precise' | 'estimated' | 'incomplete';
+    missingMassIngredients: string[];
+}
+
+export interface NutritionMetrics {
+    total: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        sugar?: number;
+        fiber?: number;
+        salt?: number;
+    };
+    perPortion?: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        sugar?: number;
+        fiber?: number;
+        salt?: number;
+    };
+    isEstimate: boolean;
+    coverage: number; 
 }
 
 export interface ProcessedSection {
@@ -198,6 +232,7 @@ export interface ProcessedSection {
     steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
+    metrics?: MassMetrics;
 }
 
 export interface ProcessedStep {
@@ -235,5 +270,6 @@ export interface CompilationResult {
         totalTime: number;   // Critical path duration (end of last async task)
         activeTime: number;  // Sum of cook work time
         preparationTime: number; // Estimated mise-en-place time
-    };
+        nutrition?: NutritionMetrics;
+    } & MassMetrics;
 }

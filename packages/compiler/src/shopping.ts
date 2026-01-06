@@ -1,5 +1,6 @@
 import { slugify, minifyQuantity } from './utils';
-import { getMass } from './units';
+import { normalizeMass } from './mass_normalization';
+import { getIngredientData } from './ingredient_db';
 import { detectCycles } from './graph';
 import { ProcessedSection, Registry, Usage, QuantityValueAST } from 'gram-parser';
 
@@ -14,12 +15,17 @@ interface ShoppingListItem {
     otherUnits?: Record<string, number>;
     variableParts?: string[];
     _hasSure?: boolean;
+    // New fields
+    normalizedMass?: number;
+    isEstimate?: boolean;
+    conversionMethod?: string;
+    purchasingMass?: number; // Gross mass considering yield/waste
 }
 
 interface CompositeItem {
     type: 'composite';
     id: string;
-    qty: number;
+    qty: number; // calculated max parent qty
     usage: Partial<Usage>[];
     _subUsageMap: Map<string, number>;
     _usageAccumulator: Map<string, Partial<Usage>>;
@@ -37,7 +43,7 @@ function formatQuantity(q: any): string | number {
     return JSON.stringify(q);
 }
 
-export function generateShoppingList(sections: ProcessedSection[], registry: Registry): (ShoppingListItem | CompositeItem | Usage)[] {
+export function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>): (ShoppingListItem | CompositeItem | Usage)[] {
     const listMap = new Map<string, ShoppingListItem>();
     const compositeMap = new Map<string, CompositeItem>();
     const alternatives: Usage[] = [];
@@ -71,10 +77,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  }
                  const comp = compositeMap.get(parentId)!;
                  
-                 // 1. Accumulate Parent Quantity Requirement per Sub-Ingredient
-                 // If we have multiple batches of Whites, we sum the Parent requirements for Whites.
-                 // If we have Whites and Yolks, we take the MAX of (TotalWhitesRequirement, TotalYolksRequirement).
-                 
+                 // Accumulate Parent Quantity Requirement
                  let declParentQty = 0;
                  if (item.composite && item.composite.quantity) {
                       const minQ = minifyQuantity(item.composite.quantity);
@@ -85,9 +88,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  const currentParentTotal = comp._subUsageMap.get(subId) || 0;
                  comp._subUsageMap.set(subId, currentParentTotal + declParentQty);
 
-                 // 2. Accumulate Usage (Child Quantity)
-                 // Merge usages if ID and Unit match
-                 
+                 // Accumulate Usage (Child Quantity)
                  const uUnit = item.unit || '';
                  const uKey = `${subId}::${uUnit}`;
                  
@@ -105,7 +106,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  if (typeof item.qty === 'number') {
                      childVal = item.qty;
                  } else if (item.qty && typeof item.qty === 'object') {
-                     // Try to get numeric value from object
                      const m = minifyQuantity(item.qty);
                      if (typeof m === 'number') childVal = m;
                  }
@@ -113,7 +113,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  if (typeof uEntry.qty === 'number') {
                      uEntry.qty += childVal;
                  }
-                 
                  return;
             }
 
@@ -125,9 +124,12 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                     id: id,
                     name: registry.ingredients.get(id)?.name || item.name,
                     sureMass: 0,
-                    otherUnits: {}, // Map<unit, val>
+                    otherUnits: {},
                     variableParts: [],
-                    _hasSure: false
+                    _hasSure: false,
+                    normalizedMass: 0,
+                    isEstimate: false,
+                    conversionMethod: 'physical' // default
                 });
             }
             
@@ -135,7 +137,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             
             // LOGIC: Resolve Quantity to Number if possible
             let numericQty: number | null = null;
-            let unit = item.unit || ''; // Changed from 'unités' to empty string
+            let unit = item.unit || '';
             let isGhost = false;
 
             // Check if Relative
@@ -163,36 +165,31 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             if (isGhost) {
                  // GHOST HANDLING
                  let text = item.formula ? item.formula.raw : (item.qty && (item.qty as any).value) || '';
-                 if (item.type === 'variable_entries' && /* check logic */ false) { }
-                 
-                 // If item.formula exists, use raw string.
                  if (item.formula) {
                      text = item.formula.raw;
                  }
-                 
-                 // Add warning indicator
                  const display = `${text} ❓`;
                  existing.variableParts!.push(`(${display})`);
             } else if (numericQty !== null) {
-                // Try mass conversion
-                // getMass needs a string, empty string returns valid:false
-                const massObj = getMass(numericQty, unit);
-                if (massObj.valid) {
-                    existing.sureMass! += massObj.mass;
+                // 1. Calculate Mass for Badge (Total Normalized)
+                const norm = normalizeMass(numericQty, unit, existing.name, overrides);
+                if (norm) {
+                    existing.normalizedMass = (existing.normalizedMass || 0) + norm.mass;
+                    if (norm.isEstimate) existing.isEstimate = true;
+                }
+
+                // 2. Aggregation Logic for Display (Physical vs Other)
+                if (norm && norm.method === 'physical') {
+                    existing.sureMass! += norm.mass;
                     existing._hasSure = true;
                 } else {
-                    // Other unit (or empty unit)
                     const u = unit;
                     if (!existing.otherUnits![u]) existing.otherUnits![u] = 0;
                     existing.otherUnits![u] += numericQty;
                 }
             } else {
                  // Unresolved or Just Variable
-                 if (item.formula) {
-                      // It's a formula that wasn't ghost but wasn't numeric?
-                      // Should have been handled above if calculation succeeded.
-                      // If here, numericQty is null.
-                 } else if (item.qty) {
+                 if (item.qty) {
                       const qStr = formatQuantity(item.qty);
                       const uStr = unit ? ` ${unit}` : '';
                       existing.variableParts!.push(`${qStr}${uStr}`);
@@ -206,26 +203,36 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
     });
 
     const standardList = [...listMap.values()].map(item => {
-        // Structured data only
         const res: ShoppingListItem = {
             id: item.id,
-            name: item.name
+            name: item.name,
+            normalizedMass: item.normalizedMass,
+            isEstimate: item.isEstimate,
+            conversionMethod: item.isEstimate ? 'estimate' : 'physical'
         };
 
         // Determine main Qty/Unit
-        // Priority: Mass > First Other Unit
         if (item.sureMass! > 0) {
              res.qty = parseFloat(item.sureMass!.toFixed(2));
              res.unit = 'g';
         } else {
              const units = Object.keys(item.otherUnits!);
              if (units.length > 0) {
-                  // Use first available unit
                   res.qty = parseFloat(item.otherUnits![units[0]].toFixed(2));
-                  res.unit = units[0] || null; // null if empty string
+                  res.unit = units[0] || null;
              }
         }
 
+        // --- Gross Mass Calculation (Yield) ---
+        // Only if we have a normalized mass (Net) and the ingredient has a yield factor < 1
+        if (res.normalizedMass && res.normalizedMass > 0) {
+             const dbData = getIngredientData(item.id);
+             if (dbData && dbData.yield && dbData.yield < 1) {
+                 const gross = res.normalizedMass / dbData.yield;
+                 res.purchasingMass = parseFloat(gross.toFixed(2));
+             }
+        }
+        
         const hasMass = item.sureMass! > 0;
         const hasOther = Object.keys(item.otherUnits!).length > 0;
         
@@ -254,22 +261,52 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
 
         return res;
     });
-    
-    // Process Composites
+
+
     const compositeList = [...compositeMap.values()].map(c => {
-        
-        // Finalize Parent Qty: Max of the sums of sub-parts
         let maxQ = 0;
         for (const q of c._subUsageMap.values()) {
             if (q > maxQ) maxQ = q;
         }
         c.qty = maxQ;
 
-        // Finalize Usage List
-        c.usage = [...c._usageAccumulator.values()];
+        // Calculate Mass for Parent Composite
+        // Composite parents are almost always counted units (e.g. 6 eggs)
+        // If an explicit unit exists in composite definition we should use it, but here we infer 'unit' from maxQ usually being unitless count
+        const parentName = registry.ingredients.get(c.id)?.name || c.id;
+        const parentNorm = normalizeMass(c.qty, 'unit', parentName, overrides);
+        
+        let cRes: any = {
+            type: 'composite',
+            id: c.id,
+            name: parentName,
+            qty: c.qty,
+            usage: [] // Will populate below
+        };
 
-        const { _subUsageMap, _usageAccumulator, ...rest } = c;
-        return rest;
+        if (parentNorm) {
+            cRes.normalizedMass = parentNorm.mass;
+            cRes.isEstimate = parentNorm.isEstimate;
+            cRes.conversionMethod = parentNorm.method;
+        }
+
+        // Calculate Mass for Sub-usages
+        cRes.usage = [...c._usageAccumulator.values()].map(u => {
+            const childUsage: any = { ...u };
+            if (u.qty && typeof u.qty === 'number') {
+                const childId = u.id || '';
+                const childName = registry.ingredients.get(childId)?.name || childId;
+                const childNorm = normalizeMass(u.qty, u.unit || '', childName, overrides);
+                if (childNorm) {
+                     childUsage.normalizedMass = childNorm.mass;
+                     childUsage.isEstimate = childNorm.isEstimate;
+                     childUsage.conversionMethod = childNorm.method;
+                }
+            }
+            return childUsage;
+        });
+
+        return cRes;
     });
 
     return [

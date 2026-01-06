@@ -22,6 +22,8 @@ The quantity is flexible:
 *   **Fraction**: `@sugar{1/2 cup}`
 *   **Range**: `@apples{3-4}`
 
+> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
+
 ## Modifiers (Flags)
 
 Modifiers change the behavior of the ingredient. They are placed right after the `@`.
@@ -53,7 +55,7 @@ Even if `@butter{20g}` and `@&butter{20g}` both add 20g to the shopping list, th
     *   `@butter{}` -> "I need some butter." -> Adds a ghost entry to shopping list.
     *   `@&butter{}` -> "Use the butter defined earlier." -> **No effect** on shopping list. 
 
-**Best Practice:** Use simple declaration (`@name`) only for the *first* time an ingredient appears. Use reference (`@&name`) for *all subsequent uses*.
+**Best Practice:** Use simple declaration (`@name{}`) only for the *first* time an ingredient appears. Use reference (`@&name{}`) for *all subsequent uses*.
 
 ## Aliases (Renaming)
 

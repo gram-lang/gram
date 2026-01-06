@@ -63,8 +63,8 @@ Use intermediate variables (`->&name`) to create a logical thread. This lets the
 
 Don't repeat yourself. If you use an ingredient a second time, use the **Reference** modifier (`@&`).
 
-*   **Declaration** (`@sugar`): "I am introducing a new ingredient."
-*   **Reference** (`@&sugar`): "I am talking about the sugar I mentioned before."
+*   **Declaration** (`@sugar{}`): "I am introducing a new ingredient."
+*   **Reference** (`@&sugar{}`): "I am talking about the sugar I mentioned before."
 
 This protects you against typos (`@&suggar{}` will trigger an error) and keeps the shopping list clean (using `@&sugar{}` without quantity triggers specific instruction logic without polluting the list).
 
@@ -74,7 +74,7 @@ Here is how to transform a classic recipe into Idiomatic GRAM.
 
 | Element | Classic Style (Avoid) | GRAM Style (Prefer) | Why? |
 | --- | --- | --- | --- |
-| **Verbosity** | "Gently take the eggs..." | `[Clarify] The @eggs{}.` | Faster to read in the kitchen. |
+| **Verbosity** | "Gently take the eggs..." | `[Clarify] The @eggs{3}.` | Faster to read in the kitchen. |
 | **Precision** | "...then cook for a while." | `...for ~{10%min}.` | Allows generating Timers. |
 | **Context** | "Watch out, it burns fast!" | `// Watch the browning.` | Cleans up the visual interface. |
 | **Structure** | Long paragraphs. | Short lines + Actions. | Allows chart generation. |

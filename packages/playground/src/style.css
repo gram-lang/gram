@@ -420,8 +420,11 @@ code {
 }
 .preview-output h2 {
   font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: var(--foreground);
+  margin-bottom: 0.75rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 1em;
+  font-weight: 600;
 }
 .preview-output h3 {
   font-size: 1.15rem;
@@ -434,18 +437,30 @@ code {
 }
 
 /* Lists in Preview */
-.preview-output ul, .preview-output ol {
-  padding-left: 1.5rem;
+.preview-output ul {
+  padding-left: 1rem;
   margin-bottom: 1rem;
 }
+
+.preview-output ol{
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
 .preview-output li {
   margin-bottom: 0.25rem;
 }
+
+.preview-output li::marker {
+color: var(--muted-foreground);
+}
+
 .preview-output .steps li {
   margin-bottom: 0.5rem;
 }
 
 /* Semantic Items (Badge Styles) */
+
 .preview-output .ingredient {
   font-weight: 600;
   color: var(--item-ingredient-text);
@@ -474,11 +489,7 @@ code {
   border-style: dashed;
   opacity: 0.9;
 }
-.preview-output .timer.async::after {
-  content: " ⏳";
-  font-size: 0.8em;
-  opacity: 0.7;
-}
+
 .preview-output .temp {
   font-weight: 600;
   color: var(--item-temp-text);
@@ -511,6 +522,54 @@ code {
 }
 
 /* Metadata & Sections */
+/* Metadata & Sections */
+.preview-output .recipe-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.preview-output .meta-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.preview-output .meta-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--muted-foreground);
+}
+
+.preview-output .meta-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: space-between;
+  line-height: 1em;
+}
+
+.preview-output .meta-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.preview-output .meta-value {
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
 .preview-output .metadata {
   background: var(--secondary);
   padding: 1rem;
@@ -525,9 +584,9 @@ code {
 .preview-output .shopping-list, 
 .preview-output div.cookware {
   background-color: var(--secondary);
-  padding: 0.5rem 1rem 0.25rem;
   border-radius: var(--radius);
-  margin-bottom: 1.5rem;
+  padding: .8rem 1rem .25rem;
+margin-bottom: 1rem;
   border: 1px solid var(--border);
 }
 
@@ -556,9 +615,62 @@ code {
   margin-left: 0.25em;
 }
 
-.separator {
-  list-style: none;
-  border-block-end: 1px dotted var(--muted-foreground);
+
+.preview-output .mass-badge {
+  display: inline-block;
+  font-size: 0.75em;
+  color: var(--muted-foreground);
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0 0.5em;
+  vertical-align: middle;
+  cursor: help;
+  line-height: 1.4;
+  margin-block-end: 0.1rem;
+}
+
+body.hide-mass-badges .preview-output .mass-badge {
+  display: none !important;
+}
+
+.preview-output .gross-mass {
+  font-size: 0.75em;
+  color: var(--warning); 
+  font-style: italic;
+  margin-left: 0.5em;
+}
+
+/* Secondary Metadata */
+.preview-output .metadata-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.preview-output .meta-secondary-item {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.85em;
+}
+
+.preview-output .meta-secondary-item .label {
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.preview-output .meta-secondary-item .value {
+  color: var(--foreground);
+  font-weight: 500;
 }
 
 /* =========================================
@@ -703,3 +815,63 @@ code {
 .hljs-number { color: var(--token-number); }
 .hljs-literal { color: var(--token-def); }
 .hljs-symbol, .hljs-bullet { color: var(--token-keyword); }
+
+/* Nutrition Panel */
+.nutrition-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nutrition-panel .nut-header {
+  margin-bottom: 0.5rem;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nutrition-panel .nut-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.nutrition-panel .nut-item {
+  background: var(--secondary);
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.nutrition-panel .nut-item small {
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.nutrition-panel .nut-item .label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 2px;
+}
+
+.nutrition-panel .est-badge {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 9px;
+    padding: 0 6px;
+    font-size: 0.7em;
+    font-weight: normal;
+    text-transform: none;
+}
