@@ -11,11 +11,15 @@ The file must start with a YAML block delimited by `---`.
 title: My Recipe
 author: Chef
 tags: [dessert, easy]
-densities:
+# Metadata used by Compiler Features
+portions: 4          # For Nutrition Calculation
+densities:           # For Mass Unification
   - flour: 0.6
   - egg: 55
 ---
 ```
+
+> Values like `densities` and `portions` are used by the **Smart Compiler**. See [Compiler Features](../compiler_features).
 
 ## 2. Sections (##)
 

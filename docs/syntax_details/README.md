@@ -19,9 +19,14 @@ Every aspect of the syntax is detailed in a dedicated file.
 *   [Relative Quantities](./05_relative_quantities.md) - Understanding `%` calculations.
 *   [Variables & Intermediates](./06_intermediate_vars.md) - Chaining preparations (`->&var`).
 *   [Composites & Alternatives](./08_advanced_features.md) - Driver/Passenger (`<`) and Choice (`|`).
-*   [Mass Unification](./97_mass_unification.md) - Automatic conversions and Total Weight.
 
-### 4. Technical
+### 4. Smart/Compiler Features
+See the dedicated **[Compiler Features](../compiler_features/01_mass_unification.md)** section for:
+*   Mass Unification (Auto-conversion)
+*   Yield Management (Waste Factor)
+*   Nutritional Estimation
+
+### 5. Technical
 *   [JSON Output](./99_json_output.md) - Generated data structure for developers.
 
 ### 5. More
