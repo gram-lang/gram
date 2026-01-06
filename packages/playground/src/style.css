@@ -420,8 +420,11 @@ code {
 }
 .preview-output h2 {
   font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: var(--foreground);
+  margin-bottom: 0.75rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 1em;
+  font-weight: 600;
 }
 .preview-output h3 {
   font-size: 1.15rem;
@@ -435,17 +438,23 @@ code {
 
 /* Lists in Preview */
 .preview-output ul, .preview-output ol {
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   margin-bottom: 1rem;
 }
 .preview-output li {
   margin-bottom: 0.25rem;
 }
+
+.preview-output li::marker {
+color: var(--muted-foreground);
+}
+
 .preview-output .steps li {
   margin-bottom: 0.5rem;
 }
 
 /* Semantic Items (Badge Styles) */
+
 .preview-output .ingredient {
   font-weight: 600;
   color: var(--item-ingredient-text);
@@ -474,11 +483,7 @@ code {
   border-style: dashed;
   opacity: 0.9;
 }
-.preview-output .timer.async::after {
-  content: " ⏳";
-  font-size: 0.8em;
-  opacity: 0.7;
-}
+
 .preview-output .temp {
   font-weight: 600;
   color: var(--item-temp-text);
@@ -513,30 +518,35 @@ code {
 /* Metadata & Sections */
 /* Metadata & Sections */
 .preview-output .recipe-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
 .preview-output .meta-item {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .preview-output .meta-icon {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   line-height: 1;
+  color: var(--muted-foreground);
 }
 
 .preview-output .meta-content {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  justify-content: space-between;
+  line-height: 1em;
 }
 
 .preview-output .meta-label {
@@ -545,10 +555,11 @@ code {
   letter-spacing: 0.05em;
   color: var(--muted-foreground);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .preview-output .meta-value {
-  font-size: 1.1em;
+  font-size: 0.8em;
   font-weight: 700;
   color: var(--foreground);
 }
@@ -567,9 +578,9 @@ code {
 .preview-output .shopping-list, 
 .preview-output div.cookware {
   background-color: var(--secondary);
-  padding: 0.5rem 1rem 0.25rem;
   border-radius: var(--radius);
-  margin-bottom: 1.5rem;
+  padding: .8rem 1rem .25rem;
+margin-bottom: 1rem;
   border: 1px solid var(--border);
 }
 
@@ -610,6 +621,7 @@ code {
   vertical-align: middle;
   cursor: help;
   line-height: 1.4;
+  margin-block-end: 0.1rem;
 }
 
 body.hide-mass-badges .preview-output .mass-badge {
@@ -808,13 +820,15 @@ body.hide-mass-badges .preview-output .mass-badge {
 }
 
 .nutrition-panel .nut-header {
-  font-weight: 500;
   margin-bottom: 0.5rem;
   font-size: 0.9em;
-  color: var(--muted-foreground);
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .nutrition-panel .nut-grid {
@@ -853,4 +867,5 @@ body.hide-mass-badges .preview-output .mass-badge {
     padding: 0 6px;
     font-size: 0.7em;
     font-weight: normal;
+    text-transform: none;
 }

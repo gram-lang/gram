@@ -58,8 +58,8 @@ themeToggle.addEventListener('click', () => {
 function updateThemeIcon(isLight) {
     // Simple text or svg swap
     themeToggle.innerHTML = isLight 
-        ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#000000" viewBox="0 0 256 256"><path d="M236.37,139.4a12,12,0,0,0-12-3A84.07,84.07,0,0,1,119.6,31.59a12,12,0,0,0-15-15A108.86,108.86,0,0,0,49.69,55.07,108,108,0,0,0,136,228a107.09,107.09,0,0,0,64.93-21.69,108.86,108.86,0,0,0,38.44-54.94A12,12,0,0,0,236.37,139.4Zm-49.88,47.74A84,84,0,0,1,68.86,69.51,84.93,84.93,0,0,1,92.27,48.29Q92,52.13,92,56A108.12,108.12,0,0,0,200,164q3.87,0,7.71-.27A84.79,84.79,0,0,1,186.49,187.14Z"></path></svg>` // Moon for "Go Dark"
-        : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff" viewBox="0 0 256 256"><path d="M116,36V20a12,12,0,0,1,24,0V36a12,12,0,0,1-24,0Zm80,92a68,68,0,1,1-68-68A68.07,68.07,0,0,1,196,128Zm-24,0a44,44,0,1,0-44,44A44.05,44.05,0,0,0,172,128ZM51.51,68.49a12,12,0,1,0,17-17l-12-12a12,12,0,0,0-17,17Zm0,119-12,12a12,12,0,0,0,17,17l12-12a12,12,0,1,0-17-17ZM196,72a12,12,0,0,0,8.49-3.51l12-12a12,12,0,0,0-17-17l-12,12A12,12,0,0,0,196,72Zm8.49,115.51a12,12,0,0,0-17,17l12,12a12,12,0,0,0,17-17ZM48,128a12,12,0,0,0-12-12H20a12,12,0,0,0,0,24H36A12,12,0,0,0,48,128Zm80,80a12,12,0,0,0-12,12v16a12,12,0,0,0,24,0V220A12,12,0,0,0,128,208Zm108-92H220a12,12,0,0,0,0,24h16a12,12,0,0,0,0-24Z"></path></svg>`; // Sun for "Go Light"
+        ? `<i class="ph ph-moon" style="font-size: 1.25rem;"></i>` // Moon for "Go Dark"
+        : `<i class="ph ph-sun" style="font-size: 1.25rem;"></i>`; // Sun for "Go Light"
 }
 
 // Init Theme
@@ -536,7 +536,7 @@ function renderHTML(data) {
     if (data.metrics) {
         // Total Time
         html += ` <div class="meta-item">\n`;
-        html += `   <div class="meta-icon">⏱️</div>\n`;
+        html += `   <div class="meta-icon"><i class="ph ph-clock"></i></div>\n`;
         html += `   <div class="meta-content">\n`;
         html += `     <span class="meta-label">Total Time</span>\n`;
         html += `     <span class="meta-value">${formatDuration(data.metrics.totalTime)}</span>\n`;
@@ -545,7 +545,7 @@ function renderHTML(data) {
 
         // Active Time
         html += ` <div class="meta-item">\n`;
-        html += `   <div class="meta-icon">🔥</div>\n`;
+        html += `   <div class="meta-icon"><i class="ph ph-fire"></i></div>\n`;
         html += `   <div class="meta-content">\n`;
         html += `     <span class="meta-label">Active Time</span>\n`;
         html += `     <span class="meta-value">${formatDuration(data.metrics.activeTime)}</span>\n`;
@@ -554,7 +554,7 @@ function renderHTML(data) {
 
         // Prep Time
         html += ` <div class="meta-item" title="Based on ingredient count and complexity">\n`;
-        html += `   <div class="meta-icon">🔪</div>\n`;
+        html += `   <div class="meta-icon"><i class="ph ph-knife"></i></div>\n`;
         html += `   <div class="meta-content">\n`;
         html += `     <span class="meta-label">Prep Time</span>\n`;
         html += `     <span class="meta-value">${formatDuration(data.metrics.preparationTime)} <span class="est">(est.)</span></span>\n`;
@@ -674,7 +674,7 @@ function renderHTML(data) {
             if (sec.title) {
                 let titleHtml = escapeHtml(sec.title);
                 if (sec.retro_planning) {
-                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;">⏱ ${escapeHtml(sec.retro_planning)}</small>`;
+                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;"><i class="ph ph-clock-counter-clockwise"></i> ${escapeHtml(sec.retro_planning)}</small>`;
                 }
                 
                 // Section Mass
@@ -687,10 +687,8 @@ function renderHTML(data) {
                          title += " (Estimated)";
                      }
                      if (sec.metrics.massStatus === 'incomplete') {
-                         msg = `${mass}g?`;
-                         title += " (Incomplete)";
                      }
-                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}">⚖️ ${msg}</small>`;
+                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}"><i class="ph ph-scales"></i> ${msg}</small>`;
                 }
 
                 html += `    <h3>${titleHtml}</h3>\n`;
@@ -748,14 +746,15 @@ function renderHTML(data) {
                              const q = c.quantity || { value: '' };
                              const qVal = formatQuantityValue(q);
                              const asyncClass = c.isAsync ? ' async' : '';
-                             str = `<span class="timer${asyncClass}" data-value="${q.value}" data-unit="${c.unit || ''}">${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
+                             const icon = c.isAsync ? '<i class="ph ph-hourglass"></i>' : '<i class="ph ph-timer"></i>';
+                             str = `<span class="timer${asyncClass}" data-value="${q.value}" data-unit="${c.unit || ''}">${icon} ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
                          } else if (c.type === 'temperature') {
                              const q = c.quantity || { value: '' };
                              const qVal = formatQuantityValue(q);
-                             str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}">${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
+                             str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}"><i class="ph ph-thermometer"></i> ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
                          } else if (c.type === 'reference') {
                              const name = registry.ingredients[c.id]?.name || c.id;
-                             let refStr = `<span class="reference">${escapeHtml(name)}`;
+                             let refStr = `<span class="reference"><i class="ph ph-arrow-right"></i> ${escapeHtml(name)}`;
                              const qty = getQty(c);
                              if (qty) {
                                   refStr += ` <span class="quantity">${qty.text || qty.value}`;
@@ -946,7 +945,7 @@ function formatIngredientHTML(item, registry) {
 
     if (isPartial) {
         // Show Formula AS Quantity (with warning)
-        str += ` <span class="quantity formula-qty" title="Calculation partial or failed">(${formulaStr} ⚠️)</span>`;
+        str += ` <span class="quantity formula-qty" title="Calculation partial or failed">(${formulaStr} <i class="ph ph-warning"></i>)</span>`;
     } else {
         // Normal Quantity
         let qtyContent = '';
@@ -985,7 +984,7 @@ function formatIngredientHTML(item, registry) {
          }
          
          if (item.conversionMethod === 'explicit') {
-             display = `✍️ ${display}`;
+             display = `<i class="ph ph-pencil-simple"></i> ${display}`;
              title += ` (User Override)`;
          } else if (item.conversionMethod === 'physical') {
              title += ` (Exact)`;
@@ -996,7 +995,7 @@ function formatIngredientHTML(item, registry) {
     
     if (item.preparation) str += ` <span class="prep">(${escapeHtml(item.preparation)})</span>`;
     if (item.modifiers && item.modifiers.includes('optional')) str += ` <span class="opt">(optional)</span>`;
-    if (item.modifiers && item.modifiers.includes('reference')) str += ` <span class="ref" title="Reference to existing ingredient">↩️</span>`;
+    if (item.modifiers && item.modifiers.includes('reference')) str += ` <span class="ref" title="Reference to existing ingredient"><i class="ph ph-arrow-u-down-left"></i></span>`;
     
     str += `</span>`;
     return str;
