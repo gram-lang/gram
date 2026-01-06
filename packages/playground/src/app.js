@@ -223,13 +223,15 @@ function renderMarkdown(data) {
                 md += '\n';
             }
             
+            let stepCounter = 0;
             sec.steps.forEach((step, idx) => {
                 if (step.type === 'comment') {
                      md += `> *${step.value ? step.value.trim() : ''}*\n\n`;
                      return;
                 }
 
-                const stepNum = idx + 1;
+                stepCounter++;
+                const stepNum = stepCounter;
                 let stepText = '';
                 
                 // Prepend Action if exists
@@ -718,6 +720,7 @@ function renderHTML(data) {
             }
             
             html += `    <ol class="steps">\n`;
+            let stepCounter = 0;
             sec.steps.forEach((step, idx) => {
                 if (step.type === 'comment') {
                     // Render differently, maybe as a note?
@@ -727,7 +730,8 @@ function renderHTML(data) {
                     return;
                 }
 
-                html += `      <li>\n`;
+                stepCounter++;
+                html += `      <li value="${stepCounter}">\n`;
                 if (step.action) {
                      html += `        <span class="action">[${escapeHtml(step.action)}]</span> `;
                 }
