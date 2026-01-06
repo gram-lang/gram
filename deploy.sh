@@ -11,7 +11,8 @@ echo "🚀 Starting deployment process..."
 git checkout main
 rm -rf "$TMP_DIR"
 mkdir -p "$TMP_DIR"
-cp -r packages/playground/* "$TMP_DIR/"
+# Using rsync to exclude node_modules
+rsync -av --exclude='node_modules' --exclude='.git' packages/playground/ "$TMP_DIR/"
 
 # 2. Clean the pages branch
 git checkout pages
