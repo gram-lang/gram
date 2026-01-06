@@ -6,13 +6,13 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/abiwab/gram.git",
+    "url": "https://codeberg.org/abiwab/gram.git",
     "directory": "playground"
   },
   "bugs": {
-    "url": "https://github.com/abiwab/gram/issues"
+    "url": "https://codeberg.org/abiwab/gram/issues"
   },
-  "homepage": "https://github.com/abiwab/gram/tree/main/playground#readme",
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/parser#readme",
   "scripts": {
     "build": "echo '🔨 Bundling...' && node build.js && echo '✨ Done!'",
     "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"

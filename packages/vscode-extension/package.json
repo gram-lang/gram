@@ -8,13 +8,13 @@
   "author": "abiwab",
   "repository": {
     "type": "git",
-    "url": "https://github.com/abiwab/gram.git",
+    "url": "https://codeberg.org/abiwab/gram.git",
     "directory": "vscode-extension"
   },
   "bugs": {
-    "url": "https://github.com/abiwab/gram/issues"
+    "url": "https://codeberg.org/abiwab/gram/issues"
   },
-  "homepage": "https://github.com/abiwab/gram/tree/main/vscode-extension#readme",
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/vscode-extension#readme",
   "engines": {
     "vscode": "^1.75.0"
   },
