@@ -516,7 +516,7 @@ code {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .preview-output .meta-item {
@@ -607,7 +607,6 @@ code {
   border: 1px solid var(--border);
   border-radius: 99px;
   padding: 0 0.5em;
-  margin-left: 0.5em;
   vertical-align: middle;
   cursor: help;
   line-height: 1.4;
@@ -629,7 +628,7 @@ body.hide-mass-badges .preview-output .mass-badge {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .preview-output .meta-secondary-item {
