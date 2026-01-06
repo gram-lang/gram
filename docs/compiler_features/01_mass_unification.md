@@ -11,6 +11,7 @@ This process, called **NormalizeMass**, follows a strict priority order:
 1.  **Physical Mass**: If the unit is already a weight (`g`, `kg`, `mg`, `oz`, `lb`), it is simply converted to grams. This is considered **Precise**.
 2.  **Explicit Override**: If you provided a specific density override in the recipe metadata (see below), it is used to convert volume to mass. This is considered **Explicit**.
 3.  **Ingredient Database (Density)**: If the unit is a known Volume (`ml`, `cup`, `tbsp`...), the compiler looks up the ingredient's density. If found, it converts volume to mass. This is considered **Estimated** (`~`).
+    *   *Note: Database values (density/weights) are AI-generated estimates. See [disclaimer](./03_nutritional_estimation.md#ingredient-database).*
 4.  **Count / Fallback**: If the unit is **not** a known Mass or Volume (e.g., `unit`, `piece`, or custom units like `clove`, `head`...), it acts as a multiplier. The compiler looks for a **Unit Weight** in the DB or Overrides.
     *   Example: `@garlic{3 cloves}` -> Looks for unit weight of garlic (5g) -> 15g.
     *   This is considered **Estimated** (`~`).
