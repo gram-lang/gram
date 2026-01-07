@@ -2,7 +2,7 @@
 
 For complex cases where a linear ingredient list is not enough.
 
-## 1. Composite Ingredients (Driver/Passenger)
+## 1. Composite Ingredients (Passenger/Driver)
 
 Useful when an ingredient is "split" or "transformed" into multiple sub-parts (e.g., Egg -> White + Yolk).
 
@@ -13,9 +13,9 @@ Use `<` to say "This comes from...".
 *   The **Parent** (@lemon{}) is the item to buy.
 
 ```gram
-Zest the @lemon{} to get @zest{1}<@lemon{1}.
+Add the @zest{1}<@lemon{1}.
 
-Later, squeeze the @juice{1}<@lemon{}.
+Later, squeeze the @juice{3}<@lemon{3}.
 ```
 
 ### MAX Rule (Driver)
@@ -28,6 +28,9 @@ GRAM looks at all "requests" made to the parent and takes the largest one (the M
 
 If you put an explicit quantity on both child AND parent:
 `@zest{1}<@lemon{2}` -> "I need one zest, but consume 2 lemons to get it".
+
+Works with volumes or mass too:
+`@juice{75ml}<@lemon{2}` -> "I need 15ml of juice, it consumes 2 lemons to get it".
 
 ## 2. Alternatives (Or)
 

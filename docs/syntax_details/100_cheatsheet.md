@@ -20,8 +20,8 @@ Placed right after the `@`.
 * **Aliases** (Rename): `@white wine[wine]{}` -> Displays "wine", lists "white wine".
 * **Alternatives** (Choice): `@milk{}|@water{}` or `#pan{}|#wok{}`.
 * **Composites** (Sub-parts):
-    * Source: `Zest the @lemon{} to get @zest{1}<@lemon{}.`
-    * Rule: `Total = @lemon + Max(@zest, @juice...)`. (Do not put quantity on parent source to avoid duplicates).
+    * Source: `Add @zest{1}<@lemon{} and @juice{2}<@lemon{2}.` → Total shopping : 2 lemon.
+    * Rule: `Total = Max(@parent)`. (Do not put quantity on parent source to avoid duplicates).
 * **Relative Quantities**: `Add @water{60% @flour}` (Calculates 60% of the sum of previous flours in the section).
 
 ### 4. Recipe Structure
