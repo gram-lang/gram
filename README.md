@@ -37,12 +37,19 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 
 1.  **Data vs. Narrative:** Clear separation between ingredients (`@flour{200g}`) and instructions.
 2.  **Mise en Place:** Distinguishes between the **Shopping List** (Aggregated totals) and the **Section List** (What you need on the table right now).
-3.  **Complex Relationships:**
+3.  **Advanced Syntax Features:**
+    *   **Actions (`[Mix]`)**: Highlights the main method used in a step
     *   **References (`@&`)**: Reuse previously measured ingredients without doubling the shopping list amount.
     *   **Intermediate Preparations (`->&dough`)**: Chain recipe parts like variables.
     *   **Relative Quantities**: Define `@water{60% @flour}` for dynamic bakers math.
+    *   **Composites**: Handle "Zest of 1 lemon" and "Juice of 2 lemon" implying "Buy 2 Lemon".
+4.  **Automated Insights:**
     *   **Mass Unification**: Automatically converts volumes and units to grams (e.g., `1 cup flour` -> `125g`).
-    *   **Composites**: Handle "Zest of 1 lemon" and "Juice of 1 lemon" implying "Buy 1 Lemon".
+    *   **Yield Management**: Understands that buying `1 avocado` results in `~135g` of edible flesh (Purchasing vs. Net Mass).
+    *   **Nutritional Estimation**: Automatically calculates calories and macros based on an integrated ingredient database (POC).
+    *   **Scheduling**: Distinguishes **Active Time** (labor), **Prep Time** (mise en place) and **Cook Time** (actual cooking) from **Total Time** (including background tasks like rising or marinating).
+
+→ See the [**full feature list**](./docs/README.md) for more details.
 
 ---
 
