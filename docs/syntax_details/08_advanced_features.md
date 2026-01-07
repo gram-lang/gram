@@ -6,14 +6,15 @@ For complex cases where a linear ingredient list is not enough.
 
 Useful when an ingredient is "split" or "transformed" into multiple sub-parts (e.g., Egg -> White + Yolk).
 
-### Syntax `Parent < Child`
+### Syntax `Child < Parent`
 Use `<` to say "This comes from...".
 
-*   The **Parent** (@lemon{}) is the item to buy.
 *   The **Child** (@zest{}) is what is used in the step.
+*   The **Parent** (@lemon{}) is the item to buy.
 
 ```gram
 Zest the @lemon{} to get @zest{1}<@lemon{1}.
+
 Later, squeeze the @juice{1}<@lemon{}.
 ```
 
