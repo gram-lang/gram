@@ -203,7 +203,6 @@ export interface ProcessedSection {
 }
 export interface ProcessedStep {
     type: 'step';
-    value: string;
     action?: string;
     timings: {
         start: number;

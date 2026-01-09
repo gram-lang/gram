@@ -388,8 +388,7 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                  let localActiveTime = 0;
                  const stepAsyncTasks: Array<{ name?: string, duration: number, startOffset: number }> = [];
                  const stepContentObjects: any[] = [];
-                 let stepText = '';
-
+                 
                  ctx.intermediateDecl = null;
                  
                  block.children.forEach((item: any) => {
@@ -398,17 +397,9 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                      if (processed) {
                           stepContentObjects.push(processed);
 
-                          if (typeof processed === 'string') {
-                              stepText += processed;
-                          } else {
+                          if (typeof processed !== 'string') {
                               const p = processed as any; 
                               if (p.type === 'timer' && p.quantity) {
-                                  const qtyVal = p.quantity.value || p.quantity;
-                                  const unit = p.unit || '';
-                                  const name = p.name ? `~${p.name}` : '~';
-                                  stepText += `${name}{${qtyVal}${unit}}`;
-                                  if (p.isAsync) stepText += '&';
-
                                   const duration = quantityToMinutes({ value: p.quantity, unit: p.unit });
                                   
                                   if (p.isAsync) {
@@ -421,15 +412,6 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                                   } else {
                                       localActiveTime += duration;
                                   }
-                              } else if (p.type === 'ingredient') {
-                                   stepText += `@${p.name}`;
-                              } else if (p.type === 'cookware') {
-                                   stepText += `#${p.name}`;
-                              } else if (p.type === 'temperature') {
-                                   const qtyVal = (p.quantity && p.quantity.value) ? p.quantity.value : (p.quantity || '');
-                                   stepText += `!${p.name || ''}{${qtyVal}${p.unit || ''}}`;
-                              } else if (p.type === 'reference') {
-                                   stepText += `&${p.name}`;
                               }
                           }
                      }
@@ -444,7 +426,6 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
                  
                  const stepObj: ProcessedStep = {
                      type: 'step',
-                     value: stepText.trim(),
                      content: stepContentObjects,
                      timings: {
                          start: startTime,

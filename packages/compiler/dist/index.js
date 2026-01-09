@@ -368,24 +368,14 @@ function processSections(astChildren, registry, overrides) {
                 let localActiveTime = 0;
                 const stepAsyncTasks = [];
                 const stepContentObjects = [];
-                let stepText = '';
                 ctx.intermediateDecl = null;
                 block.children.forEach((item) => {
                     const processed = processBlockItem(item, ctx, registry, sectionIngredients, sectionCookware);
                     if (processed) {
                         stepContentObjects.push(processed);
-                        if (typeof processed === 'string') {
-                            stepText += processed;
-                        }
-                        else {
+                        if (typeof processed !== 'string') {
                             const p = processed;
                             if (p.type === 'timer' && p.quantity) {
-                                const qtyVal = p.quantity.value || p.quantity;
-                                const unit = p.unit || '';
-                                const name = p.name ? `~${p.name}` : '~';
-                                stepText += `${name}{${qtyVal}${unit}}`;
-                                if (p.isAsync)
-                                    stepText += '&';
                                 const duration = (0, units_1.quantityToMinutes)({ value: p.quantity, unit: p.unit });
                                 if (p.isAsync) {
                                     stepAsyncTasks.push({
@@ -399,19 +389,6 @@ function processSections(astChildren, registry, overrides) {
                                     localActiveTime += duration;
                                 }
                             }
-                            else if (p.type === 'ingredient') {
-                                stepText += `@${p.name}`;
-                            }
-                            else if (p.type === 'cookware') {
-                                stepText += `#${p.name}`;
-                            }
-                            else if (p.type === 'temperature') {
-                                const qtyVal = (p.quantity && p.quantity.value) ? p.quantity.value : (p.quantity || '');
-                                stepText += `!${p.name || ''}{${qtyVal}${p.unit || ''}}`;
-                            }
-                            else if (p.type === 'reference') {
-                                stepText += `&${p.name}`;
-                            }
                         }
                     }
                 });
@@ -422,7 +399,6 @@ function processSections(astChildren, registry, overrides) {
                 const endTime = cookCursor + localActiveTime;
                 const stepObj = {
                     type: 'step',
-                    value: stepText.trim(),
                     content: stepContentObjects,
                     timings: {
                         start: startTime,
