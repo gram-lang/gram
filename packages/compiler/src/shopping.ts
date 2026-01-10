@@ -78,7 +78,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  const comp = compositeMap.get(parentId)!;
                  
                  // Accumulate Parent Quantity Requirement
-                 let declParentQty = 0;
+                 let declParentQty = 1; // Default to 1 if not specified
                  if (item.composite && item.composite.quantity) {
                       const minQ = minifyQuantity(item.composite.quantity);
                       if (typeof minQ === 'number') declParentQty = minQ;
@@ -224,7 +224,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         }
 
         // --- Gross Mass Calculation (Yield) ---
-        // Only if we have a normalized mass (Net) and the ingredient has a yield factor < 1
         if (res.normalizedMass && res.normalizedMass > 0) {
              const dbData = getIngredientData(item.id);
              if (dbData && dbData.yield && dbData.yield < 1) {
@@ -239,13 +238,11 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         const extraEntries: string[] = [];
         
         if (hasMass) {
-             // Mass is in Qty. Any other units are extra.
              for (const [u, q] of Object.entries(item.otherUnits!)) {
                   const uStr = u ? ` ${u}` : '';
                   extraEntries.push(`${parseFloat(q.toFixed(2))}${uStr}`);
              }
         } else if (hasOther) {
-             // First unit is in Qty. Others are extra.
              const units = Object.keys(item.otherUnits!);
              for (let i = 1; i < units.length; i++) {
                   const u = units[i];
@@ -263,16 +260,45 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
     });
 
 
+    // --- Aggregation: Merge Direct Usage into Composite ---
+    const finalStandardList: ShoppingListItem[] = [];
+    
+    standardList.forEach(stdItem => {
+         if (compositeMap.has(stdItem.id)) {
+              const comp = compositeMap.get(stdItem.id)!;
+              
+              let addQty = 0;
+              if (stdItem.qty) {
+                   addQty = stdItem.qty;
+              }
+              
+              const directUsageKey = `__direct_${stdItem.id}`;
+              comp._usageAccumulator.set(directUsageKey, {
+                  id: stdItem.id, 
+                  alias: 'Direct Use', 
+                  qty: stdItem.qty,
+                  unit: stdItem.unit
+              });
+              
+             (comp as any)._directAddQty = addQty;
+
+         } else {
+             finalStandardList.push(stdItem);
+         }
+    });
+
     const compositeList = [...compositeMap.values()].map(c => {
         let maxQ = 0;
         for (const q of c._subUsageMap.values()) {
             if (q > maxQ) maxQ = q;
         }
+        
+        if ((c as any)._directAddQty) {
+            maxQ += (c as any)._directAddQty;
+        }
+
         c.qty = maxQ;
 
-        // Calculate Mass for Parent Composite
-        // Composite parents are almost always counted units (e.g. 6 eggs)
-        // If an explicit unit exists in composite definition we should use it, but here we infer 'unit' from maxQ usually being unitless count
         const parentName = registry.ingredients.get(c.id)?.name || c.id;
         const parentNorm = normalizeMass(c.qty, 'unit', parentName, overrides);
         
@@ -281,7 +307,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             id: c.id,
             name: parentName,
             qty: c.qty,
-            usage: [] // Will populate below
+            usage: [] 
         };
 
         if (parentNorm) {
@@ -290,7 +316,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             cRes.conversionMethod = parentNorm.method;
         }
 
-        // Calculate Mass for Sub-usages
         cRes.usage = [...c._usageAccumulator.values()].map(u => {
             const childUsage: any = { ...u };
             if (u.qty && typeof u.qty === 'number') {
@@ -310,7 +335,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
     });
 
     return [
-        ...standardList,
+        ...finalStandardList,
         ...compositeList,
         ...alternatives
     ];

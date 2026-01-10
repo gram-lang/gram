@@ -49,7 +49,7 @@ function generateShoppingList(sections, registry, overrides) {
                 }
                 const comp = compositeMap.get(parentId);
                 // Accumulate Parent Quantity Requirement
-                let declParentQty = 0;
+                let declParentQty = 1; // Default to 1 if not specified
                 if (item.composite && item.composite.quantity) {
                     const minQ = (0, utils_1.minifyQuantity)(item.composite.quantity);
                     if (typeof minQ === 'number')
@@ -194,7 +194,6 @@ function generateShoppingList(sections, registry, overrides) {
             }
         }
         // --- Gross Mass Calculation (Yield) ---
-        // Only if we have a normalized mass (Net) and the ingredient has a yield factor < 1
         if (res.normalizedMass && res.normalizedMass > 0) {
             const dbData = (0, ingredient_db_1.getIngredientData)(item.id);
             if (dbData && dbData.yield && dbData.yield < 1) {
@@ -206,14 +205,12 @@ function generateShoppingList(sections, registry, overrides) {
         const hasOther = Object.keys(item.otherUnits).length > 0;
         const extraEntries = [];
         if (hasMass) {
-            // Mass is in Qty. Any other units are extra.
             for (const [u, q] of Object.entries(item.otherUnits)) {
                 const uStr = u ? ` ${u}` : '';
                 extraEntries.push(`${parseFloat(q.toFixed(2))}${uStr}`);
             }
         }
         else if (hasOther) {
-            // First unit is in Qty. Others are extra.
             const units = Object.keys(item.otherUnits);
             for (let i = 1; i < units.length; i++) {
                 const u = units[i];
@@ -227,16 +224,38 @@ function generateShoppingList(sections, registry, overrides) {
         }
         return res;
     });
+    // --- Aggregation: Merge Direct Usage into Composite ---
+    const finalStandardList = [];
+    standardList.forEach(stdItem => {
+        if (compositeMap.has(stdItem.id)) {
+            const comp = compositeMap.get(stdItem.id);
+            let addQty = 0;
+            if (stdItem.qty) {
+                addQty = stdItem.qty;
+            }
+            const directUsageKey = `__direct_${stdItem.id}`;
+            comp._usageAccumulator.set(directUsageKey, {
+                id: stdItem.id,
+                alias: 'Direct Use',
+                qty: stdItem.qty,
+                unit: stdItem.unit
+            });
+            comp._directAddQty = addQty;
+        }
+        else {
+            finalStandardList.push(stdItem);
+        }
+    });
     const compositeList = [...compositeMap.values()].map(c => {
         let maxQ = 0;
         for (const q of c._subUsageMap.values()) {
             if (q > maxQ)
                 maxQ = q;
         }
+        if (c._directAddQty) {
+            maxQ += c._directAddQty;
+        }
         c.qty = maxQ;
-        // Calculate Mass for Parent Composite
-        // Composite parents are almost always counted units (e.g. 6 eggs)
-        // If an explicit unit exists in composite definition we should use it, but here we infer 'unit' from maxQ usually being unitless count
         const parentName = registry.ingredients.get(c.id)?.name || c.id;
         const parentNorm = (0, mass_normalization_1.normalizeMass)(c.qty, 'unit', parentName, overrides);
         let cRes = {
@@ -244,14 +263,13 @@ function generateShoppingList(sections, registry, overrides) {
             id: c.id,
             name: parentName,
             qty: c.qty,
-            usage: [] // Will populate below
+            usage: []
         };
         if (parentNorm) {
             cRes.normalizedMass = parentNorm.mass;
             cRes.isEstimate = parentNorm.isEstimate;
             cRes.conversionMethod = parentNorm.method;
         }
-        // Calculate Mass for Sub-usages
         cRes.usage = [...c._usageAccumulator.values()].map(u => {
             const childUsage = { ...u };
             if (u.qty && typeof u.qty === 'number') {
@@ -269,7 +287,7 @@ function generateShoppingList(sections, registry, overrides) {
         return cRes;
     });
     return [
-        ...standardList,
+        ...finalStandardList,
         ...compositeList,
         ...alternatives
     ];
