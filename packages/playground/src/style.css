@@ -299,6 +299,8 @@ code-input {
   line-height: 1.7;
   background: transparent;
   --code-input-font-family: var(--font-mono); /* Some libs use vars */
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 
@@ -795,7 +797,7 @@ body.hide-mass-badges .preview-output .mass-badge {
 .hljs-title { color: var(--foreground); font-weight: normal; font-style: italic; opacity: 0.8; } /* Aliases [name] */
 
 /* Headers & Meta */
-.hljs-section { color: var(--foreground); font-weight: 700; border-bottom: 1px solid var(--border); display: inline-block; width: 100%;}
+.hljs-section { color: var(--foreground); font-weight: 700; display: inline-block; width: 100%;}
 .hljs-meta { color: var(foreground); font-weight: 700;}
 .hljs-comment, .hljs-quote { color: var(--token-comment); font-style: italic; }
 

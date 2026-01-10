@@ -33,7 +33,7 @@ code-input {
   background-color: white;
 
   /* Normal inline styles */
-  margin: 8px;
+  margin: 0;
   --padding: 16px;
   --padding-left: var(--padding, 16px);
   --padding-right: var(--padding, 16px);
@@ -47,7 +47,7 @@ code-input {
   line-height: 1.5; /* Inherited to child elements */
   tab-size: 2;
   white-space: pre;
-  padding: 0!important; /* Use --padding to set the code-input element's padding */
+  padding: 25px; /* Use --padding to set the code-input element's padding */
 }
 
 code-input :not(.code-input_dialog-container *) {
@@ -57,10 +57,10 @@ code-input :not(.code-input_dialog-container *) {
 code-input textarea, code-input:not(.code-input_pre-element-styled) pre code, code-input.code-input_pre-element-styled pre {
   /* Both elements need the same text and space styling so they are directly on top of each other */
   margin: 0px!important;
-  padding-left: var(--padding-left, 16px)!important;
+  /* padding-left: var(--padding-left, 16px)!important;
   padding-right: var(--padding-right, 16px)!important;
   padding-top: var(--padding-top, 16px)!important;
-  padding-bottom: var(--padding-bottom, 16px)!important;
+  padding-bottom: var(--padding-bottom, 16px)!important; */
   border: 0;
 
   min-width: calc(100% - var(--padding-left, 16px) - var(--padding-right, 16px));
@@ -73,7 +73,7 @@ code-input textarea, code-input:not(.code-input_pre-element-styled) pre code, co
 }
 code-input:not(.code-input_pre-element-styled) pre code, code-input.code-input_pre-element-styled pre {
   height: max-content;
-  width: max-content;
+  width: 100%;
 
   /* Allow colour change to reflect properly;
   transition-behavior: allow-discrete could be used but this is better supported and
