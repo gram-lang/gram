@@ -810,7 +810,7 @@ body.hide-mass-badges .preview-output .mass-badge {
 .hljs-variable { color: var(--token-decl); } /* Inside quantity % @ref */
 
 /* Frontmatter */
-.hljs-frontmatter { color: var(--token-comment); display: block; border-bottom: 1px dashed var(--border); margin-bottom: 1rem; }
+.hljs-frontmatter { color: var(--token-comment);}
 .hljs-attr { color: var(--token-keyword); }
 
 /* JSON Tree Colors */
