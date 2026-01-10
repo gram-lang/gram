@@ -707,6 +707,10 @@ function renderHTML(data) {
                      titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}"><i class="ph ph-scales"></i> ${msg}</small>`;
                 }
 
+                if (sec.intermediate_preparation) {
+                    titleHtml += ` <span class="declaration" title="Intermediate result for this section"><i class="ph ph-arrow-right"></i> ${escapeHtml(sec.intermediate_preparation)}</span>`;
+                }
+
                 html += `    <h3>${titleHtml}</h3>\n`;
             }
             
@@ -772,7 +776,7 @@ function renderHTML(data) {
                              str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}"><i class="ph ph-thermometer"></i> ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
                          } else if (c.type === 'reference') {
                              const name = registry.ingredients[c.id]?.name || c.id;
-                             let refStr = `<span class="reference"><i class="ph ph-arrow-right"></i> ${escapeHtml(name)}`;
+                             let refStr = `<span class="reference"><i class="ph ph-caret-circle-right"></i> ${escapeHtml(name)}`;
                              const qty = getQty(c);
                              if (qty) {
                                   refStr += ` <span class="quantity">${qty.text || qty.value}`;
@@ -794,6 +798,8 @@ function renderHTML(data) {
                                  if (isCookware) return formatCookwareHTML(opt, registry);
                                  return formatIngredientHTML(opt, registry);
                              }).join(' <span class="keyword">or</span> ');
+                         } else if (c.type === 'declaration') {
+                             str = `<span class="declaration" title="Intermediate result declaring this step's output"><i class="ph ph-arrow-right"></i> ${escapeHtml(c.name)}</span>`;
                          } else if (c.type === 'comment') {
                              str = `<!-- ${escapeHtml(c.value.trim())} -->`;
                          }
@@ -953,7 +959,8 @@ function formatIngredientHTML(item, registry) {
     let displayName = name;
     if (item.alias) displayName = item.alias;
 
-    let str = `<span class="ingredient" data-name="${escapeHtml(name)}">${escapeHtml(displayName)}`;
+    const className = (item.type === 'reference') ? 'reference' : 'ingredient';
+    let str = `<span class="${className}" data-name="${escapeHtml(name)}">${escapeHtml(displayName)}`;
     
     const qty = getQty(item);
     

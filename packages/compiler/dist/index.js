@@ -208,7 +208,9 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         if (ctx.definedIntermediates.has(item.name))
             ctx.usedIntermediates.add(item.name);
         const obj = { type: 'reference', id, name: item.name };
-        if (item.quantity) {
+        // Only use explicit quantity if it has a value or unit (e.g. {100g} or {100})
+        // Empty braces {} should fall through to inheritance
+        if (item.quantity && (item.quantity.value !== null || item.quantity.unit || item.quantity.type === 'TextQuantity')) {
             const cleanQty = (0, utils_1.minifyQuantity)(item.quantity);
             if (cleanQty !== undefined)
                 obj.qty = cleanQty;
@@ -236,12 +238,21 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                     obj.conversionMethod = 'physical'; // Inherited
                 }
             }
+            else {
+                console.log(`[DEBUG] Variable ${id} not found. Available:`, Array.from(ctx.variableWeights.keys()));
+            }
+        }
+        // Only add to section ingredients (for Mass Calc) if it's NOT a local intermediate
+        // Local intermediates are already counted in the steps that created them.
+        if (!ctx.currentSectionIntermediates.has(item.name)) {
+            secIngredients.push(obj);
         }
         return obj;
     }
     if (item.type === 'IntermediateDecl') {
         const id = (0, utils_1.slugify)(item.name);
         ctx.intermediateDecl = id;
+        ctx.currentSectionIntermediates.add(item.name); // Track local declaration
         if (!registry.ingredients.has(id)) {
             registry.ingredients.set(id, { id, name: item.name, is_intermediate: true });
         }
@@ -250,7 +261,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
             if (entry)
                 entry.is_intermediate = true;
         }
-        return null;
+        return { type: 'declaration', name: item.name, id };
     }
     if (item.type === 'Text')
         return item.value;
@@ -279,8 +290,8 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                     ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
                 }
             }
+            return obj;
         }
-        return obj;
     }
     if (item.type === 'Comment') {
         return { type: 'comment', value: item.value, kind: item.kind };
@@ -327,6 +338,7 @@ function processSections(astChildren, registry, overrides) {
         seenNames: new Set(),
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
+        currentSectionIntermediates: new Set(),
         variableWeights: new Map(),
         globalScopes: new Map(),
         densityOverrides: overrides || {}
@@ -342,6 +354,7 @@ function processSections(astChildren, registry, overrides) {
     blocksToProcess.forEach(section => {
         if (section.type !== 'Section')
             return;
+        ctx.currentSectionIntermediates.clear();
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;
             if (ctx.globalScopes.has(varName)) {

@@ -35,6 +35,9 @@ function generateShoppingList(sections, registry, overrides) {
             if (circularIds.has(item.id)) {
                 item.isCircular = true;
             }
+            // Skip intermediate variable references (they show up in steps but not shopping list)
+            if (item.type === 'reference')
+                return;
             if (item.composite) {
                 const parentId = (0, utils_1.slugify)(item.composite.parent);
                 if (!compositeMap.has(parentId)) {

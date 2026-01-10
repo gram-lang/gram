@@ -225,7 +225,10 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
         
         const obj: Usage = { type: 'reference', id, name: item.name };
         
-        if (item.quantity) {
+        
+        // Only use explicit quantity if it has a value or unit (e.g. {100g} or {100})
+        // Empty braces {} should fall through to inheritance
+        if (item.quantity && (item.quantity.value !== null || item.quantity.unit || item.quantity.type === 'TextQuantity')) {
              const cleanQty = minifyQuantity(item.quantity);
              if (cleanQty !== undefined) obj.qty = cleanQty;
              if (item.quantity.unit) obj.unit = item.quantity.unit;
@@ -249,21 +252,31 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                      obj.isEstimate = w.isPartial;
                      obj.conversionMethod = 'physical'; // Inherited
                  }
+             } else {
+                 console.log(`[DEBUG] Variable ${id} not found. Available:`, Array.from(ctx.variableWeights.keys()));
              }
         }
+        
+        // Only add to section ingredients (for Mass Calc) if it's NOT a local intermediate
+        // Local intermediates are already counted in the steps that created them.
+        if (!ctx.currentSectionIntermediates.has(item.name)) {
+            secIngredients.push(obj);
+        }
+        
         return obj;
     }
 
     if (item.type === 'IntermediateDecl') {
         const id = slugify(item.name);
         ctx.intermediateDecl = id;
+        ctx.currentSectionIntermediates.add(item.name); // Track local declaration
         if (!registry.ingredients.has(id)) {
             registry.ingredients.set(id, { id, name: item.name, is_intermediate: true });
         } else {
             const entry = registry.ingredients.get(id);
             if (entry) entry.is_intermediate = true;
         }
-        return null; 
+        return { type: 'declaration', name: item.name, id };
     }
 
     if (item.type === 'Text') return item.value;
@@ -288,8 +301,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                       ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
                   }
               }
-         }
          return obj;
+    }
     }
 
     if (item.type === 'Comment') {
@@ -341,6 +354,7 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
         seenNames: new Set(),
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
+        currentSectionIntermediates: new Set(),
         variableWeights: new Map(),
         globalScopes: new Map(),
         densityOverrides: overrides || {}
@@ -359,6 +373,7 @@ function processSections(astChildren: any[], registry: Registry, overrides?: Rec
 
     blocksToProcess.forEach(section => {
         if (section.type !== 'Section') return; 
+        ctx.currentSectionIntermediates.clear();
 
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;

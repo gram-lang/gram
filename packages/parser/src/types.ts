@@ -165,6 +165,7 @@ export interface Context {
     seenNames: Set<string>;
     definedIntermediates: Set<string>;
     usedIntermediates: Set<string>;
+    currentSectionIntermediates: Set<string>; // Track intermediates defined in the current section
     variableWeights: Map<string, VariableWeight>;
     globalScopes: Map<string, string>;
     densityOverrides: Record<string, number>;

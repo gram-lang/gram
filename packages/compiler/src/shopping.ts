@@ -63,6 +63,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                 item.isCircular = true;
             }
 
+            // Skip intermediate variable references (they show up in steps but not shopping list)
+            if (item.type === 'reference') return;
+
             if (item.composite) {
                  const parentId = slugify(item.composite.parent);
                  if (!compositeMap.has(parentId)) {

@@ -43,5 +43,9 @@ For "Driver/Passenger" ingredients (`<@parent{}`), the compiler uses a smart agg
 *   Step 2: `@lemon{2}` (Direct use)
 *   **Result**: 3 Lemons (1 for zest + 2 direct).
 
-## 3. Flow Instructions
-Ingredients defined with empty quantities (e.g., `@reserved_sauce{}`) are treated as **Flow Instructions** (referring to something already made) and are **excluded** from the Shopping List.
+## 3. Exclusions (Flow & Intermediates)
+
+The following items are **excluded** from the Shopping List:
+
+1.  **Flow Instructions**: Ingredients defined with empty quantities (e.g., `@reserved sauce{}`). These are treated as references to something already made.
+2.  **Intermediate Ingredients**: Any reference starting with `&` (e.g., `&dough{}`). These are strictly internal to the recipe's workflow.

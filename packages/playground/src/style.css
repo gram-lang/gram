@@ -72,6 +72,9 @@
   --item-ref-text: #10b981;
   --item-ref-bg: rgba(16, 185, 129, 0.1);
   --item-ref-border: rgba(16, 185, 129, 0.2);
+  --item-decl-text: #1d4ed8;
+  --item-decl-bg: rgba(29, 78, 216, 0.1);
+  --item-decl-border: rgba(29, 78, 216, 0.2);
 }
 
 .light {
@@ -507,6 +510,17 @@ color: var(--muted-foreground);
   border-radius: 4px;
   border: 1px solid var(--item-ref-border);
   cursor: default;
+}
+.preview-output .declaration {
+  font-weight: normal;
+  color: var(--item-ref-text);
+  background: var(--background);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  border: 1px solid var(--item-decl-border);
+  cursor: default;
+  font-size: 0.85rem;
+  margin-left: 0.5em; /* Spacing from previous text */
 }
 .preview-output .action {
   display: inline-block;
