@@ -41,7 +41,10 @@ esbuild.build({
   alias: {
       'gram-parser': shimmedParserPath,
       'gram-compiler': path.resolve(__dirname, '../compiler/dist/index.js')
-  }
+  },
+  plugins: [
+      require('esbuild-plugin-yaml').yamlPlugin()
+  ]
 }).then(() => {
     console.log('Build successful!');
     fs.unlinkSync(shimmedParserPath);

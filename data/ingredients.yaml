@@ -1,0 +1,332 @@
+# Basic Baking
+flour:
+  density: 0.53
+  aliases: ["all-purpose flour", "wheat flour"]
+  macros: { calories: 364, protein: 10, carbs: 76, fat: 1, sugar: 0.3, fiber: 2.7, salt: 0 }
+
+sugar:
+  density: 0.85
+  aliases: ["white sugar", "granulated sugar"]
+  macros: { calories: 387, protein: 0, carbs: 100, fat: 0, sugar: 100, fiber: 0, salt: 0 }
+
+brown sugar:
+  density: 0.93
+  macros: { calories: 380, protein: 0, carbs: 98, fat: 0, sugar: 97, fiber: 0, salt: 0.04 }
+
+powdered sugar:
+  density: 0.56
+  aliases: ["icing sugar"]
+  macros: { calories: 389, protein: 0, carbs: 100, fat: 0 }
+
+butter:
+  density: 0.911
+  macros: { calories: 717, protein: 0.85, carbs: 0.06, fat: 81 }
+
+oil:
+  density: 0.92
+  aliases: ["vegetable oil", "olive oil"]
+  macros: { calories: 884, protein: 0, carbs: 0, fat: 100 }
+
+milk:
+  density: 1.03
+  aliases: ["whole milk"]
+  macros: { calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3 }
+
+water:
+  density: 1.0
+  macros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+
+salt:
+  density: 1.2
+  aliases: ["sea salt"]
+  macros: { calories: 0, protein: 0, carbs: 0, fat: 0, salt: 100 }
+
+yeast:
+  density: 0.95
+  aliases: ["active dry yeast"]
+  macros: { calories: 325, protein: 40, carbs: 41, fat: 7 }
+
+baking powder:
+  density: 0.9
+  macros: { calories: 53, protein: 0, carbs: 28, fat: 0 }
+
+baking soda:
+  density: 1.2
+  macros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+
+cocoa powder:
+  density: 0.44
+  aliases: ["cocoa"]
+  macros: { calories: 228, protein: 20, carbs: 58, fat: 14 }
+
+honey:
+  density: 1.42
+  macros: { calories: 304, protein: 0.3, carbs: 82, fat: 0 }
+
+maple syrup:
+  density: 1.37
+  macros: { calories: 260, protein: 0, carbs: 67, fat: 0 }
+
+cream:
+  density: 1.01
+  aliases: ["heavy cream"]
+  macros: { calories: 340, protein: 2.8, carbs: 2.7, fat: 36 }
+
+vanilla extract:
+  density: 0.88
+  macros: { calories: 288, protein: 0, carbs: 13, fat: 0 }
+
+cornstarch:
+  density: 0.65
+  aliases: ["corn flour"]
+  macros: { calories: 381, protein: 0.3, carbs: 91, fat: 0.1 }
+
+almond flour:
+  density: 0.45
+  aliases: ["ground almonds"]
+  macros: { calories: 579, protein: 21, carbs: 22, fat: 50 }
+
+chocolate chips:
+  density: 0.7
+  aliases: ["chocolate"]
+  macros: { calories: 546, protein: 6, carbs: 61, fat: 31 }
+
+cheese:
+  density: 0.6
+  aliases: ["cheddar"]
+  macros: { calories: 403, protein: 25, carbs: 1.3, fat: 33 }
+
+# Produce
+egg:
+  density: 1.03
+  unit_weight: 55
+  yield: 0.88
+  aliases: ["eggs"]
+  macros: { calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 }
+
+egg yolk:
+  density: 1.03
+  unit_weight: 18
+  aliases: ["egg yolks", "yolk", "yolks"]
+  macros: { calories: 322, protein: 16, carbs: 3.6, fat: 27 }
+
+egg white:
+  density: 1.03
+  unit_weight: 33
+  aliases: ["egg whites", "white", "whites"]
+  macros: { calories: 52, protein: 11, carbs: 0.7, fat: 0.2 }
+
+lemon:
+  density: 1.0
+  unit_weight: 120
+  yield: 0.50
+  aliases: ["lemons"]
+  macros: { calories: 29, protein: 1.1, carbs: 9, fat: 0.3 }
+
+lemon juice:
+  density: 1.04
+  unit_weight: 45
+  aliases: ["juice"]
+  macros: { calories: 22, protein: 0.35, carbs: 6.9, fat: 0.2 }
+
+lemon zest:
+  density: 0.5
+  unit_weight: 3
+  aliases: ["zest"]
+  macros: { calories: 47, protein: 1.5, carbs: 16, fat: 0.3 }
+
+lime:
+  density: 1.0
+  unit_weight: 60
+  yield: 0.55
+  aliases: ["limes"]
+  macros: { calories: 30, protein: 0.7, carbs: 11, fat: 0.2 }
+
+onion:
+  density: 0.7
+  unit_weight: 150
+  yield: 0.90
+  aliases: ["onions", "yellow onion"]
+  macros: { calories: 40, protein: 1.1, carbs: 9.3, fat: 0.1 }
+
+red onion:
+  density: 0.7
+  unit_weight: 150
+  yield: 0.90
+  aliases: ["red onions"]
+  macros: { calories: 40, protein: 1.1, carbs: 9.3, fat: 0.1 }
+
+garlic:
+  density: 0.6
+  unit_weight: 5
+  yield: 0.85
+  aliases: ["garlic clove", "garlic cloves"]
+  macros: { calories: 149, protein: 6.4, carbs: 33, fat: 0.5 }
+
+carrot:
+  density: 0.7
+  unit_weight: 100
+  yield: 0.80
+  aliases: ["carrots"]
+  macros: { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, sugar: 4.7, fiber: 2.8, salt: 0.1 }
+
+potato:
+  density: 0.77
+  unit_weight: 200
+  yield: 0.80
+  aliases: ["potatoes", "russet potato"]
+  macros: { calories: 77, protein: 2, carbs: 17, fat: 0.1, sugar: 0.8, fiber: 2.2, salt: 0 }
+
+apple:
+  density: 0.6
+  unit_weight: 180
+  yield: 0.75
+  aliases: ["apples"]
+  macros: { calories: 52, protein: 0.3, carbs: 14, fat: 0.2, sugar: 10, fiber: 2.4, salt: 0 }
+
+banana:
+  density: 0.9
+  unit_weight: 120
+  yield: 0.65
+  aliases: ["bananas"]
+  macros: { calories: 89, protein: 1.1, carbs: 23, fat: 0.3, sugar: 12, fiber: 2.6, salt: 0 }
+
+tomato:
+  density: 0.95
+  unit_weight: 120
+  yield: 0.91
+  aliases: ["tomatoes"]
+  macros: { calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, sugar: 2.6, fiber: 1.2, salt: 0.01 }
+
+canned tomatoes:
+  density: 1.1
+  aliases: ["canned tomato"]
+  macros: { calories: 32, protein: 1.6, carbs: 7.3, fat: 0.3 }
+
+bell pepper:
+  density: 0.5
+  unit_weight: 150
+  yield: 0.82
+  aliases: ["red bell pepper", "green bell pepper"]
+  macros: { calories: 26, protein: 1, carbs: 6, fat: 0.3 }
+
+chili:
+  density: 0.5
+  unit_weight: 15
+  yield: 0.85
+  aliases: ["chili pepper", "espelette pepper"]
+  macros: { calories: 40, protein: 1.9, carbs: 9, fat: 0.4 }
+
+ginger:
+  density: 0.9
+  unit_weight: 30
+  yield: 0.75
+  macros: { calories: 80, protein: 1.8, carbs: 18, fat: 0.8 }
+
+spinach:
+  density: 0.1
+  unit_weight: 300
+  yield: 0.90
+  macros: { calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4 }
+
+# Meat & Protein
+chicken:
+  density: 1.05
+  unit_weight: 200
+  aliases: ["chicken breast"]
+  macros: { calories: 165, protein: 31, carbs: 0, fat: 3.6 }
+
+chicken thigh:
+  density: 1.05
+  unit_weight: 120
+  aliases: ["chicken thighs"]
+  macros: { calories: 209, protein: 26, carbs: 0, fat: 10.9 }
+
+beef:
+  density: 1.05
+  aliases: ["ground beef", "steak"]
+  macros: { calories: 250, protein: 26, carbs: 0, fat: 17 }
+
+pork:
+  density: 1.05
+  unit_weight: 150
+  aliases: ["pork chop"]
+  macros: { calories: 242, protein: 27, carbs: 0, fat: 14 }
+
+bacon:
+  density: 0.5
+  macros: { calories: 541, protein: 37, carbs: 1.4, fat: 42 }
+
+tofu:
+  density: 0.95
+  macros: { calories: 76, protein: 8.1, carbs: 1.9, fat: 4.8 }
+
+# Spices
+pepper:
+  density: 0.5
+  aliases: ["black pepper", "ground pepper"]
+  macros: { calories: 251, protein: 10, carbs: 64, fat: 3.3 }
+
+cinnamon:
+  density: 0.55
+  macros: { calories: 247, protein: 4, carbs: 81, fat: 1.2 }
+
+paprika:
+  density: 0.45
+  macros: { calories: 282, protein: 14, carbs: 54, fat: 13 }
+
+cumin:
+  density: 0.45
+  macros: { calories: 375, protein: 18, carbs: 44, fat: 22 }
+
+turmeric:
+  density: 0.6
+  macros: { calories: 354, protein: 8, carbs: 65, fat: 10 }
+
+# Stocks & Sauces
+stock:
+  density: 1.01
+  aliases: ["chicken stock", "beef stock", "vegetable stock", "broth"]
+  macros: { calories: 15, protein: 2, carbs: 1, fat: 0.5 }
+
+mayonnaise:
+  density: 0.92
+  macros: { calories: 680, protein: 1, carbs: 1, fat: 75 }
+
+mustard:
+  density: 1.05
+  macros: { calories: 66, protein: 4, carbs: 8, fat: 4 }
+
+ketchup:
+  density: 1.15
+  macros: { calories: 111, protein: 1, carbs: 26, fat: 0 }
+
+# Grains
+rice:
+  density: 0.85
+  macros: { calories: 360, protein: 7, carbs: 80, fat: 0.7 }
+
+basmati rice:
+  density: 0.85
+  macros: { calories: 350, protein: 8, carbs: 77, fat: 0.5 }
+
+oats:
+  density: 0.4
+  aliases: ["rolled oats"]
+  macros: { calories: 389, protein: 17, carbs: 66, fat: 7 }
+
+pasta:
+  density: 1.3
+  aliases: ["spaghetti"]
+  macros: { calories: 371, protein: 13, carbs: 75, fat: 1.5 }
+
+# Liquids
+wine:
+  density: 0.99
+  aliases: ["red wine", "white wine"]
+
+vinegar:
+  density: 1.01
+
+soy sauce:
+  density: 1.13

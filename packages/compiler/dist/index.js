@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.configureIngredientDb = void 0;
 exports.processBlockItem = processBlockItem;
 exports.compile = compile;
 const units_1 = require("./units");
@@ -7,6 +8,8 @@ const utils_1 = require("./utils");
 const shopping_1 = require("./shopping");
 const nutrition_1 = require("./nutrition");
 const mass_normalization_1 = require("./mass_normalization");
+var ingredient_db_1 = require("./ingredient_db");
+Object.defineProperty(exports, "configureIngredientDb", { enumerable: true, get: function () { return ingredient_db_1.configureIngredientDb; } });
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
 // We'll trust the structure matches types.ts
 function processBlockItem(item, ctx, registry, secIngredients, secCookware) {

@@ -10,6 +10,8 @@ import {
     CompilationResult, Usage, ProcessedStep, MassMetrics
 } from 'gram-parser';
 
+export { configureIngredientDb } from './ingredient_db';
+
 // Helper type helper since we don't have all exact AST names matching from Ohm semantics yet
 // We'll trust the structure matches types.ts
 

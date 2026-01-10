@@ -7,19 +7,8 @@
  * Values have NOT been verified against official food databases (USDA, CIQUAL, etc.).
  * They serve as a temporary Proof of Concept. Treat all values as unverified estimates.
  */
-export interface IngredientData {
-    density: number;
-    unit_weight?: number;
-    yield?: number;
-    macros?: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        sugar?: number;
-        fiber?: number;
-        salt?: number;
-    };
-}
-export declare const INGREDIENT_DB: Record<string, IngredientData>;
+import { Ingredient } from './ingredients/schema';
+export type IngredientData = Ingredient;
+export declare let INGREDIENT_DB: Record<string, IngredientData>;
+export declare function configureIngredientDb(userDbOverride: Record<string, any>): void;
 export declare function getIngredientData(name: string): IngredientData | null;

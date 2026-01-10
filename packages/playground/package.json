@@ -24,6 +24,7 @@
     "ohm-js": "^17.2.1"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0"
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-yaml": "^0.0.1"
   }
 }
