@@ -18,9 +18,10 @@
     "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"
   },
   "dependencies": {
-    "ohm-js": "^17.2.1",
+    "@webcoder49/code-input": "^2.8.0",
+    "gram-compiler": "file:../compiler",
     "gram-parser": "file:../parser",
-    "gram-compiler": "file:../compiler"
+    "ohm-js": "^17.2.1"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

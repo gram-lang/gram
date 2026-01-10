@@ -1,8 +1,22 @@
 import { getAST } from 'gram-parser';
 import { compile } from 'gram-compiler';
+import codeInput from '@webcoder49/code-input';
+import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
+import gramGrammar from './gram-highlight.js';
+
+// Register Gram Grammar
+if (window.hljs) {
+    window.hljs.registerLanguage('gram', gramGrammar);
+}
+
+// Register code-input template
+codeInput.registerTemplate("syntax-highlighted", new hljsTemplate(window.hljs));
 
 const input = document.getElementById('input');
 const output = document.getElementById('output');
+
+// Setup Update Listener
+input.addEventListener('input', debounce(update, 300));
 
 const status = document.getElementById('status');
 const themeToggle = document.getElementById('theme-toggle');
@@ -1075,186 +1089,7 @@ function formatCookwareHTML(item, registry) {
 }
 
 
-const highlights = document.getElementById('highlights');
-
-function applyHighlights(text) {
-    // Escape HTML first
-    let escaped = text.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;");
-
-    // Simple Tokenizer Loop would be better, but let's try composed Regex for simplicity
-    // Order matters! 
-    
-    // Comments
-    escaped = escaped.replace(/(\/\/.*)/g, '<span class="token-comment">$1</span>');
-    
-    // Frontmatter (naive)
-    // Multiline regex in JS for frontmatter
-    // We can't easily match mulitline with simple replace if we already escaped lines. 
-    // And standard regex replace doesn't handle state.
-    
-    // Let's do a slightly smarter replacement:
-    // Highlight specific syntax chars wherever they appear if not in comment?
-    // Comments are already wrapped in span, so we shouldn't match inside them?
-    // Regex inside HTML is dangerous. 
-    
-    // REWRITE: Tokenize properly-ish.
-    // Actually, for a simple playground, we can use a sequence of replacements on parts that are NOT tags.
-    // But that's hard.
-    
-    // Let's just highlight specific patterns assuming no overlap or handled by order.
-    // Reset to unescaped for processing? No, must render HTML.
-    
-    // Strategy:
-    // 1. Split by newlines.
-    // 2. Process each line.
-    
-    const lines = text.split('\n');
-    const processedLines = lines.map(line => {
-        // Escape content
-        let l = line.replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
-                    
-        // Comments
-        if (l.trim().startsWith('//')) {
-            return `<span class="token-comment">${l}</span>`;
-        }
-        
-        // Header
-        if (l.trim().startsWith('##')) {
-             const html = l.replace(/(\{T-.*?\})/, '<span class="token-timer">$1</span>');
-             return `<span class="token-header">${html}</span>`;
-        }
-        
-        // Frontmatter separator
-        if (l.trim() === '---') {
-            return `<span class="token-frontmatter">${l}</span>`;
-        }
-
-        // Action [Action Name] at start of line
-        // Strict: Start of line (after leading spaces in l, but l is the full line content including spaces here?)
-        // The loop splits by \n, so l is the line.
-        // We match ` [Action]` or `[Action]`.
-        l = l.replace(/^(\s*)(\[)([^\]]+)(\])/, '$1<span class="token-action">$2$3$4</span>');
-
-        // Ingredients / Cookware / etc
-        // @name{qty%unit}
-        // #name{...}
-        // ~timer{...}
-        // !temp{...}
-        
-        // Highlighting Ingredients / Cookware / etc
-        
-        // Regex explaining:
-        // 1. ([@#~!]) -> Type start
-        // 2. ((?:\[.*?\]|[^\{\}\[\]\(\)<>\|@#~!&\?\*\n])*) -> Name (and modifiers? modifiers are ?, -, *, &).
-        //    Modifiers are allowed before name. Modifiers are ? - * &.
-        //    So name group actually captures modifiers + name.
-        //    We exclude syntax chars but modifiers are syntax chars! 
-        //    Wait, modifiers are ?, -, *, &.
-        //    If I exclude & from name regex, I exclude modifer?
-        //    Yes. Name definition in grammar: `(~(syntaxChar | nl) any)+`.
-        //    `syntaxChar` INCLUDES `&`, `?`, `*`.
-        //    So strict parser says name cannot contain `&`.
-        //    Structure: @ [Modifiers] Name ...
-        //    The string between @ and { contains modifiers + name.
-        //    The grammar separates them.
-        //    Here in regex we capture "everything between @ and {".
-        //    So we should allow modifiers in the capture group.
-        //    We should exclude syntax chars that START other things or delimiters.
-        //    Delimiters: { (start qty), [ (start alias), < (composite).
-        //    Start new element: @ # ~ !
-        //    Others: | (alternative), ( (prep).
-        //    So we should exclude: { [ < | ( @ # ~ ! 
-        //    And maybe ) } ] > for safety.
-        //    We should NOT exclude ?, -, *, & because they are modifiers.
-        
-        // Regex explaining:
-        // 1. (-&gt;&amp;|[@#~!&]) -> Type start. Must handle escaped ->& which is -&gt;&amp;
-        // 2. ((?:\[.*?\]|[^\{\[\<\(\|\@\#\~\!\n])*) -> Name
-        
-        l = l.replace(/(-&gt;&amp;|[@#~!&])((?:\[.*?\]|[^\{\[\<\(\|\@\#\~\!\n])*)(\{.*?\})?/g, (match, type, name, qty) => {
-             // Filter false positives for '!' (punctuation)
-             if (type === '!' && !qty && (!name || !name.trim().match(/[a-zA-Z0-9]/))) {
-                 return match; 
-             }
-             
-             // Handle escaped entities and references
-             let displayType = type;
-             let displayName = name;
-             
-             if (type === '&') {
-                 // Check if it's a pure entity literal like &lt; &gt; &amp;
-                 if (name === 'lt;' || name === 'gt;' || name === 'amp;') {
-                     return match;
-                 }
-                 // Check if it is a reference that got double-escaped prefix &amp;name
-                 if (name.startsWith('amp;')) {
-                     displayName = name.slice(4); // Remove amp;
-                     // It is a reference &name
-                 } 
-             }
-             
-             if (type === '-&gt;&amp;') {
-                 displayType = '->&';
-             }
-
-             let cls = 'token-ingredient';
-             if (type === '#') cls = 'token-cookware';
-             if (type === '~') cls = 'token-timer';
-             if (type === '!') cls = 'token-temp';
-             if (type === '&' || type === '-&gt;&amp;') cls = 'token-decl'; 
-             
-             // Wrap parts
-             const symbolHtml = `<span class="${cls}">${displayType}</span>`;
-             const nameHtml = `<span class="${cls}">${displayName}</span>`;
-             
-             let qtyHtml = '';
-             if (qty) {
-                 qtyHtml = `<span class="${cls}">${qty}</span>`; 
-                 qtyHtml = qtyHtml.replace(/(\d+(?:\.\d+)?)/g, '<span class="token-qty">$1</span>');
-                 qtyHtml = qtyHtml.replace(/(%)([\w°]+)/g, '<span class="token-syntax">$1</span><span class="token-unit">$2</span>');
-             }
-             
-             return `${symbolHtml}${nameHtml}${qtyHtml}`;
-        });
-        
-        return l;
-    });
-    
-    return processedLines.join('\n') + '<br>'; // trailing newlines need br or they disappear
-}
-
-
-function handleInput() {
-    const text = input.value;
-    highlights.innerHTML = applyHighlights(text);
-    update();
-}
-
-function handleScroll() {
-    highlights.scrollTop = input.scrollTop;
-    highlights.scrollLeft = input.scrollLeft;
-}
-
-// Event Listeners
-
-// 1. Sync Scroll
-input.addEventListener('scroll', handleScroll);
-
-// 2. Highlight (Immediate)
-input.addEventListener('input', () => {
-    highlights.innerHTML = applyHighlights(input.value);
-});
-
-// 3. Parse (Debounced)
-const debouncedParse = debounce(update, 300);
-input.addEventListener('input', debouncedParse);
-
 // Initial state
-highlights.innerHTML = applyHighlights(input.value);
 update();
 
 function showWarnings(warnings) {
@@ -1338,7 +1173,7 @@ if (examplesSelect) {
             })
             .then(text => {
                 input.value = text;
-                handleInput();
+                update();
             })
             .catch(err => {
                 console.error('Could not load example:', err);

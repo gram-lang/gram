@@ -1,3 +1,5 @@
+@import 'code-input.css'; /* Copied from node_modules */
+
 /* =========================================
    1. VARIABLES & THEME
    ========================================= */
@@ -281,53 +283,50 @@ h2 {
   position: relative;
   flex: 1;
   display: flex;
-  overflow: hidden;
+  overflow: hidden; /* code-input handles scroll */
   background-color: #0c0c0e;
 }
 .light .editor-container {
   background-color: #fafafa;
 }
 
-.editor-container textarea,
-.editor-container .highlights {
+code-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
   font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.7;
-  padding: 1rem;
-  width: 100%;
-  height: 100%;
-  border: none;
   background: transparent;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+  --code-input-font-family: var(--font-mono); /* Some libs use vars */
 }
 
-textarea {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  color: transparent;
-  caret-color: var(--foreground);
-  resize: none;
-  outline: none;
-  overflow: auto;
+
+/* Ensure internal elements match */
+code-input textarea, 
+code-input pre, 
+code-input code {
+    font-family: var(--font-mono) !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
 }
 
-.highlights {
-  color: var(--foreground);
-  overflow: hidden;
+/* Fix for cursor color if needed */
+code-input textarea {
+    caret-color: var(--foreground);
+    color: transparent; /* Standard text transparency for syntax highlight overlay */
 }
 
-.backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
+code-input textarea:focus {
+    outline: none;
+}
+
+code-input pre code {
+    color: var(--token-code); /* base color */
+}
+
+code-input:has(textarea:focus):not(.code-input_mouse-focused){
+  outline:none;
 }
 
 
@@ -786,35 +785,43 @@ body.hide-mass-badges .preview-output .mass-badge {
 /* =========================================
    9. SYNTAX HIGHLIGHTING (TOKENS)
    ========================================= */
-.token-comment { color: var(--token-comment); }
-.token-header { color: var(--foreground); font-weight: 600; }
-.token-frontmatter { color: var(--token-comment); }
+/* Braces and Syntax Chars */
+.hljs-qty, .hljs-operator, .hljs-punctuation { color: var(--token-syntax); }
 
-.token-ingredient { color: var(--token-ingredient); }
-.token-cookware { color: var(--token-cookware); }
-.token-timer { color: var(--token-timer); }
-.token-temp { color: var(--token-temp); }
-.token-decl { color: var(--token-decl); }
-.token-qty { color: var(--token-qty); }
-.token-syntax { color: var(--token-syntax); }
+/* Values */
+.hljs-number, .json-num { color: var(--token-number); }
+.hljs-unit { color: var(--token-unit); }
+.hljs-string { color: var(--token-string); font-style: italic; } /* Preps (diced) */
+.hljs-title { color: var(--foreground); font-weight: normal; font-style: italic; opacity: 0.8; } /* Aliases [name] */
 
-/* Highlight.js Overrides */
+/* Headers & Meta */
+.hljs-section { color: var(--foreground); font-weight: 700; border-bottom: 1px solid var(--border); display: inline-block; width: 100%;}
+.hljs-meta { color: var(foreground); font-weight: 700;}
+.hljs-comment, .hljs-quote { color: var(--token-comment); font-style: italic; }
+
+/* Elements */
+.hljs-ingredient { color: var(--token-ingredient); font-weight: 500; }
+.hljs-cookware { color: var(--token-cookware); font-weight: 500; }
+.hljs-timer { color: var(--token-timer); font-weight: 500; }
+.hljs-temp { color: var(--token-temp); font-weight: 500; }
+.hljs-reference { color: var(--token-decl); font-weight: 500; }
+.hljs-variable { color: var(--token-decl); } /* Inside quantity % @ref */
+
+/* Frontmatter */
+.hljs-frontmatter { color: var(--token-comment); display: block; border-bottom: 1px dashed var(--border); margin-bottom: 1rem; }
+.hljs-attr { color: var(--token-keyword); }
+
+/* JSON Tree Colors */
+.json-key { color: var(--token-ingredient); }
+.json-str { color: var(--token-string); }
+.json-bool { color: var(--token-keyword); }
+.json-null { color: var(--token-comment); }
+
+/* Highlight.js Overrides - Reset standard styles to avoid conflicts */
 .hljs {
   background: transparent;
   color: var(--foreground);
 }
-.hljs-comment { color: var(--token-comment); }
-.hljs-keyword, .hljs-selector-tag, .hljs-title, .hljs-section, .hljs-doctag, .hljs-name, .hljs-strong {
-  font-weight: bold;
-}
-.hljs-emphasis { font-style: italic; }
-.hljs-string, .hljs-title, .hljs-section, .hljs-built_in, .hljs-literal, .hljs-type, .hljs-addition, .hljs-tag, .hljs-quote, .hljs-name, .hljs-selector-id, .hljs-selector-class {
-  color: var(--token-string);
-}
-.hljs-attr { color: var(--token-keyword); }
-.hljs-number { color: var(--token-number); }
-.hljs-literal { color: var(--token-def); }
-.hljs-symbol, .hljs-bullet { color: var(--token-keyword); }
 
 /* Nutrition Panel */
 .nutrition-panel {
