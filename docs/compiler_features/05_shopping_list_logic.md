@@ -31,12 +31,17 @@ If an ingredient uses a relative quantity (`@{50% @milk}`) but `@milk{}` is neve
 ### 2.2. Circular References
 The compiler detects infinite loops (A depends on B, B depends on A) and flags them as `⚠️ Circular Ref` instead of crashing.
 
-### 2.3. Composite Ingredients (Max Rule)
-For "Driver/Passenger" ingredients (`<@parent{}`), the compiler applies a **MAX** strategy.
+### 2.3. Composite Ingredients (Max & Sum Rules)
+For "Driver/Passenger" ingredients (`<@parent{}`), the compiler uses a smart aggregation strategy:
 
-*   If Step A needs 1 lemon's zest.
-*   If Step B needs 3 lemons' juice.
-*   The Shopping List will request **3 Lemons** (the driver), ensuring coverage for the highest requirement.
+1.  **MAX Rule**: When different parts are used (e.g., zest vs juice), it takes the maximum requirement.
+2.  **SUM Rule**: When the same part is used multiple times, requirements are summed.
+3.  **Aggregation**: If the parent itself is used directly elsewhere in the recipe, that quantity is added to the composite requirement.
+
+**Example**:
+*   Step 1: `@zest{1}<@lemon{1}`
+*   Step 2: `@lemon{2}` (Direct use)
+*   **Result**: 3 Lemons (1 for zest + 2 direct).
 
 ## 3. Flow Instructions
 Ingredients defined with empty quantities (e.g., `@reserved_sauce{}`) are treated as **Flow Instructions** (referring to something already made) and are **excluded** from the Shopping List.

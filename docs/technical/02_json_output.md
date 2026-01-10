@@ -169,15 +169,14 @@ The structure is optimized for display.
 
 *   **Composites**
     ```json
-  {
+    {
       "type": "composite",
       "id": "lemon",
-      "qty": 1,
+      "qty": 4, // Max(Zest, Juice) + Direct
       "usage": [
-        {
-          "id": "zest",
-          "qty": 1
-        }
+        { "id": "zest", "qty": 1 },
+        { "id": "juice", "qty": 1 },
+        { "id": "lemon", "qty": 2, "alias": "Direct Use" }
       ]
     }
     ```

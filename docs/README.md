@@ -9,13 +9,14 @@
 The core language specification and usage guides.
 
 *   [**Overview**](./syntax_details/00_overview.md) - A high-level tour of the GRAM language.
+*   [**Structure**](./syntax_details/01_structure.md) - Headers, steps, comments and metadata blocks.
 *   [**Ingredients**](./syntax_details/02_ingredients.md) - Syntax, quantities, modifiers (`@?`, `@-`, `@*`) and preparations.
 *   [**Cookware**](./syntax_details/03_cookware.md) - Fixed vs Scalable tools, dimensions and materials.
 *   [**Time & Temperature**](./syntax_details/04_time_and_temp.md) - Timers (`~`), temperatures (`!`) and async tasks.
-*   [**Relative Quantities**](./syntax_details/05_relative_quantities.md) - Dynamic calculations (e.g. `60% @flour`).
-*   [**Variables & Intermediate**](./syntax_details/06_intermediate_vars.md) - Using `->&dough` to chain recipe parts.
-*   [**Structure**](./syntax_details/07_structure.md) - Headers, steps, comments and metadata blocks.
-*   [**Advanced Features**](./syntax_details/08_advanced_features.md) - Composites, alternatives, and edge cases.
+*   [**Advanced Features**](./syntax_details/05_advanced_features.md) - Alternatives (`|`) and Inline Preps.
+*   [**Relative Quantities**](./syntax_details/06_relative_quantities.md) - Dynamic calculations (e.g. `60% @flour`).
+*   [**Variables & Intermediate**](./syntax_details/07_intermediate_vars.md) - Using `->&dough` to chain recipe parts.
+*   [**Composites**](./syntax_details/08_composite_ingredients.md) - Driver/Passenger logic (`<`).
 
 
 ### Compiler Features

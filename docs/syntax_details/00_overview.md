@@ -121,7 +121,7 @@ You can declare an intermediate preparation using `->&` at the end of the title.
 ## Puff Pastry ->&dough{}
 ```
 
-More about intermediate preparations in the [Intermediate Preparations](#intermediate-preparations) section.
+More about intermediate preparations in the [Intermediate Preparations](./07_intermediate_vars.md) section.
 
 **Order of operations:**
 If using both Retro-planning and Intermediate declarations in a header, the order is strict:
@@ -330,33 +330,30 @@ These ingredients will not appear in the shopping list.
 
 ## Composite ingredients
  
-You can define composite ingredients that are made of multiple ingredients.
- 
+You can define ingredients (children) that are drawn from another ingredient (parent).
+See full documentation in [08_composite_ingredients.md](./08_composite_ingredients.md).
+
+### Syntax
+`@child{qty}<@parent{parentQty}`.
+If `parentQty` is omitted (e.g., `<@lemon{}` or `<@lemon`), it defaults to **1**.
+
 ```gram
-Add the @zest{1}<@lemon{1} and stir.
- 
-Then add the @juice{1}<@lemon{}.
+Add the @zest{1}<@lemon{}. // Costs 1 Lemon
+Then add the @juice{1}<@lemon{}. // Costs 1 Lemon
 ```
- 
-Here, @zest{} and @juice{} are refering to the same ingredient @lemon{}.
- 
-The total quantity is calculated using the **Driver/Passenger** logic (MAX on explicit parent quantities).
- 
+
+### Calculation Rules
+1.  **MAX Rule**: Different parts of the same parent (zest vs juice) share the parent. The highest cost wins.
+2.  **SUM Rule**: Same part used multiple times adds up.
+3.  **Aggregation**: Mixes with direct usages (`@lemon{2}`).
+
+**Example**:
 ```gram
-Add the @yolk{4}<@eggs{4} and stir.
- 
-Then add the @white{2}<@eggs{}.
+@zest{1}<@lemon{}       // Need 1
+@juice{1}<@lemon{}      // Need 1 (Covered by the one above)
+@lemon{2}               // Direct use
 ```
- 
-\-\> The total quantity will be **4**.
- 
-If you specify a quantity on both, it takes the MAX:
- 
-```gram
-@part A{...}<@parent{2} ... @part B{...}<@parent{5}
-```
- 
-\-\> Total: 5.
+**Total Shopping List**: 3 Lemons.
 
 ## Component alias
 
