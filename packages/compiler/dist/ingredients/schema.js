@@ -16,6 +16,7 @@ exports.IngredientSchema = zod_1.z.object({
     unit_weight: zod_1.z.number().optional(),
     yield: zod_1.z.number().default(1.0),
     aliases: zod_1.z.array(zod_1.z.string()).default([]),
+    i18n: zod_1.z.record(zod_1.z.string(), zod_1.z.array(zod_1.z.string())).optional(),
     macros: exports.MacrosSchema.optional(),
 });
 exports.IngredientDbSchema = zod_1.z.record(zod_1.z.string(), exports.IngredientSchema);

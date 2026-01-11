@@ -15,6 +15,7 @@ export const IngredientSchema = z.object({
   unit_weight: z.number().optional(),
   yield: z.number().default(1.0),
   aliases: z.array(z.string()).default([]),
+  i18n: z.record(z.string(), z.array(z.string())).optional(),
   macros: MacrosSchema.optional(),
 });
 

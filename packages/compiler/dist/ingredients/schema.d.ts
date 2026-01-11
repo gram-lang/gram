@@ -13,6 +13,7 @@ export declare const IngredientSchema: z.ZodObject<{
     unit_weight: z.ZodOptional<z.ZodNumber>;
     yield: z.ZodDefault<z.ZodNumber>;
     aliases: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    i18n: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString>>>;
     macros: z.ZodOptional<z.ZodObject<{
         calories: z.ZodDefault<z.ZodNumber>;
         protein: z.ZodDefault<z.ZodNumber>;
@@ -28,6 +29,7 @@ export declare const IngredientDbSchema: z.ZodRecord<z.ZodString, z.ZodObject<{
     unit_weight: z.ZodOptional<z.ZodNumber>;
     yield: z.ZodDefault<z.ZodNumber>;
     aliases: z.ZodDefault<z.ZodArray<z.ZodString>>;
+    i18n: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString>>>;
     macros: z.ZodOptional<z.ZodObject<{
         calories: z.ZodDefault<z.ZodNumber>;
         protein: z.ZodDefault<z.ZodNumber>;

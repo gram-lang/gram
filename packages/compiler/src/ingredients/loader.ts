@@ -54,6 +54,17 @@ export function buildFastLookupMap(db: Record<string, Ingredient>): Record<strin
                 lookup[alias] = data;
             }
         }
+
+        // Add i18n aliases
+        if (data.i18n) {
+            for (const lang of Object.values(data.i18n)) {
+                if (Array.isArray(lang)) {
+                    for (const alias of lang) {
+                        lookup[alias] = data;
+                    }
+                }
+            }
+        }
     }
 
     return lookup;
