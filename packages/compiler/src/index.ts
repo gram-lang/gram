@@ -575,6 +575,19 @@ export function compile(ast: RecipeAST): CompilationResult {
     
     const globalMassMetrics = calculateMassMetrics(allRawIngredients);
 
+    // [New] Generate warnings for missing mass data to help users debug
+    const reportedMissing = new Set<string>();
+    globalMassMetrics.missingMassIngredients.forEach(name => {
+         if (!reportedMissing.has(name)) {
+             registry.warnings.push({
+                 code: 'MISSING_MASS_DATA',
+                 message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
+                 item: name
+             });
+             reportedMissing.add(name);
+         }
+    });
+
     const shopping_list = generateShoppingList(sections, registry, densityOverrides);
     
     const globalCookware: Usage[] = [];

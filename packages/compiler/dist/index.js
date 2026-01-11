@@ -535,6 +535,18 @@ function compile(ast) {
         });
     });
     const globalMassMetrics = calculateMassMetrics(allRawIngredients);
+    // [New] Generate warnings for missing mass data to help users debug
+    const reportedMissing = new Set();
+    globalMassMetrics.missingMassIngredients.forEach(name => {
+        if (!reportedMissing.has(name)) {
+            registry.warnings.push({
+                code: 'MISSING_MASS_DATA',
+                message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
+                item: name
+            });
+            reportedMissing.add(name);
+        }
+    });
     const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry, densityOverrides);
     const globalCookware = [];
     sections.forEach(sec => {
