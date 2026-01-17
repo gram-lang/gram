@@ -1,0 +1,2705 @@
+ketchup:
+  name: ketchup
+  i18n:
+    fr: ketchup
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11008'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 108
+        water: 68.3
+        protein: 1.23
+        carbs: 23.7
+        sugar: 21.1
+        fat: 0.16
+        sat_fat: 0.035
+        mono_fat: 0.028
+        poly_fat: 0.098
+        fiber: 1.77
+        sodium: 0.9
+        alcohol: 0
+
+mayonnaise:
+  name: mayonnaise
+  i18n:
+    fr: mayonnaise
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11054'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 692
+        water: 18.1
+        protein: 1.33
+        carbs: 3.41
+        sugar: 1.2
+        fat: 74.5
+        sat_fat: 6.76
+        mono_fat: 18.6
+        poly_fat: 40.8
+        fiber: 0.26
+        sodium: 0.552
+        alcohol: 0
+
+barbecue-sauce:
+  name: barbecue sauce
+  i18n:
+    fr: sauce barbecue
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11100'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 136
+        water: 63.4
+        protein: 0.56
+        carbs: 30.3
+        sugar: 27.5
+        fat: 0.6
+        sat_fat: 0.1
+        mono_fat: 0.24
+        poly_fat: 0.21
+        fiber: 1.2
+        sodium: 0.706
+        alcohol: 0
+
+soy-sauce:
+  name: soy sauce
+  i18n:
+    fr: sauce soja
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11104'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 39.9
+        water: 75.4
+        protein: 7.25
+        carbs: 1.72
+        sugar: 0
+        fat: 0.5
+        sat_fat: 0.006
+        mono_fat: 0.006
+        poly_fat: 0.006
+        fiber: 0.9
+        sodium: 5.25
+        alcohol: 0
+
+harissa:
+  name: harissa
+  i18n:
+    fr: harissa
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11112'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 76.4
+        water: 77.9
+        protein: 2.72
+        carbs: 7.3
+        sugar: 6.89
+        fat: 2.9
+        sat_fat: 0.47
+        mono_fat: 0.73
+        poly_fat: 1.01
+        fiber: 5.1
+        sodium: 1.12
+        alcohol: 0
+
+gherkin:
+  name: gherkin
+  i18n:
+    fr: cornichon
+  aliases:
+    - pickle
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11004'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 16
+        water: 93.7
+        protein: 1.06
+        carbs: 0.78
+        sugar: 0.6
+        fat: 0.6
+        sat_fat: 0.01
+        mono_fat: 0.01
+        poly_fat: 0.01
+        fiber: 1.5
+        sodium: 0.689
+        alcohol: 0
+
+mustard:
+  name: mustard
+  i18n:
+    fr: moutarde
+  aliases:
+    - dijon mustard
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11013'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 151
+        water: 67.9
+        protein: 6.92
+        carbs: 4.33
+        sugar: 1.73
+        fat: 11.2
+        sat_fat: 1.1
+        mono_fat: 5.76
+        poly_fat: 2.91
+        fiber: 1
+        sodium: 2.3
+        alcohol: 0
+
+vinegar:
+  name: vinegar
+  i18n:
+    fr: vinaigre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11018'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 22.5
+        water: 92.9
+        protein: 0.04
+        carbs: 0.95
+        sugar: 0.04
+        fat: 0.1
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0.005
+        alcohol: 0
+
+whole-grain-mustard:
+  name: whole grain mustard
+  i18n:
+    fr: moutarde à l'ancienne
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11021'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 142
+        water: 67.8
+        protein: 6.6
+        carbs: 2.2
+        sugar: 2.2
+        fat: 9.9
+        sat_fat: 0.61
+        mono_fat: 5.34
+        poly_fat: 3.47
+        fiber: 4.5
+        sodium: 1.96
+        alcohol: 0
+
+capers:
+  name: capers
+  i18n:
+    fr: câpres
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11040'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 83.9
+        protein: 2.18
+        carbs: 3.5
+        sugar: 0.41
+        fat: 0.86
+        sat_fat: 0.23
+        mono_fat: 0.063
+        poly_fat: 0.3
+        fiber: 3.6
+        sodium: 1.62
+        alcohol: 0
+
+pickled-onion:
+  name: pickled onion
+  i18n:
+    fr: oignon au vinaigre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11055'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 93
+        protein: 0.6
+        carbs: 2.5
+        sugar: 2.5
+        fat: 0.15
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 1.8
+        sodium: 0.458
+        alcohol: 0
+
+cider-vinegar:
+  name: cider vinegar
+  i18n:
+    fr: vinaigre de cidre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11090'
+  physical:
+    density: 1.01
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 93.8
+        protein: 0
+        carbs: 0.93
+        sugar: 0.4
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0.005
+        alcohol: 0
+
+balsamic-vinegar:
+  name: balsamic vinegar
+  i18n:
+    fr: vinaigre balsamique
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11091'
+  physical:
+    density: 1.08
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 91.7
+        water: 77
+        protein: 0.69
+        carbs: 18
+        sugar: 18
+        fat: 0.6
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0.75
+        sodium: 0.027
+        alcohol: 0
+
+sweet-and-sour-gherkin:
+  name: sweet and sour gherkin
+  i18n:
+    fr: cornichon aigre-doux
+  aliases:
+    - sweet and sour pickle
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11097'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 36
+        water: 91.5
+        protein: 1.25
+        carbs: 5
+        sugar: 4
+        fat: 0.35
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 1.5
+        sodium: 0.376
+        alcohol: 0
+
+red-wine-vinegar:
+  name: red wine vinegar
+  i18n:
+    fr: vinaigre de vin rouge
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11220'
+  physical:
+    density: 1.01
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 20.6
+        water: 91.5
+        protein: 0.25
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0.0051
+        alcohol: 0
+
+greek-olive:
+  name: greek olive
+  i18n:
+    fr: olive noire à la grecque
+  aliases:
+    - greek black olive
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '13131'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 349
+        water: 42
+        protein: 2.19
+        carbs: 4.33
+        sugar: 0.3
+        fat: 33.3
+        sat_fat: 4.02
+        mono_fat: 22.6
+        poly_fat: 5.06
+        fiber: 11.6
+        sodium: 3.38
+        alcohol: 0
+
+olive:
+  name: olive
+  i18n:
+    fr: olive
+  aliases:
+    - olive verte
+    - green olive
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '13184'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 165
+        water: 74.4
+        protein: 1.29
+        carbs: 0.65
+        sugar: 0.029
+        fat: 16.6
+        sat_fat: 2.29
+        mono_fat: 10.5
+        poly_fat: 1.57
+        fiber: 3.83
+        sodium: 1.13
+        alcohol: 0
+
+black-olive:
+  name: black olive
+  i18n:
+    fr: olive noire
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '13186'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 182
+        water: 73.3
+        protein: 1.41
+        carbs: 0.26
+        sugar: 0.015
+        fat: 18
+        sat_fat: 2.17
+        mono_fat: 10.8
+        poly_fat: 1.69
+        fiber: 6.46
+        sodium: 0.835
+        alcohol: 0
+
+miso:
+  name: miso
+  i18n:
+    fr: miso
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20916'
+  physical:
+    density: 1.16
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 188
+        water: 43
+        protein: 12.8
+        carbs: 18.1
+        sugar: 6.2
+        fat: 6.01
+        sat_fat: 1.14
+        mono_fat: 1.24
+        poly_fat: 3.2
+        fiber: 5.4
+        sodium: 3.73
+        alcohol: 0
+
+wheat-bran:
+  name: wheat bran
+  i18n:
+    fr: son de blé
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '9621'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 270
+        water: 9.89
+        protein: 14.7
+        carbs: 22.7
+        sugar: 2.39
+        fat: 3.88
+        sat_fat: 0.82
+        mono_fat: 0.64
+        poly_fat: 2.21
+        fiber: 42.9
+        sodium: 0.006
+        alcohol: 0
+
+oat-bran:
+  name: Oat bran
+  i18n:
+    fr: son d'avoine
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '9640'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 361
+        water: 6.55
+        protein: 16.8
+        carbs: 50.6
+        sugar: 2.23
+        fat: 6.52
+        sat_fat: 1.16
+        mono_fat: 2.38
+        poly_fat: 2.77
+        fiber: 16.7
+        sodium: 0.0065
+        alcohol: 0
+
+corn-bran:
+  name: Corn bran
+  i18n:
+    fr: son de maïs
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '9641'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 226
+        water: 4.71
+        protein: 8.36
+        carbs: 6.65
+        sugar: 0
+        fat: 0.92
+        sat_fat: 0.13
+        mono_fat: 0.24
+        poly_fat: 0.42
+        fiber: 79
+        sodium: 0.007
+        alcohol: 0
+
+rice-bran:
+  name: Rice bran
+  i18n:
+    fr: son de riz
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '9643'
+  physical:
+    density: 0.92
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 398
+        water: 6.13
+        protein: 14
+        carbs: 28
+        sugar: 0.9
+        fat: 20.9
+        sat_fat: 4.17
+        mono_fat: 7.55
+        poly_fat: 7.46
+        fiber: 21
+        sodium: 0.005
+        alcohol: 0
+
+wheat-germ:
+  name: Wheat germ
+  i18n:
+    fr: germe de blé
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '9660'
+  physical:
+    density: 0.92
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 375
+        water: 7.5
+        protein: 29.2
+        carbs: 35.1
+        sugar: 10
+        fat: 9.5
+        sat_fat: 1.83
+        mono_fat: 1.52
+        poly_fat: 5.72
+        fiber: 16.3
+        sodium: 0.0072
+        alcohol: 0
+
+beef-stock:
+  name: beef stock
+  i18n:
+    fr: bouillon de bœuf
+  aliases:
+    - beef broth
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11001'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 232
+        water: 2.6
+        protein: 10.2
+        carbs: 18
+        sugar: 2
+        fat: 13.3
+        sat_fat: 7.03
+        mono_fat: 2.6
+        poly_fat: 1.4
+        fiber: 0
+        sodium: 13.2
+        alcohol: 0
+
+gelatin:
+  name: gelatin
+  i18n:
+    fr: gélatine
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11007'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 348
+        water: 11.3
+        protein: 86.9
+        carbs: 0
+        sugar: 0
+        fat: 0.1
+        sat_fat: 0.036
+        mono_fat: 0.041
+        poly_fat: 0
+        fiber: 0
+        sodium: 0.298
+        alcohol: 0
+
+yeast-flakes:
+  name: yeast flakes
+  i18n:
+    fr: levure de bière en paillettes
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11009'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 334
+        water: 5
+        protein: 40.4
+        carbs: 21.8
+        sugar: 2.5
+        fat: 4.5
+        sat_fat: 0.7
+        mono_fat: 2.1
+        poly_fat: 0.01
+        fiber: 22.5
+        sodium: 0.141
+        alcohol: 0
+
+yeast:
+  name: yeast
+  i18n:
+    fr: levure de boulanger
+  aliases:
+    - fresh yeast
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11010'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 115
+        water: 69
+        protein: 8.47
+        carbs: 11.9
+        sugar: 0
+        fat: 1.9
+        sat_fat: 0.24
+        mono_fat: 1.05
+        poly_fat: 0.004
+        fiber: 8.1
+        sodium: 0.03
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 341
+        water: 5.08
+        protein: 42.7
+        carbs: 14.3
+        sugar: 0
+        fat: 6.56
+        sat_fat: 1
+        mono_fat: 4.31
+        poly_fat: 0.017
+        fiber: 26.9
+        sodium: 0.051
+        alcohol: 0
+
+vegetables-stock:
+  name: vegetables stock
+  i18n:
+    fr: bouillon de légumes
+  aliases:
+    - vegetables broth
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11041'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 287
+        water: 1.65
+        protein: 9.66
+        carbs: 26
+        sugar: 0
+        fat: 16
+        sat_fat: 7.79
+        mono_fat: 5.82
+        poly_fat: 0
+        fiber: 0.5
+        sodium: 19.1
+        alcohol: 0
+
+baking-powder:
+  name: baking powder
+  i18n:
+    fr: levure chimique
+  aliases:
+    - poudre à lever
+    - raising agent
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11046'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 108
+        water: 4.5
+        protein: 0.1
+        carbs: 26.9
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0.2
+        sodium: 9.25
+        alcohol: 0
+
+vanilla-extract:
+  name: vanilla extract
+  i18n:
+    fr: vanille liquide
+  aliases:
+    - extrait de vanille
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11065'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 240
+        water: 64.5
+        protein: 0.05
+        carbs: 2.41
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0.004
+        alcohol: 0
+
+veal-stock:
+  name: veal stock
+  i18n:
+    fr: fond de veau
+  aliases:
+    - veal broth
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11169'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 343
+        water: 4.2
+        protein: 8.5
+        carbs: 59.5
+        sugar: 22.3
+        fat: 7.4
+        sat_fat: 3.22
+        mono_fat: 2.82
+        poly_fat: 0.99
+        fiber: 2.1
+        sodium: 6.66
+        alcohol: 0
+
+poultry-stock-for-sauce:
+  name: poultry stock for sauce
+  i18n:
+    fr: fond de volaille
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11171'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 336
+        water: 0
+        protein: 10
+        carbs: 63
+        sugar: 24
+        fat: 4.5
+        sat_fat: 1.84
+        mono_fat: 1.84
+        poly_fat: 0.81
+        fiber: 1.5
+        sodium: 5.4
+        alcohol: 0
+
+chicken-stock:
+  name: chicken stock
+  i18n:
+    fr: bouillon de volaille
+  aliases:
+    - bouillon de poule
+    - bouillon de poulet
+    - chicken broth
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11174'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 193
+        water: 8.14
+        protein: 13
+        carbs: 17
+        sugar: 4
+        fat: 8
+        sat_fat: 5
+        mono_fat: 1.94
+        poly_fat: 0.37
+        fiber: 0.5
+        sodium: 22.5
+        alcohol: 0
+
+bakind-soda:
+  name: bakind soda
+  i18n:
+    fr: bicarbonate de soude
+  aliases:
+    - bicarbonate
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11507'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0.4
+        water: 0.2
+        protein: 0.1
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 27.4
+        alcohol: 0
+
+coconut-milk:
+  name: coconut milk
+  i18n:
+    fr: lait de coco
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '18041'
+  physical:
+    density: 0.92
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 199
+        water: 72.9
+        protein: 1.94
+        carbs: 4.29
+        sugar: 2.5
+        fat: 19.2
+        sat_fat: 17
+        mono_fat: 0.91
+        poly_fat: 0.23
+        fiber: 0.75
+        sodium: 0.027
+        alcohol: 0
+
+table-salt:
+  name: table salt
+  i18n:
+    fr: sel
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11058'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 0.027
+        protein: 0
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 39.1
+        alcohol: 0
+
+flaky-salt:
+  name: flaky salt
+  i18n:
+    fr: fleur de sel
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11082'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 3.75
+        protein: 0
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 37.7
+        alcohol: 0
+
+sea-salt:
+  name: sea salt
+  i18n:
+    fr: sel marin
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11083'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 5.09
+        protein: 0
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 32.2
+        alcohol: 0
+
+curry-powder:
+  name: curry powder
+  i18n:
+    fr: curry
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11005'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 301
+        water: 8.8
+        protein: 14.5
+        carbs: 2.63
+        sugar: 2.63
+        fat: 14
+        sat_fat: 1.65
+        mono_fat: 8.78
+        poly_fat: 3.06
+        fiber: 53.2
+        sodium: 0.052
+        alcohol: 0
+
+ginger-powder:
+  name: ginger powder
+  i18n:
+    fr: gingembre en poudre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11006'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 335
+        water: 9.94
+        protein: 8.98
+        carbs: 58.3
+        sugar: 3.39
+        fat: 4.24
+        sat_fat: 2.6
+        mono_fat: 0.48
+        poly_fat: 0.93
+        fiber: 14.1
+        sodium: 0.027
+        alcohol: 0
+
+black-pepper:
+  name: black pepper
+  i18n:
+    fr: poivre noir
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11015'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 331
+        water: 9
+        protein: 13.3
+        carbs: 39.9
+        sugar: 0.64
+        fat: 7.5
+        sat_fat: 2.9
+        mono_fat: 2.06
+        poly_fat: 2.17
+        fiber: 25.3
+        sodium: 0.0142
+        alcohol: 0
+
+white-pepper:
+  name: white pepper
+  i18n:
+    fr: poivre blanc
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11019'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 313
+        water: 11.4
+        protein: 12.1
+        carbs: 48.3
+        sugar: 0
+        fat: 2.12
+        sat_fat: 0.63
+        mono_fat: 0.79
+        poly_fat: 0.62
+        fiber: 26.2
+        sodium: 0.005
+        alcohol: 0
+
+cinnamon-powder:
+  name: cinnamon powder
+  i18n:
+    fr: cannelle moule
+  aliases:
+    - cannelle en bâton
+    - cinnamon
+    - cinnamon stick
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11025'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 243
+        water: 10.6
+        protein: 3.99
+        carbs: 27.5
+        sugar: 2.17
+        fat: 1.24
+        sat_fat: 0.35
+        mono_fat: 0.25
+        poly_fat: 0.068
+        fiber: 53.1
+        sodium: 0.01
+        alcohol: 0
+
+coriander-seed:
+  name: coriander seed
+  i18n:
+    fr: graine de coriandre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11026'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 345
+        water: 8.86
+        protein: 12.4
+        carbs: 13
+        sugar: 0
+        fat: 17.8
+        sat_fat: 0.99
+        mono_fat: 13.6
+        poly_fat: 1.75
+        fiber: 41.9
+        sodium: 0.035
+        alcohol: 0
+
+saffron:
+  name: saffron
+  i18n:
+    fr: safran
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11039'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 352
+        water: 11.9
+        protein: 11.4
+        carbs: 61.5
+        sugar: 42.4
+        fat: 5.85
+        sat_fat: 1.59
+        mono_fat: 0.43
+        poly_fat: 2.07
+        fiber: 3.9
+        sodium: 0.148
+        alcohol: 0
+
+cumin-seed:
+  name: cumin seed
+  i18n:
+    fr: cumin
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11042'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 427
+        water: 8.06
+        protein: 17.8
+        carbs: 33.7
+        sugar: 2.25
+        fat: 22.3
+        sat_fat: 1.54
+        mono_fat: 14
+        poly_fat: 3.28
+        fiber: 10.5
+        sodium: 0.168
+        alcohol: 0
+
+nutmeg:
+  name: nutmeg
+  i18n:
+    fr: noix de muscade
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11048'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 506
+        water: 6.23
+        protein: 6.89
+        carbs: 27.4
+        sugar: 2.99
+        fat: 36.3
+        sat_fat: 25.9
+        mono_fat: 3.22
+        poly_fat: 0.35
+        fiber: 20.8
+        sodium: 0.016
+        alcohol: 0
+
+paprika:
+  name: paprika
+  i18n:
+    fr: paprika
+  aliases:
+    - paprika powder
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11049'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 318
+        water: 11.2
+        protein: 14.1
+        carbs: 18.8
+        sugar: 10.3
+        fat: 12.9
+        sat_fat: 2.14
+        mono_fat: 1.7
+        poly_fat: 7.77
+        fiber: 34.9
+        sodium: 0.068
+        alcohol: 0
+
+cloves:
+  name: cloves
+  i18n:
+    fr: clou de girofle
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11052'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 335
+        water: 9.87
+        protein: 5.97
+        carbs: 31.6
+        sugar: 2.38
+        fat: 13
+        sat_fat: 3.95
+        mono_fat: 1.39
+        poly_fat: 3.61
+        fiber: 33.9
+        sodium: 0.277
+        alcohol: 0
+
+bay-leaves:
+  name: bay leaves
+  i18n:
+    fr: feuille de laurier
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11053'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 353
+        water: 5.44
+        protein: 7.61
+        carbs: 48.6
+        sugar: 48.6
+        fat: 8.36
+        sat_fat: 2.28
+        mono_fat: 1.64
+        poly_fat: 2.29
+        fiber: 26.3
+        sodium: 0.023
+        alcohol: 0
+
+vanilla-pod:
+  name: vanilla pod
+  i18n:
+    fr: vanille
+  aliases:
+    - gousse de vanille
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11057'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 0
+        protein: 0
+        carbs: 0
+        sugar: 0
+        fat: 0
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0
+        alcohol: 0
+
+poppy-ssed:
+  name: poppy ssed
+  i18n:
+    fr: pavot
+  aliases:
+    - graines de pavot
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11061'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 534
+        water: 5.95
+        protein: 21.2
+        carbs: 13.7
+        sugar: 2.99
+        fat: 41.6
+        sat_fat: 4.52
+        mono_fat: 5.98
+        poly_fat: 28.6
+        fiber: 10
+        sodium: 0.026
+        alcohol: 0
+
+caraway-seed:
+  name: caraway seed
+  i18n:
+    fr: carvi
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11064'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 334
+        water: 9.87
+        protein: 19.8
+        carbs: 11.9
+        sugar: 0.64
+        fat: 14.6
+        sat_fat: 0.62
+        mono_fat: 7.13
+        poly_fat: 3.27
+        fiber: 38
+        sodium: 0.017
+        alcohol: 0
+
+fennel-seed:
+  name: fennel seed
+  i18n:
+    fr: graine de fenouil
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11066'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 327
+        water: 8.81
+        protein: 15.8
+        carbs: 12.5
+        sugar: 12.5
+        fat: 14.9
+        sat_fat: 0.48
+        mono_fat: 9.91
+        poly_fat: 1.69
+        fiber: 39.8
+        sodium: 0.088
+        alcohol: 0
+
+fresh-ginger:
+  name: fresh ginger
+  i18n:
+    fr: gingembre frais
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11074'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 33.3
+        water: 90.9
+        protein: 1.1
+        carbs: 3.4
+        sugar: 1
+        fat: 1.1
+        sat_fat: 0.09
+        mono_fat: 0.8
+        poly_fat: 0.13
+        fiber: 2.7
+        sodium: 0.0063
+        alcohol: 0
+
+cardamom:
+  name: cardamom
+  i18n:
+    fr: cardamome en poudre
+  aliases:
+    - cardamom powder
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11075'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 321
+        water: 8.28
+        protein: 10.8
+        carbs: 40.5
+        sugar: 0
+        fat: 6.7
+        sat_fat: 0
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 28
+        sodium: 0.018
+        alcohol: 0
+
+fenugreek-seed:
+  name: fenugreek seed
+  i18n:
+    fr: graine de fenugrec
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11077'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 350
+        water: 7.72
+        protein: 27.1
+        carbs: 33.8
+        sugar: 8.7
+        fat: 6.41
+        sat_fat: 1.46
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 24.6
+        sodium: 0.067
+        alcohol: 0
+
+cayenne-pepper:
+  name: cayenne pepper
+  i18n:
+    fr: piment de cayenne
+  aliases:
+    - cayenne pepper powder
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11088'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 376
+        water: 8.05
+        protein: 12
+        carbs: 29.4
+        sugar: 10.3
+        fat: 17.3
+        sat_fat: 3.26
+        mono_fat: 2.75
+        poly_fat: 8.37
+        fiber: 27.2
+        sodium: 0.03
+        alcohol: 0
+
+turmeric:
+  name: turmeric
+  i18n:
+    fr: curcuma en poudre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11089'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 291
+        water: 12.9
+        protein: 9.68
+        carbs: 44.4
+        sugar: 3.21
+        fat: 3.25
+        sat_fat: 1.84
+        mono_fat: 0.45
+        poly_fat: 0.76
+        fiber: 22.7
+        sodium: 0.027
+        alcohol: 0
+
+garlic:
+  name: garlic
+  i18n:
+    fr: ail
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11000'
+  physical:
+    density: 0.57
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 109
+        water: 67.8
+        protein: 5.31
+        carbs: 18.6
+        sugar: 1.2
+        fat: 0.5
+        sat_fat: 0.01
+        mono_fat: 0.01
+        poly_fat: 0.01
+        fiber: 5.8
+        sodium: 0.009
+        alcohol: 0
+
+chervil:
+  name: chervil
+  i18n:
+    fr: cerfeuil
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11002'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 48.3
+        water: 86.8
+        protein: 3.31
+        carbs: 6.25
+        sugar: 0.6
+        fat: 0.55
+        sat_fat: 0.25
+        mono_fat: 0.011
+        poly_fat: 0.29
+        fiber: 2.55
+        sodium: 0.005
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 302
+        water: 7.2
+        protein: 23.2
+        carbs: 37.8
+        sugar: 0
+        fat: 3.9
+        sat_fat: 0.17
+        mono_fat: 1.4
+        poly_fat: 1.8
+        fiber: 11.3
+        sodium: 0.083
+        alcohol: 0
+
+chive:
+  name: chive
+  i18n:
+    fr: ciboulette
+  aliases:
+    - ciboule
+    - spring onion
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11003'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 30.8
+        water: 90.2
+        protein: 2.55
+        carbs: 2.85
+        sugar: 2.09
+        fat: 0.46
+        sat_fat: 0.089
+        mono_fat: 0.061
+        poly_fat: 0.17
+        fiber: 2.55
+        sodium: 0.0095
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 0
+        water: 2
+        protein: 0
+        carbs: 38.1
+        sugar: 0
+        fat: 3.5
+        sat_fat: 0.59
+        mono_fat: 0.49
+        poly_fat: 1.37
+        fiber: 26.2
+        sodium: 0.07
+        alcohol: 0
+
+parsley:
+  name: parsley
+  i18n:
+    fr: persil
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11014'
+  physical:
+    density: 0.25
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 42.5
+        water: 85.5
+        protein: 2.97
+        carbs: 4.1
+        sugar: 0.85
+        fat: 0.63
+        sat_fat: 0.1
+        mono_fat: 0.3
+        poly_fat: 0.12
+        fiber: 4.3
+        sodium: 0.0515
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 291
+        water: 3.95
+        protein: 29
+        carbs: 16.8
+        sugar: 7.27
+        fat: 5.34
+        sat_fat: 1.38
+        mono_fat: 0.76
+        poly_fat: 3.12
+        fiber: 29.7
+        sodium: 0.422
+        alcohol: 0
+
+horseradish:
+  name: horseradish
+  i18n:
+    fr: raifort
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11016'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 73.2
+        water: 76.5
+        protein: 5.25
+        carbs: 7.79
+        sugar: 0
+        fat: 0.45
+        sat_fat: 0.088
+        mono_fat: 0.054
+        poly_fat: 0.31
+        fiber: 7.5
+        sodium: 0.013
+        alcohol: 0
+
+mint:
+  name: mint
+  i18n:
+    fr: menthe
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11027'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 57.6
+        water: 82.1
+        protein: 3.52
+        carbs: 5.3
+        sugar: 5.3
+        fat: 0.84
+        sat_fat: 0.22
+        mono_fat: 0.029
+        poly_fat: 0.45
+        fiber: 7.4
+        sodium: 0.0305
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 283
+        water: 11.3
+        protein: 19.9
+        carbs: 22.2
+        sugar: 0
+        fat: 6.03
+        sat_fat: 1.58
+        mono_fat: 0.21
+        poly_fat: 3.26
+        fiber: 29.8
+        sodium: 0.344
+        alcohol: 0
+
+basil:
+  name: basil
+  i18n:
+    fr: basilic
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11033'
+  physical:
+    density: 0.1
+    yield: 1
+    unit_weight: 6
+  states:
+    default:
+      macros:
+        kcal: 35.2
+        water: 92.1
+        protein: 3.15
+        carbs: 3.4
+        sugar: 0.3
+        fat: 0.64
+        sat_fat: 0.041
+        mono_fat: 0.088
+        poly_fat: 0.39
+        fiber: 1.6
+        sodium: 0.004
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 244
+        water: 10.4
+        protein: 23
+        carbs: 10.1
+        sugar: 1.71
+        fat: 4.07
+        sat_fat: 2.16
+        mono_fat: 1.24
+        poly_fat: 0.5
+        fiber: 37.7
+        sodium: 0.076
+        alcohol: 0
+
+rosemary:
+  name: rosemary
+  i18n:
+    fr: romarin
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11068'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 121
+        water: 67.8
+        protein: 3.31
+        carbs: 6.6
+        sugar: 0
+        fat: 5.86
+        sat_fat: 2.84
+        mono_fat: 1.16
+        poly_fat: 0.9
+        fiber: 14.1
+        sodium: 0.026
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 328
+        water: 9.31
+        protein: 4.88
+        carbs: 21.5
+        sugar: 0
+        fat: 15.2
+        sat_fat: 7.37
+        mono_fat: 3.01
+        poly_fat: 2.34
+        fiber: 42.6
+        sodium: 0.05
+        alcohol: 0
+
+sage:
+  name: sage
+  i18n:
+    fr: sauge
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11069'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 34.9
+        water: 85.6
+        protein: 4
+        carbs: 0.97
+        sugar: 0.3
+        fat: 0.5
+        sat_fat: 0.01
+        mono_fat: 0.01
+        poly_fat: 0.01
+        fiber: 7
+        sodium: 0.0111
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 320
+        water: 7.96
+        protein: 10.6
+        carbs: 20.4
+        sugar: 1.71
+        fat: 12.8
+        sat_fat: 7.03
+        mono_fat: 1.87
+        poly_fat: 1.76
+        fiber: 40.3
+        sodium: 0.011
+        alcohol: 0
+
+thyme:
+  name: thyme
+  i18n:
+    fr: thym
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11070'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 107
+        water: 65.1
+        protein: 5.56
+        carbs: 10.5
+        sugar: 0
+        fat: 1.68
+        sat_fat: 0.47
+        mono_fat: 0.081
+        poly_fat: 0.53
+        fiber: 14
+        sodium: 0.009
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 285
+        water: 7.79
+        protein: 9.11
+        carbs: 26.9
+        sugar: 1.71
+        fat: 7.43
+        sat_fat: 2.73
+        mono_fat: 0.47
+        poly_fat: 1.19
+        fiber: 37
+        sodium: 0.055
+        alcohol: 0
+
+herbs:
+  name: herbs
+  i18n:
+    fr: herbes aromatiques
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11080'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 51.2
+        water: 83.8
+        protein: 3.26
+        carbs: 4.69
+        sugar: 1.89
+        fat: 0.93
+        sat_fat: 0.25
+        mono_fat: 0.21
+        poly_fat: 0.28
+        fiber: 5.53
+        sodium: 0.032
+        alcohol: 0
+
+tarragon:
+  name: tarragon
+  i18n:
+    fr: estragon
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11092'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 0
+        protein: 3.8
+        carbs: 4.1
+        sugar: 1.2
+        fat: 0
+        sat_fat: 0.6
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 6.2
+        sodium: 0
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 342
+        water: 7.74
+        protein: 22.8
+        carbs: 42.8
+        sugar: 0
+        fat: 7.24
+        sat_fat: 1.88
+        mono_fat: 0.47
+        poly_fat: 3.7
+        fiber: 7.4
+        sodium: 0.062
+        alcohol: 0
+
+dill:
+  name: dill
+  i18n:
+    fr: aneth
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11093'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 48.2
+        water: 86
+        protein: 3.93
+        carbs: 3.9
+        sugar: 1.2
+        fat: 1.1
+        sat_fat: 0.34
+        mono_fat: 0.68
+        poly_fat: 0.08
+        fiber: 3.5
+        sodium: 0.027
+        alcohol: 0
+    dried:
+      macros:
+        kcal: 315
+        water: 7.3
+        protein: 20
+        carbs: 42.2
+        sugar: 0
+        fat: 4.36
+        sat_fat: 0.23
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 13.6
+        sodium: 0.208
+        alcohol: 0
+
+coriander:
+  name: coriander
+  i18n:
+    fr: coriandre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11094'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 22.3
+        water: 92.2
+        protein: 2.13
+        carbs: 0.87
+        sugar: 0.87
+        fat: 0.52
+        sat_fat: 0.014
+        mono_fat: 0.28
+        poly_fat: 0.04
+        fiber: 2.8
+        sodium: 0.046
+        alcohol: 0
+
+garlic-powder:
+  name: garlic powder
+  i18n:
+    fr: ail en poudre
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11023'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 346
+        water: 6.45
+        protein: 16.6
+        carbs: 63.7
+        sugar: 2.43
+        fat: 0.73
+        sat_fat: 0.25
+        mono_fat: 0.12
+        poly_fat: 0.18
+        fiber: 9
+        sodium: 0.06
+        alcohol: 0
+
+marjoram:
+  name: marjoram
+  i18n:
+    fr: marjolaine
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11034'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 276
+        water: 7.64
+        protein: 12.7
+        carbs: 20.3
+        sugar: 4.09
+        fat: 7.04
+        sat_fat: 0.53
+        mono_fat: 0.94
+        poly_fat: 4.41
+        fiber: 40.3
+        sodium: 0.077
+        alcohol: 0
+
+oregano:
+  name: oregano
+  i18n:
+    fr: origan
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11035'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 265
+        water: 9.93
+        protein: 9
+        carbs: 26.4
+        sugar: 4.09
+        fat: 4.28
+        sat_fat: 1.55
+        mono_fat: 0.72
+        poly_fat: 1.37
+        fiber: 42.5
+        sodium: 0.025
+        alcohol: 0
+
+herbes-de-provence:
+  name: Herbes de Provence
+  i18n:
+    fr: herbes de Provence
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11060'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 283
+        water: 7.1
+        protein: 11.5
+        carbs: 23.1
+        sugar: 0
+        fat: 7.2
+        sat_fat: 1.88
+        mono_fat: 0.53
+        poly_fat: 2.86
+        fiber: 40.1
+        sodium: 0.035
+        alcohol: 0
+
+savory:
+  name: savory
+  i18n:
+    fr: sariette
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11062'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 264
+        water: 9
+        protein: 6.73
+        carbs: 23
+        sugar: 0
+        fat: 5.91
+        sat_fat: 3.26
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 45.7
+        sodium: 0.024
+        alcohol: 0
+
+seaweed:
+  name: seaweed
+  i18n:
+    fr: agar
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11085'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 0
+        water: 8.68
+        protein: 6.21
+        carbs: 0
+        sugar: 2.97
+        fat: 0.3
+        sat_fat: 0.061
+        mono_fat: 0.027
+        poly_fat: 0.1
+        fiber: 0
+        sodium: 0.102
+        alcohol: 0
+
+spirulina:
+  name: spirulina
+  i18n:
+    fr: spiruline
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '11086'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    dried:
+      macros:
+        kcal: 374
+        water: 5.39
+        protein: 60.4
+        carbs: 17.7
+        sugar: 1.23
+        fat: 6.27
+        sat_fat: 3.28
+        mono_fat: 0.74
+        poly_fat: 2.25
+        fiber: 2.71
+        sodium: 0.755
+        alcohol: 0
+
+laver:
+  name: laver
+  i18n:
+    fr: nori
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20987'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 257
+        water: 6.7
+        protein: 30.2
+        carbs: 11.7
+        sugar: 0
+        fat: 1.77
+        sat_fat: 0.46
+        mono_fat: 0.15
+        poly_fat: 1.17
+        fiber: 36.8
+        sodium: 1.9
+        alcohol: 0
+
+kombu:
+  name: kombu
+  i18n:
+    fr: kombu
+  aliases:
+    - japanese kelp
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20990'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 222
+        water: 10.8
+        protein: 7.89
+        carbs: 24.9
+        sugar: 0
+        fat: 2.56
+        sat_fat: 0.72
+        mono_fat: 0.23
+        poly_fat: 0.75
+        fiber: 34.1
+        sodium: 2.45
+        alcohol: 0
+
+gut-weed:
+  name: gut weed
+  i18n:
+    fr: ao-nori
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20995'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 225
+        water: 7.98
+        protein: 13.6
+        carbs: 19.5
+        sugar: 1.35
+        fat: 2.5
+        sat_fat: 0.55
+        mono_fat: 0.32
+        poly_fat: 0.61
+        fiber: 35.1
+        sodium: 4.09
+        alcohol: 0
+
+tofu:
+  name: tofu
+  i18n:
+    fr: tofu nature
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20904'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 147
+        water: 73.8
+        protein: 14.7
+        carbs: 2.87
+        sugar: 0.57
+        fat: 8.5
+        sat_fat: 1.35
+        mono_fat: 1.91
+        poly_fat: 4.81
+        fiber: 0.5
+        sodium: 0.01
+        alcohol: 0
+
+silky-tofu:
+  name: silky tofu
+  i18n:
+    fr: tofu soyeux
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20906'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 54.3
+        water: 89.4
+        protein: 5
+        carbs: 1.53
+        sugar: 1.13
+        fat: 2.9
+        sat_fat: 0.47
+        mono_fat: 0.65
+        poly_fat: 1.62
+        fiber: 0.6
+        sodium: 0.005
+        alcohol: 0
+
+silken-tofu:
+  name: silken tofu
+  i18n:
+    fr: tofu fumé
+  aliases: []
+  tags:
+    - spice
+    - condiment
+  meta:
+    code_ciqual: '20912'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 164
+        water: 70.3
+        protein: 16.4
+        carbs: 2.91
+        sugar: 0.85
+        fat: 9.5
+        sat_fat: 1.53
+        mono_fat: 1.97
+        poly_fat: 5.59
+        fiber: 0.5
+        sodium: 0.295
+        alcohol: 0

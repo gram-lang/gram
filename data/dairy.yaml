@@ -1,0 +1,2191 @@
+whole-milk:
+  name: whole milk
+  i18n:
+    fr: lait entier
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19016'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 63.9
+        water: 87.9
+        protein: 3.35
+        carbs: 4.78
+        sugar: 4.29
+        fat: 3.49
+        sat_fat: 2.12
+        mono_fat: 0.71
+        poly_fat: 0.075
+        fiber: 0
+        sodium: 0.0471
+        alcohol: 0
+
+semi-skimmed-milk:
+  name: semi-skimmed milk
+  i18n:
+    fr: lait demi-écrémé
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19033'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 47.5
+        water: 89.3
+        protein: 3.38
+        carbs: 4.97
+        sugar: 4.91
+        fat: 1.55
+        sat_fat: 0.98
+        mono_fat: 0.3
+        poly_fat: 0.027
+        fiber: 0
+        sodium: 0.0348
+        alcohol: 0
+
+milk-powder:
+  name: Milk powder
+  i18n:
+    fr: lait en poudre entier
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19021'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 361
+        water: 1.95
+        protein: 34.6
+        carbs: 54
+        sugar: 53.1
+        fat: 0.7
+        sat_fat: 0.48
+        mono_fat: 0.19
+        poly_fat: 0.03
+        fiber: 0
+        sodium: 0.526
+        alcohol: 0
+
+evaporated-milk:
+  name: evaporated milk
+  i18n:
+    fr: lait concentré
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19026'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 119
+        water: 74.5
+        protein: 6.31
+        carbs: 9.91
+        sugar: 9.47
+        fat: 5.9
+        sat_fat: 3.96
+        mono_fat: 1.36
+        poly_fat: 0.1
+        fiber: 3
+        sodium: 0.095
+        alcohol: 0
+
+condensed-milk:
+  name: condensed milk
+  i18n:
+    fr: lait concentré sucré
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19027'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 327
+        water: 27.2
+        protein: 7.54
+        carbs: 56.5
+        sugar: 56.5
+        fat: 7.87
+        sat_fat: 5.23
+        mono_fat: 2.32
+        poly_fat: 0.32
+        fiber: 0
+        sodium: 0.0852
+        alcohol: 0
+
+semi-skimmed-milk-powder:
+  name: semi-skimmed milk powder
+  i18n:
+    fr: lait en poudre demi-écrémé
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19044'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 459
+        water: 2.47
+        protein: 30.8
+        carbs: 43.4
+        sugar: 43.4
+        fat: 17.5
+        sat_fat: 11.6
+        mono_fat: 4.14
+        poly_fat: 0.46
+        fiber: 0
+        sodium: 0.313
+        alcohol: 0
+
+yogurt:
+  name: Yogurt
+  i18n:
+    fr: yaourt nature
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19593'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 50.1
+        water: 88.4
+        protein: 3.75
+        carbs: 4.26
+        sugar: 4
+        fat: 1.68
+        sat_fat: 1.08
+        mono_fat: 0.31
+        poly_fat: 0.033
+        fiber: 0
+        sodium: 0.04
+        alcohol: 0
+
+0percent-fat-yogurt:
+  name: 0% fat yogurt
+  i18n:
+    fr: yaourt nature 0%
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19594'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 39.1
+        water: 88.9
+        protein: 4.08
+        carbs: 4.89
+        sugar: 4.63
+        fat: 0.1
+        sat_fat: 0.15
+        mono_fat: 0.15
+        poly_fat: 0.15
+        fiber: 0.031
+        sodium: 0.043
+        alcohol: 0
+
+buttermilk:
+  name: buttermilk
+  i18n:
+    fr: lait fermenté
+  aliases:
+    - lait ribot
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19801'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 36.2
+        water: 90.6
+        protein: 3.26
+        carbs: 3.87
+        sugar: 3.87
+        fat: 0.54
+        sat_fat: 0.34
+        mono_fat: 0.12
+        poly_fat: 0.01
+        fiber: 0.05
+        sodium: 0.035
+        alcohol: 0
+
+whole-buttermilk:
+  name: whole buttermilk
+  i18n:
+    fr: lait fermenté entier
+  aliases:
+    - lait ribot entier
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19805'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 52.7
+        water: 88.3
+        protein: 3.31
+        carbs: 1.99
+        sugar: 1.99
+        fat: 3.2
+        sat_fat: 2.24
+        mono_fat: 0.7
+        poly_fat: 0.04
+        fiber: 3
+        sodium: 0.035
+        alcohol: 0
+
+greek-yogurt:
+  name: greek yogurt
+  i18n:
+    fr: yaourt à la grecque
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19860'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 103
+        water: 83.5
+        protein: 2.96
+        carbs: 3.73
+        sugar: 3.11
+        fat: 8.16
+        sat_fat: 5.26
+        mono_fat: 1.62
+        poly_fat: 0.16
+        fiber: 0.071
+        sodium: 0.032
+        alcohol: 0
+
+kefir-milk:
+  name: kefir milk
+  i18n:
+    fr: kéfir
+  aliases:
+    - kefir
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19865'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 61.1
+        water: 87.6
+        protein: 3.13
+        carbs: 4.5
+        sugar: 3.42
+        fat: 3.4
+        sat_fat: 2.33
+        mono_fat: 0.97
+        poly_fat: 0.1
+        fiber: 0
+        sodium: 0.049
+        alcohol: 0
+
+quark:
+  name: Quark
+  i18n:
+    fr: fromage blanc
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19501'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 80
+        water: 82.4
+        protein: 6.87
+        carbs: 6.34
+        sugar: 6.05
+        fat: 2.83
+        sat_fat: 1.83
+        mono_fat: 0.63
+        poly_fat: 0.079
+        fiber: 0.02
+        sodium: 0.0416
+        alcohol: 0
+
+drained-soft-fresh-cheese-0percent-fat:
+  name: Drained soft fresh cheese 0% fat
+  i18n:
+    fr: faisselle 0%
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19639'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 36.8
+        water: 89.9
+        protein: 4.43
+        carbs: 4.65
+        sugar: 3.71
+        fat: 0.05
+        sat_fat: 0.025
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0.083
+        sodium: 0.0425
+        alcohol: 0
+
+drained-soft-fresh-cheese-6percent-fat:
+  name: Drained soft fresh cheese 6% fat
+  i18n:
+    fr: faisselle
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19641'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 83.6
+        water: 84.7
+        protein: 4.38
+        carbs: 3.36
+        sugar: 3.36
+        fat: 5.5
+        sat_fat: 3.74
+        mono_fat: 1.15
+        poly_fat: 0.14
+        fiber: 0.21
+        sodium: 0.035
+        alcohol: 0
+
+camembert-cheese:
+  name: Camembert cheese
+  i18n:
+    fr: camembert
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12001'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 280
+        water: 54.8
+        protein: 19.1
+        carbs: 0
+        sugar: 0
+        fat: 22.5
+        sat_fat: 15.8
+        mono_fat: 4.73
+        poly_fat: 0.42
+        fiber: 0
+        sodium: 0.579
+        alcohol: 0
+
+coulommiers-cheese:
+  name: Coulommiers cheese
+  i18n:
+    fr: coulommiers
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12010'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 280
+        water: 51.8
+        protein: 18.4
+        carbs: 0
+        sugar: 0
+        fat: 23
+        sat_fat: 16.1
+        mono_fat: 5.96
+        poly_fat: 0.65
+        fiber: 0.043
+        sodium: 0.59
+        alcohol: 0
+
+brie-cheese:
+  name: Brie cheese
+  i18n:
+    fr: brie
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12020'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 345
+        water: 51.4
+        protein: 17.3
+        carbs: 0.68
+        sugar: 0.15
+        fat: 30.4
+        sat_fat: 21.5
+        mono_fat: 7.85
+        poly_fat: 0.82
+        fiber: 0.056
+        sodium: 0.655
+        alcohol: 0
+
+chaource-cheese:
+  name: Chaource cheese
+  i18n:
+    fr: chaource
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12028'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 278
+        water: 56
+        protein: 17
+        carbs: 0.58
+        sugar: 0.2
+        fat: 22.9
+        sat_fat: 15.8
+        mono_fat: 4.84
+        poly_fat: 0.63
+        fiber: 0
+        sodium: 0.76
+        alcohol: 0
+
+neufchatel-cheese:
+  name: Neufchâtel cheese
+  i18n:
+    fr: neufchâtel
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12031'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 300
+        water: 54.8
+        protein: 17.8
+        carbs: 0
+        sugar: 0
+        fat: 25.5
+        sat_fat: 18.1
+        mono_fat: 2.26
+        poly_fat: 0.29
+        fiber: 0
+        sodium: 0.748
+        alcohol: 0
+
+maroilles-cheese:
+  name: Maroilles cheese
+  i18n:
+    fr: maroilles
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12036'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 325
+        water: 48.3
+        protein: 21.5
+        carbs: 0
+        sugar: 0.2
+        fat: 26.4
+        sat_fat: 18.1
+        mono_fat: 5.8
+        poly_fat: 0.55
+        fiber: 0
+        sodium: 0.834
+        alcohol: 0
+
+livarot-cheese:
+  name: Livarot cheese
+  i18n:
+    fr: livarot
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12037'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 301
+        water: 48.9
+        protein: 24.1
+        carbs: 0
+        sugar: 0.2
+        fat: 22.6
+        sat_fat: 15.3
+        mono_fat: 4.7
+        poly_fat: 0.54
+        fiber: 0.5
+        sodium: 0.601
+        alcohol: 0
+
+epoisses-cheese:
+  name: Époisses cheese
+  i18n:
+    fr: époisses
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12038'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 286
+        water: 55.6
+        protein: 17.3
+        carbs: 0
+        sugar: 0
+        fat: 24
+        sat_fat: 17
+        mono_fat: 6.44
+        poly_fat: 0.56
+        fiber: 0.5
+        sodium: 0.702
+        alcohol: 0
+
+munster-cheese:
+  name: Munster cheese
+  i18n:
+    fr: munster
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12039'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 324
+        water: 49.2
+        protein: 20
+        carbs: 0.7
+        sugar: 0.56
+        fat: 26.8
+        sat_fat: 18.9
+        mono_fat: 7.42
+        poly_fat: 0.56
+        fiber: 0.19
+        sodium: 0.75
+        alcohol: 0
+
+langres-cheese:
+  name: Langres cheese
+  i18n:
+    fr: langres
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12040'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 286
+        water: 56.2
+        protein: 16.4
+        carbs: 1.13
+        sugar: 0.2
+        fat: 23.8
+        sat_fat: 16.9
+        mono_fat: 4.75
+        poly_fat: 0.52
+        fiber: 0
+        sodium: 0.397
+        alcohol: 0
+
+pont-leveque-cheese:
+  name: Pont l'Evêque cheese
+  i18n:
+    fr: pont l'évêque
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12042'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 326
+        water: 47.9
+        protein: 22.2
+        carbs: 0
+        sugar: 0.2
+        fat: 26.2
+        sat_fat: 18.2
+        mono_fat: 5.08
+        poly_fat: 0.6
+        fiber: 0
+        sodium: 0.52
+        alcohol: 0
+
+reblochon-cheese:
+  name: Reblochon cheese
+  i18n:
+    fr: reblochon
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12045'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 322
+        water: 49.1
+        protein: 19.9
+        carbs: 0
+        sugar: 0
+        fat: 26.9
+        sat_fat: 19
+        mono_fat: 5.77
+        poly_fat: 1.04
+        fiber: 0
+        sodium: 0.509
+        alcohol: 0
+
+saint-marcellin-cheese:
+  name: Saint-Marcellin cheese
+  i18n:
+    fr: saint-marcellin
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12049'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 280
+        water: 58.3
+        protein: 14.8
+        carbs: 0
+        sugar: 0.2
+        fat: 24.3
+        sat_fat: 18.1
+        mono_fat: 3.86
+        poly_fat: 0.47
+        fiber: 0
+        sodium: 0.433
+        alcohol: 0
+
+saint-felicien-cheese:
+  name: Saint-Felicien cheese
+  i18n:
+    fr: saint-félicien
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12052'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 281
+        water: 58.6
+        protein: 13.1
+        carbs: 0
+        sugar: 0
+        fat: 25.2
+        sat_fat: 18
+        mono_fat: 4.9
+        poly_fat: 0.6
+        fiber: 0
+        sodium: 0.511
+        alcohol: 0
+
+cheese:
+  name: Cheese
+  i18n:
+    fr: saint-maure de Touraine
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12807'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 285
+        water: 54.8
+        protein: 18.4
+        carbs: 0
+        sugar: 0
+        fat: 23.3
+        sat_fat: 16.2
+        mono_fat: 4.88
+        poly_fat: 0.62
+        fiber: 0
+        sodium: 0.63
+        alcohol: 0
+
+chabichou-cheese:
+  name: Chabichou cheese
+  i18n:
+    fr: chabichou
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12830'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 305
+        water: 50.4
+        protein: 19
+        carbs: 1.5
+        sugar: 0.5
+        fat: 24.8
+        sat_fat: 17.9
+        mono_fat: 4.06
+        poly_fat: 0.78
+        fiber: 0
+        sodium: 0.742
+        alcohol: 0
+
+pelardon-cheese:
+  name: Pélardon cheese
+  i18n:
+    fr: pélardon
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12831'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 343
+        water: 43.6
+        protein: 23.3
+        carbs: 0
+        sugar: 0
+        fat: 27.8
+        sat_fat: 18.6
+        mono_fat: 6.05
+        poly_fat: 1.05
+        fiber: 0
+        sodium: 0.572
+        alcohol: 0
+
+crottin-cheese:
+  name: Crottin cheese
+  i18n:
+    fr: crottin de chèvre
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12833'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 344
+        water: 0
+        protein: 21.9
+        carbs: 1
+        sugar: 0
+        fat: 28
+        sat_fat: 19.6
+        mono_fat: 5.5
+        poly_fat: 0.91
+        fiber: 0
+        sodium: 0.467
+        alcohol: 0
+
+crottin-de-chavignol-cheese:
+  name: Crottin de Chavignol cheese
+  i18n:
+    fr: crottin de Chavignol
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12834'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 318
+        water: 50.8
+        protein: 20.3
+        carbs: 1.28
+        sugar: 1
+        fat: 25.8
+        sat_fat: 19
+        mono_fat: 5.55
+        poly_fat: 0.9
+        fiber: 0
+        sodium: 0.518
+        alcohol: 0
+
+picodon-cheese:
+  name: Picodon cheese
+  i18n:
+    fr: picodon
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12836'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 313
+        water: 49.4
+        protein: 19.5
+        carbs: 1
+        sugar: 0.9
+        fat: 25.6
+        sat_fat: 19
+        mono_fat: 4.25
+        poly_fat: 0.87
+        fiber: 0.13
+        sodium: 0.53
+        alcohol: 0
+
+pouligny-saint-pierre-cheese:
+  name: Pouligny Saint-Pierre cheese
+  i18n:
+    fr: pouligny
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12839'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 286
+        water: 52.7
+        protein: 17.3
+        carbs: 1.38
+        sugar: 0
+        fat: 23.5
+        sat_fat: 16.7
+        mono_fat: 5.4
+        poly_fat: 0.8
+        fiber: 0
+        sodium: 0.432
+        alcohol: 0
+
+sainte-maure-cheese:
+  name: Sainte Maure cheese
+  i18n:
+    fr: saint-maure
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12842'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 298
+        water: 50.3
+        protein: 19.6
+        carbs: 0.91
+        sugar: 0.52
+        fat: 24
+        sat_fat: 17.1
+        mono_fat: 6.16
+        poly_fat: 0.77
+        fiber: 0.000025
+        sodium: 0.56
+        alcohol: 0
+
+selles-sur-cher-cheese:
+  name: Selles-sur-Cher cheese
+  i18n:
+    fr: selles-sur-cher
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12845'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 289
+        water: 53.1
+        protein: 18.4
+        carbs: 1.17
+        sugar: 0.58
+        fat: 23.5
+        sat_fat: 17.5
+        mono_fat: 3.66
+        poly_fat: 0.76
+        fiber: 0
+        sodium: 0.562
+        alcohol: 0
+
+chevrot-cheese:
+  name: Chevrot cheese
+  i18n:
+    fr: chevrot
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12846'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 263
+        water: 59.1
+        protein: 16.9
+        carbs: 1.42
+        sugar: 0.49
+        fat: 21.1
+        sat_fat: 14.3
+        mono_fat: 4.54
+        poly_fat: 0.74
+        fiber: 0
+        sodium: 0.407
+        alcohol: 0
+
+rocamadour-cheese:
+  name: Rocamadour cheese
+  i18n:
+    fr: rocamadour
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12847'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 274
+        water: 57.2
+        protein: 17.7
+        carbs: 0.93
+        sugar: 0.23
+        fat: 22.2
+        sat_fat: 17
+        mono_fat: 4.32
+        poly_fat: 0.74
+        fiber: 0.5
+        sodium: 0.373
+        alcohol: 0
+
+valencay-cheese:
+  name: Valençay cheese
+  i18n:
+    fr: valençay
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12848'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 295
+        water: 51.8
+        protein: 18.5
+        carbs: 0.64
+        sugar: 0.64
+        fat: 24.3
+        sat_fat: 17.7
+        mono_fat: 5
+        poly_fat: 0.91
+        fiber: 0
+        sodium: 0.509
+        alcohol: 0
+
+roquefort-cheese:
+  name: Roquefort cheese
+  i18n:
+    fr: roquefort
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12500'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 384
+        water: 41.9
+        protein: 19.1
+        carbs: 0
+        sugar: 0
+        fat: 33.9
+        sat_fat: 24.9
+        mono_fat: 5.88
+        poly_fat: 0.84
+        fiber: 0
+        sodium: 1.29
+        alcohol: 0
+
+fourme-de-montbrison-cheese:
+  name: Fourme de Montbrison cheese
+  i18n:
+    fr: fourme de montbrison
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12519'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 365
+        water: 42.8
+        protein: 22.1
+        carbs: 0
+        sugar: 0
+        fat: 30.8
+        sat_fat: 20.5
+        mono_fat: 7.28
+        poly_fat: 1.04
+        fiber: 0
+        sodium: 0.652
+        alcohol: 0
+
+blue-cheese:
+  name: Blue cheese
+  i18n:
+    fr: fromage bleu
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12520'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 361
+        water: 48.1
+        protein: 16.5
+        carbs: 0.68
+        sugar: 0.18
+        fat: 32.5
+        sat_fat: 22.5
+        mono_fat: 7.78
+        poly_fat: 0.8
+        fiber: 0.063
+        sodium: 0.85
+        alcohol: 0
+
+fourme-dambert-cheese:
+  name: Fourme d'Ambert cheese
+  i18n:
+    fr: fourme d'ambert
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12522'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 339
+        water: 46.6
+        protein: 20.2
+        carbs: 0
+        sugar: 0
+        fat: 28.4
+        sat_fat: 16.3
+        mono_fat: 5.02
+        poly_fat: 0.56
+        fiber: 0
+        sodium: 0.881
+        alcohol: 0
+
+causses-blue-cheese:
+  name: Causses blue cheese
+  i18n:
+    fr: fromage bleu des causses
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12523'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 350
+        water: 45.2
+        protein: 20
+        carbs: 0
+        sugar: 0
+        fat: 30
+        sat_fat: 21.2
+        mono_fat: 7.07
+        poly_fat: 0.82
+        fiber: 0
+        sodium: 1.3
+        alcohol: 0
+
+gorgonzola-cheese:
+  name: Gorgonzola cheese
+  i18n:
+    fr: gorgonzola
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12524'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 318
+        water: 51.1
+        protein: 19.1
+        carbs: 0
+        sugar: 0
+        fat: 26.9
+        sat_fat: 16.4
+        mono_fat: 8.17
+        poly_fat: 0.84
+        fiber: 0
+        sodium: 0.71
+        alcohol: 0
+
+emmental-cheese:
+  name: Emmental cheese
+  i18n:
+    fr: emmental de Savoie
+  aliases:
+    - emmenthal de savoie
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12099'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 373
+        water: 39.1
+        protein: 27.3
+        carbs: 0
+        sugar: 0
+        fat: 28.8
+        sat_fat: 19.7
+        mono_fat: 6.58
+        poly_fat: 0.54
+        fiber: 0
+        sodium: 0.245
+        alcohol: 0
+
+beaufort-cheese:
+  name: Beaufort cheese
+  i18n:
+    fr: beaufort
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12105'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 404
+        water: 34.3
+        protein: 26.1
+        carbs: 0.72
+        sugar: 0.1
+        fat: 33
+        sat_fat: 21.4
+        mono_fat: 5.84
+        poly_fat: 0
+        fiber: 0.063
+        sodium: 0.44
+        alcohol: 0
+
+cantal-cheese:
+  name: Cantal cheese
+  i18n:
+    fr: cantal jeune
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12109'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 378
+        water: 0
+        protein: 24.8
+        carbs: 0
+        sugar: 0.5
+        fat: 31
+        sat_fat: 24.2
+        mono_fat: 5.9
+        poly_fat: 0.94
+        fiber: 0
+        sodium: 0.768
+        alcohol: 0
+
+comte-cheese:
+  name: Comté cheese
+  i18n:
+    fr: comté
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12110'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 413
+        water: 33.2
+        protein: 27.2
+        carbs: 0
+        sugar: 0
+        fat: 33.8
+        sat_fat: 21.7
+        mono_fat: 10.2
+        poly_fat: 1.96
+        fiber: 0
+        sodium: 0.403
+        alcohol: 0
+
+abondance-cheese:
+  name: Abondance cheese
+  i18n:
+    fr: abondance
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12112'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 393
+        water: 37.2
+        protein: 26.6
+        carbs: 0
+        sugar: 0.2
+        fat: 31.6
+        sat_fat: 20.1
+        mono_fat: 7.47
+        poly_fat: 0.94
+        fiber: 0.083
+        sodium: 0.69
+        alcohol: 0
+
+gruyere-cheese:
+  name: Gruyère cheese
+  i18n:
+    fr: gruyère
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12114'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 408
+        water: 32.5
+        protein: 25.8
+        carbs: 0.78
+        sugar: 0.0001
+        fat: 33.5
+        sat_fat: 22
+        mono_fat: 9.55
+        poly_fat: 1.47
+        fiber: 0
+        sodium: 0.32
+        alcohol: 0
+
+ossau-iraty-cheese:
+  name: Ossau-Iraty cheese
+  i18n:
+    fr: ossau-iraty
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12119'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 423
+        water: 33.8
+        protein: 23.7
+        carbs: 1
+        sugar: 0.12
+        fat: 36
+        sat_fat: 24.3
+        mono_fat: 8.43
+        poly_fat: 1.78
+        fiber: 0
+        sodium: 0.677
+        alcohol: 0
+
+parmesan-cheese:
+  name: Parmesan cheese
+  i18n:
+    fr: parmesan
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12120'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 411
+        water: 30.4
+        protein: 30.5
+        carbs: 1.14
+        sugar: 0
+        fat: 31
+        sat_fat: 20.6
+        mono_fat: 7.23
+        poly_fat: 0.96
+        fiber: 0
+        sodium: 0.628
+        alcohol: 0
+
+fontina-cheese:
+  name: Fontina cheese
+  i18n:
+    fr: fontina
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12121'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 384
+        water: 37.9
+        protein: 25.1
+        carbs: 0.8
+        sugar: 0
+        fat: 31.1
+        sat_fat: 19.2
+        mono_fat: 8.69
+        poly_fat: 1.65
+        fiber: 0
+        sodium: 0.8
+        alcohol: 0
+
+pecorino-cheese:
+  name: Pecorino cheese
+  i18n:
+    fr: pecorino
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12122'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 383
+        water: 32.2
+        protein: 25
+        carbs: 1
+        sugar: 0.5
+        fat: 31
+        sat_fat: 22
+        mono_fat: 7.58
+        poly_fat: 0.64
+        fiber: 0
+        sodium: 1.89
+        alcohol: 0
+
+grana-padano-cheese:
+  name: Grana Padano cheese
+  i18n:
+    fr: grana padano
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12123'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 399
+        water: 30.4
+        protein: 33.2
+        carbs: 1.17
+        sugar: 0
+        fat: 28.5
+        sat_fat: 17
+        mono_fat: 5.96
+        poly_fat: 0.82
+        fiber: 0
+        sodium: 0.538
+        alcohol: 0
+
+provolone-cheese:
+  name: Provolone cheese
+  i18n:
+    fr: provolone
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12716'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 340
+        water: 41
+        protein: 25.1
+        carbs: 0
+        sugar: 0
+        fat: 26.6
+        sat_fat: 17.1
+        mono_fat: 7.39
+        poly_fat: 0.77
+        fiber: 0
+        sodium: 0.876
+        alcohol: 0
+
+half-matured-cantal-cheese:
+  name: Half matured Cantal cheese
+  i18n:
+    fr: cantal entre-deux
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12722'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 383
+        water: 37.1
+        protein: 26.1
+        carbs: 0
+        sugar: 0
+        fat: 30.5
+        sat_fat: 19.9
+        mono_fat: 7.29
+        poly_fat: 0.78
+        fiber: 0
+        sodium: 0.741
+        alcohol: 0
+
+salers-cheese:
+  name: Salers cheese
+  i18n:
+    fr: salers
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12725'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 388
+        water: 38.6
+        protein: 25.4
+        carbs: 0
+        sugar: 0.2
+        fat: 31.4
+        sat_fat: 20
+        mono_fat: 7.78
+        poly_fat: 0.75
+        fiber: 0
+        sodium: 0.875
+        alcohol: 0
+
+cheddar-cheese:
+  name: Cheddar cheese
+  i18n:
+    fr: cheddar
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12726'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 399
+        water: 36.4
+        protein: 24.2
+        carbs: 1.2
+        sugar: 0.15
+        fat: 32.6
+        sat_fat: 20.1
+        mono_fat: 7.35
+        poly_fat: 0.77
+        fiber: 0
+        sodium: 0.707
+        alcohol: 0
+
+edam-cheese:
+  name: Edam cheese
+  i18n:
+    fr: edam
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12729'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 320
+        water: 41.6
+        protein: 25.2
+        carbs: 0
+        sugar: 0
+        fat: 24.4
+        sat_fat: 16.7
+        mono_fat: 7.05
+        poly_fat: 0.58
+        fiber: 0
+        sodium: 0.8
+        alcohol: 0
+
+gouda-cheese:
+  name: Gouda cheese
+  i18n:
+    fr: gouda
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12736'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 378
+        water: 0
+        protein: 23.6
+        carbs: 0.6
+        sugar: 0.000033
+        fat: 31
+        sat_fat: 20.9
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0.9
+        sodium: 0
+        alcohol: 0
+
+mimolette-cheese:
+  name: Mimolette cheese
+  i18n:
+    fr: mimolette
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12740'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 319
+        water: 45.5
+        protein: 25.3
+        carbs: 0
+        sugar: 0
+        fat: 24.2
+        sat_fat: 16.6
+        mono_fat: 5.66
+        poly_fat: 0.58
+        fiber: 0
+        sodium: 0.88
+        alcohol: 0
+
+morbier-cheese:
+  name: Morbier cheese
+  i18n:
+    fr: morbier
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12743'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 355
+        water: 43.6
+        protein: 22.4
+        carbs: 0
+        sugar: 0
+        fat: 29.2
+        sat_fat: 19.2
+        mono_fat: 6.4
+        poly_fat: 0.75
+        fiber: 0
+        sodium: 0.562
+        alcohol: 0
+
+saint-nectaire-cheese:
+  name: Saint-Nectaire cheese
+  i18n:
+    fr: saint-nectaire
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12752'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 342
+        water: 44.6
+        protein: 23
+        carbs: 0.5
+        sugar: 0
+        fat: 27.5
+        sat_fat: 18
+        mono_fat: 6.4
+        poly_fat: 0.74
+        fiber: 0
+        sodium: 0.62
+        alcohol: 0
+
+tomme-cheese:
+  name: Tomme cheese
+  i18n:
+    fr: tomme
+  aliases:
+    - tome de vache
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12758'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 381
+        water: 39.5
+        protein: 26.1
+        carbs: 0
+        sugar: 0
+        fat: 30.8
+        sat_fat: 19
+        mono_fat: 8.1
+        poly_fat: 1.64
+        fiber: 0
+        sodium: 0.459
+        alcohol: 0
+
+asiago-cheese:
+  name: Asiago cheese
+  i18n:
+    fr: asiago
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12761'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 356
+        water: 0
+        protein: 31.4
+        carbs: 0
+        sugar: 0
+        fat: 25.6
+        sat_fat: 15.9
+        mono_fat: 8.28
+        poly_fat: 0.9
+        fiber: 0
+        sodium: 0.76
+        alcohol: 0
+
+tete-de-moine-cheese:
+  name: Tete de Moine cheese
+  i18n:
+    fr: tête de moine
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12764'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 415
+        water: 0
+        protein: 25.5
+        carbs: 0.5
+        sugar: 0
+        fat: 34.5
+        sat_fat: 21.5
+        mono_fat: 0
+        poly_fat: 0
+        fiber: 0
+        sodium: 0
+        alcohol: 0
+
+raclette-cheese:
+  name: Raclette cheese
+  i18n:
+    fr: raclette
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12776'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 357
+        water: 42.4
+        protein: 23.6
+        carbs: 0
+        sugar: 0.2
+        fat: 29.1
+        sat_fat: 20.2
+        mono_fat: 6.9
+        poly_fat: 0.83
+        fiber: 3
+        sodium: 0.607
+        alcohol: 0
+
+cancoillotte:
+  name: Cancoillotte
+  i18n:
+    fr: cancoillotte
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12325'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 151
+        water: 72.5
+        protein: 13.6
+        carbs: 0.48
+        sugar: 0
+        fat: 10.5
+        sat_fat: 7.06
+        mono_fat: 2.38
+        poly_fat: 0.22
+        fiber: 0
+        sodium: 0.692
+        alcohol: 0
+
+uncured-soft-cheese:
+  name: Uncured soft cheese
+  i18n:
+    fr: fromage frais
+  aliases:
+    - philadelphia
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '12068'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 225
+        water: 67.8
+        protein: 6.13
+        carbs: 3.31
+        sugar: 3.31
+        fat: 20.7
+        sat_fat: 13
+        mono_fat: 4.52
+        poly_fat: 0.45
+        fiber: 0
+        sodium: 0.358
+        alcohol: 0
+
+mascarpone-cheese:
+  name: Mascarpone cheese
+  i18n:
+    fr: mascarpone
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19584'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 369
+        water: 51.5
+        protein: 5.88
+        carbs: 3.1
+        sugar: 2.99
+        fat: 37
+        sat_fat: 25.9
+        mono_fat: 10.1
+        poly_fat: 1.03
+        fiber: 0.5
+        sodium: 0.0322
+        alcohol: 0
+
+ricotta-cheese:
+  name: Ricotta cheese
+  i18n:
+    fr: ricotta
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19585'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 0
+        water: 71.7
+        protein: 7.96
+        carbs: 4.09
+        sugar: 3.69
+        fat: 10.7
+        sat_fat: 7.38
+        mono_fat: 2.99
+        poly_fat: 0.32
+        fiber: 0
+        sodium: 0.082
+        alcohol: 0
+
+mozarella-cheese:
+  name: Mozarella cheese
+  i18n:
+    fr: mozarella
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19590'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 227
+        water: 62.7
+        protein: 16.1
+        carbs: 0.7
+        sugar: 0.7
+        fat: 17.7
+        sat_fat: 11.7
+        mono_fat: 4.24
+        poly_fat: 0.45
+        fiber: 0
+        sodium: 0.24
+        alcohol: 0
+
+creme-fraiche:
+  name: crème fraîche
+  i18n:
+    fr: crème épaisse 30%
+  aliases: []
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19410'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 285
+        water: 63.9
+        protein: 2.28
+        carbs: 1.38
+        sugar: 1.38
+        fat: 29.9
+        sat_fat: 19.5
+        mono_fat: 6.09
+        poly_fat: 0.63
+        fiber: 3
+        sodium: 0.026
+        alcohol: 0
+
+heavy-cream:
+  name: heavy cream
+  i18n:
+    fr: crème liquide 30%
+  aliases:
+    - crème fluide 30%
+    - heavy whipping cream
+  tags:
+    - dairy
+  meta:
+    code_ciqual: '19417'
+  physical:
+    density: 1
+    yield: 1
+  states:
+    default:
+      macros:
+        kcal: 293
+        water: 63.6
+        protein: 2.16
+        carbs: 3.69
+        sugar: 2.93
+        fat: 30
+        sat_fat: 18.6
+        mono_fat: 6.34
+        poly_fat: 0.61
+        fiber: 0
+        sodium: 0.027
+        alcohol: 0
