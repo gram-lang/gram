@@ -6223,6 +6223,34 @@ almond:
         sodium: 0.005
         alcohol: 0
 
+almond-powder:
+  name: almond powder
+  i18n:
+    fr: amande en poudre
+  aliases: ['almond meal',"poudre d'amande"]
+  tags:
+    - nut # [LLM]
+  meta:
+    code_ciqual: '15000'
+  physical:
+    density: 0.45 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
+  states:
+    default:
+      macros:
+        kcal: 615
+        water: 4.8
+        protein: 22.6
+        carbs: 9.51
+        sugar: 4.2
+        fat: 51.3
+        sat_fat: 4.11
+        mono_fat: 34.4
+        poly_fat: 10.5
+        fiber: 12.5
+        sodium: 0.005
+        alcohol: 0
+
 peanut:
   name: peanut
   i18n:
