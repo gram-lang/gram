@@ -57,7 +57,9 @@ GRAM {
   Alternative = simpleIngredient ("|" simpleIngredient)+
   
   // Rule: Quantity is mandatory (it's the delimiter)
-  simpleIngredient = "@" modifier* name alias? ingredientQuantity preparation? composite?
+  simpleIngredient = "@" modifier* name state? alias? ingredientQuantity preparation? composite?
+  
+  state = ":" name
 
   modifier = "?" | "-" | "*" | "&"
   alias = "[" space* name space* "]"
@@ -107,7 +109,7 @@ GRAM {
 
   // SyntaxChar used for name content exclusion
   // Restricted to true delimiters that start a new component
-  syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" 
+  syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":" 
   
   // Name can contain '&' or '@' or other symbols, as long as it doesn't look like a start of a new element if specific context requires it?
   // Actually, standard grammar strategy: consume until a known delimiter.

@@ -95,6 +95,8 @@ const createCleanUsage = (item, id, overrides) => {
         obj.alias = item.alias;
     if (item.preparation)
         obj.preparation = item.preparation;
+    if (item.state)
+        obj.state = item.state;
     if (item.composite) {
         const comp = {};
         if (item.composite.parent)

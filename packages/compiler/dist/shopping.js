@@ -5,6 +5,7 @@ const utils_1 = require("./utils");
 const mass_normalization_1 = require("./mass_normalization");
 const ingredient_db_1 = require("./ingredient_db");
 const graph_1 = require("./graph");
+const i18n_1 = require("./i18n");
 function formatQuantity(q) {
     if (!q)
         return '';
@@ -88,11 +89,33 @@ function generateShoppingList(sections, registry, overrides) {
                 return;
             }
             const id = item.id;
-            const key = id;
+            const rawState = item.state || 'default';
+            // Use canonical state for aggregation so "boite" and "conserve" merge
+            const canonicalState = (0, i18n_1.resolveState)(rawState);
+            const key = `${id}::${canonicalState}`;
             if (!listMap.has(key)) {
+                let name = registry.ingredients.get(id)?.name || item.name;
+                // Display the canonical state for consistency, OR user input?
+                // Let's display User Input (rawState) for the first item encountered, 
+                // OR display Canonical if it differs from default.
+                // Issue: If we merge "boite" and "conserve", the label will be whichever came first.
+                // Explicit request "keep possibility to add language".
+                // Maybe standardized display is better? E.g. always "Mushroom (conserve)"? 
+                // But we don't have the reverse map.
+                // Let's allow the raw state to be part of the name if it's not default.
+                if (canonicalState !== 'default') {
+                    // Use the canonical state in the label? "Mushroom (canned)" -> might be English.
+                    // Use the RAW state? "Mushroom (boîte)".
+                    // User preference: likely wants to see what they typed, or a localized version.
+                    // Since we assume the aliases map TO English keys (usually), showing the raw input is safer for I18N context
+                    // UNLESS the user wrote in English and wants French.
+                    // Let's stick to: Use rawState for display if it's the first one.
+                    name = `${name} (${rawState})`;
+                }
                 listMap.set(key, {
                     id: id,
-                    name: registry.ingredients.get(id)?.name || item.name,
+                    name: name,
+                    state: rawState, // Keep raw state in the object for info
                     sureMass: 0,
                     otherUnits: {},
                     variableParts: [],
@@ -180,6 +203,7 @@ function generateShoppingList(sections, registry, overrides) {
         const res = {
             id: item.id,
             name: item.name,
+            state: item.state,
             normalizedMass: item.normalizedMass,
             isEstimate: item.isEstimate,
             conversionMethod: item.isEstimate ? 'estimate' : 'physical'
@@ -199,8 +223,8 @@ function generateShoppingList(sections, registry, overrides) {
         // --- Gross Mass Calculation (Yield) ---
         if (res.normalizedMass && res.normalizedMass > 0) {
             const dbData = (0, ingredient_db_1.getIngredientData)(item.id);
-            if (dbData && dbData.yield && dbData.yield < 1) {
-                const gross = res.normalizedMass / dbData.yield;
+            if (dbData && dbData.physical && dbData.physical.yield && dbData.physical.yield < 1) {
+                const gross = res.normalizedMass / dbData.physical.yield;
                 res.purchasingMass = parseFloat(gross.toFixed(2));
             }
         }

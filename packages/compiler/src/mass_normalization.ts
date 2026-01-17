@@ -40,8 +40,8 @@ export function normalizeMass(amount: number, unit: string, ingredientName?: str
                 method = 'explicit';
             } else {
                 const data = getIngredientData(ingredientName);
-                if (data) {
-                    density = data.density;
+                if (data && data.physical) {
+                    density = data.physical.density;
                     method = 'density';
                 }
             }
@@ -69,8 +69,8 @@ export function normalizeMass(amount: number, unit: string, ingredientName?: str
         }
 
         const data = getIngredientData(ingredientName);
-        if (data && data.unit_weight) {
-            return { mass: amount * data.unit_weight, method: 'unit_weight', isEstimate: true };
+        if (data && data.physical && data.physical.unit_weight) {
+            return { mass: amount * data.physical.unit_weight, method: 'unit_weight', isEstimate: true };
         }
     }
 

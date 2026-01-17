@@ -92,6 +92,7 @@ export const createCleanUsage = (item: any, id: string, overrides?: Record<strin
 
     if (item.alias) obj.alias = item.alias;
     if (item.preparation) obj.preparation = item.preparation;
+    if (item.state) obj.state = item.state;
     
     if (item.composite) {
          const comp: any = {};

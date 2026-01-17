@@ -12,6 +12,7 @@ export interface NutritionMetrics {
     perPortion?: Macros;
     isEstimate: boolean;
     coverage: number;
+    warnings?: string[];
 }
 export declare function calculateNutrition(ingredients: any[], portions?: number): NutritionMetrics;
 export {};

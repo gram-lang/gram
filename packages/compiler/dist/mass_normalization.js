@@ -28,8 +28,8 @@ function normalizeMass(amount, unit, ingredientName, overrides) {
             }
             else {
                 const data = (0, ingredient_db_1.getIngredientData)(ingredientName);
-                if (data) {
-                    density = data.density;
+                if (data && data.physical) {
+                    density = data.physical.density;
                     method = 'density';
                 }
             }
@@ -55,8 +55,8 @@ function normalizeMass(amount, unit, ingredientName, overrides) {
             };
         }
         const data = (0, ingredient_db_1.getIngredientData)(ingredientName);
-        if (data && data.unit_weight) {
-            return { mass: amount * data.unit_weight, method: 'unit_weight', isEstimate: true };
+        if (data && data.physical && data.physical.unit_weight) {
+            return { mass: amount * data.physical.unit_weight, method: 'unit_weight', isEstimate: true };
         }
     }
     return null;

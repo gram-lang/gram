@@ -1,6 +1,7 @@
 import { Usage } from 'gram-parser';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
+import { resolveState } from './i18n';
 
 interface Macros {
     calories: number;
@@ -12,11 +13,12 @@ interface Macros {
     salt?: number;
 }
 
-export interface NutritionMetrics {
+    export interface NutritionMetrics {
     total: Macros;
     perPortion?: Macros;
     isEstimate: boolean;
     coverage: number; // 0-1, how many ingredients had macros
+    warnings?: string[];
 }
 
 export function calculateNutrition(ingredients: any[], portions: number = 1): NutritionMetrics {
@@ -32,6 +34,7 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
 
     let metricsCount = 0;
     let knownCount = 0;
+    const warnings: string[] = [];
     
     // Flatten composite ingredients and alternatives
     const flatList: Usage[] = [];
@@ -71,17 +74,39 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
 
         if (mass > 0) {
             const data = getIngredientData(id);
-            if (data && data.macros) {
+            if (data && data.states) {
                 knownCount++;
                 const factor = mass / 100.0;
-                total.calories += data.macros.calories * factor;
-                total.protein += data.macros.protein * factor;
-                total.carbs += data.macros.carbs * factor;
-                total.fat += data.macros.fat * factor;
                 
-                if (data.macros.sugar !== undefined) total.sugar = (total.sugar || 0) + data.macros.sugar * factor;
-                if (data.macros.fiber !== undefined) total.fiber = (total.fiber || 0) + data.macros.fiber * factor;
-                if (data.macros.salt !== undefined) total.salt = (total.salt || 0) + data.macros.salt * factor;
+                // Resolve State (canonical key)
+                const stateRaw = item.state || 'default';
+                const stateKey = resolveState(stateRaw);
+
+                let targetState = 'default';
+                
+                if (data.states[stateKey]) {
+                    targetState = stateKey;
+                } else {
+                    // Fallback to default if canonical key not found
+                    // Only warn if the USER provided state was not 'default' but resolved to something unknown
+                    if (stateKey !== 'default') {
+                         warnings.push(`Ingredient "${id}": Unknown state "${stateRaw}" (resolved: "${stateKey}"), using default macros.`);
+                    }
+                }
+
+                const stateData = data.states[targetState] || data.states['default'];
+                
+                if (stateData && stateData.macros) {
+                    const m = stateData.macros;
+                    total.calories += m.kcal * factor;
+                    total.protein += m.protein * factor;
+                    total.carbs += m.carbs * factor;
+                    total.fat += m.fat * factor;
+                    
+                    if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
+                    if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
+                    if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
+                }
             }
         }
     });
@@ -100,7 +125,8 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
     const res: NutritionMetrics = {
         total,
         isEstimate: true, 
-        coverage
+        coverage,
+        warnings: warnings.length > 0 ? warnings : undefined
     };
 
     if (portions > 1) {

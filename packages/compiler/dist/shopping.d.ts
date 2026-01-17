@@ -4,6 +4,7 @@ interface ShoppingListItem {
     name?: string;
     qty?: number;
     unit?: string | null;
+    state?: string;
     variable_entries?: string[];
     sureMass?: number;
     otherUnits?: Record<string, number>;

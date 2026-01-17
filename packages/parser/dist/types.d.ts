@@ -72,6 +72,7 @@ export interface IngredientAST extends NodeAST {
     type: 'Ingredient';
     name: string;
     modifiers: Modifier[];
+    state?: string | null;
     quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
     alias?: string | null;
     preparation?: string | null;
@@ -147,6 +148,7 @@ export interface Usage {
     qty?: number | string | QuantityValueAST;
     unit?: string | null;
     modifiers?: string[];
+    state?: string | null;
     fixed?: boolean;
     alias?: string | null;
     preparation?: string | null;

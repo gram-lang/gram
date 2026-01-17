@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateNutrition = calculateNutrition;
 const ingredient_db_1 = require("./ingredient_db");
 const mass_normalization_1 = require("./mass_normalization");
+const i18n_1 = require("./i18n");
 function calculateNutrition(ingredients, portions = 1) {
     const total = {
         calories: 0,
@@ -15,6 +16,7 @@ function calculateNutrition(ingredients, portions = 1) {
     };
     let metricsCount = 0;
     let knownCount = 0;
+    const warnings = [];
     // Flatten composite ingredients and alternatives
     const flatList = [];
     ingredients.forEach(item => {
@@ -49,19 +51,37 @@ function calculateNutrition(ingredients, portions = 1) {
         }
         if (mass > 0) {
             const data = (0, ingredient_db_1.getIngredientData)(id);
-            if (data && data.macros) {
+            if (data && data.states) {
                 knownCount++;
                 const factor = mass / 100.0;
-                total.calories += data.macros.calories * factor;
-                total.protein += data.macros.protein * factor;
-                total.carbs += data.macros.carbs * factor;
-                total.fat += data.macros.fat * factor;
-                if (data.macros.sugar !== undefined)
-                    total.sugar = (total.sugar || 0) + data.macros.sugar * factor;
-                if (data.macros.fiber !== undefined)
-                    total.fiber = (total.fiber || 0) + data.macros.fiber * factor;
-                if (data.macros.salt !== undefined)
-                    total.salt = (total.salt || 0) + data.macros.salt * factor;
+                // Resolve State (canonical key)
+                const stateRaw = item.state || 'default';
+                const stateKey = (0, i18n_1.resolveState)(stateRaw);
+                let targetState = 'default';
+                if (data.states[stateKey]) {
+                    targetState = stateKey;
+                }
+                else {
+                    // Fallback to default if canonical key not found
+                    // Only warn if the USER provided state was not 'default' but resolved to something unknown
+                    if (stateKey !== 'default') {
+                        warnings.push(`Ingredient "${id}": Unknown state "${stateRaw}" (resolved: "${stateKey}"), using default macros.`);
+                    }
+                }
+                const stateData = data.states[targetState] || data.states['default'];
+                if (stateData && stateData.macros) {
+                    const m = stateData.macros;
+                    total.calories += m.kcal * factor;
+                    total.protein += m.protein * factor;
+                    total.carbs += m.carbs * factor;
+                    total.fat += m.fat * factor;
+                    if (m.sugar !== undefined)
+                        total.sugar = (total.sugar || 0) + m.sugar * factor;
+                    if (m.fiber !== undefined)
+                        total.fiber = (total.fiber || 0) + m.fiber * factor;
+                    if (m.sodium !== undefined)
+                        total.salt = (total.salt || 0) + m.sodium * factor;
+                }
             }
         }
     });
@@ -80,7 +100,8 @@ function calculateNutrition(ingredients, portions = 1) {
     const res = {
         total,
         isEstimate: true,
-        coverage
+        coverage,
+        warnings: warnings.length > 0 ? warnings : undefined
     };
     if (portions > 1) {
         res.perPortion = {
