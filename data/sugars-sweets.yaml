@@ -5,11 +5,12 @@ rainbow-sprinkles:
   aliases:
     - sprinkles
   tags:
-    - sweet
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '11510'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Sprinkles
     yield: 1
   states:
     default:
@@ -33,7 +34,7 @@ honey:
     fr: miel
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31008'
   physical:
@@ -61,11 +62,11 @@ white-sugar:
     fr: sucre blanc
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31016'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Granulated
     yield: 1
   states:
     default:
@@ -89,7 +90,7 @@ brown-sugar:
     fr: sucre roux
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31017'
   physical:
@@ -117,11 +118,11 @@ maple-syrup:
     fr: sirop d'érable
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31034'
   physical:
-    density: 0.35
+    density: 1.32 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -145,11 +146,12 @@ vanilla-sugar:
     fr: sucre vanillé
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '31044'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Granulated
     yield: 1
   states:
     default:
@@ -175,11 +177,11 @@ can-molasses:
     - mélasse
     - molasses
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31067'
   physical:
-    density: 1
+    density: 1.4 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -203,11 +205,11 @@ fructose:
     fr: fructose
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31077'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -231,11 +233,11 @@ agave-syrup:
     fr: sirop d'agave
   aliases: []
   tags:
-    - sweet
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31089'
   physical:
-    density: 1
+    density: 1.38 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -259,11 +261,12 @@ candied-chestnut:
     fr: marron glacé
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31023'
   physical:
-    density: 1
+    density: 1.3 # [LLM] Estimate
     yield: 1
   states:
     default:
@@ -287,11 +290,12 @@ candied-almond:
     fr: praline
   aliases: []
   tags:
-    - sweet
+    - nut # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31052'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Estimate
     yield: 1
   states:
     default:
@@ -315,11 +319,12 @@ chestnut-cream:
     fr: crème de marron
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '15013'
   physical:
-    density: 1
+    density: 1.25 # [LLM] Estimate
     yield: 1
   states:
     default:
@@ -344,11 +349,13 @@ marmelade:
   aliases:
     - jam
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30888'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -372,11 +379,13 @@ blackberry-jam:
     fr: confiture de mûre
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30990'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -400,11 +409,13 @@ blackberry-jelly:
     fr: gelée de mûre
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30991'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jelly
     yield: 1
   states:
     default:
@@ -428,11 +439,13 @@ rhubarb-jam:
     fr: confiture de rhubarbe
   aliases: []
   tags:
-    - sweet
+    - vegetable # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30992'
   physical:
-    density: 0.52
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -456,11 +469,13 @@ peach-jam:
     fr: confiture de pêche
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30993'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -484,11 +499,13 @@ fig-jam:
     fr: confiture de figue
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30994'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -512,11 +529,13 @@ raspberry-jelly:
     fr: gelée de framboise
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '30998'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jelly
     yield: 1
   states:
     default:
@@ -540,11 +559,13 @@ strawberry-jam:
     fr: confiture de fraise
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31024'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -568,11 +589,13 @@ apricot-jam:
     fr: confiture d'abricot
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31037'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -596,11 +619,13 @@ cherry-jam:
     fr: confiture de cerise
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31038'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -626,7 +651,9 @@ orange-marmelade:
     - confiture d'orange
     - orange jam
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31039'
   physical:
@@ -654,11 +681,13 @@ dulce-de-leche:
     fr: confiture de lait
   aliases: []
   tags:
-    - sweet
+    - dairy # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31040'
   physical:
-    density: 1
+    density: 1.32 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -682,11 +711,13 @@ plum-jam:
     fr: confiture de prune
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31053'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -710,11 +741,13 @@ raspberry-jam:
     fr: confiture de framboise
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31062'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -738,11 +771,13 @@ blueberry-jam:
     fr: confiture de myrtille
   aliases: []
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31068'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jam
     yield: 1
   states:
     default:
@@ -767,11 +802,13 @@ red-currant-jelly:
   aliases:
     - currant jelly
   tags:
-    - sweet
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '31095'
   physical:
-    density: 1
+    density: 1.33 # [LLM] Jelly
     yield: 1
   states:
     default:
@@ -796,12 +833,14 @@ cookie:
   aliases:
     - biscuit sec
   tags:
-    - sweet
+    - grain # [LLM]
+    - baking # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '24000'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Crumbles
+    unit_weight: 15 # [LLM] Small
   states:
     default:
       macros:
@@ -825,12 +864,14 @@ biscoff:
   aliases:
     - biscoff cookie
   tags:
-    - sweet
+    - grain # [LLM]
+    - baking # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '24009'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Crumbles
+    unit_weight: 8 # [LLM] Biscuit
   states:
     default:
       macros:
@@ -853,12 +894,14 @@ wafer-cookie:
     fr: crêpe dentelle
   aliases: []
   tags:
-    - sweet
+    - grain # [LLM]
+    - baking # [LLM]
+    - sweetener # [LLM]
   meta:
     code_ciqual: '24370'
   physical:
-    density: 1
-    yield: 1
+    density: 0.2 # [LLM] Light
+    unit_weight: 5 # [LLM] Biscuit
   states:
     default:
       macros:
@@ -881,12 +924,14 @@ meringue:
     fr: meringue
   aliases: []
   tags:
-    - sweet
+    - egg # [LLM]
+    - sweetener # [LLM]
+    - baking # [LLM]
   meta:
     code_ciqual: '24520'
   physical:
-    density: 1
-    yield: 1
+    density: 0.2 # [LLM] Light
+    unit_weight: 15 # [LLM] Medium
   states:
     default:
       macros:
@@ -909,12 +954,11 @@ puffed-rice:
     fr: riz soufflé
   aliases: []
   tags:
-    - sweet
+    - grain # [LLM]
   meta:
     code_ciqual: '32006'
   physical:
-    density: 1
-    yield: 1
+    density: 0.12 # [LLM] Puffed
   states:
     default:
       macros:
@@ -938,12 +982,11 @@ corn-flakes:
   aliases:
     - cornflakes
   tags:
-    - sweet
+    - grain # [LLM]
   meta:
     code_ciqual: '32014'
   physical:
-    density: 1
-    yield: 1
+    density: 0.12 # [LLM] Flakes
   states:
     default:
       macros:
@@ -968,12 +1011,11 @@ oat:
     - rolled oat
     - old fashioned oat
   tags:
-    - sweet
+    - grain # [LLM]
   meta:
     code_ciqual: '32140'
   physical:
-    density: 1
-    yield: 1
+    density: 0.36 # [LLM] Rolled
   states:
     default:
       macros:

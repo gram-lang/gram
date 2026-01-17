@@ -4,13 +4,13 @@ beef-rib:
     fr: côte de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone
+    unit_weight: 1000 # [LLM] Big cut
   states:
     default:
       macros:
@@ -33,13 +33,12 @@ beef-shoulder:
     fr: épaule de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6002'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Fat/Trim
   states:
     default:
       macros:
@@ -62,12 +61,11 @@ beef-chuck-steak:
     fr: basse-côte de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6003'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -91,12 +89,11 @@ beef-round:
     fr: gîte à la noix de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6102'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -120,13 +117,13 @@ beef-rib-steak:
     fr: entrecôte de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6103'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 300 # [LLM] Steak
   states:
     default:
       macros:
@@ -149,12 +146,11 @@ beef-eye-of-round:
     fr: rond de gîte de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6106'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -178,13 +174,13 @@ beef-sirloin-steak:
     fr: faux-filet de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6111'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 250 # [LLM] Steak
   states:
     default:
       macros:
@@ -207,13 +203,13 @@ beef-tenderloin:
     fr: filet cru de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6116'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 180 # [LLM] Steak
   states:
     default:
       macros:
@@ -236,13 +232,12 @@ beef-short-ribs:
     fr: plat de côtes de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6122'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone
   states:
     default:
       macros:
@@ -265,13 +260,13 @@ beef-thin-flank:
     fr: hampe de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6130'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 200 # [LLM] Steak
   states:
     default:
       macros:
@@ -294,13 +289,12 @@ beef-cheek:
     fr: joue de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6140'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Trim
   states:
     default:
       macros:
@@ -323,13 +317,12 @@ beef-knuckle:
     fr: jarret de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6150'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
   states:
     default:
       macros:
@@ -352,12 +345,11 @@ beef-topside:
     fr: tende de tranche de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6160'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -382,13 +374,13 @@ beef-steak:
   aliases:
     - bifteck de bœuf
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6201'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -411,12 +403,11 @@ beef-bolar-blade:
     fr: boule de macreuse de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6202'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -440,13 +431,13 @@ beef-hanger-steak:
     fr: onglet de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6204'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 200 # [LLM] Steak
   states:
     default:
       macros:
@@ -469,13 +460,13 @@ beef-rump-steak:
     fr: rumsteak de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6206'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 180 # [LLM] Steak
   states:
     default:
       macros:
@@ -498,13 +489,13 @@ beef-flank-steak:
     fr: bavette d'aloyau de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6212'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 160 # [LLM] Steak
   states:
     default:
       macros:
@@ -527,12 +518,11 @@ beef-stewing-meat:
     fr: bourguignon de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6231'
   physical:
-    density: 1
+    density: 1 # [LLM] Chunks
     yield: 1
   states:
     default:
@@ -556,13 +546,12 @@ beef-neck:
     fr: collier de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6240'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone
   states:
     default:
       macros:
@@ -585,12 +574,11 @@ minced-beef-5percent:
     fr: steak haché de bœuf 5%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6250'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -614,12 +602,11 @@ minced-beef-10percent:
     fr: steak haché de bœuf 10%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6252'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -643,12 +630,11 @@ minced-beef-15percent:
     fr: steak haché de bœuf 15%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6254'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -672,12 +658,11 @@ minced-beef-20percent:
     fr: steak haché de bœuf 20%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6256'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -701,12 +686,11 @@ beef-chuck:
     fr: paleron de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6270'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -730,13 +714,12 @@ beef-oxtail:
     fr: queue de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6311'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Bone/Cartilage
   states:
     default:
       macros:
@@ -759,13 +742,13 @@ veal-chop:
     fr: côte de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6510'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 250 # [LLM] Medium
   states:
     default:
       macros:
@@ -788,13 +771,12 @@ veal-loin:
     fr: carré de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6513'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
   states:
     default:
       macros:
@@ -846,13 +828,13 @@ veal-tenderloin:
     fr: noix de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6522'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -875,13 +857,13 @@ veal-fillet:
     fr: filet de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6530'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -904,12 +886,11 @@ minced-veal-20percent:
     fr: steak haché de veau 20%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6535'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -933,12 +914,11 @@ minced-steak-15percent:
     fr: steak haché de veau 15%
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6536'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -962,13 +942,12 @@ veal-breast:
     fr: poitrine de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6540'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone/Cartilage
   states:
     default:
       macros:
@@ -991,12 +970,11 @@ veal-roast:
     fr: rôti de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6550'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -1020,13 +998,12 @@ veal-shoulder:
     fr: épaule de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6560'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone might be present
   states:
     default:
       macros:
@@ -1049,13 +1026,12 @@ veal-foot:
     fr: pied de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6580'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Bone
   states:
     default:
       macros:
@@ -1079,13 +1055,12 @@ veal-knuckle:
   aliases:
     - veal shank
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6583'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone
   states:
     default:
       macros:
@@ -1108,13 +1083,12 @@ veal-neck:
     fr: collier de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6590'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
   states:
     default:
       macros:
@@ -1137,13 +1111,12 @@ pork-shoulder:
     fr: épaule de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone
   states:
     default:
       macros:
@@ -1166,13 +1139,12 @@ pork-belly:
     fr: poitrine de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28002'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Rind/Cartilage
   states:
     default:
       macros:
@@ -1195,13 +1167,12 @@ pork-blade:
     fr: palette de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28009'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone
   states:
     default:
       macros:
@@ -1224,13 +1195,13 @@ pork-chop:
     fr: côte de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28100'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 180 # [LLM] Chop
   states:
     default:
       macros:
@@ -1253,13 +1224,12 @@ pork-round-steak:
     fr: rouelle de jambon
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28102'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone/Rind
   states:
     default:
       macros:
@@ -1282,13 +1252,12 @@ pork-rack:
     fr: carré de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28104'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
   states:
     default:
       macros:
@@ -1312,13 +1281,13 @@ pork-filet-mignon:
   aliases:
     - filet mignon de porc
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28204'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 400 # [LLM] Whole
   states:
     default:
       macros:
@@ -1341,12 +1310,11 @@ pork-roast:
     fr: rôti de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28300'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -1370,13 +1338,12 @@ pork-loin:
     fr: échine de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28302'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone
   states:
     default:
       macros:
@@ -1399,13 +1366,12 @@ pork-spare-ribs:
     fr: travers de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28400'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone
   states:
     default:
       macros:
@@ -1428,13 +1394,13 @@ pork-ham-escalope:
     fr: escalope de jambon
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28460'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Escalope
   states:
     default:
       macros:
@@ -1457,12 +1423,12 @@ pork-back-fat:
     fr: bardière découennée
   aliases: []
   tags:
-    - protein
-    - meat
+    - fat # [LLM]
+    - meat # [LLM]
   meta:
     code_ciqual: '28470'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Fat
     yield: 1
   states:
     default:
@@ -1486,12 +1452,12 @@ pork-jowl:
     fr: gorge découennée
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
+    - fat # [LLM]
   meta:
     code_ciqual: '28471'
   physical:
-    density: 1
+    density: 1 # [LLM] Mix
     yield: 1
   states:
     default:
@@ -1515,13 +1481,13 @@ hen:
     fr: poule
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone/Skin
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -1544,13 +1510,12 @@ chicken-leg:
     fr: cuisse de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36002'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone/Skin
     unit_weight: 297
   states:
     default:
@@ -1574,13 +1539,13 @@ chicken:
     fr: poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36003'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -1603,14 +1568,13 @@ white-race-chicken:
     fr: poulet blanc
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36007'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 271
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -1633,13 +1597,13 @@ free-range-chicken:
     fr: poulet fermier
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36008'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -1662,14 +1626,13 @@ whole-chicken:
     fr: poulet entier
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36016'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 297
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -1692,13 +1655,13 @@ chicken-fillet:
     fr: filet de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36017'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 120 # [LLM] Fillet
   states:
     default:
       macros:
@@ -1721,13 +1684,13 @@ chicken-high-leg:
     fr: haut de cuisse
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36019'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone/Skin
+    unit_weight: 150 # [LLM] Thigh
   states:
     default:
       macros:
@@ -1750,13 +1713,13 @@ chicken-drumstick:
     fr: pilon de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36022'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Bone/Skin
+    unit_weight: 100 # [LLM] Drumstick
   states:
     default:
       macros:
@@ -1779,14 +1742,13 @@ chicken-wing:
     fr: aile de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36023'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 271
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Bone/Skin
+    unit_weight: 80 # [LLM] Wing
   states:
     default:
       macros:
@@ -1809,14 +1771,13 @@ chicken-breast:
     fr: poitrine de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36029'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
-    unit_weight: 297
+    unit_weight: 150 # [LLM] Breast
   states:
     default:
       macros:
@@ -1839,13 +1800,13 @@ turkey:
     fr: dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36300'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone/Skin
+    unit_weight: 5000 # [LLM] Whole
   states:
     default:
       macros:
@@ -1868,12 +1829,11 @@ skinless-turkey:
     fr: dinde sans peau
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36301'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -1897,13 +1857,13 @@ turkey-escalope:
     fr: escalope de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36304'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 120 # [LLM] Escalope
   states:
     default:
       macros:
@@ -1926,13 +1886,13 @@ turkey-leg:
     fr: cuisse de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36305'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
+    unit_weight: 600 # [LLM] Leg
   states:
     default:
       macros:
@@ -1955,13 +1915,13 @@ skinless-turkey-leg:
     fr: cuisse de dinde sans peau
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36307'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone
+    unit_weight: 500 # [LLM] Leg
   states:
     default:
       macros:
@@ -1984,13 +1944,13 @@ turkey-wing:
     fr: aile de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36310'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Bone/Skin
+    unit_weight: 200 # [LLM] Wing
   states:
     default:
       macros:
@@ -2013,13 +1973,12 @@ mutton:
     fr: mouton
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone
   states:
     default:
       macros:
@@ -2042,13 +2001,13 @@ mutton-shoulder:
     fr: épaule de mouton
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21003'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 1500 # [LLM] Shoulder
   states:
     default:
       macros:
@@ -2071,13 +2030,12 @@ sheep-foot:
     fr: pied de mouton
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21004'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Bone
   states:
     default:
       macros:
@@ -2100,13 +2058,12 @@ sheep-head:
     fr: tête de mouton
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21005'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Bone
   states:
     default:
       macros:
@@ -2129,13 +2086,13 @@ mutton-leg:
     fr: gigot de mouton
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21006'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 2000 # [LLM] Leg
   states:
     default:
       macros:
@@ -2158,13 +2115,13 @@ lamb-cutlet:
     fr: côtelette d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21500'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 100 # [LLM] Cutlet
   states:
     default:
       macros:
@@ -2187,13 +2144,13 @@ lamb-leg:
     fr: gigot d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21502'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 1800 # [LLM] Leg
   states:
     default:
       macros:
@@ -2216,13 +2173,13 @@ lamb-shoulder:
     fr: épaule d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21504'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone
+    unit_weight: 1200 # [LLM] Shoulder
   states:
     default:
       macros:
@@ -2245,13 +2202,13 @@ lamb-neck:
     fr: collier d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21514'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone
+    unit_weight: 800 # [LLM] Neck
   states:
     default:
       macros:
@@ -2274,13 +2231,13 @@ lamb-saddle:
     fr: selle d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21515'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone
+    unit_weight: 1500 # [LLM] Saddle
   states:
     default:
       macros:
@@ -2303,13 +2260,13 @@ lamb-chop:
     fr: côte d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21521'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone
+    unit_weight: 100 # [LLM] Chop
   states:
     default:
       macros:
@@ -2332,13 +2289,12 @@ wild-boar:
     fr: sanglier
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '14002'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.8 # [LLM] Bone/Skin
   states:
     default:
       macros:
@@ -2362,13 +2318,12 @@ hare:
   aliases:
     - hare meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '14004'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
   states:
     default:
       macros:
@@ -2392,13 +2347,12 @@ roebuck:
   aliases:
     - roebuck meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '14005'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone/Skin
   states:
     default:
       macros:
@@ -2422,13 +2376,12 @@ hart:
   aliases:
     - hart meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '14006'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.75 # [LLM] Bone/Skin
   states:
     default:
       macros:
@@ -2452,12 +2405,11 @@ skinless-pheasant:
   aliases:
     - skinless pheasant meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '36401'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
     unit_weight: 326
   states:
@@ -2483,12 +2435,11 @@ horse:
   aliases:
     - horse meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6900'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -2512,12 +2463,11 @@ horse-steak:
     fr: steak de cheval
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6901'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -2541,12 +2491,11 @@ horse-topside:
     fr: tende de tranche de cheval
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6903'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -2570,12 +2519,11 @@ horse-sirloin-steak:
     fr: faux-filet de cheval
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6904'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -2599,12 +2547,11 @@ horse-rib-steak:
     fr: entrecôte de cheval
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '6905'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -2628,13 +2575,12 @@ kid-meat:
     fr: chevreau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '21800'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone might be present
   states:
     default:
       macros:
@@ -2658,13 +2604,13 @@ rabbit:
   aliases:
     - rabbit meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '34001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone
+    unit_weight: 1200 # [LLM] Whole
   states:
     default:
       macros:
@@ -2688,13 +2634,13 @@ wild-rabbit:
   aliases:
     - wild rabbit meat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '34003'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -2718,14 +2664,13 @@ capon:
   aliases:
     - capon meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36050'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 297
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
+    unit_weight: 3000 # [LLM] Whole
   states:
     default:
       macros:
@@ -2749,14 +2694,13 @@ quail:
   aliases:
     - quail meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36100'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 405
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone/Skin
+    unit_weight: 180 # [LLM] Whole
   states:
     default:
       macros:
@@ -2780,14 +2724,13 @@ skinless-quail:
   aliases:
     - skinless quail meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36101'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 342
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Bone
+    unit_weight: 180 # [LLM] Whole
   states:
     default:
       macros:
@@ -2811,13 +2754,13 @@ duck:
   aliases:
     - duck meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36201'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone/Skin
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -2840,14 +2783,13 @@ duck-leg:
     fr: cuisse de canard
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36203'
   physical:
-    density: 1
-    yield: 1
-    unit_weight: 239
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Bone/Skin
+    unit_weight: 250 # [LLM] Leg
   states:
     default:
       macros:
@@ -2871,13 +2813,13 @@ duck-breast-fillet:
   aliases:
     - duck breast
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36206'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Skin/Fat
+    unit_weight: 350 # [LLM] Breast
   states:
     default:
       macros:
@@ -2901,13 +2843,13 @@ goose:
   aliases:
     - goose meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36500'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Bone/Skin
+    unit_weight: 4000 # [LLM] Whole
   states:
     default:
       macros:
@@ -2931,13 +2873,13 @@ pigeon:
   aliases:
     - pigeon meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36600'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
+    unit_weight: 400 # [LLM] Whole
   states:
     default:
       macros:
@@ -2961,13 +2903,13 @@ guinea-fowl:
   aliases:
     - guinea fowl meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36700'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
+    unit_weight: 1200 # [LLM] Whole
   states:
     default:
       macros:
@@ -2990,13 +2932,13 @@ guinea-fowl-breast:
     fr: poitrine de pintade
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36702'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Breast
   states:
     default:
       macros:
@@ -3019,13 +2961,13 @@ guinea-fowl-leg:
     fr: cuisse de pintade
   aliases: []
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36703'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Bone/Skin
+    unit_weight: 200 # [LLM] Leg
   states:
     default:
       macros:
@@ -3049,12 +2991,11 @@ ostrich:
   aliases:
     - ostrich meat
   tags:
-    - protein
-    - meat
+    - poultry # [LLM]
   meta:
     code_ciqual: '36800'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3078,13 +3019,13 @@ lamb-brain:
     fr: cervelle d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40002'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 100 # [LLM] Brain
   states:
     default:
       macros:
@@ -3107,13 +3048,13 @@ pork-brain:
     fr: cervelle de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40005'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 100 # [LLM] Brain
   states:
     default:
       macros:
@@ -3136,13 +3077,13 @@ calf-brain:
     fr: cervelle de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40006'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -3165,13 +3106,12 @@ beef-heart:
     fr: cœur de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40052'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Trim
   states:
     default:
       macros:
@@ -3194,13 +3134,13 @@ chicken-heart:
     fr: cœur de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40054'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.95 # [LLM] Trim
+    unit_weight: 10 # [LLM] Heart
   states:
     default:
       macros:
@@ -3223,13 +3163,13 @@ turkey-heart:
     fr: cœur de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40055'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.95 # [LLM] Trim
+    unit_weight: 20 # [LLM] Heart
   states:
     default:
       macros:
@@ -3281,13 +3221,12 @@ pork-heart:
     fr: cœur de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40060'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Trim
   states:
     default:
       macros:
@@ -3310,13 +3249,12 @@ calf-heart:
     fr: cœur de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40062'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Trim
   states:
     default:
       macros:
@@ -3339,12 +3277,11 @@ lamb-liver:
     fr: foie d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40102'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3368,12 +3305,11 @@ heifer-liver:
     fr: foie de génisse
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40104'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3397,12 +3333,11 @@ calf-liver:
     fr: foie de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40106'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3426,12 +3361,11 @@ poultry-liver:
     fr: foie de volaille
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40108'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3455,12 +3389,11 @@ rabbit-liver:
     fr: foie de lapin
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40110'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3484,12 +3417,11 @@ chicken-liver:
     fr: foie de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40111'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3513,12 +3445,11 @@ turkey-liver:
     fr: foie de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40115'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3542,12 +3473,11 @@ pork-liver:
     fr: foie de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40119'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3571,14 +3501,13 @@ goose-liver:
     fr: foie d'oie
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40120'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
-    unit_weight: 11
+    unit_weight: 11 # [LLM] Liver
   states:
     default:
       macros:
@@ -3601,12 +3530,11 @@ duck-liver:
     fr: foie de canard
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40121'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3630,13 +3558,12 @@ beef-tongue:
     fr: langue de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40202'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Skin
   states:
     default:
       macros:
@@ -3659,13 +3586,12 @@ calf-tongue:
     fr: langue de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40204'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Skin
   states:
     default:
       macros:
@@ -3688,13 +3614,12 @@ pork-tongue:
     fr: langue de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40205'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Skin
   states:
     default:
       macros:
@@ -3717,13 +3642,12 @@ lamb-tongue:
     fr: langue d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40207'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Skin
   states:
     default:
       macros:
@@ -3746,12 +3670,11 @@ lamb-sweetbread:
     fr: ris d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40302'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3775,12 +3698,11 @@ calf-sweetbread:
     fr: ris de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40304'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3804,13 +3726,12 @@ beef-kidney:
     fr: rognon de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40402'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Trim
   states:
     default:
       macros:
@@ -3833,13 +3754,12 @@ pork-kidney:
     fr: rognon de porc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40404'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Trim
   states:
     default:
       macros:
@@ -3862,13 +3782,12 @@ lamb-kidney:
     fr: rognon d'agneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40407'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Trim
   states:
     default:
       macros:
@@ -3891,13 +3810,12 @@ calf-kidney:
     fr: rognon de veau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40409'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Trim
   states:
     default:
       macros:
@@ -3920,12 +3838,11 @@ beef-tripe:
     fr: tripes de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40502'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -3949,12 +3866,11 @@ beef-blood:
     fr: sang de bœuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40600'
   physical:
-    density: 1
+    density: 1.06 # [LLM] Liquid/Pudding
     yield: 1
   states:
     default:
@@ -3978,12 +3894,11 @@ chicken-gizzard:
     fr: gésier de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '40700'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -4007,13 +3922,13 @@ bacon:
     fr: filet de bacon
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28727'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 15 # [LLM] Slice
   states:
     default:
       macros:
@@ -4037,13 +3952,13 @@ cooked-ham:
   aliases:
     - jambon
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28900'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 40 # [LLM] Slice
   states:
     default:
       macros:
@@ -4097,13 +4012,13 @@ chicken-ham:
     fr: jambon de poulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28963'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 40 # [LLM] Slice
   states:
     default:
       macros:
@@ -4126,13 +4041,13 @@ turkey-ham:
     fr: jambon de dinde
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28964'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 40 # [LLM] Slice
   states:
     default:
       macros:
@@ -4155,13 +4070,13 @@ cured-ham:
     fr: jambon cru
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28800'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 30 # [LLM] Slice
   states:
     default:
       macros:
@@ -4184,13 +4099,13 @@ bayonne-cured-ham:
     fr: jambon de Bayonne
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28811'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 30 # [LLM] Slice
   states:
     default:
       macros:
@@ -4214,13 +4129,13 @@ dry-cured-parma-ham:
   aliases:
     - parma ham
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28844'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 25 # [LLM] Slice
   states:
     default:
       macros:
@@ -4244,13 +4159,13 @@ dry-cured-serrano-ham:
   aliases:
     - serrano ham
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28845'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 25 # [LLM] Slice
   states:
     default:
       macros:
@@ -4273,13 +4188,13 @@ coppa:
     fr: coppa
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28850'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 5 # [LLM] Slice
   states:
     default:
       macros:
@@ -4302,13 +4217,13 @@ pancetta:
     fr: pancetta
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28858'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 5 # [LLM] Slice
   states:
     default:
       macros:
@@ -4331,13 +4246,13 @@ dry-sausage:
     fr: saucisson sec
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30300'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 10 # [LLM] Slice
   states:
     default:
       macros:
@@ -4360,12 +4275,11 @@ sausage-meat:
     fr: chair à saucisse
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30050'
   physical:
-    density: 1
+    density: 0.95 # [LLM] Minced
     yield: 1
   states:
     default:
@@ -4389,13 +4303,13 @@ morteaux-sausage:
     fr: saucisse de Morteau
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30104'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 350 # [LLM] Whole
   states:
     default:
       macros:
@@ -4418,13 +4332,13 @@ montbeliard-sausage:
     fr: saucisse de Montbéliard
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30105'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 150 # [LLM] Whole
   states:
     default:
       macros:
@@ -4447,13 +4361,13 @@ toulouse-sausage:
     fr: saucisse de Toulouse
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30110'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 120 # [LLM] Whole
   states:
     default:
       macros:
@@ -4476,13 +4390,13 @@ chipolata-sausage:
     fr: chipolata
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30115'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 25 # [LLM] Whole
   states:
     default:
       macros:
@@ -4507,13 +4421,13 @@ smoked-alsatian-sausage:
     - gendarme
     - landjäger
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30125'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 50 # [LLM] Whole
   states:
     default:
       macros:
@@ -4536,13 +4450,13 @@ frankfurter-sausage:
     fr: saucisse de Francfort
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30134'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 35 # [LLM] Whole
   states:
     default:
       macros:
@@ -4565,13 +4479,13 @@ merguez-sausage:
     fr: merguez
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30151'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 50 # [LLM] Whole
   states:
     default:
       macros:
@@ -4595,13 +4509,13 @@ strasbourg-sausage:
   aliases:
     - knack
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30742'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 35 # [LLM] Whole
   states:
     default:
       macros:
@@ -4625,12 +4539,11 @@ foie-gras:
   aliases:
     - duck foie gras
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '8328'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -4654,12 +4567,11 @@ chitterling-sausage:
     fr: andouille
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '8500'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -4683,12 +4595,11 @@ guemene-chitterling-sausage:
     fr: andouille de Guéméné
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '8501'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -4712,13 +4623,13 @@ black-pudding:
     fr: boudin noir
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '8703'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 125 # [LLM] Whole
   states:
     default:
       macros:
@@ -4741,13 +4652,13 @@ white-pudding:
     fr: boudin blanc
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '8801'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 125 # [LLM] Whole
   states:
     default:
       macros:
@@ -4770,12 +4681,11 @@ lardoons:
     fr: lardon nature
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28501'
   physical:
-    density: 1
+    density: 1 # [LLM] Chunks
     yield: 1
   states:
     default:
@@ -4799,12 +4709,11 @@ smoked-lardoons:
     fr: lardon fumé
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '28720'
   physical:
-    density: 1
+    density: 1 # [LLM] Chunks
     yield: 1
   states:
     default:
@@ -4828,13 +4737,13 @@ spicy-pork-sausage:
     fr: chorizo
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30315'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -4857,13 +4766,13 @@ salami:
     fr: salami
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30350'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 10 # [LLM] Slice
   states:
     default:
       macros:
@@ -4887,13 +4796,13 @@ saveloy:
   aliases:
     - cervelat
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30730'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 100 # [LLM] Whole
   states:
     default:
       macros:
@@ -4916,13 +4825,13 @@ mortadella:
     fr: mortadelle
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '30789'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 10 # [LLM] Slice
   states:
     default:
       macros:
@@ -4946,13 +4855,13 @@ alaska-pollock:
   aliases:
     - lieu
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26006'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 500 # [LLM] Whole
   states:
     default:
       macros:
@@ -4975,13 +4884,13 @@ atlantic-halibut:
     fr: flétan
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26009'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 3000 # [LLM] Whole
   states:
     default:
       macros:
@@ -5004,13 +4913,13 @@ atlantic-herring:
     fr: hareng
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26011'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 150 # [LLM] Whole
   states:
     default:
       macros:
@@ -5034,13 +4943,13 @@ anglerfish:
   aliases:
     - baudroie
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26018'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Head/Skin/Bone
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -5063,13 +4972,13 @@ salmon:
     fr: saumon d'élevage
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26036'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 150 # [LLM] Fillet
   states:
     default:
       macros:
@@ -5092,13 +5001,13 @@ turbot:
     fr: turbot sauvage
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26042'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -5121,13 +5030,13 @@ cod:
     fr: cabillaud
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26043'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 150 # [LLM] Fillet
   states:
     default:
       macros:
@@ -5150,13 +5059,13 @@ european-hake:
     fr: merlu
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26044'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 150 # [LLM] Fillet
   states:
     default:
       macros:
@@ -5179,13 +5088,13 @@ saithe:
     fr: lieu noir
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26047'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 500 # [LLM] Whole
   states:
     default:
       macros:
@@ -5208,13 +5117,13 @@ hake:
     fr: merlu
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26048'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 500 # [LLM] Whole
   states:
     default:
       macros:
@@ -5237,13 +5146,13 @@ mackerel:
     fr: maquereau
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26051'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5266,13 +5175,13 @@ ray:
     fr: raie
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26052'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Wing/Body
+    unit_weight: 500 # [LLM] Wing
   states:
     default:
       macros:
@@ -5295,13 +5204,13 @@ tuna:
     fr: thon
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26053'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -5339,13 +5248,13 @@ european-plaice:
   aliases:
     - plie
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26055'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5368,13 +5277,13 @@ common-dab:
     fr: limande
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26057'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Whole
+    unit_weight: 200 # [LLM] Whole
   states:
     default:
       macros:
@@ -5397,13 +5306,13 @@ common-sole:
     fr: sole
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26058'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5426,13 +5335,13 @@ spiny-scorpionfish:
     fr: rascasse
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26063'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.35 # [LLM] Head/Bone
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5455,13 +5364,13 @@ yellowfin-tuna:
     fr: thon albacore
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26064'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -5484,13 +5393,13 @@ european-pilchard-or-sardine:
     fr: sardine
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26065'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 50 # [LLM] Whole
   states:
     default:
       macros:
@@ -5513,13 +5422,13 @@ skipjack-tuna:
     fr: thon listao
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26068'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -5542,13 +5451,13 @@ atlantic-bluefin-tuna:
     fr: thon rouge
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26069'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -5572,13 +5481,13 @@ european-bass:
   aliases:
     - loup
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26072'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -5603,13 +5512,13 @@ nursehound-or-lesser-spotted-dogfish:
     - petite roussette
     - saumonette
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26074'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Skin/Cartilage
+    unit_weight: 500 # [LLM] Whole
   states:
     default:
       macros:
@@ -5632,13 +5541,13 @@ atlantic-bass:
     fr: loup de l'Atlantique
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26075'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -5662,13 +5571,13 @@ albacore:
   aliases:
     - thon blanc
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26076'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -5691,13 +5600,13 @@ anchovy:
     fr: anchois
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26079'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 150 # [LLM] Steak
   states:
     default:
       macros:
@@ -5721,13 +5630,13 @@ gilthead-seabream:
   aliases:
     - daurade
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26080'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -5750,13 +5659,13 @@ swordfish:
     fr: espadon
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26082'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 200 # [LLM] Steak
   states:
     default:
       macros:
@@ -5779,13 +5688,13 @@ pond-smelt:
     fr: éperlan
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26083'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Whole
+    unit_weight: 15 # [LLM] Whole
   states:
     default:
       macros:
@@ -5808,13 +5717,13 @@ megrim:
     fr: cardine franche
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26084'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5837,13 +5746,13 @@ surmullet-or-red-mullet:
     fr: rouget-barbet de roche
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26085'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 250 # [LLM] Whole
   states:
     default:
       macros:
@@ -5866,13 +5775,13 @@ mullet:
     fr: mulet
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26091'
   physical:
-    density: 0.85
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 800 # [LLM] Whole
   states:
     default:
       macros:
@@ -5895,13 +5804,13 @@ sea-trout:
     fr: truite de mer
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26092'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -5924,13 +5833,13 @@ whiting:
     fr: merlan
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26095'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -5955,13 +5864,13 @@ black-seabream:
     - daurade grise
     - griset
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26099'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -5984,13 +5893,13 @@ bogue:
     fr: bogue
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26100'
   physical:
-    density: 0.38
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 250 # [LLM] Whole
   states:
     default:
       macros:
@@ -6013,13 +5922,13 @@ bonito:
     fr: bonite
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26101'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6044,13 +5953,13 @@ atlantic-chub-mackerel:
     - maquereau blanc
     - billard
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26102'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 350 # [LLM] Whole
   states:
     default:
       macros:
@@ -6073,13 +5982,13 @@ common-dentex:
     fr: denté
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26103'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -6102,13 +6011,13 @@ john-dory:
     fr: saint-Pierre
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26104'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Head/Bone
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -6131,13 +6040,13 @@ red-gurnard:
     fr: grondin
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26106'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 350 # [LLM] Whole
   states:
     default:
       macros:
@@ -6160,13 +6069,13 @@ brown-meagre:
     fr: corb
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26107'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6189,13 +6098,13 @@ capelin:
     fr: capelan
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26108'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Whole
+    unit_weight: 25 # [LLM] Whole
   states:
     default:
       macros:
@@ -6219,13 +6128,13 @@ blackspot-seabream:
   aliases:
     - daurade rose
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26109'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 700 # [LLM] Whole
   states:
     default:
       macros:
@@ -6248,13 +6157,13 @@ salema:
     fr: saupe
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26111'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 400 # [LLM] Whole
   states:
     default:
       macros:
@@ -6277,13 +6186,13 @@ horse-mackerel:
     fr: chinchard
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26113'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -6306,13 +6215,13 @@ haddock:
     fr: églefin
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26122'
   physical:
-    density: 0.56
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6335,13 +6244,13 @@ pacific-cod:
     fr: cabillaud
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26125'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6364,13 +6273,13 @@ conger:
     fr: congre
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26127'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 5000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6393,13 +6302,13 @@ roundnose-grenadier:
     fr: grenadier
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26128'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Head/Tail
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6423,13 +6332,13 @@ pollack:
   aliases:
     - colin
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26129'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -6453,13 +6362,13 @@ ling:
   aliases:
     - lingue
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26130'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6482,13 +6391,13 @@ pouting:
     fr: tacaud
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26133'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 200 # [LLM] Whole
   states:
     default:
       macros:
@@ -6511,13 +6420,12 @@ lemon-sole:
     fr: limande-sole
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26135'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
   states:
     default:
       macros:
@@ -6540,12 +6448,11 @@ cod-liver:
     fr: foie de morue
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26141'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
   states:
     default:
@@ -6569,13 +6476,13 @@ snapper:
     fr: vivaneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26146'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 1200 # [LLM] Whole
   states:
     default:
       macros:
@@ -6598,13 +6505,13 @@ largehead-hairtail:
     fr: sabre
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26153'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 800 # [LLM] Whole
   states:
     default:
       macros:
@@ -6628,13 +6535,13 @@ greenland-halibut:
   aliases:
     - flétan noir
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26154'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 3000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6657,13 +6564,13 @@ crevalle-jack:
     fr: carangue
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26157'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6686,13 +6593,13 @@ bigeye-scad:
     fr: coulirou
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26159'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 200 # [LLM] Whole
   states:
     default:
       macros:
@@ -6715,13 +6622,13 @@ shark:
     fr: requin
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26162'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Skin/Cartilage
+    unit_weight: 5000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6744,13 +6651,13 @@ garfish:
     fr: orphie
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26166'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 350 # [LLM] Whole
   states:
     default:
       macros:
@@ -6773,13 +6680,13 @@ lump-fish:
     fr: lompe
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26168'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Head/Skin/Bone
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6802,13 +6709,13 @@ freshwater-bream:
     fr: brème
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26170'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Whole
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6831,13 +6738,13 @@ arctic-char:
     fr: omble chevalier
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26171'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 500 # [LLM] Whole
   states:
     default:
       macros:
@@ -6860,13 +6767,13 @@ spotted-wolffish:
     fr: loup tacheté
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26172'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 4000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6889,13 +6796,13 @@ european-sprat:
     fr: sprat
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26173'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.9 # [LLM] Whole
+    unit_weight: 15 # [LLM] Whole
   states:
     default:
       macros:
@@ -6919,13 +6826,13 @@ european-whitefish:
   aliases:
     - lavaret
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26175'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 400 # [LLM] Whole
   states:
     default:
       macros:
@@ -6948,13 +6855,13 @@ grouper:
     fr: mérou
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26178'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Whole
+    unit_weight: 5000 # [LLM] Whole
   states:
     default:
       macros:
@@ -6977,13 +6884,13 @@ blue-ling:
     fr: lingue bleue
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26194'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -7007,13 +6914,13 @@ tonguesole:
   aliases:
     - sole-langue
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26200'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.55 # [LLM] Whole
+    unit_weight: 300 # [LLM] Whole
   states:
     default:
       macros:
@@ -7037,13 +6944,13 @@ mediterranean-bass:
   aliases:
     - loup d'élevage
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26206'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -7066,13 +6973,13 @@ carp:
     fr: carpe
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '27003'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Whole
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -7095,13 +7002,13 @@ trout:
     fr: truite
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '27008'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.65 # [LLM] Whole
+    unit_weight: 250 # [LLM] Whole
   states:
     default:
       macros:
@@ -7124,13 +7031,13 @@ northern-pike:
     fr: brochet
   aliases: []
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '27011'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.5 # [LLM] Whole
+    unit_weight: 2000 # [LLM] Whole
   states:
     default:
       macros:
@@ -7155,13 +7062,13 @@ squid:
     - calamar
     - encornet
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10001'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Cleaned
+    unit_weight: 150 # [LLM] Whole
   states:
     default:
       macros:
@@ -7184,13 +7091,13 @@ scallop:
     fr: coquille Saint-Jacques
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10003'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.15 # [LLM] Shell
+    unit_weight: 20 # [LLM] Nut
   states:
     default:
       macros:
@@ -7213,13 +7120,13 @@ snail:
     fr: escargot
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10008'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Shell
+    unit_weight: 10 # [LLM] Meat
   states:
     default:
       macros:
@@ -7242,13 +7149,13 @@ lobster:
     fr: homard
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10010'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.35 # [LLM] Shell
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -7271,13 +7178,13 @@ oyster:
     fr: huître
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10011'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.15 # [LLM] Shell
+    unit_weight: 80 # [LLM] Whole
   states:
     default:
       macros:
@@ -7300,13 +7207,13 @@ mussel:
     fr: moule
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10014'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.25 # [LLM] Shell
+    unit_weight: 15 # [LLM] Whole
   states:
     default:
       macros:
@@ -7329,13 +7236,13 @@ spiny-lobster:
     fr: langouste
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10015'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.35 # [LLM] Shell
+    unit_weight: 1000 # [LLM] Whole
   states:
     default:
       macros:
@@ -7358,13 +7265,13 @@ cuttlefish:
     fr: seiche
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10016'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.7 # [LLM] Cleaned
+    unit_weight: 400 # [LLM] Whole
   states:
     default:
       macros:
@@ -7388,13 +7295,13 @@ clam:
   aliases:
     - praire
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10017'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.2 # [LLM] Shell
+    unit_weight: 20 # [LLM] Whole
   states:
     default:
       macros:
@@ -7417,13 +7324,13 @@ octopus:
     fr: poulpe
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10018'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.85 # [LLM] Cleaned
+    unit_weight: 1500 # [LLM] Whole
   states:
     default:
       macros:
@@ -7447,13 +7354,13 @@ whelk:
   aliases:
     - buccin
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10019'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.3 # [LLM] Shell
+    unit_weight: 40 # [LLM] Whole
   states:
     default:
       macros:
@@ -7476,13 +7383,13 @@ shrimp-or-prawn:
     fr: crevette
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10021'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.45 # [LLM] Shell/Head
+    unit_weight: 20 # [LLM] Whole
   states:
     default:
       macros:
@@ -7505,13 +7412,13 @@ norway-lobster:
     fr: langoustine
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10024'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.35 # [LLM] Shell/Head
+    unit_weight: 60 # [LLM] Whole
   states:
     default:
       macros:
@@ -7534,13 +7441,13 @@ crayfish:
     fr: écrevisse
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10030'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.25 # [LLM] Shell/Head
+    unit_weight: 50 # [LLM] Whole
   states:
     default:
       macros:
@@ -7563,13 +7470,13 @@ crab:
     fr: crabe
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10039'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.35 # [LLM] Shell
+    unit_weight: 800 # [LLM] Whole
   states:
     default:
       macros:
@@ -7594,13 +7501,13 @@ abalone:
     - ormer
     - sea ear
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10041'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.4 # [LLM] Shell
+    unit_weight: 100 # [LLM] Whole
   states:
     default:
       macros:
@@ -7623,13 +7530,13 @@ winkle:
     fr: bigorneau
   aliases: []
   tags:
-    - protein
-    - meat
+    - seafood # [LLM]
   meta:
     code_ciqual: '10074'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.25 # [LLM] Shell
+    unit_weight: 5 # [LLM] Whole
   states:
     default:
       macros:
@@ -7652,13 +7559,13 @@ frog:
     fr: cuisse de grenouille
   aliases: []
   tags:
-    - protein
-    - meat
+    - meat # [LLM]
   meta:
     code_ciqual: '34500'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Solid
+    yield: 0.6 # [LLM] Bone
+    unit_weight: 25 # [LLM] Leg
   states:
     default:
       macros:
@@ -7682,13 +7589,13 @@ european-pilchard:
   aliases:
     - sardine
   tags:
-    - protein
-    - meat
+    - fish # [LLM]
   meta:
     code_ciqual: '26034'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Solid
     yield: 1
+    unit_weight: 90 # [LLM] Can
   states:
     canned:
       macros:
@@ -7711,13 +7618,13 @@ egg:
     fr: œuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - egg # [LLM]
   meta:
     code_ciqual: '22000'
   physical:
-    density: 1
-    yield: 1
+    density: 1.031 # [LLM] Liquid
+    yield: 0.88 # [LLM] Shell
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -7740,13 +7647,13 @@ egg-white:
     fr: blanc d'œuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - egg # [LLM]
   meta:
     code_ciqual: '22001'
   physical:
-    density: 1.03
+    density: 1.03 # [LLM] Liquid
     yield: 1
+    unit_weight: 35 # [LLM] Medium
   states:
     default:
       macros:
@@ -7769,13 +7676,13 @@ egg-yolk:
     fr: jaune d'œuf
   aliases: []
   tags:
-    - protein
-    - meat
+    - egg # [LLM]
   meta:
     code_ciqual: '22002'
   physical:
-    density: 1
+    density: 1.029 # [LLM] Liquid
     yield: 1
+    unit_weight: 18 # [LLM] Medium
   states:
     default:
       macros:

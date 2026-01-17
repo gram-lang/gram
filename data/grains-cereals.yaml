@@ -4,11 +4,11 @@ spelt:
     fr: épautre
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9001'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -32,11 +32,11 @@ khorasan-wheat:
     fr: blé de Khorasan
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9003'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -60,11 +60,11 @@ durum-wheat:
     fr: blé dur complet
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9060'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -89,11 +89,11 @@ wholewheat:
   aliases:
     - ebly
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9080'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Precooked
     yield: 1
   states:
     default:
@@ -117,11 +117,11 @@ white-rice:
     fr: riz blanc
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9100'
   physical:
-    density: 0.68
+    density: 0.85 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -145,11 +145,11 @@ wholegrain-rice:
     fr: riz complet
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9102'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -173,11 +173,11 @@ wild-rice:
     fr: riz sauvage
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9108'
   physical:
-    density: 0.68
+    density: 0.77 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -201,11 +201,11 @@ red-rice:
     fr: riz rouge
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9109'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -230,11 +230,11 @@ basmati-rice:
   aliases:
     - riz basmati
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9119'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -258,11 +258,11 @@ oat:
     fr: avoine
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9310'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -287,11 +287,11 @@ barley:
   aliases:
     - wholegrain barley
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9320'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -315,11 +315,11 @@ pearled-barley:
     fr: orge perlée
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9321'
   physical:
-    density: 0.85
+    density: 0.8 # [LLM] Pearled
     yield: 1
   states:
     default:
@@ -344,11 +344,11 @@ millet:
   aliases:
     - wholegrain millet
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9330'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Grain
     yield: 1
   states:
     default:
@@ -372,11 +372,11 @@ quinoa:
     fr: quinoa
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9340'
   physical:
-    density: 1
+    density: 0.72 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -400,11 +400,11 @@ amaranth:
     fr: amarante
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9345'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -429,11 +429,11 @@ sorghum:
   aliases:
     - wholegrain sorghum
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9360'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -458,11 +458,11 @@ buckwheat:
   aliases:
     - wholegrain buckwheat
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9380'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -487,11 +487,11 @@ rye:
   aliases:
     - wholegrain rye
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9390'
   physical:
-    density: 1
+    density: 0.72 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -515,11 +515,12 @@ durum-wheat-semolina:
     fr: semoule de blé dur
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - flour # [LLM]
   meta:
     code_ciqual: '9610'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Semolina
     yield: 1
   states:
     default:
@@ -546,11 +547,11 @@ polenta:
     - corn semolina
     - maize
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9614'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Raw
     yield: 1
   states:
     default:
@@ -574,11 +575,12 @@ couscous:
     fr: graines de couscous
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9681'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dry
     yield: 1
   states:
     default:
@@ -603,11 +605,11 @@ wheat-bulgur:
   aliases:
     - bulgur
   tags:
-    - grain
+    - grain # [LLM]
   meta:
     code_ciqual: '9690'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dry
     yield: 1
   states:
     default:
@@ -631,11 +633,12 @@ pasta:
     fr: pâtes
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9810'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Dry
     yield: 1
   states:
     dried:
@@ -659,11 +662,12 @@ egg-pasta:
     fr: pâtes aux œufs
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9815'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Dry
     yield: 1
   states:
     default:
@@ -702,11 +706,12 @@ asian-noodles:
   aliases:
     - nouilles asiatiques
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9863'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Dry
     yield: 1
   states:
     dried:
@@ -730,11 +735,12 @@ wholewheat-pasta:
     fr: pâtes complètes
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9870'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Dry
     yield: 1
   states:
     dried:
@@ -758,11 +764,12 @@ rice-wermicelli:
     fr: vermicelles de riz
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
   meta:
     code_ciqual: '9900'
   physical:
-    density: 1
+    density: 0.45 # [LLM] Dry
     yield: 1
   states:
     dried:
@@ -786,11 +793,13 @@ soy-vermicelli:
     fr: vermicelles de soja
   aliases: []
   tags:
-    - grain
+    - grain # [LLM]
+    - pasta # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '9902'
   physical:
-    density: 1
+    density: 0.45 # [LLM] Dry
     yield: 1
   states:
     dried:
@@ -814,11 +823,11 @@ bread:
     fr: pain
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7000'
   physical:
-    density: 1
+    density: 0.25 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -843,11 +852,11 @@ white-bread:
   aliases:
     - baguette
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7001'
   physical:
-    density: 1
+    density: 0.25 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -871,11 +880,11 @@ sourdough-bread:
     fr: pain au levain
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7002'
   physical:
-    density: 1
+    density: 0.28 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -899,11 +908,11 @@ french-bread:
     fr: pain tradition
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7007'
   physical:
-    density: 1
+    density: 0.25 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -927,11 +936,11 @@ country-style-bread:
     fr: pain de campagne
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7100'
   physical:
-    density: 1
+    density: 0.3 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -957,11 +966,11 @@ wholemeal-bread:
     - pain intégral
     - whole wheat bread
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7110'
   physical:
-    density: 1
+    density: 0.3 # [LLM] Loaf
     yield: 1
   states:
     default:
@@ -985,11 +994,11 @@ soft-bread:
     fr: pain de mie complet
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7111'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Slices
     yield: 1
   states:
     default:
@@ -1013,11 +1022,11 @@ unleavened-bread:
     fr: pain azyme
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7114'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Sheets
     yield: 1
   states:
     default:
@@ -1043,11 +1052,11 @@ panini:
     - pain panini
     - panini bread
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7170'
   physical:
-    density: 1
+    density: 0.3 # [LLM] Roll
     yield: 1
   states:
     default:
@@ -1073,12 +1082,13 @@ pita:
     - pain pita
     - pita bread
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7180'
   physical:
-    density: 1
+    density: 0.35 # [LLM] Bread
     yield: 1
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -1103,12 +1113,13 @@ bagel:
     - pain bagel
     - bagel bread
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7258'
   physical:
-    density: 1
+    density: 0.35 # [LLM] Bread
     yield: 1
+    unit_weight: 90 # [LLM] Medium
   states:
     default:
       macros:
@@ -1136,12 +1147,13 @@ rolls:
     - burger rolls
     - hotdog rolls
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7259'
   physical:
-    density: 1
+    density: 0.25 # [LLM] Bread
     yield: 1
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -1165,12 +1177,14 @@ corn-tortilla:
   aliases:
     - corn tortilla wrap
   tags:
-    - grain
+    - bread # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '7813'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Tortilla
     yield: 1
+    unit_weight: 30 # [LLM] Medium
   states:
     default:
       macros:
@@ -1194,12 +1208,14 @@ wheat-tortilla:
   aliases:
     - wheat tortilla wrap
   tags:
-    - grain
+    - bread # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '7815'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Tortilla
     yield: 1
+    unit_weight: 40 # [LLM] Medium
   states:
     default:
       macros:
@@ -1222,12 +1238,13 @@ blinis:
     fr: blinis
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '23805'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Blini
     yield: 1
+    unit_weight: 10 # [LLM] Mini
   states:
     default:
       macros:
@@ -1250,12 +1267,13 @@ rusk:
     fr: biscotte
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
   meta:
     code_ciqual: '7300'
   physical:
-    density: 1
+    density: 0.15 # [LLM] Dry
     yield: 1
+    unit_weight: 10 # [LLM] Medium
   states:
     default:
       macros:
@@ -1278,11 +1296,12 @@ breadcrumbs:
     fr: chapelure
   aliases: []
   tags:
-    - grain
+    - bread # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '7500'
   physical:
-    density: 1
+    density: 0.45 # [LLM] Dry
     yield: 1
   states:
     default:
@@ -1306,11 +1325,12 @@ potato-starch:
     fr: fécule de pomme de terre
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '4090'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Starch
     yield: 1
   states:
     default:
@@ -1335,11 +1355,11 @@ wheat-flour-t110:
   aliases:
     - farine t110
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9410'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1364,11 +1384,11 @@ wheat-flour-t150:
   aliases:
     - farine t150
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9415'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1393,11 +1413,11 @@ wheat-flour-t65:
   aliases:
     - farine t65
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9435'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1422,11 +1442,11 @@ wheat-flour-t55:
   aliases:
     - farine t55
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9436'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1451,11 +1471,11 @@ wheat-flour-t45:
   aliases:
     - farine t45
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9440'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1480,11 +1500,11 @@ wheat-flour-t80:
   aliases:
     - farine t80
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9445'
   physical:
-    density: 1
+    density: 0.58 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1509,11 +1529,11 @@ spelt-flour:
   aliases:
     - farine de grand épautre
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9480'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1539,11 +1559,12 @@ corn-starch:
     - amidon de maïs
     - maizena
   tags:
-    - grain
+    - flour # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '9510'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Starch
     yield: 1
   states:
     default:
@@ -1567,11 +1588,12 @@ rice-flour:
     fr: farine de riz
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '9520'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1595,11 +1617,11 @@ rye-flour-t170:
     fr: farine de seigle T170
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9530'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1623,11 +1645,11 @@ rye-flour-t85:
     fr: farine de seigle T85
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9532'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1651,11 +1673,11 @@ rye-flour-t130:
     fr: farine de seigle T130
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9533'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1679,11 +1701,11 @@ buckwheat-flour:
     fr: farine de sarrasin
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9540'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1707,11 +1729,11 @@ corn-flour:
     fr: farine de maïs
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9545'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1735,11 +1757,11 @@ barley-flour:
     fr: farine d'orge
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9550'
   physical:
-    density: 0.68
+    density: 0.6 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1763,11 +1785,11 @@ millet-flour:
     fr: farine de millet
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9555'
   physical:
-    density: 0.5
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1791,11 +1813,11 @@ chestnut-flour:
     fr: farine de châtaigne
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9570'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1819,11 +1841,11 @@ chick-pea-flour:
     fr: farine de pois chiche
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
   meta:
     code_ciqual: '9580'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1848,11 +1870,12 @@ soya-flour:
   aliases:
     - farine de soja
   tags:
-    - grain
+    - flour # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20915'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Flour
     yield: 1
   states:
     default:
@@ -1876,11 +1899,12 @@ rice-starch:
     fr: amidon de riz
   aliases: []
   tags:
-    - grain
+    - flour # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '96781'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Starch
     yield: 1
   states:
     default:

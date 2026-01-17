@@ -4,12 +4,14 @@ avocado:
     fr: avocat
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '13004'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Mashed
+    yield: 0.64 # [LLM] Flesh only
+    unit_weight: 170 # [LLM] Whole
   states:
     default:
       macros:
@@ -32,12 +34,12 @@ swiss-chard:
     fr: blette
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20004'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped leafy
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -60,12 +62,12 @@ carrot:
     fr: carotte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20009'
   physical:
-    density: 0.54
-    yield: 1
+    density: 0.63 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled
     unit_weight: 61
   states:
     default:
@@ -103,12 +105,13 @@ mushroom:
     fr: champignon
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20010'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -145,12 +148,12 @@ curly-endive:
     fr: chicorée frisée
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20012'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -173,12 +176,12 @@ red-cabbage:
     fr: chou rouge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20014'
   physical:
-    density: 0.38
-    yield: 1
+    density: 0.45 # [LLM] Shredded
+    yield: 0.8 # [LLM] Cored & Trimmed
     unit_weight: 839
   states:
     default:
@@ -202,12 +205,12 @@ cauliflower:
     fr: chou-fleur
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20016'
   physical:
-    density: 0.45
-    yield: 1
+    density: 0.28 # [LLM] Florets
+    yield: 0.6 # [LLM] Florets only
     unit_weight: 588
   states:
     default:
@@ -231,12 +234,14 @@ cucumber:
     fr: concombre
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20019'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Sliced
+    yield: 0.9 # [LLM] Ends trimmed
+    unit_weight: 300 # [LLM] Medium
   states:
     default:
       macros:
@@ -259,12 +264,14 @@ zucchini:
     fr: courgette
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20020'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 196 # [LLM] Medium
   states:
     default:
       macros:
@@ -316,12 +323,13 @@ celery:
   aliases:
     - celery stalk
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20023'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 40 # [LLM] Stalk
   states:
     default:
       macros:
@@ -358,12 +366,13 @@ chicory:
     fr: endive
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20026'
   physical:
-    density: 1
-    yield: 1
+    density: 0.4 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 120 # [LLM] Medium
   states:
     default:
       macros:
@@ -386,12 +395,14 @@ fennel:
     fr: fenouil
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '20028'
   physical:
-    density: 1
-    yield: 1
+    density: 0.45 # [LLM] Sliced
+    yield: 0.85 # [LLM] Trimmed
+    unit_weight: 236 # [LLM] Bulb
   states:
     default:
       macros:
@@ -414,12 +425,13 @@ lettuce:
     fr: laitue
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20031'
   physical:
-    density: 1
-    yield: 1
+    density: 0.2 # [LLM] Shredded
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 300 # [LLM] Head
   states:
     default:
       macros:
@@ -442,12 +454,13 @@ onion:
     fr: oignon
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20034'
   physical:
-    density: 0.68
-    yield: 1
+    density: 0.68 # [LLM] Chopped
+    yield: 0.9 # [LLM] Pealed
     unit_weight: 110
   states:
     default:
@@ -471,12 +484,13 @@ dandelion:
     fr: pissenlit
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - herb # [LLM]
   meta:
     code_ciqual: '20038'
   physical:
-    density: 1
-    yield: 1
+    density: 0.15 # [LLM] Greens
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -499,12 +513,13 @@ leek:
     fr: poireau
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20039'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Sliced
+    yield: 0.7 # [LLM] Trimmed
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -528,12 +543,14 @@ sweet-pepper:
   aliases:
     - bell pepper
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20041'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Chopped
+    yield: 0.82 # [LLM] Cored
+    unit_weight: 119 # [LLM] Medium
   states:
     default:
       macros:
@@ -557,12 +574,13 @@ sweet-green-pepper:
   aliases:
     - green bell pepper
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20085'
   physical:
-    density: 0.63
-    yield: 1
+    density: 0.63 # [LLM] Chopped
+    yield: 0.82 # [LLM] Cored
     unit_weight: 119
   states:
     default:
@@ -587,12 +605,13 @@ sweet-red-pepper:
   aliases:
     - red bell pepper
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20087'
   physical:
-    density: 0.63
-    yield: 1
+    density: 0.63 # [LLM] Chopped
+    yield: 0.82 # [LLM] Cored
     unit_weight: 119
   states:
     default:
@@ -631,12 +650,14 @@ sweet-yellow-pepper:
   aliases:
     - yellow bell pepper
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20168'
   physical:
-    density: 1
-    yield: 1
+    density: 0.63 # [LLM] Chopped
+    yield: 0.82 # [LLM] Cored
+    unit_weight: 119 # [LLM] Medium
   states:
     default:
       macros:
@@ -659,12 +680,13 @@ winter-squash:
     fr: potiron
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20044'
   physical:
-    density: 0.49
-    yield: 1
+    density: 0.55 # [LLM] Cubed
+    yield: 0.7 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -688,12 +710,12 @@ radish:
   aliases:
     - radis rouge
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20045'
   physical:
-    density: 0.49
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.9 # [LLM] Trimmed
     unit_weight: 4.5
   states:
     default:
@@ -717,12 +739,13 @@ artichoke:
     fr: artichaut
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20052'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Hearts
+    yield: 0.4 # [LLM] Edible portion
+    unit_weight: 200 # [LLM] Medium
   states:
     default:
       macros:
@@ -759,12 +782,14 @@ eggplant:
     fr: aubergine
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20053'
   physical:
-    density: 0.35
-    yield: 1
+    density: 0.4 # [LLM] Cubed
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 450 # [LLM] Medium
   states:
     default:
       macros:
@@ -787,12 +812,13 @@ celeriac:
     fr: céleri-rave
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20055'
   physical:
-    density: 0.66
-    yield: 1
+    density: 0.66 # [LLM] Cubed
+    yield: 0.8 # [LLM] Peeled
+    unit_weight: 350 # [LLM] Medium
   states:
     default:
       macros:
@@ -815,12 +841,13 @@ button-mushroom:
     fr: champignon de Paris
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20056'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -857,12 +884,12 @@ broccoli:
     fr: brocoli
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20057'
   physical:
     density: 0.38
-    yield: 1
+    yield: 0.65 # [LLM] Florets only
   states:
     default:
       macros:
@@ -885,12 +912,12 @@ brussels-sprout:
     fr: chou de bruxelles
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20058'
   physical:
     density: 0.37
-    yield: 1
+    yield: 0.85 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -927,12 +954,12 @@ spinach:
     fr: épinard
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20059'
   physical:
     density: 0.13
-    yield: 1
+    yield: 0.8 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -969,12 +996,12 @@ french-bean:
     fr: haricot vert
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20061'
   physical:
-    density: 1
-    yield: 1
+    density: 0.53 # [LLM] Cut
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1011,12 +1038,13 @@ turnip:
     fr: navet
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20064'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -1039,12 +1067,13 @@ kohlrabi:
     fr: chou-rave
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20065'
   physical:
     density: 0.57
-    yield: 1
+    yield: 0.7 # [LLM] Peeled
+    unit_weight: 300 # [LLM] Medium
   states:
     default:
       macros:
@@ -1067,12 +1096,12 @@ green-cabbage:
     fr: chou vert
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20069'
   physical:
-    density: 1
-    yield: 1
+    density: 0.45 # [LLM] Shredded
+    yield: 0.8 # [LLM] Cored & Trimmed
   states:
     default:
       macros:
@@ -1095,7 +1124,8 @@ garden-peas:
     fr: petits pois
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20072'
   physical:
@@ -1137,12 +1167,13 @@ black-radish:
     fr: radis noir
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20089'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.8 # [LLM] Peeled
+    unit_weight: 250 # [LLM] Medium
   states:
     default:
       macros:
@@ -1165,12 +1196,12 @@ escaroles:
     fr: scarole
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20090'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1193,12 +1224,13 @@ beetroot:
     fr: betterave
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20091'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.75 # [LLM] Peeled
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -1221,12 +1253,14 @@ shallot:
     fr: echalote
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20097'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled
+    unit_weight: 25 # [LLM] Medium
   states:
     default:
       macros:
@@ -1249,12 +1283,12 @@ lambs-lettuce:
     fr: mâche
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20099'
   physical:
-    density: 1
-    yield: 1
+    density: 0.1 # [LLM] Loose
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1279,12 +1313,13 @@ chanterelle:
     - girolle
     - girolle mushroom
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20103'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1307,12 +1342,13 @@ morel:
     fr: morille
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20105'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1335,12 +1371,14 @@ black-truffle:
     fr: truffe noire
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20106'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1363,11 +1401,12 @@ corn:
     fr: maïs
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '20108'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Kernels
     yield: 1
   states:
     default:
@@ -1405,12 +1444,13 @@ sorrel:
     fr: oseille
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - herb # [LLM]
   meta:
     code_ciqual: '20111'
   physical:
-    density: 1
-    yield: 1
+    density: 0.1 # [LLM] Leaves
+    yield: 0.8 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1433,12 +1473,13 @@ oyster-mushroom:
     fr: pleurote
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20114'
   physical:
     density: 0.36
-    yield: 1
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1461,12 +1502,12 @@ white-cabbage:
     fr: chou blanc
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20116'
   physical:
     density: 0.38
-    yield: 1
+    yield: 0.8 # [LLM] Cored & Trimmed
     unit_weight: 839
   states:
     default:
@@ -1490,12 +1531,13 @@ green-tomato:
     fr: tomate verte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20119'
   physical:
     density: 0.76
-    yield: 1
+    yield: 0.9 # [LLM] Cored
     unit_weight: 123
   states:
     default:
@@ -1519,12 +1561,12 @@ batavia:
     fr: batavia
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20123'
   physical:
-    density: 1
-    yield: 1
+    density: 0.2 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1547,12 +1589,14 @@ red-kuri-squash:
     fr: potimarron
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20132'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Cubed
+    yield: 0.75 # [LLM] Seeded (skin edible)
+    unit_weight: 1500 # [LLM] Medium
   states:
     default:
       macros:
@@ -1576,12 +1620,13 @@ sweet-green-hokkaido-squash:
   aliases:
     - hokkaido squash
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20134'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Cubed
+    yield: 0.75 # [LLM] Seeded (skin edible)
   states:
     default:
       macros:
@@ -1604,12 +1649,13 @@ butternut-squash:
     fr: courge butternut
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20138'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Cubed
+    yield: 0.8 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -1632,12 +1678,13 @@ squash:
     fr: courge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20139'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Cubed
+    yield: 0.7 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -1660,12 +1707,13 @@ spaghetti-squash:
     fr: courge spaghetti
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20145'
   physical:
-    density: 1
-    yield: 1
+    density: 0.45 # [LLM] Cooked strands
+    yield: 0.7 # [LLM] Flesh only
   states:
     default:
       macros:
@@ -1688,12 +1736,14 @@ chili-pepper:
     fr: piment
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - spice # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20151'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Chopped
+    yield: 0.85 # [LLM] Stemmed
   states:
     default:
       macros:
@@ -1716,12 +1766,13 @@ caesars-mushroom:
     fr: oronge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20159'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1744,12 +1795,13 @@ cep:
     fr: cèpe
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20160'
   physical:
-    density: 1
-    yield: 1
+    density: 0.35 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1772,12 +1824,13 @@ field-mushroom:
     fr: rosé des prés
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fungi # [LLM]
   meta:
     code_ciqual: '20161'
   physical:
     density: 0.28
-    yield: 1
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1800,12 +1853,12 @@ red-endive:
     fr: chicorée rouge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20162'
   physical:
     density: 0.21
-    yield: 1
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1828,12 +1881,12 @@ green-endive:
     fr: chicorée verte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20163'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1856,12 +1909,13 @@ pumpkin:
     fr: citrouille
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20166'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Cubed
+    yield: 0.7 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -1886,12 +1940,12 @@ romaine:
     - romaine lettuce
     - cos
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20171'
   physical:
     density: 0.2
-    yield: 1
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -1914,12 +1968,14 @@ cherry-tomato:
     fr: tomate cerise
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20172'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Edible skin
+    unit_weight: 15 # [LLM] Medium
   states:
     default:
       macros:
@@ -1943,12 +1999,13 @@ snow-pea:
   aliases:
     - pois gourmand
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20173'
   physical:
-    density: 1
-    yield: 1
+    density: 0.4 # [LLM] Loose pods
+    yield: 0.95 # [LLM] Trimmed ends
   states:
     default:
       macros:
@@ -1971,12 +2028,13 @@ parsnip:
     fr: panais
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20181'
   physical:
     density: 0.56
-    yield: 1
+    yield: 0.85 # [LLM] Peeled & trimmed
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -2001,11 +2059,12 @@ mung-bean:
     - haricot mungo
     - sprouted mung bean
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20183'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Sprouts
     yield: 1
   states:
     default:
@@ -2044,12 +2103,14 @@ beef-heart-tomato:
   aliases:
     - tomate cœur de bœuf
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20192'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Chopped
+    yield: 0.95 # [LLM] Cored
+    unit_weight: 300 # [LLM] Large
   states:
     default:
       macros:
@@ -2073,11 +2134,12 @@ butter-bean:
   aliases:
     - yellow bean
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20195'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Beans
     yield: 1
   states:
     default:
@@ -2117,12 +2179,12 @@ salsify:
     - black salsifi
     - salsifi noir
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20197'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -2160,12 +2222,12 @@ bamboo-shoots:
   aliases:
     - pousse de bambou
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20198'
   physical:
     density: 0.64
-    yield: 1
+    yield: 0.7 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2202,12 +2264,12 @@ iceberg-lettuce:
     fr: laitue iceberg
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20200'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2231,12 +2293,12 @@ rutabaga:
   aliases:
     - swede
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20201'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -2260,12 +2322,13 @@ roman-rocket:
   aliases:
     - rocket
   tags:
-    - produce
+    - vegetable # [LLM]
+    - herb # [LLM]
   meta:
     code_ciqual: '20217'
   physical:
-    density: 1
-    yield: 1
+    density: 0.1 # [LLM] Leaves
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2288,12 +2351,12 @@ curly-kale:
     fr: chou frisé
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20218'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped leaves
+    yield: 0.7 # [LLM] Stems removed
   states:
     default:
       macros:
@@ -2316,12 +2379,14 @@ red-onion:
     fr: oignon rouge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20238'
   physical:
-    density: 1
-    yield: 1
+    density: 0.68 # [LLM] Chopped
+    yield: 0.9 # [LLM] Peeled
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -2344,12 +2409,14 @@ yellow-onion:
     fr: oignon jaune
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20239'
   physical:
-    density: 1
-    yield: 1
+    density: 0.68 # [LLM] Chopped
+    yield: 0.9 # [LLM] Peeled
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -2372,12 +2439,13 @@ flat-bean:
     fr: haricot plat
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20269'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Cut
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2400,12 +2468,12 @@ young-spinach-leaves:
     fr: jeunes pousses d'épinard
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20270'
   physical:
-    density: 1
-    yield: 1
+    density: 0.08 # [LLM] Loose leaves
+    yield: 1 # [LLM] Ready to eat
   states:
     default:
       macros:
@@ -2428,12 +2496,12 @@ mesclun:
     fr: mesclun
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20272'
   physical:
-    density: 1
-    yield: 1
+    density: 0.08 # [LLM] Loose leaves
+    yield: 1 # [LLM] Ready to eat
   states:
     default:
       macros:
@@ -2456,12 +2524,14 @@ round-tomato:
     fr: tomate ronde
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20276'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.95 # [LLM] Cored
+    unit_weight: 120 # [LLM] Medium
   states:
     default:
       macros:
@@ -2484,12 +2554,12 @@ green-asparagus:
     fr: asperge verte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20279'
   physical:
     density: 0.57
-    yield: 1
+    yield: 0.6 # [LLM] Trimmed stalks
     unit_weight: 16
   states:
     default:
@@ -2514,12 +2584,12 @@ romanesco-cauliflower:
   aliases:
     - romanesco broccoli
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20280'
   physical:
-    density: 1
-    yield: 1
+    density: 0.38 # [LLM] Florets
+    yield: 0.6 # [LLM] Florets only
   states:
     default:
       macros:
@@ -2546,12 +2616,12 @@ asparagus:
     - white asparagus
     - purple asparagus
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20282'
   physical:
-    density: 1
-    yield: 1
+    density: 0.57 # [LLM] Raw spears
+    yield: 0.5 # [LLM] Peeled & trimmed
   states:
     default:
       macros:
@@ -2588,11 +2658,11 @@ glasswort:
     fr: salicorne
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20283'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Packed
     yield: 1
   states:
     default:
@@ -2616,12 +2686,13 @@ sucrine-lettuce:
     fr: sucrine
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20288'
   physical:
-    density: 1
-    yield: 1
+    density: 0.3 # [LLM] Chopped
+    yield: 0.9 # [LLM] Trimmed
+    unit_weight: 100 # [LLM] Head
   states:
     default:
       macros:
@@ -2644,12 +2715,12 @@ oak-leaf-lettuce:
     fr: feuille de chêne
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20295'
   physical:
-    density: 1
-    yield: 1
+    density: 0.15 # [LLM] Leaves
+    yield: 0.9 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2674,12 +2745,12 @@ chinese-cabbage:
     - pak choï
     - pak choy
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20340'
   physical:
     density: 0.3
-    yield: 1
+    yield: 0.85 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -2702,12 +2773,14 @@ marmande-tomato:
     fr: tomate marmande
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20343'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.95 # [LLM] Cored
+    unit_weight: 180 # [LLM] Large
   states:
     default:
       macros:
@@ -2730,12 +2803,14 @@ black-krim-tomato:
     fr: tomate noire de Crimée
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20344'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.95 # [LLM] Cored
+    unit_weight: 200 # [LLM] Large
   states:
     default:
       macros:
@@ -2758,12 +2833,14 @@ long-tomato:
     fr: tomate allongée
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20345'
   physical:
     density: 0.67
-    yield: 1
+    yield: 0.95 # [LLM] Cored
+    unit_weight: 90 # [LLM] Medium
   states:
     default:
       macros:
@@ -2786,12 +2863,12 @@ kale:
     fr: chou kale
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20346'
   physical:
     density: 0.09
-    yield: 1
+    yield: 0.7 # [LLM] Stems removed
   states:
     default:
       macros:
@@ -2814,12 +2891,13 @@ tomato:
     fr: tomate
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20385'
   physical:
     density: 0.67
-    yield: 1
+    yield: 0.95 # [LLM] Cored
   states:
     default:
       macros:
@@ -2856,12 +2934,13 @@ tomato-bunch:
     fr: tomate grappe
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20584'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.9 # [LLM] Stems
   states:
     default:
       macros:
@@ -2884,11 +2963,11 @@ green-salad:
     fr: salade verte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '25604'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Loose leaves
     yield: 1
   states:
     default:
@@ -2913,12 +2992,14 @@ plantain-banana:
   aliases:
     - plantain
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '53100'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Sliced
+    yield: 0.7 # [LLM] Peeled
+    unit_weight: 200 # [LLM] Each
   states:
     default:
       macros:
@@ -2941,11 +3022,11 @@ palm-heart:
     fr: cœur de palmier
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20018'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Sliced
     yield: 1
   states:
     canned:
@@ -2969,11 +3050,12 @@ tomato-paste:
     fr: concentré de tomate
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20068'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Paste
     yield: 1
   states:
     canned:
@@ -2997,11 +3079,11 @@ artichoke-heart:
     fr: cœur d'artichaut
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20155'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Canned
     yield: 1
   states:
     canned:
@@ -3025,11 +3107,11 @@ artichoke-base:
     fr: fond d'artichaut
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20156'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Canned
     yield: 1
   states:
     canned:
@@ -3053,11 +3135,12 @@ tomato-flesh:
     fr: chair de tomate
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '20169'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Canned
     yield: 1
   states:
     canned:
@@ -3081,11 +3164,12 @@ tomato-puree:
     fr: purée de tomate
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20170'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Puree
     yield: 1
   states:
     canned:
@@ -3109,11 +3193,12 @@ double-concentrate-tomato-paste:
     fr: double concentré de tomate
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20268'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Paste
     yield: 1
   states:
     canned:
@@ -3138,11 +3223,12 @@ tapioca:
   aliases:
     - perles du japon
   tags:
-    - produce
+    - vegetable # [LLM]
+    - grain # [LLM]
   meta:
     code_ciqual: '4000'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Pearls
     yield: 1
   states:
     default:
@@ -3167,11 +3253,12 @@ potato-crisps:
   aliases:
     - potato chips
   tags:
-    - produce
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '4004'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Crisps
     yield: 1
   states:
     default:
@@ -3195,12 +3282,13 @@ potato:
     fr: pomme de terre
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '4008'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled
+    unit_weight: 175 # [LLM] Medium
   states:
     default:
       macros:
@@ -3223,12 +3311,13 @@ sweet-potato:
     fr: patate douce
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '4101'
   physical:
-    density: 0.15
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled
+    unit_weight: 200 # [LLM] Medium
   states:
     default:
       macros:
@@ -3251,12 +3340,12 @@ jerusalem-artichoke:
     fr: topinambour
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20196'
   physical:
     density: 0.63
-    yield: 1
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -3279,12 +3368,12 @@ taro:
     fr: taro
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '53200'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -3307,12 +3396,12 @@ yam:
     fr: igname
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '53502'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled
   states:
     default:
       macros:
@@ -3335,12 +3424,12 @@ cassava:
     fr: manioc
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
   meta:
     code_ciqual: '54031'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -3364,11 +3453,12 @@ flageolet-bean:
   aliases:
     - haricot flageolet
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20508'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dried
     yield: 1
   states:
     canned:
@@ -3406,11 +3496,12 @@ lentil:
     fr: lentille
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20510'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     canned:
@@ -3434,11 +3525,12 @@ haricot-bean:
     fr: haricot blanc
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20511'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     canned:
@@ -3476,11 +3568,12 @@ red-kidney-bean:
     fr: haricot rouge
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20524'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Dried
     yield: 1
   states:
     canned:
@@ -3518,11 +3611,12 @@ chick-pea:
     fr: pois chiche
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20532'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Dried
     yield: 1
   states:
     canned:
@@ -3560,11 +3654,12 @@ split-pea:
     fr: pois cassé
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20515'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -3588,11 +3683,12 @@ broad-bean:
     fr: fève
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20518'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Beans
     yield: 1
   states:
     default:
@@ -3616,7 +3712,8 @@ mung-beans:
     fr: haricot mungo
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20530'
   physical:
@@ -3644,11 +3741,12 @@ lupin-seed:
     fr: lupin
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20534'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -3673,11 +3771,12 @@ red-lentil:
   aliases:
     - pink lentil
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20535'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -3701,11 +3800,12 @@ green-lentil:
     fr: lentille verte
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20585'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -3729,11 +3829,12 @@ blond-lentil:
     fr: lentille blonde
   aliases: []
   tags:
-    - produce
+    - vegetable # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20586'
   physical:
-    density: 1
+    density: 0.85 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -3757,12 +3858,13 @@ apricot:
     fr: abricot
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13000'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Sliced
+    yield: 0.93 # [LLM] Pitted
+    unit_weight: 35 # [LLM] Medium
   states:
     default:
       macros:
@@ -3799,12 +3901,13 @@ pineapple:
     fr: ananas
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13002'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Cubed
+    yield: 0.5 # [LLM] Peeled and cored
+    unit_weight: 1500 # [LLM] Medium
   states:
     default:
       macros:
@@ -3827,13 +3930,13 @@ banana:
     fr: banane
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13005'
   physical:
-    density: 0.46
-    yield: 1
-    unit_weight: 161
+    density: 0.6 # [LLM] Sliced
+    yield: 0.65 # [LLM] Peeled
+    unit_weight: 120 # [LLM] Medium
   states:
     default:
       macros:
@@ -3870,12 +3973,12 @@ black-currant:
     fr: cassis
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13007'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 0.98 # [LLM] Stems
   states:
     default:
       macros:
@@ -3898,12 +4001,13 @@ cherry:
     fr: cerise
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13008'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 8 # [LLM] Medium
   states:
     default:
       macros:
@@ -3926,12 +4030,12 @@ lemon:
     fr: citron
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13009'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Wedges
+    yield: 0.45 # [LLM] Juice only
   states:
     default:
       macros:
@@ -3954,12 +4058,13 @@ quince:
     fr: coing
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13010'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.75 # [LLM] Peeled & seeded
+    unit_weight: 250 # [LLM] Medium
   states:
     default:
       macros:
@@ -3982,12 +4087,12 @@ fig:
     fr: figue
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13012'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.95 # [LLM] Stems
     unit_weight: 50
   states:
     default:
@@ -4025,12 +4130,12 @@ strawberry:
     fr: fraise
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13014'
   physical:
     density: 0.64
-    yield: 1
+    yield: 0.95 # [LLM] Hulled
     unit_weight: 12
   states:
     default:
@@ -4054,12 +4159,12 @@ raspberry:
     fr: framboise
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13015'
   physical:
     density: 0.52
-    yield: 1
+    yield: 1 # [LLM] Whole
   states:
     default:
       macros:
@@ -4083,12 +4188,13 @@ passion-fruit:
   aliases:
     - maracudja
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13016'
   physical:
-    density: 1
-    yield: 1
+    density: 0.9 # [LLM] Pulp
+    yield: 0.45 # [LLM] Pulp only
+    unit_weight: 50 # [LLM] Medium
   states:
     default:
       macros:
@@ -4111,12 +4217,13 @@ pomegranate:
     fr: grenade
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13018'
   physical:
-    density: 1
-    yield: 1
+    density: 0.8 # [LLM] Arils
+    yield: 0.55 # [LLM] Arils only
+    unit_weight: 250 # [LLM] Medium
   states:
     default:
       macros:
@@ -4139,12 +4246,12 @@ red-currant:
     fr: groseille
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13019'
   physical:
-    density: 1
-    yield: 1
+    density: 0.63 # [LLM] Whole
+    yield: 0.98 # [LLM] Stems
   states:
     default:
       macros:
@@ -4167,12 +4274,12 @@ gooseberry:
     fr: groseille à maquereau
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13020'
   physical:
     density: 0.63
-    yield: 1
+    yield: 0.98 # [LLM] Stems
   states:
     default:
       macros:
@@ -4195,12 +4302,13 @@ kiwi:
     fr: kiwi
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13021'
   physical:
-    density: 1
-    yield: 1
+    density: 0.63 # [LLM] Sliced
+    yield: 0.8 # [LLM] Peeled
+    unit_weight: 75 # [LLM] Medium
   states:
     default:
       macros:
@@ -4223,12 +4331,12 @@ lithchi:
     fr: litchi
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13023'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Flesh
+    yield: 0.6 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -4253,12 +4361,13 @@ clementine:
     - mandarine
     - mandarin orange
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13024'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Segments
+    yield: 0.75 # [LLM] Peeled
+    unit_weight: 70 # [LLM] Medium
   states:
     default:
       macros:
@@ -4281,12 +4390,13 @@ mango:
     fr: mangue
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13025'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Cubed
+    yield: 0.7 # [LLM] Peeled & pitted
+    unit_weight: 400 # [LLM] Medium
   states:
     default:
       macros:
@@ -4310,12 +4420,12 @@ canaloupe:
   aliases:
     - melon cantaloup
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13026'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Cubed
+    yield: 0.55 # [LLM] Rind & seeds removed
   states:
     default:
       macros:
@@ -4338,12 +4448,12 @@ mirabelle-plum:
     fr: mirabelle
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13027'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.9 # [LLM] Pitted
   states:
     default:
       macros:
@@ -4366,7 +4476,7 @@ blueberry:
     fr: myrtille
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13028'
   physical:
@@ -4394,7 +4504,7 @@ blackberry:
     fr: mûre
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13029'
   physical:
@@ -4422,12 +4532,13 @@ orange:
     fr: orange
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13034'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Segments
+    yield: 0.7 # [LLM] Peeled
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -4450,12 +4561,13 @@ papaya:
     fr: papaye
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13035'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Cubed
+    yield: 0.65 # [LLM] Peeled & seeded
+    unit_weight: 500 # [LLM] Medium
   states:
     default:
       macros:
@@ -4478,12 +4590,12 @@ watermelon:
     fr: pastèque
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13036'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Cubed
+    yield: 0.5 # [LLM] Rind removed
   states:
     default:
       macros:
@@ -4506,12 +4618,12 @@ pear:
     fr: poire
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13037'
   physical:
     density: 0.63
-    yield: 1
+    yield: 0.85 # [LLM] Peeled & cored
     unit_weight: 213
   states:
     default:
@@ -4535,12 +4647,13 @@ apple:
     fr: pomme
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13039'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -4578,12 +4691,13 @@ grapefruit:
   aliases:
     - pamplemousse
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13040'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Segments
+    yield: 0.5 # [LLM] Peeled & pitted
+    unit_weight: 350 # [LLM] Medium
   states:
     default:
       macros:
@@ -4606,12 +4720,12 @@ greenage-plum:
     fr: prune reine-claude
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13041'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.9 # [LLM] Pitted
   states:
     default:
       macros:
@@ -4635,12 +4749,13 @@ peach:
   aliases:
     - pêche jaune
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13043'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.85 # [LLM] Peeled & pitted
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -4663,12 +4778,12 @@ white-grape:
     fr: raisin blanc
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13044'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.95 # [LLM] Stems
   states:
     default:
       macros:
@@ -4691,12 +4806,12 @@ red-grape:
     fr: raisin noir
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13045'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.95 # [LLM] Stems
   states:
     default:
       macros:
@@ -4719,12 +4834,13 @@ rhubarb:
     fr: rhubarbe
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '13047'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Chopped
+    yield: 0.85 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -4747,12 +4863,12 @@ carambola:
     fr: carambole
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13054'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.95 # [LLM] Trimmed
   states:
     default:
       macros:
@@ -4775,12 +4891,12 @@ acerola:
     fr: cerise acérola
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13055'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Pitted
+    yield: 0.8 # [LLM] Pitted
   states:
     default:
       macros:
@@ -4804,12 +4920,12 @@ cherimoya:
   aliases:
     - chérimole
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13056'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Sliced
+    yield: 0.6 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -4832,13 +4948,12 @@ feijoa:
     fr: feijoa
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13061'
   physical:
-    density: 0.46
-    yield: 1
-    unit_weight: 161
+    density: 0.6 # [LLM] Sliced
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -4861,12 +4976,12 @@ prickly-pear:
     fr: figue de barbarie
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13063'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.6 # [LLM] Peeled
   states:
     default:
       macros:
@@ -4889,12 +5004,13 @@ persimmon:
     fr: kaki
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13066'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
+    unit_weight: 200 # [LLM] Medium
   states:
     default:
       macros:
@@ -4917,12 +5033,13 @@ lime:
     fr: citron vert
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13067'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Wedges
+    yield: 0.45 # [LLM] Juice only
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -4945,12 +5062,12 @@ black-mulberry:
     fr: mûre noire
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13071'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 0.95 # [LLM] Stems
   states:
     default:
       macros:
@@ -4973,12 +5090,12 @@ rambutan:
     fr: ramboutan
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13077'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7
+    yield: 0.45 # [LLM] Peeled & stoned
   states:
     default:
       macros:
@@ -5001,12 +5118,13 @@ tamarind:
     fr: tamarin
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '13080'
   physical:
-    density: 1
-    yield: 1
+    density: 0.8 # [LLM] Pulp
+    yield: 0.4 # [LLM] Pulp only
   states:
     default:
       macros:
@@ -5029,12 +5147,12 @@ guava:
     fr: goyave
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13083'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Chopped
+    yield: 0.8 # [LLM] Peeled
   states:
     default:
       macros:
@@ -5057,12 +5175,13 @@ canada-apple:
     fr: pomme canada
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13085'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5085,12 +5204,13 @@ golden-apple:
     fr: pomme golden
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13086'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5113,13 +5233,13 @@ plum:
     fr: prune
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13100'
   physical:
-    density: 0.63
-    yield: 1
-    unit_weight: 213
+    density: 0.65 # [LLM] Sliced
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -5146,8 +5266,8 @@ chasselas-grape:
   meta:
     code_ciqual: '13101'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.95 # [LLM] Stems
   states:
     default:
       macros:
@@ -5170,12 +5290,12 @@ morello-cherry:
     fr: griotte
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13110'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.85 # [LLM] Pitted & stemmed
   states:
     default:
       macros:
@@ -5198,11 +5318,11 @@ cranberry:
     fr: canneberge
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13113'
   physical:
-    density: 0.46
+    density: 0.5 # [LLM] Whole
     yield: 1
     unit_weight: 100
   states:
@@ -5242,12 +5362,13 @@ granny-smith-apple:
   aliases:
     - granny smith
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13122'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5270,11 +5391,12 @@ lemon-zest:
     fr: zeste de citron
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '13125'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Grated
     yield: 1
   states:
     default:
@@ -5298,12 +5420,12 @@ elberry:
     fr: baie de sureau
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13126'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 0.9 # [LLM] Stems
   states:
     default:
       macros:
@@ -5327,12 +5449,13 @@ yellow-nectarine:
   aliases:
     - brugnon jaune
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13148'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 140 # [LLM] Medium
   states:
     default:
       macros:
@@ -5356,12 +5479,13 @@ white-nectarine:
   aliases:
     - brugnon blanc
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13149'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 140 # [LLM] Medium
   states:
     default:
       macros:
@@ -5385,12 +5509,13 @@ yellow-grapefruit:
   aliases:
     - pamplemousse jaune
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13179'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Segments
+    yield: 0.5 # [LLM] Peeled & pitted
+    unit_weight: 350 # [LLM] Medium
   states:
     default:
       macros:
@@ -5415,12 +5540,13 @@ red-grapefruit:
     - pamplemousse rose
     - pink grapefruit
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13180'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Segments
+    yield: 0.5 # [LLM] Peeled & pitted
+    unit_weight: 350 # [LLM] Medium
   states:
     default:
       macros:
@@ -5443,12 +5569,13 @@ conference-pear:
     fr: poire conférence
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13188'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5471,12 +5598,13 @@ williams-pear:
     fr: poire williams
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13189'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5499,12 +5627,13 @@ chanteclerc-apple:
     fr: pomme Chantecler
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13190'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5527,12 +5656,13 @@ gala-apple:
     fr: pomme Gala
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13191'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5555,12 +5685,13 @@ pink-lady-apple:
     fr: pomme Pink Lady
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13192'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Chopped
+    yield: 0.85 # [LLM] Peeled & cored
+    unit_weight: 180 # [LLM] Medium
   states:
     default:
       macros:
@@ -5584,12 +5715,13 @@ white-flesh-peach:
   aliases:
     - white peach
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13193'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.85 # [LLM] Peeled & pitted
+    unit_weight: 150 # [LLM] Medium
   states:
     default:
       macros:
@@ -5612,12 +5744,12 @@ grape:
     fr: raisin
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13395'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.95 # [LLM] Stems
   states:
     default:
       macros:
@@ -5641,12 +5773,13 @@ nectarine:
   aliases:
     - brugnon
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13399'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Sliced
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 140 # [LLM] Medium
   states:
     default:
       macros:
@@ -5670,12 +5803,12 @@ jackfruit:
   aliases:
     - jacque
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13499'
   physical:
-    density: 1
-    yield: 1
+    density: 0.5 # [LLM] Pods
+    yield: 0.35 # [LLM] Edible portion
   states:
     default:
       macros:
@@ -5698,12 +5831,13 @@ fresh-date:
     fr: datte fraîche
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13523'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Pitted
+    yield: 0.85 # [LLM] Pitted
+    unit_weight: 20 # [LLM] Medium
   states:
     default:
       macros:
@@ -5726,12 +5860,12 @@ durian:
     fr: durian
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13529'
   physical:
-    density: 1
-    yield: 1
+    density: 0.9 # [LLM] Flesh
+    yield: 0.3 # [LLM] Edible flesh
   states:
     default:
       macros:
@@ -5754,12 +5888,13 @@ kumquat:
     fr: kumquat
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13549'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Whole
     yield: 1
+    unit_weight: 12 # [LLM] Medium
   states:
     default:
       macros:
@@ -5782,12 +5917,12 @@ longan:
     fr: longan
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13552'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Flesh
+    yield: 0.6 # [LLM] Peeled & stoned
   states:
     default:
       macros:
@@ -5810,12 +5945,12 @@ loquat:
     fr: nèfle du Japon
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13564'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Sliced
+    yield: 0.7 # [LLM] Peeled & seeded
   states:
     default:
       macros:
@@ -5838,12 +5973,13 @@ black-plum:
     fr: prune violette
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13583'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 0.9 # [LLM] Pit removed
+    unit_weight: 60 # [LLM] Medium
   states:
     default:
       macros:
@@ -5866,12 +6002,13 @@ pummelo:
     fr: pamplemousse chinois
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13614'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Segments
+    yield: 0.55 # [LLM] Peeled & membrane removed
+    unit_weight: 800 # [LLM] Medium
   states:
     default:
       macros:
@@ -5894,12 +6031,12 @@ honeydew-melon:
     fr: melon honeydew
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13742'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Cubed
+    yield: 0.55 # [LLM] Rind & seeds removed
   states:
     default:
       macros:
@@ -5922,11 +6059,11 @@ red-berries:
     fr: fruits rouges
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13997'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Mixed
     yield: 1
   states:
     default:
@@ -5950,12 +6087,13 @@ date:
     fr: datte
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13011'
   physical:
-    density: 1
-    yield: 1
+    density: 0.7 # [LLM] Dried
+    yield: 0.85 # [LLM] Pitted
+    unit_weight: 10 # [LLM] Dried
   states:
     dried:
       macros:
@@ -5978,12 +6116,13 @@ prune:
     fr: pruneau
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13042'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Dried
+    yield: 0.9 # [LLM] Pitted
+    unit_weight: 10 # [LLM] Dried
   states:
     dried:
       macros:
@@ -6006,11 +6145,11 @@ raisin:
     fr: raisin
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13046'
   physical:
-    density: 1
+    density: 0.65 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -6034,11 +6173,11 @@ goji-berry:
     fr: baie de goji
   aliases: []
   tags:
-    - produce
+    - fruit # [LLM]
   meta:
     code_ciqual: '13183'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -6062,12 +6201,12 @@ almond:
     fr: amande
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15000'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6090,12 +6229,13 @@ peanut:
     fr: cacahuète
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '15001'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6118,12 +6258,12 @@ hazelnut:
     fr: noisette
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15004'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6146,12 +6286,12 @@ walnut:
     fr: noix
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15005'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Halves
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6175,12 +6315,14 @@ coconut:
   aliases:
     - noix de coco râpé
   tags:
-    - produce
+    - nut # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '15007'
   physical:
-    density: 1
-    yield: 1
+    density: 0.9 # [LLM] Flesh
+    yield: 0.53 # [LLM] Flesh & water
+    unit_weight: 600 # [LLM] Whole
   states:
     default:
       macros:
@@ -6203,12 +6345,12 @@ brazil-nut:
     fr: noix du Brésil
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15008'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6231,12 +6373,12 @@ pistachio-nut:
     fr: pistache
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15009'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6260,11 +6402,12 @@ sesame-seed:
   aliases:
     - graine de sésame
   tags:
-    - produce
+    - seed # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '15010'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Seeds
     yield: 1
   states:
     default:
@@ -6288,11 +6431,11 @@ sunflower:
     fr: graine de tournesol
   aliases: []
   tags:
-    - produce
+    - seed # [LLM]
   meta:
     code_ciqual: '15011'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Seeds
     yield: 1
   states:
     default:
@@ -6317,11 +6460,12 @@ chestnut-puree:
   aliases:
     - pâte de marrons
   tags:
-    - produce
+    - nut # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '15015'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Puree
     yield: 1
   states:
     default:
@@ -6345,12 +6489,13 @@ chestnut:
     fr: châtaigne
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15020'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Pealed
+    yield: 0.8 # [LLM] Pealed
+    unit_weight: 15 # [LLM] Medium
   states:
     cooked:
       macros:
@@ -6402,12 +6547,12 @@ pecan-nut:
   aliases:
     - pecan
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15026'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6430,12 +6575,12 @@ macadamia-nut:
     fr: noix de macadamia
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15027'
   physical:
-    density: 1
-    yield: 1
+    density: 0.6 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6459,11 +6604,12 @@ alfalfa:
   aliases:
     - graine de luzerne
   tags:
-    - produce
+    - seed # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '15032'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dried seeds
     yield: 1
   states:
     default:
@@ -6488,7 +6634,7 @@ flaxseed:
   aliases:
     - graine de lin
   tags:
-    - produce
+    - seed # [LLM]
   meta:
     code_ciqual: '15034'
   physical:
@@ -6517,11 +6663,11 @@ peeled-almond:
     fr: amande émondée
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15041'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Whole
     yield: 1
   states:
     default:
@@ -6547,11 +6693,11 @@ chia:
     - graine de chia
     - chia seed
   tags:
-    - produce
+    - seed # [LLM]
   meta:
     code_ciqual: '15047'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Seeds
     yield: 1
   states:
     default:
@@ -6575,12 +6721,12 @@ cashew-nut:
     fr: noix de cajou
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
   meta:
     code_ciqual: '15054'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Whole
+    yield: 1 # [LLM] Shelled
   states:
     default:
       macros:
@@ -6603,11 +6749,12 @@ peanut-butter:
     fr: beurre de cacahuète
   aliases: []
   tags:
-    - produce
+    - nut # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '15202'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Butter
     yield: 1
   states:
     default:
@@ -6633,11 +6780,12 @@ tahini:
     - purée de sésame
     - sesame paste
   tags:
-    - produce
+    - seed # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '15203'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Paste
     yield: 1
   states:
     default:
@@ -6661,11 +6809,12 @@ soybean:
     fr: soja
   aliases: []
   tags:
-    - produce
+    - legume # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '20901'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Dried
     yield: 1
   states:
     default:

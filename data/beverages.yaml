@@ -4,7 +4,8 @@ water:
     fr: eau
   aliases: []
   tags:
-    - drink
+    - water # [LLM]
+    - beverage # [LLM]
   meta:
     code_ciqual: '18066'
   physical:
@@ -32,11 +33,12 @@ carrot-juice:
     fr: jus de carotte
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '2006'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -60,11 +62,12 @@ grape-juice:
     fr: jus de raisin
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2016'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -88,11 +91,12 @@ pomegranate-juice:
     fr: jus de grenade
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2017'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -116,11 +120,13 @@ lemon-juice:
     fr: jus de citron
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '2028'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -144,11 +150,13 @@ lime-juice:
     fr: jus de citron vert
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '2031'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -174,11 +182,12 @@ mandarin-juice:
     - jus de mandarine
     - clementine juice
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2034'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -202,11 +211,12 @@ tomato-juice:
     fr: jus de tomate
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '2053'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -230,11 +240,12 @@ orange-juice:
     fr: jus d'orange
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2070'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -258,11 +269,12 @@ pineapple-juice:
     fr: jus d'ananas
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2073'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -286,11 +298,12 @@ apple-juice:
     fr: jus de pomme
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2074'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -314,11 +327,12 @@ blood-orange-juice:
     fr: jus d'orange sanguine
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
+    - fruit # [LLM]
   meta:
     code_ciqual: '2377'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Juice
     yield: 1
   states:
     default:
@@ -344,11 +358,11 @@ cola:
     - coca-cola
     - pepsi
   tags:
-    - drink
+    - beverage # [LLM]
   meta:
     code_ciqual: '18018'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Soda
     yield: 1
   states:
     default:
@@ -373,7 +387,7 @@ coffee:
   aliases:
     - espresso
   tags:
-    - drink
+    - beverage # [LLM]
   meta:
     code_ciqual: '18004'
   physical:
@@ -401,11 +415,11 @@ instant-coffee:
     fr: café instantané
   aliases: []
   tags:
-    - drink
+    - beverage # [LLM]
   meta:
     code_ciqual: '18073'
   physical:
-    density: 1
+    density: 0.35 # [LLM] Instant
     yield: 1
   states:
     default:
@@ -431,11 +445,11 @@ tea:
     - feuilles de thé
     - tea leaf
   tags:
-    - drink
+    - beverage # [LLM]
   meta:
     code_ciqual: '18076'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Loose Leaf
     yield: 1
   states:
     default:
@@ -459,11 +473,11 @@ champagne:
     fr: champagne
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5207'
   physical:
-    density: 1
+    density: 0.99 # [LLM]
     yield: 1
   states:
     default:
@@ -487,11 +501,11 @@ red-wine:
     fr: vin rouge
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5214'
   physical:
-    density: 1
+    density: 0.994 # [LLM]
     yield: 1
   states:
     default:
@@ -515,11 +529,11 @@ white-wine:
     fr: vin blanc sec
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5215'
   physical:
-    density: 1
+    density: 0.994 # [LLM]
     yield: 1
   states:
     default:
@@ -543,11 +557,11 @@ rose-wine:
     fr: vin rosé
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5216'
   physical:
-    density: 1
+    density: 0.994 # [LLM]
     yield: 1
   states:
     default:
@@ -571,11 +585,11 @@ dark-beer:
     fr: bière brune
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5000'
   physical:
-    density: 1
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -599,11 +613,11 @@ dry-cider:
     fr: cidre brut
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5006'
   physical:
-    density: 1
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -627,11 +641,11 @@ sweet-cider:
     fr: cidre doux
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5007'
   physical:
-    density: 1
+    density: 1.02 # [LLM]
     yield: 1
   states:
     default:
@@ -655,11 +669,11 @@ white-beer:
     fr: bière blanche
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5009'
   physical:
-    density: 1
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -683,11 +697,11 @@ traditional-cider:
     fr: cidre
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '5020'
   physical:
-    density: 1
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -711,11 +725,11 @@ pastis:
     fr: pastis
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1000'
   physical:
-    density: 1
+    density: 0.96 # [LLM]
     yield: 1
   states:
     default:
@@ -739,11 +753,11 @@ gin:
     fr: gin
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1002'
   physical:
-    density: 1
+    density: 0.94 # [LLM]
     yield: 1
   states:
     default:
@@ -767,11 +781,11 @@ liqueur:
     fr: liqueur
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1003'
   physical:
-    density: 1
+    density: 1.1 # [LLM]
     yield: 1
   states:
     default:
@@ -795,11 +809,11 @@ rum:
     fr: rhum
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1004'
   physical:
-    density: 1
+    density: 0.94 # [LLM]
     yield: 1
   states:
     default:
@@ -823,11 +837,11 @@ whisky:
     fr: whisky
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1005'
   physical:
-    density: 1
+    density: 0.94 # [LLM]
     yield: 1
   states:
     default:
@@ -851,11 +865,11 @@ vodka:
     fr: vodka
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1008'
   physical:
-    density: 1
+    density: 0.95 # [LLM]
     yield: 1
   states:
     default:
@@ -879,7 +893,7 @@ marsala-wine:
     fr: marsala
   aliases: []
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1015'
   physical:
@@ -909,11 +923,11 @@ sake:
     - alcool de riz
     - rice wine
   tags:
-    - drink
+    - alcohol # [LLM]
   meta:
     code_ciqual: '1026'
   physical:
-    density: 1
+    density: 0.99 # [LLM]
     yield: 1
   states:
     default:

@@ -4,12 +4,11 @@ ketchup:
     fr: ketchup
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11008'
   physical:
-    density: 1
+    density: 1.15 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -33,12 +32,13 @@ mayonnaise:
     fr: mayonnaise
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
+    - fat # [LLM]
+    - egg # [LLM]
   meta:
     code_ciqual: '11054'
   physical:
-    density: 1
+    density: 0.93 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -62,12 +62,11 @@ barbecue-sauce:
     fr: sauce barbecue
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11100'
   physical:
-    density: 1
+    density: 1.22 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -91,12 +90,11 @@ soy-sauce:
     fr: sauce soja
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11104'
   physical:
-    density: 1
+    density: 1.13 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -120,12 +118,12 @@ harissa:
     fr: harissa
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
+    - spice # [LLM]
   meta:
     code_ciqual: '11112'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Paste
     yield: 1
   states:
     default:
@@ -150,12 +148,12 @@ gherkin:
   aliases:
     - pickle
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11004'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Drained
     yield: 1
   states:
     default:
@@ -180,12 +178,11 @@ mustard:
   aliases:
     - dijon mustard
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11013'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -209,12 +206,11 @@ vinegar:
     fr: vinaigre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11018'
   physical:
-    density: 1
+    density: 1.01 # [LLM] Standard
     yield: 1
   states:
     default:
@@ -238,12 +234,11 @@ whole-grain-mustard:
     fr: moutarde à l'ancienne
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11021'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Estimate
     yield: 1
   states:
     default:
@@ -267,12 +262,12 @@ capers:
     fr: câpres
   aliases: []
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11040'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Drained
     yield: 1
   states:
     default:
@@ -296,12 +291,12 @@ pickled-onion:
     fr: oignon au vinaigre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11055'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Drained
     yield: 1
   states:
     default:
@@ -325,12 +320,11 @@ cider-vinegar:
     fr: vinaigre de cidre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11090'
   physical:
-    density: 1.01
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -354,12 +348,11 @@ balsamic-vinegar:
     fr: vinaigre balsamique
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11091'
   physical:
-    density: 1.08
+    density: 1.08 # [LLM] Aqua-calc
     yield: 1
   states:
     default:
@@ -384,12 +377,12 @@ sweet-and-sour-gherkin:
   aliases:
     - sweet and sour pickle
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11097'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Drained
     yield: 1
   states:
     default:
@@ -413,12 +406,11 @@ red-wine-vinegar:
     fr: vinaigre de vin rouge
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11220'
   physical:
-    density: 1.01
+    density: 1.01 # [LLM]
     yield: 1
   states:
     default:
@@ -443,13 +435,15 @@ greek-olive:
   aliases:
     - greek black olive
   tags:
-    - spice
-    - condiment
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - fat # [LLM]
   meta:
     code_ciqual: '13131'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Drained
+    yield: 0.85 # [LLM] Pit
+    unit_weight: 4 # [LLM] Medium
   states:
     default:
       macros:
@@ -474,13 +468,15 @@ olive:
     - olive verte
     - green olive
   tags:
-    - spice
-    - condiment
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - fat # [LLM]
   meta:
     code_ciqual: '13184'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Drained
+    yield: 0.85 # [LLM] Pit
+    unit_weight: 4 # [LLM] Medium
   states:
     default:
       macros:
@@ -503,13 +499,15 @@ black-olive:
     fr: olive noire
   aliases: []
   tags:
-    - spice
-    - condiment
+    - fruit # [LLM]
+    - condiment # [LLM]
+    - fat # [LLM]
   meta:
     code_ciqual: '13186'
   physical:
-    density: 1
-    yield: 1
+    density: 0.65 # [LLM] Drained
+    yield: 0.85 # [LLM] Pit
+    unit_weight: 4 # [LLM] Medium
   states:
     default:
       macros:
@@ -532,12 +530,12 @@ miso:
     fr: miso
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
+    - legume # [LLM]
   meta:
     code_ciqual: '20916'
   physical:
-    density: 1.16
+    density: 1.2 # [LLM] Paste
     yield: 1
   states:
     default:
@@ -561,12 +559,11 @@ wheat-bran:
     fr: son de blé
   aliases: []
   tags:
-    - spice
-    - condiment
+    - grain # [LLM]
   meta:
     code_ciqual: '9621'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Flakes
     yield: 1
   states:
     default:
@@ -590,12 +587,11 @@ oat-bran:
     fr: son d'avoine
   aliases: []
   tags:
-    - spice
-    - condiment
+    - grain # [LLM]
   meta:
     code_ciqual: '9640'
   physical:
-    density: 1
+    density: 0.55 # [LLM]
     yield: 1
   states:
     default:
@@ -619,12 +615,11 @@ corn-bran:
     fr: son de maïs
   aliases: []
   tags:
-    - spice
-    - condiment
+    - grain # [LLM]
   meta:
     code_ciqual: '9641'
   physical:
-    density: 1
+    density: 0.35 # [LLM]
     yield: 1
   states:
     default:
@@ -648,8 +643,7 @@ rice-bran:
     fr: son de riz
   aliases: []
   tags:
-    - spice
-    - condiment
+    - grain # [LLM]
   meta:
     code_ciqual: '9643'
   physical:
@@ -677,8 +671,7 @@ wheat-germ:
     fr: germe de blé
   aliases: []
   tags:
-    - spice
-    - condiment
+    - grain # [LLM]
   meta:
     code_ciqual: '9660'
   physical:
@@ -707,8 +700,7 @@ beef-stock:
   aliases:
     - beef broth
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11001'
   physical:
@@ -736,12 +728,11 @@ gelatin:
     fr: gélatine
   aliases: []
   tags:
-    - spice
-    - condiment
+    - baking # [LLM]
   meta:
     code_ciqual: '11007'
   physical:
-    density: 1
+    density: 0.7 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -765,12 +756,11 @@ yeast-flakes:
     fr: levure de bière en paillettes
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11009'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Flakes
     yield: 1
   states:
     default:
@@ -795,8 +785,7 @@ yeast:
   aliases:
     - fresh yeast
   tags:
-    - spice
-    - condiment
+    - baking # [LLM]
   meta:
     code_ciqual: '11010'
   physical:
@@ -839,8 +828,7 @@ vegetables-stock:
   aliases:
     - vegetables broth
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11041'
   physical:
@@ -870,12 +858,11 @@ baking-powder:
     - poudre à lever
     - raising agent
   tags:
-    - spice
-    - condiment
+    - baking # [LLM]
   meta:
     code_ciqual: '11046'
   physical:
-    density: 1
+    density: 0.9 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -900,8 +887,7 @@ vanilla-extract:
   aliases:
     - extrait de vanille
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11065'
   physical:
@@ -930,8 +916,7 @@ veal-stock:
   aliases:
     - veal broth
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11169'
   physical:
@@ -959,8 +944,7 @@ poultry-stock-for-sauce:
     fr: fond de volaille
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11171'
   physical:
@@ -991,8 +975,7 @@ chicken-stock:
     - bouillon de poulet
     - chicken broth
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11174'
   physical:
@@ -1021,12 +1004,11 @@ bakind-soda:
   aliases:
     - bicarbonate
   tags:
-    - spice
-    - condiment
+    - baking # [LLM]
   meta:
     code_ciqual: '11507'
   physical:
-    density: 1
+    density: 1.2 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -1050,8 +1032,8 @@ coconut-milk:
     fr: lait de coco
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
+    - fat # [LLM]
   meta:
     code_ciqual: '18041'
   physical:
@@ -1079,12 +1061,11 @@ table-salt:
     fr: sel
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11058'
   physical:
-    density: 1
+    density: 1.2 # [LLM]
     yield: 1
   states:
     default:
@@ -1108,12 +1089,11 @@ flaky-salt:
     fr: fleur de sel
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11082'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Flakes
     yield: 1
   states:
     default:
@@ -1137,12 +1117,11 @@ sea-salt:
     fr: sel marin
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11083'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Coarse
     yield: 1
   states:
     default:
@@ -1166,12 +1145,11 @@ curry-powder:
     fr: curry
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11005'
   physical:
-    density: 1
+    density: 0.5 # [LLM]
     yield: 1
   states:
     dried:
@@ -1195,12 +1173,11 @@ ginger-powder:
     fr: gingembre en poudre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11006'
   physical:
-    density: 1
+    density: 0.5 # [LLM]
     yield: 1
   states:
     default:
@@ -1224,12 +1201,11 @@ black-pepper:
     fr: poivre noir
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11015'
   physical:
-    density: 1
+    density: 0.55 # [LLM] Ground
     yield: 1
   states:
     default:
@@ -1253,12 +1229,11 @@ white-pepper:
     fr: poivre blanc
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11019'
   physical:
-    density: 1
+    density: 0.55 # [LLM]
     yield: 1
   states:
     default:
@@ -1285,12 +1260,11 @@ cinnamon-powder:
     - cinnamon
     - cinnamon stick
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11025'
   physical:
-    density: 1
+    density: 0.56 # [LLM]
     yield: 1
   states:
     default:
@@ -1314,12 +1288,11 @@ coriander-seed:
     fr: graine de coriandre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11026'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Seed
     yield: 1
   states:
     default:
@@ -1343,12 +1316,11 @@ saffron:
     fr: safran
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11039'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Threads
     yield: 1
   states:
     default:
@@ -1372,12 +1344,11 @@ cumin-seed:
     fr: cumin
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11042'
   physical:
-    density: 1
+    density: 0.45 # [LLM] Seed
     yield: 1
   states:
     default:
@@ -1401,13 +1372,12 @@ nutmeg:
     fr: noix de muscade
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11048'
   physical:
-    density: 1
-    yield: 1
+    density: 0.55 # [LLM] Ground
+    unit_weight: 4 # [LLM] Whole
   states:
     default:
       macros:
@@ -1431,12 +1401,11 @@ paprika:
   aliases:
     - paprika powder
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11049'
   physical:
-    density: 1
+    density: 0.48 # [LLM]
     yield: 1
   states:
     default:
@@ -1460,12 +1429,11 @@ cloves:
     fr: clou de girofle
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11052'
   physical:
-    density: 1
+    density: 0.4 # [LLM] Whole
     yield: 1
   states:
     default:
@@ -1489,12 +1457,11 @@ bay-leaves:
     fr: feuille de laurier
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11053'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -1519,13 +1486,12 @@ vanilla-pod:
   aliases:
     - gousse de vanille
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11057'
   physical:
-    density: 1
-    yield: 1
+    density: 1 # [LLM]
+    unit_weight: 3 # [LLM] Pod
   states:
     default:
       macros:
@@ -1549,12 +1515,11 @@ poppy-ssed:
   aliases:
     - graines de pavot
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11061'
   physical:
-    density: 1
+    density: 0.6 # [LLM]
     yield: 1
   states:
     default:
@@ -1578,12 +1543,11 @@ caraway-seed:
     fr: carvi
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11064'
   physical:
-    density: 1
+    density: 0.5 # [LLM]
     yield: 1
   states:
     default:
@@ -1636,13 +1600,13 @@ fresh-ginger:
     fr: gingembre frais
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
+    - vegetable # [LLM]
   meta:
     code_ciqual: '11074'
   physical:
-    density: 1
-    yield: 1
+    density: 1.05 # [LLM] Root
+    yield: 0.85 # [LLM] Peel
   states:
     default:
       macros:
@@ -1666,12 +1630,11 @@ cardamom:
   aliases:
     - cardamom powder
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11075'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -1695,12 +1658,11 @@ fenugreek-seed:
     fr: graine de fenugrec
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11077'
   physical:
-    density: 1
+    density: 0.75 # [LLM] Seed
     yield: 1
   states:
     default:
@@ -1725,12 +1687,11 @@ cayenne-pepper:
   aliases:
     - cayenne pepper powder
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11088'
   physical:
-    density: 1
+    density: 0.45 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -1754,12 +1715,11 @@ turmeric:
     fr: curcuma en poudre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11089'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -1783,13 +1743,14 @@ garlic:
     fr: ail
   aliases: []
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11000'
   physical:
     density: 0.57
-    yield: 1
+    yield: 0.85 # [LLM] Skin
+    unit_weight: 5 # [LLM] Clove
   states:
     default:
       macros:
@@ -1812,12 +1773,11 @@ chervil:
     fr: cerfeuil
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11002'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -1857,12 +1817,11 @@ chive:
     - ciboule
     - spring onion
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11003'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Chopped
     yield: 1
   states:
     default:
@@ -1900,8 +1859,7 @@ parsley:
     fr: persil
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11014'
   physical:
@@ -1943,13 +1901,13 @@ horseradish:
     fr: raifort
   aliases: []
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '11016'
   physical:
-    density: 1
-    yield: 1
+    density: 1.1 # [LLM] Root
+    yield: 0.8 # [LLM] Peel
   states:
     default:
       macros:
@@ -1972,12 +1930,11 @@ mint:
     fr: menthe
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11027'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2015,8 +1972,7 @@ basil:
     fr: basilic
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11033'
   physical:
@@ -2059,12 +2015,11 @@ rosemary:
     fr: romarin
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11068'
   physical:
-    density: 1
+    density: 0.15 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2102,12 +2057,11 @@ sage:
     fr: sauge
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11069'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2145,12 +2099,11 @@ thyme:
     fr: thym
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11070'
   physical:
-    density: 1
+    density: 0.15 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2188,12 +2141,11 @@ herbs:
     fr: herbes aromatiques
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11080'
   physical:
-    density: 1
+    density: 0.15 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2217,12 +2169,11 @@ tarragon:
     fr: estragon
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11092'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2260,12 +2211,11 @@ dill:
     fr: aneth
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11093'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2303,12 +2253,11 @@ coriander:
     fr: coriandre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11094'
   physical:
-    density: 1
+    density: 0.1 # [LLM] Leaf
     yield: 1
   states:
     default:
@@ -2332,12 +2281,11 @@ garlic-powder:
     fr: ail en poudre
   aliases: []
   tags:
-    - spice
-    - condiment
+    - spice # [LLM]
   meta:
     code_ciqual: '11023'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Powder
     yield: 1
   states:
     dried:
@@ -2361,12 +2309,11 @@ marjoram:
     fr: marjolaine
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11034'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -2390,12 +2337,11 @@ oregano:
     fr: origan
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11035'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -2419,12 +2365,11 @@ herbes-de-provence:
     fr: herbes de Provence
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11060'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -2448,12 +2393,11 @@ savory:
     fr: sariette
   aliases: []
   tags:
-    - spice
-    - condiment
+    - herb # [LLM]
   meta:
     code_ciqual: '11062'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Dried
     yield: 1
   states:
     dried:
@@ -2477,12 +2421,11 @@ seaweed:
     fr: agar
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11085'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Powder
     yield: 1
   states:
     dried:
@@ -2506,12 +2449,11 @@ spirulina:
     fr: spiruline
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '11086'
   physical:
-    density: 1
+    density: 0.5 # [LLM] Powder
     yield: 1
   states:
     dried:
@@ -2535,12 +2477,12 @@ laver:
     fr: nori
   aliases: []
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20987'
   physical:
-    density: 1
+    density: 0.2 # [LLM] Sheets
     yield: 1
   states:
     default:
@@ -2565,12 +2507,12 @@ kombu:
   aliases:
     - japanese kelp
   tags:
-    - spice
-    - condiment
+    - vegetable # [LLM]
+    - condiment # [LLM]
   meta:
     code_ciqual: '20990'
   physical:
-    density: 1
+    density: 0.8 # [LLM] Dried
     yield: 1
   states:
     default:
@@ -2594,12 +2536,11 @@ gut-weed:
     fr: ao-nori
   aliases: []
   tags:
-    - spice
-    - condiment
+    - condiment # [LLM]
   meta:
     code_ciqual: '20995'
   physical:
-    density: 1
+    density: 0.3 # [LLM] Flakes
     yield: 1
   states:
     default:
@@ -2623,12 +2564,11 @@ tofu:
     fr: tofu nature
   aliases: []
   tags:
-    - spice
-    - condiment
+    - legume # [LLM]
   meta:
     code_ciqual: '20904'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Firm
     yield: 1
   states:
     default:
@@ -2652,8 +2592,7 @@ silky-tofu:
     fr: tofu soyeux
   aliases: []
   tags:
-    - spice
-    - condiment
+    - legume # [LLM]
   meta:
     code_ciqual: '20906'
   physical:
@@ -2681,12 +2620,11 @@ silken-tofu:
     fr: tofu fumé
   aliases: []
   tags:
-    - spice
-    - condiment
+    - legume # [LLM]
   meta:
     code_ciqual: '20912'
   physical:
-    density: 1
+    density: 1.08 # [LLM] Firm
     yield: 1
   states:
     default:

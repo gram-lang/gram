@@ -5,10 +5,11 @@ butter:
   aliases: []
   tags:
     - fat
+    - dairy # [LLM]
   meta:
     code_ciqual: '16400'
   physical:
-    density: 1
+    density: 0.911 # [LLM] Butter
     yield: 1
   states:
     default:
@@ -33,6 +34,7 @@ cocoa-butter:
   aliases: []
   tags:
     - fat
+    - baking # [LLM]
   meta:
     code_ciqual: '16030'
   physical:
@@ -61,10 +63,11 @@ coconut-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '16040'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Solid/Liquid mean
     yield: 1
   states:
     default:
@@ -92,7 +95,7 @@ margarine:
   meta:
     code_ciqual: '16080'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Margarine
     yield: 1
   states:
     default:
@@ -120,7 +123,7 @@ shea-butter:
   meta:
     code_ciqual: '16110'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Butter
     yield: 1
   states:
     default:
@@ -147,10 +150,11 @@ palm-oil:
     - graisse de palmiste
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '16200'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -175,6 +179,7 @@ apricot-kernel-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17020'
   physical:
@@ -203,6 +208,7 @@ almond-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17030'
   physical:
@@ -231,6 +237,7 @@ peanut-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17040'
   physical:
@@ -259,6 +266,7 @@ avocado-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17100'
   physical:
@@ -287,6 +295,7 @@ wheat-germ-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17110'
   physical:
@@ -315,10 +324,11 @@ rapeseed-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17130'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -343,10 +353,11 @@ cottonseed-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17170'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -371,10 +382,11 @@ linseed-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17180'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -399,10 +411,11 @@ corn-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17190'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -427,6 +440,7 @@ hazelnut-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17210'
   physical:
@@ -455,6 +469,7 @@ walnut-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17220'
   physical:
@@ -483,10 +498,11 @@ extra-virgin-olive-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17270'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -511,6 +527,7 @@ poppyseed-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17325'
   physical:
@@ -539,6 +556,7 @@ grapeseed-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17350'
   physical:
@@ -567,6 +585,7 @@ rice-bran-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17390'
   physical:
@@ -595,10 +614,11 @@ sesame-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17400'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -623,10 +643,11 @@ soy-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17420'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -651,10 +672,11 @@ sunflower-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17440'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -679,10 +701,11 @@ combined-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17700'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -707,10 +730,11 @@ camelina-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17800'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -735,10 +759,11 @@ hemp-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17850'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -763,10 +788,11 @@ argan-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17900'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -791,6 +817,7 @@ cod-liver-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17630'
   physical:
@@ -819,6 +846,7 @@ sardine-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17640'
   physical:
@@ -847,10 +875,11 @@ salmon-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17645'
   physical:
-    density: 1
+    density: 0.92 # [LLM] Oil
     yield: 1
   states:
     default:
@@ -875,6 +904,7 @@ herring-oil:
   aliases: []
   tags:
     - fat
+    - oil # [LLM]
   meta:
     code_ciqual: '17650'
   physical:
@@ -904,10 +934,11 @@ lard:
     - pork fat
   tags:
     - fat
+    - meat # [LLM]
   meta:
     code_ciqual: '16520'
   physical:
-    density: 1
+    density: 0.9 # [LLM] Lard
     yield: 1
   states:
     default:
@@ -932,10 +963,11 @@ chicken-fat:
   aliases: []
   tags:
     - fat
+    - poultry # [LLM]
   meta:
     code_ciqual: '16540'
   physical:
-    density: 0.87
+    density: 0.9 # [LLM] Fat
     yield: 1
   states:
     default:
@@ -960,10 +992,11 @@ duck-fat:
   aliases: []
   tags:
     - fat
+    - poultry # [LLM]
   meta:
     code_ciqual: '16550'
   physical:
-    density: 1
+    density: 0.9 # [LLM] Fat
     yield: 1
   states:
     default:
@@ -988,10 +1021,11 @@ goose-fat:
   aliases: []
   tags:
     - fat
+    - poultry # [LLM]
   meta:
     code_ciqual: '16560'
   physical:
-    density: 0.87
+    density: 0.9 # [LLM] Fat
     yield: 1
   states:
     default:
@@ -1016,10 +1050,11 @@ turkey-fat:
   aliases: []
   tags:
     - fat
+    - poultry # [LLM]
   meta:
     code_ciqual: '16570'
   physical:
-    density: 0.87
+    density: 0.9 # [LLM] Fat
     yield: 1
   states:
     default:

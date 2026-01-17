@@ -5,10 +5,11 @@ whole-milk:
   aliases: []
   tags:
     - dairy
+    - beverage # [LLM]
   meta:
     code_ciqual: '19016'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Milk
     yield: 1
   states:
     default:
@@ -33,10 +34,11 @@ semi-skimmed-milk:
   aliases: []
   tags:
     - dairy
+    - beverage # [LLM]
   meta:
     code_ciqual: '19033'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Milk
     yield: 1
   states:
     default:
@@ -61,10 +63,11 @@ milk-powder:
   aliases: []
   tags:
     - dairy
+    - baking # [LLM]
   meta:
     code_ciqual: '19021'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -92,7 +95,7 @@ evaporated-milk:
   meta:
     code_ciqual: '19026'
   physical:
-    density: 1
+    density: 1.07 # [LLM] Evaporated
     yield: 1
   states:
     default:
@@ -117,10 +120,11 @@ condensed-milk:
   aliases: []
   tags:
     - dairy
+    - sweetener # [LLM]
   meta:
     code_ciqual: '19027'
   physical:
-    density: 1
+    density: 1.3 # [LLM] Condensed
     yield: 1
   states:
     default:
@@ -145,10 +149,11 @@ semi-skimmed-milk-powder:
   aliases: []
   tags:
     - dairy
+    - baking # [LLM]
   meta:
     code_ciqual: '19044'
   physical:
-    density: 1
+    density: 0.6 # [LLM] Powder
     yield: 1
   states:
     default:
@@ -176,7 +181,7 @@ yogurt:
   meta:
     code_ciqual: '19593'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Yogurt
     yield: 1
   states:
     default:
@@ -204,7 +209,7 @@ yogurt:
   meta:
     code_ciqual: '19594'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Yogurt
     yield: 1
   states:
     default:
@@ -230,10 +235,11 @@ buttermilk:
     - lait ribot
   tags:
     - dairy
+    - beverage # [LLM]
   meta:
     code_ciqual: '19801'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Milk
     yield: 1
   states:
     default:
@@ -259,10 +265,11 @@ whole-buttermilk:
     - lait ribot entier
   tags:
     - dairy
+    - beverage # [LLM]
   meta:
     code_ciqual: '19805'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Milk
     yield: 1
   states:
     default:
@@ -290,7 +297,7 @@ greek-yogurt:
   meta:
     code_ciqual: '19860'
   physical:
-    density: 1
+    density: 1.04 # [LLM] Yogurt
     yield: 1
   states:
     default:
@@ -316,10 +323,11 @@ kefir-milk:
     - kefir
   tags:
     - dairy
+    - beverage # [LLM]
   meta:
     code_ciqual: '19865'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Milk
     yield: 1
   states:
     default:
@@ -344,10 +352,11 @@ quark:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19501'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -372,10 +381,11 @@ drained-soft-fresh-cheese-0percent-fat:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19639'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -400,10 +410,11 @@ drained-soft-fresh-cheese-6percent-fat:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19641'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -428,10 +439,11 @@ camembert-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12001'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -456,10 +468,11 @@ coulommiers-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12010'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -484,10 +497,11 @@ brie-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12020'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -512,10 +526,11 @@ chaource-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12028'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -540,10 +555,11 @@ neufchatel-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12031'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -568,10 +584,11 @@ maroilles-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12036'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -596,10 +613,11 @@ livarot-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12037'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -624,10 +642,11 @@ epoisses-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12038'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -652,10 +671,11 @@ munster-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12039'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -680,10 +700,11 @@ langres-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12040'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -708,10 +729,11 @@ pont-leveque-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12042'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -736,10 +758,11 @@ reblochon-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12045'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -764,10 +787,11 @@ saint-marcellin-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12049'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -792,10 +816,11 @@ saint-felicien-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12052'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -820,10 +845,11 @@ cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12807'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Medium Cheese
     yield: 1
   states:
     default:
@@ -848,10 +874,11 @@ chabichou-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12830'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -876,10 +903,11 @@ pelardon-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12831'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -904,10 +932,11 @@ crottin-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12833'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -932,10 +961,11 @@ crottin-de-chavignol-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12834'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -960,10 +990,11 @@ picodon-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12836'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -988,10 +1019,11 @@ pouligny-saint-pierre-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12839'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1016,10 +1048,11 @@ sainte-maure-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12842'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1044,10 +1077,11 @@ selles-sur-cher-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12845'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1072,10 +1106,11 @@ chevrot-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12846'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1100,10 +1135,11 @@ rocamadour-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12847'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1128,10 +1164,11 @@ valencay-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12848'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Goat Cheese
     yield: 1
   states:
     default:
@@ -1156,10 +1193,11 @@ roquefort-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12500'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1184,10 +1222,11 @@ fourme-de-montbrison-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12519'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1212,10 +1251,11 @@ blue-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12520'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1240,10 +1280,11 @@ fourme-dambert-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12522'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1268,10 +1309,11 @@ causses-blue-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12523'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1296,10 +1338,11 @@ gorgonzola-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12524'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Blue Cheese
     yield: 1
   states:
     default:
@@ -1325,10 +1368,11 @@ emmental-cheese:
     - emmenthal de savoie
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12099'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1353,10 +1397,11 @@ beaufort-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12105'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1381,10 +1426,11 @@ cantal-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12109'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1409,10 +1455,11 @@ comte-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12110'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1437,10 +1484,11 @@ abondance-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12112'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1465,10 +1513,11 @@ gruyere-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12114'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1493,10 +1542,11 @@ ossau-iraty-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12119'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1521,10 +1571,11 @@ parmesan-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12120'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1549,10 +1600,11 @@ fontina-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12121'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1577,10 +1629,11 @@ pecorino-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12122'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1605,10 +1658,11 @@ grana-padano-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12123'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1633,10 +1687,11 @@ provolone-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12716'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1661,10 +1716,11 @@ half-matured-cantal-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12722'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1689,10 +1745,11 @@ salers-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12725'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1717,10 +1774,11 @@ cheddar-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12726'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1745,10 +1803,11 @@ edam-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12729'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1773,10 +1832,11 @@ gouda-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12736'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1801,10 +1861,11 @@ mimolette-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12740'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1829,10 +1890,11 @@ morbier-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12743'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1857,10 +1919,11 @@ saint-nectaire-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12752'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1886,10 +1949,11 @@ tomme-cheese:
     - tome de vache
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12758'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1914,10 +1978,11 @@ asiago-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12761'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1942,10 +2007,11 @@ tete-de-moine-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12764'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1970,10 +2036,11 @@ raclette-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12776'
   physical:
-    density: 1
+    density: 1.1 # [LLM] Hard Cheese
     yield: 1
   states:
     default:
@@ -1998,10 +2065,11 @@ cancoillotte:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12325'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Processed Cheese
     yield: 1
   states:
     default:
@@ -2027,10 +2095,11 @@ uncured-soft-cheese:
     - philadelphia
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '12068'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -2055,10 +2124,11 @@ mascarpone-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19584'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -2083,10 +2153,11 @@ ricotta-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19585'
   physical:
-    density: 1
+    density: 1.05 # [LLM] Fresh Cheese
     yield: 1
   states:
     default:
@@ -2111,10 +2182,11 @@ mozarella-cheese:
   aliases: []
   tags:
     - dairy
+    - cheese # [LLM]
   meta:
     code_ciqual: '19590'
   physical:
-    density: 1
+    density: 1.03 # [LLM] Soft Cheese
     yield: 1
   states:
     default:
@@ -2139,10 +2211,11 @@ creme-fraiche:
   aliases: []
   tags:
     - dairy
+    - fat # [LLM]
   meta:
     code_ciqual: '19410'
   physical:
-    density: 1
+    density: 0.98 # [LLM] Cream
     yield: 1
   states:
     default:
@@ -2169,10 +2242,11 @@ heavy-cream:
     - heavy whipping cream
   tags:
     - dairy
+    - fat # [LLM]
   meta:
     code_ciqual: '19417'
   physical:
-    density: 1
+    density: 0.98 # [LLM] Cream
     yield: 1
   states:
     default:
