@@ -1441,6 +1441,8 @@ wheat-flour-t55:
     fr: farine de blé T55
   aliases:
     - farine t55
+    - flour ## Default flour
+    - farine ## Farine par défaut
   tags:
     - flour # [LLM]
   meta:
