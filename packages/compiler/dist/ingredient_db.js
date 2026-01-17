@@ -20,8 +20,9 @@ function configureIngredientDb(sources) {
     dbDefinitions = (0, loader_1.loadIngredientDb)(sources);
     exports.INGREDIENT_DB = (0, loader_1.buildFastLookupMap)(dbDefinitions);
 }
+const utils_1 = require("./utils");
 function getIngredientData(name) {
-    const slug = name.toLowerCase().trim();
+    const slug = (0, utils_1.slugify)(name);
     // Direct match
     if (exports.INGREDIENT_DB[slug])
         return exports.INGREDIENT_DB[slug];

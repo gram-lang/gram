@@ -620,7 +620,17 @@ function compile(ast) {
                 }
                 if (portions < 1)
                     portions = 1;
-                return (0, nutrition_1.calculateNutrition)(shopping_list, portions);
+                const nutMetrics = (0, nutrition_1.calculateNutrition)(shopping_list, portions);
+                // [New] Inject Nutrition warnings into main registry
+                if (nutMetrics.warnings) {
+                    nutMetrics.warnings.forEach(w => {
+                        registry.warnings.push({
+                            code: 'NUTRITION_WARNING',
+                            message: w
+                        });
+                    });
+                }
+                return nutMetrics;
             })()
         }
     };

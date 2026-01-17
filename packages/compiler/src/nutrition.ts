@@ -74,7 +74,9 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
 
         if (mass > 0) {
             const data = getIngredientData(id);
-            if (data && data.states) {
+            if (!data) {
+                 warnings.push(`MISSING_INGREDIENT: "${id}" not found in database.`);
+            } else if (data.states) {
                 knownCount++;
                 const factor = mass / 100.0;
                 
@@ -90,7 +92,7 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
                     // Fallback to default if canonical key not found
                     // Only warn if the USER provided state was not 'default' but resolved to something unknown
                     if (stateKey !== 'default') {
-                         warnings.push(`Ingredient "${id}": Unknown state "${stateRaw}" (resolved: "${stateKey}"), using default macros.`);
+                         warnings.push(`UNKNOWN_STATE: Ingredient "${id}": Unknown state "${stateRaw}" (resolved: "${stateKey}"), using default macros.`);
                     }
                 }
 
@@ -105,7 +107,18 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
                     
                     if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
                     if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
+                    
+                    // sodium -> salt (approx x2.5 or if sodium is actually salt in YAML?) 
+                    // YAML schema has sodium, UI displays salt usually. 
+                    // CIQUAL often calls it "Salt". But schema says "Sodium".
+                    // Standard conversion: Salt = Sodium * 2.5
+                    // But if the DB stores salt directly, we just sum.
+                    // The schema says sodium: z.number().optional(). 
+                    // Let's assume input is Sodium (mg or g? usually g/100g in these files).
                     if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
+                    
+                } else {
+                     warnings.push(`MISSING_MACROS: Ingredient "${id}" (state: ${targetState}) has no macro data.`);
                 }
             }
         }

@@ -842,6 +842,12 @@ function renderHTML(data) {
     // Nutrition Panel (Moved to bottom)
     if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
         const nut = data.metrics.nutrition;
+        
+        // Hide if data is incomplete (User Request: "ne devraient pas apparaître")
+        if (nut.warnings && nut.warnings.length > 0) {
+            return html;
+        }
+
         const total = nut.total;
         
         let portionText = '';

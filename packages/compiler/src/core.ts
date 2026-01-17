@@ -664,7 +664,19 @@ export function compile(ast: RecipeAST): CompilationResult {
                 }
                 if (portions < 1) portions = 1;
                 
-                return calculateNutrition(shopping_list, portions);
+                const nutMetrics = calculateNutrition(shopping_list, portions);
+                
+                // [New] Inject Nutrition warnings into main registry
+                if (nutMetrics.warnings) {
+                    nutMetrics.warnings.forEach(w => {
+                        registry.warnings.push({
+                            code: 'NUTRITION_WARNING',
+                            message: w
+                        });
+                    });
+                }
+                
+                return nutMetrics;
             })()
         }
     };

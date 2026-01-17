@@ -26,8 +26,10 @@ export function configureIngredientDb(sources: Array<{ name: string, data: any }
 }
 
 
+import { slugify } from './utils';
+
 export function getIngredientData(name: string): IngredientData | null {
-    const slug = name.toLowerCase().trim();
+    const slug = slugify(name);
     // Direct match
     if (INGREDIENT_DB[slug]) return INGREDIENT_DB[slug];
     

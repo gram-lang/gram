@@ -40,6 +40,16 @@ esbuild.build({
   sourcemap: true,
   format: 'esm',
   splitting: true,
+  chunkNames: 'chunks/[name]-[hash]',
+  assetNames: 'assets/[name]-[hash]',
+  // Actually, user wants NO hash changing every time if content changes?
+  // Or just stable names? 
+  // If we remove [hash], cache busting breaks.
+  // But for git usage, stable names are better.
+  // Let's try to control the output name of the dynamic import bundle.
+  // esbuild default for code splitting chunks is [name]-[hash].
+  // If we set it to [name], we might get conflicts or cache issues, but git history will be clean.
+  chunkNames: 'chunks/[name]', 
   alias: {
       'gram-parser': shimmedParserPath,
       'gram-compiler': path.resolve(__dirname, '../compiler/dist/lite.js')

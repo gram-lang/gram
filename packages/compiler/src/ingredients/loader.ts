@@ -22,17 +22,19 @@ export function loadIngredientDb(sources: Array<{ name: string, data: any }> = [
   return ingredientsMap;
 }
 
+import { slugify } from '../utils';
+
 export function buildFastLookupMap(db: Record<string, Ingredient>): Record<string, Ingredient> {
     const lookup: Record<string, Ingredient> = {};
 
     for (const [canonicalName, data] of Object.entries(db)) {
         // Add canonical name
-        lookup[canonicalName] = data;
+        lookup[slugify(canonicalName)] = data;
 
         // Add aliases
         if (data.aliases) {
             for (const alias of data.aliases) {
-                lookup[alias] = data;
+                lookup[slugify(alias)] = data;
             }
         }
 
@@ -41,10 +43,10 @@ export function buildFastLookupMap(db: Record<string, Ingredient>): Record<strin
             for (const val of Object.values(data.i18n)) {
                 if (Array.isArray(val)) {
                     for (const alias of val) {
-                        lookup[alias] = data;
+                        lookup[slugify(alias)] = data;
                     }
                 } else if (typeof val === 'string') {
-                    lookup[val] = data;
+                    lookup[slugify(val)] = data;
                 }
             }
         }

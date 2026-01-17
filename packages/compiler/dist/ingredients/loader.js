@@ -23,15 +23,16 @@ function loadIngredientDb(sources = []) {
     }
     return ingredientsMap;
 }
+const utils_1 = require("../utils");
 function buildFastLookupMap(db) {
     const lookup = {};
     for (const [canonicalName, data] of Object.entries(db)) {
         // Add canonical name
-        lookup[canonicalName] = data;
+        lookup[(0, utils_1.slugify)(canonicalName)] = data;
         // Add aliases
         if (data.aliases) {
             for (const alias of data.aliases) {
-                lookup[alias] = data;
+                lookup[(0, utils_1.slugify)(alias)] = data;
             }
         }
         // Add i18n aliases
@@ -39,11 +40,11 @@ function buildFastLookupMap(db) {
             for (const val of Object.values(data.i18n)) {
                 if (Array.isArray(val)) {
                     for (const alias of val) {
-                        lookup[alias] = data;
+                        lookup[(0, utils_1.slugify)(alias)] = data;
                     }
                 }
                 else if (typeof val === 'string') {
-                    lookup[val] = data;
+                    lookup[(0, utils_1.slugify)(val)] = data;
                 }
             }
         }
