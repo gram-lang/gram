@@ -60,7 +60,7 @@ white-sugar:
   name: White sugar
   i18n:
     fr: sucre blanc
-  aliases: []
+  aliases: ['sugar', 'sucre']
   tags:
     - sweetener # [LLM]
   meta:
@@ -88,7 +88,7 @@ brown-sugar:
   name: brown sugar
   i18n:
     fr: sucre roux
-  aliases: []
+  aliases: ['light brown sugar','cassonade']
   tags:
     - sweetener # [LLM]
   meta:

@@ -31,7 +31,7 @@ semi-skimmed-milk:
   name: semi-skimmed milk
   i18n:
     fr: lait demi-écrémé
-  aliases: []
+  aliases: ['lait', 'milk']
   tags:
     - dairy
     - beverage # [LLM]

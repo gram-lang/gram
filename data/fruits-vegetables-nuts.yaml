@@ -4157,7 +4157,7 @@ raspberry:
   name: raspberry
   i18n:
     fr: framboise
-  aliases: []
+  aliases: ['raspberry puree', 'raspberry coulis', 'raspberry sauce', 'purée de framboise', 'coulis de framboise', 'sauce framboise']
   tags:
     - fruit # [LLM]
   meta:
