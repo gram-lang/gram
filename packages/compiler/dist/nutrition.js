@@ -39,8 +39,16 @@ function calculateNutrition(ingredients, portions = 1) {
         metricsCount++;
         let mass = 0;
         let isEst = false;
-        // Try to calculate mass
-        if (item.qty && (typeof item.qty === 'number' || item.qty.value)) {
+        // Try to obtain mass (reuse normalizedMass if available)
+        if (item.normalizedMass) {
+            mass = item.normalizedMass;
+            // We don't overwrite isEst here because normalizedMass already accounts for it on item.isEstimate usually, 
+            // but let's trust the item.
+            if (item.isEstimate)
+                isEst = true;
+        }
+        else if (item.qty && (typeof item.qty === 'number' || item.qty.value)) {
+            // Fallback for items that might not have normalizedMass set (e.g. from some other source?)
             const val = typeof item.qty === 'number' ? item.qty : item.qty.value;
             const unit = item.unit || 'unit';
             const norm = (0, mass_normalization_1.normalizeMass)(val, unit, item.name);
