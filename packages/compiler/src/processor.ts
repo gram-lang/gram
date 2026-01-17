@@ -62,7 +62,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                      ctx.warnings.push({
                          code: 'VARIABLE_NOT_FOUND',
                          message: `Variable '&${targetName}' not found or has undefined mass.`,
-                         item: item.name
+                         item: item.name,
+                         loc: item.loc
                      });
                  }
              } else {
@@ -73,7 +74,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                      ctx.warnings.push({
                          code: 'RELATIVE_QUANTITY_UNRESOLVED',
                          message: `Could not resolve relative quantity for '@${targetName}'. Source not found.`,
-                         item: item.name
+                         item: item.name,
+                         loc: item.loc
                      });
                  } else {
                      // Calculate sum
@@ -100,7 +102,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                          ctx.warnings.push({
                              code: 'RELATIVE_NO_MASS',
                              message: `Source '@${targetName}' has no mass (unitless or incompatible). Calculation impossible.`,
-                             item: item.name
+                             item: item.name,
+                             loc: item.loc
                          });
                      }
                  }
@@ -126,7 +129,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                  ctx.warnings.push({
                      code: 'CIRCULAR_REFERENCE',
                      message: `Circular reference detected: ${item.name} depends on itself.`,
-                     item: item.name
+                     item: item.name,
+                     loc: item.loc
                  });
              }
 
@@ -147,7 +151,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
         const usage = createCleanUsage(item, id, ctx.densityOverrides);
         if (item.modifiers && item.modifiers.includes('&')) {
              if (!ctx.seenNames.has(item.name)) {
-                 ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name });
+                 ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name, loc: item.loc });
              }
              if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
         } else {
@@ -211,7 +215,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
     if (item.type === 'Reference') {
         const id = slugify(item.name);
         if (!registry.ingredients.has(id)) {
-             ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name });
+             ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name, loc: item.loc });
         }
         if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
         
@@ -286,11 +290,11 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
               if (unit) obj.unit = unit;
               
               if (q.type === 'TextQuantity') {
-                  ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value });
+                  ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value, loc: item.loc });
                   obj.quantity = { type: 'text', value: (q as any).value }; 
               } else {
                   if (!unit) {
-                      ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type });
+                      ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type, loc: item.loc });
                   }
               }
          return obj;
@@ -338,7 +342,8 @@ export function processSections(astChildren: any[], registry: Registry, override
                 registry.warnings.push({
                     code: 'SCOPE_CONFLICT',
                     message: `La variable globale '&${varName}' est redéfinie.`,
-                    section: section.title
+                    section: section.title,
+                    loc: section.intermediateDecl?.loc
                 });
             } else {
                 ctx.globalScopes.set(varName, section.title);

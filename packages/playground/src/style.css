@@ -898,3 +898,137 @@ body.hide-mass-badges .preview-output .mass-badge {
     font-weight: normal;
     text-transform: none;
 }
+
+/* =========================================
+   9. WARNINGS PANEL
+   ========================================= */
+#warnings{
+  display: block; 
+  background: rgba(220, 38, 38, 0.1); 
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  overflow-y: auto;
+  border-top: 1px solid rgba(220,38,38,.2);
+border-radius: 0 0 6px 6px;
+padding: 0 .75rem .75rem;
+max-height: 350px;
+}
+
+#warnings:has(.collapsed){
+  padding-bottom: 0;
+}
+   
+.warnings-panel {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.warnings-panel.collapsed .toggle-icon{
+  transition: transform 0.2s;
+  transform: rotate(180deg);
+}
+
+.warning-header {
+    background-color: #dc26261a;
+padding: .75rem;
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.warning-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.warning-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    transition: background-color 0.2s;
+}
+
+.warning-item:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.warning-item:last-child {
+    border-bottom: none;
+}
+
+.warning-icon {
+    color: #ef4444;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.warning-content {
+    flex: 1;
+    color: var(--foreground);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.warning-message {
+    color: var(--foreground);
+}
+
+.warning-code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    background-color: var(--secondary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+
+.warning-jump {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+}
+
+.warning-jump:hover {
+    background-color: var(--secondary);
+    color: var(--foreground);
+    border-color: var(--muted-foreground);
+}
+
+
+.warning-jump i {
+    font-size: 1rem;
+}
+
+.warnings-panel.collapsed .warning-list {
+    display: none;
+}
+
+.warnings-panel.collapsed .warning-header {
+    border-bottom: none;
+}

@@ -1112,26 +1112,110 @@ function formatCookwareHTML(item, registry) {
 // Initial state
 update();
 
+let isWarningsCollapsed = false;
+
+// Event listener for warning clicks (Delegation)
+if (warningsArea) {
+    warningsArea.addEventListener('click', (e) => {
+        // Handle Jump Button
+        const btn = e.target.closest('.warning-jump');
+        if (btn) {
+            const start = parseInt(btn.dataset.start);
+            const end = parseInt(btn.dataset.end);
+            highlightWarning(start, end);
+            return;
+        }
+        
+        // Handle Header Click (Collapse/Expand)
+        const header = e.target.closest('.warning-header');
+        if (header) {
+            isWarningsCollapsed = !isWarningsCollapsed;
+            const panel = warningsArea.querySelector('.warnings-panel');
+            const icon = header.querySelector('.toggle-icon');
+            if (panel) {
+                if (isWarningsCollapsed) {
+                    panel.classList.add('collapsed');
+                } else {
+                    panel.classList.remove('collapsed');
+                }
+            }
+        }
+    });
+}
+
 function showWarnings(warnings) {
     if (!warningsArea) return;
     warningsArea.style.display = 'block';
     
-    // Group warnings?
-    // Structure: { code, message, item }
+    const collapsedClass = isWarningsCollapsed ? ' collapsed' : '';
+    const rotateStyle = isWarningsCollapsed ? 'transform: rotate(-90deg);' : '';
     
-    let html = '<div style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem;">⚠️ Compiler Warnings</div>';
-    html += '<ul style="margin: 0; padding-left: 1.5rem; color: #ef4444;">';
+    let html = `
+    <div class="warnings-panel${collapsedClass}">
+        <div class="warning-header" style="cursor: pointer; user-select: none;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
+                <i class="ph ph-warning-circle" style="font-size: 1.25rem;"></i>
+                <span>${warnings.length} Warning${warnings.length > 1 ? 's' : ''}</span>
+            </div>
+            <i class="ph ph-caret-down toggle-icon" style="transition: transform 0.2s; ${rotateStyle}"></i>
+        </div>
+        <ul class="warning-list">
+    `;
     
     warnings.forEach(w => {
-        html += `<li>[${w.code}] ${w.message}</li>`;
+        const hasLoc = w.loc && w.loc.start !== undefined;
+        
+        html += `<li class="warning-item">
+            <div class="warning-icon"><i class="ph ph-warning"></i></div>
+            <div class="warning-content">
+                <span class="warning-code">[${escapeHtml(w.code)}]</span>
+                <span class="warning-message">${escapeHtml(w.message)}</span>
+                ${w.item ? `<span style="font-size:0.8em; opacity:0.7;">Item: ${escapeHtml(w.item)}</span>` : ''}
+            </div>`;
+            
+        if (hasLoc) {
+            html += `
+            <button class="warning-jump" data-start="${w.loc.start}" data-end="${w.loc.end}">
+                <i class="ph ph-crosshair"></i> Show
+            </button>
+            `;
+        }
+        
+        html += `</li>`;
     });
     
-    html += '</ul>';
+    html += `   </ul>
+    </div>`;
+    
     warningsArea.innerHTML = html;
 }
 
 function hideWarnings() {
-    if (warningsArea) warningsArea.style.display = 'none';
+    if (warningsArea) {
+        warningsArea.style.display = 'none';
+        warningsArea.innerHTML = '';
+    }
+}
+
+function highlightWarning(start, end) {
+    if (!input) return;
+    
+    // Attempt to focus and select text
+    // If 'input' is the <code-input> custom element, we might need to access its internal textarea
+    // or it implements these methods.
+    input.focus();
+    
+    // Check if setSelectionRange exists on the element itself
+    if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(start, end);
+    } else {
+        // Fallback: try to find a textarea inside if it's a wrapper
+        const textarea = input.querySelector ? input.querySelector('textarea') : null;
+        if (textarea && typeof textarea.setSelectionRange === 'function') {
+            textarea.focus();
+            textarea.setSelectionRange(start, end);
+        }
+    }
 }
 const copyBtn = document.getElementById('copy-btn');
 
