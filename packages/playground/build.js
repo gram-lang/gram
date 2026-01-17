@@ -38,9 +38,11 @@ esbuild.build({
   outdir: 'dist',
   minify: true,
   sourcemap: true,
+  format: 'esm',
+  splitting: true,
   alias: {
       'gram-parser': shimmedParserPath,
-      'gram-compiler': path.resolve(__dirname, '../compiler/dist/index.js')
+      'gram-compiler': path.resolve(__dirname, '../compiler/dist/lite.js')
   },
   plugins: [
       require('esbuild-plugin-yaml').yamlPlugin()

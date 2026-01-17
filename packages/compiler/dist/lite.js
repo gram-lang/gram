@@ -14,8 +14,4 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const default_db_1 = require("./ingredients/default_db");
-const ingredient_db_1 = require("./ingredient_db");
 __exportStar(require("./core"), exports);
-// Initialize default DB for standard usage
-(0, ingredient_db_1.configureIngredientDb)(default_db_1.DEFAULT_SOURCES);

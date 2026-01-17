@@ -10,5 +10,8 @@
 import { Ingredient } from './ingredients/schema';
 export type IngredientData = Ingredient;
 export declare let INGREDIENT_DB: Record<string, IngredientData>;
-export declare function configureIngredientDb(userDbOverride: Record<string, any>): void;
+export declare function configureIngredientDb(sources: Array<{
+    name: string;
+    data: any;
+}>): void;
 export declare function getIngredientData(name: string): IngredientData | null;

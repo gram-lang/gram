@@ -1,8 +1,15 @@
 import { getAST } from 'gram-parser';
-import { compile } from 'gram-compiler';
+import { compile, configureIngredientDb } from 'gram-compiler';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
 import gramGrammar from './gram-highlight.js';
+
+// Lazy load Ingredient Database
+import('./db_bundle.js').then(({ DEFAULT_SOURCES }) => {
+    configureIngredientDb(DEFAULT_SOURCES);
+    // Trigger update to re-calculate macros with data
+    update();
+}).catch(err => console.error("Failed to load database:", err));
 
 // Register Gram Grammar
 if (window.hljs) {

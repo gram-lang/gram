@@ -20,8 +20,8 @@ export type IngredientData = Ingredient;
 let dbDefinitions = loadIngredientDb();
 export let INGREDIENT_DB: Record<string, IngredientData> = buildFastLookupMap(dbDefinitions);
 
-export function configureIngredientDb(userDbOverride: Record<string, any>) {
-    dbDefinitions = loadIngredientDb(userDbOverride);
+export function configureIngredientDb(sources: Array<{ name: string, data: any }>) {
+    dbDefinitions = loadIngredientDb(sources);
     INGREDIENT_DB = buildFastLookupMap(dbDefinitions);
 }
 

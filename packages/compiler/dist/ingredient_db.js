@@ -16,8 +16,8 @@ const loader_1 = require("./ingredients/loader");
 // Load Data (Initial with Core only)
 let dbDefinitions = (0, loader_1.loadIngredientDb)();
 exports.INGREDIENT_DB = (0, loader_1.buildFastLookupMap)(dbDefinitions);
-function configureIngredientDb(userDbOverride) {
-    dbDefinitions = (0, loader_1.loadIngredientDb)(userDbOverride);
+function configureIngredientDb(sources) {
+    dbDefinitions = (0, loader_1.loadIngredientDb)(sources);
     exports.INGREDIENT_DB = (0, loader_1.buildFastLookupMap)(dbDefinitions);
 }
 function getIngredientData(name) {
