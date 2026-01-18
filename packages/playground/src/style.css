@@ -201,7 +201,6 @@ main {
 
 footer#app-footer {
     padding: .75rem 0;
-    border-top: 1px solid var(--border);
     font-size: 0.8rem;
     color: var(--muted-foreground);
     display: flex;
