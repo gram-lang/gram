@@ -1,6 +1,6 @@
 {
   "name": "gram-parser",
-  "version": "1.0.1",
+  "version": "0.6.0",
   "description": "Core parser for the GRAM recipe language, converting .gram files to JSON AST.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
