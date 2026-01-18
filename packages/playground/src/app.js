@@ -105,6 +105,24 @@ function debounce(func, wait) {
     };
 }
 
+// Footer Info
+const footer = document.getElementById('app-footer');
+if (footer) {
+    const version = process.env.GRAM_VERSION;
+    const repoUrl = process.env.REPO_URL;
+
+    footer.innerHTML = `
+        <div>
+            <a href="${repoUrl}" target="_blank" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ph ph-git-branch"></i> Repository
+            </a>
+        </div>
+        <div>
+            <span title="Version: ${version}">${version}</span>
+        </div>
+    `;
+}
+
 // Output Mode Logic
 let outputMode = 'json'; // 'json' | 'markdown' | 'html'
 

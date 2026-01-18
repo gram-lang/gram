@@ -1,6 +1,19 @@
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+const pkg = require('./package.json');
+
+// Get Git Commit Hash
+let commitHash = 'dev';
+try {
+    commitHash = execSync('git rev-parse --short HEAD').toString().trim();
+} catch (e) {
+    console.warn('Failed to get git commit hash, defaulting to dev');
+}
+
+const version = `${pkg.version}-${commitHash}`;
+const repoUrl = pkg.repository.url.replace(/\.git$/, '');
 
 // 1. Prepare Parser Code (Shimmed)
 const grammarPath = path.join(__dirname, '../parser/grammar.ohm');
@@ -56,7 +69,11 @@ esbuild.build({
   },
   plugins: [
       require('esbuild-plugin-yaml').yamlPlugin()
-  ]
+  ],
+  define: {
+      'process.env.GRAM_VERSION': JSON.stringify(version),
+      'process.env.REPO_URL': JSON.stringify(repoUrl)
+  }
 }).then(() => {
     console.log('Build successful!');
     fs.unlinkSync(shimmedParserPath);
