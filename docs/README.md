@@ -30,6 +30,7 @@ The core language specification and usage guides.
 For contributors and developers implementing GRAM:
 *   [**Parsing Architecture**](./technical/01_parsing_architecture.md)
 *   [**JSON Output Schema**](./technical/02_json_output.md)
+*   [**Compiler Options**](./technical/04_compiler_options.md)
 
 ### Helpers
 
