@@ -4,15 +4,17 @@ The basic atom of GRAM. Anything edible or consumable is an ingredient.
 
 ## Basic Syntax
 
-`@name{quantity}` or simply `@name`.
+`@name{quantity}` or `@name{}`.
 
 *   `@`: Trigger.
 *   `name`: Name of the ingredient (Spaces allowed).
 *   `{quantity}`: (Optional) Defines the quantity used.
-*   `{}`: (Required) If no quantity, empty braces mark the end of the name.
+*   `{}`: (Mandatory) If no quantity is specified, empty braces must be used. This also indicates a **negligible mass (0g)** for the compiler.
 
 > **Why empty braces?**
-> To allow compound names without ambiguity: `@sea salt{}` vs `@sea salt`. Without braces, the parser wouldn't know where the name "sea salt" ends.
+> To allow compound names without ambiguity: `@sea salt{}` vs `@sea salt` (invalid). Without braces, the parser wouldn't know where the name "sea salt" ends if followed by text.
+> 
+> **Negligible Mass**: Ingredients declared with empty braces `{}` are considered to have a **negligible mass (0g)**. This allows mass calculations to be completed (no "Incomplete" status) even if seasonings or dusting flour are not weighed.
 
 ## Quantities and Units
 

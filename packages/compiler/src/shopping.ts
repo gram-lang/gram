@@ -188,7 +188,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                     const qObj = item.qty as QuantityValueAST;
                     if (qObj.type === 'fraction') numericQty = qObj.value as number;
                     else if (qObj.type === 'range') numericQty = qObj.value as number; 
-                    else if (qObj.type === 'single') numericQty = qObj.value as number;
+                    else if (qObj.type === 'single') {
+                         numericQty = qObj.value !== null ? (qObj.value as number) : 0;
+                    }
                 }
             }
             

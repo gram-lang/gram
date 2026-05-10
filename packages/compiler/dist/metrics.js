@@ -11,7 +11,7 @@ function calculateMassMetrics(ingredients) {
         if ((i.type === 'alternative' || i.type === 'group') && i.options && i.options.length > 0) {
             target = i.options[0];
         }
-        if (target.normalizedMass) {
+        if (target.normalizedMass !== undefined) {
             totalMass += target.normalizedMass;
             if (target.isEstimate)
                 isEstimated = true;

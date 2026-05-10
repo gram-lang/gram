@@ -43,7 +43,7 @@ densities:
 
 ### Ingredients
 
-To define an ingredient, use the `@` symbol. You MUST indicate the end of the name with `{}`.
+To define an ingredient, use the `@` symbol. You MUST always indicate the end of the name with `{}` or `{quantity}`.
 
 > **Note:** Ingredient names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `[`, `]`, `(`, `)`, `<`, `|`).
 

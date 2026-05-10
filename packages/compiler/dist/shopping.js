@@ -153,8 +153,9 @@ function generateShoppingList(sections, registry, overrides, options) {
                         numericQty = qObj.value;
                     else if (qObj.type === 'range')
                         numericQty = qObj.value;
-                    else if (qObj.type === 'single')
-                        numericQty = qObj.value;
+                    else if (qObj.type === 'single') {
+                        numericQty = qObj.value !== null ? qObj.value : 0;
+                    }
                 }
             }
             if (isGhost) {

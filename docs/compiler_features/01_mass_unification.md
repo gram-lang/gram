@@ -61,4 +61,4 @@ The compiler calculates:
 1.  **Section Mass**: The total mass of ingredients entering a specific section.
 2.  **Total Recipe Mass**: The sum of all raw ingredients in the recipe (excluding references to previously prepared sections to avoid double counting).
 
-> **Note**: If some ingredients have no known weight (e.g. `@pinch of salt{}` or unknown unit), the Total Mass might be marked as **Incomplete** (`?`).
+> **Note**: If some ingredients have an unknown unit or mass data cannot be found, the Total Mass might be marked as **Incomplete** (`?`). However, ingredients with explicitly empty braces (e.g., `@salt{}`) are considered to have a **negligible mass (0g)** and will not block the total calculation.

@@ -70,6 +70,13 @@ export const createCleanUsage = (item: any, id: string, overrides?: Record<strin
              obj.conversionMethod = norm.method;
              obj.isEstimate = norm.isEstimate;
          }
+    } else if (item.quantity && item.quantity.type === 'Quantity' && item.quantity.value === null) {
+        // Explicitly empty braces {} -> Negligible mass (0g)
+        if (options?.enableMassNormalization !== false) {
+            obj.normalizedMass = 0;
+            obj.conversionMethod = 'default';
+            obj.isEstimate = false;
+        }
     }
 
     if (item.modifiers && item.modifiers.length > 0) {

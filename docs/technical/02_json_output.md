@@ -70,7 +70,7 @@ Whenever an ingredient or utensil is **used** (in a step or list), strictly mini
 | `modifiers` | `string[]` | Array of flags: `"optional"`, `"reference"`, `"hidden"`, `"bakers_percentage"`. |
 | `fixed` | `boolean` | Transformation flag. **Ingredients**: `true` if fixed (default false). **Cookware**: `false` if scalable (default true). |
 | `hidden` | `boolean` | `true` if marked with `-`. |
-| `normalizedMass` | `number` | *Mass Unification*. The calculated mass in grams. |
+| `normalizedMass` | `number` | *Mass Unification*. The calculated mass in grams. **Note**: If quantity was empty braces `{}`, this is set to `0`. |
 | `isEstimate` | `boolean` | *Mass Unification*. `true` if mass was derived from density/average (not explicit weight). |
 | `conversionMethod`| `string` | *Mass Unification*. Source of mass: `'physical'`, `'density'`, `'unit_weight'`, `'explicit'`, `'default'`. |
 | `formula` | `object` | *Optional*. Contains raw relative formula data: `{ raw, target, percent, isGhost }`. `isGhost` is true if the target reference was not found. |
