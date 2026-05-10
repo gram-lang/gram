@@ -1,3 +1,4 @@
+import { CompilerOptions } from './core';
 /**
  * Mass Normalization Module
  *
@@ -7,7 +8,7 @@ interface ConversionResult {
     mass: number;
     method: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
 }
-export declare function normalizeMass(amount: number, unit: string, ingredientName?: string, overrides?: Record<string, number>): ConversionResult & {
+export declare function normalizeMass(amount: number, unit: string, ingredientName?: string, overrides?: Record<string, number>, options?: CompilerOptions): ConversionResult & {
     isEstimate: boolean;
 } | null;
 export {};

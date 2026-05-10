@@ -10,7 +10,13 @@ import {
 
 export { configureIngredientDb } from './ingredient_db';
 
-export function compile(ast: RecipeAST): CompilationResult {
+export interface CompilerOptions {
+    enableMassNormalization?: boolean;
+    enableYieldManagement?: boolean;
+    enableNutritionalEstimation?: boolean;
+}
+
+export function compile(ast: RecipeAST, options?: CompilerOptions): CompilationResult {
     if (ast.type !== 'Recipe') throw new Error("Compiler expects Recipe AST");
 
     const registry: Registry = {
@@ -35,7 +41,7 @@ export function compile(ast: RecipeAST): CompilationResult {
         });
     }
 
-    const resultPayload = processSections(ast.children, registry, densityOverrides);
+    const resultPayload = processSections(ast.children, registry, densityOverrides, options);
     const sections = resultPayload.sections;
     
     sections.forEach(sec => {
@@ -54,19 +60,21 @@ export function compile(ast: RecipeAST): CompilationResult {
     const globalMassMetrics = calculateMassMetrics(allRawIngredients);
 
     // Generate warnings for missing mass data to help users debug
-    const reportedMissing = new Set<string>();
-    globalMassMetrics.missingMassIngredients.forEach(name => {
-         if (!reportedMissing.has(name)) {
-             registry.warnings.push({
-                 code: 'MISSING_MASS_DATA',
-                 message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
-                 item: name
-             });
-             reportedMissing.add(name);
-         }
-    });
+    if (options?.enableMassNormalization !== false) {
+        const reportedMissing = new Set<string>();
+        globalMassMetrics.missingMassIngredients.forEach(name => {
+             if (!reportedMissing.has(name)) {
+                 registry.warnings.push({
+                     code: 'MISSING_MASS_DATA',
+                     message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
+                     item: name
+                 });
+                 reportedMissing.add(name);
+             }
+        });
+    }
 
-    const shopping_list = generateShoppingList(sections, registry, densityOverrides);
+    const shopping_list = generateShoppingList(sections, registry, densityOverrides, options);
     
     const globalCookware: Usage[] = [];
     sections.forEach(sec => {
@@ -94,6 +102,8 @@ export function compile(ast: RecipeAST): CompilationResult {
             ...globalMassMetrics,
             preparationTime: calculatePreparationTime(sections, registry),
             nutrition: (() => {
+                if (!options?.enableNutritionalEstimation) return undefined;
+                
                 let portions = 1;
                 if (ast.meta && ast.meta.portions) {
                     // Try to parse portions

@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_ALIASES = void 0;
+exports.UNIT_ALIASES = exports.STATE_ALIASES = void 0;
 exports.resolveState = resolveState;
+exports.resolveUnit = resolveUnit;
 const STATE_DEFINITIONS = {
     'canned': {
         'en': ['canned'],
@@ -41,4 +42,21 @@ function resolveState(state) {
         return 'default';
     const lower = state.toLowerCase().trim();
     return exports.STATE_ALIASES[lower] || lower;
+}
+// Unit Translations
+exports.UNIT_ALIASES = {
+    // Volume - FR
+    'càc': 'tsp', 'cac': 'tsp', 'c.à.c': 'tsp', 'cuillère à café': 'tsp', 'cuillères à café': 'tsp', 'cuillere a cafe': 'tsp', 'cuilleres a cafe': 'tsp',
+    'càs': 'tbsp', 'cas': 'tbsp', 'c.à.s': 'tbsp', 'cuillère à soupe': 'tbsp', 'cuillères à soupe': 'tbsp', 'cuillere a soupe': 'tbsp', 'cuilleres a soupe': 'tbsp',
+    'gramme': 'g', 'grammes': 'g',
+    'kilo': 'kg', 'kilos': 'kg',
+    'litre': 'l', 'litres': 'l',
+    'heure': 'h', 'heures': 'h',
+    'seconde': 's', 'secondes': 's'
+};
+function resolveUnit(unit) {
+    if (!unit)
+        return '';
+    const lower = unit.toLowerCase().trim();
+    return exports.UNIT_ALIASES[lower] || lower;
 }

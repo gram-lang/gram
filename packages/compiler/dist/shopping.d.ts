@@ -1,4 +1,5 @@
 import { ProcessedSection, Registry, Usage } from 'gram-parser';
+import { CompilerOptions } from './core';
 interface ShoppingListItem {
     id: string;
     name?: string;
@@ -23,5 +24,5 @@ interface CompositeItem {
     _subUsageMap: Map<string, number>;
     _usageAccumulator: Map<string, Partial<Usage>>;
 }
-export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>): (ShoppingListItem | CompositeItem | Usage)[];
+export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>, options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[];
 export {};

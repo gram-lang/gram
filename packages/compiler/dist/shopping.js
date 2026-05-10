@@ -20,7 +20,7 @@ function formatQuantity(q) {
         return q.text || `${q.value}`;
     return JSON.stringify(q);
 }
-function generateShoppingList(sections, registry, overrides) {
+function generateShoppingList(sections, registry, overrides, options) {
     const listMap = new Map();
     const compositeMap = new Map();
     const alternatives = [];
@@ -168,7 +168,8 @@ function generateShoppingList(sections, registry, overrides) {
             }
             else if (numericQty !== null) {
                 // 1. Calculate Mass for Badge (Total Normalized)
-                const norm = (0, mass_normalization_1.normalizeMass)(numericQty, unit, existing.name, overrides);
+                const unitForCalc = unit || 'unit';
+                const norm = (0, mass_normalization_1.normalizeMass)(numericQty, unitForCalc, existing.name, overrides, options);
                 if (norm) {
                     existing.normalizedMass = (existing.normalizedMass || 0) + norm.mass;
                     if (norm.isEstimate)
@@ -195,7 +196,7 @@ function generateShoppingList(sections, registry, overrides) {
                 }
             }
             if (!isGhost && item.isCircular) {
-                existing.variableParts.push("⚠️ Ref. Circulaire");
+                existing.variableParts.push("⚠️ Circular Ref.");
             }
         });
     });
@@ -203,11 +204,13 @@ function generateShoppingList(sections, registry, overrides) {
         const res = {
             id: item.id,
             name: item.name,
-            state: item.state,
-            normalizedMass: item.normalizedMass,
-            isEstimate: item.isEstimate,
-            conversionMethod: item.isEstimate ? 'estimate' : 'physical'
+            state: item.state
         };
+        if (options?.enableMassNormalization !== false) {
+            res.normalizedMass = item.normalizedMass;
+            res.isEstimate = item.isEstimate;
+            res.conversionMethod = item.isEstimate ? 'estimate' : 'physical';
+        }
         // Determine main Qty/Unit
         if (item.sureMass > 0) {
             res.qty = parseFloat(item.sureMass.toFixed(2));
@@ -221,7 +224,7 @@ function generateShoppingList(sections, registry, overrides) {
             }
         }
         // --- Gross Mass Calculation (Yield) ---
-        if (res.normalizedMass && res.normalizedMass > 0) {
+        if (options?.enableYieldManagement !== false && res.normalizedMass && res.normalizedMass > 0) {
             const dbData = (0, ingredient_db_1.getIngredientData)(item.id);
             if (dbData && dbData.physical && dbData.physical.yield && dbData.physical.yield < 1) {
                 const gross = res.normalizedMass / dbData.physical.yield;
@@ -284,7 +287,7 @@ function generateShoppingList(sections, registry, overrides) {
         }
         c.qty = maxQ;
         const parentName = registry.ingredients.get(c.id)?.name || c.id;
-        const parentNorm = (0, mass_normalization_1.normalizeMass)(c.qty, 'unit', parentName, overrides);
+        const parentNorm = (0, mass_normalization_1.normalizeMass)(c.qty, 'unit', parentName, overrides, options);
         let cRes = {
             type: 'composite',
             id: c.id,
@@ -302,7 +305,7 @@ function generateShoppingList(sections, registry, overrides) {
             if (u.qty && typeof u.qty === 'number') {
                 const childId = u.id || '';
                 const childName = registry.ingredients.get(childId)?.name || childId;
-                const childNorm = (0, mass_normalization_1.normalizeMass)(u.qty, u.unit || '', childName, overrides);
+                const childNorm = (0, mass_normalization_1.normalizeMass)(u.qty, u.unit || '', childName, overrides, options);
                 if (childNorm) {
                     childUsage.normalizedMass = childNorm.mass;
                     childUsage.isEstimate = childNorm.isEstimate;

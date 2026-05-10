@@ -31,43 +31,39 @@ const themeToggle = document.getElementById('theme-toggle');
 const warningsArea = document.getElementById('warnings');
 const viewSelect = document.getElementById('view-mode');
 
-const massToggleContainer = document.getElementById('mass-toggle-container');
-const showMassCheckbox = document.getElementById('show-mass');
+// Experimental Features
+const optMass = document.getElementById('opt-mass');
+const optYield = document.getElementById('opt-yield');
+const optNutrition = document.getElementById('opt-nutrition');
 
-// Initial state
-const savedShowMass = localStorage.getItem('showMass');
-if (savedShowMass === 'false') {
-    showMassCheckbox.checked = false;
-    document.body.classList.add('hide-mass-badges');
+if (localStorage.getItem('optMass') === 'true') optMass.checked = true;
+if (localStorage.getItem('optYield') === 'true') optYield.checked = true;
+if (localStorage.getItem('optNutrition') === 'true') optNutrition.checked = true;
+
+function updateExperimentalDeps() {
+    const labelYield = document.getElementById('label-opt-yield');
+    if (optMass.checked) {
+        optYield.disabled = false;
+        if (labelYield) labelYield.style.opacity = '1';
+    } else {
+        optYield.disabled = true;
+        if (labelYield) labelYield.style.opacity = '0.5';
+    }
 }
+updateExperimentalDeps();
+
+[optMass, optYield, optNutrition].forEach(el => {
+    el.addEventListener('change', () => {
+        if (el.id === 'opt-mass') updateExperimentalDeps();
+        localStorage.setItem(el.id, el.checked);
+        update();
+    });
+});
 
 viewSelect.addEventListener('change', () => {
     outputMode = viewSelect.value;
-    updateVisibility();
     update();
 });
-
-showMassCheckbox.addEventListener('change', () => {
-    const isChecked = showMassCheckbox.checked;
-    localStorage.setItem('showMass', isChecked);
-    if (isChecked) {
-        document.body.classList.remove('hide-mass-badges');
-    } else {
-        document.body.classList.add('hide-mass-badges');
-    }
-});
-
-function updateVisibility() {
-    if (outputMode === 'preview') {
-        massToggleContainer.style.display = 'flex';
-    } else {
-        massToggleContainer.style.display = 'none';
-    }
-}
-
-// Call once on init
-updateVisibility();
-
 // Theme Logic
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('light');
@@ -177,7 +173,7 @@ function renderMarkdown(data) {
             md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
             md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
             if (data.metrics.preparationTime) {
-                md += `> - **Mise en place**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
+                md += `> - **Prep Time**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
             }
         }
         if (data.meta) {
@@ -422,7 +418,12 @@ function update() {
     const text = input.value;
     try {
         const ast = getAST(text);
-        const result = compile(ast);
+        const compilerOptions = {
+            enableMassNormalization: optMass.checked,
+            enableYieldManagement: optMass.checked && optYield.checked,
+            enableNutritionalEstimation: optNutrition.checked
+        };
+        const result = compile(ast, compilerOptions);
         
         // Prepare content
         let content = '';

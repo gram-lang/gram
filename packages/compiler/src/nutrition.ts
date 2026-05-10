@@ -127,6 +127,8 @@ export function calculateNutrition(ingredients: any[], portions: number = 1): Nu
                      warnings.push(`MISSING_MACROS: Ingredient "${id}" (state: ${targetState}) has no macro data.`);
                 }
             }
+        } else {
+            warnings.push(`UNKNOWN_MASS: Cannot calculate mass for "${id}" to estimate nutrition.`);
         }
     });
 

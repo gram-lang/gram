@@ -4,6 +4,7 @@ import { getIngredientData } from './ingredient_db';
 import { detectCycles } from './graph';
 import { resolveState } from './i18n';
 import { ProcessedSection, Registry, Usage, QuantityValueAST } from 'gram-parser';
+import { CompilerOptions } from './core';
 
 interface ShoppingListItem {
     id: string;
@@ -45,7 +46,7 @@ function formatQuantity(q: any): string | number {
     return JSON.stringify(q);
 }
 
-export function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>): (ShoppingListItem | CompositeItem | Usage)[] {
+export function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>, options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[] {
     const listMap = new Map<string, ShoppingListItem>();
     const compositeMap = new Map<string, CompositeItem>();
     const alternatives: Usage[] = [];
@@ -201,7 +202,8 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  existing.variableParts!.push(`(${display})`);
             } else if (numericQty !== null) {
                 // 1. Calculate Mass for Badge (Total Normalized)
-                const norm = normalizeMass(numericQty, unit, existing.name, overrides);
+                const unitForCalc = unit || 'unit';
+                const norm = normalizeMass(numericQty, unitForCalc, existing.name, overrides, options);
                 if (norm) {
                     existing.normalizedMass = (existing.normalizedMass || 0) + norm.mass;
                     if (norm.isEstimate) existing.isEstimate = true;
@@ -226,7 +228,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             }
             
             if (!isGhost && item.isCircular) {
-                 existing.variableParts!.push("⚠️ Ref. Circulaire");
+                 existing.variableParts!.push("⚠️ Circular Ref.");
             }
         });
     });
@@ -235,11 +237,14 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         const res: ShoppingListItem = {
             id: item.id,
             name: item.name,
-            state: item.state, 
-            normalizedMass: item.normalizedMass,
-            isEstimate: item.isEstimate,
-            conversionMethod: item.isEstimate ? 'estimate' : 'physical'
+            state: item.state
         };
+
+        if (options?.enableMassNormalization !== false) {
+             res.normalizedMass = item.normalizedMass;
+             res.isEstimate = item.isEstimate;
+             res.conversionMethod = item.isEstimate ? 'estimate' : 'physical';
+        }
 
         // Determine main Qty/Unit
         if (item.sureMass! > 0) {
@@ -254,7 +259,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         }
 
         // --- Gross Mass Calculation (Yield) ---
-        if (res.normalizedMass && res.normalizedMass > 0) {
+        if (options?.enableYieldManagement !== false && res.normalizedMass && res.normalizedMass > 0) {
              const dbData = getIngredientData(item.id);
              if (dbData && dbData.physical && dbData.physical.yield && dbData.physical.yield < 1) {
                  const gross = res.normalizedMass / dbData.physical.yield;
@@ -330,7 +335,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         c.qty = maxQ;
 
         const parentName = registry.ingredients.get(c.id)?.name || c.id;
-        const parentNorm = normalizeMass(c.qty, 'unit', parentName, overrides);
+        const parentNorm = normalizeMass(c.qty, 'unit', parentName, overrides, options);
         
         let cRes: any = {
             type: 'composite',
@@ -351,7 +356,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             if (u.qty && typeof u.qty === 'number') {
                 const childId = u.id || '';
                 const childName = registry.ingredients.get(childId)?.name || childId;
-                const childNorm = normalizeMass(u.qty, u.unit || '', childName, overrides);
+                const childNorm = normalizeMass(u.qty, u.unit || '', childName, overrides, options);
                 if (childNorm) {
                      childUsage.normalizedMass = childNorm.mass;
                      childUsage.isEstimate = childNorm.isEstimate;

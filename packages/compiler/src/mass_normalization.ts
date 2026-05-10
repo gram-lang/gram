@@ -1,6 +1,7 @@
 import { UNIT_CONVERSIONS } from './units';
 import { getIngredientData } from './ingredient_db';
 import { slugify } from './utils';
+import { CompilerOptions } from './core';
 
 /**
  * Mass Normalization Module
@@ -13,12 +14,18 @@ interface ConversionResult {
     method: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
 }
 
-export function normalizeMass(amount: number, unit: string, ingredientName?: string, overrides?: Record<string, number>): ConversionResult & { isEstimate: boolean } | null {
+import { resolveUnit } from './i18n';
+
+export function normalizeMass(amount: number, unit: string, ingredientName?: string, overrides?: Record<string, number>, options?: CompilerOptions): ConversionResult & { isEstimate: boolean } | null {
     if (!unit) {
-         // ...
+        return null;
+    }
+
+    if (options?.enableMassNormalization === false) {
+        return null;
     }
     
-    const u = unit.toLowerCase().trim();
+    const u = resolveUnit(unit);
 
     // 1. Physical Mass
     const massMap = UNIT_CONVERSIONS.mass.map;

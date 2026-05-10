@@ -29,10 +29,11 @@ exports.UNIT_CONVERSIONS = {
         }
     }
 };
+const i18n_1 = require("./i18n");
 const normalizeUnit = (quantityObj, unit) => {
     if (!quantityObj)
         return { quantity: 0, unit: unit || null };
-    const u = (unit || '').toLowerCase().trim();
+    const u = (0, i18n_1.resolveUnit)(unit);
     let val = quantityObj;
     if (typeof quantityObj === 'object' && quantityObj.value !== undefined) {
         val = quantityObj.value;
@@ -63,7 +64,7 @@ const getMass = (qty, unit) => {
     }
     if (typeof val !== 'number')
         return { mass: 0, valid: false };
-    const u = (unit || '').toLowerCase().trim();
+    const u = (0, i18n_1.resolveUnit)(unit);
     if (exports.UNIT_CONVERSIONS.mass.map[u])
         return { mass: val * exports.UNIT_CONVERSIONS.mass.map[u], valid: true };
     if (exports.UNIT_CONVERSIONS.volume.map[u])
@@ -108,9 +109,9 @@ const quantityToMinutes = (qty) => {
     }
     if (typeof val !== 'number')
         return 0;
-    const u = unit.toLowerCase().trim();
+    const u = (0, i18n_1.resolveUnit)(unit);
     // Time conversions to minutes
-    if (u === 'h' || u === 'hour' || u === 'hours' || u === 'heure' || u === 'heures')
+    if (u === 'h' || u === 'hour' || u === 'hours')
         return val * 60;
     if (u === 'm' || u === 'min' || u === 'minute' || u === 'minutes' || u === 'mins')
         return val;

@@ -4,8 +4,13 @@ import { normalizeMass } from './mass_normalization';
 import { 
     Context, Registry, ProcessedSection, ProcessedStep, Usage 
 } from 'gram-parser';
+import { CompilerOptions } from './core';
 
-export function processBlockItem(item: any, ctx: Context, registry: Registry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
+export interface ProcessorContext extends Context {
+    options?: CompilerOptions;
+}
+
+export function processBlockItem(item: any, ctx: ProcessorContext, registry: Registry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
     if (!item) return null;
 
     if (item.type === 'Ingredient') {
@@ -47,7 +52,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              
              const markerChar = rel.referenceType === 'variable' ? '&' : '@';
              // Store formula for display.
-             const formulaStr = `${percent}% de ${markerChar}${targetName}`;
+             const formulaStr = `${percent}% of ${markerChar}${targetName}`;
 
              if (rel.referenceType === 'variable') {
                  if (ctx.variableWeights.has(targetId)) {
@@ -78,44 +83,75 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
                          loc: item.loc
                      });
                  } else {
-                     // Calculate sum
+                     // Calculate sum by original unit
+                     let fallbackMassSum = 0;
+                     let fallbackUnit = 'g';
+                     let hasValidUnit = false;
+                     
                      for (const prev of secIngredients) {
                          if (prev.id === targetId) {
-                             // Use normalizedMass logic which includes density handling
-                             if (prev.normalizedMass) {
-                                 totalQty += prev.normalizedMass;
-                                 if (!inheritedUnit) inheritedUnit = 'g';
-                             } else if (prev.qty && typeof prev.qty === 'number' && prev.unit) {
-                                  // Fallback: try raw normalization if missing on object
-                                  const norm = normalizeMass(prev.qty, prev.unit, prev.name, ctx.densityOverrides);
-                                  if (norm) {
-                                      totalQty += norm.mass;
-                                      if (!inheritedUnit) inheritedUnit = 'g';
-                                  }
+                             if (!hasValidUnit && prev.unit) {
+                                 inheritedUnit = prev.unit;
+                                 hasValidUnit = true;
+                             }
+                             
+                             if (hasValidUnit && prev.unit === inheritedUnit && prev.qty && typeof prev.qty === 'number') {
+                                 totalQty += prev.qty;
+                             } else {
+                                 // Unit mismatch, fallback to mass if possible
+                                 if (prev.normalizedMass) {
+                                     fallbackMassSum += prev.normalizedMass;
+                                 } else if (prev.qty && typeof prev.qty === 'number' && prev.unit) {
+                                     const norm = normalizeMass(prev.qty, prev.unit, prev.name, ctx.densityOverrides, ctx.options);
+                                     if (norm) {
+                                         fallbackMassSum += norm.mass;
+                                     }
+                                 }
                              }
                          }
                      }
                      
-                     if (!inheritedUnit) {
-                         // Found source but no valid mass (e.g. unitless count)
-                         isGhost = true;
-                         ctx.warnings.push({
-                             code: 'RELATIVE_NO_MASS',
-                             message: `Source '@${targetName}' has no mass (unitless or incompatible). Calculation impossible.`,
-                             item: item.name,
-                             loc: item.loc
-                         });
+                     if (!hasValidUnit) {
+                         // Maybe it's unitless or mass-only, fallback to mass sum
+                         if (fallbackMassSum > 0) {
+                             totalQty = fallbackMassSum;
+                             inheritedUnit = 'g';
+                         } else {
+                             isGhost = true;
+                             ctx.warnings.push({
+                                 code: 'RELATIVE_NO_MASS',
+                                 message: `Source '@${targetName}' has no usable quantity. Calculation impossible.`,
+                                 item: item.name,
+                                 loc: item.loc
+                             });
+                         }
+                     } else if (fallbackMassSum > 0) {
+                         // Mixed units, and we have a mass fallback. If mass norm is enabled, use it.
+                         if (ctx.options?.enableMassNormalization !== false) {
+                             // Try to add the matching unit parts to the mass sum
+                             const norm = normalizeMass(totalQty, inheritedUnit!, item.name, ctx.densityOverrides, ctx.options);
+                             if (norm) fallbackMassSum += norm.mass;
+                             totalQty = fallbackMassSum;
+                             inheritedUnit = 'g';
+                         } else {
+                              ctx.warnings.push({
+                                  code: 'RELATIVE_MIXED_UNITS',
+                                  message: `Source '@${targetName}' has mixed units and mass normalization is disabled. Only identical units were summed.`,
+                                  item: item.name,
+                                  loc: item.loc
+                              });
+                         }
                      }
                  }
              }
              
              const newVal = totalQty * (percent / 100);
-             const usage = createCleanUsage(item, id, ctx.densityOverrides);
+             const usage = createCleanUsage(item, id, ctx.densityOverrides, ctx.options);
               usage.qty = parseFloat(newVal.toFixed(2)); 
               usage.unit = inheritedUnit || 'g'; 
               
               if (usage.unit) {
-                  const norm = normalizeMass(usage.qty, usage.unit, usage.name || item.name, ctx.densityOverrides);
+                  const norm = normalizeMass(usage.qty, usage.unit, usage.name || item.name, ctx.densityOverrides, ctx.options);
                   if (norm) {
                       usage.normalizedMass = norm.mass;
                       usage.conversionMethod = norm.method;
@@ -148,7 +184,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
              return usage;
         }
 
-        const usage = createCleanUsage(item, id, ctx.densityOverrides);
+        const usage = createCleanUsage(item, id, ctx.densityOverrides, ctx.options);
         if (item.modifiers && item.modifiers.includes('&')) {
              if (!ctx.seenNames.has(item.name)) {
                  ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name, loc: item.loc });
@@ -170,7 +206,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
         if (!registry.cookware.has(id)) {
             registry.cookware.set(id, { id, name: item.name });
         }
-        const usage = createCleanUsage(item, id, ctx.densityOverrides);
+        const usage = createCleanUsage(item, id, ctx.densityOverrides, ctx.options);
         secCookware.push(usage);
         return usage;
     }
@@ -232,7 +268,7 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
 
              // Normalize explicit quantity
              if (obj.qty && typeof obj.qty === 'number') {
-                 const norm = normalizeMass(obj.qty, obj.unit || '', item.name, ctx.densityOverrides);
+                 const norm = normalizeMass(obj.qty, obj.unit || '', item.name, ctx.densityOverrides, ctx.options);
                  if (norm) {
                      obj.normalizedMass = norm.mass;
                      obj.conversionMethod = norm.method;
@@ -308,8 +344,8 @@ export function processBlockItem(item: any, ctx: Context, registry: Registry, se
     return item;
 }
 
-export function processSections(astChildren: any[], registry: Registry, overrides?: Record<string, number>): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
-    const ctx: Context = {
+export function processSections(astChildren: any[], registry: Registry, overrides?: Record<string, number>, options?: CompilerOptions): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
+    const ctx: ProcessorContext = {
         warnings: registry.warnings,
         intermediateDecl: null,
         seenNames: new Set(),
@@ -318,7 +354,8 @@ export function processSections(astChildren: any[], registry: Registry, override
         currentSectionIntermediates: new Set(),
         variableWeights: new Map(),
         globalScopes: new Map(),
-        densityOverrides: overrides || {}
+        densityOverrides: overrides || {},
+        options
     };
 
     const sections: ProcessedSection[] = [];
@@ -341,7 +378,7 @@ export function processSections(astChildren: any[], registry: Registry, override
             if (ctx.globalScopes.has(varName)) {
                 registry.warnings.push({
                     code: 'SCOPE_CONFLICT',
-                    message: `La variable globale '&${varName}' est redéfinie.`,
+                    message: `Global variable '&${varName}' is redefined.`,
                     section: section.title,
                     loc: section.intermediateDecl?.loc
                 });
@@ -428,7 +465,7 @@ export function processSections(astChildren: any[], registry: Registry, override
                                 stepMass += p.normalizedMass;
                           } else if (p.qty && typeof p.qty === 'number' && p.unit) {
                                 // Last resort fallback
-                                const norm = normalizeMass(p.qty, p.unit, p.name, ctx.densityOverrides);
+                                const norm = normalizeMass(p.qty, p.unit, p.name, ctx.densityOverrides, ctx.options);
                                 if (norm) stepMass += norm.mass;
                           }
                           

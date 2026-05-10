@@ -35,7 +35,9 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
 
 import { normalizeMass } from './mass_normalization';
 
-export const createCleanUsage = (item: any, id: string, overrides?: Record<string, number>): Usage => {
+import { CompilerOptions } from './core';
+
+export const createCleanUsage = (item: any, id: string, overrides?: Record<string, number>, options?: CompilerOptions): Usage => {
     const obj: Usage = { id };
     const qtyNode = item.quantity;
     let cleanQty: any = undefined;
@@ -62,7 +64,7 @@ export const createCleanUsage = (item: any, id: string, overrides?: Record<strin
     if (valForCalc !== null) {
          const unitForCalc = obj.unit || 'unit';
          // Use item.name directly for lookup, do not attach to obj
-         const norm = normalizeMass(valForCalc, unitForCalc, item.name, overrides);
+         const norm = normalizeMass(valForCalc, unitForCalc, item.name, overrides, options);
          if (norm) {
              obj.normalizedMass = norm.mass;
              obj.conversionMethod = norm.method;

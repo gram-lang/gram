@@ -37,7 +37,7 @@ const minifyQuantity = (q) => {
 };
 exports.minifyQuantity = minifyQuantity;
 const mass_normalization_1 = require("./mass_normalization");
-const createCleanUsage = (item, id, overrides) => {
+const createCleanUsage = (item, id, overrides, options) => {
     const obj = { id };
     const qtyNode = item.quantity;
     let cleanQty = undefined;
@@ -64,7 +64,7 @@ const createCleanUsage = (item, id, overrides) => {
     if (valForCalc !== null) {
         const unitForCalc = obj.unit || 'unit';
         // Use item.name directly for lookup, do not attach to obj
-        const norm = (0, mass_normalization_1.normalizeMass)(valForCalc, unitForCalc, item.name, overrides);
+        const norm = (0, mass_normalization_1.normalizeMass)(valForCalc, unitForCalc, item.name, overrides, options);
         if (norm) {
             obj.normalizedMass = norm.mass;
             obj.conversionMethod = norm.method;

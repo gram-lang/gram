@@ -105,6 +105,9 @@ function calculateNutrition(ingredients, portions = 1) {
                 }
             }
         }
+        else {
+            warnings.push(`UNKNOWN_MASS: Cannot calculate mass for "${id}" to estimate nutrition.`);
+        }
     });
     const coverage = metricsCount > 0 ? knownCount / metricsCount : 0;
     // Rounding

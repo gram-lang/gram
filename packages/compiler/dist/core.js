@@ -9,7 +9,7 @@ const processor_1 = require("./processor");
 const metrics_1 = require("./metrics");
 var ingredient_db_1 = require("./ingredient_db");
 Object.defineProperty(exports, "configureIngredientDb", { enumerable: true, get: function () { return ingredient_db_1.configureIngredientDb; } });
-function compile(ast) {
+function compile(ast, options) {
     if (ast.type !== 'Recipe')
         throw new Error("Compiler expects Recipe AST");
     const registry = {
@@ -32,7 +32,7 @@ function compile(ast) {
             }
         });
     }
-    const resultPayload = (0, processor_1.processSections)(ast.children, registry, densityOverrides);
+    const resultPayload = (0, processor_1.processSections)(ast.children, registry, densityOverrides, options);
     const sections = resultPayload.sections;
     sections.forEach(sec => {
         sec.metrics = (0, metrics_1.calculateMassMetrics)(sec.ingredients);
@@ -47,18 +47,20 @@ function compile(ast) {
     });
     const globalMassMetrics = (0, metrics_1.calculateMassMetrics)(allRawIngredients);
     // Generate warnings for missing mass data to help users debug
-    const reportedMissing = new Set();
-    globalMassMetrics.missingMassIngredients.forEach(name => {
-        if (!reportedMissing.has(name)) {
-            registry.warnings.push({
-                code: 'MISSING_MASS_DATA',
-                message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
-                item: name
-            });
-            reportedMissing.add(name);
-        }
-    });
-    const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry, densityOverrides);
+    if (options?.enableMassNormalization !== false) {
+        const reportedMissing = new Set();
+        globalMassMetrics.missingMassIngredients.forEach(name => {
+            if (!reportedMissing.has(name)) {
+                registry.warnings.push({
+                    code: 'MISSING_MASS_DATA',
+                    message: `Unable to calculate mass for '${name}'. Add it to the database or specify a physical unit (g, kg).`,
+                    item: name
+                });
+                reportedMissing.add(name);
+            }
+        });
+    }
+    const shopping_list = (0, shopping_1.generateShoppingList)(sections, registry, densityOverrides, options);
     const globalCookware = [];
     sections.forEach(sec => {
         sec.cookware.forEach(cw => {
@@ -84,6 +86,8 @@ function compile(ast) {
             ...globalMassMetrics,
             preparationTime: (0, metrics_1.calculatePreparationTime)(sections, registry),
             nutrition: (() => {
+                if (!options?.enableNutritionalEstimation)
+                    return undefined;
                 let portions = 1;
                 if (ast.meta && ast.meta.portions) {
                     // Try to parse portions

@@ -4,11 +4,15 @@ exports.normalizeMass = normalizeMass;
 const units_1 = require("./units");
 const ingredient_db_1 = require("./ingredient_db");
 const utils_1 = require("./utils");
-function normalizeMass(amount, unit, ingredientName, overrides) {
+const i18n_1 = require("./i18n");
+function normalizeMass(amount, unit, ingredientName, overrides, options) {
     if (!unit) {
-        // ...
+        return null;
     }
-    const u = unit.toLowerCase().trim();
+    if (options?.enableMassNormalization === false) {
+        return null;
+    }
+    const u = (0, i18n_1.resolveUnit)(unit);
     // 1. Physical Mass
     const massMap = units_1.UNIT_CONVERSIONS.mass.map;
     if (massMap[u] !== undefined) {
