@@ -20,9 +20,9 @@ The core language specification and usage guides.
 
 
 ### Compiler Features
-*   [**Mass Unification**](./compiler_features/01_mass_unification.md) - How units are converted to grams.
-*   [**Yield Management**](./compiler_features/02_yield_management.md) - Net vs Gross weight (Waste factor).
-*   [**Nutritional Estimation**](./compiler_features/03_nutritional_estimation.md) - Calorie and Macro calculation.
+*   [**Mass Unification**](./compiler_features/01_mass_unification.md) *(Experimental)* - How units are converted to grams.
+*   [**Yield Management**](./compiler_features/02_yield_management.md) *(Experimental)* - Net vs Gross weight (Waste factor).
+*   [**Nutritional Estimation**](./compiler_features/03_nutritional_estimation.md) *(Experimental)* - Calorie and Macro calculation.
 *   [**Time Metrics & Scheduling**](./compiler_features/04_time_and_scheduling.md) - Active Time, Total Time, and Retro-planning.
 *   [**Shopping List Generation**](./compiler_features/05_shopping_list_logic.md) - Aggregation, alternatives, and ghost references.
 

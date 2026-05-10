@@ -38,7 +38,8 @@ For each case, the parser follows this algorithm:
 
 | Scenario | Source Example | Target Example | Current Decision | Shopping List Result |
 | :--- | :--- | :--- | :--- | :--- |
-| **Simple** | `@Apple{5}` (Units) | `@Sugar{50% @Apple}` | **FALLBACK (Numeric Calc)** <br> `5 * 0.50 = 2.5` | `Sugar: 2.5` *(Inherits unitless status)* |
+| **Simple (Unitless)** | `@Apple{5}` (Units) | `@Sugar{50% @Apple}` | **FALLBACK (Numeric Calc)** <br> `5 * 0.50 = 2.5` | `Sugar: 2.5` *(Inherits unitless status)* |
+| **Inherited Unit** | `@Flour{100g}` | `@Sugar{200% @Flour}` | **MASS (Priority)** <br> `100 * 2.0 = 200` | `Sugar: 200g` *(Inherits 'g' from Flour)* |
 | **100% Unitary Variable** | `->&Salad{}` (3 Apples + 2 Pears) | `@Sugar{10% &Salad}` | **FALLBACK (Sum)** <br> `(3+2) * 0.10 = 0.5` | `Sugar: 0.5` |
 | **Mixed Variable** | `->&Mix{}` (100g Flour + 2 Eggs) | `@Salt{10% &Mix}` | **MASS PRIORITY** <br> `(100g + 0) * 0.10 = 10g` | `Salt: 10g` *(Eggs are ignored)* |
 

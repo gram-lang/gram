@@ -1,5 +1,8 @@
 # Nutritional Estimation
 
+> [!IMPORTANT]
+> **Experimental Feature**: Nutritional Estimation is currently an optional, experimental feature. It can be enabled independently of Mass Unification (it will perform internal mass calculations for data lookup even if Mass Unification is visually disabled).
+
 The compiler allows for automatic **Nutritional Analysis** of recipes. It calculates estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Salt) based on the ingredients list.
 
 ## How it works
@@ -68,8 +71,9 @@ The nutritional value of food changes when cooked. Gram now supports **State-bas
 
 ## Partial Data Warnings
 
-To ensure accuracy, the system is strict about missing data:
+To ensure accuracy and avoid misleading results, the system is strict about missing data:
 1.  **Missing Macros**: If an ingredient is in the DB but has no macro data, a warning is raised.
-2.  **Preview Hiding**: In the Playground, if *any* ingredient has missing nutritional data (or is missing entirely), the **Nutrition Panel will be hidden** to prevent showing misleading "partial" totals.
+2.  **Unknown Mass**: If the compiler cannot determine the mass of an ingredient (e.g., unknown ingredient or unit without unit weight), it cannot calculate nutrition for that item.
+3.  **Preview Hiding**: In the Playground, if *any* ingredient has missing nutritional data or an unknown mass, the **Nutrition Panel will be completely hidden**. This prevents showing "partial" totals that would underestimate the true nutritional content of the recipe.
 
 The database is not exhaustive; it's a very long-term project. We aim to gradually expand it to include more international ingredients, as well as most of the classic ingredients used in recipes. Any help in completing it is welcome.

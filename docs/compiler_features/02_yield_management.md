@@ -1,5 +1,8 @@
 # Yield Management (Waste Factor)
 
+> [!IMPORTANT]
+> **Experimental Feature**: Yield Management is an optional feature and **requires Mass Unification** to be enabled. If Mass Unification is disabled, Yield Management will also be inactive.
+
 The compiler includes a **Yield Management** system to distinguish between the **Net Mass** (what goes into the recipe) and the **Purchasing Mass** (Gross Mass - what you need to buy).
 
 ## Concept

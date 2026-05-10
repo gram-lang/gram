@@ -143,9 +143,14 @@ The structure is optimized for display.
 | Key | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `string` | Semantic ID. |
-| `qty` | `number` | The "Certain Mass", useful for scaling/graphing. (Replaces `total_mass`) |
+| `name` | `string` | Display name for the item. |
+| `state` | `string` | The ingredient state used for this entry. |
+| `qty` | `number` | The "Certain Mass" (sum of physical masses), useful for scaling. |
 | `unit` | `string` | The unit for the certain mass (usually 'g'). |
-| `normalizedMass` | `number` | *New*: The aggregated mass in grams. |
+| `normalizedMass` | `number` | *Experimental*. The total aggregated mass in grams. Only present if Mass Unification is enabled. |
+| `purchasingMass` | `number` | *Experimental*. The total mass to buy (Gross Mass), including waste. Only present if Yield Management is enabled. |
+| `isEstimate` | `boolean` | *Experimental*. `true` if the total mass includes estimated values. |
+| `conversionMethod`| `string` | *Experimental*. Source of mass calculation for this aggregated item. |
 | `variable_entries`| `string[]`| The list of logic strings (mixed units, relative quantities) that couldn't be summed into the main mass. |
 
 

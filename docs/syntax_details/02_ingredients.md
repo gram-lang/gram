@@ -22,7 +22,9 @@ The quantity is flexible:
 *   **Fraction**: `@sugar{1/2 cup}`
 *   **Range**: `@apples{3-4}`
 
-> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
+> **Other languages Units Support**: The compiler natively understands common kitchen unit abbreviations for multiple languages. For now it includes English and French, but it is designed to be expanded in the future.
+
+> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. This is an **experimental feature** that can be toggled. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
 
 ## Modifiers (Flags)
 

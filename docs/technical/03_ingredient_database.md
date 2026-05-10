@@ -53,10 +53,10 @@ The core database is populated using high-quality data from official sources, au
 
 ## Internationalization (I18n)
 
-The database natively supports multilingual lookups.
+The database and compiler natively support multilingual lookups for both ingredients and units.
 
-*   You can write `@oeuf` (French) or `@egg` (English) in your recipe.
-*   The compiler normalizes both to the canonical key (`egg`) using the `i18n` map.
+*   **Ingredients**: You can write `@oeuf` (French) or `@egg` (English). The compiler normalizes both to the canonical key (`egg`) using the `i18n` map.
+*   **Units**: Common unit abbreviations are also localized. For example, French volume units like `càs` (tablespoon) and `càc` (teaspoon) are automatically resolved to their canonical equivalents (`tbsp`, `tsp`) to enable density-based mass calculation.
 *   This allows recipes to be written in different languages while sharing the same underlying nutritional/physical data.
 
 ## Loading Process
