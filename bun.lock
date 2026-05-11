@@ -6,7 +6,7 @@
     },
     "packages/compiler": {
       "name": "gram-compiler",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "dependencies": {
         "@types/js-yaml": "^4.0.9",
         "gram-parser": "file:../parser",
@@ -20,7 +20,7 @@
     },
     "packages/parser": {
       "name": "gram-parser",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "dependencies": {
         "ohm-js": "^17.2.1",
       },
@@ -31,7 +31,7 @@
     },
     "packages/playground": {
       "name": "gram-playground",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "dependencies": {
         "@webcoder49/code-input": "^2.8.0",
         "gram-compiler": "file:../compiler",
@@ -138,5 +138,9 @@
     "universalify": ["universalify@2.0.1", "", {}, "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw=="],
 
     "zod": ["zod@4.3.5", "", {}, "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="],
+
+    "gram-compiler/gram-parser": ["gram-parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
+
+    "gram-playground/gram-parser": ["gram-parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
   }
 }

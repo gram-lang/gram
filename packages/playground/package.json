@@ -1,6 +1,6 @@
 {
   "name": "gram-playground",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Browser-based playground and IDE for the GRAM recipe language",
   "author": "abiwab",
   "license": "GPL-3.0",
