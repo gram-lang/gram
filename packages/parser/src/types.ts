@@ -87,7 +87,6 @@ export interface IngredientAST extends NodeAST {
     type: 'Ingredient';
     name: string;
     modifiers: Modifier[];
-    state?: string | null;
     quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
     alias?: string | null;
     preparation?: string | null;
@@ -155,10 +154,6 @@ export interface Registry {
     warnings: any[];
 }
 
-export interface VariableWeight {
-    mass: number;
-    isPartial: boolean;
-}
 
 export interface Context {
     warnings: any[];
@@ -167,9 +162,7 @@ export interface Context {
     definedIntermediates: Set<string>;
     usedIntermediates: Set<string>;
     currentSectionIntermediates: Set<string>; // Track intermediates defined in the current section
-    variableWeights: Map<string, VariableWeight>;
     globalScopes: Map<string, string>;
-    densityOverrides: Record<string, number>;
 }
 
 export interface Usage {
@@ -177,7 +170,6 @@ export interface Usage {
     qty?: number | string | QuantityValueAST;
     unit?: string | null;
     modifiers?: string[];
-    state?: string | null;
     fixed?: boolean;
     alias?: string | null;
     preparation?: string | null;
@@ -193,40 +185,8 @@ export interface Usage {
     type?: string; 
     options?: any[]; // For alternatives
     name?: string; // Optional name cache
-    // Mass Unification
-    normalizedMass?: number;
-    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
-    isEstimate?: boolean;
 }
 
-export interface MassMetrics {
-    totalMass: number;
-    massStatus: 'precise' | 'estimated' | 'incomplete';
-    missingMassIngredients: string[];
-}
-
-export interface NutritionMetrics {
-    total: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        sugar?: number;
-        fiber?: number;
-        salt?: number;
-    };
-    perPortion?: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        sugar?: number;
-        fiber?: number;
-        salt?: number;
-    };
-    isEstimate: boolean;
-    coverage: number; 
-}
 
 export interface ProcessedSection {
     title: string | null;
@@ -235,7 +195,6 @@ export interface ProcessedSection {
     steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
-    metrics?: MassMetrics;
 }
 
 export interface ProcessedStep {
@@ -272,6 +231,5 @@ export interface CompilationResult {
         totalTime: number;   // Critical path duration (end of last async task)
         activeTime: number;  // Sum of cook work time
         preparationTime: number; // Estimated mise-en-place time
-        nutrition?: NutritionMetrics;
-    } & MassMetrics;
+    };
 }

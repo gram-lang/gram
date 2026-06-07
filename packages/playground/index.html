@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,60 +9,69 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="/favicon.png">
     <!-- Highlight.js -->
     <!-- Highlight.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body>
     <div class="container">
         <header>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                   <h1><span style="color: #52525b">Gram</span> Playground</h1>
+                    <h1><span style="color: #52525b">Gram</span> Playground</h1>
                 </div>
                 <div style="display: flex; gap: 1rem; align-items: center;">
-                    <select id="examples-select" style="background: var(--card); color: var(--foreground); border: 1px solid var(--border); padding: 0.5rem; border-radius: 0.375rem; font-family: var(--font-sans); cursor: pointer;">
+                    <select id="examples-select"
+                        style="background: var(--card); color: var(--foreground); border: 1px solid var(--border); padding: 0.5rem; border-radius: 0.375rem; font-family: var(--font-sans); cursor: pointer;">
                         <option value="" disabled selected>Load Example...</option>
                         <option value="pancakes">Simple Pancakes</option>
                         <option value="spaghetti">Spaghetti Bolognese</option>
                         <option value="torture">Torture Test (Syntax)</option>
                     </select>
-                    <button id="theme-toggle" style="background:none; border:none; cursor:pointer; padding:0.5rem; border-radius: 0.375rem; color: inherit; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s; line-height: 0;">
+                    <button id="theme-toggle"
+                        style="background:none; border:none; cursor:pointer; padding:0.5rem; border-radius: 0.375rem; color: inherit; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s; line-height: 0;">
                         <!-- Icon inserted by JS -->
                     </button>
                 </div>
             </div>
         </header>
-        
+
         <main class="playground">
             <section class="editor-section">
                 <div class="header-bar">
                     <h2>Input (.gram)</h2>
                 </div>
                 <div class="editor-container">
-                    <code-input id="input" lang="gram" placeholder="Write your recipe here...">## Pancakes
+                    <code-input id="input" lang="gram" placeholder="Write your recipe here...">
+                        ## Pancakes
 
-[Mix] The @flour{200g} with the @milk{300ml}.
+                        [Mix] The @flour{200g} with the @milk{300ml}.
 
-[Add] The @eggs{2} and mix well.
+                        Add] The @eggs{2} and mix well.
 
-[Cook] On a #griddle{} at !{170°C} for ~pancakes{5min}.
+                        [Cook] On a #griddle{} at !{170°C} for ~pancakes{5min}.
 
-</code-input>
+                    </code-input>
                 </div>
             </section>
-            
+
             <section class="result-section">
                 <div class="header-bar">
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <h2>Output</h2>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <label for="view-mode" style="font-size: 0.9rem; color: var(--muted-foreground);">View:</label>
-                            <select id="view-mode" style="background: var(--card); color: var(--foreground); border: 1px solid var(--border); padding: 0.4rem 0.5rem; border-radius: 0.375rem; font-family: var(--font-sans); cursor: pointer; font-size: 0.9rem;">
+                            <label for="view-mode"
+                                style="font-size: 0.9rem; color: var(--muted-foreground);">View:</label>
+                            <select id="view-mode"
+                                style="background: var(--card); color: var(--foreground); border: 1px solid var(--border); padding: 0.4rem 0.5rem; border-radius: 0.375rem; font-family: var(--font-sans); cursor: pointer; font-size: 0.9rem;">
                                 <option value="json" selected>JSON Output</option>
                                 <option value="ast">AST (Raw)</option>
                                 <option value="json-tree">Interactive Tree</option>
@@ -71,21 +81,37 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center;">
-                        <button id="copy-btn" class="tab-btn" title="Copy to Clipboard" style="display: flex; align-items: center; justify-content: center;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path></svg>
+                        <button id="copy-btn" class="tab-btn" title="Copy to Clipboard"
+                            style="display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                viewBox="0 0 256 256">
+                                <path
+                                    d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z">
+                                </path>
+                            </svg>
                         </button>
-                        <details class="settings-menu" style="position: relative;">
-                            <summary style="cursor: pointer; padding: 0.4rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; gap: 0.25rem; list-style: none;" title="Experimental Features"><i class="ph ph-gear"></i></summary>
-                            <div style="position: absolute; top: 100%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem; z-index: 10; margin-top: 0.25rem; width: max-content; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                                <strong style="font-size: 0.75rem; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 0.5rem; display: block;">Experimental Features</strong>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.4rem; cursor: pointer;">
+                        <details class="settings-menu" style="position: relative; display: none;">
+                            <summary
+                                style="cursor: pointer; padding: 0.4rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; gap: 0.25rem; list-style: none;"
+                                title="Experimental Features"><i class="ph ph-gear"></i></summary>
+                            <div
+                                style="position: absolute; top: 100%; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem; z-index: 10; margin-top: 0.25rem; width: max-content; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                <strong
+                                    style="font-size: 0.75rem; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 0.5rem; display: block;">Experimental
+                                    Features</strong>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.4rem; cursor: pointer;">
                                     <input type="checkbox" id="opt-mass" style="cursor: pointer;"> Mass Normalization
                                 </label>
-                                <label id="label-opt-yield" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.4rem; margin-left: 1.25rem; cursor: pointer;">
-                                    <input type="checkbox" id="opt-yield" style="cursor: pointer;"> Yield Management (Gross Mass)
+                                <label id="label-opt-yield"
+                                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.4rem; margin-left: 1.25rem; cursor: pointer;">
+                                    <input type="checkbox" id="opt-yield" style="cursor: pointer;"> Yield Management
+                                    (Gross Mass)
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
-                                    <input type="checkbox" id="opt-nutrition" style="cursor: pointer;"> Nutrition Estimation
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" id="opt-nutrition" style="cursor: pointer;"> Nutrition
+                                    Estimation
                                 </label>
                             </div>
                         </details>
@@ -97,12 +123,13 @@
                     <pre><code id="output"></code></pre>
                     <div id="preview-output" class="preview-output" style="display: none;"></div>
                 </div>
-                 <div id="warnings"></div>
+                <div id="warnings"></div>
             </section>
         </main>
-    <footer id="app-footer"></footer>
+        <footer id="app-footer"></footer>
     </div>
 
     <script type="module" src="dist/app.js"></script>
 </body>
+
 </html>

@@ -1,36 +1,14 @@
-# GRAM Parser
+# @gram/parser
 
-A robust, 3-stage parser for the GRAM recipe language.
+A robust, 3-stage parser for the GRAM recipe language. It is part of the GRAM monorepo and is strictly limited to text-to-AST parsing.
 
-## Architecture
+---
 
-This parser extracts data from `.gram` files using a three-step pipeline:
+## 📚 General Documentation
 
-1.  **Parsing (OhmJS):** Validates the source against the grammar.
-2.  **AST Generation:** Converts the raw parse tree into a clean Abstract Syntax Tree.
-3.  **Compilation:** Processes the AST to generate a registry-based JSON model, handling:
-    *   Linear scaling logic
-    *   Composite ingredient aggregation (MAX logic)
-    *   Ingredient & Cookware reference resolution
-    *   Shopping list generation
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
 
-## Usage
-
-```javascript
-const { parse } = require('gram-parser');
-
-const source = `
-## My Recipe
-Mix @flour{200%g} and @water{100%ml}.
-`;
-
-try {
-    const result = parse(source);
-    console.log(result);
-} catch (e) {
-    console.error("Parsing error:", e.message);
-}
-```
+---
 
 ## Building
 
@@ -43,20 +21,36 @@ npm run build
 
 This will generate the compiled JavaScript in the `dist/` directory.
 
-## Structure
+---
 
-*   `src/index.ts`: Entry point, orchestrates Parsing -> AST.
-*   `src/compiler/`: Contains the logic for AST -> Schema JSON transformation.
-*   `grammar.ohm`: The OhmJS grammar definition.
-*   `dist/`: Compiled JavaScript output (generated).
+## ⚡ Usage
 
-## Output Model
+The package exports `getAST()` to convert GRAM source strings into a typed Recipe AST.
 
-The output is a JSON object optimized for UI rendering, featuring:
-*   `registry`: Deduplicated definitions of ingredients/cookware.
-*   `shopping_list`: Aggregated quantities.
-*   `sections`: Step-by-step instructions with references to the registry.
+```javascript
+const { getAST } = require('@gram/parser');
 
-## License
+const source = `
+## My Recipe
+Mix @flour{200g} and @water{100ml}.
+`;
+
+try {
+    const ast = getAST(source);
+    console.log(JSON.stringify(ast, null, 2));
+} catch (e) {
+    console.error("Parsing error:", e.message);
+}
+```
+
+## 🏗️ Structure
+
+*   `src/index.ts`: Orchestrates parsing and Ohm Semantics to AST conversions.
+*   `src/types.ts`: Declares strictly-typed AST node definitions.
+*   `grammar.ohm`: The official OhmJS grammar defining the GRAM language structure.
+
+---
+
+## 📄 License
 
 This project is licensed under the GPL-3.0 License - see the [LICENSE](../LICENSE) file for details.

@@ -2,12 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processBlockItem = processBlockItem;
 exports.processSections = processSections;
-const units_1 = require("./units");
 const utils_1 = require("./utils");
-const mass_normalization_1 = require("./mass_normalization");
+/**
+ * Processes a single AST item inside a recipe step.
+ * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
+ * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
+ */
 function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     if (!item)
         return null;
+    // 1. Process standard Ingredient declarations
     if (item.type === 'Ingredient') {
         const id = (0, utils_1.slugify)(item.name);
         if (!registry.ingredients.has(id)) {
@@ -20,6 +24,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         if (entry && item.quantity && item.quantity.unit && !entry.default_unit) {
             entry.default_unit = item.quantity.unit;
         }
+        // Tag composite ingredients linked to a parent sub-recipe
         if (item.composite) {
             if (entry)
                 entry.is_composite = true;
@@ -35,127 +40,41 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                     parent.is_composite = true;
             }
         }
-        // Handle RelativeQuantity
+        // Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
         if (item.quantity && item.quantity.type === 'RelativeQuantity') {
             const rel = item.quantity;
             const targetName = rel.target;
             const targetId = (0, utils_1.slugify)(targetName);
             const percent = rel.percent;
-            let totalQty = 0;
-            let inheritedUnit = null;
             let isGhost = false;
             const markerChar = rel.referenceType === 'variable' ? '&' : '@';
-            // Store formula for display.
             const formulaStr = `${percent}% of ${markerChar}${targetName}`;
             if (rel.referenceType === 'variable') {
-                if (ctx.variableWeights.has(targetId)) {
-                    const varData = ctx.variableWeights.get(targetId);
-                    if (varData) {
-                        totalQty = varData.mass;
-                        inheritedUnit = 'g';
-                    }
-                }
-                else {
-                    // Ghost Variable
+                if (!ctx.definedIntermediates.has(targetName)) {
                     isGhost = true;
                     ctx.warnings.push({
                         code: 'VARIABLE_NOT_FOUND',
-                        message: `Variable '&${targetName}' not found or has undefined mass.`,
+                        message: `Variable '&${targetName}' not found.`,
                         item: item.name,
                         loc: item.loc
                     });
                 }
             }
             else {
-                // Ingredient Resolution (Linear Top-Down)
                 const found = secIngredients.some(i => i.id === targetId);
                 if (!found) {
                     isGhost = true;
                     ctx.warnings.push({
                         code: 'RELATIVE_QUANTITY_UNRESOLVED',
-                        message: `Could not resolve relative quantity for '@${targetName}'. Source not found.`,
+                        message: `Could not resolve relative quantity for '@${targetName}'. Source not found in current section.`,
                         item: item.name,
                         loc: item.loc
                     });
                 }
-                else {
-                    // Calculate sum by original unit
-                    let fallbackMassSum = 0;
-                    let fallbackUnit = 'g';
-                    let hasValidUnit = false;
-                    for (const prev of secIngredients) {
-                        if (prev.id === targetId) {
-                            if (!hasValidUnit && prev.unit) {
-                                inheritedUnit = prev.unit;
-                                hasValidUnit = true;
-                            }
-                            if (hasValidUnit && prev.unit === inheritedUnit && prev.qty && typeof prev.qty === 'number') {
-                                totalQty += prev.qty;
-                            }
-                            else {
-                                // Unit mismatch, fallback to mass if possible
-                                if (prev.normalizedMass) {
-                                    fallbackMassSum += prev.normalizedMass;
-                                }
-                                else if (prev.qty && typeof prev.qty === 'number' && prev.unit) {
-                                    const norm = (0, mass_normalization_1.normalizeMass)(prev.qty, prev.unit, prev.name, ctx.densityOverrides, ctx.options);
-                                    if (norm) {
-                                        fallbackMassSum += norm.mass;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (!hasValidUnit) {
-                        // Maybe it's unitless or mass-only, fallback to mass sum
-                        if (fallbackMassSum > 0) {
-                            totalQty = fallbackMassSum;
-                            inheritedUnit = 'g';
-                        }
-                        else {
-                            isGhost = true;
-                            ctx.warnings.push({
-                                code: 'RELATIVE_NO_MASS',
-                                message: `Source '@${targetName}' has no usable quantity. Calculation impossible.`,
-                                item: item.name,
-                                loc: item.loc
-                            });
-                        }
-                    }
-                    else if (fallbackMassSum > 0) {
-                        // Mixed units, and we have a mass fallback. If mass norm is enabled, use it.
-                        if (ctx.options?.enableMassNormalization !== false) {
-                            // Try to add the matching unit parts to the mass sum
-                            const norm = (0, mass_normalization_1.normalizeMass)(totalQty, inheritedUnit, item.name, ctx.densityOverrides, ctx.options);
-                            if (norm)
-                                fallbackMassSum += norm.mass;
-                            totalQty = fallbackMassSum;
-                            inheritedUnit = 'g';
-                        }
-                        else {
-                            ctx.warnings.push({
-                                code: 'RELATIVE_MIXED_UNITS',
-                                message: `Source '@${targetName}' has mixed units and mass normalization is disabled. Only identical units were summed.`,
-                                item: item.name,
-                                loc: item.loc
-                            });
-                        }
-                    }
-                }
             }
-            const newVal = totalQty * (percent / 100);
-            const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides, ctx.options);
-            usage.qty = parseFloat(newVal.toFixed(2));
-            usage.unit = inheritedUnit || 'g';
-            if (usage.unit) {
-                const norm = (0, mass_normalization_1.normalizeMass)(usage.qty, usage.unit, usage.name || item.name, ctx.densityOverrides, ctx.options);
-                if (norm) {
-                    usage.normalizedMass = norm.mass;
-                    usage.conversionMethod = norm.method;
-                    usage.isEstimate = norm.isEstimate;
-                }
-            }
-            // Check Circular (Direct self-reference)
+            const usage = (0, utils_1.createCleanUsage)(item, id, ctx.options);
+            usage.qty = item.quantity; // Defer evaluation to analyzer
+            usage.unit = null;
             if (targetId === id) {
                 usage.isCircular = true;
                 ctx.warnings.push({
@@ -165,7 +84,6 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                     loc: item.loc
                 });
             }
-            // Attach dependency info for graph cycle detection
             usage.dependencies = [targetId];
             usage.formula = {
                 raw: formulaStr,
@@ -176,7 +94,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
             secIngredients.push(usage);
             return usage;
         }
-        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides, ctx.options);
+        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.options);
         if (item.modifiers && item.modifiers.includes('&')) {
             if (!ctx.seenNames.has(item.name)) {
                 ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name, loc: item.loc });
@@ -192,18 +110,19 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         }
         return usage;
     }
+    // 2. Process Cookware items
     if (item.type === 'Cookware') {
         const id = (0, utils_1.slugify)(item.name);
         if (!registry.cookware.has(id)) {
             registry.cookware.set(id, { id, name: item.name });
         }
-        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.densityOverrides, ctx.options);
+        const usage = (0, utils_1.createCleanUsage)(item, id, ctx.options);
         secCookware.push(usage);
         return usage;
     }
+    // 3. Process Alternative listings (A | B)
     if (item.type === 'Alternative') {
         const processedOptions = [];
-        // Sequential processing to allow internal references (e.g. A | B{50% A})
         let tempIngredientsScope = [...secIngredients];
         let tempCookwareScope = [...secCookware];
         item.options.forEach((opt) => {
@@ -232,6 +151,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         }
         return usage;
     }
+    // 4. Process Variable References (&reference)
     if (item.type === 'Reference') {
         const id = (0, utils_1.slugify)(item.name);
         if (!registry.ingredients.has(id)) {
@@ -240,8 +160,6 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
         if (ctx.definedIntermediates.has(item.name))
             ctx.usedIntermediates.add(item.name);
         const obj = { type: 'reference', id, name: item.name };
-        // Only use explicit quantity if it has a value or unit (e.g. {100g} or {100})
-        // Empty braces {} should fall through to inheritance
         if (item.quantity && (item.quantity.value !== null || item.quantity.unit || item.quantity.type === 'TextQuantity')) {
             const cleanQty = (0, utils_1.minifyQuantity)(item.quantity);
             if (cleanQty !== undefined)
@@ -250,41 +168,17 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                 obj.unit = item.quantity.unit;
             if (item.quantity.type === 'TextQuantity')
                 obj.qty = item.quantity.value;
-            // Normalize explicit quantity
-            if (obj.qty && typeof obj.qty === 'number') {
-                const norm = (0, mass_normalization_1.normalizeMass)(obj.qty, obj.unit || '', item.name, ctx.densityOverrides, ctx.options);
-                if (norm) {
-                    obj.normalizedMass = norm.mass;
-                    obj.conversionMethod = norm.method;
-                    obj.isEstimate = norm.isEstimate;
-                }
-            }
         }
-        else {
-            // No quantity -> Inherit mass from intermediate
-            if (ctx.variableWeights.has(id)) {
-                const w = ctx.variableWeights.get(id);
-                if (w) {
-                    obj.normalizedMass = w.mass;
-                    obj.isEstimate = w.isPartial;
-                    obj.conversionMethod = 'physical'; // Inherited
-                }
-            }
-            else {
-                console.log(`[DEBUG] Variable ${id} not found. Available:`, Array.from(ctx.variableWeights.keys()));
-            }
-        }
-        // Only add to section ingredients (for Mass Calc) if it's NOT a local intermediate
-        // Local intermediates are already counted in the steps that created them.
         if (!ctx.currentSectionIntermediates.has(item.name)) {
             secIngredients.push(obj);
         }
         return obj;
     }
+    // 5. Process Intermediate Declarations (creating a sub-product like a dough)
     if (item.type === 'IntermediateDecl') {
         const id = (0, utils_1.slugify)(item.name);
         ctx.intermediateDecl = id;
-        ctx.currentSectionIntermediates.add(item.name); // Track local declaration
+        ctx.currentSectionIntermediates.add(item.name);
         if (!registry.ingredients.has(id)) {
             registry.ingredients.set(id, { id, name: item.name, is_intermediate: true });
         }
@@ -297,7 +191,7 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
     }
     if (item.type === 'Text')
         return item.value;
-    // Timer/Temperature logic (keep same)
+    // 6. Process Timers and Temperatures
     if (item.type === 'Timer' || item.type === 'Temperature') {
         const obj = { type: item.type.toLowerCase() };
         if (item.name)
@@ -322,15 +216,21 @@ function processBlockItem(item, ctx, registry, secIngredients, secCookware) {
                     ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type, loc: item.loc });
                 }
             }
-            return obj;
         }
+        return obj;
     }
+    // 7. Process Step Comments
     if (item.type === 'Comment') {
         return { type: 'comment', value: item.value, kind: item.kind };
     }
     return item;
 }
-function processSections(astChildren, registry, overrides, options) {
+/**
+ * Main structural step/section processor.
+ * Builds global scopes, registers intermediate recipe variables, schedules steps,
+ * handles async background tasks, and calculates active and total duration metrics.
+ */
+function processSections(astChildren, registry, options) {
     const ctx = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -338,13 +238,12 @@ function processSections(astChildren, registry, overrides, options) {
         definedIntermediates: new Set(),
         usedIntermediates: new Set(),
         currentSectionIntermediates: new Set(),
-        variableWeights: new Map(),
         globalScopes: new Map(),
-        densityOverrides: overrides || {},
         options
     };
     const sections = [];
     let blocksToProcess = astChildren;
+    // Wrap raw top-level steps into an implicit default section if none exist
     if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
         blocksToProcess = [{ type: 'Section', title: null, children: astChildren }];
     }
@@ -355,6 +254,7 @@ function processSections(astChildren, registry, overrides, options) {
         if (section.type !== 'Section')
             return;
         ctx.currentSectionIntermediates.clear();
+        // Register variables outputted by previous sections
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;
             if (ctx.globalScopes.has(varName)) {
@@ -383,6 +283,7 @@ function processSections(astChildren, registry, overrides, options) {
                 const stepAsyncTasks = [];
                 const stepContentObjects = [];
                 ctx.intermediateDecl = null;
+                // Process all items in the step sequentially
                 block.children.forEach((item) => {
                     const processed = processBlockItem(item, ctx, registry, sectionIngredients, sectionCookware);
                     if (processed) {
@@ -390,7 +291,8 @@ function processSections(astChildren, registry, overrides, options) {
                         if (typeof processed !== 'string') {
                             const p = processed;
                             if (p.type === 'timer' && p.quantity) {
-                                const duration = (0, units_1.quantityToMinutes)({ value: p.quantity, unit: p.unit });
+                                const duration = (0, utils_1.quantityToMinutes)({ value: p.quantity, unit: p.unit });
+                                // Asynchronous background task (Gantt track split)
                                 if (p.isAsync) {
                                     stepAsyncTasks.push({
                                         name: p.name || 'Timer',
@@ -400,12 +302,14 @@ function processSections(astChildren, registry, overrides, options) {
                                     activeBackgroundTasks.push({ end: cookCursor + localActiveTime + duration });
                                 }
                                 else {
+                                    // Synchronous task (blocks the main workflow)
                                     localActiveTime += duration;
                                 }
                             }
                         }
                     }
                 });
+                // Apply standard fallback active duration for empty step actions (2 min)
                 if (localActiveTime === 0 && stepAsyncTasks.length === 0) {
                     localActiveTime = 2;
                 }
@@ -426,28 +330,7 @@ function processSections(astChildren, registry, overrides, options) {
                 }
                 cookCursor += localActiveTime;
                 globalActiveTime += localActiveTime;
-                let stepMass = 0;
-                let stepValid = true;
-                stepContentObjects.forEach(p => {
-                    if (typeof p !== 'string') {
-                        // Prioritize normalized mass
-                        if (p.normalizedMass) {
-                            stepMass += p.normalizedMass;
-                        }
-                        else if (p.qty && typeof p.qty === 'number' && p.unit) {
-                            // Last resort fallback
-                            const norm = (0, mass_normalization_1.normalizeMass)(p.qty, p.unit, p.name, ctx.densityOverrides, ctx.options);
-                            if (norm)
-                                stepMass += norm.mass;
-                        }
-                        // Check validity for partial status
-                        if (p.type === 'ingredient' && !p.normalizedMass)
-                            stepValid = false;
-                    }
-                });
                 if (ctx.intermediateDecl) {
-                    const varId = ctx.intermediateDecl;
-                    ctx.variableWeights.set(varId, { mass: stepMass, isPartial: !stepValid });
                     stepObj.intermediate_preparation = ctx.intermediateDecl;
                 }
                 steps.push(stepObj);
@@ -464,24 +347,13 @@ function processSections(astChildren, registry, overrides, options) {
         };
         if (section.intermediateDecl) {
             res.intermediate_preparation = section.intermediateDecl.name;
-            let secMass = 0;
-            let partial = false;
-            res.ingredients.forEach(ing => {
-                if (ing.normalizedMass) {
-                    secMass += ing.normalizedMass;
-                }
-                else {
-                    partial = true; // Conservative
-                }
-            });
-            const varId = (0, utils_1.slugify)(section.intermediateDecl.name);
-            ctx.variableWeights.set(varId, { mass: secMass, isPartial: partial });
         }
         if (section.retroPlanning) {
             res.retro_planning = section.retroPlanning;
         }
         sections.push(res);
     });
+    // Compute maximum workflow end time including background async tasks
     let maxBackgroundTaskEnd = 0;
     activeBackgroundTasks.forEach(t => {
         if (t.end > maxBackgroundTaskEnd)

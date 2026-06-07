@@ -1,8 +1,9 @@
-import { RecipeAST, CompilationResult } from 'gram-parser';
-export { configureIngredientDb } from './ingredient_db';
+import { RecipeAST, CompilationResult } from '@gram/parser';
 export interface CompilerOptions {
-    enableMassNormalization?: boolean;
-    enableYieldManagement?: boolean;
-    enableNutritionalEstimation?: boolean;
 }
+/**
+ * Main entry point of the Gram compiler.
+ * Transforms a raw Recipe AST into a clean, structured CompilationResult
+ * by compiling sections, generating the shopping list, and calculating preparation times.
+ */
 export declare function compile(ast: RecipeAST, options?: CompilerOptions): CompilationResult;

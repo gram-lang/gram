@@ -1,6 +1,6 @@
 {
-  "name": "gram-playground",
-  "version": "0.7.0",
+  "name": "@gram/playground",
+  "version": "0.8.0",
   "description": "Browser-based playground and IDE for the GRAM recipe language",
   "author": "abiwab",
   "license": "GPL-3.0",
@@ -19,8 +19,9 @@
   },
   "dependencies": {
     "@webcoder49/code-input": "^2.8.0",
-    "gram-compiler": "file:../compiler",
-    "gram-parser": "file:../parser",
+    "@gram/compiler": "file:../compiler",
+    "@gram/parser": "file:../parser",
+    "@gram/analyzer": "file:../analyzer",
     "ohm-js": "^17.2.1"
   },
   "devDependencies": {

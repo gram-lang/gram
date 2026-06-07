@@ -57,9 +57,7 @@ GRAM {
   Alternative = simpleIngredient ("|" simpleIngredient)+
   
   // Rule: Quantity is mandatory (it's the delimiter)
-  simpleIngredient = "@" modifier* name state? alias? ingredientQuantity preparation? composite?
-  
-  state = ":" name
+  simpleIngredient = "@" modifier* name alias? ingredientQuantity preparation? composite?
 
   modifier = "?" | "-" | "*" | "&"
   alias = "[" space* name space* "]"

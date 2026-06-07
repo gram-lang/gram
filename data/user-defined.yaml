@@ -1,6 +1,0 @@
-# User Defined Ingredients
-# Use this file to add new ingredients or override existing ones.
-# Format:
-# ingredient_id:
-#   text: "Display Name"
-#   ...

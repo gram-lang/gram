@@ -60,18 +60,6 @@ Even if `@butter{20g}` and `@&butter{20g}` both add 20g to the shopping list, th
     *   `@&butter{}` -> "Use the butter defined earlier." -> **No effect** on shopping list. 
 
 **Best Practice:** Use simple declaration (`@name{}`) only for the *first* time an ingredient appears. Use reference (`@&name{}`) for *all subsequent uses*.
-
-## Ingredient States (`:state`)
-
-Some ingredients change their nutritional properties or density depending on their state (e.g. cooked vs raw, whole vs grated).
-
-Syntax: `@name:state`
-
-*   `@mushroom:canned{400g}` -> Uses nutritional data for a *canned* mushroom.
-*   `@parsley:dried{10g}` -> Calculation based on dried parsley density/macros.
-
-If the state is not defined in the database, the compiler will emit a **Warning** (`UNKNOWN_STATE`) and fall back to the default values.
-
 ## Database Validation
 
 GRAM now checks your ingredients against a database of known ingredients (French Ciqual/USDA derived). 

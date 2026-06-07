@@ -1,20 +1,13 @@
-import { ProcessedSection, Registry, Usage } from 'gram-parser';
+import { ProcessedSection, Registry, Usage } from '@gram/parser';
 import { CompilerOptions } from './core';
 interface ShoppingListItem {
     id: string;
     name?: string;
     qty?: number;
     unit?: string | null;
-    state?: string;
     variable_entries?: string[];
-    sureMass?: number;
     otherUnits?: Record<string, number>;
     variableParts?: string[];
-    _hasSure?: boolean;
-    normalizedMass?: number;
-    isEstimate?: boolean;
-    conversionMethod?: string;
-    purchasingMass?: number;
 }
 interface CompositeItem {
     type: 'composite';
@@ -24,5 +17,10 @@ interface CompositeItem {
     _subUsageMap: Map<string, number>;
     _usageAccumulator: Map<string, Partial<Usage>>;
 }
-export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry, overrides?: Record<string, number>, options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[];
+/**
+ * Main entry point for shopping list generation.
+ * Iterates through all compiled sections and merges identical ingredients by ID,
+ * aggregates compatible quantities, handles composite/parent sub-recipes, and flags circular references.
+ */
+export declare function generateShoppingList(sections: ProcessedSection[], registry: Registry, options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[];
 export {};

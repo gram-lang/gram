@@ -198,13 +198,12 @@ semantics.addOperation('toAST', {
         return { type: 'Alternative', options, loc: { start: this.source.startIdx, end: this.source.endIdx } } as AlternativeAST;
     },
 
-    simpleIngredient(_at, _mods, _name, _state, _alias, _qty, _prep, _comp) {
+    simpleIngredient(_at, _mods, _name, _alias, _qty, _prep, _comp) {
         const modifiers = _mods.children.map(m => m.sourceString);
         return {
             type: 'Ingredient',
             name: _name.sourceString.trim(),
             modifiers,
-            state: getOpt(_state),
             quantity: _qty.toAST(),
             alias: getOpt(_alias),
             preparation: getOpt(_prep),
@@ -212,8 +211,6 @@ semantics.addOperation('toAST', {
             loc: { start: this.source.startIdx, end: this.source.endIdx }
         } as IngredientAST;
     },
-
-    state(_colon, name) { return clean(name.sourceString); },
 
     composite(_lt, _sp1, _at, _sp2, _name, _sp3, _qty) {
         return {

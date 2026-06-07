@@ -1,6 +1,5 @@
-import { DEFAULT_SOURCES } from './ingredients/default_db';
-import { configureIngredientDb } from './ingredient_db';
 export * from './core';
-
-// Initialize default DB for standard usage
-configureIngredientDb(DEFAULT_SOURCES);
+export * from './utils';
+export * from './shopping';
+export * from './processor';
+export * from './metrics';

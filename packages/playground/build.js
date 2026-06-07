@@ -64,8 +64,9 @@ esbuild.build({
   // If we set it to [name], we might get conflicts or cache issues, but git history will be clean.
   chunkNames: 'chunks/[name]', 
   alias: {
-      'gram-parser': shimmedParserPath,
-      'gram-compiler': path.resolve(__dirname, '../compiler/dist/lite.js')
+      '@gram/parser': shimmedParserPath,
+      '@gram/compiler': path.resolve(__dirname, '../compiler/dist/index.js'),
+      '@gram/analyzer': path.resolve(__dirname, '../analyzer/dist/index.js')
   },
   plugins: [
       require('esbuild-plugin-yaml').yamlPlugin()
@@ -80,7 +81,7 @@ esbuild.build({
 
     // Copy examples to dist
     // Copy examples to dist and generate manifest
-    const examplesSrc = path.join(__dirname, '../../examples');
+    const examplesSrc = path.join(__dirname, 'src/examples');
     const examplesDest = path.join(__dirname, 'dist/examples');
     if (!fs.existsSync(examplesDest)) {
         fs.mkdirSync(examplesDest, { recursive: true });

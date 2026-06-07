@@ -1,12 +1,28 @@
-import { getAST } from 'gram-parser';
-import { compile, configureIngredientDb } from 'gram-compiler';
+import { getAST } from '@gram/parser';
+import { compile, configureIngredientDb } from '@gram/compiler';
+import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
 import gramGrammar from './gram-highlight.js';
 
+let fullDatabase = {};
+
 // Lazy load Ingredient Database
 import('./db_bundle.js').then(({ DEFAULT_SOURCES }) => {
-    configureIngredientDb(DEFAULT_SOURCES);
+    // Build the lookup record for the analyzer
+    DEFAULT_SOURCES.forEach(source => {
+        if (source.data) {
+            Object.assign(fullDatabase, source.data);
+        }
+    });
+
+    // Also keep the old configureIngredientDb for compiler if it still needs some registry info
+    // Actually compiler doesn't use it anymore for mass, but might use it for registry names?
+    // Let's keep it if it exists.
+    if (typeof configureIngredientDb === 'function') {
+        configureIngredientDb(DEFAULT_SOURCES);
+    }
+
     // Trigger update to re-calculate macros with data
     update();
 }).catch(err => console.error("Failed to load database:", err));
@@ -36,9 +52,13 @@ const optMass = document.getElementById('opt-mass');
 const optYield = document.getElementById('opt-yield');
 const optNutrition = document.getElementById('opt-nutrition');
 
-if (localStorage.getItem('optMass') === 'true') optMass.checked = true;
-if (localStorage.getItem('optYield') === 'true') optYield.checked = true;
-if (localStorage.getItem('optNutrition') === 'true') optNutrition.checked = true;
+// if (localStorage.getItem('optMass') === 'true') optMass.checked = true;
+// if (localStorage.getItem('optYield') === 'true') optYield.checked = true;
+// if (localStorage.getItem('optNutrition') === 'true') optNutrition.checked = true;
+
+optMass.checked = false;
+optYield.checked = false;
+optNutrition.checked = false;
 
 function updateExperimentalDeps() {
     const labelYield = document.getElementById('label-opt-yield');
@@ -126,6 +146,14 @@ let outputMode = 'json'; // 'json' | 'markdown' | 'html'
 function getQty(item) {
     if (item.qty !== undefined) {
         if (typeof item.qty === 'number') return { value: item.qty, text: String(item.qty) };
+        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
+            const marker = item.qty.referenceType === 'variable' ? '&' : '@';
+            return { 
+                value: null, 
+                text: `${item.qty.percent}% of ${marker}${item.qty.target}`,
+                isRelative: true
+            };
+        }
         return item.qty;
     }
     // Fallback for old getters, check if S and S.quantity exists
@@ -142,6 +170,11 @@ function formatQuantityValue(q) {
     
     // { type: 'fraction', value: 0.5, text: "1/2" }
     if (q.text) return q.text;
+
+    if (q.type === 'RelativeQuantity') {
+        const marker = q.referenceType === 'variable' ? '&' : '@';
+        return `${q.percent}% of ${marker}${q.target}`;
+    }
     
     // { value: 123 }
     if (q.value !== undefined) return q.value;
@@ -423,7 +456,18 @@ function update() {
             enableYieldManagement: optMass.checked && optYield.checked,
             enableNutritionalEstimation: optNutrition.checked
         };
-        const result = compile(ast, compilerOptions);
+        let result = compile(ast, compilerOptions);
+        
+        // Physical Analysis (Mass/Nutrition)
+        const analysisOptions = {
+            enableMassNormalization: optMass.checked,
+            enableYieldManagement: optMass.checked && optYield.checked,
+            enableNutritionalEstimation: optNutrition.checked
+        };
+        const analysis = analyze(result, fullDatabase, analysisOptions);
+        result = analysis.result;
+        // In the playground, we gracefully ignore missingIngredients for now, 
+        // as it's primarily for build-time database synchronization.
         
         // Prepare content
         let content = '';

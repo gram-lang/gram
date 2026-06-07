@@ -72,7 +72,6 @@ export interface IngredientAST extends NodeAST {
     type: 'Ingredient';
     name: string;
     modifiers: Modifier[];
-    state?: string | null;
     quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
     alias?: string | null;
     preparation?: string | null;
@@ -128,10 +127,6 @@ export interface Registry {
     }>;
     warnings: any[];
 }
-export interface VariableWeight {
-    mass: number;
-    isPartial: boolean;
-}
 export interface Context {
     warnings: any[];
     intermediateDecl: string | null;
@@ -139,16 +134,13 @@ export interface Context {
     definedIntermediates: Set<string>;
     usedIntermediates: Set<string>;
     currentSectionIntermediates: Set<string>;
-    variableWeights: Map<string, VariableWeight>;
     globalScopes: Map<string, string>;
-    densityOverrides: Record<string, number>;
 }
 export interface Usage {
     id: string;
     qty?: number | string | QuantityValueAST;
     unit?: string | null;
     modifiers?: string[];
-    state?: string | null;
     fixed?: boolean;
     alias?: string | null;
     preparation?: string | null;
@@ -164,36 +156,6 @@ export interface Usage {
     type?: string;
     options?: any[];
     name?: string;
-    normalizedMass?: number;
-    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
-    isEstimate?: boolean;
-}
-export interface MassMetrics {
-    totalMass: number;
-    massStatus: 'precise' | 'estimated' | 'incomplete';
-    missingMassIngredients: string[];
-}
-export interface NutritionMetrics {
-    total: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        sugar?: number;
-        fiber?: number;
-        salt?: number;
-    };
-    perPortion?: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        sugar?: number;
-        fiber?: number;
-        salt?: number;
-    };
-    isEstimate: boolean;
-    coverage: number;
 }
 export interface ProcessedSection {
     title: string | null;
@@ -202,7 +164,6 @@ export interface ProcessedSection {
     steps: ProcessedStep[];
     intermediate_preparation?: string;
     retro_planning?: string | null;
-    metrics?: MassMetrics;
 }
 export interface ProcessedStep {
     type: 'step';
@@ -238,6 +199,5 @@ export interface CompilationResult {
         totalTime: number;
         activeTime: number;
         preparationTime: number;
-        nutrition?: NutritionMetrics;
-    } & MassMetrics;
+    };
 }

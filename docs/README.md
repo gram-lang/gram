@@ -19,18 +19,23 @@ The core language specification and usage guides.
 *   [**Composites**](./syntax_details/08_composite_ingredients.md) - Driver/Passenger logic (`<`).
 
 
-### Compiler Features
-*   [**Mass Unification**](./compiler_features/01_mass_unification.md) *(Experimental)* - How units are converted to grams.
-*   [**Yield Management**](./compiler_features/02_yield_management.md) *(Experimental)* - Net vs Gross weight (Waste factor).
-*   [**Nutritional Estimation**](./compiler_features/03_nutritional_estimation.md) *(Experimental)* - Calorie and Macro calculation.
-*   [**Time Metrics & Scheduling**](./compiler_features/04_time_and_scheduling.md) - Active Time, Total Time, and Retro-planning.
-*   [**Shopping List Generation**](./compiler_features/05_shopping_list_logic.md) - Aggregation, alternatives, and ghost references.
+### Advanced Calculations & Capabilities
+Detailed explanation of compiler and analyzer features.
 
-### Technical
+*   **[Features Overview](./features/README.md)** - Split between compile-time and analysis-time computations.
+*   [**Shopping List Generation**](./features/05_shopping_list_logic.md) - Aggregation, alternatives, and ghost references.
+*   [**Time Metrics & Scheduling**](./features/04_time_and_scheduling.md) - Active Time, Total Time, and Retro-planning.
+*   [**Mass Normalization**](./features/01_mass_normalization.md) - How units are resolved to grams.
+*   [**Yield Management**](./features/02_yield_management.md) - Net vs Gross weight (Waste factor).
+*   [**Nutritional Estimation**](./features/03_nutritional_estimation.md) - Calorie and Macro calculation.
+
+### Technical & Architecture
 For contributors and developers implementing GRAM:
-*   [**Parsing Architecture**](./technical/01_parsing_architecture.md)
-*   [**JSON Output Schema**](./technical/02_json_output.md)
-*   [**Compiler Options**](./technical/04_compiler_options.md)
+
+*   [**Parsing Architecture**](./technical/01_parsing_architecture.md) - The 4-stage pipeline and execution logic.
+*   [**JSON Output Schema**](./technical/02_json_output.md) - Structural vs analyzed JSON output.
+*   [**Options & Config**](./technical/04_options.md) - Compiler and analyzer configurations.
+*   [**Ingredient Database**](./technical/03_ingredient_database.md) - Format, i18n, and density mapping schema.
 
 ### Helpers
 

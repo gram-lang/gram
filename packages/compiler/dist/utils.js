@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cleanObject = exports.createCleanUsage = exports.minifyQuantity = exports.slugify = void 0;
+exports.quantityToMinutes = exports.cleanObject = exports.createCleanUsage = exports.minifyQuantity = exports.slugify = void 0;
+/**
+ * Normalizes user-inputted strings (like ingredient names) into URL-friendly,
+ * standard alphanumeric identifiers (slugs).
+ *
+ * Used globally to generate robust keys/IDs (e.g., "basmati-rice" from "Basmati Rice")
+ * to ensure reliable lookups and comparisons across ingredients and databases.
+ */
 const slugify = (text) => {
     return text
         .toString()
@@ -14,6 +21,13 @@ const slugify = (text) => {
         || 'unknown';
 };
 exports.slugify = slugify;
+/**
+ * Simplifies complex parsed Quantity AST structures into compact JSON-friendly formats.
+ *
+ * Extract raw numbers from simple single-value nodes, or preserve ranges and fractions
+ * as clean objects. Explicitly ignores RelativeQuantities since their evaluation is
+ * deferred to the analyzer.
+ */
 const minifyQuantity = (q) => {
     if (!q)
         return undefined;
@@ -36,8 +50,13 @@ const minifyQuantity = (q) => {
     return q;
 };
 exports.minifyQuantity = minifyQuantity;
-const mass_normalization_1 = require("./mass_normalization");
-const createCleanUsage = (item, id, overrides, options) => {
+/**
+ * Standardizes a raw step/section ingredient or cookware item into a clean, unified `Usage` object.
+ *
+ * Maps modifier symbols (?, -, &, *) to semantic names, handles fixed quantity states,
+ * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
+ */
+const createCleanUsage = (item, id, options) => {
     const obj = { id };
     const qtyNode = item.quantity;
     let cleanQty = undefined;
@@ -54,31 +73,6 @@ const createCleanUsage = (item, id, overrides, options) => {
         obj.qty = cleanQty;
     if (qtyNode && qtyNode.unit)
         obj.unit = qtyNode.unit;
-    // Mass Normalization Integration
-    let valForCalc = null;
-    if (typeof obj.qty === 'number')
-        valForCalc = obj.qty;
-    else if (obj.qty && typeof obj.qty === 'object' && typeof obj.qty.value === 'number') {
-        valForCalc = obj.qty.value; // Handles Range (avg) and Fraction
-    }
-    if (valForCalc !== null) {
-        const unitForCalc = obj.unit || 'unit';
-        // Use item.name directly for lookup, do not attach to obj
-        const norm = (0, mass_normalization_1.normalizeMass)(valForCalc, unitForCalc, item.name, overrides, options);
-        if (norm) {
-            obj.normalizedMass = norm.mass;
-            obj.conversionMethod = norm.method;
-            obj.isEstimate = norm.isEstimate;
-        }
-    }
-    else if (item.quantity && item.quantity.type === 'Quantity' && item.quantity.value === null) {
-        // Explicitly empty braces {} -> Negligible mass (0g)
-        if (options?.enableMassNormalization !== false) {
-            obj.normalizedMass = 0;
-            obj.conversionMethod = 'default';
-            obj.isEstimate = false;
-        }
-    }
     if (item.modifiers && item.modifiers.length > 0) {
         const MODIFIER_MAP = {
             '?': 'optional',
@@ -105,8 +99,6 @@ const createCleanUsage = (item, id, overrides, options) => {
         obj.alias = item.alias;
     if (item.preparation)
         obj.preparation = item.preparation;
-    if (item.state)
-        obj.state = item.state;
     if (item.composite) {
         const comp = {};
         if (item.composite.parent)
@@ -124,6 +116,13 @@ const createCleanUsage = (item, id, overrides, options) => {
     return obj;
 };
 exports.createCleanUsage = createCleanUsage;
+/**
+ * Recursively cleans a compiled output object by removing `null` and `undefined` properties.
+ *
+ * Retains empty arrays for structural core fields (`ingredients`, `cookware`, `steps`, `sections`, etc.)
+ * to preserve a guaranteed API schema for consumers (avoiding undefined references),
+ * while stripping other empty arrays to keep the JSON output lightweight and neat.
+ */
 const cleanObject = (obj) => {
     if (obj === null || obj === undefined)
         return undefined;
@@ -137,8 +136,11 @@ const cleanObject = (obj) => {
             const val = obj[key];
             const cleanedVal = (0, exports.cleanObject)(val);
             if (cleanedVal !== null && cleanedVal !== undefined) {
-                if (Array.isArray(cleanedVal) && cleanedVal.length === 0)
-                    continue;
+                if (Array.isArray(cleanedVal) && cleanedVal.length === 0) {
+                    const keepKeys = ['ingredients', 'cookware', 'steps', 'sections', 'shopping_list', 'warnings'];
+                    if (!keepKeys.includes(key))
+                        continue;
+                }
                 res[key] = cleanedVal;
             }
         }
@@ -147,3 +149,80 @@ const cleanObject = (obj) => {
     return obj;
 };
 exports.cleanObject = cleanObject;
+/**
+ * Internal translation dictionary for time unit aliases (English and French).
+ *
+ * Maps alternative time representations (e.g. "heures", "mins", "seconde")
+ * to canonical codes: 'h' (hours), 'm' (minutes), or 's' (seconds).
+ */
+const TIME_ALIASES = {
+    // Hours
+    'h': 'h', 'hour': 'h', 'hours': 'h', 'heure': 'h', 'heures': 'h',
+    // Minutes
+    'm': 'm', 'min': 'm', 'mins': 'm', 'minute': 'm', 'minutes': 'm',
+    // Seconds
+    's': 's', 'sec': 's', 'secs': 's', 'second': 's', 'seconds': 's', 'seconde': 's', 'secondes': 's'
+};
+/**
+ * Helper to normalize a time unit string into its canonical alias ('h', 'm', 's').
+ */
+const resolveTimeUnit = (unit) => {
+    if (!unit)
+        return '';
+    const clean = unit.trim().toLowerCase();
+    return TIME_ALIASES[clean] || clean;
+};
+/**
+ * Converts a recipe time quantity AST (timer or active duration) into a unified number of minutes.
+ *
+ * Supports ranges (takes the average), simple numbers, and fractions, and performs
+ * conversions from hours ('h') or seconds ('s') based on the resolved time unit.
+ */
+const quantityToMinutes = (qty) => {
+    if (!qty)
+        return 0;
+    let val = 0;
+    let unit = '';
+    // Handle AST objects
+    if (typeof qty === 'object') {
+        if (qty.type === 'Quantity' && qty.value) {
+            const sub = qty.value;
+            if (sub.type === 'single')
+                val = sub.value;
+            if (sub.type === 'fraction')
+                val = sub.value;
+            if (sub.type === 'range' && sub.range)
+                val = (sub.range.min + sub.range.max) / 2;
+            unit = qty.unit || '';
+        }
+        else if (qty.value !== undefined) {
+            // Fallback for simple objects
+            let raw = qty.value;
+            if (typeof raw === 'object' && raw !== null) {
+                if (raw.type === 'single')
+                    raw = raw.value;
+                else if (raw.type === 'fraction')
+                    raw = raw.value;
+                else if (raw.type === 'range' && raw.range)
+                    raw = (raw.range.min + raw.range.max) / 2;
+            }
+            val = raw;
+            unit = qty.unit || '';
+        }
+    }
+    else {
+        return 0;
+    }
+    if (typeof val !== 'number')
+        return 0;
+    const u = resolveTimeUnit(unit);
+    // Time conversions to minutes
+    if (u === 'h')
+        return val * 60;
+    if (u === 'm')
+        return val;
+    if (u === 's')
+        return val / 60;
+    return val;
+};
+exports.quantityToMinutes = quantityToMinutes;

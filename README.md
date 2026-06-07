@@ -117,8 +117,8 @@ npm run dev
 *(See `parser/README.md` for API details)*
 
 ```javascript
-const { getAST } = require('gram-parser');
-const { compile } = require('gram-compiler');
+const { getAST } = require('@gram/parser');
+const { compile } = require('@gram/compiler');
 
 const ast = getAST(myGramString);
 const result = compile(ast);
