@@ -294,8 +294,8 @@ are 5 modifiers:
   - `&` **Reference**. References another ingredient with the same name.
     *   **Safety**: Verifies that the ingredient was previously declared.
     *   **Logic**:
-        *   `@&butter{50g}`: Adds 50g to the shopping list for 'butter'.
-        *   `@&butter{}`: Does NOT add to the shopping list. (Use for instructions like "Add the reserved butter").
+        *   `@&butter{50g}`: Adds 50g to the shopping list for 'butter', and includes it in the current section's ingredient list.
+        *   `@&butter{}`: Does NOT add to the shopping list. (Use for instructions like "Add the reserved butter"). It is also excluded from the section's ingredient list (mise en place) to keep it clean.
     ```gram
     Add @flour{200g} [...], then drench the chicken in this @&flour{}.
     ```

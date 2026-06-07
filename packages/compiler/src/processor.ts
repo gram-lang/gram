@@ -114,7 +114,13 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
              ctx.seenNames.add(item.name);
         }
         
-        if (!item.modifiers || !item.modifiers.includes('&') || item.quantity) {
+        const hasQuantityValue = !!(item.quantity && (
+             (item.quantity.type === 'Quantity' && (item.quantity.value !== null || item.quantity.unit !== null)) ||
+             item.quantity.type === 'RelativeQuantity' ||
+             item.quantity.type === 'TextQuantity'
+        ));
+        
+        if (!item.modifiers || !item.modifiers.includes('&') || hasQuantityValue) {
              secIngredients.push(usage);
         }
         

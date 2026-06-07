@@ -62,8 +62,8 @@ The parser enforces structures to ensure recipe metrics are computable:
 *   **No Physical Computations**: The compiler operates strictly on the text and mathematical structure. It does not load database files or perform unit weight scaling (e.g. converting `cup` to grams).
 *   **Stack-based Section Ingredient Resolution**: Section ingredients are recorded exactly as typed.
     *   **Modifiers (`@&` Reference):**
-        *   If it has a quantity (`@&butter{50g}`): Treat as a new measured amount of an existing ingredient ➡️ **Add to shopping list**.
-        *   If it has NO quantity (`@&butter{}`): Treat as a flow instruction (e.g., "Use the reserved butter") ➡️ **Ignore in shopping list**.
+        *   If it has a quantity (`@&butter{50g}`): Treat as a new measured amount of an existing ingredient ➡️ **Add to shopping list** and **add to section ingredients**.
+        *   If it has NO quantity (`@&butter{}`): Treat as a flow instruction (e.g., "Use the reserved butter") ➡️ **Ignore in shopping list** and **exclude from section ingredients**.
 *   **Relative Quantities (`@{20% @target}`)**:
     *   The compiler checks for targets in the current scope, builds dependency links, and tracks formulas dynamically. It does not resolve these to absolute gram values; resolution is deferred to the `@gram/analyzer`.
 *   **Cycle Detection**: The compiler runs a DFS cycle detection pass to flag any self-referential or circular relative ingredient definitions.
