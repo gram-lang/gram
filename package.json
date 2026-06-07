@@ -13,5 +13,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.0"
   }
 }
