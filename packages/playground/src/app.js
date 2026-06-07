@@ -1173,7 +1173,27 @@ function formatCookwareHTML(item, registry) {
 
 
 // Initial state
+if (input && input.value) {
+    const lines = input.value.split('\n');
+    let minIndent = Infinity;
+    for (const line of lines) {
+        if (line.trim() !== '') {
+            const match = line.match(/^(\s*)/);
+            if (match) {
+                minIndent = Math.min(minIndent, match[1].length);
+            }
+        }
+    }
+    if (minIndent !== Infinity && minIndent > 0) {
+        input.value = lines.map(line => {
+            if (line.trim() === '') return '';
+            return line.slice(minIndent);
+        }).join('\n');
+    }
+    input.value = input.value.trim();
+}
 update();
+
 
 let isWarningsCollapsed = false;
 
