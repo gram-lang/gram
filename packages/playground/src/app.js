@@ -142,10 +142,38 @@ if (footer) {
 // Output Mode Logic
 let outputMode = 'json'; // 'json' | 'markdown' | 'html'
 
+function formatDecimalToFraction(value) {
+    if (typeof value !== 'number') return String(value);
+    
+    // Exact integers
+    if (Math.abs(value - Math.round(value)) < 0.01) {
+        return String(Math.round(value));
+    }
+
+    // Fractions only for values strictly below 1
+    if (value < 1) {
+        const commonFractions = [
+            { val: 0.5, str: '1/2' },
+            { val: 0.25, str: '1/4' },
+            { val: 0.75, str: '3/4' },
+            { val: 1/3, str: '1/3' },
+            { val: 2/3, str: '2/3' },
+            { val: 0.125, str: '1/8' },
+            { val: 0.375, str: '3/8' },
+            { val: 0.625, str: '5/8' },
+            { val: 0.875, str: '7/8' }
+        ];
+        const match = commonFractions.find(f => Math.abs(value - f.val) < 0.01);
+        if (match) return match.str;
+    }
+
+    return String(parseFloat(value.toFixed(2)));
+}
+
 // Helper for minified properties
 function getQty(item) {
     if (item.qty !== undefined) {
-        if (typeof item.qty === 'number') return { value: item.qty, text: String(item.qty) };
+        if (typeof item.qty === 'number') return { value: item.qty, text: formatDecimalToFraction(item.qty) };
         if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
             const marker = item.qty.referenceType === 'variable' ? '&' : '@';
             return { 

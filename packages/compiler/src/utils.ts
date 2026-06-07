@@ -213,3 +213,18 @@ export const quantityToMinutes = (qty: any): number => {
     
     return val; 
 };
+
+export const getNumericQty = (q: any): number | null => {
+    if (q === undefined || q === null) return null;
+    if (typeof q === 'number') return q;
+    
+    const val = q.type === 'Quantity' ? q.value : q;
+    if (val && typeof val === 'object') {
+        if (val.type === 'fraction' || val.type === 'range' || val.type === 'single') {
+            return val.value !== null ? val.value : null;
+        }
+    } else if (typeof val === 'number') {
+        return val;
+    }
+    return null;
+};

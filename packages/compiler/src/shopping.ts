@@ -1,4 +1,4 @@
-import { slugify, minifyQuantity } from './utils';
+import { slugify, minifyQuantity, getNumericQty } from './utils';
 import { detectCycles } from './graph';
 import { ProcessedSection, Registry, Usage, QuantityValueAST } from '@gram/parser';
 import { CompilerOptions } from './core';
@@ -89,8 +89,8 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  // Accumulate declared parent batch requirements (default to 1)
                  let declParentQty = 1;
                  if (item.composite && item.composite.quantity) {
-                      const minQ = minifyQuantity(item.composite.quantity);
-                      if (typeof minQ === 'number') declParentQty = minQ;
+                      const numQ = getNumericQty(item.composite.quantity);
+                      if (numQ !== null) declParentQty = numQ;
                  }
                  
                  const subId = item.id;
@@ -112,11 +112,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  const uEntry = comp._usageAccumulator.get(uKey)!;
                  
                  let childVal = 0;
-                 if (typeof item.qty === 'number') {
-                     childVal = item.qty;
-                 } else if (item.qty && typeof item.qty === 'object') {
-                     const m = minifyQuantity(item.qty);
-                     if (typeof m === 'number') childVal = m;
+                 const numQ = getNumericQty(item.qty);
+                 if (numQ !== null) {
+                     childVal = numQ;
                  }
                  
                  if (typeof uEntry.qty === 'number') {
@@ -151,21 +149,12 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                 if (item.formula.isGhost) {
                      isGhost = true;
                 } else {
-                     if (typeof item.qty === 'number') {
-                          numericQty = item.qty;
-                     }
+                     const numQ = getNumericQty(item.qty);
+                     if (numQ !== null) numericQty = numQ;
                 }
             } else {
-                if (typeof item.qty === 'number') {
-                    numericQty = item.qty;
-                } else if (item.qty && typeof item.qty === 'object') {
-                    const qObj = item.qty as QuantityValueAST;
-                    if (qObj.type === 'fraction') numericQty = qObj.value as number;
-                    else if (qObj.type === 'range') numericQty = qObj.value as number; 
-                    else if (qObj.type === 'single') {
-                         numericQty = qObj.value !== null ? (qObj.value as number) : 0;
-                    }
-                }
+                const numQ = getNumericQty(item.qty);
+                if (numQ !== null) numericQty = numQ;
             }
             
             // Push ghosts, variables, and circular warnings to alternative descriptions
