@@ -77,6 +77,7 @@ This monorepo contains the following packages in `packages/`:
 
 *   **`parser/`**: The core parser. Converts GRAM strings to an AST (Abstract Syntax Tree).
 *   **`compiler/`**: The compiler logic. Transforms the AST into the final Shopping List and Instructions JSON.
+*   **`analyzer/`**: The physical resolver. Handles mass normalization, yield management, and nutritional estimation based on an ingredient database.
 *   **`playground/`**: A web-based IDE to write GRAM and visualize the output (JSON, Markdown, Preview).
 
 And:

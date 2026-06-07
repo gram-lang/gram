@@ -163,6 +163,8 @@
 
     "@gram/compiler/zod": ["zod@4.3.5", "", {}, "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="],
 
+    "@gram/playground/@gram/analyzer": ["@gram/analyzer@file:packages/analyzer", { "dependencies": { "@gram/compiler": "file:../compiler", "@gram/parser": "file:../parser", "zod": "^3.22.4" }, "devDependencies": { "typescript": "^5.3.3" } }],
+
     "@gram/playground/@gram/compiler": ["@gram/compiler@file:packages/compiler", { "dependencies": { "@gram/parser": "file:../parser", "@types/js-yaml": "^4.0.9", "js-yaml": "^4.1.1", "zod": "^4.3.5" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 
     "@gram/playground/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
@@ -170,6 +172,10 @@
     "@gram/analyzer/@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", {}],
 
     "@gram/analyzer/@gram/compiler/zod": ["zod@4.3.5", "", {}, "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="],
+
+    "@gram/playground/@gram/analyzer/@gram/compiler": ["@gram/compiler@file:packages/compiler", {}],
+
+    "@gram/playground/@gram/analyzer/@gram/parser": ["@gram/parser@file:packages/parser", {}],
 
     "@gram/playground/@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", {}],
 
