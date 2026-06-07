@@ -47,9 +47,11 @@ To avoid syntax resolution conflicts, inline tokenization enforces this sequence
     *   Explicit Fixed (`#pan{=2}`) ➡️ **Explicit Fixed** (`fixed: true`).
 
 ### 2.4. Strict Timer & Temperature Validation
-The parser enforces strict structures to ensure scheduling metrics are computable:
+The parser enforces structures to ensure recipe metrics are computable:
 *   **Timers (`~{...}`):** Must have an explicit unit. Whitelisted units: `min` (minutes), `h` (hours), `d` (days), `s` (seconds).
-*   **Temperatures (`!{...}`):** Must have an explicit unit. Whitelisted units: `°C`, `°F`.
+*   **Temperatures (`!{...}`):** Supports two formats:
+    *   **Exact Temperatures:** Must have a numeric value and an explicit unit (whitelisted units: `°C`, `°F`).
+    *   **Semantic Temperatures:** Allows free-text qualitative descriptions (e.g., `low heat`, `froid`, `à ébullition`) inside the braces. Under the hood, these bypass numeric and unit validation and are exported as a flat `text` field in the final JSON.
 
 ---
 
