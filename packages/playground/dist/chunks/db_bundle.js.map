@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/db_bundle.js"],
-  "sourcesContent": ["export const DEFAULT_SOURCES = [];\n"],
-  "mappings": "mBAAO,IAAMA,EAAkB,CAAC",
-  "names": ["DEFAULT_SOURCES"]
-}
