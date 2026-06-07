@@ -324,7 +324,11 @@ function renderMarkdown(data) {
                                  str = `⏲️ ${qStr}`;
                              }
                          } else if (c.type === 'temperature') {
-                             str = `🔥${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
+                              if (c.text) {
+                                  str = `🔥${c.text}`;
+                              } else {
+                                  str = `🔥${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
+                              }
                          } else if (c.type === 'reference') {
                              const name = registry.ingredients[c.id]?.name || c.id;
                              str = `👉*${name}*`;
@@ -841,9 +845,13 @@ function renderHTML(data) {
                              const icon = c.isAsync ? '<i class="ph ph-hourglass"></i>' : '<i class="ph ph-timer"></i>';
                              str = `<span class="timer${asyncClass}" data-value="${q.value}" data-unit="${c.unit || ''}">${icon} ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
                          } else if (c.type === 'temperature') {
-                             const q = c.quantity || { value: '' };
-                             const qVal = formatQuantityValue(q);
-                             str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}"><i class="ph ph-thermometer"></i> ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
+                              if (c.text) {
+                                  str = `<span class="temp" data-semantic="${escapeHtml(c.text)}"><i class="ph ph-thermometer"></i> ${escapeHtml(c.text)}</span>`;
+                              } else {
+                                  const q = c.quantity || { value: '' };
+                                  const qVal = formatQuantityValue(q);
+                                  str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}"><i class="ph ph-thermometer"></i> ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
+                              }
                          } else if (c.type === 'reference') {
                              const name = registry.ingredients[c.id]?.name || c.id;
                              let refStr = `<span class="reference"><i class="ph ph-caret-circle-right"></i> ${escapeHtml(name)}`;

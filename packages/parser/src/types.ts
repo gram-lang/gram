@@ -129,7 +129,9 @@ export interface TimerAST extends NodeAST {
 export interface TemperatureAST extends NodeAST {
     type: 'Temperature';
     name?: string | null;
-    quantity: QuantityAST | TextQuantityAST;
+    value?: QuantityValueAST | null;
+    unit?: string | null;
+    text?: string | null;
 }
 
 export interface AlternativeAST extends NodeAST {

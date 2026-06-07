@@ -323,7 +323,24 @@ semantics.addOperation('toAST', {
 
     Temperature(_1, name, qty) {
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
-        return { type: 'Temperature', name: n, quantity: qty.toAST(), loc: { start: this.source.startIdx, end: this.source.endIdx } } as TemperatureAST;
+        const qAST = qty.toAST();
+        const base = {
+            type: 'Temperature' as const,
+            name: n,
+            loc: { start: this.source.startIdx, end: this.source.endIdx }
+        };
+
+        if (qAST.type === 'TextQuantity') {
+            return { ...base, text: qAST.value } as TemperatureAST;
+        }
+        if (qAST.type === 'Quantity' && !qAST.value) {
+            return { ...base, text: qAST.unit || '' } as TemperatureAST;
+        }
+        return {
+            ...base,
+            value: qAST.value || null,
+            unit: qAST.unit || null
+        } as TemperatureAST;
     },
     
     Comment(_1, text) { return { type: 'Comment', value: text.sourceString, kind: 'line', loc: { start: this.source.startIdx, end: this.source.endIdx } } as CommentAST; },

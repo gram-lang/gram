@@ -62,25 +62,36 @@ The compiler automatically estimates the "Mise en place" time based on the recip
 Trigger: `!`
 
 ### Syntax
-`!{valueUnit}`
 
+Temperatures support two formats: **Exact Temperatures** and **Semantic Temperatures**.
+
+#### 1. Exact Temperatures
+`!{valueUnit}`
 *   **Unit Mandatory.**
 *   **Supported Units:**
     *   `°C` (Celsius).
     *   `°F` (Fahrenheit).
+*   **Examples:**
+    *   `!{180°C}`
+    *   `!{350°F}`
 
-### Examples
-*   `!{180°C}`
-*   `!{350°F}`
+#### 2. Semantic Temperatures
+`!{description}`
+*   Allows generic free-text strings of characters inside the brackets for non-numeric contexts (e.g. stove settings, water status).
+*   **Examples:**
+    *   `!{low heat}`
+    *   `!{cold}`
+    *   `!{boiling}`
 
 ### Named Temperature
-Like timers.
+You can name the temperature for the UI. The name goes between `!` and the brace.
 ```gram
 Preheat the !oven{180°C}.
+Cook on !stove{low heat}.
 ```
 
 ## Best Practices
 
-1.  **Be numeric.** Avoid `~{about 10 minutes}`. Prefer `~{10min}` and add "about" in the surrounding text.
+1.  **Be numeric when possible.** Avoid `~{about 10 minutes}`. Prefer `~{10min}` and add "about" in the surrounding text.
 2.  **Ranges.** Use hyphens for uncertainties: `~{15-20min}`.
 3.  **Conversions.** The parser does not convert values (C -> F) in the code; it is up to the display engine ("front-end") to offer conversion if the user requests it. GRAM stores the exact raw value.

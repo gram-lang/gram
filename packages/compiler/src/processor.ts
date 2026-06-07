@@ -209,24 +209,45 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
     if (item.type === 'Text') return item.value;
     
     // 6. Process Timers and Temperatures
-    if (item.type === 'Timer' || item.type === 'Temperature') {
-         const obj: any = { type: item.type.toLowerCase() };
+    if (item.type === 'Timer') {
+         const obj: any = { type: 'timer' };
          if (item.name) obj.name = item.name;
-         if (item.type === 'Timer' && (item as any).isAsync) obj.isAsync = true;
+         if (item.isAsync) obj.isAsync = true;
          if (item.quantity) {
               const q = item.quantity;
               if (q.value) obj.quantity = q.value;
               let unit = q.unit;
-              if (item.type === 'Timer' && (unit === 'm' || unit === 'minutes')) unit = 'min';
+              if (unit === 'm' || unit === 'minutes') unit = 'min';
               if (unit) obj.unit = unit;
               
               if (q.type === 'TextQuantity') {
-                   ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in ${item.type}.`, item: (q as any).value, loc: item.loc });
+                   ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in Timer.`, item: (q as any).value, loc: item.loc });
                    obj.quantity = { type: 'text', value: (q as any).value }; 
               } else {
                    if (!unit) {
-                       ctx.warnings.push({ code: 'MISSING_UNIT', message: `${item.type} must have an explicit unit.`, item: item.name || item.type, loc: item.loc });
+                       ctx.warnings.push({ code: 'MISSING_UNIT', message: `Timer must have an explicit unit.`, item: item.name || 'Timer', loc: item.loc });
                    }
+               }
+          }
+          return obj;
+    }
+
+    if (item.type === 'Temperature') {
+         const obj: any = { type: 'temperature' };
+         if (item.name) obj.name = item.name;
+         if (item.text) {
+              obj.text = item.text;
+         } else {
+              if (item.value) obj.quantity = item.value;
+              if (item.unit) {
+                  obj.unit = item.unit;
+              } else {
+                  ctx.warnings.push({
+                      code: 'MISSING_UNIT',
+                      message: `Temperature must have an explicit unit.`,
+                      item: item.name || 'Temperature',
+                      loc: item.loc
+                  });
               }
          }
          return obj;
