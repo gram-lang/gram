@@ -35,6 +35,11 @@ Sections divide the recipe into major logical parts.
     *   `## Marinade {T-12h}` (12 hours before start).
 *   **Output**: `->&variable{}`. (See Variables doc).
 
+### The All-or-Nothing Rule
+GRAM enforces a strict structure logic:
+* **Implicit Mode:** If a recipe has **no** `##` sections at all, the entire body is treated as one single implicit section.
+* **Explicit Mode:** If a recipe uses **at least one** `##` section, then **all steps and comments must belong to a section**. You cannot place steps or comments before the first `##` header or mix flat steps with sectioned steps. Doing so will trigger a compilation error.
+
 ## 3. Steps
 
 One step = One paragraph.
