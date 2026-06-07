@@ -1,5 +1,5 @@
 {
-  "name": "gram-vscode-extension",
+  "name": "@gram/vscode-extension",
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language support for Gram recipe files",
   "version": "0.2.1",
