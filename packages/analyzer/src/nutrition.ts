@@ -1,7 +1,6 @@
 import { Usage } from '@gram/parser';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
-import { resolveState } from './i18n';
 import { NutritionMetrics, IngredientData } from './types';
 
 interface Macros {
@@ -79,21 +78,7 @@ export function calculateNutrition(
             } else if (data.states) {
                 knownCount++;
                 const factor = mass / 100.0;
-                
-                const stateRaw = item.state || 'default';
-                const stateKey = resolveState(stateRaw);
-
-                let targetState = 'default';
-                
-                if (data.states[stateKey]) {
-                    targetState = stateKey;
-                } else {
-                    if (stateKey !== 'default') {
-                         warnings.push(`UNKNOWN_STATE: Ingredient "${id}": Unknown state "${stateRaw}" (resolved: "${stateKey}"), using default macros.`);
-                    }
-                }
-
-                const stateData = data.states[targetState] || data.states['default'];
+                const stateData = data.states['default'];
                 
                 if (stateData && stateData.macros) {
                     const m = stateData.macros;
@@ -107,7 +92,7 @@ export function calculateNutrition(
                     if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
                     
                 } else {
-                     warnings.push(`MISSING_MACROS: Ingredient "${id}" (state: ${targetState}) has no macro data.`);
+                     warnings.push(`MISSING_MACROS: Ingredient "${id}" has no default macro data.`);
                 }
             }
         } else {
