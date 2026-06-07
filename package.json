@@ -12,6 +12,6 @@
     "dev": "echo '🚀 Starting Playground...' && npm start -w @gram/playground -s",
     "test": "echo \"Error: no test specified\" && exit 1",
     "change": "changeset",
-    "version-packages": "changeset version"
+    "version-packages": "bun run generate-release-note.ts && changeset version"
   }
 }
