@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "postinstall": "npm run build",
-    "build": "echo '🏗️ Building Parser, Compiler & Analyzer...' && npm run build -w @gram/parser -s && npm run build -w @gram/compiler -s && npm run build -w @gram/analyzer -s && echo '✅ Core build complete.'",
-    "build:playground": "echo '🎨 Building Playground...' && npm run build -w @gram/playground -s && echo '✅ Playground build complete.'",
+    "build": "echo '🏗️ Building Parser, Compiler & Analyzer...' && npm --prefix packages/parser run build && npm --prefix packages/compiler run build && npm --prefix packages/analyzer run build && echo '✅ Core build complete.'",
+    "build:playground": "echo '🎨 Building Playground...' && npm --prefix packages/playground run build && echo '✅ Playground build complete.'",
     "dev": "echo '🚀 Starting Playground...' && npm start -w @gram/playground -s",
     "test": "echo \"Error: no test specified\" && exit 1",
     "change": "changeset",
