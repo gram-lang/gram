@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
+  "changelog": [
+    "@changesets/cli/changelog",
+    {
+      "repo": "abiwab/gram"
+    }
+  ],
+  "commit": false,
+  "fixed": [
+    [
+      "@gram/analyzer",
+      "@gram/compiler",
+      "@gram/parser",
+      "@gram/playground",
+      "@gram/vscode-extension"
+    ]
+  ],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
