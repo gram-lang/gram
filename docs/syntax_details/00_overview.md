@@ -22,6 +22,7 @@ However, some keys have specific effects in the GRAM Compiler:
 *   `source`: URL(s) to the original recipe.
 *   `date`, `lastUpdated`: YYYY-MM-DD.
 *   `size`: Serving size description or dimensions (e.g. "20x20cm mold").
+*   `notes`: General notes about the recipe (e.g. "Tested on 2026-06-07. Decrease sugar next time.").
 
 ```yaml
 ---
@@ -145,6 +146,17 @@ Or block comments with `/* comment text */`.
 
 ```gram
 Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing
+```
+
+#### Placement Rules & General Notes
+* **Within Sections:** In a recipe with explicit sections (`## Section`), comments must reside inside a section (after the section header). You cannot place standalone comments at the very beginning of the recipe before the first section.
+* **Implicit Recipes:** In a recipe without any sections, comments can be placed anywhere.
+* **Recipe-Wide Notes:** To document recipe logs or general notes (e.g., *"Tested on 2026-06-07. Decrease sugar next time"*), do not use comments at the beginning of the file. Instead, use the **Frontmatter** metadata blocks at the top of the file:
+```gram
+---
+title: Layer Cake
+notes: "Tested on 2026-06-07. Decrease sugar next time."
+---
 ```
 
 ### Cookware
