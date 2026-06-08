@@ -41,9 +41,11 @@ export function calculatePreparationTime(sections: ProcessedSection[], registry:
     // Aggregate preparation time across all steps and sections
     sections.forEach(sec => {
         sec.steps.forEach(s => {
-                if (s.content) s.content.forEach((c: any) => {
+            if (s.type === 'step' && s.content) {
+                s.content.forEach((c: any) => {
                     t += countPrep(c);
                 });
+            }
         });
     });
     return t;

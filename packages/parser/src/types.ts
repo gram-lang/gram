@@ -31,8 +31,9 @@ export interface SectionAST extends NodeAST {
 export interface StepAST extends NodeAST {
     type: 'Step';
     action?: string | null;
-    children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST | ReferenceAST | AlternativeAST)[];
+    children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST | ReferenceAST | AlternativeAST | IntermediateDecl | CommentAST)[];
 }
+
 
 export interface CommentAST extends NodeAST {
     type: 'Comment';
@@ -46,7 +47,7 @@ export interface TextAST extends NodeAST {
     fallback?: boolean;
 }
 
-export interface IntermediateDecl {
+export interface IntermediateDecl extends NodeAST {
     type: 'IntermediateDecl';
     name: string;
 }
@@ -169,7 +170,7 @@ export interface Context {
 
 export interface Usage {
     id: string;
-    qty?: number | string | QuantityValueAST;
+    qty?: number | string | QuantityValueAST | RelativeQuantityAST | TextQuantityAST;
     unit?: string | null;
     modifiers?: string[];
     fixed?: boolean;
@@ -190,13 +191,10 @@ export interface Usage {
 }
 
 
-export interface ProcessedSection {
-    title: string | null;
-    ingredients: Usage[];
-    cookware: Usage[];
-    steps: ProcessedStep[];
-    intermediate_preparation?: string;
-    retro_planning?: string | null;
+export interface ProcessedComment {
+    type: 'comment';
+    value: string;
+    kind: 'line' | 'block';
 }
 
 export interface ProcessedStep {
@@ -215,7 +213,20 @@ export interface ProcessedStep {
         startOffset: number; // Relative to step start
     }>;
     content: any[];
+    intermediate_preparation?: string;
 }
+
+export type ProcessedStepItem = ProcessedStep | ProcessedComment;
+
+export interface ProcessedSection {
+    title: string | null;
+    ingredients: Usage[];
+    cookware: Usage[];
+    steps: ProcessedStepItem[];
+    intermediate_preparation?: string;
+    retro_planning?: string | null;
+}
+
 
 export interface CompilationResult {
     title: string | null;
@@ -235,3 +246,18 @@ export interface CompilationResult {
         preparationTime: number; // Estimated mise-en-place time
     };
 }
+
+export type ASTNode =
+    | RecipeAST
+    | SectionAST
+    | StepAST
+    | CommentAST
+    | TextAST
+    | IngredientAST
+    | CookwareAST
+    | ReferenceAST
+    | TimerAST
+    | TemperatureAST
+    | AlternativeAST
+    | IntermediateDecl;
+

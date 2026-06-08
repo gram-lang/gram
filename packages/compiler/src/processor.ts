@@ -1,6 +1,9 @@
 import { minifyQuantity, createCleanUsage, quantityToMinutes } from './utils';
 import { 
-    Context, ProcessedSection, ProcessedStep, Usage 
+    Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment,
+    ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
+    AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
+    QuantityValueAST
 } from '@gram/parser';
 import { CompilerOptions } from './core';
 import { RecipeRegistry } from './registry';
@@ -14,12 +17,31 @@ export interface ProcessorContext extends Context {
  * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
  * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
  */
-export function processBlockItem(item: any, ctx: ProcessorContext, registry: RecipeRegistry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
+export type ProcessedBlockResult = 
+    | Usage 
+    | string 
+    | { type: 'declaration'; name: string; id: string } 
+    | { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } 
+    | { type: 'temperature'; name?: string; text?: string; quantity?: any; unit?: string } 
+    | { type: 'comment'; value: string; kind: 'line' | 'block' };
+
+/**
+ * Processes a single AST item inside a recipe step.
+ * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
+ * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
+ */
+export function processBlockItem(
+    item: ASTNode | null | undefined,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry,
+    secIngredients: Usage[],
+    secCookware: Usage[]
+): ProcessedBlockResult | null {
     if (!item) return null;
 
     // 1. Process standard Ingredient declarations
     if (item.type === 'Ingredient') {
-        const defaultUnit = (item.quantity && item.quantity.unit) || undefined;
+        const defaultUnit = (item.quantity && 'unit' in item.quantity && item.quantity.unit) || undefined;
         const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
 
         // Tag composite ingredients linked to a parent sub-recipe
@@ -100,7 +122,6 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
         
         const hasQuantityValue = !!(item.quantity && (
              (item.quantity.type === 'Quantity' && (item.quantity.value !== null || item.quantity.unit !== null)) ||
-             item.quantity.type === 'RelativeQuantity' ||
              item.quantity.type === 'TextQuantity'
         ));
         
@@ -121,24 +142,26 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
 
     // 3. Process Alternative listings (A | B)
     if (item.type === 'Alternative') {
-        const processedOptions: any[] = [];
+        const processedOptions: ProcessedBlockResult[] = [];
         let tempIngredientsScope = [...secIngredients];
         let tempCookwareScope = [...secCookware];
 
-        item.options.forEach((opt: any) => {
+        item.options.forEach((opt) => {
             const captureIngredients = [...tempIngredientsScope];
             const captureCookware = [...tempCookwareScope];
             
             const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
-            processedOptions.push(result);
-            
-            if (result && typeof result !== 'string') {
-                const r = result as Usage;
-                if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) { 
-                     tempIngredientsScope.push(r);
-                }
-                if (r.type === 'cookware') {
-                     tempCookwareScope.push(r);
+            if (result !== null) {
+                processedOptions.push(result);
+                
+                if (typeof result !== 'string') {
+                    const r = result as Usage;
+                    if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) { 
+                         tempIngredientsScope.push(r);
+                    }
+                    if (r.type === 'cookware') {
+                         tempCookwareScope.push(r);
+                    }
                 }
             }
         });
@@ -165,11 +188,16 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
         
         const obj: Usage = { type: 'reference', id, name: item.name };
         
-        if (item.quantity && (item.quantity.value !== null || item.quantity.unit || item.quantity.type === 'TextQuantity')) {
-             const cleanQty = minifyQuantity(item.quantity);
-             if (cleanQty !== undefined) obj.qty = cleanQty;
-             if (item.quantity.unit) obj.unit = item.quantity.unit;
-             if (item.quantity.type === 'TextQuantity') obj.qty = item.quantity.value;
+        if (item.quantity) {
+             if (item.quantity.type === 'Quantity') {
+                  if (item.quantity.value !== null || item.quantity.unit) {
+                       const cleanQty = minifyQuantity(item.quantity);
+                       if (cleanQty !== undefined) obj.qty = cleanQty;
+                       if (item.quantity.unit) obj.unit = item.quantity.unit;
+                  }
+             } else if (item.quantity.type === 'TextQuantity') {
+                  obj.qty = item.quantity.value;
+             }
         }
         
         if (!ctx.currentSectionIntermediates.has(item.name)) {
@@ -191,30 +219,29 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
     
     // 6. Process Timers and Temperatures
     if (item.type === 'Timer') {
-         const obj: any = { type: 'timer' };
+         const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } = { type: 'timer' };
          if (item.name) obj.name = item.name;
          if (item.isAsync) obj.isAsync = true;
          if (item.quantity) {
               const q = item.quantity;
-              if (q.value) obj.quantity = q.value;
-              let unit = q.unit;
-              if (unit === 'm' || unit === 'minutes') unit = 'min';
-              if (unit) obj.unit = unit;
-              
-              if (q.type === 'TextQuantity') {
-                   ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in Timer.`, item: (q as any).value, loc: item.loc });
-                   obj.quantity = { type: 'text', value: (q as any).value }; 
-              } else {
+              if (q.type === 'Quantity') {
+                   if (q.value) obj.quantity = q.value;
+                   let unit = q.unit;
+                   if (unit === 'm' || unit === 'minutes') unit = 'min';
+                   if (unit) obj.unit = unit;
                    if (!unit) {
                        ctx.warnings.push({ code: 'MISSING_UNIT', message: `Timer must have an explicit unit.`, item: item.name || 'Timer', loc: item.loc });
                    }
-               }
+              } else if (q.type === 'TextQuantity') {
+                   ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in Timer.`, item: q.value, loc: item.loc });
+                   obj.quantity = { type: 'text', value: q.value }; 
+              }
           }
           return obj;
     }
 
     if (item.type === 'Temperature') {
-         const obj: any = { type: 'temperature' };
+         const obj: { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } = { type: 'temperature' };
          if (item.name) obj.name = item.name;
          if (item.text) {
               obj.text = item.text;
@@ -236,10 +263,10 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
 
     // 7. Process Step Comments
     if (item.type === 'Comment') {
-        return { type: 'comment', value: item.value, kind: item.kind } as any;
+        return { type: 'comment', value: item.value, kind: item.kind };
     }
 
-    return item;
+    return null;
 }
 
 /**
@@ -247,7 +274,11 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Rec
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
  * handles async background tasks, and calculates active and total duration metrics.
  */
-export function processSections(astChildren: any[], registry: RecipeRegistry, options?: CompilerOptions): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
+export function processSections(
+    astChildren: ASTNode[],
+    registry: RecipeRegistry,
+    options?: CompilerOptions
+): { sections: ProcessedSection[]; metrics: { totalTime: number; activeTime: number } } {
     const ctx: ProcessorContext = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -260,11 +291,12 @@ export function processSections(astChildren: any[], registry: RecipeRegistry, op
     };
 
     const sections: ProcessedSection[] = [];
-    let blocksToProcess = astChildren;
+    let blocksToProcess: ASTNode[] = astChildren;
     
     // Wrap raw top-level steps into an implicit default section if none exist
     if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
-        blocksToProcess = [{ type: 'Section', title: null, children: astChildren }];
+        const children = astChildren.filter((child): child is StepAST | CommentAST => child.type === 'Step' || child.type === 'Comment');
+        blocksToProcess = [{ type: 'Section', title: null, children } as SectionAST];
     }
 
     let cookCursor = 0;
@@ -286,7 +318,7 @@ export function processSections(astChildren: any[], registry: RecipeRegistry, op
                     loc: section.intermediateDecl?.loc
                 });
             } else {
-                ctx.globalScopes.set(varName, section.title);
+                ctx.globalScopes.set(varName, section.title || '');
             }
 
             registry.registerIngredient(varName, { is_intermediate: true });
@@ -295,32 +327,31 @@ export function processSections(astChildren: any[], registry: RecipeRegistry, op
 
         const sectionIngredients: Usage[] = [];
         const sectionCookware: Usage[] = [];
-        const steps: ProcessedStep[] = [];
+        const steps: ProcessedStepItem[] = [];
 
-        section.children.forEach((block: any) => {
+        section.children.forEach((block) => {
              if (block.type === 'Step') {
                   let localActiveTime = 0;
-                  const stepAsyncTasks: Array<{ name?: string, duration: number, startOffset: number }> = [];
-                  const stepContentObjects: any[] = [];
+                  const stepAsyncTasks: Array<{ name?: string; duration: number; startOffset: number }> = [];
+                  const stepContentObjects: ProcessedBlockResult[] = [];
                   
                   ctx.intermediateDecl = null;
                   
                   // Process all items in the step sequentially
-                  block.children.forEach((item: any) => {
+                  block.children.forEach((item) => {
                       const processed = processBlockItem(item, ctx, registry, sectionIngredients, sectionCookware);
                       
                       if (processed) {
                            stepContentObjects.push(processed);
 
                            if (typeof processed !== 'string') {
-                               const p = processed as any; 
-                               if (p.type === 'timer' && p.quantity) {
-                                   const duration = quantityToMinutes({ value: p.quantity, unit: p.unit });
+                               if ('type' in processed && processed.type === 'timer' && !('id' in processed) && processed.quantity) {
+                                   const duration = quantityToMinutes({ value: processed.quantity, unit: processed.unit });
                                    
                                    // Asynchronous background task (Gantt track split)
-                                   if (p.isAsync) {
+                                   if (processed.isAsync) {
                                        stepAsyncTasks.push({
-                                           name: p.name || 'Timer',
+                                           name: processed.name || 'Timer',
                                            duration: duration,
                                            startOffset: localActiveTime
                                        });
@@ -353,21 +384,21 @@ export function processSections(astChildren: any[], registry: RecipeRegistry, op
                       backgroundTasks: stepAsyncTasks
                   };
 
-                   if (block.action) {
-                       (stepObj as any).action = block.action;
-                   }
+                  if (block.action) {
+                      stepObj.action = block.action;
+                  }
 
                   cookCursor += localActiveTime;
                   globalActiveTime += localActiveTime;
 
                   if (ctx.intermediateDecl) { 
-                       (stepObj as any).intermediate_preparation = ctx.intermediateDecl;
+                      stepObj.intermediate_preparation = ctx.intermediateDecl;
                   }
                   
                   steps.push(stepObj);
 
              } else if (block.type === 'Comment') {
-                  steps.push({ type: 'comment', value: block.value, kind: block.kind } as any);
+                  steps.push({ type: 'comment', value: block.value, kind: block.kind });
              }
         });
 
@@ -382,7 +413,7 @@ export function processSections(astChildren: any[], registry: RecipeRegistry, op
              res.intermediate_preparation = section.intermediateDecl.name;
         }
         if (section.retroPlanning) {
-            res.retro_planning = section.retroPlanning;
+             res.retro_planning = section.retroPlanning;
         }
         sections.push(res);
     });
