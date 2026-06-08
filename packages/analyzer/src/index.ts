@@ -6,6 +6,7 @@ export * from './metrics';
 
 
 import { CompilationResult, Usage } from '@gram/parser';
+import { getNumericQty } from '@gram/compiler';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
@@ -60,11 +61,7 @@ export function analyze(
 
             // Perform physical mass normalization if enabled
             if (opts.enableMassNormalization !== false) {
-                 let numericQty: number | null = null;
-                 if (typeof item.qty === 'number') numericQty = item.qty;
-                 else if (item.qty && typeof item.qty === 'object' && 'value' in item.qty) {
-                      numericQty = (item.qty as any).value as number;
-                 }
+                 const numericQty = getNumericQty(item.qty);
                  
                  if (numericQty !== null) {
                       const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
@@ -92,8 +89,7 @@ export function analyze(
     shopping_list.forEach((item: any) => {
          // Resolve raw items to normalized grams
          if (opts.enableMassNormalization !== false) {
-              let numericQty: number | null = null;
-              if (typeof item.qty === 'number') numericQty = item.qty;
+              const numericQty = getNumericQty(item.qty);
               if (numericQty !== null) {
                    const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
                    if (norm) {

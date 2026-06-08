@@ -1,4 +1,5 @@
 import { Usage } from '@gram/parser';
+import { getNumericQty } from '@gram/compiler';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
 import { NutritionMetrics, IngredientData } from './types';
@@ -60,14 +61,16 @@ export function calculateNutrition(
         if (item.normalizedMass) {
             mass = item.normalizedMass;
             if ((item as any).isEstimate) isEst = true;
-        } else if (item.qty && (typeof item.qty === 'number' || (item.qty as any).value)) {
-            const val = typeof item.qty === 'number' ? item.qty : (item.qty as any).value;
-            const unit = item.unit || 'unit'; 
-            
-            const norm = normalizeMass(val, unit, database, item.name); 
-            if (norm) {
-                mass = norm.mass;
-                isEst = norm.isEstimate;
+        } else if (item.qty) {
+            const val = getNumericQty(item.qty);
+            if (val !== null) {
+                const unit = item.unit || 'unit'; 
+                
+                const norm = normalizeMass(val, unit, database, item.name); 
+                if (norm) {
+                    mass = norm.mass;
+                    isEst = norm.isEstimate;
+                }
             }
         }
 
