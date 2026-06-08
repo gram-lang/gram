@@ -1,6 +1,6 @@
 import { slugify, minifyQuantity, getNumericQty } from './utils';
 import { detectCycles } from './graph';
-import { ProcessedSection, Registry, Usage, QuantityValueAST } from '@gram/parser';
+import { ProcessedSection, Registry, Usage, QuantityValueAST, ASTNodeType } from '@gram/parser';
 import { CompilerOptions } from './core';
 
 interface ShoppingListItem {
@@ -35,7 +35,7 @@ function formatQuantity(q: any): string | number {
     if (q.type === 'single') return q.value;
     if (q.type === 'range') return q.text || `${q.value}`;
     if (q.type === 'fraction') return q.text || `${q.value}`;
-    if (q.type === 'RelativeQuantity') {
+    if (q.type === ASTNodeType.RelativeQuantity) {
         const marker = q.referenceType === 'variable' ? '&' : '@';
         return `${q.percent}% of ${marker}${q.target}`;
     }

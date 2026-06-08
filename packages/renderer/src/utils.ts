@@ -1,3 +1,5 @@
+import { ASTNodeType } from '@gram/parser';
+
 /**
  * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).
  */
@@ -37,7 +39,7 @@ export function getQty(item: any): any {
         if (typeof item.qty === 'number') {
             return { value: item.qty, text: formatDecimalToFraction(item.qty) };
         }
-        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
+        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === ASTNodeType.RelativeQuantity) {
             const marker = item.qty.referenceType === 'variable' ? '&' : '@';
             return { 
                 value: null, 
@@ -58,7 +60,7 @@ export function formatQuantityValue(q: any): string {
     if (!q) return '';
     if (q.type === 'range' && q.text) return q.text;
     if (q.text) return q.text;
-    if (q.type === 'RelativeQuantity') {
+    if (q.type === ASTNodeType.RelativeQuantity) {
         const marker = q.referenceType === 'variable' ? '&' : '@';
         return `${q.percent}% of ${marker}${q.target}`;
     }

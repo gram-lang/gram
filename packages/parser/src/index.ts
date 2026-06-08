@@ -5,7 +5,7 @@ import {
     RecipeAST, SectionAST, StepAST, IngredientAST, CookwareAST, 
     QuantityAST, QuantityValueAST, RelativeQuantityAST, TextQuantityAST, 
     ReferenceAST, TimerAST, TemperatureAST, CommentAST, AlternativeAST, 
-    IntermediateDecl 
+    IntermediateDecl, ASTNodeType 
 } from './types';
 
 export * from './types';
@@ -75,7 +75,7 @@ semantics.addOperation('toAST', {
     Recipe(frontmatter, content) {
         const meta = getOpt(frontmatter) || {};
         const sections = getOpt(content) || [];
-        return { type: 'Recipe', meta, children: sections } as RecipeAST;
+        return { type: ASTNodeType.Recipe, meta, children: sections } as RecipeAST;
     },
 
     Frontmatter(_1, _2, kv, _3, _4) {
@@ -100,7 +100,7 @@ semantics.addOperation('toAST', {
     Section(header, blocks) {
         const h = header.toAST();
         return { 
-            type: 'Section', 
+            type: ASTNodeType.Section, 
             title: h.title, 
             retroPlanning: h.retroPlanning,
             intermediateDecl: h.intermediateDecl,
@@ -151,7 +151,7 @@ semantics.addOperation('toAST', {
         // Combine first line with subsequent lines, joined by a space
         const content: any[] = [line1.toAST()];
         lines.children.forEach(l => {
-             content.push([{ type: 'Text', value: ' ' }]); // Space separator
+             content.push([{ type: ASTNodeType.Text, value: ' ' }]); // Space separator
              content.push(l.toAST());
         });
 
@@ -159,7 +159,7 @@ semantics.addOperation('toAST', {
         const flatContent = content.flat().filter(c => c !== null);
 
         return {
-            type: 'Step',
+            type: ASTNodeType.Step,
             action,
             children: flatContent,
             loc: { start: this.source.startIdx, end: this.source.endIdx }
@@ -172,22 +172,22 @@ semantics.addOperation('toAST', {
     stepContent(child) { return child.toAST(); },
     
     intermediateDecl(_1, name, _2) {
-        return { type: 'IntermediateDecl', name: clean(name.sourceString) } as IntermediateDecl;
+        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString) } as IntermediateDecl;
     },
 
     // --- Text & Primitives ---
 
     text(spaces, chars) {
         const val = spaces.sourceString + chars.sourceString;
-        return { type: 'Text', value: val, loc: { start: this.source.startIdx, end: this.source.endIdx }};
+        return { type: ASTNodeType.Text, value: val, loc: { start: this.source.startIdx, end: this.source.endIdx }};
     },
     
     fallback(c) {
-        return { type: 'Text', value: c.sourceString, fallback: true, loc: { start: this.source.startIdx, end: this.source.endIdx } };
+        return { type: ASTNodeType.Text, value: c.sourceString, fallback: true, loc: { start: this.source.startIdx, end: this.source.endIdx } };
     },
 
     nl(_r, _n) { return null; }, 
-    ws(s) { return { type: 'Text', value: s.sourceString }; },
+    ws(s) { return { type: ASTNodeType.Text, value: s.sourceString }; },
 
     // --- Ingredients ---
 
@@ -195,13 +195,13 @@ semantics.addOperation('toAST', {
     
     Alternative(first, _bars, rest) {
         const options = [first.toAST(), ...rest.children.map(c => c.toAST())];
-        return { type: 'Alternative', options, loc: { start: this.source.startIdx, end: this.source.endIdx } } as AlternativeAST;
+        return { type: ASTNodeType.Alternative, options, loc: { start: this.source.startIdx, end: this.source.endIdx } } as AlternativeAST;
     },
 
     simpleIngredient(_at, _mods, _name, _alias, _qty, _prep, _comp) {
         const modifiers = _mods.children.map(m => m.sourceString);
         return {
-            type: 'Ingredient',
+            type: ASTNodeType.Ingredient,
             name: _name.sourceString.trim(),
             modifiers,
             quantity: _qty.toAST(),
@@ -214,7 +214,7 @@ semantics.addOperation('toAST', {
 
     composite(_lt, _sp1, _at, _sp2, _name, _sp3, _qty) {
         return {
-             type: 'Composite',
+             type: ASTNodeType.Composite,
              parent: _name.sourceString,
              quantity: getOpt(_qty)
         };
@@ -230,7 +230,7 @@ semantics.addOperation('toAST', {
 
     relativeQuantity(val, _s1, _pct, _s2, marker, _s3, name) {
         return { 
-            type: 'RelativeQuantity', 
+            type: ASTNodeType.RelativeQuantity, 
             percent: parseFloat(val.sourceString), 
             target: clean(name.sourceString),
             referenceType: marker.sourceString === '&' ? 'variable' : 'ingredient',
@@ -240,7 +240,7 @@ semantics.addOperation('toAST', {
     
     absoluteQuantity(fixed, _sFixed, val, _s2, unit, _sUnit) {
         return { 
-            type: 'Quantity', 
+            type: ASTNodeType.Quantity, 
             value: getOpt(val), 
             unit: getOpt(unit), 
             fixed: fixed.children.length > 0, 
@@ -250,7 +250,7 @@ semantics.addOperation('toAST', {
 
     cookwareQuantity(_lb, _s1, fixed, _sFixed, val, _s2, _rb) {
         return { 
-            type: 'Quantity', 
+            type: ASTNodeType.Quantity, 
             value: getOpt(val), 
             unit: null, 
             fixed: fixed.children.length > 0, 
@@ -259,7 +259,7 @@ semantics.addOperation('toAST', {
     },
 
     textQuantity(_lb, _s1, content, _s2, _rb) {
-        return { type: 'TextQuantity', value: clean(content.sourceString), loc: { start: this.source.startIdx, end: this.source.endIdx } } as TextQuantityAST;
+        return { type: ASTNodeType.TextQuantity, value: clean(content.sourceString), loc: { start: this.source.startIdx, end: this.source.endIdx } } as TextQuantityAST;
     },
 
     number(_1, _2, _3, _4, _5) {
@@ -280,7 +280,7 @@ semantics.addOperation('toAST', {
 
     CookwareAlternative(first, _bars, rest) { 
         return { 
-            type: 'Alternative', 
+            type: ASTNodeType.Alternative, 
             options: [first.toAST(), ...rest.children.map(c => c.toAST())], 
             loc: { start: this.source.startIdx, end: this.source.endIdx } 
         } as AlternativeAST; 
@@ -289,7 +289,7 @@ semantics.addOperation('toAST', {
     simpleCookware(_hash, mods, name, alias, qty, prep) {
          const modifiers = mods.children.map(c => c.sourceString);
          return {
-            type: 'Cookware',
+            type: ASTNodeType.Cookware,
             name: clean(name.sourceString),
             modifiers,
             alias: getOpt(alias),
@@ -303,7 +303,7 @@ semantics.addOperation('toAST', {
 
     Reference(_amp, _name, _qty) {
         return { 
-            type: 'Reference', 
+            type: ASTNodeType.Reference, 
             name: _name.sourceString, 
             quantity: _qty.toAST(),
             loc: { start: this.source.startIdx, end: this.source.endIdx } 
@@ -313,7 +313,7 @@ semantics.addOperation('toAST', {
     Timer(_1, name, qty, asyncMod) { 
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
         return { 
-            type: 'Timer', 
+            type: ASTNodeType.Timer, 
             name: n, 
             quantity: qty.toAST(), 
             isAsync: asyncMod.children.length > 0,
@@ -325,15 +325,15 @@ semantics.addOperation('toAST', {
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
         const qAST = qty.toAST();
         const base = {
-            type: 'Temperature' as const,
+            type: ASTNodeType.Temperature,
             name: n,
             loc: { start: this.source.startIdx, end: this.source.endIdx }
         };
 
-        if (qAST.type === 'TextQuantity') {
+        if (qAST.type === ASTNodeType.TextQuantity) {
             return { ...base, text: qAST.value } as TemperatureAST;
         }
-        if (qAST.type === 'Quantity' && !qAST.value) {
+        if (qAST.type === ASTNodeType.Quantity && !qAST.value) {
             return { ...base, text: qAST.unit || '' } as TemperatureAST;
         }
         return {
@@ -343,8 +343,8 @@ semantics.addOperation('toAST', {
         } as TemperatureAST;
     },
     
-    Comment(_1, text) { return { type: 'Comment', value: text.sourceString, kind: 'line', loc: { start: this.source.startIdx, end: this.source.endIdx } } as CommentAST; },
-    CommentBlock(_1, text, _2) { return { type: 'Comment', value: text.sourceString, kind: 'block', loc: { start: this.source.startIdx, end: this.source.endIdx } } as CommentAST; },
+    Comment(_1, text) { return { type: ASTNodeType.Comment, value: text.sourceString, kind: 'line', loc: { start: this.source.startIdx, end: this.source.endIdx } } as CommentAST; },
+    CommentBlock(_1, text, _2) { return { type: ASTNodeType.Comment, value: text.sourceString, kind: 'block', loc: { start: this.source.startIdx, end: this.source.endIdx } } as CommentAST; },
     
     _terminal() { return null; }
 });

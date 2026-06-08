@@ -3,7 +3,7 @@ import {
     Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment,
     ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
     AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
-    QuantityValueAST
+    QuantityValueAST, ASTNodeType
 } from '@gram/parser';
 import { CompilerOptions } from './core';
 import { RecipeRegistry } from './registry';
@@ -40,7 +40,7 @@ export function processBlockItem(
     if (!item) return null;
 
     // 1. Process standard Ingredient declarations
-    if (item.type === 'Ingredient') {
+    if (item.type === ASTNodeType.Ingredient) {
         const defaultUnit = (item.quantity && 'unit' in item.quantity && item.quantity.unit) || undefined;
         const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
 
@@ -51,7 +51,7 @@ export function processBlockItem(
         }
 
         // Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
-        if (item.quantity && item.quantity.type === 'RelativeQuantity') {
+        if (item.quantity && item.quantity.type === ASTNodeType.RelativeQuantity) {
              const rel = item.quantity;
              const targetName = rel.target;
              const targetId = registry.getIngredientId(targetName);
@@ -121,8 +121,8 @@ export function processBlockItem(
         }
         
         const hasQuantityValue = !!(item.quantity && (
-             (item.quantity.type === 'Quantity' && (item.quantity.value !== null || item.quantity.unit !== null)) ||
-             item.quantity.type === 'TextQuantity'
+             (item.quantity.type === ASTNodeType.Quantity && (item.quantity.value !== null || item.quantity.unit !== null)) ||
+             item.quantity.type === ASTNodeType.TextQuantity
         ));
         
         if (!item.modifiers || !item.modifiers.includes('&') || hasQuantityValue) {
@@ -133,7 +133,7 @@ export function processBlockItem(
     }
 
     // 2. Process Cookware items
-    if (item.type === 'Cookware') {
+    if (item.type === ASTNodeType.Cookware) {
         const id = registry.registerCookware(item.name);
         const usage = createCleanUsage(item, id, ctx.options);
         secCookware.push(usage);
@@ -141,7 +141,7 @@ export function processBlockItem(
     }
 
     // 3. Process Alternative listings (A | B)
-    if (item.type === 'Alternative') {
+    if (item.type === ASTNodeType.Alternative) {
         const processedOptions: ProcessedBlockResult[] = [];
         let tempIngredientsScope = [...secIngredients];
         let tempCookwareScope = [...secCookware];
@@ -169,9 +169,9 @@ export function processBlockItem(
         const usage: Usage = { id: 'alternative', type: 'alternative', options: processedOptions };
         
         if (item.options.length > 0) {
-             if (item.options[0].type === 'Ingredient') {
+             if (item.options[0].type === ASTNodeType.Ingredient) {
                   secIngredients.push(usage);
-             } else if (item.options[0].type === 'Cookware') {
+             } else if (item.options[0].type === ASTNodeType.Cookware) {
                   secCookware.push(usage);
              }
         }
@@ -179,7 +179,7 @@ export function processBlockItem(
     }
 
     // 4. Process Variable References (&reference)
-    if (item.type === 'Reference') {
+    if (item.type === ASTNodeType.Reference) {
         const id = registry.getIngredientId(item.name);
         if (!registry.ingredients.has(id)) {
              ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name, loc: item.loc });
@@ -189,13 +189,13 @@ export function processBlockItem(
         const obj: Usage = { type: 'reference', id, name: item.name };
         
         if (item.quantity) {
-             if (item.quantity.type === 'Quantity') {
+             if (item.quantity.type === ASTNodeType.Quantity) {
                   if (item.quantity.value !== null || item.quantity.unit) {
                        const cleanQty = minifyQuantity(item.quantity);
                        if (cleanQty !== undefined) obj.qty = cleanQty;
                        if (item.quantity.unit) obj.unit = item.quantity.unit;
                   }
-             } else if (item.quantity.type === 'TextQuantity') {
+             } else if (item.quantity.type === ASTNodeType.TextQuantity) {
                   obj.qty = item.quantity.value;
              }
         }
@@ -208,31 +208,31 @@ export function processBlockItem(
     }
 
     // 5. Process Intermediate Declarations (creating a sub-product like a dough)
-    if (item.type === 'IntermediateDecl') {
+    if (item.type === ASTNodeType.IntermediateDecl) {
         const id = registry.registerIngredient(item.name, { is_intermediate: true });
         ctx.intermediateDecl = id;
         ctx.currentSectionIntermediates.add(item.name);
         return { type: 'declaration', name: item.name, id };
     }
 
-    if (item.type === 'Text') return item.value;
+    if (item.type === ASTNodeType.Text) return item.value;
     
     // 6. Process Timers and Temperatures
-    if (item.type === 'Timer') {
+    if (item.type === ASTNodeType.Timer) {
          const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } = { type: 'timer' };
          if (item.name) obj.name = item.name;
          if (item.isAsync) obj.isAsync = true;
          if (item.quantity) {
               const q = item.quantity;
-              if (q.type === 'Quantity') {
-                   if (q.value) obj.quantity = q.value;
-                   let unit = q.unit;
-                   if (unit === 'm' || unit === 'minutes') unit = 'min';
-                   if (unit) obj.unit = unit;
-                   if (!unit) {
-                       ctx.warnings.push({ code: 'MISSING_UNIT', message: `Timer must have an explicit unit.`, item: item.name || 'Timer', loc: item.loc });
-                   }
-              } else if (q.type === 'TextQuantity') {
+              if (q.type === ASTNodeType.Quantity) {
+               if (q.value) obj.quantity = q.value;
+               let unit = q.unit;
+               if (unit === 'm' || unit === 'minutes') unit = 'min';
+               if (unit) obj.unit = unit;
+               if (!unit) {
+                   ctx.warnings.push({ code: 'MISSING_UNIT', message: `Timer must have an explicit unit.`, item: item.name || 'Timer', loc: item.loc });
+               }
+          } else if (q.type === ASTNodeType.TextQuantity) {
                    ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in Timer.`, item: q.value, loc: item.loc });
                    obj.quantity = { type: 'text', value: q.value }; 
               }
@@ -240,7 +240,7 @@ export function processBlockItem(
           return obj;
     }
 
-    if (item.type === 'Temperature') {
+    if (item.type === ASTNodeType.Temperature) {
          const obj: { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } = { type: 'temperature' };
          if (item.name) obj.name = item.name;
          if (item.text) {
@@ -262,7 +262,7 @@ export function processBlockItem(
     }
 
     // 7. Process Step Comments
-    if (item.type === 'Comment') {
+    if (item.type === ASTNodeType.Comment) {
         return { type: 'comment', value: item.value, kind: item.kind };
     }
 
@@ -294,9 +294,9 @@ export function processSections(
     let blocksToProcess: ASTNode[] = astChildren;
     
     // Wrap raw top-level steps into an implicit default section if none exist
-    if (blocksToProcess.length > 0 && blocksToProcess[0].type !== 'Section') {
-        const children = astChildren.filter((child): child is StepAST | CommentAST => child.type === 'Step' || child.type === 'Comment');
-        blocksToProcess = [{ type: 'Section', title: null, children } as SectionAST];
+    if (blocksToProcess.length > 0 && blocksToProcess[0].type !== ASTNodeType.Section) {
+        const children = astChildren.filter((child): child is StepAST | CommentAST => child.type === ASTNodeType.Step || child.type === ASTNodeType.Comment);
+        blocksToProcess = [{ type: ASTNodeType.Section, title: null, children } as SectionAST];
     }
 
     let cookCursor = 0;
@@ -304,7 +304,7 @@ export function processSections(
     const activeBackgroundTasks: Array<{ end: number }> = [];
 
     blocksToProcess.forEach(section => {
-        if (section.type !== 'Section') return; 
+        if (section.type !== ASTNodeType.Section) return; 
         ctx.currentSectionIntermediates.clear();
 
         // Register variables outputted by previous sections
@@ -330,7 +330,7 @@ export function processSections(
         const steps: ProcessedStepItem[] = [];
 
         section.children.forEach((block) => {
-             if (block.type === 'Step') {
+             if (block.type === ASTNodeType.Step) {
                   let localActiveTime = 0;
                   const stepAsyncTasks: Array<{ name?: string; duration: number; startOffset: number }> = [];
                   const stepContentObjects: ProcessedBlockResult[] = [];
@@ -397,7 +397,7 @@ export function processSections(
                   
                   steps.push(stepObj);
 
-             } else if (block.type === 'Comment') {
+             } else if (block.type === ASTNodeType.Comment) {
                   steps.push({ type: 'comment', value: block.value, kind: block.kind });
              }
         });

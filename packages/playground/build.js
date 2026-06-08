@@ -27,7 +27,25 @@ let parserCode = fs.readFileSync(parserPath, 'utf-8');
 // 1. Remove fs/path imports
 parserCode = parserCode.replace(/require\("fs"\)/g, '({})');
 parserCode = parserCode.replace(/require\("path"\)/g, '({})');
-parserCode = parserCode.replace(/require\("\.\/types"\)/g, '({})');
+const astNodeTypesObj = {
+    Recipe: 'Recipe',
+    Section: 'Section',
+    Step: 'Step',
+    Comment: 'Comment',
+    Text: 'Text',
+    IntermediateDecl: 'IntermediateDecl',
+    RelativeQuantity: 'RelativeQuantity',
+    TextQuantity: 'TextQuantity',
+    Quantity: 'Quantity',
+    Ingredient: 'Ingredient',
+    Composite: 'Composite',
+    Cookware: 'Cookware',
+    Reference: 'Reference',
+    Timer: 'Timer',
+    Temperature: 'Temperature',
+    Alternative: 'Alternative'
+};
+parserCode = parserCode.replace(/require\("\.\/types"\)/g, `({ ASTNodeType: ${JSON.stringify(astNodeTypesObj)} })`);
 
 // 2. Remove file reading logic (assuming variable names match dist output)
 // This relies on the emitted JS having "grammarPath" and "grammarContent" variables.

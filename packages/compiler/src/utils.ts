@@ -1,4 +1,4 @@
-import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST } from '@gram/parser';
+import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST, ASTNodeType } from '@gram/parser';
 import { resolveTimeUnit } from '@gram/i18n';
 import { CompilerOptions } from './core';
 
@@ -38,13 +38,13 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
     if (q.type === 'range' || q.type === 'fraction') return q;
     
     // If it's a full QuantityAST
-    if (q.type === 'Quantity') {
+    if (q.type === ASTNodeType.Quantity) {
         if (q.value && q.value.type === 'single') return q.value.value;
         return q.value; 
     }
     
     // Explicitly ignore RelativeQuantity for minification in this context
-    if (q.type === 'RelativeQuantity') return undefined; 
+    if (q.type === ASTNodeType.RelativeQuantity) return undefined; 
     
     return q;
 };
@@ -62,7 +62,7 @@ export const createCleanUsage = (item: any, id: string, options?: CompilerOption
     
     if (qtyNode) {
         // If it's a TextQuantity, we use the value directly
-        if (qtyNode.type === 'TextQuantity') {
+        if (qtyNode.type === ASTNodeType.TextQuantity) {
              cleanQty = qtyNode.value;
         } else {
              cleanQty = minifyQuantity(qtyNode.value || qtyNode);
@@ -83,14 +83,14 @@ export const createCleanUsage = (item: any, id: string, options?: CompilerOption
         obj.modifiers = item.modifiers.map((m: string) => MODIFIER_MAP[m] || m);
     }
 
-    if (item.type === 'Cookware') {
+    if (item.type === ASTNodeType.Cookware) {
         if (qtyNode && qtyNode.fixed === false) obj.fixed = false;
     } else {
         if (qtyNode && qtyNode.fixed === true) obj.fixed = true;
     }
     
     // Special handling for TextQuantity override
-    if (qtyNode && qtyNode.type === 'TextQuantity') {
+    if (qtyNode && qtyNode.type === ASTNodeType.TextQuantity) {
         obj.qty = qtyNode.value;
         obj.fixed = true; 
     }
@@ -160,7 +160,7 @@ export const quantityToMinutes = (qty: any): number => {
 
     // Handle AST objects
     if (typeof qty === 'object') {
-        if (qty.type === 'Quantity' && qty.value) {
+        if (qty.type === ASTNodeType.Quantity && qty.value) {
            const sub = qty.value;
            if (sub.type === 'single') val = sub.value as number;
            if (sub.type === 'fraction') val = sub.value as number;
@@ -197,7 +197,7 @@ export const getNumericQty = (q: any): number | null => {
     if (q === undefined || q === null) return null;
     if (typeof q === 'number') return q;
     
-    const val = q.type === 'Quantity' ? q.value : q;
+    const val = q.type === ASTNodeType.Quantity ? q.value : q;
     if (val && typeof val === 'object') {
         if (val.type === 'fraction' || val.type === 'range' || val.type === 'single') {
             return val.value !== null ? val.value : null;
