@@ -7,6 +7,7 @@ import {
 } from '@gram/parser';
 import { CompilerOptions } from './core';
 import { RecipeRegistry } from './registry';
+import { WarningCode, pushWarning } from './warnings';
 
 export interface ProcessorContext extends Context {
     options?: CompilerOptions;
@@ -64,23 +65,13 @@ export function processBlockItem(
              if (rel.referenceType === 'variable') {
                   if (!ctx.definedIntermediates.has(targetName)) {
                       isGhost = true;
-                      ctx.warnings.push({
-                          code: 'VARIABLE_NOT_FOUND',
-                          message: `Variable '&${targetName}' not found.`,
-                          item: item.name,
-                          loc: item.loc
-                      });
+                      pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, { targetName, item: item.name, loc: item.loc });
                   }
              } else {
                   const found = secIngredients.some(i => i.id === targetId);
                   if (!found) {
                       isGhost = true;
-                      ctx.warnings.push({
-                          code: 'RELATIVE_QUANTITY_UNRESOLVED',
-                          message: `Could not resolve relative quantity for '@${targetName}'. Source not found in current section.`,
-                          item: item.name,
-                          loc: item.loc
-                      });
+                      pushWarning(ctx, WarningCode.RELATIVE_QUANTITY_UNRESOLVED, { targetName, item: item.name, loc: item.loc });
                   }
              }
              
@@ -90,12 +81,7 @@ export function processBlockItem(
              
              if (targetId === id) {
                   usage.isCircular = true;
-                  ctx.warnings.push({
-                      code: 'CIRCULAR_REFERENCE',
-                      message: `Circular reference detected: ${item.name} depends on itself.`,
-                      item: item.name,
-                      loc: item.loc
-                  });
+                  pushWarning(ctx, WarningCode.CIRCULAR_REFERENCE, { name: item.name, item: item.name, loc: item.loc });
              }
 
              usage.dependencies = [targetId];
@@ -113,7 +99,7 @@ export function processBlockItem(
         const usage = createCleanUsage(item, id, ctx.options);
         if (item.modifiers && item.modifiers.includes('&')) {
              if (!ctx.seenNames.has(item.name)) {
-                  ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '@&${item.name}'.`, item: item.name, loc: item.loc });
+                  pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '@&', name: item.name, item: item.name, loc: item.loc });
              }
              if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
         } else {
@@ -182,7 +168,7 @@ export function processBlockItem(
     if (item.type === ASTNodeType.Reference) {
         const id = registry.getIngredientId(item.name);
         if (!registry.ingredients.has(id)) {
-             ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name, loc: item.loc });
+             pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '&', name: item.name, item: item.name, loc: item.loc });
         }
         if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
         
@@ -230,10 +216,10 @@ export function processBlockItem(
                if (unit === 'm' || unit === 'minutes') unit = 'min';
                if (unit) obj.unit = unit;
                if (!unit) {
-                   ctx.warnings.push({ code: 'MISSING_UNIT', message: `Timer must have an explicit unit.`, item: item.name || 'Timer', loc: item.loc });
+                   pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Timer', item: item.name || 'Timer', loc: item.loc });
                }
           } else if (q.type === ASTNodeType.TextQuantity) {
-                   ctx.warnings.push({ code: 'INVALID_UNIT', message: `Invalid text content in Timer.`, item: q.value, loc: item.loc });
+                   pushWarning(ctx, WarningCode.INVALID_UNIT, { value: q.value, loc: item.loc });
                    obj.quantity = { type: 'text', value: q.value }; 
               }
           }
@@ -250,12 +236,7 @@ export function processBlockItem(
               if (item.unit) {
                   obj.unit = item.unit;
               } else {
-                  ctx.warnings.push({
-                      code: 'MISSING_UNIT',
-                      message: `Temperature must have an explicit unit.`,
-                      item: item.name || 'Temperature',
-                      loc: item.loc
-                  });
+                  pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Temperature', item: item.name || 'Temperature', loc: item.loc });
               }
          }
          return obj;
@@ -311,12 +292,7 @@ export function processSections(
         if (section.intermediateDecl) {
             const varName = section.intermediateDecl.name;
             if (ctx.globalScopes.has(varName)) {
-                registry.warnings.push({
-                    code: 'SCOPE_CONFLICT',
-                    message: `Global variable '&${varName}' is redefined.`,
-                    section: section.title,
-                    loc: section.intermediateDecl?.loc
-                });
+                pushWarning(registry, WarningCode.SCOPE_CONFLICT, { varName, section: section.title, loc: section.intermediateDecl?.loc });
             } else {
                 ctx.globalScopes.set(varName, section.title || '');
             }

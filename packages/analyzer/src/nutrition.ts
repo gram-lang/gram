@@ -1,5 +1,5 @@
 import { Usage } from '@gram/parser';
-import { getNumericQty } from '@gram/compiler';
+import { getNumericQty, WarningCode, pushWarning } from '@gram/compiler';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
 import { NutritionMetrics, IngredientData } from './types';
@@ -42,7 +42,7 @@ export function calculateNutrition(
         } else if (item.type === 'alternative') {
              if (item.options && item.options.length > 0) {
                  flatList.push(item.options[0]);
-             }
+              }
         } else {
              flatList.push(item);
         }
@@ -77,7 +77,7 @@ export function calculateNutrition(
         if (mass > 0) {
             const data = getIngredientData(id, database);
             if (!data) {
-                 warnings.push(`MISSING_INGREDIENT: "${id}" not found in database.`);
+                 pushWarning(warnings, WarningCode.MISSING_INGREDIENT, { id });
             } else if (data.states) {
                 knownCount++;
                 const factor = mass / 100.0;
@@ -95,11 +95,11 @@ export function calculateNutrition(
                     if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
                     
                 } else {
-                     warnings.push(`MISSING_MACROS: Ingredient "${id}" has no default macro data.`);
+                     pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
                 }
             }
         } else {
-            warnings.push(`UNKNOWN_MASS: Cannot calculate mass for "${id}" to estimate nutrition.`);
+            pushWarning(warnings, WarningCode.UNKNOWN_MASS, { id });
         }
     });
 
