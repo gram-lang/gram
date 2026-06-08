@@ -28,7 +28,7 @@ To run the playground locally from the repository root:
     ```bash
     npm install
     ```
-2.  **Build the Parser, Compiler, and Analyzer**:
+2.  **Build the Parser, Compiler, Analyzer, and Renderer**:
     ```bash
     npm run build
     ```

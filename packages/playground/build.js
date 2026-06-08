@@ -66,7 +66,8 @@ esbuild.build({
   alias: {
       '@gram/parser': shimmedParserPath,
       '@gram/compiler': path.resolve(__dirname, '../compiler/dist/index.js'),
-      '@gram/analyzer': path.resolve(__dirname, '../analyzer/dist/index.js')
+      '@gram/analyzer': path.resolve(__dirname, '../analyzer/dist/index.js'),
+      '@gram/renderer': path.resolve(__dirname, '../renderer/dist/index.js')
   },
   plugins: [
       require('esbuild-plugin-yaml').yamlPlugin()

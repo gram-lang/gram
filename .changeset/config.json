@@ -14,6 +14,7 @@
       "@gram/parser",
       "@gram/playground",
       "@gram/i18n",
+      "@gram/renderer",
       "@gram/vscode-extension"
     ]
   ],

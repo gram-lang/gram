@@ -1,97 +1,8 @@
-/**
- * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).
- */
-export function formatDecimalToFraction(value) {
-    if (typeof value !== 'number') return String(value);
-    
-    // Exact integers
-    if (Math.abs(value - Math.round(value)) < 0.01) {
-        return String(Math.round(value));
-    }
-
-    // Fractions only for values strictly below 1
-    if (value < 1) {
-        const commonFractions = [
-            { val: 0.5, str: '1/2' },
-            { val: 0.25, str: '1/4' },
-            { val: 0.75, str: '3/4' },
-            { val: 1/3, str: '1/3' },
-            { val: 2/3, str: '2/3' },
-            { val: 0.125, str: '1/8' },
-            { val: 0.375, str: '3/8' },
-            { val: 0.625, str: '5/8' },
-            { val: 0.875, str: '7/8' }
-        ];
-        const match = commonFractions.find(f => Math.abs(value - f.val) < 0.01);
-        if (match) return match.str;
-    }
-
-    return String(parseFloat(value.toFixed(2)));
-}
-
-/**
- * Extracts and normalizes quantity information from an item.
- */
-export function getQty(item) {
-    if (item.qty !== undefined) {
-        if (typeof item.qty === 'number') {
-            return { value: item.qty, text: formatDecimalToFraction(item.qty) };
-        }
-        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
-            const marker = item.qty.referenceType === 'variable' ? '&' : '@';
-            return { 
-                value: null, 
-                text: `${item.qty.percent}% of ${marker}${item.qty.target}`,
-                isRelative: true
-            };
-        }
-        return item.qty;
-    }
-    if (item.quantity) return item.quantity;
-    return undefined;
-}
-
-/**
- * Helper to display Timer/Temperature range or value.
- */
-export function formatQuantityValue(q) {
-    if (!q) return '';
-    if (q.type === 'range' && q.text) return q.text;
-    if (q.text) return q.text;
-    if (q.type === 'RelativeQuantity') {
-        const marker = q.referenceType === 'variable' ? '&' : '@';
-        return `${q.percent}% of ${marker}${q.target}`;
-    }
-    if (q.value !== undefined) return q.value;
-    return q;
-}
-
-/**
- * Formats duration values into human readable strings (e.g. 90 -> 1h 30m).
- */
-export function formatDuration(minutes) {
-    if (!minutes) return '0m';
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h > 0) return `${h}h ${m > 0 ? m + 'm' : ''}`;
-    return `${m}m`;
-}
-
-/**
- * Safely escapes HTML special characters to prevent XSS.
- */
-export function escapeHtml(unsafe) {
-    if (unsafe === undefined || unsafe === null) return '';
-    return String(unsafe)
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-}
+import { RenderContext } from '../types';
+import { escapeHtml, getQty, formatQuantityValue } from '../utils';
 
 // Default icons mapping
-const DEFAULT_ICONS = {
+export const DEFAULT_ICONS = {
     html: {
         hourglass: '<i class="ph ph-hourglass"></i>',
         timer: '<i class="ph ph-timer"></i>',
@@ -114,7 +25,7 @@ const DEFAULT_ICONS = {
     }
 };
 
-const strategies = {
+const strategies: Record<string, (item: any, format: 'html' | 'md', context: RenderContext) => string> = {
     ingredient: (item, format, context) => {
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
@@ -156,20 +67,26 @@ const strategies = {
             const vars = item.variable_entries.join(' + ');
             qtyContent = qtyContent ? `${qtyContent} + ${vars}` : vars;
         }
-
+ 
         if (format === 'html') {
-            const className = (item.type === 'reference') ? 'reference' : 'ingredient';
+            const baseClass = (item.type === 'reference') ? 'reference' : 'ingredient';
+            const className = (item.type === 'reference') 
+                ? (context.classes?.reference || baseClass) 
+                : (context.classes?.ingredient || baseClass);
+                
             let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
             
             if (isPartial) {
                 const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
-                html += ` <span class="quantity formula-qty" title="Calculation partial or failed">(${escapeHtml(formulaStr)} ${warningIcon})</span>`;
+                const formulaClass = context.classes?.formulaText ? ` ${context.classes.formulaText}` : '';
+                html += ` <span class="quantity formula-qty${formulaClass}" title="Calculation partial or failed">(${escapeHtml(formulaStr)} ${warningIcon})</span>`;
             } else {
                 if (qtyContent) {
                     html += ` <span class="quantity">(${qtyContent})</span>`;
                 }
                 if (formulaStr) {
-                    html += ` <span class="formula" title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
+                    const formulaClass = context.classes?.formulaText ? ` class="${context.classes.formulaText}"` : '';
+                    html += ` <span${formulaClass} title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
                 }
             }
             
@@ -187,14 +104,17 @@ const strategies = {
                 } else if (conversionMethod === 'physical') {
                     title += ` (Exact)`;
                 }
-                html += ` <span class="mass-badge" title="${escapeHtml(title)}">${display}</span>`;
+                const badgeClass = context.classes?.massBadge || 'mass-badge';
+                html += ` <span class="${badgeClass}" title="${escapeHtml(title)}">${display}</span>`;
             }
             
             if (prep) {
-                html += ` <span class="prep">(${escapeHtml(prep)})</span>`;
+                const prepClass = context.classes?.prepText || 'prep';
+                html += ` <span class="${prepClass}">(${escapeHtml(prep)})</span>`;
             }
             if (isOptional) {
-                html += ` <span class="opt">(optional)</span>`;
+                const optClass = context.classes?.optionalText || 'opt';
+                html += ` <span class="${optClass}">(optional)</span>`;
             }
             if (isReference) {
                 const refIcon = context.icons?.arrowUDownLeft ?? DEFAULT_ICONS.html.arrowUDownLeft;
@@ -238,7 +158,7 @@ const strategies = {
             return md;
         }
     },
-    
+     
     cookware: (item, format, context) => {
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
@@ -252,7 +172,8 @@ const strategies = {
         const qtyVal = qty ? qty.value : null;
         
         if (format === 'html') {
-            let html = `<span class="cookware" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
+            const className = context.classes?.cookware || 'cookware';
+            let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
             if (qtyVal !== null) {
                 html += ` <span class="quantity">(${escapeHtml(qtyVal)})</span>`;
             }
@@ -266,7 +187,7 @@ const strategies = {
             return md;
         }
     },
-    
+     
     timer: (item, format, context) => {
         const q = item.quantity || { value: '' };
         const qVal = formatQuantityValue(q);
@@ -274,10 +195,11 @@ const strategies = {
         const isAsync = !!item.isAsync;
         
         if (format === 'html') {
-            const asyncClass = isAsync ? ' async' : '';
+            const asyncClassStr = isAsync ? ' async' : '';
+            const className = (context.classes?.timer || 'timer') + asyncClassStr;
             const iconKey = isAsync ? 'hourglass' : 'timer';
-            const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey];
-            return `<span class="timer${asyncClass}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
+            const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey as keyof typeof DEFAULT_ICONS.html];
+            return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
         } else {
             const prefix = context.icons?.hourglass !== undefined 
                 ? (isAsync ? context.icons.hourglass : (context.icons.timer ?? '')) 
@@ -286,13 +208,14 @@ const strategies = {
             return `${prefix}${qVal}${unitStr}${suffix}`;
         }
     },
-    
+     
     temperature: (item, format, context) => {
         const termIcon = context.icons?.thermometer ?? (format === 'html' ? DEFAULT_ICONS.html.thermometer : DEFAULT_ICONS.md.thermometer);
+        const className = context.classes?.temperature || 'temp';
         if (item.text) {
             const textVal = item.text;
             if (format === 'html') {
-                return `<span class="temp" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
+                return `<span class="${className}" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
             } else {
                 return `${termIcon}${textVal}`;
             }
@@ -301,13 +224,13 @@ const strategies = {
             const qVal = formatQuantityValue(q);
             const unitStr = item.unit ? ` ${item.unit}` : '';
             if (format === 'html') {
-                return `<span class="temp" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
+                return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
             } else {
                 return `${termIcon}${qVal}${unitStr}`;
             }
         }
     },
-    
+     
     reference: (item, format, context) => {
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
@@ -317,7 +240,8 @@ const strategies = {
         
         if (format === 'html') {
             const caretIcon = context.icons?.caretRight ?? DEFAULT_ICONS.html.caretRight;
-            let html = `<span class="reference">${caretIcon} ${escapeHtml(name)}`;
+            const className = context.classes?.reference || 'reference';
+            let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
             if (qty) {
                 const qtyVal = qty.text || qty.value;
                 html += ` <span class="quantity">${escapeHtml(qtyVal)}`;
@@ -339,18 +263,19 @@ const strategies = {
             return md;
         }
     },
-    
+     
     declaration: (item, format, context) => {
         const name = item.name || '';
         if (format === 'html') {
             const arrowIcon = context.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
-            return `<span class="declaration" title="Intermediate result declaring this step's output">${arrowIcon} ${escapeHtml(name)}</span>`;
+            const className = context.classes?.declaration || 'declaration';
+            return `<span class="${className}" title="Intermediate result declaring this step's output">${arrowIcon} ${escapeHtml(name)}</span>`;
         } else {
             const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
             return `{${prefix}${name}}`;
         }
     },
-    
+     
     comment: (item, format, context) => {
         const text = (item.value || '').trim();
         if (format === 'html') {
@@ -359,24 +284,24 @@ const strategies = {
             return ` *${text}*`;
         }
     },
-    
+     
     alternative: (item, format, context) => {
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
         const separator = format === 'html' ? ' <span class="keyword">or</span> ' : ' or ';
-        return item.options.map(opt => {
+        return item.options.map((opt: any) => {
             // Check if cookware either by explicit opt.type or checking the registry cookware list
             const isCookware = opt.type === 'cookware' || !!cookwareList[opt.id];
             const resolvedOpt = { ...opt, type: opt.type || (isCookware ? 'cookware' : 'ingredient') };
             return formatElement(resolvedOpt, format, context);
         }).join(separator);
     },
-    
+     
     group: (item, format, context) => {
         // Alias alternative strategy for group AST type
         return strategies.alternative(item, format, context);
     },
-    
+     
     text: (item, format) => {
         const text = item.value || '';
         return format === 'html' ? escapeHtml(text) : text;
@@ -385,14 +310,8 @@ const strategies = {
 
 /**
  * Unified entry point to format an AST element.
- * 
- * @param {Object|string} element The AST element or a plain string
- * @param {'html'|'md'} format Output format
- * @param {Object} [context] Optional config and registry options
- * @param {Object} [context.registry] Compile registry containing ingredients and cookware details
- * @param {Object} [context.icons] Object mapping icon keys to specific representations
  */
-export function formatElement(element, format, context = {}) {
+export function formatElement(element: any, format: 'html' | 'md', context: RenderContext = {}): string {
     if (element === null || element === undefined) return '';
     if (typeof element === 'string') {
         return format === 'html' ? escapeHtml(element) : element;

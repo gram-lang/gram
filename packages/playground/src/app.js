@@ -4,7 +4,7 @@ import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
 import gramGrammar from './gram-highlight.js';
-import { formatElement, formatDuration, escapeHtml } from './formatter.js';
+import { toMarkdown, toHTML, escapeHtml } from '@gram/renderer';
 
 let fullDatabase = {};
 
@@ -143,146 +143,23 @@ if (footer) {
 // Output Mode Logic
 let outputMode = 'json'; // 'json' | 'markdown' | 'html'
 
-function renderMarkdown(data) {
-    const registry = data.registry || { ingredients: {}, cookware: {} };
-    let md = '';
-    
-    // Title
-    if (data.title) md += `# ${data.title}\n\n`;
-    
-    // Meta & Metrics
-    if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
-        md += `> **Metadata**\n`;
-        if (data.metrics) {
-            md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
-            md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
-            if (data.metrics.preparationTime) {
-                md += `> - **Prep Time**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
-            }
-        }
-        if (data.meta) {
-            for (const [k, v] of Object.entries(data.meta)) {
-                if (k !== 'title') md += `> - ${k}: ${v}\n`;
-            }
-        }
-        md += '\n';
+const playgroundOptions = {
+    icons: {
+        hourglass: '<i class="ph ph-hourglass"></i>',
+        timer: '<i class="ph ph-timer"></i>',
+        thermometer: '<i class="ph ph-thermometer"></i>',
+        caretRight: '<i class="ph ph-caret-circle-right"></i>',
+        arrowRight: '<i class="ph ph-arrow-right"></i>',
+        arrowUDownLeft: '<i class="ph ph-arrow-u-down-left"></i>',
+        warning: '<i class="ph ph-warning"></i>',
+        pencilSimple: '<i class="ph ph-pencil-simple"></i>',
+        clock: '<i class="ph ph-clock"></i>',
+        fire: '<i class="ph ph-fire"></i>',
+        knife: '<i class="ph ph-knife"></i>',
+        scales: '<i class="ph ph-scales"></i>',
+        clockCounterClockwise: '<i class="ph ph-clock-counter-clockwise"></i>'
     }
-    
-    // Shopping List
-    if (data.shopping_list && data.shopping_list.length > 0) {
-        md += `## 🛒 Shopping List\n\n`;
-        data.shopping_list.forEach(item => {
-            if (item.type === 'alternative' || item.type === 'group') {
-                md += `- **Alternative Group**:\n`;
-                item.options.forEach(opt => {
-                    md += `  - ${formatElement(opt, 'md', { registry })}\n`;
-                });
-            } else if (item.type === 'composite') {
-                 let parentStr = formatElement(item, 'md', { registry });
-                 md += `- **${parentStr}** (Composite):\n`;
-                 item.usage.forEach(child => {
-                     md += `  - ${formatElement(child, 'md', { registry })}\n`;
-                 });
-            } else if (item.display) {
-                  md += `- ${item.display}\n`;
-            } else {
-                md += `- ${formatElement(item, 'md', { registry })}\n`;
-            }
-        });
-        md += '\n';
-    }
-    
-    // Cookware
-    if (data.cookware && data.cookware.length > 0) {
-        md += `## 🍳 Cookware\n\n`;
-        data.cookware.forEach(cw => {
-             if (cw.type === 'alternative' || cw.type === 'group') {
-                 md += `- **Alternative Group**:\n`;
-                 cw.options.forEach(opt => {
-                     md += `  - ${formatElement(opt, 'md', { registry })}\n`;
-                 });
-             } else {
-                 md += `- ${formatElement(cw, 'md', { registry })}\n`;
-             }
-        });
-        md += '\n';
-    }
-    
-    // Instructions
-    if (data.sections && data.sections.length > 0) {
-        md += `## 👨‍🍳 Instructions\n\n`;
-        data.sections.forEach(sec => {
-            if (sec.title) {
-                md += `### ${sec.title}`;
-                if (sec.retro_planning) md += ` {T-${sec.retro_planning}}`;
-                md += `\n\n`;
-            }
-            
-            // Section Ingredients
-            if (sec.ingredients && sec.ingredients.length > 0) {
-                md += `**Ingredients**:\n`;
-                sec.ingredients.forEach(item => {
-                    if (item.type === 'alternative' || item.type === 'group') {
-                        md += `- **Alternative Group**:\n`;
-                        item.options.forEach(opt => {
-                            md += `  - ${formatElement(opt, 'md', { registry })}\n`;
-                        });
-                    } else {
-                        md += `- ${formatElement(item, 'md', { registry })}\n`;
-                    }
-                });
-                md += '\n';
-            }
-            
-            let stepCounter = 0;
-            sec.steps.forEach((step, idx) => {
-                if (step.type === 'comment') {
-                     md += `> *${step.value ? step.value.trim() : ''}*\n\n`;
-                     return;
-                }
-
-                stepCounter++;
-                const stepNum = stepCounter;
-                let stepText = '';
-                
-                // Prepend Action if exists
-                if (step.action) {
-                     stepText += `**[${step.action}]** `;
-                }
-
-                if (step.type === 'text') {
-                    stepText += step.value;
-                } else if (step.type === 'step') {
-                     stepText += step.content.map((c, i, arr) => {
-                         let str = formatElement(c, 'md', { registry });
-
-                         // Spacing Logic
-                         const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
-                         if (isObject) {
-                             const next = arr[i+1];
-                             if (next) {
-                                let nextChar = '';
-                                if (typeof next === 'string') nextChar = next[0];
-                                else if (next.type === 'text') nextChar = next.value ? next.value[0] : '';
-                                
-                                // Don't add space if next is glue (punctuation or space)
-                                const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
-                                if (!isGlue) {
-                                    str += ' ';
-                                }
-                             }
-                         }
-                         return str;
-                     }).join('');
-                }
-                md += `${stepNum}. ${stepText}\n`;
-            });
-            md += '\n';
-        });
-    }
-    
-    return md;
-}
+};
 
 function update() {
     const text = input.value;
@@ -320,7 +197,7 @@ function update() {
              content = renderSExpr(ast);
              hideWarnings();
         } else if (outputMode === 'markdown') {
-             content = renderMarkdown(result);
+             content = toMarkdown(result);
              if (result.warnings && result.warnings.length > 0) {
                  showWarnings(result.warnings);
              } else {
@@ -334,7 +211,7 @@ function update() {
                  hideWarnings();
              }
         } else if (outputMode === 'preview') {
-             content = renderHTML(result);
+             content = toHTML(result, playgroundOptions);
              if (result.warnings && result.warnings.length > 0) {
                  showWarnings(result.warnings);
              } else {
@@ -444,303 +321,6 @@ function update() {
 }
 
 
-function renderHTML(data) {
-    const registry = data.registry || { ingredients: {}, cookware: {} };
-    let html = '';
-    
-    // Title
-    if (data.title) {
-        html += `<h1>${escapeHtml(data.title)}</h1>\n\n`;
-    }
-    
-    // Display Metadata
-    // Display Metadata
-    html += `<div class="recipe-meta">\n`;
-    if (data.metrics) {
-        // Total Time
-        html += ` <div class="meta-item">\n`;
-        html += `   <div class="meta-icon"><i class="ph ph-clock"></i></div>\n`;
-        html += `   <div class="meta-content">\n`;
-        html += `     <span class="meta-label">Total Time</span>\n`;
-        html += `     <span class="meta-value">${formatDuration(data.metrics.totalTime)}</span>\n`;
-        html += `   </div>\n`;
-        html += ` </div>\n`;
-
-        // Active Time
-        html += ` <div class="meta-item">\n`;
-        html += `   <div class="meta-icon"><i class="ph ph-fire"></i></div>\n`;
-        html += `   <div class="meta-content">\n`;
-        html += `     <span class="meta-label">Active Time</span>\n`;
-        html += `     <span class="meta-value">${formatDuration(data.metrics.activeTime)}</span>\n`;
-        html += `   </div>\n`;
-        html += ` </div>\n`;
-
-        // Prep Time
-        html += ` <div class="meta-item" title="Based on ingredient count and complexity">\n`;
-        html += `   <div class="meta-icon"><i class="ph ph-knife"></i></div>\n`;
-        html += `   <div class="meta-content">\n`;
-        html += `     <span class="meta-label">Prep Time</span>\n`;
-        html += `     <span class="meta-value">${formatDuration(data.metrics.preparationTime)} <span class="est">(est.)</span></span>\n`;
-        html += `   </div>\n`;
-        html += ` </div>\n`;
-    }
-    html += `</div>\n`;
-
-
-
-    // Secondary Metrics (Mass, etc) & Metadata combined
-    html += `<div class="recipe-meta-secondary">\n`;
-    html += `<div class="metadata-grid">\n`;
-
-    if (data.metrics && data.metrics.totalMass) {
-         const mass = Math.round(data.metrics.totalMass);
-         let msg = `${mass}g`;
-         let title = "Total Recipe Input Mass";
-         if (data.metrics.massStatus === 'estimated') {
-             msg = `~${mass}g`;
-             title += " (Estimated)";
-         }
-         if (data.metrics.massStatus === 'incomplete') {
-             msg = `${mass}g?`;
-             title += " (Incomplete)";
-         }
-         html += `  <div class="meta-secondary-item" title="${title}">\n`;
-         html += `    <span class="label">Total Mass</span>\n`;
-         html += `    <span class="value">${msg}</span>\n`;
-         html += `  </div>\n`;
-    }
-
-    if (data.meta) {
-        for (const [k, v] of Object.entries(data.meta)) {
-            if (k !== 'title') {
-                html += `  <div class="meta-secondary-item">\n`;
-                html += `    <span class="label">${escapeHtml(k)}</span>\n`;
-                html += `    <span class="value">${escapeHtml(v)}</span>\n`;
-                html += `  </div>\n`;
-            }
-        }
-    }
-    
-    html += `</div>\n`;
-    html += `</div>\n\n`;
-
-
-    
-    // Shopping List
-    if (data.shopping_list && data.shopping_list.length > 0) {
-        html += `<div class="shopping-list">\n`;
-        html += `  <h2>Shopping List</h2>\n`;
-        html += `  <ul>\n`;
-        data.shopping_list.forEach(item => {
-            if (item.type === 'alternative' || item.type === 'group') {
-                html += `    <li>\n`;
-                html += `      <strong>Alternative Group</strong>:\n`;
-                html += `      <ul>\n`;
-                item.options.forEach(opt => {
-                    html += `        <li>${formatElement(opt, 'html', { registry })}</li>\n`;
-                });
-                html += `      </ul>\n`;
-                html += `    </li>\n`;
-            } else if (item.type === 'composite') {
-                html += `    <li>\n`;
-                html += `      <strong>${formatElement(item, 'html', { registry })}</strong> (Composite):\n`;
-                html += `      <ul>\n`;
-                item.usage.forEach(child => {
-                     html += `        <li>${formatElement(child, 'html', { registry })}</li>\n`;
-                });
-                html += `      </ul>\n`;
-                html += `    </li>\n`;
-            } else if (item.display) {
-                html += `    <li>${escapeHtml(item.display)}</li>\n`;
-            } else {
-                let extraHtml = '';
-                if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
-                     // Show Gross Mass if different from Net
-                     const gross = Math.round(item.purchasingMass * 10) / 10;
-                     extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
-                }
-                html += `    <li>${formatElement(item, 'html', { registry })}${extraHtml}</li>\n`;
-            }
-        });
-        html += `  </ul>\n`;
-        html += `</div>\n\n`;
-    }
-    
-    // Cookware
-    if (data.cookware && data.cookware.length > 0) {
-        html += `<div class="cookware">\n`;
-        html += `  <h2>Cookware</h2>\n`;
-        html += `  <ul>\n`;
-        data.cookware.forEach(cw => {
-            if (cw.type === 'alternative' || cw.type === 'group') {
-                 html += `    <li>\n`;
-                 html += `      <strong>Alternative Group</strong>:\n`;
-                 html += `      <ul>\n`;
-                 cw.options.forEach(opt => {
-                     html += `        <li>${formatElement(opt, 'html', { registry })}</li>\n`;
-                 });
-                 html += `      </ul>\n`;
-                 html += `    </li>\n`;
-            } else {
-                 html += `    <li>${formatElement(cw, 'html', { registry })}</li>\n`;
-            }
-        });
-        html += `  </ul>\n`;
-        html += `</div>\n\n`;
-    }
-    
-    // Instructions
-    if (data.sections && data.sections.length > 0) {
-        html += `<div class="instructions">\n`;
-        data.sections.forEach(sec => {
-            html += `  <section>\n`;
-            if (sec.title) {
-                let titleHtml = escapeHtml(sec.title);
-                if (sec.retro_planning) {
-                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;"><i class="ph ph-clock-counter-clockwise"></i> ${escapeHtml(sec.retro_planning)}</small>`;
-                }
-                
-                // Section Mass
-                if (sec.metrics && sec.metrics.totalMass > 0) {
-                     const mass = Math.round(sec.metrics.totalMass);
-                     let msg = `${mass}g`;
-                     let title = "Section Input Mass";
-                     if (sec.metrics.massStatus === 'estimated') {
-                         msg = `~${mass}g`;
-                         title += " (Estimated)";
-                     }
-                     if (sec.metrics.massStatus === 'incomplete') {
-                     }
-                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}"><i class="ph ph-scales"></i> ${msg}</small>`;
-                }
-
-                if (sec.intermediate_preparation) {
-                    titleHtml += ` <span class="declaration" title="Intermediate result for this section"><i class="ph ph-arrow-right"></i> ${escapeHtml(sec.intermediate_preparation)}</span>`;
-                }
-
-                html += `    <h3>${titleHtml}</h3>\n`;
-            }
-            
-            // Section Ingredients
-            if (sec.ingredients && sec.ingredients.length > 0) {
-                html += `    <div class="section-ingredients">\n`;
-                html += `      <h4>Ingredients</h4>\n`;
-                html += `      <ul>\n`;
-                sec.ingredients.forEach(item => {
-                    if (item.type === 'alternative' || item.type === 'group') {
-                        html += `        <li>\n`;
-                        html += `          <strong>Alternative Group</strong>:\n`;
-                        html += `          <ul>\n`;
-                        item.options.forEach(opt => {
-                            html += `            <li>${formatElement(opt, 'html', { registry })}</li>\n`;
-                        });
-                        html += `          </ul>\n`;
-                        html += `        </li>\n`;
-                    } else {
-                        html += `        <li>${formatElement(item, 'html', { registry })}</li>\n`;
-                    }
-                });
-                html += `      </ul>\n`;
-                html += `    </div>\n`;
-            }
-            
-            html += `    <ol class="steps">\n`;
-            let stepCounter = 0;
-            sec.steps.forEach((step, idx) => {
-                if (step.type === 'comment') {
-                    // Render differently, maybe as a note?
-                    html += `      <li style="list-style: none; margin-left: -1em; color: gray; font-style: italic;">\n`;
-                    html += `        ${escapeHtml(step.value)}\n`;
-                    html += `      </li>\n`;
-                    return;
-                }
-
-                stepCounter++;
-                html += `      <li value="${stepCounter}">\n`;
-                if (step.action) {
-                     html += `        <span class="action">[${escapeHtml(step.action)}]</span> `;
-                }
-                
-                let stepContent = '';
-                if (step.type === 'text') {
-                    stepContent = escapeHtml(step.value);
-                } else if (step.type === 'step') {
-                     stepContent = step.content.map((c, i, arr) => {
-                         let str = formatElement(c, 'html', { registry });
-
-                         // Spacing Logic
-                         const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
-                         if (isObject) {
-                             const next = arr[i+1];
-                             if (next) {
-                                let nextChar = '';
-                                if (typeof next === 'string') nextChar = next[0];
-                                else if (next.type === 'text') nextChar = next.value ? next.value[0] : '';
-                                
-                                // Don't add space if next is glue (punctuation or space)
-                                const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
-                                if (!isGlue) {
-                                    str += ' ';
-                                }
-                             }
-                         }
-                         return str;
-                     }).join('');
-                }
-                html += `        ${stepContent}\n`;
-                html += `      </li>\n`;
-            });
-            html += `    </ol>\n`;
-            html += `  </section>\n`;
-        });
-        html += `</div>\n`;
-    }
-
-    // Nutrition Panel (Moved to bottom)
-    if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
-        const nut = data.metrics.nutrition;
-        
-        // Hide if data is incomplete (User Request: "ne devraient pas apparaître")
-        if (nut.warnings && nut.warnings.length > 0) {
-            return html;
-        }
-
-        const total = nut.total;
-        
-        let portionText = '';
-        let portionVals = null;
-        if (nut.perPortion) {
-             portionText = ` (Per Portion)`;
-             portionVals = nut.perPortion;
-        }
-        
-        const displayVals = portionVals || total;
-        
-        const cal = Math.round(displayVals.calories);
-        const p = displayVals.protein;
-        const c = displayVals.carbs;
-        const f = displayVals.fat;
-
-        // Granular
-        const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
-        const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
-        const salt = displayVals.salt !== undefined ? displayVals.salt : '-';
-        
-        html += `<div class="nutrition-panel">\n`;
-        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
-        html += `  <div class="nut-grid">\n`;
-        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Salt</span> <strong>${salt}g</strong></div>\n`;
-        html += `  </div>\n`;
-        html += `</div>\n`;
-    }
-    
-    return html;
-}
 
 function renderJsonTree(data) {
     // Controls

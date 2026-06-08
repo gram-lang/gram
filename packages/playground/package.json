@@ -22,6 +22,7 @@
     "@gram/compiler": "file:../compiler",
     "@gram/parser": "file:../parser",
     "@gram/analyzer": "file:../analyzer",
+    "@gram/renderer": "file:../renderer",
     "ohm-js": "^17.2.1"
   },
   "devDependencies": {
