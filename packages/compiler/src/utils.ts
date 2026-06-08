@@ -1,4 +1,5 @@
 import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST } from '@gram/parser';
+import { resolveTimeUnit } from '@gram/i18n';
 import { CompilerOptions } from './core';
 
 /**
@@ -143,29 +144,7 @@ export const cleanObject = (obj: any): any => {
     return obj;
 };
 
-/**
- * Internal translation dictionary for time unit aliases (English and French).
- * 
- * Maps alternative time representations (e.g. "heures", "mins", "seconde") 
- * to canonical codes: 'h' (hours), 'm' (minutes), or 's' (seconds).
- */
-const TIME_ALIASES: Record<string, string> = {
-    // Hours
-    'h': 'h', 'hour': 'h', 'hours': 'h', 'heure': 'h', 'heures': 'h',
-    // Minutes
-    'm': 'm', 'min': 'm', 'mins': 'm', 'minute': 'm', 'minutes': 'm',
-    // Seconds
-    's': 's', 'sec': 's', 'secs': 's', 'second': 's', 'seconds': 's', 'seconde': 's', 'secondes': 's'
-};
 
-/**
- * Helper to normalize a time unit string into its canonical alias ('h', 'm', 's').
- */
-const resolveTimeUnit = (unit?: string | null): string => {
-    if (!unit) return '';
-    const clean = unit.trim().toLowerCase();
-    return TIME_ALIASES[clean] || clean;
-};
 
 /**
  * Converts a recipe time quantity AST (timer or active duration) into a unified number of minutes.

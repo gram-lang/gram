@@ -1,5 +1,5 @@
 import { slugify } from '@gram/compiler';
-import { resolveUnit } from './i18n';
+import { normalizeUnit } from '@gram/i18n';
 
 export interface UnitMap {
     base: string;
@@ -60,7 +60,7 @@ export function normalizeMass(
         return null;
     }
     
-    const u = resolveUnit(unit);
+    const u = normalizeUnit(unit);
 
     // 1. Physical Mass
     const massMap = UNIT_CONVERSIONS.mass.map;

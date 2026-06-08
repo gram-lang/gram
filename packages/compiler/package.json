@@ -28,6 +28,7 @@
   "dependencies": {
     "@types/js-yaml": "^4.0.9",
     "@gram/parser": "file:../parser",
+    "@gram/i18n": "file:../i18n",
     "js-yaml": "^4.1.1",
     "zod": "^4.3.5"
   },

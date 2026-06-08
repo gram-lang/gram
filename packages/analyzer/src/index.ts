@@ -3,7 +3,7 @@ export * from './ingredient_db';
 export * from './mass_normalization';
 export * from './nutrition';
 export * from './metrics';
-export * from './i18n';
+
 
 import { CompilationResult, Usage } from '@gram/parser';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
