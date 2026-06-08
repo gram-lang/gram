@@ -1,0 +1,419 @@
+/**
+ * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).
+ */
+export function formatDecimalToFraction(value) {
+    if (typeof value !== 'number') return String(value);
+    
+    // Exact integers
+    if (Math.abs(value - Math.round(value)) < 0.01) {
+        return String(Math.round(value));
+    }
+
+    // Fractions only for values strictly below 1
+    if (value < 1) {
+        const commonFractions = [
+            { val: 0.5, str: '1/2' },
+            { val: 0.25, str: '1/4' },
+            { val: 0.75, str: '3/4' },
+            { val: 1/3, str: '1/3' },
+            { val: 2/3, str: '2/3' },
+            { val: 0.125, str: '1/8' },
+            { val: 0.375, str: '3/8' },
+            { val: 0.625, str: '5/8' },
+            { val: 0.875, str: '7/8' }
+        ];
+        const match = commonFractions.find(f => Math.abs(value - f.val) < 0.01);
+        if (match) return match.str;
+    }
+
+    return String(parseFloat(value.toFixed(2)));
+}
+
+/**
+ * Extracts and normalizes quantity information from an item.
+ */
+export function getQty(item) {
+    if (item.qty !== undefined) {
+        if (typeof item.qty === 'number') {
+            return { value: item.qty, text: formatDecimalToFraction(item.qty) };
+        }
+        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
+            const marker = item.qty.referenceType === 'variable' ? '&' : '@';
+            return { 
+                value: null, 
+                text: `${item.qty.percent}% of ${marker}${item.qty.target}`,
+                isRelative: true
+            };
+        }
+        return item.qty;
+    }
+    if (item.quantity) return item.quantity;
+    return undefined;
+}
+
+/**
+ * Helper to display Timer/Temperature range or value.
+ */
+export function formatQuantityValue(q) {
+    if (!q) return '';
+    if (q.type === 'range' && q.text) return q.text;
+    if (q.text) return q.text;
+    if (q.type === 'RelativeQuantity') {
+        const marker = q.referenceType === 'variable' ? '&' : '@';
+        return `${q.percent}% of ${marker}${q.target}`;
+    }
+    if (q.value !== undefined) return q.value;
+    return q;
+}
+
+/**
+ * Formats duration values into human readable strings (e.g. 90 -> 1h 30m).
+ */
+export function formatDuration(minutes) {
+    if (!minutes) return '0m';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0) return `${h}h ${m > 0 ? m + 'm' : ''}`;
+    return `${m}m`;
+}
+
+/**
+ * Safely escapes HTML special characters to prevent XSS.
+ */
+export function escapeHtml(unsafe) {
+    if (unsafe === undefined || unsafe === null) return '';
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
+// Default icons mapping
+const DEFAULT_ICONS = {
+    html: {
+        hourglass: '<i class="ph ph-hourglass"></i>',
+        timer: '<i class="ph ph-timer"></i>',
+        thermometer: '<i class="ph ph-thermometer"></i>',
+        caretRight: '<i class="ph ph-caret-circle-right"></i>',
+        arrowRight: '<i class="ph ph-arrow-right"></i>',
+        arrowUDownLeft: '<i class="ph ph-arrow-u-down-left"></i>',
+        warning: '<i class="ph ph-warning"></i>',
+        pencilSimple: '<i class="ph ph-pencil-simple"></i>'
+    },
+    md: {
+        hourglass: '⏳ ',
+        timer: '⏲️ ',
+        thermometer: '🔥',
+        caretRight: '👉',
+        arrowRight: 'T-',
+        arrowUDownLeft: '',
+        warning: ' ⚠️',
+        pencilSimple: ''
+    }
+};
+
+const strategies = {
+    ingredient: (item, format, context) => {
+        const registry = context.registry || {};
+        const ingredients = registry.ingredients || {};
+        const def = ingredients[item.id];
+        
+        // Defensive Lookup Fallback
+        const baseName = def ? def.name : (item.id || '[Unknown Ingredient]');
+        const name = item.alias || baseName;
+        
+        const qty = getQty(item);
+        const formulaStr = item.formula ? `${item.formula.percent}% of ${item.formula.target}` : null;
+        const isPartial = item.formula && item.formula.is_partial;
+        
+        // Extract optional preparation and modifiers
+        const prep = item.preparation || '';
+        const isOptional = item.modifiers && item.modifiers.includes('optional');
+        const isReference = item.modifiers && item.modifiers.includes('reference');
+        
+        // Prepare normalized mass
+        let normalizedMass = null;
+        let isEstimate = false;
+        let conversionMethod = '';
+        if (item.normalizedMass) {
+            normalizedMass = Math.round(item.normalizedMass * 10) / 10;
+            isEstimate = !!item.isEstimate;
+            conversionMethod = item.conversionMethod || '';
+        }
+        
+        // Setup quantity string parts
+        let qtyContent = '';
+        if (qty) {
+            qtyContent += qty.text || qty.value;
+            if (item.unit) {
+                qtyContent += format === 'html' ? ` <span class="unit">${escapeHtml(item.unit)}</span>` : ` ${item.unit}`;
+            }
+        }
+        
+        if (item.variable_entries && item.variable_entries.length > 0) {
+            const vars = item.variable_entries.join(' + ');
+            qtyContent = qtyContent ? `${qtyContent} + ${vars}` : vars;
+        }
+
+        if (format === 'html') {
+            const className = (item.type === 'reference') ? 'reference' : 'ingredient';
+            let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
+            
+            if (isPartial) {
+                const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
+                html += ` <span class="quantity formula-qty" title="Calculation partial or failed">(${escapeHtml(formulaStr)} ${warningIcon})</span>`;
+            } else {
+                if (qtyContent) {
+                    html += ` <span class="quantity">(${qtyContent})</span>`;
+                }
+                if (formulaStr) {
+                    html += ` <span class="formula" title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
+                }
+            }
+            
+            if (normalizedMass !== null) {
+                let display = `${normalizedMass}g`;
+                let title = `Calculated Mass: ${normalizedMass}g\nMethod: ${conversionMethod}`;
+                if (isEstimate) {
+                    display = `~${display}`;
+                    title += ` (Estimated)`;
+                }
+                if (conversionMethod === 'explicit') {
+                    const editIcon = context.icons?.pencilSimple ?? DEFAULT_ICONS.html.pencilSimple;
+                    display = `${editIcon} ${display}`;
+                    title += ` (User Override)`;
+                } else if (conversionMethod === 'physical') {
+                    title += ` (Exact)`;
+                }
+                html += ` <span class="mass-badge" title="${escapeHtml(title)}">${display}</span>`;
+            }
+            
+            if (prep) {
+                html += ` <span class="prep">(${escapeHtml(prep)})</span>`;
+            }
+            if (isOptional) {
+                html += ` <span class="opt">(optional)</span>`;
+            }
+            if (isReference) {
+                const refIcon = context.icons?.arrowUDownLeft ?? DEFAULT_ICONS.html.arrowUDownLeft;
+                html += ` <span class="ref" title="Reference to existing ingredient">${refIcon}</span>`;
+            }
+            
+            html += `</span>`;
+            return html;
+        } else {
+            // Markdown / Plain Text Format
+            let md = (item.type === 'reference') ? `👉*${name}*` : `**${name}**`;
+            
+            if (isPartial) {
+                const warningSymbol = context.icons?.warning ?? DEFAULT_ICONS.md.warning;
+                md = `${name} (${formulaStr}${warningSymbol})`;
+            } else {
+                let qtyParts = [];
+                if (qty) {
+                    let qStr = qty.text || qty.value;
+                    if (item.unit) qStr += ` ${item.unit}`;
+                    qtyParts.push(qStr);
+                }
+                if (item.variable_entries && item.variable_entries.length > 0) {
+                    qtyParts.push(...item.variable_entries);
+                }
+                
+                if (qtyParts.length > 0) {
+                    md += ` (${qtyParts.join(' + ')})`;
+                }
+                if (formulaStr) {
+                    md += ` [${formulaStr}]`;
+                }
+            }
+            
+            if (prep) {
+                md += ` (${prep})`;
+            }
+            if (isOptional) {
+                md += ' (optional)';
+            }
+            return md;
+        }
+    },
+    
+    cookware: (item, format, context) => {
+        const registry = context.registry || {};
+        const cookwareList = registry.cookware || {};
+        const def = cookwareList[item.id];
+        
+        // Defensive Lookup Fallback
+        const baseName = def ? def.name : (item.id || '[Unknown Cookware]');
+        const name = item.alias || baseName;
+        
+        const qty = getQty(item);
+        const qtyVal = qty ? qty.value : null;
+        
+        if (format === 'html') {
+            let html = `<span class="cookware" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
+            if (qtyVal !== null) {
+                html += ` <span class="quantity">(${escapeHtml(qtyVal)})</span>`;
+            }
+            html += `</span>`;
+            return html;
+        } else {
+            let md = `*${name}*`;
+            if (qtyVal !== null) {
+                md += ` (${qtyVal})`;
+            }
+            return md;
+        }
+    },
+    
+    timer: (item, format, context) => {
+        const q = item.quantity || { value: '' };
+        const qVal = formatQuantityValue(q);
+        const unitStr = item.unit ? ` ${item.unit}` : '';
+        const isAsync = !!item.isAsync;
+        
+        if (format === 'html') {
+            const asyncClass = isAsync ? ' async' : '';
+            const iconKey = isAsync ? 'hourglass' : 'timer';
+            const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey];
+            return `<span class="timer${asyncClass}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
+        } else {
+            const prefix = context.icons?.hourglass !== undefined 
+                ? (isAsync ? context.icons.hourglass : (context.icons.timer ?? '')) 
+                : (isAsync ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
+            const suffix = isAsync ? ' (async)' : '';
+            return `${prefix}${qVal}${unitStr}${suffix}`;
+        }
+    },
+    
+    temperature: (item, format, context) => {
+        const termIcon = context.icons?.thermometer ?? (format === 'html' ? DEFAULT_ICONS.html.thermometer : DEFAULT_ICONS.md.thermometer);
+        if (item.text) {
+            const textVal = item.text;
+            if (format === 'html') {
+                return `<span class="temp" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
+            } else {
+                return `${termIcon}${textVal}`;
+            }
+        } else {
+            const q = item.quantity || { value: '' };
+            const qVal = formatQuantityValue(q);
+            const unitStr = item.unit ? ` ${item.unit}` : '';
+            if (format === 'html') {
+                return `<span class="temp" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
+            } else {
+                return `${termIcon}${qVal}${unitStr}`;
+            }
+        }
+    },
+    
+    reference: (item, format, context) => {
+        const registry = context.registry || {};
+        const ingredients = registry.ingredients || {};
+        const def = ingredients[item.id];
+        const name = def ? def.name : (item.id || '[Unknown Reference]');
+        const qty = getQty(item);
+        
+        if (format === 'html') {
+            const caretIcon = context.icons?.caretRight ?? DEFAULT_ICONS.html.caretRight;
+            let html = `<span class="reference">${caretIcon} ${escapeHtml(name)}`;
+            if (qty) {
+                const qtyVal = qty.text || qty.value;
+                html += ` <span class="quantity">${escapeHtml(qtyVal)}`;
+                if (item.unit) {
+                    html += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
+                }
+                html += `</span>`;
+            }
+            html += `</span>`;
+            return html;
+        } else {
+            let md = `👉*${name}*`;
+            if (qty) {
+                const qtyVal = qty.text || qty.value;
+                md += ` (${qtyVal}`;
+                if (item.unit) md += ` ${item.unit}`;
+                md += ')';
+            }
+            return md;
+        }
+    },
+    
+    declaration: (item, format, context) => {
+        const name = item.name || '';
+        if (format === 'html') {
+            const arrowIcon = context.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
+            return `<span class="declaration" title="Intermediate result declaring this step's output">${arrowIcon} ${escapeHtml(name)}</span>`;
+        } else {
+            const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
+            return `{${prefix}${name}}`;
+        }
+    },
+    
+    comment: (item, format, context) => {
+        const text = (item.value || '').trim();
+        if (format === 'html') {
+            return `<!-- ${escapeHtml(text)} -->`;
+        } else {
+            return ` *${text}*`;
+        }
+    },
+    
+    alternative: (item, format, context) => {
+        const registry = context.registry || {};
+        const cookwareList = registry.cookware || {};
+        const separator = format === 'html' ? ' <span class="keyword">or</span> ' : ' or ';
+        return item.options.map(opt => {
+            // Check if cookware either by explicit opt.type or checking the registry cookware list
+            const isCookware = opt.type === 'cookware' || !!cookwareList[opt.id];
+            const resolvedOpt = { ...opt, type: opt.type || (isCookware ? 'cookware' : 'ingredient') };
+            return formatElement(resolvedOpt, format, context);
+        }).join(separator);
+    },
+    
+    group: (item, format, context) => {
+        // Alias alternative strategy for group AST type
+        return strategies.alternative(item, format, context);
+    },
+    
+    text: (item, format) => {
+        const text = item.value || '';
+        return format === 'html' ? escapeHtml(text) : text;
+    }
+};
+
+/**
+ * Unified entry point to format an AST element.
+ * 
+ * @param {Object|string} element The AST element or a plain string
+ * @param {'html'|'md'} format Output format
+ * @param {Object} [context] Optional config and registry options
+ * @param {Object} [context.registry] Compile registry containing ingredients and cookware details
+ * @param {Object} [context.icons] Object mapping icon keys to specific representations
+ */
+export function formatElement(element, format, context = {}) {
+    if (element === null || element === undefined) return '';
+    if (typeof element === 'string') {
+        return format === 'html' ? escapeHtml(element) : element;
+    }
+    
+    // Resolve strategy
+    const type = element.type || '';
+    
+    // Check if it looks like an implicit ingredient/cookware step element (no type, has id)
+    if (!type && element.id) {
+        const registry = context.registry || {};
+        const isCookware = !!(registry.cookware && registry.cookware[element.id]);
+        const inferredType = isCookware ? 'cookware' : 'ingredient';
+        return strategies[inferredType]({ ...element, type: inferredType }, format, context);
+    }
+    
+    const strategy = strategies[type];
+    if (strategy) {
+        return strategy(element, format, context);
+    }
+    
+    // Fallback for unknown elements
+    return format === 'html' ? escapeHtml(String(element.value || '')) : String(element.value || '');
+}

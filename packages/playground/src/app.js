@@ -4,6 +4,7 @@ import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
 import gramGrammar from './gram-highlight.js';
+import { formatElement, formatDuration, escapeHtml } from './formatter.js';
 
 let fullDatabase = {};
 
@@ -142,84 +143,6 @@ if (footer) {
 // Output Mode Logic
 let outputMode = 'json'; // 'json' | 'markdown' | 'html'
 
-function formatDecimalToFraction(value) {
-    if (typeof value !== 'number') return String(value);
-    
-    // Exact integers
-    if (Math.abs(value - Math.round(value)) < 0.01) {
-        return String(Math.round(value));
-    }
-
-    // Fractions only for values strictly below 1
-    if (value < 1) {
-        const commonFractions = [
-            { val: 0.5, str: '1/2' },
-            { val: 0.25, str: '1/4' },
-            { val: 0.75, str: '3/4' },
-            { val: 1/3, str: '1/3' },
-            { val: 2/3, str: '2/3' },
-            { val: 0.125, str: '1/8' },
-            { val: 0.375, str: '3/8' },
-            { val: 0.625, str: '5/8' },
-            { val: 0.875, str: '7/8' }
-        ];
-        const match = commonFractions.find(f => Math.abs(value - f.val) < 0.01);
-        if (match) return match.str;
-    }
-
-    return String(parseFloat(value.toFixed(2)));
-}
-
-// Helper for minified properties
-function getQty(item) {
-    if (item.qty !== undefined) {
-        if (typeof item.qty === 'number') return { value: item.qty, text: formatDecimalToFraction(item.qty) };
-        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === 'RelativeQuantity') {
-            const marker = item.qty.referenceType === 'variable' ? '&' : '@';
-            return { 
-                value: null, 
-                text: `${item.qty.percent}% of ${marker}${item.qty.target}`,
-                isRelative: true
-            };
-        }
-        return item.qty;
-    }
-    // Fallback for old getters, check if S and S.quantity exists
-    if (item.quantity) return item.quantity;
-    return undefined;
-}
-
-// Helper for Timer/Temperature range display
-function formatQuantityValue(q) {
-    if (!q) return '';
-    // Check if it's a semantic quantity object from the parser
-    // { type: 'range', value: avg, range: { min, max }, text: "160-180" }
-    if (q.type === 'range' && q.text) return q.text;
-    
-    // { type: 'fraction', value: 0.5, text: "1/2" }
-    if (q.text) return q.text;
-
-    if (q.type === 'RelativeQuantity') {
-        const marker = q.referenceType === 'variable' ? '&' : '@';
-        return `${q.percent}% of ${marker}${q.target}`;
-    }
-    
-    // { value: 123 }
-    if (q.value !== undefined) return q.value;
-    
-    // Simple number
-    return q;
-}
-
-// Helper for duration formatting
-function formatDuration(minutes) {
-    if (!minutes) return '0m';
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h > 0) return `${h}h ${m > 0 ? m + 'm' : ''}`;
-    return `${m}m`;
-}
-
 function renderMarkdown(data) {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     let md = '';
@@ -252,26 +175,18 @@ function renderMarkdown(data) {
             if (item.type === 'alternative' || item.type === 'group') {
                 md += `- **Alternative Group**:\n`;
                 item.options.forEach(opt => {
-                    md += `  - ${formatIngredient(opt, registry)}\n`;
+                    md += `  - ${formatElement(opt, 'md', { registry })}\n`;
                 });
             } else if (item.type === 'composite') {
-                 // Composite handling for MD
-                 // Parent Quantity Display
-                 let parentStr = formatIngredient(item, registry);
-                 // If formatIngredient didn't add the quantity because it's usually for usage,
-                 // we must handle it here. 
-                 // However, formatIngredient uses getQty(item) which looks at item.qty.
-                 // Composite item has 'qty' property (from maxQty).
-                 // So formatIngredient SHOULD display it if present.
+                 let parentStr = formatElement(item, 'md', { registry });
                  md += `- **${parentStr}** (Composite):\n`;
                  item.usage.forEach(child => {
-                     md += `  - ${formatIngredient(child, registry)}\n`;
+                     md += `  - ${formatElement(child, 'md', { registry })}\n`;
                  });
             } else if (item.display) {
-                  // New Shopping List Format
                   md += `- ${item.display}\n`;
             } else {
-                md += `- ${formatIngredient(item, registry)}\n`;
+                md += `- ${formatElement(item, 'md', { registry })}\n`;
             }
         });
         md += '\n';
@@ -284,10 +199,10 @@ function renderMarkdown(data) {
              if (cw.type === 'alternative' || cw.type === 'group') {
                  md += `- **Alternative Group**:\n`;
                  cw.options.forEach(opt => {
-                     md += `  - ${formatCookware(opt, registry)}\n`;
+                     md += `  - ${formatElement(opt, 'md', { registry })}\n`;
                  });
              } else {
-                 md += `- ${formatCookware(cw, registry)}\n`;
+                 md += `- ${formatElement(cw, 'md', { registry })}\n`;
              }
         });
         md += '\n';
@@ -310,10 +225,10 @@ function renderMarkdown(data) {
                     if (item.type === 'alternative' || item.type === 'group') {
                         md += `- **Alternative Group**:\n`;
                         item.options.forEach(opt => {
-                            md += `  - ${formatIngredient(opt, registry)}\n`;
+                            md += `  - ${formatElement(opt, 'md', { registry })}\n`;
                         });
                     } else {
-                        md += `- ${formatIngredient(item, registry)}\n`;
+                        md += `- ${formatElement(item, 'md', { registry })}\n`;
                     }
                 });
                 md += '\n';
@@ -339,55 +254,7 @@ function renderMarkdown(data) {
                     stepText += step.value;
                 } else if (step.type === 'step') {
                      stepText += step.content.map((c, i, arr) => {
-                         let str = '';
-                         if (typeof c === 'string') {
-                             str = c;
-                         } else if (c.type === 'text') {
-                             str = c.value;
-                         } else if (c.type === 'timer') {
-                             const qStr = `${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
-                             if (c.isAsync) {
-                                 str = `⏳ ${qStr} (async)`;
-                             } else {
-                                 str = `⏲️ ${qStr}`;
-                             }
-                         } else if (c.type === 'temperature') {
-                              if (c.text) {
-                                  str = `🔥${c.text}`;
-                              } else {
-                                  str = `🔥${formatQuantityValue(c.quantity)}${c.unit ? ' ' + c.unit : ''}`;
-                              }
-                         } else if (c.type === 'reference') {
-                             const name = registry.ingredients[c.id]?.name || c.id;
-                             str = `👉*${name}*`;
-                             const qty = getQty(c);
-                             if (qty) {
-                                 str += ` (${qty.text || qty.value}`;
-                                 if (c.unit) str += ` ${c.unit}`;
-                                 str += ')';
-                             }
-                         } else if (!c.type && c.id) {
-                              if (registry.cookware[c.id]) str = `*${formatCookware(c, registry)}*`;
-                              else str = `**${formatIngredient(c, registry)}**`;
-                         } else if (c.type === 'ingredient') {
-                             str = `**${formatIngredient(c, registry)}**`;
-                         } else if (c.type === 'cookware') {
-                             str = `*${formatCookware(c, registry)}*`;
-                         } else if (c.type === 'alternative') {
-                             str = c.options.map(opt => {
-                                 const isCookware = opt.type === 'cookware' || registry.cookware[opt.id];
-                                 if (isCookware) return `*${formatCookware(opt, registry)}*`;
-                                 return `**${formatIngredient(opt, registry)}**`;
-                             }).join(' or ');
-                         } else if (c.type === 'group') {
-                              str = c.options.map(opt => {
-                                 const isCookware = opt.type === 'cookware' || registry.cookware[opt.id];
-                                 if (isCookware) return `*${formatCookware(opt, registry)}*`;
-                                 return `**${formatIngredient(opt, registry)}**`;
-                             }).join(' or ');
-                         } else if (c.type === 'comment') {
-                             str = ` *${c.value.trim()}*`;
-                         }
+                         let str = formatElement(c, 'md', { registry });
 
                          // Spacing Logic
                          const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
@@ -416,68 +283,6 @@ function renderMarkdown(data) {
     
     return md;
 }
-
-function formatIngredient(item, registry) {
-    // Resolve name from registry
-    const def = registry.ingredients[item.id];
-    let str = def ? def.name : item.id;
-    
-    // Alias overrides name if present in usage
-    if (item.alias) str = item.alias;
-    
-    // Shopping List Specific Display
-    // If we have variableentries, we might want to display them cleanly.
-    // The Input item here might be from shopping list OR from instructions.
-    // Shopping list items have 'qty', 'unit', and potentially 'variable_entries'.
-    
-    const qty = getQty(item);
-    
-    // Formula handling
-    const formulaStr = item.formula ? `${item.formula.percent}% of ${item.formula.target}` : null;
-    const isPartial = item.formula && item.formula.is_partial;
-
-    if (isPartial) {
-        // Replace quantity with formula
-        str += ` (${formulaStr} ⚠️)`;
-    } else {
-        let qtyParts = [];
-        
-        if (qty) {
-            let qStr = qty.text || qty.value;
-            if (item.unit) qStr += ` ${item.unit}`;
-            qtyParts.push(qStr);
-        }
-        
-        if (item.variable_entries && item.variable_entries.length > 0) {
-             qtyParts.push(...item.variable_entries);
-        }
-        
-        if (qtyParts.length > 0) {
-             str += ` (${qtyParts.join(' + ')})`;
-        }
-        
-        if (formulaStr) str += ` [${formulaStr}]`;
-    }
-
-    if (item.preparation) str += ` (${item.preparation})`;
-    if (item.modifiers && item.modifiers.includes('optional')) str += ' (optional)';
-    
-    return str;
-}
-
-function formatCookware(item, registry) {
-    const def = registry.cookware[item.id];
-    let str = def ? def.name : item.id;
-    
-    if (item.alias) str = item.alias;
-    
-    const qty = getQty(item);
-    if (qty) {
-        str += ` (${qty.value})`;
-    }
-    return str;
-}
-
 
 function update() {
     const text = input.value;
@@ -732,16 +537,16 @@ function renderHTML(data) {
                 html += `      <strong>Alternative Group</strong>:\n`;
                 html += `      <ul>\n`;
                 item.options.forEach(opt => {
-                    html += `        <li>${formatIngredientHTML(opt, registry)}</li>\n`;
+                    html += `        <li>${formatElement(opt, 'html', { registry })}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
             } else if (item.type === 'composite') {
                 html += `    <li>\n`;
-                html += `      <strong>${formatIngredientHTML(item, registry)}</strong> (Composite):\n`;
+                html += `      <strong>${formatElement(item, 'html', { registry })}</strong> (Composite):\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach(child => {
-                     html += `        <li>${formatIngredientHTML(child, registry)}</li>\n`;
+                     html += `        <li>${formatElement(child, 'html', { registry })}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
@@ -754,7 +559,7 @@ function renderHTML(data) {
                      const gross = Math.round(item.purchasingMass * 10) / 10;
                      extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
                 }
-                html += `    <li>${formatIngredientHTML(item, registry)}${extraHtml}</li>\n`;
+                html += `    <li>${formatElement(item, 'html', { registry })}${extraHtml}</li>\n`;
             }
         });
         html += `  </ul>\n`;
@@ -772,12 +577,12 @@ function renderHTML(data) {
                  html += `      <strong>Alternative Group</strong>:\n`;
                  html += `      <ul>\n`;
                  cw.options.forEach(opt => {
-                     html += `        <li>${formatCookwareHTML(opt, registry)}</li>\n`;
+                     html += `        <li>${formatElement(opt, 'html', { registry })}</li>\n`;
                  });
                  html += `      </ul>\n`;
                  html += `    </li>\n`;
             } else {
-                 html += `    <li>${formatCookwareHTML(cw, registry)}</li>\n`;
+                 html += `    <li>${formatElement(cw, 'html', { registry })}</li>\n`;
             }
         });
         html += `  </ul>\n`;
@@ -827,12 +632,12 @@ function renderHTML(data) {
                         html += `          <strong>Alternative Group</strong>:\n`;
                         html += `          <ul>\n`;
                         item.options.forEach(opt => {
-                            html += `            <li>${formatIngredientHTML(opt, registry)}</li>\n`;
+                            html += `            <li>${formatElement(opt, 'html', { registry })}</li>\n`;
                         });
                         html += `          </ul>\n`;
                         html += `        </li>\n`;
                     } else {
-                        html += `        <li>${formatIngredientHTML(item, registry)}</li>\n`;
+                        html += `        <li>${formatElement(item, 'html', { registry })}</li>\n`;
                     }
                 });
                 html += `      </ul>\n`;
@@ -861,54 +666,7 @@ function renderHTML(data) {
                     stepContent = escapeHtml(step.value);
                 } else if (step.type === 'step') {
                      stepContent = step.content.map((c, i, arr) => {
-                         let str = '';
-                         if (typeof c === 'string') {
-                             str = escapeHtml(c);
-                         } else if (c.type === 'text') {
-                             str = escapeHtml(c.value);
-                         } else if (c.type === 'timer') {
-                             const q = c.quantity || { value: '' };
-                             const qVal = formatQuantityValue(q);
-                             const asyncClass = c.isAsync ? ' async' : '';
-                             const icon = c.isAsync ? '<i class="ph ph-hourglass"></i>' : '<i class="ph ph-timer"></i>';
-                             str = `<span class="timer${asyncClass}" data-value="${q.value}" data-unit="${c.unit || ''}">${icon} ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
-                         } else if (c.type === 'temperature') {
-                              if (c.text) {
-                                  str = `<span class="temp" data-semantic="${escapeHtml(c.text)}"><i class="ph ph-thermometer"></i> ${escapeHtml(c.text)}</span>`;
-                              } else {
-                                  const q = c.quantity || { value: '' };
-                                  const qVal = formatQuantityValue(q);
-                                  str = `<span class="temp" data-value="${q.value}" data-unit="${c.unit || ''}"><i class="ph ph-thermometer"></i> ${qVal}${c.unit ? ' ' + c.unit : ''}</span>`;
-                              }
-                         } else if (c.type === 'reference') {
-                             const name = registry.ingredients[c.id]?.name || c.id;
-                             let refStr = `<span class="reference"><i class="ph ph-caret-circle-right"></i> ${escapeHtml(name)}`;
-                             const qty = getQty(c);
-                             if (qty) {
-                                  refStr += ` <span class="quantity">${qty.text || qty.value}`;
-                                  if (c.unit) refStr += ` <span class="unit">${c.unit}</span>`;
-                                  refStr += `</span>`;
-                             }
-                             refStr += `</span>`;
-                             str = refStr;
-                         } else if (!c.type && c.id) {
-                              if (registry.cookware[c.id]) str = formatCookwareHTML(c, registry);
-                              else str = formatIngredientHTML(c, registry);
-                         } else if (c.type === 'ingredient') {
-                             str = formatIngredientHTML(c, registry);
-                         } else if (c.type === 'cookware') {
-                             str = formatCookwareHTML(c, registry);
-                         } else if (c.type === 'alternative' || c.type === 'group') {
-                             str = c.options.map(opt => {
-                                 const isCookware = opt.type === 'cookware' || registry.cookware[opt.id];
-                                 if (isCookware) return formatCookwareHTML(opt, registry);
-                                 return formatIngredientHTML(opt, registry);
-                             }).join(' <span class="keyword">or</span> ');
-                         } else if (c.type === 'declaration') {
-                             str = `<span class="declaration" title="Intermediate result declaring this step's output"><i class="ph ph-arrow-right"></i> ${escapeHtml(c.name)}</span>`;
-                         } else if (c.type === 'comment') {
-                             str = `<!-- ${escapeHtml(c.value.trim())} -->`;
-                         }
+                         let str = formatElement(c, 'html', { registry });
 
                          // Spacing Logic
                          const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
@@ -1053,90 +811,7 @@ function renderJsonNode(item, key = null, addComma = false) {
     return html;
 }
 
-function escapeHtml(unsafe) {
-    if (unsafe === undefined || unsafe === null) return '';
-    return String(unsafe)
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-}
 
-function formatIngredientHTML(item, registry) {
-    // Lookup
-    const def = registry.ingredients[item.id];
-    const name = def ? def.name : item.id;
-    
-    let displayName = name;
-    if (item.alias) displayName = item.alias;
-
-    const className = (item.type === 'reference') ? 'reference' : 'ingredient';
-    let str = `<span class="${className}" data-name="${escapeHtml(name)}">${escapeHtml(displayName)}`;
-    
-    const qty = getQty(item);
-    
-    // Formula Setup
-    const formulaStr = item.formula ? `${item.formula.percent}% of ${escapeHtml(item.formula.target)}` : null;
-    const isPartial = item.formula && item.formula.is_partial;
-
-    if (isPartial) {
-        // Show Formula AS Quantity (with warning)
-        str += ` <span class="quantity formula-qty" title="Calculation partial or failed">(${formulaStr} <i class="ph ph-warning"></i>)</span>`;
-    } else {
-        // Normal Quantity
-        let qtyContent = '';
-        if (qty) {
-            qtyContent += qty.text || qty.value;
-            if (item.unit) qtyContent += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
-        }
-        
-        // Variable entries support
-        if (item.variable_entries && item.variable_entries.length > 0) {
-             const vars = item.variable_entries.join(' + ');
-             if (qtyContent) qtyContent += ` + ${vars}`;
-             else qtyContent = vars;
-        }
-
-        if (qtyContent) {
-            str += ` <span class="quantity">(${qtyContent})</span>`;
-        }
-
-        // Normal Formula indicator
-        if (formulaStr) {
-             str += ` <span class="formula" title="Base Mass Used: ${item.formula ? item.formula.base_mass_used : ''}g">[${formulaStr}]</span>`;
-        }
-    }
-
-    // Mass Badge
-    if (item.normalizedMass) {
-         // Round to max 1 decimal for display
-         const mass = Math.round(item.normalizedMass * 10) / 10;
-         let display = `${mass}g`;
-         let title = `Calculated Mass: ${mass}g\nMethod: ${item.conversionMethod}`;
-         
-         if (item.isEstimate) {
-             display = `~${display}`;
-             title += ` (Estimated)`;
-         }
-         
-         if (item.conversionMethod === 'explicit') {
-             display = `<i class="ph ph-pencil-simple"></i> ${display}`;
-             title += ` (User Override)`;
-         } else if (item.conversionMethod === 'physical') {
-             title += ` (Exact)`;
-         }
-
-         str += ` <span class="mass-badge" title="${title}">${display}</span>`;
-    }
-    
-    if (item.preparation) str += ` <span class="prep">(${escapeHtml(item.preparation)})</span>`;
-    if (item.modifiers && item.modifiers.includes('optional')) str += ` <span class="opt">(optional)</span>`;
-    if (item.modifiers && item.modifiers.includes('reference')) str += ` <span class="ref" title="Reference to existing ingredient"><i class="ph ph-arrow-u-down-left"></i></span>`;
-    
-    str += `</span>`;
-    return str;
-}
 
 function renderSExpr(node, level = 0) {
     if (node === null || node === undefined) return 'nil';
@@ -1188,23 +863,6 @@ function renderSExpr(node, level = 0) {
     // Format children
     const childrenStr = children.map(c => renderSExpr(c, level + 1)).join('\n');
     return `${indent}(${type}${attrs}\n${childrenStr})`;
-}
-
-function formatCookwareHTML(item, registry) {
-    const def = registry.cookware[item.id];
-    const name = def ? def.name : item.id;
-    
-    let displayName = name;
-    if (item.alias) displayName = item.alias;
-
-    let str = `<span class="cookware" data-name="${escapeHtml(name)}">${escapeHtml(displayName)}`;
-    
-    const qty = getQty(item);
-    if (qty) {
-         str += ` <span class="quantity">(${qty.value})</span>`;
-    }
-    str += `</span>`;
-    return str;
 }
 
 
