@@ -1,8 +1,9 @@
-import { slugify, minifyQuantity, createCleanUsage, quantityToMinutes } from './utils';
+import { minifyQuantity, createCleanUsage, quantityToMinutes } from './utils';
 import { 
-    Context, Registry, ProcessedSection, ProcessedStep, Usage 
+    Context, ProcessedSection, ProcessedStep, Usage 
 } from '@gram/parser';
 import { CompilerOptions } from './core';
+import { RecipeRegistry } from './registry';
 
 export interface ProcessorContext extends Context {
     options?: CompilerOptions;
@@ -13,42 +14,25 @@ export interface ProcessorContext extends Context {
  * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
  * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
  */
-export function processBlockItem(item: any, ctx: ProcessorContext, registry: Registry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
+export function processBlockItem(item: any, ctx: ProcessorContext, registry: RecipeRegistry, secIngredients: Usage[], secCookware: Usage[]): Usage | null | string {
     if (!item) return null;
 
     // 1. Process standard Ingredient declarations
     if (item.type === 'Ingredient') {
-        const id = slugify(item.name);
-        
-        if (!registry.ingredients.has(id)) {
-            let defaultUnit = null;
-            if (item.quantity && item.quantity.unit) defaultUnit = item.quantity.unit;
-            registry.ingredients.set(id, { id, name: item.name, default_unit: defaultUnit });
-        }
-        
-        const entry = registry.ingredients.get(id);
-        if (entry && item.quantity && item.quantity.unit && !entry.default_unit) {
-            entry.default_unit = item.quantity.unit;
-        }
+        const defaultUnit = (item.quantity && item.quantity.unit) || undefined;
+        const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
 
         // Tag composite ingredients linked to a parent sub-recipe
         if (item.composite) {
-            if (entry) entry.is_composite = true;
-            const parentId = slugify(item.composite.parent);
-            if (entry) entry.parent = parentId;
-            if (!registry.ingredients.has(parentId)) {
-                 registry.ingredients.set(parentId, { id: parentId, name: item.composite.parent, is_composite: true });
-            } else {
-                 const parent = registry.ingredients.get(parentId);
-                 if (parent) parent.is_composite = true;
-            }
+            const parentId = registry.registerIngredient(item.composite.parent, { is_composite: true });
+            registry.registerIngredient(item.name, { is_composite: true, parent: parentId });
         }
 
         // Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
         if (item.quantity && item.quantity.type === 'RelativeQuantity') {
              const rel = item.quantity;
              const targetName = rel.target;
-             const targetId = slugify(targetName);
+             const targetId = registry.getIngredientId(targetName);
              const percent = rel.percent;
              
              let isGhost = false;
@@ -129,10 +113,7 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
 
     // 2. Process Cookware items
     if (item.type === 'Cookware') {
-        const id = slugify(item.name);
-        if (!registry.cookware.has(id)) {
-            registry.cookware.set(id, { id, name: item.name });
-        }
+        const id = registry.registerCookware(item.name);
         const usage = createCleanUsage(item, id, ctx.options);
         secCookware.push(usage);
         return usage;
@@ -176,7 +157,7 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
 
     // 4. Process Variable References (&reference)
     if (item.type === 'Reference') {
-        const id = slugify(item.name);
+        const id = registry.getIngredientId(item.name);
         if (!registry.ingredients.has(id)) {
              ctx.warnings.push({ code: 'UNDEFINED_REFERENCE', message: `Reference to undefined ingredient '&${item.name}'.`, item: item.name, loc: item.loc });
         }
@@ -200,15 +181,9 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
 
     // 5. Process Intermediate Declarations (creating a sub-product like a dough)
     if (item.type === 'IntermediateDecl') {
-        const id = slugify(item.name);
+        const id = registry.registerIngredient(item.name, { is_intermediate: true });
         ctx.intermediateDecl = id;
         ctx.currentSectionIntermediates.add(item.name);
-        if (!registry.ingredients.has(id)) {
-            registry.ingredients.set(id, { id, name: item.name, is_intermediate: true });
-        } else {
-            const entry = registry.ingredients.get(id);
-            if (entry) entry.is_intermediate = true;
-        }
         return { type: 'declaration', name: item.name, id };
     }
 
@@ -272,7 +247,7 @@ export function processBlockItem(item: any, ctx: ProcessorContext, registry: Reg
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
  * handles async background tasks, and calculates active and total duration metrics.
  */
-export function processSections(astChildren: any[], registry: Registry, options?: CompilerOptions): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
+export function processSections(astChildren: any[], registry: RecipeRegistry, options?: CompilerOptions): { sections: ProcessedSection[], metrics: { totalTime: number, activeTime: number } } {
     const ctx: ProcessorContext = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -314,10 +289,7 @@ export function processSections(astChildren: any[], registry: Registry, options?
                 ctx.globalScopes.set(varName, section.title);
             }
 
-            const id = slugify(varName);
-            if (!registry.ingredients.has(id)) {
-                registry.ingredients.set(id, { id, name: varName, is_intermediate: true });
-            }
+            registry.registerIngredient(varName, { is_intermediate: true });
             ctx.definedIntermediates.add(varName);
         }
 

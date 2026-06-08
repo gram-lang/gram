@@ -2,6 +2,7 @@ import { slugify, cleanObject } from './utils';
 import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
+import { RecipeRegistry } from './registry';
 import { 
     RecipeAST, Registry, CompilationResult, Usage 
 } from '@gram/parser';
@@ -17,11 +18,7 @@ export interface CompilerOptions {
 export function compile(ast: RecipeAST, options?: CompilerOptions): CompilationResult {
     if (ast.type !== 'Recipe') throw new Error("Compiler expects Recipe AST");
 
-    const registry: Registry = {
-        ingredients: new Map(),
-        cookware: new Map(),
-        warnings: []
-    };
+    const registry = new RecipeRegistry();
 
     // 1. Process steps, scheduling, and build global registries
     const resultPayload = processSections(ast.children, registry, options);
@@ -45,10 +42,7 @@ export function compile(ast: RecipeAST, options?: CompilerOptions): CompilationR
         title: (ast.meta as any).title || null,
         slug: (ast.meta as any).title ? slugify((ast.meta as any).title) : null,
         meta: ast.meta,
-        registry: {
-            ingredients: Object.fromEntries(registry.ingredients),
-            cookware: Object.fromEntries(registry.cookware)
-        },
+        registry: registry.toPlainObject(),
         shopping_list, 
         cookware: globalCookware,
         sections,
