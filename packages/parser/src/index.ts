@@ -9,6 +9,7 @@ import {
 } from './types';
 
 export * from './types';
+import { MetaSchema } from './schemas';
 
 // Load Grammar
 const grammarPath = path.join(__dirname, '../grammar.ohm');
@@ -73,7 +74,15 @@ semantics.addOperation('toAST', {
     // --- Structure ---
 
     Recipe(frontmatter, content) {
-        const meta = getOpt(frontmatter) || {};
+        let meta = getOpt(frontmatter) || {};
+        const metaResult = MetaSchema.safeParse(meta);
+        if (!metaResult.success) {
+            console.warn("[GRAM Parser] Invalid Front-Matter detected, ignoring metadata. Error:", metaResult.error.errors[0].message);
+            meta = {};
+        } else {
+            meta = metaResult.data;
+        }
+
         const sections = getOpt(content) || [];
         return { type: ASTNodeType.Recipe, meta, children: sections } as RecipeAST;
     },

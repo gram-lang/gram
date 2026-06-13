@@ -1,9 +1,7 @@
-export interface AnalyzerOptions {
-    enableMassNormalization?: boolean;
-    enableYieldManagement?: boolean;
-    enableNutritionalEstimation?: boolean;
-    portions?: number;
-}
+import { z } from 'zod';
+import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
+
+export type AnalyzerOptions = z.infer<typeof AnalyzerOptionsSchema>;
 
 import { Usage, ProcessedSection, CompilationResult } from '@gram/parser';
 
@@ -37,26 +35,7 @@ export interface NutritionMetrics {
     warnings?: string[];
 }
 
-export interface IngredientData {
-    name: string;
-    physical?: {
-        density: number;
-        yield: number;
-        unit_weight?: number;
-    };
-    states: Record<string, {
-        macros?: {
-            kcal: number;
-            protein: number;
-            carbs: number;
-            fat: number;
-            sugar?: number;
-            fiber?: number;
-            sodium?: number;
-        };
-    }>;
-    aliases: string[];
-}
+export type IngredientData = z.infer<typeof IngredientDataSchema>;
 
 export interface AnalyzedUsage extends Usage {
     normalizedMass?: number;

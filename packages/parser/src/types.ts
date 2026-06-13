@@ -3,9 +3,10 @@ export interface Location {
     end: number;
 }
 
-export interface Meta {
-    [key: string]: string | string[];
-}
+import { z } from 'zod';
+import { MetaSchema } from './schemas';
+
+export type Meta = z.infer<typeof MetaSchema>;
 
 export enum ASTNodeType {
     Recipe = 'Recipe',

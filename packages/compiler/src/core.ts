@@ -7,15 +7,18 @@ import {
     RecipeAST, Registry, CompilationResult, Usage 
 } from '@gram/parser';
 
-export interface CompilerOptions {
-}
+import { z } from 'zod';
+import { CompilerOptionsSchema } from './schemas';
+
+export type CompilerOptions = z.infer<typeof CompilerOptionsSchema>;
 
 /**
  * Main entry point of the Gram compiler.
  * Transforms a raw Recipe AST into a clean, structured CompilationResult
  * by compiling sections, generating the shopping list, and calculating preparation times.
  */
-export function compile(ast: RecipeAST, options?: CompilerOptions): CompilationResult {
+export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): CompilationResult {
+    const options = CompilerOptionsSchema.parse(rawOptions || {});
     if (ast.type !== 'Recipe') throw new Error("Compiler expects Recipe AST");
 
     const registry = new RecipeRegistry();

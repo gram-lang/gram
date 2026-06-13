@@ -12,6 +12,12 @@ import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
 import { normalizeMass } from './mass_normalization';
 import { getIngredientData } from './ingredient_db';
+import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
+import { z } from 'zod';
+
+export function validateIngredientDatabase(rawDb: unknown): Record<string, IngredientData> {
+    return z.record(IngredientDataSchema).parse(rawDb);
+}
 
 /**
  * Main entry point for recipe physical analysis.
@@ -23,7 +29,7 @@ export function analyze(
     database: Record<string, IngredientData>,
     options?: AnalyzerOptions
 ): AnalysisResult {
-    const opts = options || {};
+    const opts = AnalyzerOptionsSchema.parse(options || {});
     const missingIngredientsSet = new Set<string>();
     
     // Deep clone the compiled sections to perform safe mutations
