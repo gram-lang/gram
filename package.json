@@ -6,10 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "npm run build",
-    "build": "echo '🏗️ Building i18n, Parser, Compiler & Analyzer...' && npm --prefix packages/i18n run build && npm --prefix packages/parser run build && npm --prefix packages/compiler run build && npm --prefix packages/analyzer run build && echo '✅ Core build complete.'",
-    "build:playground": "echo '🎨 Building Playground...' && npm --prefix packages/playground run build && echo '✅ Playground build complete.'",
-    "dev": "echo '🚀 Starting Playground...' && npm start -w @gram/playground -s",
+    "postinstall": "bun run build",
+    "build": "echo '🏗️ Building Core Packages...' && echo '➤ i18n' && (cd packages/i18n && bun run build) && echo '➤ Parser' && (cd packages/parser && bun run build) && echo '➤ Compiler' && (cd packages/compiler && bun run build) && echo '➤ Analyzer' && (cd packages/analyzer && bun run build) && echo '➤ Renderer' && (cd packages/renderer && bun run build) && echo '✅ Core build complete.'",
+    "build:playground": "echo '🎨 Building Playground...' && (cd packages/playground && bun run build) && echo '✅ Playground build complete.'",
+    "dev": "echo '🚀 Starting Playground...' && (cd packages/playground && bun run start)",
     "test": "echo \"Error: no test specified\" && exit 1",
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version"

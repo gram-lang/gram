@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "gram",
@@ -13,6 +12,7 @@
       "version": "0.9.0",
       "dependencies": {
         "@gram/compiler": "file:../compiler",
+        "@gram/i18n": "file:../i18n",
         "@gram/parser": "file:../parser",
         "zod": "^3.22.4",
       },
@@ -24,6 +24,7 @@
       "name": "@gram/compiler",
       "version": "0.9.0",
       "dependencies": {
+        "@gram/i18n": "file:../i18n",
         "@gram/parser": "file:../parser",
         "@types/js-yaml": "^4.0.9",
         "js-yaml": "^4.1.1",
@@ -31,6 +32,13 @@
       },
       "devDependencies": {
         "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/i18n": {
+      "name": "@gram/i18n",
+      "version": "0.9.0",
+      "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
@@ -52,12 +60,21 @@
         "@gram/analyzer": "file:../analyzer",
         "@gram/compiler": "file:../compiler",
         "@gram/parser": "file:../parser",
+        "@gram/renderer": "file:../renderer",
         "@webcoder49/code-input": "^2.8.0",
         "ohm-js": "^17.2.1",
       },
       "devDependencies": {
         "esbuild": "^0.24.0",
         "esbuild-plugin-yaml": "^0.0.1",
+      },
+    },
+    "packages/renderer": {
+      "name": "@gram/renderer",
+      "version": "0.9.0",
+      "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
       },
     },
     "packages/vscode-extension": {
@@ -156,9 +173,13 @@
 
     "@gram/compiler": ["@gram/compiler@workspace:packages/compiler"],
 
+    "@gram/i18n": ["@gram/i18n@workspace:packages/i18n"],
+
     "@gram/parser": ["@gram/parser@workspace:packages/parser"],
 
     "@gram/playground": ["@gram/playground@workspace:packages/playground"],
+
+    "@gram/renderer": ["@gram/renderer@workspace:packages/renderer"],
 
     "@gram/vscode-extension": ["@gram/vscode-extension@workspace:packages/vscode-extension"],
 
@@ -336,17 +357,11 @@
 
     "zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
-    "@gram/analyzer/@gram/compiler": ["@gram/compiler@file:packages/compiler", { "dependencies": { "@gram/parser": "file:../parser", "@types/js-yaml": "^4.0.9", "js-yaml": "^4.1.1", "zod": "^4.3.5" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
-
     "@gram/analyzer/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 
     "@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 
     "@gram/compiler/zod": ["zod@4.3.5", "", {}, "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="],
-
-    "@gram/playground/@gram/analyzer": ["@gram/analyzer@file:packages/analyzer", { "dependencies": { "@gram/compiler": "file:../compiler", "@gram/parser": "file:../parser", "zod": "^3.22.4" }, "devDependencies": { "typescript": "^5.3.3" } }],
-
-    "@gram/playground/@gram/compiler": ["@gram/compiler@file:packages/compiler", { "dependencies": { "@gram/parser": "file:../parser", "@types/js-yaml": "^4.0.9", "js-yaml": "^4.1.1", "zod": "^4.3.5" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 
     "@gram/playground/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 
@@ -362,20 +377,10 @@
 
     "read-yaml-file/js-yaml": ["js-yaml@3.14.2", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg=="],
 
-    "@gram/analyzer/@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
-
-    "@gram/playground/@gram/analyzer/@gram/compiler": ["@gram/compiler@file:packages/compiler", { "dependencies": { "@gram/parser": "file:../parser", "@types/js-yaml": "^4.0.9", "js-yaml": "^4.1.1", "zod": "^4.3.5" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
-
-    "@gram/playground/@gram/analyzer/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
-
-    "@gram/playground/@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
-
     "esbuild-plugin-yaml/fs-extra/jsonfile": ["jsonfile@6.2.0", "", { "dependencies": { "universalify": "^2.0.0" }, "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-FGuPw30AdOIUTRMC2OMRtQV+jkVj2cfPqSeWXv1NEAJ1qZ5zb1X6z1mFhbfOB/iy3ssJCD+3KuZ8r8C3uVFlAg=="],
 
     "esbuild-plugin-yaml/fs-extra/universalify": ["universalify@2.0.1", "", {}, "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw=="],
 
     "read-yaml-file/js-yaml/argparse": ["argparse@1.0.10", "", { "dependencies": { "sprintf-js": "~1.0.2" } }, "sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg=="],
-
-    "@gram/playground/@gram/analyzer/@gram/compiler/@gram/parser": ["@gram/parser@file:packages/parser", { "dependencies": { "ohm-js": "^17.2.1" }, "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
   }
 }

@@ -9,9 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@gram/parser": "file:../parser",
-    "@gram/compiler": "file:../compiler",
-    "@gram/i18n": "file:../i18n",
+    "@gram/parser": "workspace:*",
+    "@gram/compiler": "workspace:*",
+    "@gram/i18n": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {

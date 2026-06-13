@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@gram/parser": "file:../parser",
-    "@gram/i18n": "file:../i18n",
+    "@gram/parser": "workspace:*",
+    "@gram/i18n": "workspace:*",
     "js-yaml": "^4.1.1",
     "zod": "^4.3.5"
   },
