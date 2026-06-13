@@ -22,6 +22,7 @@
   },
   "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/parser#readme",
   "scripts": {
+    "prebuild": "node scripts/build-grammar.js",
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },

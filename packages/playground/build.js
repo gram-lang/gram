@@ -15,54 +15,7 @@ try {
 const version = `${pkg.version}-${commitHash}`;
 const repoUrl = pkg.repository.url.replace(/\.git$/, '');
 
-// 1. Prepare Parser Code (Shimmed)
-const grammarPath = path.join(__dirname, '../parser/grammar.ohm');
-const grammarContent = fs.readFileSync(grammarPath, 'utf-8');
-
-// Use the COMPILED output from TypeScript
-const parserPath = path.join(__dirname, '../parser/dist/index.js');
-let parserCode = fs.readFileSync(parserPath, 'utf-8');
-
-// Shim Node.js dependencies and inject grammar
-// 1. Remove fs/path imports
-parserCode = parserCode.replace(/require\("fs"\)/g, '({})');
-parserCode = parserCode.replace(/require\("path"\)/g, '({})');
-const astNodeTypesObj = {
-    Recipe: 'Recipe',
-    Section: 'Section',
-    Step: 'Step',
-    Comment: 'Comment',
-    Text: 'Text',
-    IntermediateDecl: 'IntermediateDecl',
-    RelativeQuantity: 'RelativeQuantity',
-    TextQuantity: 'TextQuantity',
-    Quantity: 'Quantity',
-    Ingredient: 'Ingredient',
-    Composite: 'Composite',
-    Cookware: 'Cookware',
-    Reference: 'Reference',
-    Timer: 'Timer',
-    Temperature: 'Temperature',
-    Alternative: 'Alternative'
-};
-parserCode = parserCode.replace(/require\("\.\/types"\)/g, `({ ASTNodeType: ${JSON.stringify(astNodeTypesObj)} })`);
-
-// 2. Remove file reading logic (assuming variable names match dist output)
-// This relies on the emitted JS having "grammarPath" and "grammarContent" variables.
-// If they are optimized away or renamed, this might fail.
-// We fallback to replacing the fs.readFileSync calls if variables are not found?
-// But tsc output usually preserves variable names if they are top-level constants.
-
-parserCode = parserCode.replace(/const grammarPath = .*/, '// grammarPath suppressed');
-parserCode = parserCode.replace(/const grammarContent = .*/, `const grammarContent = ${JSON.stringify(grammarContent)};`);
-
-// 3. Remove/Fix unused imports?
-// gram-parser now only exports types and getAST. No internal compiler import to fix.
-
-const shimmedParserPath = path.join(__dirname, 'src/shimmed-gram-parser.js');
-fs.writeFileSync(shimmedParserPath, parserCode);
-
-// 2. Build App & CSS
+// Build App & CSS
 esbuild.build({
   entryPoints: ['src/app.js', 'src/style.css'],
   bundle: true,
@@ -71,18 +24,11 @@ esbuild.build({
   sourcemap: true,
   format: 'esm',
   splitting: true,
-  chunkNames: 'chunks/[name]-[hash]',
   assetNames: 'assets/[name]-[hash]',
-  // Actually, user wants NO hash changing every time if content changes?
-  // Or just stable names? 
-  // If we remove [hash], cache busting breaks.
-  // But for git usage, stable names are better.
-  // Let's try to control the output name of the dynamic import bundle.
-  // esbuild default for code splitting chunks is [name]-[hash].
-  // If we set it to [name], we might get conflicts or cache issues, but git history will be clean.
+  // Use stable chunk names for cleaner git history
   chunkNames: 'chunks/[name]', 
   alias: {
-      '@gram/parser': shimmedParserPath,
+      '@gram/parser': path.resolve(__dirname, '../parser/dist/index.js'),
       '@gram/compiler': path.resolve(__dirname, '../compiler/dist/index.js'),
       '@gram/analyzer': path.resolve(__dirname, '../analyzer/dist/index.js'),
       '@gram/renderer': path.resolve(__dirname, '../renderer/dist/index.js')
@@ -96,10 +42,8 @@ esbuild.build({
   }
 }).then(() => {
     console.log('Build successful!');
-    fs.unlinkSync(shimmedParserPath);
 
-    // Copy examples to dist
-    // Copy examples to dist and generate manifest
+    // Generate examples manifest and copy files
     const examplesSrc = path.join(__dirname, 'src/examples');
     const examplesDest = path.join(__dirname, 'dist/examples');
     if (!fs.existsSync(examplesDest)) {
@@ -115,13 +59,9 @@ esbuild.build({
         const destPath = path.join(examplesDest, file);
         fs.copyFileSync(srcPath, destPath);
 
-        // Read title from file content
+        // Extract title from YAML Frontmatter or Markdown H2
         const content = fs.readFileSync(srcPath, 'utf-8');
-        
-        // Try YAML Frontmatter Title
         const yamlMatch = content.match(/^title:\s*['"]?(.+?)['"]?\s*$/m);
-        
-        // Try Markdown h2 Title
         const h2Match = content.match(/^##\s+(.+)$/m);
         
         const title = yamlMatch ? yamlMatch[1].trim() : (h2Match ? h2Match[1].trim() : file.replace('.gram', ''));

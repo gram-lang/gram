@@ -1,6 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as ohm from 'ohm-js';
+import { grammarContent } from './grammar-content';
 import { 
     RecipeAST, SectionAST, StepAST, IngredientAST, CookwareAST, 
     QuantityAST, QuantityValueAST, RelativeQuantityAST, TextQuantityAST, 
@@ -12,8 +11,6 @@ export * from './types';
 import { MetaSchema } from './schemas';
 
 // Load Grammar
-const grammarPath = path.join(__dirname, '../grammar.ohm');
-const grammarContent = fs.readFileSync(grammarPath, 'utf-8');
 const grammar = ohm.grammar(grammarContent);
 
 // ----------------------------------------------------------------------------
