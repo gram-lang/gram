@@ -1,5 +1,11 @@
 # @gram/vscode-extension
 
+## 0.10.0
+
+### Patch Changes
+
+- 3720644: Added Zod to automatically catch invalid data and prevent crashes.
+
 ## 0.9.0
 
 ### Minor Changes

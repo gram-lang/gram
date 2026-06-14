@@ -1,5 +1,32 @@
 # @gram/analyzer
 
+## 0.10.0
+
+### Minor Changes
+
+- dc98e0b: Added Bun snapshot testing to the development environment for compiler validation.
+- cfda9e1: Refactored unit translation and normalization into a new centralized @gram/i18n package to remove redundancy between the compiler and analyzer.
+
+### Patch Changes
+
+- c720fa1: Refactored the analyzer to reuse the compiler's getNumericQty utility, improving code DRYness and type safety.
+- 705bb45: Migrated to full Bun environment using 'workspace:\*' dependencies
+- 3720644: Added Zod to automatically catch invalid data and prevent crashes.
+- 833cfbf: Standardized the warning system to provide consistent and reliable error messages across all tools.
+- Updated dependencies [705bb45]
+- Updated dependencies [3720644]
+- Updated dependencies [63ec5a4]
+- Updated dependencies [cfda9e1]
+- Updated dependencies [cdf3181]
+- Updated dependencies [05791fd]
+- Updated dependencies [833cfbf]
+- Updated dependencies [087b78b]
+- Updated dependencies [919f299]
+- Updated dependencies [69870cc]
+  - @gram/compiler@0.10.0
+  - @gram/i18n@0.10.0
+  - @gram/parser@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes

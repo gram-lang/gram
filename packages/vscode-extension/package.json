@@ -2,7 +2,7 @@
   "name": "@gram/vscode-extension",
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language support for Gram recipe files",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "publisher": "abiwab",
   "license": "GPL-3.0",
   "author": "abiwab",

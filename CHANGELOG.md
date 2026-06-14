@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.10.0] - 6/14/2026
+
+### ✨ New Features
+- Added Bun snapshot testing to the development environment for compiler validation.
+- Created a new shared @gram/renderer package to handle HTML and Markdown generation.
+- Refactored unit translation and normalization into a new centralized @gram/i18n package to remove redundancy between the compiler and analyzer.
+
+### 🐛 Bug Fixes & Improvements
+- Refactored the analyzer to reuse the compiler's getNumericQty utility, improving code DRYness and type safety.
+- Migrated to full Bun environment using 'workspace:\*' dependencies
+- Added Zod to automatically catch invalid data and prevent crashes.
+- Improved code safety in the compiler by adding strict type checking for recipe elements.
+- Introduce a unified `getNumericQty` utility in `utils.ts` to safely extract numeric values from AST Quantity structures (including fractions, ranges, and nested nodes). This fixes a bug where composite child ingredient quantities using fractions (e.g. `@zest{1/2}`) aggregated to zero in the shopping list.
+- Format decimal values strictly below 1 (e.g. `0.5`, `0.25`) as clean culinary fractions (`1/2`, `1/4`) in the shopping list, while keeping standard decimal formatting for values greater than or equal to 1 (e.g. `1.5`).
+- Cleaned up repetitive code that manages and saves ingredients and cookware.
+- Standardized the warning system to provide consistent and reliable error messages across all tools.
+- Improved parser stability and removed complex build workarounds for web environments.
+- Refactored AST processing for improved maintainability.
+- Standardized how recipe elements are identified across the system to prevent typos and errors.
+
+---
+
 ## [0.9.0] - 6/7/2026
 
 ### ✨ New Features

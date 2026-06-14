@@ -1,5 +1,14 @@
 # @gram/parser
 
+## 0.10.0
+
+### Patch Changes
+
+- 3720644: Added Zod to automatically catch invalid data and prevent crashes.
+- 63ec5a4: Improved code safety in the compiler by adding strict type checking for recipe elements.
+- 087b78b: Improved parser stability and removed complex build workarounds for web environments.
+- 69870cc: Standardized how recipe elements are identified across the system to prevent typos and errors.
+
 ## 0.9.0
 
 ### Minor Changes
