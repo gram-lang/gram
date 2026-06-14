@@ -26,15 +26,15 @@ To run the playground locally from the repository root:
 
 1.  **Install Monorepo Dependencies**:
     ```bash
-    npm install
+    bun install
     ```
 2.  **Build the Parser, Compiler, Analyzer, and Renderer**:
     ```bash
-    npm run build
+    bun run build
     ```
 3.  **Start the Playground Dev Server**:
     ```bash
-    npm run dev
+    bun run dev
     ```
     Open `http://localhost:3000` in your web browser.
 

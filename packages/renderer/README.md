@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/renderer` via npm:
+Install `@gram/renderer` via bun:
 
 ```bash
-npm install @gram/renderer
+bun install @gram/renderer
 ```
 
 ---

@@ -104,13 +104,13 @@ To inspect the parser or test your recipes in the web-based playground IDE:
 
 ```bash
 # Install dependencies for all packages
-npm install
+bun install
 
 # Build parser, compiler, and playground
-npm run build 
+bun run build 
 
 # Run the playground
-npm run dev
+bun run dev
 ```
 
 ### 2. Use the Parser

@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/analyzer` via npm:
+Install `@gram/analyzer` via bun:
 
 ```bash
-npm install @gram/analyzer
+bun install @gram/analyzer
 ```
 
 ---

@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/compiler` via npm:
+Install `@gram/compiler` via bun:
 
 ```bash
-npm install @gram/compiler
+bun install @gram/compiler
 ```
 
 ---

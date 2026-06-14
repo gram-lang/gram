@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/i18n` via npm:
+Install `@gram/i18n` via bun:
 
 ```bash
-npm install @gram/i18n
+bun install @gram/i18n
 ```
 
 ---

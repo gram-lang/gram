@@ -40,8 +40,8 @@ GRAM is a language specification. Changes to valid syntax are significant.
    ```
 2.  **Make your changes**.
 3.  **Test your changes**.
-   *   For the parser/compiler, verify the build via `npm run build` at the root.
-   *   For the playground, verify it runs via `npm run dev`.
+   *   For the parser/compiler, verify the build via `bun run build` at the root.
+   *   For the playground, verify it runs via `bun run dev`.
 4.  **Commit** your changes with clear messages.
 5.  **Push** to your fork.
 6.  **Open a Pull Request** against the `main` branch of the `gram` repository.

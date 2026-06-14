@@ -15,8 +15,8 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 To build the project from source (TypeScript):
 
 ```bash
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 This will generate the compiled JavaScript in the `dist/` directory.
