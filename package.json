@@ -10,12 +10,13 @@
     "build": "echo '🏗️ Building Core Packages...' && echo '➤ i18n' && (cd packages/i18n && bun run build) && echo '➤ Parser' && (cd packages/parser && bun run build) && echo '➤ Compiler' && (cd packages/compiler && bun run build) && echo '➤ Analyzer' && (cd packages/analyzer && bun run build) && echo '➤ Renderer' && (cd packages/renderer && bun run build) && echo '✅ Core build complete.'",
     "build:playground": "echo '🎨 Building Playground...' && (cd packages/playground && bun run build) && echo '✅ Playground build complete.'",
     "dev": "echo '🚀 Starting Playground...' && (cd packages/playground && bun run start)",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test",
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0"
+    "@changesets/cli": "^2.31.0",
+    "yaml": "^2.9.0"
   },
   "dependencies": {
     "zod": "^4.4.3"

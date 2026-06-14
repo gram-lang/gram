@@ -1,0 +1,21 @@
+---
+title: "Recipe with ALL warnings"
+---
+
+## Business Errors ->&dup{}
+
+We will use a step reference that does not exist: &ghost_step{}
+
+And an undeclared ingredient variable: @&ghost_var{10g}
+
+Relative quantity pointing to nothing: @sugar{50% @flour}
+
+Circular relative quantity: @salt{10% @salt}
+
+Timer missing unit: ~timer{10}
+
+Temperature missing unit: !{180}
+
+## Scope Conflict ->&dup{}
+
+This section re-declares the same output variable 'dup', which should trigger a SCOPE_CONFLICT.

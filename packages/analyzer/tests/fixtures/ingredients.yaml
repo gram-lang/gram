@@ -1,0 +1,26 @@
+ingredients:
+  mustard:
+    name: "Moutarde de Dijon"
+    aliases: ["dijon mustard", "moutarde"]
+    tags: ["condiment"]
+    physical:
+      density: 1.05
+      yield: 1.0
+    nutrition:
+      calories: 151
+      carbs: 4.33
+      protein: 6.92
+      fat: 11.2
+  sugar:
+    name: "Sucre blanc"
+    aliases: ["white sugar", "sucre"]
+    tags: ["sucré", "poudre"]
+    physical:
+      density: 0.85
+      yield: 1.0
+    nutrition:
+      calories: 400
+      carbs: 100
+      protein: 0
+      fat: 0
+      sugar: 100

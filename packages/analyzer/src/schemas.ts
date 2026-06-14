@@ -14,19 +14,14 @@ export const IngredientDataSchema = z.object({
         yield: z.number().min(0).max(1),
         unit_weight: z.number().positive().optional(),
     }).optional(),
-    states: z.record(
-        z.string(),
-        z.object({
-            macros: z.object({
-                kcal: z.number().min(0),
-                protein: z.number().min(0),
-                carbs: z.number().min(0),
-                fat: z.number().min(0),
-                sugar: z.number().min(0).optional(),
-                fiber: z.number().min(0).optional(),
-                sodium: z.number().min(0).optional(),
-            }).optional()
-        })
-    ),
-    aliases: z.array(z.string()),
+    nutrition: z.object({
+        calories: z.number().min(0),
+        protein: z.number().min(0),
+        carbs: z.number().min(0),
+        fat: z.number().min(0),
+        sugar: z.number().min(0).optional(),
+        fiber: z.number().min(0).optional(),
+        sodium: z.number().min(0).optional(),
+    }).optional(),
+    aliases: z.array(z.string()).optional(),
 });

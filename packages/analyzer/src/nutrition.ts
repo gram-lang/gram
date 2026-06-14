@@ -78,25 +78,22 @@ export function calculateNutrition(
             const data = getIngredientData(id, database);
             if (!data) {
                  pushWarning(warnings, WarningCode.MISSING_INGREDIENT, { id });
-            } else if (data.states) {
+            } else if (data.nutrition) {
                 knownCount++;
                 const factor = mass / 100.0;
-                const stateData = data.states['default'];
                 
-                if (stateData && stateData.macros) {
-                    const m = stateData.macros;
-                    total.calories += m.kcal * factor;
-                    total.protein += m.protein * factor;
-                    total.carbs += m.carbs * factor;
-                    total.fat += m.fat * factor;
+                const m = data.nutrition;
+                total.calories += m.calories * factor;
+                total.protein += m.protein * factor;
+                total.carbs += m.carbs * factor;
+                total.fat += m.fat * factor;
+                
+                if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
+                if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
+                if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
                     
-                    if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
-                    if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
-                    if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
-                    
-                } else {
-                     pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
-                }
+            } else {
+                 pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
             }
         } else {
             pushWarning(warnings, WarningCode.UNKNOWN_MASS, { id });
