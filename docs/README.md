@@ -35,7 +35,8 @@ For contributors and developers implementing GRAM:
 *   [**Parsing Architecture**](./technical/01_parsing_architecture.md) - The 4-stage pipeline and execution logic.
 *   [**JSON Output Schema**](./technical/02_json_output.md) - Structural vs analyzed JSON output.
 *   [**Options & Config**](./technical/04_options.md) - Compiler and analyzer configurations.
-*   [**Ingredient Database**](./technical/03_ingredient_database.md) - Format, i18n, and density mapping schema.
+*   [**Ingredient Database**](./technical/03_ingredient_database.md) - Format and density mapping schema.
+*   [**Development Environment**](./technical/05_development_environment.md) - Monorepo architecture, validation, and testing logic.
 
 ### Helpers
 

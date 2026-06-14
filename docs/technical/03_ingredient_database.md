@@ -6,55 +6,27 @@ The `@gram/analyzer` queries an external ingredient database to perform physical
 
 The host application (such as the Playground or a custom server CLI) is responsible for loading the database from files and passing it directly as a JavaScript object/dictionary to the `analyze` function of `@gram/analyzer`. 
 
-By default, in the GRAM monorepo, the reference database is compiled from individual YAML files in the `data/` directory.
+By default, in the GRAM monorepo, the reference database is loaded from files by the host application. A complete YAML fixture example is available in `packages/analyzer/tests/fixtures/ingredients.yaml` which serves as the Living Documentation for the expected schema.
 
 ### 1.1. Schema Specification
 
-Each ingredient in the database maps to the `IngredientData` type:
+To avoid outdated documentation, we do not hardcode the full YAML schema here. Instead, GRAM relies on **Living Documentation**. 
 
-```yaml
-canonical-slug:
-  name: "Canonical Name"
-  i18n:
-    fr: "Nom Français"
-    es: "Nombre Español"
-  aliases: ["common alias", "other name"]
-  tags: ["category", "tag"]
-  
-  # Physical Properties (Mass/Volume conversion)
-  physical:
-    density: 0.92      # g/ml
-    unit_weight: 55    # g (default weight for 1 unit)
-    yield: 0.85        # Edible portion factor (Yield percentage)
-    
-  # Nutritional Data (Macronutrients per 100g)
-  states:
-    default:
-      macros:
-        kcal: 100
-        protein: 10
-        fat: 5
-        carbs: 20
-        sugar: 5
-        fiber: 2
-        sodium: 0.1
-```
+The definitive, always-up-to-date schema reference is the tested fixture file located at:
+**[`packages/analyzer/tests/fixtures/ingredients.yaml`](../../../packages/analyzer/tests/fixtures/ingredients.yaml)**
 
-> [!NOTE]  
-> While the database schema supports a `states` map (for raw vs. cooked macros) for long-term extensibility, the deprecated `:state` text syntax has been removed from the parser and compiler to keep the grammar pure and focused strictly on raw text recipes. All database queries default to the `"default"` state.
+Each ingredient in this database maps internally to the `IngredientData` type defined and validated by Zod in `packages/analyzer/src/schemas.ts`. If you are building a host application, your provided database must pass this Zod validation.
 
 ---
 
-## 2. Multilingual Support (I18n)
+## 2. Resolution & Multilingual Units
 
-The database enables full localized lookups for ingredients:
-
-*   **Ingredients Resolution**: You can write `@oeuf` (French) or `@egg` (English) in your recipe text. The `@gram/analyzer` normalizes both to the canonical key `egg` using the database's `i18n` mapping.
-*   **Units Normalization**: Volume units are normalized across languages. For example, French volume units like `càs` (tablespoon) and `càc` (teaspoon) are resolved to their canonical equivalents (`tbsp`, `tsp`) internally.
+*   **Ingredients Resolution (Aliases)**: Ingredients are resolved primarily by their exact string match. However, the database supports an `aliases` array. This allows the analyzer to map variations (like `@dijon mustard` or `@yellow mustard`) back to the canonical `mustard` object in the user's custom database.
+*   **Units Normalization (I18n)**: While ingredient names are specific to the user's language, **volume and mass units are natively normalized across languages** by the `@gram/i18n` package. For example, French volume units like `càs` (tablespoon) and `càc` (teaspoon) are automatically resolved to their canonical equivalents (`tbsp`, `tsp`) internally.
 
 ---
 
 ## 3. Host Loading Process
 
-1.  **Node.js / Host Environment**: The host application reads the YAML files from the `data/` directory at startup and merges them. The `user-defined.yaml` overrides file should be loaded last to take precedence.
-2.  **Playground (Web Environment)**: The database is pre-bundled into a separate chunk (`dist/chunks/db_bundle.js`) to keep the initial page loading times extremely fast. The playground app lazy-loads the database bundle only when the analyzer is active.
+1.  **Node.js / Host Environment**: The host application reads the database from its own data source (YAML files, JSON, REST APIs) and passes the unified object to the analyzer.
+2.  **Playground (Web Environment)**: The playground uses a local version of the database.

@@ -16,9 +16,14 @@ GRAM is an open source project dedicated to treating recipes as code. Whether yo
 Right now, GRAM is a **monorepo** organized in a `packages/` directory containing four main packages:
 
 1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts string to AST.
-2.  **`compiler/`**: The logic layer. Processes the AST to generate shopping lists and JSON results.
-3.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
-4.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
+2.  **`compiler/`**: The logic layer. Processes the AST to generate structured results and warnings.
+3.  **`analyzer/`**: The physical layer. Connects to ingredient databases to normalize units and calculate nutrition.
+4.  **`i18n/`**: The translation and localization layer.
+5.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
+6.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
+
+> [!TIP]
+> **Developer Guide:** For an in-depth look at our technology stack, monorepo setup, data validation, and testing philosophy, please read the [**Development Environment Guide**](./docs/technical/05_development_environment.md).
 
 ## 🤝 How to Contribute
 
@@ -40,7 +45,7 @@ GRAM is a language specification. Changes to valid syntax are significant.
    ```
 2.  **Make your changes**.
 3.  **Test your changes**.
-   *   For the parser/compiler, verify the build via `bun run build` at the root.
+   *   For the core logic, run the test suite via `bun run test` at the root. If you changed syntax or expected JSON outputs, use `bun test --update-snapshots` to visually confirm and lock your changes.
    *   For the playground, verify it runs via `bun run dev`.
 4.  **Commit** your changes with clear messages.
 5.  **Push** to your fork.

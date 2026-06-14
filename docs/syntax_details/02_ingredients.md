@@ -71,7 +71,7 @@ GRAM now checks your ingredients against a database of known ingredients (French
 *   **Missing Ingredient**: If you use `@unicorn meat{}`, the compiler will warn: `MISSING_INGREDIENT`. It will still appear in the shopping list, but mass/nutrition calculations will be skipped.
 *   **Missing Macros**: If an ingredient exists but has no data, you will get a `MISSING_MACROS` warning.
 
-> **Tip**: You can add your own ingredients in `data/user-defined.yaml` to fix these warnings.
+> **Tip**: You can add your own ingredients to your custom database to fix these warnings.
 
 ## Aliases (Renaming)
 

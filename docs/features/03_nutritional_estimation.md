@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > **Physical Analysis Feature**: Nutritional Estimation is handled by the `@gram/analyzer` package. It can be enabled independently of Mass Normalization (it performs internal mass calculations for data lookup even if Mass Normalization is visually disabled).
 
-The `@gram/analyzer` allows for automatic **Nutritional Analysis** of recipes. It calculates estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Salt) based on the ingredients list.
+The `@gram/analyzer` allows for automatic **Nutritional Analysis** of recipes. It calculates estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) based on the ingredients list.
 
 ## How it works
 
@@ -42,7 +42,7 @@ The system calculates:
     *   of which **Sugars** (g)
 *   **Fat** (g)
 *   **Fiber** (g)
-*   **Salt** (g)
+*   **Sodium** (g)
 
 ## Ingredient Database
 
@@ -50,9 +50,8 @@ The system calculates:
 >
 > The `@gram/analyzer` does not read files from the file system; the host application (like the Playground) loads the database and passes it as a parameter to the `analyze` function.
 > 
-> *   **Primary Sources**: The default database provided in the Playground contains around 900 ingredients from **ANSES CIQUAL** and **USDA FoodData Central**.
-> *   **Augmentation**: LLMs are used to fill gaps (densities, obscure ingredients), marked with `# [LLM]` in the default YAML source file.
-> *   **Customizability**: Developers can supply any database matching the `IngredientData` type.
+> *   **Primary Sources**: The database is fully user-defined. The analyzer expects an object matching the `IngredientData` schema.
+> *   **Customizability**: Developers can supply any custom database (from REST APIs, local JSON, or YAML) as long as it matches the Zod schema.
 
 ## Partial Data Warnings
 
