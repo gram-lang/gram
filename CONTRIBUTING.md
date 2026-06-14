@@ -18,7 +18,8 @@ Right now, GRAM is a **monorepo** organized in a `packages/` directory containin
 1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts string to AST.
 2.  **`compiler/`**: The logic layer. Processes the AST to generate structured results and warnings.
 3.  **`analyzer/`**: The physical layer. Connects to ingredient databases to normalize units and calculate nutrition.
-4.  **`i18n/`**: The translation and localization layer.
+4.  **`renderer/`**: The display layer. Converts the compiled JSON into Markdown or HTML.
+5.  **`i18n/`**: The translation and localization layer.
 5.  **`playground/`**: The web-based IDE (Vanilla JS + Esbuild).
 6.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting.
 

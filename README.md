@@ -46,7 +46,7 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 4.  **Automated Insights:**
     *   **Mass Unification**: Automatically converts volumes and units to grams (e.g., `1 cup flour` -> `125g`).
     *   **Yield Management**: Understands that buying `1 avocado` results in `~135g` of edible flesh (Purchasing vs. Net Mass).
-    *   **Nutritional Estimation**: Automatically calculates calories and macros based on an integrated ingredient database (POC).
+    *   **Nutritional Estimation**: Automatically calculates calories and macros based on a user-provided ingredient database.
     *   **Scheduling**: Distinguishes **Active Time** (labor), **Prep Time** (mise en place) and **Cook Time** (actual cooking) from **Total Time** (including background tasks like rising or marinating).
 
 → See the [**full feature list**](./docs/README.md) for more details.
@@ -67,7 +67,7 @@ While Cooklang focuses on natural language fluidity, GRAM prioritizes **data int
 [Bake] In the #oven{} at !{200°C}.
 ```
 
-You can find more real-world examples in the `examples/` directory at the root of the project.
+You can find more real-world examples in the Playground or by exploring the test fixtures in the `packages/` directory.
 
 ---
 
@@ -78,6 +78,8 @@ This monorepo contains the following packages in `packages/`:
 *   **`parser/`**: The core parser. Converts GRAM strings to an AST (Abstract Syntax Tree).
 *   **`compiler/`**: The compiler logic. Transforms the AST into the final Shopping List and Instructions JSON.
 *   **`analyzer/`**: The physical resolver. Handles mass normalization, yield management, and nutritional estimation based on an ingredient database.
+*   **`renderer/`**: The display layer. Converts the compiled JSON into beautiful Markdown or HTML.
+*   **`i18n/`**: The localization layer. Centralizes translation dictionaries and unit mappings across languages.
 *   **`playground/`**: A web-based IDE to write GRAM and visualize the output (JSON, Markdown, Preview).
 
 And:
