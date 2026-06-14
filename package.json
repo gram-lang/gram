@@ -1,24 +1,25 @@
 {
   "name": "gram",
-  "private": true,
+  "devDependencies": {
+    "@changesets/assemble-release-plan": "^6.0.10",
+    "@changesets/cli": "^2.31.0",
+    "@changesets/config": "^3.1.4",
+    "@changesets/read": "^0.6.7",
+    "@manypkg/get-packages": "^3.1.0",
+    "turbo": "^2.9.18"
+  },
   "license": "GPL-3.0",
-  "workspaces": [
-    "packages/*"
-  ],
+  "private": true,
+  "packageManager": "bun@1.3.14",
   "scripts": {
     "postinstall": "bun run build",
-    "build": "echo '🏗️ Building Core Packages...' && echo '➤ i18n' && (cd packages/i18n && bun run build) && echo '➤ Parser' && (cd packages/parser && bun run build) && echo '➤ Compiler' && (cd packages/compiler && bun run build) && echo '➤ Analyzer' && (cd packages/analyzer && bun run build) && echo '➤ Renderer' && (cd packages/renderer && bun run build) && echo '✅ Core build complete.'",
-    "build:playground": "echo '🎨 Building Playground...' && (cd packages/playground && bun run build) && echo '✅ Playground build complete.'",
-    "dev": "echo '🚀 Starting Playground...' && (cd packages/playground && bun run start)",
+    "build": "turbo run build",
+    "dev": "turbo run start",
     "test": "bun test",
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version"
   },
-  "devDependencies": {
-    "@changesets/cli": "^2.31.0",
-    "yaml": "^2.9.0"
-  },
-  "dependencies": {
-    "zod": "^4.4.3"
-  }
+  "workspaces": [
+    "packages/*"
+  ]
 }

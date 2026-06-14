@@ -9,7 +9,11 @@ async function main() {
     const cwd = process.cwd();
 
     // 1. Read all packages in the monorepo and pending changesets
-    const packages = await getPackages(cwd);
+    const rawPackages = await getPackages(cwd);
+    const packages = {
+        ...rawPackages,
+        root: rawPackages.root || rawPackages.rootPackage || { dir: cwd }
+    };
     const changesets = await readChangesets(cwd);
 
     if (changesets.length === 0) {

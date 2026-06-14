@@ -1,6 +1,6 @@
 {
   "name": "@gram/playground",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Browser-based playground and IDE for the GRAM recipe language",
   "author": "abiwab",
   "license": "GPL-3.0",
@@ -18,15 +18,15 @@
     "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"
   },
   "dependencies": {
-    "@webcoder49/code-input": "^2.8.0",
+    "@gram/analyzer": "workspace:*",
     "@gram/compiler": "workspace:*",
     "@gram/parser": "workspace:*",
-    "@gram/analyzer": "workspace:*",
     "@gram/renderer": "workspace:*",
-    "ohm-js": "^17.2.1"
+    "@webcoder49/code-input": "^2.8.2"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0",
-    "esbuild-plugin-yaml": "^0.0.1"
+    "esbuild": "^0.28.1",
+    "esbuild-plugin-yaml": "^0.0.1",
+    "serve": "^14.2.6"
   }
 }

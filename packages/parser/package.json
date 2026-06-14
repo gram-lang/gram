@@ -1,6 +1,6 @@
 {
   "name": "@gram/parser",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Core parser for the GRAM recipe language, converting .gram files to JSON AST.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,11 +27,10 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "ohm-js": "^17.2.1",
-    "zod": "^3.22.4"
+    "ohm-js": "^17.5.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^6.0.3"
   }
 }

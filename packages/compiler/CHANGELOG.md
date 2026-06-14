@@ -1,5 +1,15 @@
 # @gram/compiler
 
+## 0.10.1
+
+### Patch Changes
+
+- Cleaned up and updated dependencies.
+- Implemented Turborepo to optimize and simplify project building.
+- Updated dependencies
+  - @gram/parser@0.10.1
+  - @gram/i18n@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes

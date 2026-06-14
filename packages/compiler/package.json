@@ -1,6 +1,6 @@
 {
   "name": "@gram/compiler",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Compiler for the GRAM recipe language, converting AST to JSON.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,14 +26,12 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@types/js-yaml": "^4.0.9",
-    "@gram/parser": "workspace:*",
     "@gram/i18n": "workspace:*",
-    "js-yaml": "^4.1.1",
-    "zod": "^4.3.5"
+    "@gram/parser": "workspace:*",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
   }
 }

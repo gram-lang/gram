@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1] - 6/14/2026
+
+### 🐛 Bug Fixes & Improvements
+
+- Cleaned up and updated dependencies.
+- Implemented Turborepo to optimize and simplify project building.
+
 ## [0.10.0] - 6/14/2026
 
 ### ✨ New Features

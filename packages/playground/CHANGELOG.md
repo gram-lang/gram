@@ -1,5 +1,17 @@
 # @gram/playground
 
+## 0.10.1
+
+### Patch Changes
+
+- Cleaned up and updated dependencies.
+- Implemented Turborepo to optimize and simplify project building.
+- Updated dependencies
+  - @gram/analyzer@0.10.1
+  - @gram/compiler@0.10.1
+  - @gram/renderer@0.10.1
+  - @gram/parser@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
