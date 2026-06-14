@@ -31,6 +31,239 @@ export type ProcessedBlockResult =
  * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
  * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
  */
+function processIngredient(
+    item: IngredientAST,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry,
+    secIngredients: Usage[]
+): Usage {
+    const defaultUnit = (item.quantity && 'unit' in item.quantity && item.quantity.unit) || undefined;
+    const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
+
+    // Tag composite ingredients linked to a parent sub-recipe
+    if (item.composite) {
+        const parentId = registry.registerIngredient(item.composite.parent, { is_composite: true });
+        registry.registerIngredient(item.name, { is_composite: true, parent: parentId });
+    }
+
+    // Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
+    if (item.quantity && item.quantity.type === ASTNodeType.RelativeQuantity) {
+         const rel = item.quantity;
+         const targetName = rel.target;
+         const targetId = registry.getIngredientId(targetName);
+         const percent = rel.percent;
+         
+         let isGhost = false;
+         const markerChar = rel.referenceType === 'variable' ? '&' : '@';
+         const formulaStr = `${percent}% of ${markerChar}${targetName}`;
+
+         if (rel.referenceType === 'variable') {
+              if (!ctx.definedIntermediates.has(targetName)) {
+                  isGhost = true;
+                  pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, { targetName, item: item.name, loc: item.loc });
+              }
+         } else {
+              const found = secIngredients.some(i => i.id === targetId);
+              if (!found) {
+                  isGhost = true;
+                  pushWarning(ctx, WarningCode.RELATIVE_QUANTITY_UNRESOLVED, { targetName, item: item.name, loc: item.loc });
+              }
+         }
+         
+         const usage = createCleanUsage(item, id, ctx.options);
+         usage.qty = item.quantity; // Defer evaluation to analyzer
+         usage.unit = null;
+         
+         if (targetId === id) {
+              usage.isCircular = true;
+              pushWarning(ctx, WarningCode.CIRCULAR_REFERENCE, { name: item.name, item: item.name, loc: item.loc });
+         }
+
+         usage.dependencies = [targetId];
+         usage.formula = {
+              raw: formulaStr,
+              target: targetName,
+              percent: percent,
+              isGhost: isGhost
+         };
+         
+         secIngredients.push(usage);
+         return usage;
+    }
+
+    const usage = createCleanUsage(item, id, ctx.options);
+    if (item.modifiers && item.modifiers.includes('&')) {
+         if (!ctx.seenNames.has(item.name)) {
+              pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '@&', name: item.name, item: item.name, loc: item.loc });
+         }
+         if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
+    } else {
+         ctx.seenNames.add(item.name);
+    }
+    
+    const hasQuantityValue = !!(item.quantity && (
+         (item.quantity.type === ASTNodeType.Quantity && (item.quantity.value !== null || item.quantity.unit !== null)) ||
+         item.quantity.type === ASTNodeType.TextQuantity
+    ));
+    
+    if (!item.modifiers || !item.modifiers.includes('&') || hasQuantityValue) {
+         secIngredients.push(usage);
+    }
+    
+    return usage;
+}
+
+function processCookware(
+    item: CookwareAST,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry,
+    secCookware: Usage[]
+): Usage {
+    const id = registry.registerCookware(item.name);
+    const usage = createCleanUsage(item, id, ctx.options);
+    secCookware.push(usage);
+    return usage;
+}
+
+function processAlternative(
+    item: AlternativeAST,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry,
+    secIngredients: Usage[],
+    secCookware: Usage[]
+): Usage {
+    const processedOptions: ProcessedBlockResult[] = [];
+    let tempIngredientsScope = [...secIngredients];
+    let tempCookwareScope = [...secCookware];
+
+    item.options.forEach((opt) => {
+        const captureIngredients = [...tempIngredientsScope];
+        const captureCookware = [...tempCookwareScope];
+        
+        const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
+        if (result !== null) {
+            processedOptions.push(result);
+            
+            if (typeof result !== 'string') {
+                const r = result as Usage;
+                if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) { 
+                     tempIngredientsScope.push(r);
+                }
+                if (r.type === 'cookware') {
+                     tempCookwareScope.push(r);
+                }
+            }
+        }
+    });
+
+    const usage: Usage = { id: 'alternative', type: 'alternative', options: processedOptions };
+    
+    if (item.options.length > 0) {
+         if (item.options[0].type === ASTNodeType.Ingredient) {
+              secIngredients.push(usage);
+         } else if (item.options[0].type === ASTNodeType.Cookware) {
+              secCookware.push(usage);
+         }
+    }
+    return usage;
+}
+
+function processReference(
+    item: ReferenceAST,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry,
+    secIngredients: Usage[]
+): Usage {
+    const id = registry.getIngredientId(item.name);
+    if (!registry.ingredients.has(id)) {
+         pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '&', name: item.name, item: item.name, loc: item.loc });
+    }
+    if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
+    
+    const obj: Usage = { type: 'reference', id, name: item.name };
+    
+    if (item.quantity) {
+         if (item.quantity.type === ASTNodeType.Quantity) {
+              if (item.quantity.value !== null || item.quantity.unit) {
+                   const cleanQty = minifyQuantity(item.quantity);
+                   if (cleanQty !== undefined) obj.qty = cleanQty;
+                   if (item.quantity.unit) obj.unit = item.quantity.unit;
+              }
+         } else if (item.quantity.type === ASTNodeType.TextQuantity) {
+              obj.qty = item.quantity.value;
+         }
+    }
+    
+    if (!ctx.currentSectionIntermediates.has(item.name)) {
+        secIngredients.push(obj);
+    }
+    
+    return obj;
+}
+
+function processIntermediateDecl(
+    item: IntermediateDecl,
+    ctx: ProcessorContext,
+    registry: RecipeRegistry
+): ProcessedBlockResult {
+    const id = registry.registerIngredient(item.name, { is_intermediate: true });
+    ctx.intermediateDecl = id;
+    ctx.currentSectionIntermediates.add(item.name);
+    return { type: 'declaration', name: item.name, id };
+}
+
+function processTimer(
+    item: TimerAST,
+    ctx: ProcessorContext
+): ProcessedBlockResult {
+    const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } = { type: 'timer' };
+    if (item.name) obj.name = item.name;
+    if (item.isAsync) obj.isAsync = true;
+    if (item.quantity) {
+         const q = item.quantity;
+         if (q.type === ASTNodeType.Quantity) {
+             if (q.value) obj.quantity = q.value;
+             let unit = q.unit;
+             if (unit === 'm' || unit === 'minutes') unit = 'min';
+             if (unit) obj.unit = unit;
+             if (!unit) {
+                 pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Timer', item: item.name || 'Timer', loc: item.loc });
+             }
+         } else if (q.type === ASTNodeType.TextQuantity) {
+             pushWarning(ctx, WarningCode.INVALID_UNIT, { value: q.value, loc: item.loc });
+             obj.quantity = { type: 'text', value: q.value }; 
+         }
+    }
+    return obj;
+}
+
+function processTemperature(
+    item: TemperatureAST,
+    ctx: ProcessorContext
+): ProcessedBlockResult {
+    const obj: { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } = { type: 'temperature' };
+    if (item.name) obj.name = item.name;
+    if (item.text) {
+         obj.text = item.text;
+    } else {
+         if (item.value) obj.quantity = item.value;
+         if (item.unit) {
+             obj.unit = item.unit;
+         } else {
+             pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Temperature', item: item.name || 'Temperature', loc: item.loc });
+         }
+    }
+    return obj;
+}
+
+function processText(item: TextAST): ProcessedBlockResult {
+    return item.value;
+}
+
+function processComment(item: CommentAST): ProcessedBlockResult {
+    return { type: 'comment', value: item.value, kind: item.kind };
+}
+
 export function processBlockItem(
     item: ASTNode | null | undefined,
     ctx: ProcessorContext,
@@ -40,214 +273,33 @@ export function processBlockItem(
 ): ProcessedBlockResult | null {
     if (!item) return null;
 
-    // 1. Process standard Ingredient declarations
-    if (item.type === ASTNodeType.Ingredient) {
-        const defaultUnit = (item.quantity && 'unit' in item.quantity && item.quantity.unit) || undefined;
-        const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
-
-        // Tag composite ingredients linked to a parent sub-recipe
-        if (item.composite) {
-            const parentId = registry.registerIngredient(item.composite.parent, { is_composite: true });
-            registry.registerIngredient(item.name, { is_composite: true, parent: parentId });
-        }
-
-        // Process RelativeQuantity nodes (e.g. 50% of another ingredient/variable)
-        if (item.quantity && item.quantity.type === ASTNodeType.RelativeQuantity) {
-             const rel = item.quantity;
-             const targetName = rel.target;
-             const targetId = registry.getIngredientId(targetName);
-             const percent = rel.percent;
-             
-             let isGhost = false;
-             const markerChar = rel.referenceType === 'variable' ? '&' : '@';
-             const formulaStr = `${percent}% of ${markerChar}${targetName}`;
-
-             if (rel.referenceType === 'variable') {
-                  if (!ctx.definedIntermediates.has(targetName)) {
-                      isGhost = true;
-                      pushWarning(ctx, WarningCode.VARIABLE_NOT_FOUND, { targetName, item: item.name, loc: item.loc });
-                  }
-             } else {
-                  const found = secIngredients.some(i => i.id === targetId);
-                  if (!found) {
-                      isGhost = true;
-                      pushWarning(ctx, WarningCode.RELATIVE_QUANTITY_UNRESOLVED, { targetName, item: item.name, loc: item.loc });
-                  }
-             }
-             
-             const usage = createCleanUsage(item, id, ctx.options);
-             usage.qty = item.quantity; // Defer evaluation to analyzer
-             usage.unit = null;
-             
-             if (targetId === id) {
-                  usage.isCircular = true;
-                  pushWarning(ctx, WarningCode.CIRCULAR_REFERENCE, { name: item.name, item: item.name, loc: item.loc });
-             }
-
-             usage.dependencies = [targetId];
-             usage.formula = {
-                  raw: formulaStr,
-                  target: targetName,
-                  percent: percent,
-                  isGhost: isGhost
-             };
-             
-             secIngredients.push(usage);
-             return usage;
-        }
-
-        const usage = createCleanUsage(item, id, ctx.options);
-        if (item.modifiers && item.modifiers.includes('&')) {
-             if (!ctx.seenNames.has(item.name)) {
-                  pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '@&', name: item.name, item: item.name, loc: item.loc });
-             }
-             if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
-        } else {
-             ctx.seenNames.add(item.name);
-        }
-        
-        const hasQuantityValue = !!(item.quantity && (
-             (item.quantity.type === ASTNodeType.Quantity && (item.quantity.value !== null || item.quantity.unit !== null)) ||
-             item.quantity.type === ASTNodeType.TextQuantity
-        ));
-        
-        if (!item.modifiers || !item.modifiers.includes('&') || hasQuantityValue) {
-             secIngredients.push(usage);
-        }
-        
-        return usage;
+    switch (item.type) {
+        case ASTNodeType.Ingredient:
+            return processIngredient(item as IngredientAST, ctx, registry, secIngredients);
+        case ASTNodeType.Cookware:
+            return processCookware(item as CookwareAST, ctx, registry, secCookware);
+        case ASTNodeType.Alternative:
+            return processAlternative(item as AlternativeAST, ctx, registry, secIngredients, secCookware);
+        case ASTNodeType.Reference:
+            return processReference(item as ReferenceAST, ctx, registry, secIngredients);
+        case ASTNodeType.IntermediateDecl:
+            return processIntermediateDecl(item as IntermediateDecl, ctx, registry);
+        case ASTNodeType.Text:
+            return processText(item as TextAST);
+        case ASTNodeType.Timer:
+            return processTimer(item as TimerAST, ctx);
+        case ASTNodeType.Temperature:
+            return processTemperature(item as TemperatureAST, ctx);
+        case ASTNodeType.Comment:
+            return processComment(item as CommentAST);
+        case ASTNodeType.Recipe:
+        case ASTNodeType.Section:
+        case ASTNodeType.Step:
+            return null;
+        default:
+            const _exhaustiveCheck: never = item;
+            throw new Error(`Unhandled AST node type: ${(item as any).type}`);
     }
-
-    // 2. Process Cookware items
-    if (item.type === ASTNodeType.Cookware) {
-        const id = registry.registerCookware(item.name);
-        const usage = createCleanUsage(item, id, ctx.options);
-        secCookware.push(usage);
-        return usage;
-    }
-
-    // 3. Process Alternative listings (A | B)
-    if (item.type === ASTNodeType.Alternative) {
-        const processedOptions: ProcessedBlockResult[] = [];
-        let tempIngredientsScope = [...secIngredients];
-        let tempCookwareScope = [...secCookware];
-
-        item.options.forEach((opt) => {
-            const captureIngredients = [...tempIngredientsScope];
-            const captureCookware = [...tempCookwareScope];
-            
-            const result = processBlockItem(opt, ctx, registry, captureIngredients, captureCookware);
-            if (result !== null) {
-                processedOptions.push(result);
-                
-                if (typeof result !== 'string') {
-                    const r = result as Usage;
-                    if (r.type === 'ingredient' || r.type === 'drink' || (r.id && !r.type)) { 
-                         tempIngredientsScope.push(r);
-                    }
-                    if (r.type === 'cookware') {
-                         tempCookwareScope.push(r);
-                    }
-                }
-            }
-        });
-
-        const usage: Usage = { id: 'alternative', type: 'alternative', options: processedOptions };
-        
-        if (item.options.length > 0) {
-             if (item.options[0].type === ASTNodeType.Ingredient) {
-                  secIngredients.push(usage);
-             } else if (item.options[0].type === ASTNodeType.Cookware) {
-                  secCookware.push(usage);
-             }
-        }
-        return usage;
-    }
-
-    // 4. Process Variable References (&reference)
-    if (item.type === ASTNodeType.Reference) {
-        const id = registry.getIngredientId(item.name);
-        if (!registry.ingredients.has(id)) {
-             pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '&', name: item.name, item: item.name, loc: item.loc });
-        }
-        if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
-        
-        const obj: Usage = { type: 'reference', id, name: item.name };
-        
-        if (item.quantity) {
-             if (item.quantity.type === ASTNodeType.Quantity) {
-                  if (item.quantity.value !== null || item.quantity.unit) {
-                       const cleanQty = minifyQuantity(item.quantity);
-                       if (cleanQty !== undefined) obj.qty = cleanQty;
-                       if (item.quantity.unit) obj.unit = item.quantity.unit;
-                  }
-             } else if (item.quantity.type === ASTNodeType.TextQuantity) {
-                  obj.qty = item.quantity.value;
-             }
-        }
-        
-        if (!ctx.currentSectionIntermediates.has(item.name)) {
-            secIngredients.push(obj);
-        }
-        
-        return obj;
-    }
-
-    // 5. Process Intermediate Declarations (creating a sub-product like a dough)
-    if (item.type === ASTNodeType.IntermediateDecl) {
-        const id = registry.registerIngredient(item.name, { is_intermediate: true });
-        ctx.intermediateDecl = id;
-        ctx.currentSectionIntermediates.add(item.name);
-        return { type: 'declaration', name: item.name, id };
-    }
-
-    if (item.type === ASTNodeType.Text) return item.value;
-    
-    // 6. Process Timers and Temperatures
-    if (item.type === ASTNodeType.Timer) {
-         const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } = { type: 'timer' };
-         if (item.name) obj.name = item.name;
-         if (item.isAsync) obj.isAsync = true;
-         if (item.quantity) {
-              const q = item.quantity;
-              if (q.type === ASTNodeType.Quantity) {
-               if (q.value) obj.quantity = q.value;
-               let unit = q.unit;
-               if (unit === 'm' || unit === 'minutes') unit = 'min';
-               if (unit) obj.unit = unit;
-               if (!unit) {
-                   pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Timer', item: item.name || 'Timer', loc: item.loc });
-               }
-          } else if (q.type === ASTNodeType.TextQuantity) {
-                   pushWarning(ctx, WarningCode.INVALID_UNIT, { value: q.value, loc: item.loc });
-                   obj.quantity = { type: 'text', value: q.value }; 
-              }
-          }
-          return obj;
-    }
-
-    if (item.type === ASTNodeType.Temperature) {
-         const obj: { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } = { type: 'temperature' };
-         if (item.name) obj.name = item.name;
-         if (item.text) {
-              obj.text = item.text;
-         } else {
-              if (item.value) obj.quantity = item.value;
-              if (item.unit) {
-                  obj.unit = item.unit;
-              } else {
-                  pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Temperature', item: item.name || 'Temperature', loc: item.loc });
-              }
-         }
-         return obj;
-    }
-
-    // 7. Process Step Comments
-    if (item.type === ASTNodeType.Comment) {
-        return { type: 'comment', value: item.value, kind: item.kind };
-    }
-
-    return null;
 }
 
 /**

@@ -641,9 +641,9 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     "title": "Recipe with ALL warnings",
   },
   "metrics": {
-    "activeTime": 16,
+    "activeTime": 22,
     "preparationTime": 4,
-    "totalTime": 16,
+    "totalTime": 22,
   },
   "registry": {
     "cookware": {},
@@ -698,8 +698,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "id": "sugar",
           "qty": {
             "loc": {
-              "end": 249,
-              "start": 239,
+              "end": 250,
+              "start": 240,
             },
             "percent": 50,
             "referenceType": "ingredient",
@@ -721,8 +721,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "isCircular": true,
           "qty": {
             "loc": {
-              "end": 294,
-              "start": 285,
+              "end": 296,
+              "start": 287,
             },
             "percent": 10,
             "referenceType": "ingredient",
@@ -741,7 +741,16 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
               "name": "ghost_step",
               "type": "reference",
             },
-            " ",
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 2,
+            "start": 0,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
             "And an undeclared ingredient variable: ",
             {
               "id": "ghost-var",
@@ -754,8 +763,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           ],
           "timings": {
             "activeDuration": 2,
-            "end": 2,
-            "start": 0,
+            "end": 4,
+            "start": 2,
           },
           "type": "step",
         },
@@ -775,8 +784,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
               "id": "sugar",
               "qty": {
                 "loc": {
-                  "end": 249,
-                  "start": 239,
+                  "end": 250,
+                  "start": 240,
                 },
                 "percent": 50,
                 "referenceType": "ingredient",
@@ -784,7 +793,16 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
                 "type": "RelativeQuantity",
               },
             },
-            " ",
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 6,
+            "start": 4,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
             "Circular relative quantity: ",
             {
               "dependencies": [
@@ -800,8 +818,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
               "isCircular": true,
               "qty": {
                 "loc": {
-                  "end": 294,
-                  "start": 285,
+                  "end": 296,
+                  "start": 287,
                 },
                 "percent": 10,
                 "referenceType": "ingredient",
@@ -812,8 +830,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           ],
           "timings": {
             "activeDuration": 2,
-            "end": 4,
-            "start": 2,
+            "end": 8,
+            "start": 6,
           },
           "type": "step",
         },
@@ -829,7 +847,16 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
               },
               "type": "timer",
             },
-            " ",
+          ],
+          "timings": {
+            "activeDuration": 10,
+            "end": 18,
+            "start": 8,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
             "Temperature missing unit: ",
             {
               "quantity": {
@@ -841,9 +868,9 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
             },
           ],
           "timings": {
-            "activeDuration": 10,
-            "end": 14,
-            "start": 4,
+            "activeDuration": 2,
+            "end": 20,
+            "start": 18,
           },
           "type": "step",
         },
@@ -861,8 +888,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           ],
           "timings": {
             "activeDuration": 2,
-            "end": 16,
-            "start": 14,
+            "end": 22,
+            "start": 20,
           },
           "type": "step",
         },
@@ -908,8 +935,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "UNDEFINED_REFERENCE",
       "item": "ghost_var",
       "loc": {
-        "end": 191,
-        "start": 175,
+        "end": 192,
+        "start": 176,
       },
       "message": "Reference to undefined ingredient '@&ghost_var'.",
     },
@@ -917,8 +944,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "RELATIVE_QUANTITY_UNRESOLVED",
       "item": "sugar",
       "loc": {
-        "end": 250,
-        "start": 232,
+        "end": 251,
+        "start": 233,
       },
       "message": "Could not resolve relative quantity for '@flour'. Source not found in current section.",
     },
@@ -926,8 +953,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "RELATIVE_QUANTITY_UNRESOLVED",
       "item": "salt",
       "loc": {
-        "end": 295,
-        "start": 279,
+        "end": 297,
+        "start": 281,
       },
       "message": "Could not resolve relative quantity for '@salt'. Source not found in current section.",
     },
@@ -935,8 +962,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "CIRCULAR_REFERENCE",
       "item": "salt",
       "loc": {
-        "end": 295,
-        "start": 279,
+        "end": 297,
+        "start": 281,
       },
       "message": "Circular reference detected: salt depends on itself.",
     },
@@ -944,8 +971,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "MISSING_UNIT",
       "item": "timer",
       "loc": {
-        "end": 327,
-        "start": 317,
+        "end": 329,
+        "start": 319,
       },
       "message": "Timer must have an explicit unit.",
     },
@@ -953,8 +980,8 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "code": "MISSING_UNIT",
       "item": "Temperature",
       "loc": {
-        "end": 360,
-        "start": 354,
+        "end": 363,
+        "start": 357,
       },
       "message": "Temperature must have an explicit unit.",
     },
