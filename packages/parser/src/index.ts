@@ -74,7 +74,7 @@ semantics.addOperation('toAST', {
         let meta = getOpt(frontmatter) || {};
         const metaResult = MetaSchema.safeParse(meta);
         if (!metaResult.success) {
-            console.warn("[GRAM Parser] Invalid Front-Matter detected, ignoring metadata. Error:", metaResult.error.errors[0].message);
+            console.warn("[GRAM Parser] Invalid Front-Matter detected, ignoring metadata. Error:", metaResult.error.issues[0].message);
             meta = {};
         } else {
             meta = metaResult.data;
