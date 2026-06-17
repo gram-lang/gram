@@ -63,6 +63,29 @@ export function lookupIngredient(name: string, db: IngredientDB): IngredientEntr
     return null;
 }
 
+// Pre-computes all known lookup keys into a Set for O(1) ingredient existence checks.
+// Must be rebuilt whenever the DB is reloaded.
+export function buildIngredientLookupSet(db: IngredientDB): Set<string> {
+    const set = new Set<string>();
+    for (const [key, entry] of Object.entries(db)) {
+        set.add(key);                          // slug key
+        set.add(entry.name.toLowerCase());     // canonical name
+        for (const alias of entry.aliases ?? []) {
+            set.add(alias.toLowerCase());      // aliases
+        }
+    }
+    return set;
+}
+
+// O(1) check — mirrors the lookup order of lookupIngredient() without linear scan.
+export function isKnownIngredient(name: string, lookupSet: Set<string>): boolean {
+    const slug = slugify(name);
+    if (lookupSet.has(slug)) return true;
+    // Naive singularization: "carrots" → "carrot"
+    if (slug.endsWith('s') && lookupSet.has(slug.slice(0, -1))) return true;
+    return lookupSet.has(name.toLowerCase());
+}
+
 export function allIngredientCompletionLabels(db: IngredientDB): Array<{ label: string; canonical: string; entry: IngredientEntry }> {
     const results: Array<{ label: string; canonical: string; entry: IngredientEntry }> = [];
     for (const entry of Object.values(db)) {
@@ -71,5 +94,5 @@ export function allIngredientCompletionLabels(db: IngredientDB): Array<{ label: 
             results.push({ label: alias, canonical: entry.name, entry });
         }
     }
-    return results;
+    return results.sort((a, b) => a.label.localeCompare(b.label));
 }

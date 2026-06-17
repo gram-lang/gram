@@ -53,7 +53,7 @@ function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUni
     const qtyValue = qty.value;
     if (!qtyValue) return null;
     const amount = getQtyAmount(qtyValue);
-    if (amount === null) return null;
+    if (amount === null || amount <= 0) return null;
 
     const grams = volumeToGrams(amount, canon, physical.density);
     if (grams != null) {

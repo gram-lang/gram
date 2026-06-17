@@ -1,12 +1,13 @@
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
-import { collectIntermediates, collectReferences } from '../utils/ast-walker';
+import { collectIntermediates, collectReferences, collectIngredients } from '../utils/ast-walker';
 import { WarningCode } from '@gram/compiler';
+import { isKnownIngredient } from '../ingredient-loader';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } };
 
-export function provideDiagnostics(state: DocumentState): Diagnostic[] {
+export function provideDiagnostics(state: DocumentState, ingredientLookupSet: Set<string> = new Set()): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
     if (state.parseError) {
@@ -49,6 +50,22 @@ export function provideDiagnostics(state: DocumentState): Diagnostic[] {
                 code: 'UNUSED_INTERMEDIATE',
                 source: 'gram',
             });
+        }
+    }
+
+    // Unknown ingredients — only when an ingredient DB is loaded
+    if (ingredientLookupSet.size > 0) {
+        for (const ingredient of collectIngredients(state.ast)) {
+            if (!isKnownIngredient(ingredient.name, ingredientLookupSet)) {
+                const range = ingredient.loc ? locToRange(state.lineStarts, ingredient.loc) : ZERO_RANGE;
+                diagnostics.push({
+                    severity: DiagnosticSeverity.Information,
+                    range,
+                    message: `'@${ingredient.name}' not found in the ingredient database. Possible typo or missing entry.`,
+                    code: 'UNKNOWN_INGREDIENT',
+                    source: 'gram',
+                });
+            }
         }
     }
 

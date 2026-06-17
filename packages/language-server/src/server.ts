@@ -18,34 +18,38 @@ import { provideReferences } from './features/references';
 import { prepareName, provideRename } from './features/rename';
 import { provideFormatting } from './features/formatting';
 import { provideCodeActions } from './features/code-actions';
-import { loadIngredientDB, IngredientDB } from './ingredient-loader';
+import { loadIngredientDB, IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const states = new Map<string, DocumentState>();
 
 let ingredientDB: IngredientDB = {};
+let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
 
 function loadDB(configPath?: string): void {
     if (configPath && configPath.trim()) {
         ingredientDB = loadIngredientDB(configPath.trim());
-        return;
-    }
-    for (const folder of workspaceFolders) {
-        const auto = join(folder, '.gram', 'ingredients.yaml');
-        if (existsSync(auto)) {
-            ingredientDB = loadIngredientDB(auto);
-            return;
+    } else {
+        ingredientDB = {};
+        for (const folder of workspaceFolders) {
+            const auto = join(folder, '.gram', 'ingredients.yaml');
+            if (existsSync(auto)) {
+                ingredientDB = loadIngredientDB(auto);
+                break;
+            }
         }
     }
-    ingredientDB = {};
+    // Rebuilt once here — all diagnostic checks are O(1) from this point
+    ingredientLookupSet = buildIngredientLookupSet(ingredientDB);
 }
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-    workspaceFolders = params.workspaceFolders?.map(f => new URL(f.uri).pathname) ?? [];
+    workspaceFolders = params.workspaceFolders?.map(f => fileURLToPath(f.uri)) ?? [];
     return {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -78,7 +82,7 @@ connection.onInitialized(async () => {
             loadDB();
         }
         for (const [uri, state] of states) {
-            connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state) });
+            connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet) });
         }
     });
 });
@@ -86,7 +90,7 @@ connection.onInitialized(async () => {
 function refresh(uri: string, text: string) {
     const state = parseDocument(text);
     states.set(uri, state);
-    connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state) });
+    connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet) });
 }
 
 documents.onDidOpen(e => refresh(e.document.uri, e.document.getText()));

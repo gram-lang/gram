@@ -13,11 +13,14 @@ function formatLine(line: string, inFrontmatter: boolean): string {
     // Only trim inner leading/trailing spaces, not content
     out = out.replace(/\{(\s+)/g, '{').replace(/(\s+)\}/g, '}');
 
-    // Normalize ->&name {} → ->&name{} (remove space before empty braces)
-    out = out.replace(/(->& *\S+)\s+\{\}/g, '$1{}');
+    // Normalize composite separator: @ingA{} < @ingB{} → @ingA{}<@ingB{}
+    out = out.replace(/ *< *@/g, '<@');
 
-    // Normalize section headers: ensure exactly one space after ##
-    out = out.replace(/^(#{1,3})\s+/, (_, hashes) => hashes + ' ');
+    // Normalize ->&name {} → ->&name{} (handles single and multi-word names)
+    out = out.replace(/->&([^{\n]+?)\s+\{\}/g, '->&$1{}');
+
+    // Normalize section headers: ensure exactly one space after ## (handles ##Title and ##  Title)
+    out = out.replace(/^(#{1,3})\s*(?=\S)/, (_, hashes) => hashes + ' ');
 
     // Normalize tabs → 4 spaces (in recipe body only)
     out = out.replace(/\t/g, '    ');

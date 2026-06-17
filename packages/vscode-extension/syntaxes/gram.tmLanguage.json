@@ -219,7 +219,7 @@
     "quantity-content": {
       "patterns": [
         {
-           "match": "\\b\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?\\b", 
+           "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
            "name": "constant.numeric.gram" 
         },
         {

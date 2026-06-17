@@ -36,9 +36,9 @@ export function provideCodeActions(
         // Quick fix: remove unused intermediate declaration
         if (diag.code === 'UNUSED_INTERMEDIATE') {
             const nameMatch = diag.message.match(/'->& *([^']+)'/);
-            if (nameMatch) {
+            if (nameMatch && state.ast) {
                 const name = nameMatch[1];
-                const decls = collectIntermediates(state.ast!);
+                const decls = collectIntermediates(state.ast);
                 const match = decls.find(d => d.decl.name === name && d.decl.loc);
                 if (match?.decl.loc) {
                     actions.push({
@@ -52,7 +52,7 @@ export function provideCodeActions(
         }
 
         // Quick fix: declare missing intermediate at end of current section
-        if (diag.code === 'UNDEFINED_REFERENCE' || (typeof diag.code === 'string' && diag.code.includes('UNDEFINED'))) {
+        if (diag.code === 'UNDEFINED_REFERENCE') {
             const nameMatch = diag.message.match(/'&([^']+)'/);
             if (nameMatch && state.ast) {
                 const name = nameMatch[1];
@@ -86,18 +86,14 @@ export function provideCodeActions(
 
             if (entry?.physical?.density && qty?.unit && qty.value && qty.loc) {
                 const amount = getQtyAmount(qty.value);
-                if (amount !== null) {
-                    const canon = normalizeUnit(qty.unit);
-                    const density = entry.physical.density;
-
-                    // Volume → grams: ml, l, tsp, tbsp, and their FR/EN aliases
-                    const grams = volumeToGrams(amount, canon, density);
+                const canon = amount && amount > 0 ? normalizeUnit(qty.unit) : null;
+                if (canon) {
+                    const grams = volumeToGrams(amount!, canon, entry.physical.density);
                     if (grams != null) {
                         const qtyRange = locToRange(state.lineStarts, qty.loc);
                         actions.push({
                             title: `Convert to grams (≈ ${Math.round(grams)} g)`,
                             kind: CodeActionKind.RefactorRewrite,
-                            // qty.loc covers only the inner content (e.g. "1/2 tbsp"), not the surrounding {}
                             edit: { changes: { [uri]: [{ range: qtyRange, newText: `${Math.round(grams)} g` }] } },
                         });
                     }

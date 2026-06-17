@@ -2,6 +2,7 @@ import { CompletionItem, CompletionItemKind, Position } from 'vscode-languageser
 import { DocumentState } from '../document-state';
 import { collectIntermediates } from '../utils/ast-walker';
 import { IngredientDB } from '../ingredient-loader';
+import { positionToOffset } from '../utils/position';
 import { isInsideBraces, provideUnitCompletions } from './completions-units';
 import { isAfterAt, provideIngredientCompletions } from './completions-ingredients';
 
@@ -19,9 +20,9 @@ function isAfterReference(prefix: string): boolean {
 export function provideCompletions(state: DocumentState, position: Position, db: IngredientDB): CompletionItem[] {
     if (!state.ast) return [];
 
-    const lines = state.text.split('\n');
-    const line = lines[position.line] ?? '';
-    const prefix = line.slice(0, position.character);
+    const lineStart = state.lineStarts[position.line] ?? 0;
+    const prefixEnd = positionToOffset(state.lineStarts, position);
+    const prefix = state.text.slice(lineStart, prefixEnd);
 
     // Inside {quantity unit} → unit completions
     if (isInsideBraces(prefix)) {
