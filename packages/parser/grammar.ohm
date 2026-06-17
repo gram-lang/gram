@@ -2,10 +2,8 @@ GRAM {
   Recipe = Frontmatter? Content?
   
   Content = 
-    | (nl* TopLevelComment)* (nl* Section)+      -- explicit
+    | (nl* Block)* (nl* Section)+      -- explicit
     | (nl* Block)+        -- implicit
-
-  TopLevelComment = CommentBlock | Comment
 
   Frontmatter = "---" nl KeyValue* "---" (nl | end)
   KeyValue = key ":" sp* value nl

@@ -95,9 +95,9 @@ semantics.addOperation('toAST', {
         return { [key.sourceString]: parseFrontmatterValue(value.sourceString) };
     },
 
-    Content_explicit(_nls1, topLevelComments, _nls2, sections) {
+    Content_explicit(_nls1, blocks, _nls2, sections) {
         return [
-            ...topLevelComments.children.map(c => c.toAST()),
+            ...blocks.children.map(c => c.toAST()),
             ...sections.children.map(s => s.toAST())
         ];
     },
@@ -106,7 +106,6 @@ semantics.addOperation('toAST', {
          return blocks.children.map(b => b.toAST());
     },
     
-    TopLevelComment(child) { return child.toAST(); },
 
     Section(header, blocks) {
         const h = header.toAST();

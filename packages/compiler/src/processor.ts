@@ -357,10 +357,21 @@ export function processSections(
     const sections: ProcessedSection[] = [];
     let blocksToProcess: ASTNode[] = astChildren;
     
-    // Wrap raw top-level steps into an implicit default section if none exist
-    if (blocksToProcess.length > 0 && blocksToProcess[0].type !== ASTNodeType.Section) {
-        const children = astChildren.filter((child): child is StepAST | CommentAST => child.type === ASTNodeType.Step || child.type === ASTNodeType.Comment);
-        blocksToProcess = [{ type: ASTNodeType.Section, title: null, children } as SectionAST];
+    // Group all top-level steps and comments into an implicit default section
+    const topLevelBlocks: ASTNode[] = [];
+    const actualSections: ASTNode[] = [];
+    
+    for (const child of astChildren) {
+        if (child.type === ASTNodeType.Section) {
+            actualSections.push(child);
+        } else {
+            topLevelBlocks.push(child);
+        }
+    }
+
+    blocksToProcess = [...actualSections];
+    if (topLevelBlocks.length > 0) {
+        blocksToProcess.unshift({ type: ASTNodeType.Section, title: null, children: topLevelBlocks } as SectionAST);
     }
 
     let cookCursor = 0;
