@@ -1,0 +1,64 @@
+{
+  "Recipe frontmatter": {
+    "prefix": "recipe",
+    "body": [
+      "---",
+      "title: ${1:Recipe Name}",
+      "---"
+    ],
+    "description": "Recipe frontmatter"
+  },
+  "Section header": {
+    "prefix": "##",
+    "body": [
+      "## ${1:Section title}",
+      ""
+    ],
+    "description": "Section header"
+  },
+  "Step with action": {
+    "prefix": "step",
+    "body": "[${1:Mix}] ${0}",
+    "description": "Step with an action verb (e.g. Mix, Bake, Rest)"
+  },
+  "Ingredient": {
+    "prefix": "@ing",
+    "body": "@${1:ingredient}{${2:qty} ${3:unit}}",
+    "description": "Ingredient with quantity and unit"
+  },
+  "Ingredient — optional": {
+    "prefix": "@?",
+    "body": "@?${1:ingredient}{${2:qty} ${3:unit}}",
+    "description": "Optional ingredient (@? modifier)"
+  },
+  "Ingredient — hidden": {
+    "prefix": "@-",
+    "body": "@-${1:ingredient}{${2:qty} ${3:unit}}",
+    "description": "Hidden ingredient — excluded from shopping list (@- modifier)"
+  },
+  "Ingredient — baker's %": {
+    "prefix": "@*",
+    "body": "@*${1:ingredient}{${2:100}%}",
+    "description": "Ingredient as baker's percentage (@* modifier)"
+  },
+  "Cookware": {
+    "prefix": "#cw",
+    "body": "#${1:cookware}{${2:qty}}",
+    "description": "Cookware item with quantity"
+  },
+  "Intermediate declaration": {
+    "prefix": "->&",
+    "body": "->&${1:name}{}",
+    "description": "Declare an intermediate preparation step"
+  },
+  "Timer": {
+    "prefix": "~",
+    "body": "~{${1:30} ${2:min}}",
+    "description": "Timer"
+  },
+  "Temperature": {
+    "prefix": "°",
+    "body": "°{${1:180}°C}",
+    "description": "Temperature"
+  }
+}

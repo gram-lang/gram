@@ -1,5 +1,5 @@
 import {
-    RecipeAST, SectionAST, StepAST, IntermediateDecl, ReferenceAST,
+    RecipeAST, SectionAST, StepAST, IntermediateDecl, ReferenceAST, IngredientAST, AlternativeAST,
     ASTNodeType
 } from '@gram/parser';
 
@@ -46,4 +46,35 @@ export function collectReferences(ast: RecipeAST): ReferenceAST[] {
 export function getStepSourceText(step: StepAST, documentText: string): string {
     if (!step.loc) return '';
     return documentText.slice(step.loc.start, step.loc.end).trim();
+}
+
+export function collectIngredients(ast: RecipeAST): IngredientAST[] {
+    const results: IngredientAST[] = [];
+    for (const section of ast.children) {
+        for (const block of section.children) {
+            if (block.type !== ASTNodeType.Step) continue;
+            for (const child of block.children) {
+                if (child.type === ASTNodeType.Ingredient) {
+                    results.push(child as IngredientAST);
+                } else if (child.type === ASTNodeType.Alternative) {
+                    for (const opt of (child as AlternativeAST).options) {
+                        if (opt.type === ASTNodeType.Ingredient) results.push(opt as IngredientAST);
+                    }
+                }
+            }
+        }
+    }
+    return results;
+}
+
+export function findNameAtOffset(ast: RecipeAST, offset: number): { name: string; kind: 'decl' | 'ref' } | null {
+    const refs = collectReferences(ast);
+    const ref = refs.find(r => r.loc && r.loc.start <= offset && offset <= r.loc.end);
+    if (ref) return { name: ref.name, kind: 'ref' };
+
+    const decls = collectIntermediates(ast);
+    const decl = decls.find(d => d.decl.loc && d.decl.loc.start <= offset && offset <= d.decl.loc.end);
+    if (decl) return { name: decl.decl.name, kind: 'decl' };
+
+    return null;
 }

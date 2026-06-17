@@ -42,7 +42,23 @@
         "scopeName": "source.gram",
         "path": "./syntaxes/gram.tmLanguage.json"
       }
-    ]
+    ],
+    "snippets": [
+      {
+        "language": "gram",
+        "path": "./snippets/gram.json"
+      }
+    ],
+    "configuration": {
+      "title": "GRAM",
+      "properties": {
+        "gram.ingredientDatabase.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a YAML ingredient database file. Leave empty to auto-detect .gram/ingredients.yaml in the workspace root."
+        }
+      }
+    }
   },
   "scripts": {
     "build": "node build.js",
