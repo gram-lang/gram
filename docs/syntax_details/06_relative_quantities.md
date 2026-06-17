@@ -5,7 +5,7 @@ The goal is to ensure predictable behavior for the developer and understandable 
 
 ## General Principle
 
-A relative quantity `@A{X% @B}` attempts to answer the question: "How much is X% of B?".
+A relative quantity `@A{X% @&B}` attempts to answer the question: "How much is X% of B?".
 
 ### The Two Target Types
 
@@ -25,9 +25,9 @@ For each case, the parser follows this algorithm:
 
 | Scenario | Source Example | Target Example | Calculation | Shopping List Result |
 | :--- | :--- | :--- | :--- | :--- |
-| **Simple** | `@Flour{100g}` | `@Sugar{10% @Flour}` | `100g * 0.10` | `Sugar: 10g` |
-| **Composite Variable** | `->&Dough{}` (Flour 200g + Water 100g) | `@Salt{2% &Dough}` | `(200+100) * 0.02` | `Salt: 6g` |
-| **Mixed** | `->&Mix{}` (Flour 100g + 2 Eggs) | `@Salt{2% &Mix}` | `(100 + 0) * 0.02` | `Salt: 2g` *(Eggs count as 0g)* |
+| **Simple** | `@Flour{100g}` | `@Sugar{10% @&Flour}` | `100g * 0.10` | `Sugar: 10g` |
+| **Composite Variable** | `->&dough` (Flour 200g + Water 100g) | `@Salt{2% &dough}` | `(200+100) * 0.02` | `Salt: 6g` |
+| **Mixed** | `->&mix` (Flour 100g + 2 Eggs) | `@Salt{2% &mix}` | `(100 + 0) * 0.02` | `Salt: 2g` *(Eggs count as 0g)* |
 
 > **Rule:** Non-convertible items (units/pieces) are ignored during mass addition (treated as 0g), but do not invalidate the calculation.
 
@@ -38,10 +38,10 @@ For each case, the parser follows this algorithm:
 
 | Scenario | Source Example | Target Example | Current Decision | Shopping List Result |
 | :--- | :--- | :--- | :--- | :--- |
-| **Simple (Unitless)** | `@Apple{5}` (Units) | `@Sugar{50% @Apple}` | **FALLBACK (Numeric Calc)** <br> `5 * 0.50 = 2.5` | `Sugar: 2.5` *(Inherits unitless status)* |
-| **Inherited Unit** | `@Flour{100g}` | `@Sugar{200% @Flour}` | **MASS (Priority)** <br> `100 * 2.0 = 200` | `Sugar: 200g` *(Inherits 'g' from Flour)* |
-| **100% Unitary Variable** | `->&Salad{}` (3 Apples + 2 Pears) | `@Sugar{10% &Salad}` | **FALLBACK (Sum)** <br> `(3+2) * 0.10 = 0.5` | `Sugar: 0.5` |
-| **Mixed Variable** | `->&Mix{}` (100g Flour + 2 Eggs) | `@Salt{10% &Mix}` | **MASS PRIORITY** <br> `(100g + 0) * 0.10 = 10g` | `Salt: 10g` *(Eggs are ignored)* |
+| **Simple (Unitless)** | `@Apple{5}` (Units) | `@Sugar{50% @&Apple}` | **FALLBACK (Numeric Calc)** <br> `5 * 0.50 = 2.5` | `Sugar: 2.5` *(Inherits unitless status)* |
+| **Inherited Unit** | `@Flour{100g}` | `@Sugar{200% @&Flour}` | **MASS (Priority)** <br> `100 * 2.0 = 200` | `Sugar: 200g` *(Inherits 'g' from Flour)* |
+| **100% Unitary Variable** | `->&Salad` (3 Apples + 2 Pears) | `@Sugar{10% &Salad}` | **FALLBACK (Sum)** <br> `(3+2) * 0.10 = 0.5` | `Sugar: 0.5` |
+| **Mixed Variable** | `->&Mix` (100g Flour + 2 Eggs) | `@Salt{10% &Mix}` | **MASS PRIORITY** <br> `(100g + 0) * 0.10 = 10g` | `Salt: 10g` *(Eggs are ignored)* |
 
 > **Proposed Rule (Fallback)**:
 > 1. If Mass > 0 can be calculated → Use **Mass** (Priority).
@@ -54,9 +54,9 @@ For each case, the parser follows this algorithm:
 
 | Scenario | Example | Problem | Shopping List Result |
 | :--- | :--- | :--- | :--- |
-| **Source Not Found** | `@Sugar{10% @Ghost}` | No one is named "@Ghost". | `Sugar: (10% of @Ghost ❓)` |
+| **Source Not Found** | `@Sugar{10% @&Ghost}` | No one is named "Ghost". | `Sugar: (10% of @&Ghost ❓)` |
 | **Variable Not Found** | `@Sugar{10% &Unknown}` | `->&Unknown` was never defined. | `Sugar: (10% of &Unknown ❓)` |
-| **Empty Source** | `@Water{}` (No qty) | `@Sugar{10% @Water}` | Value = 0 / Null. | `Sugar: 0` *(Or Ghost handling if preferred)* |
+| **Empty Source** | `@Water` (No qty) | `@Sugar{10% @&Water}` | Value = 0 / Null. | `Sugar: 0` *(Or Ghost handling if preferred)* |
 
 ---
 
@@ -68,10 +68,10 @@ For each case, the parser follows this algorithm:
 
 | Code GRAM | Calculation | Shopping List Display |
 | :--- | :--- | :--- |
-| `@Sugar{10% @Flour{1kg}}` | 1000 * 0.10 | `Sugar (100 g)` |
-| `@Sugar{50% @Apples{4}}` | 4 * 0.50 | `Sugar (2)` |
-| `@Sugar{10% @Ghost}` | Impossible | `Sugar (10% of @Ghost ❓)` |
-| `@Salt{1% &Dough{Flour 1kg + 3 eggs}}` | 1000 * 0.01 | `Salt (10 g)` |
+| `@Sugar{10% @&Flour}` (Flour=1kg) | 1000 * 0.10 | `Sugar (100 g)` |
+| `@Sugar{50% @&Apples}` (Apples=4)| 4 * 0.50 | `Sugar (2)` |
+| `@Sugar{10% @&Ghost}` | Impossible | `Sugar (10% of @&Ghost ❓)` |
+| `@Salt{1% &Dough}` (Dough=1kg Flour + 3 eggs) | 1000 * 0.01 | `Salt (10 g)` |
 
 ## Conclusion for the User
 

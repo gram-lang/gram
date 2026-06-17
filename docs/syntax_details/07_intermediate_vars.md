@@ -7,7 +7,7 @@ This is what makes GRAM a culinary programming language. You can name the result
 To say "The result of this step is called X", we use the arrow `->`.
 
 ### Syntax
-`->&name{}`
+`->&name`
 
 This is placed **ALWAYS at the end** of a block.
 
@@ -17,9 +17,9 @@ This is placed **ALWAYS at the end** of a block.
 Applies **strictly** to ingredients mentioned in the current step block. It does **not** automatically include ingredients from previous steps in the same section.
 
 ```gram
-Mix @flour{} and @water{}. ->&dough{}
+Mix @flour and @water. ->&dough
 ```
-Here, `&dough{}` is a virtual variable containing the sum of the masses of flour and water **only**.
+Here, `&dough` is a virtual variable containing the sum of the masses of flour and water **only**.
 
 > [!WARNING]
 > If you have a sequence of steps (Mix A, then Mix B, then Cook), adding `->&result` at the *last* step will only capture the ingredients of the last step. To capture the entire section, use **Global Scope** (Section Title).
@@ -28,9 +28,9 @@ Here, `&dough{}` is a virtual variable containing the sum of the masses of flour
 Applies conceptually to the entire section.
 
 ```gram
-## Pastry Cream ->&cream{}
+## Pastry Cream ->&cream
 ```
-Here, the entire result of the "Pastry Cream" section will be accessible elsewhere as `&cream{}`.
+Here, the entire result of the "Pastry Cream" section will be accessible elsewhere as `&cream`.
 
 ---
 
@@ -39,15 +39,15 @@ Here, the entire result of the "Pastry Cream" section will be accessible elsewhe
 To use an intermediate preparation, simply call it by its name (without `@`).
 
 ### Syntax
-`Use the &name{}`
+`Use the &name`
 
 *   **No `@`**: This is not a new ingredient to buy, it's a work in process.
 *   **Optional Quantity**:
-    *   `&dough{}`: "Take the dough" (Instruction).
+    *   `&dough`: "Take the dough" (Instruction).
     *   `&dough{200g}`: "Take 200g of the dough" (Precision).
 
 > [!IMPORTANT]
-> **Shopping List Exclusion**: Intermediate references (`&name{}`) **NEVER** appear in the shopping list. They represent internal workflow steps, not items to purchase.
+> **Shopping List Exclusion**: Intermediate references (`&name`) **NEVER** appear in the shopping list. They represent internal workflow steps, not items to purchase.
 
 ## 4. Logic Rules
 
@@ -62,9 +62,9 @@ To prevent double-counting mass when a section produces an intermediate that is 
     *   *Reason*: They are "inputs" for this specific section.
 
 ### Dependency & Complexity
-1.  **Dependency**: If you declare `->&A{}`, you MUST use it somewhere in a future step.
+1.  **Dependency**: If you declare `->&A`, you MUST use it somewhere in a future step.
 2.  **Complexity**: A variable "carries" with it the sum of the masses of its components.
-    *   If `&A{}` = 100g Flour + 50g Water.
+    *   If `&A` = 100g Flour + 50g Water.
     *   Then Mass(&A) = 150g.
 
 ## Best Practices (Chaining)
@@ -72,11 +72,11 @@ To prevent double-counting mass when a section produces an intermediate that is 
 Create a logical chain so the system understands the recipe evolution.
 
 ```gram
-[Mix] Dry -> &dry_mix{}
+[Mix] Dry -> &dry mix{}
 
-[Mix] Wet -> &wet_mix{}
+[Mix] Wet -> &wet mix{}
 
-[Combine] &dry_mix{} + &wet_mix{} -> &final_dough{}
+[Combine] &dry mix{} + &wet mix{} -> &final dough{}
 ```
 
 This ensures accurate dependency graph generation.

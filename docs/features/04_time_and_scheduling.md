@@ -16,8 +16,8 @@ The compiler distinguishes between time you spend working and time you spend wai
     *   Adds to **Active Time** (assuming you are monitoring/cooking).
     *   Adds to **Total Time**.
     *   *Note: Future versions may allow marking timers as "passive" to reduce Active Time.*
-*   **Asynchronous Timer (`~{1h}&`)**:
-    *   Declared with the `&` suffix.
+*   **Asynchronous Timer (`~&{1h}`)**:
+    *   Declared with the `&` modifier after the `~`.
     *   Adds **0** to Active Time.
     *   Starts a "Background Task" (e.g., rising dough, marinating) that runs parallel to subsequent steps.
     *   **Total Time** is calculated dynamically: `Max(Personal_Cursor, Background_Task_End)`.
@@ -37,11 +37,11 @@ This metric is displayed as **"Prep Time (est.)"**.
     *   Iterates through every step content.
     *   **+2 min** if an ingredient has a specific preparation note (e.g., `(chopped)`, `(diced)`).
 3.  **Alternative Rule (Max Strategy):**
-    *   In a choice (`@A{}|@B{}`), the system calculates the prep cost for each option and takes the **MAXIMUM**.
+    *   In a choice (`@A|@B`), the system calculates the prep cost for each option and takes the **MAXIMUM**.
     *   *Rationale:* We estimate for the "worst case" scenario to ensure the user has enough time.
 
 ## 3. Retro-Planning
 
-If you define a retro-planning target in a section header (e.g., `## Dough {T-2h}`), the compiler can calculate the localized start time for that section relative to the serving time.
+If you define a retro-planning target in a section header (e.g., `## Dough ~{-2h}`), the compiler can calculate the localized start time for that section relative to the serving time.
 
 *(Note: This feature interacts with the async timer logic to suggest when to start specific sub-sections).*

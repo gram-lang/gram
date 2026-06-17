@@ -8,19 +8,21 @@ In many recipes, what you buy is not exactly what you use.
 *   You buy **Lemons** -> You use **Zest** and **Juice**.
 *   You buy a **Whole Chicken** -> You use **Thighs** and **Breasts**.
 
-If you just listed `@white{}` and `@yolk{}`, the shopping list would ask for "White" and "Yolk" separately. We want it to ask for "Eggs".
+If you just listed `@white` and `@yolk`, the shopping list would ask for "White" and "Yolk" separately. We want it to ask for "Eggs".
 
 ## Syntax: `Child < Parent`
 
 The syntax `<` establishes a dependency. It can be read as "**drawn from**".
 
+> **Warning:** Spaces are STRICTLY forbidden around the `<` operator. Doing so will trigger a compilation error.
+
 ```gram
-Add the @zest{1}<@lemon{} to the bowl.
+Add the @zest{1}<@lemon to the bowl.
 ```
 
 *   **Child**: `@zest` (Used in step)
 *   **Parent**: `@lemon` (Added to shopping list)
-*   **Parent Quantity**: Implicitly `1` if omitted. `@lemon` is equivalent to `@lemon{1}`.
+*   **Parent Quantity**: Implicitly `1` if omitted. `<@lemon` is equivalent to `<@lemon{1}`.
 
 ### Examples
 
@@ -32,7 +34,7 @@ Add the @zest{1}<@lemon{} to the bowl.
 
 **Implicit Parent Quantity:**
 ```gram
-@zest{1}<@lemon{}
+@zest{1}<@lemon
 ```
 *"I need 1 zest. Requires 1 lemon."*
 
