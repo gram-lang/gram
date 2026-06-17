@@ -58,7 +58,24 @@
           "description": "Path to a YAML ingredient database file. Leave empty to auto-detect .gram/ingredients.yaml in the workspace root."
         }
       }
-    }
+    },
+    "semanticTokenScopes": [
+      {
+        "language": "gram",
+        "scopes": {
+          "namespace": ["entity.name.section.gram"],
+          "keyword": ["keyword.control.gram"],
+          "parameter": ["variable.parameter.ingredient.gram"],
+          "variable": ["variable.other.intermediate.gram"],
+          "number": ["constant.numeric.gram"],
+          "type": ["string.unquoted.unit.gram"],
+          "string": ["string.quoted.gram"],
+          "operator": ["keyword.operator.gram"],
+          "function": ["entity.name.function.action.gram"],
+          "comment": ["comment.line.gram"]
+        }
+      }
+    ]
   },
   "scripts": {
     "build": "node build.js",

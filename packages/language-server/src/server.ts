@@ -18,6 +18,7 @@ import { provideReferences } from './features/references';
 import { prepareName, provideRename } from './features/rename';
 import { provideFormatting } from './features/formatting';
 import { provideCodeActions } from './features/code-actions';
+import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS } from './features/semantic-tokens';
 import { loadIngredientDB, IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -58,6 +59,13 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
             hoverProvider: true,
             foldingRangeProvider: true,
             completionProvider: { triggerCharacters: ['&', '@'] },
+            semanticTokensProvider: {
+                full: true,
+                legend: {
+                    tokenTypes: SEMANTIC_TOKEN_TYPES as unknown as string[],
+                    tokenModifiers: SEMANTIC_TOKEN_MODIFIERS,
+                },
+            },
             referencesProvider: true,
             renameProvider: { prepareProvider: true },
             documentFormattingProvider: true,
@@ -152,6 +160,11 @@ connection.onDocumentFormatting(({ textDocument: { uri } }) => {
 connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
     const s = states.get(uri);
     return s ? provideCodeActions(s, range, context.diagnostics, uri, ingredientDB) : [];
+});
+
+connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
+    const s = states.get(uri);
+    return s ? provideSemanticTokens(s) : { data: [] };
 });
 
 documents.listen(connection);
