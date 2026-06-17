@@ -4,10 +4,28 @@ import { positionToOffset } from '../utils/position';
 import { collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
-import { ASTNodeType, QuantityAST } from '@gram/parser';
+import { ASTNodeType, QuantityAST, QuantityValueAST } from '@gram/parser';
 
 // ml equivalent for spoon units (not in i18n volume set)
 export const SPOON_TO_ML: Record<string, number> = { tsp: 5, tbsp: 15 };
+
+// Resolve the numeric amount from any supported QuantityValueAST type.
+export function getQtyAmount(qtyValue: QuantityValueAST): number | null {
+    switch (qtyValue.type) {
+        case 'single':
+            return typeof qtyValue.value === 'number' ? qtyValue.value : null;
+        case 'fraction':
+            if (qtyValue.numerator != null && qtyValue.denominator) {
+                return qtyValue.numerator / qtyValue.denominator;
+            }
+            return null;
+        case 'range':
+            // Use the lower bound for a conservative estimate
+            return qtyValue.range?.min ?? null;
+        default:
+            return null;
+    }
+}
 
 const VOLUME_UNITS = new Set(['ml', 'l']);
 
@@ -33,8 +51,9 @@ function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUni
     if (!canon) return null;
 
     const qtyValue = qty.value;
-    if (!qtyValue || qtyValue.type !== 'single' || typeof qtyValue.value !== 'number') return null;
-    const amount = qtyValue.value;
+    if (!qtyValue) return null;
+    const amount = getQtyAmount(qtyValue);
+    if (amount === null) return null;
 
     const grams = volumeToGrams(amount, canon, physical.density);
     if (grams != null) {

@@ -5,7 +5,7 @@ import { collectIntermediates, collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
 import { ASTNodeType, QuantityAST } from '@gram/parser';
-import { volumeToGrams } from './hover-nutrition';
+import { volumeToGrams, getQtyAmount } from './hover-nutrition';
 
 export function provideCodeActions(
     state: DocumentState,
@@ -84,21 +84,23 @@ export function provideCodeActions(
             const entry = lookupIngredient(ingredient.name, db);
             const qty = ingredient.quantity?.type === ASTNodeType.Quantity ? ingredient.quantity as QuantityAST : null;
 
-            if (entry?.physical?.density && qty?.unit && qty.value?.type === 'single' && typeof qty.value.value === 'number' && qty.loc) {
-                const canon = normalizeUnit(qty.unit);
-                const amount = qty.value.value;
-                const density = entry.physical.density;
+            if (entry?.physical?.density && qty?.unit && qty.value && qty.loc) {
+                const amount = getQtyAmount(qty.value);
+                if (amount !== null) {
+                    const canon = normalizeUnit(qty.unit);
+                    const density = entry.physical.density;
 
-                // Volume → grams: ml, l, tsp, tbsp, and their aliases
-                const grams = volumeToGrams(amount, canon, density);
-                if (grams != null) {
-                    const qtyRange = locToRange(state.lineStarts, qty.loc);
-                    actions.push({
-                        title: `Convert to grams (≈ ${Math.round(grams)} g)`,
-                        kind: CodeActionKind.RefactorRewrite,
-                        // qty.loc covers only the inner content (e.g. "1 càc"), not the surrounding {}
-                        edit: { changes: { [uri]: [{ range: qtyRange, newText: `${Math.round(grams)} g` }] } },
-                    });
+                    // Volume → grams: ml, l, tsp, tbsp, and their FR/EN aliases
+                    const grams = volumeToGrams(amount, canon, density);
+                    if (grams != null) {
+                        const qtyRange = locToRange(state.lineStarts, qty.loc);
+                        actions.push({
+                            title: `Convert to grams (≈ ${Math.round(grams)} g)`,
+                            kind: CodeActionKind.RefactorRewrite,
+                            // qty.loc covers only the inner content (e.g. "1/2 tbsp"), not the surrounding {}
+                            edit: { changes: { [uri]: [{ range: qtyRange, newText: `${Math.round(grams)} g` }] } },
+                        });
+                    }
                 }
             }
         }

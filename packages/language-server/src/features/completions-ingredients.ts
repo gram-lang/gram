@@ -24,7 +24,8 @@ export function provideIngredientCompletions(db: IngredientDB): CompletionItem[]
             kind: CompletionItemKind.Value,
             detail: canonical !== label ? canonical : undefined,
             documentation: lines.length > 0 ? { kind: MarkupKind.Markdown, value: lines.join('\n\n') } : undefined,
-            insertText: label,
+            // Multi-word names require {} to delimit the name in GRAM syntax (@name{qty})
+            insertText: label.includes(' ') ? `${label}{}` : label,
         };
     });
 }
