@@ -3,11 +3,15 @@ import { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
 import { collectIntermediates, collectReferences, collectIngredients } from '../utils/ast-walker';
 import { WarningCode } from '@gram/compiler';
-import { isKnownIngredient } from '../ingredient-loader';
+import { isKnownIngredient, findClosestIngredient, IngredientDB } from '../ingredient-loader';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } };
 
-export function provideDiagnostics(state: DocumentState, ingredientLookupSet: Set<string> = new Set()): Diagnostic[] {
+export function provideDiagnostics(
+    state: DocumentState,
+    ingredientLookupSet: Set<string> = new Set(),
+    ingredientDB: IngredientDB = {},
+): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
     if (state.parseError) {
@@ -55,15 +59,20 @@ export function provideDiagnostics(state: DocumentState, ingredientLookupSet: Se
 
     // Unknown ingredients — only when an ingredient DB is loaded
     if (ingredientLookupSet.size > 0) {
+        const hasDB = Object.keys(ingredientDB).length > 0;
         for (const ingredient of collectIngredients(state.ast)) {
             if (!isKnownIngredient(ingredient.name, ingredientLookupSet)) {
                 const range = ingredient.loc ? locToRange(state.lineStarts, ingredient.loc) : ZERO_RANGE;
+                const closest = hasDB ? findClosestIngredient(ingredient.name, ingredientDB) : null;
                 diagnostics.push({
                     severity: DiagnosticSeverity.Information,
                     range,
-                    message: `'@${ingredient.name}' not found in the ingredient database. Possible typo or missing entry.`,
+                    message: closest
+                        ? `'@${ingredient.name}' not found in the ingredient database. Did you mean '@${closest}'?`
+                        : `'@${ingredient.name}' not found in the ingredient database. Possible typo or missing entry.`,
                     code: 'UNKNOWN_INGREDIENT',
                     source: 'gram',
+                    data: closest ? { suggestion: closest } : undefined,
                 });
             }
         }

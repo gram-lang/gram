@@ -90,7 +90,7 @@ connection.onInitialized(async () => {
             loadDB();
         }
         for (const [uri, state] of states) {
-            connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet) });
+            connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB) });
         }
     });
 });
@@ -98,7 +98,7 @@ connection.onInitialized(async () => {
 function refresh(uri: string, text: string) {
     const state = parseDocument(text);
     states.set(uri, state);
-    connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet) });
+    connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB) });
 }
 
 documents.onDidOpen(e => refresh(e.document.uri, e.document.getText()));

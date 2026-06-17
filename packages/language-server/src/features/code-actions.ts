@@ -51,6 +51,43 @@ export function provideCodeActions(
             }
         }
 
+        // Quick fix: replace misspelled ingredient name with fuzzy suggestion
+        if (diag.code === 'UNKNOWN_INGREDIENT') {
+            const suggestion = (diag.data as { suggestion?: string } | undefined)?.suggestion;
+            if (suggestion) {
+                const startOffset = positionToOffset(state.lineStarts, diag.range.start);
+                const endOffset = positionToOffset(state.lineStarts, diag.range.end);
+                const ingText = state.text.slice(startOffset, endOffset);
+
+                // Skip @ sigil and any modifiers (?-*&=) to reach the name
+                let nameRelStart = ingText[0] === '@' ? 1 : 0;
+                while (nameRelStart < ingText.length && '-?&*='.includes(ingText[nameRelStart])) nameRelStart++;
+
+                // Name ends at the first brace, composite <, parenthesis, pipe, or newline
+                let nameRelEnd = nameRelStart;
+                while (nameRelEnd < ingText.length && !'{<(|\n'.includes(ingText[nameRelEnd])) nameRelEnd++;
+                while (nameRelEnd > nameRelStart && ingText[nameRelEnd - 1] === ' ') nameRelEnd--;
+
+                actions.push({
+                    title: `Replace with '@${suggestion}'`,
+                    kind: CodeActionKind.QuickFix,
+                    isPreferred: true,
+                    diagnostics: [diag],
+                    edit: {
+                        changes: {
+                            [uri]: [{
+                                range: {
+                                    start: offsetToPosition(state.lineStarts, startOffset + nameRelStart),
+                                    end: offsetToPosition(state.lineStarts, startOffset + nameRelEnd),
+                                },
+                                newText: suggestion,
+                            }],
+                        },
+                    },
+                });
+            }
+        }
+
         // Quick fix: declare missing intermediate at end of current section
         if (diag.code === 'UNDEFINED_REFERENCE') {
             const nameMatch = diag.message.match(/'&([^']+)'/);
