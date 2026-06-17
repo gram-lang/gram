@@ -42,10 +42,8 @@ export function collectReferences(ast: RecipeAST): ReferenceAST[] {
     return refs;
 }
 
-export function findStepTextContent(step: StepAST): string {
-    return step.children
-        .filter(c => c.type === ASTNodeType.Text)
-        .map(c => (c as any).value as string)
-        .join('')
-        .trim();
+// Returns the raw source text of a step, preserving ingredients, cookware, etc.
+export function getStepSourceText(step: StepAST, documentText: string): string {
+    if (!step.loc) return '';
+    return documentText.slice(step.loc.start, step.loc.end).trim();
 }

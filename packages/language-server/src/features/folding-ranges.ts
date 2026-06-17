@@ -21,7 +21,12 @@ export function provideFoldingRanges(state: DocumentState): FoldingRange[] {
     for (const section of state.ast.children) {
         if (!section.loc) continue;
         const startLine = offsetToPosition(state.lineStarts, section.loc.start).line;
-        const endLine = offsetToPosition(state.lineStarts, section.loc.end).line;
+        const rawEnd = offsetToPosition(state.lineStarts, section.loc.end);
+        // loc.end lands after the trailing newline(s), i.e. at character 0 of the next
+        // section's line. Pull back one line so ranges don't share a boundary line.
+        const endLine = rawEnd.character === 0 && rawEnd.line > startLine
+            ? rawEnd.line - 1
+            : rawEnd.line;
         if (endLine > startLine) {
             ranges.push({ startLine, endLine, kind: FoldingRangeKind.Region });
         }

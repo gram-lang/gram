@@ -1,7 +1,7 @@
 import { Hover, MarkupContent, MarkupKind, Position } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
 import { positionToOffset } from '../utils/position';
-import { collectIntermediates, collectReferences, findStepTextContent } from '../utils/ast-walker';
+import { collectIntermediates, collectReferences, getStepSourceText } from '../utils/ast-walker';
 
 export function provideHover(state: DocumentState, position: Position): Hover | null {
     if (!state.ast) return null;
@@ -18,7 +18,7 @@ export function provideHover(state: DocumentState, position: Position): Hover | 
 
     let description = '';
     if (match.step) {
-        description = findStepTextContent(match.step);
+        description = '```gram\n' + getStepSourceText(match.step, state.text) + '\n```';
     } else if (match.section) {
         description = `Section: **${match.section.title ?? '(unnamed)'}**`;
     }
