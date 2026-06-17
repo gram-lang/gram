@@ -1,0 +1,22 @@
+{
+  "name": "@gram/language-server",
+  "version": "0.10.1",
+  "description": "LSP server for the GRAM recipe language",
+  "main": "dist/server.js",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --watch"
+  },
+  "dependencies": {
+    "@gram/compiler": "workspace:*",
+    "@gram/parser": "workspace:*",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "esbuild": "^0.25.5",
+    "typescript": "^6.0.3"
+  }
+}

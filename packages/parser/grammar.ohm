@@ -50,9 +50,9 @@ GRAM {
     | CommentBlock
     | Comment
 
-  intermediateDecl = 
-    | "->&" singleWordName -- bare
+  intermediateDecl =
     | "->&" name "{}"      -- full
+    | "->&" singleWordName -- bare
 
   // Ingredients
   Ingredient = 

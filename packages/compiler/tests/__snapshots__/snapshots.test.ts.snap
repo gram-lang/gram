@@ -1040,6 +1040,10 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "code": "SCOPE_CONFLICT",
+      "loc": {
+        "end": 433,
+        "start": 427,
+      },
       "message": "Global variable '&dup' is redefined.",
       "section": "Scope Conflict",
     },

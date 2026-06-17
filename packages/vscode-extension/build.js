@@ -1,0 +1,29 @@
+const esbuild = require('esbuild');
+const fs = require('fs');
+const path = require('path');
+
+async function build() {
+    // Build the extension client
+    await esbuild.build({
+        entryPoints: ['src/extension.ts'],
+        bundle: true,
+        outfile: 'dist/extension.js',
+        format: 'cjs',
+        platform: 'node',
+        target: 'node18',
+        external: ['vscode'],
+    });
+
+    // Copy the language server bundle into the extension's dist/
+    // so the extension can reference it as a single self-contained dist/ folder
+    const serverSrc = path.join(__dirname, '..', 'language-server', 'dist', 'server.js');
+    const serverDst = path.join(__dirname, 'dist', 'server.js');
+    if (fs.existsSync(serverSrc)) {
+        fs.copyFileSync(serverSrc, serverDst);
+    } else {
+        console.warn('[vscode-extension/build] Language server bundle not found, skipping copy.');
+        console.warn('  Expected:', serverSrc);
+    }
+}
+
+build().catch(() => process.exit(1));

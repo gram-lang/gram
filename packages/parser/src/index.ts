@@ -186,11 +186,11 @@ semantics.addOperation('toAST', {
     },
 
     intermediateDecl_bare(_1, name) {
-        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString) } as IntermediateDecl;
+        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString), loc: { start: this.source.startIdx, end: this.source.endIdx } } as IntermediateDecl;
     },
 
     intermediateDecl_full(_1, name, _2) {
-        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString) } as IntermediateDecl;
+        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString), loc: { start: this.source.startIdx, end: this.source.endIdx } } as IntermediateDecl;
     },
 
     // --- Text & Primitives ---
