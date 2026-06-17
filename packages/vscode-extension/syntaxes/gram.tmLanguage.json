@@ -63,7 +63,7 @@
       "patterns": [
         {
           "name": "meta.ingredient.gram",
-          "begin": "(@)([-?&*=]*)([^\\{\\[@#~°!:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(@)([-?&*=]*)([^\\{\\[@#~°:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -83,7 +83,7 @@
         },
         {
           "name": "meta.ingredient.bare.gram",
-          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~°!:<]+)(?:(:)([\\w]+))?",
+          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -98,7 +98,7 @@
       "patterns": [
         {
           "name": "meta.cookware.gram",
-          "begin": "(#)([-?&*=]*)([^\\{\\[@#~°!:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(#)([-?&*=]*)([^\\{\\[@#~°:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -118,7 +118,7 @@
         },
         {
           "name": "meta.cookware.bare.gram",
-          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~°!:<]+)(?:(:)([\\w]+))?",
+          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?",
           "captures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -176,7 +176,7 @@
         },
         {
           "name": "meta.reference.usage.bare.gram",
-          "match": "(&)([^\\s\\{\\[@#~°!:<]+)",
+          "match": "(&)([^\\s\\{\\[@#~°:<]+)",
           "captures": {
             "1": { "name": "keyword.control.reference.gram" },
             "2": { "name": "variable.other.reference.gram" }
