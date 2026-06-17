@@ -2,8 +2,10 @@ GRAM {
   Recipe = Frontmatter? Content?
   
   Content = 
-    | (nl* Section)+      -- explicit
+    | (nl* TopLevelComment)* (nl* Section)+      -- explicit
     | (nl* Block)+        -- implicit
+
+  TopLevelComment = CommentBlock | Comment
 
   Frontmatter = "---" nl KeyValue* "---" (nl | end)
   KeyValue = key ":" sp* value nl
@@ -14,11 +16,11 @@ GRAM {
   header = "##" sp+ title headerExtension? sp* nl+
   headerExtension = 
       | retroPlanning sp* intermediateDecl?  -- retro
-      | intermediateDecl                     -- decl
-  titleStop = nl | "->&" | "{T-"
+      | intermediateDecl sp* retroPlanning?  -- decl
+  titleStop = nl | "->&" | "~{"
   title = (~titleStop any)*
   
-  retroPlanning = "{T-" (~"}" any)+ "}"
+  retroPlanning = "~{" (~"}" any)+ "}"
   
   Block = 
     | Comment nl*       -- comment
@@ -28,11 +30,14 @@ GRAM {
   startAction = "[" (~"]" any)+ "]" sp*
   line = stepContent+
   stepContent = 
+    | invalidComposite
     | text
     | ws
     | intermediateDecl
     | applySyntactic<Element> 
     | fallback
+    
+  invalidComposite = space+ "<" space* "@" name
     
   ws = space+
 
@@ -47,7 +52,9 @@ GRAM {
     | CommentBlock
     | Comment
 
-  intermediateDecl = "->&" name "{}"
+  intermediateDecl = 
+    | "->&" singleWordName -- bare
+    | "->&" name "{}"      -- full
 
   // Ingredients
   Ingredient = 
@@ -56,20 +63,22 @@ GRAM {
 
   Alternative = simpleIngredient ("|" simpleIngredient)+
   
-  // Rule: Quantity is mandatory (it's the delimiter)
-  simpleIngredient = "@" modifier* name alias? ingredientQuantity preparation? composite?
+  // Rule: Quantity is mandatory unless it's a single word name
+  simpleIngredient = 
+    | "@" modifier* name alias? ingredientQuantity preparation? composite? -- full
+    | "@" modifier* singleWordName alias? -- bare
 
-  modifier = "?" | "-" | "*" | "&"
-  alias = "[" space* name space* "]"
+  modifier = "?" | "-" | "*" | "&" | "="
+  alias = ":" name
   ingredientQuantity = "{" space* (relativeQuantity | absoluteQuantity) space* "}"
-  relativeQuantity = number space* "%" space* ("@" | "&") space* name
-  absoluteQuantity = (fixed space*)? (range | number)? space* (unit space*)?
+  relativeQuantity = number space* "%" space* ("@&" | "&") space* name
+  absoluteQuantity = (range | number)? space* (unit space*)?
   textQuantity = "{" space* (~"}" any)+ space* "}"
   fixed = "="
   unit = unitName
   unitName = (alnum | sp | "°" | "%")+
   preparation = "(" (~")" any)* ")"
-  composite = "<" space* "@" space* name space* ingredientQuantity?
+  composite = "<@" name ingredientQuantity?
 
   // Cookware
   // Specs say use braces too.
@@ -78,17 +87,19 @@ GRAM {
     | simpleCookware
 
   CookwareAlternative = simpleCookware ("|" simpleCookware)+
-  simpleCookware = "#" modifier* name alias? cookwareQuantity preparation?
+  simpleCookware = 
+    | "#" modifier* name alias? cookwareQuantity preparation? -- full
+    | "#" modifier* singleWordName alias? -- bare
 
-  // Restrict cookware quantity to only numbers/fixed, NO UNITS.
-  // Allowed: {}, {2}, {=1}
-  cookwareQuantity = "{" space* (fixed space*)? number? space* "}"
+  // Restrict cookware quantity to only numbers, NO UNITS.
+  // Allowed: {}, {2}
+  cookwareQuantity = "{" space* number? space* "}"
 
   // Timer
-  Timer = "~" name? ingredientQuantity "&"?
+  Timer = "~" "&"? name? ingredientQuantity
   
   // Temperature
-  Temperature = "!" name? (ingredientQuantity | textQuantity)
+  Temperature = "°" name? (ingredientQuantity | textQuantity)
 
 
   // Comments
@@ -97,13 +108,16 @@ GRAM {
 
   // Primitives
   name = (~(syntaxChar | nl) any)+
+  singleWordName = (~(syntaxChar | space | nl) any)+
   
   number = digit+ ("." digit+)? ("/" digit+)?
   range = number space* "-" space* number
 
   text = space* (~(elementStart | nl) any)+
   
-  Reference = "&" name ingredientQuantity
+  Reference = 
+    | "&" name ingredientQuantity -- full
+    | "&" singleWordName          -- bare
 
   // SyntaxChar used for name content exclusion
   // Restricted to true delimiters that start a new component
@@ -124,7 +138,7 @@ GRAM {
   
   // ElementStart used for text content exclusion
   // This remains strict to identify WHERE an element starts in free text.
-  elementStart = "@" | "#" | "~" | "!" | "//" | "/*" | "->&" | "&"
+  elementStart = "@" | "#" | "~" | "°" | "//" | "/*" | "->&" | "&"
   
   nl = "\r"? "\n"
   sp = " " | "\t"

@@ -16,7 +16,7 @@ import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 import { z } from 'zod';
 
 export function validateIngredientDatabase(rawDb: unknown): Record<string, IngredientData> {
-    return z.record(IngredientDataSchema).parse(rawDb);
+    return z.record(z.string(), IngredientDataSchema).parse(rawDb);
 }
 
 /**

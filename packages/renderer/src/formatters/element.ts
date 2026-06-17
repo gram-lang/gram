@@ -18,7 +18,7 @@ export const DEFAULT_ICONS = {
         timer: '⏲️ ',
         thermometer: '🔥',
         caretRight: '👉',
-        arrowRight: 'T-',
+        arrowRight: '->&',
         arrowUDownLeft: '',
         warning: ' ⚠️',
         pencilSimple: ''
@@ -272,7 +272,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return `<span class="${className}" title="Intermediate result declaring this step's output">${arrowIcon} ${escapeHtml(name)}</span>`;
         } else {
             const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
-            return `{${prefix}${name}}`;
+            return `${prefix}${name}`;
         }
     },
      

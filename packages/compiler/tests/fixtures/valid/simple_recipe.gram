@@ -12,18 +12,18 @@ tags: [dessert, easy]
 densities: ["flour: 0.6", "milk: 1.03"]
 ---
 
-## Crepe Batter {T-1h} ->&batter{}
+## Crepe Batter ~{-1h} ->&batter
 
 /* Again, don't try this recipe at home ! */
 
-[Mix] In a #bowl{}, mix the @*flour{250 g} with the @egg yolks{2}<@eggs{2} and the @eggs{1-2}. ->&mixture{}
+[Mix] In a #bowl, mix the @*flour{250 g} with the @egg yolks{2}<@eggs{2} and the @eggs{1-2}. ->&mixture
 
-[Whisk] In the @milk{200% @flour} into the &mixture{}. // Don't overmix !
+[Whisk] In the @milk{200% @&flour} into the &mixture. // Don't overmix !
 
-[Add] Some @butter{30 g}(melted), the @vanilla extract{1 tsp}|@vanilla paste{1/2 tsp}, the @apple cider vinegar[vinegar]{}, a @-secret ingredient{1 pinch} and @?orange blossom water{1 tbsp}.
+[Add] Some @butter{30 g}(melted), the @vanilla extract{1 tsp}|@vanilla paste{1/2 tsp}, the @apple cider vinegar:vinegar{}, a @-secret ingredient{1 pinch} and @?orange blossom water{1 tbsp}.
 
 [Rest] Let it rest ~rest{1h}.
 
 ## Cooking
 
-[Cook] The &batter{} in a #frying pan[pan]{=2}(25cm)|#griddle{} with some @&butter{10 g} over !{medium heat} for about ~{2min}&.²
+[Cook] The &batter in a #=frying pan:pan{2}(25cm)|#griddle with some @&butter{10 g} over °{medium heat} for about ~&{2min}.²

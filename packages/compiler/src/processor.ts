@@ -13,6 +13,33 @@ export interface ProcessorContext extends Context {
     options?: CompilerOptions;
 }
 
+function checkModifiers(ctx: ProcessorContext, modifiers: string[], itemName: string, loc?: any) {
+    if (!modifiers) return;
+    
+    const seen = new Set<string>();
+    for (const m of modifiers) {
+        if (seen.has(m)) {
+            pushWarning(ctx, WarningCode.INVALID_MODIFIER_COMBINATION, { item: itemName, combination: `Duplicated modifier '${m}'`, loc });
+        }
+        seen.add(m);
+    }
+    
+    const hasOpt = modifiers.includes('?');
+    const hasImp = modifiers.includes('*');
+    const hasHid = modifiers.includes('-');
+    const hasRef = modifiers.includes('&');
+    
+    if (hasOpt && hasImp) {
+        pushWarning(ctx, WarningCode.INVALID_MODIFIER_COMBINATION, { item: itemName, combination: 'Optional (?) and Important (*)', loc });
+    }
+    if (hasHid && hasImp) {
+        pushWarning(ctx, WarningCode.INVALID_MODIFIER_COMBINATION, { item: itemName, combination: 'Hidden (-) and Important (*)', loc });
+    }
+    if (hasHid && hasRef) {
+        pushWarning(ctx, WarningCode.INVALID_MODIFIER_COMBINATION, { item: itemName, combination: 'Hidden (-) and Referenceable (&)', loc });
+    }
+}
+
 /**
  * Processes a single AST item inside a recipe step.
  * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
@@ -37,6 +64,8 @@ function processIngredient(
     registry: RecipeRegistry,
     secIngredients: Usage[]
 ): Usage {
+    checkModifiers(ctx, item.modifiers, item.name, item.loc);
+    
     const defaultUnit = (item.quantity && 'unit' in item.quantity && item.quantity.unit) || undefined;
     const id = registry.registerIngredient(item.name, defaultUnit ? { default_unit: defaultUnit } : undefined);
 
@@ -119,6 +148,8 @@ function processCookware(
     registry: RecipeRegistry,
     secCookware: Usage[]
 ): Usage {
+    checkModifiers(ctx, item.modifiers, item.name, item.loc);
+
     const id = registry.registerCookware(item.name);
     const usage = createCleanUsage(item, id, ctx.options);
     secCookware.push(usage);

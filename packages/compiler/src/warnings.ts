@@ -8,7 +8,8 @@ export enum WarningCode {
     SCOPE_CONFLICT = 'SCOPE_CONFLICT',
     MISSING_INGREDIENT = 'MISSING_INGREDIENT',
     MISSING_MACROS = 'MISSING_MACROS',
-    UNKNOWN_MASS = 'UNKNOWN_MASS'
+    UNKNOWN_MASS = 'UNKNOWN_MASS',
+    INVALID_MODIFIER_COMBINATION = 'INVALID_MODIFIER_COMBINATION'
 }
 
 export interface WarningPayloads {
@@ -22,6 +23,7 @@ export interface WarningPayloads {
     [WarningCode.MISSING_INGREDIENT]: { id: string };
     [WarningCode.MISSING_MACROS]: { id: string };
     [WarningCode.UNKNOWN_MASS]: { id: string };
+    [WarningCode.INVALID_MODIFIER_COMBINATION]: { item: string; combination: string; loc?: any };
 }
 
 export const warningTemplates: { [K in WarningCode]: (payload: WarningPayloads[K]) => string } = {
@@ -34,7 +36,8 @@ export const warningTemplates: { [K in WarningCode]: (payload: WarningPayloads[K
     [WarningCode.SCOPE_CONFLICT]: (p) => `Global variable '&${p.varName}' is redefined.`,
     [WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,
     [WarningCode.MISSING_MACROS]: (p) => `Ingredient "${p.id}" has no default macro data.`,
-    [WarningCode.UNKNOWN_MASS]: (p) => `Cannot calculate mass for "${p.id}" to estimate nutrition.`
+    [WarningCode.UNKNOWN_MASS]: (p) => `Cannot calculate mass for "${p.id}" to estimate nutrition.`,
+    [WarningCode.INVALID_MODIFIER_COMBINATION]: (p) => `Invalid modifier combination on "${p.item}": ${p.combination}`
 };
 
 export function pushWarning<K extends WarningCode>(

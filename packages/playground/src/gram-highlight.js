@@ -40,9 +40,9 @@ export default function(hljs) {
     };
 
     const ALIAS = {
-        className: 'title', // [alias]
-        begin: /\[/,
-        end: /\]/,
+        className: 'title', // :alias
+        begin: /:/,
+        end: /(?=[\{\(\s]|$)/,
         relevance: 0
     };
 
@@ -72,10 +72,10 @@ export default function(hljs) {
     function element(className, char) {
         return {
             className: className,
-            begin: new RegExp(char + '[\\?\\-\\*\\&]?'),
+            begin: new RegExp(char + '[\\?\\-\\*\\&\\=]*'),
             // Use explicit end chars and exclude them from the match
             // so they can be picked up by next modes (like Quantity or Prep)
-            end: /(?=[\{\(\[\<\|\n@#~!&]|$)/, 
+            end: /(?=[\{\(\:\<\|\n@#~°!& ]|$)/, 
             relevance: 10
         };
     }
@@ -83,16 +83,23 @@ export default function(hljs) {
     const INGREDIENT = element('ingredient', '@');
     const COOKWARE = element('cookware', '#');
     const TIMER = element('timer', '~');
-    const TEMP = element('temp', '!');
+    const TEMP = element('temp', '°');
     const REFERENCE = element('reference', '&');
     const DECL = element('reference', '->&'); 
+    
+    // Composite
+    const COMPOSITE = {
+        className: 'operator',
+        begin: /<@/,
+        relevance: 10
+    };
 
     const HEADER = {
         className: 'section',
         begin: /^##/,
         end: /$/,
         contains: [
-            { className: 'timer', begin: /\{T\-/, end: /\}/ }, // Retro-planning
+            { className: 'timer', begin: /~\{/, end: /\}/ }, // Retro-planning
             DECL,
             QUANTITY,
             PREP
@@ -115,6 +122,7 @@ export default function(hljs) {
             ACTION, // Matches ^[...] so must be before ALIAS
             
             DECL,
+            COMPOSITE,
             INGREDIENT,
             COOKWARE,
             TIMER,
@@ -125,8 +133,7 @@ export default function(hljs) {
             PREP,
             ALIAS, 
             
-            { className: 'operator', begin: /\|/ },
-            { className: 'operator', begin: /</ } 
+            { className: 'operator', begin: /\|/ }
         ]
     };
 }

@@ -95,13 +95,18 @@ semantics.addOperation('toAST', {
         return { [key.sourceString]: parseFrontmatterValue(value.sourceString) };
     },
 
-    Content_explicit(_nls, sections) {
-        return sections.children.map(s => s.toAST());
+    Content_explicit(_nls1, topLevelComments, _nls2, sections) {
+        return [
+            ...topLevelComments.children.map(c => c.toAST()),
+            ...sections.children.map(s => s.toAST())
+        ];
     },
 
     Content_implicit(nls, blocks) {
          return blocks.children.map(b => b.toAST());
     },
+    
+    TopLevelComment(child) { return child.toAST(); },
 
     Section(header, blocks) {
         const h = header.toAST();
@@ -138,8 +143,9 @@ semantics.addOperation('toAST', {
         return { retroPlanning: retro.toAST(), intermediateDecl: intermediate };
     },
     
-    headerExtension_decl(decl) {
-        return { retroPlanning: null, intermediateDecl: decl.toAST() };
+    headerExtension_decl(decl, _sp, retro) {
+        const r = getOpt(retro);
+        return { retroPlanning: r ? r.toAST() : null, intermediateDecl: decl.toAST() };
     },
 
     retroPlanning(_1, content, _2) {
@@ -176,8 +182,15 @@ semantics.addOperation('toAST', {
 
     line(items) { return items.children.map(i => i.toAST()); },
     stepContent(child) { return child.toAST(); },
-    
-    intermediateDecl(_1, name, _2) {
+    invalidComposite(_s1, _lt, _s2, _at, name) {
+        throw new Error(`GRAM Syntax Error: spaces are not allowed around '<' for composite ingredients. Did you mean '<@${name.sourceString}'?`);
+    },
+
+    intermediateDecl_bare(_1, name) {
+        return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString) } as IntermediateDecl;
+    },
+
+    intermediateDecl_full(_1, name, _2) {
         return { type: ASTNodeType.IntermediateDecl, name: clean(name.sourceString) } as IntermediateDecl;
     },
 
@@ -204,13 +217,22 @@ semantics.addOperation('toAST', {
         return { type: ASTNodeType.Alternative, options, loc: { start: this.source.startIdx, end: this.source.endIdx } } as AlternativeAST;
     },
 
-    simpleIngredient(_at, _mods, _name, _alias, _qty, _prep, _comp) {
-        const modifiers = _mods.children.map(m => m.sourceString);
+    simpleIngredient_full(_at, _mods, _name, _alias, _qty, _prep, _comp) {
+        let modifiers = _mods.children.map(m => m.sourceString);
+        const qtyAST = _qty.toAST();
+        
+        if (modifiers.includes('=')) {
+            if (qtyAST && qtyAST.type === ASTNodeType.Quantity) {
+                qtyAST.fixed = true;
+            }
+            modifiers = modifiers.filter(m => m !== '=');
+        }
+
         return {
             type: ASTNodeType.Ingredient,
             name: _name.sourceString.trim(),
             modifiers,
-            quantity: _qty.toAST(),
+            quantity: qtyAST,
             alias: getOpt(_alias),
             preparation: getOpt(_prep),
             composite: getOpt(_comp),
@@ -218,15 +240,29 @@ semantics.addOperation('toAST', {
         } as IngredientAST;
     },
 
-    composite(_lt, _sp1, _at, _sp2, _name, _sp3, _qty) {
+    simpleIngredient_bare(_at, _mods, _name, _alias) {
+        const modifiers = _mods.children.map(m => m.sourceString).filter(m => m !== '=');
+        return {
+            type: ASTNodeType.Ingredient,
+            name: _name.sourceString.trim(),
+            modifiers,
+            quantity: null,
+            alias: getOpt(_alias),
+            preparation: null,
+            composite: null,
+            loc: { start: this.source.startIdx, end: this.source.endIdx }
+        } as IngredientAST;
+    },
+
+    composite(_ltat, name, _qty) {
         return {
              type: ASTNodeType.Composite,
-             parent: _name.sourceString,
+             parent: clean(name.sourceString),
              quantity: getOpt(_qty)
         };
     },
 
-    alias(_lb, _sp1, name, _sp2, _rb) { return clean(name.sourceString); },
+    alias(_colon, name) { return clean(name.sourceString); },
     preparation(_lp, text, _rp) { return clean(text.sourceString); },
     unit(name) { return clean(name.sourceString); },
     
@@ -244,22 +280,22 @@ semantics.addOperation('toAST', {
         } as RelativeQuantityAST;
     },
     
-    absoluteQuantity(fixed, _sFixed, val, _s2, unit, _sUnit) {
+    absoluteQuantity(val, _s2, unit, _sUnit) {
         return { 
             type: ASTNodeType.Quantity, 
             value: getOpt(val), 
             unit: getOpt(unit), 
-            fixed: fixed.children.length > 0, 
+            fixed: false, // In v1, fixed is a modifier on the element, not the quantity
             loc: { start: this.source.startIdx, end: this.source.endIdx } 
         } as QuantityAST;
     },
 
-    cookwareQuantity(_lb, _s1, fixed, _sFixed, val, _s2, _rb) {
+    cookwareQuantity(_lb, _s1, val, _s2, _rb) {
         return { 
             type: ASTNodeType.Quantity, 
             value: getOpt(val), 
             unit: null, 
-            fixed: fixed.children.length > 0, 
+            fixed: false, 
             loc: { start: this.source.startIdx, end: this.source.endIdx } 
         } as QuantityAST;
     },
@@ -292,22 +328,48 @@ semantics.addOperation('toAST', {
         } as AlternativeAST; 
     },
 
-    simpleCookware(_hash, mods, name, alias, qty, prep) {
-         const modifiers = mods.children.map(c => c.sourceString);
+    simpleCookware_full(_hash, mods, name, alias, qty, prep) {
+         let modifiers = mods.children.map(c => c.sourceString);
+         const qtyAST = qty.toAST();
+         
+         if (modifiers.includes('=')) {
+             if (qtyAST && qtyAST.type === ASTNodeType.Quantity) {
+                 qtyAST.fixed = true;
+             }
+             modifiers = modifiers.filter(m => m !== '=');
+         }
+
          return {
             type: ASTNodeType.Cookware,
             name: clean(name.sourceString),
             modifiers,
             alias: getOpt(alias),
-            quantity: qty.toAST(), // Mandatory
+            quantity: qtyAST, // Mandatory
             preparation: getOpt(prep),
+            loc: { start: this.source.startIdx, end: this.source.endIdx }
+         } as CookwareAST;
+    },
+
+    simpleCookware_bare(_hash, mods, name, alias) {
+         const modifiers = mods.children.map(c => c.sourceString).filter(m => m !== '=');
+         return {
+            type: ASTNodeType.Cookware,
+            name: clean(name.sourceString),
+            modifiers,
+            alias: getOpt(alias),
+            quantity: {
+                type: ASTNodeType.Quantity,
+                fixed: false,
+                loc: { start: this.source.startIdx, end: this.source.endIdx }
+            },
+            preparation: null,
             loc: { start: this.source.startIdx, end: this.source.endIdx }
          } as CookwareAST;
     },
 
     // --- Other Elements ---
 
-    Reference(_amp, _name, _qty) {
+    Reference_full(_amp, _name, _qty) {
         return { 
             type: ASTNodeType.Reference, 
             name: _name.sourceString, 
@@ -316,7 +378,16 @@ semantics.addOperation('toAST', {
         } as ReferenceAST;
     },
 
-    Timer(_1, name, qty, asyncMod) { 
+    Reference_bare(_amp, _name) {
+        return { 
+            type: ASTNodeType.Reference, 
+            name: _name.sourceString, 
+            quantity: null,
+            loc: { start: this.source.startIdx, end: this.source.endIdx } 
+        } as ReferenceAST;
+    },
+
+    Timer(_1, asyncMod, name, qty) { 
         const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
         return { 
             type: ASTNodeType.Timer, 
