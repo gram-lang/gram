@@ -20,36 +20,37 @@ The compilation and analysis flow follows a modern, decoupled 4-stage pipeline:
 ### 2.1. Sectioning Strategy
 The parser normalizes the structure regardless of the input format:
 *   **Explicit Sections:** Split by `##` headers.
-    *   **Retro-Planning:** Headers can optionally include starting offsets (`{T-2d}`).
+    *   **Retro-Planning:** Headers can optionally include starting offsets (`~{-2d}`).
         *   **Allowed Units:** `d` (days), `h` (hours), `min` or `m` (minutes).
-    *   **Intermediate Output:** Headers can define an intermediate preparation (`->&name{}`) capturing the section's result.
-    *   **Strict Order:** Must appear exactly as: `## Title` ➡️ `{Retro-Planning}` ➡️ `->&Intermediate`.
-        *   `## Dough {T-2h} ->&dough{}` (Valid)
-        *   `## Dough ->&dough{} {T-2h}` (Invalid)
+    *   **Intermediate Output:** Headers can define an intermediate preparation (`->&name`) capturing the section's result.
+    *   **Order of operations:**
+    If using both Retro-planning and Intermediate declarations in a header, the order is free:
+        *   `## Puff Pastry ~{-2d} ->&dough` (Valid)
+        *   `## Puff Pastry ->&dough ~{-2d}` (Valid)
 *   **Implicit Section:** If no `##` headers are found, the entire body (after frontmatter) is treated as a single "Default Section" (Title: `null`).
 
 ### 2.2. The "Block" Concept (Step)
 A step is defined by a paragraph (separated by double newlines).
 *   An intermediate preparation defined on a step (`->&dough`) applies to **all** ingredients found within that paragraph block.
-*   An intermediate preparation defined on a section title (`## Title ->&dough{}`) applies to the entire section.
+*   An intermediate preparation defined on a section title (`## Title ->&dough`) applies to the entire section.
 
 ### 2.3. Token Parsing Priority
 To avoid syntax resolution conflicts, inline tokenization enforces this sequence:
 1.  **Comments** (`//`, `/* */`) ➡️ Stripped or isolated.
 2.  **Action** (`[Action]`) ➡️ Must occupy the absolute beginning of the block.
 3.  **Composites/Sources** (`<@parent`) ➡️ Associate passenger ingredients to drivers immediately.
-4.  **Aliases** (`@Name[Alias]`) ➡️ Bracketed text immediately following a name.
+4.  **Aliases** (`@Name:Alias`) ➡️ Bracketed text immediately following a name.
 5.  **Alternatives** (`@A|@B` or `#A|#B`) ➡️ Separator pipe `|`.
 6.  **Standard Ingredients/Cookware** (`@`, `#`).
 7.  **Cookware Scaling Logic**:
-    *   No quantity (`#bowl{}`) ➡️ **Implicit Fixed** (`fixed: true`).
+    *   No quantity (`#bowl`) ➡️ **Implicit Fixed** (`fixed: true`).
     *   Quantity defined (`#ramekin{4}`) ➡️ **Implicit Scalable** (`fixed: false`).
-    *   Explicit Fixed (`#pan{=2}`) ➡️ **Explicit Fixed** (`fixed: true`).
+    *   Explicit Fixed (`#=pan{2}`) ➡️ **Explicit Fixed** (`fixed: true`).
 
 ### 2.4. Strict Timer & Temperature Validation
 The parser enforces structures to ensure recipe metrics are computable:
 *   **Timers (`~{...}`):** Must have an explicit unit. Whitelisted units: `min` (minutes), `h` (hours), `d` (days), `s` (seconds).
-*   **Temperatures (`!{...}`):** Supports two formats:
+*   **Temperatures (`°{...}`):** Supports two formats:
     *   **Exact Temperatures:** Must have a numeric value and an explicit unit (whitelisted units: `°C`, `°F`).
     *   **Semantic Temperatures:** Allows free-text qualitative descriptions (e.g., `low heat`, `froid`, `à ébullition`) inside the braces. Under the hood, these bypass numeric and unit validation and are exported as a flat `text` field in the final JSON.
 
@@ -63,8 +64,8 @@ The parser enforces structures to ensure recipe metrics are computable:
 *   **Stack-based Section Ingredient Resolution**: Section ingredients are recorded exactly as typed.
     *   **Modifiers (`@&` Reference):**
         *   If it has a quantity (`@&butter{50g}`): Treat as a new measured amount of an existing ingredient ➡️ **Add to shopping list** and **add to section ingredients**.
-        *   If it has NO quantity (`@&butter{}`): Treat as a flow instruction (e.g., "Use the reserved butter") ➡️ **Ignore in shopping list** and **exclude from section ingredients**.
-*   **Relative Quantities (`@{20% @target}`)**:
+        *   If it has NO quantity (`@&butter`): Treat as a flow instruction (e.g., "Use the reserved butter") ➡️ **Ignore in shopping list** and **exclude from section ingredients**.
+*   **Relative Quantities (`@{20% @&target}`)**:
     *   The compiler checks for targets in the current scope, builds dependency links, and tracks formulas dynamically. It does not resolve these to absolute gram values; resolution is deferred to the `@gram/analyzer`.
 *   **Cycle Detection**: The compiler runs a DFS cycle detection pass to flag any self-referential or circular relative ingredient definitions.
 
