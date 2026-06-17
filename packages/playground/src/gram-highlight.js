@@ -75,7 +75,7 @@ export default function(hljs) {
             begin: new RegExp(char + '[\\?\\-\\*\\&\\=]*'),
             // Use explicit end chars and exclude them from the match
             // so they can be picked up by next modes (like Quantity or Prep)
-            end: /(?=[\{\(\:\<\|\n@#~°!& ]|$)/, 
+            end: /(?=[\{\(\:\<\|\n@#~°& ]|$)/, 
             relevance: 10
         };
     }
