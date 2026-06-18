@@ -20,8 +20,13 @@ export const IngredientDataSchema = z.object({
         carbs: z.number().min(0),
         fat: z.number().min(0),
         sugar: z.number().min(0).optional(),
+        sat_fat: z.number().min(0).optional(),
+        mono_fat: z.number().min(0).optional(),
+        poly_fat: z.number().min(0).optional(),
         fiber: z.number().min(0).optional(),
         sodium: z.number().min(0).optional(),
+        alcohol: z.number().min(0).optional(),
     }).optional(),
     aliases: z.array(z.string()).optional(),
+    tags: z.array(z.string()).optional(),
 });

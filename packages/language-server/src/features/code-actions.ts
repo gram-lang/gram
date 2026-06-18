@@ -5,7 +5,8 @@ import { collectIntermediates, collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
 import { ASTNodeType, QuantityAST } from '@gram/parser';
-import { volumeToGrams, getQtyAmount } from './hover-nutrition';
+import { normalizeMass } from '@gram/analyzer';
+import { getNumericQty } from '@gram/compiler';
 
 export function provideCodeActions(
     state: DocumentState,
@@ -121,17 +122,17 @@ export function provideCodeActions(
             const entry = lookupIngredient(ingredient.name, db);
             const qty = ingredient.quantity?.type === ASTNodeType.Quantity ? ingredient.quantity as QuantityAST : null;
 
-            if (entry?.physical?.density && qty?.unit && qty.value && qty.loc) {
-                const amount = getQtyAmount(qty.value);
+            if (qty?.unit && qty.value && qty.loc) {
+                const amount = getNumericQty(qty.value);
                 const canon = amount && amount > 0 ? normalizeUnit(qty.unit) : null;
                 if (canon) {
-                    const grams = volumeToGrams(amount!, canon, entry.physical.density);
-                    if (grams != null) {
+                    const norm = normalizeMass(amount!, canon, db, entry?.name);
+                    if (norm && norm.method === 'density' && norm.mass) {
                         const qtyRange = locToRange(state.lineStarts, qty.loc);
                         actions.push({
-                            title: `Convert to grams (≈ ${Math.round(grams)} g)`,
+                            title: `Convert to grams (≈ ${Math.round(norm.mass)} g)`,
                             kind: CodeActionKind.RefactorRewrite,
-                            edit: { changes: { [uri]: [{ range: qtyRange, newText: `${Math.round(grams)} g` }] } },
+                            edit: { changes: { [uri]: [{ range: qtyRange, newText: `${Math.round(norm.mass)} g` }] } },
                         });
                     }
                 }

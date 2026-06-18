@@ -2,33 +2,9 @@ import { parse } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
 import { slugify } from '@gram/compiler';
 
-export interface IngredientPhysical {
-    density?: number;
-    yield?: number;
-    unit_weight?: number;
-}
+import { IngredientData } from '@gram/analyzer';
 
-export interface IngredientNutrition {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    sugar?: number;
-    sat_fat?: number;
-    mono_fat?: number;
-    poly_fat?: number;
-    fiber?: number;
-    sodium?: number;
-    alcohol?: number;
-}
-
-export interface IngredientEntry {
-    name: string;
-    aliases?: string[];
-    tags?: string[];
-    physical?: IngredientPhysical;
-    nutrition?: IngredientNutrition;
-}
+export type IngredientEntry = IngredientData;
 
 export type IngredientDB = Record<string, IngredientEntry>;
 

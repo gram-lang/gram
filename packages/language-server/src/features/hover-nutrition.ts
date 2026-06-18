@@ -4,55 +4,31 @@ import { positionToOffset } from '../utils/position';
 import { collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
-import { UNIT_CONVERSIONS } from '@gram/analyzer';
+import { UNIT_CONVERSIONS, normalizeMass } from '@gram/analyzer';
 import { ASTNodeType, QuantityAST, QuantityValueAST } from '@gram/parser';
+import { getNumericQty } from '@gram/compiler';
 
-// Resolve the numeric amount from any supported QuantityValueAST type.
-export function getQtyAmount(qtyValue: QuantityValueAST): number | null {
-    switch (qtyValue.type) {
-        case 'single':
-            return typeof qtyValue.value === 'number' ? qtyValue.value : null;
-        case 'fraction':
-            if (qtyValue.numerator != null && qtyValue.denominator) {
-                return qtyValue.numerator / qtyValue.denominator;
-            }
-            return null;
-        case 'range':
-            return qtyValue.range?.min ?? null;
-        default:
-            return null;
-    }
-}
-
-// Returns grams from a volume unit + density, or from a mass unit directly.
-export function volumeToGrams(amount: number, canonUnit: string, density: number): number | null {
-    const volFactor = UNIT_CONVERSIONS.volume.map[canonUnit];
-    if (volFactor !== undefined) return amount * volFactor * density;
-    const massFactor = UNIT_CONVERSIONS.mass.map[canonUnit];
-    if (massFactor !== undefined) return amount * massFactor;
-    return null;
-}
-
-function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUnit: string): string | null {
+function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUnit: string, db: IngredientDB): string | null {
     const physical = entry.physical;
-    if (!physical?.density) return null;
+    if (!physical) return null;
 
     const canon = normalizeUnit(rawUnit);
     if (!canon) return null;
 
     const qtyValue = qty.value;
     if (!qtyValue) return null;
-    const amount = getQtyAmount(qtyValue);
+    const amount = getNumericQty(qtyValue);
     if (amount === null || amount <= 0) return null;
 
-    const grams = volumeToGrams(amount, canon, physical.density);
-    if (grams != null) {
-        return `**Conversion**: ${amount} ${rawUnit} ≈ **${Math.round(grams)} g** _(density: ${physical.density} g/ml)_`;
-    }
-
-    if (physical.unit_weight) {
-        const totalGrams = amount * physical.unit_weight;
-        return `**Conversion**: ${amount} unit(s) ≈ **${Math.round(totalGrams)} g** _(${physical.unit_weight} g/unit)_`;
+    const norm = normalizeMass(amount, canon, db, entry.name);
+    if (norm) {
+        if (norm.method === 'physical' && canon !== 'g') {
+            return `**Conversion**: ${amount} ${rawUnit} = **${Math.round(norm.mass)} g**`;
+        } else if (norm.method === 'density' && physical.density) {
+            return `**Conversion**: ${amount} ${rawUnit} ≈ **${Math.round(norm.mass)} g** _(density: ${physical.density} g/ml)_`;
+        } else if (norm.method === 'unit_weight' && physical.unit_weight) {
+            return `**Conversion**: ${amount} unit(s) ≈ **${Math.round(norm.mass)} g** _(${physical.unit_weight} g/unit)_`;
+        }
     }
 
     return null;
@@ -112,7 +88,7 @@ export function provideNutritionHover(state: DocumentState, position: Position, 
 
     const qty = ingredient.quantity?.type === ASTNodeType.Quantity ? ingredient.quantity as QuantityAST : null;
     if (qty?.unit) {
-        const conversion = buildConversionSection(qty, entry, qty.unit);
+        const conversion = buildConversionSection(qty, entry, qty.unit, db);
         if (conversion) sections.push(conversion);
     }
 
