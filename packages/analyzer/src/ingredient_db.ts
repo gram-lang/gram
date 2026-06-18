@@ -12,5 +12,12 @@ export function getIngredientData(name: string, database: Record<string, Ingredi
         return database[slug.slice(0, -1)];
     }
 
+    // Check aliases
+    const lowerName = name.toLowerCase();
+    for (const entry of Object.values(database)) {
+        if (entry.name && entry.name.toLowerCase() === lowerName) return entry;
+        if (entry.aliases && entry.aliases.some(a => a.toLowerCase() === lowerName)) return entry;
+    }
+
     return null;
 }

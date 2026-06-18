@@ -23,6 +23,17 @@
     "Programming Languages"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "gram.showPreview",
+        "title": "GRAM: Live Preview",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "gram.showNutrition",
+        "title": "GRAM: Macros"
+      }
+    ],
     "languages": [
       {
         "id": "gram",

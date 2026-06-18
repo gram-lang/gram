@@ -13,6 +13,7 @@
     "@gram/compiler": "workspace:*",
     "@gram/i18n": "workspace:*",
     "@gram/parser": "workspace:*",
+    "@gram/renderer": "workspace:*",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12",
     "yaml": "^2.0.0"

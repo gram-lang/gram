@@ -20,6 +20,9 @@ import { provideFormatting } from './features/formatting';
 import { provideCodeActions } from './features/code-actions';
 import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS } from './features/semantic-tokens';
 import { loadIngredientDB, IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
+import { provideInlayHints } from './features/inlay-hints';
+import { provideCodeLenses } from './features/code-lens';
+import { toHTML } from '@gram/renderer';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -70,6 +73,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
             renameProvider: { prepareProvider: true },
             documentFormattingProvider: true,
             codeActionProvider: true,
+            inlayHintProvider: true,
+            codeLensProvider: { resolveProvider: false },
         },
     };
 });
@@ -96,9 +101,30 @@ connection.onInitialized(async () => {
 });
 
 function refresh(uri: string, text: string) {
-    const state = parseDocument(text);
+    const state = parseDocument(text, ingredientDB);
     states.set(uri, state);
     connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB) });
+    
+    // Send live preview HTML to the client
+    if (state.compilation) {
+        try {
+            const html = toHTML(state.compilation, {
+                // You can add default styles or icons here if needed, but defaults usually work
+            });
+            connection.sendNotification('gram/previewUpdated', { uri, html });
+        } catch (e) {
+            console.error('HTML render error', e);
+        }
+    } else if (state.parseError) {
+        // Fallback for syntax errors
+        const html = `
+            <div style="padding: 20px; color: var(--vscode-errorForeground);">
+                <h2>Syntax Error</h2>
+                <pre style="background: var(--vscode-editorWidget-background); padding: 10px; border-radius: 6px;">${state.parseError}</pre>
+            </div>
+        `;
+        connection.sendNotification('gram/previewUpdated', { uri, html });
+    }
 }
 
 documents.onDidOpen(e => refresh(e.document.uri, e.document.getText()));
@@ -165,6 +191,16 @@ connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
 connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
     const s = states.get(uri);
     return s ? provideSemanticTokens(s) : { data: [] };
+});
+
+connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
+    const s = states.get(uri);
+    return s ? provideInlayHints(s) : [];
+});
+
+connection.onCodeLens(({ textDocument: { uri } }) => {
+    const s = states.get(uri);
+    return s ? provideCodeLenses(s) : [];
 });
 
 documents.listen(connection);

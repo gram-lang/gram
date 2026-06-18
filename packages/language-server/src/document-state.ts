@@ -1,5 +1,6 @@
 import { getAST, RecipeAST } from '@gram/parser';
 import { compile, CompilationResult } from '@gram/compiler';
+import { analyze, AnalyzedCompilationResult, IngredientData } from '@gram/analyzer';
 import { buildLineIndex } from './utils/position';
 
 export interface DocumentState {
@@ -7,16 +8,22 @@ export interface DocumentState {
     lineStarts: number[];
     ast: RecipeAST | null;
     parseError: string | null;
-    compilation: CompilationResult | null;
+    compilation: AnalyzedCompilationResult | CompilationResult | null;
 }
 
-export function parseDocument(text: string): DocumentState {
+export function parseDocument(text: string, db?: Record<string, IngredientData>): DocumentState {
     const lineStarts = buildLineIndex(text);
     try {
         const ast = getAST(text);
-        let compilation: CompilationResult | null = null;
+        let compilation: AnalyzedCompilationResult | CompilationResult | null = null;
         try {
-            compilation = compile(ast);
+            const rawCompilation = compile(ast);
+            if (db) {
+                const analyzed = analyze(rawCompilation, db);
+                compilation = analyzed.result;
+            } else {
+                compilation = rawCompilation;
+            }
         } catch {
             // compilation failures don't invalidate the AST
         }

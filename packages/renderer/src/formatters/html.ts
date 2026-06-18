@@ -286,43 +286,51 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     }
 
     // Nutrition Panel (Moved to bottom)
-    if (data.metrics && data.metrics.nutrition && data.metrics.nutrition.total && data.metrics.nutrition.total.calories > 0) {
+    if (data.metrics && data.metrics.nutrition) {
         const nut = data.metrics.nutrition;
         
-        // Hide if data is incomplete (User Request: "ne devraient pas apparaître")
-        if (!nut.warnings || nut.warnings.length === 0) {
-            const total = nut.total;
-            
-            let portionText = '';
-            let portionVals = null;
-            if (nut.perPortion) {
-                 portionText = ` (Per Portion)`;
-                 portionVals = nut.perPortion;
-            }
-            
-            const displayVals = portionVals || total;
-            
-            const cal = Math.round(displayVals.calories);
-            const p = displayVals.protein;
-            const c = displayVals.carbs;
-            const f = displayVals.fat;
+        // Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
+        if ((nut.total && nut.total.calories > 0) || (nut.warnings && nut.warnings.length > 0)) {
+            const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+        
+        let portionText = '';
+        let portionVals = null;
+        if (nut.perPortion) {
+             portionText = ` (Per Portion)`;
+             portionVals = nut.perPortion;
+        }
+        
+        const displayVals = portionVals || total;
+        
+        const cal = Math.round(displayVals.calories);
+        const p = displayVals.protein;
+        const c = displayVals.carbs;
+        const f = displayVals.fat;
 
-            // Granular
-            const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
-            const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
-            const salt = displayVals.salt !== undefined ? displayVals.salt : '-';
-            
-            html += `<div class="nutrition-panel">\n`;
-            html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
-            html += `  <div class="nut-grid">\n`;
-            html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Salt</span> <strong>${salt}g</strong></div>\n`;
-            html += `  </div>\n`;
-            html += `</div>\n`;
+        // Granular
+        const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
+        const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
+        const salt = displayVals.salt !== undefined ? displayVals.salt : '-';
+        
+        let warningsHtml = '';
+        if (nut.warnings && nut.warnings.length > 0) {
+            warningsHtml = `  <div class="nut-warnings" style="color: var(--vscode-errorForeground, #f87171); font-size: 0.85em; margin-bottom: 10px; padding: 10px; background: color-mix(in srgb, var(--vscode-errorForeground, red) 10%, transparent); border-radius: 6px;">\n`;
+            warningsHtml += `    <strong>Données incomplètes :</strong> Les valeurs ci-dessous sont estimées et n'incluent pas : ${escapeHtml(nut.warnings.join(', '))}\n`;
+            warningsHtml += `  </div>\n`;
+        }
+
+        html += `<div class="nutrition-panel">\n`;
+        html += warningsHtml;
+        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+        html += `  <div class="nut-grid">\n`;
+        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Salt</span> <strong>${salt}g</strong></div>\n`;
+        html += `  </div>\n`;
+        html += `</div>\n`;
         }
     }
     
