@@ -130,8 +130,8 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                              const next = arr[i+1];
                              if (next) {
                                 let nextChar = '';
-                                if (typeof next === 'string') nextChar = next[0];
-                                else if (next.type === 'text') nextChar = next.value ? next.value[0] : '';
+                                if (typeof next === 'string') nextChar = next.charAt(0);
+                                else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
                                 
                                 // Don't add space if next is glue (punctuation or space)
                                 const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));

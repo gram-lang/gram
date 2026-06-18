@@ -5,19 +5,27 @@ export function getIngredientData(name: string, database: Record<string, Ingredi
     const slug = slugify(name);
     
     // Direct match
-    if (database[slug]) return database[slug];
+    const direct = database[slug];
+    if (direct) return direct;
     
     // Simple singularization fallback (very naive)
-    if (slug.endsWith('s') && database[slug.slice(0, -1)]) {
-        return database[slug.slice(0, -1)];
+    if (slug.endsWith('s')) {
+        const singular = database[slug.slice(0, -1)];
+        if (singular) return singular;
     }
 
-    // Check aliases
-    const lowerName = name.toLowerCase();
-    for (const entry of Object.values(database)) {
-        if (entry.name && entry.name.toLowerCase() === lowerName) return entry;
-        if (entry.aliases && entry.aliases.some(a => a.toLowerCase() === lowerName)) return entry;
+    // Check aliases using a lazily built index
+    if (!(database as any).__aliasIndex) {
+        const index = new Map<string, IngredientData>();
+        for (const entry of Object.values(database)) {
+            if (entry.name) index.set(entry.name.toLowerCase(), entry);
+            if (entry.aliases) {
+                entry.aliases.forEach(a => index.set(a.toLowerCase(), entry));
+            }
+        }
+        Object.defineProperty(database, '__aliasIndex', { value: index, enumerable: false, writable: true });
     }
-
-    return null;
+    
+    const index = (database as any).__aliasIndex as Map<string, IngredientData>;
+    return index.get(name.toLowerCase()) || null;
 }

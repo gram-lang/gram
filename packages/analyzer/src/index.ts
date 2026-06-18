@@ -5,7 +5,7 @@ export * from './nutrition';
 export * from './metrics';
 
 
-import { CompilationResult, Usage } from '@gram/parser';
+import { CompilationResult, Usage } from '@gram/compiler';
 import { getNumericQty } from '@gram/compiler';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
 import { calculateMassMetrics } from './metrics';
@@ -44,8 +44,8 @@ export function analyze(
             if (typeof entry !== 'string') return;
             const parts = entry.split(':');
             if (parts.length === 2) {
-                const name = parts[0].trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
-                const density = parseFloat(parts[1].trim());
+                const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
+                const density = parseFloat((parts[1] || '').trim());
                 if (!isNaN(density)) {
                     overrides[name] = density;
                 }

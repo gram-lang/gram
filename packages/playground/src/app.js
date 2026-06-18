@@ -1,5 +1,5 @@
 import { getAST } from '@gram/parser';
-import { compile, configureIngredientDb } from '@gram/compiler';
+import { compile } from '@gram/compiler';
 import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
@@ -17,12 +17,7 @@ import('./db_bundle.js').then(({ DEFAULT_SOURCES }) => {
         }
     });
 
-    // Also keep the old configureIngredientDb for compiler if it still needs some registry info
     // Actually compiler doesn't use it anymore for mass, but might use it for registry names?
-    // Let's keep it if it exists.
-    if (typeof configureIngredientDb === 'function') {
-        configureIngredientDb(DEFAULT_SOURCES);
-    }
 
     // Trigger update to re-calculate macros with data
     update();

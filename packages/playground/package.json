@@ -14,8 +14,8 @@
   },
   "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/parser#readme",
   "scripts": {
-    "build": "echo '🔨 Bundling...' && node build.js && echo '✨ Done!'",
-    "start": "echo '🔨 Bundling...' && node build.js && echo '🌐 Serving at http://localhost:3000' && npx serve"
+    "build": "echo '🔨 Bundling...' && node build.cjs && echo '✨ Done!'",
+    "start": "echo '🔨 Bundling...' && node build.cjs && echo '🌐 Serving at http://localhost:3000' && npx serve"
   },
   "dependencies": {
     "@gram/analyzer": "workspace:*",
@@ -28,5 +28,6 @@
     "esbuild": "^0.28.1",
     "esbuild-plugin-yaml": "^0.0.1",
     "serve": "^14.2.6"
-  }
+  },
+  "type": "module"
 }

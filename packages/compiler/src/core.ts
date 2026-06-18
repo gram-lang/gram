@@ -3,9 +3,8 @@ import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
 import { RecipeRegistry } from './registry';
-import { 
-    RecipeAST, Registry, CompilationResult, Usage 
-} from '@gram/parser';
+import { RecipeAST } from '@gram/parser';
+import { Registry, CompilationResult, Usage } from './types';
 
 import { z } from 'zod';
 import { CompilerOptionsSchema } from './schemas';

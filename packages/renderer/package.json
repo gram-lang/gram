@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -22,5 +22,6 @@
   },
   "devDependencies": {
     "typescript": "^6.0.3"
-  }
+  },
+  "type": "module"
 }

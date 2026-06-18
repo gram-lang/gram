@@ -6,6 +6,7 @@
     "@changesets/config": "^3.1.4",
     "@changesets/read": "^0.6.7",
     "@manypkg/get-packages": "^3.1.0",
+    "tsup": "^8.5.1",
     "turbo": "^2.9.18"
   },
   "license": "GPL-3.0",

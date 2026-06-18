@@ -1,4 +1,4 @@
-import { ProcessedSection, Registry } from '@gram/parser';
+import { ProcessedSection, Registry } from './types';
 
 /**
  * Calculates the total active preparation time (in minutes) for a recipe.

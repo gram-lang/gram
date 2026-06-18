@@ -1,6 +1,6 @@
 import {
     RecipeAST, SectionAST, StepAST, IntermediateDecl, ReferenceAST, IngredientAST, AlternativeAST,
-    ASTNodeType
+    isIntermediateDecl, isReference, isIngredient, isAlternative, isStep
 } from '@gram/parser';
 
 export interface IntermediateDeclWithSection {
@@ -16,10 +16,10 @@ export function collectIntermediates(ast: RecipeAST): IntermediateDeclWithSectio
             results.push({ decl: section.intermediateDecl, section, step: null });
         }
         for (const block of section.children) {
-            if (block.type !== ASTNodeType.Step) continue;
+            if (!isStep(block)) continue;
             for (const child of block.children) {
-                if (child.type === ASTNodeType.IntermediateDecl) {
-                    results.push({ decl: child as IntermediateDecl, section, step: block });
+                if (isIntermediateDecl(child)) {
+                    results.push({ decl: child, section, step: block });
                 }
             }
         }
@@ -31,10 +31,10 @@ export function collectReferences(ast: RecipeAST): ReferenceAST[] {
     const refs: ReferenceAST[] = [];
     for (const section of ast.children) {
         for (const block of section.children) {
-            if (block.type !== ASTNodeType.Step) continue;
+            if (!isStep(block)) continue;
             for (const child of block.children) {
-                if (child.type === ASTNodeType.Reference) {
-                    refs.push(child as ReferenceAST);
+                if (isReference(child)) {
+                    refs.push(child);
                 }
             }
         }
@@ -52,13 +52,13 @@ export function collectIngredients(ast: RecipeAST): IngredientAST[] {
     const results: IngredientAST[] = [];
     for (const section of ast.children) {
         for (const block of section.children) {
-            if (block.type !== ASTNodeType.Step) continue;
+            if (!isStep(block)) continue;
             for (const child of block.children) {
-                if (child.type === ASTNodeType.Ingredient) {
-                    results.push(child as IngredientAST);
-                } else if (child.type === ASTNodeType.Alternative) {
-                    for (const opt of (child as AlternativeAST).options) {
-                        if (opt.type === ASTNodeType.Ingredient) results.push(opt as IngredientAST);
+                if (isIngredient(child)) {
+                    results.push(child);
+                } else if (isAlternative(child)) {
+                    for (const opt of child.options) {
+                        if (isIngredient(opt)) results.push(opt);
                     }
                 }
             }

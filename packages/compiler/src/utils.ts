@@ -1,4 +1,5 @@
-import { QuantityAST, RelativeQuantityAST, Usage, QuantityValueAST, TextQuantityAST, ASTNodeType } from '@gram/parser';
+import { QuantityAST, RelativeQuantityAST, QuantityValueAST, TextQuantityAST, ASTNodeType } from '@gram/parser';
+import { Usage } from './types';
 import { resolveTimeUnit } from '@gram/i18n';
 import { CompilerOptions } from './core';
 

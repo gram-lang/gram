@@ -5,7 +5,7 @@ import { collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
 import { UNIT_CONVERSIONS, normalizeMass } from '@gram/analyzer';
-import { ASTNodeType, QuantityAST, QuantityValueAST } from '@gram/parser';
+import { ASTNodeType, QuantityAST, QuantityValueAST, isQuantity } from '@gram/parser';
 import { getNumericQty } from '@gram/compiler';
 
 function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUnit: string, db: IngredientDB): string | null {
@@ -86,7 +86,7 @@ export function provideNutritionHover(state: DocumentState, position: Position, 
     const nutrition = buildNutritionSection(entry);
     if (nutrition) sections.push(nutrition);
 
-    const qty = ingredient.quantity?.type === ASTNodeType.Quantity ? ingredient.quantity as QuantityAST : null;
+    const qty = isQuantity(ingredient.quantity) ? ingredient.quantity : null;
     if (qty?.unit) {
         const conversion = buildConversionSection(qty, entry, qty.unit, db);
         if (conversion) sections.push(conversion);

@@ -1,4 +1,4 @@
-import { ProcessedSection } from '@gram/parser';
+import { ProcessedSection } from './types';
 
 /**
  * Runs a Cycle Detection algorithm on the recipe graph using DFS.

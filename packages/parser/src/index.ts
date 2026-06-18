@@ -8,6 +8,7 @@ import {
 } from './types';
 
 export * from './types';
+export * from './guards';
 import { MetaSchema } from './schemas';
 
 // Load Grammar
@@ -34,8 +35,10 @@ const getOpt = (node: any) => (node.children.length > 0 ? node.children[0].toAST
  */
 const parseNumber = (n: string): QuantityValueAST | null => {
     if (!n) return null;
-    const [numStr, denStr] = n.split('/');
-    if (denStr) {
+    const parts = n.split('/');
+    const numStr = parts[0];
+    const denStr = parts[1];
+    if (numStr && denStr) {
         const num = parseInt(numStr);
         const den = parseInt(denStr);
         return { type: 'fraction', value: num / den, numerator: num, denominator: den, text: n };
@@ -74,7 +77,7 @@ semantics.addOperation('toAST', {
         let meta = getOpt(frontmatter) || {};
         const metaResult = MetaSchema.safeParse(meta);
         if (!metaResult.success) {
-            console.warn("[GRAM Parser] Invalid Front-Matter detected, ignoring metadata. Error:", metaResult.error.issues[0].message);
+            console.warn("[GRAM Parser] Invalid Front-Matter detected, ignoring metadata. Error:", metaResult.error.issues[0]?.message);
             meta = {};
         } else {
             meta = metaResult.data;
@@ -387,7 +390,8 @@ semantics.addOperation('toAST', {
     },
 
     Timer(_1, asyncMod, name, qty) { 
-        const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
+        const child = name.children[0];
+        const n = child ? clean(child.sourceString) : null;
         return { 
             type: ASTNodeType.Timer, 
             name: n, 
@@ -398,7 +402,8 @@ semantics.addOperation('toAST', {
     },
 
     Temperature(_1, name, qty) {
-        const n = name.children.length > 0 ? clean(name.children[0].sourceString) : null;
+        const child = name.children[0];
+        const n = child ? clean(child.sourceString) : null;
         const qAST = qty.toAST();
         const base = {
             type: ASTNodeType.Temperature,

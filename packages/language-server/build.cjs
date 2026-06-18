@@ -4,7 +4,7 @@ const isWatch = process.argv.includes('--watch');
 const config = {
     entryPoints: ['src/server.ts'],
     bundle: true,
-    outfile: 'dist/server.js',
+    outfile: 'dist/server.cjs',
     format: 'cjs',
     platform: 'node',
     target: 'node18',

@@ -12,7 +12,7 @@ import {
 let client: LanguageClient | undefined;
 
 export async function activate(context: ExtensionContext): Promise<void> {
-    const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
+    const serverModule = context.asAbsolutePath(path.join('dist', 'server.cjs'));
 
     const serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },

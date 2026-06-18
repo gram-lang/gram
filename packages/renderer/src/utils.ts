@@ -3,7 +3,7 @@ import { ASTNodeType } from '@gram/parser';
 /**
  * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).
  */
-export function formatDecimalToFraction(value: number | any): string {
+export function formatDecimalToFraction(value: unknown): string {
     if (typeof value !== 'number') return String(value);
     
     // Exact integers
@@ -31,25 +31,32 @@ export function formatDecimalToFraction(value: number | any): string {
     return String(parseFloat(value.toFixed(2)));
 }
 
+export interface ExtractedQuantity {
+    value: number | string | null;
+    text?: string;
+    isRelative?: boolean;
+}
+
 /**
  * Extracts and normalizes quantity information from an item.
  */
-export function getQty(item: any): any {
+export function getQty(item: Record<string, unknown>): ExtractedQuantity | undefined {
     if (item.qty !== undefined) {
         if (typeof item.qty === 'number') {
             return { value: item.qty, text: formatDecimalToFraction(item.qty) };
         }
-        if (typeof item.qty === 'object' && item.qty !== null && item.qty.type === ASTNodeType.RelativeQuantity) {
-            const marker = item.qty.referenceType === 'variable' ? '&' : '@';
+        if (typeof item.qty === 'object' && item.qty !== null && (item.qty as any).type === ASTNodeType.RelativeQuantity) {
+            const rel = item.qty as any;
+            const marker = rel.referenceType === 'variable' ? '&' : '@';
             return { 
                 value: null, 
-                text: `${item.qty.percent}% of ${marker}${item.qty.target}`,
+                text: `${rel.percent}% of ${marker}${rel.target}`,
                 isRelative: true
             };
         }
-        return item.qty;
+        return item.qty as ExtractedQuantity;
     }
-    if (item.quantity) return item.quantity;
+    if (item.quantity) return item.quantity as ExtractedQuantity;
     return undefined;
 }
 
@@ -82,7 +89,7 @@ export function formatDuration(minutes: number): string {
 /**
  * Safely escapes HTML special characters to prevent XSS.
  */
-export function escapeHtml(unsafe: any): string {
+export function escapeHtml(unsafe: string | null | undefined): string {
     if (unsafe === undefined || unsafe === null) return '';
     return String(unsafe)
          .replace(/&/g, "&amp;")

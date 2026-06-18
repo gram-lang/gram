@@ -1,4 +1,4 @@
-import { Registry, RegistryEntry } from '@gram/parser';
+import { Registry, RegistryEntry } from './types';
 import { slugify } from './utils';
 
 export class RecipeRegistry implements Registry {

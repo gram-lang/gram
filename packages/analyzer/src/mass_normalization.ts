@@ -6,7 +6,7 @@ export interface UnitMap {
     map: Record<string, number>;
 }
 
-export const UNIT_CONVERSIONS: Record<string, UnitMap> = {
+export const UNIT_CONVERSIONS = {
     mass: {
         base: 'g',
         map: {
@@ -54,22 +54,26 @@ export function normalizeMass(
     const u = normalizeUnit(unit);
 
     // 1. Physical Mass
-    const massMap = UNIT_CONVERSIONS.mass.map;
-    if (massMap[u] !== undefined) {
-        return { mass: amount * massMap[u], method: 'physical', isEstimate: false };
+    const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;
+    const massFactor = massMap[u];
+    if (massFactor !== undefined) {
+        return { mass: amount * massFactor, method: 'physical', isEstimate: false };
     }
 
     // 2. Volume -> Density
-    const volMap = UNIT_CONVERSIONS.volume.map;
-    if (volMap[u] !== undefined) {
-        const volumeMl = amount * volMap[u];
+    const volMap: Record<string, number> = UNIT_CONVERSIONS.volume.map;
+    const volFactor = volMap[u];
+    if (volFactor !== undefined) {
+        const volumeMl = amount * volFactor;
         let density = 1.0; // Default Water
         let method: 'density' | 'default' | 'explicit' = 'default';
 
         if (ingredientName) {
             // Check overrides first
-            if (overrides && overrides[slugify(ingredientName)]) {
-                density = overrides[slugify(ingredientName)];
+            const slug = slugify(ingredientName);
+            const overrideDensity = overrides ? overrides[slug] : undefined;
+            if (overrideDensity !== undefined) {
+                density = overrideDensity;
                 method = 'explicit';
             } else {
                 const data = getIngredientData(ingredientName, database);
@@ -90,8 +94,9 @@ export function normalizeMass(
     // e.g. "clove", "head", "stick", "slice" -> treated as "1 unit" multiplier
     if (ingredientName) {
         // Check overrides first
-        if (overrides && overrides[slugify(ingredientName)]) {
-            const unitWt = overrides[slugify(ingredientName)];
+        const slug = slugify(ingredientName);
+        const unitWt = overrides ? overrides[slug] : undefined;
+        if (unitWt !== undefined) {
             return { 
                 mass: amount * unitWt, 
                 method: 'explicit', 

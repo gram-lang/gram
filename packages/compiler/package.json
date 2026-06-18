@@ -22,7 +22,7 @@
   },
   "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/compiler#readme",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -33,5 +33,6 @@
   "devDependencies": {
     "@types/node": "^25.9.3",
     "typescript": "^6.0.3"
-  }
+  },
+  "type": "module"
 }

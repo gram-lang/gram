@@ -1,8 +1,8 @@
-import { Usage } from '@gram/parser';
+import { Usage } from '@gram/compiler';
 import { getNumericQty, WarningCode, pushWarning } from '@gram/compiler';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
-import { NutritionMetrics, IngredientData } from './types';
+import { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';
 
 interface Macros {
     calories: number;
@@ -14,8 +14,12 @@ interface Macros {
     salt?: number;
 }
 
+export type NutritionItem = AnalyzedUsage & {
+    usage?: NutritionItem[];
+};
+
 export function calculateNutrition(
-    ingredients: any[], 
+    ingredients: NutritionItem[], 
     database: Record<string, IngredientData>,
     portions: number = 1
 ): NutritionMetrics {
@@ -34,7 +38,7 @@ export function calculateNutrition(
     const warnings: string[] = [];
     
     // Flatten composite ingredients and alternatives
-    const flatList: any[] = [];
+    const flatList: NutritionItem[] = [];
     
     ingredients.forEach(item => {
         if (item.type === 'composite' && item.usage) {

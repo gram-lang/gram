@@ -3,6 +3,7 @@ import {
     ASTNodeType, SectionAST, StepAST, IngredientAST, CookwareAST,
     TimerAST, TemperatureAST, ReferenceAST, IntermediateDecl,
     AlternativeAST, CommentAST, QuantityAST, TextQuantityAST,
+    isIngredient, isCookware, isReference, isTimer, isTemperature, isIntermediateDecl, isAlternative, isComment, isStep, isQuantity, isTextQuantity
 } from '@gram/parser';
 import { DocumentState } from '../document-state';
 import { offsetToPosition } from '../utils/position';
@@ -82,10 +83,10 @@ function walkIngredient(out: RawToken[], ing: IngredientAST, text: string): void
     if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.parameter);
 
     // Main quantity
-    if (ing.quantity?.type === ASTNodeType.Quantity) {
-        emitQuantity(out, ing.quantity as QuantityAST, text);
-    } else if (ing.quantity?.type === ASTNodeType.TextQuantity) {
-        emitTextQtyWithText(out, ing.quantity as TextQuantityAST, text);
+    if (isQuantity(ing.quantity)) {
+        emitQuantity(out, ing.quantity, text);
+    } else if (isTextQuantity(ing.quantity)) {
+        emitTextQtyWithText(out, ing.quantity, text);
     }
 
     // Composite part: <@name{qty} stored in ing.composite, within the same loc span
@@ -97,8 +98,8 @@ function walkIngredient(out: RawToken[], ing: IngredientAST, text: string): void
             emit(out, ltAt + 1, 1, T.keyword); // @
             const compNameStart = ltAt + 2;
             emit(out, compNameStart, ing.composite.parent.length, T.parameter); // composite name
-            if (ing.composite.quantity?.type === ASTNodeType.Quantity) {
-                emitQuantity(out, ing.composite.quantity as QuantityAST, text);
+            if (isQuantity(ing.composite.quantity)) {
+                emitQuantity(out, ing.composite.quantity, text);
             }
         }
     }
@@ -123,8 +124,8 @@ function walkCookware(out: RawToken[], cw: CookwareAST, text: string): void {
     if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.parameter);
 
     // Quantity
-    if (cw.quantity?.type === ASTNodeType.Quantity) {
-        emitQuantity(out, cw.quantity as QuantityAST, text);
+    if (isQuantity(cw.quantity)) {
+        emitQuantity(out, cw.quantity, text);
     }
 }
 
@@ -142,10 +143,10 @@ function walkReference(out: RawToken[], ref: ReferenceAST, text: string): void {
     if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.variable);
 
     // Optional quantity
-    if (ref.quantity?.type === ASTNodeType.Quantity) {
-        emitQuantity(out, ref.quantity as QuantityAST, text);
-    } else if (ref.quantity?.type === ASTNodeType.TextQuantity) {
-        emitTextQtyWithText(out, ref.quantity as TextQuantityAST, text);
+    if (isQuantity(ref.quantity)) {
+        emitQuantity(out, ref.quantity, text);
+    } else if (isTextQuantity(ref.quantity)) {
+        emitTextQtyWithText(out, ref.quantity, text);
     }
 }
 
@@ -168,10 +169,10 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
         pos += timer.name.length;
     }
 
-    if (timer.quantity?.type === ASTNodeType.Quantity) {
-        emitQuantity(out, timer.quantity as QuantityAST, text);
-    } else if (timer.quantity?.type === ASTNodeType.TextQuantity) {
-        emitTextQtyWithText(out, timer.quantity as TextQuantityAST, text);
+    if (isQuantity(timer.quantity)) {
+        emitQuantity(out, timer.quantity, text);
+    } else if (isTextQuantity(timer.quantity)) {
+        emitTextQtyWithText(out, timer.quantity, text);
     }
 }
 
@@ -231,31 +232,20 @@ function walkStep(out: RawToken[], step: StepAST, text: string): void {
     }
 
     for (const child of step.children) {
-        switch (child.type) {
-            case ASTNodeType.Ingredient:
-                walkIngredient(out, child as IngredientAST, text); break;
-            case ASTNodeType.Cookware:
-                walkCookware(out, child as CookwareAST, text); break;
-            case ASTNodeType.Timer:
-                walkTimer(out, child as TimerAST, text); break;
-            case ASTNodeType.Temperature:
-                walkTemperature(out, child as TemperatureAST, text); break;
-            case ASTNodeType.Reference:
-                walkReference(out, child as ReferenceAST, text); break;
-            case ASTNodeType.IntermediateDecl:
-                walkIntermediate(out, child as IntermediateDecl, text); break;
-            case ASTNodeType.Alternative:
-                for (const opt of (child as AlternativeAST).options) {
-                    if (opt.type === ASTNodeType.Ingredient) walkIngredient(out, opt as IngredientAST, text);
-                    else if (opt.type === ASTNodeType.Cookware) walkCookware(out, opt as CookwareAST, text);
-                }
-                break;
-            case ASTNodeType.Comment:
-                if ((child as CommentAST).loc) {
-                    const c = child as CommentAST;
-                    emit(out, c.loc!.start, c.loc!.end - c.loc!.start, T.comment);
-                }
-                break;
+        if (isIngredient(child)) walkIngredient(out, child, text);
+        else if (isCookware(child)) walkCookware(out, child, text);
+        else if (isTimer(child)) walkTimer(out, child, text);
+        else if (isTemperature(child)) walkTemperature(out, child, text);
+        else if (isReference(child)) walkReference(out, child, text);
+        else if (isIntermediateDecl(child)) walkIntermediate(out, child, text);
+        else if (isAlternative(child)) {
+            for (const opt of child.options) {
+                if (isIngredient(opt)) walkIngredient(out, opt, text);
+                else if (isCookware(opt)) walkCookware(out, opt, text);
+            }
+        }
+        else if (isComment(child) && child.loc) {
+            emit(out, child.loc.start, child.loc.end - child.loc.start, T.comment);
         }
     }
 }
@@ -289,11 +279,10 @@ function walkSection(out: RawToken[], section: SectionAST, text: string): void {
     }
 
     for (const block of section.children) {
-        if (block.type === ASTNodeType.Step) {
-            walkStep(out, block as StepAST, text);
-        } else if (block.type === ASTNodeType.Comment) {
-            const c = block as CommentAST;
-            if (c.loc) emit(out, c.loc.start, c.loc.end - c.loc.start, T.comment);
+        if (isStep(block)) {
+            walkStep(out, block, text);
+        } else if (isComment(block) && block.loc) {
+            emit(out, block.loc.start, block.loc.end - block.loc.start, T.comment);
         }
     }
 }

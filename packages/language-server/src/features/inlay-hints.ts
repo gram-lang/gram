@@ -1,6 +1,6 @@
 import { InlayHint, InlayHintKind, Position } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
-import { ASTNodeType, FrontmatterAST } from '@gram/parser';
+import { ASTNodeType } from '@gram/parser';
 import { offsetToPosition } from '../utils/position';
 import { formatDuration } from '@gram/renderer';
 

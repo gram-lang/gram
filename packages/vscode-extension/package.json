@@ -6,7 +6,7 @@
   "publisher": "abiwab",
   "license": "GPL-3.0",
   "author": "abiwab",
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",
@@ -74,23 +74,43 @@
       {
         "language": "gram",
         "scopes": {
-          "namespace": ["entity.name.section.gram"],
-          "keyword": ["keyword.control.gram"],
-          "parameter": ["variable.parameter.ingredient.gram"],
-          "variable": ["variable.other.intermediate.gram"],
-          "number": ["constant.numeric.gram"],
-          "type": ["string.unquoted.unit.gram"],
-          "string": ["string.quoted.gram"],
-          "operator": ["keyword.operator.gram"],
-          "function": ["entity.name.function.action.gram"],
-          "comment": ["comment.line.gram"]
+          "namespace": [
+            "entity.name.section.gram"
+          ],
+          "keyword": [
+            "keyword.control.gram"
+          ],
+          "parameter": [
+            "variable.parameter.ingredient.gram"
+          ],
+          "variable": [
+            "variable.other.intermediate.gram"
+          ],
+          "number": [
+            "constant.numeric.gram"
+          ],
+          "type": [
+            "string.unquoted.unit.gram"
+          ],
+          "string": [
+            "string.quoted.gram"
+          ],
+          "operator": [
+            "keyword.operator.gram"
+          ],
+          "function": [
+            "entity.name.function.action.gram"
+          ],
+          "comment": [
+            "comment.line.gram"
+          ]
         }
       }
     ]
   },
   "scripts": {
-    "build": "node build.js",
-    "dev": "node build.js --watch",
+    "build": "node build.cjs",
+    "dev": "node build.cjs --watch",
     "package": "vsce package"
   },
   "dependencies": {
@@ -103,5 +123,6 @@
     "@vscode/vsce": "^3.5.0",
     "esbuild": "^0.25.5",
     "typescript": "^6.0.3"
-  }
+  },
+  "type": "module"
 }

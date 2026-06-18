@@ -1,10 +1,10 @@
 import { minifyQuantity, createCleanUsage, quantityToMinutes } from './utils';
 import { 
-    Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment,
     ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
     AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
-    QuantityValueAST, ASTNodeType
+    QuantityValueAST, ASTNodeType, Location
 } from '@gram/parser';
+import { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment } from './types';
 import { CompilerOptions } from './core';
 import { RecipeRegistry } from './registry';
 import { WarningCode, pushWarning } from './warnings';
@@ -13,7 +13,7 @@ export interface ProcessorContext extends Context {
     options?: CompilerOptions;
 }
 
-function checkModifiers(ctx: ProcessorContext, modifiers: string[], itemName: string, loc?: any) {
+function checkModifiers(ctx: ProcessorContext, modifiers: string[], itemName: string, loc?: Location) {
     if (!modifiers) return;
     
     const seen = new Set<string>();
@@ -49,8 +49,8 @@ export type ProcessedBlockResult =
     | Usage 
     | string 
     | { type: 'declaration'; name: string; id: string } 
-    | { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } 
-    | { type: 'temperature'; name?: string; text?: string; quantity?: any; unit?: string } 
+    | { type: 'timer'; name?: string; isAsync?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } 
+    | { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } 
     | { type: 'comment'; value: string; kind: 'line' | 'block' };
 
 /**
@@ -189,10 +189,11 @@ function processAlternative(
 
     const usage: Usage = { id: 'alternative', type: 'alternative', options: processedOptions };
     
-    if (item.options.length > 0) {
-         if (item.options[0].type === ASTNodeType.Ingredient) {
+    const firstOption = item.options[0];
+    if (firstOption) {
+         if (firstOption.type === ASTNodeType.Ingredient) {
               secIngredients.push(usage);
-         } else if (item.options[0].type === ASTNodeType.Cookware) {
+         } else if (firstOption.type === ASTNodeType.Cookware) {
               secCookware.push(usage);
          }
     }
@@ -247,7 +248,7 @@ function processTimer(
     item: TimerAST,
     ctx: ProcessorContext
 ): ProcessedBlockResult {
-    const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: any; unit?: string } = { type: 'timer' };
+    const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } = { type: 'timer' };
     if (item.name) obj.name = item.name;
     if (item.isAsync) obj.isAsync = true;
     if (item.quantity) {

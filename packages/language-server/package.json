@@ -2,11 +2,11 @@
   "name": "@gram/language-server",
   "version": "0.10.1",
   "description": "LSP server for the GRAM recipe language",
-  "main": "dist/server.js",
+  "main": "dist/server.cjs",
   "private": true,
   "scripts": {
-    "build": "node build.js",
-    "dev": "node build.js --watch"
+    "build": "node build.cjs",
+    "dev": "node build.cjs --watch"
   },
   "dependencies": {
     "@gram/analyzer": "workspace:*",
@@ -22,5 +22,6 @@
     "@types/node": "^25.9.3",
     "esbuild": "^0.25.5",
     "typescript": "^6.0.3"
-  }
+  },
+  "type": "module"
 }

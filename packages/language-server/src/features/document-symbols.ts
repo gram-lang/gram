@@ -1,7 +1,7 @@
 import { DocumentSymbol, SymbolKind, Range } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
-import { ASTNodeType, SectionAST, StepAST, IntermediateDecl } from '@gram/parser';
+import { ASTNodeType, SectionAST, StepAST, IntermediateDecl, isIntermediateDecl, isStep } from '@gram/parser';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } };
 
@@ -22,8 +22,8 @@ function getStepSymbol(step: StepAST, index: number, lineStarts: number[]): Docu
     // Inline ->&decl inside this step become children
     const children: DocumentSymbol[] = [];
     for (const child of step.children) {
-        if (child.type === ASTNodeType.IntermediateDecl) {
-            children.push(getDeclSymbol(child as IntermediateDecl, lineStarts));
+        if (isIntermediateDecl(child)) {
+            children.push(getDeclSymbol(child, lineStarts));
         }
     }
 
@@ -52,8 +52,8 @@ export function provideDocumentSymbols(state: DocumentState): DocumentSymbol[] {
         // Steps (with their inline ->&decl as children)
         let stepIndex = 0;
         for (const block of section.children) {
-            if (block.type !== ASTNodeType.Step) continue;
-            children.push(getStepSymbol(block as StepAST, stepIndex, state.lineStarts));
+            if (!isStep(block)) continue;
+            children.push(getStepSymbol(block, stepIndex, state.lineStarts));
             stepIndex++;
         }
 

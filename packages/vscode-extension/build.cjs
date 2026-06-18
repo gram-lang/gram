@@ -7,7 +7,7 @@ async function build() {
     await esbuild.build({
         entryPoints: ['src/extension.ts'],
         bundle: true,
-        outfile: 'dist/extension.js',
+        outfile: 'dist/extension.cjs',
         format: 'cjs',
         platform: 'node',
         target: 'node18',
@@ -16,8 +16,8 @@ async function build() {
 
     // Copy the language server bundle into the extension's dist/
     // so the extension can reference it as a single self-contained dist/ folder
-    const serverSrc = path.join(__dirname, '..', 'language-server', 'dist', 'server.js');
-    const serverDst = path.join(__dirname, 'dist', 'server.js');
+    const serverSrc = path.join(__dirname, '..', 'language-server', 'dist', 'server.cjs');
+    const serverDst = path.join(__dirname, 'dist', 'server.cjs');
     if (fs.existsSync(serverSrc)) {
         fs.copyFileSync(serverSrc, serverDst);
     } else {

@@ -3,7 +3,7 @@ import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 
 export type AnalyzerOptions = z.infer<typeof AnalyzerOptionsSchema>;
 
-import { Usage, ProcessedSection, CompilationResult } from '@gram/parser';
+import { Usage, ProcessedSection, CompilationResult } from '@gram/compiler';
 
 export interface MassMetrics {
     totalMass: number;

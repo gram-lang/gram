@@ -178,7 +178,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             const className = context.classes?.cookware || 'cookware';
             let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
             if (qtyVal !== null) {
-                html += ` <span class="quantity">(${escapeHtml(qtyVal)})</span>`;
+                html += ` <span class="quantity">(${escapeHtml(String(qtyVal))})</span>`;
             }
             html += `</span>`;
             return html;
@@ -247,7 +247,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
             if (qty) {
                 const qtyVal = qty.text || qty.value;
-                html += ` <span class="quantity">${escapeHtml(qtyVal)}`;
+                html += ` <span class="quantity">${escapeHtml(String(qtyVal))}`;
                 if (item.unit) {
                     html += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
                 }
@@ -302,7 +302,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
      
     group: (item, format, context) => {
         // Alias alternative strategy for group AST type
-        return strategies.alternative(item, format, context);
+        return strategies.alternative!(item, format, context);
     },
      
     text: (item, format) => {
@@ -328,7 +328,7 @@ export function formatElement(element: any, format: 'html' | 'md', context: Rend
         const registry = context.registry || {};
         const isCookware = !!(registry.cookware && registry.cookware[element.id]);
         const inferredType = isCookware ? 'cookware' : 'ingredient';
-        return strategies[inferredType]({ ...element, type: inferredType }, format, context);
+        return strategies[inferredType]!({ ...element, type: inferredType }, format, context);
     }
     
     const strategy = strategies[type];

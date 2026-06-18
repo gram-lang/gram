@@ -95,7 +95,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             if (k !== 'title') {
                 html += `  <div class="${metaSecondaryItemClass}">\n`;
                 html += `    <span class="label">${escapeHtml(k)}</span>\n`;
-                html += `    <span class="value">${escapeHtml(v)}</span>\n`;
+                html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
                 html += `  </div>\n`;
             }
         }
@@ -263,8 +263,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                              const next = arr[i+1];
                              if (next) {
                                 let nextChar = '';
-                                if (typeof next === 'string') nextChar = next[0];
-                                else if (next.type === 'text') nextChar = next.value ? next.value[0] : '';
+                                if (typeof next === 'string') nextChar = next.charAt(0);
+                                else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
                                 
                                 // Don't add space if next is glue (punctuation or space)
                                 const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));

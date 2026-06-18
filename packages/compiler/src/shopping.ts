@@ -1,6 +1,7 @@
 import { slugify, minifyQuantity, getNumericQty } from './utils';
 import { detectCycles } from './graph';
-import { ProcessedSection, Registry, Usage, QuantityValueAST, ASTNodeType } from '@gram/parser';
+import { QuantityValueAST, ASTNodeType } from '@gram/parser';
+import { ProcessedSection, Registry, Usage } from './types';
 import { CompilerOptions } from './core';
 
 interface ShoppingListItem {
@@ -192,9 +193,10 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         };
 
         const units = Object.keys(item.otherUnits!);
-        if (units.length > 0) {
-            res.qty = parseFloat(item.otherUnits![units[0]].toFixed(2));
-            res.unit = units[0] || null;
+        const primaryUnit = units[0];
+        if (primaryUnit !== undefined) {
+            res.qty = parseFloat((item.otherUnits![primaryUnit] || 0).toFixed(2));
+            res.unit = primaryUnit || null;
         }
         
         const hasOther = Object.keys(item.otherUnits!).length > 0;
@@ -204,8 +206,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
              const units = Object.keys(item.otherUnits!);
              for (let i = 1; i < units.length; i++) {
                    const u = units[i];
+                   if (u === undefined) continue;
                    const uStr = u ? ` ${u}` : '';
-                   extraEntries.push(`${parseFloat(item.otherUnits![u].toFixed(2))}${uStr}`);
+                   extraEntries.push(`${parseFloat((item.otherUnits![u] || 0).toFixed(2))}${uStr}`);
              }
         }
         
