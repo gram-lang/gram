@@ -57,14 +57,17 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         // Setup quantity string parts
         let qtyContent = '';
         if (qty) {
-            qtyContent += qty.text || qty.value;
+            const baseQty = qty.text || String(qty.value);
+            qtyContent += format === 'html' ? escapeHtml(baseQty) : baseQty;
             if (item.unit) {
                 qtyContent += format === 'html' ? ` <span class="unit">${escapeHtml(item.unit)}</span>` : ` ${item.unit}`;
             }
         }
         
         if (item.variable_entries && item.variable_entries.length > 0) {
-            const vars = item.variable_entries.join(' + ');
+            const vars = format === 'html' 
+                ? item.variable_entries.map((v: any) => escapeHtml(String(v))).join(' + ')
+                : item.variable_entries.join(' + ');
             qtyContent = qtyContent ? `${qtyContent} + ${vars}` : vars;
         }
  

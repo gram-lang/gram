@@ -9,13 +9,11 @@ import {
     TransportKind,
 } from 'vscode-languageclient/node';
 
-let client: LanguageClient;
+let client: LanguageClient | undefined;
 
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext): Promise<void> {
     const serverModule = context.asAbsolutePath(path.join('dist', 'server.js'));
 
-    // To swap in the Rust binary when ready, change serverOptions to:
-    // { run: { command: context.asAbsolutePath('bin/gram-ls'), args: ['--stdio'] }, ... }
     const serverOptions: ServerOptions = {
         run: { module: serverModule, transport: TransportKind.ipc },
         debug: {
@@ -29,32 +27,33 @@ export function activate(context: ExtensionContext) {
         documentSelector: [{ scheme: 'file', language: 'gram' }],
     };
 
-    let latestHtml: string = '';
+    let latestHtml = '';
 
     client = new LanguageClient('gramLanguageServer', 'GRAM Language Server', serverOptions, clientOptions);
-    client.start().then(() => {
+    
+    try {
+        await client.start();
+        
         client.onNotification('gram/previewUpdated', (params: { uri: string; html: string }) => {
             latestHtml = params.html;
             if (PreviewPanel.currentPanel) {
                 PreviewPanel.currentPanel.updateHTML(params.html);
             }
         });
-    });
+    } catch (error) {
+        vscode.window.showErrorMessage(`Échec du démarrage du serveur de langage GRAM: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     context.subscriptions.push(
-        client,
         vscode.commands.registerCommand('gram.showPreview', () => {
-            PreviewPanel.createOrShow(context.extensionUri);
-            if (latestHtml && PreviewPanel.currentPanel) {
+            PreviewPanel.createOrShow(context.extensionUri, latestHtml);
+            if (PreviewPanel.currentPanel) {
                 PreviewPanel.currentPanel.updateHTML(latestHtml);
-            } else {
-                // If we don't have HTML yet, we could show a loading state, but typing immediately triggers it.
-                // Best is to trigger a fake edit to force an update, but saving state is usually enough.
             }
         }),
         vscode.commands.registerCommand('gram.showNutrition', () => {
-            PreviewPanel.createOrShow(context.extensionUri);
-            if (latestHtml && PreviewPanel.currentPanel) {
+            PreviewPanel.createOrShow(context.extensionUri, latestHtml);
+            if (PreviewPanel.currentPanel) {
                 PreviewPanel.currentPanel.updateHTML(latestHtml);
                 PreviewPanel.currentPanel.showMacros();
             }

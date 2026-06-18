@@ -5,17 +5,18 @@ export class PreviewPanel {
     public static currentPanel: PreviewPanel | undefined;
 
     private readonly _panel: vscode.WebviewPanel;
-    private readonly _extensionUri: vscode.Uri;
     private _disposables: vscode.Disposable[] = [];
-    private _showMacros: boolean = false;
+    private _showMacros = false;
+    private readonly _extensionUri: vscode.Uri;
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, initialHtml: string) {
         this._panel = panel;
         this._extensionUri = extensionUri;
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        this._panel.webview.html = this._getHtmlForWebview(initialHtml);
     }
 
-    public static createOrShow(extensionUri: vscode.Uri) {
+    public static createOrShow(extensionUri: vscode.Uri, initialHtml = ''): void {
         const column = vscode.window.activeTextEditor
             ? vscode.ViewColumn.Beside
             : vscode.ViewColumn.One;
@@ -26,7 +27,7 @@ export class PreviewPanel {
         }
 
         const panel = vscode.window.createWebviewPanel(
-            'gramPreview',
+            PreviewPanel.viewType,
             'Live Preview',
             { viewColumn: column, preserveFocus: true },
             {
@@ -35,359 +36,49 @@ export class PreviewPanel {
             }
         );
 
-        PreviewPanel.currentPanel = new PreviewPanel(panel);
+        PreviewPanel.currentPanel = new PreviewPanel(panel, extensionUri, initialHtml);
     }
 
-    public updateHTML(html: string) {
-        this._panel.webview.html = this._getHtmlForWebview(html);
+    public updateHTML(html: string): void {
+        this._panel.webview.postMessage({ command: 'updateContent', html });
     }
 
-    private _getHtmlForWebview(bodyHtml: string): string {
+    public showMacros(): void {
+        this._showMacros = true;
+        this._panel.webview.postMessage({ command: 'showMacros' });
+    }
+
+    public dispose(): void {
+        PreviewPanel.currentPanel = undefined;
+        this._panel.dispose();
+        while (this._disposables.length) {
+            const disposable = this._disposables.pop();
+            if (disposable) {
+                disposable.dispose();
+            }
+        }
+    }
+
+    private _getHtmlForWebview(initialHtml: string): string {
+        const nonce = getNonce();
+        
+        // Link to extracted CSS
+        const cssPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'preview.css');
+        const cssUri = this._panel.webview.asWebviewUri(cssPathOnDisk);
+
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'nonce-${nonce}';">
     <title>GRAM Preview</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --background: var(--vscode-editor-background);
-            --foreground: var(--vscode-editor-foreground);
-            --card: var(--vscode-editorWidget-background);
-            --card-foreground: var(--vscode-editorWidget-foreground);
-            --secondary: color-mix(in srgb, var(--vscode-editor-foreground) 5%, var(--vscode-editor-background));
-            --muted: var(--vscode-editorWidget-background);
-            --muted-foreground: var(--vscode-descriptionForeground);
-            --border: var(--vscode-widget-border);
-            --radius: 0.5rem;
-            --font-sans: 'Inter', var(--vscode-font-family);
-            --font-mono: var(--vscode-editor-font-family);
-
-            --item-ingredient-text: #8b5cf6;
-            --item-ingredient-bg: rgba(139, 92, 246, 0.1);
-            --item-ingredient-border: rgba(139, 92, 246, 0.2);
-            --item-cookware-text: #f59e0b;
-            --item-cookware-bg: rgba(245, 158, 11, 0.1);
-            --item-cookware-border: rgba(245, 158, 11, 0.2);
-            --item-timer-text: #06b6d4;
-            --item-timer-bg: rgba(6, 182, 212, 0.1);
-            --item-timer-border: rgba(6, 182, 212, 0.2);
-            --item-temp-text: #f43f5e;
-            --item-temp-bg: rgba(244, 63, 94, 0.1);
-            --item-temp-border: rgba(244, 63, 94, 0.2);
-            --item-ref-text: #10b981;
-            --item-ref-bg: rgba(16, 185, 129, 0.1);
-            --item-ref-border: rgba(16, 185, 129, 0.2);
-            --item-decl-text: #1d4ed8;
-            --item-decl-bg: rgba(29, 78, 216, 0.1);
-            --item-decl-border: rgba(29, 78, 216, 0.2);
-        }
-
-        body.vscode-light {
-            --item-ingredient-text: #7c3aed;
-            --item-cookware-text: #d97706;
-            --item-timer-text: #0891b2;
-            --item-temp-text: #e11d48;
-        }
-        
-        body {
-            font-family: var(--font-sans);
-            padding: 2rem;
-            color: var(--foreground);
-            background-color: var(--background);
-            line-height: 1.7;
-            font-size: 15px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        /* Headings in Preview */
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-            color: var(--foreground);
-        }
-        h2 {
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-            color: var(--muted-foreground);
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        h3 {
-            font-size: 1.15rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--foreground);
-        }
-        h4 {
-            margin-bottom: 0.5rem;
-        }
-
-        /* Lists in Preview */
-        ul {
-            padding-left: 1rem;
-            margin-bottom: 1rem;
-        }
-        ol {
-            padding-left: 1.25rem;
-            margin-bottom: 1rem;
-        }
-        li {
-            margin-bottom: 0.25rem;
-        }
-        li::marker {
-            color: var(--muted-foreground);
-        }
-        .steps li {
-            margin-bottom: 0.5rem;
-        }
-
-        /* Semantic Items (Badge Styles) */
-        .ingredient {
-            font-weight: 600;
-            color: var(--item-ingredient-text);
-            background: var(--item-ingredient-bg);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-ingredient-border);
-        }
-        span.cookware {
-            font-weight: 600;
-            color: var(--item-cookware-text);
-            background: var(--item-cookware-bg);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-cookware-border);
-        }
-        .timer {
-            font-weight: 600;
-            color: var(--item-timer-text);
-            background: var(--item-timer-bg);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-timer-border);
-        }
-        .timer.async {
-            border-style: dashed;
-            opacity: 0.9;
-        }
-        .temp {
-            font-weight: 600;
-            color: var(--item-temp-text);
-            background: var(--item-temp-bg);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-temp-border);
-        }
-        .reference {
-            font-weight: 600;
-            color: var(--item-ref-text);
-            background: var(--item-ref-bg);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-ref-border);
-            cursor: default;
-        }
-        .declaration {
-            font-weight: normal;
-            color: var(--item-ref-text);
-            background: var(--background);
-            padding: 0.1em 0.3em;
-            border-radius: 4px;
-            border: 1px solid var(--item-decl-border);
-            cursor: default;
-            font-size: 0.85rem;
-            margin-left: 0.5em; /* Spacing from previous text */
-        }
-        .action {
-            display: inline-block;
-            padding: 0.1em 0.4em;
-            border-radius: 4px;
-            background: var(--secondary);
-            color: var(--foreground);
-            font-size: 0.75em;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-right: 0.5rem;
-            vertical-align: middle;
-            letter-spacing: 0.05em;
-        }
-
-        /* Metadata & Sections */
-        .recipe-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .meta-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.5rem 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex: 1;
-        }
-
-        .meta-icon {
-            font-size: 1.25rem;
-            line-height: 1;
-            color: var(--muted-foreground);
-        }
-
-        .meta-content {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            justify-content: space-between;
-            line-height: 1em;
-        }
-
-        .meta-label {
-            font-size: 0.7em;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--muted-foreground);
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .meta-value {
-            font-size: 0.8em;
-            font-weight: 700;
-            color: var(--foreground);
-        }
-
-        .metadata {
-            background: var(--secondary);
-            padding: 1rem;
-            border-radius: var(--radius);
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-        }
-
-        .metadata ul{
-            margin-block-end:0;
-        }
-        
-        .shopping-list, 
-        div.cookware {
-            background-color: var(--secondary);
-            border-radius: var(--radius);
-            padding: .8rem 1rem .25rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border);
-        }
-
-        .instructions section {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .instructions section:last-child {
-            border-bottom: none;
-        }
-
-        .quantity {
-            color: var(--foreground);
-            font-weight: 500;
-            opacity: 0.9;
-        }
-        .unit {
-            color: var(--muted-foreground);
-            font-size: 0.9em;
-        }
-        .optional {
-            font-style: italic;
-            color: var(--muted-foreground);
-            font-size: 0.85em;
-            margin-left: 0.25em;
-        }
-
-        .mass-badge {
-            display: inline-block;
-            font-size: 0.75em;
-            color: var(--muted-foreground);
-            background-color: var(--background);
-            border: 1px solid var(--border);
-            border-radius: 99px;
-            padding: 0 0.5em;
-            vertical-align: middle;
-            cursor: help;
-            line-height: 1.4;
-            margin-block-end: 0.1rem;
-        }
-
-        body.hide-mass-badges .mass-badge {
-            display: none !important;
-        }
-
-        .gross-mass {
-            font-size: 0.75em;
-            color: #eab308; /* warning equivalent */
-            font-style: italic;
-            margin-left: 0.5em;
-        }
-
-        /* Secondary Metadata */
-        .metadata-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .meta-secondary-item {
-            background: var(--secondary);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            display: flex;
-            align-items: baseline;
-            gap: 0.4rem;
-            font-size: 0.85em;
-        }
-
-        .meta-secondary-item .label {
-            color: var(--muted-foreground);
-            text-transform: uppercase;
-            font-size: 0.8em;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-
-        .meta-secondary-item .value {
-            color: var(--foreground);
-            font-weight: 500;
-        }
-        
-        .nutrition-panel {
-            display: none;
-            margin-top: 30px; 
-            padding: 15px; 
-            background: var(--card); 
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--item-ingredient-text);
-        }
-        body.show-macros .nutrition-panel {
-            display: block;
-        }
-        .nut-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin-top: 15px; }
-        .est-badge { background: var(--secondary); color: var(--foreground); padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
-    </style>
+    <link href="${cssUri}" rel="stylesheet">
 </head>
 <body class="${this._showMacros ? 'show-macros' : ''}">
-    ${bodyHtml}
-    <script>
+    <div id="content">${initialHtml}</div>
+    <script nonce="${nonce}">
         window.addEventListener('message', event => {
             const message = event.data;
             if (message.command === 'showMacros') {
@@ -396,26 +87,24 @@ export class PreviewPanel {
                 if (panel) {
                     panel.scrollIntoView({ behavior: 'smooth' });
                 }
+            } else if (message.command === 'updateContent') {
+                const contentDiv = document.getElementById('content');
+                if (contentDiv) {
+                    contentDiv.innerHTML = message.html;
+                }
             }
         });
     </script>
 </body>
 </html>`;
     }
+}
 
-    public showMacros() {
-        this._showMacros = true;
-        this._panel.webview.postMessage({ command: 'showMacros' });
+function getNonce(): string {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-
-    public dispose() {
-        PreviewPanel.currentPanel = undefined;
-        this._panel.dispose();
-        while (this._disposables.length) {
-            const x = this._disposables.pop();
-            if (x) {
-                x.dispose();
-            }
-        }
-    }
+    return text;
 }
