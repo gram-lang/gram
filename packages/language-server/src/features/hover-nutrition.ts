@@ -4,10 +4,8 @@ import { positionToOffset } from '../utils/position';
 import { collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
+import { UNIT_CONVERSIONS } from '@gram/analyzer';
 import { ASTNodeType, QuantityAST, QuantityValueAST } from '@gram/parser';
-
-// ml equivalent for spoon units (not in i18n volume set)
-export const SPOON_TO_ML: Record<string, number> = { tsp: 5, tbsp: 15 };
 
 // Resolve the numeric amount from any supported QuantityValueAST type.
 export function getQtyAmount(qtyValue: QuantityValueAST): number | null {
@@ -20,26 +18,18 @@ export function getQtyAmount(qtyValue: QuantityValueAST): number | null {
             }
             return null;
         case 'range':
-            // Use the lower bound for a conservative estimate
             return qtyValue.range?.min ?? null;
         default:
             return null;
     }
 }
 
-const VOLUME_UNITS = new Set(['ml', 'l']);
-
-function toMillilitres(value: number, unit: string): number {
-    if (unit === 'l') return value * 1000;
-    if (SPOON_TO_ML[unit]) return value * SPOON_TO_ML[unit];
-    return value; // ml
-}
-
-// Returns grams from any volume unit (ml, l, tsp, tbsp), or null if not applicable.
+// Returns grams from a volume unit + density, or from a mass unit directly.
 export function volumeToGrams(amount: number, canonUnit: string, density: number): number | null {
-    if (VOLUME_UNITS.has(canonUnit) || SPOON_TO_ML[canonUnit]) {
-        return toMillilitres(amount, canonUnit) * density;
-    }
+    const volFactor = UNIT_CONVERSIONS.volume.map[canonUnit];
+    if (volFactor !== undefined) return amount * volFactor * density;
+    const massFactor = UNIT_CONVERSIONS.mass.map[canonUnit];
+    if (massFactor !== undefined) return amount * massFactor;
     return null;
 }
 

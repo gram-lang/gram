@@ -50,6 +50,7 @@
       "name": "@gram/language-server",
       "version": "0.10.1",
       "dependencies": {
+        "@gram/analyzer": "workspace:*",
         "@gram/compiler": "workspace:*",
         "@gram/i18n": "workspace:*",
         "@gram/parser": "workspace:*",

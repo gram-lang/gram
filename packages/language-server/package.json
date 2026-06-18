@@ -9,6 +9,7 @@
     "dev": "node build.js --watch"
   },
   "dependencies": {
+    "@gram/analyzer": "workspace:*",
     "@gram/compiler": "workspace:*",
     "@gram/i18n": "workspace:*",
     "@gram/parser": "workspace:*",

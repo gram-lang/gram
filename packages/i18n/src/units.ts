@@ -1,21 +1,49 @@
 import { compileDictionary, LanguageDict } from './dictionary';
 
 const en: LanguageDict = {
-    tsp: ['teaspoon', 'teaspoons'],
-    tbsp: ['tablespoon', 'tablespoons'],
-    g: ['gram', 'grams'],
-    kg: ['kilo', 'kilos', 'kilogram', 'kilograms'],
-    l: ['liter', 'liters'],
-    ml: ['milliliter', 'milliliters']
+    // Volume — spoons
+    tsp:   ['teaspoon', 'teaspoons'],
+    tbsp:  ['tablespoon', 'tablespoons'],
+    // Volume — cups & imperial
+    cup:   ['cups'],
+    pt:    ['pint', 'pints'],
+    qt:    ['quart', 'quarts'],
+    'fl oz': ['floz', 'fl. oz.', 'fluid ounce', 'fluid ounces'],
+    // Volume — metric
+    ml:    ['milliliter', 'milliliters'],
+    cl:    ['centiliter', 'centiliters'],
+    dl:    ['deciliter', 'deciliters'],
+    l:     ['liter', 'liters'],
+    // Weight — metric
+    mg:    ['milligram', 'milligrams'],
+    g:     ['gram', 'grams'],
+    kg:    ['kilo', 'kilos', 'kilogram', 'kilograms'],
+    // Weight — imperial
+    oz:    ['ounce', 'ounces'],
+    lb:    ['lbs', 'pound', 'pounds'],
 };
 
 const fr: LanguageDict = {
-    tsp: ['càc', 'cac', 'c.à.c', 'cuillère à café', 'cuillères à café', 'cuillere a cafe', 'cuilleres a cafe'],
-    tbsp: ['càs', 'cas', 'c.à.s', 'cuillère à soupe', 'cuillères à soupe', 'cuillere a soupe', 'cuilleres a soupe'],
-    g: ['gramme', 'grammes'],
-    kg: ['kilo', 'kilos', 'kilogramme', 'kilogrammes'],
-    l: ['litre', 'litres'],
-    ml: ['millilitre', 'millilitres']
+    // Volume — cuillères
+    tsp:   ['càc', 'cac', 'c.à.c', 'cuillère à café', 'cuillères à café', 'cuillere a cafe', 'cuilleres a cafe'],
+    tbsp:  ['càs', 'cas', 'c.à.s', 'cuillère à soupe', 'cuillères à soupe', 'cuillere a soupe', 'cuilleres a soupe'],
+    // Volume — tasse & mesures anglo-saxonnes
+    cup:   ['tasse', 'tasses'],
+    pt:    ['pinte', 'pintes'],
+    qt:    ['quart', 'quarts'],
+    'fl oz': ['once liquide', 'onces liquides'],
+    // Volume — métrique
+    ml:    ['millilitre', 'millilitres'],
+    cl:    ['centilitre', 'centilitres'],
+    dl:    ['décilitre', 'décilitres', 'decilitre', 'decilitres'],
+    l:     ['litre', 'litres'],
+    // Poids — métrique
+    mg:    ['milligramme', 'milligrammes'],
+    g:     ['gramme', 'grammes'],
+    kg:    ['kilo', 'kilos', 'kilogramme', 'kilogrammes'],
+    // Poids — impérial
+    oz:    ['once', 'onces'],
+    lb:    ['livre', 'livres'],
 };
 
 export const UNIT_DICTIONARIES = { en, fr };
