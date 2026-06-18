@@ -10,7 +10,7 @@
   "fixed": [
     [
       "@gram/analyzer",
-      "@gram/compiler",
+      "@gram/kitchen",
       "@gram/parser",
       "@gram/playground",
       "@gram/i18n",

@@ -1,4 +1,4 @@
-# @gram/compiler
+# @gram/kitchen
 
 ## 0.10.1
 

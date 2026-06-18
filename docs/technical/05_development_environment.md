@@ -14,14 +14,14 @@ GRAM is built with modern, lightweight tools designed for speed and reliability:
 The project is structured as a monorepo containing several interconnected packages:
 
 *   **`@gram/parser`**: The core. It takes a raw string, matches it against the Ohm grammar, and produces a purely structural Abstract Syntax Tree (AST).
-*   **`@gram/compiler`**: The logic layer. It takes the AST from the parser and resolves variables, schedules timers, detects business errors (warnings), and aggregates the shopping list.
+*   **`@gram/kitchen`**: The logic layer. It takes the AST from the parser and resolves variables, schedules timers, detects business errors (warnings), and aggregates the shopping list.
 *   **`@gram/analyzer`**: The physical layer. It connects the compiled recipe to an external ingredient database to normalize units (e.g., converting "1 cup of flour" to "120g") and estimate nutritional values.
 *   **`@gram/renderer`**: The display layer. Converts the compiled JSON into Markdown or HTML formats for easy display.
 *   **`@gram/i18n`**: Centralizes translation dictionaries and unit mappings across languages.
 
 > [!TIP]
 > **Why strict separation?**
-> This architecture ensures watertight boundaries. A user building a simple syntax highlighter only needs `@gram/parser`. A user building a complex meal-planner will use `@gram/compiler` and `@gram/analyzer`.
+> This architecture ensures watertight boundaries. A user building a simple syntax highlighter only needs `@gram/parser`. A user building a complex meal-planner will use `@gram/kitchen` and `@gram/analyzer`.
 
 ## 3. Data Validation with Zod
 

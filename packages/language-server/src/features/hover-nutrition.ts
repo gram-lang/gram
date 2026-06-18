@@ -6,7 +6,7 @@ import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-l
 import { normalizeUnit } from '@gram/i18n';
 import { UNIT_CONVERSIONS, normalizeMass } from '@gram/analyzer';
 import { ASTNodeType, QuantityAST, QuantityValueAST, isQuantity } from '@gram/parser';
-import { getNumericQty } from '@gram/compiler';
+import { getNumericQty } from '@gram/kitchen';
 
 function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUnit: string, db: IngredientDB): string | null {
     const physical = entry.physical;

@@ -3,7 +3,7 @@
 "@gram/language-server": minor
 "@gram/playground": minor
 "@gram/analyzer": minor
-"@gram/compiler": minor
+"@gram/kitchen": minor
 "@gram/renderer": minor
 "@gram/parser": minor
 "@gram/i18n": minor

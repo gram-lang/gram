@@ -8,7 +8,7 @@
 - Implemented Turborepo to optimize and simplify project building.
 - Updated dependencies
   - @gram/analyzer@0.10.1
-  - @gram/compiler@0.10.1
+  - @gram/kitchen@0.10.1
   - @gram/renderer@0.10.1
   - @gram/parser@0.10.1
 
@@ -40,7 +40,7 @@
 - Updated dependencies [69870cc]
   - @gram/analyzer@0.10.0
   - @gram/renderer@0.10.0
-  - @gram/compiler@0.10.0
+  - @gram/kitchen@0.10.0
   - @gram/parser@0.10.0
 
 ## 0.9.0

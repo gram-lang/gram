@@ -1,5 +1,5 @@
 import { getAST } from '@gram/parser';
-import { compile } from '@gram/compiler';
+import { compile } from '@gram/kitchen';
 import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';

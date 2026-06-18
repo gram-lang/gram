@@ -6,7 +6,7 @@ import { IngredientDB, lookupIngredient } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
 import { ASTNodeType, QuantityAST } from '@gram/parser';
 import { normalizeMass } from '@gram/analyzer';
-import { getNumericQty } from '@gram/compiler';
+import { getNumericQty } from '@gram/kitchen';
 
 export function provideCodeActions(
     state: DocumentState,

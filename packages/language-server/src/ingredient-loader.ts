@@ -1,6 +1,6 @@
 import { parse } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
-import { slugify } from '@gram/compiler';
+import { slugify } from '@gram/kitchen';
 
 import { IngredientData } from '@gram/analyzer';
 

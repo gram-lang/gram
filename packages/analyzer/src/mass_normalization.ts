@@ -1,4 +1,4 @@
-import { slugify } from '@gram/compiler';
+import { slugify } from '@gram/kitchen';
 import { normalizeUnit } from '@gram/i18n';
 
 export interface UnitMap {

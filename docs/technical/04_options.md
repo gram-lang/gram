@@ -6,7 +6,7 @@ The GRAM ecosystem is modularly configured using `CompilerOptions` for structura
 
 ## 1. Compiler Options (`CompilerOptions`)
 
-`CompilerOptions` configure the core structural compile pipeline (`@gram/compiler`). It is passed as the second argument to `compile`.
+`CompilerOptions` configure the core structural compile pipeline (`@gram/kitchen`). It is passed as the second argument to `compile`.
 
 ```typescript
 export interface CompilerOptions {
@@ -57,7 +57,7 @@ To parse, compile, and physically analyze a recipe in JavaScript/TypeScript:
 
 ```typescript
 import { getAST } from '@gram/parser';
-import { compile } from '@gram/compiler';
+import { compile } from '@gram/kitchen';
 import { analyze } from '@gram/analyzer';
 
 // 1. Get raw AST

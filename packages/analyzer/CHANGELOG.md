@@ -7,7 +7,7 @@
 - Cleaned up and updated dependencies.
 - Implemented Turborepo to optimize and simplify project building.
 - Updated dependencies
-  - @gram/compiler@0.10.1
+  - @gram/kitchen@0.10.1
   - @gram/parser@0.10.1
   - @gram/i18n@0.10.1
 
@@ -34,7 +34,7 @@
 - Updated dependencies [087b78b]
 - Updated dependencies [919f299]
 - Updated dependencies [69870cc]
-  - @gram/compiler@0.10.0
+  - @gram/kitchen@0.10.0
   - @gram/i18n@0.10.0
   - @gram/parser@0.10.0
 

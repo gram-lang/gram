@@ -1,10 +1,10 @@
 # GRAM Features & Calculations
 
-This directory documents the advanced logic of the GRAM ecosystem. Features are divided between core recipe compilation (`@gram/compiler`) and physical/macro analysis (`@gram/analyzer`).
+This directory documents the advanced logic of the GRAM ecosystem. Features are divided between core recipe compilation (`@gram/kitchen`) and physical/macro analysis (`@gram/analyzer`).
 
 ## Contents
 
-### 🧑‍🍳 Core Compiler Features (`@gram/compiler`)
+### 🧑‍🍳 Core Compiler Features (`@gram/kitchen`)
 
 *   **[Shopping List Generation](./05_shopping_list_logic.md)**
     *   The complex logic behind merging ingredients across recipe sections.

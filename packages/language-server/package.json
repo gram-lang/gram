@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@gram/analyzer": "workspace:*",
-    "@gram/compiler": "workspace:*",
+    "@gram/kitchen": "workspace:*",
     "@gram/i18n": "workspace:*",
     "@gram/parser": "workspace:*",
     "@gram/renderer": "workspace:*",

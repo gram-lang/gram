@@ -1,5 +1,5 @@
 import { IngredientData } from './types';
-import { slugify } from '@gram/compiler'; 
+import { slugify } from '@gram/kitchen'; 
 
 export function getIngredientData(name: string, database: Record<string, IngredientData>): IngredientData | null {
     const slug = slugify(name);

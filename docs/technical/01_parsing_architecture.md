@@ -8,7 +8,7 @@ The compilation and analysis flow follows a modern, decoupled 4-stage pipeline:
 
 1.  **Parsing (OhmJS) [`@gram/parser`]:** A PEG (Parsing Expression Grammar) parser validates the raw `.gram` text against the official GRAM grammar.
 2.  **AST Generation [`@gram/parser`]:** The match tree is traversed to build a strictly typed, naive **Abstract Syntax Tree (AST)**.
-3.  **Compilation [`@gram/compiler`]:** The AST is compiled into a structured recipe JSON. It deduplicates ingredients/cookware, tracks timing and Gantt schedules, aggregates the global shopping list, and minifies the output.
+3.  **Compilation [`@gram/kitchen`]:** The AST is compiled into a structured recipe JSON. It deduplicates ingredients/cookware, tracks timing and Gantt schedules, aggregates the global shopping list, and minifies the output.
 4.  **Analysis [`@gram/analyzer`]:** The compiled JSON is enriched with physical properties (mass normalization, yield percentages, portion scaling, and macronutrient estimations) by querying an external database.
 
 [![](https://mermaid.ink/img/pako:eNpdkEtPwzAQhP-KtVfSkMRWXgcEtBVSJahEeiLuwUqWJqJ2ItcRff53nLRUBZ-845lvVj5A0ZQIKay0aCuymHBF7Fng1uQcXKtKkjWdLnDQOCzJaPRwnFdylpEX-yqFPpLMiBX6-aswhWVoxOUZc9aHRIZSKFMXm4s7yN_FN3nKFrfWYLByeOx774tGtvUaNYdLhubjs1SSdyzqFsksm7_dAugfgFBivdujJndkujWo7Ugmz1ccy6dK10X1DweO_Yy6hNToDh2QqKXoRzj0RRxMhRI5pPZaCv3FgauTzbRCfTSN_I3ppltVkH6K9cZOXVsKg5Na9HtdVY2qRD1uOmUgZXRgQHqALaS-z1zmJXFEkzBgXkCZAzsre9T1Qj-OGI2TkMWMnRzYD7WeG8UBDUNKE-qzyI_j0w9chJYC?type=png)]
@@ -56,7 +56,7 @@ The parser enforces structures to ensure recipe metrics are computable:
 
 ---
 
-## 3. Data Logic: Compiler Scope (`@gram/compiler`)
+## 3. Data Logic: Compiler Scope (`@gram/kitchen`)
 
 **Goal:** Generate pure recipe structural mappings.
 

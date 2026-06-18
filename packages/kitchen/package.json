@@ -1,5 +1,5 @@
 {
-  "name": "@gram/compiler",
+  "name": "@gram/kitchen",
   "version": "0.10.1",
   "description": "Compiler for the GRAM recipe language, converting AST to JSON.",
   "main": "dist/index.js",

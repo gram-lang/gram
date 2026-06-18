@@ -2,7 +2,7 @@
 "@gram/vscode-extension": minor
 "@gram/playground": minor
 "@gram/analyzer": minor
-"@gram/compiler": minor
+"@gram/kitchen": minor
 "@gram/renderer": minor
 "@gram/parser": minor
 ---

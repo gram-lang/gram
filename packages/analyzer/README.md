@@ -1,6 +1,6 @@
 # @gram/analyzer
 
-The physical and nutritional analysis module for the GRAM recipe language. It takes a structurally compiled recipe (produced by `@gram/compiler`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
+The physical and nutritional analysis module for the GRAM recipe language. It takes a structurally compiled recipe (produced by `@gram/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
 
 ---
 
@@ -24,7 +24,7 @@ bun install @gram/analyzer
 
 ```javascript
 const { getAST } = require('@gram/parser');
-const { compile } = require('@gram/compiler');
+const { compile } = require('@gram/kitchen');
 const { analyze } = require('@gram/analyzer');
 
 // 1. Compile AST

@@ -1,5 +1,5 @@
 import { getAST, RecipeAST } from '@gram/parser';
-import { compile, CompilationResult } from '@gram/compiler';
+import { compile, CompilationResult } from '@gram/kitchen';
 import { analyze, AnalyzedCompilationResult, IngredientData } from '@gram/analyzer';
 import { buildLineIndex } from './utils/position';
 

@@ -1,5 +1,5 @@
-import { Usage } from '@gram/compiler';
-import { getNumericQty, WarningCode, pushWarning } from '@gram/compiler';
+import { Usage } from '@gram/kitchen';
+import { getNumericQty, WarningCode, pushWarning } from '@gram/kitchen';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
 import { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';

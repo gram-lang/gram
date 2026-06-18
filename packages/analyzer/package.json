@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@gram/parser": "workspace:*",
-    "@gram/compiler": "workspace:*",
+    "@gram/kitchen": "workspace:*",
     "@gram/i18n": "workspace:*",
     "zod": "^4.4.3"
   },

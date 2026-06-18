@@ -5,8 +5,8 @@ export * from './nutrition';
 export * from './metrics';
 
 
-import { CompilationResult, Usage } from '@gram/compiler';
-import { getNumericQty } from '@gram/compiler';
+import { CompilationResult, Usage } from '@gram/kitchen';
+import { getNumericQty } from '@gram/kitchen';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';

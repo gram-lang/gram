@@ -121,7 +121,7 @@ bun run dev
 
 ```javascript
 const { getAST } = require('@gram/parser');
-const { compile } = require('@gram/compiler');
+const { compile } = require('@gram/kitchen');
 
 const ast = getAST(myGramString);
 const result = compile(ast);

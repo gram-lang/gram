@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@gram/analyzer": "workspace:*",
-    "@gram/compiler": "workspace:*",
+    "@gram/kitchen": "workspace:*",
     "@gram/parser": "workspace:*",
     "@gram/renderer": "workspace:*",
     "@webcoder49/code-input": "^2.8.2"

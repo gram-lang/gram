@@ -6,9 +6,9 @@ GRAM generates a highly optimized, minified, **registry-based** JSON structure t
 
 ## 1. Global Structural Outputs
 
-The system distinguishes between two output payloads: the **Compiled AST** (from `@gram/compiler`) and the **Analyzed AST** (from `@gram/analyzer`).
+The system distinguishes between two output payloads: the **Compiled AST** (from `@gram/kitchen`) and the **Analyzed AST** (from `@gram/analyzer`).
 
-### 1.1. Pure Compiled Output Schema (`@gram/compiler`)
+### 1.1. Pure Compiled Output Schema (`@gram/kitchen`)
 
 The core compiler returns a clean structural model of the recipe:
 
