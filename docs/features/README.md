@@ -22,6 +22,8 @@ This directory documents the advanced logic of the GRAM ecosystem. Features are 
 
 ### 🧪 Physical Analyzer Features (`@gram/analyzer`)
 
+*(Note: The analyzer is an optional layer that requires the host application to provide an Ingredient Database to perform these calculations. See [Ingredient Database](../technical/03_ingredient_database.md) for architecture details.)*
+
 *   **[Mass Normalization](./01_mass_normalization.md)**
     *   How quantities (cups, tbsp, counts) are resolved into grams to enable unified mass calculation.
     *   Density database resolving and custom Frontmatter overrides.

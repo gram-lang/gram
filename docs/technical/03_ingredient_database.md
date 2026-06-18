@@ -1,12 +1,22 @@
 # Ingredient Database
 
-The `@gram/analyzer` queries an external ingredient database to perform physical mass normalization, yield adjustments, and nutritional estimation. 
+It is important to understand that the core language compiler (`@gram/compiler`) **does not** need an ingredient database. It only validates the syntax and builds the structural AST of the recipe.
 
-## 1. Database Architecture
+The ingredient database is exclusively used by the **`@gram/analyzer`** (an optional layer). The analyzer "overloads" and enriches the recipes with physical mass normalization, yield adjustments, and nutritional estimation, **if and only if** a database is provided.
 
-The host application (such as the Playground or a custom server CLI) is responsible for loading the database from files and passing it directly as a JavaScript object/dictionary to the `analyze` function of `@gram/analyzer`. 
+## 1. Database Architecture (The "Host" Pattern)
 
-By default, in the GRAM monorepo, the reference database is loaded from files by the host application. A complete YAML fixture example is available in `packages/analyzer/tests/fixtures/ingredients.yaml` which serves as the Living Documentation for the expected schema.
+Because Gram is designed to be environment-agnostic, the analyzer does not know how to read files or make HTTP requests. 
+
+The **host application** (such as the VS Code extension, the Playground, or a custom server CLI) is responsible for providing this data. It acts as an adapter:
+
+*   **VS Code Extension / Local Projects:** The extension (the "host") looks for a `.gram/ingredients.yaml` file in the user's workspace. The extension reads this file and passes it to the analyzer.
+*   **Playground / Web:** The playground (the "host") passes a hardcoded JSON object or fetches data from an API.
+*   **Custom Backend:** A Node.js backend might query a real database (like PostgreSQL) and pass the result to the analyzer.
+
+In all cases, the host must pass the data as a JavaScript object/dictionary to the `analyze` function of `@gram/analyzer`.
+
+A complete YAML fixture example is available in `packages/analyzer/tests/fixtures/ingredients.yaml` which serves as the Living Documentation for the expected schema.
 
 ### 1.1. Schema Specification
 
