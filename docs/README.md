@@ -29,6 +29,9 @@ Detailed explanation of compiler and analyzer features.
 *   [**Yield Management**](./features/02_yield_management.md) - Net vs Gross weight (Waste factor).
 *   [**Nutritional Estimation**](./features/03_nutritional_estimation.md) - Calorie and Macro calculation.
 
+### IDE & Tooling
+*   [**VS Code Extension**](./features/06_vscode_extension.md) - Features, configuration, and capabilities of the official editor extension.
+
 ### Technical & Architecture
 For contributors and developers implementing GRAM:
 
