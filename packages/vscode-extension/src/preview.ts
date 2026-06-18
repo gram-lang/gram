@@ -75,8 +75,23 @@ export class PreviewPanel {
     <title>GRAM Preview</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="${cssUri}" rel="stylesheet">
+    <style nonce="${nonce}">
+        :root {
+            --background: var(--vscode-editor-background);
+            --foreground: var(--vscode-editor-foreground);
+            --card: var(--vscode-editorWidget-background);
+            --card-foreground: var(--vscode-editorWidget-foreground);
+            --secondary: color-mix(in srgb, var(--vscode-editor-foreground) 5%, var(--vscode-editor-background));
+            --muted: var(--vscode-editorWidget-background);
+            --muted-foreground: var(--vscode-descriptionForeground);
+            --border: var(--vscode-widget-border);
+            --radius: 0.5rem;
+            --font-sans: 'Inter', var(--vscode-font-family);
+            --font-mono: var(--vscode-editor-font-family);
+        }
+    </style>
 </head>
-<body class="${this._showMacros ? 'show-macros' : ''}">
+<body class="gram-preview ${this._showMacros ? 'show-macros' : ''}">
     <div id="content">${initialHtml}</div>
     <script nonce="${nonce}">
         window.addEventListener('message', event => {

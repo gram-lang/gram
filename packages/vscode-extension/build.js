@@ -24,6 +24,20 @@ async function build() {
         console.warn('[vscode-extension/build] Language server bundle not found, skipping copy.');
         console.warn('  Expected:', serverSrc);
     }
+
+    // Copy the shared renderer CSS
+    const cssSrc = path.join(__dirname, '..', 'renderer', 'gram.css');
+    const mediaDest = path.join(__dirname, 'media');
+    if (!fs.existsSync(mediaDest)) {
+        fs.mkdirSync(mediaDest, { recursive: true });
+    }
+    const cssDst = path.join(mediaDest, 'preview.css');
+    if (fs.existsSync(cssSrc)) {
+        fs.copyFileSync(cssSrc, cssDst);
+    } else {
+        console.warn('[vscode-extension/build] Renderer CSS not found, skipping copy.');
+        console.warn('  Expected:', cssSrc);
+    }
 }
 
 build().catch(() => process.exit(1));
