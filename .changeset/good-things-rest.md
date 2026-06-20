@@ -7,7 +7,7 @@
 "@gram/parser": minor
 ---
 
-_Core language update to enforce new syntax adjustments (breaking changes)._
+Core language update to enforce new syntax adjustments (breaking changes).
 
 * **Grammar & Parsing**: 
   * Made `{}` optional for single-word ingredients.

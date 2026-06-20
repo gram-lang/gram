@@ -9,7 +9,7 @@
 "@gram/i18n": minor
 ---
 
-_Complete overhaul of the VS Code Extension with Language Server, Live Preview, and advanced assistance_
+Complete overhaul of the VS Code Extension with Language Server, Live Preview, and advanced assistance
 
 **Major New Features:**
 - **Full Language Server (LSP)**: The extension now ships with a complete language server. All advanced features activate instantly upon opening a `.gram` file.

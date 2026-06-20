@@ -1,0 +1,63 @@
+import { defineCommand } from 'citty'
+import { spinner } from '@clack/prompts'
+import { loadConfig } from '../core/config'
+import { loadDb } from '../core/db'
+import { resolveGlob } from '../core/glob'
+import { checkFiles } from '../services/checker'
+import { renderCheckResult } from '../ui/diagnostics'
+import { ExitCode, GramCLIError } from '../errors'
+import { log } from '@clack/prompts'
+
+export default defineCommand({
+  meta: {
+    name: 'check',
+    description: 'Validate .gram recipe files for syntax and structure errors',
+  },
+  args: {
+    pattern: {
+      type: 'positional',
+      description: 'File path or glob pattern (default: **/*.gram)',
+      required: false,
+    },
+    db: {
+      type: 'string',
+      description: 'Path to ingredient database YAML',
+    },
+    'skip-db': {
+      type: 'boolean',
+      description: 'Skip ingredient database enrichment',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    // args._ holds all positional args; fall back to project-wide glob
+    const patterns = args._.length > 0 ? args._ : ['**/*.gram']
+    let files: string[] = []
+    try {
+      files = resolveGlob(patterns)
+    } catch (err) {
+      if (err instanceof GramCLIError) {
+        log.error(err.message)
+        process.exit(err.exitCode)
+      }
+      throw err
+    }
+
+    const config = await loadConfig()
+    const db = args['skip-db'] ? null : await loadDb(config, args.db)
+
+    const n = files.length
+    const s = spinner()
+    s.start(`Checking ${n} file${n !== 1 ? 's' : ''}…`)
+
+    const result = await checkFiles(files, { db: db ?? undefined })
+
+    s.stop(`Checked ${n} file${n !== 1 ? 's' : ''}.`)
+
+    renderCheckResult(result)
+
+    if (result.hasErrors) {
+      process.exit(ExitCode.Error)
+    }
+  },
+})

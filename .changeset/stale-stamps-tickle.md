@@ -7,4 +7,4 @@
 "@gram/parser": minor
 ---
 
-_Complete overhaul of the documentation to reflect the new syntax changes._
+Complete overhaul of the documentation to reflect the new syntax changes.
