@@ -31,6 +31,7 @@ Detailed explanation of compiler and analyzer features.
 
 ### IDE & Tooling
 *   [**VS Code Extension**](./features/06_vscode_extension.md) - Features, configuration, and capabilities of the official editor extension.
+*   [**Command Line Interface**](./features/07_cli.md) - Using the official CLI to compile, validate, and manage recipes.
 
 ### Technical & Architecture
 For contributors and developers implementing GRAM:

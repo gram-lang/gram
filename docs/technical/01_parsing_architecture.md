@@ -78,3 +78,11 @@ The parser enforces structures to ensure recipe metrics are computable:
 *   **Mass Normalization**: Resolves count/volume quantities to grams (`g`) using density and unit weight mappings from the provided database and YAML metadata overrides.
 *   **Yield Percentage Calculations**: Adjusts recipe net masses to gross purchasing masses (e.g. peeling waste factors) dynamically.
 *   **Nutritional Estimations**: Computes calories and macros per recipe and per portion based onportion headers and ingredient database lookups.
+
+### 4.1. The "Envelope" Pattern (`AnalysisResult`)
+
+The `analyze()` function does not directly return the modified JSON AST. Instead, it returns an **"Envelope"** (the `AnalysisResult` object) containing two distinct parts:
+1. `result`: The final, physically-enriched recipe JSON AST.
+2. `missingIngredients`: Diagnostic metadata generated during the database reconciliation phase.
+
+This architectural separation of concerns ensures that diagnostic logs (used by the CLI `check` command or the Language Server to display warnings) do not pollute the pure business data of the recipe (`result`), which is cleanly extracted by the CLI `build` command for frontend consumption.
