@@ -8,10 +8,16 @@ function errorToDiagnostic(file: string, err: unknown): Diagnostic {
   const lineMatch = message.match(/line[: ]+(\d+)/i)
   return {
     level: 'error',
+    category: 'Structure',
     file,
     message,
     line: lineMatch ? parseInt(lineMatch[1]!, 10) : undefined,
   }
+}
+
+function getLineFromOffset(content: string, offset?: number): number | undefined {
+  if (offset == null) return undefined
+  return content.slice(0, offset).split('\n').length
 }
 
 export async function checkFiles(
@@ -25,14 +31,22 @@ export async function checkFiles(
     files.map(file =>
       limit(async () => {
         try {
-          const { compiled, analyzed } = await runPipeline(file, { db: opts.db })
+          const { content, compiled, analyzed } = await runPipeline(file, { db: opts.db })
 
-          // Compiler structural warnings (undefined references, scope conflicts, etc.)
+          // Compiler structural errors (undefined references, scope conflicts, etc.)
           for (const w of compiled.warnings) {
+            const isObj = typeof w !== 'string'
+            const msg = isObj ? (w as any).message : w
+            const loc = isObj ? (w as any).loc : undefined
+            
+            const line = loc?.start?.line ?? loc?.line ?? getLineFromOffset(content, loc?.start ?? loc?.offset)
+
             diagnostics.push({
-              level: 'warning',
+              level: 'error',
+              category: 'Structure',
               file,
-              message: typeof w === 'string' ? w : (w as { message: string }).message,
+              message: msg,
+              line,
             })
           }
 
@@ -41,6 +55,7 @@ export async function checkFiles(
             for (const id of analyzed.missingIngredients) {
               diagnostics.push({
                 level: 'warning',
+                category: 'Database',
                 file,
                 message: `"${id}" not found in ingredient database.`,
               })

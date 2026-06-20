@@ -7,6 +7,7 @@ import type { AnalysisResult, IngredientData } from '@gram/analyzer'
 import type { PipelineOptions } from '../types'
 
 export interface PipelineResult {
+  content: string
   compiled: CompilationResult
   analyzed: AnalysisResult | null
 }
@@ -22,5 +23,5 @@ export async function runPipeline(
   const analyzed =
     !opts.skipAnalyzer && opts.db ? analyze(compiled, opts.db) : null
 
-  return { compiled, analyzed }
+  return { content, compiled, analyzed }
 }

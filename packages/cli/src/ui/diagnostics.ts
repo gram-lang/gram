@@ -24,18 +24,29 @@ export function renderCheckResult(result: CheckResult): void {
     return
   }
 
-  for (const [file, diags] of groupByFile(result.diagnostics)) {
+    for (const [file, diags] of groupByFile(result.diagnostics)) {
     console.log()
     console.log(chalk.bold(displayPath(file)))
+    
+    const byCategory = new Map<string, Diagnostic[]>()
     for (const d of diags) {
-      const loc = d.line != null ? chalk.dim(`  line ${d.line}  `) : '  '
-      const icon =
-        d.level === 'error'
-          ? chalk.red('✗')
-          : d.level === 'warning'
-            ? chalk.yellow('⚠')
-            : chalk.blue('·')
-      console.log(`${loc}${icon} ${d.message}`)
+      const bucket = byCategory.get(d.category) ?? []
+      bucket.push(d)
+      byCategory.set(d.category, bucket)
+    }
+
+    for (const [category, catDiags] of byCategory) {
+      console.log(chalk.dim(`  [${category}]`))
+      for (const d of catDiags) {
+        const loc = d.line != null ? chalk.dim(`  line ${String(d.line).padEnd(2)} `) : '  '
+        const icon =
+          d.level === 'error'
+            ? chalk.red('✗')
+            : d.level === 'warning'
+              ? chalk.yellow('⚠')
+              : chalk.blue('·')
+        console.log(`  ${loc}${icon} ${d.message}`)
+      }
     }
   }
 

@@ -4,6 +4,7 @@ export type DiagnosticLevel = 'error' | 'warning' | 'info'
 
 export interface Diagnostic {
   level: DiagnosticLevel
+  category: 'Structure' | 'Database'
   file: string
   message: string
   line?: number
