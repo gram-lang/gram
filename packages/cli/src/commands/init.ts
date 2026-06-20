@@ -94,6 +94,16 @@ export default defineCommand({
       }
     }
 
+    const gitignorePath = join(gramDir, '.gitignore')
+    let gitignoreExists = false
+    try {
+      await access(gitignorePath)
+      gitignoreExists = true
+    } catch { }
+    if (!gitignoreExists) {
+      await writeFile(gitignorePath, '# Prevent committing sensitive API keys if used in config\n*.key\n.env*\n')
+    }
+
     const nextSteps = [
       'Edit .gram/config.yaml to adjust your project settings.',
       createDb ? 'Fill .gram/ingredients.yaml with your ingredient data.' : '',
