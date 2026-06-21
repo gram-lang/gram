@@ -10,7 +10,7 @@ import { DEFAULT_AI_MODEL } from '../core/ai'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 const SYSTEM_PROMPT =
-  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (rayon de supermarché). Then provide other useful free-form "tagSuggestions" (e.g., vegan, sans-gluten, allergen, etc.). For aliases, provide highly specific synonyms or regional names, avoiding generic terms that could conflict.'
+  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (rayon de supermarché). Then provide other useful free-form "tagSuggestions" (e.g., vegan, sans-gluten, allergen, etc.).'
 
 const RESPONSE_SCHEMA = {
   type: SchemaType.OBJECT,
@@ -36,7 +36,6 @@ const RESPONSE_SCHEMA = {
               sodium: { type: SchemaType.NUMBER },
             },
           },
-          aliasSuggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
           aisle: {
             type: SchemaType.STRING,
             enum: [
@@ -78,7 +77,6 @@ const EnrichItemSchema = z.object({
       sodium: z.number().min(0).optional(),
     })
     .optional(),
-  aliasSuggestions: z.array(z.string()).default([]),
   aisle: z.string().default('Autre'),
   tagSuggestions: z.array(z.string()).default([]),
 })
@@ -139,7 +137,7 @@ export async function enrichDb(
     batches.map(batch =>
       limit(async () => {
         const prompt = JSON.stringify(
-          batch.map(([id, ing]) => ({ key: id, name: ing.name, aliases: ing.aliases ?? [] })),
+          batch.map(([id, ing]) => ({ key: id, name: ing.name })),
         )
 
         const batchEnriched: string[] = []
@@ -169,7 +167,6 @@ export async function enrichDb(
             density: item.density,
             unit_weight: item.unit_weight,
             nutrition: item.nutrition,
-            aliasSuggestions: item.aliasSuggestions,
             tagSuggestions: Array.from(new Set([item.aisle, ...item.tagSuggestions].filter(Boolean))),
           }
           enriched.push(entry)
@@ -216,13 +213,7 @@ export async function enrichDb(
             }
           }
 
-          if (entry.aliasSuggestions.length > 0) {
-            const existingAliases = ingNode.get('aliases') as string[] | null | undefined
-            if (!existingAliases || existingAliases.length === 0) {
-              ingNode.set('aliases', doc.createNode(entry.aliasSuggestions))
-            }
-          }
-          if (entry.tagSuggestions.length > 0) {
+          if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
             const existingTags = ingNode.get('tags') as string[] | null | undefined
             if (!existingTags || existingTags.length === 0) {
               ingNode.set('tags', doc.createNode(entry.tagSuggestions))

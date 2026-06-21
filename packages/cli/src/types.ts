@@ -109,7 +109,6 @@ export interface EnrichEntry {
     fiber?: number
     sodium?: number
   }
-  aliasSuggestions: string[]
   tagSuggestions: string[]
 }
 
