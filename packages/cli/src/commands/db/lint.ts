@@ -48,17 +48,17 @@ export default defineCommand({
     }
 
     const s = spinner()
-    s.start('Analyse de la base via AI…')
+    s.start('Analyzing database via AI…')
 
     let result
     try {
       result = await lintDb(db, config, model, { dbPathOverride: args.db })
     } catch (err) {
-      s.stop('Erreur.')
+      s.stop('Error.')
       throw err
     }
 
-    s.stop(`Analyse terminée — ${result.issues.length} problème${result.issues.length !== 1 ? 's' : ''} trouvé${result.issues.length !== 1 ? 's' : ''}.`)
+    s.stop(`Analysis complete — ${result.issues.length} issue${result.issues.length !== 1 ? 's' : ''} found.`)
 
     if (result.issues.length === 0 || args.report) {
       renderLintReport(result)
@@ -68,7 +68,7 @@ export default defineCommand({
     renderLintReport(result)
 
     if (!process.stdout.isTTY) {
-      log.warn('Mode non-interactif détecté — relancez avec --report pour voir les détails.')
+      log.warn('Non-interactive mode detected — run with --report to view details.')
       process.exit(ExitCode.Ok)
     }
 

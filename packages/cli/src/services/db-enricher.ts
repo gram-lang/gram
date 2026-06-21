@@ -10,20 +10,20 @@ import { withFileLock, atomicWrite } from '../core/lock'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 const SYSTEM_PROMPT =
-  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (rayon de supermarché). Then provide other useful free-form "tagSuggestions" (e.g., vegan, sans-gluten, allergen, etc.).'
+  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (supermarket aisle). Then provide other useful free-form "tagSuggestions" (e.g., vegan, gluten-free, allergen, etc.).'
 
 const AISLES = [
-  'Fruits & Légumes',
-  'Viandes & Poissons',
-  'Produits Laitiers',
-  'Boulangerie',
-  'Épicerie Sucrée',
-  'Épicerie Salée',
-  'Boissons',
-  'Surgelés',
-  'Frais',
-  'Produits secs',
-  'Autre',
+  'Fruits & Vegetables',
+  'Meat & Seafood',
+  'Dairy & Eggs',
+  'Bakery',
+  'Sweet Groceries',
+  'Savory Groceries',
+  'Beverages',
+  'Frozen Foods',
+  'Fresh Foods',
+  'Dry Goods',
+  'Other',
 ] as const
 
 const EnrichItemSchema = z.object({

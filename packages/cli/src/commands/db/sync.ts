@@ -76,7 +76,7 @@ export default defineCommand({
         } else {
           for (const match of analysis.fuzzyMatches) {
             log.warn(
-              `"${match.newId}" ressemble à "${match.existingId}" (${pct(match.score)}%) — créé comme nouvelle entrée (mode non-interactif)`,
+              `"${match.newId}" is similar to "${match.existingId}" (${pct(match.score)}%) — created as new entry (non-interactive mode)`,
             )
           }
         }
@@ -104,21 +104,21 @@ function pct(score: number): number {
 
 async function promptFuzzyMatch(match: FuzzyMatch): Promise<string> {
   const answer = await select({
-    message: `"${match.newId}" ressemble à "${match.existingId}" (${pct(match.score)}% de similarité)`,
+    message: `"${match.newId}" is similar to "${match.existingId}" (${pct(match.score)}% similarity)`,
     options: [
       {
         value: `alias-of:${match.existingId}`,
-        label: `Ajouter comme alias de "${match.existingId}"`,
-        hint: 'recommandé — zéro doublon, rétrocompatible',
+        label: `Add as alias of "${match.existingId}"`,
+        hint: 'recommended — no duplicates, backward compatible',
       },
       {
         value: 'new',
-        label: 'Créer une nouvelle entrée indépendante',
-        hint: 'si c\'est réellement un ingrédient différent',
+        label: 'Create a new independent entry',
+        hint: 'if it is genuinely a different ingredient',
       },
       {
         value: 'ignore',
-        label: 'Ignorer pour l\'instant',
+        label: 'Ignore for now',
       },
     ],
   })

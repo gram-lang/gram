@@ -31,7 +31,7 @@ const DB_TEMPLATE = `# GRAM ingredient database
 
 function guardCancel<T>(value: T | symbol): T {
   if (isCancel(value)) {
-    cancel('Initialisation annulée.')
+    cancel('Initialization canceled.')
     process.exit(ExitCode.Ok)
   }
   return value as T

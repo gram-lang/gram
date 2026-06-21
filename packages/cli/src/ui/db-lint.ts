@@ -14,7 +14,7 @@ export function renderLintReport(result: LintResult): void {
 
   console.log()
   if (plurals.length > 0) {
-    console.log(chalk.bold('  Pluriels détectés'))
+    console.log(chalk.bold('  Plurals detected'))
     for (const issue of plurals) {
       console.log(
         `  ${chalk.yellow('→')} ${issue.suggestion.aliasIds.join(', ')} ${chalk.dim('→')} ${chalk.cyan(issue.suggestion.keepId)}`,
@@ -24,19 +24,19 @@ export function renderLintReport(result: LintResult): void {
   }
 
   if (duplicates.length > 0) {
-    console.log(chalk.bold('  Doublons sémantiques'))
+    console.log(chalk.bold('  Semantic duplicates'))
     for (const issue of duplicates) {
-      const conflict = issue.hasNutritionConflict ? chalk.red(' (conflit nutrition)') : ''
+      const conflict = issue.hasNutritionConflict ? chalk.red(' (nutrition conflict)') : ''
       console.log(
-        `  ${chalk.yellow('→')} ${issue.ids.join(', ')} ${chalk.dim('→')} conserver ${chalk.cyan(issue.suggestion.keepId)}${conflict}`,
+        `  ${chalk.yellow('→')} ${issue.ids.join(', ')} ${chalk.dim('→')} keep ${chalk.cyan(issue.suggestion.keepId)}${conflict}`,
       )
     }
     console.log()
   }
 
   log.warn(
-    `${result.issues.length} problème${result.issues.length !== 1 ? 's' : ''} détecté${result.issues.length !== 1 ? 's' : ''}. ` +
-      `Relancez sans --report pour les corriger.`,
+    `${result.issues.length} issue${result.issues.length !== 1 ? 's' : ''} detected. ` +
+      `Run without --report to fix them.`,
   )
 }
 
@@ -57,14 +57,14 @@ async function promptIssue(index: number, issue: LintIssue): Promise<LintDecisio
 
   if (issue.type === 'plural') {
     const answer = await select({
-      message: `Pluriel : "${aliasIds.join('", "')}" → fusionner dans "${keepId}" ?`,
+      message: `Plural: "${aliasIds.join('", "')}" → merge into "${keepId}"?`,
       options: [
         {
           value: 'apply',
-          label: `Fusionner — ajouter ${aliasIds.map(a => `"${a}"`).join(', ')} comme alias de "${keepId}"`,
-          hint: 'rétrocompatible, zéro rupture',
+          label: `Merge — add ${aliasIds.map(a => `"${a}"`).join(', ')} as alias of "${keepId}"`,
+          hint: 'backward compatible, no breaking changes',
         },
-        { value: 'skip', label: 'Ignorer' },
+        { value: 'skip', label: 'Skip' },
       ],
     })
     return {
@@ -75,14 +75,14 @@ async function promptIssue(index: number, issue: LintIssue): Promise<LintDecisio
 
   // duplicate
   const answer = await select({
-    message: `Doublon : "${issue.ids.join('", "')}" — conserver "${keepId}" et supprimer les autres ?`,
+    message: `Duplicate: "${issue.ids.join('", "')}" — keep "${keepId}" and remove others?`,
     options: [
       {
         value: 'apply',
-        label: `Fusionner dans "${keepId}"`,
-        hint: issue.hasNutritionConflict ? 'nutrition à choisir à l\'étape suivante' : undefined,
+        label: `Merge into "${keepId}"`,
+        hint: issue.hasNutritionConflict ? 'nutrition to choose in the next step' : undefined,
       },
-      { value: 'skip', label: 'Ignorer' },
+      { value: 'skip', label: 'Skip' },
     ],
   })
 
@@ -95,10 +95,10 @@ async function promptIssue(index: number, issue: LintIssue): Promise<LintDecisio
   }
 
   const nutrition = await select({
-    message: `Conflit nutrition entre "${keepId}" et "${aliasIds[0]}" — quelle valeur conserver ?`,
+    message: `Nutrition conflict between "${keepId}" and "${aliasIds[0]}" — which value to keep?`,
     options: [
-      { value: 'keep', label: `Garder la nutrition de "${keepId}"` },
-      { value: 'source', label: `Utiliser la nutrition de "${aliasIds[0]}"` },
+      { value: 'keep', label: `Keep nutrition from "${keepId}"` },
+      { value: 'source', label: `Use nutrition from "${aliasIds[0]}"` },
     ],
   })
 
@@ -115,12 +115,12 @@ export function renderLintSummary(
 ): void {
   const { applied, skipped } = result
   if (applied === 0) {
-    log.info('Aucune correction appliquée.')
+    log.info('No fixes applied.')
     return
   }
   log.success(
-    `${applied} correction${applied !== 1 ? 's' : ''} appliquée${applied !== 1 ? 's' : ''}` +
-      (skipped > 0 ? `, ${skipped} ignorée${skipped !== 1 ? 's' : ''}` : '') +
+    `${applied} fix${applied !== 1 ? 'es' : ''} applied` +
+      (skipped > 0 ? `, ${skipped} skipped` : '') +
       ` — ${dbPath}`,
   )
 }
