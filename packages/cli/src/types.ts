@@ -167,9 +167,10 @@ export interface GramConfig {
   database?: string
   language?: string
   ai?: {
-    provider?: string
-    apiKey?: string
+    provider?: 'google' | 'openai' | 'anthropic' | 'ollama'
     model?: string
+    apiKey?: string
+    baseUrl?: string
   }
   /** Absolute path to the project root (.gram/ directory ancestor). Set by loadConfig(). */
   projectRoot: string

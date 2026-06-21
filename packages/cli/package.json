@@ -12,16 +12,21 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.85",
+    "@ai-sdk/google": "^3.0.83",
+    "@ai-sdk/openai": "^3.0.73",
+    "@ai-sdk/openai-compatible": "^2.0.51",
     "@clack/prompts": "latest",
-    "@google/generative-ai": "^0.24.1",
     "@gram/analyzer": "workspace:*",
     "@gram/kitchen": "workspace:*",
     "@gram/parser": "workspace:*",
     "@gram/renderer": "workspace:*",
+    "ai": "^6.0.208",
     "chalk": "^5.4.0",
     "citty": "latest",
     "defu": "latest",
     "p-limit": "latest",
+    "recipe-ingredient-parser-v3": "^1.5.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {

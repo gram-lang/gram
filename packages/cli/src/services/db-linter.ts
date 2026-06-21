@@ -2,34 +2,13 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { parseDocument, isMap, isSeq } from 'yaml'
 import { z } from 'zod'
-import type { GoogleGenerativeAI } from '@google/generative-ai'
-import { SchemaType } from '@google/generative-ai'
+import { generateObject } from 'ai'
+import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
-import { DEFAULT_AI_MODEL } from '../core/ai'
 import type { GramConfig, LintResult, LintIssue, LintOptions } from '../types'
 
 const SYSTEM_PROMPT =
   'You are a culinary database assistant. Analyze ingredient database keys and identify linguistic or semantic issues. Be conservative: only report high-confidence issues.'
-
-const RESPONSE_SCHEMA = {
-  type: SchemaType.OBJECT,
-  properties: {
-    issues: {
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          type: { type: SchemaType.STRING, enum: ['plural', 'duplicate'] },
-          ids: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-          keepId: { type: SchemaType.STRING },
-          aliasIds: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-        },
-        required: ['type', 'ids', 'keepId', 'aliasIds'],
-      },
-    },
-  },
-  required: ['issues'],
-}
 
 const LintIssueRawSchema = z.object({
   type: z.enum(['plural', 'duplicate']),
@@ -45,21 +24,12 @@ const LintResponseSchema = z.object({
 export async function lintDb(
   db: Record<string, IngredientData>,
   config: GramConfig,
-  ai: GoogleGenerativeAI,
+  model: LanguageModel,
   opts: LintOptions = {},
 ): Promise<LintResult> {
   const dbPath = resolve(opts.dbPathOverride ?? config.database ?? '.gram/ingredients.yaml')
 
   const keys = Object.entries(db).map(([id, ing]) => ({ key: id, name: ing.name }))
-
-  const model = ai.getGenerativeModel({
-    model: config.ai?.model ?? DEFAULT_AI_MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA as any,
-    },
-  })
 
   const prompt = `Analyze these ingredient database keys and find:
 1. Keys that are plurals of another key in the list (e.g. "oeufs" when "oeuf" exists). Propose the singular form as keepId.
@@ -70,15 +40,17 @@ Only report issues where all IDs actually appear in the provided list. Be conser
 Ingredient list:
 ${JSON.stringify(keys, null, 2)}`
 
-  const res = await model.generateContent(prompt)
-  const text = res.response.text()
-  const raw = LintResponseSchema.parse(JSON.parse(text))
+  const { object: raw } = await generateObject({
+    model,
+    system: SYSTEM_PROMPT,
+    prompt,
+    schema: LintResponseSchema,
+  })
 
   const dbKeys = new Set(Object.keys(db))
 
   const issues: LintIssue[] = []
   for (const item of raw.issues) {
-    // Verify all ids exist in the actual DB (guard against hallucinations)
     if (!item.ids.every(id => dbKeys.has(id))) continue
     if (!dbKeys.has(item.keepId)) continue
     if (!item.aliasIds.every(id => dbKeys.has(id))) continue
@@ -130,18 +102,14 @@ export async function applyLintDecisions(
     const { keepId, aliasIds } = issue.suggestion
 
     if (issue.type === 'plural') {
-      // Rename keepId if needed (it might already be the canonical form)
-      // Add aliasIds as aliases on the keepId node
       const keepNode = ingredientsMap.get(keepId, true)
       if (!isMap(keepNode)) { skipped++; continue }
 
       for (const aliasId of aliasIds) {
         if (aliasId === keepId) continue
 
-        // If the alias key exists as a separate entry, merge its data then delete it
         const aliasNode = ingredientsMap.get(aliasId, true)
         if (isMap(aliasNode)) {
-          // Absorb any aliases the old entry had
           const oldAliases = (aliasNode.get('aliases') as string[] | null) ?? []
           _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
           _deleteKey(ingredientsMap, aliasId)
@@ -150,7 +118,6 @@ export async function applyLintDecisions(
         }
       }
     } else {
-      // duplicate: full merge
       const keepNode = ingredientsMap.get(keepId, true)
       if (!isMap(keepNode)) { skipped++; continue }
 
@@ -160,18 +127,15 @@ export async function applyLintDecisions(
         const sourceNode = ingredientsMap.get(aliasId, true)
         if (!isMap(sourceNode)) continue
 
-        // Merge nutrition if requested
         if (decision.keepNutrition === 'source') {
           const sourceNutrition = sourceNode.get('nutrition', true)
           if (sourceNutrition) keepNode.set('nutrition', sourceNutrition)
         }
 
-        // Merge physical data if keep node lacks it
         const keepPhys = keepNode.get('physical')
         const sourcePhys = sourceNode.get('physical', true)
         if (!keepPhys && sourcePhys) keepNode.set('physical', sourcePhys)
 
-        // Absorb aliases
         const oldAliases = (sourceNode.get('aliases') as string[] | null) ?? []
         _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
 
@@ -182,7 +146,6 @@ export async function applyLintDecisions(
     applied++
   }
 
-  // Re-sort alphabetically
   ingredientsMap.items.sort((a, b) => String(a.key).localeCompare(String(b.key)))
   for (let i = 1; i < ingredientsMap.items.length; i++) {
     const item = ingredientsMap.items[i]
@@ -200,7 +163,6 @@ function _addAliasesToNode(doc: ReturnType<typeof parseDocument>, node: any, new
   const merged = Array.from(new Set([...existing, ...newAliases]))
   const aliasesNode = node.get('aliases', true)
   if (isSeq(aliasesNode)) {
-    // Clear and repopulate to avoid duplicates
     aliasesNode.items.length = 0
     for (const a of merged) aliasesNode.add(doc.createNode(a))
   } else {

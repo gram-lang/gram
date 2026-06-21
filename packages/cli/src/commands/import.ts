@@ -3,8 +3,10 @@ import { log } from '@clack/prompts'
 import { writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { version } from '../../package.json'
-import { importJsonLd } from '../services/importer'
+import { importJsonLd, importWithAI } from '../services/importer'
 import { renderImportResult } from '../ui/importer'
+import { loadConfig } from '../core/config'
+import { loadAiModel } from '../core/ai'
 import { ExitCode, GramCLIError } from '../errors'
 
 export default defineCommand({
@@ -20,17 +22,37 @@ export default defineCommand({
       alias: 'o',
       description: 'Output .gram file (default: stdout)',
     },
+    ai: {
+      type: 'boolean',
+      description: 'Use configured AI for semantic translation (requires ai config)',
+      default: false,
+    },
   },
   async run({ args }) {
     const source = args.source as string
     const outputPath = args.output ? resolve(args.output) : undefined
-
-    // Logs go to stderr when outputting to stdout so the gram content stays clean
     const useStdout = !outputPath
 
     let result
     try {
-      result = await importJsonLd(source)
+      if (args.ai) {
+        const config = await loadConfig()
+        let model
+        try {
+          model = loadAiModel(config)
+        } catch (err) {
+          if (err instanceof GramCLIError) {
+            log.error(err.message)
+            process.exit(err.exitCode)
+          }
+          throw err
+        }
+        // Inform user which model is being used (to stderr so stdout stays clean)
+        process.stderr.write(`  Using AI model for import…\n`)
+        result = await importWithAI(source, model)
+      } else {
+        result = await importJsonLd(source)
+      }
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
@@ -44,7 +66,6 @@ export default defineCommand({
       renderImportResult(result, source, outputPath)
     } else {
       if (useStdout) {
-        // Print import summary to stderr, gram content to stdout
         process.stderr.write('\n')
         process.stderr.write(`  ${'Title'.padEnd(14)} ${result.title}\n`)
         process.stderr.write(`  ${'Ingredients'.padEnd(14)} ${result.ingredientCount}\n`)

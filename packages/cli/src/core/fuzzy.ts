@@ -42,3 +42,52 @@ export function findSimilarInDb(
   }
   return best
 }
+
+/**
+ * Find the best matching position of `name` inside `text` using a sliding
+ * n-gram window over words. Returns start/end char offsets or null if no
+ * match exceeds the threshold.
+ */
+export function matchInText(
+  name: string,
+  text: string,
+  threshold = 0.72,
+): { start: number; end: number } | null {
+  if (!name || !text) return null
+
+  const normName = name.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
+  const normText = text.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
+
+  // Build word-boundary positions from the original text
+  const wordRe = /\S+/g
+  const words: Array<{ word: string; start: number; end: number }> = []
+  let m: RegExpExecArray | null
+  while ((m = wordRe.exec(normText)) !== null) {
+    words.push({ word: m[0], start: m.index, end: m.index + m[0].length })
+  }
+
+  if (words.length === 0) return null
+
+  const nameWordCount = normName.split(/\s+/).length
+  // Slide a window of nameWordCount ± 1 words
+  const windowSizes = Array.from(
+    new Set([nameWordCount - 1, nameWordCount, nameWordCount + 1].filter(n => n > 0)),
+  )
+
+  let bestScore = 0
+  let bestMatch: { start: number; end: number } | null = null
+
+  for (const size of windowSizes) {
+    for (let i = 0; i <= words.length - size; i++) {
+      const chunk = words.slice(i, i + size)
+      const chunkText = chunk.map(w => w.word).join(' ')
+      const score = similarity(normName, chunkText)
+      if (score > bestScore) {
+        bestScore = score
+        bestMatch = { start: chunk[0]!.start, end: chunk[chunk.length - 1]!.end }
+      }
+    }
+  }
+
+  return bestScore >= threshold ? bestMatch : null
+}

@@ -3,64 +3,28 @@ import { readFile, mkdir } from 'node:fs/promises'
 import { resolve, dirname, join } from 'node:path'
 import { parseDocument, isMap } from 'yaml'
 import { z } from 'zod'
-import type { GoogleGenerativeAI } from '@google/generative-ai'
-import { SchemaType } from '@google/generative-ai'
+import { generateObject } from 'ai'
+import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
-import { DEFAULT_AI_MODEL } from '../core/ai'
 import { withFileLock, atomicWrite } from '../core/lock'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 const SYSTEM_PROMPT =
   'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (rayon de supermarché). Then provide other useful free-form "tagSuggestions" (e.g., vegan, sans-gluten, allergen, etc.).'
 
-const RESPONSE_SCHEMA = {
-  type: SchemaType.OBJECT,
-  properties: {
-    ingredients: {
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          key: { type: SchemaType.STRING },
-          density: { type: SchemaType.NUMBER },
-          unit_weight: { type: SchemaType.NUMBER },
-          nutrition: {
-            type: SchemaType.OBJECT,
-            properties: {
-              calories: { type: SchemaType.NUMBER },
-              carbs: { type: SchemaType.NUMBER },
-              protein: { type: SchemaType.NUMBER },
-              fat: { type: SchemaType.NUMBER },
-              sugar: { type: SchemaType.NUMBER },
-              sat_fat: { type: SchemaType.NUMBER },
-              fiber: { type: SchemaType.NUMBER },
-              sodium: { type: SchemaType.NUMBER },
-            },
-          },
-          aisle: {
-            type: SchemaType.STRING,
-            enum: [
-              'Fruits & Légumes',
-              'Viandes & Poissons',
-              'Produits Laitiers',
-              'Boulangerie',
-              'Épicerie Sucrée',
-              'Épicerie Salée',
-              'Boissons',
-              'Surgelés',
-              'Frais',
-              'Produits secs',
-              'Autre'
-            ]
-          },
-          tagSuggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-        },
-        required: ['key'],
-      },
-    },
-  },
-  required: ['ingredients'],
-}
+const AISLES = [
+  'Fruits & Légumes',
+  'Viandes & Poissons',
+  'Produits Laitiers',
+  'Boulangerie',
+  'Épicerie Sucrée',
+  'Épicerie Salée',
+  'Boissons',
+  'Surgelés',
+  'Frais',
+  'Produits secs',
+  'Autre',
+] as const
 
 const EnrichItemSchema = z.object({
   key: z.string(),
@@ -78,7 +42,7 @@ const EnrichItemSchema = z.object({
       sodium: z.number().min(0).optional(),
     })
     .optional(),
-  aisle: z.string().default('Autre'),
+  aisle: z.enum(AISLES).default('Autre'),
   tagSuggestions: z.array(z.string()).default([]),
 })
 
@@ -96,13 +60,12 @@ function resolveDbPath(config: GramConfig, override?: string): string {
 export async function enrichDb(
   db: Record<string, IngredientData>,
   config: GramConfig,
-  ai: GoogleGenerativeAI,
+  model: LanguageModel,
   opts: EnrichOptions = {},
 ): Promise<EnrichResult> {
   const dbPath = resolveDbPath(config, opts.dbPathOverride)
   const field = opts.field ?? 'all'
 
-  // Filter ingredients to enrich
   let toEnrich = Object.entries(db).filter(([, ing]) => {
     const needsDensity = !ing.physical?.density
     const needsNutrition = !ing.nutrition
@@ -120,15 +83,6 @@ export async function enrichDb(
   if (toEnrich.length === 0) {
     return { dbPath, totalIncomplete: 0, enriched: [], skipped, failed: [] }
   }
-
-  const model = ai.getGenerativeModel({
-    model: config.ai?.model ?? DEFAULT_AI_MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA as any,
-    },
-  })
 
   const BATCH_SIZE = 8
   const batches: Array<[string, IngredientData][]> = []
@@ -153,9 +107,13 @@ export async function enrichDb(
 
         let parsed: z.infer<typeof EnrichResponseSchema>
         try {
-          const res = await model.generateContent(prompt)
-          const text = res.response.text()
-          parsed = EnrichResponseSchema.parse(JSON.parse(text))
+          const { object } = await generateObject({
+            model,
+            system: SYSTEM_PROMPT,
+            prompt,
+            schema: EnrichResponseSchema,
+          })
+          parsed = object
         } catch {
           for (const [id] of batch) batchFailed.push(id)
           failed.push(...batchFailed)
@@ -181,7 +139,6 @@ export async function enrichDb(
           batchEnriched.push(item.key)
         }
 
-        // If Gemini returned fewer items than sent, mark missing as failed
         for (const [id] of batch) {
           if (!parsed.ingredients.some(i => i.key === id) && !failed.includes(id)) {
             batchFailed.push(id)
@@ -230,8 +187,7 @@ export async function enrichDb(
             }
 
             if (entry.nutrition != null) {
-              const nutNode = doc.createNode(entry.nutrition)
-              ingNode.set('nutrition', nutNode)
+              ingNode.set('nutrition', doc.createNode(entry.nutrition))
             }
           }
           await mkdir(dirname(dbPath), { recursive: true })
@@ -241,11 +197,5 @@ export async function enrichDb(
     })
   }
 
-  return {
-    dbPath,
-    totalIncomplete: toEnrich.length,
-    enriched,
-    skipped,
-    failed,
-  }
+  return { dbPath, totalIncomplete: toEnrich.length, enriched, skipped, failed }
 }

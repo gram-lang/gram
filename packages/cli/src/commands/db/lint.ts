@@ -4,7 +4,7 @@ import { relative } from 'node:path'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { loadDb } from '../../core/db'
-import { loadAiClient } from '../../core/ai'
+import { loadAiModel } from '../../core/ai'
 import { lintDb, applyLintDecisions } from '../../services/db-linter'
 import { renderLintReport, promptLintDecisions, renderLintSummary } from '../../ui/db-lint'
 import { ExitCode, GramCLIError } from '../../errors'
@@ -36,9 +36,9 @@ export default defineCommand({
       process.exit(ExitCode.Error)
     }
 
-    let ai
+    let model
     try {
-      ai = loadAiClient(config)
+      model = loadAiModel(config)
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
@@ -48,11 +48,11 @@ export default defineCommand({
     }
 
     const s = spinner()
-    s.start('Analyse de la base via Gemini…')
+    s.start('Analyse de la base via AI…')
 
     let result
     try {
-      result = await lintDb(db, config, ai, { dbPathOverride: args.db })
+      result = await lintDb(db, config, model, { dbPathOverride: args.db })
     } catch (err) {
       s.stop('Erreur.')
       throw err

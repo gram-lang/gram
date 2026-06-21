@@ -25,9 +25,11 @@ export async function loadConfig(): Promise<GramConfig> {
   // Project config takes priority over global defaults
   const merged = defu(project, global) as GramConfig
 
-  // Environment variable always wins over config files
-  if (process.env.GEMINI_API_KEY) {
-    merged.ai = { provider: 'gemini', ...merged.ai, apiKey: process.env.GEMINI_API_KEY }
+  // API keys from env vars — provider resolution happens in loadAiModel()
+  if (!merged.ai?.apiKey) {
+    if (process.env.GEMINI_API_KEY) merged.ai = { ...merged.ai, apiKey: process.env.GEMINI_API_KEY }
+    else if (process.env.OPENAI_API_KEY) merged.ai = { ...merged.ai, apiKey: process.env.OPENAI_API_KEY }
+    else if (process.env.ANTHROPIC_API_KEY) merged.ai = { ...merged.ai, apiKey: process.env.ANTHROPIC_API_KEY }
   }
 
   merged.projectRoot = projectRoot

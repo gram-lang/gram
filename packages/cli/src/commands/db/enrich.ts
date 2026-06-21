@@ -3,7 +3,7 @@ import { log, spinner } from '@clack/prompts'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { loadDb } from '../../core/db'
-import { loadAiClient } from '../../core/ai'
+import { loadAiModel } from '../../core/ai'
 import { enrichDb } from '../../services/db-enricher'
 import { renderEnrichResult } from '../../ui/db-enrich'
 import { ExitCode, GramCLIError } from '../../errors'
@@ -46,9 +46,9 @@ export default defineCommand({
       process.exit(ExitCode.Error)
     }
 
-    let ai
+    let model
     try {
-      ai = loadAiClient(config)
+      model = loadAiModel(config)
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
@@ -58,9 +58,9 @@ export default defineCommand({
     }
 
     const s = spinner()
-    s.start('Contacting Gemini…')
+    s.start('Calling AI model…')
 
-    const result = await enrichDb(db, config, ai, {
+    const result = await enrichDb(db, config, model, {
       ingredient: args.ingredient,
       field,
       dryRun: args['dry-run'],
