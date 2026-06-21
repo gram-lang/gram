@@ -65,29 +65,33 @@ export function normalizeMass(
     const volFactor = volMap[u];
     if (volFactor !== undefined) {
         const volumeMl = amount * volFactor;
-        let density = 1.0; // Default Water
-        let method: 'density' | 'default' | 'explicit' = 'default';
-
         if (ingredientName) {
             // Check overrides first
             const slug = slugify(ingredientName);
             const overrideDensity = overrides ? overrides[slug] : undefined;
             if (overrideDensity !== undefined) {
-                density = overrideDensity;
-                method = 'explicit';
+                return { 
+                    mass: volumeMl * overrideDensity, 
+                    method: 'explicit',
+                    isEstimate: false 
+                };
             } else {
                 const data = getIngredientData(ingredientName, database);
-                if (data && data.physical) {
-                    density = data.physical.density;
-                    method = 'density';
+                if (data && data.physical && data.physical.density) {
+                    return { 
+                        mass: volumeMl * data.physical.density, 
+                        method: 'density',
+                        isEstimate: true 
+                    };
                 }
             }
         }
-        return { 
-            mass: volumeMl * density, 
-            method,
-            isEstimate: method !== 'explicit' 
-        };
+        
+        // If we reach here, we have a volume unit but NO density available.
+        // We refuse to blindly guess (e.g. density=1.0) because it creates false
+        // aggregations in shopping lists (e.g. 1 cup of flour != 240g).
+        // By returning null, the item will be listed by its raw unit.
+        return null;
     }
 
     // 3. Fallback: Treat unknown units as Count/Unit units

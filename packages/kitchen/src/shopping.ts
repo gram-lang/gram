@@ -126,20 +126,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
 
             // 3. Normal ingredient aggregation
             const id = item.id;
-            const key = id; // Group simply by ID
-
-            if (!listMap.has(key)) {
-                let name = registry.ingredients.get(id)?.name || item.name;
-                
-                listMap.set(key, {
-                    id: id,
-                    name: name,
-                    otherUnits: {},
-                    variableParts: [],
-                });
-            }
-            
-            const existing = listMap.get(key)!;
             
             // Extract numeric quantities if resolvable
             let numericQty: number | null = null;
@@ -157,6 +143,26 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                 const numQ = getNumericQty(item.qty);
                 if (numQ !== null) numericQty = numQ;
             }
+
+            // Group by ID AND unit (and ghost status) to prevent semantic data loss 
+            // where secondary units were stringified into variable_entries.
+            const key = `${id}::${unit}::${isGhost ? 'ghost' : 'real'}`;
+
+            if (!listMap.has(key)) {
+                let name = registry.ingredients.get(id)?.name || item.name;
+                
+                listMap.set(key, {
+                    id: id,
+                    name: name,
+                    unit: unit,
+                    otherUnits: {},
+                    variableParts: [],
+                });
+            }
+            
+            const existing = listMap.get(key)!;
+            
+            // (Numeric extraction moved up above key generation)
             
             // Push ghosts, variables, and circular warnings to alternative descriptions
             if (isGhost) {

@@ -9,24 +9,24 @@ import { ExitCode } from '../errors'
 const DB_TEMPLATE = `# GRAM ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
 # Full schema reference: packages/analyzer/tests/fixtures/ingredients.yaml
-
-ingredients:
-  butter:
-    name: Butter
-    aliases: [unsalted butter, sweet cream butter]
-    tags: [dairy, fat]
-    physical:
-      density: 0.91
-      yield: 1.0
-    nutrition:
-      calories: 717
-      protein: 0.9
-      carbs: 0.1
-      fat: 81
-      sat_fat: 51.4
-      mono_fat: 21.0
-      poly_fat: 3.0
-      sodium: 0.011
+#
+# ingredients:
+#   butter:
+#     name: Butter
+#     aliases: [unsalted butter, sweet cream butter]
+#     tags: [dairy, fat]
+#     physical:
+#       density: 0.91
+#       yield: 1.0
+#     nutrition:
+#       calories: 717
+#       protein: 0.9
+#       carbs: 0.1
+#       fat: 81
+#       sat_fat: 51.4
+#       mono_fat: 21.0
+#       poly_fat: 3.0
+#       sodium: 0.011
 `
 
 function guardCancel<T>(value: T | symbol): T {
