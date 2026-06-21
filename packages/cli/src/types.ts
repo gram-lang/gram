@@ -27,16 +27,50 @@ export interface BuildResult {
 
 // --- Phase 2 types ---
 
+export interface FuzzyMatch {
+  newId: string
+  existingId: string
+  score: number
+}
+
 export interface DbSyncOptions {
   dryRun?: boolean
   dbPathOverride?: string
+}
+
+export interface DbSyncAnalysis {
+  dbPath: string
+  allIds: Map<string, string>
+  exactMatches: string[]
+  fuzzyMatches: FuzzyMatch[]
+  genuinelyNew: string[]
 }
 
 export interface DbSyncResult {
   dbPath: string
   totalFound: number
   newIngredients: string[]
+  aliasedIngredients: string[]
   existingIngredients: string[]
+}
+
+export type LintIssueType = 'plural' | 'duplicate'
+
+export interface LintIssue {
+  type: LintIssueType
+  ids: string[]
+  suggestion: { keepId: string; aliasIds: string[] }
+  hasNutritionConflict: boolean
+}
+
+export interface LintResult {
+  dbPath: string
+  issues: LintIssue[]
+}
+
+export interface LintOptions {
+  report?: boolean
+  dbPathOverride?: string
 }
 
 export interface DbIssue {

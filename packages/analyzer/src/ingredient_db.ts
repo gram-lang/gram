@@ -8,12 +8,6 @@ export function getIngredientData(name: string, database: Record<string, Ingredi
     const direct = database[slug];
     if (direct) return direct;
     
-    // Simple singularization fallback (very naive)
-    if (slug.endsWith('s')) {
-        const singular = database[slug.slice(0, -1)];
-        if (singular) return singular;
-    }
-
     // Check aliases using a lazily built index
     if (!(database as any).__aliasIndex) {
         const index = new Map<string, IngredientData>();

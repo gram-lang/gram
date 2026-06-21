@@ -1,19 +1,20 @@
 import pLimit from 'p-limit'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { resolve, dirname } from 'node:path'
-import { parseDocument, YAMLMap, isMap, Document } from 'yaml'
+import { parseDocument, isMap, isSeq, Document } from 'yaml'
 import { runPipeline } from '../core/pipeline'
-import type { GramConfig, DbSyncResult, DbSyncOptions } from '../types'
-import { getIngredientData } from '@gram/analyzer'
+import { getIngredientData, type IngredientData } from '@gram/analyzer'
+import { findSimilarInDb } from '../core/fuzzy'
+import type { GramConfig, DbSyncResult, DbSyncOptions, DbSyncAnalysis, FuzzyMatch } from '../types'
 
-export async function syncIngredients(
+export async function analyzeIngredients(
   files: string[],
+  db: Record<string, IngredientData>,
   config: GramConfig,
   opts: DbSyncOptions = {},
-): Promise<DbSyncResult> {
+): Promise<DbSyncAnalysis> {
   const dbPath = resolve(opts.dbPathOverride ?? config.database ?? '.gram/ingredients.yaml')
 
-  // Collect all ingredient IDs + display names referenced in recipes (no analyzer needed)
   const limit = pLimit(20)
   const itemBatches = await Promise.all(
     files.map(file =>
@@ -26,96 +27,125 @@ export async function syncIngredients(
     ),
   )
 
-  // Deduplicate by id, keeping the first name seen
-  const allItems = new Map<string, string>()
+  const allIds = new Map<string, string>()
   for (const batch of itemBatches) {
     for (const { id, name } of batch) {
-      if (!allItems.has(id)) allItems.set(id, name)
+      if (!allIds.has(id)) allIds.set(id, name)
     }
   }
 
-  // Load existing DB via AST to preserve comments
-  let doc: Document | null = null
-  let existingRaw: Record<string, unknown> = {}
+  const exactMatches: string[] = []
+  const fuzzyMatches: FuzzyMatch[] = []
+  const genuinelyNew: string[] = []
+
+  for (const id of allIds.keys()) {
+    if (getIngredientData(id, db)) {
+      exactMatches.push(id)
+    } else {
+      const match = findSimilarInDb(id, db)
+      if (match) {
+        fuzzyMatches.push(match)
+      } else {
+        genuinelyNew.push(id)
+      }
+    }
+  }
+
+  exactMatches.sort()
+  fuzzyMatches.sort((a, b) => a.newId.localeCompare(b.newId))
+  genuinelyNew.sort()
+
+  return { dbPath, allIds, exactMatches, fuzzyMatches, genuinelyNew }
+}
+
+// decisions: Map<newId, 'new' | `alias-of:${existingId}` | 'ignore'>
+export async function applySync(
+  analysis: DbSyncAnalysis,
+  decisions: Map<string, string>,
+  opts: DbSyncOptions = {},
+): Promise<DbSyncResult> {
+  const { dbPath, allIds, exactMatches } = analysis
+
+  const toCreate: string[] = []
+  const toAlias: Array<{ newId: string; existingId: string }> = []
+
+  for (const [newId, decision] of decisions) {
+    if (decision === 'new') {
+      toCreate.push(newId)
+    } else if (decision.startsWith('alias-of:')) {
+      toAlias.push({ newId, existingId: decision.slice('alias-of:'.length) })
+    }
+    // 'ignore' → nothing
+  }
+
+  const aliasedIngredients = toAlias.map(a => a.newId)
+
+  if (opts.dryRun || (toCreate.length === 0 && toAlias.length === 0)) {
+    return {
+      dbPath,
+      totalFound: allIds.size,
+      newIngredients: toCreate,
+      aliasedIngredients,
+      existingIngredients: exactMatches,
+    }
+  }
+
+  let doc: Document
   try {
     const content = await readFile(dbPath, 'utf-8')
     doc = parseDocument(content)
-    const raw = doc.toJSON() as Record<string, unknown> | null
-    if (raw && raw.ingredients && typeof raw.ingredients === 'object') {
-      existingRaw = raw.ingredients as Record<string, unknown>
-    } else if (raw && typeof raw === 'object' && !('ingredients' in raw)) {
-      existingRaw = raw as Record<string, unknown>
-    }
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
-    // File doesn't exist yet
     doc = new Document({ ingredients: {} })
   }
 
-  // Instead of just checking exact keys, we use the analyzer's resolution logic
-  // which checks aliases and naive plurals (ends with 's')
-  const existingIngredients: string[] = []
-  const newIngredients: string[] = []
+  let ingredientsMap = doc.get('ingredients', true)
+  if (!ingredientsMap || !isMap(ingredientsMap)) {
+    const node = doc.createNode({})
+    if (isMap(node)) node.flow = false
+    doc.set('ingredients', node)
+    ingredientsMap = doc.get('ingredients', true)
+  }
 
-  for (const id of allItems.keys()) {
-    if (getIngredientData(id, existingRaw as any)) {
-      existingIngredients.push(id)
+  if (!isMap(ingredientsMap)) {
+    throw new Error('Could not locate or create ingredients map in YAML document')
+  }
+
+  ingredientsMap.flow = false
+
+  for (const { newId, existingId } of toAlias) {
+    const ingNode = ingredientsMap.get(existingId, true)
+    if (!isMap(ingNode)) continue
+    const aliasesNode = ingNode.get('aliases', true)
+    if (isSeq(aliasesNode)) {
+      aliasesNode.add(doc.createNode(newId))
     } else {
-      newIngredients.push(id)
+      ingNode.set('aliases', doc.createNode([newId]))
     }
   }
 
-  existingIngredients.sort()
-  newIngredients.sort()
-
-  if (!opts.dryRun && newIngredients.length > 0) {
-    if (!doc) doc = new Document({ ingredients: {} })
-    
-    // Find or create the 'ingredients' map
-    let ingredientsMap = doc.get('ingredients')
-    if (!ingredientsMap || !isMap(ingredientsMap)) {
-      ingredientsMap = doc.createNode({})
-      if (isMap(ingredientsMap)) ingredientsMap.flow = false
-      doc.set('ingredients', ingredientsMap)
-    }
-
-    if (isMap(ingredientsMap)) {
-      ingredientsMap.flow = false
-      
-      for (const id of newIngredients) {
-        const ingNode = doc.createNode({ name: allItems.get(id) ?? id, aliases: [], tags: [] })
-        if (isMap(ingNode)) ingNode.flow = false
-        
-        ingredientsMap.add({
-          key: doc.createNode(id),
-          value: ingNode
-        })
-      }
-      
-      // Sort the AST items alphabetically to maintain order while preserving comments
-      ingredientsMap.items.sort((a, b) => {
-        const keyA = String(a.key)
-        const keyB = String(b.key)
-        return keyA.localeCompare(keyB)
-      })
-
-      // Add a blank line between each ingredient for better manual readability
-      for (let i = 1; i < ingredientsMap.items.length; i++) {
-        const item = ingredientsMap.items[i]
-        if (item?.key && typeof item.key === 'object') {
-          (item.key as any).spaceBefore = true
-        }
-      }
-    }
-
-    await mkdir(dirname(dbPath), { recursive: true })
-    await writeFile(dbPath, String(doc))
+  for (const id of toCreate) {
+    const ingNode = doc.createNode({ name: allIds.get(id) ?? id, aliases: [], tags: [] })
+    if (isMap(ingNode)) ingNode.flow = false
+    ingredientsMap.add({ key: doc.createNode(id), value: ingNode })
   }
+
+  ingredientsMap.items.sort((a, b) => String(a.key).localeCompare(String(b.key)))
+  for (let i = 1; i < ingredientsMap.items.length; i++) {
+    const item = ingredientsMap.items[i]
+    if (item?.key && typeof item.key === 'object') {
+      (item.key as any).spaceBefore = true
+    }
+  }
+
+  await mkdir(dirname(dbPath), { recursive: true })
+  await writeFile(dbPath, String(doc))
 
   return {
     dbPath,
-    totalFound: allItems.size,
-    newIngredients,
-    existingIngredients,
+    totalFound: allIds.size,
+    newIngredients: toCreate,
+    aliasedIngredients,
+    existingIngredients: exactMatches,
   }
 }

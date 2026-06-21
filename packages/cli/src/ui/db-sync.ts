@@ -4,22 +4,29 @@ import { relative } from 'node:path'
 import type { DbSyncResult } from '../types'
 
 export function renderSyncResult(result: DbSyncResult, dryRun: boolean): void {
-  const { newIngredients, existingIngredients, dbPath } = result
+  const { newIngredients, aliasedIngredients, existingIngredients, dbPath } = result
   const relPath = relative(process.cwd(), dbPath) || dbPath
 
-  if (newIngredients.length === 0) {
+  const totalChanges = newIngredients.length + aliasedIngredients.length
+
+  if (totalChanges === 0) {
     const n = existingIngredients.length
     log.success(`Database up to date — ${n} ingredient${n !== 1 ? 's' : ''}, nothing to add.`)
     return
   }
 
   console.log()
-  console.log(
-    `  ${chalk.dim(existingIngredients.length + ' already in database')} · ${chalk.green(newIngredients.length + ' new')}`,
-  )
+  const parts = [chalk.dim(existingIngredients.length + ' already in database')]
+  if (newIngredients.length > 0) parts.push(chalk.green(newIngredients.length + ' new'))
+  if (aliasedIngredients.length > 0) parts.push(chalk.blue(aliasedIngredients.length + ' aliased'))
+  console.log(`  ${parts.join(' · ')}`)
   console.log()
+
   for (const id of newIngredients) {
     console.log(`  ${chalk.green('+')} ${id}`)
+  }
+  for (const id of aliasedIngredients) {
+    console.log(`  ${chalk.blue('~')} ${id}  ${chalk.dim('(alias)')}`)
   }
   console.log()
 
