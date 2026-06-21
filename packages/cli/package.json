@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@clack/prompts": "latest",
+    "@google/generative-ai": "^0.24.1",
     "@gram/analyzer": "workspace:*",
     "@gram/kitchen": "workspace:*",
     "@gram/parser": "workspace:*",

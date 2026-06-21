@@ -30,12 +30,13 @@
     },
     "packages/cli": {
       "name": "@gram/cli",
-      "version": "0.1.0",
+      "version": "0.10.1",
       "bin": {
         "gram": "./dist/index.js",
       },
       "dependencies": {
         "@clack/prompts": "latest",
+        "@google/generative-ai": "^0.24.1",
         "@gram/analyzer": "workspace:*",
         "@gram/kitchen": "workspace:*",
         "@gram/parser": "workspace:*",
@@ -266,6 +267,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
+
+    "@google/generative-ai": ["@google/generative-ai@0.24.1", "", {}, "sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q=="],
 
     "@gram/analyzer": ["@gram/analyzer@workspace:packages/analyzer"],
 

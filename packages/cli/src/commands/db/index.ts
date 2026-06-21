@@ -5,5 +5,6 @@ export default defineCommand({
   subCommands: {
     sync: () => import('./sync').then(m => m.default),
     validate: () => import('./validate').then(m => m.default),
+    enrich: () => import('./enrich').then(m => m.default),
   },
 })

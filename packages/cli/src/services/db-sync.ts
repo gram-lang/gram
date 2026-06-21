@@ -102,7 +102,7 @@ export async function syncIngredients(
       // Add a blank line between each ingredient for better manual readability
       for (let i = 1; i < ingredientsMap.items.length; i++) {
         const item = ingredientsMap.items[i]
-        if (item.key && typeof item.key === 'object') {
+        if (item?.key && typeof item.key === 'object') {
           (item.key as any).spaceBefore = true
         }
       }

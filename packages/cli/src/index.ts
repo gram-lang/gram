@@ -13,6 +13,8 @@ const main = defineCommand({
     init: () => import('./commands/init').then(m => m.default),
     check: () => import('./commands/check').then(m => m.default),
     build: () => import('./commands/build').then(m => m.default),
+    view: () => import('./commands/view').then(m => m.default),
+    import: () => import('./commands/import').then(m => m.default),
     db: () => import('./commands/db').then(m => m.default),
     shop: () => import('./commands/shop').then(m => m.default),
   },
