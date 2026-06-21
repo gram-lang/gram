@@ -1,6 +1,7 @@
 import pLimit from 'p-limit'
 import { basename } from 'node:path'
 import { runPipeline } from '../core/pipeline'
+import { fmtNumber } from '../core/format'
 import type { IngredientData } from '@gram/analyzer'
 import type { ShopResult, ShoppingEntry } from '../types'
 
@@ -19,11 +20,8 @@ interface CollectedItem {
 }
 
 function formatMass(grams: number): string {
-  if (grams >= 1000) {
-    const kg = parseFloat((grams / 1000).toFixed(2))
-    return `${kg} kg`
-  }
-  return `${Math.round(grams)} g`
+  if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`
+  return `${fmtNumber(Math.round(grams), 0)} g`
 }
 
 const CATEGORY_ORDER = ['Dairy', 'Meat', 'Fish', 'Produce', 'Grains', 'Fat', 'Spice', 'Other']
@@ -34,26 +32,32 @@ export async function buildShoppingList(
 ): Promise<ShopResult> {
   const limit = pLimit(20)
   const allItems: CollectedItem[] = []
+  const noQtyIds: string[] = []
 
   await Promise.all(
     files.map(file =>
       limit(async () => {
         const slug = basename(file, '.gram')
+        const trackNoQty = (item: CollectedItem) => {
+          if (!(item as any).type && !(item as any).variable_entries) {
+            noQtyIds.push(item.name ?? item.id)
+          }
+        }
+
         if (opts.db) {
           const { analyzed } = await runPipeline(file, { db: opts.db })
           if (analyzed) {
             for (const item of analyzed.result.shopping_list as CollectedItem[]) {
               if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
-              if (typeof item.qty !== 'number' || !isFinite(item.qty)) continue
+              if (typeof item.qty !== 'number' || !isFinite(item.qty)) { trackNoQty(item); continue }
               allItems.push({ ...item, recipe: slug })
             }
           }
         } else {
           const { compiled } = await runPipeline(file, { skipAnalyzer: true })
           for (const item of compiled.shopping_list as CollectedItem[]) {
-            // Skip alternative groups and variable-quantity items
             if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
-            if (typeof item.qty !== 'number' || !isFinite(item.qty)) continue
+            if (typeof item.qty !== 'number' || !isFinite(item.qty)) { trackNoQty(item); continue }
             allItems.push({ ...item, recipe: slug })
           }
         }
@@ -98,7 +102,7 @@ export async function buildShoppingList(
         const unit = items[0]?.unit
         fullyAggregated = true;
         finalEntry = {
-          displayQty: unit ? `${total} ${unit}` : String(total),
+          displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total),
           isEstimate: false
         }
       }
@@ -152,10 +156,14 @@ export async function buildShoppingList(
 
   const uniqueRecipes = new Set(allItems.map(i => i.recipe))
 
+  const noQtyWarnings = [...new Set(noQtyIds)].map(
+    name => `${name}: no quantity specified — not included in list (add a quantity to your recipe)`,
+  )
+
   return {
     items: entries,
     byCategory: sortedByCategory,
-    warnings,
+    warnings: [...warnings, ...noQtyWarnings],
     recipeCount: uniqueRecipes.size,
   }
 }

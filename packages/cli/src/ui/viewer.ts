@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import { spawn } from 'node:child_process'
+import { fmtNumber } from '../core/format'
 import type { RecipeViewModel } from '../types'
 
 const COL = Math.min(process.stdout.columns || 70, 78)
@@ -24,7 +25,10 @@ function formatMinutes(mins: number): string {
 function renderHeader(model: RecipeViewModel): string {
   const lines: string[] = []
   const servStr = model.servings ? ` ${model.servings} servings ` : ' '
-  const top = `┌─ ${model.title} ${'─'.repeat(Math.max(0, COL - 4 - model.title.length - servStr.length))}${servStr}─┐`
+  const maxTitleLen = COL - 6 - servStr.length
+  const rawTitle = model.title
+  const title = rawTitle.length > maxTitleLen ? rawTitle.slice(0, maxTitleLen - 1) + '…' : rawTitle
+  const top = `┌─ ${title} ${'─'.repeat(Math.max(2, COL - 4 - title.length - servStr.length))}${servStr}─┐`
   lines.push(chalk.bold(top))
 
   if (model.times) {
@@ -36,7 +40,7 @@ function renderHeader(model: RecipeViewModel): string {
     if (t.total) parts.push(`Total: ${formatMinutes(t.total)}`)
     if (parts.length > 0) {
       const inner = `⏱  ${parts.join('  ·  ')}`
-      lines.push(chalk.bold(`│  `) + chalk.dim(pad(inner, COL - 4)) + chalk.bold(` │`))
+      lines.push(chalk.bold(`│  `) + chalk.dim(pad(inner, COL - 5)) + chalk.bold(` │`))
     }
   }
 
@@ -89,12 +93,12 @@ function renderNutrition(nutrition: RecipeViewModel['nutrition']): string {
   const lines: string[] = [
     '',
     chalk.bold('NUTRITION (per serving)'),
-    `  ${'Calories'.padEnd(12)} ${p.calories} kcal`,
-    `  ${'Carbs'.padEnd(12)} ${p.carbs} g`,
-    `  ${'Protein'.padEnd(12)} ${p.protein} g`,
-    `  ${'Fat'.padEnd(12)} ${p.fat} g`,
+    `  ${'Calories'.padEnd(12)} ${fmtNumber(p.calories, 0)} kcal`,
+    `  ${'Carbs'.padEnd(12)} ${fmtNumber(p.carbs, 1)} g`,
+    `  ${'Protein'.padEnd(12)} ${fmtNumber(p.protein, 1)} g`,
+    `  ${'Fat'.padEnd(12)} ${fmtNumber(p.fat, 1)} g`,
   ]
-  if (p.fiber != null) lines.push(`  ${'Fiber'.padEnd(12)} ${p.fiber} g`)
+  if (p.fiber != null) lines.push(`  ${'Fiber'.padEnd(12)} ${fmtNumber(p.fiber, 1)} g`)
   if (nutrition.isEstimate) lines.push(chalk.dim('  * estimated values'))
   return lines.join('\n')
 }
@@ -136,10 +140,14 @@ export async function outputRecipe(model: RecipeViewModel, noPager: boolean): Pr
       const less = spawn('less', ['-R', '--quit-if-one-screen'], {
         stdio: ['pipe', 'inherit', 'inherit'],
       })
+      less.on('error', () => {
+        // less unavailable (Windows, minimal containers) — fall back to direct write
+        process.stdout.write(content)
+        resolve()
+      })
       less.stdin.write(content)
       less.stdin.end()
       less.on('close', resolve)
-      less.on('error', reject)
     })
   } else {
     process.stdout.write(content)

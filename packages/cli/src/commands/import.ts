@@ -50,7 +50,10 @@ export default defineCommand({
         process.stderr.write(`  ${'Ingredients'.padEnd(14)} ${result.ingredientCount}\n`)
         process.stderr.write(`  ${'Steps'.padEnd(14)} ${result.stepCount}\n`)
         if (result.parseWarnings.length > 0) {
-          process.stderr.write(`\n  ⚠ ${result.parseWarnings.length} ingredient(s) could not be parsed\n`)
+          process.stderr.write(`\n  ⚠ Could not parse:\n`)
+          for (const w of result.parseWarnings) {
+            process.stderr.write(`    ${w}\n`)
+          }
         }
         process.stderr.write('\n')
       }

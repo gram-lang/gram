@@ -11,7 +11,7 @@ export const IngredientDataSchema = z.object({
     name: z.string(),
     physical: z.object({
         density: z.number().positive(),
-        yield: z.number().min(0).max(1),
+        yield: z.number().min(0).max(1).optional(),
         unit_weight: z.number().positive().optional(),
     }).optional(),
     nutrition: z.object({

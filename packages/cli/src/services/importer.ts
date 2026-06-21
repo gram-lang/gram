@@ -135,7 +135,8 @@ function generateGram(recipe: any, ingredients: ParsedIngredient[]): string {
   const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
   let stepIdx = 0
 
-  for (const step of instructions) {
+  for (let i = 0; i < instructions.length; i++) {
+    const step = instructions[i]!
     stepIdx++
     const action = step.name && step.name !== step.text
       ? `[${step.name.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}]`
@@ -151,6 +152,8 @@ function generateGram(recipe: any, ingredients: ParsedIngredient[]): string {
     }
 
     lines.push(`${action} ${text}`)
+    // Blank line between steps so the grammar parser treats them as separate steps
+    if (i < instructions.length - 1) lines.push('')
   }
 
   return lines.join('\n')

@@ -1,12 +1,13 @@
 import pLimit from 'p-limit'
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { resolve, dirname } from 'node:path'
+import { readFile, mkdir } from 'node:fs/promises'
+import { resolve, dirname, join } from 'node:path'
 import { parseDocument, isMap } from 'yaml'
 import { z } from 'zod'
 import type { GoogleGenerativeAI } from '@google/generative-ai'
 import { SchemaType } from '@google/generative-ai'
 import type { IngredientData } from '@gram/analyzer'
 import { DEFAULT_AI_MODEL } from '../core/ai'
+import { withFileLock, atomicWrite } from '../core/lock'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 const SYSTEM_PROMPT =
@@ -85,13 +86,20 @@ const EnrichResponseSchema = z.object({
   ingredients: z.array(EnrichItemSchema),
 })
 
+function resolveDbPath(config: GramConfig, override?: string): string {
+  const root = config.projectRoot ?? process.cwd()
+  if (override) return resolve(override)
+  if (config.database) return resolve(root, config.database)
+  return join(root, '.gram', 'ingredients.yaml')
+}
+
 export async function enrichDb(
   db: Record<string, IngredientData>,
   config: GramConfig,
   ai: GoogleGenerativeAI,
   opts: EnrichOptions = {},
 ): Promise<EnrichResult> {
-  const dbPath = resolve(opts.dbPathOverride ?? config.database ?? '.gram/ingredients.yaml')
+  const dbPath = resolveDbPath(config, opts.dbPathOverride)
   const field = opts.field ?? 'all'
 
   // Filter ingredients to enrich
@@ -187,48 +195,50 @@ export async function enrichDb(
   )
 
   if (!opts.dryRun && enriched.length > 0) {
-    const content = await readFile(dbPath, 'utf-8').catch(() => '')
-    const doc = content ? parseDocument(content) : null
+    await withFileLock(dbPath, async () => {
+      const content = await readFile(dbPath, 'utf-8').catch(() => '')
+      const doc = content ? parseDocument(content) : null
 
-    if (doc) {
-      const root = doc.toJSON() as Record<string, unknown>
-      const hasWrapper = root && 'ingredients' in root
-      const node = hasWrapper ? doc.get('ingredients') : doc.contents
+      if (doc) {
+        const root = doc.toJSON() as Record<string, unknown>
+        const hasWrapper = root && 'ingredients' in root
+        const node = hasWrapper ? doc.get('ingredients') : doc.contents
 
-      if (isMap(node)) {
-        for (const entry of enriched) {
-          const ingNode = node.get(entry.id, true) as any
-          if (!isMap(ingNode)) continue
+        if (isMap(node)) {
+          for (const entry of enriched) {
+            const ingNode = node.get(entry.id, true) as any
+            if (!isMap(ingNode)) continue
 
-          if (entry.density != null || entry.unit_weight != null) {
-            const physNode = ingNode.get('physical', true)
-            if (!isMap(physNode)) {
-              const data: any = {}
-              if (entry.density != null) data.density = entry.density
-              if (entry.unit_weight != null) data.unit_weight = entry.unit_weight
-              ingNode.set('physical', doc.createNode(data))
-            } else {
-              if (entry.density != null) (physNode as any).set('density', entry.density)
-              if (entry.unit_weight != null) (physNode as any).set('unit_weight', entry.unit_weight)
+            if (entry.density != null || entry.unit_weight != null) {
+              const physNode = ingNode.get('physical', true)
+              if (!isMap(physNode)) {
+                const data: any = {}
+                if (entry.density != null) data.density = entry.density
+                if (entry.unit_weight != null) data.unit_weight = entry.unit_weight
+                ingNode.set('physical', doc.createNode(data))
+              } else {
+                if (entry.density != null) (physNode as any).set('density', entry.density)
+                if (entry.unit_weight != null) (physNode as any).set('unit_weight', entry.unit_weight)
+              }
+            }
+
+            if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
+              const existingTags = ingNode.get('tags') as string[] | null | undefined
+              if (!existingTags || existingTags.length === 0) {
+                ingNode.set('tags', doc.createNode(entry.tagSuggestions))
+              }
+            }
+
+            if (entry.nutrition != null) {
+              const nutNode = doc.createNode(entry.nutrition)
+              ingNode.set('nutrition', nutNode)
             }
           }
-
-          if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
-            const existingTags = ingNode.get('tags') as string[] | null | undefined
-            if (!existingTags || existingTags.length === 0) {
-              ingNode.set('tags', doc.createNode(entry.tagSuggestions))
-            }
-          }
-
-          if (entry.nutrition != null) {
-            const nutNode = doc.createNode(entry.nutrition)
-            ingNode.set('nutrition', nutNode)
-          }
+          await mkdir(dirname(dbPath), { recursive: true })
+          await atomicWrite(dbPath, String(doc))
         }
-        await mkdir(dirname(dbPath), { recursive: true })
-        await writeFile(dbPath, String(doc))
       }
-    }
+    })
   }
 
   return {

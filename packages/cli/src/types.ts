@@ -171,6 +171,8 @@ export interface GramConfig {
     apiKey?: string
     model?: string
   }
+  /** Absolute path to the project root (.gram/ directory ancestor). Set by loadConfig(). */
+  projectRoot: string
 }
 
 export interface PipelineOptions {

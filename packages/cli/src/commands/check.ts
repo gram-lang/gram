@@ -1,7 +1,7 @@
 import { defineCommand } from 'citty'
 import { spinner } from '@clack/prompts'
 import { loadConfig } from '../core/config'
-import { loadDb } from '../core/db'
+import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { checkFiles } from '../services/checker'
 import { renderCheckResult } from '../ui/diagnostics'
@@ -34,7 +34,7 @@ export default defineCommand({
     const patterns = args._.length > 0 ? args._ : ['**/*.gram']
     let files: string[] = []
     try {
-      files = resolveGlob(patterns)
+      files = await resolveGlob(patterns)
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
@@ -44,7 +44,7 @@ export default defineCommand({
     }
 
     const config = await loadConfig()
-    const db = args['skip-db'] ? null : await loadDb(config, args.db)
+    const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
     const n = files.length
     const s = spinner()

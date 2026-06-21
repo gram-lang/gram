@@ -1,18 +1,23 @@
 import { Glob } from 'bun'
 import { resolve, extname } from 'node:path'
 import { GramCLIError, ExitCode } from '../errors'
+import { findProjectRoot } from './workspace'
 
-export function resolveGlob(patterns: string[]): string[] {
+export async function resolveGlob(patterns: string[]): Promise<string[]> {
+  const root = await findProjectRoot()
   const files: string[] = []
 
   for (const pattern of patterns) {
     if (pattern.includes('*')) {
-      const matches = [
-        ...new Glob(pattern).scanSync({
-          cwd: process.cwd(),
-          absolute: true,
-        }),
-      ].filter(f => extname(f) === '.gram')
+      let matches: string[] = []
+      try {
+        matches = [...new Glob(pattern).scanSync({ cwd: root, absolute: true })]
+          .filter(f => extname(f) === '.gram')
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code
+        if (code !== 'ENOENT' && code !== 'EACCES' && code !== 'ENOTDIR') throw err
+        // Non-existent or inaccessible directory — treat as no matches
+      }
       files.push(...matches)
     } else {
       files.push(resolve(pattern))

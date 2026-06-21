@@ -5,6 +5,7 @@ import { analyze } from '@gram/analyzer'
 import type { CompilationResult } from '@gram/kitchen'
 import type { AnalysisResult, IngredientData } from '@gram/analyzer'
 import type { PipelineOptions } from '../types'
+import { GramCLIError, ExitCode } from '../errors'
 
 export interface PipelineResult {
   content: string
@@ -16,7 +17,15 @@ export async function runPipeline(
   filePath: string,
   opts: PipelineOptions = {},
 ): Promise<PipelineResult> {
-  const content = await readFile(filePath, 'utf-8')
+  let content: string
+  try {
+    content = await readFile(filePath, 'utf-8')
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new GramCLIError(`File not found: ${filePath}`, ExitCode.Error)
+    }
+    throw err
+  }
   const ast = getAST(content)
   const compiled = compile(ast)
 

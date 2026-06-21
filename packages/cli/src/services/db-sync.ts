@@ -1,11 +1,19 @@
 import pLimit from 'p-limit'
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { resolve, dirname } from 'node:path'
+import { readFile, mkdir } from 'node:fs/promises'
+import { resolve, dirname, join } from 'node:path'
 import { parseDocument, isMap, isSeq, Document } from 'yaml'
 import { runPipeline } from '../core/pipeline'
 import { getIngredientData, type IngredientData } from '@gram/analyzer'
 import { findSimilarInDb } from '../core/fuzzy'
+import { withFileLock, atomicWrite } from '../core/lock'
 import type { GramConfig, DbSyncResult, DbSyncOptions, DbSyncAnalysis, FuzzyMatch } from '../types'
+
+function resolveDbPath(config: GramConfig, override?: string): string {
+  const root = config.projectRoot ?? process.cwd()
+  if (override) return resolve(override)
+  if (config.database) return resolve(root, config.database)
+  return join(root, '.gram', 'ingredients.yaml')
+}
 
 export async function analyzeIngredients(
   files: string[],
@@ -13,7 +21,7 @@ export async function analyzeIngredients(
   config: GramConfig,
   opts: DbSyncOptions = {},
 ): Promise<DbSyncAnalysis> {
-  const dbPath = resolve(opts.dbPathOverride ?? config.database ?? '.gram/ingredients.yaml')
+  const dbPath = resolveDbPath(config, opts.dbPathOverride)
 
   const limit = pLimit(20)
   const itemBatches = await Promise.all(
@@ -90,56 +98,58 @@ export async function applySync(
     }
   }
 
-  let doc: Document
-  try {
-    const content = await readFile(dbPath, 'utf-8')
-    doc = parseDocument(content)
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
-    doc = new Document({ ingredients: {} })
-  }
-
-  let ingredientsMap = doc.get('ingredients', true)
-  if (!ingredientsMap || !isMap(ingredientsMap)) {
-    const node = doc.createNode({})
-    if (isMap(node)) node.flow = false
-    doc.set('ingredients', node)
-    ingredientsMap = doc.get('ingredients', true)
-  }
-
-  if (!isMap(ingredientsMap)) {
-    throw new Error('Could not locate or create ingredients map in YAML document')
-  }
-
-  ingredientsMap.flow = false
-
-  for (const { newId, existingId } of toAlias) {
-    const ingNode = ingredientsMap.get(existingId, true)
-    if (!isMap(ingNode)) continue
-    const aliasesNode = ingNode.get('aliases', true)
-    if (isSeq(aliasesNode)) {
-      aliasesNode.add(doc.createNode(newId))
-    } else {
-      ingNode.set('aliases', doc.createNode([newId]))
+  await withFileLock(dbPath, async () => {
+    let doc: Document
+    try {
+      const content = await readFile(dbPath, 'utf-8')
+      doc = parseDocument(content)
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+      doc = new Document({ ingredients: {} })
     }
-  }
 
-  for (const id of toCreate) {
-    const ingNode = doc.createNode({ name: allIds.get(id) ?? id, aliases: [], tags: [] })
-    if (isMap(ingNode)) ingNode.flow = false
-    ingredientsMap.add({ key: doc.createNode(id), value: ingNode })
-  }
-
-  ingredientsMap.items.sort((a, b) => String(a.key).localeCompare(String(b.key)))
-  for (let i = 1; i < ingredientsMap.items.length; i++) {
-    const item = ingredientsMap.items[i]
-    if (item?.key && typeof item.key === 'object') {
-      (item.key as any).spaceBefore = true
+    let ingredientsMap = doc.get('ingredients', true)
+    if (!ingredientsMap || !isMap(ingredientsMap)) {
+      const node = doc.createNode({})
+      if (isMap(node)) node.flow = false
+      doc.set('ingredients', node)
+      ingredientsMap = doc.get('ingredients', true)
     }
-  }
 
-  await mkdir(dirname(dbPath), { recursive: true })
-  await writeFile(dbPath, String(doc))
+    if (!isMap(ingredientsMap)) {
+      throw new Error('Could not locate or create ingredients map in YAML document')
+    }
+
+    ingredientsMap.flow = false
+
+    for (const { newId, existingId } of toAlias) {
+      const ingNode = ingredientsMap.get(existingId, true)
+      if (!isMap(ingNode)) continue
+      const aliasesNode = ingNode.get('aliases', true)
+      if (isSeq(aliasesNode)) {
+        aliasesNode.add(doc.createNode(newId))
+      } else {
+        ingNode.set('aliases', doc.createNode([newId]))
+      }
+    }
+
+    for (const id of toCreate) {
+      const ingNode = doc.createNode({ name: allIds.get(id) ?? id, aliases: [], tags: [] })
+      if (isMap(ingNode)) ingNode.flow = false
+      ingredientsMap.add({ key: doc.createNode(id), value: ingNode })
+    }
+
+    ingredientsMap.items.sort((a, b) => String(a.key).localeCompare(String(b.key)))
+    for (let i = 1; i < ingredientsMap.items.length; i++) {
+      const item = ingredientsMap.items[i]
+      if (item?.key && typeof item.key === 'object') {
+        (item.key as any).spaceBefore = true
+      }
+    }
+
+    await mkdir(dirname(dbPath), { recursive: true })
+    await atomicWrite(dbPath, String(doc))
+  })
 
   return {
     dbPath,

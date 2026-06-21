@@ -2,7 +2,7 @@ import { defineCommand } from 'citty'
 import { writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import { loadConfig } from '../core/config'
-import { loadDb } from '../core/db'
+import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { buildShoppingList } from '../services/shopper'
 import { renderShopTerminal, renderShopMarkdown, renderShopJson } from '../ui/shop'
@@ -45,7 +45,7 @@ export default defineCommand({
     const patterns = (args._ as string[]).length > 0 ? (args._ as string[]) : ['**/*.gram']
     let files: string[]
     try {
-      files = resolveGlob(patterns)
+      files = await resolveGlob(patterns)
     } catch (err) {
       if (err instanceof GramCLIError) {
         if (isRawOutput) {
@@ -59,7 +59,7 @@ export default defineCommand({
     }
 
     const config = await loadConfig()
-    const db = args['skip-db'] ? null : await loadDb(config, args.db)
+    const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
     const result = await buildShoppingList(files, { db })
 
     if (args.format === 'json') {

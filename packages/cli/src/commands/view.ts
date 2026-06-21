@@ -2,7 +2,7 @@ import { defineCommand } from 'citty'
 import { log } from '@clack/prompts'
 import { version } from '../../package.json'
 import { loadConfig } from '../core/config'
-import { loadDb } from '../core/db'
+import { loadDbSafe } from '../core/db'
 import { buildViewModel } from '../services/viewer'
 import { outputRecipe } from '../ui/viewer'
 import { ExitCode, GramCLIError } from '../errors'
@@ -34,7 +34,7 @@ export default defineCommand({
 
     let db: Record<string, any> | null = null
     if (!args['skip-db']) {
-      db = await loadDb(config, args.db)
+      db = await loadDbSafe(config, args.db)
     }
 
     let model

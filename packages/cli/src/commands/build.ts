@@ -3,8 +3,9 @@ import { spinner, log } from '@clack/prompts'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import chalk from 'chalk'
+import pLimit from 'p-limit'
 import { loadConfig } from '../core/config'
-import { loadDb } from '../core/db'
+import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { buildFiles } from '../services/builder'
 import { ExitCode, GramCLIError } from '../errors'
@@ -72,7 +73,7 @@ async function resolveInputs(args: Args) {
   const patterns = args._.length > 0 ? args._ : ['**/*.gram']
   let files: string[] = []
   try {
-    files = resolveGlob(patterns)
+    files = await resolveGlob(patterns)
   } catch (err) {
     if (err instanceof GramCLIError) {
       log.error(err.message)
@@ -81,7 +82,7 @@ async function resolveInputs(args: Args) {
     throw err
   }
   const config = await loadConfig()
-  const db = args['skip-db'] ? null : await loadDb(config, args.db)
+  const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
   return { files, db }
 }
 
@@ -109,9 +110,12 @@ async function runToFiles(args: Args) {
   await mkdir(outDir, { recursive: true })
 
   const indent = args.pretty ? 2 : undefined
+  const writeLimit = pLimit(20)
   await Promise.all(
     results.map(({ slug, data }) =>
-      writeFile(join(outDir, `${slug}.json`), JSON.stringify(data, null, indent) + '\n'),
+      writeLimit(() =>
+        writeFile(join(outDir, `${slug}.json`), JSON.stringify(data, null, indent) + '\n'),
+      ),
     ),
   )
 

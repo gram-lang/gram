@@ -36,7 +36,7 @@ export default defineCommand({
     const patterns = (args._ as string[]).length > 0 ? (args._ as string[]) : ['**/*.gram']
     let files: string[]
     try {
-      files = resolveGlob(patterns)
+      files = await resolveGlob(patterns)
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)

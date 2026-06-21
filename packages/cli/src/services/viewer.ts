@@ -1,29 +1,32 @@
 import { basename } from 'node:path'
 import { runPipeline } from '../core/pipeline'
+import { fmtNumber } from '../core/format'
 import type { IngredientData } from '@gram/analyzer'
 import type { RecipeViewModel } from '../types'
 
 function formatMass(grams: number): string {
-  if (grams >= 1000) return `${parseFloat((grams / 1000).toFixed(2))} kg`
-  return `${Math.round(grams)} g`
+  if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`
+  return `${fmtNumber(Math.round(grams), 0)} g`
 }
 
 function formatQty(item: any): string {
   const qty = item.qty
   if (qty == null) return ''
   if (typeof qty === 'number') {
-    return item.unit ? `${qty} ${item.unit}` : String(qty)
+    return item.unit ? `${fmtNumber(qty)} ${item.unit}` : fmtNumber(qty)
   }
   if (typeof qty === 'string') return item.unit ? `${qty} ${item.unit}` : qty
   if (typeof qty === 'object') {
     if (qty.value === 'TextQuantity' || qty.type === 'text') return qty.value ?? ''
     if (qty.text) return item.unit ? `${qty.text} ${item.unit}` : qty.text
     if (qty.value != null) {
-      const v = String(qty.value)
+      const v = typeof qty.value === 'number' ? fmtNumber(qty.value) : String(qty.value)
       return item.unit ? `${v} ${item.unit}` : v
     }
     if (qty.range) {
-      const r = `${qty.range.min}–${qty.range.max}`
+      const min = typeof qty.range.min === 'number' ? fmtNumber(qty.range.min) : qty.range.min
+      const max = typeof qty.range.max === 'number' ? fmtNumber(qty.range.max) : qty.range.max
+      const r = `${min}–${max}`
       return item.unit ? `${r} ${item.unit}` : r
     }
   }
