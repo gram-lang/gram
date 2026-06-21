@@ -98,7 +98,17 @@ export interface EnrichEntry {
   id: string
   name: string
   density?: number
-  nutrition?: { calories: number; carbs: number; protein: number; fat: number }
+  unit_weight?: number
+  nutrition?: {
+    calories: number
+    carbs: number
+    protein: number
+    fat: number
+    sugar?: number
+    sat_fat?: number
+    fiber?: number
+    sodium?: number
+  }
   aliasSuggestions: string[]
   tagSuggestions: string[]
 }
@@ -116,6 +126,7 @@ export interface EnrichOptions {
   field?: 'density' | 'nutrition' | 'all'
   dryRun?: boolean
   dbPathOverride?: string
+  onBatchDone?: (done: number, total: number, enriched: string[], failed: string[]) => void
 }
 
 export interface GramConfig {

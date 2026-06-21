@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { log } from '@clack/prompts'
+import { log, spinner } from '@clack/prompts'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { loadDb } from '../../core/db'
@@ -57,13 +57,23 @@ export default defineCommand({
       throw err
     }
 
+    const s = spinner()
+    s.start('Contacting Gemini…')
+
     const result = await enrichDb(db, config, ai, {
       ingredient: args.ingredient,
       field,
       dryRun: args['dry-run'],
       dbPathOverride: args.db,
+      onBatchDone(done, total, enriched, failed) {
+        const ok = enriched.length > 0 ? `✓ ${enriched.length}` : ''
+        const ko = failed.length > 0 ? `✗ ${failed.length}` : ''
+        const counts = [ok, ko].filter(Boolean).join('  ')
+        s.message(`Batch ${done}/${total} — ${counts || 'processing…'}`)
+      },
     })
 
+    s.stop('Done.')
     renderEnrichResult(result, args['dry-run'])
     process.exit(ExitCode.Ok)
   },

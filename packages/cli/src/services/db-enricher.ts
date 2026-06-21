@@ -10,7 +10,7 @@ import { DEFAULT_AI_MODEL } from '../core/ai'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 const SYSTEM_PROMPT =
-  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion.'
+  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (rayon de supermarché). Then provide other useful free-form "tagSuggestions" (e.g., vegan, sans-gluten, allergen, etc.). For aliases, provide highly specific synonyms or regional names, avoiding generic terms that could conflict.'
 
 const RESPONSE_SCHEMA = {
   type: SchemaType.OBJECT,
@@ -22,6 +22,7 @@ const RESPONSE_SCHEMA = {
         properties: {
           key: { type: SchemaType.STRING },
           density: { type: SchemaType.NUMBER },
+          unit_weight: { type: SchemaType.NUMBER },
           nutrition: {
             type: SchemaType.OBJECT,
             properties: {
@@ -29,9 +30,29 @@ const RESPONSE_SCHEMA = {
               carbs: { type: SchemaType.NUMBER },
               protein: { type: SchemaType.NUMBER },
               fat: { type: SchemaType.NUMBER },
+              sugar: { type: SchemaType.NUMBER },
+              sat_fat: { type: SchemaType.NUMBER },
+              fiber: { type: SchemaType.NUMBER },
+              sodium: { type: SchemaType.NUMBER },
             },
           },
           aliasSuggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+          aisle: {
+            type: SchemaType.STRING,
+            enum: [
+              'Fruits & Légumes',
+              'Viandes & Poissons',
+              'Produits Laitiers',
+              'Boulangerie',
+              'Épicerie Sucrée',
+              'Épicerie Salée',
+              'Boissons',
+              'Surgelés',
+              'Frais',
+              'Produits secs',
+              'Autre'
+            ]
+          },
           tagSuggestions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
         },
         required: ['key'],
@@ -44,15 +65,21 @@ const RESPONSE_SCHEMA = {
 const EnrichItemSchema = z.object({
   key: z.string(),
   density: z.number().max(5).optional(),
+  unit_weight: z.number().optional(),
   nutrition: z
     .object({
       calories: z.number().max(1000),
       carbs: z.number().min(0),
       protein: z.number().min(0),
       fat: z.number().min(0),
+      sugar: z.number().min(0).optional(),
+      sat_fat: z.number().min(0).optional(),
+      fiber: z.number().min(0).optional(),
+      sodium: z.number().min(0).optional(),
     })
     .optional(),
   aliasSuggestions: z.array(z.string()).default([]),
+  aisle: z.string().default('Autre'),
   tagSuggestions: z.array(z.string()).default([]),
 })
 
@@ -106,13 +133,17 @@ export async function enrichDb(
   const limit = pLimit(5)
   const enriched: EnrichEntry[] = []
   const failed: string[] = []
+  let batchsDone = 0
 
   await Promise.all(
-    batches.map((batch, batchIdx) =>
+    batches.map(batch =>
       limit(async () => {
         const prompt = JSON.stringify(
           batch.map(([id, ing]) => ({ key: id, name: ing.name, aliases: ing.aliases ?? [] })),
         )
+
+        const batchEnriched: string[] = []
+        const batchFailed: string[] = []
 
         let parsed: z.infer<typeof EnrichResponseSchema>
         try {
@@ -120,32 +151,40 @@ export async function enrichDb(
           const text = res.response.text()
           parsed = EnrichResponseSchema.parse(JSON.parse(text))
         } catch {
-          for (const [id] of batch) failed.push(id)
+          for (const [id] of batch) batchFailed.push(id)
+          failed.push(...batchFailed)
+          opts.onBatchDone?.(++batchsDone, batches.length, batchEnriched, batchFailed)
           return
         }
 
         for (const item of parsed.ingredients) {
           const [, ing] = batch.find(([id]) => id === item.key) ?? []
           if (!ing) {
-            failed.push(item.key)
+            batchFailed.push(item.key)
             continue
           }
-          enriched.push({
+          const entry: EnrichEntry = {
             id: item.key,
             name: ing.name,
             density: item.density,
+            unit_weight: item.unit_weight,
             nutrition: item.nutrition,
             aliasSuggestions: item.aliasSuggestions,
-            tagSuggestions: item.tagSuggestions,
-          })
+            tagSuggestions: Array.from(new Set([item.aisle, ...item.tagSuggestions].filter(Boolean))),
+          }
+          enriched.push(entry)
+          batchEnriched.push(item.key)
         }
 
         // If Gemini returned fewer items than sent, mark missing as failed
         for (const [id] of batch) {
           if (!parsed.ingredients.some(i => i.key === id) && !failed.includes(id)) {
-            failed.push(id)
+            batchFailed.push(id)
           }
         }
+
+        failed.push(...batchFailed)
+        opts.onBatchDone?.(++batchsDone, batches.length, batchEnriched, batchFailed)
       }),
     ),
   )
@@ -164,12 +203,29 @@ export async function enrichDb(
           const ingNode = node.get(entry.id, true) as any
           if (!isMap(ingNode)) continue
 
-          if (entry.density != null) {
+          if (entry.density != null || entry.unit_weight != null) {
             const physNode = ingNode.get('physical', true)
             if (!isMap(physNode)) {
-              ingNode.set('physical', doc.createNode({ density: entry.density }))
+              const data: any = {}
+              if (entry.density != null) data.density = entry.density
+              if (entry.unit_weight != null) data.unit_weight = entry.unit_weight
+              ingNode.set('physical', doc.createNode(data))
             } else {
-              (physNode as any).set('density', entry.density)
+              if (entry.density != null) (physNode as any).set('density', entry.density)
+              if (entry.unit_weight != null) (physNode as any).set('unit_weight', entry.unit_weight)
+            }
+          }
+
+          if (entry.aliasSuggestions.length > 0) {
+            const existingAliases = ingNode.get('aliases') as string[] | null | undefined
+            if (!existingAliases || existingAliases.length === 0) {
+              ingNode.set('aliases', doc.createNode(entry.aliasSuggestions))
+            }
+          }
+          if (entry.tagSuggestions.length > 0) {
+            const existingTags = ingNode.get('tags') as string[] | null | undefined
+            if (!existingTags || existingTags.length === 0) {
+              ingNode.set('tags', doc.createNode(entry.tagSuggestions))
             }
           }
 
