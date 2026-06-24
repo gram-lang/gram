@@ -2,9 +2,12 @@ import { readFile } from 'node:fs/promises'
 import { parse as parseIngredientLib } from 'recipe-ingredient-parser-v3'
 import { generateText } from 'ai'
 import type { LanguageModel } from 'ai'
+import { getAST } from '@gram/parser'
+import { compile } from '@gram/kitchen'
 import { GramCLIError, ExitCode } from '../errors'
 import { matchInText } from '../core/fuzzy'
 import type { ImportResult } from '../types'
+import { GRAM_SPEC_PROMPT } from '../prompts/gram-spec'
 
 // ── Unicode fraction normalization ────────────────────────────────────────────
 
@@ -280,82 +283,59 @@ export async function importJsonLd(source: string): Promise<ImportResult> {
 
 // ── AI import ─────────────────────────────────────────────────────────────────
 
-const GRAM_SPEC_PROMPT = `You are an expert at converting recipe data into the Gram recipe language.
+const AI_MAX_RETRIES = 2
 
-## Gram format specification
+function validateGram(text: string): string[] {
+  try {
+    const ast = getAST(text)
+    const compiled = compile(ast)
+    return compiled.warnings.map((w: any) =>
+      typeof w === 'string' ? w : w.message ?? String(w),
+    )
+  } catch (err) {
+    return [err instanceof Error ? err.message : String(err)]
+  }
+}
 
-A Gram file has two parts: a YAML frontmatter block and a body.
-
-### Frontmatter (between --- delimiters)
-\`\`\`
----
-title: 'Recipe Title'
-author: 'Author Name'
-servings: 4
-time:
-  prep: 15
-  active: 30
-  total: 45
----
-\`\`\`
-All time values are in minutes.
-
-### Body — Steps
-Each step is on its own line with an action verb in square brackets:
-\`[Sauté]\` or \`[Step 1]\` if no specific action name.
-
-### Ingredient references in steps
-Use \`@slug{quantity unit}\` where slug is the ingredient name in kebab-case:
-- \`@flour{250 g}\`
-- \`@olive-oil{2 tbsp}\`
-- \`@eggs{3}\` (no unit for countable items)
-- \`@salt\` (no quantity = to taste)
-
-### Equipment
-Use \`#equipment-name\` for tools and vessels: \`#dutch-oven\`, \`#baking-sheet\`
-
-### Timers
-Use \`~{duration}\` for timing cues: \`~{10 min}\`, \`~{1h30}\`
-
-### Temperatures
-Use \`°{value}\` for temperatures: \`°{180°C}\`, \`°{350°F}\`
-
-### Step outputs (references)
-Use \`->&name\` at the end of a step to name its output, then \`@&name\` to reference it later.
-
-## Rules
-- Output ONLY the raw Gram file content — no markdown fences, no explanation
-- Every ingredient mentioned in a step MUST use the @slug{} syntax
-- Steps must be separated by blank lines
-- Preserve all sections (## Section Name) if the recipe has multiple phases
-- Use sensible SI units (g, ml, kg, L) or common cooking units (tbsp, tsp, cup)
-- Slugs: lowercase, kebab-case, no accents (farine, huile-dolive, oeuf)
-`
+function stripFences(text: string): string {
+  return text.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim()
+}
 
 export async function importWithAI(source: string, model: LanguageModel): Promise<ImportResult> {
   const { jsonLd } = await fetchRecipe(source)
   const recipe: any = findRecipe(jsonLd) ?? jsonLd
 
   const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
+  const rawIngredients: string[] = recipe.recipeIngredient ?? []
 
   let gramContent: string
   try {
     const { text } = await generateText({
       model,
+      temperature: 0,
       system: GRAM_SPEC_PROMPT,
       prompt: `Convert this recipe JSON-LD to Gram format:\n\n${JSON.stringify(recipe, null, 2)}`,
     })
-    gramContent = text.trim()
-    // Strip accidental markdown fences if the model adds them
-    gramContent = gramContent.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim()
+    gramContent = stripFences(text)
+
+    // Validation loop: re-prompt with compiler errors up to AI_MAX_RETRIES times
+    for (let attempt = 0; attempt < AI_MAX_RETRIES; attempt++) {
+      const errors = validateGram(gramContent)
+      if (errors.length === 0) break
+
+      const errorList = errors.map((e, i) => `${i + 1}. ${e}`).join('\n')
+      const { text: fixed } = await generateText({
+        model,
+        temperature: 0,
+        system: GRAM_SPEC_PROMPT,
+        prompt: `The following .gram file has validation errors. Fix them and output only the corrected .gram content.\n\nErrors:\n${errorList}\n\nFile:\n${gramContent}`,
+      })
+      gramContent = stripFences(fixed)
+    }
   } catch (err) {
-    // Fallback to heuristic if AI call fails
     process.stderr.write(`  ⚠ AI call failed, falling back to heuristic import.\n`)
     return importJsonLd(source)
   }
-
-  // Count ingredients and steps from the parsed JSON-LD for reporting
-  const rawIngredients: string[] = recipe.recipeIngredient ?? []
 
   return {
     gramContent,
