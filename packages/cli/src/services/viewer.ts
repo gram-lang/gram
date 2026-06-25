@@ -118,6 +118,7 @@ export async function buildViewModel(
       : null
 
   const registry = compiled.registry?.ingredients ?? {}
+  const cwRegistry = compiled.registry?.cookware ?? {}
 
   // Shopping list
   const shoppingList: RecipeViewModel['shoppingList'] = []
@@ -149,10 +150,11 @@ export async function buildViewModel(
   // Sections
   const sourceSections: any[] = analyzed ? analyzed.result.sections : compiled.sections
   const sections: RecipeViewModel['sections'] = sourceSections.map(sec => {
-    const ingredients: RecipeViewModel['sections'][0]['ingredients'] = (
-      (sec.ingredients ?? []) as any[]
-    )
-      .filter((ing: any) => ing.type !== 'alternative' && ing.qty != null)
+    const secIngs: any[] = sec.ingredients ?? []
+
+    // Regular (non-composite) ingredients
+    const regularEntries: RecipeViewModel['sections'][0]['ingredients'] = secIngs
+      .filter((ing: any) => !ing.composite && ing.type !== 'alternative' && ing.qty != null)
       .map((ing: any) => {
         const name = opts.db?.[ing.id]?.name ?? ing.alias ?? registry[ing.id]?.name ?? ing.name ?? ing.id
         if (ing.normalizedMass != null) {
@@ -161,6 +163,41 @@ export async function buildViewModel(
         const qty = formatQty(ing)
         return { name, displayQty: qty, isEstimate: false }
       })
+
+    // Composite ingredients — group children by parent, apply MAX rule for parent qty
+    // composite.quantity can be a number OR a fraction/qty object — extract numeric value for MAX comparison
+    function compositeNumericValue(q: any): number {
+      if (q == null) return 0
+      if (typeof q === 'number') return q
+      if (typeof q === 'object' && q.value != null) return q.value
+      return 0
+    }
+    const parentMap = new Map<string, {
+      name: string; maxQtyRaw: any; unit?: string; children: Array<{ name: string; displayQty: string }>
+    }>()
+    for (const ing of secIngs.filter((i: any) => i.composite)) {
+      const parentName: string = ing.composite.parent
+      const childQtyRaw = ing.composite.quantity ?? null
+      const childUnit: string | undefined = ing.composite.unit ?? undefined
+      if (!parentMap.has(parentName)) {
+        parentMap.set(parentName, { name: parentName, maxQtyRaw: childQtyRaw, unit: childUnit, children: [] })
+      }
+      const parent = parentMap.get(parentName)!
+      if (childQtyRaw != null && compositeNumericValue(childQtyRaw) > compositeNumericValue(parent.maxQtyRaw)) {
+        parent.maxQtyRaw = childQtyRaw
+      }
+      const childName = opts.db?.[ing.id]?.name ?? registry[ing.id]?.name ?? ing.name ?? ing.id
+      const childDisplayQty = childQtyRaw != null ? formatQty({ qty: childQtyRaw, unit: childUnit }) : ''
+      parent.children.push({ name: childName, displayQty: childDisplayQty })
+    }
+    const compositeEntries: RecipeViewModel['sections'][0]['ingredients'] = Array.from(parentMap.values()).map(p => ({
+      name: p.name,
+      displayQty: p.maxQtyRaw != null ? formatQty({ qty: p.maxQtyRaw, unit: p.unit }) : '',
+      isEstimate: false,
+      children: p.children,
+    }))
+
+    const ingredients: RecipeViewModel['sections'][0]['ingredients'] = [...regularEntries, ...compositeEntries]
 
     const steps: RecipeViewModel['sections'][0]['steps'] = []
     for (const step of (sec.steps ?? []) as any[]) {
@@ -171,6 +208,7 @@ export async function buildViewModel(
         action: step.action ?? undefined,
         text,
         timerMinutes: getTimerMinutes(step),
+        _tokens: step.content ?? [],
       })
     }
 
@@ -180,5 +218,8 @@ export async function buildViewModel(
   const nutrition = analyzed?.result.metrics?.nutrition ?? null
   const missingIngredients = analyzed?.missingIngredients ?? []
 
-  return { title, servings, times, shoppingList, sections, nutrition, missingIngredients }
+  return {
+    title, servings, times, shoppingList, sections, nutrition, missingIngredients,
+    _registries: { ingredients: registry, cookware: cwRegistry },
+  }
 }

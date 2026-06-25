@@ -113,11 +113,17 @@ export interface RecipeViewModel {
   shoppingList: Array<{ name: string; displayQty: string; isEstimate: boolean }>
   sections: Array<{
     title: string | null
-    ingredients: Array<{ name: string; displayQty: string; isEstimate: boolean }>
-    steps: Array<{ action?: string; text: string; timerMinutes?: number }>
+    ingredients: Array<{
+      name: string
+      displayQty: string
+      isEstimate: boolean
+      children?: Array<{ name: string; displayQty: string }>
+    }>
+    steps: Array<{ action?: string; text: string; timerMinutes?: number; _tokens: any[] }>
   }>
   nutrition: NutritionMetrics | null
   missingIngredients: string[]
+  _registries: { ingredients: Record<string, any>; cookware: Record<string, any> }
 }
 
 export interface ImportResult {

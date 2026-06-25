@@ -3,6 +3,83 @@ import { spawn } from 'node:child_process'
 import { fmtNumber } from '../core/format'
 import type { RecipeViewModel } from '../types'
 
+// ── Inline step coloring ──────────────────────────────────────────────────────
+
+function isInlineToken(item: any): boolean {
+  if (typeof item === 'string') return false
+  if (!item) return false
+  if (item.type === 'comment' || item.type === 'declaration') return false
+  return true
+}
+
+function tokenToRichText(
+  item: any,
+  ingReg: Record<string, any>,
+  cwReg: Record<string, any>,
+): string {
+  if (typeof item === 'string') return item
+  if (!item) return ''
+
+  if (item.type === 'reference') {
+    const name = ingReg[item.id]?.name ?? item.name ?? item.id
+    return chalk.magenta(name)
+  }
+
+  if (item.type === 'timer') {
+    const q = item.quantity
+    if (!q) return ''
+    const val = q.text ?? (q.value != null ? String(q.value) : '')
+    return chalk.dim(`~${val}${q.unit ?? 'min'}`)
+  }
+
+  if (item.type === 'temperature') {
+    const q = item.quantity
+    if (!q) return item.text ?? ''
+    const val = q.text ?? (q.value != null ? String(q.value) : '')
+    return chalk.dim(`${val}${item.unit ?? '°C'}`)
+  }
+
+  if (item.type === 'comment' || item.type === 'declaration') return ''
+
+  if (item.id) {
+    const name = item.alias ?? ingReg[item.id]?.name ?? cwReg[item.id]?.name ?? item.name ?? item.id
+    if (item.type === 'cookware' || cwReg[item.id]) return chalk.cyan(name)
+    // Composite child — just color the child name, no parent reference in step
+    return chalk.yellow(name)
+  }
+
+  return item.value ?? item.name ?? ''
+}
+
+function stepToRichText(
+  tokens: any[],
+  ingReg: Record<string, any>,
+  cwReg: Record<string, any>,
+): string {
+  const parts: string[] = []
+  for (let i = 0; i < tokens.length; i++) {
+    const item = tokens[i]
+    const text = tokenToRichText(item, ingReg, cwReg)
+    if (!text) continue
+
+    if (isInlineToken(item) && parts.length > 0) {
+      const last = parts[parts.length - 1]
+      // Strip ANSI codes before testing the last character
+      const lastPlain = last.replace(/\x1b\[[0-9;]*m/g, '')
+      if (lastPlain && !/[\s']$/.test(lastPlain)) parts.push(' ')
+    }
+
+    parts.push(text)
+
+    if (isInlineToken(item)) {
+      const next = tokens[i + 1]
+      const nextPlain = next ? (typeof next === 'string' ? next : (tokenToRichText(next, ingReg, cwReg).replace(/\x1b\[[0-9;]*m/g, ''))) : ''
+      if (nextPlain && !/^[\s.,!?:;)]/.test(nextPlain)) parts.push(' ')
+    }
+  }
+  return parts.join('').trim()
+}
+
 const COL = Math.min(process.stdout.columns || 70, 78)
 
 function pad(s: string, width: number): string {
@@ -59,7 +136,10 @@ function renderShoppingList(list: RecipeViewModel['shoppingList']): string {
   return lines.join('\n')
 }
 
-function renderSections(sections: RecipeViewModel['sections']): string {
+function renderSections(
+  sections: RecipeViewModel['sections'],
+  registries: RecipeViewModel['_registries'],
+): string {
   const lines: string[] = []
   let stepNum = 1
 
@@ -72,6 +152,13 @@ function renderSections(sections: RecipeViewModel['sections']): string {
         const name = ing.name.padEnd(20)
         const qty = ing.isEstimate ? chalk.dim(`≈ ${ing.displayQty}`) : ing.displayQty
         lines.push(`  ${chalk.dim('•')} ${name} ${qty}`)
+        if (ing.children) {
+          for (const child of ing.children) {
+            const childName = child.name.padEnd(18)
+            const childQty = child.displayQty ? chalk.dim(child.displayQty) : ''
+            lines.push(`    ${chalk.dim('↳')} ${childName} ${childQty}`)
+          }
+        }
       }
       lines.push('')
     }
@@ -80,7 +167,8 @@ function renderSections(sections: RecipeViewModel['sections']): string {
       const num = String(stepNum++).padStart(2)
       const action = step.action ? chalk.cyan(`[${step.action}]`).padEnd(12) : ''.padEnd(10)
       const timer = step.timerMinutes ? chalk.dim(` (~${formatMinutes(step.timerMinutes)})`) : ''
-      lines.push(`  ${chalk.dim(num + '.')} ${action} ${step.text}${timer}`)
+      const richText = stepToRichText(step._tokens, registries.ingredients, registries.cookware)
+      lines.push(`  ${chalk.dim(num + '.')} ${action} ${richText}${timer}`)
     }
   }
 
@@ -117,7 +205,7 @@ export function renderRecipe(model: RecipeViewModel): string {
   return [
     renderHeader(model),
     renderShoppingList(model.shoppingList),
-    renderSections(model.sections),
+    renderSections(model.sections, model._registries),
     renderNutrition(model.nutrition),
     renderMissingWarning(model.missingIngredients),
     '',

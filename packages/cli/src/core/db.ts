@@ -33,6 +33,9 @@ export async function loadDb(
     )
   }
 
+  // Empty file (comments-only YAML parses to null) = no database
+  if (raw == null) return null
+
   // Support both formats: with or without top-level 'ingredients:' wrapper
   const ingredients = (raw as Record<string, unknown>)?.ingredients ?? raw
 
