@@ -40,6 +40,7 @@
         "@ai-sdk/openai-compatible": "^2.0.51",
         "@clack/prompts": "latest",
         "@gram/analyzer": "workspace:*",
+        "@gram/i18n": "workspace:*",
         "@gram/kitchen": "workspace:*",
         "@gram/parser": "workspace:*",
         "@gram/renderer": "workspace:*",

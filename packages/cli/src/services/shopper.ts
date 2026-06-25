@@ -1,5 +1,6 @@
 import pLimit from 'p-limit'
 import { basename } from 'node:path'
+import { normalizeUnit } from '@gram/i18n'
 import { runPipeline } from '../core/pipeline'
 import { fmtNumber } from '../core/format'
 import type { IngredientData } from '@gram/analyzer'
@@ -25,6 +26,7 @@ function formatMass(grams: number): string {
 }
 
 const CATEGORY_ORDER = ['Dairy', 'Meat', 'Fish', 'Produce', 'Grains', 'Fat', 'Spice', 'Other']
+
 
 export async function buildShoppingList(
   files: string[],
@@ -96,10 +98,10 @@ export async function buildShoppingList(
     }
 
     if (!fullyAggregated) {
-      const units = new Set(items.map(i => i.unit ?? ''))
+      const units = new Set(items.map(i => normalizeUnit(i.unit)))
       if (units.size === 1) {
         const total = items.reduce((sum, i) => sum + i.qty, 0)
-        const unit = items[0]?.unit
+        const unit = normalizeUnit(items[0]?.unit)
         fullyAggregated = true;
         finalEntry = {
           displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total),
