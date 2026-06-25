@@ -14,69 +14,103 @@ bun add -d @gram/cli
 
 ## Core Commands
 
-The CLI is currently in its V1 phase and offers the foundational tools needed to validate and compile recipes.
+### Project Management
 
-### `gram init`
-
+#### `gram init`
 Scaffolds a new GRAM environment in the current directory.
-
-```bash
-gram init
-```
-
-**What it does:**
 - Creates a `.gram/` directory.
 - Generates a heavily commented `config.yaml` template.
 - Generates a starter `ingredients.yaml` ingredient database.
 - Generates a `.gitignore` to prevent committing sensitive keys.
 
-### `gram check [pattern]`
+#### `gram check [pattern]`
+Validates your `.gram` files for syntax errors, structural integrity, and undefined ingredients.
+- Runs the OhmJS parser to catch syntax errors.
+- Runs the Kitchen compiler to catch structural errors (e.g., cyclic dependencies).
+- Connects to your `ingredients.yaml` to warn about ingredients not documented in your database.
 
-Validates your `.gram` files for syntax errors and structural integrity.
-
-```bash
-gram check "**/*.gram"
-```
-
-**What it does:**
-- Runs the OhmJS parser to catch syntax errors (e.g. missing braces, invalid headers).
-- Runs the Kitchen compiler to catch structural errors (e.g. referencing an undefined `&intermediate`, cyclic dependencies).
-- Connects to your `ingredients.yaml` (if present) to warn you about any ingredients that are not documented in your database.
-
-**Output:**
-The output is grouped logically by file, separating critical `[Structure]` errors from non-blocking `[Database]` warnings.
-
-### `gram build [pattern]`
-
+#### `gram build [pattern]`
 Compiles your `.gram` recipes into the final, minified JSON format.
-
 ```bash
-# Output everything to a dist/ directory
 gram build "**/*.gram" --output ./dist
-
-# Compile a single file and output formatted JSON to the terminal
 gram build brioche.gram --pretty
 ```
+- By default, outputs pure JSON directly to `stdout` for easy piping.
+- Computes nutritional data and physical mass normalization automatically via the database.
 
-**What it does:**
-- Parses the AST and resolves the shopping list and Gantt timings.
-- Automatically connects to the analyzer to compute nutritional data and physical mass normalization (unless `--skip-db` is passed).
-- **Unix Philosophy**: By default, if `--output` is omitted, the CLI outputs pure JSON directly to `stdout` with absolutely no decorative logs. This allows you to pipe the output seamlessly into tools like `jq` or external APIs.
+#### `gram view <file>`
+Displays a recipe directly in the terminal in a beautifully styled ASCII box.
+- Supports automatic paging for long recipes.
+- Displays calculated nutrition, timings, and ingredient checklists.
+- Options: `--no-pager`, `--skip-db`, `--db`.
+
+#### `gram import <source>`
+Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file.
+- Automatically extracts `application/ld+json` from websites.
+- Options: `--output <file>`, `--ai` (uses AI to semantically translate the recipe into perfect Gram syntax instead of using the heuristic parser).
+
+#### `gram shop [pattern]`
+Generates an aggregated shopping list across multiple recipes.
+- Aggregates quantities intelligently via density.
+- Categorizes ingredients (Dairy, Produce, etc.).
+- Formats: `--format terminal|md|json`.
+
+### Database Management
+
+Commands nested under `gram db` to manage your `ingredients.yaml`.
+
+#### `gram db sync [pattern]`
+Scans your recipes to find undocumented ingredients and adds them to your database.
+- Interactive fuzzy matching (Levenshtein) helps you avoid duplicates for plurals or typos.
+- Options: `--dry-run`, `--db`.
+
+#### `gram db validate`
+Validates the integrity of your `ingredients.yaml`.
+- Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
+- Warns about missing nutrition or density data.
+- Options: `--strict` (exit 1 on warnings).
+
+#### `gram db enrich`
+Uses AI to automatically complete missing nutritional values and physical properties in your database.
+- Enriches `density`, `unit_weight`, and `nutrition` fields in batches.
+- Options: `--field density|nutrition|all`, `--ingredient <id>`, `--dry-run`.
+
+#### `gram db lint`
+Uses AI to detect and resolve semantic duplicates and plurals in your database.
+- Interactive prompts to merge duplicates and keep the database clean.
+- Options: `--report`.
 
 ---
 
 ## Configuration
 
-By default, the CLI looks for a `.gram/config.yaml` and `.gram/ingredients.yaml` in the directory from which the command is run. 
+The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
 
-You can manually override the database path during commands:
+You can also manually override the database path during commands:
 ```bash
 gram build --db ./my-custom-db.yaml
 ```
 
-## Roadmap
+### `config.yaml` Settings
 
-Future versions of the CLI will introduce:
-- `gram db extract`: Automatically extract undefined ingredients from your recipes into your database.
-- `gram view`: A beautifully styled terminal viewer for your recipes.
-- `gram shop`: Generate an aggregated shopping list across multiple recipes.
+Here is the complete reference of all available settings in `config.yaml`:
+
+```yaml
+version: 1
+database: "./ingredients.yaml" # Relative or absolute path to the database
+language: "en"                 # Language for the CLI
+
+# AI settings for `gram db enrich` and `gram db lint`
+ai:
+  # Supported providers: "google", "openai", "anthropic", "ollama"
+  provider: "google"
+  
+  # Specific model string (defaults to 'gemini-2.0-flash' for google)
+  model: "gemini-2.0-flash"
+  
+  # API key (Can also use ENV variables like GEMINI_API_KEY, OPENAI_API_KEY)
+  apiKey: "YOUR_API_KEY"
+  
+  # Custom base URL (Useful for Ollama or OpenAI compatible proxies)
+  baseUrl: "http://localhost:11434"
+```
