@@ -12,16 +12,16 @@ import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../ty
 
 function buildSystemPrompt(lang: string): string {
   const categories = getDefaultCategories(lang).join(', ')
-  return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category from examples like: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.).`
+  return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category from examples like: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.`
 }
 
 const EnrichItemSchema = z.object({
   key: z.string(),
-  density: z.number().max(5).optional(),
+  density: z.number().positive().optional(),
   unit_weight: z.number().optional(),
   nutrition: z
     .object({
-      calories: z.number().max(1000),
+      calories: z.number().min(0),
       carbs: z.number().min(0),
       protein: z.number().min(0),
       fat: z.number().min(0),
@@ -117,13 +117,14 @@ export async function enrichDb(
         }
 
         for (const item of parsed.ingredients) {
-          const [, ing] = batch.find(([id]) => id === item.key) ?? []
-          if (!ing) {
+          const normalizedKey = item.key.trim().toLowerCase()
+          const [id, ing] = batch.find(([id]) => id.toLowerCase() === normalizedKey) ?? []
+          if (!ing || !id) {
             batchFailed.push(item.key)
             continue
           }
           const entry: EnrichEntry = {
-            id: item.key,
+            id: id,
             name: ing.name,
             density: item.density,
             unit_weight: item.unit_weight || undefined,
