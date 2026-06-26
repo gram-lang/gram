@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
-import { intro, outro, confirm, isCancel, cancel, note } from '@clack/prompts'
-import { mkdir, writeFile, access } from 'node:fs/promises'
+import { intro, outro, confirm, isCancel, cancel, note, select, text } from '@clack/prompts'
+import { mkdir, writeFile, access, appendFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { stringify } from 'yaml'
 import type { GramConfig } from '../types'
@@ -27,6 +27,8 @@ const DB_TEMPLATE = `# GRAM ingredient database
 #       mono_fat: 21.0
 #       poly_fat: 3.0
 #       sodium: 0.011
+#       fiber: 0.0
+#       sugar: 0.1
 `
 
 function guardCancel<T>(value: T | symbol): T {
@@ -76,6 +78,103 @@ export default defineCommand({
 
     const config: GramConfig = {
       ...(createDb && { database: '.gram/ingredients.yaml' }),
+    }
+
+    const configureAi = guardCancel(
+      await confirm({
+        message: "Configure an AI provider now? (Required for 'gram import' and 'gram db enrich')",
+        initialValue: true,
+      }),
+    )
+
+    if (configureAi) {
+      const provider = guardCancel(
+        await select({
+          message: 'Select an AI provider:',
+          options: [
+            { value: 'google', label: 'Google (Gemini)' },
+            { value: 'openai', label: 'OpenAI (ChatGPT)' },
+            { value: 'anthropic', label: 'Anthropic (Claude)' },
+            { value: 'ollama', label: 'Ollama (Local)' },
+          ],
+        }),
+      ) as 'google' | 'openai' | 'anthropic' | 'ollama'
+
+      let model: string
+
+      if (provider === 'google') {
+        const selectedModel = guardCancel(
+          await select({
+            message: 'Select a model:',
+            options: [
+              { value: 'gemini-3.5-flash', label: 'gemini-3.5-flash (Recommended)' },
+              { value: 'gemini-3.1-pro', label: 'gemini-3.1-pro' },
+              { value: 'other', label: 'Other (Manual entry)' },
+            ],
+          }),
+        )
+        model = selectedModel === 'other' ? guardCancel(await text({ message: 'Enter model name:' })) : (selectedModel as string)
+      } else if (provider === 'openai') {
+        const selectedModel = guardCancel(
+          await select({
+            message: 'Select a model:',
+            options: [
+              { value: 'gpt-5.4-mini', label: 'gpt-5.4-mini (Recommended)' },
+              { value: 'gpt-5.5', label: 'gpt-5.5' },
+              { value: 'other', label: 'Other (Manual entry)' },
+            ],
+          }),
+        )
+        model = selectedModel === 'other' ? guardCancel(await text({ message: 'Enter model name:' })) : (selectedModel as string)
+      } else if (provider === 'anthropic') {
+        const selectedModel = guardCancel(
+          await select({
+            message: 'Select a model:',
+            options: [
+              { value: 'claude-sonnet-4.6', label: 'claude-sonnet-4.6 (Recommended)' },
+              { value: 'claude-haiku-4.5', label: 'claude-haiku-4.5' },
+              { value: 'claude-fable-5', label: 'claude-fable-5' },
+              { value: 'other', label: 'Other (Manual entry)' },
+            ],
+          }),
+        )
+        model = selectedModel === 'other' ? guardCancel(await text({ message: 'Enter model name:' })) : (selectedModel as string)
+      } else {
+        const selectedModel = guardCancel(
+          await select({
+            message: 'Select a model:',
+            options: [
+              { value: 'llama3', label: 'llama3' },
+              { value: 'other', label: 'Other (Manual entry)' },
+            ],
+          }),
+        )
+        model = selectedModel === 'other' ? guardCancel(await text({ message: 'Enter model name:' })) : (selectedModel as string)
+      }
+
+      config.ai = { provider, model }
+
+      if (provider !== 'ollama') {
+        const saveKey = guardCancel(
+          await confirm({
+            message: 'Save API key in .env file now?',
+            initialValue: true,
+          }),
+        )
+        if (saveKey) {
+          const apiKey = guardCancel(await text({ message: 'Enter your API key:' }))
+          if (apiKey) {
+            const envPath = join(process.cwd(), '.env')
+            const envKeyMap = {
+              google: 'GEMINI_API_KEY',
+              openai: 'OPENAI_API_KEY',
+              anthropic: 'ANTHROPIC_API_KEY',
+            }
+            const envKey = envKeyMap[provider as 'google' | 'openai' | 'anthropic']
+            await appendFile(envPath, `\n${envKey}="${apiKey}"\n`)
+          }
+        }
+      }
     }
 
     await mkdir(gramDir, { recursive: true })

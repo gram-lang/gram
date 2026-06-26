@@ -20,6 +20,8 @@ bun add -d @gram/cli
 Scaffolds a new GRAM environment in the current directory.
 - Creates a `.gram/` directory.
 - Generates a heavily commented `config.yaml` template.
+- Interactively configures your preferred AI provider and model.
+- Generates/updates a `.env` file for your AI API keys.
 - Generates a starter `ingredients.yaml` ingredient database.
 - Generates a `.gitignore` to prevent committing sensitive keys.
 
@@ -48,7 +50,7 @@ Displays a recipe directly in the terminal in a beautifully styled ASCII box.
 Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file using AI.
 - Automatically extracts `application/ld+json` from websites.
 - Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
-- Requires AI to be configured (see `config.yaml`). Falls back to a heuristic parser silently if the AI call fails.
+- Requires AI to be configured (see `config.yaml`).
 - Options: `--output <file>`.
 
 #### `gram shop [pattern]`
@@ -80,8 +82,10 @@ Uses AI to automatically complete missing data in your database.
 
 #### `gram db lint`
 Uses AI to detect and resolve semantic duplicates and plurals in your database.
-- Interactive prompts to merge duplicates and keep the database clean.
-- Options: `--report`.
+- Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `oeuf`).
+- For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
+- Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
+- Options: `--report` (show issues without fixing).
 
 ---
 
@@ -93,6 +97,14 @@ You can also manually override the database path during commands:
 ```bash
 gram build --db ./my-custom-db.yaml
 ```
+
+### Cascading AI Configuration
+GRAM uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
+1. **Environment Variables**: Variables like `GEMINI_API_KEY` (from the system or a `.env` file) take absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
+2. **`config.yaml` Fallback**: If the environment variable is missing, GRAM falls back to the `ai.apiKey` field in your `config.yaml`. 
+
+> [!WARNING]
+> Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
 
 ### `config.yaml` Settings
 
@@ -109,10 +121,11 @@ ai:
   # Supported providers: "google", "openai", "anthropic", "ollama"
   provider: "google"
   
-  # Specific model string (defaults to 'gemini-2.0-flash' for google)
-  model: "gemini-2.0-flash"
+  # Specific model string (defaults to 'gemini-3.5-flash' for google)
+  model: "gemini-3.5-flash"
   
   # API key (Can also use ENV variables like GEMINI_API_KEY, OPENAI_API_KEY)
+  # WARNING: Prefer using a .env file instead of committing this file with your key.
   apiKey: "YOUR_API_KEY"
   
   # Custom base URL (Useful for Ollama or OpenAI compatible proxies)
