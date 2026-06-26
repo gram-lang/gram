@@ -75,6 +75,7 @@ ${JSON.stringify(keys, null, 2)}`
 export interface LintDecision {
   issueIndex: number
   action: 'apply' | 'skip'
+  keepId?: string
   keepNutrition?: 'keep' | 'source'
 }
 
@@ -112,7 +113,8 @@ export async function applyLintDecisions(
 
         const aliasNode = ingredientsMap.get(aliasId, true)
         if (isMap(aliasNode)) {
-          const oldAliases = (aliasNode.get('aliases') as string[] | null) ?? []
+          const aliasesRaw = aliasNode.get('aliases', true)
+          const oldAliases: string[] = isSeq(aliasesRaw) ? aliasesRaw.toJSON() : []
           _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
           _deleteKey(ingredientsMap, aliasId)
         } else {
@@ -120,12 +122,13 @@ export async function applyLintDecisions(
         }
       }
     } else {
-      const keepNode = ingredientsMap.get(keepId, true)
+      const effectiveKeepId = decision.keepId ?? keepId
+      const effectiveAliasIds = issue.ids.filter(id => id !== effectiveKeepId)
+
+      const keepNode = ingredientsMap.get(effectiveKeepId, true)
       if (!isMap(keepNode)) { skipped++; continue }
 
-      for (const aliasId of aliasIds) {
-        if (aliasId === keepId) continue
-
+      for (const aliasId of effectiveAliasIds) {
         const sourceNode = ingredientsMap.get(aliasId, true)
         if (!isMap(sourceNode)) continue
 
@@ -138,7 +141,8 @@ export async function applyLintDecisions(
         const sourcePhys = sourceNode.get('physical', true)
         if (!keepPhys && sourcePhys) keepNode.set('physical', sourcePhys)
 
-        const oldAliases = (sourceNode.get('aliases') as string[] | null) ?? []
+        const aliasesRaw = sourceNode.get('aliases', true)
+        const oldAliases: string[] = isSeq(aliasesRaw) ? aliasesRaw.toJSON() : []
         _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
 
         _deleteKey(ingredientsMap, aliasId)
@@ -161,9 +165,9 @@ export async function applyLintDecisions(
 }
 
 function _addAliasesToNode(doc: ReturnType<typeof parseDocument>, node: any, newAliases: string[]): void {
-  const existing = (node.get('aliases') as string[] | null) ?? []
-  const merged = Array.from(new Set([...existing, ...newAliases]))
   const aliasesNode = node.get('aliases', true)
+  const existing: string[] = isSeq(aliasesNode) ? aliasesNode.toJSON() : []
+  const merged = Array.from(new Set([...existing, ...newAliases]))
   if (isSeq(aliasesNode)) {
     aliasesNode.items.length = 0
     for (const a of merged) aliasesNode.add(doc.createNode(a))

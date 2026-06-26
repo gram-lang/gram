@@ -73,38 +73,44 @@ async function promptIssue(index: number, issue: LintIssue): Promise<LintDecisio
     }
   }
 
-  // duplicate
-  const answer = await select({
-    message: `Duplicate: "${issue.ids.join('", "')}" — keep "${keepId}" and remove others?`,
+  // duplicate — let the user choose which key to keep
+  const keepAnswer = await select({
+    message: `Duplicate: "${issue.ids.join('" and "')}" — which key should be the primary?`,
     options: [
-      {
-        value: 'apply',
-        label: `Merge into "${keepId}"`,
-        hint: issue.hasNutritionConflict ? 'nutrition to choose in the next step' : undefined,
-      },
+      ...issue.ids.map(id => ({
+        value: id,
+        label: id === keepId
+          ? `${id}  ${chalk.dim('(AI suggestion)')}`
+          : id,
+        hint: id === keepId ? undefined : `"${keepId}" will become an alias`,
+      })),
       { value: 'skip', label: 'Skip' },
     ],
   })
 
-  if (typeof answer === 'symbol' || answer === 'skip') {
+  if (typeof keepAnswer === 'symbol' || keepAnswer === 'skip') {
     return { issueIndex: index, action: 'skip' }
   }
 
+  const chosenKeepId = keepAnswer as string
+  const aliasId = issue.ids.find(id => id !== chosenKeepId)!
+
   if (!issue.hasNutritionConflict) {
-    return { issueIndex: index, action: 'apply' }
+    return { issueIndex: index, action: 'apply', keepId: chosenKeepId }
   }
 
   const nutrition = await select({
-    message: `Nutrition conflict between "${keepId}" and "${aliasIds[0]}" — which value to keep?`,
+    message: `Both have nutrition data — which values to keep?`,
     options: [
-      { value: 'keep', label: `Keep nutrition from "${keepId}"` },
-      { value: 'source', label: `Use nutrition from "${aliasIds[0]}"` },
+      { value: 'keep', label: `From "${chosenKeepId}" (primary)` },
+      { value: 'source', label: `From "${aliasId}" (will become alias)` },
     ],
   })
 
   return {
     issueIndex: index,
     action: 'apply',
+    keepId: chosenKeepId,
     keepNutrition: typeof nutrition === 'symbol' ? 'keep' : (nutrition as 'keep' | 'source'),
   }
 }
