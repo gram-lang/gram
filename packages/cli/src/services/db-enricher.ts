@@ -126,7 +126,7 @@ export async function enrichDb(
             id: item.key,
             name: ing.name,
             density: item.density,
-            unit_weight: item.unit_weight,
+            unit_weight: item.unit_weight || undefined,
             nutrition: item.nutrition,
             category: item.category,
             tagSuggestions: item.tagSuggestions,
