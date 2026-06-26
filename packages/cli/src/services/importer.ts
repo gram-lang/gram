@@ -4,6 +4,7 @@ import { generateText } from 'ai'
 import type { LanguageModel } from 'ai'
 import { getAST } from '@gram/parser'
 import { compile } from '@gram/kitchen'
+import { getAiLanguageInstruction } from '@gram/i18n'
 import { GramCLIError, ExitCode } from '../errors'
 import { matchInText } from '../core/fuzzy'
 import type { ImportResult } from '../types'
@@ -301,19 +302,21 @@ function stripFences(text: string): string {
   return text.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim()
 }
 
-export async function importWithAI(source: string, model: LanguageModel): Promise<ImportResult> {
+export async function importWithAI(source: string, model: LanguageModel, lang = 'en'): Promise<ImportResult> {
   const { jsonLd } = await fetchRecipe(source)
   const recipe: any = findRecipe(jsonLd) ?? jsonLd
 
   const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
   const rawIngredients: string[] = recipe.recipeIngredient ?? []
 
+  const systemPrompt = `${getAiLanguageInstruction(lang)}\n\n${GRAM_SPEC_PROMPT}`
+
   let gramContent: string
   try {
     const { text } = await generateText({
       model,
       temperature: 0,
-      system: GRAM_SPEC_PROMPT,
+      system: systemPrompt,
       prompt: `Convert this recipe JSON-LD to Gram format:\n\n${JSON.stringify(recipe, null, 2)}`,
     })
     gramContent = stripFences(text)
@@ -327,7 +330,7 @@ export async function importWithAI(source: string, model: LanguageModel): Promis
       const { text: fixed } = await generateText({
         model,
         temperature: 0,
-        system: GRAM_SPEC_PROMPT,
+        system: systemPrompt,
         prompt: `The following .gram file has validation errors. Fix them and output only the corrected .gram content.\n\nErrors:\n${errorList}\n\nFile:\n${gramContent}`,
       })
       gramContent = stripFences(fixed)

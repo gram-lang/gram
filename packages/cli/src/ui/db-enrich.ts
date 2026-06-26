@@ -15,6 +15,7 @@ export function renderEnrichResult(result: EnrichResult, dryRun: boolean): void 
   console.log()
   for (const entry of enriched) {
     const parts: string[] = []
+    if (entry.category) parts.push(entry.category)
     if (entry.density != null) parts.push(`density: ${entry.density} g/mL`)
     if (entry.nutrition != null) parts.push(`${entry.nutrition.calories} kcal/100g`)
     console.log(`  ${chalk.green('✓')} ${entry.name.padEnd(22)} ${chalk.dim(parts.join(' · '))}`)

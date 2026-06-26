@@ -17,7 +17,7 @@ export default defineCommand({
     },
     field: {
       type: 'string',
-      description: 'Field to enrich: density | nutrition | all (default: all)',
+      description: 'Field to enrich: density | nutrition | tags | category | all (default: all)',
       default: 'all',
     },
     'dry-run': {
@@ -32,9 +32,9 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    const field = args.field as 'density' | 'nutrition' | 'all'
-    if (!['density', 'nutrition', 'all'].includes(field)) {
-      log.error(`Invalid --field "${field}". Use density, nutrition, or all.`)
+    const field = args.field as 'density' | 'nutrition' | 'tags' | 'category' | 'all'
+    if (!['density', 'nutrition', 'tags', 'category', 'all'].includes(field)) {
+      log.error(`Invalid --field "${field}". Use density, nutrition, tags, category, or all.`)
       process.exit(ExitCode.Error)
     }
 

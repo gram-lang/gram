@@ -6,25 +6,14 @@ import { z } from 'zod'
 import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
+import { getAiLanguageInstruction, getDefaultCategories } from '@gram/i18n'
 import { withFileLock, atomicWrite } from '../core/lock'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
-const SYSTEM_PROMPT =
-  'You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Choose exactly one "aisle" (supermarket aisle). Then provide other useful free-form "tagSuggestions" (e.g., vegan, gluten-free, allergen, etc.).'
-
-const AISLES = [
-  'Fruits & Vegetables',
-  'Meat & Seafood',
-  'Dairy & Eggs',
-  'Bakery',
-  'Sweet Groceries',
-  'Savory Groceries',
-  'Beverages',
-  'Frozen Foods',
-  'Fresh Foods',
-  'Dry Goods',
-  'Other',
-] as const
+function buildSystemPrompt(lang: string): string {
+  const categories = getDefaultCategories(lang).join(', ')
+  return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category from examples like: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.).`
+}
 
 const EnrichItemSchema = z.object({
   key: z.string(),
@@ -42,7 +31,7 @@ const EnrichItemSchema = z.object({
       sodium: z.number().min(0).optional(),
     })
     .optional(),
-  aisle: z.enum(AISLES).default('Autre'),
+  category: z.string().default('Other'),
   tagSuggestions: z.array(z.string()).default([]),
 })
 
@@ -65,13 +54,18 @@ export async function enrichDb(
 ): Promise<EnrichResult> {
   const dbPath = resolveDbPath(config, opts.dbPathOverride)
   const field = opts.field ?? 'all'
+  const lang = config.language ?? 'en'
 
   let toEnrich = Object.entries(db).filter(([, ing]) => {
     const needsDensity = !ing.physical?.density
     const needsNutrition = !ing.nutrition
+    const needsTags = !ing.tags || ing.tags.length === 0
+    const needsCategory = !ing.category
     if (field === 'density') return needsDensity
     if (field === 'nutrition') return needsNutrition
-    return needsDensity || needsNutrition
+    if (field === 'tags') return needsTags
+    if (field === 'category') return needsCategory
+    return needsDensity || needsNutrition || needsTags || needsCategory
   })
 
   if (opts.ingredient) {
@@ -90,6 +84,7 @@ export async function enrichDb(
     batches.push(toEnrich.slice(i, i + BATCH_SIZE))
   }
 
+  const systemPrompt = buildSystemPrompt(lang)
   const limit = pLimit(5)
   const enriched: EnrichEntry[] = []
   const failed: string[] = []
@@ -109,7 +104,7 @@ export async function enrichDb(
         try {
           const { object } = await generateObject({
             model,
-            system: SYSTEM_PROMPT,
+            system: systemPrompt,
             prompt,
             schema: EnrichResponseSchema,
           })
@@ -133,7 +128,8 @@ export async function enrichDb(
             density: item.density,
             unit_weight: item.unit_weight,
             nutrition: item.nutrition,
-            tagSuggestions: Array.from(new Set([item.aisle, ...item.tagSuggestions].filter(Boolean))),
+            category: item.category,
+            tagSuggestions: item.tagSuggestions,
           }
           enriched.push(entry)
           batchEnriched.push(item.key)
@@ -176,6 +172,13 @@ export async function enrichDb(
               } else {
                 if (entry.density != null) (physNode as any).set('density', entry.density)
                 if (entry.unit_weight != null) (physNode as any).set('unit_weight', entry.unit_weight)
+              }
+            }
+
+            if (entry.category) {
+              const existingCategory = ingNode.get('category') as string | null | undefined
+              if (!existingCategory) {
+                ingNode.set('category', entry.category)
               }
             }
 

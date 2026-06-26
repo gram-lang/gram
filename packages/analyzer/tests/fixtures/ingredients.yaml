@@ -2,6 +2,7 @@ ingredients:
   mustard:
     name: "Moutarde de Dijon"
     aliases: ["dijon mustard", "moutarde"]
+    category: "Condiments"
     tags: ["condiment"]
     physical:
       density: 1.05
@@ -14,6 +15,7 @@ ingredients:
   sugar:
     name: "Sucre blanc"
     aliases: ["white sugar", "sucre"]
+    category: "Sucres"
     tags: ["sucré", "poudre"]
     physical:
       density: 0.85

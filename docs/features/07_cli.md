@@ -52,7 +52,7 @@ Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file.
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.
 - Aggregates quantities intelligently via density.
-- Categorizes ingredients (Dairy, Produce, etc.).
+- Groups ingredients by their `category` field (culinary family: Vegetables, Dairy, Grains, etc.).
 - Formats: `--format terminal|md|json`.
 
 ### Database Management
@@ -71,9 +71,10 @@ Validates the integrity of your `ingredients.yaml`.
 - Options: `--strict` (exit 1 on warnings).
 
 #### `gram db enrich`
-Uses AI to automatically complete missing nutritional values and physical properties in your database.
-- Enriches `density`, `unit_weight`, and `nutrition` fields in batches.
-- Options: `--field density|nutrition|all`, `--ingredient <id>`, `--dry-run`.
+Uses AI to automatically complete missing data in your database.
+- Enriches `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches.
+- `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
+- Options: `--field density|nutrition|tags|category|all`, `--ingredient <id>`, `--dry-run`.
 
 #### `gram db lint`
 Uses AI to detect and resolve semantic duplicates and plurals in your database.
@@ -98,7 +99,8 @@ Here is the complete reference of all available settings in `config.yaml`:
 ```yaml
 version: 1
 database: "./ingredients.yaml" # Relative or absolute path to the database
-language: "en"                 # Language for the CLI
+language: "en"                 # Language for all AI-generated content (categories, tags, imported recipes)
+                               # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
 
 # AI settings for `gram db enrich` and `gram db lint`
 ai:

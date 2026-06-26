@@ -5,10 +5,12 @@ import { z } from 'zod'
 import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
+import { getAiLanguageInstruction } from '@gram/i18n'
 import type { GramConfig, LintResult, LintIssue, LintOptions } from '../types'
 
-const SYSTEM_PROMPT =
-  'You are a culinary database assistant. Analyze ingredient database keys and identify linguistic or semantic issues. Be conservative: only report high-confidence issues.'
+function buildSystemPrompt(lang: string): string {
+  return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. Analyze ingredient database keys and identify linguistic or semantic issues. Be conservative: only report high-confidence issues.`
+}
 
 const LintIssueRawSchema = z.object({
   type: z.enum(['plural', 'duplicate']),
@@ -42,7 +44,7 @@ ${JSON.stringify(keys, null, 2)}`
 
   const { object: raw } = await generateObject({
     model,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(config.language ?? 'en'),
     prompt,
     schema: LintResponseSchema,
   })

@@ -29,14 +29,39 @@ Each ingredient in this database maps internally to the `IngredientData` type de
 
 ---
 
-## 2. Resolution & Multilingual Units
+## 2. Ingredient Fields
 
-*   **Ingredients Resolution (Aliases)**: Ingredients are resolved primarily by their exact string match. However, the database supports an `aliases` array. This allows the analyzer to map variations (like `@dijon mustard` or `@yellow mustard`) back to the canonical `mustard` object in the user's custom database.
-*   **Units Normalization (I18n)**: While ingredient names are specific to the user's language, **volume and mass units are natively normalized across languages** by the `@gram/i18n` package. For example, French volume units like `càs` (tablespoon) and `càc` (teaspoon) are automatically resolved to their canonical equivalents (`tbsp`, `tsp`) internally.
+Beyond the physical and nutritional data, each ingredient entry supports two classification fields:
+
+*   **`category`** *(string, optional)*: The culinary family of the ingredient — a single, stable classification such as `Vegetables`, `Dairy`, `Grains`, or `Condiments`. This is distinct from free-form tags: a category is unique per ingredient and used by `gram shop` to group the shopping list. `gram db enrich` generates this automatically from the `language` set in your config.
+*   **`tags`** *(string[], optional)*: Free-form annotations for dietary or allergy info (e.g. `vegan`, `gluten-free`, `allergen`). Multiple values, no fixed vocabulary.
+
+```yaml
+# Example entry
+flour:
+  name: "Farine de blé"
+  category: "Céréales"        # culinary family — unique, localized
+  tags: ["gluten"]            # free-form annotations
+  physical:
+    density: 0.6
+  nutrition:
+    calories: 364
+    carbs: 76
+    protein: 10
+    fat: 1
+```
 
 ---
 
-## 3. Host Loading Process
+## 3. Resolution & Multilingual Units
+
+*   **Ingredients Resolution (Aliases)**: Ingredients are resolved primarily by their exact string match. However, the database supports an `aliases` array. This allows the analyzer to map variations (like `@dijon mustard` or `@yellow mustard`) back to the canonical `mustard` object in the user's custom database.
+*   **Units Normalization (I18n)**: While ingredient names are specific to the user's language, **volume and mass units are natively normalized across languages** by the `@gram/i18n` package. For example, French volume units like `càs` (tablespoon) and `càc` (teaspoon) are automatically resolved to their canonical equivalents (`tbsp`, `tsp`) internally.
+*   **AI-generated content language**: The `language` key in `config.yaml` controls the language used for all AI-generated text — category names, tags, and recipe content imported via `gram import --ai`. Set `language: fr` to get French categories and tags from `gram db enrich`.
+
+---
+
+## 4. Host Loading Process
 
 1.  **Node.js / Host Environment**: The host application reads the database from its own data source (YAML files, JSON, REST APIs) and passes the unified object to the analyzer.
 2.  **Playground (Web Environment)**: The playground uses a local version of the database.

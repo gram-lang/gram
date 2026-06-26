@@ -29,4 +29,5 @@ export const IngredientDataSchema = z.object({
     }).optional(),
     aliases: z.array(z.string()).optional(),
     tags: z.array(z.string()).optional(),
+    category: z.string().optional(),
 });

@@ -49,7 +49,7 @@ export default defineCommand({
         }
         // Inform user which model is being used (to stderr so stdout stays clean)
         process.stderr.write(`  Using AI model for import…\n`)
-        result = await importWithAI(source, model)
+        result = await importWithAI(source, model, config.language)
       } else {
         result = await importJsonLd(source)
       }

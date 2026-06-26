@@ -149,6 +149,7 @@ export interface EnrichEntry {
     fiber?: number
     sodium?: number
   }
+  category?: string
   tagSuggestions: string[]
 }
 
@@ -162,7 +163,7 @@ export interface EnrichResult {
 
 export interface EnrichOptions {
   ingredient?: string
-  field?: 'density' | 'nutrition' | 'all'
+  field?: 'density' | 'nutrition' | 'tags' | 'category' | 'all'
   dryRun?: boolean
   dbPathOverride?: string
   onBatchDone?: (done: number, total: number, enriched: string[], failed: string[]) => void
