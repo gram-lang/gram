@@ -45,9 +45,11 @@ Displays a recipe directly in the terminal in a beautifully styled ASCII box.
 - Options: `--no-pager`, `--skip-db`, `--db`.
 
 #### `gram import <source>`
-Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file.
+Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file using AI.
 - Automatically extracts `application/ld+json` from websites.
-- Options: `--output <file>`, `--ai` (uses AI to semantically translate the recipe into perfect Gram syntax instead of using the heuristic parser).
+- Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
+- Requires AI to be configured (see `config.yaml`). Falls back to a heuristic parser silently if the AI call fails.
+- Options: `--output <file>`.
 
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.
@@ -102,7 +104,7 @@ database: "./ingredients.yaml" # Relative or absolute path to the database
 language: "en"                 # Language for all AI-generated content (categories, tags, imported recipes)
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
 
-# AI settings for `gram db enrich` and `gram db lint`
+# AI settings for `gram import`, `gram db enrich` and `gram db lint`
 ai:
   # Supported providers: "google", "openai", "anthropic", "ollama"
   provider: "google"

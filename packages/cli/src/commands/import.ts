@@ -3,14 +3,14 @@ import { log } from '@clack/prompts'
 import { writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { version } from '../../package.json'
-import { importJsonLd, importWithAI } from '../services/importer'
+import { importWithAI } from '../services/importer'
 import { renderImportResult } from '../ui/importer'
 import { loadConfig } from '../core/config'
 import { loadAiModel } from '../core/ai'
 import { ExitCode, GramCLIError } from '../errors'
 
 export default defineCommand({
-  meta: { name: 'import', version, description: 'Import a recipe from a JSON-LD file or URL' },
+  meta: { name: 'import', version, description: 'Import a recipe from a JSON-LD file or URL and convert it to .gram via AI' },
   args: {
     source: {
       type: 'positional',
@@ -22,37 +22,30 @@ export default defineCommand({
       alias: 'o',
       description: 'Output .gram file (default: stdout)',
     },
-    ai: {
-      type: 'boolean',
-      description: 'Use configured AI for semantic translation (requires ai config)',
-      default: false,
-    },
   },
   async run({ args }) {
     const source = args.source as string
     const outputPath = args.output ? resolve(args.output) : undefined
     const useStdout = !outputPath
 
+    const config = await loadConfig()
+
+    let model
+    try {
+      model = loadAiModel(config)
+    } catch (err) {
+      if (err instanceof GramCLIError) {
+        log.error(err.message)
+        process.exit(err.exitCode)
+      }
+      throw err
+    }
+
+    process.stderr.write(`  Using AI model for import…\n`)
+
     let result
     try {
-      if (args.ai) {
-        const config = await loadConfig()
-        let model
-        try {
-          model = loadAiModel(config)
-        } catch (err) {
-          if (err instanceof GramCLIError) {
-            log.error(err.message)
-            process.exit(err.exitCode)
-          }
-          throw err
-        }
-        // Inform user which model is being used (to stderr so stdout stays clean)
-        process.stderr.write(`  Using AI model for import…\n`)
-        result = await importWithAI(source, model, config.language)
-      } else {
-        result = await importJsonLd(source)
-      }
+      result = await importWithAI(source, model, config.language)
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)

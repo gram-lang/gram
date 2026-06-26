@@ -28,7 +28,22 @@ export function loadAiModel(config: GramConfig): LanguageModel {
 
   if (!provider || !model) {
     throw new GramCLIError(
-      'No AI provider configured. Set one of: GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or add "ai.provider" to your .gram/config.yaml.',
+      [
+        'No AI provider configured.',
+        '',
+        'Add an AI section to your .gram/config.yaml (or ~/.config/gram/config.yaml):',
+        '',
+        '  ai:',
+        '    provider: google          # google | openai | anthropic | ollama',
+        '    apiKey: YOUR_API_KEY',
+        '',
+        'Or export an environment variable:',
+        '  GEMINI_API_KEY=...    (Google)',
+        '  OPENAI_API_KEY=...    (OpenAI)',
+        '  ANTHROPIC_API_KEY=... (Anthropic)',
+        '',
+        'Run `gram init` to generate a commented config template.',
+      ].join('\n'),
       ExitCode.Error,
     )
   }
