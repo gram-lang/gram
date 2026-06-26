@@ -1,114 +1,12 @@
 import { readFile } from 'node:fs/promises'
-import { parse as parseIngredientLib } from 'recipe-ingredient-parser-v3'
 import { generateText } from 'ai'
 import type { LanguageModel } from 'ai'
 import { getAST } from '@gram/parser'
 import { compile } from '@gram/kitchen'
 import { getAiLanguageInstruction } from '@gram/i18n'
 import { GramCLIError, ExitCode } from '../errors'
-import { matchInText } from '../core/fuzzy'
 import type { ImportResult } from '../types'
 import { GRAM_SPEC_PROMPT } from '../prompts/gram-spec'
-
-// ── Unicode fraction normalization ────────────────────────────────────────────
-
-const UNICODE_FRACTIONS: Record<string, number> = {
-  '½': 0.5, '⅓': 1 / 3, '⅔': 2 / 3,
-  '¼': 0.25, '¾': 0.75,
-  '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8,
-  '⅙': 1 / 6, '⅚': 5 / 6,
-  '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875,
-}
-
-function normalizeUnicodeFractions(s: string): string {
-  return s.replace(
-    /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/g,
-    ch => String(UNICODE_FRACTIONS[ch] ?? ch),
-  )
-}
-
-// ── ISO duration ─────────────────────────────────────────────────────────────
-
-function parseIsoDuration(iso: string): number {
-  const m = iso.match(/P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?/)
-  if (!m) return 0
-  return (parseInt(m[1] ?? '0') * 1440) + (parseInt(m[2] ?? '0') * 60) + parseInt(m[3] ?? '0')
-}
-
-// ── Slug ─────────────────────────────────────────────────────────────────────
-
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
-// ── Ingredient parsing ────────────────────────────────────────────────────────
-
-const QTY_UNITS = [
-  'g', 'ml', 'kg', 'l', 'cl', 'dl',
-  'tbsp', 'tsp', 'cup', 'cups', 'oz', 'lb',
-  'tablespoon', 'tablespoons', 'teaspoon', 'teaspoons',
-  'ounce', 'ounces', 'pound', 'pounds',
-]
-const UNIT_PATTERN = QTY_UNITS.map(u => u.replace(/s$/, 's?')).join('|')
-const ING_RE = new RegExp(
-  `^(\\d+(?:[,./]\\d+)?(?:\\s*-\\s*\\d+(?:[,./]\\d+)?)?)\\s*(${UNIT_PATTERN})\\.?\\s+(.+)$`,
-  'i',
-)
-const ING_RE_NOUNIT = /^(\d+(?:[,./]\d+)?)\s+(.+)$/
-
-interface ParsedIngredient {
-  slug: string
-  name: string
-  qty: string
-  unit: string
-  raw: string
-  unparsable: boolean
-}
-
-function parseIngredient(raw: string): ParsedIngredient {
-  const normalized = normalizeUnicodeFractions(raw.trim())
-  const cleaned = normalized.trim()
-
-  // Try recipe-ingredient-parser-v3 first (best for standard English formats)
-  try {
-    const result = parseIngredientLib(cleaned, 'eng')
-    if (result.ingredient && result.quantity > 0) {
-      const unit = result.symbol ?? result.unit ?? ''
-      const qty = result.minQty !== result.maxQty
-        ? `${result.minQty}-${result.maxQty}`
-        : String(result.quantity)
-      return {
-        slug: toSlug(result.ingredient),
-        name: result.ingredient,
-        qty,
-        unit: unit.toLowerCase(),
-        raw: cleaned,
-        unparsable: false,
-      }
-    }
-  } catch {
-    // parser crashed (e.g. French text quantities) — fall through to regex
-  }
-
-  // Regex fallback (handles French units, compact "285g farine", etc.)
-  let m = cleaned.match(ING_RE)
-  if (m) {
-    const name = (m[3] ?? '').trim()
-    return { slug: toSlug(name), name, qty: (m[1] ?? '').replace(',', '.'), unit: (m[2] ?? '').toLowerCase(), raw: cleaned, unparsable: false }
-  }
-  m = cleaned.match(ING_RE_NOUNIT)
-  if (m) {
-    const name = (m[2] ?? '').trim()
-    return { slug: toSlug(name), name, qty: (m[1] ?? '').replace(',', '.'), unit: '', raw: cleaned, unparsable: false }
-  }
-
-  return { slug: toSlug(cleaned), name: cleaned, qty: '', unit: '', raw: cleaned, unparsable: true }
-}
 
 // ── JSON-LD extraction ────────────────────────────────────────────────────────
 
@@ -167,78 +65,9 @@ function flattenInstructions(instructions: any[]): Array<{ text: string; name?: 
   return steps
 }
 
-// ── Step annotation via fuzzy matching ───────────────────────────────────────
-
-function annotateStep(text: string, ingredients: ParsedIngredient[]): string {
-  // Sort longest name first to avoid partial overlaps
-  const sorted = [...ingredients].sort((a, b) => b.name.length - a.name.length)
-  let result = text
-  let offset = 0
-
-  for (const ing of sorted) {
-    if (ing.unparsable || !ing.name) continue
-
-    const match = matchInText(ing.name, result.slice(offset))
-    if (!match) continue
-
-    const absStart = offset + match.start
-    const absEnd = offset + match.end
-    const ref = `@${ing.slug}{${ing.qty}${ing.unit ? ' ' + ing.unit : ''}}`
-    result = result.slice(0, absStart) + ref + result.slice(absEnd)
-    // Advance offset past this replacement so we don't re-scan it
-    offset = absStart + ref.length
-  }
-
-  return result
-}
-
-// ── Gram generation ───────────────────────────────────────────────────────────
-
-function generateGram(recipe: any, ingredients: ParsedIngredient[]): string {
-  const meta: string[] = ['---']
-  meta.push(`title: '${String(recipe.name ?? 'Untitled').replace(/'/g, "\\'")}'`)
-
-  const author = recipe.author?.name ?? (typeof recipe.author === 'string' ? recipe.author : null)
-  if (author) meta.push(`author: '${String(author).replace(/'/g, "\\'")}'`)
-
-  const yield_ = recipe.recipeYield
-  if (yield_) {
-    const n = typeof yield_ === 'string' ? parseInt(yield_) : (Array.isArray(yield_) ? parseInt(yield_[0]) : yield_)
-    if (!isNaN(n)) meta.push(`servings: ${n}`)
-  }
-
-  const prepMins = recipe.prepTime ? parseIsoDuration(recipe.prepTime) : 0
-  const cookMins = recipe.cookTime ? parseIsoDuration(recipe.cookTime) : 0
-  const totalMins = recipe.totalTime ? parseIsoDuration(recipe.totalTime) : (prepMins + cookMins)
-  if (prepMins || cookMins || totalMins) {
-    meta.push('time:')
-    if (prepMins) meta.push(`  prep: ${prepMins}`)
-    if (cookMins) meta.push(`  active: ${cookMins}`)
-    if (totalMins && totalMins !== prepMins + cookMins) meta.push(`  total: ${totalMins}`)
-  }
-  meta.push('---')
-
-  const lines = [...meta, '', '## Instructions', '']
-
-  const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
-
-  for (let i = 0; i < instructions.length; i++) {
-    const step = instructions[i]!
-    const stepNum = i + 1
-    const action = step.name && step.name !== step.text
-      ? `[${step.name.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}]`
-      : `[Step ${stepNum}]`
-
-    lines.push(`${action} ${annotateStep(step.text, ingredients)}`)
-    if (i < instructions.length - 1) lines.push('')
-  }
-
-  return lines.join('\n')
-}
-
 // ── Source fetching ───────────────────────────────────────────────────────────
 
-async function fetchRecipe(source: string): Promise<{ jsonLd: any; rawHtml?: string }> {
+async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
   if (source.startsWith('http://') || source.startsWith('https://')) {
     const res = await fetch(source)
     if (!res.ok) throw new GramCLIError(`HTTP ${res.status} fetching ${source}`, ExitCode.Error)
@@ -247,8 +76,7 @@ async function fetchRecipe(source: string): Promise<{ jsonLd: any; rawHtml?: str
     if (contentType.includes('json')) {
       return { jsonLd: await res.json() }
     }
-    const html = await res.text()
-    return { jsonLd: extractRecipeJsonLd(html), rawHtml: html }
+    return { jsonLd: extractRecipeJsonLd(await res.text()) }
   }
 
   const content = await readFile(source, 'utf-8')
@@ -256,30 +84,6 @@ async function fetchRecipe(source: string): Promise<{ jsonLd: any; rawHtml?: str
   const recipe = findRecipe(parsed)
   if (!recipe) throw new GramCLIError('No schema.org/Recipe found in the provided JSON file.', ExitCode.Error)
   return { jsonLd: recipe }
-}
-
-// ── Heuristic import ──────────────────────────────────────────────────────────
-
-export async function importJsonLd(source: string): Promise<ImportResult> {
-  const { jsonLd } = await fetchRecipe(source)
-  const recipe: any = findRecipe(jsonLd) ?? jsonLd
-
-  const rawIngredients: string[] = recipe.recipeIngredient ?? []
-  const parsedIngredients = rawIngredients.map(parseIngredient)
-  const parseWarnings = parsedIngredients
-    .filter(i => i.unparsable)
-    .map(i => `"${i.raw}"  →  @${i.slug}{}  (quantity unknown)`)
-
-  const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
-  const gramContent = generateGram(recipe, parsedIngredients)
-
-  return {
-    gramContent,
-    title: recipe.name ?? 'Untitled',
-    ingredientCount: parsedIngredients.length,
-    stepCount: instructions.length,
-    parseWarnings,
-  }
 }
 
 // ── AI import ─────────────────────────────────────────────────────────────────
@@ -306,9 +110,8 @@ export async function importWithAI(source: string, model: LanguageModel, lang = 
   const { jsonLd } = await fetchRecipe(source)
   const recipe: any = findRecipe(jsonLd) ?? jsonLd
 
-  const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
   const rawIngredients: string[] = recipe.recipeIngredient ?? []
-
+  const instructions = flattenInstructions(recipe.recipeInstructions ?? [])
   const systemPrompt = `${getAiLanguageInstruction(lang)}\n\n${GRAM_SPEC_PROMPT}`
 
   let gramContent: string
@@ -321,7 +124,6 @@ export async function importWithAI(source: string, model: LanguageModel, lang = 
     })
     gramContent = stripFences(text)
 
-    // Validation loop: re-prompt with compiler errors up to AI_MAX_RETRIES times
     for (let attempt = 0; attempt < AI_MAX_RETRIES; attempt++) {
       const errors = validateGram(gramContent)
       if (errors.length === 0) break
@@ -336,8 +138,8 @@ export async function importWithAI(source: string, model: LanguageModel, lang = 
       gramContent = stripFences(fixed)
     }
   } catch (err) {
-    process.stderr.write(`  ⚠ AI call failed, falling back to heuristic import.\n`)
-    return importJsonLd(source)
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new GramCLIError(`AI import failed: ${msg}`, ExitCode.Error)
   }
 
   return {

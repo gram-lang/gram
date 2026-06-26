@@ -27,8 +27,7 @@
     "citty": "latest",
     "defu": "latest",
     "p-limit": "latest",
-    "recipe-ingredient-parser-v3": "^1.5.0",
-    "yaml": "^2.9.0",
+"yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
