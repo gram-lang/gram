@@ -36,8 +36,12 @@ export async function loadDb(
   // Empty file (comments-only YAML parses to null) = no database
   if (raw == null) return null
 
-  // Support both formats: with or without top-level 'ingredients:' wrapper
-  const ingredients = (raw as Record<string, unknown>)?.ingredients ?? raw
+  // Support both formats: with or without top-level 'ingredients:' wrapper.
+  // If the wrapper key exists but is null/empty (e.g. `ingredients:` with no entries),
+  // treat as an empty database rather than an error.
+  const rawObj = raw as Record<string, unknown>
+  const hasWrapper = typeof rawObj === 'object' && 'ingredients' in rawObj
+  const ingredients = hasWrapper ? (rawObj.ingredients ?? {}) : raw
 
   try {
     return validateIngredientDatabase(ingredients)
