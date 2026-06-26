@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { log } from '@clack/prompts'
+import { log, spinner } from '@clack/prompts'
 import { writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { version } from '../../package.json'
@@ -41,12 +41,15 @@ export default defineCommand({
       throw err
     }
 
-    process.stderr.write(`  Using AI model for import…\n`)
+    const s = spinner()
+    s.start('Importing recipe via AI…')
 
     let result
     try {
       result = await importWithAI(source, model, config.language)
+      s.stop('Import complete.')
     } catch (err) {
+      s.stop('Import failed.')
       if (err instanceof GramCLIError) {
         log.error(err.message)
         process.exit(err.exitCode)

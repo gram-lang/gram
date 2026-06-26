@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { log, select, note } from '@clack/prompts'
+import { log, select, note, spinner } from '@clack/prompts'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { loadDb } from '../../core/db'
@@ -48,9 +48,13 @@ export default defineCommand({
     const config = await loadConfig()
     const db = (await loadDb(config, args.db)) ?? {}
 
+    const s = spinner()
+    s.start(`Scanning ${files.length} file${files.length !== 1 ? 's' : ''}…`)
     const analysis = await analyzeIngredients(files, db, config, {
       dbPathOverride: args.db,
     })
+    const newCount = analysis.genuinelyNew.length + analysis.fuzzyMatches.length
+    s.stop(`Scan complete — ${newCount} new ingredient${newCount !== 1 ? 's' : ''} found.`)
 
     const decisions = new Map<string, string>()
 
