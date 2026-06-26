@@ -72,7 +72,7 @@ export default defineCommand({
       process.exit(ExitCode.Ok)
     }
 
-    const decisions = await promptLintDecisions(result)
+    const decisions = await promptLintDecisions(result, db)
     const summary = await applyLintDecisions(result, decisions)
     renderLintSummary(summary, relative(process.cwd(), result.dbPath) || result.dbPath)
 
