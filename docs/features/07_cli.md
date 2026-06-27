@@ -154,6 +154,17 @@ gram watch --build --output ./dist      # Also build changed files to JSON
 - 150ms debounce prevents redundant runs when editors write files in multiple chunks.
 - Options: `--build`, `--output <dir>`, `--skip-db`, `--db`.
 
+#### `gram print <file>`
+Generates a print-ready HTML and opens it in the default browser.
+```bash
+gram print brioche.gram                   # Generate and open
+gram print brioche.gram --scale 2         # Print at double quantities
+gram print brioche.gram --no-open         # Generate only, print the path to stdout
+```
+- The HTML is written to a temporary file (`/tmp/gram_print_<timestamp>.html`) and opened with the OS default browser (`open` on macOS, `xdg-open` on Linux, `start` on Windows).
+- Identical output to `gram export --format html` — suitable for browser print dialog (`Ctrl+P` / `Cmd+P`) to produce an A4 PDF.
+- Options: `--no-open`, `--scale <factor|ref>`, `--skip-db`, `--db`.
+
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
 ```bash

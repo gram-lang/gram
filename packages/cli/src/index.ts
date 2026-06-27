@@ -24,6 +24,7 @@ const main = defineCommand({
     config: () => import('./commands/config').then(m => m.default),
     format: () => import('./commands/format').then(m => m.default),
     export: () => import('./commands/export').then(m => m.default),
+    print: () => import('./commands/print').then(m => m.default),
   },
 })
 
