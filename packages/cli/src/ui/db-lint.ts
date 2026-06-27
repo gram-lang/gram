@@ -1,8 +1,8 @@
 import chalk from 'chalk'
 import { log, select, note } from '@clack/prompts'
 import type { IngredientData } from '@gram/analyzer'
-import type { LintResult, LintIssue } from '../types'
-import type { LintDecision } from '../types'
+import type { LintResult, LintIssue, LintDecision } from '../types'
+import { fmtNumber } from '../core/format'
 
 type NutritionKey = 'calories' | 'fat' | 'carbs' | 'protein' | 'sugar' | 'sat_fat' | 'fiber' | 'sodium'
 
@@ -28,7 +28,7 @@ function diffNutritionFields(
 function formatNutritionRow(id: string, nutr: IngredientData['nutrition'], fields: NutritionKey[], padWidth: number): string {
   const parts = fields.map(f => {
     const val = nutr?.[f]
-    return `${NUTRITION_LABELS[f]} ${val != null ? `${val}${NUTRITION_UNITS[f]}` : '–'}`
+    return `${NUTRITION_LABELS[f]} ${val != null ? `${fmtNumber(val, 1)}${NUTRITION_UNITS[f]}` : '–'}`
   })
   return `  ${id.padEnd(padWidth)}  ${parts.join('  ')}`
 }

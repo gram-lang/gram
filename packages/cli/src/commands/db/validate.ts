@@ -1,12 +1,12 @@
 import { defineCommand } from 'citty'
 import { log } from '@clack/prompts'
 import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { parse } from 'yaml'
 import { validateIngredientDatabase } from '@gram/analyzer'
 import type { IngredientData } from '@gram/analyzer'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
+import { resolveDbPath } from '../../core/db'
 import { validateDb } from '../../services/db-validator'
 import { renderValidateResult } from '../../ui/db-validate'
 import type { DbIssue } from '../../types'
@@ -31,7 +31,7 @@ export default defineCommand({
   },
   async run({ args }) {
     const config = await loadConfig()
-    const dbPath = resolve(args.db ?? config.database ?? '.gram/ingredients.yaml')
+    const dbPath = resolveDbPath(config, args.db)
 
     let rawContent: string
     try {

@@ -1,5 +1,4 @@
 import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { parseDocument, isMap, isSeq, Scalar } from 'yaml'
 import { z } from 'zod'
 import { generateObject } from 'ai'
@@ -7,6 +6,7 @@ import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
 import { getAiLanguageInstruction } from '@gram/i18n'
 import { withFileLock, atomicWrite } from '../core/lock'
+import { resolveDbPath } from '../core/db'
 import type { GramConfig, LintResult, LintIssue, LintOptions, LintDecision } from '../types'
 
 function buildSystemPrompt(lang: string): string {
@@ -24,17 +24,29 @@ const LintResponseSchema = z.object({
   issues: z.array(LintIssueRawSchema),
 })
 
+const LINT_BATCH_SIZE = 100
+
 export async function lintDb(
   db: Record<string, IngredientData>,
   config: GramConfig,
   model: LanguageModel,
   opts: LintOptions = {},
 ): Promise<LintResult> {
-  const dbPath = resolve(opts.dbPathOverride ?? config.database ?? '.gram/ingredients.yaml')
+  const dbPath = resolveDbPath(config, opts.dbPathOverride)
 
-  const keys = Object.entries(db).map(([id, ing]) => ({ key: id, name: ing.name }))
+  const allKeys = Object.entries(db).map(([id, ing]) => ({ key: id, name: ing.name }))
+  const dbKeys = new Set(Object.keys(db))
+  const lang = config.language ?? 'en'
+  const system = buildSystemPrompt(lang)
 
-  const prompt = `Analyze these ingredient database keys and find:
+  const batches: typeof allKeys[] = []
+  for (let i = 0; i < allKeys.length; i += LINT_BATCH_SIZE) {
+    batches.push(allKeys.slice(i, i + LINT_BATCH_SIZE))
+  }
+
+  const rawIssuesPerBatch = await Promise.all(
+    batches.map(keys => {
+      const prompt = `Analyze these ingredient database keys and find:
 1. Keys that are plurals of another key in the list (e.g. "oeufs" when "oeuf" exists). Propose the singular form as keepId.
 2. Keys that are semantic duplicates (same ingredient, different wording). Propose the most canonical key as keepId.
 
@@ -42,32 +54,35 @@ Only report issues where all IDs actually appear in the provided list. Be conser
 
 Ingredient list:
 ${JSON.stringify(keys, null, 2)}`
+      return generateObject({ model, system, prompt, schema: LintResponseSchema })
+        .then(r => r.object.issues)
+    }),
+  )
 
-  const { object: raw } = await generateObject({
-    model,
-    system: buildSystemPrompt(config.language ?? 'en'),
-    prompt,
-    schema: LintResponseSchema,
-  })
-
-  const dbKeys = new Set(Object.keys(db))
-
+  const seen = new Set<string>()
   const issues: LintIssue[] = []
-  for (const item of raw.issues) {
-    if (!item.ids.every(id => dbKeys.has(id))) continue
-    if (!dbKeys.has(item.keepId)) continue
-    if (!item.aliasIds.every(id => dbKeys.has(id))) continue
 
-    const hasNutritionConflict =
-      item.type === 'duplicate' &&
-      item.ids.filter(id => db[id]?.nutrition != null).length > 1
+  for (const batchIssues of rawIssuesPerBatch) {
+    for (const item of batchIssues) {
+      if (!item.ids.every(id => dbKeys.has(id))) continue
+      if (!dbKeys.has(item.keepId)) continue
+      if (!item.aliasIds.every(id => dbKeys.has(id))) continue
 
-    issues.push({
-      type: item.type,
-      ids: item.ids,
-      suggestion: { keepId: item.keepId, aliasIds: item.aliasIds },
-      hasNutritionConflict,
-    })
+      const dedupeKey = [...item.ids].sort().join('|')
+      if (seen.has(dedupeKey)) continue
+      seen.add(dedupeKey)
+
+      const hasNutritionConflict =
+        item.type === 'duplicate' &&
+        item.ids.filter(id => db[id]?.nutrition != null).length > 1
+
+      issues.push({
+        type: item.type,
+        ids: item.ids,
+        suggestion: { keepId: item.keepId, aliasIds: item.aliasIds },
+        hasNutritionConflict,
+      })
+    }
   }
 
   return { dbPath, issues }
