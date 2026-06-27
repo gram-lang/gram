@@ -80,6 +80,18 @@ export default defineCommand({
       ...(createDb && { database: '.gram/ingredients.yaml' }),
     }
 
+    const language = guardCancel(
+      await select({
+        message: 'What is the primary language of your recipes?',
+        options: [
+          { value: 'en', label: 'English (en)' },
+          { value: 'fr', label: 'Français (fr)' },
+        ],
+      }),
+    ) as string
+
+    config.language = language
+
     const configureAi = guardCancel(
       await confirm({
         message: "Configure an AI provider now? (Required for 'gram import' and 'gram db enrich')",
