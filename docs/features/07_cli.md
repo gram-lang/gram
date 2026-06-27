@@ -154,6 +154,66 @@ gram watch --build --output ./dist      # Also build changed files to JSON
 - 150ms debounce prevents redundant runs when editors write files in multiple chunks.
 - Options: `--build`, `--output <dir>`, `--skip-db`, `--db`.
 
+### Configuration
+
+Commands nested under `gram config` to read and write project (or global) configuration.
+
+#### `gram config list`
+Displays all configuration values from both the local project config and the global config.
+```bash
+gram config list
+```
+Output example:
+```
+  Local config  (.gram/config.yaml)
+  ───────────────────────────────────────
+  database     ./ingredients.yaml
+  language     fr
+  ai.provider  google
+  ai.model     gemini-2.0-flash
+  ai.apiKey    *** (GEMINI_API_KEY in .env)
+
+  Global config  (~/.config/gram/config.yaml)
+  ────────────────────────────────────────────
+  (empty)
+```
+- Sensitive values (API keys) are always masked and shown with the env var name they live in.
+
+#### `gram config get <key>`
+Prints a single config value to stdout.
+```bash
+gram config get ai.provider      # → google
+gram config get database         # → ./ingredients.yaml
+gram config get ai.provider --global
+```
+- Exits with code 1 if the key is not set.
+- Output is plain text, suitable for scripting.
+
+#### `gram config set <key> <value>`
+Sets a configuration value.
+```bash
+gram config set database ./my-db.yaml
+gram config set language fr
+gram config set ai.provider google
+gram config set ai.model gemini-2.0-flash
+gram config set ai.apiKey AIza...           # Writes GEMINI_API_KEY to .env
+gram config set database ./global-db.yaml --global
+```
+- Values are written to `.gram/config.yaml` by default; use `--global` for `~/.config/gram/config.yaml`.
+- Sensitive keys (`ai.apiKey`) are always written to the project `.env` file. The env var name is derived from the configured provider (e.g. `google` → `GEMINI_API_KEY`).
+- Numbers and booleans are coerced automatically (`"2"` → `2`, `"true"` → `true`).
+
+#### `gram config unset <key>`
+Removes a configuration value.
+```bash
+gram config unset ai.model
+gram config unset ai.apiKey         # Removes the API key env var from .env
+gram config unset language --global
+```
+- Exits with code 1 if the key was not set.
+
+---
+
 ### Database Management
 
 Commands nested under `gram db` to manage your `ingredients.yaml`.
