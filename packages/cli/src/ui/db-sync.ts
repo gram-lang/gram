@@ -34,6 +34,6 @@ export function renderSyncResult(result: DbSyncResult, dryRun: boolean): void {
     log.warn(`Dry run — no changes written.`)
   } else {
     log.success(`Updated ${chalk.dim(relPath)}`)
-    console.log(chalk.dim(`  → Run 'gram db enrich' to fill in density and nutrition data.`))
+    console.log(chalk.dim(`  → Run 'gram db lint' to merge any duplicates, then 'gram db enrich' to fill in missing data.`))
   }
 }

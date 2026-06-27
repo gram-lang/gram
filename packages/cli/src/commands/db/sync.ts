@@ -13,7 +13,7 @@ export default defineCommand({
   meta: {
     name: 'sync',
     version,
-    description: 'Add missing ingredient stubs from recipes to the database',
+    description: 'Add missing ingredient stubs from recipes to the database (step 1/3 — run lint then enrich after)',
   },
   args: {
     pattern: {

@@ -13,7 +13,7 @@ export default defineCommand({
   meta: {
     name: 'lint',
     version,
-    description: 'Detect duplicates and malformed plurals in the ingredient database via AI',
+    description: 'Detect duplicates and plurals via AI (step 2/3 — run after sync, before enrich)',
   },
   args: {
     report: {

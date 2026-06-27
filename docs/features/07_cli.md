@@ -63,29 +63,36 @@ Generates an aggregated shopping list across multiple recipes.
 
 Commands nested under `gram db` to manage your `ingredients.yaml`.
 
+> **Recommended workflow — always run in this order:**
+> ```
+> gram db sync → gram db lint → gram db enrich
+> ```
+> Running `lint` before `enrich` avoids wasting AI calls enriching ingredients that will later be merged as duplicates.
+
 #### `gram db sync [pattern]`
-Scans your recipes to find undocumented ingredients and adds them to your database.
+**Step 1/3.** Scans your recipes to find undocumented ingredients and adds them to your database.
 - Interactive fuzzy matching (Levenshtein) helps you avoid duplicates for plurals or typos.
 - Options: `--dry-run`, `--db`.
+
+#### `gram db lint`
+**Step 2/3.** Uses AI to detect and resolve semantic duplicates and plurals in your database.
+- Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `egg`).
+- For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
+- Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
+- Options: `--report` (show issues without fixing).
+
+#### `gram db enrich`
+**Step 3/3.** Uses AI to automatically complete missing data in your database.
+- Enriches `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches.
+- `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
+- Idempotent: safely re-runnable, only fills in fields that are still missing.
+- Options: `--field density|nutrition|tags|category|all`, `--ingredient <id>`, `--dry-run`.
 
 #### `gram db validate`
 Validates the integrity of your `ingredients.yaml`.
 - Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
 - Warns about missing nutrition or density data.
 - Options: `--strict` (exit 1 on warnings).
-
-#### `gram db enrich`
-Uses AI to automatically complete missing data in your database.
-- Enriches `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches.
-- `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
-- Options: `--field density|nutrition|tags|category|all`, `--ingredient <id>`, `--dry-run`.
-
-#### `gram db lint`
-Uses AI to detect and resolve semantic duplicates and plurals in your database.
-- Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `oeuf`).
-- For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
-- Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
-- Options: `--report` (show issues without fixing).
 
 ---
 

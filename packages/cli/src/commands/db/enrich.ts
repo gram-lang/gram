@@ -9,7 +9,7 @@ import { renderEnrichResult } from '../../ui/db-enrich'
 import { ExitCode, GramCLIError } from '../../errors'
 
 export default defineCommand({
-  meta: { name: 'enrich', version, description: 'Fill in missing density and nutrition data via AI' },
+  meta: { name: 'enrich', version, description: 'Fill in missing density, nutrition and tags via AI (step 3/3 — run after lint)' },
   args: {
     ingredient: {
       type: 'string',
