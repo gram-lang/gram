@@ -1,6 +1,6 @@
 import pLimit from 'p-limit'
 import { readFile, mkdir } from 'node:fs/promises'
-import { resolve, dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { parseDocument, isMap, isSeq } from 'yaml'
 import { z } from 'zod'
 import { generateObject } from 'ai'
@@ -8,6 +8,7 @@ import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
 import { getAiLanguageInstruction, getDefaultCategories } from '@gram/i18n'
 import { withFileLock, atomicWrite } from '../core/lock'
+import { resolveDbPath } from '../core/db'
 import type { GramConfig, EnrichEntry, EnrichResult, EnrichOptions } from '../types'
 
 function buildSystemPrompt(lang: string): string {
@@ -39,12 +40,6 @@ const EnrichResponseSchema = z.object({
   ingredients: z.array(EnrichItemSchema),
 })
 
-function resolveDbPath(config: GramConfig, override?: string): string {
-  const root = config.projectRoot ?? process.cwd()
-  if (override) return resolve(override)
-  if (config.database) return resolve(root, config.database)
-  return join(root, '.gram', 'ingredients.yaml')
-}
 
 export async function enrichDb(
   db: Record<string, IngredientData>,
@@ -137,7 +132,7 @@ export async function enrichDb(
         }
 
         for (const [id] of batch) {
-          if (!parsed.ingredients.some(i => i.key === id) && !failed.includes(id)) {
+          if (!parsed.ingredients.some(i => i.key.toLowerCase() === id.toLowerCase()) && !failed.includes(id)) {
             batchFailed.push(id)
           }
         }

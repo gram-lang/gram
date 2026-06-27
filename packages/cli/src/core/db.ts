@@ -7,7 +7,7 @@ import type { GramConfig } from '../types'
 import { GramConfigError, ExitCode } from '../errors'
 import { log } from '@clack/prompts'
 
-function resolveDbPath(config: GramConfig, overridePath?: string): string {
+export function resolveDbPath(config: GramConfig, overridePath?: string): string {
   const root = config.projectRoot ?? process.cwd()
   if (overridePath) return resolve(overridePath)
   if (config.database) return resolve(root, config.database)

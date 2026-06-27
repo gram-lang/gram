@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 import { intro, outro, confirm, isCancel, cancel, note, select, text } from '@clack/prompts'
-import { mkdir, writeFile, access, appendFile } from 'node:fs/promises'
+import { mkdir, writeFile, access, appendFile, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { stringify } from 'yaml'
 import type { GramConfig } from '../types'
@@ -184,6 +184,15 @@ export default defineCommand({
             }
             const envKey = envKeyMap[provider as 'google' | 'openai' | 'anthropic']
             await appendFile(envPath, `\n${envKey}="${apiKey}"\n`)
+
+            // Ensure root .gitignore covers .env
+            const rootGitignore = join(process.cwd(), '.gitignore')
+            const existing = await readFile(rootGitignore, 'utf-8').catch(() => '')
+            if (!existing.includes('.env')) {
+              await appendFile(rootGitignore, '\n# API keys\n.env\n.env.*\n').catch(() => {
+                note('Add ".env" to your root .gitignore to avoid committing your API key.', '⚠ Security')
+              })
+            }
           }
         }
       }

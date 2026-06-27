@@ -73,6 +73,13 @@ export interface LintOptions {
   dbPathOverride?: string
 }
 
+export interface LintDecision {
+  issueIndex: number
+  action: 'apply' | 'skip'
+  keepId?: string
+  keepNutrition?: 'keep' | 'source'
+}
+
 export interface DbIssue {
   level: 'error' | 'warning'
   category: string

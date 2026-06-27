@@ -3,11 +3,15 @@
   "version": "0.10.1",
   "description": "CLI for the GRAM recipe language",
   "type": "module",
+  "engines": {
+    "node": ">=20",
+    "bun": ">=1.0"
+  },
   "bin": {
     "gram": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsup && chmod +x dist/index.js",
+    "build": "tsup && node -e \"require('fs').chmodSync('dist/index.js', 0o755)\"",
     "dev": "bun run src/index.ts",
     "test": "bun test"
   },
@@ -16,7 +20,7 @@
     "@ai-sdk/google": "^3.0.83",
     "@ai-sdk/openai": "^3.0.73",
     "@ai-sdk/openai-compatible": "^2.0.51",
-    "@clack/prompts": "latest",
+    "@clack/prompts": "^1.6.0",
     "@gram/analyzer": "workspace:*",
     "@gram/i18n": "workspace:*",
     "@gram/kitchen": "workspace:*",
@@ -24,10 +28,10 @@
     "@gram/renderer": "workspace:*",
     "ai": "^6.0.208",
     "chalk": "^5.4.0",
-    "citty": "latest",
-    "defu": "latest",
-    "p-limit": "latest",
-"yaml": "^2.9.0",
+    "citty": "^0.2.2",
+    "defu": "^6.1.7",
+    "p-limit": "^7.3.0",
+    "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

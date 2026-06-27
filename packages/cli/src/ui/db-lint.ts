@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { log, select, note } from '@clack/prompts'
 import type { IngredientData } from '@gram/analyzer'
 import type { LintResult, LintIssue } from '../types'
-import type { LintDecision } from '../services/db-linter'
+import type { LintDecision } from '../types'
 
 type NutritionKey = 'calories' | 'fat' | 'carbs' | 'protein' | 'sugar' | 'sat_fat' | 'fiber' | 'sodium'
 

@@ -1,12 +1,11 @@
 import { defineCommand } from 'citty'
-import { spinner } from '@clack/prompts'
+import { spinner, log } from '@clack/prompts'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { checkFiles } from '../services/checker'
 import { renderCheckResult } from '../ui/diagnostics'
 import { ExitCode, GramCLIError } from '../errors'
-import { log } from '@clack/prompts'
 
 export default defineCommand({
   meta: {

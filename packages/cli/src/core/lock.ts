@@ -1,4 +1,4 @@
-import { open, unlink, rename, writeFile as _writeFile } from 'node:fs/promises'
+import { open, unlink, rename, writeFile as _writeFile, copyFile } from 'node:fs/promises'
 
 export async function withFileLock<T>(targetPath: string, fn: () => Promise<T>): Promise<T> {
   const lockPath = targetPath + '.lock'
@@ -21,9 +21,18 @@ export async function withFileLock<T>(targetPath: string, fn: () => Promise<T>):
   }
 }
 
-// Write to a .tmp file then rename — rename is atomic on POSIX and NTFS
+// Write to a .tmp file then rename — atomic on POSIX; fallback copy+delete on Windows EEXIST
 export async function atomicWrite(targetPath: string, content: string): Promise<void> {
   const tmp = targetPath + '.tmp'
   await _writeFile(tmp, content, 'utf-8')
-  await rename(tmp, targetPath)
+  try {
+    await rename(tmp, targetPath)
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
+      await copyFile(tmp, targetPath)
+      await unlink(tmp).catch(() => {})
+    } else {
+      throw err
+    }
+  }
 }

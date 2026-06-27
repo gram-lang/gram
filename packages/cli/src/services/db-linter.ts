@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { parseDocument, isMap, isSeq, Scalar } from 'yaml'
 import { z } from 'zod'
@@ -6,7 +6,8 @@ import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
 import type { IngredientData } from '@gram/analyzer'
 import { getAiLanguageInstruction } from '@gram/i18n'
-import type { GramConfig, LintResult, LintIssue, LintOptions } from '../types'
+import { withFileLock, atomicWrite } from '../core/lock'
+import type { GramConfig, LintResult, LintIssue, LintOptions, LintDecision } from '../types'
 
 function buildSystemPrompt(lang: string): string {
   return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. Analyze ingredient database keys and identify linguistic or semantic issues. Be conservative: only report high-confidence issues.`
@@ -72,12 +73,6 @@ ${JSON.stringify(keys, null, 2)}`
   return { dbPath, issues }
 }
 
-export interface LintDecision {
-  issueIndex: number
-  action: 'apply' | 'skip'
-  keepId?: string
-  keepNutrition?: 'keep' | 'source'
-}
 
 export async function applyLintDecisions(
   result: LintResult,
@@ -160,7 +155,9 @@ export async function applyLintDecisions(
     }
   }
 
-  await writeFile(result.dbPath, String(doc))
+  await withFileLock(result.dbPath, async () => {
+    await atomicWrite(result.dbPath, String(doc))
+  })
   return { applied, skipped }
 }
 
@@ -179,7 +176,7 @@ function _addAliasesToNode(doc: ReturnType<typeof parseDocument>, node: any, new
     for (const a of merged) aliasesNode.add(_quotedNode(doc, a))
   } else {
     const seq = doc.createNode([] as string[])
-    for (const a of merged) ;(seq as any).add(_quotedNode(doc, a))
+    for (const a of merged) (seq as any).add(_quotedNode(doc, a))
     node.set('aliases', seq)
   }
 }

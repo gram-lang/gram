@@ -1,19 +1,13 @@
 import pLimit from 'p-limit'
 import { readFile, mkdir } from 'node:fs/promises'
-import { resolve, dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { parseDocument, isMap, isSeq, Document, Scalar } from 'yaml'
 import { runPipeline } from '../core/pipeline'
 import { getIngredientData, type IngredientData } from '@gram/analyzer'
 import { findSimilarInDb } from '../core/fuzzy'
 import { withFileLock, atomicWrite } from '../core/lock'
+import { resolveDbPath } from '../core/db'
 import type { GramConfig, DbSyncResult, DbSyncOptions, DbSyncAnalysis, FuzzyMatch } from '../types'
-
-function resolveDbPath(config: GramConfig, override?: string): string {
-  const root = config.projectRoot ?? process.cwd()
-  if (override) return resolve(override)
-  if (config.database) return resolve(root, config.database)
-  return join(root, '.gram', 'ingredients.yaml')
-}
 
 export async function analyzeIngredients(
   files: string[],
