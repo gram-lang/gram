@@ -59,6 +59,18 @@ Generates an aggregated shopping list across multiple recipes.
 - Groups ingredients by their `category` field (culinary family: Vegetables, Dairy, Grains, etc.).
 - Formats: `--format terminal|md|json`.
 
+#### `gram watch [dir]`
+Watches a directory for `.gram` file changes and re-runs `gram check` automatically on every save.
+```bash
+gram watch                              # Watch project root
+gram watch recipes/                     # Watch a specific directory
+gram watch --build --output ./dist      # Also build changed files to JSON
+```
+- Displays a timestamped result line per change: `[12:34:01] ✓ brioche.gram` or `✗ brioche.gram — 1 error`.
+- Errors are shown inline below the filename — the watcher never stops on error.
+- 150ms debounce prevents redundant runs when editors write files in multiple chunks.
+- Options: `--build`, `--output <dir>`, `--skip-db`, `--db`.
+
 ### Database Management
 
 Commands nested under `gram db` to manage your `ingredients.yaml`.

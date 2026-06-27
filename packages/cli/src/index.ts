@@ -17,6 +17,7 @@ const main = defineCommand({
     import: () => import('./commands/import').then(m => m.default),
     db: () => import('./commands/db').then(m => m.default),
     shop: () => import('./commands/shop').then(m => m.default),
+    watch: () => import('./commands/watch').then(m => m.default),
   },
 })
 
