@@ -100,9 +100,9 @@ function getTimerMinutes(step: any): number | undefined {
 
 export async function buildViewModel(
   file: string,
-  opts: { db?: Record<string, IngredientData> | null },
+  opts: { db?: Record<string, IngredientData> | null; scaleFactor?: number },
 ): Promise<RecipeViewModel> {
-  const { compiled, analyzed } = await runPipeline(file, { db: opts.db })
+  const { compiled, analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
 
   const title = (compiled.meta?.title as string | undefined) ?? compiled.title ?? basename(file, '.gram')
   const servings = (compiled.meta?.servings as number | undefined) ?? null

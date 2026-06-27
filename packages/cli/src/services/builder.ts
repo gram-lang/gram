@@ -11,7 +11,7 @@ export async function buildFiles(
   return Promise.all(
     files.map(file =>
       limit(async () => {
-        const { compiled, analyzed } = await runPipeline(file, { db: opts.db })
+        const { compiled, analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
         return {
           slug: basename(file, '.gram'),
           file,

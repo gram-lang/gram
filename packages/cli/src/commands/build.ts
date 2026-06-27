@@ -8,6 +8,7 @@ import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { buildFiles } from '../services/builder'
+import { parseScaleArg } from '../services/scaler'
 import { ExitCode, GramCLIError } from '../errors'
 
 export default defineCommand({
@@ -20,6 +21,10 @@ export default defineCommand({
       type: 'positional',
       description: 'File path or glob pattern (default: **/*.gram)',
       required: false,
+    },
+    scale: {
+      type: 'string',
+      description: 'Scale factor applied to all recipes (e.g. 2, 0.5)',
     },
     output: {
       type: 'string',
@@ -42,12 +47,27 @@ export default defineCommand({
     },
   },
   async run({ args }) {
+    let scaleFactor: number | undefined
+    if (args.scale) {
+      try {
+        const parsed = parseScaleArg(args.scale as string)
+        if (parsed.type === 'ref') {
+          process.stderr.write('gram build: Reference mode (id=value) is not available for gram build. Use a numeric factor (e.g. --scale 2).\n')
+          process.exit(ExitCode.Error)
+        }
+        scaleFactor = parsed.value
+      } catch (err) {
+        process.stderr.write(`gram build: ${err instanceof Error ? err.message : String(err)}\n`)
+        process.exit(ExitCode.Error)
+      }
+    }
+
     const toStdout = !args.output
 
     // In pipe mode, ALL errors must go to stderr to preserve stdout purity
     if (toStdout) {
       try {
-        await runToStdout(args)
+        await runToStdout({ ...args, _scaleFactor: scaleFactor })
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         process.stderr.write(`gram build: ${msg}\n`)
@@ -56,13 +76,15 @@ export default defineCommand({
       return
     }
 
-    await runToFiles(args)
+    await runToFiles({ ...args, _scaleFactor: scaleFactor })
   },
 })
 
 type Args = {
   _: string[]
   pattern?: string
+  scale?: string
+  _scaleFactor?: number
   output?: string
   pretty: boolean
   db?: string
@@ -88,7 +110,7 @@ async function resolveInputs(args: Args) {
 
 async function runToStdout(args: Args) {
   const { files, db } = await resolveInputs(args)
-  const results = await buildFiles(files, { db: db ?? undefined })
+  const results = await buildFiles(files, { db: db ?? undefined, scaleFactor: args._scaleFactor })
   const indent = args.pretty ? 2 : undefined
   for (const { data } of results) {
     process.stdout.write(JSON.stringify(data, null, indent) + '\n')
@@ -103,7 +125,7 @@ async function runToFiles(args: Args) {
   const s = spinner()
   s.start(`Building ${n} file${n !== 1 ? 's' : ''}…`)
 
-  const results = await buildFiles(files, { db: db ?? undefined })
+  const results = await buildFiles(files, { db: db ?? undefined, scaleFactor: args._scaleFactor })
 
   s.stop(`Built ${n} file${n !== 1 ? 's' : ''}.`)
 

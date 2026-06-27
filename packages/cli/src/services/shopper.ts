@@ -8,6 +8,7 @@ import type { ShopResult, ShoppingEntry } from '../types'
 
 export interface ShopOptions {
   db?: Record<string, IngredientData> | null
+  scaleFactor?: number
 }
 
 interface CollectedItem {
@@ -47,7 +48,7 @@ export async function buildShoppingList(
         }
 
         if (opts.db) {
-          const { analyzed } = await runPipeline(file, { db: opts.db })
+          const { analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
           if (analyzed) {
             for (const item of analyzed.result.shopping_list as CollectedItem[]) {
               if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
@@ -56,7 +57,7 @@ export async function buildShoppingList(
             }
           }
         } else {
-          const { compiled } = await runPipeline(file, { skipAnalyzer: true })
+          const { compiled } = await runPipeline(file, { skipAnalyzer: true, scaleFactor: opts.scaleFactor })
           for (const item of compiled.shopping_list as CollectedItem[]) {
             if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
             if (typeof item.qty !== 'number' || !isFinite(item.qty)) { trackNoQty(item); continue }

@@ -36,15 +36,23 @@ Compiles your `.gram` recipes into the final, minified JSON format.
 ```bash
 gram build "**/*.gram" --output ./dist
 gram build brioche.gram --pretty
+gram build brioche.gram --scale 2 --output ./dist-doubled
 ```
 - By default, outputs pure JSON directly to `stdout` for easy piping.
 - Computes nutritional data and physical mass normalization automatically via the database.
+- `--scale <factor>` bakes the scaling into the JSON output (factor only — no ref mode for multi-file builds).
 
 #### `gram view <file>`
 Displays a recipe directly in the terminal in a beautifully styled ASCII box.
+```bash
+gram view brioche.gram                      # Default view
+gram view brioche.gram --scale 2            # View at double quantities
+gram view brioche.gram --scale farine=300g  # View scaled to flour = 300g
+```
 - Supports automatic paging for long recipes.
 - Displays calculated nutrition, timings, and ingredient checklists.
-- Options: `--no-pager`, `--skip-db`, `--db`.
+- With `--scale`, all ingredient quantities (shopping list and in-step references) are adjusted.
+- Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`.
 
 #### `gram import <source>`
 Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file using AI.
@@ -55,8 +63,14 @@ Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file us
 
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.
+```bash
+gram shop "**/*.gram"                 # All recipes
+gram shop brioche.gram --scale 2      # Double all quantities
+gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
+```
 - Aggregates quantities intelligently via density.
 - Groups ingredients by their `category` field (culinary family: Vegetables, Dairy, Grains, etc.).
+- `--scale <factor>` applies a numeric multiplier to all recipes (factor only — ref mode not available for multi-file).
 - Formats: `--format terminal|md|json`.
 
 #### `gram cook <file>`
@@ -85,7 +99,7 @@ gram cook carbonara.gram --skip-db
 | `T` | Start a timer |
 | `Q` / `Esc` | Quit (asks for confirmation if a timer is running) |
 
-- Options: `--skip-db`, `--db`.
+- Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 
 #### `gram diff <file> [file-b]`
 Shows a semantic diff of a recipe — comparing ingredients, timings, and sections rather than raw text.

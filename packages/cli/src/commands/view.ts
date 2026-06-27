@@ -1,10 +1,13 @@
 import { defineCommand } from 'citty'
 import { log } from '@clack/prompts'
+import chalk from 'chalk'
+import { resolve } from 'node:path'
 import { version } from '../../package.json'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { buildViewModel } from '../services/viewer'
 import { outputRecipe } from '../ui/viewer'
+import { resolveScaleFactor, getScaleWarnings } from '../services/scaler'
 import { ExitCode, GramCLIError } from '../errors'
 
 export default defineCommand({
@@ -14,6 +17,10 @@ export default defineCommand({
       type: 'positional',
       required: true,
       description: 'Path to a .gram recipe file',
+    },
+    scale: {
+      type: 'string',
+      description: 'Scale factor (e.g. 1.5) or reference ingredient (e.g. farine=300g)',
     },
     db: {
       type: 'string',
@@ -29,23 +36,36 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    const file = args.file as string
+    const file = resolve(args.file as string)
     const config = await loadConfig()
+    const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
-    let db: Record<string, any> | null = null
-    if (!args['skip-db']) {
-      db = await loadDbSafe(config, args.db)
+    let scaleFactor = 1
+    if (args.scale) {
+      try {
+        scaleFactor = await resolveScaleFactor(file, args.scale as string, db)
+      } catch (err) {
+        log.error(err instanceof Error ? err.message : String(err))
+        process.exit(ExitCode.Error)
+      }
     }
 
     let model
     try {
-      model = await buildViewModel(file, { db })
+      model = await buildViewModel(file, { db, scaleFactor })
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
         process.exit(err.exitCode)
       }
       throw err
+    }
+
+    if (scaleFactor !== 1) {
+      const factorStr = scaleFactor === Math.round(scaleFactor) ? `×${scaleFactor}` : `×${scaleFactor.toFixed(2)}`
+      console.log(chalk.dim(`  Scaled ${factorStr}\n`))
+      const warnings = getScaleWarnings(scaleFactor, model.times?.total ?? 0)
+      for (const w of warnings) log.warn(w)
     }
 
     await outputRecipe(model, args['no-pager'] ?? false)

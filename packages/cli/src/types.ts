@@ -203,4 +203,5 @@ export interface CheckOptions {
 export interface BuildOptions {
   db?: Record<string, IngredientData> | null
   pretty?: boolean
+  scaleFactor?: number
 }
