@@ -30,12 +30,15 @@
     "chalk": "^5.4.0",
     "citty": "^0.2.2",
     "defu": "^6.1.7",
+    "ink": "^7.1.0",
     "p-limit": "^7.3.0",
+    "react": "^19.2.7",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/react": "^19.2.17",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3"
   }

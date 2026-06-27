@@ -59,6 +59,34 @@ Generates an aggregated shopping list across multiple recipes.
 - Groups ingredients by their `category` field (culinary family: Vegetables, Dairy, Grains, etc.).
 - Formats: `--format terminal|md|json`.
 
+#### `gram cook <file>`
+Launches an interactive step-by-step cooking guide directly in the terminal.
+```bash
+gram cook brioche.gram
+gram cook carbonara.gram --skip-db
+```
+**Flow:**
+1. **Mise en place** — global ingredient list for the full recipe (Space to start)
+2. **Section intro** — ingredients for the upcoming section (shown before each section)
+3. **Cooking steps** — one step at a time with inline ingredients, action verb, and instructions
+4. **End screen** — total time spent
+
+**Timers** — timers annotated in the recipe (`~label{30min}`) appear in the step view:
+- Press `T` to start a timer; if multiple are available, a picker appears
+- Timers run in the background — they remain visible as you advance through steps
+- A terminal bell sounds and the timer flashes green when it finishes
+- Press any key to dismiss a finished timer
+
+**Keyboard shortcuts:**
+| Key | Action |
+|---|---|
+| `Space` / `Enter` | Next step |
+| `B` | Previous step |
+| `T` | Start a timer |
+| `Q` / `Esc` | Quit (asks for confirmation if a timer is running) |
+
+- Options: `--skip-db`, `--db`.
+
 #### `gram diff <file> [file-b]`
 Shows a semantic diff of a recipe — comparing ingredients, timings, and sections rather than raw text.
 ```bash
