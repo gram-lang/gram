@@ -154,6 +154,18 @@ gram watch --build --output ./dist      # Also build changed files to JSON
 - 150ms debounce prevents redundant runs when editors write files in multiple chunks.
 - Options: `--build`, `--output <dir>`, `--skip-db`, `--db`.
 
+#### `gram export <file>`
+Exports a recipe to Markdown or print-ready HTML.
+```bash
+gram export brioche.gram --format md                   # brioche.md alongside the source
+gram export brioche.gram --format html -o ~/print.html # explicit output path
+gram export brioche.gram --format html --scale 2       # export at double quantities
+```
+- `--format md` — standard Markdown with a shopping list, equipment section, and numbered steps.
+- `--format html` — standalone A4-ready HTML document with embedded CSS for printing. No external dependencies or CDN — works offline and in browser print dialogs.
+- Default output path: same directory as the input file, extension replaced (`.gram` → `.md` or `.html`).
+- Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--skip-db`, `--db`.
+
 #### `gram format [pattern]`
 Auto-formats `.gram` files applying 9 text-based rules in-place.
 ```bash

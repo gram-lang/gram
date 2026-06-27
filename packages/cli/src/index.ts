@@ -23,6 +23,7 @@ const main = defineCommand({
     cook: () => import('./commands/cook').then(m => m.default),
     config: () => import('./commands/config').then(m => m.default),
     format: () => import('./commands/format').then(m => m.default),
+    export: () => import('./commands/export').then(m => m.default),
   },
 })
 
