@@ -86,3 +86,13 @@ The `analyze()` function does not directly return the modified JSON AST. Instead
 2. `missingIngredients`: Diagnostic metadata generated during the database reconciliation phase.
 
 This architectural separation of concerns ensures that diagnostic logs (used by the CLI `check` command or the Language Server to display warnings) do not pollute the pure business data of the recipe (`result`), which is cleanly extracted by the CLI `build` command for frontend consumption.
+
+### 4.2. Semantic Recipe Diff (`diffRecipes`)
+
+`@gram/analyzer` also exposes `diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult`, which compares two compiled recipes and returns a structured diff across three axes:
+
+- **Ingredients** (`IngredientDelta[]`): added, removed, or changed items from the shopping list — with `percentChange` when the unit is the same on both sides.
+- **Timings** (`TimingDelta[]`): changes to `totalTime`, `activeTime`, or `preparationTime` (in minutes).
+- **Sections** (`SectionDelta[]`): added, removed, or step-count changes per section.
+
+The comparison operates on **Kitchen's compiled output**, not on raw text. This means purely syntactic changes (whitespace, comment rewording, equivalent reformatting) produce no diff — only semantic changes do. The CLI's `gram diff` command uses this function via `services/differ.ts`, which handles git integration (`git show <ref>:<path>`) transparently.

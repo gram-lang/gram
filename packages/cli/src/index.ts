@@ -19,6 +19,7 @@ const main = defineCommand({
     shop: () => import('./commands/shop').then(m => m.default),
     watch: () => import('./commands/watch').then(m => m.default),
     scale: () => import('./commands/scale').then(m => m.default),
+    diff: () => import('./commands/diff').then(m => m.default),
   },
 })
 

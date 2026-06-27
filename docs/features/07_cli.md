@@ -59,6 +59,33 @@ Generates an aggregated shopping list across multiple recipes.
 - Groups ingredients by their `category` field (culinary family: Vegetables, Dairy, Grains, etc.).
 - Formats: `--format terminal|md|json`.
 
+#### `gram diff <file> [file-b]`
+Shows a semantic diff of a recipe — comparing ingredients, timings, and sections rather than raw text.
+```bash
+gram diff brioche.gram                        # Working tree vs HEAD (most common)
+gram diff brioche.gram --ref HEAD~2           # vs a specific git commit
+gram diff brioche.gram --ref v1.2             # vs a git tag
+gram diff brioche-v1.gram brioche-v2.gram     # Two explicit files (no git needed)
+```
+Output example:
+```
+  Semantic diff: brioche.gram (HEAD → working tree)
+
+  INGREDIENTS
+  ~ farine             500g → 600g   (+20%)
+  + levure             5g
+  - sel                2g
+
+  TIMING
+  ~ Total time         60 min → 90 min  (+30 min)
+
+  SECTIONS
+  ~ Section "Pâte" — 3 → 4 steps (+1)
+```
+- Operates on compiled objects (Kitchen output), not raw text — syntactic reformatting produces no diff.
+- Git mode requires the file to be tracked. Gracefully errors if `git` is unavailable.
+- Options: `--ref <git-ref>`.
+
 #### `gram scale <file>`
 Displays a recipe's ingredient list scaled to a target factor or matched to a reference ingredient.
 ```bash

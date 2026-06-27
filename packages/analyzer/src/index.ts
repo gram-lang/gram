@@ -3,6 +3,7 @@ export * from './ingredient_db';
 export * from './mass_normalization';
 export * from './nutrition';
 export * from './metrics';
+export * from './diff';
 
 
 import { CompilationResult, Usage } from '@gram/kitchen';
