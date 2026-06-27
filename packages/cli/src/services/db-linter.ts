@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises'
-import { parseDocument, isMap, isSeq, Scalar } from 'yaml'
+import { parseDocument, isMap, isSeq } from 'yaml'
 import { z } from 'zod'
 import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
@@ -7,6 +7,7 @@ import type { IngredientData } from '@gram/analyzer'
 import { getAiLanguageInstruction } from '@gram/i18n'
 import { withFileLock, atomicWrite } from '../core/lock'
 import { resolveDbPath } from '../core/db'
+import { quotedScalar, addAliasesToNode, removeIngredientKey } from '../core/db-writer'
 import type { GramConfig, LintResult, LintIssue, LintOptions, LintDecision } from '../types'
 
 function buildSystemPrompt(lang: string): string {
@@ -125,8 +126,8 @@ export async function applyLintDecisions(
         if (isMap(aliasNode)) {
           const aliasesRaw = aliasNode.get('aliases', true)
           const oldAliases: string[] = isSeq(aliasesRaw) ? aliasesRaw.toJSON() : []
-          _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
-          _deleteKey(ingredientsMap, aliasId)
+          addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
+          removeIngredientKey(ingredientsMap, aliasId)
         } else {
           _addAliasesToNode(doc, keepNode, [aliasId])
         }
@@ -153,9 +154,9 @@ export async function applyLintDecisions(
 
         const aliasesRaw = sourceNode.get('aliases', true)
         const oldAliases: string[] = isSeq(aliasesRaw) ? aliasesRaw.toJSON() : []
-        _addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
+        addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
 
-        _deleteKey(ingredientsMap, aliasId)
+        removeIngredientKey(ingredientsMap, aliasId)
       }
     }
 
@@ -176,27 +177,3 @@ export async function applyLintDecisions(
   return { applied, skipped }
 }
 
-function _quotedNode(doc: ReturnType<typeof parseDocument>, value: string) {
-  const n = doc.createNode(value)
-  ;(n as Scalar).type = Scalar.QUOTE_DOUBLE
-  return n
-}
-
-function _addAliasesToNode(doc: ReturnType<typeof parseDocument>, node: any, newAliases: string[]): void {
-  const aliasesNode = node.get('aliases', true)
-  const existing: string[] = isSeq(aliasesNode) ? aliasesNode.toJSON() : []
-  const merged = Array.from(new Set([...existing, ...newAliases]))
-  if (isSeq(aliasesNode)) {
-    aliasesNode.items.length = 0
-    for (const a of merged) aliasesNode.add(_quotedNode(doc, a))
-  } else {
-    const seq = doc.createNode([] as string[])
-    for (const a of merged) (seq as any).add(_quotedNode(doc, a))
-    node.set('aliases', seq)
-  }
-}
-
-function _deleteKey(map: any, key: string): void {
-  const idx = map.items.findIndex((pair: any) => String(pair.key) === key)
-  if (idx !== -1) map.items.splice(idx, 1)
-}

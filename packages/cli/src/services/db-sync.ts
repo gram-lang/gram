@@ -1,12 +1,13 @@
 import pLimit from 'p-limit'
 import { readFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { parseDocument, isMap, isSeq, Document, Scalar } from 'yaml'
+import { parseDocument, isMap, Document } from 'yaml'
 import { runPipeline } from '../core/pipeline'
 import { getIngredientData, type IngredientData } from '@gram/analyzer'
 import { findSimilarInDb } from '../core/fuzzy'
 import { withFileLock, atomicWrite } from '../core/lock'
 import { resolveDbPath } from '../core/db'
+import { addAliasesToNode } from '../core/db-writer'
 import type { GramConfig, DbSyncResult, DbSyncOptions, DbSyncAnalysis, FuzzyMatch } from '../types'
 
 export async function analyzeIngredients(
@@ -119,16 +120,7 @@ export async function applySync(
     for (const { newId, existingId } of toAlias) {
       const ingNode = ingredientsMap.get(existingId, true)
       if (!isMap(ingNode)) continue
-      const aliasesNode = ingNode.get('aliases', true)
-      const quotedId = doc.createNode(newId)
-      ;(quotedId as Scalar).type = Scalar.QUOTE_DOUBLE
-      if (isSeq(aliasesNode)) {
-        aliasesNode.add(quotedId)
-      } else {
-        const seq = doc.createNode([] as string[])
-        ;(seq as any).add(quotedId)
-        ingNode.set('aliases', seq)
-      }
+      addAliasesToNode(doc, ingNode, [newId])
     }
 
     for (const id of toCreate) {
