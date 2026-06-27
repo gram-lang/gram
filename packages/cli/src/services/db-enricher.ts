@@ -1,7 +1,7 @@
 import pLimit from 'p-limit'
 import { readFile, mkdir } from 'node:fs/promises'
 import { resolve, dirname, join } from 'node:path'
-import { parseDocument, isMap } from 'yaml'
+import { parseDocument, isMap, isSeq } from 'yaml'
 import { z } from 'zod'
 import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
@@ -171,26 +171,27 @@ export async function enrichDb(
                 if (entry.unit_weight != null) data.unit_weight = entry.unit_weight
                 ingNode.set('physical', doc.createNode(data))
               } else {
-                if (entry.density != null) (physNode as any).set('density', entry.density)
-                if (entry.unit_weight != null) (physNode as any).set('unit_weight', entry.unit_weight)
+                if (entry.density != null && !physNode.get('density')) (physNode as any).set('density', entry.density)
+                if (entry.unit_weight != null && !physNode.get('unit_weight')) (physNode as any).set('unit_weight', entry.unit_weight)
               }
             }
 
             if (entry.category) {
-              const existingCategory = ingNode.get('category') as string | null | undefined
+              const existingCategory = ingNode.get('category')
               if (!existingCategory) {
                 ingNode.set('category', entry.category)
               }
             }
 
             if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
-              const existingTags = ingNode.get('tags') as string[] | null | undefined
-              if (!existingTags || existingTags.length === 0) {
+              const existingTagsNode = ingNode.get('tags', true)
+              const hasExistingTags = isSeq(existingTagsNode) && existingTagsNode.items.length > 0
+              if (!hasExistingTags) {
                 ingNode.set('tags', doc.createNode(entry.tagSuggestions))
               }
             }
 
-            if (entry.nutrition != null) {
+            if (entry.nutrition != null && !ingNode.get('nutrition')) {
               ingNode.set('nutrition', doc.createNode(entry.nutrition))
             }
           }
