@@ -17,12 +17,17 @@ export async function generatePrintHTML(
   return outPath
 }
 
-export function openInBrowser(htmlPath: string): void {
+export function openInBrowser(htmlPath: string): boolean {
   const cmds: Record<string, string[]> = {
     darwin: ['open', htmlPath],
     win32: ['cmd', '/c', 'start', '', htmlPath],
     linux: ['xdg-open', htmlPath],
   }
   const argv = cmds[process.platform] ?? ['xdg-open', htmlPath]
-  Bun.spawn(argv, { stdio: ['ignore', 'ignore', 'ignore'] })
+  try {
+    Bun.spawn(argv, { stdio: ['ignore', 'ignore', 'ignore'] })
+    return true
+  } catch {
+    return false
+  }
 }

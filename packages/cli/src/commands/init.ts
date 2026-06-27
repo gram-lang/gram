@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { stringify } from 'yaml'
 import type { GramConfig } from '../types'
 import { ExitCode } from '../errors'
+import { upsertEnvVar } from '../services/config-manager'
 
 const DB_TEMPLATE = `# GRAM ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
@@ -183,7 +184,7 @@ export default defineCommand({
               anthropic: 'ANTHROPIC_API_KEY',
             }
             const envKey = envKeyMap[provider as 'google' | 'openai' | 'anthropic']
-            await appendFile(envPath, `\n${envKey}="${apiKey}"\n`)
+            await upsertEnvVar(envPath, envKey, apiKey)
 
             // Ensure root .gitignore covers .env
             const rootGitignore = join(process.cwd(), '.gitignore')

@@ -7,7 +7,7 @@ import {
   setConfigValue,
   isSensitiveKey,
 } from '../../services/config-manager'
-import { findProjectRoot } from '../../core/workspace'
+import { requireProjectRoot, findProjectRoot } from '../../core/workspace'
 import { ExitCode } from '../../errors'
 
 export default defineCommand({
@@ -32,7 +32,7 @@ export default defineCommand({
   async run({ args }) {
     const key = args.key as string
     const value = args.value as string
-    const projectRoot = await findProjectRoot()
+    const projectRoot = args.global ? await findProjectRoot() : await requireProjectRoot()
 
     if (args.global && isSensitiveKey(key)) {
       log.error(`"${key}" is a sensitive value — it is always written to the project .env file, not global config.`)

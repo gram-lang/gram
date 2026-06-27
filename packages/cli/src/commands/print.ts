@@ -4,7 +4,7 @@ import { log } from '@clack/prompts'
 import chalk from 'chalk'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
-import { resolveScaleFactor } from '../services/scaler'
+import { resolveScaleArg } from '../services/scaler'
 import { generatePrintHTML, openInBrowser } from '../services/printer'
 import { ExitCode, GramCLIError } from '../errors'
 
@@ -43,15 +43,7 @@ export default defineCommand({
     const config = await loadConfig()
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
-    let scaleFactor: number | undefined
-    if (args.scale) {
-      try {
-        scaleFactor = await resolveScaleFactor(filePath, args.scale as string, db)
-      } catch (err) {
-        log.error(err instanceof Error ? err.message : String(err))
-        process.exit(ExitCode.Error)
-      }
-    }
+    const scaleFactor = await resolveScaleArg(args.scale as string | undefined, filePath, db)
 
     let htmlPath: string
     try {
@@ -67,8 +59,12 @@ export default defineCommand({
     log.success(`HTML generated: ${chalk.dim(htmlPath)}`)
 
     if (args.open !== false) {
-      log.info('Opening in browser…')
-      openInBrowser(htmlPath)
+      const opened = openInBrowser(htmlPath)
+      if (opened) {
+        log.info('Opening in browser…')
+      } else {
+        log.warn(`Could not open browser automatically. Open the file manually:\n${htmlPath}`)
+      }
     }
   },
 })

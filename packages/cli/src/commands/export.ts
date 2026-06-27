@@ -5,7 +5,7 @@ import { log } from '@clack/prompts'
 import chalk from 'chalk'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
-import { resolveScaleFactor } from '../services/scaler'
+import { resolveScaleArg } from '../services/scaler'
 import { exportRecipe } from '../services/exporter'
 import { ExitCode, GramCLIError } from '../errors'
 
@@ -54,15 +54,7 @@ export default defineCommand({
     const config = await loadConfig()
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
-    let scaleFactor: number | undefined
-    if (args.scale) {
-      try {
-        scaleFactor = await resolveScaleFactor(filePath, args.scale as string, db)
-      } catch (err) {
-        log.error(err instanceof Error ? err.message : String(err))
-        process.exit(ExitCode.Error)
-      }
-    }
+    const scaleFactor = await resolveScaleArg(args.scale as string | undefined, filePath, db)
 
     const outputPath = args.output
       ? resolve(args.output as string)

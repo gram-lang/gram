@@ -1,4 +1,6 @@
+import { log } from '@clack/prompts'
 import { runPipeline } from '../core/pipeline'
+import { ExitCode } from '../errors'
 import type { IngredientData } from '@gram/analyzer'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -92,6 +94,9 @@ export async function resolveScaleFactor(
       `Cannot use "${ref.id}" as reference: its quantity ("${item.qty}") is not a simple number.`,
     )
   }
+  if (item.qty === 0) {
+    throw new Error(`Cannot use "${ref.id}" as reference: its quantity is 0.`)
+  }
 
   const itemUnit = item.unit || null
   const refUnit = ref.unit
@@ -109,6 +114,24 @@ export async function resolveScaleFactor(
   }
 
   return ref.value / item.qty
+}
+
+/**
+ * Convenience wrapper: resolves --scale arg to a factor, logging + exiting on error.
+ * Returns undefined when no scale arg is provided (preserves original pipeline behavior).
+ */
+export async function resolveScaleArg(
+  scale: string | undefined,
+  filePath: string,
+  db: Record<string, IngredientData> | null | undefined,
+): Promise<number | undefined> {
+  if (!scale) return undefined
+  try {
+    return await resolveScaleFactor(filePath, scale, db)
+  } catch (err) {
+    log.error(err instanceof Error ? err.message : String(err))
+    return process.exit(ExitCode.Error)
+  }
 }
 
 // ── Shared warning helper ─────────────────────────────────────────────────────

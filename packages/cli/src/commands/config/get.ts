@@ -5,7 +5,7 @@ import {
   getGlobalConfigPath,
   getConfigValue,
 } from '../../services/config-manager'
-import { findProjectRoot } from '../../core/workspace'
+import { requireProjectRoot, findProjectRoot } from '../../core/workspace'
 import { ExitCode } from '../../errors'
 
 export default defineCommand({
@@ -23,7 +23,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    const projectRoot = await findProjectRoot()
+    const projectRoot = args.global ? await findProjectRoot() : await requireProjectRoot()
     const configPath = args.global
       ? getGlobalConfigPath()
       : getLocalConfigPath(projectRoot)

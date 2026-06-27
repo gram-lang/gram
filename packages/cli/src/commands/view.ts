@@ -7,7 +7,7 @@ import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { buildViewModel } from '../services/viewer'
 import { outputRecipe } from '../ui/viewer'
-import { resolveScaleFactor, getScaleWarnings } from '../services/scaler'
+import { resolveScaleArg, getScaleWarnings } from '../services/scaler'
 import { ExitCode, GramCLIError } from '../errors'
 
 export default defineCommand({
@@ -40,15 +40,7 @@ export default defineCommand({
     const config = await loadConfig()
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
-    let scaleFactor = 1
-    if (args.scale) {
-      try {
-        scaleFactor = await resolveScaleFactor(file, args.scale as string, db)
-      } catch (err) {
-        log.error(err instanceof Error ? err.message : String(err))
-        process.exit(ExitCode.Error)
-      }
-    }
+    const scaleFactor = (await resolveScaleArg(args.scale as string | undefined, file, db)) ?? 1
 
     let model
     try {

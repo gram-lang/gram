@@ -1,7 +1,8 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { readFile, mkdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { parse, stringify } from 'yaml'
+import { withFileLock, atomicWrite } from '../core/lock'
 
 const SENSITIVE_KEYS = new Set(['ai.apiKey'])
 
@@ -29,28 +30,43 @@ export function getEnvVarName(provider?: string): string {
 
 // ── Dot-notation helpers ──────────────────────────────────────────────────────
 
+const FORBIDDEN_KEY_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype'])
+
+function guardKey(key: string): void {
+  for (const part of key.split('.')) {
+    if (FORBIDDEN_KEY_SEGMENTS.has(part)) {
+      throw new Error(`Forbidden config key segment: "${part}"`)
+    }
+  }
+}
+
 function setNestedKey(obj: Record<string, any>, key: string, value: any): void {
+  guardKey(key)
   const parts = key.split('.')
   let curr = obj
   for (let i = 0; i < parts.length - 1; i++) {
-    if (!curr[parts[i]] || typeof curr[parts[i]] !== 'object') curr[parts[i]] = {}
-    curr = curr[parts[i]]
+    const part = parts[i]!
+    if (!curr[part] || typeof curr[part] !== 'object') curr[part] = {}
+    curr = curr[part]
   }
-  curr[parts[parts.length - 1]] = value
+  curr[parts[parts.length - 1]!] = value
 }
 
 export function getNestedKey(obj: Record<string, any>, key: string): any {
+  guardKey(key)
   return key.split('.').reduce((acc: any, part) => acc?.[part], obj)
 }
 
 function deleteNestedKey(obj: Record<string, any>, key: string): boolean {
+  guardKey(key)
   const parts = key.split('.')
   let curr = obj
   for (let i = 0; i < parts.length - 1; i++) {
-    if (!curr[parts[i]] || typeof curr[parts[i]] !== 'object') return false
-    curr = curr[parts[i]]
+    const part = parts[i]!
+    if (!curr[part] || typeof curr[part] !== 'object') return false
+    curr = curr[part]
   }
-  const last = parts[parts.length - 1]
+  const last = parts[parts.length - 1]!
   if (!(last in curr)) return false
   delete curr[last]
   return true
@@ -90,7 +106,7 @@ async function readConfigFile(path: string): Promise<Record<string, any>> {
 
 async function writeConfigFile(path: string, data: Record<string, any>): Promise<void> {
   await mkdir(dirname(path), { recursive: true })
-  await writeFile(path, stringify(data, { lineWidth: 0 }))
+  await withFileLock(path, () => atomicWrite(path, stringify(data, { lineWidth: 0 })))
 }
 
 // ── .env helpers ──────────────────────────────────────────────────────────────
@@ -114,8 +130,16 @@ export async function readDotEnv(envPath: string): Promise<Record<string, string
 }
 
 async function writeDotEnv(envPath: string, vars: Record<string, string>): Promise<void> {
-  const lines = Object.entries(vars).map(([k, v]) => `${k}="${v}"`).join('\n') + '\n'
-  await writeFile(envPath, lines)
+  const lines = Object.entries(vars)
+    .map(([k, v]) => `${k}="${v.replace(/[\r\n"]/g, '')}"`)
+    .join('\n') + '\n'
+  await withFileLock(envPath, () => atomicWrite(envPath, lines))
+}
+
+export async function upsertEnvVar(envPath: string, key: string, value: string): Promise<void> {
+  const vars = await readDotEnv(envPath)
+  vars[key] = value
+  await writeDotEnv(envPath, vars)
 }
 
 function getApiEnvVarFromConfig(config: Record<string, any>): string {

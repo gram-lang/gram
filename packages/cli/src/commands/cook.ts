@@ -8,7 +8,7 @@ import { version } from '../../package.json'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { runPipeline } from '../core/pipeline'
-import { resolveScaleFactor, getScaleWarnings } from '../services/scaler'
+import { resolveScaleArg, getScaleWarnings } from '../services/scaler'
 import { prepareRecipeData } from '../ui/cook/prepare'
 import App from '../ui/cook/App'
 import { ExitCode } from '../errors'
@@ -44,15 +44,7 @@ export default defineCommand({
     const config = await loadConfig()
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
-    let scaleFactor = 1
-    if (args.scale) {
-      try {
-        scaleFactor = await resolveScaleFactor(filePath, args.scale as string, db)
-      } catch (err) {
-        log.error(err instanceof Error ? err.message : String(err))
-        process.exit(ExitCode.Error)
-      }
-    }
+    const scaleFactor = (await resolveScaleArg(args.scale as string | undefined, filePath, db)) ?? 1
 
     const s = spinner()
     s.start('Loading recipe…')

@@ -84,10 +84,13 @@ export function formatGram(source: string): { content: string; changes: Formatte
     return `{${n}${u}}`
   })
 
-  // Rule 5: Remove space before ° in temperature quantities ({180 °C} → {180°C})
-  content = content.replace(/\{([^}]*?)(\d+)\s+°/g, (_, prefix, n) => {
-    changes.temperatureSpacing++
-    return `{${prefix}${n}°`
+  // Rule 5: Remove space before ° in temperature quantities (handles multiple temps per brace)
+  content = content.replace(/\{([^}]*)\}/g, (_, inner) => {
+    const fixed = inner.replace(/(\d+)\s+°/g, (_m: string, n: string) => {
+      changes.temperatureSpacing++
+      return `${n}°`
+    })
+    return `{${fixed}}`
   })
 
   // Rule 8: Trim trailing whitespace line by line
