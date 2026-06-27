@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { parseDocument, isMap, isSeq } from 'yaml'
+import { parseDocument, isMap, isSeq, Scalar } from 'yaml'
 import { z } from 'zod'
 import { generateObject } from 'ai'
 import type { LanguageModel } from 'ai'
@@ -164,15 +164,23 @@ export async function applyLintDecisions(
   return { applied, skipped }
 }
 
+function _quotedNode(doc: ReturnType<typeof parseDocument>, value: string) {
+  const n = doc.createNode(value)
+  ;(n as Scalar).type = Scalar.QUOTE_DOUBLE
+  return n
+}
+
 function _addAliasesToNode(doc: ReturnType<typeof parseDocument>, node: any, newAliases: string[]): void {
   const aliasesNode = node.get('aliases', true)
   const existing: string[] = isSeq(aliasesNode) ? aliasesNode.toJSON() : []
   const merged = Array.from(new Set([...existing, ...newAliases]))
   if (isSeq(aliasesNode)) {
     aliasesNode.items.length = 0
-    for (const a of merged) aliasesNode.add(doc.createNode(a))
+    for (const a of merged) aliasesNode.add(_quotedNode(doc, a))
   } else {
-    node.set('aliases', doc.createNode(merged))
+    const seq = doc.createNode([] as string[])
+    for (const a of merged) ;(seq as any).add(_quotedNode(doc, a))
+    node.set('aliases', seq)
   }
 }
 

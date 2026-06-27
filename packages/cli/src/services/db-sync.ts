@@ -1,7 +1,7 @@
 import pLimit from 'p-limit'
 import { readFile, mkdir } from 'node:fs/promises'
 import { resolve, dirname, join } from 'node:path'
-import { parseDocument, isMap, isSeq, Document } from 'yaml'
+import { parseDocument, isMap, isSeq, Document, Scalar } from 'yaml'
 import { runPipeline } from '../core/pipeline'
 import { getIngredientData, type IngredientData } from '@gram/analyzer'
 import { findSimilarInDb } from '../core/fuzzy'
@@ -126,10 +126,14 @@ export async function applySync(
       const ingNode = ingredientsMap.get(existingId, true)
       if (!isMap(ingNode)) continue
       const aliasesNode = ingNode.get('aliases', true)
+      const quotedId = doc.createNode(newId)
+      ;(quotedId as Scalar).type = Scalar.QUOTE_DOUBLE
       if (isSeq(aliasesNode)) {
-        aliasesNode.add(doc.createNode(newId))
+        aliasesNode.add(quotedId)
       } else {
-        ingNode.set('aliases', doc.createNode([newId]))
+        const seq = doc.createNode([] as string[])
+        ;(seq as any).add(quotedId)
+        ingNode.set('aliases', seq)
       }
     }
 
