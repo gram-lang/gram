@@ -94,7 +94,7 @@ export default defineCommand({
 
     const configureAi = guardCancel(
       await confirm({
-        message: "Configure an AI provider now? (Required for 'gram import' and 'gram db enrich')",
+        message: "Configure an AI provider now? (Required to import recipes and auto-enrich ingredients)",
         initialValue: true,
       }),
     )
