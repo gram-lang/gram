@@ -1,17 +1,19 @@
 import chalk from 'chalk'
 import { log } from '@clack/prompts'
 import { fmtNumber } from '../core/format'
-import type { ScaleResult } from '../services/scaler'
+import type { ScaledItem } from '../services/scaler'
 
 function fmtQty(qty: number, unit: string | null): string {
-  // Show integers without decimals, trim trailing zeros otherwise
   const rounded = Math.abs(qty - Math.round(qty)) < 0.005 ? Math.round(qty) : parseFloat(qty.toFixed(2))
   return unit ? `${fmtNumber(rounded)}${unit}` : fmtNumber(rounded, 1)
 }
 
-export function renderScaleResult(result: ScaleResult): void {
-  const { title, factor, items, warnings } = result
-
+export function renderScaleResult(
+  title: string | null,
+  factor: number,
+  items: ScaledItem[],
+  warnings: string[],
+): void {
   const factorStr = factor === Math.round(factor) ? `×${factor}` : `×${factor.toFixed(2)}`
   const header = title ? `${title} — ${factorStr}` : factorStr
 
@@ -50,10 +52,6 @@ export function renderScaleResult(result: ScaleResult): void {
 
   console.log()
 
-  if (warnings.length > 0) {
-    for (const w of warnings) {
-      log.warn(w)
-    }
-    console.log()
-  }
+  for (const w of warnings) log.warn(w)
+  if (warnings.length > 0) console.log()
 }

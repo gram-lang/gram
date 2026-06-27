@@ -115,18 +115,18 @@ Output example:
 - Options: `--ref <git-ref>`.
 
 #### `gram scale <file>`
-Displays a recipe's ingredient list scaled to a target factor or matched to a reference ingredient.
+Displays a before/after comparison of ingredient quantities at a given scale.
 ```bash
-gram scale brioche.gram --factor 2          # Double all quantities
-gram scale brioche.gram --factor 0.5        # Halve all quantities
-gram scale brioche.gram --ref farine=300g   # Scale so that flour = 300g
-gram scale brioche.gram --ref oeufs=3       # Scale so that eggs = 3
+gram scale brioche.gram --scale 2            # Double all quantities
+gram scale brioche.gram --scale 0.5          # Halve all quantities
+gram scale brioche.gram --scale farine=300g  # Scale so that flour = 300g
+gram scale brioche.gram --scale oeufs=3      # Scale so that eggs = 3
 ```
-- Displays a before/after table with original and scaled quantities for each ingredient.
+- Displays a comparison table: original quantities (dimmed) vs scaled (green).
 - Quantities that cannot be scaled (text values like "1 pinch") are listed separately.
 - Warns on extreme factors (×0.1 or ×20) and notes that cooking times are not adjusted.
-- `--ref id=value` computes the factor automatically from the reference ingredient. The ID must match the ingredient key used in the recipe. Units must be compatible (e.g. g↔g, ml↔ml) — use `gram db enrich` to add density for volume↔mass conversion.
-- Options: `--factor <n>`, `--ref <id=value>`, `--skip-db`, `--db`.
+- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units must be compatible (e.g. g↔g) — use `gram db enrich` to add density for volume↔mass conversion.
+- Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 
 #### `gram watch [dir]`
 Watches a directory for `.gram` file changes and re-runs `gram check` automatically on every save.

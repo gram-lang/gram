@@ -4,7 +4,8 @@ import { log, spinner } from '@clack/prompts'
 import { version } from '../../package.json'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
-import { computeScale } from '../services/scaler'
+import { runPipeline } from '../core/pipeline'
+import { resolveScaleFactor, buildScaleComparison, getScaleWarnings } from '../services/scaler'
 import { renderScaleResult } from '../ui/scaler'
 import { ExitCode } from '../errors'
 
@@ -12,7 +13,7 @@ export default defineCommand({
   meta: {
     name: 'scale',
     version,
-    description: 'Display a recipe scaled by a factor or matched to a reference ingredient quantity',
+    description: 'Display a before/after comparison of ingredient quantities at a given scale',
   },
   args: {
     file: {
@@ -20,13 +21,9 @@ export default defineCommand({
       required: true,
       description: '.gram recipe file to scale',
     },
-    factor: {
+    scale: {
       type: 'string',
-      description: 'Scale factor to apply (e.g. 2, 0.5, 1.5)',
-    },
-    ref: {
-      type: 'string',
-      description: 'Reference ingredient and target quantity: id=value (e.g. farine=300g, oeufs=3)',
+      description: 'Scale factor (e.g. 1.5, 2) or reference ingredient (e.g. farine=300g)',
     },
     db: {
       type: 'string',
@@ -39,22 +36,9 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (!args.factor && !args.ref) {
-      log.error('Provide either --factor <n> or --ref <id=value>. Run "gram scale --help" for examples.')
+    if (!args.scale) {
+      log.error('Provide --scale <factor|ref>. Examples: --scale 2  or  --scale farine=300g')
       process.exit(ExitCode.Error)
-    }
-    if (args.factor && args.ref) {
-      log.error('--factor and --ref are mutually exclusive.')
-      process.exit(ExitCode.Error)
-    }
-
-    let factor: number | undefined
-    if (args.factor) {
-      factor = parseFloat(args.factor as string)
-      if (isNaN(factor) || factor <= 0) {
-        log.error('--factor must be a positive number (e.g. 2, 0.75).')
-        process.exit(ExitCode.Error)
-      }
     }
 
     const filePath = resolve(args.file as string)
@@ -64,16 +48,23 @@ export default defineCommand({
     const s = spinner()
     s.start('Computing scaled quantities…')
 
-    let result
     try {
-      result = await computeScale(filePath, factor, args.ref as string | undefined, db)
+      const factor = await resolveScaleFactor(filePath, args.scale as string, db)
+
+      const [{ compiled: original }, { compiled: scaled }] = await Promise.all([
+        runPipeline(filePath, { db, skipAnalyzer: !db }),
+        runPipeline(filePath, { db, skipAnalyzer: !db, scaleFactor: factor }),
+      ])
+
       s.stop('Done.')
+
+      const items = buildScaleComparison(original.shopping_list, scaled.shopping_list)
+      const warnings = getScaleWarnings(factor, original.metrics.totalTime)
+      renderScaleResult(original.title, factor, items, warnings)
     } catch (err) {
       s.stop('Failed.')
       log.error(err instanceof Error ? err.message : String(err))
       process.exit(ExitCode.Error)
     }
-
-    renderScaleResult(result)
   },
 })
