@@ -14,7 +14,7 @@ bun add -d @gram/cli
 
 ## Core Commands
 
-### Project Management
+### Project Management & Developer Workflow
 
 #### `gram init`
 Scaffolds a new GRAM environment in the current directory.
@@ -153,6 +153,28 @@ gram watch --build --output ./dist      # Also build changed files to JSON
 - Errors are shown inline below the filename — the watcher never stops on error.
 - 150ms debounce prevents redundant runs when editors write files in multiple chunks.
 - Options: `--build`, `--output <dir>`, `--skip-db`, `--db`.
+
+#### `gram format [pattern]`
+Auto-formats `.gram` files applying 9 text-based rules in-place.
+```bash
+gram format                              # Format all *.gram files
+gram format brioche.gram                 # Format a single file
+gram format "recipes/**/*.gram" --check  # CI check — exit 1 if any file needs formatting
+```
+**Rules applied (in order):**
+1. **Lowercase ingredient IDs** — `@Farine` → `@farine`
+2. **Space before brace** — `@ing {10g}` → `@ing{10g}`
+3. **Spaces inside braces** — `@ing{ 10g }` → `@ing{10g}`
+4. **Trailing decimal zeros** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
+5. **Temperature spacing** — `{180 °C}` → `{180°C}`
+6. **Max 2 consecutive blank lines** — collapse runs of 4+ newlines to 3
+7. **2 blank lines before section headers** — normalize `##` spacing
+8. **Trailing whitespace** — strip end-of-line spaces and tabs
+9. **Single newline at EOF**
+
+Output per file: `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
+The formatter is idempotent — running it twice produces no further changes.
+- Options: `--check`.
 
 ### Configuration
 

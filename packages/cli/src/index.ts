@@ -22,6 +22,7 @@ const main = defineCommand({
     diff: () => import('./commands/diff').then(m => m.default),
     cook: () => import('./commands/cook').then(m => m.default),
     config: () => import('./commands/config').then(m => m.default),
+    format: () => import('./commands/format').then(m => m.default),
   },
 })
 
