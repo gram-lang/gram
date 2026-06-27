@@ -1,4 +1,4 @@
-import { slugify, cleanObject } from './utils';
+import { slugify, cleanObject, applyScaleFactor } from './utils';
 import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
@@ -54,6 +54,10 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
             preparationTime: calculatePreparationTime(sections, registry)
         }
     };
+
+    if (options.scaleFactor && options.scaleFactor !== 1) {
+        applyScaleFactor(result, options.scaleFactor);
+    }
 
     return cleanObject(result);
 }

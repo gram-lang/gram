@@ -27,7 +27,7 @@ export async function runPipeline(
     throw err
   }
   const ast = getAST(content)
-  const compiled = compile(ast)
+  const compiled = compile(ast, opts.scaleFactor ? { scaleFactor: opts.scaleFactor } : undefined)
 
   const analyzed =
     !opts.skipAnalyzer && opts.db ? analyze(compiled, opts.db) : null

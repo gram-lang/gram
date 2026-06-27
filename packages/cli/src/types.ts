@@ -193,6 +193,7 @@ export interface GramConfig {
 export interface PipelineOptions {
   db?: Record<string, IngredientData> | null
   skipAnalyzer?: boolean
+  scaleFactor?: number
 }
 
 export interface CheckOptions {
