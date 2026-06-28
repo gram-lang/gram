@@ -52,8 +52,8 @@ The `gram cook` interactive TUI exposes all timers defined in a recipe as starta
 
 | GRAM syntax | Timer label in `gram cook` |
 |---|---|
-| `~repos{45min}` | "repos" |
-| `~&cuisson{30min}` | "cuisson" |
+| `~rest{45min}` | "rest" |
+| `~&bake{30min}` | "bake" |
 | `~{10min}` (no label) | "Timer step N" |
 
 Async timers (`~&`) declared in a step appear in the `backgroundTasks` of the compiled output and continue counting down independently of which step the user is currently viewing — consistent with their semantics in the compiler's CPM analysis.

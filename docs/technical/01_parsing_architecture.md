@@ -89,10 +89,13 @@ This architectural separation of concerns ensures that diagnostic logs (used by 
 
 ### 4.2. Semantic Recipe Diff (`diffRecipes`)
 
-`@gram/analyzer` also exposes `diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult`, which compares two compiled recipes and returns a structured diff across three axes:
+`@gram/analyzer` also exposes `diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult`, which compares two compiled recipes and returns a structured diff across six axes:
 
 - **Ingredients** (`IngredientDelta[]`): added, removed, or changed items from the shopping list — with `percentChange` when the unit is the same on both sides.
 - **Timings** (`TimingDelta[]`): changes to `totalTime`, `activeTime`, or `preparationTime` (in minutes).
 - **Sections** (`SectionDelta[]`): added, removed, or step-count changes per section.
+- **Frontmatter** (`MetaDelta[]`): changes to recipe metadata fields (`portions`, `title`, `description`, and other user-defined keys).
+- **Preparations** (`PrepDelta[]`): changed preparation notes per ingredient (e.g. "diced" → "sliced"), keyed by ingredient ID and section.
+- **Temperatures & Timers** (`TemperatureDelta[]`, `TimerDelta[]`): added, removed, or changed temperature targets and timer durations, grouped by section.
 
 The comparison operates on **Kitchen's compiled output**, not on raw text. This means purely syntactic changes (whitespace, comment rewording, equivalent reformatting) produce no diff — only semantic changes do. The CLI's `gram diff` command uses this function via `services/differ.ts`, which handles git integration (`git show <ref>:<path>`) transparently.
