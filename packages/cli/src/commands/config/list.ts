@@ -38,9 +38,14 @@ function renderSection(
       const provider = getNestedKey(localConfig, 'ai.provider')
       const envVar = getEnvVarName(provider)
       const envValue = envVars[envVar]
-      display = envValue
-        ? chalk.dim(`***  (${envVar} in .env)`)
-        : chalk.dim(`not set  (would use ${envVar} from .env)`)
+      const yamlValue = getNestedKey(localConfig, key)
+      if (envValue) {
+        display = chalk.dim(`***  (${envVar} in .env)`)
+      } else if (yamlValue) {
+        display = chalk.yellow(`***  (in config.yaml — move to .env for security)`)
+      } else {
+        display = chalk.dim(`not set  (would use ${envVar} from .env)`)
+      }
     } else {
       display = chalk.green(String(value))
     }
