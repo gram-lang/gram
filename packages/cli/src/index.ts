@@ -25,6 +25,7 @@ const main = defineCommand({
     format: () => import('./commands/format').then(m => m.default),
     export: () => import('./commands/export').then(m => m.default),
     print: () => import('./commands/print').then(m => m.default),
+    suggest: () => import('./commands/suggest').then(m => m.default),
   },
 })
 

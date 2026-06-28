@@ -7,5 +7,7 @@ export default defineCommand({
     lint: () => import('./lint').then(m => m.default),
     enrich: () => import('./enrich').then(m => m.default),
     validate: () => import('./validate').then(m => m.default),
+    search: () => import('./search').then(m => m.default),
+    merge: () => import('./merge').then(m => m.default),
   },
 })
