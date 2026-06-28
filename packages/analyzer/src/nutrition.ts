@@ -1,4 +1,3 @@
-import { Usage } from '@gram/kitchen';
 import { getNumericQty, WarningCode, pushWarning } from '@gram/kitchen';
 import { getIngredientData } from './ingredient_db';
 import { normalizeMass } from './mass_normalization';
@@ -11,7 +10,7 @@ interface Macros {
     fat: number;
     sugar?: number;
     fiber?: number;
-    salt?: number;
+    sodium?: number;
 }
 
 export type NutritionItem = AnalyzedUsage & {
@@ -30,7 +29,7 @@ export function calculateNutrition(
         fat: 0,
         sugar: 0,
         fiber: 0,
-        salt: 0
+        sodium: 0
     };
 
     let metricsCount = 0;
@@ -94,7 +93,7 @@ export function calculateNutrition(
                 
                 if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
                 if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
-                if (m.sodium !== undefined) total.salt = (total.salt || 0) + m.sodium * factor;
+                if (m.sodium !== undefined) total.sodium = (total.sodium ?? 0) + m.sodium * factor;
                     
             } else {
                  pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
@@ -113,7 +112,7 @@ export function calculateNutrition(
     total.fat = Math.round(total.fat * 10) / 10;
     if (total.sugar !== undefined) total.sugar = Math.round(total.sugar * 10) / 10;
     if (total.fiber !== undefined) total.fiber = Math.round(total.fiber * 10) / 10;
-    if (total.salt !== undefined) total.salt = Math.round(total.salt * 100) / 100;
+    if (total.sodium !== undefined) total.sodium = Math.round(total.sodium * 100) / 100;
 
     const res: NutritionMetrics = {
         total,
@@ -130,7 +129,7 @@ export function calculateNutrition(
             fat: Math.round(total.fat / portions * 10) / 10,
             sugar: total.sugar !== undefined ? Math.round(total.sugar / portions * 10) / 10 : 0,
             fiber: total.fiber !== undefined ? Math.round(total.fiber / portions * 10) / 10 : 0,
-            salt: total.salt !== undefined ? Math.round(total.salt / portions * 100) / 100 : 0
+            sodium: total.sodium !== undefined ? Math.round(total.sodium / portions * 100) / 100 : 0
         };
     }
 

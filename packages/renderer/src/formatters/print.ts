@@ -481,9 +481,8 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
             body += `  <span class="nut-item"><small>Carbs</small> <strong>${vals.carbs}g</strong></span>\n`;
             body += `  <span class="nut-item"><small>Fat</small> <strong>${vals.fat}g</strong></span>\n`;
             if (vals.fiber != null) body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
-            if (vals.salt != null || vals.sodium != null) {
-                const saltVal = vals.salt ?? vals.sodium;
-                body += `  <span class="nut-item"><small>Salt</small> <strong>${saltVal}g</strong></span>\n`;
+            if (vals.sodium != null) {
+                body += `  <span class="nut-item"><small>Sodium</small> <strong>${vals.sodium}g</strong></span>\n`;
             }
             body += `</div>\n</div>\n`;
         }

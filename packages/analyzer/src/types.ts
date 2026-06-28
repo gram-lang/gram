@@ -19,7 +19,7 @@ export interface NutritionMetrics {
         fat: number;
         sugar?: number;
         fiber?: number;
-        salt?: number;
+        sodium?: number;
     };
     perPortion?: {
         calories: number;
@@ -28,7 +28,7 @@ export interface NutritionMetrics {
         fat: number;
         sugar?: number;
         fiber?: number;
-        salt?: number;
+        sodium?: number;
     };
     isEstimate: boolean;
     coverage: number;
