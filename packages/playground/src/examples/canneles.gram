@@ -28,4 +28,4 @@ tags: ['bordeaux', 'french', 'traditional', 'pastry','boozy']
 
 [Bake] In the #&oven at °{240°C} for ~&{10 min}.
 
-[Cook] Lower the temperature to °{180°C} and continue for ~&{30 min}. /* Adjust the time between 30 and 60 min depending on the desired browning */
+[Cook] Lower the temperature to °{180°C} and continue for ~&{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning
