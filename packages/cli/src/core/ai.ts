@@ -7,10 +7,10 @@ import { GramCLIError, ExitCode } from '../errors'
 import type { GramConfig } from '../types'
 
 const DEFAULTS: Record<string, string> = {
-  google: 'gemini-2.0-flash',
-  openai: 'gpt-4o-mini',
+  google: 'gemini-3.5-flash',
+  openai: 'gpt-4.1-nano',
   anthropic: 'claude-haiku-4-5-20251001',
-  ollama: 'llama3.2',
+  ollama: 'llama4',
 }
 
 export function loadAiModel(config: GramConfig): LanguageModel {
@@ -40,7 +40,7 @@ export function loadAiModel(config: GramConfig): LanguageModel {
         '',
         '  ai:',
         '    provider: google   # google | openai | anthropic | ollama',
-        '    model: gemini-2.0-flash',
+        '    model: gemini-3.5-flash',
         '',
         'Run `gram init` to configure an AI provider interactively.',
       ].join('\n'),
