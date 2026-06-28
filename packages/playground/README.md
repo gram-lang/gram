@@ -13,7 +13,7 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 ## ⚡ Features
 
 *   **Real-time Rendering**: Instantly compiles your recipe into JSON, Markdown, and a gorgeous interactive Preview card.
-*   **Physical Analysis**: Simulates Net vs Gross weights and nutritional macronutrient curves dynamically by loading a CIQUAL/USDA derived database.
+*   **Physical Analysis**: Computes Net vs Gross weights and nutritional macros dynamically from the bundled ingredient database. Mass normalization and nutrition estimation are enabled by default.
 *   **Gantt Scheduler**: Displays active and total durations dynamically.
 *   **Pre-built Example Library**: Access various recipes to quickly learn the grammar.
 *   **Deduplicated Tree Explorer**: Browse the nested JSON output interactively.

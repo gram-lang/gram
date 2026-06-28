@@ -43,20 +43,16 @@ const themeToggle = document.getElementById('theme-toggle');
 const warningsArea = document.getElementById('warnings');
 const viewSelect = document.getElementById('view-mode');
 
-// Experimental Features
 const optMass = document.getElementById('opt-mass');
 const optYield = document.getElementById('opt-yield');
 const optNutrition = document.getElementById('opt-nutrition');
 
-// if (localStorage.getItem('optMass') === 'true') optMass.checked = true;
-// if (localStorage.getItem('optYield') === 'true') optYield.checked = true;
-// if (localStorage.getItem('optNutrition') === 'true') optNutrition.checked = true;
+// Restore from localStorage, defaulting Mass and Nutrition to on
+optMass.checked = localStorage.getItem('opt-mass') !== null ? localStorage.getItem('opt-mass') === 'true' : true;
+optYield.checked = localStorage.getItem('opt-yield') === 'true';
+optNutrition.checked = localStorage.getItem('opt-nutrition') !== null ? localStorage.getItem('opt-nutrition') === 'true' : true;
 
-optMass.checked = false;
-optYield.checked = false;
-optNutrition.checked = false;
-
-function updateExperimentalDeps() {
+function updateAnalysisDeps() {
     const labelYield = document.getElementById('label-opt-yield');
     if (optMass.checked) {
         optYield.disabled = false;
@@ -66,11 +62,11 @@ function updateExperimentalDeps() {
         if (labelYield) labelYield.style.opacity = '0.5';
     }
 }
-updateExperimentalDeps();
+updateAnalysisDeps();
 
 [optMass, optYield, optNutrition].forEach(el => {
     el.addEventListener('change', () => {
-        if (el.id === 'opt-mass') updateExperimentalDeps();
+        if (el.id === 'opt-mass') updateAnalysisDeps();
         localStorage.setItem(el.id, el.checked);
         update();
     });
