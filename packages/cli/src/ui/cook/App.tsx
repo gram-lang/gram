@@ -184,7 +184,7 @@ export default function App({ recipe }: Props) {
                 <Text key={`${ing.id}-${idx}`}>
                   {'  • '}
                   <Text color="yellow">{ing.name}</Text>
-                  {qtyStr && <Text dimColor>  {qtyStr}</Text>}
+                  {qtyStr && <Text>  {qtyStr}</Text>}
                   {showMass && <Text dimColor>  ≈ {fmtMass(mass!)}</Text>}
                 </Text>
               )
