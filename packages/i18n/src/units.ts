@@ -2,8 +2,14 @@ import { compileDictionary, LanguageDict } from './dictionary';
 
 const en: LanguageDict = {
     // Volume — spoons
-    tsp:   ['teaspoon', 'teaspoons'],
-    tbsp:  ['tablespoon', 'tablespoons'],
+    tsp:      ['teaspoon', 'teaspoons'],
+    tbsp:     ['tablespoon', 'tablespoons'],
+    // Volume — small measures (sub-tsp)
+    tad:      ['tads'],
+    dash:     ['dashes'],
+    pinch:    ['pinches'],
+    smidgen:  ['smidgen', 'smidge', 'smidgens'],
+    drop:     ['drops'],
     // Volume — cups & imperial
     cup:   ['cups'],
     pt:    ['pint', 'pints'],
@@ -25,8 +31,14 @@ const en: LanguageDict = {
 
 const fr: LanguageDict = {
     // Volume — cuillères
-    tsp:   ['càc', 'cac', 'c.à.c', 'cuillère à café', 'cuillères à café', 'cuillere a cafe', 'cuilleres a cafe'],
-    tbsp:  ['càs', 'cas', 'c.à.s', 'cuillère à soupe', 'cuillères à soupe', 'cuillere a soupe', 'cuilleres a soupe'],
+    tsp:     ['càc', 'cac', 'c.à.c', 'cuillère à café', 'cuillères à café', 'cuillere a cafe', 'cuilleres a cafe'],
+    tbsp:    ['càs', 'cas', 'c.à.s', 'cuillère à soupe', 'cuillères à soupe', 'cuillere a soupe', 'cuilleres a soupe'],
+    // Volume — petites mesures (sous-càc)
+    tad:     ['soupçon', 'soupcons'],
+    dash:    ['trait'],
+    pinch:   ['pincée', 'pincee', 'pincées', 'pincees'],
+    smidgen: ['poussière', 'poussiere', 'poussières', 'poussieres'],
+    drop:    ['goutte', 'gouttes'],
     // Volume — tasse & mesures anglo-saxonnes
     cup:   ['tasse', 'tasses'],
     pt:    ['pinte', 'pintes'],

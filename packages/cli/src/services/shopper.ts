@@ -36,6 +36,16 @@ export async function buildShoppingList(
   const limit = pLimit(20)
   const allItems: CollectedItem[] = []
 
+  // Build alias → canonical id map so @sel and @salt (same ingredient) are grouped together
+  const aliasMap = new Map<string, string>()
+  if (opts.db) {
+    for (const [canonicalId, data] of Object.entries(opts.db)) {
+      for (const alias of data.aliases ?? []) {
+        aliasMap.set(alias, canonicalId)
+      }
+    }
+  }
+
   await Promise.all(
     files.map(file =>
       limit(async () => {
@@ -44,7 +54,8 @@ export async function buildShoppingList(
         const pushItem = (item: any) => {
           if ((item as any).type === 'alternative' || (item as any).variable_entries) return
           const qty = typeof item.qty === 'number' && isFinite(item.qty) ? item.qty : null
-          allItems.push({ id: item.id, name: item.name, qty, unit: item.unit, normalizedMass: item.normalizedMass, isEstimate: item.isEstimate, recipe: slug })
+          const id = aliasMap.get(item.id) ?? item.id
+          allItems.push({ id, name: item.name, qty, unit: item.unit, normalizedMass: item.normalizedMass, isEstimate: item.isEstimate, recipe: slug })
         }
 
         if (opts.db) {

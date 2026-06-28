@@ -21,5 +21,5 @@ export function getIngredientData(name: string, database: Record<string, Ingredi
     }
     
     const index = (database as any).__aliasIndex as Map<string, IngredientData>;
-    return index.get(name.toLowerCase()) || null;
+    return index.get(name.toLowerCase()) || index.get(slug) || null;
 }

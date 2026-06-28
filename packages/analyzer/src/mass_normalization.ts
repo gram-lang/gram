@@ -18,6 +18,7 @@ export const UNIT_CONVERSIONS = {
         base: 'ml',
         map: {
             ml: 1, cl: 10, dl: 100, l: 1000,
+            drop: 0.078, smidgen: 0.156, pinch: 0.3125, dash: 0.625, tad: 1.25,
             tsp: 4.9289, tbsp: 14.7868,
             cup: 236.588,
             pt: 473.176, qt: 946.353, gal: 3785.41,
