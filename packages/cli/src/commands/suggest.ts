@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty'
 import { log } from '@clack/prompts'
 import { version } from '../../package.json'
+import { ExitCode } from '../errors'
 import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
@@ -64,7 +65,7 @@ export default defineCommand({
 
     if (withTerms.length === 0 && withoutTerms.length === 0) {
       log.error('Specify at least --with or --without.')
-      process.exit(1)
+      process.exit(ExitCode.Error)
     }
 
     const config = await loadConfig()

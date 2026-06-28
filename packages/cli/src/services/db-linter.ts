@@ -1,3 +1,4 @@
+import pLimit from 'p-limit'
 import { readFile } from 'node:fs/promises'
 import { parseDocument, isMap, isSeq } from 'yaml'
 import { z } from 'zod'
@@ -7,7 +8,7 @@ import type { IngredientData } from '@gram/analyzer'
 import { getAiLanguageInstruction } from '@gram/i18n'
 import { withFileLock, atomicWrite } from '../core/lock'
 import { resolveDbPath } from '../core/db'
-import { quotedScalar, addAliasesToNode, removeIngredientKey } from '../core/db-writer'
+import { addAliasesToNode, removeIngredientKey } from '../core/db-writer'
 import type { GramConfig, LintResult, LintIssue, LintOptions, LintDecision } from '../types'
 
 function buildSystemPrompt(lang: string): string {
@@ -45,8 +46,9 @@ export async function lintDb(
     batches.push(allKeys.slice(i, i + LINT_BATCH_SIZE))
   }
 
+  const limit = pLimit(5)
   const rawIssuesPerBatch = await Promise.all(
-    batches.map(keys => {
+    batches.map(keys => limit(() => {
       const prompt = `Analyze these ingredient database keys and find:
 1. Keys that are plurals of another key in the list (e.g. "oeufs" when "oeuf" exists). Propose the singular form as keepId.
 2. Keys that are semantic duplicates (same ingredient, different wording). Propose the most canonical key as keepId.
@@ -57,7 +59,7 @@ Ingredient list:
 ${JSON.stringify(keys, null, 2)}`
       return generateObject({ model, system, prompt, schema: LintResponseSchema })
         .then(r => r.object.issues)
-    }),
+    })),
   )
 
   const seen = new Set<string>()
@@ -129,7 +131,7 @@ export async function applyLintDecisions(
           addAliasesToNode(doc, keepNode, [aliasId, ...oldAliases])
           removeIngredientKey(ingredientsMap, aliasId)
         } else {
-          _addAliasesToNode(doc, keepNode, [aliasId])
+          addAliasesToNode(doc, keepNode, [aliasId])
         }
       }
     } else {

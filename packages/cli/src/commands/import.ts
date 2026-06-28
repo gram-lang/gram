@@ -26,7 +26,6 @@ export default defineCommand({
   async run({ args }) {
     const source = args.source as string
     const outputPath = args.output ? resolve(args.output) : undefined
-    const useStdout = !outputPath
 
     const config = await loadConfig()
 
@@ -61,19 +60,17 @@ export default defineCommand({
       await writeFile(outputPath, result.gramContent, 'utf-8')
       renderImportResult(result, source, outputPath)
     } else {
-      if (useStdout) {
-        process.stderr.write('\n')
-        process.stderr.write(`  ${'Title'.padEnd(14)} ${result.title}\n`)
-        process.stderr.write(`  ${'Ingredients'.padEnd(14)} ${result.ingredientCount}\n`)
-        process.stderr.write(`  ${'Steps'.padEnd(14)} ${result.stepCount}\n`)
-        if (result.parseWarnings.length > 0) {
-          process.stderr.write(`\n  ⚠ Could not parse:\n`)
-          for (const w of result.parseWarnings) {
-            process.stderr.write(`    ${w}\n`)
-          }
+      process.stderr.write('\n')
+      process.stderr.write(`  ${'Title'.padEnd(14)} ${result.title}\n`)
+      process.stderr.write(`  ${'Ingredients'.padEnd(14)} ${result.ingredientCount}\n`)
+      process.stderr.write(`  ${'Steps'.padEnd(14)} ${result.stepCount}\n`)
+      if (result.parseWarnings.length > 0) {
+        process.stderr.write(`\n  ⚠ Could not parse:\n`)
+        for (const w of result.parseWarnings) {
+          process.stderr.write(`    ${w}\n`)
         }
-        process.stderr.write('\n')
       }
+      process.stderr.write('\n')
       process.stdout.write(result.gramContent + '\n')
     }
 
