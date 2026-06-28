@@ -4,8 +4,8 @@ export default defineCommand({
   meta: { name: 'db', description: 'Manage the ingredient database' },
   subCommands: {
     sync: () => import('./sync').then(m => m.default),
-    validate: () => import('./validate').then(m => m.default),
-    enrich: () => import('./enrich').then(m => m.default),
     lint: () => import('./lint').then(m => m.default),
+    enrich: () => import('./enrich').then(m => m.default),
+    validate: () => import('./validate').then(m => m.default),
   },
 })

@@ -8,8 +8,11 @@ interface Props {
 }
 
 export default function MiseEnPlace({ title, items, width }: Props) {
-  const scalable = items.filter(i => i.type !== 'composite' && i.type !== 'alternative' && i.qty != null)
-  const other = items.filter(i => i.type !== 'composite' && i.type !== 'alternative' && i.qty == null)
+  const base = items.filter(i => i.type !== 'composite' && i.type !== 'alternative')
+  const seen = new Set<string>()
+  const deduped = base.filter((i: any) => { if (seen.has(i.id)) return false; seen.add(i.id); return true })
+  const scalable = deduped.filter(i => i.qty != null)
+  const other = deduped.filter(i => i.qty == null)
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} width={width}>
