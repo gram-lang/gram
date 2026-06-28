@@ -14,7 +14,7 @@ export interface ShopOptions {
 interface CollectedItem {
   id: string
   name: string
-  qty: number
+  qty: number | null  // null = ingredient present but no quantity specified
   unit?: string
   normalizedMass?: number
   isEstimate?: boolean
@@ -35,34 +35,26 @@ export async function buildShoppingList(
 ): Promise<ShopResult> {
   const limit = pLimit(20)
   const allItems: CollectedItem[] = []
-  const noQtyIds: string[] = []
 
   await Promise.all(
     files.map(file =>
       limit(async () => {
         const slug = basename(file, '.gram')
-        const trackNoQty = (item: CollectedItem) => {
-          if (!(item as any).type && !(item as any).variable_entries) {
-            noQtyIds.push(item.name ?? item.id)
-          }
+
+        const pushItem = (item: any) => {
+          if ((item as any).type === 'alternative' || (item as any).variable_entries) return
+          const qty = typeof item.qty === 'number' && isFinite(item.qty) ? item.qty : null
+          allItems.push({ id: item.id, name: item.name, qty, unit: item.unit, normalizedMass: item.normalizedMass, isEstimate: item.isEstimate, recipe: slug })
         }
 
         if (opts.db) {
           const { analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
           if (analyzed) {
-            for (const item of analyzed.result.shopping_list as CollectedItem[]) {
-              if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
-              if (typeof item.qty !== 'number' || !isFinite(item.qty)) { trackNoQty(item); continue }
-              allItems.push({ ...item, recipe: slug })
-            }
+            for (const item of analyzed.result.shopping_list as any[]) pushItem(item)
           }
         } else {
           const { compiled } = await runPipeline(file, { skipAnalyzer: true, scaleFactor: opts.scaleFactor })
-          for (const item of compiled.shopping_list as CollectedItem[]) {
-            if ((item as any).type === 'alternative' || (item as any).variable_entries) continue
-            if (typeof item.qty !== 'number' || !isFinite(item.qty)) { trackNoQty(item); continue }
-            allItems.push({ ...item, recipe: slug })
-          }
+          for (const item of compiled.shopping_list as any[]) pushItem(item)
         }
       }),
     ),
@@ -82,53 +74,47 @@ export async function buildShoppingList(
   for (const [id, items] of grouped) {
     const recipes = [...new Set(items.map(i => i.recipe))]
     const displayName = opts.db?.[id]?.name ?? items[0]?.name ?? id
-    const category = opts.db?.[id]?.tags?.[0] ?? 'Other'
-    let fullyAggregated = false;
-    let finalEntry: Partial<ShoppingEntry> = {};
+    const category = opts.db?.[id]?.category ?? 'Other'
+
+    const qtyItems = items.filter((i): i is CollectedItem & { qty: number } => i.qty !== null)
+
+    if (qtyItems.length === 0) {
+      entries.push({ id, name: displayName, displayQty: '-', isEstimate: false, recipes, category, cannotAggregate: false })
+      continue
+    }
+
+    let fullyAggregated = false
+    let finalEntry: Partial<ShoppingEntry> = {}
 
     if (opts.db) {
-      const massItems = items.filter(i => i.normalizedMass != null)
-      if (massItems.length === items.length) {
+      const massItems = qtyItems.filter(i => i.normalizedMass != null)
+      if (massItems.length === qtyItems.length) {
         const totalMass = massItems.reduce((sum, i) => sum + (i.normalizedMass ?? 0), 0)
-        fullyAggregated = true;
-        finalEntry = {
-          displayQty: formatMass(totalMass),
-          isEstimate: massItems.some(i => i.isEstimate)
-        }
+        fullyAggregated = true
+        finalEntry = { displayQty: formatMass(totalMass), isEstimate: massItems.some(i => i.isEstimate) }
       }
     }
 
     if (!fullyAggregated) {
-      const units = new Set(items.map(i => normalizeUnit(i.unit)))
+      const units = new Set(qtyItems.map(i => normalizeUnit(i.unit)))
       if (units.size === 1) {
-        const total = items.reduce((sum, i) => sum + i.qty, 0)
-        const unit = normalizeUnit(items[0]?.unit)
-        fullyAggregated = true;
-        finalEntry = {
-          displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total),
-          isEstimate: false
-        }
+        const total = qtyItems.reduce((sum, i) => sum + i.qty, 0)
+        const unit = normalizeUnit(qtyItems[0]?.unit)
+        fullyAggregated = true
+        finalEntry = { displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total), isEstimate: false }
       }
     }
 
     if (fullyAggregated) {
-      entries.push({
-        id,
-        name: displayName,
-        displayQty: finalEntry.displayQty!,
-        isEstimate: finalEntry.isEstimate!,
-        recipes,
-        category,
-        cannotAggregate: false
-      })
+      entries.push({ id, name: displayName, displayQty: finalEntry.displayQty!, isEstimate: finalEntry.isEstimate!, recipes, category, cannotAggregate: false })
     } else {
-      const unitList = [...new Set(items.map(u => u.unit || 'count'))].join(', ')
+      const unitList = [...new Set(qtyItems.map(u => u.unit || 'count'))].join(', ')
       const tip = opts.db ? 'add density to database to aggregate' : 'add to database to aggregate'
       warnings.push(`${id}: mixed units (${unitList}) — listed separately (${tip})`)
       entries.push({
         id,
         name: displayName,
-        displayQty: items.map(i => `${i.qty}${i.unit ? ` ${i.unit}` : ''} (${i.recipe})`).join(' + '),
+        displayQty: qtyItems.map(i => `${i.qty}${i.unit ? ` ${i.unit}` : ''} (${i.recipe})`).join(' + '),
         isEstimate: false,
         recipes,
         category,
@@ -159,14 +145,10 @@ export async function buildShoppingList(
 
   const uniqueRecipes = new Set(allItems.map(i => i.recipe))
 
-  const noQtyWarnings = [...new Set(noQtyIds)].map(
-    name => `${name}: no quantity specified — not included in list (add a quantity to your recipe)`,
-  )
-
   return {
     items: entries,
     byCategory: sortedByCategory,
-    warnings: [...warnings, ...noQtyWarnings],
+    warnings,
     recipeCount: uniqueRecipes.size,
   }
 }

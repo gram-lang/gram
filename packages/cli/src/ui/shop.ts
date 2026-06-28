@@ -61,15 +61,15 @@ export function renderShopMarkdown(result: ShopResult): string {
     for (const [category, catItems] of byCategory) {
       lines.push(`### ${category}`)
       for (const item of catItems) {
-        const qty = item.isEstimate ? `≈ ${item.displayQty}` : item.displayQty
-        lines.push(`- [ ] ${item.name} — ${qty}`)
+        const qty = item.displayQty === '-' ? '' : (item.isEstimate ? `≈ ${item.displayQty}` : item.displayQty)
+        lines.push(qty ? `- [ ] ${item.name} — ${qty}` : `- [ ] ${item.name}`)
       }
       lines.push('')
     }
   } else {
     for (const item of items) {
-      const qty = item.isEstimate ? `≈ ${item.displayQty}` : item.displayQty
-      lines.push(`- [ ] ${item.name} — ${qty}`)
+      const qty = item.displayQty === '-' ? '' : (item.isEstimate ? `≈ ${item.displayQty}` : item.displayQty)
+      lines.push(qty ? `- [ ] ${item.name} — ${qty}` : `- [ ] ${item.name}`)
     }
     lines.push('')
   }
