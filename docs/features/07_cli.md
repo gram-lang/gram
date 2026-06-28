@@ -248,7 +248,7 @@ Output example:
   Local config  (.gram/config.yaml)
   ───────────────────────────────────────
   database     ./ingredients.yaml
-  language     fr
+  language     en
   ai.provider  google
   ai.model     gemini-3.5-flash
   ai.apiKey    *** (GEMINI_API_KEY in .env)
@@ -273,7 +273,7 @@ gram config get ai.provider --global
 Sets a configuration value.
 ```bash
 gram config set database ./my-db.yaml
-gram config set language fr
+gram config set language en
 gram config set ai.provider google
 gram config set ai.model gemini-3.5-flash
 gram config set ai.apiKey AIza...           # Writes GEMINI_API_KEY to .env
