@@ -173,12 +173,21 @@ export default function App({ recipe }: Props) {
         {currentFlat.sectionIngredients.length > 0 && (
           <>
             <Text dimColor>Ingredients for this section:</Text>
-            {currentFlat.sectionIngredients.map((ing: any, idx: number) => {
+            {currentFlat.sectionIngredients.map((ing, idx) => {
               const mass = recipe.massMap[ing.id]
+              const qtyStr = ing.quantities
+                ? ing.quantities.map(q => fmtQty({ qty: q.qty, unit: q.unit }).trim()).join(' + ')
+                : null
               return (
                 <React.Fragment key={`${ing.id}-${idx}`}>
-                  <Text>{'  • '}<Text color="yellow">{ing.name ?? ing.id}</Text><Text dimColor>{fmtQty(ing)}</Text></Text>
-                  {mass != null && <Text dimColor>{'      ≈ '}{fmtMass(mass)}</Text>}
+                  <Text>
+                    {'  • '}
+                    <Text color="yellow">{ing.name}</Text>
+                    {qtyStr && <Text dimColor>  {qtyStr}</Text>}
+                  </Text>
+                  {mass != null && ing.quantities != null && (
+                    <Text dimColor>{'      ≈ '}{fmtMass(mass)}</Text>
+                  )}
                 </React.Fragment>
               )
             })}

@@ -1,4 +1,4 @@
-import type { CompilationResult } from '@gram/kitchen'
+import type { CompilationResult, AggregatedIngredient } from '@gram/kitchen'
 
 export interface CookTimer {
   id: string
@@ -16,7 +16,7 @@ export interface FlatStep {
   sectionIndex: number
   sectionTitle: string | null
   isFirstOfSection: boolean
-  sectionIngredients: any[]
+  sectionIngredients: AggregatedIngredient[]
   step: any // ProcessedStep
   timers: CookTimer[]
 }

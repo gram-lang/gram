@@ -6,3 +6,4 @@ export * from './metrics';
 export * from './registry';
 export * from './warnings';
 export * from './types';
+export * from './section';

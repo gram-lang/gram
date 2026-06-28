@@ -1,5 +1,5 @@
 import type { CompilationResult } from '@gram/kitchen'
-import { quantityToMinutes } from '@gram/kitchen'
+import { quantityToMinutes, aggregateSectionIngredients } from '@gram/kitchen'
 import type { RecipeData, FlatStep, CookTimer } from './types'
 
 // Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit
@@ -82,7 +82,7 @@ export function prepareRecipeData(compiled: CompilationResult, massMap: Record<s
         sectionIndex: sectionIdx,
         sectionTitle: section.title,
         isFirstOfSection: localIdx === 0,
-        sectionIngredients: section.ingredients ?? [],
+        sectionIngredients: aggregateSectionIngredients(section.ingredients ?? []),
         step,
         timers: extractTimers(step, sectionIdx, globalIndex),
       })
