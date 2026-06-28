@@ -23,7 +23,7 @@ The quantity is flexible:
 
 > **Other languages Units Support**: The compiler natively understands common kitchen unit abbreviations for multiple languages. For now it includes English and French, but it is designed to be expanded in the future.
 
-> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. This is an **experimental feature** that can be toggled. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
+> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
 
 ## Modifiers (Flags)
 
@@ -67,12 +67,12 @@ Even if `@butter{20g}` and `@&butter{20g}` both add 20g to the shopping list, th
 
 ## Database Validation
 
-GRAM now checks your ingredients against a database of known ingredients (French Ciqual/USDA derived). 
+GRAM checks your ingredients against **your own** ingredient database (`.gram/ingredients.yaml`). There is no built-in global database — the database is entirely user-defined and contains only the ingredients you actually use.
 
-*   **Missing Ingredient**: If you use `@unicorn meat{}`, the compiler will warn: `MISSING_INGREDIENT`. It will still appear in the shopping list, but mass/nutrition calculations will be skipped.
-*   **Missing Macros**: If an ingredient exists but has no data, you will get a `MISSING_MACROS` warning.
+*   **Missing Ingredient**: If you use `@unicorn meat{}` and it isn't in your database, the analyzer warns: `MISSING_INGREDIENT`. It still appears in the shopping list, but mass/nutrition calculations will be skipped.
+*   **Missing Macros**: If an ingredient is in your database but has no nutritional data, you will get a `MISSING_MACROS` warning.
 
-> **Tip**: You can add your own ingredients to your custom database to fix these warnings.
+> **Tip**: Run `gram db sync` to automatically add stubs for new ingredients, then `gram db enrich` to fill in the physical and nutritional data with AI.
 
 ## Aliases (Renaming)
 

@@ -1,7 +1,7 @@
 # Mass Normalization (Physical Analysis)
 
 > [!IMPORTANT]
-> **Physical Analysis Feature**: Mass Normalization is an optional feature processed by the `@gram/analyzer` package. It must be enabled via the analyzer options (or the "Experimental Features" menu in the Playground). When disabled, the analyzer does not enrich the compiled AST with physical properties (`normalizedMass`, confidence badges, etc.).
+> **Physical Analysis Feature**: Mass Normalization is processed by the `@gram/analyzer` package. It can be toggled via the analyzer options (or the "Analysis" menu in the Playground). When disabled, the analyzer does not enrich the compiled AST with physical properties (`normalizedMass`, confidence badges, etc.).
 
 GRAM provides a system to unify and normalize masses across recipes. This allows the `@gram/analyzer` to calculate the **Total Mass** of a recipe or a section, even when ingredients are expressed in volumes (ml, cups) or counts (units).
 
@@ -15,7 +15,7 @@ This process, called **NormalizeMass**, follows a strict priority order:
 2.  **Explicit Override**: If you provided a specific density override in the recipe metadata (see below), it is used to convert volume to mass. This is considered **Explicit**.
 3.  **Ingredient Database (Density)**: If the unit is a known Volume (`ml`, `cup`, `tbsp`, `tsp`...), the analyzer looks up the ingredient's density in the provided database. If found, it converts volume to mass. This is considered **Estimated** (`~`).
     *   **I18N Support**: Common volume units and abbreviations are natively supported (including French ones like `càs`, `cas`, `c.à.s` for tablespoon; `càc`, `cac`, `c.à.c` for teaspoon).
-    *   *Note: Database values (density/weights) are derived from Ciqual/USDA or AI-generated estimates. See [disclaimer](./03_nutritional_estimation.md#ingredient-database).*
+    *   *Note: Density values come from your own ingredient database. Use `gram db enrich` to fill in missing entries automatically.*
 4.  **Count / Fallback**: If the unit is **not** a known Mass or Volume (e.g., `unit`, `piece`, or custom units like `clove`, `head`...), it acts as a multiplier. The analyzer looks for a **Unit Weight** in the DB or Overrides.
     *   Example: `@garlic{3 cloves}` -> Looks for unit weight of garlic (5g) -> 15g.
     *   This is considered **Estimated** (`~`).
