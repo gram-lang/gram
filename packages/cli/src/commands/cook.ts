@@ -1,5 +1,6 @@
 import { defineCommand } from 'citty'
 import { resolve } from 'node:path'
+import { PassThrough } from 'node:stream'
 import { log, spinner } from '@clack/prompts'
 import chalk from 'chalk'
 import { render } from 'ink'
@@ -75,7 +76,26 @@ export default defineCommand({
       for (const w of warnings) log.warn(w)
     }
 
-    const { waitUntilExit } = render(React.createElement(App, { recipe }))
+    if (!process.stdin.isTTY) {
+      log.error('gram cook requires an interactive terminal (stdin is not a TTY).')
+      process.exit(ExitCode.Error)
+    }
+
+    // Bun emits 'data' events on raw-mode stdin instead of 'readable'.
+    // ink reads via 'readable' + stream.read(), so bridge through a PassThrough.
+    const stdinBridge = new PassThrough()
+    ;(stdinBridge as any).isTTY = true
+    ;(stdinBridge as any).setRawMode = (mode: boolean) => { process.stdin.setRawMode(mode) }
+    ;(stdinBridge as any).ref = () => process.stdin.ref()
+    ;(stdinBridge as any).unref = () => process.stdin.unref()
+    process.stdin.setRawMode(true)
+    process.stdin.resume()
+    process.stdin.on('data', (chunk: Buffer) => stdinBridge.write(chunk))
+
+    const { waitUntilExit } = render(React.createElement(App, { recipe }), {
+      stdin: stdinBridge as any,
+    })
     await waitUntilExit()
+    process.stdin.setRawMode(false)
   },
 })

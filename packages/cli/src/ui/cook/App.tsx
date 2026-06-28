@@ -162,10 +162,10 @@ export default function App({ recipe }: Props) {
         {currentFlat.sectionIngredients.length > 0 && (
           <>
             <Text dimColor>Ingredients for this section:</Text>
-            {currentFlat.sectionIngredients.map((ing: any) => {
+            {currentFlat.sectionIngredients.map((ing: any, idx: number) => {
               const qty = ing.qty != null ? ` ${typeof ing.qty === 'number' ? ing.qty : (ing.qty?.value ?? '')}${ing.unit ?? ''}` : ''
               return (
-                <Text key={ing.id}>{'  • '}<Text color="yellow">{ing.name ?? ing.id}</Text><Text dimColor>{qty}</Text></Text>
+                <Text key={`${ing.id}-${idx}`}>{'  • '}<Text color="yellow">{ing.name ?? ing.id}</Text><Text dimColor>{qty}</Text></Text>
               )
             })}
             <Text> </Text>
