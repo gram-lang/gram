@@ -53,9 +53,13 @@ export default defineCommand({
     let recipe
     let totalTime = 0
     try {
-      const { compiled } = await runPipeline(filePath, { db, skipAnalyzer: !db, scaleFactor })
+      const { compiled, analyzed } = await runPipeline(filePath, { db, skipAnalyzer: !db, scaleFactor })
       totalTime = compiled.metrics?.totalTime ?? 0
-      recipe = prepareRecipeData(compiled)
+      const massMap: Record<string, number> = {}
+      for (const item of analyzed?.result?.shopping_list ?? []) {
+        if (item.id && typeof item.normalizedMass === 'number') massMap[item.id] = item.normalizedMass
+      }
+      recipe = prepareRecipeData(compiled, massMap)
       const factorStr =
         scaleFactor !== 1
           ? ` ${chalk.dim(scaleFactor === Math.round(scaleFactor) ? `(x${scaleFactor})` : `(x${scaleFactor.toFixed(2)})`)}` : ''

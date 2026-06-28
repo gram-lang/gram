@@ -26,6 +26,7 @@ export interface RecipeData {
   shoppingList: any[]
   steps: FlatStep[]
   registry: CompilationResult['registry']
+  massMap: Record<string, number>
 }
 
 export type Phase = 'mise-en-place' | 'section-start' | 'cooking' | 'end'

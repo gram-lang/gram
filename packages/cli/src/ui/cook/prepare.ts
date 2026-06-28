@@ -1,14 +1,40 @@
 import type { CompilationResult } from '@gram/kitchen'
+import { quantityToMinutes } from '@gram/kitchen'
 import type { RecipeData, FlatStep, CookTimer } from './types'
 
+// Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit
+export function fmtQty(item: { qty?: any; unit?: string | null }): string {
+  if (item.qty == null) return ''
+  const q = item.qty
+  let display: string
+  if (typeof q === 'number') {
+    display = String(q)
+  } else if (typeof q === 'object' && q !== null) {
+    display = q.text ?? (q.value != null ? String(q.value) : '')
+  } else {
+    display = String(q)
+  }
+  const unit = item.unit ?? ''
+  return unit ? ` ${display} ${unit}` : ` ${display}`
+}
+
+export function fmtCountdown(remainingMs: number): string {
+  const total = Math.max(0, Math.ceil(remainingMs / 1000))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+export function fmtMass(g: number): string {
+  if (g >= 1000) return `${+(g / 1000).toFixed(1)} kg`
+  if (g >= 10) return `${Math.round(g)} g`
+  return `${+g.toFixed(1)} g`
+}
+
 function quantityToMs(qty: any): number {
-  if (!qty) return 0
-  const val = typeof qty.value === 'object' ? qty.value?.value : qty.value
-  const num = typeof val === 'number' ? val : 0
-  const unit = (qty.unit ?? 'min').toLowerCase()
-  if (unit === 'h' || unit === 'hr' || unit === 'heure' || unit === 'heures') return num * 60 * 60 * 1000
-  if (unit === 's' || unit === 'sec') return num * 1000
-  return num * 60 * 1000 // default minutes
+  return quantityToMinutes(qty) * 60_000
 }
 
 function extractTimers(step: any, sectionIdx: number, stepIdx: number): CookTimer[] {
@@ -44,7 +70,7 @@ function extractTimers(step: any, sectionIdx: number, stepIdx: number): CookTime
   return timers.filter(t => t.durationMs > 0)
 }
 
-export function prepareRecipeData(compiled: CompilationResult): RecipeData {
+export function prepareRecipeData(compiled: CompilationResult, massMap: Record<string, number> = {}): RecipeData {
   const steps: FlatStep[] = []
   let globalIndex = 0
 
@@ -69,6 +95,7 @@ export function prepareRecipeData(compiled: CompilationResult): RecipeData {
     shoppingList: compiled.shopping_list ?? [],
     steps,
     registry: compiled.registry,
+    massMap,
   }
 }
 
@@ -101,5 +128,15 @@ export function stepToText(content: any[], registry: CompilationResult['registry
     }
     if (token.value != null) parts.push(String(token.value))
   }
-  return parts.join('').trim()
+
+  // Smart join: insert a space between adjacent word characters (avoids "peacheswith")
+  let result = ''
+  for (const part of parts) {
+    if (!result) { result = part; continue }
+    const last = result[result.length - 1] ?? ''
+    const first = part[0] ?? ''
+    if (/\w/.test(last) && /\w/.test(first)) result += ' ' + part
+    else result += part
+  }
+  return result.trim()
 }

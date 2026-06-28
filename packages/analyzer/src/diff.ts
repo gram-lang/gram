@@ -1,4 +1,5 @@
 import type { CompilationResult } from '@gram/kitchen'
+import { getNumericQty } from '@gram/kitchen'
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -72,15 +73,7 @@ export interface DiffResult {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function numericQty(item: any): number | null {
-  const q = item.qty
-  if (typeof q === 'number') return q
-  if (q && typeof q === 'object') {
-    if (q.type === 'single' && typeof q.value === 'number') return q.value
-    if ((q.type === 'fraction' || q.type === 'range') && typeof q.value === 'number') return q.value
-  }
-  return null
-}
+const numericQty = (item: any): number | null => getNumericQty(item.qty)
 
 function fmtTimerQty(qty: any, unit?: string): string {
   const u = unit ? ` ${unit}` : ''

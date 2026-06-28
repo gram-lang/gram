@@ -206,14 +206,17 @@ function processReference(
     registry: RecipeRegistry,
     secIngredients: Usage[]
 ): Usage {
-    const id = registry.getIngredientId(item.name);
+    // singleWordName stops at spaces but not punctuation, so "&crust." captures the trailing dot.
+    // Strip trailing sentence punctuation before resolving the reference.
+    const cleanName = item.name.replace(/[.,!?;:]+$/, '');
+    const id = registry.getIngredientId(cleanName);
     if (!registry.ingredients.has(id)) {
-         pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '&', name: item.name, item: item.name, loc: item.loc });
+         pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '&', name: cleanName, item: cleanName, loc: item.loc });
     }
-    if (ctx.definedIntermediates.has(item.name)) ctx.usedIntermediates.add(item.name);
-    
-    const obj: Usage = { type: 'reference', id, name: item.name };
-    
+    if (ctx.definedIntermediates.has(cleanName)) ctx.usedIntermediates.add(cleanName);
+
+    const obj: Usage = { type: 'reference', id, name: cleanName };
+
     if (item.quantity) {
          if (item.quantity.type === ASTNodeType.Quantity) {
               if (item.quantity.value !== null || item.quantity.unit) {
@@ -225,8 +228,8 @@ function processReference(
               obj.qty = item.quantity.value;
          }
     }
-    
-    if (!ctx.currentSectionIntermediates.has(item.name)) {
+
+    if (!ctx.currentSectionIntermediates.has(cleanName)) {
         secIngredients.push(obj);
     }
     

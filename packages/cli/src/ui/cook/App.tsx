@@ -4,6 +4,7 @@ import type { RecipeData, ActiveTimer, Phase } from './types'
 import MiseEnPlace from './MiseEnPlace'
 import StepView from './StepView'
 import EndScreen from './EndScreen'
+import { fmtQty, fmtMass, fmtCountdown } from './prepare'
 
 interface Props {
   recipe: RecipeData
@@ -147,13 +148,23 @@ export default function App({ recipe }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (phase === 'mise-en-place') {
-    return <MiseEnPlace title={recipe.title} items={recipe.shoppingList} width={width} />
+    return <MiseEnPlace title={recipe.title} items={recipe.shoppingList} massMap={recipe.massMap} width={width} />
   }
 
   if (phase === 'section-start' && currentFlat) {
+    const runningTimers = activeTimers.filter(t => !t.done)
     return (
       <Box flexDirection="column" paddingX={2} paddingY={1} width={width}>
-        <Text bold>{recipe.title ?? 'Recipe'}</Text>
+        <Box justifyContent="space-between">
+          <Text bold>{recipe.title ?? 'Recipe'}</Text>
+          {runningTimers.length > 0 && (
+            <Box>
+              {runningTimers.map(t => (
+                <Text key={t.id} bold color="yellow">⏱ {fmtCountdown(t.startedAt + t.durationMs - Date.now())}  </Text>
+              ))}
+            </Box>
+          )}
+        </Box>
         <Text> </Text>
         <Text bold color="cyan">
           {currentFlat.sectionTitle ? `Section: ${currentFlat.sectionTitle}` : 'New section'}
@@ -163,9 +174,12 @@ export default function App({ recipe }: Props) {
           <>
             <Text dimColor>Ingredients for this section:</Text>
             {currentFlat.sectionIngredients.map((ing: any, idx: number) => {
-              const qty = ing.qty != null ? ` ${typeof ing.qty === 'number' ? ing.qty : (ing.qty?.value ?? '')}${ing.unit ?? ''}` : ''
+              const mass = recipe.massMap[ing.id]
               return (
-                <Text key={`${ing.id}-${idx}`}>{'  • '}<Text color="yellow">{ing.name ?? ing.id}</Text><Text dimColor>{qty}</Text></Text>
+                <React.Fragment key={`${ing.id}-${idx}`}>
+                  <Text>{'  • '}<Text color="yellow">{ing.name ?? ing.id}</Text><Text dimColor>{fmtQty(ing)}</Text></Text>
+                  {mass != null && <Text dimColor>{'      ≈ '}{fmtMass(mass)}</Text>}
+                </React.Fragment>
               )
             })}
             <Text> </Text>
@@ -189,6 +203,7 @@ export default function App({ recipe }: Props) {
         timerSelect={timerSelect}
         timerSelectIndex={timerSelectIndex}
         registry={recipe.registry}
+        massMap={recipe.massMap}
         width={width}
       />
     )
