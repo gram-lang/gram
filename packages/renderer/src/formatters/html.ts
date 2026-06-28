@@ -1,6 +1,7 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
+import { aggregateSectionIngredients } from '@gram/kitchen';
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
@@ -205,25 +206,15 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `    <h3${sHeaderClass}>${titleHtml}</h3>\n`;
             }
             
-            // Section Ingredients
-            if (sec.ingredients && sec.ingredients.length > 0) {
+            // Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
+            const sectionItems = aggregateSectionIngredients(sec.ingredients ?? []).map(aggToRendererItem);
+            if (sectionItems.length > 0) {
                 const sIngredientsClass = options.classes?.sectionIngredients || 'section-ingredients';
                 html += `    <div class="${sIngredientsClass}">\n`;
                 html += `      <h4>Ingredients</h4>\n`;
                 html += `      <ul>\n`;
-                sec.ingredients.forEach((item: any) => {
-                    if (item.type === 'alternative' || item.type === 'group') {
-                        html += `        <li>\n`;
-                        html += `          <strong>Alternative Group</strong>:\n`;
-                        html += `          <ul>\n`;
-                        item.options.forEach((opt: any) => {
-                            html += `            <li>${formatElement(opt, 'html', context)}</li>\n`;
-                        });
-                        html += `          </ul>\n`;
-                        html += `        </li>\n`;
-                    } else {
-                        html += `        <li>${formatElement(item, 'html', context)}</li>\n`;
-                    }
+                sectionItems.forEach((item: any) => {
+                    html += `        <li>${formatElement(item, 'html', context)}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </div>\n`;

@@ -1,4 +1,26 @@
 import { ASTNodeType } from '@gram/parser';
+import type { AggregatedIngredient } from '@gram/kitchen';
+
+// Converts an AggregatedIngredient to a plain object that formatElement can render.
+// The first quantity becomes qty/unit; additional ones become variable_entries strings.
+export function aggToRendererItem(agg: AggregatedIngredient): Record<string, unknown> {
+    const base: Record<string, unknown> = { id: agg.id, name: agg.name }
+    if (agg.type) base.type = agg.type
+    if (!agg.quantities || agg.quantities.length === 0) return base
+    const [first, ...rest] = agg.quantities
+    if (first) {
+        base.qty = first.qty
+        base.unit = first.unit ?? null
+    }
+    if (rest.length > 0) {
+        base.variable_entries = rest.map(q => {
+            const qty = q.qty as any
+            const qStr = qty?.text ?? (typeof qty === 'number' ? String(qty) : String(qty?.value ?? qty))
+            return q.unit ? `${qStr} ${q.unit}` : qStr
+        })
+    }
+    return base
+}
 
 /**
  * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).

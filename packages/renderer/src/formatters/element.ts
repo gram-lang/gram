@@ -240,28 +240,36 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         const def = ingredients[item.id];
         const name = def ? def.name : (item.id || '[Unknown Reference]');
         const qty = getQty(item);
-        
+
         if (format === 'html') {
             const caretIcon = context.icons?.caretRight ?? DEFAULT_ICONS.html.caretRight;
             const className = context.classes?.reference || 'reference';
             let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
             if (qty) {
-                const qtyVal = qty.text || qty.value;
-                html += ` <span class="quantity">${escapeHtml(String(qtyVal))}`;
-                if (item.unit) {
-                    html += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
+                const parts: string[] = [];
+                const baseQty = qty.text || String(qty.value);
+                let first = escapeHtml(baseQty);
+                if (item.unit) first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
+                parts.push(first);
+                if (item.variable_entries && item.variable_entries.length > 0) {
+                    parts.push(...(item.variable_entries as string[]).map(escapeHtml));
                 }
-                html += `</span>`;
+                html += ` <span class="quantity">${parts.join(' + ')}</span>`;
             }
             html += `</span>`;
             return html;
         } else {
             let md = `👉*${name}*`;
             if (qty) {
+                const parts: string[] = [];
                 const qtyVal = qty.text || qty.value;
-                md += ` (${qtyVal}`;
-                if (item.unit) md += ` ${item.unit}`;
-                md += ')';
+                let first = String(qtyVal);
+                if (item.unit) first += ` ${item.unit}`;
+                parts.push(first);
+                if (item.variable_entries && item.variable_entries.length > 0) {
+                    parts.push(...(item.variable_entries as string[]));
+                }
+                md += ` (${parts.join(' + ')})`;
             }
             return md;
         }

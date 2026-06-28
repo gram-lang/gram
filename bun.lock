@@ -132,6 +132,7 @@
       "name": "@gram/renderer",
       "version": "0.10.1",
       "dependencies": {
+        "@gram/kitchen": "workspace:*",
         "@gram/parser": "workspace:*",
       },
       "devDependencies": {

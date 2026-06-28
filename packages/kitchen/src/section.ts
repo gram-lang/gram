@@ -3,6 +3,7 @@ import type { Usage } from './types'
 export interface AggregatedIngredient {
     id: string
     name: string
+    type?: string  // 'reference' for cross-section intermediates, undefined for regular ingredients
     // null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
     // Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
     quantities: Array<{ qty: NonNullable<Usage['qty']>; unit?: string | null }> | null
@@ -36,6 +37,7 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
                 const entry: AggregatedIngredient = {
                     id: ing.id,
                     name,
+                    type: ing.type,
                     quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
                 }
                 measuredByID.set(ing.id, entry)
@@ -43,7 +45,7 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
             }
         } else {
             if (!unmeasuredByID.has(ing.id)) {
-                const entry: AggregatedIngredient = { id: ing.id, name, quantities: null }
+                const entry: AggregatedIngredient = { id: ing.id, name, type: ing.type, quantities: null }
                 unmeasuredByID.set(ing.id, entry)
                 order.push(entry)
             }

@@ -1,6 +1,7 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration } from '../utils';
+import { formatDuration as defaultFormatDuration, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
+import { aggregateSectionIngredients } from '@gram/kitchen';
 
 export function toMarkdown(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
@@ -86,18 +87,12 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                 md += `\n\n`;
             }
             
-            // Section Ingredients
-            if (sec.ingredients && sec.ingredients.length > 0) {
+            // Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
+            const sectionItems = aggregateSectionIngredients(sec.ingredients ?? []).map(aggToRendererItem);
+            if (sectionItems.length > 0) {
                 md += `**Ingredients**:\n`;
-                sec.ingredients.forEach((item: any) => {
-                    if (item.type === 'alternative' || item.type === 'group') {
-                        md += `- **Alternative Group**:\n`;
-                        item.options.forEach((opt: any) => {
-                            md += `  - ${formatElement(opt, 'md', context)}\n`;
-                        });
-                    } else {
-                        md += `- ${formatElement(item, 'md', context)}\n`;
-                    }
+                sectionItems.forEach((item: any) => {
+                    md += `- ${formatElement(item, 'md', context)}\n`;
                 });
                 md += '\n';
             }

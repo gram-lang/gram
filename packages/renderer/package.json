@@ -18,7 +18,8 @@
   "author": "abiwab",
   "license": "GPL-3.0",
   "dependencies": {
-    "@gram/parser": "workspace:*"
+    "@gram/parser": "workspace:*",
+    "@gram/kitchen": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.3"
