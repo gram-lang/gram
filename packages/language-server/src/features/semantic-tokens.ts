@@ -178,22 +178,27 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
 
 function walkTemperature(out: RawToken[], temp: TemperatureAST, text: string): void {
     if (!temp.loc) return;
+
     // ° sigil (1 UTF-16 code unit)
     emit(out, temp.loc.start, 1, T.keyword);
 
-    // The {value unit} or {text} part: color as string — precise splitting from TemperatureAST fields
-    if (temp.loc.end > temp.loc.start + 1) {
-        const bodyStart = temp.loc.start + 1 + (temp.name?.length ?? 0);
-        const body = text.slice(bodyStart, temp.loc.end);
-        const braceOpen = body.indexOf('{');
-        if (braceOpen >= 0) {
-            const braceClose = body.lastIndexOf('}');
-            const absOpen = bodyStart + braceOpen;
-            const absClose = bodyStart + (braceClose >= 0 ? braceClose : body.length - 1);
-            emit(out, absOpen, 1, T.operator);                           // {
-            emit(out, absOpen + 1, absClose - absOpen - 1, T.string);   // content
-            emit(out, absClose, 1, T.operator);                          // }
-        }
+    // Optional label: °oven{...} → emit "oven" as variable
+    if (temp.name) {
+        emit(out, temp.loc.start + 1, temp.name.length, T.variable);
+    }
+
+    // Emit only { and } as operators — leave the number/unit content to the TextMate grammar
+    // (constant.numeric.gram for the value, string.unquoted.unit.gram for the unit).
+    // Emitting a single span here would override TextMate and collapse both to one colour.
+    const bodyStart = temp.loc.start + 1 + (temp.name?.length ?? 0);
+    const body = text.slice(bodyStart, temp.loc.end);
+    const braceOpen = body.indexOf('{');
+    if (braceOpen >= 0) {
+        const braceClose = body.lastIndexOf('}');
+        const absOpen = bodyStart + braceOpen;
+        const absClose = bodyStart + (braceClose >= 0 ? braceClose : body.length - 1);
+        emit(out, absOpen, 1, T.operator);   // {
+        emit(out, absClose, 1, T.operator);  // }
     }
 }
 

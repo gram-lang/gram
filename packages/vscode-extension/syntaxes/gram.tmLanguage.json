@@ -156,13 +156,13 @@
       "endCaptures": {
         "1": { "name": "punctuation.section.embedded.end.gram" }
       },
-      "patterns": [ { "include": "#quantity-content" } ]
+      "patterns": [ { "include": "#temperature-content" } ]
     },
     "references": {
       "patterns": [
         {
           "name": "meta.reference.usage.gram",
-          "begin": "(&)([\\w\\s]+)(\\{)",
+          "begin": "(&)(\\w+(?:\\s+\\w+)*)(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.reference.gram" },
             "2": { "name": "variable.other.reference.gram" },
@@ -215,6 +215,21 @@
              "1": { "name": "keyword.operator.arrow.gram" },
              "2": { "name": "variable.other.intermediate.gram" }
          }
+    },
+    "temperature-content": {
+      "patterns": [
+        {
+          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)(°[A-Za-z]+|[A-Za-z]+)?",
+          "captures": {
+            "1": { "name": "constant.numeric.gram" },
+            "2": { "name": "string.unquoted.unit.gram" }
+          }
+        },
+        {
+          "match": "[^\\d\\}]+",
+          "name": "string.unquoted.unit.gram"
+        }
+      ]
     },
     "quantity-content": {
       "patterns": [
