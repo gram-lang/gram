@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Box, Text, useInput, useApp, useStdout } from 'ink'
 import type { RecipeData, ActiveTimer, Phase } from './types'
 import MiseEnPlace from './MiseEnPlace'
@@ -178,17 +178,18 @@ export default function App({ recipe }: Props) {
               const qtyStr = ing.quantities
                 ? ing.quantities.map(q => fmtQty({ qty: q.qty, unit: q.unit }).trim()).join(' + ')
                 : null
+              // Skip mass when all quantities are already in metric mass units (not approximate)
+              const allMetricMass = ing.quantities?.every(
+                q => q.unit != null && /^(g|kg|mg)$/i.test(q.unit),
+              ) ?? false
+              const showMass = mass != null && ing.quantities != null && !allMetricMass
               return (
-                <React.Fragment key={`${ing.id}-${idx}`}>
-                  <Text>
-                    {'  • '}
-                    <Text color="yellow">{ing.name}</Text>
-                    {qtyStr && <Text dimColor>  {qtyStr}</Text>}
-                  </Text>
-                  {mass != null && ing.quantities != null && (
-                    <Text dimColor>{'      ≈ '}{fmtMass(mass)}</Text>
-                  )}
-                </React.Fragment>
+                <Text key={`${ing.id}-${idx}`}>
+                  {'  • '}
+                  <Text color="yellow">{ing.name}</Text>
+                  {qtyStr && <Text dimColor>  {qtyStr}</Text>}
+                  {showMass && <Text dimColor>  ≈ {fmtMass(mass!)}</Text>}
+                </Text>
               )
             })}
             <Text> </Text>

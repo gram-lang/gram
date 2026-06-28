@@ -123,6 +123,9 @@ export default function StepView({
     item.alias ?? registry.ingredients[item.id]?.name ?? item.name ?? item.id
   const getCookwareName = (item: any) =>
     registry.cookware?.[item.id]?.name ?? item.name ?? item.id
+  // Don't show ≈ mass when the quantity is already in a metric mass unit (g, kg, mg)
+  const showMass = (item: any, mass: number | undefined) =>
+    mass != null && (item.unit == null || !/^(g|kg|mg)$/i.test(item.unit))
 
   const stepNum = stepIndex + 1
   const hasAction = step.action && step.action.trim()
@@ -181,7 +184,7 @@ export default function StepView({
                     <Text color="yellow">{getIngredientName(item)}</Text>
                     <Text dimColor>{fmtQty(item)}</Text>
                   </Text>
-                  {mass != null && <Text dimColor>{'  ≈ '}{fmtMass(mass)}</Text>}
+                  {showMass(item, mass) && <Text dimColor>{'  ≈ '}{fmtMass(mass!)}</Text>}
                 </React.Fragment>
               )
             })}
@@ -207,7 +210,7 @@ export default function StepView({
                       <Text color="yellow">{getIngredientName(item)}</Text>
                       <Text dimColor>{fmtQty(item)}</Text>
                     </Text>
-                    {mass != null && <Text dimColor>{'    ≈ '}{fmtMass(mass)}</Text>}
+                    {showMass(item, mass) && <Text dimColor>{'    ≈ '}{fmtMass(mass!)}</Text>}
                   </React.Fragment>
                 )
               })}
