@@ -5,7 +5,7 @@ This directory contains internal documentation intended for developers contribut
 ## Contents
 
 *   **[Parsing Architecture](./01_parsing_architecture.md)**
-    *   Detailed breakdown of the 3-stage pipeline: Parsing (OhmJS), AST Generation, and Compilation.
+    *   Detailed breakdown of the 4-stage pipeline: Parsing (OhmJS), AST Generation, Compilation, and Analysis.
     *   Explanation of section scopes, stack logic, and the central registry.
 
 *   **[JSON Output Schema](./02_json_output.md)**
@@ -16,6 +16,6 @@ This directory contains internal documentation intended for developers contribut
     *   Reference guide for the ingredient database.
     *   Details on how the database is structured and used by the compiler.
 
-*   **[Compiler Options](./04_compiler_options.md)**
-    *   Configuration guide for enabling/disabling experimental features.
-    *   Details on feature gating and pruning logic.
+*   **[Options & Config](./04_options.md)**
+    *   Configuration guide for `CompilerOptions` and `AnalyzerOptions`.
+    *   Details on scaling, mass normalization, yield, and nutritional estimation settings.

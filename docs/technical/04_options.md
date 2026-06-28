@@ -10,7 +10,12 @@ The GRAM ecosystem is modularly configured using `CompilerOptions` for structura
 
 ```typescript
 export interface CompilerOptions {
-  // Reserved for future structural compile-time settings
+    /**
+     * Multiply all numeric ingredient quantities by this factor at compile time.
+     * Useful for generating a scaled version of a recipe (e.g. 2× for double batch).
+     * Default: 1 (no scaling)
+     */
+    scaleFactor?: number;
 }
 ```
 

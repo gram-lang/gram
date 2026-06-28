@@ -33,5 +33,5 @@ This directory documents the advanced logic of the GRAM ecosystem. Features are 
     *   Waste factor calculation rules.
 
 *   **[Nutritional Estimation](./03_nutritional_estimation.md)**
-    *   Automatic calculation of calories and macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Salt) per recipe and per portion.
+    *   Automatic calculation of calories and macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) per recipe and per portion.
     *   Database resolution coverage and warning triggers.

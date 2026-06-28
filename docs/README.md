@@ -12,7 +12,7 @@ The core language specification and usage guides.
 *   [**Structure**](./syntax_details/01_structure.md) - Headers, steps, comments and metadata blocks.
 *   [**Ingredients**](./syntax_details/02_ingredients.md) - Syntax, quantities, modifiers (`@?`, `@-`, `@*`) and preparations.
 *   [**Cookware**](./syntax_details/03_cookware.md) - Fixed vs Scalable tools, dimensions and materials.
-*   [**Time & Temperature**](./syntax_details/04_time_and_temp.md) - Timers (`~`), temperatures (`!`) and async tasks.
+*   [**Time & Temperature**](./syntax_details/04_time_and_temp.md) - Timers (`~`), temperatures (`°`) and async tasks.
 *   [**Advanced Features**](./syntax_details/05_advanced_features.md) - Alternatives (`|`) and Inline Preps.
 *   [**Relative Quantities**](./syntax_details/06_relative_quantities.md) - Dynamic calculations (e.g. `60% @flour`).
 *   [**Variables & Intermediate**](./syntax_details/07_intermediate_vars.md) - Using `->&dough` to chain recipe parts.

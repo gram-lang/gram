@@ -11,7 +11,7 @@ Every aspect of the GRAM syntax is detailed in a dedicated file.
 ### 2. Detailed Syntax
 *   [Ingredients (@)](./02_ingredients.md) - Quantities, Units, Modifiers.
 *   [Cookware (#)](./03_cookware.md) - Definition, Scalability (Fixed vs Variable).
-*   [Time & Temp (~ and !)](./04_time_and_temp.md) - Strict syntax and ranges.
+*   [Time & Temp (~ and °)](./04_time_and_temp.md) - Strict syntax and ranges.
 
 ### 3. Advanced Logic
 *   [Advanced Features](./05_advanced_features.md) - Alternatives (`|`), Inline Preps.

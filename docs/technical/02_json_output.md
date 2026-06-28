@@ -44,11 +44,26 @@ The analyzer enriches the compiled output with physical, density, and nutritiona
      "totalMass": 1250,    // Total raw mass in grams
      "massStatus": "estimated", // 'precise' | 'estimated' | 'incomplete'
      "missingMassIngredients": [ ... ],
-     "nutrition": {        // Estimated calories & macros
+     "nutrition": {        // Estimated calories & macros (total for the recipe)
          "calories": 2500,
          "protein": 85,
          "carbs": 310,
-         "fat": 95
+         "fat": 95,
+         "sugar": 40,       // optional
+         "fiber": 12,       // optional
+         "sodium": 3.5,     // optional — summed from ingredient sodium values (g)
+         "isEstimate": true,// true if any ingredient lacked full nutrition data
+         "coverage": 0.87,  // fraction of recipe mass covered by DB nutrition data
+         "warnings": [],    // array of warning strings if coverage is partial
+         "perPortion": {    // present if AnalyzerOptions.portions > 1
+             "calories": 625,
+             "protein": 21,
+             "carbs": 77,
+             "fat": 24,
+             "sugar": 10,
+             "fiber": 3,
+             "sodium": 0.9
+         }
      }
   }
 }

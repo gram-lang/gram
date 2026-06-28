@@ -16,6 +16,7 @@ Core language update to enforce new syntax adjustments (breaking changes).
   * Replaced aliases brackets with `:`.
   * Tightened `<@` with no spaces allowed.
   * Added fixed modifier `=`.
+  * Mandatory `@&` inside relative quantities declarations. (e.g: `@water{60% @&flour}`)
   * **Top-Level Support**: Allowed writing comments and recipe steps globally, anywhere in the document (even before the first `## Section`).
 * **Compiler Analysis**: 
   * Added `INVALID_MODIFIER_COMBINATION` warnings.

@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@gram/analyzer": "0.10.1",
+    "@gram/cli": "0.10.1",
+    "@gram/i18n": "0.10.1",
+    "@gram/kitchen": "0.10.1",
+    "@gram/language-server": "0.10.1",
+    "@gram/parser": "0.10.1",
+    "@gram/playground": "0.10.1",
+    "@gram/renderer": "0.10.1",
+    "@gram/vscode-extension": "0.10.1"
+  },
+  "changesets": []
+}
