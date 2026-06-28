@@ -27,6 +27,11 @@ export function fmtCountdown(remainingMs: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+// Returns true when showing ≈ mass is useful (unit is not already a metric mass unit)
+export function shouldShowMass(unit?: string | null): boolean {
+  return unit == null || !/^(g|kg|mg)$/i.test(unit)
+}
+
 export function fmtMass(g: number): string {
   if (g >= 1000) return `${+(g / 1000).toFixed(1)} kg`
   if (g >= 10) return `${Math.round(g)} g`

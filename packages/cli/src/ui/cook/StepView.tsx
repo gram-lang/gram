@@ -3,7 +3,7 @@ import { Box, Text } from 'ink'
 import chalk from 'chalk'
 import type { ActiveTimer, FlatStep } from './types'
 import type { CompilationResult } from '@gram/kitchen'
-import { fmtQty, fmtMass, fmtCountdown } from './prepare'
+import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from './prepare'
 
 function getQtyText(q: any): string {
   if (!q) return ''
@@ -123,9 +123,8 @@ export default function StepView({
     item.alias ?? registry.ingredients[item.id]?.name ?? item.name ?? item.id
   const getCookwareName = (item: any) =>
     registry.cookware?.[item.id]?.name ?? item.name ?? item.id
-  // Don't show ≈ mass when the quantity is already in a metric mass unit (g, kg, mg)
   const showMass = (item: any, mass: number | undefined) =>
-    mass != null && (item.unit == null || !/^(g|kg|mg)$/i.test(item.unit))
+    mass != null && shouldShowMass(item.unit)
 
   const stepNum = stepIndex + 1
   const hasAction = step.action && step.action.trim()

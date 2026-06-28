@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Text } from 'ink'
-import { fmtQty, fmtMass } from './prepare'
+import { fmtQty, fmtMass, shouldShowMass } from './prepare'
 
 interface Props {
   title: string | null
@@ -29,7 +29,7 @@ export default function MiseEnPlace({ title, items, massMap, width }: Props) {
             {'  • '}
             <Text>{(item.name ?? item.id).padEnd(22)}</Text>
             <Text color="green">{fmtQty(item).trimStart()}</Text>
-            {mass != null && <Text dimColor>{' ≈ '}{fmtMass(mass)}</Text>}
+            {mass != null && shouldShowMass(item.unit) && <Text dimColor>{' ≈ '}{fmtMass(mass)}</Text>}
           </Text>
         )
       })}
