@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { log } from '@clack/prompts'
-import type { DiffResult, IngredientDelta, TimingDelta, SectionDelta } from '@gram/analyzer'
+import type { DiffResult, IngredientDelta, TimingDelta, SectionDelta, MetaDelta, TemperatureDelta, TimerDelta, PrepDelta } from '@gram/analyzer'
 
 function fmtQty(qty?: number, unit?: string | null): string {
   if (qty === undefined) return '?'
@@ -18,31 +18,52 @@ function fmtMinutes(m: number): string {
   return `${sign}${min} min`
 }
 
+function fmtMetaValue(v: unknown): string {
+  if (v === null || v === undefined) return '(none)'
+  if (Array.isArray(v)) return v.join(', ')
+  return String(v)
+}
+
+function fmtTempValue(v?: { value: number; unit: string }): string {
+  if (!v) return '?'
+  return `${v.value}${v.unit}`
+}
+
 const TIMING_LABELS: Record<string, string> = {
   totalTime: 'Total time',
   activeTime: 'Active time',
   preparationTime: 'Prep time',
 }
 
+function renderMeta(d: MetaDelta): string {
+  const label = d.field.padEnd(18)
+  const from = chalk.dim(fmtMetaValue(d.from))
+  const to = chalk.yellow(fmtMetaValue(d.to))
+  return `  ${chalk.yellow('~')} ${label} ${from} → ${to}`
+}
+
 function renderIngredient(d: IngredientDelta): string {
   const name = (d.name || d.id).padEnd(18)
 
   if (d.change === 'added') {
-    const qty = chalk.green(fmtQty(d.toQty, d.toUnit))
-    return `  ${chalk.green('+')} ${name} ${qty}`
+    return `  ${chalk.green('+')} ${name} ${chalk.green(fmtQty(d.toQty, d.toUnit))}`
   }
   if (d.change === 'removed') {
-    const qty = chalk.red(fmtQty(d.fromQty, d.fromUnit))
-    return `  ${chalk.red('-')} ${name} ${qty}`
+    return `  ${chalk.red('-')} ${name} ${chalk.red(fmtQty(d.fromQty, d.fromUnit))}`
   }
 
-  // changed
   const from = chalk.dim(fmtQty(d.fromQty, d.fromUnit))
   const to = chalk.yellow(fmtQty(d.toQty, d.toUnit))
-  const pct = d.percentChange !== undefined
-    ? chalk.dim(` (${d.percentChange > 0 ? '+' : ''}${d.percentChange}%)`)
-    : ''
+  const pct = d.percentChange !== undefined ? chalk.dim(` (${d.percentChange > 0 ? '+' : ''}${d.percentChange}%)`) : ''
   return `  ${chalk.yellow('~')} ${name} ${from} → ${to}${pct}`
+}
+
+function renderPrep(d: PrepDelta): string {
+  const name = (d.name || d.id).padEnd(18)
+  const section = d.section ? chalk.dim(` [${d.section}]`) : ''
+  const from = d.from ? chalk.dim(`(${d.from})`) : chalk.dim('—')
+  const to = d.to ? chalk.yellow(`(${d.to})`) : chalk.yellow('—')
+  return `  ${chalk.yellow('~')} ${name}${section}  ${from} → ${to}`
 }
 
 function renderTiming(d: TimingDelta): string {
@@ -71,6 +92,24 @@ function renderSection(d: SectionDelta): string {
   return `  ${chalk.yellow('~')} Section ${title} — ${chalk.dim(`${from}`)} → ${chalk.yellow(`${to}`)} steps ${chalk.dim(`(${sign}${diff})`)}`
 }
 
+function renderTemperature(d: TemperatureDelta): string {
+  const section = d.section ? chalk.dim(`[${d.section}] `) : ''
+  const label = d.name ? `${d.name}: ` : ''
+
+  if (d.change === 'added') return `  ${chalk.green('+')} ${section}${label}${chalk.green(fmtTempValue(d.to))}`
+  if (d.change === 'removed') return `  ${chalk.red('-')} ${section}${label}${chalk.red(fmtTempValue(d.from))}`
+  return `  ${chalk.yellow('~')} ${section}${label}${chalk.dim(fmtTempValue(d.from))} → ${chalk.yellow(fmtTempValue(d.to))}`
+}
+
+function renderTimer(d: TimerDelta): string {
+  const section = d.section ? chalk.dim(`[${d.section}] `) : ''
+  const label = d.name ? `${d.name}: ` : ''
+
+  if (d.change === 'added') return `  ${chalk.green('+')} ${section}${label}${chalk.green(d.to ?? '?')}`
+  if (d.change === 'removed') return `  ${chalk.red('-')} ${section}${label}${chalk.red(d.from ?? '?')}`
+  return `  ${chalk.yellow('~')} ${section}${label}${chalk.dim(d.from ?? '?')} → ${chalk.yellow(d.to ?? '?')}`
+}
+
 export function renderDiffResult(result: DiffResult, label: string): void {
   console.log()
   console.log(`  ${chalk.bold('Semantic diff:')} ${chalk.dim(label)}`)
@@ -86,28 +125,46 @@ export function renderDiffResult(result: DiffResult, label: string): void {
     console.log(`  ${chalk.yellow('~')} ${'Title'.padEnd(18)} ${chalk.dim(result.fromTitle ?? '(none)')} → ${chalk.yellow(result.toTitle ?? '(none)')}`)
   }
 
+  if (result.meta.length > 0) {
+    console.log()
+    console.log(`  ${chalk.bold('FRONTMATTER')}`)
+    for (const d of result.meta) console.log(renderMeta(d))
+  }
+
   if (result.ingredients.length > 0) {
     console.log()
     console.log(`  ${chalk.bold('INGREDIENTS')}`)
-    for (const d of result.ingredients) {
-      console.log(renderIngredient(d))
-    }
+    for (const d of result.ingredients) console.log(renderIngredient(d))
+  }
+
+  if (result.preparations.length > 0) {
+    console.log()
+    console.log(`  ${chalk.bold('PREPARATIONS')}`)
+    for (const d of result.preparations) console.log(renderPrep(d))
+  }
+
+  if (result.temperatures.length > 0) {
+    console.log()
+    console.log(`  ${chalk.bold('TEMPERATURES')}`)
+    for (const d of result.temperatures) console.log(renderTemperature(d))
+  }
+
+  if (result.timers.length > 0) {
+    console.log()
+    console.log(`  ${chalk.bold('TIMERS')}`)
+    for (const d of result.timers) console.log(renderTimer(d))
   }
 
   if (result.timings.length > 0) {
     console.log()
     console.log(`  ${chalk.bold('TIMING')}`)
-    for (const d of result.timings) {
-      console.log(renderTiming(d))
-    }
+    for (const d of result.timings) console.log(renderTiming(d))
   }
 
   if (result.sections.length > 0) {
     console.log()
     console.log(`  ${chalk.bold('SECTIONS')}`)
-    for (const d of result.sections) {
-      console.log(renderSection(d))
-    }
+    for (const d of result.sections) console.log(renderSection(d))
   }
 
   console.log()
