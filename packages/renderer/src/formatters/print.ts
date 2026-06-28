@@ -6,148 +6,187 @@ import { aggregateSectionIngredients } from '@gram/kitchen';
 const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
 
+  :root {
+    --black: #000000;
+    --dark-grey: #333333;
+    --grey: #666666;
+    --light-grey: #cccccc;
+    --very-light-grey: #e5e5e5;
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   @page {
     size: A4;
-    margin: 20mm 22mm 20mm 22mm;
+    margin: 25mm 20mm;
   }
 
   body {
     font-family: 'Courier Prime', 'Courier New', Courier, monospace;
-    font-size: 10.5pt;
-    line-height: 1.6;
-    color: #000;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: var(--black);
     background: #fff;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── Title ── */
   h1 {
-    font-size: 21pt;
+    font-family: 'Courier Prime', monospace;
+    font-size: 20pt;
     font-weight: 700;
-    letter-spacing: -0.02em;
     line-height: 1.1;
-    margin-bottom: 6pt;
+    margin-bottom: 12pt;
+    padding-bottom: 8pt;
+    border-bottom: 2pt solid var(--black);
     page-break-after: avoid;
   }
 
   /* ── Section labels (Shopping, Equipment, Instructions…) ── */
   h2 {
     font-family: 'Inter', system-ui, sans-serif;
-    font-size: 6.5pt;
+    font-size: 7.5pt;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    border-top: 1.5pt solid #000;
-    padding-top: 5pt;
-    margin-top: 16pt;
-    margin-bottom: 8pt;
+    letter-spacing: 0.25em;
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 6pt;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
     page-break-after: avoid;
   }
 
   /* ── Sub-section headers (recipe sections) ── */
   h3 {
-    font-size: 10.5pt;
+    font-size: 11.5pt;
     font-weight: 700;
-    font-style: italic;
-    margin-top: 12pt;
-    margin-bottom: 4pt;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
     page-break-after: avoid;
-  }
-
-  /* ── Mise en place label ── */
-  h4 {
-    font-family: 'Inter', system-ui, sans-serif;
-    font-size: 6pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 3pt;
-    opacity: 0.55;
+    display: inline-block;
+    border-bottom: 1px dashed var(--black);
   }
 
   /* ── Meta bar ── */
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 20pt;
+    gap: 4pt 16pt;
     font-family: 'Inter', system-ui, sans-serif;
-    font-size: 8.5pt;
-    margin-bottom: 14pt;
-    padding: 5pt 0;
-    border-top: 0.5pt solid #999;
+    font-size: 8pt;
+    margin-bottom: 16pt;
+    padding: 4pt 0;
+    border-bottom: 1px solid var(--light-grey);
   }
-  .meta-item { white-space: nowrap; }
+  .meta-item { display: flex; align-items: baseline; }
   .meta-label {
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    font-size: 6.5pt;
-    letter-spacing: 0.06em;
-    margin-right: 3pt;
-    opacity: 0.55;
+    font-size: 7pt;
+    letter-spacing: 0.1em;
+    margin-right: 6pt;
+    color: var(--grey);
   }
 
-  /* ── Shopping list — 2 columns ── */
+  /* ── Shopping list ── */
   .shopping-list ul {
     columns: 2;
-    column-gap: 22pt;
+    column-gap: 24pt;
     list-style: none;
-    margin-top: 4pt;
+    margin-top: 8pt;
   }
   .shopping-list li {
     break-inside: avoid;
     page-break-inside: avoid;
-    padding: 1.5pt 0;
-    font-size: 10pt;
+    position: relative;
+    padding: 3pt 0 3pt 16pt;
+    font-size: 9.5pt;
+    border-bottom: 1px dotted var(--light-grey);
   }
   .shopping-list li::before {
-    content: "□  ";
-    font-size: 9.5pt;
+    content: "☐";
+    position: absolute;
+    left: 0;
+    top: 3.5pt;
+    font-size: 11pt;
     font-family: 'Inter', system-ui, sans-serif;
+    color: var(--grey);
   }
 
-  /* ── Equipment — inline comma-separated ── */
+  /* ── Equipment ── */
   .cookware-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 2pt 4pt;
-    margin-top: 3pt;
-    font-size: 9.5pt;
+    column-gap: 12pt;
+    row-gap: 6pt;
+    margin-top: 8pt;
+    font-size: 10pt;
     font-style: italic;
   }
-  .cookware-list .cw-item:not(:last-child)::after { content: ","; }
+  .cookware-list .cw-item {
+    position: relative;
+  }
+  .cookware-list .cw-item:not(:last-child)::after { 
+    content: "•"; 
+    position: absolute;
+    right: -8pt;
+    color: var(--light-grey); 
+    font-style: normal; 
+  }
 
   /* ── Instructions ── */
   .instructions section {
-    page-break-inside: avoid;
+    margin-bottom: 24pt;
   }
 
   /* ── Section-level mise en place ── */
   .section-ingredients {
-    border-left: 2pt solid #000;
-    padding-left: 7pt;
-    margin-bottom: 5pt;
+    border: 1px solid var(--black);
+    border-left: 4pt solid var(--black);
+    padding: 10pt 14pt;
+    margin-bottom: 16pt;
+    margin-top: 8pt;
   }
   .section-ingredients ul {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 14pt;
-    font-size: 9pt;
+    column-gap: 16pt;
+    row-gap: 6pt;
+    font-size: 9.5pt;
   }
   .section-ingredients li { white-space: nowrap; }
-  .section-ingredients li::before { content: "· "; opacity: 0.5; }
+  .section-ingredients li::before { 
+    content: "— "; 
+    color: var(--grey); 
+    font-weight: bold; 
+  }
 
   /* ── Steps ── */
   ol.steps {
     margin: 0;
-    padding-left: 18pt;
+    padding-left: 0;
+    list-style: none;
+    counter-reset: step-counter;
   }
   ol.steps li {
     break-inside: avoid;
     page-break-inside: avoid;
-    margin-bottom: 5pt;
-    font-size: 10.5pt;
+    margin-bottom: 10pt;
+    font-size: 10pt;
+    position: relative;
+    padding-left: 24pt;
+  }
+  ol.steps li:not(.comment-step)::before {
+    content: counter(step-counter) ".";
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    color: var(--black);
   }
 
   /* ── Action tag ── */
@@ -155,83 +194,110 @@ const PRINT_CSS = `
     display: inline-block;
     font-family: 'Inter', system-ui, sans-serif;
     font-weight: 700;
-    font-size: 6.5pt;
+    font-size: 7.5pt;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border: 0.75pt solid #000;
-    padding: 0.5pt 3pt 0pt;
-    margin-right: 5pt;
-    vertical-align: middle;
+    letter-spacing: 0.15em;
+    border: 1px solid var(--black);
+    border-radius: 2px;
+    padding: 2pt 5pt;
+    margin-right: 8pt;
+    vertical-align: text-bottom;
     white-space: nowrap;
   }
 
-  /* ── Inline semantic tokens — B&W typographic distinction ── */
+  /* ── Inline semantic tokens ── */
   .ingredient {
     font-weight: 700;
   }
   .reference {
     font-weight: 700;
     text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 1.5pt;
-    text-decoration-thickness: 0.75pt;
+    text-decoration-style: solid;
+    text-underline-offset: 2.5pt;
+    text-decoration-thickness: 1px;
   }
   .cookware {
-    font-style: italic;
+    font-weight: 700;
   }
   .timer {
     font-weight: 700;
-    border-bottom: 1pt solid #000;
+    border-bottom: 2px solid var(--black);
     white-space: nowrap;
+    padding-bottom: 1px;
   }
   .timer.async {
-    border-bottom-style: dashed;
+    border-bottom: 2px dotted var(--black);
   }
   .temp {
     font-weight: 700;
     white-space: nowrap;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.9em;
+    letter-spacing: 0.05em;
   }
   .quantity { font-weight: normal; }
-  .unit { opacity: 0.65; }
-  .opt { opacity: 0.5; font-style: italic; }
+  .unit { color: var(--dark-grey); font-size: 0.95em; }
+  .opt { color: var(--grey); font-style: italic; }
   .declaration {
-    font-size: 8pt;
+    font-size: 9pt;
     font-style: italic;
-    opacity: 0.65;
+    color: var(--grey);
   }
   .comment-step {
-    list-style: none;
-    margin-left: -18pt;
+    padding-left: 0 !important;
     font-style: italic;
-    opacity: 0.6;
+    color: var(--dark-grey);
     font-size: 9.5pt;
+    margin-top: -4pt;
+    margin-bottom: 10pt !important;
   }
 
   /* ── Nutrition ── */
   .nutrition {
-    margin-top: 14pt;
-    font-size: 9pt;
+    margin-top: 24pt;
+    padding-top: 12pt;
+    border-top: 2px solid var(--black);
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+  .nutrition h2 {
+    border-bottom: none;
+    margin: 0 0 12pt 0;
+    padding: 0;
   }
   .nut-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 4pt 18pt;
-    margin-top: 4pt;
+    gap: 12pt 24pt;
   }
-  .nut-item strong { font-size: 10.5pt; }
-  .nut-item small { font-size: 8pt; opacity: 0.6; }
+  .nut-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nut-item strong { 
+    font-size: 13pt; 
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1;
+    margin-bottom: 4pt;
+  }
+  .nut-item small { 
+    font-size: 7pt; 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em; 
+    color: var(--grey); 
+    font-family: 'Inter', system-ui, sans-serif;
+  }
 
   /* Screen preview */
   @media screen {
     body {
-      max-width: 760px;
+      max-width: 210mm;
       margin: 40px auto;
-      padding: 40px 48px;
-      font-size: 12pt;
-      box-shadow: 0 2px 40px rgba(0,0,0,0.07);
-      border: 1px solid #e5e5e5;
+      padding: 25mm 20mm;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+      border: 1px solid var(--very-light-grey);
+      min-height: 297mm;
     }
   }
 `;
