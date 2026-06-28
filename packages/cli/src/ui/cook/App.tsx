@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Box, Text, useInput, useApp, useStdout } from 'ink'
 import type { RecipeData, ActiveTimer, Phase } from './types'
 import MiseEnPlace from './MiseEnPlace'
 import StepView from './StepView'
 import EndScreen from './EndScreen'
-import { fmtQty, fmtMass, fmtCountdown } from './prepare'
+import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from './prepare'
 
 interface Props {
   recipe: RecipeData
@@ -178,11 +178,8 @@ export default function App({ recipe }: Props) {
               const qtyStr = ing.quantities
                 ? ing.quantities.map(q => fmtQty({ qty: q.qty, unit: q.unit }).trim()).join(' + ')
                 : null
-              // Skip mass when all quantities are already in metric mass units (not approximate)
-              const allMetricMass = ing.quantities?.every(
-                q => q.unit != null && /^(g|kg|mg)$/i.test(q.unit),
-              ) ?? false
-              const showMass = mass != null && ing.quantities != null && !allMetricMass
+              const showMass = mass != null && ing.quantities != null &&
+                ing.quantities.some(q => shouldShowMass(q.unit))
               return (
                 <Text key={`${ing.id}-${idx}`}>
                   {'  • '}
