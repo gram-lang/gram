@@ -1,70 +1,96 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml, formatQuantityValue } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
+import { aggregateSectionIngredients } from '@gram/kitchen';
 
 const PRINT_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   @page {
     size: A4;
-    margin: 18mm 22mm 18mm 22mm;
+    margin: 20mm 22mm 20mm 22mm;
   }
 
   body {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 11pt;
+    font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    font-size: 10.5pt;
     line-height: 1.6;
     color: #000;
     background: #fff;
   }
 
+  /* ── Title ── */
   h1 {
-    font-size: 20pt;
-    font-weight: bold;
+    font-size: 21pt;
+    font-weight: 700;
     letter-spacing: -0.02em;
+    line-height: 1.1;
     margin-bottom: 6pt;
     page-break-after: avoid;
   }
 
+  /* ── Section labels (Shopping, Equipment, Instructions…) ── */
   h2 {
-    font-size: 13pt;
-    font-weight: bold;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 6.5pt;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1pt solid #000;
-    padding-bottom: 2pt;
-    margin-top: 14pt;
+    letter-spacing: 0.18em;
+    border-top: 1.5pt solid #000;
+    padding-top: 5pt;
+    margin-top: 16pt;
     margin-bottom: 8pt;
     page-break-after: avoid;
   }
 
+  /* ── Sub-section headers (recipe sections) ── */
   h3 {
-    font-size: 11pt;
-    font-weight: bold;
+    font-size: 10.5pt;
+    font-weight: 700;
     font-style: italic;
-    margin-top: 10pt;
+    margin-top: 12pt;
     margin-bottom: 4pt;
     page-break-after: avoid;
+  }
+
+  /* ── Mise en place label ── */
+  h4 {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 6pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 3pt;
+    opacity: 0.55;
   }
 
   /* ── Meta bar ── */
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 24pt;
-    font-size: 9.5pt;
-    color: #333;
-    margin-bottom: 12pt;
-    padding-bottom: 8pt;
-    border-bottom: 0.5pt solid #ccc;
+    gap: 0 20pt;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 8.5pt;
+    margin-bottom: 14pt;
+    padding: 5pt 0;
+    border-top: 0.5pt solid #999;
   }
   .meta-item { white-space: nowrap; }
-  .meta-label { font-style: italic; margin-right: 3pt; }
+  .meta-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 6.5pt;
+    letter-spacing: 0.06em;
+    margin-right: 3pt;
+    opacity: 0.55;
+  }
 
   /* ── Shopping list — 2 columns ── */
   .shopping-list ul {
     columns: 2;
-    column-gap: 20pt;
+    column-gap: 22pt;
     list-style: none;
     margin-top: 4pt;
   }
@@ -72,43 +98,47 @@ const PRINT_CSS = `
     break-inside: avoid;
     page-break-inside: avoid;
     padding: 1.5pt 0;
-    font-size: 10.5pt;
-  }
-  .shopping-list li::before {
-    content: "☐  ";
     font-size: 10pt;
   }
-  .shopping-list .qty { color: #444; }
+  .shopping-list li::before {
+    content: "□  ";
+    font-size: 9.5pt;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
 
-  /* ── Cookware ── */
+  /* ── Equipment — inline comma-separated ── */
   .cookware-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 4pt 10pt;
-    margin-top: 4pt;
-    font-size: 10pt;
+    gap: 2pt 4pt;
+    margin-top: 3pt;
+    font-size: 9.5pt;
+    font-style: italic;
   }
-  .cookware-list .cw-item::after { content: ","; }
-  .cookware-list .cw-item:last-child::after { content: ""; }
+  .cookware-list .cw-item:not(:last-child)::after { content: ","; }
 
   /* ── Instructions ── */
   .instructions section {
     page-break-inside: avoid;
   }
+
+  /* ── Section-level mise en place ── */
   .section-ingredients {
-    font-size: 9.5pt;
-    color: #333;
-    margin-bottom: 4pt;
-    font-style: italic;
+    border-left: 2pt solid #000;
+    padding-left: 7pt;
+    margin-bottom: 5pt;
   }
   .section-ingredients ul {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 0 10pt;
+    gap: 0 14pt;
+    font-size: 9pt;
   }
-  .section-ingredients li::before { content: "· "; }
+  .section-ingredients li { white-space: nowrap; }
+  .section-ingredients li::before { content: "· "; opacity: 0.5; }
 
+  /* ── Steps ── */
   ol.steps {
     margin: 0;
     padding-left: 18pt;
@@ -119,54 +149,114 @@ const PRINT_CSS = `
     margin-bottom: 5pt;
     font-size: 10.5pt;
   }
-  ol.steps li .action {
-    font-weight: bold;
+
+  /* ── Action tag ── */
+  .action {
+    display: inline-block;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 6.5pt;
     text-transform: uppercase;
-    font-size: 8pt;
-    letter-spacing: 0.08em;
-    margin-right: 4pt;
+    letter-spacing: 0.1em;
+    border: 0.75pt solid #000;
+    padding: 0.5pt 3pt 0pt;
+    margin-right: 5pt;
+    vertical-align: middle;
+    white-space: nowrap;
   }
-  /* Inline element styles — no color, just typographic weight */
-  .ingredient, .reference { font-weight: bold; }
-  .cookware { font-style: italic; }
-  .timer, .temp { font-variant-numeric: tabular-nums; }
+
+  /* ── Inline semantic tokens — B&W typographic distinction ── */
+  .ingredient {
+    font-weight: 700;
+  }
+  .reference {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 1.5pt;
+    text-decoration-thickness: 0.75pt;
+  }
+  .cookware {
+    font-style: italic;
+  }
+  .timer {
+    font-weight: 700;
+    border-bottom: 1pt solid #000;
+    white-space: nowrap;
+  }
+  .timer.async {
+    border-bottom-style: dashed;
+  }
+  .temp {
+    font-weight: 700;
+    white-space: nowrap;
+  }
   .quantity { font-weight: normal; }
-  .opt { opacity: 0.6; }
-  .comment-step { list-style: none; margin-left: -18pt; font-style: italic; color: #555; font-size: 10pt; }
+  .unit { opacity: 0.65; }
+  .opt { opacity: 0.5; font-style: italic; }
+  .declaration {
+    font-size: 8pt;
+    font-style: italic;
+    opacity: 0.65;
+  }
+  .comment-step {
+    list-style: none;
+    margin-left: -18pt;
+    font-style: italic;
+    opacity: 0.6;
+    font-size: 9.5pt;
+  }
 
   /* ── Nutrition ── */
   .nutrition {
     margin-top: 14pt;
-    font-size: 9.5pt;
+    font-size: 9pt;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .nutrition h2 { font-size: 10pt; }
   .nut-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 4pt 14pt;
+    gap: 4pt 18pt;
     margin-top: 4pt;
   }
-  .nut-item strong { font-size: 11pt; }
-  .nut-item small { font-size: 8pt; color: #555; }
+  .nut-item strong { font-size: 10.5pt; }
+  .nut-item small { font-size: 8pt; opacity: 0.6; }
 
-  /* Print-safe: hide anything that shouldn't print */
-  @media screen { body { max-width: 800px; margin: 20px auto; padding: 20px; } }
+  /* Screen preview */
+  @media screen {
+    body {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 40px 48px;
+      font-size: 12pt;
+      box-shadow: 0 2px 40px rgba(0,0,0,0.07);
+      border: 1px solid #e5e5e5;
+    }
+  }
 `;
 
+const SVG = {
+    // Clock (sync timer) — Lucide Clock
+    clock: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    // Hourglass (async timer) — Lucide Hourglass
+    hourglass: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M17 2v4.172a2 2 0 0 0-.586 1.414L12 12 7.586 7.586A2 2 0 0 1 7 6.172V2"/></svg>`,
+    // Thermometer — Lucide Thermometer
+    thermometer: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`,
+};
+
 const PRINT_ICONS = {
-    hourglass: '⏳',
-    timer: '⏱',
-    thermometer: '🌡',
+    hourglass: SVG.hourglass,
+    timer: SVG.clock,
+    thermometer: SVG.thermometer,
     caretRight: '→',
     arrowRight: '→',
     arrowUDownLeft: '↵',
     warning: '⚠',
-    pencilSimple: '✏',
-    clock: '⏱',
-    fire: '🔥',
-    knife: '🔪',
+    pencilSimple: '✎',
+    clock: SVG.clock,
+    fire: '△',
+    knife: '—',
     scales: '⚖',
     clockCounterClockwise: '↺',
 };
@@ -180,6 +270,10 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         formatDuration,
         formatFraction: options.formatFraction,
     };
+    // Context variant used when rendering inline step tokens — hides qty if flag is set
+    const stepContext: RenderContext = options.hideStepQty
+        ? { ...context, hideIngredientQty: true }
+        : context;
 
     let body = '';
 
@@ -192,20 +286,20 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
     body += `<div class="meta">\n`;
     if (data.metrics) {
         if (data.metrics.totalTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Total:</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">Total</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
         }
         if (data.metrics.activeTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Active:</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">Active</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
         }
         if (data.metrics.preparationTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Prep:</span>${formatDuration(data.metrics.preparationTime)} (est.)</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">Prep</span>${formatDuration(data.metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">est.</em></span>\n`;
         }
     }
     if (data.meta) {
         for (const [k, v] of Object.entries(data.meta as Record<string, any>)) {
             if (k === 'title') continue;
             const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ');
-            body += `  <span class="meta-item"><span class="meta-label">${escapeHtml(label)}:</span>${escapeHtml(String(v))}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">${escapeHtml(label)}</span>${escapeHtml(String(v))}</span>\n`;
         }
     }
     body += `</div>\n\n`;
@@ -231,7 +325,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         body += `</ul>\n</div>\n\n`;
     }
 
-    // ── Cookware ───────────────────────────────────────────────────────────
+    // ── Equipment ─────────────────────────────────────────────────────────
     if (data.cookware?.length > 0) {
         body += `<div>\n<h2>Equipment</h2>\n<div class="cookware-list">\n`;
         for (const cw of data.cookware) {
@@ -252,15 +346,15 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
             body += `<section>\n`;
             if (sec.title) {
                 let titleHtml = escapeHtml(sec.title);
-                if (sec.retro_planning) titleHtml += ` <small>(${escapeHtml(sec.retro_planning)})</small>`;
+                if (sec.retro_planning) titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning)})</small>`;
                 body += `  <h3>${titleHtml}</h3>\n`;
             }
 
-            // Section-level ingredients (mise en place)
-            const secIngs = (sec.ingredients ?? []).filter((i: any) => i.qty != null && i.type !== 'alternative');
-            if (secIngs.length > 0) {
+            // Section-level ingredients — aggregated (dedup, addition, intermediates)
+            const secItems = aggregateSectionIngredients(sec.ingredients ?? []).map(aggToRendererItem);
+            if (secItems.length > 0) {
                 body += `  <div class="section-ingredients"><ul>\n`;
-                for (const ing of secIngs) {
+                for (const ing of secItems) {
                     body += `    <li>${formatElement(ing, 'html', context)}</li>\n`;
                 }
                 body += `  </ul></div>\n`;
@@ -286,7 +380,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
                     stepContent = escapeHtml(stepItem.value ?? '');
                 } else {
                     stepContent = (stepItem.content ?? []).map((c: any, i: number, arr: any[]) => {
-                        let str = formatElement(c, 'html', context);
+                        let str = formatElement(c, 'html', stepContext);
                         const isToken = c && typeof c === 'object' && c.type !== 'text' && c.type !== 'comment';
                         if (isToken) {
                             const next = arr[i + 1];
@@ -302,15 +396,6 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
                 }
 
                 body += stepContent ? `      ${stepContent}\n` : '';
-
-                // Inline timers from backgroundTasks
-                if (stepItem.backgroundTasks?.length > 0) {
-                    const timerTexts = stepItem.backgroundTasks.map((t: any) =>
-                        `⏳ ${t.name ? escapeHtml(t.name) + ': ' : ''}${formatDuration(t.duration)}`
-                    );
-                    body += `      <span class="timer" style="font-size:9pt;margin-left:6pt">${timerTexts.join(' · ')}</span>\n`;
-                }
-
                 body += `    </li>\n`;
             }
             body += `  </ol>\n</section>\n`;
@@ -338,7 +423,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         }
     }
 
-    // ── Wrap in full HTML document ─────────────────────────────────────────
+    // ── Full HTML document ─────────────────────────────────────────────────
     const titleTag = data.title ? `<title>${escapeHtml(data.title)}</title>` : '<title>Recipe</title>';
     return `<!DOCTYPE html>
 <html lang="${escapeHtml((data.meta as any)?.language ?? 'en')}">

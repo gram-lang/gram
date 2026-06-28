@@ -73,23 +73,25 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
  
         if (format === 'html') {
             const baseClass = (item.type === 'reference') ? 'reference' : 'ingredient';
-            const className = (item.type === 'reference') 
-                ? (context.classes?.reference || baseClass) 
+            const className = (item.type === 'reference')
+                ? (context.classes?.reference || baseClass)
                 : (context.classes?.ingredient || baseClass);
-                
+
             let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
-            
-            if (isPartial) {
-                const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
-                const formulaClass = context.classes?.formulaText ? ` ${context.classes.formulaText}` : '';
-                html += ` <span class="quantity formula-qty${formulaClass}" title="Calculation partial or failed">(${escapeHtml(formulaStr)} ${warningIcon})</span>`;
-            } else {
-                if (qtyContent) {
-                    html += ` <span class="quantity">(${qtyContent})</span>`;
-                }
-                if (formulaStr) {
-                    const formulaClass = context.classes?.formulaText ? ` class="${context.classes.formulaText}"` : '';
-                    html += ` <span${formulaClass} title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
+
+            if (!context.hideIngredientQty) {
+                if (isPartial) {
+                    const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
+                    const formulaClass = context.classes?.formulaText ? ` ${context.classes.formulaText}` : '';
+                    html += ` <span class="quantity formula-qty${formulaClass}" title="Calculation partial or failed">(${escapeHtml(formulaStr)} ${warningIcon})</span>`;
+                } else {
+                    if (qtyContent) {
+                        html += ` <span class="quantity">(${qtyContent})</span>`;
+                    }
+                    if (formulaStr) {
+                        const formulaClass = context.classes?.formulaText ? ` class="${context.classes.formulaText}"` : '';
+                        html += ` <span${formulaClass} title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
+                    }
                 }
             }
             
@@ -129,26 +131,27 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         } else {
             // Markdown / Plain Text Format
             let md = (item.type === 'reference') ? `👉*${name}*` : `**${name}**`;
-            
-            if (isPartial) {
-                const warningSymbol = context.icons?.warning ?? DEFAULT_ICONS.md.warning;
-                md = `${name} (${formulaStr}${warningSymbol})`;
-            } else {
-                let qtyParts = [];
-                if (qty) {
-                    let qStr = qty.text || qty.value;
-                    if (item.unit) qStr += ` ${item.unit}`;
-                    qtyParts.push(qStr);
-                }
-                if (item.variable_entries && item.variable_entries.length > 0) {
-                    qtyParts.push(...item.variable_entries);
-                }
-                
-                if (qtyParts.length > 0) {
-                    md += ` (${qtyParts.join(' + ')})`;
-                }
-                if (formulaStr) {
-                    md += ` [${formulaStr}]`;
+
+            if (!context.hideIngredientQty) {
+                if (isPartial) {
+                    const warningSymbol = context.icons?.warning ?? DEFAULT_ICONS.md.warning;
+                    md = `${name} (${formulaStr}${warningSymbol})`;
+                } else {
+                    let qtyParts = [];
+                    if (qty) {
+                        let qStr = qty.text || qty.value;
+                        if (item.unit) qStr += ` ${item.unit}`;
+                        qtyParts.push(qStr);
+                    }
+                    if (item.variable_entries && item.variable_entries.length > 0) {
+                        qtyParts.push(...item.variable_entries);
+                    }
+                    if (qtyParts.length > 0) {
+                        md += ` (${qtyParts.join(' + ')})`;
+                    }
+                    if (formulaStr) {
+                        md += ` [${formulaStr}]`;
+                    }
                 }
             }
             

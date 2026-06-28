@@ -52,6 +52,8 @@ export interface RendererOptions {
   classes?: RendererClasses;
   formatFraction?: (value: number) => string;
   formatDuration?: (minutes: number) => string;
+  /** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
+  hideStepQty?: boolean;
 }
 
 export interface RenderContext {
@@ -63,4 +65,6 @@ export interface RenderContext {
   classes?: RendererClasses;
   formatFraction?: (value: number) => string;
   formatDuration?: (minutes: number) => string;
+  /** Set to true when formatting step tokens to suppress quantity display. */
+  hideIngredientQty?: boolean;
 }

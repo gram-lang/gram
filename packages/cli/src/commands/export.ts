@@ -42,6 +42,11 @@ export default defineCommand({
       description: 'Skip ingredient database',
       default: false,
     },
+    'no-step-qty': {
+      type: 'boolean',
+      description: 'HTML only: hide ingredient quantities inside step text (quantities still shown in section mise en place)',
+      default: false,
+    },
   },
   async run({ args }) {
     const fmt = args.format as string | undefined
@@ -62,7 +67,7 @@ export default defineCommand({
 
     let content: string
     try {
-      content = await exportRecipe(filePath, fmt, db, scaleFactor)
+      content = await exportRecipe(filePath, fmt, db, scaleFactor, { hideStepQty: args['no-step-qty'] as boolean })
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
