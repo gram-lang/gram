@@ -94,19 +94,42 @@ export function analyze(
     // 2. Traverse and enrich the master Shopping List
     const shopping_list = result.shopping_list ? JSON.parse(JSON.stringify(result.shopping_list)) : [];
     shopping_list.forEach((item: any) => {
-         // Resolve raw items to normalized grams
          if (opts.enableMassNormalization !== false) {
-              const numericQty = getNumericQty(item.qty);
-              if (numericQty !== null) {
-                   const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
-                   if (norm) {
-                       item.normalizedMass = (item.normalizedMass || 0) + norm.mass;
-                       if (norm.isEstimate) item.isEstimate = true;
-                       item.conversionMethod = item.isEstimate ? 'estimate' : 'physical';
+              if (item.type === 'composite' && Array.isArray(item.usage)) {
+                   // For composites, sum children masses — NOT the parent unit weight.
+                   // e.g. 6 egg yolks + 1 direct egg → 6×17g + 1×50g = 152g, not 7×50g = 350g.
+                   let totalMass = 0;
+                   let hasEstimate = false;
+                   for (const child of item.usage) {
+                        const numericQty = getNumericQty(child.qty);
+                        if (numericQty !== null) {
+                             const norm = normalizeMass(numericQty, child.unit || 'unit', database, child.name || child.id, overrides);
+                             if (norm) {
+                                  child.normalizedMass = parseFloat(norm.mass.toFixed(2));
+                                  child.isEstimate = norm.isEstimate;
+                                  totalMass += norm.mass;
+                                  if (norm.isEstimate) hasEstimate = true;
+                             }
+                        }
+                   }
+                   if (totalMass > 0) {
+                        item.normalizedMass = parseFloat(totalMass.toFixed(2));
+                        item.isEstimate = hasEstimate;
+                        item.conversionMethod = hasEstimate ? 'estimate' : 'physical';
+                   }
+              } else {
+                   const numericQty = getNumericQty(item.qty);
+                   if (numericQty !== null) {
+                        const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
+                        if (norm) {
+                            item.normalizedMass = (item.normalizedMass || 0) + norm.mass;
+                            if (norm.isEstimate) item.isEstimate = true;
+                            item.conversionMethod = item.isEstimate ? 'estimate' : 'physical';
+                        }
                    }
               }
          }
-         
+
          // Apply physical yields (waste factor adjustments, e.g. purchasing weight vs net weight)
          if (opts.enableYieldManagement !== false && item.normalizedMass && item.normalizedMass > 0) {
               const dbData = getIngredientData(item.id, database);
