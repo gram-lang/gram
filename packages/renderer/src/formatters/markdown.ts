@@ -48,7 +48,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                 });
             } else if (item.type === 'composite') {
                  let parentStr = formatElement(item, 'md', context);
-                 md += `- **${parentStr}** (Composite):\n`;
+                 md += `- ${parentStr} **(Composite)**:\n`;
                  item.usage.forEach((child: any) => {
                      md += `  - ${formatElement(child, 'md', context)}\n`;
                  });

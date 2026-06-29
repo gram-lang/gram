@@ -316,6 +316,12 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         return strategies.alternative!(item, format, context);
     },
      
+    composite: (item, format, context) => {
+        // A composite item in the shopping list is essentially a parent ingredient.
+        // We reuse the ingredient formatter to display it identically.
+        return strategies.ingredient!({ ...item, type: 'ingredient' }, format, context);
+    },
+     
     text: (item, format) => {
         const text = item.value || '';
         return format === 'html' ? escapeHtml(text) : text;

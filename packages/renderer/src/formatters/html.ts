@@ -123,7 +123,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `    </li>\n`;
             } else if (item.type === 'composite') {
                 html += `    <li>\n`;
-                html += `      <strong>${formatElement(item, 'html', context)}</strong> (Composite):\n`;
+                html += `      ${formatElement(item, 'html', context)} <strong>(Composite)</strong>:\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach((child: any) => {
                      html += `        <li>${formatElement(child, 'html', context)}</li>\n`;
