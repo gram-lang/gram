@@ -12,5 +12,14 @@
     "@gram/renderer": "0.10.1",
     "@gram/vscode-extension": "0.10.1"
   },
-  "changesets": []
+  "changesets": [
+    "cuddly-tires-crash",
+    "forty-lies-guess",
+    "good-things-rest",
+    "happy-hands-peel",
+    "little-rings-take",
+    "shaggy-wasps-behave",
+    "stale-stamps-tickle",
+    "true-numbers-float"
+  ]
 }
