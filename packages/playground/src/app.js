@@ -43,6 +43,13 @@ const themeToggle = document.getElementById('theme-toggle');
 const warningsArea = document.getElementById('warnings');
 const viewSelect = document.getElementById('view-mode');
 
+let outputMode = localStorage.getItem('view-mode');
+if (!outputMode) {
+    outputMode = viewSelect.value || 'json';
+} else {
+    viewSelect.value = outputMode;
+}
+
 const optMass = document.getElementById('opt-mass');
 const optYield = document.getElementById('opt-yield');
 const optNutrition = document.getElementById('opt-nutrition');
@@ -72,6 +79,7 @@ updateAnalysisDeps();
         if (el.id === 'opt-nutrition' && el.checked && outputMode !== 'preview') {
             outputMode = 'preview';
             viewSelect.value = 'preview';
+            localStorage.setItem('view-mode', 'preview');
         }
         update();
     });
@@ -79,6 +87,7 @@ updateAnalysisDeps();
 
 viewSelect.addEventListener('change', () => {
     outputMode = viewSelect.value;
+    localStorage.setItem('view-mode', outputMode);
     update();
 });
 // Theme Logic
@@ -137,7 +146,7 @@ if (footer) {
 }
 
 // Output Mode Logic
-let outputMode = 'json'; // 'json' | 'markdown' | 'html'
+// (outputMode is now initialized earlier)
 
 const playgroundOptions = {
     icons: {
@@ -623,6 +632,18 @@ if (examplesSelect) {
                 opt.textContent = ex.title;
                 examplesSelect.appendChild(opt);
             });
+
+            // Auto-load a rich example by default if input is empty
+            if (manifest.length > 0 && (!input.value || input.value.trim() === '')) {
+                const defaultEx = manifest.find(ex => ex.id === 'empanadas') || manifest.find(ex => ex.id === 'canneles') || manifest[0];
+                fetch(defaultEx.path)
+                    .then(res => res.text())
+                    .then(text => {
+                        input.value = text;
+                        update();
+                    })
+                    .catch(e => console.error('Failed to load default example:', e));
+            }
         })
         .catch(e => console.error('Manifest Error:', e));
 
