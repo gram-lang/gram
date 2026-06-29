@@ -301,7 +301,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         // Granular
         const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
         const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
-        const sodium = displayVals.sodium !== undefined ? displayVals.sodium : '-';
+        // sodium is stored/calculated in mg — round to nearest integer for display
+        const sodium = displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : '-';
         
         let warningsHtml = '';
         if (nut.warnings && nut.warnings.length > 0) {
@@ -319,7 +320,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
         html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
         html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}g</strong></div>\n`;
+        html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
         html += `  </div>\n`;
         html += `</div>\n`;
         }

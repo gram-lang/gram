@@ -117,7 +117,7 @@ export function calculateNutrition(
     total.fat = Math.round(total.fat * 10) / 10;
     if (total.sugar !== undefined) total.sugar = Math.round(total.sugar * 10) / 10;
     if (total.fiber !== undefined) total.fiber = Math.round(total.fiber * 10) / 10;
-    if (total.sodium !== undefined) total.sodium = Math.round(total.sodium * 100) / 100;
+    if (total.sodium !== undefined) total.sodium = Math.round(total.sodium); // mg → integer
 
     const res: NutritionMetrics = {
         total,
@@ -134,7 +134,7 @@ export function calculateNutrition(
             fat: Math.round(total.fat / portions * 10) / 10,
             sugar: total.sugar !== undefined ? Math.round(total.sugar / portions * 10) / 10 : 0,
             fiber: total.fiber !== undefined ? Math.round(total.fiber / portions * 10) / 10 : 0,
-            sodium: total.sodium !== undefined ? Math.round(total.sodium / portions * 100) / 100 : 0
+            sodium: total.sodium !== undefined ? Math.round(total.sodium / portions) : 0
         };
     }
 
