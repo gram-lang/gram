@@ -5,7 +5,7 @@
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=flat-square)
 ![License](https://img.shields.io/badge/License-GPL_v3-blue.svg?style=flat-square)
 
-![Gram Banner](gram-banner.png "Gram")
+![Gram Banner](gram-banner.jpg "Gram")
 
 GRAM is a markup language designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. It treats your recipes as **code**, compiling ingredients, instructions, and cookware into an Abstract Syntax Tree (AST).
 
