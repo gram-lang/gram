@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "src/.vitepress/dist/**"]
     },
     "prebuild": {
       "outputs": ["src/grammar-content.ts"]

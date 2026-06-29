@@ -10,12 +10,18 @@ echo "🚀 Starting deployment process..."
 bun run build
 
 
-# 1. Back up the playground content (from main)
+# 1. Back up the compiled content (from main)
 git checkout main
 rm -rf "$TMP_DIR"
 mkdir -p "$TMP_DIR"
+
+# Copy Docs to root
+cp -r packages/docs/src/.vitepress/dist/. "$TMP_DIR/"
+
+# Copy Playground to a subfolder
+mkdir -p "$TMP_DIR/playground"
 # Using rsync to exclude node_modules
-rsync -av --exclude='node_modules' --exclude='.git' packages/playground/ "$TMP_DIR/"
+rsync -av --exclude='node_modules' --exclude='.git' packages/playground/ "$TMP_DIR/playground/"
 
 # 2. Clean the pages branch
 git checkout pages
