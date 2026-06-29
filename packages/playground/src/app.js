@@ -68,6 +68,11 @@ updateAnalysisDeps();
     el.addEventListener('change', () => {
         if (el.id === 'opt-mass') updateAnalysisDeps();
         localStorage.setItem(el.id, el.checked);
+        // Nutrition panel is only visible in Preview — auto-switch so the user sees it
+        if (el.id === 'opt-nutrition' && el.checked && outputMode !== 'preview') {
+            outputMode = 'preview';
+            viewSelect.value = 'preview';
+        }
         update();
     });
 });
@@ -213,6 +218,14 @@ function update() {
         const previewOutput = document.getElementById('preview-output');
         const preOutput = document.getElementById('output').parentElement; // pre is parent of code#output
         
+        // Toggle .show-macros so gram.css reveals the nutrition panel when enabled
+        const previewOutput2 = document.getElementById('preview-output');
+        if (optNutrition.checked) {
+            previewOutput2.classList.add('show-macros');
+        } else {
+            previewOutput2.classList.remove('show-macros');
+        }
+
         // Render
         if (outputMode === 'preview' || outputMode === 'json-tree') {
             // Hide Code View

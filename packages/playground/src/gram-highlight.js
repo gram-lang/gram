@@ -72,10 +72,16 @@ export default function(hljs) {
     function element(className, char) {
         return {
             className: className,
-            begin: new RegExp(char + '[\\?\\-\\*\\&\\=]*'),
-            // Use explicit end chars and exclude them from the match
-            // so they can be picked up by next modes (like Quantity or Prep)
-            end: /(?=[\{\(\:\<\|\n@#~°& ]|$)/, 
+            variants: [
+                {
+                    // Full element (with syntax chars like {} following it). Can contain spaces.
+                    begin: new RegExp(char + '[\\?\\-\\*\\&\\=]*[^\\{\\(\\:\\<\\|\\n@#~°&]+(?=[\\{\\(\\:\\<\\|])')
+                },
+                {
+                    // Bare element. Cannot contain spaces.
+                    begin: new RegExp(char + '[\\?\\-\\*\\&\\=]*[^\\s\\{\\(\\:\\<\\|\\n@#~°&]+')
+                }
+            ],
             relevance: 10
         };
     }
