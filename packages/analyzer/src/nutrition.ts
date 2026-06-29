@@ -54,7 +54,11 @@ export function calculateNutrition(
     flatList.forEach(item => {
         const id = item.id;
         if (!id) return;
-        
+
+        // Ingredients declared without a quantity (@salt{}, @oil) have negligible/trace mass.
+        // They are intentional "to taste" entries — skip silently, no warning, no coverage hit.
+        if (item.qty == null && !item.normalizedMass) return;
+
         metricsCount++;
 
         let mass = 0;
@@ -67,8 +71,8 @@ export function calculateNutrition(
         } else if (item.qty) {
             const val = getNumericQty(item.qty);
             if (val !== null) {
-                const unit = item.unit || 'unit'; 
-                
+                const unit = item.unit || 'unit';
+
                 // item.name may be undefined for composite children (usage items only carry id+qty)
                 const norm = normalizeMass(val, unit, database, item.name || item.id);
                 if (norm) {
@@ -85,17 +89,17 @@ export function calculateNutrition(
             } else if (data.nutrition) {
                 knownCount++;
                 const factor = mass / 100.0;
-                
+
                 const m = data.nutrition;
                 total.calories += m.calories * factor;
                 total.protein += m.protein * factor;
                 total.carbs += m.carbs * factor;
                 total.fat += m.fat * factor;
-                
+
                 if (m.sugar !== undefined) total.sugar = (total.sugar || 0) + m.sugar * factor;
                 if (m.fiber !== undefined) total.fiber = (total.fiber || 0) + m.fiber * factor;
                 if (m.sodium !== undefined) total.sodium = (total.sodium ?? 0) + m.sodium * factor;
-                    
+
             } else {
                  pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
             }
