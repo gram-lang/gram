@@ -8,7 +8,7 @@ TMP_DIR="/tmp/gram_build"
 echo "🚀 Starting deployment process..."
 
 bun run build
-bun run build:playground
+
 
 # 1. Back up the playground content (from main)
 git checkout main
