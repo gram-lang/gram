@@ -27,7 +27,7 @@ Inspired by the excellent [Cooklang](https://cooklang.org), GRAM takes the conce
 
 While other markups focus purely on natural language, GRAM cares deeply about **data integrity** to solve complex culinary problems:
 
-1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl{}`), timers (`~{30min}`), and temperatures (`°{230°C}`).
+1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl`), timers (`~{30min}`), and temperatures (`°{230°C}`).
 2. **Explicit Actions**: Highlight the main method used in a step (e.g., `[Mix]`, `[Bake]`).
 3. **Composite Ingredients (`<@`)**: Cleanly handle tricky relationships like "Zest of 1 lemon" and "Juice of 2 lemons" while ensuring your shopping list aggregates to exactly "Buy 2 Lemons".
 4. **Intermediate Preparations (`->&dough`)**: Chain recipe parts together just like variables in code, and reuse them later without accidentally doubling your shopping list totals.
@@ -51,7 +51,7 @@ size: 2 loaves
 description: A simple, highly hydrated dough.
 ---
 
-## Dough ~{-1d}
+## Dough
 
 [Mix] The @flour{500g}, @water{70% @&flour}, and @salt{10g} in a #large bowl{}. ->&dough
 
