@@ -1,6 +1,9 @@
 import { Registry, RegistryEntry } from './types';
 import { slugify } from './utils';
 
+// Strip punctuation that bleeds into bare element names (e.g. #saucepan, or @salt.)
+const cleanRegistryName = (name: string) => name.trim().replace(/[,;!?.]+$/, '');
+
 export class RecipeRegistry implements Registry {
     ingredients = new Map<string, RegistryEntry>();
     cookware = new Map<string, { id: string; name: string }>();
@@ -11,10 +14,11 @@ export class RecipeRegistry implements Registry {
     }
 
     registerIngredient(name: string, data?: Partial<Omit<RegistryEntry, 'id' | 'name'>>): string {
-        const id = slugify(name);
+        const cleanedName = cleanRegistryName(name);
+        const id = slugify(cleanedName);
         const existing = this.ingredients.get(id);
         if (!existing) {
-            this.ingredients.set(id, { id, name, ...data } as RegistryEntry);
+            this.ingredients.set(id, { id, name: cleanedName, ...data } as RegistryEntry);
         } else if (data) {
             if (data.default_unit && !existing.default_unit) {
                 existing.default_unit = data.default_unit;
@@ -27,9 +31,10 @@ export class RecipeRegistry implements Registry {
     }
 
     registerCookware(name: string): string {
-        const id = slugify(name);
+        const cleanedName = cleanRegistryName(name);
+        const id = slugify(cleanedName);
         if (!this.cookware.has(id)) {
-            this.cookware.set(id, { id, name });
+            this.cookware.set(id, { id, name: cleanedName });
         }
         return id;
     }
