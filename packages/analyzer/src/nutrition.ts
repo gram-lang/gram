@@ -69,7 +69,8 @@ export function calculateNutrition(
             if (val !== null) {
                 const unit = item.unit || 'unit'; 
                 
-                const norm = normalizeMass(val, unit, database, item.name); 
+                // item.name may be undefined for composite children (usage items only carry id+qty)
+                const norm = normalizeMass(val, unit, database, item.name || item.id);
                 if (norm) {
                     mass = norm.mass;
                     isEst = norm.isEstimate;

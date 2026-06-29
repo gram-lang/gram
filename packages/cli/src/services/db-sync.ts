@@ -23,9 +23,13 @@ export async function analyzeIngredients(
     files.map(file =>
       limit(async () => {
         const { compiled } = await runPipeline(file, { skipAnalyzer: true })
-        return (compiled.shopping_list as Array<{ id: string; name: string; type?: string }>)
-          .filter(item => item.type !== 'alternative')
-          .map(item => ({ id: item.id, name: item.name }))
+        // Use registry (not shopping_list) so composite children like `egg-yolks`
+        // from `@egg yolks{}<@eggs` are included — they only appear in usage[] sub-arrays
+        // in the shopping list and are never exposed as top-level items there.
+        const reg = compiled.registry.ingredients as Record<string, { id: string; name: string; is_intermediate?: boolean }>
+        return Object.values(reg)
+          .filter(entry => !entry.is_intermediate)
+          .map(entry => ({ id: entry.id, name: entry.name }))
       }),
     ),
   )
