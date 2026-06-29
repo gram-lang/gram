@@ -9,9 +9,9 @@
 
 ### 2. Modifiers (Flags)
 Placed right after the `@`. Combinations are allowed (e.g., `@?-`). Absurd combinations (e.g., `?*`, `-&`, `**`) will trigger a compiler warning (`INVALID_MODIFIER_COMBINATION`).
-* `@?` **Optional**: `@?sugar{}` (Displays "optional").
-* `@-` **Hidden**: `@-salt{}` (Does not show in shopping list, useful for "Salt, pepper").
-* `@*` **Baker's Base**: `@*flour{}` (100% reference for baker's math).
+* `@?` **Optional**: `@?sugar` (Displays "optional").
+* `@-` **Hidden**: `@-salt` (Does not show in shopping list, useful for "Salt, pepper").
+* `@*` **Baker's Base**: `@*flour` (100% reference for baker's math).
 * `@=` **Fixed**: `@=salt{10g}` (Quantity does not scale with portions).
 * `@&` **Reference**: `@&butter{50g}` (Reuses previously listed butter, adds 50g to total).
     *   *Safety*: Triggers error if `butter` was not defined before (typo check).
