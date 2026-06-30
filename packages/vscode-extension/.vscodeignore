@@ -1,0 +1,9 @@
+**
+!dist/**
+!package.json
+!README.md
+!CHANGELOG.md
+!syntaxes/**
+!snippets/**
+!language-configuration.json
+!LICENSE

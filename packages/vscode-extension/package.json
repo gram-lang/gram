@@ -111,7 +111,7 @@
   "scripts": {
     "build": "node build.cjs",
     "dev": "node build.cjs --watch",
-    "package": "vsce package"
+    "package": "node package.cjs"
   },
   "dependencies": {
     "@gram/language-server": "workspace:*",
