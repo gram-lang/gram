@@ -20,7 +20,7 @@ You would need to calculate a multiplier (`400 / 500 = 0.8`), and manually multi
 ## The Solution: Baker's Percentages
 
 In professional baking, every ingredient is expressed as a percentage of the total flour weight. 
-In Gram, we can encode this logic directly into the recipe using `% @&target`.
+In Gram, this logic can be encoded directly into the recipe using `% @&target`.
 
 ### 1. Define the Anchor (Target)
 First, define the flour as a standard ingredient and give it an intermediate variable declaration so it can be referenced.

@@ -1,12 +1,12 @@
 # Tutorial: Your First Complex Recipe
 
-In this tutorial, we will write a complete recipe for a **Lemon Meringue Tart**. 
+Time to bake! In this tutorial, a complete recipe for a **Lemon Meringue Tart** is written.
 
-This recipe will teach you how to move beyond a simple list of ingredients and use Gram's advanced compiler features to write a truly dynamic, scalable, and data-driven recipe.
+This recipe demonstrates how to move beyond a simple list of ingredients and use Gram's advanced compiler features to write a truly dynamic, scalable, and data-driven recipe.
 
 ## Step 1: The Basics (The Dough)
 
-Let's start by defining the sweet pastry dough. We use the `@` symbol for ingredients and `#` for cookware.
+Start by defining the sweet pastry dough. The `@` symbol is used for ingredients and `#` for cookware.
 
 ```gram
 ## Sweet Pastry Dough
@@ -21,9 +21,9 @@ This is very readable! The compiler will automatically extract the ingredients i
 
 ## Step 2: Intermediate Variables
 
-Our dough is currently just a list of steps. But we will need to use this dough later (to bake it). We must tell the compiler that the result of this section is a unified entity.
+The dough is currently just a list of steps. To use this dough later (to bake it), the compiler must be told that the result of this section is a unified entity.
 
-We do this using an **Intermediate Declaration** (`->&name`) at the end of the section.
+This is done using an **Intermediate Declaration** (`->&name`) at the end of the section.
 
 ```gram
 ## Sweet Pastry Dough
@@ -36,7 +36,7 @@ Wrap in plastic and let it rest in the fridge for ~{1h}.
 ->&pastry_dough
 ```
 
-Now, in our next section, we can reference this dough using `&name` instead of re-typing the ingredients. The compiler knows **not to add the dough to the shopping list**, because it's an intermediate preparation!
+Now, in the next section, this dough can be referenced using `&name` instead of re-typing the ingredients. The compiler knows **not to add the dough to the shopping list**, because it's an intermediate preparation!
 
 ```gram
 ## Baking the Tart Shell
@@ -48,7 +48,7 @@ Bake for ~{20min} until golden.
 
 ## Step 3: Background Timers
 
-In Step 1, we wrote `let it rest in the fridge for ~{1h}`. 
+In Step 1, the following was written: `let it rest in the fridge for ~{1h}`. 
 By default, timers are **synchronous**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
 
 But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a background task, add an ampersand `~&`:
@@ -61,11 +61,11 @@ Now, the compiler will subtract 1 hour from your *Active Time* but keep it in th
 
 ## Step 4: Composite Ingredients
 
-A lemon tart requires lemon zest and lemon juice. If you write `@lemon zest{10g}` and `@lemon juice{50ml}`, the shopping list will treat them as two completely different products. But you buy *whole lemons*!
+A lemon tart requires lemon zest and lemon juice. If you write `@lemon zest{10g}` and `@lemon juice{50ml}`, the shopping list will treat them as two completely different products. But lemons are bought whole!
 
-We solve this using **Composite Ingredients** (`<@parent`).
+This is solved using **Composite Ingredients** (`<@parent`).
 
-Let's write the Lemon Curd section:
+Here is the Lemon Curd section:
 
 ```gram
 ## Lemon Curd
@@ -79,7 +79,7 @@ Because both the zest and the juice point to `<@lemon`, the Gram Analyzer will u
 
 ## Step 5: Relative Quantities (Baker's Percentages)
 
-Let's say you want to make sure your lemon curd is perfectly balanced, no matter how much you scale the recipe. You want the sugar to always be exactly 150% of the weight of the lemon juice.
+For example, to make sure the lemon curd is perfectly balanced, no matter how much the recipe is scaled, the sugar must always be exactly 150% of the weight of the lemon juice.
 
 You can use **Relative Quantities** (`% @&target`):
 

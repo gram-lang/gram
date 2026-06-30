@@ -4,56 +4,94 @@ This guide will help you install the Gram ecosystem and compile your first recip
 
 ## 1. Installation
 
-Gram is optimized for [Bun](https://bun.sh/) and distributed as an NPM package. To start using it, you need to install the Gram CLI globally.
+Gram is an open-source project. To start using the CLI, clone the repository and build it locally. [Bun](https://bun.sh/) is used as the package manager and runtime.
 
-```bash
-bun add -g @gram/cli
-```
+1. Clone the repository:
+   ```bash
+   git clone https://codeberg.org/abiwab/gram.git
+   cd gram
+   ```
+2. Install all dependencies across the workspace:
+   ```bash
+   bun install
+   ```
+3. Link the CLI globally:
+   ```bash
+   cd packages/cli
+   bun link
+   ```
+
 > [!NOTE]
-> While it is technically possible to run Gram using Node.js and `npm` or `pnpm`, we highly recommend using Bun for optimal performance and compatibility.
+> The `bun link` command registers the `gram` executable globally. Ensure that your `~/.bun/bin` folder is in your system's `PATH`.
 
 ## 2. Editor Setup
 
 Because Gram treats recipes as code, having the right editor makes a huge difference.
 
-We highly recommend installing the **Gram VS Code Extension**. It provides:
+::: info Gram VS Code Extension
+Installing the **Gram VS Code Extension** is highly recommended. It provides:
 - Syntax highlighting
 - Auto-completion
 - Inline diagnostics and error checking
 - Real-time compiler feedback
+:::
 
-Currently, the extension is not available on the VS Code Marketplace, but you can build and install it locally from the source repository:
+Currently, the extension is not available on the VS Code Marketplace, but you can build and install it locally from the source repository you just cloned:
 
-1. Clone the repository: `git clone https://codeberg.org/abiwab/gram.git`
-2. Navigate to the extension folder: `cd gram/packages/vscode-extension`
-3. Install dependencies and package the extension:
-   ```bash
-   bun install
-   bun run package
-   ```
-4. This will generate a `.vsix` file. Install it in VS Code by running:
-   ```bash
-   code --install-extension gram-extension-*.vsix
-   ```
+```bash
+# 1. Navigate to the extension folder (from the root of the repository)
+cd packages/vscode-extension
 
-Alternatively, for development, you can symlink the extension to your local VS Code extensions folder:
-- **Linux / macOS**: `ln -s $(pwd) ~/.vscode/extensions/gram-vscode-extension`
-- **Windows**: `New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\gram-vscode-extension" -Target $PWD`
+# 2. Build the extension package (this generates a .vsix file)
+bun run package
 
-## 3. Writing Your First Recipe
+# 3. Install the package in VS Code
+code --install-extension gram-vscode-extension-*.vsix
+```
 
-Create a new file named `pancakes.gram`.
+::: details Alternative: Symlink for Extension Development
+For development purposes, you can symlink the extension directly to your local VS Code extensions folder instead of packaging it.
 
-Open it in your editor and add the following basic recipe:
+**Linux / macOS**:
+```bash
+ln -s $(pwd) ~/.vscode/extensions/gram-vscode-extension
+```
+
+**Windows (PowerShell)**:
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\gram-vscode-extension" -Target $PWD
+```
+:::
+
+## 3. Initializing a Project
+
+Before writing any recipe, it's highly recommended to initialize a Gram workspace. Run this command in a **new folder**:
+
+```bash
+gram init
+```
+
+This command scaffolds a `.gram/` directory with a configuration file and a starter database. 
+
+::: tip Interactive Setup
+The CLI will ask you a few questions to configure your AI provider (used later for advanced features like database enrichment or importing recipes). You don't need this for your first recipe! Feel free to just press `Enter` to skip or accept the defaults for now.
+:::
+
+## 4. Writing Your First Recipe
+
+Let's make some pancakes, shall we? 
+
+Create a new file named `pancakes.gram`, open it in the editor, and add the following basic recipe:
 
 ```gram [pancakes.gram]
 ---
 title: Pancakes
 portions: 2
 ---
+
 ## Batter ->&batter
 
-In a #medium bowl{}, mix the @flour{160g}, @baking powder{1 tsp}, @baking soda{1/2 tsp}, @sugar{1 tbsp} and @salt{1/4 tsp}. ->&dry mix{}
+In a #medium bowl{}, mix the @flour{160g}, @baking powder{1 tsp}, @sugar{1 tbsp} and @salt{1/4 tsp}. ->&dry mix{}
 
 To the &dry mix{}, add the @buttermilk{1 cup}, @egg{1} and the @vanilla extract{1/2 tsp}.
 
@@ -62,11 +100,11 @@ To the &dry mix{}, add the @buttermilk{1 cup}, @egg{1} and the @vanilla extract{
 Pour the &batter on a #griddle on °{medium heat} and cook for ~{2min}.
 ```
 
-## 4. Compiling the Recipe
+## 5. Compiling the Recipe
 
-Now, let's use the CLI to compile your recipe into a structured JSON format.
+Time to see the compiler in action! 
 
-Run the following command in your terminal:
+Run the following command in the terminal to compile the recipe into a structured JSON format:
 
 ```bash
 gram build pancakes.gram
@@ -78,7 +116,7 @@ This command will parse the recipe and output its structured JSON representation
 gram build pancakes.gram -o pancakes.json
 ```
 
-While the JSON output is incredibly useful for developers building applications around Gram, it is not the most readable format for humans!
+While the JSON output is incredibly useful for building applications around Gram, it is not the most readable format for humans!
 
 To see your recipe rendered directly in your terminal, you can use the `view` command:
 
@@ -86,10 +124,10 @@ To see your recipe rendered directly in your terminal, you can use the `view` co
 gram view pancakes.gram
 ```
 
-Alternatively, to see it come to life with a fully formatted visual interface, we highly recommend opening your recipe using the **VS Code Extension** or our **[Web Playground](../playground/index.md)**.
+Alternatively, to see it come to life with a fully formatted visual interface, it is highly recommended to open the recipe using the **VS Code Extension** or the **[Web Playground](../playground/index.md)**.
 
 ::: tip Try the playground
-If you don't want to install anything yet, you can try writing Gram directly in our web-based [Playground](../playground/index.md).
+If you don't want to install anything yet, you can try writing Gram directly in the web-based [Playground](../playground/index.md).
 :::
 
 ## Next Steps

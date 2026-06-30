@@ -26,4 +26,4 @@ The Gram Language Server implements the following standard LSP capabilities:
 
 Because it uses the standard LSP protocol, the `@gram/language-server` can be integrated into Neovim, Emacs, Sublime Text, or any other editor that supports LSP. 
 
-*(Documentation for configuring the language server in Neovim/Emacs is currently a work in progress. If you build an integration, please let us know!)*
+*(Documentation for configuring the language server in Neovim/Emacs is currently a work in progress. Contributions are welcome!)*
