@@ -29,44 +29,47 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/guide/what-is-gram' },
-          { text: 'Features', link: '/features/cli' },
+          { text: 'Ecosystem', link: '/ecosystem/cli' },
           { text: 'Playground', link: '/playground/' }
         ],
         sidebar: [
           {
-            text: 'Syntax Guide',
+            text: 'Introduction',
             items: [
               { text: 'What is Gram?', link: '/guide/what-is-gram' },
-              { text: 'Structure', link: '/guide/structure' },
-              { text: 'Ingredients', link: '/guide/ingredients' },
-              { text: 'Cookware', link: '/guide/cookware' },
-              { text: 'Time & Temperatures', link: '/guide/time-and-temperatures' },
-              { text: 'Relative Quantities', link: '/guide/advanced/relative-quantities' },
-              { text: 'Intermediate Vars', link: '/guide/advanced/intermediate-vars' },
-              { text: 'Composite Ingredients', link: '/guide/advanced/composite-ingredients' },
-              { text: 'Cheatsheet', link: '/guide/cheatsheet' }
+              { text: 'Getting Started', link: '/guide/getting-started' }
             ]
           },
           {
-            text: 'Core Features',
+            text: 'Language Specification',
             items: [
-              { text: 'Mass Normalization', link: '/features/mass-normalization' },
-              { text: 'Yield Management', link: '/features/yield-management' },
-              { text: 'Nutritional Estimation', link: '/features/nutritional-estimation' },
-              { text: 'Time & Scheduling', link: '/features/time-and-scheduling' },
-              { text: 'Shopping List Logic', link: '/features/shopping-list-logic' },
-              { text: 'CLI', link: '/features/cli' },
-              { text: 'VS Code Extension', link: '/features/vscode-extension' }
+              { text: 'Document Structure', link: '/syntax/document-structure' },
+              { text: 'Ingredients', link: '/syntax/ingredients' },
+              { text: 'Cookware', link: '/syntax/cookware' },
+              { text: 'Times', link: '/syntax/times' },
+              { text: 'Temperatures', link: '/syntax/temperatures' },
+              { text: 'Relative Quantities', link: '/syntax/relative-quantities' },
+              { text: 'Intermediate Variables', link: '/syntax/intermediate-variables' },
+              { text: 'Composite Ingredients', link: '/syntax/composite-ingredients' },
+              { text: 'Cheatsheet', link: '/syntax/cheatsheet' }
             ]
           },
           {
-            text: 'Technical',
+            text: 'Ecosystem & Tools',
             items: [
-              { text: 'Parsing Architecture', link: '/technical/parsing-architecture' },
-              { text: 'JSON Output', link: '/technical/json-output' },
-              { text: 'Ingredient Database', link: '/technical/ingredient-database' },
-              { text: 'Options', link: '/technical/options' },
-              { text: 'Development Environment', link: '/technical/development-environment' }
+              { text: 'CLI', link: '/ecosystem/cli' },
+              { text: 'VS Code Extension', link: '/ecosystem/vscode-extension' },
+              { text: 'Language Server', link: '/ecosystem/language-server' }
+            ]
+          },
+          {
+            text: 'The Engine (Internals)',
+            items: [
+              { text: 'The Gram Lifecycle', link: '/engine/lifecycle' },
+              { text: 'Parsing & AST', link: '/engine/parser' },
+              { text: 'Compilation & Structure', link: '/engine/kitchen' },
+              { text: 'Semantic Analysis', link: '/engine/analyzer' },
+              { text: 'JSON Output', link: '/engine/renderer' }
             ]
           }
         ]
@@ -127,7 +130,7 @@ export default defineConfig({
 
   themeConfig: {
     socialLinks: [
-      { icon: 'github', link: 'https://codeberg.org/abiwab/gram' }
+      { icon: { svg: '<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Codeberg</title><path d="M11.999.747A11.974 11.974 0 0 0 0 12.75c0 2.254.635 4.465 1.833 6.376L11.837 6.19c.072-.092.251-.092.323 0l4.178 5.402h-2.992l.065.239h3.113l.882 1.138h-3.674l.103.374h3.86l.777 1.003h-4.358l.135.483h4.593l.695.894h-5.038l.165.589h5.326l.609.785h-5.717l.182.65h6.038l.562.727h-6.397l.183.65h6.717A12.003 12.003 0 0 0 24 12.75 11.977 11.977 0 0 0 11.999.747zm3.654 19.104.182.65h5.326c.173-.204.353-.433.513-.65zm.385 1.377.18.65h3.563c.233-.198.485-.428.712-.65zm.383 1.377.182.648h1.203c.356-.204.685-.412 1.042-.648zz"/></svg>' }, link: 'https://codeberg.org/abiwab/gram' }
     ]
   }
 })

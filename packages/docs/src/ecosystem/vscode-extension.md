@@ -35,7 +35,7 @@ The official GRAM VS Code extension transforms your editor into a powerful recip
   - Convert volume quantities to mass directly in your code (if density is known).
 
 ### 5. Auto-formatting
-Trigger document formatting (`Alt+Shift+F`) to:
+Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to:
 - Normalize spacing inside braces (`{ 200 g }` becomes `{200g}`).
 - Format composite ingredients cleanly (`@a < @b` becomes `@a<@b`).
 - Align section headers and convert tabs to spaces, leaving the YAML frontmatter intact.

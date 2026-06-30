@@ -6,9 +6,17 @@ The official GRAM CLI (`@gram/cli`) is the primary tool for validating, compilin
 
 The CLI can be installed globally or locally in your project:
 
-```bash
+::: code-group
+```bash [bun]
 bun add -d @gram/cli
 ```
+```bash [npm]
+npm install -D @gram/cli
+```
+```bash [pnpm]
+pnpm add -D @gram/cli
+```
+:::
 
 ---
 
@@ -113,27 +121,6 @@ gram diff brioche.gram                        # Working tree vs HEAD (most commo
 gram diff brioche.gram --ref HEAD~2           # vs a specific git commit
 gram diff brioche.gram --ref v1.2             # vs a git tag
 gram diff brioche-v1.gram brioche-v2.gram     # Two explicit files (no git needed)
-```
-Output example:
-```
-  Semantic diff: brioche.gram (HEAD → working tree)
-
-  META
-  ~ portions           8 → 12
-
-  INGREDIENTS
-  ~ flour              500g → 600g   (+20%)
-  + yeast              5g
-  - salt               2g
-
-  TIMING
-  ~ Total time         60 min → 90 min  (+30 min)
-
-  SECTIONS
-  ~ Section "Dough" — 3 → 4 steps (+1)
-
-  TEMPERATURES
-  + Section "Baking"   180°C
 ```
 The diff covers **six axes**:
 - **Ingredients** — added/removed/changed quantities, with `percentChange` when units match.
@@ -243,21 +230,6 @@ Displays all configuration values from both the local project config and the glo
 ```bash
 gram config list
 ```
-Output example:
-```
-  Local config  (.gram/config.yaml)
-  ───────────────────────────────────────
-  database     ./ingredients.yaml
-  language     en
-  ai.provider  google
-  ai.model     gemini-3.5-flash
-  ai.apiKey    *** (GEMINI_API_KEY in .env)
-
-  Global config  (~/.config/gram/config.yaml)
-  ────────────────────────────────────────────
-  (empty)
-```
-- Sensitive values (API keys) are always masked and shown with the env var name they live in.
 
 #### `gram config get <key>`
 Prints a single config value to stdout.
@@ -266,16 +238,12 @@ gram config get ai.provider      # → google
 gram config get database         # → ./ingredients.yaml
 gram config get ai.provider --global
 ```
-- Exits with code 1 if the key is not set.
-- Output is plain text, suitable for scripting.
 
 #### `gram config set <key> <value>`
 Sets a configuration value.
 ```bash
 gram config set database ./my-db.yaml
-gram config set language en
 gram config set ai.provider google
-gram config set ai.model gemini-3.5-flash
 gram config set ai.apiKey AIza...           # Writes GEMINI_API_KEY to .env
 gram config set database ./global-db.yaml --global
 ```
@@ -288,9 +256,7 @@ Removes a configuration value.
 ```bash
 gram config unset ai.model
 gram config unset ai.apiKey         # Removes the API key env var from .env
-gram config unset language --global
 ```
-- Exits with code 1 if the key was not set.
 
 ---
 
@@ -298,38 +264,34 @@ gram config unset language --global
 
 Commands nested under `gram db` to manage your `ingredients.yaml`.
 
-> **Recommended workflow — always run in this order:**
-> ```
-> gram db sync → gram db lint → gram db enrich
-> ```
-> Running `lint` before `enrich` avoids wasting AI calls enriching ingredients that will later be merged as duplicates.
->
-> Use `gram db search` at any time to inspect entries and audit completeness. Use `gram db merge` to incorporate an external database into your own.
+::: tip Recommended Workflow
+Always run in this order:
+```
+gram db sync → gram db lint → gram db enrich
+```
+Running `lint` before `enrich` avoids wasting AI calls enriching ingredients that will later be merged as duplicates.
+Use `gram db search` at any time to inspect entries and audit completeness. Use `gram db merge` to incorporate an external database into your own.
+:::
 
 #### `gram db sync [pattern]`
 **Step 1/3.** Scans your recipes to find undocumented ingredients and adds them to your database.
 - Interactive fuzzy matching (Levenshtein) helps you avoid duplicates for plurals or typos.
-- Options: `--dry-run`, `--db`.
 
 #### `gram db lint`
 **Step 2/3.** Uses AI to detect and resolve semantic duplicates and plurals in your database.
 - Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `egg`).
 - For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
 - Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
-- Options: `--report` (show issues without fixing).
 
 #### `gram db enrich`
 **Step 3/3.** Uses AI to automatically complete missing data in your database.
 - Enriches `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches.
 - `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
 - Idempotent: safely re-runnable, only fills in fields that are still missing.
-- Options: `--field density|nutrition|tags|category|all`, `--ingredient <id>`, `--dry-run`.
 
 #### `gram db validate`
 Validates the integrity of your `ingredients.yaml`.
 - Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
-- Warns about missing nutrition or density data.
-- Options: `--strict` (exit 1 on warnings).
 
 #### `gram db search [query]`
 Searches and displays ingredient entries in full detail.
@@ -338,48 +300,31 @@ gram db search butter            # Partial match on id, name, or any alias
 gram db search --tag dairy       # All dairy-tagged ingredients
 gram db search --category Grains # All ingredients in the Grains category
 gram db search --missing nutrition  # Entries that have no nutrition data yet
-gram db search butter --exact    # Exact match only (name or alias)
-gram db search --count           # Print count of matches, suitable for scripting
 ```
 Every field is displayed for each match: name, aliases, tags, category, and full nutrition (calories, protein, carbs, fat, saturated/monounsaturated/polyunsaturated fat, sugar, fiber, sodium, alcohol per 100g) and physical data (density, yield, unit weight).
-- Options: `[query]`, `--tag <tag>`, `--category/-c <category>`, `--missing nutrition|physical|aliases`, `--exact`, `--count`, `--db`, `--json`.
 
 #### `gram db merge <source.yaml>`
 Merges an external ingredient database into your local one.
 ```bash
 gram db merge ~/shared-ingredients.yaml          # Interactive conflict resolution
 gram db merge community.yaml --prefer remote     # Always use remote values on conflict
-gram db merge community.yaml --dry-run           # Preview changes without writing
-gram db merge community.yaml --only-new          # Add new entries only, skip enrichment
 ```
 The merge is **alias-aware**: if your database has `butter` with alias `beurre`, and the source has a `beurre` entry, they are recognized as the same ingredient.
 
-**Merge rules:**
-- `aliases` and `tags` are always **union-merged** (no conflict possible).
-- `nutrition`, `physical`, `category`: if only one side has data, it is filled in automatically. If both sides differ, it is a **conflict**.
-- Conflicts are resolved interactively (one prompt per field) unless `--prefer local|remote` is specified.
-
-Only local YAML files are accepted as source — URLs are intentionally not supported.
-- Options: `<source>` (required, `.yaml`/`.yml`), `--prefer local|remote`, `--dry-run`, `--only-new`, `--db`.
-
 ---
 
-## Configuration
+## Configuration File Details
 
 The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
-
-You can also manually override the database path during commands:
-```bash
-gram build --db ./my-custom-db.yaml
-```
 
 ### Cascading AI Configuration
 GRAM uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
 1. **Environment Variables**: Variables like `GEMINI_API_KEY` (from the system or a `.env` file) take absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
 2. **`config.yaml` Fallback**: If the environment variable is missing, GRAM falls back to the `ai.apiKey` field in your `config.yaml`. 
 
-> [!WARNING]
-> Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
+::: warning Protect your Keys!
+Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
+:::
 
 ### `config.yaml` Settings
 
