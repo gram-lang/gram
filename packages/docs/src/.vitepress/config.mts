@@ -28,48 +28,58 @@ export default defineConfig({
       lang: 'en',
       themeConfig: {
         nav: [
-          { text: 'Guide', link: '/guide/what-is-gram' },
-          { text: 'Ecosystem', link: '/ecosystem/cli' },
+          { text: 'Tutorials', link: '/tutorials/getting-started' },
+          { text: 'How-To', link: '/how-to/manage-database' },
+          { text: 'Reference', link: '/reference/syntax/cheatsheet' },
+          { text: 'Explanation', link: '/explanation/philosophy' },
           { text: 'Playground', link: '/playground/' }
         ],
         sidebar: [
           {
-            text: 'Introduction',
+            text: 'Tutorials',
             items: [
-              { text: 'What is Gram?', link: '/guide/what-is-gram' },
-              { text: 'Getting Started', link: '/guide/getting-started' }
+              { text: 'Getting Started', link: '/tutorials/getting-started' },
+              { text: 'Your First Recipe', link: '/tutorials/first-recipe' }
             ]
           },
           {
-            text: 'Language Specification',
+            text: 'How-To Guides',
             items: [
-              { text: 'Document Structure', link: '/syntax/document-structure' },
-              { text: 'Ingredients', link: '/syntax/ingredients' },
-              { text: 'Cookware', link: '/syntax/cookware' },
-              { text: 'Times', link: '/syntax/times' },
-              { text: 'Temperatures', link: '/syntax/temperatures' },
-              { text: 'Relative Quantities', link: '/syntax/relative-quantities' },
-              { text: 'Intermediate Variables', link: '/syntax/intermediate-variables' },
-              { text: 'Composite Ingredients', link: '/syntax/composite-ingredients' },
-              { text: 'Cheatsheet', link: '/syntax/cheatsheet' }
+              { text: 'Manage Database', link: '/how-to/manage-database' },
+              { text: 'Scale Recipes Dynamically', link: '/how-to/scale-recipes' },
+              { text: 'Generate Shopping List', link: '/how-to/weekly-shopping-list' },
+              { text: 'Customize HTML Rendering', link: '/how-to/custom-html-renderer' }
             ]
           },
           {
-            text: 'Ecosystem & Tools',
+            text: 'Reference',
             items: [
-              { text: 'CLI', link: '/ecosystem/cli' },
-              { text: 'VS Code Extension', link: '/ecosystem/vscode-extension' },
-              { text: 'Language Server', link: '/ecosystem/language-server' }
+              { text: 'Document Structure', link: '/reference/syntax/document-structure' },
+              { text: 'Ingredients', link: '/reference/syntax/ingredients' },
+              { text: 'Cookware', link: '/reference/syntax/cookware' },
+              { text: 'Times', link: '/reference/syntax/times' },
+              { text: 'Temperatures', link: '/reference/syntax/temperatures' },
+              { text: 'Relative Quantities', link: '/reference/syntax/relative-quantities' },
+              { text: 'Intermediate Variables', link: '/reference/syntax/intermediate-variables' },
+              { text: 'Composite Ingredients', link: '/reference/syntax/composite-ingredients' },
+              { text: 'Cheatsheet', link: '/reference/syntax/cheatsheet' },
+              { text: 'CLI Commands', link: '/reference/tooling/cli' },
+              { text: 'VS Code Extension', link: '/reference/tooling/vscode-extension' },
+              { text: 'Language Server', link: '/reference/tooling/language-server' }
             ]
           },
           {
-            text: 'The Engine (Internals)',
+            text: 'Explanation',
             items: [
-              { text: 'The Gram Lifecycle', link: '/engine/lifecycle' },
-              { text: 'Parsing & AST', link: '/engine/parser' },
-              { text: 'Compilation & Structure', link: '/engine/kitchen' },
-              { text: 'Semantic Analysis', link: '/engine/analyzer' },
-              { text: 'JSON Output', link: '/engine/renderer' }
+              { text: 'What is Gram?', link: '/explanation/philosophy' },
+              { text: 'The Gram Lifecycle', link: '/explanation/engine/lifecycle' },
+              { text: 'Parsing & AST', link: '/explanation/engine/parser' },
+              { text: 'Compilation & Structure', link: '/explanation/engine/kitchen' },
+              { text: 'Semantic Analysis', link: '/explanation/engine/analyzer' },
+              { text: 'JSON Output', link: '/explanation/engine/renderer' },
+              { text: 'Deep Dive: Mass & Yield', link: '/explanation/mass-and-yield' },
+              { text: 'Deep Dive: Nutrition', link: '/explanation/nutrition' },
+              { text: 'Deep Dive: Shopping Lists', link: '/explanation/shopping-list-aggregation' }
             ]
           }
         ]
