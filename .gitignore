@@ -3,3 +3,7 @@ dist/
 .turbo/
 .notes/
 .sandbox/
+
+# Vitepress
+.vitepress/cache
+.vitepress/dist
