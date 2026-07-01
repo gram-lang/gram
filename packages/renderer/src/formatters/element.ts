@@ -1,5 +1,5 @@
 import { RenderContext } from '../types';
-import { escapeHtml, getQty, formatQuantityValue } from '../utils';
+import { escapeHtml, getQty, formatQuantityValue, applyBakersMath } from '../utils';
 
 // Default icons mapping
 export const DEFAULT_ICONS = {
@@ -69,6 +69,15 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 ? item.variable_entries.map((v: any) => escapeHtml(String(v))).join(' + ')
                 : item.variable_entries.join(' + ');
             qtyContent = qtyContent ? `${qtyContent} + ${vars}` : vars;
+        }
+        
+        let itemMassToUse = normalizedMass;
+        if (itemMassToUse === null && qty && typeof qty.value === 'number') {
+             itemMassToUse = qty.value;
+        }
+        
+        if (qtyContent) {
+            qtyContent = applyBakersMath(itemMassToUse, qtyContent, context);
         }
  
         if (format === 'html') {

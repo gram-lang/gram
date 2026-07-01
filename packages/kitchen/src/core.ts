@@ -39,7 +39,20 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
         });
     });
 
-    // 4. Assemble and return the clean, compact final compilation payload
+    // 4. Validate semantic rules (e.g., Baker's Percentage uniqueness)
+    let bakersRefFound = false;
+    sections.forEach(sec => {
+        sec.ingredients.forEach(ing => {
+            if (ing.modifiers && ing.modifiers.includes('bakers_percentage')) {
+                if (bakersRefFound) {
+                    throw new Error("MULTIPLE_BAKERS_PERCENTAGE: Only one ingredient can be marked with the baker's percentage (*) modifier in a recipe.");
+                }
+                bakersRefFound = true;
+            }
+        });
+    });
+
+    // 5. Assemble and return the clean, compact final compilation payload
     const result: CompilationResult = {
         title: (ast.meta as any).title || null,
         slug: (ast.meta as any).title ? slugify((ast.meta as any).title) : null,

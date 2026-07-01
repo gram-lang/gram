@@ -34,6 +34,18 @@ export default defineCommand({
       type: 'boolean',
       description: 'Disable automatic pager for long recipes',
     },
+    'bakers-math': {
+      type: 'boolean',
+      description: "Display in baker's percentages using the * modifier ingredient",
+    },
+    'bakers-reference': {
+      type: 'string',
+      description: "Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
+    },
+    'bakers-math-only': {
+      type: 'boolean',
+      description: "Hide absolute quantities when using baker's math",
+    },
   },
   async run({ args }) {
     const file = resolve(args.file as string)
@@ -41,10 +53,16 @@ export default defineCommand({
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
     const scaleFactor = (await resolveScaleArg(args.scale as string | undefined, file, db)) ?? 1
+    const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
 
     let model
     try {
-      model = await buildViewModel(file, { db, scaleFactor })
+      model = await buildViewModel(file, { 
+        db, 
+        scaleFactor,
+        bakersMath,
+        bakersMathOnly: args['bakers-math-only'] as boolean
+      })
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)

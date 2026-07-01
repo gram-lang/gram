@@ -100,7 +100,7 @@ function getTimerMinutes(step: any): number | undefined {
 
 export async function buildViewModel(
   file: string,
-  opts: { db?: Record<string, IngredientData> | null; scaleFactor?: number },
+  opts: { db?: Record<string, IngredientData> | null; scaleFactor?: number; bakersMath?: boolean | string; bakersMathOnly?: boolean },
 ): Promise<RecipeViewModel> {
   const { compiled, analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
 
@@ -120,6 +120,44 @@ export async function buildViewModel(
   const registry = compiled.registry?.ingredients ?? {}
   const cwRegistry = compiled.registry?.cookware ?? {}
 
+  const sourceSections: any[] = analyzed ? analyzed.result.sections : compiled.sections
+
+  // Resolve Baker's Reference
+  let referenceId: string | null = null
+  if (typeof opts.bakersMath === 'string' && opts.bakersMath !== '') {
+    referenceId = opts.bakersMath
+  } else if (opts.bakersMath) {
+    for (const sec of sourceSections) {
+      for (const ing of (sec.ingredients ?? [])) {
+        if (ing.modifiers && ing.modifiers.includes('bakers_percentage')) {
+          referenceId = ing.id
+          break
+        }
+      }
+      if (referenceId) break
+    }
+  }
+
+  if (opts.bakersMath && !referenceId) {
+    console.warn(`\n\x1b[33mWarning: No baker's percentage reference found in recipe. Use --bakers-math=<id> to specify one.\x1b[0m`)
+  }
+
+  let referenceMass: number | null = null
+  if (referenceId) {
+    const list = analyzed ? analyzed.result.shopping_list : compiled.shopping_list
+    const refItem = list.find((i: any) => i.id === referenceId)
+    if (refItem) {
+      referenceMass = analyzed ? refItem.normalizedMass : refItem.qty
+    }
+  }
+
+  function applyBakersMath(itemMass: number | null, fallbackQty: string): string {
+    if (!opts.bakersMath || !referenceMass || itemMass == null || referenceMass === 0) return fallbackQty
+    const percentage = Math.round((itemMass / referenceMass) * 100)
+    if (opts.bakersMathOnly) return `${percentage}%`
+    return `${percentage}% (${fallbackQty})`
+  }
+
   // Shopping list
   const shoppingList: RecipeViewModel['shoppingList'] = []
   if (analyzed) {
@@ -127,14 +165,15 @@ export async function buildViewModel(
       if (item.type === 'alternative' || item.variable_entries) continue
       const name = opts.db?.[item.id]?.name ?? item.name ?? item.id
       if (item.normalizedMass != null) {
+        const absQty = formatMass(item.normalizedMass)
         shoppingList.push({
           name,
-          displayQty: formatMass(item.normalizedMass),
+          displayQty: applyBakersMath(item.normalizedMass, absQty),
           isEstimate: item.isEstimate ?? false,
         })
       } else {
         const qty = formatQty(item)
-        if (qty) shoppingList.push({ name, displayQty: qty, isEstimate: false })
+        if (qty) shoppingList.push({ name, displayQty: applyBakersMath(null, qty), isEstimate: false })
       }
     }
   } else {
@@ -142,13 +181,13 @@ export async function buildViewModel(
       if (item.type === 'alternative' || item.variable_entries) continue
       const qty = formatQty(item)
       if (qty) {
-        shoppingList.push({ name: item.name ?? item.id, displayQty: qty, isEstimate: false })
+        const itemMass = typeof item.qty === 'number' ? item.qty : null
+        shoppingList.push({ name: item.name ?? item.id, displayQty: applyBakersMath(itemMass, qty), isEstimate: false })
       }
     }
   }
 
   // Sections
-  const sourceSections: any[] = analyzed ? analyzed.result.sections : compiled.sections
   const sections: RecipeViewModel['sections'] = sourceSections.map(sec => {
     const secIngs: any[] = sec.ingredients ?? []
 
@@ -158,10 +197,12 @@ export async function buildViewModel(
       .map((ing: any) => {
         const name = opts.db?.[ing.id]?.name ?? ing.alias ?? registry[ing.id]?.name ?? ing.name ?? ing.id
         if (ing.normalizedMass != null) {
-          return { name, displayQty: formatMass(ing.normalizedMass), isEstimate: ing.isEstimate ?? false }
+          const absQty = formatMass(ing.normalizedMass)
+          return { name, displayQty: applyBakersMath(ing.normalizedMass, absQty), isEstimate: ing.isEstimate ?? false }
         }
         const qty = formatQty(ing)
-        return { name, displayQty: qty, isEstimate: false }
+        const itemMass = typeof ing.qty === 'number' ? ing.qty : null
+        return { name, displayQty: applyBakersMath(itemMass, qty), isEstimate: false }
       })
 
     // Composite ingredients — group children by parent, apply MAX rule for parent qty
@@ -187,15 +228,22 @@ export async function buildViewModel(
         parent.maxQtyRaw = childQtyRaw
       }
       const childName = opts.db?.[ing.id]?.name ?? registry[ing.id]?.name ?? ing.name ?? ing.id
-      const childDisplayQty = childQtyRaw != null ? formatQty({ qty: childQtyRaw, unit: childUnit }) : ''
+      const childDisplayQtyRaw = childQtyRaw != null ? formatQty({ qty: childQtyRaw, unit: childUnit }) : ''
+      const childMass = typeof childQtyRaw === 'number' ? childQtyRaw : (childQtyRaw?.value ?? null)
+      const childDisplayQty = applyBakersMath(typeof childMass === 'number' ? childMass : null, childDisplayQtyRaw)
       parent.children.push({ name: childName, displayQty: childDisplayQty })
     }
-    const compositeEntries: RecipeViewModel['sections'][0]['ingredients'] = Array.from(parentMap.values()).map(p => ({
-      name: p.name,
-      displayQty: p.maxQtyRaw != null ? formatQty({ qty: p.maxQtyRaw, unit: p.unit }) : '',
-      isEstimate: false,
-      children: p.children,
-    }))
+    const compositeEntries: RecipeViewModel['sections'][0]['ingredients'] = Array.from(parentMap.values()).map(p => {
+      const pQtyRaw = p.maxQtyRaw != null ? formatQty({ qty: p.maxQtyRaw, unit: p.unit }) : ''
+      const pMass = typeof p.maxQtyRaw === 'number' ? p.maxQtyRaw : (p.maxQtyRaw?.value ?? null)
+      const displayQty = applyBakersMath(typeof pMass === 'number' ? pMass : null, pQtyRaw)
+      return {
+        name: p.name,
+        displayQty,
+        isEstimate: false,
+        children: p.children,
+      }
+    })
 
     const ingredients: RecipeViewModel['sections'][0]['ingredients'] = [...regularEntries, ...compositeEntries]
 
