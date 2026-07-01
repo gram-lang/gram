@@ -47,6 +47,18 @@ export default defineCommand({
       description: 'HTML only: show ingredient quantities in step text (pass --no-step-qty to hide; quantities in section mise en place are always shown)',
       default: true,
     },
+    'bakers-math': {
+      type: 'boolean',
+      description: "Display in baker's percentages using the * modifier ingredient",
+    },
+    'bakers-reference': {
+      type: 'string',
+      description: "Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
+    },
+    'bakers-math-only': {
+      type: 'boolean',
+      description: "Hide absolute quantities when using baker's math",
+    },
   },
   async run({ args }) {
     const fmt = args.format as string | undefined
@@ -66,8 +78,14 @@ export default defineCommand({
       : join(dirname(filePath), basename(filePath, extname(filePath)) + '.' + fmt)
 
     let content: string
+    const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
+    
     try {
-      content = await exportRecipe(filePath, fmt, db, scaleFactor, { hideStepQty: !args['step-qty'] })
+      content = await exportRecipe(filePath, fmt, db, scaleFactor, { 
+        hideStepQty: !args['step-qty'],
+        bakersMath,
+        bakersMathOnly: args['bakers-math-only'] as boolean
+      })
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)

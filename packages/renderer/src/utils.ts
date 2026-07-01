@@ -120,3 +120,68 @@ export function escapeHtml(unsafe: string | null | undefined): string {
          .replace(/"/g, "&quot;")
          .replace(/'/g, "&#039;");
 }
+
+/**
+ * Applies baker's math logic to format a quantity string.
+ */
+export function applyBakersMath(
+    itemMass: number | null,
+    fallbackQty: string,
+    context: import('./types').RenderContext
+): string {
+    if (!context._bakersMathEnabled || !context._bakersMathReferenceMass || itemMass == null || context._bakersMathReferenceMass === 0) {
+        return fallbackQty;
+    }
+    const percentage = Math.round((itemMass / context._bakersMathReferenceMass) * 100);
+    if (context._bakersMathOnly) {
+        return `${percentage}%`;
+    }
+    return `${percentage}% — ${fallbackQty}`;
+}
+
+/**
+ * Resolves the baker's math context by finding the reference ingredient.
+ */
+export function resolveBakersMath(
+    data: any,
+    options: import('./types').RendererOptions
+): { enabled: boolean; referenceMass: number | null; only: boolean } {
+    if (!options.bakersMath) {
+        return { enabled: false, referenceMass: null, only: false };
+    }
+
+    let referenceId: string | null = null;
+    if (typeof options.bakersMath === 'string' && options.bakersMath !== '') {
+        referenceId = options.bakersMath;
+    } else {
+        const sections = data.sections || [];
+        for (const sec of sections) {
+            for (const ing of (sec.ingredients || [])) {
+                if (ing.modifiers && ing.modifiers.includes('bakers_percentage')) {
+                    referenceId = ing.id;
+                    break;
+                }
+            }
+            if (referenceId) break;
+        }
+    }
+
+    if (!referenceId) {
+        console.warn(`\n\x1b[33mWarning: No baker's percentage reference found in recipe. Use --bakers-math=<id> to specify one.\x1b[0m`);
+        return { enabled: false, referenceMass: null, only: false };
+    }
+
+    let referenceMass: number | null = null;
+    const shoppingList = data.shopping_list || [];
+    const refItem = shoppingList.find((i: any) => i.id === referenceId);
+    if (refItem) {
+        // If rendered from an analyzed recipe, normalizedMass is used. Otherwise qty.
+        referenceMass = refItem.normalizedMass !== undefined ? refItem.normalizedMass : (typeof refItem.qty === 'number' ? refItem.qty : null);
+    }
+
+    return {
+        enabled: true,
+        referenceMass,
+        only: !!options.bakersMathOnly
+    };
+}

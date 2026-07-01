@@ -7,10 +7,11 @@ export async function exportRecipe(
   format: 'md' | 'html',
   db: Record<string, IngredientData> | null,
   scaleFactor?: number,
-  rendererOptions?: Pick<RendererOptions, 'hideStepQty'>,
+  rendererOptions?: Pick<RendererOptions, 'hideStepQty' | 'bakersMath' | 'bakersMathOnly'>,
 ): Promise<string> {
-  const { compiled } = await runPipeline(filePath, { db, scaleFactor })
+  const { compiled, analyzed } = await runPipeline(filePath, { db, scaleFactor })
+  const data = db ? analyzed?.result : compiled
 
-  if (format === 'md') return toMarkdown(compiled)
-  return toPrintHTML(compiled, rendererOptions)
+  if (format === 'md') return toMarkdown(data, rendererOptions)
+  return toPrintHTML(data, rendererOptions)
 }

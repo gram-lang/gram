@@ -42,6 +42,18 @@ export default defineCommand({
       description: 'Show ingredient quantities in step text (pass --no-step-qty to hide; quantities in section mise en place are always shown)',
       default: true,
     },
+    'bakers-math': {
+      type: 'boolean',
+      description: "Display in baker's percentages using the * modifier ingredient",
+    },
+    'bakers-reference': {
+      type: 'string',
+      description: "Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
+    },
+    'bakers-math-only': {
+      type: 'boolean',
+      description: "Hide absolute quantities when using baker's math",
+    },
   },
   async run({ args }) {
     const filePath = resolve(args.file as string)
@@ -49,10 +61,15 @@ export default defineCommand({
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
     const scaleFactor = await resolveScaleArg(args.scale as string | undefined, filePath, db)
+    const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
 
     let htmlPath: string
     try {
-      htmlPath = await generatePrintHTML(filePath, db, scaleFactor, { hideStepQty: !args['step-qty'] })
+      htmlPath = await generatePrintHTML(filePath, db, scaleFactor, { 
+        hideStepQty: !args['step-qty'],
+        bakersMath,
+        bakersMathOnly: args['bakers-math-only'] as boolean
+      })
     } catch (err) {
       if (err instanceof GramCLIError) {
         log.error(err.message)
