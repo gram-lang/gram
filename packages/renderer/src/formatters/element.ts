@@ -224,7 +224,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             const prefix = context.icons?.hourglass !== undefined 
                 ? (isAsync ? context.icons.hourglass : (context.icons.timer ?? '')) 
                 : (isAsync ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
-            const suffix = isAsync ? ' (async)' : '';
+            const suffix = isAsync ? ' (passive)' : '';
             return `${prefix}${qVal}${unitStr}${suffix}`;
         }
     },
