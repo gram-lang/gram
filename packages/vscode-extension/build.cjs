@@ -38,6 +38,20 @@ async function build() {
         console.warn('[vscode-extension/build] Renderer CSS not found, skipping copy.');
         console.warn('  Expected:', cssSrc);
     }
+
+    // Copy the TextMate grammar from parser
+    const syntaxSrc = path.join(__dirname, '..', 'parser', 'syntaxes', 'gram.tmLanguage.json');
+    const syntaxDestDir = path.join(__dirname, 'dist', 'syntaxes');
+    if (!fs.existsSync(syntaxDestDir)) {
+        fs.mkdirSync(syntaxDestDir, { recursive: true });
+    }
+    const syntaxDst = path.join(syntaxDestDir, 'gram.tmLanguage.json');
+    if (fs.existsSync(syntaxSrc)) {
+        fs.copyFileSync(syntaxSrc, syntaxDst);
+    } else {
+        console.warn('[vscode-extension/build] TextMate grammar not found, skipping copy.');
+        console.warn('  Expected:', syntaxSrc);
+    }
 }
 
 build().catch(() => process.exit(1));

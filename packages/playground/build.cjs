@@ -28,6 +28,7 @@ esbuild.build({
   // Use stable chunk names for cleaner git history
   chunkNames: 'chunks/[name]-[hash]', 
   alias: {
+      '@gram/parser/textmate': path.resolve(__dirname, '../parser/syntaxes/gram.tmLanguage.json'),
       '@gram/parser': path.resolve(__dirname, '../parser/dist/index.js'),
       '@gram/compiler': path.resolve(__dirname, '../compiler/dist/index.js'),
       '@gram/analyzer': path.resolve(__dirname, '../analyzer/dist/index.js'),
