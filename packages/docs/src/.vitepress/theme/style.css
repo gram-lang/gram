@@ -1,5 +1,6 @@
-/* Enable natural line wrapping for Gram recipes */
-.vp-doc div[class*="language-gram"] code {
+/* Enable natural line wrapping for Gram recipes and previews */
+.vp-doc div[class*="language-gram"] code,
+.vp-doc div[class*="language-markdown"] code {
   white-space: pre-wrap !important;
   word-break: break-word;
 }

@@ -26,32 +26,41 @@ When the Gram Compiler calculates a relative quantity, it follows these strict r
 
 1. **Section Scoping**: The compiler only searches for the target within the **current Section**. You cannot base a relative quantity on an ingredient declared in a different `## Section`.
 2. **Accumulation**: It sums **all** previous declarations of the target ingredient within the section up to that point.
-3. **Unit Inheritance**: The relative ingredient inherits the unit of its target.
+3. **Strictly Mass-Based**: The output of a relative quantity calculation is **always** forced into grams (`g`), regardless of the target's original unit.
 
 ## Mass Calculation Rules
 
 Since relative quantities rely on computing percentages of existing masses, the compiler (`@gram/analyzer`) standardizes the masses before calculating:
 
-- **Mass (g, kg, oz, etc.)**: Normalized cleanly to grams.
-- **Volume (ml, l, cup, etc.)**: Converted 1:1 to grams based on a neutral density assumption (unless a specific `densities` override is provided in the frontmatter).
-- **Count/Units (e.g., `@egg{2}`)**: Treated as **0 mass** for the percentage calculation. The compiler will still flag the final result as "partial" because it couldn't factor in the eggs.
+- **Explicit Mass (g, kg, oz, etc.)**: Direct calculation. 50% of 500g = 250g.
+- **Volume (ml, l, cup, etc.)**: Converted 1:1 to grams based on the ingredient's density in the database (unless a specific `densities` override is provided).
+- **Count/Units (e.g., `@egg{2}`)**: Gram looks up the average physical weight of the ingredient in the database (e.g. 1 egg = 50g), calculates the total mass, and then applies the percentage.
+- **Unknown Mass (Edge Case)**: If the target has no explicit weight and is missing from the database (e.g. `@unicorn tears{1 flask}`), the analyzer will refuse to guess. It emits an `UNKNOWN_MASS` warning and leaves the quantity unresolved.
 
 ## Shopping List Behavior
 
-Relative quantities are handled via **Hybrid Aggregation** in the final shopping list. 
+When a relative quantity is successfully resolved by the `@gram/analyzer`, it acts exactly like a fixed physical mass. 
 
-Because relative quantities might depend on complex runtime variables (or ingredients with unknown weights like whole eggs), they are **never merged** directly into the "Certain Mass" (the sum of fixed quantities).
-
-Instead, they are displayed as separate **Variable Parts**.
+It is seamlessly aggregated into the main **Shopping List**. You won't see the internal formula logic, you will only see the final calculated mass required for purchasing.
 
 *Example Shopping List Output:*
 ```text
-Sugar : 70g + (50% of @&flour)
+Sugar (156 g)
+```
+
+However, if mass normalization is disabled globally or the target's mass was completely unknown (the edge case mentioned above), the relative quantity cannot be resolved to a fixed physical mass.
+
+In this scenario, Gram will display a **Hybrid Output**, combining any fixed mass it knows with the raw unresolved formula.
+
+*Example (if we add an extra 20g of fixed sugar):*
+```text
+Sugar (125% of lemon juice + 20 g)
 ```
 
 ## Error Handling
 
 The compiler is designed to catch logic errors in relative quantities and will output specific warnings:
 
-- **Ghost Reference**: If the target ingredient or variable hasn't been declared previously in the section, the compiler warns `RELATIVE_QUANTITY_UNRESOLVED` (or `VARIABLE_NOT_FOUND`) and outputs `(20% of @&missing ❓)`.
-- **Circular Reference**: If an ingredient tries to calculate a percentage of itself (e.g., `@flour{10% @&flour}`), the compiler warns `CIRCULAR_REFERENCE` and outputs `(10% of @&self) ⚠️`.
+- **Ghost Reference**: If the target ingredient or variable hasn't been declared previously in the section, the compiler warns `RELATIVE_QUANTITY_UNRESOLVED` (or `VARIABLE_NOT_FOUND`) and outputs `(20% of missing ❓)`.
+- **Circular Reference**: If an ingredient tries to calculate a percentage of itself (e.g., `@flour{10% @&flour}`), the compiler warns `CIRCULAR_REFERENCE` and outputs `(10% of self) ⚠️`.
+- **Unknown Target Mass**: If the target's mass cannot be resolved from the physical database, the analyzer warns `RELATIVE_QUANTITY_UNKNOWN_MASS` and leaves the output unresolved.
