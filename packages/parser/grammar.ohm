@@ -76,7 +76,9 @@ GRAM {
   unit = unitName
   unitName = (alnum | sp | "°" | "%")+
   preparation = "(" (~")" any)* ")"
-  composite = "<@" name ingredientQuantity?
+  composite = 
+    | "<@" refName ingredientQuantity -- full
+    | "<@" singleWordName             -- bare
 
   // Cookware
   // Specs say use braces too.
