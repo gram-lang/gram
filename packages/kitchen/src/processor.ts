@@ -380,6 +380,7 @@ export function processSections(
     let cookCursor = 0;
     let globalActiveTime = 0;
     const activeBackgroundTasks: Array<{ end: number }> = [];
+    const intermediateReadyTimes = new Map<string, number>();
 
     blocksToProcess.forEach(section => {
         if (section.type !== ASTNodeType.Section) return; 
@@ -401,6 +402,7 @@ export function processSections(
         const sectionIngredients: Usage[] = [];
         const sectionCookware: Usage[] = [];
         const steps: ProcessedStepItem[] = [];
+        let sectionMaxBackgroundTaskEnd = 0;
 
         section.children.forEach((block) => {
              if (block.type === ASTNodeType.Step) {
@@ -409,6 +411,7 @@ export function processSections(
                   const stepContentObjects: ProcessedBlockResult[] = [];
                   
                   ctx.intermediateDecl = null;
+                  let maxDependencyReadyTime = 0;
                   
                   // Process all items in the step sequentially
                   block.children.forEach((item) => {
@@ -416,6 +419,13 @@ export function processSections(
                       
                       if (processed) {
                            stepContentObjects.push(processed);
+
+                           if (typeof processed !== 'string' && 'type' in processed && processed.type === 'reference' && processed.name) {
+                               const readyTime = intermediateReadyTimes.get(processed.name);
+                               if (readyTime !== undefined) {
+                                   maxDependencyReadyTime = Math.max(maxDependencyReadyTime, readyTime);
+                               }
+                           }
 
                            if (typeof processed !== 'string') {
                                if ('type' in processed && processed.type === 'timer' && !('id' in processed) && processed.quantity) {
@@ -428,7 +438,7 @@ export function processSections(
                                            duration: duration,
                                            startOffset: localActiveTime
                                        });
-                                       activeBackgroundTasks.push({ end: cookCursor + localActiveTime + duration });
+                                       // Background tasks are pushed to activeBackgroundTasks after cookCursor is finalized
                                    } else {
                                        // Active task (blocks the main workflow)
                                        localActiveTime += duration;
@@ -443,8 +453,27 @@ export function processSections(
                       localActiveTime = 2; 
                   }
 
+                  if (maxDependencyReadyTime > cookCursor) {
+                      cookCursor = maxDependencyReadyTime;
+                  }
+
                   const startTime = cookCursor;
                   const endTime = cookCursor + localActiveTime;
+                  
+                  let stepMaxTaskEnd = endTime;
+                  stepPassiveTasks.forEach(task => {
+                      const taskEndTime = cookCursor + task.startOffset + task.duration;
+                      activeBackgroundTasks.push({ end: taskEndTime });
+                      sectionMaxBackgroundTaskEnd = Math.max(sectionMaxBackgroundTaskEnd, taskEndTime);
+                      stepMaxTaskEnd = Math.max(stepMaxTaskEnd, taskEndTime);
+                  });
+
+                  // Add inline intermediates to ready map
+                  stepContentObjects.forEach(obj => {
+                      if (typeof obj !== 'string' && 'type' in obj && obj.type === 'declaration' && obj.name) {
+                          intermediateReadyTimes.set(obj.name, stepMaxTaskEnd);
+                      }
+                  });
                   
                   const stepObj: ProcessedStep = {
                       type: 'step',
@@ -484,6 +513,7 @@ export function processSections(
         
         if (section.intermediateDecl) {
              res.intermediate_preparation = section.intermediateDecl.name;
+             intermediateReadyTimes.set(section.intermediateDecl.name, Math.max(cookCursor, sectionMaxBackgroundTaskEnd));
         }
         if (section.retroPlanning) {
              res.retro_planning = section.retroPlanning;
