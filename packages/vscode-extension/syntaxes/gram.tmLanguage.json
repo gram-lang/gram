@@ -30,7 +30,7 @@
       ]
     },
     "sections": {
-      "match": "^(##)\\s+((?:(?!->&|~\\{).)*?)(?:\\s*(~\\{[^\\}]+\\}))?(?:\\s*(->&)\\s*([\\w\\d]+))?(?:\\s*(~\\{[^\\}]+\\}))?",
+      "match": "^(##)\\s+((?:(?!->&|~\\{).)*?)(?:\\s*(~\\{[^\\}]+\\}))?(?:\\s*(->&)\\s*([^\\{\\s]+(?:\\s+[^\\{\\s]+)*))?(?:\\s*(~\\{[^\\}]+\\}))?",
       "captures": {
         "1": { "name": "markup.heading.marker.gram" },
         "2": { "name": "entity.name.section.gram" },
@@ -211,7 +211,7 @@
       ]
     },
     "intermediate-decl": {
-         "match": "(->&)\\s*([\\w\\d]+)(?:\\{\\})?",
+         "match": "(->&)\\s*([^\\{\\s]+(?:\\s+[^\\{\\s]+)*)(?:\\{\\})?",
          "captures": {
              "1": { "name": "keyword.operator.arrow.gram" },
              "2": { "name": "entity.name.tag.intermediate.gram" }
