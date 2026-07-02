@@ -29,12 +29,12 @@ The name goes between `~` and the brace.
 Cook eggs ~eggs{3min} and pasta ~pasta{9min}.
 ```
 
-### Asynchronous Tasks
+### Passive Tasks (Idle)
 By default, a timer blocks the "Active Time" (the cook is busy). 
 To indicate a background task (e.g., baking, rising, marinating) where the cook is free to do other steps, use the `&` modifier right after the tilde (`~&`).
 
-*   `~&{1h}` : Async (Background).
-*   `~{10m}` : Sync (Blocking).
+*   `~&{1h}` : Passive (Background/Idle).
+*   `~{10m}` : Active (Blocking).
 
 **Example:**
 ```gram
@@ -44,8 +44,8 @@ Knead ~{10min}. Rise ~&{1h}.
 *   Step 2: 0m active time (starts immediately after kneading). Cook is free.
 
 ### Default Timings
-If a step has **no timers** and is not asynchronous, the compiler assigns a default **2 minutes** active time (reading, mixing, etc.).
-Async steps (`~&{...}`) have **0 active time**.
+If a step has **no timers** and is not passive, the compiler assigns a default **2 minutes** active time (reading, mixing, etc.).
+Passive steps (`~&{...}`) have **0 active time**.
 
 ### Estimated Preparation Time (Mise en Place)
 The compiler automatically estimates the "Mise en place" time based on the recipe complexity:
@@ -53,7 +53,7 @@ The compiler automatically estimates the "Mise en place" time based on the recip
 *   **Preparation**: +2 min for each ingredient usage with a specific preparation (e.g., `(chopped)`, `(peeled)`).
 *   **Alternatives**: Takes the maximum time of possible options.
 
-> **Tip:** Asynchronous timers (`~&`) allow applications to generate automated Gantt charts, calculate total vs. active time, and help the cook identify parallel tasks.
+> **Tip:** Passive timers (`~&`) allow applications to generate automated Gantt charts, calculate total vs. active time, and help the cook identify parallel tasks.
 
 ---
 

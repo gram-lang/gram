@@ -193,15 +193,15 @@ Supported units:
 - `s` (seconds).
 - *Note:* `m` or `minutes` will be automatically corrected to `min`.
 
-Timers can be **Synchronous** (blocking) or **Asynchronous** (background).
+Timers can be **Active** (blocking) or **Passive** (background).
 
-#### Synchronous (Default)
+#### Active (Default)
 Stops the workflow. The cook must wait.
 ```gram
 Bake for ~{25min}.
 ```
 
-#### Asynchronous
+#### Passive
 Runs in the background. The cook can proceed to the next step immediately. Use the `&` modifier.
 ```gram
 Let the dough rest for ~&{1h}.

@@ -8,7 +8,7 @@ A quick reference guide to the Gram syntax.
 |---|---|---|---|
 | **Ingredient** | `@name{qty}` | `@flour{200g}` | Adds an ingredient to the shopping list. |
 | **Cookware** | `#name{qty}` | `#pan{}` | Requires specific equipment. |
-| **Timer** | `~{time}` | `~{30min}` | A synchronous duration. |
+| **Timer** | `~{time}` | `~{30min}` | An active duration. |
 | **Temperature** | `°{temp}` | `°{180°C}` | An exact temperature. |
 
 ## Modifiers
@@ -31,7 +31,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Short-hand Prep** | `(...)` | `@butter{10g}(room temp)` |
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
-| **Async Timer** | `~&` | `~&{1h}` |
+| **Passive Timer** | `~&` | `~&{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
 | **Semantic Temp**| `°{text}` | `°{medium heat}` |
 

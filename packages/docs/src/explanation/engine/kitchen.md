@@ -14,13 +14,13 @@ The processor walks through every section and step in the AST sequentially to bu
 
 - **Variable Resolution**: When it encounters an intermediate declaration (`->&dough`), it registers it in the Global Scope. When it encounters a reference (`&dough`), it links it back to the declaration.
 - **Diagnostics**: It is the processor's job to catch logical errors. If you reference `&dough` but never declared it, it throws a `UNDEFINED_REFERENCE` warning. If you try to calculate a relative quantity of a missing ingredient, it throws a `RELATIVE_QUANTITY_UNRESOLVED` (ghost reference) warning. It also flags `CIRCULAR_REFERENCE` if an ingredient tries to be a percentage of itself.
-- **Timeline Generation**: It tracks `cookCursor` to compute when each step starts and ends. It differentiates between Synchronous timers (which advance the cursor) and Asynchronous timers (which spin off into background tasks).
+- **Timeline Generation**: It tracks `cookCursor` to compute when each step starts and ends. It differentiates between Active timers (which advance the cursor) and Passive timers (which spin off into background tasks).
 
 ### 2. Time Metrics (`metrics.ts`)
 
 The Kitchen calculates three separate time metrics:
-- **Active Time (`activeTime`)**: The sum of all synchronous timers and default step durations (2 minutes per step if no timer is present).
-- **Total Time (`totalTime`)**: The absolute maximum end time, taking into account any asynchronous background tasks (like resting dough for 24 hours).
+- **Active Time (`activeTime`)**: The sum of all active timers and default step durations (2 minutes per step if no timer is present).
+- **Total Time (`totalTime`)**: The absolute maximum end time, taking into account any passive background tasks (like resting dough for 24 hours).
 - **Preparation Time (`preparationTime`)**: *Independent of timers.* It calculates the *mise en place* overhead by adding 1 minute for every unique ingredient/cookware item, plus an additional 2 minutes for every ingredient that requires a short-hand preparation (e.g., `@onion(peeled and chopped)`).
 
 ### 3. Shopping List Aggregation (`shopping.ts`)

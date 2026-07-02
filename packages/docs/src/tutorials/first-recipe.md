@@ -111,9 +111,9 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 ## Step 3: Background Timers
 
 In Step 1, the following was written: `[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}`. 
-By default, timers are **synchronous**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
+By default, timers are **active**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
 
-But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a background task, add an ampersand `~&`:
+But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an ampersand `~&`:
 
 ::: code-group
 
@@ -122,7 +122,7 @@ But resting dough in the fridge is a passive task. You can do other things while
 ```
 
 ```markdown [Preview]
-1. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (async).
+1. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (passive).
 ```
 :::
 
@@ -203,7 +203,7 @@ portions: 8
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
 
-[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
+[Rest] Wrap in plastic and let it rest in the fridge for ~&{1h}.
 
 ## Lemon Curd ->&curd
 
@@ -217,7 +217,7 @@ portions: 8
 
 [Roll out] The &pastry dough{} and place it in a #tart ring{}.
 
-[Bake] For ~{20min} until golden. Let cool.
+[Bake] For ~&{20min} until golden. Let cool.
 
 ## Assembly
 
@@ -297,7 +297,7 @@ portions: 8
 - 👉*curd*
 - 👉*baked shell*
 
-1. **[Pour]** The 👉*curd* into the 👉*baked shell*. Chill in the fridge for ⏳ 2 h (async).
+1. **[Pour]** The 👉*curd* into the 👉*baked shell*. Chill in the fridge for ⏳ 2 h (passive).
 ```
 :::
 

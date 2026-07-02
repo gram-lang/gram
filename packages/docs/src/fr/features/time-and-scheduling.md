@@ -12,11 +12,11 @@ The compiler distinguishes between time you spend working and time you spend wai
 ### Calculation Rules
 
 *   **Default Cost**: Any text step without a specific timer costs **2 minutes** of Active Time (reading, mixing, handling).
-*   **Synchronous Timer (`~{10m}`)**:
+*   **Active Timer (`~{10m}`)**:
     *   Adds to **Active Time** (assuming you are monitoring/cooking).
     *   Adds to **Total Time**.
     *   *Note: Future versions may allow marking timers as "passive" to reduce Active Time.*
-*   **Asynchronous Timer (`~&{1h}`)**:
+*   **Passive Timer (`~&{1h}`)**:
     *   Declared with the `&` modifier after the `~`.
     *   Adds **0** to Active Time.
     *   Starts a "Background Task" (e.g., rising dough, marinating) that runs parallel to subsequent steps.
@@ -44,7 +44,7 @@ This metric is displayed as **"Prep Time (est.)"**.
 
 If you define a retro-planning target in a section header (e.g., `## Dough ~{-2h}`), the compiler can calculate the localized start time for that section relative to the serving time.
 
-*(Note: This feature interacts with the async timer logic to suggest when to start specific sub-sections).*
+*(Note: This feature interacts with the passive timer logic to suggest when to start specific sub-sections).*
 
 ## 4. Timer Labels in `gram cook`
 
@@ -56,5 +56,5 @@ The `gram cook` interactive TUI exposes all timers defined in a recipe as starta
 | `~&bake{30min}` | "bake" |
 | `~{10min}` (no label) | "Timer step N" |
 
-Async timers (`~&`) declared in a step appear in the `backgroundTasks` of the compiled output and continue counting down independently of which step the user is currently viewing — consistent with their semantics in the compiler's CPM analysis.
+Passive timers (`~&`) declared in a step appear in the `backgroundTasks` of the compiled output and continue counting down independently of which step the user is currently viewing — consistent with their semantics in the compiler's CPM analysis.
 
