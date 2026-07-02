@@ -13,15 +13,15 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         formatDuration,
         formatFraction: options.formatFraction
     };
-    
+
     let html = '';
-    
+
     // Title
     if (data.title) {
         const titleClass = options.classes?.recipeTitle ? ` class="${options.classes.recipeTitle}"` : '';
         html += `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n\n`;
     }
-    
+
     // Display Metadata
     const recipeMetaClass = options.classes?.recipeMeta || 'recipe-meta';
     const metaItemClass = options.classes?.metaItem || 'meta-item';
@@ -74,21 +74,21 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     html += `<div class="${metadataGridClass}">\n`;
 
     if (data.metrics && data.metrics.totalMass) {
-         const mass = Math.round(data.metrics.totalMass);
-         let msg = `${mass}g`;
-         let title = "Total Recipe Input Mass";
-         if (data.metrics.massStatus === 'estimated') {
-             msg = `~${mass}g`;
-             title += " (Estimated)";
-         }
-         if (data.metrics.massStatus === 'incomplete') {
-             msg = `${mass}g?`;
-             title += " (Incomplete)";
-         }
-         html += `  <div class="${metaSecondaryItemClass}" title="${title}">\n`;
-         html += `    <span class="label">Total Mass</span>\n`;
-         html += `    <span class="value">${msg}</span>\n`;
-         html += `  </div>\n`;
+        const mass = Math.round(data.metrics.totalMass);
+        let msg = `${mass}g`;
+        let title = "Total Recipe Input Mass";
+        if (data.metrics.massStatus === 'estimated') {
+            msg = `~${mass}g`;
+            title += " (Estimated)";
+        }
+        if (data.metrics.massStatus === 'incomplete') {
+            msg = `${mass}g?`;
+            title += " (Incomplete)";
+        }
+        html += `  <div class="${metaSecondaryItemClass}" title="${title}">\n`;
+        html += `    <span class="label">Total Mass</span>\n`;
+        html += `    <span class="value">${msg}</span>\n`;
+        html += `  </div>\n`;
     }
 
     if (data.meta) {
@@ -101,7 +101,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             }
         }
     }
-    
+
     html += `</div>\n`;
     html += `</div>\n\n`;
 
@@ -126,7 +126,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `      ${formatElement(item, 'html', context)} <strong>(Composite)</strong>:\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach((child: any) => {
-                     html += `        <li>${formatElement(child, 'html', context)}</li>\n`;
+                    html += `        <li>${formatElement(child, 'html', context)}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
@@ -135,9 +135,9 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             } else {
                 let extraHtml = '';
                 if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
-                     // Show Gross Mass if different from Net
-                     const gross = Math.round(item.purchasingMass * 10) / 10;
-                     extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
+                    // Show Gross Mass if different from Net
+                    const gross = Math.round(item.purchasingMass * 10) / 10;
+                    extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
                 }
                 html += `    <li>${formatElement(item, 'html', context)}${extraHtml}</li>\n`;
             }
@@ -145,7 +145,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         html += `  </ul>\n`;
         html += `</div>\n\n`;
     }
-    
+
     // Cookware
     if (data.cookware && data.cookware.length > 0) {
         const cookwareListClass = options.classes?.cookwareList || 'cookware';
@@ -154,22 +154,22 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         html += `  <ul>\n`;
         data.cookware.forEach((cw: any) => {
             if (cw.type === 'alternative' || cw.type === 'group') {
-                 html += `    <li>\n`;
-                 html += `      <strong>Alternative Group</strong>:\n`;
-                 html += `      <ul>\n`;
-                 cw.options.forEach((opt: any) => {
-                     html += `        <li>${formatElement(opt, 'html', context)}</li>\n`;
-                 });
-                 html += `      </ul>\n`;
-                 html += `    </li>\n`;
+                html += `    <li>\n`;
+                html += `      <strong>Alternative Group</strong>:\n`;
+                html += `      <ul>\n`;
+                cw.options.forEach((opt: any) => {
+                    html += `        <li>${formatElement(opt, 'html', context)}</li>\n`;
+                });
+                html += `      </ul>\n`;
+                html += `    </li>\n`;
             } else {
-                 html += `    <li>${formatElement(cw, 'html', context)}</li>\n`;
+                html += `    <li>${formatElement(cw, 'html', context)}</li>\n`;
             }
         });
         html += `  </ul>\n`;
         html += `</div>\n\n`;
     }
-    
+
     // Instructions
     if (data.sections && data.sections.length > 0) {
         const instructionsClass = options.classes?.instructions || 'instructions';
@@ -182,18 +182,18 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                     const rIcon = options.icons?.clockCounterClockwise ?? '<i class="ph ph-clock-counter-clockwise"></i>';
                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;">${rIcon} ${escapeHtml(sec.retro_planning)}</small>`;
                 }
-                
+
                 // Section Mass
                 if (sec.metrics && sec.metrics.totalMass > 0) {
-                     const mass = Math.round(sec.metrics.totalMass);
-                     let msg = `${mass}g`;
-                     let title = "Section Input Mass";
-                     if (sec.metrics.massStatus === 'estimated') {
-                         msg = `~${mass}g`;
-                         title += " (Estimated)";
-                     }
-                     const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
-                     titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}">${sIcon} ${msg}</small>`;
+                    const mass = Math.round(sec.metrics.totalMass);
+                    let msg = `${mass}g`;
+                    let title = "Section Input Mass";
+                    if (sec.metrics.massStatus === 'estimated') {
+                        msg = `~${mass}g`;
+                        title += " (Estimated)";
+                    }
+                    const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
+                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}">${sIcon} ${msg}</small>`;
                 }
 
                 if (sec.intermediate_preparation) {
@@ -205,7 +205,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 const sHeaderClass = options.classes?.sectionHeader ? ` class="${options.classes.sectionHeader}"` : '';
                 html += `    <h3${sHeaderClass}>${titleHtml}</h3>\n`;
             }
-            
+
             // Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
             const sectionItems = aggregateSectionIngredients(sec.ingredients ?? []).map(aggToRendererItem);
             if (sectionItems.length > 0) {
@@ -219,7 +219,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `      </ul>\n`;
                 html += `    </div>\n`;
             }
-            
+
             const stepsListClass = options.classes?.stepsList || 'steps';
             html += `    <ol class="${stepsListClass}">\n`;
             let stepCounter = 0;
@@ -237,35 +237,35 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 const stepItemClass = options.classes?.stepItem ? ` class="${options.classes.stepItem}"` : '';
                 html += `      <li value="${stepCounter}"${stepItemClass}>\n`;
                 if (step.action) {
-                     const stepActionClass = options.classes?.stepAction ? ` class="${options.classes.stepAction}"` : ' class="action"';
-                     html += `        <span${stepActionClass}>[${escapeHtml(step.action)}]</span> `;
+                    const stepActionClass = options.classes?.stepAction ? ` class="${options.classes.stepAction}"` : ' class="action"';
+                    html += `        <span${stepActionClass}>[${escapeHtml(step.action)}]</span> `;
                 }
-                
+
                 let stepContent = '';
                 if (step.type === 'text') {
                     stepContent = escapeHtml(step.value);
                 } else if (step.type === 'step') {
-                     stepContent = step.content.map((c: any, i: number, arr: any[]) => {
-                         let str = formatElement(c, 'html', context);
+                    stepContent = step.content.map((c: any, i: number, arr: any[]) => {
+                        let str = formatElement(c, 'html', context);
 
-                         // Spacing Logic
-                         const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
-                         if (isObject) {
-                             const next = arr[i+1];
-                             if (next) {
+                        // Spacing Logic
+                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
+                        if (isObject) {
+                            const next = arr[i + 1];
+                            if (next) {
                                 let nextChar = '';
                                 if (typeof next === 'string') nextChar = next.charAt(0);
                                 else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
-                                
+
                                 // Don't add space if next is glue (punctuation or space)
                                 const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
                                 if (!isGlue) {
                                     str += ' ';
                                 }
-                             }
-                         }
-                         return str;
-                     }).join('');
+                            }
+                        }
+                        return str;
+                    }).join('');
                 }
                 html += `        ${stepContent}\n`;
                 html += `      </li>\n`;
@@ -279,52 +279,52 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     // Nutrition Panel (Moved to bottom)
     if (data.metrics && data.metrics.nutrition) {
         const nut = data.metrics.nutrition;
-        
+
         // Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
         if ((nut.total && nut.total.calories > 0) || (nut.warnings && nut.warnings.length > 0)) {
             const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-        
-        let portionText = '';
-        let portionVals = null;
-        if (nut.perPortion) {
-             portionText = ` (Per Portion)`;
-             portionVals = nut.perPortion;
-        }
-        
-        const displayVals = portionVals || total;
-        
-        const cal = Math.round(displayVals.calories);
-        const p = displayVals.protein;
-        const c = displayVals.carbs;
-        const f = displayVals.fat;
 
-        // Granular
-        const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
-        const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
-        // sodium is stored/calculated in mg — round to nearest integer for display
-        const sodium = displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : '-';
-        
-        let warningsHtml = '';
-        if (nut.warnings && nut.warnings.length > 0) {
-            warningsHtml = `  <div class="nut-warnings" style="color: var(--vscode-errorForeground, #f87171); font-size: 0.85em; margin-bottom: 10px; padding: 10px; background: color-mix(in srgb, var(--vscode-errorForeground, red) 10%, transparent); border-radius: 6px;">\n`;
-            warningsHtml += `    <strong>Données incomplètes :</strong> Les valeurs ci-dessous sont estimées et n'incluent pas : ${escapeHtml(nut.warnings.join(', '))}\n`;
-            warningsHtml += `  </div>\n`;
-        }
+            let portionText = '';
+            let portionVals = null;
+            if (nut.perPortion) {
+                portionText = ` (Per Portion)`;
+                portionVals = nut.perPortion;
+            }
 
-        html += `<div class="nutrition-panel">\n`;
-        html += warningsHtml;
-        html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
-        html += `  <div class="nut-grid">\n`;
-        html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-        html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
-        html += `  </div>\n`;
-        html += `</div>\n`;
+            const displayVals = portionVals || total;
+
+            const cal = Math.round(displayVals.calories);
+            const p = displayVals.protein;
+            const c = displayVals.carbs;
+            const f = displayVals.fat;
+
+            // Granular
+            const sugar = displayVals.sugar !== undefined ? displayVals.sugar : '-';
+            const fiber = displayVals.fiber !== undefined ? displayVals.fiber : '-';
+            // sodium is stored/calculated in mg — round to nearest integer for display
+            const sodium = displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : '-';
+
+            let warningsHtml = '';
+            if (nut.warnings && nut.warnings.length > 0) {
+                warningsHtml = `  <div class="nut-warnings" style="color: var(--vscode-errorForeground, #f87171); font-size: 0.85em; margin-bottom: 10px; padding: 10px; background: color-mix(in srgb, var(--vscode-errorForeground, red) 10%, transparent); border-radius: 6px;">\n`;
+                warningsHtml += `    <strong>Incomplete data:</strong> The values ​​below are estimates and do not include: ${escapeHtml(nut.warnings.join(', '))}\n`;
+                warningsHtml += `  </div>\n`;
+            }
+
+            html += `<div class="nutrition-panel">\n`;
+            html += warningsHtml;
+            html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+            html += `  <div class="nut-grid">\n`;
+            html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
+            html += `  </div>\n`;
+            html += `</div>\n`;
         }
     }
-    
+
     return html;
 }
