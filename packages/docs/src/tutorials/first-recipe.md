@@ -15,7 +15,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 
 [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix until sandy.
+[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
 
@@ -34,7 +34,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 - **vanilla extract** (1/2 tsp)
 
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
-2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix until sandy.
+2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
 4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
 ```
@@ -57,7 +57,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 
 [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix until sandy.
+[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
 
@@ -76,7 +76,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 - **vanilla extract** (1/2 tsp)
 
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
-2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix until sandy.
+2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
 4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
 ```
@@ -91,9 +91,9 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 
 [Preheat] Preheat the #oven{} to °{350°F}.
 
-[Roll] Roll out the &pastry dough{} and place it in a #tart ring{}.
+[Roll] Roll out the &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
-[Bake] For ~{20min} until golden.
+[Bake] For ~&{20min} until golden.
 ```
 
 ```markdown [Preview]
@@ -103,8 +103,8 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 - 👉*pastry dough*
 
 1. **[Preheat]** Preheat the *oven* to 🔥350 °F.
-2. **[Roll]** Roll out the 👉*pastry dough* and place it in a *tart ring*.
-3. **[Bake]** For ⏲️ 20 min until golden.
+2. **[Roll]** Roll out the 👉*pastry dough* for ⏲️ 5 min and place it in a *tart ring*.
+3. **[Bake]** For ⏳ 20 min (passive) until golden.
 ```
 :::
 
@@ -143,7 +143,7 @@ Here is the Lemon Curd section:
 
 [Whisk] In a #saucepan{}, whisk the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{150g}, and @eggs{3}.
 
-[Cook] Cook over °{medium heat} until thickened.
+[Cook] Cook over °{medium heat} for ~{8min} until thickened.
 ```
 
 ```markdown [Preview]
@@ -156,7 +156,7 @@ Here is the Lemon Curd section:
 - **eggs** (3)
 
 1. **[Whisk]** In a *saucepan*, whisk the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
-2. **[Cook]** Cook over 🔥medium heat until thickened.
+2. **[Cook]** Cook over 🔥medium heat for ⏲️ 8 min until thickened.
 ```
 :::
 
@@ -199,7 +199,7 @@ portions: 8
 
 [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
 
-[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix until sandy.
+[Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
 
@@ -209,13 +209,13 @@ portions: 8
 
 [Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 
-[Cook] Over °{medium heat} until thickened.
+[Cook] Over °{medium heat} for ~{8min} until thickened.
 
 ## Baking the Tart Shell ->&baked shell{}
 
-[Preheat] The #oven to °{180°C}.
+[Preheat] The #oven to °{350°F}.
 
-[Roll out] The &pastry dough{} and place it in a #tart ring{}.
+[Roll out] The &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
 [Bake] For ~&{20min} until golden. Let cool.
 
@@ -228,8 +228,8 @@ portions: 8
 # Lemon Meringue Tart
 
 > **Metadata**
-> - **Total Time**: 3h 34m
-> - **Active Time**: 1h 34m
+> - **Total Time**: 3h 44.5m
+> - **Active Time**: 24.5m
 > - **Prep Time**: 20m (est.)
 > - portions: 8
 
@@ -241,7 +241,7 @@ portions: 8
 - **butter** (115 g)
 - **egg** (1)
 - **vanilla extract** (1/2 tsp)
-- **sugar** (150 g)
+- **sugar** (125% of lemon juice)
 - **eggs** (3)
 - **lemon** (2) **(Composite)**:
   - **lemon zest** (1 tbsp)
@@ -262,25 +262,25 @@ portions: 8
 - **flour** (180 g)
 - **icing sugar** (55 g)
 - **salt** (1/4 tsp)
-- **butter** (115 g)
+- **butter** (115 g) — cold, cut into small cubes
 - **egg** (1)
 - **vanilla extract** (1/2 tsp)
 
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
-2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix until sandy.
-3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
-4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
+2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
+3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together. 
+4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (passive).
 
 ### Lemon Curd
 
 **Ingredients**:
 - **lemon zest** (1 tbsp)
 - **lemon juice** (120 g)
-- **sugar** (150 g)
+- **sugar** (125% of lemon juice)
 - **eggs** (3)
 
-1. **[Whisk]** In a *saucepan*, the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
-2. **[Cook]** Over 🔥medium heat until thickened.
+1. **[Whisk]** In a *saucepan*, the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (125% of lemon juice), and **eggs** (3).
+2. **[Cook]** Over 🔥medium heat for ⏲️ 8 min until thickened.
 
 ### Baking the Tart Shell
 
@@ -288,8 +288,8 @@ portions: 8
 - 👉*pastry dough*
 
 1. **[Preheat]** The *oven* to 🔥180 °C.
-2. **[Roll out]** The 👉*pastry dough* and place it in a *tart ring*.
-3. **[Bake]** For ⏲️ 20 min until golden. Let cool.
+2. **[Roll out]** The 👉*pastry dough* for ⏲️ 5 min and place it in a *tart ring*.
+3. **[Bake]** For ⏳ 20 min (passive) until golden. Let cool.
 
 ### Assembly
 
