@@ -14,7 +14,10 @@ The processor walks through every section and step in the AST sequentially to bu
 
 - **Variable Resolution**: When it encounters an intermediate declaration (`->&dough`), it registers it in the Global Scope. When it encounters a reference (`&dough`), it links it back to the declaration.
 - **Diagnostics**: It is the processor's job to catch logical errors. If you reference `&dough` but never declared it, it throws a `UNDEFINED_REFERENCE` warning. If you try to calculate a relative quantity of a missing ingredient, it throws a `RELATIVE_QUANTITY_UNRESOLVED` (ghost reference) warning. It also flags `CIRCULAR_REFERENCE` if an ingredient tries to be a percentage of itself.
-- **Timeline Generation**: It tracks `cookCursor` to compute when each step starts and ends. It differentiates between Active timers (which advance the cursor) and Passive timers (which spin off into background tasks).
+- **Timeline Generation (Critical Path Method)**: The engine tracks a `cookCursor` to compute when each step starts and ends, simulating a real cook in the kitchen. 
+  - **Active timers** advance the cursor immediately.
+  - **Passive timers** spin off into background tasks, allowing the cook to work on other steps in parallel.
+  - **Dependency Tracking**: The engine tracks the absolute "Ready Time" of all intermediate preparations (`->&name`). If a step uses an intermediate (`👉*name*`), the `cookCursor` instantly leaps forward in time to mathematically "wait" for the ingredient to be ready (e.g. waiting for a 1-hour dough rest to finish before rolling it out). This ensures the Total Time reflects a realistic, optimized Gantt schedule.
 
 ### 2. Time Metrics (`metrics.ts`)
 

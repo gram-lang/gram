@@ -63,6 +63,7 @@ Behind the scenes, the Gram Compiler (`@gram/kitchen`) computes three distinct t
    - **Fallback**: If a cooking step does *not* contain any timer, the compiler assumes a default active duration of **2 minutes** to execute that step.
 2. **Total Time (`totalTime`)**: 
    - The absolute maximum workflow end time, accounting for all overlapping passive background tasks.
+   - **Dependency Tracking**: The compiler tracks the completion time of passive tasks. If a subsequent step references a previously declared intermediate ingredient (e.g., `👉*pastry dough*`), the compiler will mathematically "pause" the workflow and wait until that ingredient's passive timers have finished before continuing, accurately reflecting real-world idle time.
 3. **Preparation Time (`preparationTime`)**:
    - Calculated entirely independently from timers!
    - Adds **1 minute** of overhead for every unique ingredient and cookware item (gathering the *mise en place*).
