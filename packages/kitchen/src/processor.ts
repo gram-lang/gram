@@ -49,7 +49,7 @@ export type ProcessedBlockResult =
     | Usage 
     | string 
     | { type: 'declaration'; name: string; id: string } 
-    | { type: 'timer'; name?: string; isAsync?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } 
+    | { type: 'timer'; name?: string; isPassive?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } 
     | { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } 
     | { type: 'comment'; value: string; kind: 'line' | 'block' };
 
@@ -250,9 +250,9 @@ function processTimer(
     item: TimerAST,
     ctx: ProcessorContext
 ): ProcessedBlockResult {
-    const obj: { type: 'timer'; name?: string; isAsync?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } = { type: 'timer' };
+    const obj: { type: 'timer'; name?: string; isPassive?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } = { type: 'timer' };
     if (item.name) obj.name = item.name;
-    if (item.isAsync) obj.isAsync = true;
+    if (item.isPassive) obj.isPassive = true;
     if (item.quantity) {
          const q = item.quantity;
          if (q.type === ASTNodeType.Quantity) {
@@ -339,7 +339,7 @@ export function processBlockItem(
 /**
  * Main structural step/section processor.
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
- * handles async background tasks, and calculates active and total duration metrics.
+ * handles passive background tasks, and calculates active and total duration metrics.
  */
 export function processSections(
     astChildren: ASTNode[],
@@ -405,7 +405,7 @@ export function processSections(
         section.children.forEach((block) => {
              if (block.type === ASTNodeType.Step) {
                   let localActiveTime = 0;
-                  const stepAsyncTasks: Array<{ name?: string; duration: number; startOffset: number }> = [];
+                  const stepPassiveTasks: Array<{ name?: string; duration: number; startOffset: number }> = [];
                   const stepContentObjects: ProcessedBlockResult[] = [];
                   
                   ctx.intermediateDecl = null;
@@ -421,16 +421,16 @@ export function processSections(
                                if ('type' in processed && processed.type === 'timer' && !('id' in processed) && processed.quantity) {
                                    const duration = quantityToMinutes({ value: processed.quantity, unit: processed.unit });
                                    
-                                   // Asynchronous background task (Gantt track split)
-                                   if (processed.isAsync) {
-                                       stepAsyncTasks.push({
+                                   // Passive background task (Gantt track split)
+                                   if (processed.isPassive) {
+                                       stepPassiveTasks.push({
                                            name: processed.name || 'Timer',
                                            duration: duration,
                                            startOffset: localActiveTime
                                        });
                                        activeBackgroundTasks.push({ end: cookCursor + localActiveTime + duration });
                                    } else {
-                                       // Synchronous task (blocks the main workflow)
+                                       // Active task (blocks the main workflow)
                                        localActiveTime += duration;
                                    }
                                }
@@ -439,7 +439,7 @@ export function processSections(
                   });
 
                   // Apply standard fallback active duration for empty step actions (2 min)
-                  if (localActiveTime === 0 && stepAsyncTasks.length === 0) {
+                  if (localActiveTime === 0 && stepPassiveTasks.length === 0) {
                       localActiveTime = 2; 
                   }
 
@@ -454,7 +454,7 @@ export function processSections(
                           end: endTime,
                           activeDuration: localActiveTime
                       },
-                      backgroundTasks: stepAsyncTasks
+                      backgroundTasks: stepPassiveTasks
                   };
 
                   if (block.action) {
@@ -491,7 +491,7 @@ export function processSections(
         sections.push(res);
     });
 
-    // Compute maximum workflow end time including background async tasks
+    // Compute maximum workflow end time including background passive tasks
     let maxBackgroundTaskEnd = 0;
     activeBackgroundTasks.forEach(t => {
         if (t.end > maxBackgroundTaskEnd) maxBackgroundTaskEnd = t.end;

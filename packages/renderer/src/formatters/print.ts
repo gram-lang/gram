@@ -225,7 +225,7 @@ const PRINT_CSS = `
     white-space: nowrap;
     padding-bottom: 1px;
   }
-  .timer.async {
+  .timer.passive {
     border-bottom: 2px dotted var(--black);
   }
   .temp {

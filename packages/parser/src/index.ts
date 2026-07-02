@@ -397,14 +397,14 @@ semantics.addOperation('toAST', {
         } as ReferenceAST;
     },
 
-    Timer(_1, asyncMod, name, qty) { 
+    Timer(_1, passiveMod, name, qty) { 
         const child = name.children[0];
         const n = child ? clean(child.sourceString) : null;
         return { 
             type: ASTNodeType.Timer, 
             name: n, 
             quantity: qty.toAST(), 
-            isAsync: asyncMod.children.length > 0,
+            isPassive: passiveMod.children.length > 0,
             loc: { start: this.source.startIdx, end: this.source.endIdx } 
         } as TimerAST;
     },

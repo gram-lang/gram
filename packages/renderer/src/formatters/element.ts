@@ -30,20 +30,20 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
         const def = ingredients[item.id];
-        
+
         // Defensive Lookup Fallback
         const baseName = def ? def.name : (item.id || '[Unknown Ingredient]');
         const name = item.alias || baseName;
-        
+
         const qty = getQty(item);
         const formulaStr = item.formula ? `${item.formula.percent}% of ${item.formula.target}` : null;
         const isPartial = item.formula && item.formula.is_partial;
-        
+
         // Extract optional preparation and modifiers
         const prep = item.preparation || '';
         const isOptional = item.modifiers && item.modifiers.includes('optional');
         const isReference = item.modifiers && item.modifiers.includes('reference');
-        
+
         // Prepare normalized mass
         let normalizedMass = null;
         let isEstimate = false;
@@ -53,7 +53,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             isEstimate = !!item.isEstimate;
             conversionMethod = item.conversionMethod || '';
         }
-        
+
         // Setup quantity string parts
         let qtyContent = '';
         if (qty) {
@@ -63,23 +63,14 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 qtyContent += format === 'html' ? ` <span class="unit">${escapeHtml(item.unit)}</span>` : ` ${item.unit}`;
             }
         }
-        
+
         if (item.variable_entries && item.variable_entries.length > 0) {
-            const vars = format === 'html' 
+            const vars = format === 'html'
                 ? item.variable_entries.map((v: any) => escapeHtml(String(v))).join(' + ')
                 : item.variable_entries.join(' + ');
             qtyContent = qtyContent ? `${qtyContent} + ${vars}` : vars;
         }
-        
-        let itemMassToUse = normalizedMass;
-        if (itemMassToUse === null && qty && typeof qty.value === 'number') {
-             itemMassToUse = qty.value;
-        }
-        
-        if (qtyContent) {
-            qtyContent = applyBakersMath(itemMassToUse, qtyContent, context);
-        }
- 
+
         if (format === 'html') {
             const baseClass = (item.type === 'reference') ? 'reference' : 'ingredient';
             const className = (item.type === 'reference')
@@ -99,7 +90,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     }
                 }
             }
-            
+
             // Only show mass badge if the original quantity wasn't already in grams,
             // or if it wasn't a relative quantity resolved directly into grams
             if (normalizedMass !== null && conversionMethod !== 'relative') {
@@ -119,7 +110,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 const badgeClass = context.classes?.massBadge || 'mass-badge';
                 html += ` <span class="${badgeClass}" title="${escapeHtml(title)}">${display}</span>`;
             }
-            
+
             const mode = context.formatMode || 'inline';
             if (prep && mode !== 'shopping-list') {
                 const prepClass = context.classes?.prepText || 'prep';
@@ -137,7 +128,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 const refIcon = context.icons?.arrowUDownLeft ?? DEFAULT_ICONS.html.arrowUDownLeft;
                 html += ` <span class="ref" title="Reference to existing ingredient">${refIcon}</span>`;
             }
-            
+
             html += `</span>`;
             return html;
         } else {
@@ -163,7 +154,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     }
                 }
             }
-            
+
             const mode = context.formatMode || 'inline';
             if (prep && mode !== 'shopping-list') {
                 if (mode === 'mise-en-place') {
@@ -178,19 +169,19 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return md;
         }
     },
-     
+
     cookware: (item, format, context) => {
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
         const def = cookwareList[item.id];
-        
+
         // Defensive Lookup Fallback
         const baseName = def ? def.name : (item.id || '[Unknown Cookware]');
         const name = item.alias || baseName;
-        
+
         const qty = getQty(item);
         const qtyVal = qty ? qty.value : null;
-        
+
         if (format === 'html') {
             const className = context.classes?.cookware || 'cookware';
             let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
@@ -207,28 +198,28 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return md;
         }
     },
-     
+
     timer: (item, format, context) => {
         const q = item.quantity || { value: '' };
         const qVal = formatQuantityValue(q);
         const unitStr = item.unit ? ` ${item.unit}` : '';
-        const isAsync = !!item.isAsync;
-        
+        const isPassive = !!item.isPassive;
+
         if (format === 'html') {
-            const asyncClassStr = isAsync ? ' async' : '';
-            const className = (context.classes?.timer || 'timer') + asyncClassStr;
-            const iconKey = isAsync ? 'hourglass' : 'timer';
+            const passiveClassStr = isPassive ? ' passive' : '';
+            const className = (context.classes?.timer || 'timer') + passiveClassStr;
+            const iconKey = isPassive ? 'hourglass' : 'timer';
             const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey as keyof typeof DEFAULT_ICONS.html];
             return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
         } else {
-            const prefix = context.icons?.hourglass !== undefined 
-                ? (isAsync ? context.icons.hourglass : (context.icons.timer ?? '')) 
-                : (isAsync ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
-            const suffix = isAsync ? ' (passive)' : '';
+            const prefix = context.icons?.hourglass !== undefined
+                ? (isPassive ? context.icons.hourglass : (context.icons.timer ?? ''))
+                : (isPassive ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
+            const suffix = isPassive ? ' (passive)' : '';
             return `${prefix}${qVal}${unitStr}${suffix}`;
         }
     },
-     
+
     temperature: (item, format, context) => {
         const termIcon = context.icons?.thermometer ?? (format === 'html' ? DEFAULT_ICONS.html.thermometer : DEFAULT_ICONS.md.thermometer);
         const className = context.classes?.temperature || 'temp';
@@ -250,7 +241,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             }
         }
     },
-     
+
     reference: (item, format, context) => {
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
@@ -291,7 +282,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return md;
         }
     },
-     
+
     declaration: (item, format, context) => {
         const name = item.name || '';
         if (format === 'html') {
@@ -303,7 +294,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return `${prefix}${name}`;
         }
     },
-     
+
     comment: (item, format, context) => {
         const text = (item.value || '').trim();
         if (format === 'html') {
@@ -312,7 +303,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return ` *${text}*`;
         }
     },
-     
+
     alternative: (item, format, context) => {
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
@@ -324,18 +315,18 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             return formatElement(resolvedOpt, format, context);
         }).join(separator);
     },
-     
+
     group: (item, format, context) => {
         // Alias alternative strategy for group AST type
         return strategies.alternative!(item, format, context);
     },
-     
+
     composite: (item, format, context) => {
         // A composite item in the shopping list is essentially a parent ingredient.
         // We reuse the ingredient formatter to display it identically.
         return strategies.ingredient!({ ...item, type: 'ingredient' }, format, context);
     },
-     
+
     text: (item, format) => {
         const text = item.value || '';
         return format === 'html' ? escapeHtml(text) : text;
@@ -350,10 +341,10 @@ export function formatElement(element: any, format: 'html' | 'md', context: Rend
     if (typeof element === 'string') {
         return format === 'html' ? escapeHtml(element) : element;
     }
-    
+
     // Resolve strategy
     const type = element.type || '';
-    
+
     // Check if it looks like an implicit ingredient/cookware step element (no type, has id)
     if (!type && element.id) {
         const registry = context.registry || {};
@@ -361,12 +352,12 @@ export function formatElement(element: any, format: 'html' | 'md', context: Rend
         const inferredType = isCookware ? 'cookware' : 'ingredient';
         return strategies[inferredType]!({ ...element, type: inferredType }, format, context);
     }
-    
+
     const strategy = strategies[type];
     if (strategy) {
         return strategy(element, format, context);
     }
-    
+
     // Fallback for unknown elements
     return format === 'html' ? escapeHtml(String(element.value || '')) : String(element.value || '');
 }

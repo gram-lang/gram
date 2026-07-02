@@ -157,8 +157,8 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
     // ~ sigil
     if (text[pos] === '~') { emit(out, pos, 1, T.keyword); pos++; }
 
-    // Async modifier &
-    if (timer.isAsync && text[pos] === '&') {
+    // Passive modifier &
+    if (timer.isPassive && text[pos] === '&') {
         emit(out, pos, 1, T.operator);
         pos++;
     }
