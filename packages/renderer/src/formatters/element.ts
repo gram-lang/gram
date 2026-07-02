@@ -111,9 +111,14 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 html += ` <span class="${badgeClass}" title="${escapeHtml(title)}">${display}</span>`;
             }
             
-            if (prep) {
+            const mode = context.formatMode || 'inline';
+            if (prep && mode !== 'shopping-list') {
                 const prepClass = context.classes?.prepText || 'prep';
-                html += ` <span class="${prepClass}">(${escapeHtml(prep)})</span>`;
+                if (mode === 'mise-en-place') {
+                    html += ` <span class="${prepClass}">&mdash; ${escapeHtml(prep)}</span>`;
+                } else {
+                    html += ` <span class="${prepClass}">(${escapeHtml(prep)})</span>`;
+                }
             }
             if (isOptional) {
                 const optClass = context.classes?.optionalText || 'opt';
@@ -150,8 +155,13 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 }
             }
             
-            if (prep) {
-                md += ` (${prep})`;
+            const mode = context.formatMode || 'inline';
+            if (prep && mode !== 'shopping-list') {
+                if (mode === 'mise-en-place') {
+                    md += ` — ${prep}`;
+                } else {
+                    md += ` (${prep})`;
+                }
             }
             if (isOptional) {
                 md += ' (optional)';

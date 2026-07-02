@@ -4,6 +4,7 @@ export interface AggregatedIngredient {
     id: string
     name: string
     type?: string  // 'reference' for cross-section intermediates, undefined for regular ingredients
+    preparation?: string | null
     // null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
     // Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
     quantities: Array<{ qty: NonNullable<Usage['qty']>; unit?: string | null }> | null
@@ -17,10 +18,11 @@ export interface AggregatedIngredient {
  *   Rule 3 — Segregation: measured ≠ unmeasured → always two separate entries
  *
  * Insertion order from the source list is preserved.
+ * Grouping is done by `id` AND `preparation`.
  */
 export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIngredient[] {
-    const measuredByID = new Map<string, AggregatedIngredient>()
-    const unmeasuredByID = new Map<string, AggregatedIngredient>()
+    const measuredByKey = new Map<string, AggregatedIngredient>()
+    const unmeasuredByKey = new Map<string, AggregatedIngredient>()
     const order: AggregatedIngredient[] = []
 
     for (const ing of ingredients) {
@@ -28,9 +30,10 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
 
         const name = ing.name ?? ing.id
         const hasMeasuredQty = ing.qty != null
+        const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
         if (hasMeasuredQty) {
-            const existing = measuredByID.get(ing.id)
+            const existing = measuredByKey.get(key)
             if (existing) {
                 existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null })
             } else {
@@ -38,15 +41,22 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
                     id: ing.id,
                     name,
                     type: ing.type,
+                    preparation: ing.preparation,
                     quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
                 }
-                measuredByID.set(ing.id, entry)
+                measuredByKey.set(key, entry)
                 order.push(entry)
             }
         } else {
-            if (!unmeasuredByID.has(ing.id)) {
-                const entry: AggregatedIngredient = { id: ing.id, name, type: ing.type, quantities: null }
-                unmeasuredByID.set(ing.id, entry)
+            if (!unmeasuredByKey.has(key)) {
+                const entry: AggregatedIngredient = { 
+                    id: ing.id, 
+                    name, 
+                    type: ing.type, 
+                    preparation: ing.preparation,
+                    quantities: null 
+                }
+                unmeasuredByKey.set(key, entry)
                 order.push(entry)
             }
         }

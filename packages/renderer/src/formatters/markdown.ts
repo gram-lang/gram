@@ -44,18 +44,18 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
             if (item.type === 'alternative' || item.type === 'group') {
                 md += `- **Alternative Group**:\n`;
                 item.options.forEach((opt: any) => {
-                    md += `  - ${formatElement(opt, 'md', context)}\n`;
+                    md += `  - ${formatElement(opt, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
                 });
             } else if (item.type === 'composite') {
-                 let parentStr = formatElement(item, 'md', context);
+                 let parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
                  md += `- ${parentStr} **(Composite)**:\n`;
                  item.usage.forEach((child: any) => {
-                     md += `  - ${formatElement(child, 'md', context)}\n`;
+                     md += `  - ${formatElement(child, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
                  });
             } else if (item.display) {
                   md += `- ${item.display}\n`;
             } else {
-                md += `- ${formatElement(item, 'md', context)}\n`;
+                md += `- ${formatElement(item, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
             }
         });
         md += '\n';
@@ -92,7 +92,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
             if (sectionItems.length > 0) {
                 md += `**Ingredients**:\n`;
                 sectionItems.forEach((item: any) => {
-                    md += `- ${formatElement(item, 'md', context)}\n`;
+                    md += `- ${formatElement(item, 'md', { ...context, formatMode: 'mise-en-place' })}\n`;
                 });
                 md += '\n';
             }

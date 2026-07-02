@@ -67,4 +67,11 @@ export interface RenderContext {
   formatDuration?: (minutes: number) => string;
   /** Set to true when formatting step tokens to suppress quantity display. */
   hideIngredientQty?: boolean;
+  // Internal Baker's Math state resolved once per render
+  _bakersMathEnabled?: boolean;
+  _bakersMathReferenceMass?: number;
+  _bakersMathOnly?: boolean;
+
+  /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
+  formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';
 }
