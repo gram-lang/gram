@@ -144,7 +144,7 @@ export interface TimerAST extends NodeAST {
     type: ASTNodeType.Timer;
     name?: string | null;
     quantity: QuantityAST | TextQuantityAST;
-    isAsync: boolean;
+    isPassive: boolean;
 }
 
 export interface TemperatureAST extends NodeAST {

@@ -62,8 +62,8 @@ function extractTimers(step: any, sectionIdx: number, stepIdx: number): CookTime
   if (Array.isArray(step.content)) {
     step.content.forEach((token: any, i: number) => {
       if (token?.type !== 'timer') return
-      // Skip async timers already captured above (isAsync flag)
-      if (token.isAsync) return
+      // Skip passive timers already captured above (isPassive flag)
+      if (token.isPassive) return
       const name = token.name ?? `Timer step ${stepIdx + 1}`
       if (seen.has(name)) return
       seen.add(name)

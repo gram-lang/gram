@@ -51,7 +51,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     "title": "Crepes",
   },
   "metrics": {
-    "activeTime": 68,
+    "activeTime": 70,
     "preparationTime": 19,
     "totalTime": 70,
   },
@@ -356,7 +356,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "into the ",
             {
-              "_usageId": "0.10596563593562047",
+              "_usageId": "0.06566371986666497",
               "id": "mixture",
               "name": "mixture",
               "type": "reference",
@@ -494,7 +494,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       ],
       "ingredients": [
         {
-          "_usageId": "0.051329865069099645",
+          "_usageId": "0.1984453015242188",
           "id": "batter",
           "name": "batter",
           "type": "reference",
@@ -512,17 +512,10 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       "steps": [
         {
           "action": "Cook",
-          "backgroundTasks": [
-            {
-              "duration": 2,
-              "name": "Timer",
-              "startOffset": 0,
-            },
-          ],
           "content": [
             "The ",
             {
-              "_usageId": "0.051329865069099645",
+              "_usageId": "0.1984453015242188",
               "id": "batter",
               "name": "batter",
               "type": "reference",
@@ -563,7 +556,6 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "for about ",
             {
-              "isAsync": true,
               "quantity": {
                 "text": "2",
                 "type": "single",
@@ -575,8 +567,8 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             ".²",
           ],
           "timings": {
-            "activeDuration": 0,
-            "end": 68,
+            "activeDuration": 2,
+            "end": 70,
             "start": 68,
           },
           "type": "step",
@@ -732,7 +724,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "cookware": [],
       "ingredients": [
         {
-          "_usageId": "0.1349388179288863",
+          "_usageId": "0.32384350397444783",
           "id": "ghost-step",
           "name": "ghost_step",
           "type": "reference",
@@ -810,7 +802,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "We will use a step reference that does not exist: ",
             {
-              "_usageId": "0.1349388179288863",
+              "_usageId": "0.32384350397444783",
               "id": "ghost-step",
               "name": "ghost_step",
               "type": "reference",

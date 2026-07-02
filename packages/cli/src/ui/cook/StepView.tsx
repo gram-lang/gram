@@ -117,7 +117,7 @@ export default function StepView({
 
   // Step metadata for the info bar
   const stepTempTokens = (step.content ?? []).filter((t: any) => t?.type === 'temperature')
-  const stepTimerTokens = (step.content ?? []).filter((t: any) => t?.type === 'timer' && !t?.isAsync)
+  const stepTimerTokens = (step.content ?? []).filter((t: any) => t?.type === 'timer' && !t?.isPassive)
 
   const getIngredientName = (item: any) =>
     item.alias ?? registry.ingredients[item.id]?.name ?? item.name ?? item.id

@@ -112,7 +112,7 @@
   border: 1px solid var(--item-timer-border);
 }
 
-.gram-preview .timer.async {
+.gram-preview .timer.passive {
   border-style: dashed;
   opacity: 0.9;
 }

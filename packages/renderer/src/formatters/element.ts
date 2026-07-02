@@ -203,19 +203,19 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         const q = item.quantity || { value: '' };
         const qVal = formatQuantityValue(q);
         const unitStr = item.unit ? ` ${item.unit}` : '';
-        const isAsync = !!item.isAsync;
+        const isPassive = !!item.isPassive;
         
         if (format === 'html') {
-            const asyncClassStr = isAsync ? ' async' : '';
-            const className = (context.classes?.timer || 'timer') + asyncClassStr;
-            const iconKey = isAsync ? 'hourglass' : 'timer';
+            const passiveClassStr = isPassive ? ' passive' : '';
+            const className = (context.classes?.timer || 'timer') + passiveClassStr;
+            const iconKey = isPassive ? 'hourglass' : 'timer';
             const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey as keyof typeof DEFAULT_ICONS.html];
             return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
         } else {
             const prefix = context.icons?.hourglass !== undefined 
-                ? (isAsync ? context.icons.hourglass : (context.icons.timer ?? '')) 
-                : (isAsync ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
-            const suffix = isAsync ? ' (async)' : '';
+                ? (isPassive ? context.icons.hourglass : (context.icons.timer ?? '')) 
+                : (isPassive ? DEFAULT_ICONS.md.hourglass : DEFAULT_ICONS.md.timer);
+            const suffix = isPassive ? ' (passive)' : '';
             return `${prefix}${qVal}${unitStr}${suffix}`;
         }
     },

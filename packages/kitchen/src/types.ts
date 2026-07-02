@@ -102,7 +102,7 @@ export interface CompilationResult {
     sections: ProcessedSection[];
     warnings: any[];
     metrics: {
-        totalTime: number;   // Critical path duration (end of last async task)
+        totalTime: number;   // Critical path duration (end of last passive task)
         activeTime: number;  // Sum of cook work time
         preparationTime: number; // Estimated mise-en-place time
     };
