@@ -1,8 +1,8 @@
 # How to Scale Recipes Dynamically
 
-Gram is designed to ensure that recipes scale mathematically. While you can easily scale any standard recipe linearly by passing a multiplier to the CLI (`gram build --scale 2`), Gram also offers a powerful advanced feature for ratio-based cooking (like pastry or bread): **Relative Quantities**.
+Gram is designed to ensure that recipes scale mathematically. While you can easily scale any standard recipe linearly by passing a multiplier to the CLI (`gram build --scale 2`), Gram also offers two powerful advanced features for ratio-based cooking (like pastry or bread): **Relative Quantities** and **Baker's Math**.
 
-This guide shows you how to use **Relative Quantities** to build dynamic, self-documenting recipes based on ratios (a practice most famously known in the baking world as *Baker's Percentages*).
+This guide shows you how to use **Relative Quantities** to build dynamic, self-documenting recipes based on ratios, and how to use **Baker's Math** to display traditional recipes in percentage format.
 
 ## The Limit of Static Quantities
 
@@ -23,9 +23,9 @@ What if you want to increase the hydration from 70% to 75%? You would have to ma
 
 ## The Solution for Ratio-Based Recipes: Relative Quantities
 
-In professional baking and pastry, ingredients are often expressed as a percentage of a main ingredient (usually the total flour weight). This concept is called **Baker's Percentage**.
+Some recipes are fundamentally built around the mathematical relationship between ingredients, rather than strict absolute quantities (e.g., a bread dough defined by its 70% hydration).
 
-In Gram, you can apply this logic to *any* reference ingredient using the language's **Relative Quantities** feature (`% @&target`).
+In Gram, you can express these relationships directly in the source code using **Relative Quantities** (`% @&target`). This allows the recipe to recalculate itself dynamically when you tweak a single percentage.
 
 ### 1. Define the Anchor (Target)
 First, define the flour as a standard ingredient and give it an intermediate variable declaration so it can be referenced.
@@ -68,6 +68,39 @@ gram view bread.gram --scale flour=400g
 ```
 
 Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
+
+## Baker's Math Mode (CLI)
+
+While Relative Quantities are great for *designing* dynamic recipes, professional bakers often use a concept called **Baker's Percentage** to read and analyze *static* recipes. In Baker's Percentage, the main ingredient (usually flour) is defined as 100%, and everything else is displayed as a percentage of that weight.
+
+If you have a standard recipe with absolute weights, you can use the **Baker's Percentage Modifier** (`*`) to explicitly tell Gram: *"This ingredient is the 100% reference point"*.
+
+```gram
+@*flour{500g}
+@water{350g}
+@salt{10g}
+```
+
+When using the CLI, you can display the entire recipe in percentages without changing the source code, using the `--bakers-math` flag:
+
+```bash
+gram view bread.gram --bakers-math
+```
+
+The output will automatically show the percentage for each ingredient relative to the flour:
+```
+  flour                  100% (500 g)
+  water                  70% (350 g)
+  salt                   2% (10 g)
+```
+
+If your recipe does not include the `@*` modifier, you can still force baker's math by specifying the reference ingredient directly in the CLI:
+
+```bash
+gram view bread.gram --bakers-math=flour
+```
+
+If you only want to see the percentages and hide the absolute weights completely, add the `--bakers-math-only` flag.
 
 ## Scaling Fixed Ingredients
 
