@@ -6,7 +6,12 @@ import type { AggregatedIngredient } from '@gram/kitchen';
 export function aggToRendererItem(agg: AggregatedIngredient): Record<string, unknown> {
     const base: Record<string, unknown> = { id: agg.id, name: agg.name }
     if (agg.type) base.type = agg.type
-    if (!agg.quantities || agg.quantities.length === 0) return base
+    if (agg.preparation) base.preparation = agg.preparation
+    
+    if (!agg.quantities || agg.quantities.length === 0) {
+        return base;
+    }
+    
     const [first, ...rest] = agg.quantities
     if (first) {
         base.qty = first.qty

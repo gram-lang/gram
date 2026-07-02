@@ -122,16 +122,16 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `      <strong>Alternative Group</strong>:\n`;
                 html += `      <ul>\n`;
                 item.options.forEach((opt: any) => {
-                    html += `        <li>${formatElement(opt, 'html', context)}</li>\n`;
+                    html += `        <li>${formatElement(opt, 'html', { ...context, formatMode: 'shopping-list' })}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
             } else if (item.type === 'composite') {
                 html += `    <li>\n`;
-                html += `      ${formatElement(item, 'html', context)} <strong>(Composite)</strong>:\n`;
+                html += `      ${formatElement(item, 'html', { ...context, formatMode: 'shopping-list' })} <strong>(Composite)</strong>:\n`;
                 html += `      <ul>\n`;
                 item.usage.forEach((child: any) => {
-                    html += `        <li>${formatElement(child, 'html', context)}</li>\n`;
+                    html += `        <li>${formatElement(child, 'html', { ...context, formatMode: 'shopping-list' })}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
@@ -144,7 +144,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                     const gross = Math.round(item.purchasingMass * 10) / 10;
                     extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
                 }
-                html += `    <li>${formatElement(item, 'html', context)}${extraHtml}</li>\n`;
+                html += `    <li>${formatElement(item, 'html', { ...context, formatMode: 'shopping-list' })}${extraHtml}</li>\n`;
             }
         });
         html += `  </ul>\n`;
@@ -219,7 +219,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `      <h4>Ingredients</h4>\n`;
                 html += `      <ul>\n`;
                 sectionItems.forEach((item: any) => {
-                    html += `        <li>${formatElement(item, 'html', context)}</li>\n`;
+                    html += `        <li>${formatElement(item, 'html', { ...context, formatMode: 'mise-en-place' })}</li>\n`;
                 });
                 html += `      </ul>\n`;
                 html += `    </div>\n`;

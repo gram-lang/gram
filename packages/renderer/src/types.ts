@@ -76,4 +76,7 @@ export interface RenderContext {
   _bakersMathEnabled?: boolean;
   _bakersMathReferenceMass?: number;
   _bakersMathOnly?: boolean;
+
+  /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
+  formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';
 }
