@@ -3,7 +3,7 @@ import { compile } from '@gram/kitchen';
 import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
 import { createHighlighter } from 'shiki';
-import gramGrammar from '../../vscode-extension/syntaxes/gram.tmLanguage.json';
+import gramGrammar from '@gram/parser/textmate' with { type: "json" };
 import { toMarkdown, toHTML, escapeHtml } from '@gram/renderer';
 
 let fullDatabase = {};

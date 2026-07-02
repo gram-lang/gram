@@ -51,7 +51,7 @@
       {
         "language": "gram",
         "scopeName": "source.gram",
-        "path": "./syntaxes/gram.tmLanguage.json"
+        "path": "./dist/syntaxes/gram.tmLanguage.json"
       }
     ],
     "snippets": [
