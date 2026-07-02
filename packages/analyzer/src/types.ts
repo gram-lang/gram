@@ -39,7 +39,7 @@ export type IngredientData = z.infer<typeof IngredientDataSchema>;
 
 export interface AnalyzedUsage extends Usage {
     normalizedMass?: number;
-    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit' | 'estimate';
+    conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit' | 'estimate' | 'relative';
     isEstimate?: boolean;
     purchasingMass?: number;
 }

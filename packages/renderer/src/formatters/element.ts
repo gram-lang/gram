@@ -88,14 +88,12 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     if (qtyContent) {
                         html += ` <span class="quantity">(${qtyContent})</span>`;
                     }
-                    if (formulaStr) {
-                        const formulaClass = context.classes?.formulaText ? ` class="${context.classes.formulaText}"` : '';
-                        html += ` <span${formulaClass} title="Base Mass Used: ${item.formula?.base_mass_used || ''}g">[${escapeHtml(formulaStr)}]</span>`;
-                    }
                 }
             }
             
-            if (normalizedMass !== null) {
+            // Only show mass badge if the original quantity wasn't already in grams,
+            // or if it wasn't a relative quantity resolved directly into grams
+            if (normalizedMass !== null && conversionMethod !== 'relative') {
                 let display = `${normalizedMass}g`;
                 let title = `Calculated Mass: ${normalizedMass}g\nMethod: ${conversionMethod}`;
                 if (isEstimate) {
@@ -148,9 +146,6 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     }
                     if (qtyParts.length > 0) {
                         md += ` (${qtyParts.join(' + ')})`;
-                    }
-                    if (formulaStr) {
-                        md += ` [${formulaStr}]`;
                     }
                 }
             }

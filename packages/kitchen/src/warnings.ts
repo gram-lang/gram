@@ -1,6 +1,7 @@
 export enum WarningCode {
     VARIABLE_NOT_FOUND = 'VARIABLE_NOT_FOUND',
     RELATIVE_QUANTITY_UNRESOLVED = 'RELATIVE_QUANTITY_UNRESOLVED',
+    RELATIVE_QUANTITY_UNKNOWN_MASS = 'RELATIVE_QUANTITY_UNKNOWN_MASS',
     CIRCULAR_REFERENCE = 'CIRCULAR_REFERENCE',
     UNDEFINED_REFERENCE = 'UNDEFINED_REFERENCE',
     MISSING_UNIT = 'MISSING_UNIT',
@@ -15,6 +16,7 @@ export enum WarningCode {
 export interface WarningPayloads {
     [WarningCode.VARIABLE_NOT_FOUND]: { targetName: string; item: string; loc?: any };
     [WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: { targetName: string; item: string; loc?: any };
+    [WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: { targetName: string; item: string; loc?: any };
     [WarningCode.CIRCULAR_REFERENCE]: { name: string; item: string; loc?: any };
     [WarningCode.UNDEFINED_REFERENCE]: { prefix: string; name: string; item: string; loc?: any };
     [WarningCode.MISSING_UNIT]: { type: 'Timer' | 'Temperature'; item: string; loc?: any };
@@ -29,6 +31,7 @@ export interface WarningPayloads {
 export const warningTemplates: { [K in WarningCode]: (payload: WarningPayloads[K]) => string } = {
     [WarningCode.VARIABLE_NOT_FOUND]: (p) => `Variable '&${p.targetName}' not found.`,
     [WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: (p) => `Could not resolve relative quantity for '@${p.targetName}'. Source not found in current section.`,
+    [WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: (p) => `Cannot compute relative quantity for '${p.item}' because the mass of target '${p.targetName}' is unknown.`,
     [WarningCode.CIRCULAR_REFERENCE]: (p) => `Circular reference detected: ${p.name} depends on itself.`,
     [WarningCode.UNDEFINED_REFERENCE]: (p) => `Reference to undefined ingredient '${p.prefix}${p.name}'.`,
     [WarningCode.MISSING_UNIT]: (p) => `${p.type} must have an explicit unit.`,

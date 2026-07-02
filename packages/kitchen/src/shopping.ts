@@ -13,6 +13,7 @@ interface ShoppingListItem {
     // Internal fields for calculation
     otherUnits?: Record<string, number>;
     variableParts?: string[];
+    _usageIds?: string[];
 }
 
 interface CompositeItem {
@@ -37,8 +38,7 @@ function formatQuantity(q: any): string | number {
     if (q.type === 'range') return q.text || `${q.value}`;
     if (q.type === 'fraction') return q.text || `${q.value}`;
     if (q.type === ASTNodeType.RelativeQuantity) {
-        const marker = q.referenceType === 'variable' ? '&' : '@';
-        return `${q.percent}% of ${marker}${q.target}`;
+        return `${q.percent}% of ${q.target}`;
     }
     
     return JSON.stringify(q);
@@ -157,10 +157,14 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                     unit: unit,
                     otherUnits: {},
                     variableParts: [],
+                    _usageIds: [],
                 });
             }
             
             const existing = listMap.get(key)!;
+            if (item._usageId) {
+                existing._usageIds!.push(item._usageId);
+            }
             
             // (Numeric extraction moved up above key generation)
             
@@ -197,6 +201,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             id: item.id,
             name: item.name
         };
+        if (item._usageIds && item._usageIds.length > 0) {
+            res._usageIds = item._usageIds;
+        }
 
         const units = Object.keys(item.otherUnits!);
         const primaryUnit = units[0];

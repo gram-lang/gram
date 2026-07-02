@@ -83,8 +83,7 @@ function processIngredient(
          const percent = rel.percent;
          
          let isGhost = false;
-         const markerChar = rel.referenceType === 'variable' ? '&' : '@';
-         const formulaStr = `${percent}% of ${markerChar}${targetName}`;
+         const formulaStr = `${percent}% of ${targetName}`;
 
          if (rel.referenceType === 'variable') {
               if (!ctx.definedIntermediates.has(targetName)) {
@@ -215,7 +214,7 @@ function processReference(
     }
     if (ctx.definedIntermediates.has(cleanName)) ctx.usedIntermediates.add(cleanName);
 
-    const obj: Usage = { type: 'reference', id, name: cleanName };
+    const obj: Usage = { type: 'reference', id, name: cleanName, _usageId: String(Math.random()) };
 
     if (item.quantity) {
          if (item.quantity.type === ASTNodeType.Quantity) {

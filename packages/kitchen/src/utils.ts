@@ -56,8 +56,10 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
  * Maps modifier symbols (?, -, &, *) to semantic names, handles fixed quantity states, 
  * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
  */
+let usageCounter = 0;
+
 export const createCleanUsage = (item: any, id: string, options?: CompilerOptions): Usage => {
-    const obj: Usage = { id };
+    const obj: Usage = { id, _usageId: String(++usageCounter) };
     const qtyNode = item.quantity;
     let cleanQty: any = undefined;
     
