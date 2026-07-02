@@ -1,5 +1,0 @@
-# This directory is a Syncthing folder marker.
-# Do not delete.
-
-folderID: mwdhp-s6nss
-created: 2026-06-19T22:26:15+02:00
