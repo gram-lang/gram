@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const gramGrammarPath = path.resolve(__dirname, '../../../vscode-extension/syntaxes/gram.tmLanguage.json')
+const gramGrammarPath = path.resolve(__dirname, '../../../vscode-extension/dist/syntaxes/gram.tmLanguage.json')
 const gramGrammar = JSON.parse(fs.readFileSync(gramGrammarPath, 'utf-8'))
 
 export default defineConfig({
