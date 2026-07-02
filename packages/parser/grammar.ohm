@@ -113,7 +113,7 @@ GRAM {
   // Like name, but also stops at element sigils so a bare &dough is not consumed
   // into a Reference -- full when a sigil like # or @ appears later on the line.
   refName = (~(syntaxChar | refSigil | nl) any)+
-  refSigil = "@" | "#" | "~" | "°"
+  refSigil = "@" | "#" | "~" | "°" | "&"
 
   number = digit+ ("." digit+)? ("/" digit+)?
   range = number space* "-" space* number
