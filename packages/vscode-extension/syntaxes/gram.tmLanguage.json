@@ -36,7 +36,7 @@
         "2": { "name": "entity.name.section.gram" },
         "3": { "name": "entity.name.tag.retro.gram" },
         "4": { "name": "keyword.operator.arrow.gram" },
-        "5": { "name": "variable.other.intermediate.gram" },
+        "5": { "name": "entity.name.tag.intermediate.gram" },
         "6": { "name": "entity.name.tag.retro.gram" }
       }
     },
@@ -67,7 +67,7 @@
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
-            "3": { "name": "variable.parameter.ingredient.gram" },
+            "3": { "name": "entity.name.type.ingredient.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
             "5": { "name": "string.other.alias.gram" },
             "6": { "name": "punctuation.section.embedded.begin.gram" }
@@ -87,7 +87,7 @@
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
-            "3": { "name": "variable.parameter.ingredient.gram" },
+            "3": { "name": "entity.name.type.ingredient.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
             "5": { "name": "string.other.alias.gram" }
           }
@@ -102,7 +102,7 @@
           "beginCaptures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
-            "3": { "name": "variable.other.cookware.gram" },
+            "3": { "name": "support.class.cookware.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
             "5": { "name": "string.other.alias.gram" },
             "6": { "name": "punctuation.section.embedded.begin.gram" }
@@ -122,7 +122,7 @@
           "captures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
-            "3": { "name": "variable.other.cookware.gram" },
+            "3": { "name": "support.class.cookware.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
             "5": { "name": "string.other.alias.gram" }
           }
@@ -135,7 +135,7 @@
       "beginCaptures": {
         "1": { "name": "keyword.control.timer.gram" },
         "2": { "name": "storage.modifier.gram" },
-        "3": { "name": "variable.other.timer.gram" },
+        "3": { "name": "support.type.timer.gram" },
         "4": { "name": "punctuation.section.embedded.begin.gram" }
       },
       "end": "(\\})",
@@ -149,7 +149,7 @@
       "begin": "(°)([\\w\\s]+)?(\\{)",
       "beginCaptures": {
         "1": { "name": "keyword.control.temperature.gram" },
-        "2": { "name": "variable.other.temperature.gram" },
+        "2": { "name": "constant.numeric.temperature.gram" },
         "3": { "name": "punctuation.section.embedded.begin.gram" }
       },
       "end": "(\\})",
@@ -165,7 +165,7 @@
           "begin": "(&)(\\w+(?:\\s+\\w+)*)(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.reference.gram" },
-            "2": { "name": "variable.other.reference.gram" },
+            "2": { "name": "entity.name.tag.reference.gram" },
             "3": { "name": "punctuation.section.embedded.begin.gram" }
           },
           "end": "(\\})",
@@ -179,7 +179,7 @@
           "match": "(&)([^\\s\\{\\[@#~°:<]+)",
           "captures": {
             "1": { "name": "keyword.control.reference.gram" },
-            "2": { "name": "variable.other.reference.gram" }
+            "2": { "name": "entity.name.tag.reference.gram" }
           }
         }
       ]
@@ -188,10 +188,10 @@
       "patterns": [
         {
           "name": "meta.composite.gram",
-          "begin": "(<@)([\\w\\s]+)(\\{)",
+          "begin": "(<@)([^\\{\\[@#~°:<]+?)(\\{)",
           "beginCaptures": {
-            "1": { "name": "keyword.operator.composite.gram" },
-            "2": { "name": "variable.parameter.ingredient.gram" },
+            "1": { "name": "keyword.control.ingredient.gram" },
+            "2": { "name": "entity.name.type.ingredient.gram" },
             "3": { "name": "punctuation.section.embedded.begin.gram" }
           },
           "end": "(\\})",
@@ -201,10 +201,11 @@
           "patterns": [ { "include": "#quantity-content" } ]
         },
         {
-          "match": "(<@)([\\w\\s]+)",
+          "name": "meta.composite.bare.gram",
+          "match": "(<@)([^\\s\\{\\[@#~°:<]+)",
           "captures": {
-            "1": { "name": "keyword.operator.composite.gram" },
-            "2": { "name": "variable.parameter.ingredient.gram" }
+            "1": { "name": "keyword.control.ingredient.gram" },
+            "2": { "name": "entity.name.type.ingredient.gram" }
           }
         }
       ]
@@ -213,7 +214,7 @@
          "match": "(->&)\\s*([\\w\\d]+)(?:\\{\\})?",
          "captures": {
              "1": { "name": "keyword.operator.arrow.gram" },
-             "2": { "name": "variable.other.intermediate.gram" }
+             "2": { "name": "entity.name.tag.intermediate.gram" }
          }
     },
     "temperature-content": {
@@ -222,12 +223,12 @@
           "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)(°[A-Za-z]+|[A-Za-z]+)?",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
-            "2": { "name": "string.unquoted.unit.gram" }
+            "2": { "name": "keyword.other.unit.gram" }
           }
         },
         {
           "match": "[^\\d\\}]+",
-          "name": "string.unquoted.unit.gram"
+          "name": "keyword.other.unit.gram"
         }
       ]
     },
@@ -242,15 +243,15 @@
            "name": "keyword.operator.percent.gram"
         },
         {
-           "match": "(@&|&|@)([\\w\\s]+)",
+           "match": "(@&|&|@)([^\\}]+)",
            "captures": {
                "1": { "name": "keyword.control.reference.gram" },
-               "2": { "name": "variable.other.reference.gram" }
+               "2": { "name": "entity.name.tag.reference.gram" }
            }
         },
         {
            "match": "[^\\d%@&\\}]+", 
-           "name": "string.unquoted.unit.gram" 
+           "name": "keyword.other.unit.gram" 
         }
       ]
     }

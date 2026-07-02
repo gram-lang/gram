@@ -22,7 +22,8 @@
     "@gram/kitchen": "workspace:*",
     "@gram/parser": "workspace:*",
     "@gram/renderer": "workspace:*",
-    "@webcoder49/code-input": "^2.8.2"
+    "@webcoder49/code-input": "^2.8.2",
+    "shiki": "^4.3.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.1",
