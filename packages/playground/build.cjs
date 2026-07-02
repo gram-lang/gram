@@ -26,7 +26,7 @@ esbuild.build({
   splitting: true,
   assetNames: 'assets/[name]-[hash]',
   // Use stable chunk names for cleaner git history
-  chunkNames: 'chunks/[name]', 
+  chunkNames: 'chunks/[name]-[hash]', 
   alias: {
       '@gram/parser': path.resolve(__dirname, '../parser/dist/index.js'),
       '@gram/compiler': path.resolve(__dirname, '../compiler/dist/index.js'),

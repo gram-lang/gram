@@ -69,10 +69,9 @@ export function getQty(item: Record<string, unknown>): ExtractedQuantity | undef
         }
         if (typeof item.qty === 'object' && item.qty !== null && (item.qty as any).type === ASTNodeType.RelativeQuantity) {
             const rel = item.qty as any;
-            const marker = rel.referenceType === 'variable' ? '&' : '@';
             return { 
                 value: null, 
-                text: `${rel.percent}% of ${marker}${rel.target}`,
+                text: `${rel.percent}% of ${rel.target}`,
                 isRelative: true
             };
         }
@@ -90,8 +89,7 @@ export function formatQuantityValue(q: any): string {
     if (q.type === 'range' && q.text) return q.text;
     if (q.text) return q.text;
     if (q.type === ASTNodeType.RelativeQuantity) {
-        const marker = q.referenceType === 'variable' ? '&' : '@';
-        return `${q.percent}% of ${marker}${q.target}`;
+        return `${q.percent}% of ${q.target}`;
     }
     if (q.value !== undefined) return String(q.value);
     return String(q);

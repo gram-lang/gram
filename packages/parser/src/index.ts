@@ -256,11 +256,19 @@ semantics.addOperation('toAST', {
         } as IngredientAST;
     },
 
-    composite(_ltat, name, _qty) {
+    composite_full(_ltat, name, _qty) {
         return {
              type: ASTNodeType.Composite,
              parent: clean(name.sourceString),
-             quantity: getOpt(_qty)
+             quantity: _qty.toAST()
+        };
+    },
+
+    composite_bare(_ltat, name) {
+        return {
+             type: ASTNodeType.Composite,
+             parent: clean(name.sourceString),
+             quantity: null
         };
     },
 

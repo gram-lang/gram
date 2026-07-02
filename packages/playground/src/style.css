@@ -354,36 +354,23 @@ code-input:has(textarea:focus):not(.code-input_mouse-focused){
   background-color: #fafafa;
 }
 
-/* Highlight JS Line Numbers */
-.hljs-ln {
-    border-collapse: collapse;
+/* Shiki Line Numbers for Output View Only */
+#output {
+    counter-reset: step;
+    counter-increment: step 0;
+    display: block;
 }
-.hljs-ln td {
-    padding: 0;
-    border: 0;
-}
-
-.hljs-ln-line[data-line-number="1"] {
-  padding-block-start: 1rem;
-}
-
-.hljs-ln-numbers {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-
+#output .line::before {
+    content: counter(step);
+    counter-increment: step;
+    display: inline-block;
+    width: 2rem;
+    margin-right: 1rem;
     text-align: right;
     color: var(--token-comment);
-    border-right: 1px solid var(--border) !important;
-    vertical-align: top;
-    padding-right: 0.75rem !important;
-    min-width: 3rem;
-}
-.hljs-ln-code {
-    padding-left: 1rem !important;
+    border-right: 1px solid var(--border);
+    padding-right: 0.5rem;
+    user-select: none;
 }
 
 pre {
@@ -534,43 +521,7 @@ code {
 /* =========================================
    9. SYNTAX HIGHLIGHTING (TOKENS)
    ========================================= */
-/* Braces and Syntax Chars */
-.hljs-qty, .hljs-operator, .hljs-punctuation { color: var(--token-syntax); }
-
-/* Values */
-.hljs-number, .json-num { color: var(--token-number); }
-.hljs-unit { color: var(--token-unit); }
-.hljs-string { color: var(--token-string); font-style: italic; } /* Preps (diced) */
-.hljs-title { color: var(--foreground); font-weight: normal; font-style: italic; opacity: 0.8; } /* Aliases [name] */
-
-/* Headers & Meta */
-.hljs-section { color: var(--foreground); font-weight: 700; display: inline-block; width: 100%;}
-.hljs-meta { color: var(foreground); font-weight: 700;}
-.hljs-comment, .hljs-quote { color: var(--token-comment); font-style: italic; }
-
-/* Elements */
-.hljs-ingredient { color: var(--token-ingredient); font-weight: 500; }
-.hljs-cookware { color: var(--token-cookware); font-weight: 500; }
-.hljs-timer { color: var(--token-timer); font-weight: 500; }
-.hljs-temp { color: var(--token-temp); font-weight: 500; }
-.hljs-reference { color: var(--token-decl); font-weight: 500; }
-.hljs-variable { color: var(--token-decl); } /* Inside quantity % @ref */
-
-/* Frontmatter */
-.hljs-frontmatter { color: var(--token-comment);}
-.hljs-attr { color: var(--token-keyword); }
-
-/* JSON Tree Colors */
-.json-key { color: var(--token-ingredient); }
-.json-str { color: var(--token-string); }
-.json-bool { color: var(--token-keyword); }
-.json-null { color: var(--token-comment); }
-
-/* Highlight.js Overrides - Reset standard styles to avoid conflicts */
-.hljs {
-  background: transparent;
-  color: var(--foreground);
-}
+/* Shiki handles colors natively via Themes, so no need for CSS overrides here. */
 
 /* Nutrition Panel */
 .nutrition-panel {

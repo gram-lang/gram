@@ -2,8 +2,8 @@ import { getAST } from '@gram/parser';
 import { compile } from '@gram/kitchen';
 import { analyze } from '@gram/analyzer';
 import codeInput from '@webcoder49/code-input';
-import hljsTemplate from '@webcoder49/code-input/templates/hljs.mjs';
-import gramGrammar from './gram-highlight.js';
+import { createHighlighter } from 'shiki';
+import gramGrammar from '../../vscode-extension/syntaxes/gram.tmLanguage.json';
 import { toMarkdown, toHTML, escapeHtml } from '@gram/renderer';
 
 let fullDatabase = {};
@@ -23,13 +23,55 @@ import('./db_bundle.js').then(({ DEFAULT_SOURCES }) => {
     update();
 }).catch(err => console.error("Failed to load database:", err));
 
-// Register Gram Grammar
-if (window.hljs) {
-    window.hljs.registerLanguage('gram', gramGrammar);
-}
+let highlighter = null;
+let shikiReady = false;
 
-// Register code-input template
-codeInput.registerTemplate("syntax-highlighted", new hljsTemplate(window.hljs));
+// Create Custom Template for code-input
+codeInput.registerTemplate("syntax-highlighted", new codeInput.Template(
+    (codeElement) => {
+        if (!shikiReady || !highlighter) {
+            // Fallback before shiki is ready
+            codeElement.textContent = codeElement.textContent; 
+            return;
+        }
+        
+        const rawCode = codeElement.textContent;
+        const isLight = document.body.classList.contains('light');
+        const theme = isLight ? 'github-light' : 'github-dark';
+        
+        const highlightedHTML = highlighter.codeToHtml(rawCode, { lang: 'gram', theme });
+        // Extract the inside of the <code> tag
+        const match = highlightedHTML.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+        if (match) {
+            codeElement.innerHTML = match[1];
+        } else {
+            codeElement.textContent = rawCode;
+        }
+    },
+    false, // preElementStyled
+    true   // isCode
+));
+
+// Initialize Shiki asynchronously
+createHighlighter({
+    langs: [
+        { ...gramGrammar, name: 'gram' },
+        'json',
+        'lisp',
+        'markdown'
+    ],
+    themes: ['github-dark', 'github-light']
+}).then(h => {
+    highlighter = h;
+    shikiReady = true;
+    
+    // Trigger an initial update to highlight everything
+    update();
+    const inputEl = document.getElementById('input');
+    if (inputEl) {
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}).catch(e => console.error("Shiki initialization failed", e));
 
 const input = document.getElementById('input');
 const output = document.getElementById('output');
@@ -96,6 +138,13 @@ themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.contains('light');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
     updateThemeIcon(isLight);
+    
+    // Trigger update to re-highlight with new theme
+    update();
+    const inputEl = document.getElementById('input');
+    if (inputEl) {
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 });
 
 function updateThemeIcon(isLight) {
@@ -302,25 +351,22 @@ function update() {
             // Hide Preview
             previewOutput.style.display = 'none';
 
-            if (outputMode === 'json') {
-                output.textContent = content;
-                output.className = 'language-json';
-            } else if (outputMode === 'ast') {
-                output.textContent = content;
-                output.className = 'language-lisp'; // Use Lisp highlighting for S-Expr
+            output.className = outputMode === 'json' ? 'language-json' : (outputMode === 'ast' ? 'language-lisp' : 'language-markdown');
+            const rawCode = content;
+            
+            if (shikiReady && highlighter) {
+                const lang = outputMode === 'json' ? 'json' : (outputMode === 'ast' ? 'lisp' : 'markdown');
+                const isLight = document.body.classList.contains('light');
+                const highlightedHTML = highlighter.codeToHtml(rawCode, { lang, theme: isLight ? 'github-light' : 'github-dark' });
+                const match = highlightedHTML.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+                if (match) {
+                    output.innerHTML = match[1];
+                } else {
+                    output.textContent = rawCode;
+                }
             } else {
-                output.textContent = content; 
-                output.className = 'language-markdown';
+                output.textContent = rawCode;
             }
-            
-            output.removeAttribute('data-highlighted');
-            // Reset any previous line numbers structure
-            // If we don't do this, hljs might not re-run or might stack tables
-            // But output.textContent = content ALREADY destroys the table structure.
-            // So we just need to tell hljs it's fresh.
-            
-            hljs.highlightElement(output);
-            hljs.lineNumbersBlock(output);
         }
         
         status.textContent = 'Valid';

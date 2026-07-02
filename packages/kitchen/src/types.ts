@@ -50,6 +50,7 @@ export interface Usage {
     type?: string; 
     options?: any[]; // For alternatives
     name?: string; // Optional name cache
+    _usageId?: string;
 }
 
 export interface ProcessedComment {

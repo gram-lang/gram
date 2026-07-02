@@ -9,6 +9,7 @@ export * from './diff';
 import { CompilationResult, Usage } from '@gram/kitchen';
 import { getNumericQty } from '@gram/kitchen';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
+import { ASTNodeType } from '@gram/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
 import { normalizeMass } from './mass_normalization';
@@ -33,8 +34,10 @@ export function analyze(
     const opts = AnalyzerOptionsSchema.parse(options || {});
     const missingIngredientsSet = new Set<string>();
     
-    // Deep clone the compiled sections to perform safe mutations
-    const sections: AnalyzedSection[] = JSON.parse(JSON.stringify(result.sections));
+    // Deep clone the compiled sections to perform safe mutations while preserving internal references
+    const sections: AnalyzedSection[] = typeof structuredClone === 'function'
+        ? structuredClone(result.sections)
+        : JSON.parse(JSON.stringify(result.sections));
     
     // Parse custom ingredient density overrides declared in YAML/Frontmatter metadata
     const overrides: Record<string, number> = {};
@@ -91,6 +94,70 @@ export function analyze(
     // Compute the global recipe mass totals
     const globalMassMetrics = calculateMassMetrics(allRawIngredients);
 
+    // 1.5. Secondary pass: resolve Relative Quantities
+    sections.forEach(sec => {
+        sec.ingredients.forEach(item => {
+            if (item.formula && item.formula.target) {
+                const targetId = item.dependencies?.[0];
+                const isVariable = item.formula.raw.includes('% of &');
+                
+                let targetMass = 0;
+                let foundMass = false;
+                
+                if (!isVariable && targetId) {
+                    sec.ingredients.forEach(other => {
+                        if (other.id === targetId && other.normalizedMass !== undefined) {
+                            targetMass += other.normalizedMass;
+                            foundMass = true;
+                        }
+                    });
+                }
+                
+                if (foundMass && targetMass > 0) {
+                    const calculatedMass = (item.formula.percent / 100) * targetMass;
+                    item.normalizedMass = parseFloat(calculatedMass.toFixed(2));
+                    item.qty = { type: ASTNodeType.Quantity, value: item.normalizedMass, unit: 'g' } as any;
+                    item.unit = 'g';
+                    item.conversionMethod = 'relative';
+                } else {
+                    result.warnings.push({
+                        code: 'RELATIVE_QUANTITY_UNKNOWN_MASS',
+                        message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
+                        item: item.name || item.id
+                    });
+                }
+            }
+        });
+    });
+
+    // 1.8. Sync analyzed values back into step content objects using _usageId
+    // (Because cleanObject deep clones during compilation, referential integrity is lost)
+    sections.forEach(sec => {
+        const usageMap = new Map<string, AnalyzedUsage>();
+        sec.ingredients.forEach(i => { if (i._usageId) usageMap.set(i._usageId, i); });
+        if (sec.cookware) {
+            sec.cookware.forEach(c => { if (c._usageId) usageMap.set(c._usageId, c); });
+        }
+        
+        sec.steps.forEach(step => {
+            if (step.type === 'step' && Array.isArray(step.content)) {
+                step.content.forEach((contentItem: any) => {
+                    if (contentItem && typeof contentItem === 'object' && contentItem._usageId) {
+                        const enriched = usageMap.get(contentItem._usageId);
+                        if (enriched) {
+                            if (enriched.normalizedMass !== undefined) contentItem.normalizedMass = enriched.normalizedMass;
+                            if (enriched.qty !== undefined) contentItem.qty = enriched.qty;
+                            if (enriched.unit !== undefined) contentItem.unit = enriched.unit;
+                            if (enriched.conversionMethod !== undefined) contentItem.conversionMethod = enriched.conversionMethod;
+                            if (enriched.isEstimate !== undefined) contentItem.isEstimate = enriched.isEstimate;
+                            if (enriched.purchasingMass !== undefined) contentItem.purchasingMass = enriched.purchasingMass;
+                        }
+                    }
+                });
+            }
+        });
+    });
+
     // 2. Traverse and enrich the master Shopping List
     const shopping_list = result.shopping_list ? JSON.parse(JSON.stringify(result.shopping_list)) : [];
     shopping_list.forEach((item: any) => {
@@ -117,17 +184,33 @@ export function analyze(
                         item.isEstimate = hasEstimate;
                         item.conversionMethod = hasEstimate ? 'estimate' : 'physical';
                    }
-              } else {
-                   const numericQty = getNumericQty(item.qty);
-                   if (numericQty !== null) {
-                        const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
-                        if (norm) {
-                            item.normalizedMass = (item.normalizedMass || 0) + norm.mass;
-                            if (norm.isEstimate) item.isEstimate = true;
-                            item.conversionMethod = item.isEstimate ? 'estimate' : 'physical';
-                        }
+               } else {
+                   const usageIds = item._usageIds || (item._usageId ? [item._usageId] : []);
+                   const usages = allRawIngredients.filter(u => u._usageId && usageIds.includes(u._usageId));
+                   let totalMass = 0;
+                   let hasEstimate = false;
+                   let hasRelativeResolved = false;
+                   
+                   usages.forEach(u => {
+                       if (u.normalizedMass !== undefined) {
+                           totalMass += u.normalizedMass;
+                           if (u.isEstimate) hasEstimate = true;
+                           if (u.conversionMethod === 'relative') hasRelativeResolved = true;
+                       }
+                   });
+                   
+                   if (totalMass > 0) {
+                       item.normalizedMass = parseFloat(totalMass.toFixed(2));
+                       item.isEstimate = hasEstimate;
+                       item.conversionMethod = hasEstimate ? 'estimate' : 'physical';
+                       
+                       if (hasRelativeResolved) {
+                           item.qty = item.normalizedMass;
+                           item.unit = 'g';
+                           item.variable_entries = []; 
+                       }
                    }
-              }
+               }
          }
 
          // Apply physical yields (waste factor adjustments, e.g. purchasing weight vs net weight)

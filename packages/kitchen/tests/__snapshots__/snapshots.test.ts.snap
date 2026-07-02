@@ -56,7 +56,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     "cookware": {
       "bowl": {
         "id": "bowl",
-        "name": "bowl,",
+        "name": "bowl",
       },
       "frying-pan": {
         "id": "frying-pan",
@@ -189,11 +189,6 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           },
         },
         {
-          "id": "mixture",
-          "name": "mixture.",
-          "type": "reference",
-        },
-        {
           "id": "butter",
           "preparation": "melted",
           "qty": 30,
@@ -268,7 +263,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
               "fixed": false,
               "id": "bowl",
             },
-            "mix the ",
+            ", mix the ",
             {
               "id": "flour",
               "modifiers": [
@@ -343,7 +338,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             "into the ",
             {
               "id": "mixture",
-              "name": "mixture.",
+              "name": "mixture",
               "type": "reference",
             },
             {
