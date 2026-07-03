@@ -7,8 +7,9 @@ Ingredients are the core building blocks of any Gram recipe.
 To declare an ingredient, use the `@` symbol. If the ingredient name contains spaces or requires a specific quantity, you **must** append the quantity inside `{}` braces. If it is a single word without a specific quantity, the braces are optional (the quantity defaults to 1).
 
 ```gram
-Then add @salt and @ground black pepper{} to taste.
-Poke holes in @potato{2}.
+[Add] @salt and @ground black pepper{} to taste.
+
+[Poke] Holes in @potatoes{2}.
 ```
 
 > **Note:** Ingredient names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
@@ -17,7 +18,7 @@ Poke holes in @potato{2}.
 To specify a unit of measurement (weight, volume, etc.), add it directly after the numeric value inside the braces, separated by an optional space.
 
 ```gram
-Place @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
+[Place] @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
 ```
 
 ## Scaling & Fixed Quantities
@@ -39,10 +40,10 @@ Gram provides several modifiers to alter how ingredients behave in the parser an
 
 | Modifier | Name | Effect |
 |---|---|---|
+| `&` | **Reference** | References an ingredient previously declared. Does NOT add it to the shopping list again. |
 | `=` | **Fixed** | Marks the quantity as fixed (it will not scale with portions). |
 | `?` | **Optional** | Marks the ingredient as optional. |
 | `-` | **Hidden** | Hides the ingredient from the generated shopping list. |
-| `&` | **Reference** | References an ingredient previously declared. Does NOT add it to the shopping list again. |
 | `*` | **Baker's %** | Marks the ingredient as the reference (100%) to calculate baker's percentages. |
 
 ::: warning Combining Modifiers
@@ -50,17 +51,25 @@ You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g.
 :::
 
 ### The Reference Modifier (`&`)
-The reference modifier is crucial for multi-step recipes. 
-When you declare `@flour{200g}`, it adds 200g of flour to the shopping list. Later, when instructing the user to use that flour, you must use a reference so it isn't counted twice:
 
+The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an ingredient after its initial declaration, you should use the `&` modifier.**
+
+The compiler's behavior changes depending on whether you provide a new quantity with your reference:
+
+1. **Pure Reference (No Quantity)**
+When instructing the user to use an already declared ingredient, use `@&` so it isn't counted twice in the shopping list.
 ```gram
-Add @flour{200g} to the bowl.
-Later, dust the work surface with the &flour. // The @ is optional for pure references without quantities
+[Add] @flour{200g} to the bowl.
+
+[Dust] The work surface with the @&flour.
 ```
 
-You can also use references to *add* to an existing ingredient's total weight in the shopping list:
+2. **Additive Reference (With Quantity)**
+Sometimes you need to use the *same* ingredient multiple times with *different* additions throughout the recipe. Using `@&ingredient{qty}` tells the compiler: "This is the same ingredient, please add this extra quantity to the total shopping list."
 ```gram
-@&butter{50g} // Adds 50g to the "butter" entry in the shopping list.
+[Add] @butter{100g} to the dough.
+
+[Grease] Use @&butter{50g} to grease the pan. // The shopping list will correctly aggregate 150g of butter.
 ```
 
 ## Advanced Syntax
@@ -69,11 +78,15 @@ You can also use references to *add* to an existing ingredient's total weight in
 Often, an ingredient requires preparation before use. You can define this directly within the declaration using parentheses `()`.
 
 ```gram
-Mix @butter{1 stick}(room temperature) and @garlic{2 cloves}(peeled and minced).
+[Mix] @butter{1 stick}(room temperature) and @garlic{2 cloves}(peeled and minced).
 ```
 
+::: tip Best Practice: Inline vs Full Steps
+Gram encourages writing dense, data-oriented recipes. Instead of creating dedicated steps for basic *mise-en-place* tasks (e.g., `[Peel] The garlic.` then `[Mince] The garlic.`), it is highly recommended to declare these states inline using `(...)`. This keeps your recipe concise, avoids polluting the step flow, and allows frontend renderers to cleanly group preparations in the ingredients list!
+:::
+
 ::: warning Spacing is strict
-The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}`. Do not add a space between them, otherwise it will be parsed as plain text.
+The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
 :::
 
 ### Component Alias (Renaming)
