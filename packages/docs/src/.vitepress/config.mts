@@ -42,8 +42,9 @@ export default defineConfig({
         ],
         sidebar: [
           {
-            text: 'Tutorials',
+            text: 'Introduction',
             items: [
+              { text: 'What is Gram?', link: '/explanation/philosophy' },
               { text: 'Getting Started', link: '/tutorials/getting-started' },
               { text: 'Your First Recipe', link: '/tutorials/first-recipe' }
             ]
@@ -75,9 +76,8 @@ export default defineConfig({
             ]
           },
           {
-            text: 'Explanation',
+            text: 'Technical',
             items: [
-              { text: 'What is Gram?', link: '/explanation/philosophy' },
               { text: 'The Gram Lifecycle', link: '/explanation/engine/lifecycle' },
               { text: 'Parsing & AST', link: '/explanation/engine/parser' },
               { text: 'Compilation & Structure', link: '/explanation/engine/kitchen' },

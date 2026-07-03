@@ -6,10 +6,10 @@ A quick reference guide to the Gram syntax.
 
 | Element | Syntax | Example | Description |
 |---|---|---|---|
-| **Ingredient** | `@name{qty}` | `@flour{200g}` | Adds an ingredient to the shopping list. |
-| **Cookware** | `#name{qty}` | `#pan{}` | Requires specific equipment. |
-| **Timer** | `~{time}` | `~{30min}` | An active duration. |
-| **Temperature** | `°{temp}` | `°{180°C}` | An exact temperature. |
+| **Ingredient** | `@name[{qty}]` | `@flour{200g}`, `@salt` | Adds an `@ingredient`. Omitting `{}` implies no specific quantity. |
+| **Cookware** | `#name[{qty}]` | `#pan{2}`, `#pan` | Requires specific `#cookware`. Omitting `{}` defaults to `1`. |
+| **Timer** | `~{time}` | `~{30min}` | An active `~timer` duration. |
+| **Temperature** | `°{temp}` | `°{180°C}` | An exact `°temperature`. |
 
 ## Modifiers
 
@@ -17,10 +17,11 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 
 | Modifier | Example | Effect |
 |---|---|---|
-| `&` (Reference) | `@&flour` | References a previously declared item. Does NOT add it to the shopping list again. |
+| `&` (Reference) | `@&flour` | References a previously declared `@ingredient`. Does NOT add it to the shopping list again. |
 | `=` (Fixed) | `@=salt{1 tsp}` | Marks the quantity as fixed. It will **not** scale with portions. |
-| `?` (Optional) | `@?thyme` | Marks the item as optional. |
-| `-` (Hidden) | `@-sugar` | Hides the item from the generated shopping list. |
+| `?` (Optional) | `@?thyme` | Marks the `@ingredient` as optional. |
+| `-` (Hidden) | `@-sugar` | Hides the `@ingredient` from the generated shopping list. |
+| `*` (Baker's %) | `@*flour{500g}` | Marks the `@ingredient` as the reference (100%) for baker's percentages. |
 
 ## Advanced Syntax
 
@@ -31,6 +32,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Short-hand Prep** | `(...)` | `@butter{10g}(room temp)` |
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
+| **Composite** | `<@parent` | `@zest{1}<@lemon` |
 | **Passive Timer** | `~&` | `~&{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
 | **Semantic Temp**| `°{text}` | `°{medium heat}` |
@@ -42,7 +44,7 @@ Used to declare sub-components (like a dough or sauce) that are referenced later
 | Location | Syntax | Example | Scope |
 |---|---|---|---|
 | **End of a Step** | `->&name` | `Mix until smooth. ->&dough` | Captures only that step. |
-| **End of a Section**| `->&name` | `## Puff Pastry ->&pastry` | Captures the entire section. |
+| **End of a Section**| `->&name` | `## Puff Pastry ->&pastry` | Captures the entire `## Section`. |
 
 ## Section Scheduling (Retro-planning)
 
@@ -52,10 +54,4 @@ Placed anywhere in a section title to indicate preparation timeframe.
 |---|---|---|
 | `~{-time}` | `## Dough ~{-2d}` | Prepare 2 days in advance. |
 
-## Composite Ingredients
 
-Extracting child components from a shared parent ingredient.
-
-| Syntax | Example | Behavior |
-|---|---|---|
-| `<@parent` | `@zest{1}<@lemon` | Groups zest and juice under the same lemon in the shopping list. |
