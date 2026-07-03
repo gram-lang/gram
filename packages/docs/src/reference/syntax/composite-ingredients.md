@@ -1,60 +1,73 @@
 # Composite Ingredients
 
-Sometimes, a single `@ingredient` purchased at the store yields multiple different components used in a recipe. For instance, a single lemon provides both **zest** and **juice**. 
+In real-world cooking, recipes often require specific parts of an `@ingredient`—like the **zest** and **juice** of a lemon. 
 
-If you list `@zest` and `@juice` separately in your recipe, the shopping list won't know they come from the same source. To solve this, Gram introduces **Composite Ingredients**.
+If you write `@lemon zest` and `@lemon juice` separately, your shopping list will treat them as two completely different products. But lemons are bought whole!
+
+To solve this, Gram introduces **Composite Ingredients**. By telling Gram that the juice and the zest both come from a parent `<@lemon`, the compiler can mathematically optimize your shopping list. If you need the juice of 2 lemons and the zest of 1 lemon, Gram understands they share the same physical source and will smartly add exactly **2 whole lemons** to your shopping list.
 
 ## Syntax
 
-You can define a child `@ingredient` that is drawn from a parent `@ingredient` using the `<` operator.
+You define a composite ingredient using the `<` operator (which can be read as *"comes from"*). You simply append it right after the child `@ingredient`.
 
-**Format**: `@childName{childQty}<@parentName{parentQty}`
+**Format**: `@childName{childQty}<@parentName{parentCost}`
 
-If `parentQty` is omitted (e.g., `<@lemon`), it defaults to **1**. 
+- **`childName{childQty}`**: The specific part you are using in this step (e.g., `@lemon juice{100ml}`).
+- **`<@parentName`**: The physical item you actually buy at the store (e.g., `<@lemon`).
+- **`{parentCost}`**: *(Optional)* How much of the parent is consumed to yield this child part (e.g., `{2}`). If you don't write it, it defaults to `1`.
 
-::: warning Strict Spacing
-Spaces are STRICTLY forbidden around the `<` operator.
-- ❌ `@zest{1} < @lemon`
-- ✅ `@zest{1}<@lemon`
-:::
+### Example
+
+Here is how you would declare that 100ml of juice requires 2 lemons, but the zest only requires 1 lemon:
 
 ```gram
-Add the @zest{1}<@lemon. 
-Then add the @juice{1}<@lemon. 
+Add the @lemon juice{100ml}<@lemon{2}. 
+
+Then add the @lemon zest{1}<@lemon. // Implicitly costs 1 lemon
 ```
+**Total required in Shopping List**: 2 Lemons.
+
+::: warning Strict Spacing
+Spaces are **strictly forbidden** around the `<` operator.
+- ❌ `@lemon zest{1} < @lemon`
+- ✅ `@lemon zest{1}<@lemon`
+:::
 
 ## Calculation Rules
 
-When the Gram Compiler generates the shopping list, it applies specific rules to optimize the required purchasing quantity of the parent `@ingredient`.
+How does the compiler actually calculate the total number of lemons you need to buy? It uses three simple rules to automatically optimize your shopping list.
 
-### 1. The MAX Rule (Different Parts)
-Different parts (children) of the *same* parent share that parent. The compiler determines the maximum parent quantity required across all unique parts.
-
-```gram
-@zest{1}<@lemon       // Costs 1 Lemon
-@juice{1}<@lemon      // Costs 1 Lemon
-```
-**Total required**: 1 Lemon (The same lemon provides both).
-
-### 2. The SUM Rule (Same Part)
-If you use the *same* part multiple times, the compiler adds up the parent cost.
+### 1. The Overlap Rule (Different Parts)
+If you use different parts of the same parent (like zest and juice), Gram knows they can come from the exact same physical lemon. It takes the **maximum** required amount across those parts.
 
 ```gram
-@zest{1}<@lemon       // Costs 1 Lemon
-... later ...
-@zest{1}<@lemon       // Costs 1 Lemon
+Add @lemon zest{1}<@lemon.  // Needs 1 lemon
+
+Add @lemon juice{1}<@lemon. // Needs 1 lemon
 ```
-**Total required**: 2 Lemons.
+> 🛒 **Shopping List**: 1 Lemon (The single lemon provides both parts).
+
+### 2. The Addition Rule (Same Part)
+If you use the *same* part multiple times across different steps of your recipe, Gram adds them up. You can't magically get two zests from one lemon!
+
+```gram
+Add @lemon zest{1}<@lemon.  // Needs 1 lemon
+
+Add @lemon zest{1}<@lemon.  // Needs another lemon
+```
+> 🛒 **Shopping List**: 2 Lemons.
 
 ### 3. Direct Usage Aggregation
-A composite `@ingredient` mixes perfectly with direct usages of the parent `@ingredient`. The direct usage is simply added to the final calculated maximum.
+If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
-@zest{1}<@lemon       // Need 1
-@juice{1}<@lemon      // Need 1 (Covered by the one above)
-@lemon{2}             // Direct use
+Add @lemon zest{1}<@lemon.  // Covered by the 1st lemon
+
+Add @lemon juice{1}<@lemon. // Covered by the 1st lemon
+
+Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
-**Total required**: 3 Lemons.
+> 🛒 **Shopping List**: 3 Lemons.
 
 ## Shopping List Output
 
@@ -66,11 +79,12 @@ For the example above, the JSON output would look like this:
 {
   "type": "composite",
   "id": "lemon",
+  "name": "lemon",
   "qty": 3,
   "usage": [
-    { "id": "zest", "qty": 1, "alias": "zest" },
-    { "id": "juice", "qty": 1, "alias": "juice" },
-    { "id": "lemon", "qty": 2, "alias": "Direct Use" }
+    { "id": "zest", "unit": null, "qty": 1, "alias": "zest" },
+    { "id": "juice", "unit": null, "qty": 1, "alias": "juice" },
+    { "id": "lemon", "unit": null, "qty": 2, "alias": "Direct Use" }
   ]
 }
 ```
