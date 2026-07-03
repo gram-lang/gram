@@ -1,13 +1,13 @@
 # Nutritional Estimation
 
 > [!IMPORTANT]
-> **Physical Analysis Feature**: Nutritional Estimation is handled by the `@gram/analyzer` package. It can be enabled independently of Mass Normalization (it performs internal mass calculations for data lookup even if Mass Normalization is visually disabled).
+> **Physical Analysis Feature**: Nutritional Estimation is handled by the `@gram/analyzer` package. It can be enabled independently of Mass Standardization (it performs internal mass calculations for data lookup even if Mass Standardization is visually disabled).
 
 The `@gram/analyzer` allows for automatic **Nutritional Analysis** of recipes. It calculates estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) based on the ingredients list.
 
 ## How it works
 
-1.  **Mass Normalization**: First, every ingredient is converted to an internal mass in grams (see [Mass Normalization](./01_mass_normalization.md)).
+1.  **Mass Standardization**: First, every ingredient is converted to an internal mass in grams (see [Mass Standardization](./mass-standardization.md)).
 2.  **Database Lookup**: The analyzer looks up the nutritional data (per 100g) for each ingredient in the provided external database.
 3.  **Aggregation**:
     *   It sums up the contribution of each ingredient.

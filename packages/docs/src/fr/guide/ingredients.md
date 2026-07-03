@@ -23,7 +23,7 @@ The quantity is flexible:
 
 > **Other languages Units Support**: The compiler natively understands common kitchen unit abbreviations for multiple languages. For now it includes English and French, but it is designed to be expanded in the future.
 
-> **Mass Normalization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
+> **Mass Standardization**: GRAM automatically calculates the mass (in grams) for volumes and units if possible. You can override densities in the metadata. See **[Mass Unification (Compiler Features)](../compiler_features/01_mass_unification.md)**.
 
 ## Modifiers (Flags)
 

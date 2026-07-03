@@ -28,7 +28,7 @@ export interface CompilerOptions {
 ```typescript
 export interface AnalyzerOptions {
     /**
-     * Enable/Disable physical mass normalization (converting ml, cups, etc. to grams).
+     * Enable/Disable physical mass standardization (converting ml, cups, etc. to grams).
      * Default: true
      */
     enableMassNormalization?: boolean;

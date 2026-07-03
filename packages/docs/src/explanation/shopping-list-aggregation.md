@@ -14,7 +14,7 @@ The compiler first groups ingredients by their ID. If it encounters `@butter` an
 ### 2. Unit Merging
 If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`).
 
-If they have different units (e.g., `100g` and `1 cup`), the compiler cannot sum them algebraically. Instead, it defers to the Analyzer's Mass Normalization engine to convert the `1 cup` into grams using the ingredient's specific density, and then sums the resulting masses.
+If they have different units (e.g., `100g` and `1 cup`), the compiler cannot sum them algebraically. Instead, it defers to the Analyzer's Mass Standardization engine to convert the `1 cup` into grams using the ingredient's specific density, and then sums the resulting masses.
 
 ### 3. Ghosting Relative Quantities
 Relative quantities (like `@water{50% @&flour}`) pose a unique problem for shopping lists, especially in multi-recipe batch processing. 

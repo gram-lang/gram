@@ -1,11 +1,19 @@
-# Mass Normalization (Physical Analysis)
+# Mass Standardization (Physical Analysis)
 
 > [!IMPORTANT]
-> **Physical Analysis Feature**: Mass Normalization is processed by the `@gram/analyzer` package. It can be toggled via the analyzer options (or the "Analysis" menu in the Playground). When disabled, the analyzer does not enrich the compiled AST with physical properties (`normalizedMass`, confidence badges, etc.).
+> **Physical Analysis Feature**: Mass Standardization is processed by the `@gram/analyzer` package. It can be toggled via the analyzer options (or the "Analysis" menu in the Playground). When disabled, the analyzer does not enrich the compiled AST with physical properties (`normalizedMass`, confidence badges, etc.).
 
 GRAM provides a system to unify and normalize masses across recipes. This allows the `@gram/analyzer` to calculate the **Total Mass** of a recipe or a section, even when ingredients are expressed in volumes (ml, cups) or counts (units).
 
-## How it works
+## Les 3 Piliers de la Physique
+
+Pour que GRAM puisse comprendre la physique de votre recette, il sépare les propriétés des ingrédients en trois concepts distincts :
+
+1. **La Densité (`density`)** : Utilisée uniquement pour convertir les **Volumes** en **Masses**. (ex: `1 cup milk -> 240g`).
+2. **Le Poids Unitaire (`unit_weight`)** : Utilisé uniquement pour convertir les **Unités/Comptes** en **Masses**. (ex: `1 avocat -> 150g`).
+3. **Le Rendement (`yield`)** : Le taux de déchet. Utilisé pour calculer le ratio entre le **Poids Net** (ce qu'on mange) et le **Poids Brut** (ce qu'on achète). Voir [Calcul du Rendement](./yield-calculation.md).
+
+## Comment ça marche (L'Algorithme)
 
 The `@gram/analyzer` attempts to convert every ingredient quantity into a **mass in grams (g)**.
 

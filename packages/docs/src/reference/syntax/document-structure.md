@@ -12,7 +12,7 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../engine/analyzer.md).
-*   `densities`: (Object) Custom density overrides for specific ingredients, used by the [Mass Normalization](../engine/kitchen.md) algorithm.
+*   `densities`: (Object) Custom density overrides for specific ingredients, used by the [Mass Standardization](../engine/kitchen.md) algorithm.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:

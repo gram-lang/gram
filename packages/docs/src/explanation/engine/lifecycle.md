@@ -22,8 +22,8 @@ The output is a logically sound, compiled recipe.
 
 ### 3. Enrichment (`@gram/analyzer`)
 The Analyzer takes the compiled recipe and cross-references it with your project's `ingredients.yaml` database. This is where the physical world meets the digital code:
-- **Mass Normalization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
-- **Yield Management**: Calculates purchasing weight versus edible weight.
+- **Mass Standardization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
+- **Yield Calculation**: Calculates purchasing weight versus edible weight.
 - **Nutritional Estimation**: Computes calories and macronutrients based on the normalized masses.
 
 ### 4. Presentation (`@gram/renderer` or custom)

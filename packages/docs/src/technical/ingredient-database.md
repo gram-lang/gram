@@ -2,7 +2,7 @@
 
 It is important to understand that the core language compiler (`@gram/kitchen`) **does not** need an ingredient database. It only validates the syntax and builds the structural AST of the recipe.
 
-The ingredient database is exclusively used by the **`@gram/analyzer`** (an optional layer). The analyzer "overloads" and enriches the recipes with physical mass normalization, yield adjustments, and nutritional estimation, **if and only if** a database is provided.
+The ingredient database is exclusively used by the **`@gram/analyzer`** (an optional layer). The analyzer "overloads" and enriches the recipes with physical mass standardization, yield adjustments, and nutritional estimation, **if and only if** a database is provided.
 
 ## 1. Database Architecture (The "Host" Pattern)
 

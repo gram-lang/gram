@@ -47,7 +47,7 @@ gram build brioche.gram --pretty
 gram build brioche.gram --scale 2 --output ./dist-doubled
 ```
 - By default, outputs pure JSON directly to `stdout` for easy piping.
-- Computes nutritional data and physical mass normalization automatically via the database.
+- Computes nutritional data and physical mass standardization automatically via the database.
 - `--scale <factor>` bakes the scaling into the JSON output (factor only — no ref mode for multi-file builds).
 
 #### `gram view <file>`

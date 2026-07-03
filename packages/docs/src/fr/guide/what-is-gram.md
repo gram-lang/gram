@@ -9,7 +9,7 @@ The parser accepts **any** key-value pair. You can add custom fields for your ow
 However, some keys have specific effects in the GRAM Compiler:
 
 **Functional Keys (Compiler Behavior):**
-*   `densities`: Overrides for mass conversion (See [Mass Normalization](../features/01_mass_normalization.md)).
+*   `densities`: Overrides for mass conversion (See [Mass Standardization](../features/mass-standardization.md)).
 *   `portions`: Number of servings for Nutritional Analysis (See [Nutrition](../features/03_nutritional_estimation.md)).
 
 **Recommended Informational Keys (Display):**

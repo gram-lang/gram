@@ -2,9 +2,9 @@
 
 The `@gram/analyzer` package represents the final analytical step in the compilation pipeline. It takes the logically sound `KitchenRecipe` and performs **Physical Enrichment** by cross-referencing the recipe against an external `ingredients.yaml` database.
 
-This is where the physical world meets the digital code. The analyzer computes three major feature sets: Mass Normalization, Yield Management, and Nutritional Estimation.
+This is where the physical world meets the digital code. The analyzer computes three major feature sets: Mass Standardization, Yield Calculation, and Nutritional Estimation.
 
-## 1. Mass Normalization
+## 1. Mass Standardization
 
 Gram is designed to unify and normalize masses across recipes, calculating the true Total Mass of a dish even if ingredients are written in volumes (cups) or units (eggs).
 
@@ -16,7 +16,7 @@ The **NormalizeMass** algorithm follows a strict priority order:
 4. **Database Unit Weight**: If the unit is a count (e.g., `@garlic{3 cloves}`), the analyzer looks for a specific `unit_weight` in the database to estimate the mass (`Estimated`).
 5. **Fallback**: If no density is found for a volume, the analyzer assumes the density of water (`1ml = 1g`). 
 
-## 2. Yield Management (Waste Factor)
+## 2. Yield Calculation (Waste Factor)
 
 Many raw ingredients have natural waste like peels, cores, or shells. The Analyzer distinguishes between **Net Mass** (what goes into the recipe) and **Purchasing Mass** (Gross Mass - what you actually need to buy).
 
@@ -29,7 +29,7 @@ For example, a banana has a yield factor of roughly `0.65` (35% waste).
 
 The Analyzer can automatically calculate estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) based on the ingredients list.
 
-1. First, every ingredient is passed through the Mass Normalization algorithm.
+1. First, every ingredient is passed through the Mass Standardization algorithm.
 2. The analyzer looks up the nutritional data (per 100g) for each ingredient in the database.
 3. It aggregates the contribution of each ingredient into a total sum.
 4. If the recipe defines `portions` in the metadata, it divides the totals to provide **Per Portion** values.

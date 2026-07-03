@@ -48,7 +48,7 @@ It is seamlessly aggregated into the main **Shopping List**. You won't see the i
 Sugar (156 g)
 ```
 
-However, if mass normalization is disabled globally or the target's mass was completely unknown (the edge case mentioned above), the relative quantity cannot be resolved to a fixed physical mass.
+However, if mass standardization is disabled globally or the target's mass was completely unknown (the edge case mentioned above), the relative quantity cannot be resolved to a fixed physical mass.
 
 In this scenario, Gram will display a **Hybrid Output**, combining any fixed mass it knows with the raw unresolved formula.
 

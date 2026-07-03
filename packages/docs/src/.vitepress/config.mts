@@ -126,8 +126,8 @@ export default defineConfig({
           {
             text: 'Fonctionnalités Clés',
             items: [
-              { text: 'Normalisation des Masses', link: '/fr/features/mass-normalization' },
-              { text: 'Gestion du Rendement', link: '/fr/features/yield-management' },
+              { text: 'Standardisation des Masses', link: '/fr/features/mass-standardization' },
+              { text: 'Calcul du Rendement', link: '/fr/features/yield-calculation' },
               { text: 'Estimation Nutritionnelle', link: '/fr/features/nutritional-estimation' },
               { text: 'Temps & Planification', link: '/fr/features/time-and-scheduling' },
               { text: 'Logique des Courses', link: '/fr/features/shopping-list-logic' },

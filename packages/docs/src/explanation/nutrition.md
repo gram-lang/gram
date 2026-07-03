@@ -6,7 +6,7 @@ However, because nutritional data is highly sensitive and impacts dietary choice
 
 ## The Calculation Flow
 
-1. **Mass Normalization**: Before any nutritional calculation can occur, the Analyzer must first convert every single ingredient in the recipe into a standard mass in grams. (See [Mass Normalization](./mass-and-yield.md)).
+1. **Mass Standardization**: Before any nutritional calculation can occur, the Analyzer must first convert every single ingredient in the recipe into a standard mass in grams. (See [Mass Standardization](./mass-and-yield.md)).
 2. **Database Lookup**: The Analyzer queries your `ingredients.yaml` database for the `nutrition` block of each ingredient. The database values must always represent the nutrients **per 100g** of the raw ingredient.
 3. **Proportional Scaling**: The Analyzer scales the per-100g database values to match the actual mass used in the recipe.
 4. **Aggregation**: The scaled values for all ingredients are summed to calculate the Total Recipe Nutrition.

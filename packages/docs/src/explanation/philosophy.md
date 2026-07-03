@@ -11,8 +11,8 @@ Cooking is an algorithm. A recipe is a function that takes raw ingredients as in
 Gram was built on this exact premise. By writing recipes in Gram, you unlock programmatic capabilities that are impossible with standard markdown or plain text:
 
 ::: tip Why use Gram?
-- **Mass Normalization**: Automatically convert volumes (cups, spoons) to precise metric weights (grams) based on ingredient densities.
-- **Yield Management**: Calculate purchasing weights based on the physical yield of ingredients (e.g., how many whole lemons to buy to get 50ml of juice).
+- **Mass Standardization**: Automatically convert volumes (cups, spoons) to precise metric weights (grams) based on ingredient densities.
+- **Yield Calculation**: Calculate purchasing weights based on the physical yield of ingredients (e.g., how many whole lemons to buy to get 50ml of juice).
 - **Nutritional Estimation**: Automatically compute calories and macros based on portion sizes and ingredient databases.
 - **Dynamic Scaling**: Scale portions linearly, or lock specific ingredients (like salt or yeast) to fixed quantities.
 :::

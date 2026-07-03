@@ -1,6 +1,6 @@
 # How to Manage an Ingredient Database
 
-Gram uses a local `ingredients.yaml` file to store physical and nutritional data about the ingredients you use in your recipes. Maintaining this database ensures that features like Mass Normalization, Yield Management, and Nutritional Estimation work perfectly.
+Gram uses a local `ingredients.yaml` file to store physical and nutritional data about the ingredients you use in your recipes. Maintaining this database ensures that features like Mass Standardization, Yield Calculation, and Nutritional Estimation work perfectly.
 
 This guide explains the standard workflow for maintaining your database using the Gram CLI.
 
