@@ -59,7 +59,7 @@ export default defineCommand({
       s.stop('Done.')
 
       const items = buildScaleComparison(original.shopping_list, scaled.shopping_list)
-      const warnings = getScaleWarnings(factor, original.metrics.totalTime)
+      const warnings = getScaleWarnings(factor, original.metrics.cookTime)
       renderScaleResult(original.title, factor, items, warnings)
     } catch (err) {
       s.stop('Failed.')

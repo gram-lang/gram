@@ -46,6 +46,17 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         html += `   </div>\n`;
         html += ` </div>\n`;
 
+        // Cook Time
+        if (data.metrics.cookTime) {
+            html += ` <div class="${metaItemClass}">\n`;
+            html += `   <div class="${metaIconClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'}</div>\n`;
+            html += `   <div class="${metaContentClass}">\n`;
+            html += `     <span class="${metaLabelClass}">Cook Time</span>\n`;
+            html += `     <span class="${metaValueClass}">${formatDuration(data.metrics.cookTime)}</span>\n`;
+            html += `   </div>\n`;
+            html += ` </div>\n`;
+        }
+
         // Active Time
         const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
         html += ` <div class="${metaItemClass}">\n`;
