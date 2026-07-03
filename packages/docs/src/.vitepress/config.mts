@@ -13,6 +13,10 @@ export default defineConfig({
   cleanUrls: true,
   ignoreDeadLinks: true,
 
+  head: [
+    ['script', { src: 'https://unpkg.com/@phosphor-icons/web' }]
+  ],
+
   markdown: {
     languages: [
       {
@@ -29,7 +33,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Documentation', link: '/explanation/philosophy' },
-          { text: 'Playground', link: '/playground/' },
+          { text: 'Playground', link: '/play' },
           {
             text: 'v1.0.0-beta.0',
             items: [
@@ -96,7 +100,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Documentation', link: '/fr/explanation/philosophy' },
-          { text: 'Playground', link: '/playground/' },
+          { text: 'Playground', link: '/play' },
           {
             text: 'v1.0.0-beta.0',
             items: [

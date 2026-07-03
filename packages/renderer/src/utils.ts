@@ -149,13 +149,14 @@ export function resolveBakersMath(
     data: any,
     options: import('./types').RendererOptions
 ): { enabled: boolean; referenceMass: number | null; only: boolean } {
-    if (!options.bakersMath) {
+    const isEnabled = options.bakersReference !== undefined || options.bakersMathOnly;
+    if (!isEnabled) {
         return { enabled: false, referenceMass: null, only: false };
     }
 
     let referenceId: string | null = null;
-    if (typeof options.bakersMath === 'string' && options.bakersMath !== '') {
-        referenceId = options.bakersMath;
+    if (typeof options.bakersReference === 'string' && options.bakersReference !== '') {
+        referenceId = options.bakersReference;
     } else {
         const sections = data.sections || [];
         for (const sec of sections) {

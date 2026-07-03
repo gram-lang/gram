@@ -72,6 +72,11 @@ export interface RenderContext {
 
   // Passed down from RendererOptions
   bakersMathOnly?: boolean;
+  
+  // Internal properties for formatting
+  _bakersMathEnabled?: boolean;
+  _bakersMathReferenceMass?: number;
+  _bakersMathOnly?: boolean;
 
   /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
   formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';

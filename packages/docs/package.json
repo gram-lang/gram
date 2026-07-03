@@ -8,9 +8,17 @@
     "preview": "vitepress preview src"
   },
   "devDependencies": {
+    "@gram/analyzer": "workspace:*",
+    "@gram/kitchen": "workspace:*",
+    "@gram/parser": "workspace:*",
+    "@gram/renderer": "workspace:*",
     "@gram/vscode-extension": "workspace:*",
     "shiki": "^4.3.0",
     "vitepress": "^1.6.4",
     "vue": "^3.5.39"
+  },
+  "dependencies": {
+    "@guolao/vue-monaco-editor": "^1.6.0",
+    "@shikijs/monaco": "^4.3.1"
   }
 }
