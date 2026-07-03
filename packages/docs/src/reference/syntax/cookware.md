@@ -36,39 +36,39 @@ To specify the size, dimensions, material, or any other description of the cookw
 #baking sheet{2}(non-stick) // 2 baking sheets, non-stick
 ```
 
-::: warning Common Mistake
-It is a common mistake to put dimensions inside the quantity braces. This is invalid syntax and will cause a compiler error because Gram expects a strict integer inside `{}` for cookware.
-- ❌ `#pan{20cm}` -> WRONG.
-- ✅ `#pan(20cm)` -> CORRECT.
+::: warning
+Do not put dimensions inside quantity braces (e.g. ❌ `#pan{20cm}`). Gram expects a strict integer inside `{}`. Use parentheses instead: ✅ `#pan(20cm)`.
 :::
 
 ## Scaling Behavior
 
 Unlike ingredients which usually scale linearly by default, Cookware scaling behavior depends on how the quantity is specified:
 
-- **No quantity** (`#pan`): Defaults to **Fixed** (does not scale).
-- **With quantity** (`#ramequins{4}`): Defaults to **Scalable**. If you double the recipe, it will ask for 8 ramequins.
-- **Explicit Fixed** (`#=pan{2}`): Forced **Fixed**. Even if you double the recipe, it will still only ask for 2 pans.
+| Format | Example | Behavior | Description |
+| :--- | :--- | :--- | :--- |
+| **No quantity** | `#pan` | **Fixed** | Does not scale. |
+| **With quantity** | `#pan{1}` or `#ramequins{4}` | **Scalable** | Doubling the recipe asks for 2 pans or 8 ramequins. |
+| **Explicit Fixed** | `#=pan{2}` | **Fixed** | Even if you double the recipe, it will still only ask for 2 pans. |
 
 ## Modifiers and Advanced Syntax
 
-Cookware supports many of the same advanced syntax features as ingredients:
+Cookware supports many of the same advanced syntax features as ingredients. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](./ingredients.md).
 
-### Modifiers
+### [Modifiers](./ingredients.md#ingredient-modifiers)
 You can use the Optional (`?`), Hidden (`-`), and Fixed (`=`) modifiers on cookware.
 
 ```gram
 Use a #?wok if you have one, otherwise a #-large pan will do.
 ```
 
-### Component Alias (Renaming)
+### [Component Alias (Renaming)](./ingredients.md#component-alias-renaming)
 You can rename cookware for display purposes using the `:` operator.
 
 ```gram
 Use the #cast iron skillet:skillet{}.
 ```
 
-### Alternatives
+### [Alternatives](./ingredients.md#alternatives-substitutions)
 You can define acceptable alternatives using the pipe `|` operator.
 
 ```gram

@@ -94,10 +94,27 @@ You can rename an ingredient for display purposes using a colon `:` immediately 
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
-```gram
+::: code-group
+
+```gram [Code]
 Deglaze with @dry white wine:wine{100ml}.
 ```
+
+```markdown [Rendered Recipe]
+1. Deglaze with **wine** (100ml).
+```
+
+```markdown [Shopping List]
+- **dry white wine**: 100ml
+```
+
+:::
+
 The shopping list will aggregate this under "dry white wine", but the rendered recipe will just say "wine".
+
+::: tip Re-using aliased ingredients
+Aliases are applied locally. To mention this same ingredient again later in the recipe, you must reference its **real name**, not the alias (e.g. `@&dry white wine`). If you write `@wine`, Gram will treat it as a brand new ingredient.
+:::
 
 ### Alternatives (Substitutions)
 You can define acceptable alternatives for an ingredient using the pipe `|` operator.
@@ -115,5 +132,6 @@ Recipes aren't always exact. You can specify a range using a hyphen `-`.
 
 ```gram
 Add @eggs{2-4}.
+
 Pour @water{1.5-2l}.
 ```

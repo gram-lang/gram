@@ -19,7 +19,7 @@ Bake for ~{25min}.
 > **Note:** `m` or `minutes` will be automatically corrected to `min` by the compiler.
 
 ### Timer Names
-You can give a specific name to a timer for clarity, or for external applications to use as labels in notifications.
+You can assign a specific name to a timer. This is especially useful for passive tasks: when multiple timers run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
 
 ```gram
 Boil @eggs{2} for ~eggs{3min}.
@@ -31,41 +31,63 @@ You can specify a time range if the duration is an estimate.
 ```gram
 Bake for ~{30-40min}.
 ```
+::: tip
+For global timeline calculations (total recipe duration), the compiler automatically uses the average of the range (here, 35 minutes).
+:::
 
 ## Active vs Passive
 
-The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. Timers directly affect this timeline.
+The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a timer requires your full attention or if it runs in the background.
+
+::: tip 💡 The Golden Rule: Does this step block YOU from starting the next step?
+
+| Your Status | Timer Type | Syntax | Examples |
+| :--- | :--- | :--- | :--- |
+| **YES** (Manual attention required) | **Active** | `~` | *Whisking by hand, stirring a risotto* |
+| **NO** (A machine/time does the work) | **Passive** | `~&` | *Oven baking, resting, stand mixer* |
+
+:::
 
 ### Active (Default)
-By default, timers are active. This means they **block** the workflow. The cook must wait for this timer to finish before proceeding to the next step.
+By default, timers are active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
 
 ```gram
-Simmer the sauce for ~{20min}.
+Whisk the @heavy cream{} continuously for ~{5min}.
 ```
-*The compiler adds 20 minutes to the total active cooking time.*
+> ⏱️ **Result:** Adds 5 minutes to the **Active Time**.
 
 ### Passive (`&`)
-You can use the `&` modifier to make a timer passive (or idle). This indicates a background task. The cook starts the timer but can immediately proceed to the next step in the recipe.
+Use the `&` modifier to make a timer passive. This is a **background task**. You start the timer (e.g., putting a dish in the oven) and immediately move on to the next step.
 
 ```gram
-Let the dough rest for ~&{1h}.
-Meanwhile, prepare the filling...
+Bake in the #oven for ~&{45min}.
+
+Meanwhile, prepare the glaze...
 ```
-*The compiler registers this as a background task. It does not add 1 hour to the active cooking time, but it ensures the total recipe time is long enough to cover this background task.*
+> ⏱️ **Result:** Adds 0 minutes to the Active Time, but ensures the **Cook Time** is extended to cover this 45-minute wait.
 
 ## How Time is Calculated
 
-Behind the scenes, the Gram Compiler (`@gram/kitchen`) computes three distinct time metrics. Understanding these helps you write more accurate recipes:
+Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.
 
-::: tip Time Metrics
-1. **Active Time (`activeTime`)**: 
-   - Sums all active timers.
-   - **Fallback**: If a cooking step does *not* contain any timer, the compiler assumes a default active duration of **2 minutes** to execute that step.
-2. **Total Time (`totalTime`)**: 
-   - The absolute maximum workflow end time, accounting for all overlapping passive background tasks.
-   - **Dependency Tracking**: The compiler tracks the completion time of passive tasks. If a subsequent step references a previously declared intermediate ingredient (e.g., `👉*pastry dough*`), the compiler will mathematically "pause" the workflow and wait until that ingredient's passive timers have finished before continuing, accurately reflecting real-world idle time.
-3. **Preparation Time (`preparationTime`)**:
-   - Calculated entirely independently from timers!
-   - Adds **1 minute** of overhead for every unique ingredient and cookware item (gathering the *mise en place*).
-   - Adds **2 minutes** for every ingredient that has a shorthand preparation declared (e.g., `@onion{1}(peeled and chopped)` automatically adds 2 minutes of prep time).
+::: info ⏱️ The 4 Time Metrics
+1. **Preparation Time** (Mise-en-place): Time needed *before* you start step 1 (gathering ingredients, peeling, chopping).
+2. **Active Time**: Time spent actively working during the cooking steps (hands busy).
+3. **Cook Time**: The absolute time of the cooking workflow from step 1 to finish (including passive waiting).
+4. **Total Time**: The sum of Preparation Time + Cook Time. This is the realistic "time in the kitchen".
 :::
+
+### Cheat Sheet: What adds time?
+
+Here is a concrete breakdown of how the compiler automatically calculates minutes based on your syntax:
+
+| Syntax / Scenario | Adds to Prep Time | Adds to Active Time | Adds to Cook Time | Adds to Total Time |
+| :--- | :--- | :--- | :--- | :--- |
+| **New Ingredient** (`@flour`) | **+ 1 min** | - | - | **+ 1 min** |
+| **Prep shorthand** (`@onion(peeled)`) | **+ 2 min** | - | - | **+ 2 min** |
+| **Active Timer** (`~{10min}`) | - | **+ 10 min** | **+ 10 min** | **+ 10 min** |
+| **Passive Timer** (`~&{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
+| **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
+
+### Smart Dependency Tracking
+You don't need to do complex math! If you declare a dough that rests for `~&{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
