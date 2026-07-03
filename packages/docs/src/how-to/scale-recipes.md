@@ -25,22 +25,25 @@ What if you want to increase the hydration from 70% to 75%? You would have to ma
 
 Some recipes are fundamentally built around the mathematical relationship between ingredients, rather than strict absolute quantities (e.g., a bread dough defined by its 70% hydration).
 
-In Gram, you can express these relationships directly in the source code using **Relative Quantities** (`% @&target`). This allows the recipe to recalculate itself dynamically when you tweak a single percentage.
+In Gram, you can express these relationships directly in the source code using **Relative Quantities** (`% @&target` for ingredients, or `% &target` for intermediate variables). This allows the recipe to recalculate itself dynamically when you tweak a single percentage.
 
 ### 1. Define the Anchor (Target)
-First, define the flour as a standard ingredient and give it an intermediate variable declaration so it can be referenced.
+First, define the flour as a standard ingredient in your recipe.
 
 ```gram
-Add the @flour{500g}. ->&flour
+Add the @flour{500g}.
 ```
 
 ### 2. Define the Relatives
-Now, replace the static quantities of water, salt, and yeast with percentages pointing to `&flour`.
+Now, replace the static quantities of water, salt, and yeast with percentages pointing to the flour. Since the flour was already defined in a previous step, you reference it using `@&flour`.
 
 ```gram
-Add the @flour{500g}. ->&flour
-Pour in the @water{70% @&flour}, @salt{2% @&flour}, and @yeast{1% @&flour}.
+[Add] The @flour{500g}.
+
+[Pour in] The @water{70% @&flour}, @salt{2% @&flour}, and @yeast{1% @&flour}.
 ```
+
+> **Tip:** You can also define an intermediate variable (e.g., a mixture) using `->&dough` and then calculate a relative quantity against it using `&dough` (e.g., `@salt{2% &dough}`). The syntax naturally follows how you reference items in Gram!
 
 ## Scaling the Dynamic Recipe
 
@@ -55,7 +58,7 @@ Because the relationships are encoded directly in the recipe, the source code be
 
 If you want to tweak the recipe to a wetter 75% hydration, you just change one number:
 ```gram
-Pour in the @water{75% @&flour}
+[Pour in] The @water{75% @&flour}
 ```
 Gram handles the math. You never have to manually calculate absolute weights again when designing or tweaking your recipes.
 
@@ -76,9 +79,7 @@ While Relative Quantities are great for *designing* dynamic recipes, professiona
 If you have a standard recipe with absolute weights, you can use the **Baker's Percentage Modifier** (`*`) to explicitly tell Gram: *"This ingredient is the 100% reference point"*.
 
 ```gram
-@*flour{500g}
-@water{350g}
-@salt{10g}
+[Add] The @*flour{500g}, @water{350g} and @salt{10g}.
 ```
 
 When using the CLI, you can display the entire recipe in percentages without changing the source code, using the `--bakers-math` flag:
