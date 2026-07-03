@@ -28,10 +28,7 @@ export default defineConfig({
       lang: 'en',
       themeConfig: {
         nav: [
-          { text: 'Tutorials', link: '/tutorials/getting-started' },
-          { text: 'How-To', link: '/how-to/manage-database' },
-          { text: 'Reference', link: '/reference/syntax/cheatsheet' },
-          { text: 'Explanation', link: '/explanation/philosophy' },
+          { text: 'Documentation', link: '/explanation/philosophy' },
           { text: 'Playground', link: '/playground/' },
           {
             text: 'v1.0.0-beta.0',
@@ -98,8 +95,7 @@ export default defineConfig({
       description: "Un langage de balisage de recettes intelligent et orienté données pour les développeurs.",
       themeConfig: {
         nav: [
-          { text: 'Guide', link: '/fr/guide/what-is-gram' },
-          { text: 'Fonctionnalités', link: '/fr/features/cli' },
+          { text: 'Documentation', link: '/fr/explanation/philosophy' },
           { text: 'Playground', link: '/playground/' },
           {
             text: 'v1.0.0-beta.0',
@@ -110,39 +106,50 @@ export default defineConfig({
         ],
         sidebar: [
           {
-            text: 'Guide de Syntaxe',
+            text: 'Introduction',
             items: [
-              { text: 'C\'est quoi Gram ?', link: '/fr/guide/what-is-gram' },
-              { text: 'Structure', link: '/fr/guide/structure' },
-              { text: 'Ingrédients', link: '/fr/guide/ingredients' },
-              { text: 'Matériel', link: '/fr/guide/cookware' },
-              { text: 'Temps & Températures', link: '/fr/guide/time-and-temperatures' },
-              { text: 'Variables Intermédiaires', link: '/fr/guide/advanced/intermediate-vars' },
-              { text: 'Quantités Relatives', link: '/fr/guide/advanced/relative-quantities' },
-              { text: 'Ingrédients Composites', link: '/fr/guide/advanced/composite-ingredients' },
-              { text: 'Antisèche', link: '/fr/guide/cheatsheet' }
+              { text: 'C\'est quoi Gram ?', link: '/fr/explanation/philosophy' },
+              { text: 'Pour commencer', link: '/fr/tutorials/getting-started' },
+              { text: 'Votre première recette', link: '/fr/tutorials/first-recipe' }
             ]
           },
           {
-            text: 'Fonctionnalités Clés',
+            text: 'Guides pratiques',
             items: [
-              { text: 'Standardisation des Masses', link: '/fr/features/mass-standardization' },
-              { text: 'Calcul du Rendement', link: '/fr/features/yield-calculation' },
-              { text: 'Estimation Nutritionnelle', link: '/fr/features/nutritional-estimation' },
-              { text: 'Temps & Planification', link: '/fr/features/time-and-scheduling' },
-              { text: 'Logique des Courses', link: '/fr/features/shopping-list-logic' },
-              { text: 'CLI', link: '/fr/features/cli' },
-              { text: 'Extension VS Code', link: '/fr/features/vscode-extension' }
+              { text: 'Gérer la base de données', link: '/fr/how-to/manage-database' },
+              { text: 'Mise à l\'échelle dynamique', link: '/fr/how-to/scale-recipes' },
+              { text: 'Générer la liste de courses', link: '/fr/how-to/weekly-shopping-list' },
+              { text: 'Créer une UI personnalisée', link: '/fr/how-to/build-custom-ui' }
+            ]
+          },
+          {
+            text: 'Référence',
+            items: [
+              { text: 'Structure du Document', link: '/fr/reference/syntax/document-structure' },
+              { text: 'Ingrédients', link: '/fr/reference/syntax/ingredients' },
+              { text: 'Matériel', link: '/fr/reference/syntax/cookware' },
+              { text: 'Temps', link: '/fr/reference/syntax/times' },
+              { text: 'Températures', link: '/fr/reference/syntax/temperatures' },
+              { text: 'Variables Intermédiaires', link: '/fr/reference/syntax/intermediate-variables' },
+              { text: 'Quantités Relatives', link: '/fr/reference/syntax/relative-quantities' },
+              { text: 'Ingrédients Composites', link: '/fr/reference/syntax/composite-ingredients' },
+              { text: 'Antisèche', link: '/fr/reference/syntax/cheatsheet' },
+              { text: 'Commandes CLI', link: '/fr/reference/tooling/cli' },
+              { text: 'Extension VS Code', link: '/fr/reference/tooling/vscode-extension' },
+              { text: 'Language Server', link: '/fr/reference/tooling/language-server' }
             ]
           },
           {
             text: 'Technique',
             items: [
-              { text: 'Architecture du Parser', link: '/fr/technical/parsing-architecture' },
-              { text: 'Sortie JSON', link: '/fr/technical/json-output' },
-              { text: 'Base de Données', link: '/fr/technical/ingredient-database' },
-              { text: 'Options', link: '/fr/technical/options' },
-              { text: 'Environnement de Dév', link: '/fr/technical/development-environment' }
+              { text: 'Cycle de vie', link: '/fr/explanation/engine/lifecycle' },
+              { text: 'Parsing & AST', link: '/fr/explanation/engine/parser' },
+              { text: 'Compilation & Structure', link: '/fr/explanation/engine/kitchen' },
+              { text: 'Analyse Sémantique', link: '/fr/explanation/engine/analyzer' },
+              { text: 'Sortie JSON', link: '/fr/explanation/engine/renderer' },
+              { text: 'Deep Dive: Masse & Rendement', link: '/fr/explanation/mass-and-yield' },
+              { text: 'Deep Dive: Nutrition', link: '/fr/explanation/nutrition' },
+              { text: 'Deep Dive: Liste de courses', link: '/fr/explanation/shopping-list-aggregation' }
             ]
           }
         ]

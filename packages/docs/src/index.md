@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/what-is-gram
+      link: /explanation/philosophy
     - theme: alt
       text: Try the Playground
       link: /playground/
