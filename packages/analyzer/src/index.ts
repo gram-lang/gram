@@ -1,6 +1,6 @@
 export * from './types';
 export * from './ingredient_db';
-export * from './mass_normalization';
+export * from './mass_standardization';
 export * from './nutrition';
 export * from './metrics';
 export * from './diff';
@@ -12,7 +12,7 @@ import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientDa
 import { ASTNodeType } from '@gram/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
-import { normalizeMass } from './mass_normalization';
+import { standardizeMass } from './mass_standardization';
 import { getIngredientData } from './ingredient_db';
 import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 import { z } from 'zod';
@@ -70,11 +70,11 @@ export function analyze(
             }
 
             // Perform physical mass normalization if enabled
-            if (opts.enableMassNormalization !== false) {
+            if (opts.enableMassStandardization !== false) {
                  const numericQty = getNumericQty(item.qty);
                  
                  if (numericQty !== null) {
-                      const norm = normalizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
+                      const norm = standardizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
                       if (norm) {
                            item.normalizedMass = norm.mass;
                            item.conversionMethod = norm.method;
@@ -161,7 +161,7 @@ export function analyze(
     // 2. Traverse and enrich the master Shopping List
     const shopping_list = result.shopping_list ? JSON.parse(JSON.stringify(result.shopping_list)) : [];
     shopping_list.forEach((item: any) => {
-         if (opts.enableMassNormalization !== false) {
+         if (opts.enableMassStandardization !== false) {
               if (item.type === 'composite' && Array.isArray(item.usage)) {
                    // For composites, sum children masses — NOT the parent unit weight.
                    // e.g. 6 egg yolks + 1 direct egg → 6×17g + 1×50g = 152g, not 7×50g = 350g.
@@ -170,7 +170,7 @@ export function analyze(
                    for (const child of item.usage) {
                         const numericQty = getNumericQty(child.qty);
                         if (numericQty !== null) {
-                             const norm = normalizeMass(numericQty, child.unit || 'unit', database, child.name || child.id, overrides);
+                             const norm = standardizeMass(numericQty, child.unit || 'unit', database, child.name || child.id, overrides);
                              if (norm) {
                                   child.normalizedMass = parseFloat(norm.mass.toFixed(2));
                                   child.isEstimate = norm.isEstimate;
@@ -214,7 +214,7 @@ export function analyze(
          }
 
          // Apply physical yields (waste factor adjustments, e.g. purchasing weight vs net weight)
-         if (opts.enableYieldManagement !== false && item.normalizedMass && item.normalizedMass > 0) {
+         if (opts.enableYieldCalculation !== false && item.normalizedMass && item.normalizedMass > 0) {
               const dbData = getIngredientData(item.id, database);
               if (dbData && dbData.physical && dbData.physical.yield && dbData.physical.yield < 1) {
                   const gross = item.normalizedMass / dbData.physical.yield;

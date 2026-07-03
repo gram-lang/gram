@@ -220,16 +220,16 @@ function update() {
     try {
         const ast = getAST(text);
         const compilerOptions = {
-            enableMassNormalization: optMass.checked,
-            enableYieldManagement: optMass.checked && optYield.checked,
+            enableMassStandardization: optMass.checked,
+            enableYieldCalculation: optMass.checked && optYield.checked,
             enableNutritionalEstimation: optNutrition.checked
         };
         let result = compile(ast, compilerOptions);
         
         // Physical Analysis (Mass/Nutrition)
         const analysisOptions = {
-            enableMassNormalization: optMass.checked,
-            enableYieldManagement: optMass.checked && optYield.checked,
+            enableMassStandardization: optMass.checked,
+            enableYieldCalculation: optMass.checked && optYield.checked,
             enableNutritionalEstimation: optNutrition.checked
         };
         const analysis = analyze(result, fullDatabase, analysisOptions);

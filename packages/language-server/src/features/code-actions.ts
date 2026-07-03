@@ -5,7 +5,7 @@ import { collectIntermediates, collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
 import { ASTNodeType, QuantityAST } from '@gram/parser';
-import { normalizeMass } from '@gram/analyzer';
+import { standardizeMass } from '@gram/analyzer';
 import { getNumericQty } from '@gram/kitchen';
 
 export function provideCodeActions(
@@ -126,7 +126,7 @@ export function provideCodeActions(
                 const amount = getNumericQty(qty.value);
                 const canon = amount && amount > 0 ? normalizeUnit(qty.unit) : null;
                 if (canon) {
-                    const norm = normalizeMass(amount!, canon, db, entry?.name);
+                    const norm = standardizeMass(amount!, canon, db, entry?.name);
                     if (norm && norm.method === 'density' && norm.mass) {
                         const qtyRange = locToRange(state.lineStarts, qty.loc);
                         actions.push({

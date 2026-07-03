@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const AnalyzerOptionsSchema = z.object({
-    enableMassNormalization: z.boolean().optional(),
-    enableYieldManagement: z.boolean().optional(),
+    enableMassStandardization: z.boolean().optional(),
+    enableYieldCalculation: z.boolean().optional(),
     enableNutritionalEstimation: z.boolean().optional(),
     portions: z.number().positive().optional(),
 });

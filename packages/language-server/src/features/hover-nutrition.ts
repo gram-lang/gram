@@ -4,7 +4,7 @@ import { positionToOffset } from '../utils/position';
 import { collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram/i18n';
-import { UNIT_CONVERSIONS, normalizeMass } from '@gram/analyzer';
+import { UNIT_CONVERSIONS, standardizeMass } from '@gram/analyzer';
 import { ASTNodeType, QuantityAST, QuantityValueAST, isQuantity } from '@gram/parser';
 import { getNumericQty } from '@gram/kitchen';
 
@@ -20,7 +20,7 @@ function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUni
     const amount = getNumericQty(qtyValue);
     if (amount === null || amount <= 0) return null;
 
-    const norm = normalizeMass(amount, canon, db, entry.name);
+    const norm = standardizeMass(amount, canon, db, entry.name);
     if (norm) {
         if (norm.method === 'physical' && canon !== 'g') {
             return `**Conversion**: ${amount} ${rawUnit} = **${Math.round(norm.mass)} g**`;
