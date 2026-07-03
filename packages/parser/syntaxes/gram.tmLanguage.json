@@ -83,13 +83,14 @@
         },
         {
           "name": "meta.ingredient.bare.gram",
-          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?",
+          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
             "3": { "name": "entity.name.type.ingredient.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
-            "5": { "name": "string.other.alias.gram" }
+            "5": { "name": "string.other.alias.gram" },
+            "6": { "name": "string.other.preparation.gram" }
           }
         }
       ]
@@ -118,13 +119,14 @@
         },
         {
           "name": "meta.cookware.bare.gram",
-          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?",
+          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
             "3": { "name": "support.class.cookware.gram" },
             "4": { "name": "keyword.operator.alias.gram" },
-            "5": { "name": "string.other.alias.gram" }
+            "5": { "name": "string.other.alias.gram" },
+            "6": { "name": "string.other.preparation.gram" }
           }
         }
       ]

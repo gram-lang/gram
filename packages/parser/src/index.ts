@@ -242,7 +242,7 @@ semantics.addOperation('toAST', {
         } as IngredientAST;
     },
 
-    simpleIngredient_bare(_at, _mods, _name, _alias) {
+    simpleIngredient_bare(_at, _mods, _name, _alias, _prep) {
         const modifiers = _mods.children.map(m => m.sourceString).filter(m => m !== '=');
         return {
             type: ASTNodeType.Ingredient,
@@ -250,7 +250,7 @@ semantics.addOperation('toAST', {
             modifiers,
             quantity: null,
             alias: getOpt(_alias),
-            preparation: null,
+            preparation: getOpt(_prep),
             composite: null,
             loc: { start: this.source.startIdx, end: this.source.endIdx }
         } as IngredientAST;
@@ -360,7 +360,7 @@ semantics.addOperation('toAST', {
          } as CookwareAST;
     },
 
-    simpleCookware_bare(_hash, mods, name, alias) {
+    simpleCookware_bare(_hash, mods, name, alias, prep) {
          const modifiers = mods.children.map(c => c.sourceString).filter(m => m !== '=');
          return {
             type: ASTNodeType.Cookware,
@@ -372,7 +372,7 @@ semantics.addOperation('toAST', {
                 fixed: false,
                 loc: { start: this.source.startIdx, end: this.source.endIdx }
             },
-            preparation: null,
+            preparation: getOpt(prep),
             loc: { start: this.source.startIdx, end: this.source.endIdx }
          } as CookwareAST;
     },

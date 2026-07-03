@@ -64,7 +64,7 @@ GRAM {
   // Rule: Quantity is mandatory unless it's a single word name
   simpleIngredient = 
     | "@" modifier* name alias? ingredientQuantity preparation? composite? -- full
-    | "@" modifier* singleWordName alias? -- bare
+    | "@" modifier* singleWordName alias? preparation? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
   alias = ":" name
@@ -89,7 +89,7 @@ GRAM {
   CookwareAlternative = simpleCookware ("|" simpleCookware)+
   simpleCookware = 
     | "#" modifier* name alias? cookwareQuantity preparation? -- full
-    | "#" modifier* singleWordName alias? -- bare
+    | "#" modifier* singleWordName alias? preparation? -- bare
 
   // Restrict cookware quantity to only numbers, NO UNITS.
   // Allowed: {}, {2}
