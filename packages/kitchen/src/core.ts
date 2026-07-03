@@ -49,10 +49,14 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
         cookware: globalCookware,
         sections,
         warnings: registry.warnings,
-        metrics: {
-            ...resultPayload.metrics,
-            preparationTime: calculatePreparationTime(sections, registry)
-        }
+        metrics: (() => {
+            const prepTime = calculatePreparationTime(sections, registry);
+            return {
+                ...resultPayload.metrics,
+                preparationTime: prepTime,
+                totalTime: prepTime + resultPayload.metrics.cookTime
+            };
+        })()
     };
 
     if (options.scaleFactor && options.scaleFactor !== 1) {

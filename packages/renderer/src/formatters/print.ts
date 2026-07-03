@@ -354,6 +354,9 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         if (data.metrics.totalTime) {
             body += `  <span class="meta-item"><span class="meta-label">Total</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
         }
+        if (data.metrics.cookTime) {
+            body += `  <span class="meta-item"><span class="meta-label">Cook</span>${formatDuration(data.metrics.cookTime)}</span>\n`;
+        }
         if (data.metrics.activeTime) {
             body += `  <span class="meta-item"><span class="meta-label">Active</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
         }

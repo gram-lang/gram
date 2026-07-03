@@ -345,7 +345,7 @@ export function processSections(
     astChildren: ASTNode[],
     registry: RecipeRegistry,
     options?: CompilerOptions
-): { sections: ProcessedSection[]; metrics: { totalTime: number; activeTime: number } } {
+): { sections: ProcessedSection[]; metrics: { cookTime: number; activeTime: number } } {
     const ctx: ProcessorContext = {
         warnings: registry.warnings,
         intermediateDecl: null,
@@ -526,12 +526,12 @@ export function processSections(
     activeBackgroundTasks.forEach(t => {
         if (t.end > maxBackgroundTaskEnd) maxBackgroundTaskEnd = t.end;
     });
-    const totalTime = Math.max(cookCursor, maxBackgroundTaskEnd);
+    const cookTime = Math.max(cookCursor, maxBackgroundTaskEnd);
 
     return { 
         sections, 
         metrics: {
-            totalTime,
+            cookTime,
             activeTime: globalActiveTime
         }
     };

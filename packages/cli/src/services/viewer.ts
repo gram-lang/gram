@@ -123,12 +123,12 @@ export async function buildViewModel(
   const servings = (compiled.meta?.servings as number | undefined) ?? null
 
   const m = compiled.metrics
-  const times =
-    m.totalTime || m.activeTime || m.preparationTime
+  const times = m && (m.totalTime || m.cookTime || m.activeTime || m.preparationTime)
       ? {
+          total: m.totalTime || undefined,
+          cook: m.cookTime || undefined,
           active: m.activeTime || undefined,
           prep: m.preparationTime || undefined,
-          total: m.totalTime || undefined,
         }
       : null
 

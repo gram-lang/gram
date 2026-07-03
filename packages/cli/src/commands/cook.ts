@@ -54,7 +54,7 @@ export default defineCommand({
     let totalTime = 0
     try {
       const { compiled, analyzed } = await runPipeline(filePath, { db, skipAnalyzer: !db, scaleFactor })
-      totalTime = compiled.metrics?.totalTime ?? 0
+      totalTime = compiled.metrics?.cookTime ?? 0
       const massMap: Record<string, number> = {}
       for (const item of analyzed?.result?.shopping_list ?? []) {
         if (item.id && typeof item.normalizedMass === 'number') massMap[item.id] = item.normalizedMass

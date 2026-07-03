@@ -24,8 +24,15 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
     if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
         md += `> **Metadata**\n`;
         if (data.metrics) {
-            md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
-            md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
+            if (data.metrics.totalTime) {
+                md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
+            }
+            if (data.metrics.cookTime) {
+                md += `> - **Cook Time**: ${formatDuration(data.metrics.cookTime)}\n`;
+            }
+            if (data.metrics.activeTime) {
+                md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
+            }
             if (data.metrics.preparationTime) {
                 md += `> - **Prep Time**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
             }

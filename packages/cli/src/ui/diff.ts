@@ -31,6 +31,7 @@ function fmtTempValue(v?: { value: number; unit: string }): string {
 
 const TIMING_LABELS: Record<string, string> = {
   totalTime: 'Total time',
+  cookTime: 'Cook time',
   activeTime: 'Active time',
   preparationTime: 'Prep time',
 }

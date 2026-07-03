@@ -29,7 +29,7 @@ export interface PrepDelta {
 }
 
 export interface TimingDelta {
-  field: 'totalTime' | 'activeTime' | 'preparationTime'
+  field: 'totalTime' | 'cookTime' | 'activeTime' | 'preparationTime'
   from: number
   to: number
 }
@@ -196,7 +196,7 @@ function diffIngredients(a: any[], b: any[]): IngredientDelta[] {
 }
 
 function diffTimings(a: CompilationResult['metrics'], b: CompilationResult['metrics']): TimingDelta[] {
-  const fields: Array<keyof CompilationResult['metrics']> = ['totalTime', 'activeTime', 'preparationTime']
+  const fields: Array<keyof CompilationResult['metrics']> = ['totalTime', 'cookTime', 'activeTime', 'preparationTime']
   const deltas: TimingDelta[] = []
   for (const field of fields) {
     const from = a[field] ?? 0
