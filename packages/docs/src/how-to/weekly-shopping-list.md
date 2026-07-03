@@ -37,9 +37,9 @@ By default, `gram shop` outputs a beautifully formatted ASCII list directly in y
 However, you can export it to different formats to share it with your family or integrate it with other tools:
 
 ```bash
-# Export to Markdown (perfect for pasting into Obsidian or Notion)
-gram shop "menus/*.gram" --format md > shopping-list.md
+# Export to Markdown
+gram shop "menus/*.gram" --format md --output shopping-list.md
 
-# Export to JSON (perfect for building a custom React frontend)
-gram shop "menus/*.gram" --format json > shopping-list.json
+# Export to JSON
+gram shop "menus/*.gram" --format json --output shopping-list.json
 ```

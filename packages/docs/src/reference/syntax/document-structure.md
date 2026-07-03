@@ -11,34 +11,32 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 ### Functional Keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../engine/analyzer.md).
-*   `densities`: (Object) Custom density overrides for specific ingredients, used by the [Mass Standardization](../engine/kitchen.md) algorithm.
+*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../../explanation/engine/analyzer.md).
+*   `densities`: (Object) Custom density overrides for specific ingredients, used by the [Mass Standardization](../../explanation/engine/kitchen.md) algorithm.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
 
 *   `title`: The recipe name.
-*   `originalTitle`: The recipe name in its original language (e.g., Japanese, Italian).
 *   `description`: A short summary (useful for SEO meta tags).
 *   `tags`: A list of categories or keywords.
 *   `category`: Main category (e.g. "Dessert", "Main Course").
 *   `author`: Name or list of authors.
 *   `source`: URL(s) to the original recipe.
 *   `date`, `lastUpdated`: YYYY-MM-DD.
-*   `size`: Serving size description or dimensions (e.g. "20x20cm mold").
+*   `makes`: The physical output or dimensions of the recipe (e.g., "1 layer cake", "24 cookies", "20x20cm mold").
 *   `notes`: General notes about the recipe (e.g. "Tested on 2026-06-07. Decrease sugar next time.").
 
 ::: code-group
 ```gram [recipe.gram]
 ---
 title: 'Matcha Brownies'
-originalTitle: '抹茶ブラウニー'
 description: 'A simple Japanese-style matcha brownie...'
 author: ["Auguste Kerflec"]
 tags: ['brownie', 'matcha']
 category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
-size: '20x20cm'
+makes: '20x20cm mold'
 
 # Functional Fields
 portions: 4
@@ -113,6 +111,6 @@ Mash @potato{2kg} until smooth // alternatively, boil 'em first.
 Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing.
 ```
 
-::: warning Recipe Notes vs Comments
-Comments are stripped during compilation. If you want a note to be visible in the final rendered recipe app (e.g., "Decrease sugar next time"), put it in the YAML Frontmatter under the `notes` key instead of using a comment.
+::: info Comments vs YAML Notes
+Comments are preserved during compilation and are rendered alongside the instructions (typically in grey italics). They are perfect for small, step-specific tips. However, if you have global observations or general feedback about the recipe (e.g., "Decrease sugar next time", "Best served cold"), it is recommended to put them in the YAML Frontmatter under the `notes` key so they can be displayed prominently at the top.
 :::
