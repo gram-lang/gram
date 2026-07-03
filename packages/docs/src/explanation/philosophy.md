@@ -17,7 +17,7 @@ Gram was built on this exact premise. By writing recipes in Gram, you unlock pro
 - **Dynamic Scaling**: Scale portions linearly, or lock specific ingredients (like salt or yeast) to fixed quantities.
 :::
 
-## For Developers, By Developers
+## Designed for Developers
 
 Gram is not just a syntax; it is a complete ecosystem for building culinary applications.
 

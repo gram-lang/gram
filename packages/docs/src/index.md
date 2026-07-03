@@ -4,8 +4,12 @@ layout: home
 
 hero:
   name: "Gram"
-  text: "A smart, data-driven recipe markup language for developers."
-  tagline: Write recipes as code, compile to AST, and unlock powerful features.
+  text: "Code your cookbook."
+  tagline: A plain-text recipe language built for advanced culinary logic. Write your recipe once, and let the Gram engine handle the math, the scaling, and the data extraction for you.
+  image:
+    light: /logo-gram-light.svg
+    dark: /logo-gram-dark.svg
+    alt: Gram Logo
   actions:
     - theme: brand
       text: Get Started
@@ -13,12 +17,18 @@ hero:
     - theme: alt
       text: Try the Playground
       link: /playground/
+    - theme: alt
+      text: Codeberg
+      link: https://codeberg.org/abiwab/gram
 
 features:
-  - title: Explicit Data Separation
-    details: Tag ingredients, cookware, timers, and temperatures directly in your recipe steps.
-  - title: Smart Aggregation & Scaling
-    details: Automatically normalize units, compute shopping lists, and scale recipes seamlessly.
-  - title: Nutritional Estimation
-    details: Gram computes calories and macros on the fly using your local ingredient database.
+  - icon: 🧩
+    title: Relational Recipes
+    details: Treat recipes like code. Easily manage complex recipes by defining variables, linking ingredient proportions dynamically, and generating smart cooking schedules from simple tags.
+  - icon: 📊
+    title: Database-Driven Intelligence
+    details: Connect your files to a local database to automatically convert volumes to mass, track physical yields, and estimate nutritional macros.
+  - icon: 🛠️
+    title: Developer First Tooling
+    details: Keep your cookbook in git-friendly files. Enjoy real-time diagnostics, autocomplete, and live previews in your favorite editor via our Language Server.
 ---

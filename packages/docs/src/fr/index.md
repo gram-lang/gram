@@ -4,8 +4,11 @@ layout: home
 
 hero:
   name: "Gram"
-  text: "Un langage de recettes intelligent et orienté données pour les développeurs."
-  tagline: Écrivez vos recettes comme du code, compilez en AST, et débloquez des fonctionnalités puissantes.
+  text: "Code your cookbook."
+  tagline: Un langage de texte brut pensé pour la logique culinaire avancée. Écrivez votre recette une seule fois, et laissez le moteur Gram se charger des calculs, de la mise à l'échelle et de l'extraction des données pour vous.
+  image:
+    src: /logo-gram.svg
+    alt: Gram Logo
   actions:
     - theme: brand
       text: Démarrer
@@ -15,10 +18,13 @@ hero:
       link: /playground/
 
 features:
-  - title: Séparation Explicite des Données
-    details: Marquez les ingrédients, le matériel, les temps et températures directement dans vos instructions.
-  - title: Agrégation & Mise à l'Échelle
-    details: Normalisation automatique des unités, listes de courses et mise à l'échelle transparente.
-  - title: Estimation Nutritionnelle
-    details: Gram calcule vos calories et macronutriments à la volée grâce à votre base de données locale.
+  - icon: 🧩
+    title: Recettes Relationnelles
+    details: Traitez vos recettes comme du code. Gérez des recettes complexes en définissant des variables, en liant dynamiquement les proportions d'ingrédients, et en générant des plannings de cuisine intelligents.
+  - icon: 📊
+    title: Intelligence par la Data
+    details: Connectez vos fichiers à une base de données locale pour convertir automatiquement les volumes en masse, suivre le rendement physique, et estimer les macros.
+  - icon: 🛠️
+    title: Outils pour Développeurs
+    details: Gardez vos recettes dans des fichiers lisibles par Git. Profitez d'un Language Server (LSP) offrant autocomplétion, diagnostics et prévisualisation en temps réel.
 ---
