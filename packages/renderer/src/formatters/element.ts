@@ -56,7 +56,20 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
 
         // Setup quantity string parts
         let qtyContent = '';
-        if (qty) {
+        if (item.bakersPercentage !== undefined) {
+            const perc = `${item.bakersPercentage}%`;
+            if (context.bakersMathOnly) {
+                qtyContent = perc;
+            } else {
+                let absMass = '';
+                if (normalizedMass !== null) absMass = `${normalizedMass}g`;
+                else if (qty) absMass = (qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : '');
+
+                qtyContent = format === 'html'
+                    ? `${perc} <span class="abs-qty">(${escapeHtml(absMass)})</span>`
+                    : `${perc} (${absMass})`;
+            }
+        } else if (qty) {
             const baseQty = qty.text || String(qty.value);
             qtyContent += format === 'html' ? escapeHtml(baseQty) : baseQty;
             if (item.unit) {
@@ -64,7 +77,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             }
         }
 
-        if (item.variable_entries && item.variable_entries.length > 0) {
+        if (item.variable_entries && item.variable_entries.length > 0 && item.bakersPercentage === undefined) {
             const vars = format === 'html'
                 ? item.variable_entries.map((v: any) => escapeHtml(String(v))).join(' + ')
                 : item.variable_entries.join(' + ');

@@ -14,9 +14,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         classes: options.classes,
         formatDuration,
         formatFraction: options.formatFraction,
-        _bakersMathEnabled: bakersMeta.enabled,
-        _bakersMathReferenceMass: bakersMeta.referenceMass ?? undefined,
-        _bakersMathOnly: bakersMeta.only
+        bakersMathOnly: options.bakersMathOnly
     };
 
     let html = '';

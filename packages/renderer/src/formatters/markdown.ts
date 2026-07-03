@@ -7,23 +7,21 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
     const bakersMeta = resolveBakersMath(data, options);
-    
+
     const context: RenderContext = {
         registry,
         icons: options.icons,
         classes: options.classes,
         formatDuration,
         formatFraction: options.formatFraction,
-        _bakersMathEnabled: bakersMeta.enabled,
-        _bakersMathReferenceMass: bakersMeta.referenceMass ?? undefined,
-        _bakersMathOnly: bakersMeta.only
+        bakersMathOnly: options.bakersMathOnly
     };
-    
+
     let md = '';
-    
+
     // Title
     if (data.title) md += `# ${data.title}\n\n`;
-    
+
     // Meta & Metrics
     if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
         md += `> **Metadata**\n`;
@@ -41,7 +39,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
         }
         md += '\n';
     }
-    
+
     // Shopping List
     if (data.shopping_list && data.shopping_list.length > 0) {
         md += `## 🛒 Shopping List\n\n`;
@@ -52,36 +50,36 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                     md += `  - ${formatElement(opt, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
                 });
             } else if (item.type === 'composite') {
-                 let parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
-                 md += `- ${parentStr} **(Composite)**:\n`;
-                 item.usage.forEach((child: any) => {
-                     md += `  - ${formatElement(child, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
-                 });
+                let parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
+                md += `- ${parentStr} **(Composite)**:\n`;
+                item.usage.forEach((child: any) => {
+                    md += `  - ${formatElement(child, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
+                });
             } else if (item.display) {
-                  md += `- ${item.display}\n`;
+                md += `- ${item.display}\n`;
             } else {
                 md += `- ${formatElement(item, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
             }
         });
         md += '\n';
     }
-    
+
     // Cookware
     if (data.cookware && data.cookware.length > 0) {
         md += `## 🍳 Cookware\n\n`;
         data.cookware.forEach((cw: any) => {
-             if (cw.type === 'alternative' || cw.type === 'group') {
-                 md += `- **Alternative Group**:\n`;
-                 cw.options.forEach((opt: any) => {
-                     md += `  - ${formatElement(opt, 'md', context)}\n`;
-                 });
-             } else {
-                 md += `- ${formatElement(cw, 'md', context)}\n`;
-             }
+            if (cw.type === 'alternative' || cw.type === 'group') {
+                md += `- **Alternative Group**:\n`;
+                cw.options.forEach((opt: any) => {
+                    md += `  - ${formatElement(opt, 'md', context)}\n`;
+                });
+            } else {
+                md += `- ${formatElement(cw, 'md', context)}\n`;
+            }
         });
         md += '\n';
     }
-    
+
     // Instructions
     if (data.sections && data.sections.length > 0) {
         md += `## 👨‍🍳 Instructions\n\n`;
@@ -91,7 +89,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                 if (sec.retro_planning) md += ` ~{${sec.retro_planning}}`;
                 md += `\n\n`;
             }
-            
+
             // Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
             const sectionItems = aggregateSectionIngredients(sec.ingredients ?? []).map(aggToRendererItem);
             if (sectionItems.length > 0) {
@@ -101,53 +99,53 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                 });
                 md += '\n';
             }
-            
+
             let stepCounter = 0;
             sec.steps.forEach((step: any) => {
                 if (step.type === 'comment') {
-                     md += `> *${step.value ? step.value.trim() : ''}*\n\n`;
-                     return;
+                    md += `> *${step.value ? step.value.trim() : ''}*\n\n`;
+                    return;
                 }
 
                 stepCounter++;
                 const stepNum = stepCounter;
                 let stepText = '';
-                
+
                 // Prepend Action if exists
                 if (step.action) {
-                     stepText += `**[${step.action}]** `;
+                    stepText += `**[${step.action}]** `;
                 }
 
                 if (step.type === 'text') {
                     stepText += step.value;
                 } else if (step.type === 'step') {
-                     stepText += step.content.map((c: any, i: number, arr: any[]) => {
-                         let str = formatElement(c, 'md', context);
+                    stepText += step.content.map((c: any, i: number, arr: any[]) => {
+                        let str = formatElement(c, 'md', context);
 
-                         // Spacing Logic
-                         const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
-                         if (isObject) {
-                             const next = arr[i+1];
-                             if (next) {
+                        // Spacing Logic
+                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
+                        if (isObject) {
+                            const next = arr[i + 1];
+                            if (next) {
                                 let nextChar = '';
                                 if (typeof next === 'string') nextChar = next.charAt(0);
                                 else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
-                                
+
                                 // Don't add space if next is glue (punctuation or space)
                                 const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
                                 if (!isGlue) {
                                     str += ' ';
                                 }
-                             }
-                         }
-                         return str;
-                     }).join('');
+                            }
+                        }
+                        return str;
+                    }).join('');
                 }
                 md += `${stepNum}. ${stepText}\n`;
             });
             md += '\n';
         });
     }
-    
+
     return md;
 }

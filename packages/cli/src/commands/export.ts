@@ -49,16 +49,16 @@ export default defineCommand({
     },
     'bakers-math': {
       type: 'boolean',
-      description: "Display in baker's percentages using the * modifier ingredient",
+      description: 'Display ingredient quantities as a percentage of a reference ingredient (Baker\'s Percentage).',
     },
     'bakers-reference': {
       type: 'string',
-      description: "Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
+      description: 'Force a specific ingredient as the baker\'s math reference (e.g. flour). Implies --bakers-math',
     },
     'bakers-math-only': {
       type: 'boolean',
-      description: "Hide absolute quantities when using baker's math",
-    },
+      description: 'Only show the percentages and hide absolute weights.',
+    }
   },
   async run({ args }) {
     const fmt = args.format as string | undefined
@@ -73,18 +73,21 @@ export default defineCommand({
 
     const scaleFactor = await resolveScaleArg(args.scale as string | undefined, filePath, db)
 
+    const bakersReference = (args['bakers-reference'] as string) || (args['bakers-math'] ? '' : undefined)
+    const bakersMathOnly = args['bakers-math-only'] as boolean
+
     const outputPath = args.output
       ? resolve(args.output as string)
       : join(dirname(filePath), basename(filePath, extname(filePath)) + '.' + fmt)
 
     let content: string
     const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
-    
+
     try {
-      content = await exportRecipe(filePath, fmt, db, scaleFactor, { 
+      content = await exportRecipe(filePath, fmt, db, scaleFactor, {
         hideStepQty: !args['step-qty'],
-        bakersMath,
-        bakersMathOnly: args['bakers-math-only'] as boolean
+        bakersReference,
+        bakersMathOnly
       })
     } catch (err) {
       if (err instanceof GramCLIError) {

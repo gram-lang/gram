@@ -9,7 +9,7 @@ export async function generatePrintHTML(
   filePath: string,
   db: Record<string, IngredientData> | null,
   scaleFactor?: number,
-  rendererOptions?: Pick<RendererOptions, 'hideStepQty' | 'bakersMath' | 'bakersMathOnly'>,
+  rendererOptions?: Pick<RendererOptions, 'hideStepQty' | 'bakersReference' | 'bakersMathOnly'>,
 ): Promise<string> {
   const html = await exportRecipe(filePath, 'html', db, scaleFactor, rendererOptions)
   const outPath = join(tmpdir(), `gram_print_${Date.now()}.html`)
