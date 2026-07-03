@@ -15,19 +15,22 @@ If the syntax is valid, it generates an **Abstract Syntax Tree (AST)**. This AST
 ### 2. Compilation (`@gram/kitchen`)
 The AST is handed off to the Kitchen. The Kitchen is responsible for the structural logic of the recipe:
 - **Scoping**: Resolving intermediate variables (e.g., matching a `&dough` reference to a `->&dough` declaration).
-- **Time Metrics**: Computing the `activeTime`, `totalTime`, and `preparationTime` by mapping all timers.
+- **Time Metrics**: Computing `activeTime`, `cookTime`, `preparationTime`, and `totalTime` (`preparationTime + cookTime`) by mapping all timers.
 - **Shopping List Generation**: Aggregating ingredients, summing quantities, and resolving composite ingredients (e.g., combining zest and juice into whole lemons).
 
-The output is a logically sound, compiled recipe.
+The output is a logically sound, compiled recipe — a `CompilationResult` object.
 
 ### 3. Enrichment (`@gram/analyzer`)
 The Analyzer takes the compiled recipe and cross-references it with your project's `ingredients.yaml` database. This is where the physical world meets the digital code:
 - **Mass Standardization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
 - **Yield Calculation**: Calculates purchasing weight versus edible weight.
 - **Nutritional Estimation**: Computes calories and macronutrients based on the normalized masses.
+- **Baker's Percentages**: Expresses every ingredient's mass as a percentage of a reference ingredient (typically flour).
+
+Each of these feature sets can be individually enabled or disabled by the host application.
 
 ### 4. Presentation (`@gram/renderer` or custom)
-Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram/renderer` to generate a standard web view, or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
+Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram/renderer` to generate Markdown, a standard web view, or a self-contained print-ready HTML document — or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
 
 ## Package Architecture
 
