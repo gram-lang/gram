@@ -72,7 +72,7 @@ gram view bread.gram --scale flour=400g
 
 Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
 
-## Baker's Math Mode (CLI)
+## Baker's Math
 
 While Relative Quantities are great for *designing* dynamic recipes, professional bakers often use a concept called **Baker's Percentage** to read and analyze *static* recipes. In Baker's Percentage, the main ingredient (usually flour) is defined as 100%, and everything else is displayed as a percentage of that weight.
 
@@ -81,8 +81,7 @@ If you have a standard recipe with absolute weights, you can use the **Baker's P
 ```gram
 [Add] The @*flour{500g}, @water{350g} and @salt{10g}.
 ```
-
-When using the CLI, you can display the entire recipe in percentages without changing the source code, using the `--bakers-math` flag:
+When using the CLI, you can display the entire recipe in percentages using the `--bakers-math` flag:
 
 ```bash
 gram view bread.gram --bakers-math
@@ -95,13 +94,16 @@ The output will automatically show the percentage for each ingredient relative t
   salt                   2% (10 g)
 ```
 
-If your recipe does not include the `@*` modifier, you can still force baker's math by specifying the reference ingredient directly in the CLI:
+If your recipe does not include the `@*` modifier, you can still force baker's math by explicitly specifying the reference ingredient in the CLI:
 
 ```bash
-gram view bread.gram --bakers-math=flour
+gram view bread.gram --bakers-reference=flour
 ```
 
 If you only want to see the percentages and hide the absolute weights completely, add the `--bakers-math-only` flag.
+
+> [!NOTE]
+> Baker's Math is natively supported by the entire Gram ecosystem. These flags (`--bakers-math`, `--bakers-reference`, `--bakers-math-only`) work identically across all rendering commands (`gram view`, `gram print`, `gram export`) and the percentages are automatically displayed in the interactive Playground.
 
 ## Scaling Fixed Ingredients
 
