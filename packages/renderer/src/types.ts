@@ -54,6 +54,8 @@ export interface RendererOptions {
   formatDuration?: (minutes: number) => string;
   /** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
   hideStepQty?: boolean;
+  bakersReference?: string;
+  bakersMathOnly?: boolean;
 }
 
 export interface RenderContext {
@@ -67,10 +69,9 @@ export interface RenderContext {
   formatDuration?: (minutes: number) => string;
   /** Set to true when formatting step tokens to suppress quantity display. */
   hideIngredientQty?: boolean;
-  // Internal Baker's Math state resolved once per render
-  _bakersMathEnabled?: boolean;
-  _bakersMathReferenceMass?: number;
-  _bakersMathOnly?: boolean;
+  
+  // Passed down from RendererOptions
+  bakersMathOnly?: boolean;
 
   /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
   formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';

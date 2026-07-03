@@ -11,7 +11,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         icons: options.icons,
         classes: options.classes,
         formatDuration,
-        formatFraction: options.formatFraction
+        formatFraction: options.formatFraction,
+        bakersMathOnly: options.bakersMathOnly
     };
 
     let html = '';
