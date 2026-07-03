@@ -30,7 +30,12 @@ export async function runPipeline(
   const compiled = compile(ast, opts.scaleFactor ? { scaleFactor: opts.scaleFactor } : undefined)
 
   const analyzed =
-    !opts.skipAnalyzer && opts.db ? analyze(compiled, opts.db) : null
+    !opts.skipAnalyzer && opts.db 
+      ? analyze(compiled, opts.db, {
+          portions: opts.scaleFactor,
+          bakersReference: opts.bakersReference,
+        }) 
+      : null
 
   return { content, compiled, analyzed }
 }

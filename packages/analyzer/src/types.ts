@@ -42,6 +42,7 @@ export interface AnalyzedUsage extends Usage {
     conversionMethod?: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit' | 'estimate' | 'relative';
     isEstimate?: boolean;
     purchasingMass?: number;
+    bakersPercentage?: number;
 }
 
 export interface AnalyzedSection extends ProcessedSection {

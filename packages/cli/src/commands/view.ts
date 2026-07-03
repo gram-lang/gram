@@ -36,16 +36,16 @@ export default defineCommand({
     },
     'bakers-math': {
       type: 'boolean',
-      description: "Display in baker's percentages using the * modifier ingredient",
+      description: 'Display ingredient quantities as a percentage of a reference ingredient (Baker\'s Percentage).',
     },
     'bakers-reference': {
       type: 'string',
-      description: "Force a specific ingredient as the baker's math reference (e.g. flour). Implies --bakers-math",
+      description: 'Force a specific ingredient as the baker\'s math reference (e.g. flour). Implies --bakers-math',
     },
     'bakers-math-only': {
       type: 'boolean',
-      description: "Hide absolute quantities when using baker's math",
-    },
+      description: 'Only show the percentages and hide absolute weights.',
+    }
   },
   async run({ args }) {
     const file = resolve(args.file as string)
@@ -53,15 +53,17 @@ export default defineCommand({
     const db = args['skip-db'] ? null : await loadDbSafe(config, args.db)
 
     const scaleFactor = (await resolveScaleArg(args.scale as string | undefined, file, db)) ?? 1
-    const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
+
+    const bakersReference = (args['bakers-reference'] as string) || (args['bakers-math'] ? '' : undefined)
+    const bakersMathOnly = args['bakers-math-only'] as boolean
 
     let model
     try {
       model = await buildViewModel(file, { 
-        db, 
-        scaleFactor,
-        bakersMath,
-        bakersMathOnly: args['bakers-math-only'] as boolean
+          db, 
+          scaleFactor, 
+          bakersReference, 
+          bakersMathOnly 
       })
     } catch (err) {
       if (err instanceof GramCLIError) {
