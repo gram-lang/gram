@@ -1,10 +1,10 @@
 # Times & Scheduling
 
-You can define timers and durations in your recipes using the `~` symbol.
+You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
 ## Basic Declaration
 
-Timers **must** specify a unit inside the braces. Fuzzy text like `~{about 10 minutes}` is invalid.
+A `~timer` **must** specify a unit inside the braces. Fuzzy text like `~{about 10 minutes}` is invalid.
 
 ```gram
 Bake for ~{25min}.
@@ -19,7 +19,7 @@ Bake for ~{25min}.
 > **Note:** `m` or `minutes` will be automatically corrected to `min` by the compiler.
 
 ### Timer Names
-You can assign a specific name to a timer. This is especially useful for passive tasks: when multiple timers run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
+You can assign a specific name to a `~timer`. This is especially useful for passive tasks: when multiple `~timer` declarations run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
 
 ```gram
 Boil @eggs{2} for ~eggs{3min}.
@@ -37,7 +37,7 @@ For global timeline calculations (total recipe duration), the compiler automatic
 
 ## Active vs Passive
 
-The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a timer requires your full attention or if it runs in the background.
+The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a `~timer` requires your full attention or if it runs in the background.
 
 ::: tip 💡 The Golden Rule: Does this step block YOU from starting the next step?
 
@@ -49,7 +49,7 @@ The Gram compiler builds a complete execution timeline (similar to a Gantt chart
 :::
 
 ### Active (Default)
-By default, timers are active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
+By default, a `~timer` is active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
 
 ```gram
 Whisk the @heavy cream{} continuously for ~{5min}.
@@ -57,7 +57,7 @@ Whisk the @heavy cream{} continuously for ~{5min}.
 > ⏱️ **Result:** Adds 5 minutes to the **Active Time**.
 
 ### Passive (`&`)
-Use the `&` modifier to make a timer passive. This is a **background task**. You start the timer (e.g., putting a dish in the oven) and immediately move on to the next step.
+Use the `&` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
 
 ```gram
 Bake in the #oven for ~&{45min}.
@@ -91,3 +91,10 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 
 ### Smart Dependency Tracking
 You don't need to do complex math! If you declare a dough that rests for `~&{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
+
+## Error Handling
+
+The compiler validates `~timer` declarations to ensure precise scheduling and will output specific warnings for malformed data:
+
+- **Missing Unit**: If you write `~{30}` without specifying minutes or hours, the compiler warns `MISSING_UNIT`.
+- **Invalid Unit**: If you provide a unit the compiler doesn't understand (e.g., `~{30 lightyears}`), it warns `INVALID_UNIT`.

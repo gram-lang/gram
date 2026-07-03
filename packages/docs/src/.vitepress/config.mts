@@ -54,7 +54,7 @@ export default defineConfig({
               { text: 'Manage Database', link: '/how-to/manage-database' },
               { text: 'Scale Recipes Dynamically', link: '/how-to/scale-recipes' },
               { text: 'Generate Shopping List', link: '/how-to/weekly-shopping-list' },
-              { text: 'Customize HTML Rendering', link: '/how-to/custom-html-renderer' }
+              { text: 'How to Build a Custom UI', link: '/how-to/build-custom-ui' }
             ]
           },
           {
@@ -65,8 +65,8 @@ export default defineConfig({
               { text: 'Cookware', link: '/reference/syntax/cookware' },
               { text: 'Times', link: '/reference/syntax/times' },
               { text: 'Temperatures', link: '/reference/syntax/temperatures' },
-              { text: 'Relative Quantities', link: '/reference/syntax/relative-quantities' },
               { text: 'Intermediate Variables', link: '/reference/syntax/intermediate-variables' },
+              { text: 'Relative Quantities', link: '/reference/syntax/relative-quantities' },
               { text: 'Composite Ingredients', link: '/reference/syntax/composite-ingredients' },
               { text: 'Cheatsheet', link: '/reference/syntax/cheatsheet' },
               { text: 'CLI Commands', link: '/reference/tooling/cli' },
@@ -117,8 +117,8 @@ export default defineConfig({
               { text: 'Ingrédients', link: '/fr/guide/ingredients' },
               { text: 'Matériel', link: '/fr/guide/cookware' },
               { text: 'Temps & Températures', link: '/fr/guide/time-and-temperatures' },
-              { text: 'Quantités Relatives', link: '/fr/guide/advanced/relative-quantities' },
               { text: 'Variables Intermédiaires', link: '/fr/guide/advanced/intermediate-vars' },
+              { text: 'Quantités Relatives', link: '/fr/guide/advanced/relative-quantities' },
               { text: 'Ingrédients Composites', link: '/fr/guide/advanced/composite-ingredients' },
               { text: 'Antisèche', link: '/fr/guide/cheatsheet' }
             ]

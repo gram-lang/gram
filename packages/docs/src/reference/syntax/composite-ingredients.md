@@ -1,12 +1,12 @@
 # Composite Ingredients
 
-Sometimes, a single ingredient purchased at the store yields multiple different components used in a recipe. For instance, a single lemon provides both **zest** and **juice**. 
+Sometimes, a single `@ingredient` purchased at the store yields multiple different components used in a recipe. For instance, a single lemon provides both **zest** and **juice**. 
 
 If you list `@zest` and `@juice` separately in your recipe, the shopping list won't know they come from the same source. To solve this, Gram introduces **Composite Ingredients**.
 
 ## Syntax
 
-You can define a child ingredient that is drawn from a parent ingredient using the `<` operator.
+You can define a child `@ingredient` that is drawn from a parent `@ingredient` using the `<` operator.
 
 **Format**: `@childName{childQty}<@parentName{parentQty}`
 
@@ -25,7 +25,7 @@ Then add the @juice{1}<@lemon.
 
 ## Calculation Rules
 
-When the Gram Compiler generates the shopping list, it applies specific rules to optimize the required purchasing quantity of the parent ingredient.
+When the Gram Compiler generates the shopping list, it applies specific rules to optimize the required purchasing quantity of the parent `@ingredient`.
 
 ### 1. The MAX Rule (Different Parts)
 Different parts (children) of the *same* parent share that parent. The compiler determines the maximum parent quantity required across all unique parts.
@@ -47,7 +47,7 @@ If you use the *same* part multiple times, the compiler adds up the parent cost.
 **Total required**: 2 Lemons.
 
 ### 3. Direct Usage Aggregation
-Composite ingredients mix perfectly with direct usages of the parent ingredient. The direct usage is simply added to the final calculated maximum.
+A composite `@ingredient` mixes perfectly with direct usages of the parent `@ingredient`. The direct usage is simply added to the final calculated maximum.
 
 ```gram
 @zest{1}<@lemon       // Need 1

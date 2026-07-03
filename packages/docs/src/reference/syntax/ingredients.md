@@ -4,7 +4,7 @@ Ingredients are the core building blocks of any Gram recipe.
 
 ## Basic Declaration
 
-To declare an ingredient, use the `@` symbol. If the ingredient name contains spaces or requires a specific quantity, you **must** append the quantity inside `{}` braces. If it is a single word without a specific quantity, the braces are optional (the quantity defaults to 1).
+To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name contains spaces or requires a specific quantity, you **must** append the quantity inside `{}` braces. If it is a single word without a specific quantity, the braces are optional (the quantity defaults to 1).
 
 ```gram
 [Add] @salt and @ground black pepper{} to taste.
@@ -12,7 +12,7 @@ To declare an ingredient, use the `@` symbol. If the ingredient name contains sp
 [Poke] Holes in @potatoes{2}.
 ```
 
-> **Note:** Ingredient names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+> **Note:** `@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
 
 ### Units
 To specify a unit of measurement (weight, volume, etc.), add it directly after the numeric value inside the braces, separated by an optional space.
@@ -23,11 +23,11 @@ To specify a unit of measurement (weight, volume, etc.), add it directly after t
 
 ## Scaling & Fixed Quantities
 
-By default, the Gram Compiler scales ingredients **linearly** based on the number of portions requested. 
-If you scale a recipe from 2 to 4 servings, an ingredient with `{100g}` becomes `{200g}`.
+By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 
+If you scale a recipe from 2 to 4 servings, an `@ingredient` with `{100g}` becomes `{200g}`.
 
 ### Fixed Quantities (`=`)
-Some ingredients (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
+Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
 
 ```gram
 Season with @=salt{1 tsp} to taste.
@@ -36,15 +36,15 @@ This keeps the salt at 1 tsp regardless of how many servings the user calculates
 
 ## Ingredient Modifiers
 
-Gram provides several modifiers to alter how ingredients behave in the parser and the shopping list. Modifiers are placed immediately after the `@` symbol.
+Gram provides several modifiers to alter how an `@ingredient` behaves in the parser and the shopping list. Modifiers are placed immediately after the `@` symbol.
 
 | Modifier | Name | Effect |
 |---|---|---|
-| `&` | **Reference** | References an ingredient previously declared. Does NOT add it to the shopping list again. |
+| `&` | **Reference** | References an `@ingredient` previously declared. Does NOT add it to the shopping list again. |
 | `=` | **Fixed** | Marks the quantity as fixed (it will not scale with portions). |
-| `?` | **Optional** | Marks the ingredient as optional. |
-| `-` | **Hidden** | Hides the ingredient from the generated shopping list. |
-| `*` | **Baker's %** | Marks the ingredient as the reference (100%) to calculate baker's percentages. |
+| `?` | **Optional** | Marks the `@ingredient` as optional. |
+| `-` | **Hidden** | Hides the `@ingredient` from the generated shopping list. |
+| `*` | **Baker's %** | Marks the `@ingredient` as the reference (100%) to calculate baker's percentages. |
 
 ::: warning Combining Modifiers
 You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g. `?*`, `-*`, `-&`) or duplicates (`**`) will generate a compiler warning (`INVALID_MODIFIER_COMBINATION`).
@@ -52,12 +52,12 @@ You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g.
 
 ### The Reference Modifier (`&`)
 
-The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an ingredient after its initial declaration, you should use the `&` modifier.**
+The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an `@ingredient` after its initial declaration, you should use the `&` modifier.**
 
 The compiler's behavior changes depending on whether you provide a new quantity with your reference:
 
 1. **Pure Reference (No Quantity)**
-When instructing the user to use an already declared ingredient, use `@&` so it isn't counted twice in the shopping list.
+When instructing the user to use an already declared `@ingredient`, use `@&` so it isn't counted twice in the shopping list.
 ```gram
 [Add] @flour{200g} to the bowl.
 
@@ -65,24 +65,38 @@ When instructing the user to use an already declared ingredient, use `@&` so it 
 ```
 
 2. **Additive Reference (With Quantity)**
-Sometimes you need to use the *same* ingredient multiple times with *different* additions throughout the recipe. Using `@&ingredient{qty}` tells the compiler: "This is the same ingredient, please add this extra quantity to the total shopping list."
+Sometimes you need to use the *same* `@ingredient` multiple times with *different* additions throughout the recipe. Using `@&ingredient{qty}` tells the compiler: "This is the same `@ingredient`, please add this extra quantity to the total shopping list."
 ```gram
 [Add] @butter{100g} to the dough.
 
 [Grease] Use @&butter{50g} to grease the pan. // The shopping list will correctly aggregate 150g of butter.
 ```
 
+### Baker's Percentage (`*`)
+
+In baking, recipes are often built around the **Baker's Percentage**, where the main `@ingredient` (usually flour) represents 100%, and all other items are expressed as a percentage of that weight.
+
+Gram provides a dedicated modifier to mark the reference `@ingredient`. By placing a `*` after the `@` symbol, you tell the Gram Compiler: *"This is the 100% reference point"*.
+
+```gram
+[Add] The @*flour{500g}, @water{350g} and @salt{10g}.
+```
+
+This allows tools (like the CLI or web renderers) to automatically calculate and display the baker's percentages for all other items (e.g., Water: 70%, Salt: 2%) without you having to define them manually as relative quantities.
+
+> **Note:** For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.md#bakers-math) guide.
+
 ## Advanced Syntax
 
 ### Short-hand Preparations
-Often, an ingredient requires preparation before use. You can define this directly within the declaration using parentheses `()`.
+Often, an `@ingredient` requires preparation before use. You can define this directly within the declaration using parentheses `()`.
 
 ```gram
 [Mix] @butter{1 stick}(room temperature) and @garlic{2 cloves}(peeled and minced).
 ```
 
 ::: tip Best Practice: Inline vs Full Steps
-Gram encourages writing dense, data-oriented recipes. Instead of creating dedicated steps for basic *mise-en-place* tasks (e.g., `[Peel] The garlic.` then `[Mince] The garlic.`), it is highly recommended to declare these states inline using `(...)`. This keeps your recipe concise, avoids polluting the step flow, and allows frontend renderers to cleanly group preparations in the ingredients list!
+Gram encourages writing dense, data-oriented recipes. Instead of creating dedicated steps for basic *mise-en-place* tasks (e.g., `[Peel] The garlic.` then `[Mince] The garlic.`), it is highly recommended to declare these states inline using `(...)`. This keeps your recipe concise, avoids polluting the step flow, and allows frontend renderers to cleanly group preparations in the ingredient list!
 :::
 
 ::: warning Spacing is strict
@@ -90,7 +104,7 @@ The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity
 :::
 
 ### Component Alias (Renaming)
-You can rename an ingredient for display purposes using a colon `:` immediately after the real name. This is useful for keeping the shopping list clean while using a colloquial name in the instructions.
+You can rename an `@ingredient` for display purposes using a colon `:` immediately after the real name. This is useful for keeping the shopping list clean while using a colloquial name in the instructions.
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
@@ -113,11 +127,11 @@ Deglaze with @dry white wine:wine{100ml}.
 The shopping list will aggregate this under "dry white wine", but the rendered recipe will just say "wine".
 
 ::: tip Re-using aliased ingredients
-Aliases are applied locally. To mention this same ingredient again later in the recipe, you must reference its **real name**, not the alias (e.g. `@&dry white wine`). If you write `@wine`, Gram will treat it as a brand new ingredient.
+Aliases are applied locally. To mention this same `@ingredient` again later in the recipe, you must reference its **real name**, not the alias (e.g. `@&dry white wine`). If you write `@wine`, Gram will treat it as a brand new `@ingredient`.
 :::
 
 ### Alternatives (Substitutions)
-You can define acceptable alternatives for an ingredient using the pipe `|` operator.
+You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 
 ```gram
 Add @milk{100ml}|@water{95ml}.
@@ -135,3 +149,13 @@ Add @eggs{2-4}.
 
 Pour @water{1.5-2l}.
 ```
+
+## Error Handling
+
+The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
+
+- **Invalid Modifier**: If you combine incompatible modifiers (like `?*`), the compiler warns `INVALID_MODIFIER_COMBINATION` and ignores them.
+- **Undefined Reference**: If you use a reference (`@&ingredient`) but that item hasn't been declared previously in the recipe, the compiler warns `UNDEFINED_REFERENCE`.
+- **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
+- **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
+- **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.

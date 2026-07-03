@@ -12,7 +12,7 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../../explanation/engine/analyzer.md).
-*   `densities`: (Object) Custom density overrides for specific ingredients, used by the [Mass Standardization](../../explanation/engine/kitchen.md) algorithm.
+*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](../../explanation/engine/kitchen.md) algorithm.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
@@ -68,7 +68,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 
 ## 3. Sections
 
-Complex recipes often have multiple components (e.g., dough, filling, frosting) that are prepared separately. You can group steps into sections using Markdown-style headings (e.g., `## Dough`).
+Complex recipes often have multiple components (e.g., dough, filling, frosting) that are prepared separately. You can group steps into `## Section` blocks using Markdown-style headings (e.g., `## Dough`).
 
 ```gram
 ## Dough
@@ -81,16 +81,16 @@ Combine @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
 ### Retro-planning (Scheduling)
-You can assign a preparation timeframe to a section by adding a timer `~{-...}` anywhere in the section title.
+You can assign a preparation timeframe to a `## Section` by adding a `~timer` anywhere in the title.
 
 ```gram
 ## Puff Pastry ~{-2d}
 ```
-This tells the compiler that the "Puff Pastry" section should be prepared **2 days in advance**.
+This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
 Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes).
 
 ### Section Outputs (Declarations)
-If a section produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
+If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
 
 ```gram
 ## Puff Pastry ->&dough
