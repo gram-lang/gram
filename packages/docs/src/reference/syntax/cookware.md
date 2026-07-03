@@ -16,19 +16,28 @@ If the name contains spaces or you want to specify a quantity, you must use brac
 Take a #baking sheet{}.
 ```
 
-## Dimensions and Materials
+## Quantities vs Dimensions
 
-**Strict Rule:** The braces `{}` are strictly reserved for the **quantity** (an integer count). 
-To specify dimensions, materials, or any other descriptions, you must use parentheses `()`.
+Unlike ingredients (which can have complex units like grams or cups), cookware has a strict syntax separation between its **count** and its **physical description**.
+
+### 1. Quantity (Integer Count)
+The braces `{}` are strictly reserved for the number of items you need. This must be a pure integer.
 
 ```gram
-#pan{}                        // Qty 1 (implicit)
-#baking sheet{}(20x30cm)      // Qty 1, Dimension in parens
-#ramekins{4}(porcelain)       // Qty 4, Material in parens
+#pan              // Defaults to 1 pan
+#ramekins{4}      // 4 ramekins
+```
+
+### 2. Dimensions and Materials
+To specify the size, dimensions, material, or any other description of the cookware, you must use parentheses `()`.
+
+```gram
+#pan(20cm)                  // 1 pan, sized 20cm
+#baking sheet{2}(non-stick) // 2 baking sheets, non-stick
 ```
 
 ::: warning Common Mistake
-It is a common mistake to put dimensions inside the quantity braces. This is invalid Gram syntax and will cause errors during compilation.
+It is a common mistake to put dimensions inside the quantity braces. This is invalid syntax and will cause a compiler error because Gram expects a strict integer inside `{}` for cookware.
 - ❌ `#pan{20cm}` -> WRONG.
 - ✅ `#pan(20cm)` -> CORRECT.
 :::
