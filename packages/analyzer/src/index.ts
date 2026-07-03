@@ -223,6 +223,49 @@ export function analyze(
          }
     });
 
+    // 2.5 Calculate Baker's Percentages (if a reference is defined)
+    let bakersReferenceMass: number | null = null;
+    
+    // Find reference by modifier or by explicit option
+    for (const item of shopping_list) {
+        if (
+            (opts.bakersReference && item.id === opts.bakersReference) ||
+            (item.modifiers && item.modifiers.includes('bakers_percentage'))
+        ) {
+            bakersReferenceMass = item.normalizedMass || null;
+            break;
+        }
+    }
+
+    if (bakersReferenceMass !== null && bakersReferenceMass > 0) {
+        const computeBakers = (mass?: number) => 
+            mass !== undefined ? parseFloat(((mass / bakersReferenceMass!) * 100).toFixed(2)) : undefined;
+
+        // Apply to shopping list
+        shopping_list.forEach((item: any) => {
+            const bp = computeBakers(item.normalizedMass);
+            if (bp !== undefined) item.bakersPercentage = bp;
+        });
+        
+        // Apply to AST sections
+        if (Array.isArray(sections)) {
+            sections.forEach(section => {
+                if (Array.isArray(section.steps)) {
+                    section.steps.forEach((step: any) => {
+                        if (step && step.type === 'step' && Array.isArray(step.content)) {
+                            step.content.forEach((node: any) => {
+                                if (node && node.type === 'ingredient') {
+                                    const bp = computeBakers(node.normalizedMass);
+                                    if (bp !== undefined) node.bakersPercentage = bp;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+
     // 3. Estimate full nutritional profiles (calories, macros) based on portion counts
     let nutrition: any = undefined;
     if (opts.enableNutritionalEstimation !== false) {

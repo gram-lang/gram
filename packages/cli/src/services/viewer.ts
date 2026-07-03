@@ -33,6 +33,17 @@ function formatQty(item: any): string {
   return ''
 }
 
+function formatDisplayQty(item: any, opts: { bakersMathOnly?: boolean }): string {
+  if (item.normalizedMass != null) {
+    const massStr = formatMass(item.normalizedMass)
+    if (item.bakersPercentage !== undefined) {
+       return opts.bakersMathOnly ? `${item.bakersPercentage}%` : `${item.bakersPercentage}% (${massStr})`
+    }
+    return massStr
+  }
+  return formatQty(item)
+}
+
 function tokenToText(item: any, registry: Record<string, any>): string {
   if (typeof item === 'string') return item
   if (!item) return ''
@@ -100,9 +111,13 @@ function getTimerMinutes(step: any): number | undefined {
 
 export async function buildViewModel(
   file: string,
-  opts: { db?: Record<string, IngredientData> | null; scaleFactor?: number },
+  opts: { db?: Record<string, IngredientData> | null; scaleFactor?: number; bakersReference?: string; bakersMathOnly?: boolean },
 ): Promise<RecipeViewModel> {
-  const { compiled, analyzed } = await runPipeline(file, { db: opts.db, scaleFactor: opts.scaleFactor })
+  const { compiled, analyzed } = await runPipeline(file, { 
+      db: opts.db, 
+      scaleFactor: opts.scaleFactor,
+      bakersReference: opts.bakersReference,
+  })
 
   const title = (compiled.meta?.title as string | undefined) ?? compiled.title ?? basename(file, '.gram')
   const servings = (compiled.meta?.servings as number | undefined) ?? null
@@ -126,23 +141,17 @@ export async function buildViewModel(
     for (const item of analyzed.result.shopping_list as any[]) {
       if (item.type === 'alternative' || item.variable_entries) continue
       const name = opts.db?.[item.id]?.name ?? item.name ?? item.id
-      if (item.normalizedMass != null) {
-        shoppingList.push({
-          name,
-          displayQty: formatMass(item.normalizedMass),
-          isEstimate: item.isEstimate ?? false,
-        })
-      } else {
-        const qty = formatQty(item)
-        if (qty) shoppingList.push({ name, displayQty: qty, isEstimate: false })
+      const displayQty = formatDisplayQty(item, opts)
+      if (displayQty) {
+        shoppingList.push({ name, displayQty, isEstimate: item.isEstimate ?? false })
       }
     }
   } else {
     for (const item of compiled.shopping_list as any[]) {
       if (item.type === 'alternative' || item.variable_entries) continue
-      const qty = formatQty(item)
-      if (qty) {
-        shoppingList.push({ name: item.name ?? item.id, displayQty: qty, isEstimate: false })
+      const displayQty = formatDisplayQty(item, opts)
+      if (displayQty) {
+        shoppingList.push({ name: item.name ?? item.id, displayQty, isEstimate: false })
       }
     }
   }
@@ -157,11 +166,7 @@ export async function buildViewModel(
       .filter((ing: any) => !ing.composite && ing.type !== 'alternative' && ing.qty != null)
       .map((ing: any) => {
         const name = opts.db?.[ing.id]?.name ?? ing.alias ?? registry[ing.id]?.name ?? ing.name ?? ing.id
-        if (ing.normalizedMass != null) {
-          return { name, displayQty: formatMass(ing.normalizedMass), isEstimate: ing.isEstimate ?? false }
-        }
-        const qty = formatQty(ing)
-        return { name, displayQty: qty, isEstimate: false }
+        return { name, displayQty: formatDisplayQty(ing, opts), isEstimate: ing.isEstimate ?? false }
       })
 
     // Composite ingredients — group children by parent, apply MAX rule for parent qty
@@ -187,12 +192,12 @@ export async function buildViewModel(
         parent.maxQtyRaw = childQtyRaw
       }
       const childName = opts.db?.[ing.id]?.name ?? registry[ing.id]?.name ?? ing.name ?? ing.id
-      const childDisplayQty = childQtyRaw != null ? formatQty({ qty: childQtyRaw, unit: childUnit }) : ''
+      const childDisplayQty = formatDisplayQty({ qty: childQtyRaw, unit: childUnit, normalizedMass: ing.normalizedMass, bakersPercentage: ing.bakersPercentage }, opts)
       parent.children.push({ name: childName, displayQty: childDisplayQty })
     }
     const compositeEntries: RecipeViewModel['sections'][0]['ingredients'] = Array.from(parentMap.values()).map(p => ({
       name: p.name,
-      displayQty: p.maxQtyRaw != null ? formatQty({ qty: p.maxQtyRaw, unit: p.unit }) : '',
+      displayQty: formatDisplayQty({ qty: p.maxQtyRaw, unit: p.unit }, opts),
       isEstimate: false,
       children: p.children,
     }))

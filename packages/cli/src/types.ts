@@ -194,6 +194,8 @@ export interface PipelineOptions {
   db?: Record<string, IngredientData> | null
   skipAnalyzer?: boolean
   scaleFactor?: number
+  bakersReference?: string
+  bakersMathOnly?: boolean
 }
 
 export interface CheckOptions {
