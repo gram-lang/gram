@@ -1,6 +1,6 @@
 # How to Scale Recipes Dynamically
 
-Gram is designed to ensure that recipes scale mathematically. While you can easily scale any standard recipe linearly by passing a multiplier to the CLI (`gram build --scale 2`), Gram also offers two powerful advanced features for ratio-based cooking (like pastry or bread): **Relative Quantities** and **Baker's Math**.
+Gram is designed to ensure that recipes scale mathematically across its entire ecosystem. Whether you are using the interactive Playground, rendering HTML/Markdown documents, or running CLI commands, Gram natively supports two powerful features for ratio-based cooking (like pastry or bread): **Relative Quantities** and **Baker's Math**.
 
 This guide shows you how to use **Relative Quantities** to build dynamic, self-documenting recipes based on ratios, and how to use **Baker's Math** to display traditional recipes in percentage format.
 
@@ -8,13 +8,10 @@ This guide shows you how to use **Relative Quantities** to build dynamic, self-d
 
 Imagine a bread recipe:
 ```gram
-@flour{500g}
-@water{350ml}
-@salt{10g}
-@yeast{5g}
+[Mix] The @flour{500g}, @water{350ml}, @salt{10g} and @yeast{5g}.
 ```
 
-If you scale this by 2 using the CLI (`gram build --scale 2`), everything doubles. And if you only have `400g` of flour left, you can use reference scaling: `gram build --scale flour=400g`. Gram will compute the multiplier (`0.8`) and adjust everything automatically.
+If you scale this by 2 (e.g., using `gram build --scale 2`), everything doubles. And if you only have `400g` of flour left, you can use reference scaling: `gram build --scale flour=400g`. Gram will compute the multiplier (`0.8`) and adjust everything automatically.
 
 So why would we need anything else?
 
@@ -31,7 +28,7 @@ In Gram, you can express these relationships directly in the source code using *
 First, define the flour as a standard ingredient in your recipe.
 
 ```gram
-Add the @flour{500g}.
+[Add] The @flour{500g}.
 ```
 
 ### 2. Define the Relatives
@@ -47,14 +44,7 @@ Now, replace the static quantities of water, salt, and yeast with percentages po
 
 ## Scaling the Dynamic Recipe
 
-Now, when you compile or view this recipe, Gram resolves the percentages automatically:
-- Water: 70% of 500g = 350g
-- Salt: 2% of 500g = 10g
-- Yeast: 1% of 500g = 5g
-
-### The Real Magic: Modifying Recipes
-
-Because the relationships are encoded directly in the recipe, the source code becomes **self-documenting**. Any baker reading your `.gram` file immediately sees that this is a 70% hydration dough. 
+Because the relationships are encoded directly in the recipe, Gram handles the math dynamically. Any baker reading your `.gram` file immediately sees that this is a 70% hydration dough. 
 
 If you want to tweak the recipe to a wetter 75% hydration, you just change one number:
 ```gram
@@ -62,9 +52,9 @@ If you want to tweak the recipe to a wetter 75% hydration, you just change one n
 ```
 Gram handles the math. You never have to manually calculate absolute weights again when designing or tweaking your recipes.
 
-### CLI Scaling still works!
+### Universal Scaling
 
-And of course, just like absolute recipes, you can still scale the total output dynamically from the CLI based on what you have in your pantry:
+You can scale recipes visually in the Playground, or from the CLI using the `--scale` flag (available on `view`, `build`, `print`, and `export`):
 
 ```bash
 gram view bread.gram --scale flour=400g
@@ -81,7 +71,10 @@ If you have a standard recipe with absolute weights, you can use the **Baker's P
 ```gram
 [Add] The @*flour{500g}, @water{350g} and @salt{10g}.
 ```
-When using the CLI, you can display the entire recipe in percentages using the `--bakers-math` flag:
+
+The parsed recipe will automatically compute these percentages for any frontend to display. 
+
+When using the CLI, you can render these percentages by adding the `--bakers-math` flag:
 
 ```bash
 gram view bread.gram --bakers-math
@@ -94,16 +87,13 @@ The output will automatically show the percentage for each ingredient relative t
   salt                   2% (10 g)
 ```
 
-If your recipe does not include the `@*` modifier, you can still force baker's math by explicitly specifying the reference ingredient in the CLI:
+If your recipe does not include the `@*` modifier, you can still force baker's math by explicitly specifying the reference ingredient on the fly:
 
 ```bash
 gram view bread.gram --bakers-reference=flour
 ```
 
-If you only want to see the percentages and hide the absolute weights completely, add the `--bakers-math-only` flag.
-
-> [!NOTE]
-> Baker's Math is natively supported by the entire Gram ecosystem. These flags (`--bakers-math`, `--bakers-reference`, `--bakers-math-only`) work identically across all rendering commands (`gram view`, `gram print`, `gram export`) and the percentages are automatically displayed in the interactive Playground.
+*(You can also use the `--bakers-math-only` flag if you want to hide the absolute weights completely.)*
 
 ## Scaling Fixed Ingredients
 
