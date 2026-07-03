@@ -41,7 +41,7 @@ interface ConversionResult {
     method: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
 }
 
-export function normalizeMass(
+export function standardizeMass(
     amount: number, 
     unit: string, 
     database: Record<string, IngredientData>,

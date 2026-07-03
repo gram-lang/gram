@@ -45,8 +45,8 @@ const database = {
 
 // 3. Analyze
 const analysisResult = analyze(compiled, database, {
-  enableMassNormalization: true,
-  enableYieldManagement: true,
+  enableMassStandardization: true,
+  enableYieldCalculation: true,
   enableNutritionalEstimation: false
 });
 
@@ -59,7 +59,7 @@ console.log(analysisResult.result.shopping_list); // Purchasing mass auto-calcul
 ## 🏗️ Structure
 
 *   `src/index.ts`: The main entry point. Orchestrates the enrichment of sections, steps, and shopping lists.
-*   `src/mass_normalization.ts`: Resolves count/volume quantities to grams (`g`).
+*   `src/mass_standardization.ts`: Resolves count/volume quantities to grams (`g`).
 *   `src/yield_management.ts`: Scales ingredient net weights to raw purchase weights.
 *   `src/nutrition.ts`: Sums macros and calories per serving.
 *   `src/metrics.ts`: Computes global mass metrics and warning outputs.

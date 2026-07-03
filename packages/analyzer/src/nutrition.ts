@@ -1,6 +1,6 @@
 import { getNumericQty, WarningCode, pushWarning } from '@gram/kitchen';
 import { getIngredientData } from './ingredient_db';
-import { normalizeMass } from './mass_normalization';
+import { standardizeMass } from './mass_standardization';
 import { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';
 
 interface Macros {
@@ -74,7 +74,7 @@ export function calculateNutrition(
                 const unit = item.unit || 'unit';
 
                 // item.name may be undefined for composite children (usage items only carry id+qty)
-                const norm = normalizeMass(val, unit, database, item.name || item.id);
+                const norm = standardizeMass(val, unit, database, item.name || item.id);
                 if (norm) {
                     mass = norm.mass;
                     isEst = norm.isEstimate;
