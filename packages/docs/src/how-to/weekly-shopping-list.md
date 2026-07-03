@@ -16,7 +16,7 @@ gram shop "menus/week-1/*.gram"
 ### What happens during aggregation?
 
 1. **ID Matching**: The compiler groups all ingredients that share the same base ID (e.g., all instances of `@butter`).
-2. **Alias Resolution**: If your database defines `beurre` as an alias for `butter`, Gram will seamlessly merge `@beurre{50g}` and `@butter{50g}` into a single `100g` entry under the primary key `butter`.
+2. **Alias Resolution**: If your database defines `unsalted butter` as an alias for `butter`, Gram will seamlessly merge `@unsalted butter{50g}` and `@butter{50g}` into a single `100g` entry under the primary key `butter`.
 3. **Unit Normalization**: If one recipe uses `@milk{200ml}` and another uses `@milk{1 cup}`, the analyzer uses the database to normalize them (usually into grams, or whichever display unit you configured).
 4. **Categorization**: The final list is sorted by culinary categories (e.g., *Dairy*, *Produce*, *Pantry*) based on your `ingredients.yaml` data, making it easy to navigate a supermarket.
 
