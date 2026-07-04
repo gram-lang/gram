@@ -2,8 +2,10 @@
 title: 'Cannelés'
 description: 'A classic french dessert, full of rum and vanilla.'
 category: 'Dessert'
-size: '38 "lunch" cannelés'
+makes: '38 "lunch" cannelés'
 tags: ['bordeaux', 'french', 'traditional', 'pastry','boozy']
+
+portions: 10
 ---
 
 ## Batter ~{-1d} ->&batter

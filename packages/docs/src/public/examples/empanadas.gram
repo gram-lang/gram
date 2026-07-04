@@ -2,9 +2,11 @@
 title: "Brian's Empanadas"
 description: "Authentic Argentine beef empanadas, a traditional recipe from a true Argentinian."
 category: 'Main Dish'
-size: 'About 20 empanadas'
+makes: 'About 20 empanadas'
 author: ["Brian"]
 tags: ['argentine', 'beef', 'meat', 'savory pastry','street food']
+
+portions: 5
 ---
 
 ## Shortcrust Pastry ->&dough
