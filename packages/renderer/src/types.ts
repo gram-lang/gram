@@ -13,6 +13,7 @@ export interface RendererIcons {
   scales?: string;
   clockCounterClockwise?: string;
   arrowElbowDownRight?: string;
+  info?: string;
 }
 
 export interface RendererClasses {
@@ -83,4 +84,8 @@ export interface RenderContext {
 
   /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
   formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';
+  
+  // State for footnotes
+  _inlineComments?: string[];
+  _renderId?: string;
 }

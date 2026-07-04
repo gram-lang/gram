@@ -71,6 +71,31 @@ watch(() => props.htmlPreview, async () => {
     })
   }
 }, { flush: 'pre' })
+
+function handlePreviewClick(e: MouseEvent) {
+  if (props.viewMode !== 'preview') return
+  const target = e.target as HTMLElement
+  const a = target.closest('a')
+  if (a && a.hash && a.hash.startsWith('#')) {
+    const id = a.hash.substring(1)
+    const el = document.getElementById(id)
+    if (el) {
+      e.preventDefault()
+      
+      // Remove highlight from previous
+      if (previewContainer.value) {
+        previewContainer.value.querySelectorAll('.target-highlight').forEach(n => {
+          n.classList.remove('target-highlight')
+        })
+      }
+      
+      // Add highlight to target
+      el.classList.add('target-highlight')
+      
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+}
 </script>
 
 <template>
@@ -103,7 +128,7 @@ watch(() => props.htmlPreview, async () => {
       </div>
       
       <!-- HTML Preview -->
-      <div ref="previewContainer" v-else-if="viewMode === 'preview'" class="output-preview gram-preview vp-doc show-macros" v-html="htmlPreview"></div>
+      <div ref="previewContainer" @click="handlePreviewClick" v-else-if="viewMode === 'preview'" class="output-preview gram-preview vp-doc show-macros" v-html="htmlPreview"></div>
     </div>
   </div>
 </template>

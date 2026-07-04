@@ -322,7 +322,15 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
     comment: (item, format, context) => {
         const text = (item.value || '').trim();
         if (format === 'html') {
-            return `<!-- ${escapeHtml(text)} -->`;
+            if (context._inlineComments) {
+                context._inlineComments.push(text);
+                const index = context._inlineComments.length;
+                const renderId = context._renderId || 'note';
+                return `<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
+            } else {
+                // Fallback if state is missing
+                return `<span class="inline-comment">${escapeHtml(text)}</span>`;
+            }
         } else {
             return ` *${text}*`;
         }
