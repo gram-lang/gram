@@ -211,7 +211,7 @@ body.vscode-dark,
   margin: 0;
   border: none;
   padding: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .gram-preview details>summary::after {

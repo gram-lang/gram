@@ -61,7 +61,7 @@ export class PreviewPanel {
 
     private _getHtmlForWebview(initialHtml: string): string {
         const nonce = getNonce();
-        
+
         // Link to extracted CSS
         const cssPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'preview.css');
         const cssUri = this._panel.webview.asWebviewUri(cssPathOnDisk);
@@ -71,23 +71,27 @@ export class PreviewPanel {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; font-src https://fonts.gstatic.com https://unpkg.com https://cdn.jsdelivr.net; script-src 'nonce-${nonce}' https://unpkg.com;">
     <title>GRAM Preview</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="${cssUri}" rel="stylesheet">
+    <script nonce="${nonce}" src="https://unpkg.com/@phosphor-icons/web"></script>
     <style nonce="${nonce}">
-        :root {
-            --background: var(--vscode-editor-background);
-            --foreground: var(--vscode-editor-foreground);
-            --card: var(--vscode-editorWidget-background);
-            --card-foreground: var(--vscode-editorWidget-foreground);
-            --secondary: color-mix(in srgb, var(--vscode-editor-foreground) 5%, var(--vscode-editor-background));
-            --muted: var(--vscode-editorWidget-background);
-            --muted-foreground: var(--vscode-descriptionForeground);
-            --border: var(--vscode-widget-border);
-            --radius: 0.5rem;
-            --font-sans: 'Inter', var(--vscode-font-family);
-            --font-mono: var(--vscode-editor-font-family);
+        :root, body.vscode-light, body.vscode-dark, body.vscode-high-contrast {
+            /* Override gram.css colors to seamlessly blend with VSCode theme */
+            --color-bg: var(--vscode-editor-background);
+            --color-bg-subtle: var(--vscode-editorWidget-background);
+            --color-bg-muted: var(--vscode-editorWidget-background);
+            --color-surface: var(--vscode-editorWidget-background);
+            --color-surface-raised: var(--vscode-editorWidget-background);
+            --color-border: var(--vscode-widget-border);
+            --color-border-strong: var(--vscode-focusBorder);
+            --color-text-muted: var(--vscode-descriptionForeground);
+            --color-text: var(--vscode-editor-foreground);
+            --color-text-strong: var(--vscode-editor-foreground);
+            
+            --gram-font-sans: 'Inter', var(--vscode-font-family);
+            --gram-font-mono: var(--vscode-editor-font-family);
         }
     </style>
 </head>
