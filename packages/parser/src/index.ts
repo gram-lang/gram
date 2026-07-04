@@ -94,7 +94,7 @@ semantics.addOperation('toAST', {
             .reduce((acc, curr) => ({ ...acc, ...curr }), {});
     },
 
-    KeyValue(key, _1, _2, value, _3) {
+    KeyValue(_newlines, key, _1, _2, value, _3) {
         return { [key.sourceString]: parseFrontmatterValue(value.sourceString) };
     },
 

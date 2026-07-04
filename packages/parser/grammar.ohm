@@ -6,7 +6,8 @@ GRAM {
     | (nl* Block)+        -- implicit
 
   Frontmatter = "---" nl KeyValue* "---" (nl | end)
-  KeyValue = key ":" sp* value nl
+  emptyLine = sp* nl
+  KeyValue = emptyLine* key ":" sp* value nl
   key = (alnum | "_" | "-")+
   value = (~nl any)*
 
