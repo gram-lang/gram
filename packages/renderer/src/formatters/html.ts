@@ -14,7 +14,9 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         classes: options.classes,
         formatDuration,
         formatFraction: options.formatFraction,
-        bakersMathOnly: options.bakersMathOnly
+        bakersMathOnly: options.bakersMathOnly,
+        _inlineComments: [],
+        _renderId: Math.random().toString(36).substring(2, 9)
     };
 
     let html = '';
@@ -85,7 +87,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             msg = `~${mass}g (Estimated)`;
         }
         if (data.metrics.massStatus === 'incomplete') {
-            msg = `${mass}g (Incomplete)`;
+            msg = `>${mass}g (Incomplete)`;
         }
         html += `  <div class="${metaSecondaryItemClass}">\n`;
         html += `    <span class="label">Total Mass</span>\n`;
@@ -193,9 +195,13 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                     if (sec.metrics.massStatus === 'estimated') {
                         msg = `~${mass}g`;
                         title += " (Estimated)";
+                    } else if (sec.metrics.massStatus === 'incomplete') {
+                        msg = `>${mass}g`;
+                        const missingStr = sec.metrics.missingMassIngredients?.join(', ') || 'some ingredients';
+                        title += ` (Incomplete, missing: ${missingStr})`;
                     }
                     const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
-                    titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${title}">${msg}</small>`;
+                    titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${msg}</small>`;
                 }
 
                 if (sec.intermediate_preparation) {
@@ -226,8 +232,10 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             sec.steps.forEach((step: any) => {
                 if (step.type === 'comment') {
                     const stepCommentClass = options.classes?.stepComment ? ` class="${options.classes.stepComment}"` : ' class="step-comment"';
+                    const icon = options.icons?.info ?? '<i class="ph ph-info"></i>';
                     html += `      <li${stepCommentClass}>\n`;
-                    html += `        ${escapeHtml(step.value)}\n`;
+                    html += `        <span class="comment-icon">${icon}</span>\n`;
+                    html += `        <span class="comment-text">${escapeHtml(step.value)}</span>\n`;
                     html += `      </li>\n`;
                     return;
                 }
@@ -244,13 +252,16 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 if (step.type === 'text') {
                     stepContent = escapeHtml(step.value);
                 } else if (step.type === 'step') {
-                    stepContent = step.content.map((c: any, i: number, arr: any[]) => {
+                    const inlineItems = step.content.filter((c: any) => c.type !== 'declaration');
+                    const declItems = step.content.filter((c: any) => c.type === 'declaration');
+
+                    const renderArr = (arr: any[]) => arr.map((c: any, i: number, a: any[]) => {
                         let str = formatElement(c, 'html', context);
 
                         // Spacing Logic
-                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
+                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment' && c.type !== 'declaration');
                         if (isObject) {
-                            const next = arr[i + 1];
+                            const next = a[i + 1];
                             if (next) {
                                 let nextChar = '';
                                 if (typeof next === 'string') nextChar = next.charAt(0);
@@ -265,6 +276,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                         }
                         return str;
                     }).join('');
+
+                    stepContent = renderArr(inlineItems) + renderArr(declItems);
                 }
                 html += `        ${stepContent}\n`;
                 html += `      </li>\n`;
@@ -272,6 +285,23 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             html += `    </ol>\n`;
             html += `  </section>\n`;
         });
+        html += `</div>\n`;
+    }
+
+    // Footnotes / Notes Section
+    if (context._inlineComments && context._inlineComments.length > 0) {
+        const renderId = context._renderId || 'note';
+        html += `<div class="recipe-notes">\n`;
+        html += `  <h3>Notes</h3>\n`;
+        html += `  <ol>\n`;
+        context._inlineComments.forEach((note, idx) => {
+            const index = idx + 1;
+            html += `    <li id="${renderId}-${index}">\n`;
+            html += `      ${escapeHtml(note)}\n`;
+            html += `      <a href="#ref-${renderId}-${index}" class="note-return" title="Return to step">↩</a>\n`;
+            html += `    </li>\n`;
+        });
+        html += `  </ol>\n`;
         html += `</div>\n`;
     }
 
