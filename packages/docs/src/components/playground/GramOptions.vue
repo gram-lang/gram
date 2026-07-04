@@ -41,17 +41,28 @@ const nutritionEnabled = computed({
       <span class="options-title">Analysis Options</span>
     </div>
     <div class="options-body">
-      <label class="option-label">
+      <label class="option-item">
         <input type="checkbox" v-model="massEnabled" />
-        Mass Normalization
+        <div class="option-text">
+          <span class="option-name">Mass Standardization</span>
+          <span class="option-desc">Converts all ingredient quantities into a standardized mass (grams).</span>
+        </div>
       </label>
-      <label class="option-label child-option" :class="{ disabled: !massEnabled }">
+      
+      <label class="option-item child-option" :class="{ disabled: !massEnabled }">
         <input type="checkbox" v-model="yieldEnabled" :disabled="!massEnabled" />
-        Yield Management (Gross Mass)
+        <div class="option-text">
+          <span class="option-name">Yield Management</span>
+          <span class="option-desc">Calculates the gross amount needed considering ingredient yield factors.</span>
+        </div>
       </label>
-      <label class="option-label">
+
+      <label class="option-item">
         <input type="checkbox" v-model="nutritionEnabled" />
-        Nutrition Estimation
+        <div class="option-text">
+          <span class="option-name">Nutrition Estimation</span>
+          <span class="option-desc">Estimates nutritional values based on the ingredients database.</span>
+        </div>
       </label>
     </div>
   </div>
@@ -62,12 +73,15 @@ const nutritionEnabled = computed({
   background-color: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-border);
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px;
   font-size: 14px;
+  width: 320px; /* Fixed width for better wrapping of descriptions */
 }
 
 .options-header {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
 .options-title {
@@ -81,24 +95,64 @@ const nutritionEnabled = computed({
 .options-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
 }
 
-.option-label {
+.option-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--vp-c-text-2);
+  align-items: flex-start;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
 }
 
-.option-label:hover {
+.option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-name {
   color: var(--vp-c-text-1);
+  font-weight: 500;
+  line-height: 1.2;
+  transition: color 0.2s;
+}
+
+.option-desc {
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.option-item:hover .option-name {
+  color: var(--vp-c-brand-1);
 }
 
 .child-option {
-  margin-left: 20px;
+  margin-left: 24px;
+  position: relative;
+}
+
+.child-option::before {
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: -16px;
+  width: 2px;
+  height: 24px;
+  background-color: var(--vp-c-divider);
+  border-bottom-left-radius: 4px;
+}
+
+.child-option::after {
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: 8px;
+  width: 12px;
+  height: 2px;
+  background-color: var(--vp-c-divider);
 }
 
 .child-option.disabled {
@@ -106,7 +160,12 @@ const nutritionEnabled = computed({
   cursor: not-allowed;
 }
 
+.child-option.disabled:hover .option-name {
+  color: var(--vp-c-text-1); /* remove hover effect when disabled */
+}
+
 input[type="checkbox"] {
   cursor: inherit;
+  margin-top: 1px; /* Align checkbox with the top of the text */
 }
 </style>

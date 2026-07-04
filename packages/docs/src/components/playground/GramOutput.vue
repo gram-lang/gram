@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { VueMonacoEditor } from '@guolao/vue-monaco-editor'
 import { useData } from 'vitepress'
 import JsonNode from './JsonNode.vue'
@@ -46,6 +46,31 @@ const MONACO_OPTIONS = {
   readOnly: true,
   domReadOnly: true
 }
+
+const previewContainer = ref<HTMLElement | null>(null)
+
+watch(() => props.htmlPreview, async () => {
+  if (props.viewMode !== 'preview' || !previewContainer.value) return
+  
+  const openDetails = new Set<string>()
+  previewContainer.value.querySelectorAll('details[open]').forEach(details => {
+    const summary = details.querySelector('summary')
+    if (summary && summary.textContent) {
+      openDetails.add(summary.textContent.trim())
+    }
+  })
+  
+  await nextTick()
+  
+  if (openDetails.size > 0 && previewContainer.value) {
+    previewContainer.value.querySelectorAll('details').forEach(details => {
+      const summary = details.querySelector('summary')
+      if (summary && summary.textContent && openDetails.has(summary.textContent.trim())) {
+        details.open = true
+      }
+    })
+  }
+}, { flush: 'pre' })
 </script>
 
 <template>
@@ -78,7 +103,7 @@ const MONACO_OPTIONS = {
       </div>
       
       <!-- HTML Preview -->
-      <div v-else-if="viewMode === 'preview'" class="output-preview gram-preview vp-doc" v-html="htmlPreview"></div>
+      <div ref="previewContainer" v-else-if="viewMode === 'preview'" class="output-preview gram-preview vp-doc show-macros" v-html="htmlPreview"></div>
     </div>
   </div>
 </template>
@@ -151,7 +176,8 @@ const MONACO_OPTIONS = {
 }
 
 /* Fix Vitepress default styles overriding some specific gram preview stuff if needed */
-.output-preview.vp-doc ul, .output-preview.vp-doc ol {
+.output-preview.vp-doc :deep(ul), 
+.output-preview.vp-doc :deep(ol) {
   margin-top: 8px;
 }
 </style>

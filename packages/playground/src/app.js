@@ -291,7 +291,26 @@ function update() {
             
             // Show Preview (reused for tree as it's HTML content)
             previewOutput.style.display = 'block';
+            
+            // Preserve details open state
+            const openDetails = new Set();
+            if (outputMode === 'preview') {
+                previewOutput.querySelectorAll('details[open]').forEach(details => {
+                    const summary = details.querySelector('summary');
+                    if (summary) openDetails.add(summary.textContent.trim());
+                });
+            }
+
             previewOutput.innerHTML = content;
+            
+            if (outputMode === 'preview' && openDetails.size > 0) {
+                previewOutput.querySelectorAll('details').forEach(details => {
+                    const summary = details.querySelector('summary');
+                    if (summary && openDetails.has(summary.textContent.trim())) {
+                        details.open = true;
+                    }
+                });
+            }
             
             if (outputMode === 'json-tree') {
                 // Add listeners for Expand/Collapse All

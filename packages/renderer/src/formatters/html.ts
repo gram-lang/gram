@@ -34,47 +34,38 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     const metaValueClass = options.classes?.metaValue || 'meta-value';
     const metaEstClass = options.classes?.metaEst || 'est';
 
-    html += `<div class="${recipeMetaClass}">\n`;
+    const timingsGridClass = options.classes?.recipeTimingsGrid || 'recipe-timings-grid';
+    const timingCardClass = options.classes?.timingCard || 'timing-card';
+
+    html += `<div class="${timingsGridClass}">\n`;
     if (data.metrics) {
         // Total Time
         const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
-        html += ` <div class="${metaItemClass}">\n`;
-        html += `   <div class="${metaIconClass}">${clockIcon}</div>\n`;
-        html += `   <div class="${metaContentClass}">\n`;
-        html += `     <span class="${metaLabelClass}">Total Time</span>\n`;
-        html += `     <span class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</span>\n`;
-        html += `   </div>\n`;
+        html += ` <div class="${timingCardClass}">\n`;
+        html += `   <div class="${metaLabelClass}">${clockIcon} Total Time</div>\n`;
+        html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>\n`;
         html += ` </div>\n`;
 
         // Cook Time
         if (data.metrics.cookTime) {
-            html += ` <div class="${metaItemClass}">\n`;
-            html += `   <div class="${metaIconClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'}</div>\n`;
-            html += `   <div class="${metaContentClass}">\n`;
-            html += `     <span class="${metaLabelClass}">Cook Time</span>\n`;
-            html += `     <span class="${metaValueClass}">${formatDuration(data.metrics.cookTime)}</span>\n`;
-            html += `   </div>\n`;
+            html += ` <div class="${timingCardClass}">\n`;
+            html += `   <div class="${metaLabelClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'} Cook Time</div>\n`;
+            html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.cookTime)}</div>\n`;
             html += ` </div>\n`;
         }
 
         // Active Time
         const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
-        html += ` <div class="${metaItemClass}">\n`;
-        html += `   <div class="${metaIconClass}">${fireIcon}</div>\n`;
-        html += `   <div class="${metaContentClass}">\n`;
-        html += `     <span class="${metaLabelClass}">Active Time</span>\n`;
-        html += `     <span class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</span>\n`;
-        html += `   </div>\n`;
+        html += ` <div class="${timingCardClass}">\n`;
+        html += `   <div class="${metaLabelClass}">${fireIcon} Active Time</div>\n`;
+        html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</div>\n`;
         html += ` </div>\n`;
 
         // Prep Time
         const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
-        html += ` <div class="${metaItemClass}" title="Based on ingredient count and complexity">\n`;
-        html += `   <div class="${metaIconClass}">${knifeIcon}</div>\n`;
-        html += `   <div class="${metaContentClass}">\n`;
-        html += `     <span class="${metaLabelClass}">Prep Time</span>\n`;
-        html += `     <span class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">(est.)</span></span>\n`;
-        html += `   </div>\n`;
+        html += ` <div class="${timingCardClass}">\n`;
+        html += `   <div class="${metaLabelClass}">${knifeIcon} Prep Time</div>\n`;
+        html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">(est.)</span></div>\n`;
         html += ` </div>\n`;
     }
     html += `</div>\n`;
@@ -90,16 +81,13 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     if (data.metrics && data.metrics.totalMass) {
         const mass = Math.round(data.metrics.totalMass);
         let msg = `${mass}g`;
-        let title = "Total Recipe Input Mass";
         if (data.metrics.massStatus === 'estimated') {
-            msg = `~${mass}g`;
-            title += " (Estimated)";
+            msg = `~${mass}g (Estimated)`;
         }
         if (data.metrics.massStatus === 'incomplete') {
-            msg = `${mass}g?`;
-            title += " (Incomplete)";
+            msg = `${mass}g (Incomplete)`;
         }
-        html += `  <div class="${metaSecondaryItemClass}" title="${title}">\n`;
+        html += `  <div class="${metaSecondaryItemClass}">\n`;
         html += `    <span class="label">Total Mass</span>\n`;
         html += `    <span class="value">${msg}</span>\n`;
         html += `  </div>\n`;
@@ -122,8 +110,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     // Shopping List
     if (data.shopping_list && data.shopping_list.length > 0) {
         const shoppingListClass = options.classes?.shoppingList || 'shopping-list';
-        html += `<div class="${shoppingListClass}">\n`;
-        html += `  <h2>Shopping List</h2>\n`;
+        html += `<details class="${shoppingListClass}">\n`;
+        html += `  <summary><h2>Shopping List</h2></summary>\n`;
         html += `  <ul>\n`;
         data.shopping_list.forEach((item: any) => {
             if (item.type === 'alternative' || item.type === 'group') {
@@ -151,20 +139,20 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
                     // Show Gross Mass if different from Net
                     const gross = Math.round(item.purchasingMass * 10) / 10;
-                    extraHtml = ` <span class="gross-mass" title="Purchasing Weight (including waste/peel)">(${gross}g gross)</span>`;
+                    extraHtml = ` <span class="gross-mass" data-tooltip="Purchasing Weight (including waste/peel)">${gross}g gross</span>`;
                 }
                 html += `    <li>${formatElement(item, 'html', { ...context, formatMode: 'shopping-list' })}${extraHtml}</li>\n`;
             }
         });
         html += `  </ul>\n`;
-        html += `</div>\n\n`;
+        html += `</details>\n\n`;
     }
 
     // Cookware
     if (data.cookware && data.cookware.length > 0) {
         const cookwareListClass = options.classes?.cookwareList || 'cookware';
-        html += `<div class="${cookwareListClass}">\n`;
-        html += `  <h2>Cookware</h2>\n`;
+        html += `<details class="${cookwareListClass}">\n`;
+        html += `  <summary><h2>Cookware</h2></summary>\n`;
         html += `  <ul>\n`;
         data.cookware.forEach((cw: any) => {
             if (cw.type === 'alternative' || cw.type === 'group') {
@@ -181,7 +169,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             }
         });
         html += `  </ul>\n`;
-        html += `</div>\n\n`;
+        html += `</details>\n\n`;
     }
 
     // Instructions
@@ -194,30 +182,29 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 let titleHtml = escapeHtml(sec.title);
                 if (sec.retro_planning) {
                     const rIcon = options.icons?.clockCounterClockwise ?? '<i class="ph ph-clock-counter-clockwise"></i>';
-                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;">${rIcon} ${escapeHtml(sec.retro_planning)}</small>`;
+                    titleHtml += ` <small class="section-meta-badge section-meta-retroplanning">${rIcon} ${escapeHtml(sec.retro_planning)}</small>`;
                 }
 
                 // Section Mass
                 if (sec.metrics && sec.metrics.totalMass > 0) {
                     const mass = Math.round(sec.metrics.totalMass);
                     let msg = `${mass}g`;
-                    let title = "Section Input Mass";
+                    let title = "Section standardized mass";
                     if (sec.metrics.massStatus === 'estimated') {
                         msg = `~${mass}g`;
                         title += " (Estimated)";
                     }
                     const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
-                    titleHtml += ` <small style="font-size:0.6em;opacity:0.8;border:1px solid currentColor;border-radius:4px;padding:2px 6px;vertical-align:middle;" title="${title}">${sIcon} ${msg}</small>`;
+                    titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${title}">${msg}</small>`;
                 }
 
                 if (sec.intermediate_preparation) {
                     const arrowIcon = options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
-                    const decClass = options.classes?.declaration || 'declaration';
-                    titleHtml += ` <span class="${decClass}" title="Intermediate result for this section">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
+                    titleHtml += ` <span class="section-declaration-badge" data-tooltip="Intermediate result for this section">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
                 }
 
-                const sHeaderClass = options.classes?.sectionHeader ? ` class="${options.classes.sectionHeader}"` : '';
-                html += `    <h3${sHeaderClass}>${titleHtml}</h3>\n`;
+                const sHeaderClass = options.classes?.sectionHeader ? ` ${options.classes.sectionHeader}` : '';
+                html += `    <h3 class="section-header${sHeaderClass}">${titleHtml}</h3>\n`;
             }
 
             // Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
@@ -225,7 +212,6 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             if (sectionItems.length > 0) {
                 const sIngredientsClass = options.classes?.sectionIngredients || 'section-ingredients';
                 html += `    <div class="${sIngredientsClass}">\n`;
-                html += `      <h4>Ingredients</h4>\n`;
                 html += `      <ul>\n`;
                 sectionItems.forEach((item: any) => {
                     html += `        <li>${formatElement(item, 'html', { ...context, formatMode: 'mise-en-place' })}</li>\n`;
@@ -239,8 +225,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             let stepCounter = 0;
             sec.steps.forEach((step: any) => {
                 if (step.type === 'comment') {
-                    // Render differently, maybe as a note?
-                    const stepCommentClass = options.classes?.stepComment ? ` class="${options.classes.stepComment}"` : ' style="list-style: none; margin-left: -1em; color: gray; font-style: italic;"';
+                    const stepCommentClass = options.classes?.stepComment ? ` class="${options.classes.stepComment}"` : ' class="step-comment"';
                     html += `      <li${stepCommentClass}>\n`;
                     html += `        ${escapeHtml(step.value)}\n`;
                     html += `      </li>\n`;
@@ -252,7 +237,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `      <li value="${stepCounter}"${stepItemClass}>\n`;
                 if (step.action) {
                     const stepActionClass = options.classes?.stepAction ? ` class="${options.classes.stepAction}"` : ' class="action"';
-                    html += `        <span${stepActionClass}>[${escapeHtml(step.action)}]</span> `;
+                    html += `        <span${stepActionClass}>${escapeHtml(step.action)}</span> `;
                 }
 
                 let stepContent = '';
@@ -319,19 +304,21 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             const sodium = displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : '-';
 
             let warningsHtml = '';
-            if (nut.warnings && nut.warnings.length > 0) {
-                warningsHtml = `  <div class="nut-warnings" style="color: var(--vscode-errorForeground, #f87171); font-size: 0.85em; margin-bottom: 10px; padding: 10px; background: color-mix(in srgb, var(--vscode-errorForeground, red) 10%, transparent); border-radius: 6px;">\n`;
-                warningsHtml += `    <strong>Incomplete data:</strong> The values ​​below are estimates and do not include: ${escapeHtml(nut.warnings.join(', '))}\n`;
+            if (data.nutrition && data.nutrition.warnings && data.nutrition.warnings.length > 0) {
+                warningsHtml = `  <div class="nut-warnings">\n`;
+                data.nutrition.warnings.forEach((w: string) => {
+                    warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w)}</p>\n`;
+                });
                 warningsHtml += `  </div>\n`;
             }
 
             html += `<div class="nutrition-panel">\n`;
             html += warningsHtml;
-            html += `  <div class="nut-header">Nutrition <span class="est-badge" title="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+            html += `  <div class="nut-header">Nutrition <span class="est-badge" data-tooltip="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
             html += `  <div class="nut-grid">\n`;
-            html += `    <div class="nut-item"><strong>${cal}</strong> <small>kcal</small></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Calories</span> <strong>${cal} kcal</strong></div>\n`;
+            html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small class="nut-item-sugar">(sugar: ${sugar}g)</small></div>\n`;
             html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-            html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small style="font-size:0.6em; opacity:0.8; margin-top:2px;">(sugar: ${sugar}g)</small></div>\n`;
             html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
             html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
             html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;

@@ -51,6 +51,10 @@ export interface Usage {
     options?: any[]; // For alternatives
     name?: string; // Optional name cache
     _usageId?: string;
+    normalizedMass?: number;
+    conversionMethod?: string;
+    isEstimate?: boolean;
+    purchasingMass?: number;
 }
 
 export interface ProcessedComment {

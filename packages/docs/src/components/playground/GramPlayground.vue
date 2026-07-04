@@ -381,18 +381,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 400px;
+  position: relative;
+  min-height: 0;
 }
 
 .editor-wrapper {
   flex: 1;
   position: relative;
+  min-height: 0;
 }
 
 .output-wrapper {
   flex: 1;
   height: 100%;
   position: relative;
+  min-height: 0;
 }
 
 .playground-splitter {
@@ -406,7 +409,7 @@ onUnmounted(() => {
   }
   
   .playground-col {
-    min-height: auto;
+    /* No min-height required */
   }
   
   .left-col {

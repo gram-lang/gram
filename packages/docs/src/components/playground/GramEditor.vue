@@ -92,7 +92,6 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 400px;
   background-color: var(--vp-c-bg-soft);
   overflow: hidden;
 }
@@ -114,6 +113,7 @@ defineExpose({
 .editor-container {
   flex: 1;
   position: relative;
+  min-height: 0;
 }
 
 .loading-editor {

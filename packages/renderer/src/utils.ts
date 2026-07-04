@@ -7,7 +7,10 @@ export function aggToRendererItem(agg: AggregatedIngredient): Record<string, unk
     const base: Record<string, unknown> = { id: agg.id, name: agg.name }
     if (agg.type) base.type = agg.type
     if (agg.preparation) base.preparation = agg.preparation
-    
+    if (agg.normalizedMass !== undefined) base.normalizedMass = agg.normalizedMass
+    if (agg.conversionMethod !== undefined) base.conversionMethod = agg.conversionMethod
+    if (agg.isEstimate !== undefined) base.isEstimate = agg.isEstimate
+
     if (!agg.quantities || agg.quantities.length === 0) {
         return base;
     }

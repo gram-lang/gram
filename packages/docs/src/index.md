@@ -16,7 +16,7 @@ hero:
       link: /explanation/philosophy
     - theme: alt
       text: Try the Playground
-      link: /playground/
+      link: /play/
     - theme: alt
       text: Codeberg
       link: https://codeberg.org/abiwab/gram

@@ -46,8 +46,8 @@ onUnmounted(() => {
       <span class="dropdown-label">
         {{ options.find(o => o.value === modelValue)?.label || placeholder }}
       </span>
-      <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-        <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
+      <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 15.0006L7.75732 10.758L9.17154 9.34375L12 12.1722L14.8284 9.34375L16.2426 10.758L12 15.0006Z"></path>
       </svg>
     </div>
     
@@ -68,8 +68,8 @@ onUnmounted(() => {
 <style scoped>
 .custom-dropdown {
   position: relative;
-  font-size: 13px;
-  min-width: 150px;
+  font-size: 14px;
+  min-width: 140px;
 }
 
 .dropdown-header {
@@ -78,22 +78,29 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid var(--vp-c-border);
-  background-color: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
+  background-color: transparent;
+  color: var(--vp-c-text-2);
+  font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: border-color 0.2s;
+  transition: color 0.25s, background-color 0.25s;
+  border: 1px solid var(--vp-c-border);
+  width: 190px;
 }
 
 .dropdown-header:hover, .dropdown-header.is-open {
-  border-color: var(--vp-c-brand);
+  color: var(--vp-c-text-1);
+  background-color: var(--vp-c-bg-soft);
 }
 
 .dropdown-icon {
   margin-left: 8px;
   color: var(--vp-c-text-3);
-  transition: transform 0.2s;
+  transition: transform 0.25s, color 0.25s;
+}
+
+.dropdown-header:hover .dropdown-icon, .dropdown-header.is-open .dropdown-icon {
+  color: var(--vp-c-text-2);
 }
 
 .dropdown-header.is-open .dropdown-icon {
@@ -105,29 +112,31 @@ onUnmounted(() => {
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
-  background-color: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 6px;
+  background-color: var(--vp-c-bg-elv);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
   box-shadow: var(--vp-shadow-3);
   z-index: 50;
+  padding: 6px 0;
   overflow: hidden;
 }
 
 .dropdown-item {
-  padding: 8px 12px;
+  padding: 6px 16px;
   cursor: pointer;
   color: var(--vp-c-text-2);
-  transition: background-color 0.2s, color 0.2s;
+  font-weight: 500;
+  transition: color 0.25s, background-color 0.25s;
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
+  color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-default-soft);
 }
 
 .dropdown-item.active {
-  background-color: var(--vp-c-brand-soft);
   color: var(--vp-c-brand-1);
-  font-weight: 500;
+  background-color: var(--vp-c-default-soft);
 }
 </style>

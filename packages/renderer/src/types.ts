@@ -12,11 +12,14 @@ export interface RendererIcons {
   knife?: string;
   scales?: string;
   clockCounterClockwise?: string;
+  arrowElbowDownRight?: string;
 }
 
 export interface RendererClasses {
   recipeTitle?: string;
   recipeMeta?: string;
+  recipeTimingsGrid?: string;
+  timingCard?: string;
   metaItem?: string;
   metaIcon?: string;
   metaContent?: string;

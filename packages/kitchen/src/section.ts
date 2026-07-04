@@ -8,6 +8,9 @@ export interface AggregatedIngredient {
     // null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
     // Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
     quantities: Array<{ qty: NonNullable<Usage['qty']>; unit?: string | null }> | null
+    normalizedMass?: number
+    conversionMethod?: string
+    isEstimate?: boolean
 }
 
 /**
@@ -36,6 +39,10 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
             const existing = measuredByKey.get(key)
             if (existing) {
                 existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null })
+                if (ing.normalizedMass) {
+                    existing.normalizedMass = (existing.normalizedMass || 0) + ing.normalizedMass
+                    if (ing.isEstimate) existing.isEstimate = true
+                }
             } else {
                 const entry: AggregatedIngredient = {
                     id: ing.id,
@@ -43,6 +50,9 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
                     type: ing.type,
                     preparation: ing.preparation,
                     quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
+                    normalizedMass: ing.normalizedMass,
+                    conversionMethod: ing.conversionMethod,
+                    isEstimate: ing.isEstimate,
                 }
                 measuredByKey.set(key, entry)
                 order.push(entry)
