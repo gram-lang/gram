@@ -25,22 +25,16 @@ function toggle() {
   <div v-if="warnings.length > 0" class="gram-warnings" :class="{ collapsed: isCollapsed }">
     <div class="warnings-header" @click="toggle">
       <div class="warnings-title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-          <path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"></path>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z"></path></svg>
         <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
       </div>
-      <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-        <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-      </svg>
+     <svg class="toggle-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z"></path></svg>
     </div>
     
     <ul class="warnings-list" v-show="!isCollapsed">
       <li v-for="(w, i) in warnings" :key="i" class="warning-item">
         <div class="warning-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"></path>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentcolor" viewBox="0 0 256 256"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"></path></svg>
         </div>
         <div class="warning-content">
           <span class="warning-code">[{{ w.code }}]</span>
@@ -48,9 +42,7 @@ function toggle() {
           <span v-if="w.item" class="warning-item-name">Item: {{ w.item }}</span>
         </div>
         <button v-if="w.loc" class="warning-jump" @click="emit('jump', w.loc.start, w.loc.end)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M224,120H192V88a8,8,0,0,0-16,0v32H144a8,8,0,0,0,0,16h32v32a8,8,0,0,0,16,0V136h32a8,8,0,0,0,0-16ZM200,40H56A16,16,0,0,0,40,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,160H56V56H200V200Z"></path>
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M240,120H215.63A88.13,88.13,0,0,0,136,40.37V16a8,8,0,0,0-16,0V40.37A88.13,88.13,0,0,0,40.37,120H16a8,8,0,0,0,0,16H40.37A88.13,88.13,0,0,0,120,215.63V240a8,8,0,0,0,16,0V215.63A88.13,88.13,0,0,0,215.63,136H240a8,8,0,0,0,0-16ZM128,200a72,72,0,1,1,72-72A72.08,72.08,0,0,1,128,200Zm0-112a40,40,0,1,0,40,40A40,40,0,0,0,128,88Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,152Z"></path></svg>
           Show
         </button>
       </li>
@@ -60,11 +52,11 @@ function toggle() {
 
 <style scoped>
 .gram-warnings {
-  margin-top: 16px;
   background-color: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 8px;
   overflow: hidden;
+  margin: 10px;
 }
 
 .warnings-header {
@@ -106,8 +98,9 @@ function toggle() {
 
 .warnings-list {
   list-style: none;
-  padding: 0;
+  padding: 10px;
   margin: 0;
+background-color: rgba(220, 38, 38, 0.1);
 }
 
 .warning-item {
@@ -115,13 +108,12 @@ function toggle() {
   align-items: flex-start;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--vp-c-border);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.1);
   transition: background-color 0.2s;
+  background-color: var(--vp-c-bg);
+  border-radius: 7px;
 }
 
-.warning-item:hover {
-  background-color: rgba(255, 255, 255, 0.02);
-}
 
 .warning-item:last-child {
   border-bottom: none;
@@ -144,8 +136,8 @@ function toggle() {
   color: var(--vp-c-text-2);
   font-size: 12px;
   font-family: var(--vp-font-family-mono);
-  background-color: var(--vp-c-bg-mute);
-  padding: 2px 6px;
+  background-color: var(--vp-c-bg-soft);
+  padding: 0px 6px;
   border-radius: 4px;
   align-self: flex-start;
 }
