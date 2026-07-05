@@ -1,26 +1,20 @@
-# Gram - General Recipe Abstract Markup
-**A smart, data-driven recipe markup language for developers.**
+<div align="left">
+  <img src="gram-logo.png" width="130" align="left" hspace="30" alt="Gram Logo"/>
+  <h1>Gram</h1>
+  <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/Status-Beta-blue?style=flat-square" alt="Status" />
+    <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=flat-square" alt="Open Source" />
+    <img src="https://img.shields.io/badge/License-GPL_v3-blue.svg?style=flat-square" alt="License" />
+  </p>
+</div>
+<br clear="left"/>
 
-![Status](https://img.shields.io/badge/Status-Beta-blue?style=flat-square)
-![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=flat-square)
-![License](https://img.shields.io/badge/License-GPL_v3-blue.svg?style=flat-square)
+Gram is designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. 
 
-![Gram Banner](gram-banner.jpg "Gram")
+Because it treats your recipes as code, Gram unlocks features that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
 
-Gram is a markup language designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. It treats your recipes as **code**, compiling ingredients, instructions, and cookware into an Abstract Syntax Tree (AST).
-
-Because Gram actually understands the data inside your recipe, it unlocks things that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
-
----
-
-### Explore Gram.
-
-The best way to understand a new language is to play with it! I've put together a couple of resources so you can dive right in:
-
-- [**The Interactive Playground**](https://abiwab.codeberg.page/gram/play) - Write Gram code directly in your browser. Experience real-time parsing, scale recipes on the fly, and test out baker's math without installing a thing locally.
-- [**The Documentation**](https://abiwab.codeberg.page/gram/) - Ready to learn more? Dive into the full docs to learn the syntax, discover the philosophy behind the project, and explore the developer tools. Available in English and French!
-
----
+[Playground](https://abiwab.codeberg.page/gram/play) • [Documentation](https://abiwab.codeberg.page/gram/)
 
 > **Project Status: Beta (v1.0.0-beta)**
 > Gram has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
@@ -40,7 +34,7 @@ While other markups focus purely on natural language, Gram cares deeply about **
 2. **Explicit Actions**: Highlight the main method used in a step (e.g., `[Mix]`, `[Bake]`).
 3. **Composite Ingredients (`<@`)**: Cleanly handle tricky relationships like "Zest of 1 lemon" and "Juice of 2 lemons" while ensuring your shopping list aggregates to exactly "Buy 2 Lemons".
 4. **Intermediate Preparations (`->&dough`)**: Chain recipe parts together just like variables in code, and reuse them later without accidentally doubling your shopping list totals.
-5. **Relative Quantities**: Define `@water{60% @flour}` to handle dynamic baker's math effortlessly.
+5. **Relative Quantities**: Define `@water{60% @&flour}` to handle dynamic baker's math effortlessly.
 6. **Smart Aggregation & Mise en Place**: Automatically converts volumes to masses (e.g., `1 cup` -> `125g`) to calculate exact purchasing amounts and yield (Gross vs. Net Mass).
 7. **Nutritional Estimation**: Calculates calories and macros automatically using your ingredient database.
 8. **Advanced Timers & Scheduling**: Distinguish between active work (`~{10min}`) and background tasks (`~&{2h}`), and use retro-planning (`~{-2d}`) on sections to organize multi-day recipes perfectly.
