@@ -3,7 +3,7 @@ import { runPipeline } from '../core/pipeline'
 import { ExitCode } from '../errors'
 import { similarity } from '../core/fuzzy'
 import type { IngredientData } from '@gram/analyzer'
-import { convertUnit } from '@gram/analyzer'
+import { convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram/analyzer'
 import { resolveScaleFactor as resolveScaleFactorEngine, ScaleError, IngredientNotFoundError } from '@gram/kitchen'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -67,6 +67,13 @@ export function parseScaleArg(raw: string): { type: 'factor'; value: number } | 
  * ScaleEngine — the single place that validates a target ingredient (exists,
  * not fixed/relative/composite/ambiguous) and reconciles units. For ref mode,
  * runs a single unscaled pipeline to read the reference ingredient's quantity.
+ *
+ * Units within the same physical family (mass<->mass, volume<->volume) always
+ * convert. Crossing families (e.g. "water=150g" against a recipe in ml) also
+ * works whenever a density is available — from the recipe's own `densities:`
+ * frontmatter override, or the ingredient database — resolved once here and
+ * handed to the engine as a plain number, so @gram/kitchen never needs to
+ * know about ingredient databases or density at all.
  */
 export async function resolveScaleFactor(
   filePath: string,
@@ -82,11 +89,15 @@ export async function resolveScaleFactor(
   const ref = parseRef(parsed.raw)
   const { compiled } = await runPipeline(filePath, { db, skipAnalyzer: !db })
 
+  const overrides = parseDensityOverrides(compiled.meta)
+  const density = resolveIngredientDensity(ref.id, db ?? {}, overrides)?.density
+  const boundConvertUnit = (value: number, from: string, to: string) => convertUnit(value, from, to, density)
+
   try {
     return resolveScaleFactorEngine(
       compiled,
       { type: 'target', id: ref.id, qty: ref.value, unit: ref.unit },
-      convertUnit,
+      boundConvertUnit,
     ).factor
   } catch (err) {
     if (err instanceof IngredientNotFoundError) {

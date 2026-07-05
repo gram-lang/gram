@@ -70,9 +70,22 @@ Add @lemon juice{100ml}<@lemon{2}.
         expect(() => resolveScaleFactor(recipe, { type: 'target', id: 'salt', qty: 0.02, unit: 'kg' })).toThrow(UnitMismatchError);
     });
 
-    it('throws UnitMismatchError across incompatible physical families even with a converter', () => {
-        const convertUnit = () => null; // mass <-> volume needs density, a pure unit table can't do it
+    it('throws UnitMismatchError across incompatible physical families when the converter has no density to bridge with', () => {
+        const convertUnit = () => null; // e.g. no density available for this ingredient
         expect(() => resolveScaleFactor(recipe, { type: 'target', id: 'salt', qty: 1, unit: 'ml' }, convertUnit)).toThrow(UnitMismatchError);
+    });
+
+    it('bridges mass <-> volume when the injected converter resolves a density — the engine itself has no notion of density', () => {
+        // Simulates what a density-aware converter (e.g. @gram/analyzer's convertUnit
+        // bound to an ingredient's density) would return: 12g of salt at a fictional
+        // density of 1.2 g/mL is 10mL, matching the recipe's 10g.
+        const convertUnit = (value: number, from: string, to: string) => {
+            if (from === 'ml' && to === 'g') return value * 1.2;
+            return null;
+        };
+        const res = resolveScaleFactor(recipe, { type: 'target', id: 'salt', qty: 10, unit: 'ml' }, convertUnit);
+        expect(res.factor).toBe(1.2);
+        expect(res.unitConverted).toBe(true);
     });
 
     it('throws IngredientNotFoundError for an unknown id, listing available ids', () => {

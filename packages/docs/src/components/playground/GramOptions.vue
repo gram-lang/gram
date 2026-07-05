@@ -1,69 +1,207 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { UNIT_CONVERSIONS } from '@gram/analyzer'
+import { formatDecimalToFraction } from '@gram/renderer'
+
+const knownUnits = [
+  ...Object.keys(UNIT_CONVERSIONS.mass.map),
+  ...Object.keys(UNIT_CONVERSIONS.volume.map)
+]
 
 const props = defineProps<{
   options: {
     enableMassStandardization: boolean
     enableYieldCalculation: boolean
     enableNutritionalEstimation: boolean
-  }
+    bakersMath: boolean
+    bakersMathOnly: boolean
+    bakersReference: string | undefined
+  },
+  shoppingList?: any[],
+  scaleTargetId: string | null,
+  scaleTargetQty: number | null,
+  scaleTargetUnit: string
 }>()
 
 const emit = defineEmits<{
-  'update:options': [options: typeof props.options]
+  'update:options': [options: typeof props.options],
+  'update:scaleTargetId': [val: string | null],
+  'update:scaleTargetQty': [val: number | null],
+  'update:scaleTargetUnit': [val: string],
+  'scale-apply': []
 }>()
 
 const massEnabled = computed({
   get: () => props.options.enableMassStandardization,
-  set: (val) => {
-    emit('update:options', { ...props.options, enableMassStandardization: val })
-  }
+  set: (val) => emit('update:options', { ...props.options, enableMassStandardization: val })
 })
 
 const yieldEnabled = computed({
   get: () => props.options.enableYieldCalculation,
-  set: (val) => {
-    emit('update:options', { ...props.options, enableYieldCalculation: val })
-  }
+  set: (val) => emit('update:options', { ...props.options, enableYieldCalculation: val })
 })
 
 const nutritionEnabled = computed({
   get: () => props.options.enableNutritionalEstimation,
+  set: (val) => emit('update:options', { ...props.options, enableNutritionalEstimation: val })
+})
+
+const bakersMath = computed({
+  get: () => props.options.bakersMath,
+  set: (val) => emit('update:options', { ...props.options, bakersMath: val })
+})
+
+const bakersMathOnly = computed({
+  get: () => props.options.bakersMathOnly,
+  set: (val) => emit('update:options', { ...props.options, bakersMathOnly: val })
+})
+
+const bakersReference = computed({
+  get: () => props.options.bakersReference || '',
+  set: (val) => emit('update:options', { ...props.options, bakersReference: val || undefined })
+})
+
+const targetId = computed({
+  get: () => props.scaleTargetId || '',
   set: (val) => {
-    emit('update:options', { ...props.options, enableNutritionalEstimation: val })
+    emit('update:scaleTargetId', val || null)
+    if (val && props.shoppingList) {
+      const item = props.shoppingList.find(i => i.id === val)
+      if (item) {
+        emit('update:scaleTargetUnit', item.unit || '')
+        if (item.qty && typeof item.qty === 'number') {
+          emit('update:scaleTargetQty', item.qty)
+        } else {
+          emit('update:scaleTargetQty', null)
+        }
+      }
+    }
   }
 })
+
+const targetQty = computed({
+  get: () => {
+    if (props.scaleTargetQty === null) return ''
+    return formatDecimalToFraction(props.scaleTargetQty)
+  },
+  set: (val: string) => {
+    if (!val) {
+      emit('update:scaleTargetQty', null)
+      return
+    }
+    let parsed: number | null = null
+    if (val.includes('/')) {
+      const parts = val.split('/')
+      if (parts.length === 2) {
+        const n = parseFloat(parts[0])
+        const d = parseFloat(parts[1])
+        if (!isNaN(n) && !isNaN(d) && d !== 0) parsed = n / d
+      }
+    } else {
+      parsed = parseFloat(val)
+    }
+    if (parsed !== null && !isNaN(parsed)) {
+      emit('update:scaleTargetQty', parsed)
+    } else {
+      emit('update:scaleTargetQty', null)
+    }
+  }
+})
+
+const targetUnit = computed({
+  get: () => props.scaleTargetUnit,
+  set: (val) => emit('update:scaleTargetUnit', val)
+})
+
+function submitScale() {
+  emit('scale-apply')
+}
 </script>
 
 <template>
   <div class="gram-options">
-    <div class="options-header">
-      <span class="options-title">Analysis Options</span>
+    <div class="options-section">
+      <div class="options-header">
+        <span class="options-title">Scale by Ingredient</span>
+      </div>
+      <div class="options-body scale-body">
+        <select class="scale-select" v-model="targetId">
+          <option value="">Select ingredient...</option>
+          <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
+            {{ item.name }}
+          </option>
+        </select>
+        <div class="scale-inputs" v-if="targetId">
+          <input type="text" class="scale-input qty" v-model.lazy="targetQty" placeholder="Qty" @keydown.enter="submitScale" />
+          <input type="text" list="gram-units" class="scale-input unit" v-model="targetUnit" placeholder="Unit" @keydown.enter="submitScale" />
+          <button class="scale-apply-btn" @click="submitScale">Apply</button>
+        </div>
+      </div>
     </div>
-    <div class="options-body">
-      <label class="option-item">
-        <input type="checkbox" v-model="massEnabled" />
-        <div class="option-text">
-          <span class="option-name">Mass Standardization</span>
-          <span class="option-desc">Converts all ingredient quantities into a standardized mass (grams).</span>
-        </div>
-      </label>
-      
-      <label class="option-item child-option" :class="{ disabled: !massEnabled }">
-        <input type="checkbox" v-model="yieldEnabled" :disabled="!massEnabled" />
-        <div class="option-text">
-          <span class="option-name">Yield Management</span>
-          <span class="option-desc">Calculates the gross amount needed considering ingredient yield factors.</span>
-        </div>
-      </label>
 
-      <label class="option-item">
-        <input type="checkbox" v-model="nutritionEnabled" />
-        <div class="option-text">
-          <span class="option-name">Nutrition Estimation</span>
-          <span class="option-desc">Estimates nutritional values based on the ingredients database.</span>
+    <datalist id="gram-units">
+      <option v-for="u in knownUnits" :key="u" :value="u"></option>
+    </datalist>
+
+    <div class="options-section">
+      <div class="options-header">
+        <span class="options-title">Baker's Math</span>
+      </div>
+      <div class="options-body">
+        <label class="option-item">
+          <input type="checkbox" v-model="bakersMath" />
+          <div class="option-text">
+            <span class="option-name">Enable Baker's Math</span>
+            <span class="option-desc">Shows ingredients as % of reference.</span>
+          </div>
+        </label>
+        
+        <label class="option-item child-option" :class="{ disabled: !bakersMath }">
+          <input type="checkbox" v-model="bakersMathOnly" :disabled="!bakersMath" />
+          <div class="option-text">
+            <span class="option-name">Hide absolute weights</span>
+          </div>
+        </label>
+
+        <div class="child-option select-wrapper" :class="{ disabled: !bakersMath }" v-if="bakersMath">
+          <span class="select-label">Force Reference:</span>
+          <select class="scale-select" v-model="bakersReference" :disabled="!bakersMath">
+            <option value="">Auto (detect @*)</option>
+            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
+              {{ item.name }}
+            </option>
+          </select>
         </div>
-      </label>
+      </div>
+    </div>
+
+    <div class="options-section">
+      <div class="options-header">
+        <span class="options-title">Physical Analysis</span>
+      </div>
+      <div class="options-body">
+        <label class="option-item">
+          <input type="checkbox" v-model="massEnabled" />
+          <div class="option-text">
+            <span class="option-name">Mass Standardization</span>
+            <span class="option-desc">Converts all ingredient quantities into grams.</span>
+          </div>
+        </label>
+        
+        <label class="option-item child-option" :class="{ disabled: !massEnabled }">
+          <input type="checkbox" v-model="yieldEnabled" :disabled="!massEnabled" />
+          <div class="option-text">
+            <span class="option-name">Yield Management</span>
+          </div>
+        </label>
+
+        <label class="option-item">
+          <input type="checkbox" v-model="nutritionEnabled" />
+          <div class="option-text">
+            <span class="option-name">Nutrition Estimation</span>
+          </div>
+        </label>
+      </div>
     </div>
   </div>
 </template>
@@ -75,7 +213,17 @@ const nutritionEnabled = computed({
   border-radius: 8px;
   padding: 16px;
   font-size: 14px;
-  width: 320px; /* Fixed width for better wrapping of descriptions */
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.options-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .options-header {
@@ -95,7 +243,60 @@ const nutritionEnabled = computed({
 .options-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.scale-body {
+  gap: 8px;
+}
+
+.scale-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--vp-c-border);
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  outline: none;
+}
+.scale-select:focus {
+  border-color: var(--vp-c-brand-1);
+}
+
+.scale-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.scale-input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--vp-c-border);
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  outline: none;
+}
+.scale-input:focus {
+  border-color: var(--vp-c-brand-1);
+}
+.scale-input.qty { flex: 2; min-width: 0; }
+.scale-input.unit { flex: 1; min-width: 0; }
+
+.scale-apply-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.scale-apply-btn:hover {
+  opacity: 0.9;
 }
 
 .option-item {
@@ -155,17 +356,25 @@ const nutritionEnabled = computed({
   background-color: var(--vp-c-divider);
 }
 
+.select-wrapper::after {
+  top: 14px;
+}
+
+.select-label {
+  display: block;
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+  margin-bottom: 4px;
+}
+
 .child-option.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.child-option.disabled:hover .option-name {
-  color: var(--vp-c-text-1); /* remove hover effect when disabled */
+  pointer-events: none;
 }
 
 input[type="checkbox"] {
   cursor: inherit;
-  margin-top: 1px; /* Align checkbox with the top of the text */
+  margin-top: 1px;
 }
 </style>

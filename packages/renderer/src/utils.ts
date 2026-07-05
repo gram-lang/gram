@@ -10,6 +10,7 @@ export function aggToRendererItem(agg: AggregatedIngredient): Record<string, unk
     if (agg.normalizedMass !== undefined) base.normalizedMass = agg.normalizedMass
     if (agg.conversionMethod !== undefined) base.conversionMethod = agg.conversionMethod
     if (agg.isEstimate !== undefined) base.isEstimate = agg.isEstimate
+    if ((agg as any).bakersPercentage !== undefined) base.bakersPercentage = (agg as any).bakersPercentage
 
     if (!agg.quantities || agg.quantities.length === 0) {
         return base;

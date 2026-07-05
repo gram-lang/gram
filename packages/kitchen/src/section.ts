@@ -11,6 +11,7 @@ export interface AggregatedIngredient {
     normalizedMass?: number
     conversionMethod?: string
     isEstimate?: boolean
+    bakersPercentage?: number
 }
 
 /**
@@ -43,6 +44,14 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
                     existing.normalizedMass = (existing.normalizedMass || 0) + ing.normalizedMass
                     if (ing.isEstimate) existing.isEstimate = true
                 }
+                // Baker's percentage is linear in mass for a fixed reference, so it
+                // sums exactly like normalizedMass above — it must not just carry
+                // over the first occurrence's value once more are merged in.
+                if ((ing as any).bakersPercentage !== undefined) {
+                    existing.bakersPercentage = parseFloat(
+                        ((existing.bakersPercentage || 0) + (ing as any).bakersPercentage).toFixed(2)
+                    )
+                }
             } else {
                 const entry: AggregatedIngredient = {
                     id: ing.id,
@@ -53,6 +62,7 @@ export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIng
                     normalizedMass: ing.normalizedMass,
                     conversionMethod: ing.conversionMethod,
                     isEstimate: ing.isEstimate,
+                    bakersPercentage: (ing as any).bakersPercentage,
                 }
                 measuredByKey.set(key, entry)
                 order.push(entry)

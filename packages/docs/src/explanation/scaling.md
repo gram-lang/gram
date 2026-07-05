@@ -35,7 +35,9 @@ function resolveScaleFactor(
 
 - **Factor mode** just validates the number is positive and finite — `compiled` isn't even needed, so callers can validate a raw factor (e.g. from a Playground slider) without running a pipeline.
 - **Target mode** looks the ingredient up in `compiled.shopping_list`, runs it through the rejection rules below, reconciles units, and returns the derived factor.
-- **`convertUnit`** is optional and injected by the caller. `@gram/kitchen` doesn't know about density or the `UNIT_CONVERSIONS` table — that lives in `@gram/analyzer` (it needs it anyway for mass standardization). The CLI wires `@gram/analyzer`'s `convertUnit` into the engine; without a converter, only exact unit matches (after alias normalization, e.g. "gram" → "g") succeed.
+- **`convertUnit`** is optional and injected by the caller. `@gram/kitchen` doesn't know about density, ingredient databases, or the `UNIT_CONVERSIONS` table at all — those live entirely in `@gram/analyzer` (which needs them anyway for mass standardization). The engine only ever calls it as `convertUnit(value, fromUnit, toUnit)`; without one, only exact unit matches (after alias normalization, e.g. "gram" → "g") succeed.
+
+  `@gram/analyzer`'s own `convertUnit(value, fromUnit, toUnit, density?)` takes an optional density (g/mL) as its 4th argument to bridge mass ↔ volume (e.g. `flour=1L` against a recipe in `g`) — without one, it only converts within the same family (mass↔mass, volume↔volume), same as the bare table. The *caller* resolves that density once, via `resolveIngredientDensity(id, database, overrides)` (checking a recipe's frontmatter `densities:` override before the ingredient database), and binds it into a closure before handing it to `resolveScaleFactor` — the engine itself never sees an ingredient id, a database, or a density number, only a 3-argument function. The CLI and Playground both wire this up the same way.
 
 ### Rejection rules (target mode)
 
@@ -47,7 +49,7 @@ function resolveScaleFactor(
 | `FIXED_INGREDIENT` | Marked `@=`, or a `TextQuantity` like "a pinch" (which is fixed by definition) | Never scales, so can't describe a scale factor either |
 | `RELATIVE_TARGET` | Quantity is formula-derived (`70% @&flour`) | Scale the *target* ingredient (`flour`) instead — see [Relative Quantities](/reference/syntax/relative-quantities) |
 | `AMBIGUOUS_MULTI_UNIT` | Same ingredient appears in two incompatible units across the recipe | The shopping list total can't be reduced to one number |
-| `UNIT_MISMATCH` | Units belong to different physical families (mass vs. volume) with no density available | Add a density via `gram db enrich`, or match units |
+| `UNIT_MISMATCH` | Units belong to different physical families (mass vs. volume) and no density could be resolved | Add a density via `gram db enrich`, declare one in the recipe's `densities:` frontmatter, or match units |
 | `INVALID_FACTOR` | Non-positive, non-finite, zero-quantity reference, etc. | — |
 
 ## Immutability
@@ -66,6 +68,8 @@ Baker's Percentage isn't scaling, but it shares the same "don't compute a wrong 
 The reference ingredient (marked with `@*`, or forced via `--bakers-reference`) must be a physical anchor: if its own mass was itself derived from a relative quantity (`conversionMethod === 'relative'`), the analyzer refuses to use it as the 100% base — that would be circular — and instead emits an `INVALID_BAKERS_REFERENCE` warning on the result, leaving Baker's Math disabled for that run rather than showing percentages relative to a moving target.
 
 If Baker's Math was requested (`--bakers-math` or `--bakers-reference`) but no `@*` modifier and no matching id were found at all, a `NO_BAKERS_REFERENCE` warning is emitted the same way — check `result.warnings` rather than a console log.
+
+**Aggregation stays consistent with mass.** When the same ingredient is used more than once within a section (e.g. sugar added at two different steps), `@gram/kitchen`'s `aggregateSectionIngredients` sums both `normalizedMass` and `bakersPercentage` across the repeated occurrences — since percentage is linear in mass for a fixed reference, the two always agree (e.g. two 100g/10% occurrences aggregate to 200g/20%, never a mismatched 200g/10%). Every renderer (`@gram/renderer`'s HTML, Markdown, and print formatters, plus the CLI's `gram cook` TUI) reads this same precomputed, already-aggregated value — none of them recompute it themselves.
 
 ## Consuming this from a new frontend
 

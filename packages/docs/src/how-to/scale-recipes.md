@@ -73,9 +73,17 @@ Since scaling by reference derives the factor from an ingredient's own quantity,
 | An ingredient only used **inside** a sub-recipe (e.g. `lemon-zest`, part of a `<@lemon` composite) | It's not directly declared with its own quantity — only the composite parent has one | Scale the composite parent instead (e.g. `--scale lemon=4`) — its own total is a valid target |
 | One option inside an **alternative-ingredient** group (`@butter{100g}|@margarine{100g}`) | Picking one option in isolation doesn't represent the either/or choice the recipe expresses | Scale a different, unambiguous ingredient elsewhere in the recipe |
 | An ingredient split across **two incompatible units** in the recipe (e.g. `300g` in one step, `2 cups` in another) | The shopping list total can't be reduced to a single number to divide by | Rewrite the recipe to use one unit for that ingredient, or scale by a different one |
-| A unit from a different physical family (e.g. `flour=1L` against a recipe in `g`) | Converting between mass and volume needs an ingredient-specific density | Add a density via `gram db enrich`, or match the recipe's unit family |
+| A unit from a different physical family (e.g. `water=1L` against a recipe in `g`) with no density available anywhere | Converting between mass and volume needs an ingredient-specific density | Add a density via `gram db enrich`, or declare one directly in the recipe's `densities:` frontmatter |
 
-Units within the *same* family convert automatically — `--scale flour=1kg` against a recipe written in `500g` works out of the box (factor `2`), no database required.
+Units within the *same* family convert automatically — `--scale flour=1kg` against a recipe written in `500g` works out of the box (factor `2`), no database required. Crossing families (mass ↔ volume) also works, as long as a density is available: either from your `ingredients.yaml` (`gram db enrich`), or a one-off override in the recipe itself:
+
+```gram
+---
+densities: ["water:1.0"]
+---
+```
+
+With that, `--scale water=150g` against a recipe written in `ml` resolves correctly — no database required for that specific ingredient.
 
 ## Baker's Math
 

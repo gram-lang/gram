@@ -42,26 +42,100 @@ interface ConversionResult {
 }
 
 /**
- * Converts a value between two units of the same physical family (mass-to-mass,
- * or volume-to-volume), using the same UNIT_CONVERSIONS table standardizeMass
- * relies on. Returns null for cross-family conversions (mass <-> volume), since
- * those require an ingredient-specific density and can't be done with a pure
- * unit table — callers should surface that as a distinct error rather than guess.
+ * Converts a value between two unit strings. Same-family conversions
+ * (mass-to-mass, or volume-to-volume) use the UNIT_CONVERSIONS table alone.
+ * Crossing families (mass <-> volume) additionally requires a `density`
+ * (g/mL) — pass the ingredient's resolved density (see
+ * `resolveIngredientDensity`) to bridge it. Without one, cross-family
+ * conversions return null rather than guess — callers should surface that as
+ * a distinct error.
  */
-export function convertUnit(value: number, fromUnit: string, toUnit: string): number | null {
+export function convertUnit(value: number, fromUnit: string, toUnit: string, density?: number): number | null {
     const from = normalizeUnit(fromUnit);
     const to = normalizeUnit(toUnit);
     if (from === to) return value;
 
-    for (const family of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
-        const map: Record<string, number> = family.map;
-        const fromFactor = map[from];
-        const toFactor = map[to];
-        if (fromFactor !== undefined && toFactor !== undefined) {
-            return (value * fromFactor) / toFactor;
-        }
+    const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;
+    const volMap: Record<string, number> = UNIT_CONVERSIONS.volume.map;
+
+    const fromMass = massMap[from];
+    const toMass = massMap[to];
+    if (fromMass !== undefined && toMass !== undefined) {
+        return (value * fromMass) / toMass;
     }
+
+    const fromVol = volMap[from];
+    const toVol = volMap[to];
+    if (fromVol !== undefined && toVol !== undefined) {
+        return (value * fromVol) / toVol;
+    }
+
+    if (density === undefined || density <= 0) return null;
+
+    // Cross-family: bridge through grams using the density (g/mL).
+    if (fromMass !== undefined && toVol !== undefined) {
+        const grams = value * fromMass;
+        return grams / density / toVol;
+    }
+    if (fromVol !== undefined && toMass !== undefined) {
+        const grams = value * fromVol * density;
+        return grams / toMass;
+    }
+
     return null;
+}
+
+export interface DensityResolution {
+    density: number;
+    isEstimate: boolean;
+}
+
+/**
+ * Resolves an ingredient's density (g/mL), checking recipe-level overrides
+ * (frontmatter `densities:`, see `parseDensityOverrides`) before falling back
+ * to the ingredient database. Shared by `standardizeMass` and by
+ * density-aware unit conversion (e.g. reverse scaling across mass <-> volume).
+ */
+export function resolveIngredientDensity(
+    ingredientName: string,
+    database: Record<string, IngredientData>,
+    overrides?: Record<string, number>
+): DensityResolution | null {
+    const slug = slugify(ingredientName);
+    const overrideDensity = overrides ? overrides[slug] : undefined;
+    if (overrideDensity !== undefined) {
+        return { density: overrideDensity, isEstimate: false };
+    }
+
+    const data = getIngredientData(ingredientName, database);
+    if (data && data.physical && data.physical.density) {
+        return { density: data.physical.density, isEstimate: true };
+    }
+
+    return null;
+}
+
+/**
+ * Parses recipe-level density overrides from frontmatter (e.g.
+ * `densities: [water:1.0]`) into a slug -> density (g/mL) map.
+ */
+export function parseDensityOverrides(meta: any): Record<string, number> {
+    const overrides: Record<string, number> = {};
+    if (!meta || !meta.densities) return overrides;
+
+    const list = Array.isArray(meta.densities) ? meta.densities : [meta.densities];
+    list.forEach((entry: any) => {
+        if (typeof entry !== 'string') return;
+        const parts = entry.split(':');
+        if (parts.length === 2) {
+            const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
+            const density = parseFloat((parts[1] || '').trim());
+            if (!isNaN(density)) {
+                overrides[name] = density;
+            }
+        }
+    });
+    return overrides;
 }
 
 export function standardizeMass(
@@ -90,27 +164,16 @@ export function standardizeMass(
     if (volFactor !== undefined) {
         const volumeMl = amount * volFactor;
         if (ingredientName) {
-            // Check overrides first
-            const slug = slugify(ingredientName);
-            const overrideDensity = overrides ? overrides[slug] : undefined;
-            if (overrideDensity !== undefined) {
-                return { 
-                    mass: volumeMl * overrideDensity, 
-                    method: 'explicit',
-                    isEstimate: false 
+            const resolved = resolveIngredientDensity(ingredientName, database, overrides);
+            if (resolved) {
+                return {
+                    mass: volumeMl * resolved.density,
+                    method: resolved.isEstimate ? 'density' : 'explicit',
+                    isEstimate: resolved.isEstimate,
                 };
-            } else {
-                const data = getIngredientData(ingredientName, database);
-                if (data && data.physical && data.physical.density) {
-                    return { 
-                        mass: volumeMl * data.physical.density, 
-                        method: 'density',
-                        isEstimate: true 
-                    };
-                }
             }
         }
-        
+
         // If we reach here, we have a volume unit but NO density available.
         // We refuse to blindly guess (e.g. density=1.0) because it creates false
         // aggregations in shopping lists (e.g. 1 cup of flour != 240g).

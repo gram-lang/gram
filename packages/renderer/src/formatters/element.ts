@@ -154,19 +154,10 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 if (isPartial) {
                     const warningSymbol = context.icons?.warning ?? DEFAULT_ICONS.md.warning;
                     md = `${name} (${formulaStr}${warningSymbol})`;
-                } else {
-                    let qtyParts = [];
-                    if (qty) {
-                        let qStr = qty.text || qty.value;
-                        if (item.unit) qStr += ` ${item.unit}`;
-                        qtyParts.push(qStr);
-                    }
-                    if (item.variable_entries && item.variable_entries.length > 0) {
-                        qtyParts.push(...item.variable_entries);
-                    }
-                    if (qtyParts.length > 0) {
-                        md += ` (${qtyParts.join(' + ')})`;
-                    }
+                } else if (plainQty) {
+                    // plainQty already accounts for bakersPercentage/bakersMathOnly
+                    // and folds in variable_entries — same logic the HTML branch uses.
+                    md += ` (${plainQty})`;
                 }
             }
             const mode = context.formatMode || 'inline';

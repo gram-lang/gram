@@ -147,7 +147,7 @@ gram scale brioche.gram --scale eggs=3       # Scale so that eggs = 3
 - Displays a comparison table: original quantities (dimmed) vs scaled (green).
 - Quantities that cannot be scaled (text values like "1 pinch") are listed separately.
 - Warns on extreme factors (below ×0.1 or above ×20) and notes that cooking times are not adjusted.
-- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units in the same family convert automatically (e.g. `flour=1kg` against a recipe written in `500g`); crossing mass↔volume still needs a density — use `gram db enrich`.
+- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units in the same family convert automatically (e.g. `flour=1kg` against a recipe written in `500g`); crossing mass↔volume (e.g. `water=150g` against a recipe in `ml`) also works whenever a density is available — from `gram db enrich`, or a `densities: ["water:1.0"]` override in the recipe's own frontmatter.
 - Not every ingredient can be a reference target: fixed (`@=`) ingredients, relative quantities (`70% @&flour`), ingredients only used inside a sub-recipe (their composite parent's own total is a valid target instead), ingredients inside an alternative group, and ingredients split across incompatible units are all rejected with a specific error explaining why (and what to scale by instead). See [Deep Dive: Scaling](/explanation/scaling) for the full list.
 - Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 

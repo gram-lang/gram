@@ -12,7 +12,7 @@ import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientDa
 import { ASTNodeType } from '@gram/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
-import { standardizeMass } from './mass_standardization';
+import { standardizeMass, parseDensityOverrides } from './mass_standardization';
 import { getIngredientData } from './ingredient_db';
 import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 import { z } from 'zod';
@@ -40,22 +40,7 @@ export function analyze(
         : JSON.parse(JSON.stringify(result.sections));
     
     // Parse custom ingredient density overrides declared in YAML/Frontmatter metadata
-    const overrides: Record<string, number> = {};
-    if (result.meta && result.meta.densities) {
-        const d = result.meta.densities;
-        const list = Array.isArray(d) ? d : [d];
-        list.forEach((entry: any) => {
-            if (typeof entry !== 'string') return;
-            const parts = entry.split(':');
-            if (parts.length === 2) {
-                const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
-                const density = parseFloat((parts[1] || '').trim());
-                if (!isNaN(density)) {
-                    overrides[name] = density;
-                }
-            }
-        });
-    }
+    const overrides = parseDensityOverrides(result.meta);
 
     // 1. Traverse all recipe sections to calculate physical ingredient masses
     const allRawIngredients: AnalyzedUsage[] = [];
@@ -276,6 +261,12 @@ export function analyze(
         // Apply to AST sections
         if (Array.isArray(sections)) {
             sections.forEach(section => {
+                if (Array.isArray(section.ingredients)) {
+                    section.ingredients.forEach((item: any) => {
+                        const bp = computeBakers(item.normalizedMass);
+                        if (bp !== undefined) item.bakersPercentage = bp;
+                    });
+                }
                 if (Array.isArray(section.steps)) {
                     section.steps.forEach((step: any) => {
                         if (step && step.type === 'step' && Array.isArray(step.content)) {
