@@ -18,6 +18,9 @@ mkdir -p "$TMP_DIR"
 # Copy Docs to root
 cp -r packages/docs/src/.vitepress/dist/. "$TMP_DIR/"
 
+# Bypass Jekyll on Codeberg Pages
+touch "$TMP_DIR/.nojekyll"
+
 
 # 2. Clean the pages branch
 git checkout pages
