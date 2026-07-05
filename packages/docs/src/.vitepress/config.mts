@@ -13,6 +13,24 @@ export default defineConfig({
   cleanUrls: true,
   ignoreDeadLinks: true,
 
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 4000, // Increase warning limit to 4MB for Monaco Editor
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/monaco-editor') || id.includes('node_modules/@guolao/vue-monaco-editor')) {
+              return 'monaco-editor';
+            }
+            if (id.includes('node_modules/shiki') || id.includes('node_modules/@shikijs')) {
+              return 'shiki';
+            }
+          }
+        }
+      }
+    }
+  },
+
   head: [
     ['script', { src: 'https://unpkg.com/@phosphor-icons/web' }]
   ],
