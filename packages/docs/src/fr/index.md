@@ -18,13 +18,16 @@ hero:
       link: /playground/
 
 features:
-  - icon: 🧩
+  - icon:
+      src: /cooking-pot.svg
     title: Recettes Relationnelles
     details: Traitez vos recettes comme du code. Gérez des recettes complexes en définissant des variables, en liant dynamiquement les proportions d'ingrédients, et en générant des plannings de cuisine intelligents.
-  - icon: 📊
+  - icon:
+      src: /brain.svg
     title: Intelligence par la Data
     details: Connectez vos fichiers à une base de données locale pour convertir automatiquement les volumes en masse, suivre le rendement physique, et estimer les macros.
-  - icon: 🛠️
+  - icon:
+      src: /terminal-window.svg
     title: Outils pour Développeurs
     details: Gardez vos recettes dans des fichiers lisibles par Git. Profitez d'un Language Server (LSP) offrant autocomplétion, diagnostics et prévisualisation en temps réel.
 ---

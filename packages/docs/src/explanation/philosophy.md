@@ -1,68 +1,122 @@
 # What is Gram?
 
-Gram is a smart, data-driven recipe markup language designed specifically for developers. 
+Gram is a data-driven recipe markup language built for developers. 
 
-While traditional recipe formats are static blocks of text, Gram treats recipes as **code**. It compiles human-readable cooking instructions into structured, predictable JSON data. 
+Most recipe formats out there are just static blocks of text. Gram takes a different approach: it treats recipes as **code**. It takes your human-readable cooking instructions and compiles them into structured, predictable JSON data. 
 
 ## The Philosophy
 
-Cooking is an algorithm. A recipe is a function that takes raw ingredients as inputs and outputs a finished dish. 
+At its core, cooking is an algorithm. A recipe is just a function that takes raw ingredients and outputs a finished dish. Gram was built with this exact mindset. 
 
-Gram was built on this exact premise. By writing recipes in Gram, you unlock programmatic capabilities that are impossible with standard markdown or plain text:
+I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-::: tip Why use Gram?
-- **Mass Standardization**: Automatically convert volumes (cups, spoons) to precise metric weights (grams) based on ingredient densities.
-- **Yield Calculation**: Calculate purchasing weights based on the physical yield of ingredients (e.g., how many whole lemons to buy to get 50ml of juice).
-- **Nutritional Estimation**: Automatically compute calories and macros based on portion sizes and ingredient databases.
-- **Dynamic Scaling**: Scale portions linearly, or lock specific ingredients (like salt or yeast) to fixed quantities.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a predictable JSON tree, the door is wide open for developers to build advanced visual renderers in the future, like Gantt schedules or tabular flowcharts.
+
+I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic** and **data integrity** into your recipe writing:
+
+- **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
+- **Physical Accuracy**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3.
+- **Strict Data Contracts**: By using explicit tags, Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+
+::: tip The Ecosystem Approach
+Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.
+If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), and outputs a reliable JSON structure you can actually work with.
 :::
 
 ## Designed for Developers
 
-Gram is not just a syntax; it is a complete ecosystem for building culinary applications.
-
-If you are building a recipe app, a meal planner, or a smart kitchen dashboard, parsing raw text is a nightmare. With Gram, you write recipes in a comfortable, markdown-like syntax, and the **Gram Compiler** (`@gram/kitchen`) processes it into a rich Abstract Syntax Tree (AST) and a normalized JSON output.
-
-The ecosystem provides everything you need:
-- **Parser & Analyzer**: For deep semantic analysis of recipes.
-- **Language Server (LSP)**: For editor support (autocompletion, diagnostics).
-- **CLI**: To compile, scale, and extract shopping lists from your terminal.
+The Gram ecosystem gives you everything you need to treat recipes like software:
+- **Parser & Compiler (`@gram/kitchen`)**: Flattens sub-recipes, resolves baker's percentages, and scales dynamic quantities.
+- **Semantic Analyzer (`@gram/analyzer`)**: Handles deep physical analysis, yield calculation, and mass normalization based on your local database.
+- **Language Server (LSP)**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
+- **CLI (`@gram/cli`)**: Compile, scale, diff, and extract shopping lists straight from your terminal.
+- **Renderer (`@gram/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
 
 ## How it looks
 
-Here is a quick glimpse of what Gram looks like:
+Gram remains highly readable, but quietly introduces some powerful data structures. Here is a look at a classic French pastry recipe written in Gram:
 
 ::: code-group
 
-```gram [recipe.gram]
+```gram [canneles.gram]
 ---
-title: Simple Pancakes
-portions: 2
+title: 'Cannelés'
+portions: 10
 ---
-## Batter ->&batter
 
-Mix @flour{100g}, @milk{150ml}, and @eggs{2}.
-Add a pinch of @=salt. // The '=' makes it a fixed quantity (won't scale)
+## Batter ~{-1d} ->&batter
 
-## Cooking
+[Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
 
-Melt @butter{10g} in a #pan(large).
-Pour the &batter and cook for ~{2min} on °stove{medium heat}.
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to °{85°C}. ->&hot milk{}
+
+[Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
+
+[Incorporate] Add the @egg yolks{6}<@eggs{6} and the @rum{100 ml}.
+
+[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~&refrigerator{24 h}.
 ```
 
-```json [output.json]
+```json [Output Glimpse]
 {
-  "title": "Simple Pancakes",
+  "title": "Cannelés",
+  "meta": { "portions": "10" },
+  "metrics": {
+    "totalTime": 1465,
+    "totalMass": 2132,
+    "nutrition": {
+      "total": {
+        "calories": 4927,
+        "protein": 80.2,
+        "carbs": 781.6
+        // ...
+      }
+    }
+  },
   "shopping_list": [
-    { "id": "flour", "qty": 100, "unit": "g" },
-    { "id": "milk", "qty": 150, "unit": "ml" },
-    { "id": "eggs", "qty": 2, "unit": "unit" },
-    { "id": "salt", "qty": null, "unit": "unit" },
-    { "id": "butter", "qty": 10, "unit": "g" }
+    {
+      "id": "flour",
+      "qty": 300,
+      "unit": "g",
+      "normalizedMass": 300,
+      "conversionMethod": "physical"
+    },
+    // ...
+    {
+      "type": "composite",
+      "id": "eggs",
+      "qty": 6,
+      "usage": [ { "id": "egg-yolks", "qty": 6, "normalizedMass": 102 } ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Batter",
+      "retro_planning": "-1d",
+      "intermediate_preparation": "batter",
+      "steps": [
+        {
+          "type": "step",
+          "action": "Mix",
+          "content": [
+            "In a ",
+            { "id": "mixing-bowl", "_usageId": "36", "fixed": false },
+            ", combine the ",
+            { "id": "flour", "qty": 300, "unit": "g", "normalizedMass": 300 },
+            // ... (rest of the parsed AST)
+          ],
+          "timings": { "start": 0, "end": 2, "activeDuration": 2 }
+        }
+        // ... (other steps)
+      ]
+    }
+    // ... (other sections)
   ]
 }
 ```
 
 :::
+
+Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 
 Ready to dive in? Check out the [Getting Started](./getting-started.md) guide.

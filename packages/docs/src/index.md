@@ -22,13 +22,16 @@ hero:
       link: https://codeberg.org/abiwab/gram
 
 features:
-  - icon: 🧩
+  - icon:
+      src: /cooking-pot.svg
     title: Relational Recipes
     details: Treat recipes like code. Easily manage complex recipes by defining variables, linking ingredient proportions dynamically, and generating smart cooking schedules from simple tags.
-  - icon: 📊
+  - icon:
+      src: /brain.svg
     title: Database-Driven Intelligence
     details: Connect your files to a local database to automatically convert volumes to mass, track physical yields, and estimate nutritional macros.
-  - icon: 🛠️
+  - icon:
+      src: /terminal-window.svg
     title: Developer First Tooling
     details: Keep your cookbook in git-friendly files. Enjoy real-time diagnostics, autocomplete, and live previews in your favorite editor via our Language Server.
 ---
