@@ -1,4 +1,4 @@
-import { minifyQuantity, createCleanUsage, quantityToMinutes } from './utils';
+import { minifyQuantity, createCleanUsage, quantityToMinutes, nextUsageId } from './utils';
 import { 
     ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
     AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
@@ -214,7 +214,7 @@ function processReference(
     }
     if (ctx.definedIntermediates.has(cleanName)) ctx.usedIntermediates.add(cleanName);
 
-    const obj: Usage = { type: 'reference', id, name: cleanName, _usageId: String(Math.random()) };
+    const obj: Usage = { type: 'reference', id, name: cleanName, _usageId: nextUsageId() };
 
     if (item.quantity) {
          if (item.quantity.type === ASTNodeType.Quantity) {

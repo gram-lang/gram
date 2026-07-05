@@ -51,15 +51,21 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
 };
 
 /**
- * Standardizes a raw step/section ingredient or cookware item into a clean, unified `Usage` object.
- * 
- * Maps modifier symbols (?, -, &, *) to semantic names, handles fixed quantity states, 
- * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
+ * Generates a unique, deterministic `_usageId` for a Usage object. Shared by
+ * every ingredient/cookware/reference usage across the compiler so ids never
+ * collide, and compilation is reproducible (no snapshot flakiness).
  */
 let usageCounter = 0;
+export const nextUsageId = (): string => String(++usageCounter);
 
+/**
+ * Standardizes a raw step/section ingredient or cookware item into a clean, unified `Usage` object.
+ *
+ * Maps modifier symbols (?, -, &, *) to semantic names, handles fixed quantity states,
+ * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
+ */
 export const createCleanUsage = (item: any, id: string, options?: CompilerOptions): Usage => {
-    const obj: Usage = { id, _usageId: String(++usageCounter) };
+    const obj: Usage = { id, _usageId: nextUsageId() };
     const qtyNode = item.quantity;
     let cleanQty: any = undefined;
     

@@ -12,14 +12,14 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       "id": "alternative",
       "options": [
         {
-          "_usageId": "12",
+          "_usageId": "14",
           "alias": "pan",
           "id": "frying-pan",
           "preparation": "25cm",
           "qty": 2,
         },
         {
-          "_usageId": "13",
+          "_usageId": "15",
           "fixed": false,
           "id": "griddle",
         },
@@ -198,7 +198,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           },
         },
         {
-          "_usageId": "6",
+          "_usageId": "7",
           "id": "butter",
           "preparation": "melted",
           "qty": 30,
@@ -208,13 +208,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "id": "alternative",
           "options": [
             {
-              "_usageId": "7",
+              "_usageId": "8",
               "id": "vanilla-extract",
               "qty": 1,
               "unit": "tsp",
             },
             {
-              "_usageId": "8",
+              "_usageId": "9",
               "id": "vanilla-paste",
               "qty": {
                 "denominator": 2,
@@ -229,12 +229,12 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "type": "alternative",
         },
         {
-          "_usageId": "9",
+          "_usageId": "10",
           "alias": "vinegar",
           "id": "apple-cider-vinegar",
         },
         {
-          "_usageId": "10",
+          "_usageId": "11",
           "id": "secret-ingredient",
           "modifiers": [
             "hidden",
@@ -243,7 +243,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "unit": "pinch",
         },
         {
-          "_usageId": "11",
+          "_usageId": "12",
           "id": "orange-blossom-water",
           "modifiers": [
             "optional",
@@ -357,7 +357,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "into the ",
             {
-              "_usageId": "0.3371079087004948",
+              "_usageId": "6",
               "id": "mixture",
               "name": "mixture",
               "type": "reference",
@@ -380,7 +380,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "content": [
             "Some ",
             {
-              "_usageId": "6",
+              "_usageId": "7",
               "id": "butter",
               "preparation": "melted",
               "qty": 30,
@@ -391,13 +391,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
               "id": "alternative",
               "options": [
                 {
-                  "_usageId": "7",
+                  "_usageId": "8",
                   "id": "vanilla-extract",
                   "qty": 1,
                   "unit": "tsp",
                 },
                 {
-                  "_usageId": "8",
+                  "_usageId": "9",
                   "id": "vanilla-paste",
                   "qty": {
                     "denominator": 2,
@@ -413,13 +413,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             ", the ",
             {
-              "_usageId": "9",
+              "_usageId": "10",
               "alias": "vinegar",
               "id": "apple-cider-vinegar",
             },
             ", a ",
             {
-              "_usageId": "10",
+              "_usageId": "11",
               "id": "secret-ingredient",
               "modifiers": [
                 "hidden",
@@ -429,7 +429,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "and ",
             {
-              "_usageId": "11",
+              "_usageId": "12",
               "id": "orange-blossom-water",
               "modifiers": [
                 "optional",
@@ -478,14 +478,14 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "id": "alternative",
           "options": [
             {
-              "_usageId": "12",
+              "_usageId": "14",
               "alias": "pan",
               "id": "frying-pan",
               "preparation": "25cm",
               "qty": 2,
             },
             {
-              "_usageId": "13",
+              "_usageId": "15",
               "fixed": false,
               "id": "griddle",
             },
@@ -495,13 +495,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       ],
       "ingredients": [
         {
-          "_usageId": "0.7828138506347327",
+          "_usageId": "13",
           "id": "batter",
           "name": "batter",
           "type": "reference",
         },
         {
-          "_usageId": "14",
+          "_usageId": "16",
           "id": "butter",
           "modifiers": [
             "reference",
@@ -523,7 +523,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "content": [
             "The ",
             {
-              "_usageId": "0.7828138506347327",
+              "_usageId": "13",
               "id": "batter",
               "name": "batter",
               "type": "reference",
@@ -533,14 +533,14 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
               "id": "alternative",
               "options": [
                 {
-                  "_usageId": "12",
+                  "_usageId": "14",
                   "alias": "pan",
                   "id": "frying-pan",
                   "preparation": "25cm",
                   "qty": 2,
                 },
                 {
-                  "_usageId": "13",
+                  "_usageId": "15",
                   "fixed": false,
                   "id": "griddle",
                 },
@@ -549,7 +549,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "with some ",
             {
-              "_usageId": "14",
+              "_usageId": "16",
               "id": "butter",
               "modifiers": [
                 "reference",
@@ -612,8 +612,8 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "6",
-        "14",
+        "7",
+        "16",
       ],
       "id": "butter",
       "modifiers": [
@@ -625,14 +625,14 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "9",
+        "10",
       ],
       "id": "apple-cider-vinegar",
       "name": "apple cider vinegar",
     },
     {
       "_usageIds": [
-        "10",
+        "11",
       ],
       "id": "secret-ingredient",
       "modifiers": [
@@ -644,7 +644,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "11",
+        "12",
       ],
       "id": "orange-blossom-water",
       "modifiers": [
@@ -675,13 +675,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       "id": "alternative",
       "options": [
         {
-          "_usageId": "7",
+          "_usageId": "8",
           "id": "vanilla-extract",
           "qty": 1,
           "unit": "tsp",
         },
         {
-          "_usageId": "8",
+          "_usageId": "9",
           "id": "vanilla-paste",
           "qty": {
             "denominator": 2,
@@ -747,13 +747,13 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "cookware": [],
       "ingredients": [
         {
-          "_usageId": "0.4894003146092091",
+          "_usageId": "17",
           "id": "ghost-step",
           "name": "ghost_step",
           "type": "reference",
         },
         {
-          "_usageId": "15",
+          "_usageId": "18",
           "id": "ghost-var",
           "modifiers": [
             "reference",
@@ -762,7 +762,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "unit": "g",
         },
         {
-          "_usageId": "16",
+          "_usageId": "19",
           "id": "absurd",
           "modifiers": [
             "optional",
@@ -772,7 +772,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "unit": "g",
         },
         {
-          "_usageId": "17",
+          "_usageId": "20",
           "dependencies": [
             "flour",
           ],
@@ -795,7 +795,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           },
         },
         {
-          "_usageId": "18",
+          "_usageId": "21",
           "dependencies": [
             "salt",
           ],
@@ -825,7 +825,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "We will use a step reference that does not exist: ",
             {
-              "_usageId": "0.4894003146092091",
+              "_usageId": "17",
               "id": "ghost-step",
               "name": "ghost_step",
               "type": "reference",
@@ -842,7 +842,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "And an undeclared ingredient variable: ",
             {
-              "_usageId": "15",
+              "_usageId": "18",
               "id": "ghost-var",
               "modifiers": [
                 "reference",
@@ -862,7 +862,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Invalid modifier combination: ",
             {
-              "_usageId": "16",
+              "_usageId": "19",
               "id": "absurd",
               "modifiers": [
                 "optional",
@@ -883,7 +883,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Relative quantity pointing to nothing: ",
             {
-              "_usageId": "17",
+              "_usageId": "20",
               "dependencies": [
                 "flour",
               ],
@@ -917,7 +917,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Circular relative quantity: ",
             {
-              "_usageId": "18",
+              "_usageId": "21",
               "dependencies": [
                 "salt",
               ],
@@ -1013,7 +1013,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
   "shopping_list": [
     {
       "_usageIds": [
-        "15",
+        "18",
       ],
       "id": "ghost-var",
       "modifiers": [
@@ -1025,7 +1025,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "16",
+        "19",
       ],
       "id": "absurd",
       "modifiers": [
@@ -1038,7 +1038,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "17",
+        "20",
       ],
       "id": "sugar",
       "name": "sugar",
@@ -1049,7 +1049,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "18",
+        "21",
       ],
       "id": "salt",
       "name": "salt",
