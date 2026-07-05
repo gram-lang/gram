@@ -535,12 +535,11 @@ body.vscode-dark,
 .gram-preview .bakers-badge {
   font-family: var(--gram-font-mono);
   font-size: 0.85em;
-  color: var(--item-cookware-text);
-  font-weight: 600;
+  color: var(--color-text);
   vertical-align: baseline;
   cursor: help;
   background-color: var(--color-bg-subtle);
-  border: 1px dashed var(--item-cookware-text);
+  border: 1px dashed var(--color-text-muted);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -821,6 +820,7 @@ body.vscode-dark,
 .gram-preview .section-declaration-badge[data-tooltip]:hover::before {
   transform: translateY(-3px);
 }
+
 /* Interactive Scaling */
 .gram-preview .interactive-portions {
   display: inline-flex;
@@ -885,6 +885,7 @@ body.vscode-dark,
   -webkit-appearance: none;
   margin: 0;
 }
+
 .gram-preview .scale-input-inline[type=number] {
   -moz-appearance: textfield;
 }

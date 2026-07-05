@@ -2,6 +2,7 @@ import { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
+import { getDictionary } from '@gram/i18n';
 
 const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -328,6 +329,7 @@ const PRINT_ICONS = {
 };
 
 export function toPrintHTML(data: any, options: RendererOptions = {}): string {
+    const t = getDictionary(options.lang);
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
 
@@ -336,7 +338,8 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         icons: PRINT_ICONS,
         formatDuration,
         formatFraction: options.formatFraction,
-        bakersMathOnly: options.bakersMathOnly
+        bakersMathOnly: options.bakersMathOnly,
+        lang: options.lang
     };
     // Context variant used when rendering inline step tokens — hides qty if flag is set
     const stepContext: RenderContext = options.hideStepQty
@@ -354,16 +357,16 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
     body += `<div class="meta">\n`;
     if (data.metrics) {
         if (data.metrics.totalTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Total</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
         }
         if (data.metrics.cookTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Cook</span>${formatDuration(data.metrics.cookTime)}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">${t.renderer.cookTime}</span>${formatDuration(data.metrics.cookTime)}</span>\n`;
         }
         if (data.metrics.activeTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Active</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
         }
         if (data.metrics.preparationTime) {
-            body += `  <span class="meta-item"><span class="meta-label">Prep</span>${formatDuration(data.metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">est.</em></span>\n`;
+            body += `  <span class="meta-item"><span class="meta-label">${t.renderer.prepTime}</span>${formatDuration(data.metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">${t.renderer.est}</em></span>\n`;
         }
     }
     if (data.meta) {
@@ -377,7 +380,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 
     // ── Shopping list ──────────────────────────────────────────────────────
     if (data.shopping_list?.length > 0) {
-        body += `<div class="shopping-list">\n<h2>Shopping List</h2>\n<ul>\n`;
+        body += `<div class="shopping-list">\n<h2>${t.renderer.shoppingList}</h2>\n<ul>\n`;
         for (const item of data.shopping_list) {
             if (!item || typeof item !== 'object') continue;
             if (item.type === 'alternative' || item.type === 'group') {
@@ -398,7 +401,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 
     // ── Equipment ─────────────────────────────────────────────────────────
     if (data.cookware?.length > 0) {
-        body += `<div>\n<h2>Equipment</h2>\n<div class="cookware-list">\n`;
+        body += `<div>\n<h2>${t.renderer.equipment}</h2>\n<div class="cookware-list">\n`;
         for (const cw of data.cookware) {
             if (cw.type === 'alternative' || cw.type === 'group') {
                 const opts = (cw.options ?? []).map((o: any) => formatElement(o, 'html', context)).join(' or ');
@@ -480,7 +483,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         const vals = nut.perPortion || nut.total;
         const portionNote = nut.perPortion ? ' (per portion)' : '';
         if (vals && vals.calories > 0) {
-            body += `<div class="nutrition">\n<h2>Nutrition${escapeHtml(portionNote)}</h2>\n<div class="nut-grid">\n`;
+            body += `<div class="nutrition">\n<h2>${t.renderer.nutrition}${escapeHtml(portionNote)}</h2>\n<div class="nut-grid">\n`;
             body += `  <span class="nut-item"><strong>${Math.round(vals.calories)}</strong> <small>kcal</small></span>\n`;
             body += `  <span class="nut-item"><small>Protein</small> <strong>${vals.protein}g</strong></span>\n`;
             body += `  <span class="nut-item"><small>Carbs</small> <strong>${vals.carbs}g</strong></span>\n`;

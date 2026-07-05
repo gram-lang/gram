@@ -1,0 +1,100 @@
+import type { GramLocale } from './en';
+
+export const fr: GramLocale = {
+  renderer: {
+    shoppingList: "Liste de courses",
+    cookware: "Matériel",
+    equipment: "Équipement",
+    nutrition: "Nutrition",
+    totalTime: "Temps Total",
+    cookTime: "Cuisson",
+    activeTime: "Actif",
+    prepTime: "Préparation",
+    est: "(est.)",
+    passiveTimeTooltip: "Temps passif (Repos, attente...)",
+    activeTimeTooltip: "Temps actif",
+    estimateTooltip: "Estimation",
+    coverageTooltip: "Couverture",
+    unknownCookware: "[Matériel Inconnu]",
+    reset: "Réinitialiser",
+    originalRecipe: "Recette originale",
+    sectionStandardizedMass: "Masse standardisée de la section",
+    bakersPercentage: "Pourcentage du boulanger",
+    standardized: "Standardisé",
+    optional: "Optionnel",
+    calculationPartialOrFailed: "Calcul partiel ou échoué",
+    standardizedMass: "Masse standardisée",
+    quantity: "Quantité",
+    intermediateIngredient: "Ingrédient intermédiaire",
+    alternatives: "Alternatives",
+    decreasePortions: "Diminuer les portions",
+    editPortions: "Modifier directement les portions",
+    increasePortions: "Augmenter les portions",
+    returnToStep: "Retour à l'étape",
+    mixedUnitsTooltip: "Impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
+    mixedUnits: "Unités mixtes",
+    purchasingWeight: "Poids d'achat (incluant déchets/épluchures)",
+    intermediateResult: "Résultat intermédiaire pour cette section",
+    estimatedSuffix: " (Estimé)",
+    missingMass: " (Manquant : ",
+    someIngredients: "certains ingrédients"
+  },
+  playground: {
+    title: "Playground Gram",
+    inputTab: "Entrée (.gram)",
+    writePlaceholder: "Écrivez votre recette ici...",
+    outputTab: "Sortie",
+    viewLabel: "Vue :",
+    loadExample: "Charger un exemple...",
+    recipe: "Recette",
+    scaleFactor: "Facteur d'échelle %",
+    examples: {
+      pancakes: "Pancakes Simples",
+      spaghetti: "Spaghetti Bolognaise",
+      torture: "Test de Torture (Syntaxe)"
+    },
+    views: {
+      json: "Sortie JSON",
+      ast: "AST (Brut)",
+      jsonTree: "Arbre Interactif",
+      markdown: "Markdown",
+      preview: "Aperçu (HTML)"
+    },
+    options: {
+      scaleTitle: "Mettre à l'échelle par ingrédient",
+      selectIngredient: "Sélectionner un ingrédient...",
+      qty: "Qté",
+      unit: "Unité",
+      apply: "Appliquer",
+      bakersMath: "Pourcentage du boulanger",
+      enableBakersMath: "Activer le pourcentage du boulanger",
+      bakersMathDesc: "Affiche les ingrédients en % de la référence.",
+      hideAbsolute: "Masquer les poids absolus",
+      forceReference: "Forcer la référence :",
+      autoDetect: "Auto (détecte @*)",
+      physicalAnalysis: "Analyse physique",
+      massStandardization: "Standardisation des masses",
+      massDesc: "Convertit toutes les quantités d'ingrédients en grammes.",
+      yieldManagement: "Gestion du rendement",
+      nutrition: "Estimation nutritionnelle"
+    },
+    output: {
+      copy: "Copier dans le presse-papier",
+      loading: "Chargement du lecteur..."
+    },
+    warnings: {
+      warnings: "Avertissements",
+      warning: "Avertissement",
+      item: "Élément",
+      show: "Afficher"
+    },
+    analysisOptions: "Options d'Analyse",
+    analysis: "Analyse",
+    massNorm: "Standardisation des Masses",
+    yieldMgmt: "Gestion du Rendement (Masse Brute)",
+    nutritionEst: "Estimation Nutritionnelle",
+    statusValid: "Valide",
+    statusWarnings: "Avertissements",
+    copyBtn: "Copier dans le presse-papier"
+  }
+};

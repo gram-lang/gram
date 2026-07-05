@@ -64,6 +64,8 @@ export interface RendererOptions {
   bakersMathOnly?: boolean;
   /** When true, renders interactive controls for scaling portions and ingredients */
   interactiveScaling?: boolean;
+  /** Locale code (e.g. 'en', 'fr') for translating UI strings */
+  lang?: string;
 }
 
 export interface RenderContext {
@@ -81,6 +83,7 @@ export interface RenderContext {
   // Passed down from RendererOptions
   bakersMathOnly?: boolean;
   interactiveScaling?: boolean;
+  lang?: string;
 
   /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
   formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';

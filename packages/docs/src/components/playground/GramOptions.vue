@@ -2,6 +2,11 @@
 import { computed } from 'vue'
 import { UNIT_CONVERSIONS } from '@gram/analyzer'
 import { formatDecimalToFraction } from '@gram/renderer'
+import { useData } from 'vitepress'
+import { getDictionary } from '@gram/i18n'
+
+const { lang } = useData()
+const t = computed(() => getDictionary(lang.value))
 
 const knownUnits = [
   ...Object.keys(UNIT_CONVERSIONS.mass.map),
@@ -122,19 +127,19 @@ function submitScale() {
   <div class="gram-options">
     <div class="options-section">
       <div class="options-header">
-        <span class="options-title">Scale by Ingredient</span>
+        <span class="options-title">{{ t.playground.options.scaleTitle }}</span>
       </div>
       <div class="options-body scale-body">
         <select class="scale-select" v-model="targetId">
-          <option value="">Select ingredient...</option>
+          <option value="">{{ t.playground.options.selectIngredient }}</option>
           <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
             {{ item.name }}
           </option>
         </select>
         <div class="scale-inputs" v-if="targetId">
-          <input type="text" class="scale-input qty" v-model.lazy="targetQty" placeholder="Qty" @keydown.enter="submitScale" />
-          <input type="text" list="gram-units" class="scale-input unit" v-model="targetUnit" placeholder="Unit" @keydown.enter="submitScale" />
-          <button class="scale-apply-btn" @click="submitScale">Apply</button>
+          <input type="text" class="scale-input qty" v-model.lazy="targetQty" :placeholder="t.playground.options.qty" @keydown.enter="submitScale" />
+          <input type="text" list="gram-units" class="scale-input unit" v-model="targetUnit" :placeholder="t.playground.options.unit" @keydown.enter="submitScale" />
+          <button class="scale-apply-btn" @click="submitScale">{{ t.playground.options.apply }}</button>
         </div>
       </div>
     </div>
@@ -145,28 +150,28 @@ function submitScale() {
 
     <div class="options-section">
       <div class="options-header">
-        <span class="options-title">Baker's Math</span>
+        <span class="options-title">{{ t.playground.options.bakersMath }}</span>
       </div>
       <div class="options-body">
         <label class="option-item">
           <input type="checkbox" v-model="bakersMath" />
           <div class="option-text">
-            <span class="option-name">Enable Baker's Math</span>
-            <span class="option-desc">Shows ingredients as % of reference.</span>
+            <span class="option-name">{{ t.playground.options.enableBakersMath }}</span>
+            <span class="option-desc">{{ t.playground.options.bakersMathDesc }}</span>
           </div>
         </label>
         
         <label class="option-item child-option" :class="{ disabled: !bakersMath }">
           <input type="checkbox" v-model="bakersMathOnly" :disabled="!bakersMath" />
           <div class="option-text">
-            <span class="option-name">Hide absolute weights</span>
+            <span class="option-name">{{ t.playground.options.hideAbsolute }}</span>
           </div>
         </label>
 
         <div class="child-option select-wrapper" :class="{ disabled: !bakersMath }" v-if="bakersMath">
-          <span class="select-label">Force Reference:</span>
+          <span class="select-label">{{ t.playground.options.forceReference }}</span>
           <select class="scale-select" v-model="bakersReference" :disabled="!bakersMath">
-            <option value="">Auto (detect @*)</option>
+            <option value="">{{ t.playground.options.autoDetect }}</option>
             <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
               {{ item.name }}
             </option>
@@ -177,28 +182,28 @@ function submitScale() {
 
     <div class="options-section">
       <div class="options-header">
-        <span class="options-title">Physical Analysis</span>
+        <span class="options-title">{{ t.playground.options.physicalAnalysis }}</span>
       </div>
       <div class="options-body">
         <label class="option-item">
           <input type="checkbox" v-model="massEnabled" />
           <div class="option-text">
-            <span class="option-name">Mass Standardization</span>
-            <span class="option-desc">Converts all ingredient quantities into grams.</span>
+            <span class="option-name">{{ t.playground.options.massStandardization }}</span>
+            <span class="option-desc">{{ t.playground.options.massDesc }}</span>
           </div>
         </label>
         
         <label class="option-item child-option" :class="{ disabled: !massEnabled }">
           <input type="checkbox" v-model="yieldEnabled" :disabled="!massEnabled" />
           <div class="option-text">
-            <span class="option-name">Yield Management</span>
+            <span class="option-name">{{ t.playground.options.yieldManagement }}</span>
           </div>
         </label>
 
         <label class="option-item">
           <input type="checkbox" v-model="nutritionEnabled" />
           <div class="option-text">
-            <span class="option-name">Nutrition Estimation</span>
+            <span class="option-name">{{ t.playground.options.nutrition }}</span>
           </div>
         </label>
       </div>

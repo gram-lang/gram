@@ -1,5 +1,6 @@
 import { RenderContext } from '../types';
 import { escapeHtml, getQty, formatQuantityValue } from '../utils';
+import { getDictionary } from '@gram/i18n';
 
 // Default icons mapping
 export const DEFAULT_ICONS = {
@@ -31,6 +32,7 @@ export const DEFAULT_ICONS = {
 
 const strategies: Record<string, (item: any, format: 'html' | 'md', context: RenderContext) => string> = {
     ingredient: (item, format, context) => {
+        const t = getDictionary(context.lang);
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
         const def = ingredients[item.id];
@@ -87,7 +89,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             } else {
                 htmlQty = originalQtyStr || (normalizedMass !== null ? `${normalizedMass}g` : '');
                 const bpClass = context.classes?.bakersBadge || 'bakers-badge';
-                htmlBakersBadge = ` <span class="${bpClass}" data-tooltip="Baker's Percentage">${perc}</span>`;
+                htmlBakersBadge = ` <span class="${bpClass}" data-tooltip="${escapeHtml(t.renderer.bakersPercentage)}">${perc}</span>`;
             }
         }
 
@@ -106,11 +108,11 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 if (item.bakersPercentage === undefined && normalizedMass !== null && conversionMethod !== 'relative') {
                     let massDisplay = `${normalizedMass}g`;
                     if (isEstimate) massDisplay = `~${massDisplay}`;
-                    tooltipLines.push(`(Standardized: ${massDisplay})`);
+                    tooltipLines.push(`(${t.renderer.standardized}: ${massDisplay})`);
                 }
 
                 if (prep) tooltipLines.push(`— ${prep}`);
-                if (isOptional) tooltipLines.push(`(Optional)`);
+                if (isOptional) tooltipLines.push(`(${t.renderer.optional})`);
 
                 let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"`;
                 if (tooltipLines.length > 0) {
@@ -120,7 +122,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
 
                 if (isPartial && !context.hideIngredientQty) {
                     const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
-                    html += ` <span class="quantity formula-qty" data-tooltip="Calculation partial or failed">${escapeHtml(formulaStr || '')} ${warningIcon}</span>`;
+                    html += ` <span class="quantity formula-qty" data-tooltip="${escapeHtml(t.renderer.calculationPartialOrFailed)}">${escapeHtml(formulaStr || '')} ${warningIcon}</span>`;
                 }
                 html += `</span>`;
                 return html;
@@ -131,7 +133,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     if (isPartial) {
                         const warningIcon = context.icons?.warning ?? DEFAULT_ICONS.html.warning;
                         const formulaClass = context.classes?.formulaText ? ` ${context.classes.formulaText}` : '';
-                        html += ` <span class="quantity formula-qty${formulaClass}" data-tooltip="Calculation partial or failed">${escapeHtml(formulaStr || '')} ${warningIcon}</span>`;
+                        html += ` <span class="quantity formula-qty${formulaClass}" data-tooltip="${escapeHtml(t.renderer.calculationPartialOrFailed)}">${escapeHtml(formulaStr || '')} ${warningIcon}</span>`;
                     } else {
                         if (htmlQty) {
                             html += ` <span class="quantity">${escapeHtml(htmlQty)}</span>`;
@@ -147,7 +149,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     let display = `${normalizedMass}g`;
                     if (isEstimate) display = `~${display}`;
                     const badgeClass = context.classes?.massBadge || 'mass-badge';
-                    html += ` <span class="${badgeClass}" data-tooltip="Standardized mass: ${normalizedMass}g">${display}</span>`;
+                    html += ` <span class="${badgeClass}" data-tooltip="${escapeHtml(t.renderer.standardizedMass)}: ${normalizedMass}g">${display}</span>`;
                 }
 
                 if (prep && mode !== 'shopping-list') {
@@ -188,10 +190,11 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
     },
 
     cookware: (item, format, context) => {
+        const t = getDictionary(context.lang);
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
         const def = cookwareList[item.id];
-        const baseName = def ? def.name : (item.id || '[Unknown Cookware]');
+        const baseName = def ? def.name : (item.id || t.renderer.unknownCookware);
         const name = item.alias || baseName;
         const qty = getQty(item);
         const qtyVal = qty ? qty.value : null;
@@ -202,7 +205,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
 
             if (mode === 'inline') {
                 let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"`;
-                if (qtyVal !== null) html += ` data-tooltip="Quantity: ${escapeHtml(String(qtyVal))}"`;
+                if (qtyVal !== null) html += ` data-tooltip="${escapeHtml(t.renderer.quantity)}: ${escapeHtml(String(qtyVal))}"`;
                 html += `>${escapeHtml(name)}</span>`;
                 return html;
             } else {
@@ -225,11 +228,12 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         const isPassive = !!item.isPassive;
 
         if (format === 'html') {
+            const t = getDictionary(context.lang);
             const passiveClassStr = isPassive ? ' passive' : '';
             const className = (context.classes?.timer || 'timer') + passiveClassStr;
             const iconKey = isPassive ? 'hourglass' : 'timer';
             const icon = context.icons?.[iconKey] ?? DEFAULT_ICONS.html[iconKey];
-            const tooltipStr = isPassive ? 'Passive Time (Waiting, resting...)' : 'Active Time';
+            const tooltipStr = isPassive ? t.renderer.passiveTimeTooltip : t.renderer.activeTimeTooltip;
             return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || '')}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
         } else {
             const prefix = context.icons?.hourglass !== undefined
@@ -263,6 +267,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
     },
 
     reference: (item, format, context) => {
+        const t = getDictionary(context.lang);
         const registry = context.registry || {};
         const ingredients = registry.ingredients || {};
         const def = ingredients[item.id];
@@ -275,7 +280,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             const mode = context.formatMode || 'inline';
 
             if (mode === 'inline') {
-                let tooltipText = 'Intermediate Ingredient';
+                let tooltipText = t.renderer.intermediateIngredient;
                 if (qty) {
                     const parts = [];
                     const baseQty = qty.text || String(qty.value);
@@ -283,7 +288,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                     if (item.variable_entries && item.variable_entries.length > 0) {
                         parts.push(...item.variable_entries);
                     }
-                    tooltipText += `\nQuantity: ${parts.join(' + ')}`;
+                    tooltipText += `\n${t.renderer.quantity}: ${parts.join(' + ')}`;
                 }
                 return `<span class="${className}" data-tooltip="${escapeHtml(tooltipText)}">${caretIcon} ${escapeHtml(name)}</span>`;
             } else {
@@ -349,6 +354,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
     },
 
     alternative: (item, format, context) => {
+        const t = getDictionary(context.lang);
         const registry = context.registry || {};
         const cookwareList = registry.cookware || {};
 
@@ -362,7 +368,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                 const altNames = item.options.slice(1).map((opt: any) => opt.name || opt.display || opt.id);
 
                 let html = formatElement(resolvedOpt, format, context);
-                html += ` <span class="ingredient-alt-badge" data-tooltip="Alternatives:\n${escapeHtml(altNames.join('\n'))}">(alt)</span>`;
+                html += ` <span class="ingredient-alt-badge" data-tooltip="${escapeHtml(t.renderer.alternatives)}:\n${escapeHtml(altNames.join('\n'))}">(alt)</span>`;
                 return html;
             } else {
                 const separator = ' <span class="keyword">or</span> ';

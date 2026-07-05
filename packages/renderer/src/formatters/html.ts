@@ -2,8 +2,10 @@ import { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
+import { getDictionary } from '@gram/i18n';
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
+    const t = getDictionary(options.lang);
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
 
@@ -15,6 +17,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         formatFraction: options.formatFraction,
         bakersMathOnly: options.bakersMathOnly,
         interactiveScaling: options.interactiveScaling,
+        lang: options.lang,
         _inlineComments: [],
         _renderId: Math.random().toString(36).substring(2, 9)
     };
@@ -44,14 +47,14 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         // Total Time
         const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
         html += ` <div class="${timingCardClass}">\n`;
-        html += `   <div class="${metaLabelClass}">${clockIcon} Total Time</div>\n`;
+        html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
         html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>\n`;
         html += ` </div>\n`;
 
         // Cook Time
         if (data.metrics.cookTime) {
             html += ` <div class="${timingCardClass}">\n`;
-            html += `   <div class="${metaLabelClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'} Cook Time</div>\n`;
+            html += `   <div class="${metaLabelClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'} ${t.renderer.cookTime}</div>\n`;
             html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.cookTime)}</div>\n`;
             html += ` </div>\n`;
         }
@@ -59,15 +62,15 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         // Active Time
         const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
         html += ` <div class="${timingCardClass}">\n`;
-        html += `   <div class="${metaLabelClass}">${fireIcon} Active Time</div>\n`;
+        html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
         html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</div>\n`;
         html += ` </div>\n`;
 
         // Prep Time
         const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
         html += ` <div class="${timingCardClass}">\n`;
-        html += `   <div class="${metaLabelClass}">${knifeIcon} Prep Time</div>\n`;
-        html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">(est.)</span></div>\n`;
+        html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
+        html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>\n`;
         html += ` </div>\n`;
     }
     html += `</div>\n`;
@@ -106,11 +109,11 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                         ? parseFloat((numericV / data.scaleFactor).toFixed(2))
                         : v;
                     html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
-                    html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="Decrease portions">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
-                    html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="Edit portions directly" />\n`;
-                    html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="Increase portions">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
+                    html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
+                    html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="${escapeHtml(t.renderer.editPortions)}" />\n`;
+                    html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
                     html += `      <span class="scale-multipliers">\n`;
-                    html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="Original recipe">Reset</button>\n`;
+                    html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="${escapeHtml(t.renderer.originalRecipe)}">${escapeHtml(t.renderer.reset)}</button>\n`;
                     html += `      </span>\n`;
                     html += `    </span>\n`;
                 } else if (!k.startsWith('_')) {
@@ -128,7 +131,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     if (data.shopping_list && data.shopping_list.length > 0) {
         const shoppingListClass = options.classes?.shoppingList || 'shopping-list';
         html += `<details class="${shoppingListClass}">\n`;
-        html += `  <summary><h2>Shopping List</h2></summary>\n`;
+        html += `  <summary><h2>${t.renderer.shoppingList}</h2></summary>\n`;
         html += `  <ul>\n`;
 
         // Group consecutive entries that the analyzer couldn't merge into a single
@@ -172,7 +175,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `    <li>${escapeHtml(item.display)}</li>\n`;
             } else if (group.length > 1) {
                 html += `    <li>\n`;
-                html += `      <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge" data-tooltip="Couldn't be combined into one total — add a density to the ingredient database to merge them">⚠️ Mixed units</span>:\n`;
+                html += `      <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span>:\n`;
                 html += `      <ul>\n`;
                 group.forEach((entry: any) => {
                     html += `        <li>${formatElement(entry, 'html', { ...context, formatMode: 'shopping-list' })}</li>\n`;
@@ -184,7 +187,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 if (item.purchasingMass && item.purchasingMass !== item.normalizedMass) {
                     // Show Gross Mass if different from Net
                     const gross = Math.round(item.purchasingMass * 10) / 10;
-                    extraHtml = ` <span class="gross-mass" data-tooltip="Purchasing Weight (including waste/peel)">${gross}g gross</span>`;
+                    extraHtml = ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
                 }
                 html += `    <li>${formatElement(item, 'html', { ...context, formatMode: 'shopping-list' })}${extraHtml}</li>\n`;
             }
@@ -197,7 +200,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     if (data.cookware && data.cookware.length > 0) {
         const cookwareListClass = options.classes?.cookwareList || 'cookware';
         html += `<details class="${cookwareListClass}">\n`;
-        html += `  <summary><h2>Cookware</h2></summary>\n`;
+        html += `  <summary><h2>${t.renderer.cookware}</h2></summary>\n`;
         html += `  <ul>\n`;
         data.cookware.forEach((cw: any) => {
             if (cw.type === 'alternative' || cw.type === 'group') {
@@ -234,14 +237,14 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 if (sec.metrics && sec.metrics.totalMass > 0) {
                     const mass = Math.round(sec.metrics.totalMass);
                     let msg = `${mass}g`;
-                    let title = "Section standardized mass";
+                    let title = t.renderer.sectionStandardizedMass;
                     if (sec.metrics.massStatus === 'estimated') {
                         msg = `~${mass}g`;
-                        title += " (Estimated)";
+                        title += t.renderer.estimatedSuffix;
                     } else if (sec.metrics.massStatus === 'incomplete') {
                         msg = `>${mass}g`;
-                        const missingStr = sec.metrics.missingMassIngredients?.join(', ') || 'some ingredients';
-                        title += ` (Incomplete, missing: ${missingStr})`;
+                        const missingStr = sec.metrics.missingMassIngredients?.join(', ') || t.renderer.someIngredients;
+                        title += `${t.renderer.missingMass}${missingStr})`;
                     }
                     const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
                     titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${msg}</small>`;
@@ -249,7 +252,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 
                 if (sec.intermediate_preparation) {
                     const arrowIcon = options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
-                    titleHtml += ` <span class="section-declaration-badge" data-tooltip="Intermediate result for this section">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
+                    titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
                 }
 
                 const sHeaderClass = options.classes?.sectionHeader ? ` ${options.classes.sectionHeader}` : '';
@@ -341,7 +344,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             const index = idx + 1;
             html += `    <li id="${renderId}-${index}">\n`;
             html += `      ${escapeHtml(note)}\n`;
-            html += `      <a href="#ref-${renderId}-${index}" class="note-return" title="Return to step">↩</a>\n`;
+            html += `      <a href="#ref-${renderId}-${index}" class="note-return" title="${escapeHtml(t.renderer.returnToStep)}">↩</a>\n`;
             html += `    </li>\n`;
         });
         html += `  </ol>\n`;
@@ -387,7 +390,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 
             html += `<div class="nutrition-panel">\n`;
             html += warningsHtml;
-            html += `  <div class="nut-header">Nutrition <span class="est-badge" data-tooltip="Coverage: ${Math.round(nut.coverage * 100)}%">Estimate</span>${portionText}</div>\n`;
+            html += `  <div class="nut-header">${t.renderer.nutrition} <span class="est-badge" data-tooltip="${t.renderer.coverageTooltip}: ${Math.round(nut.coverage * 100)}%">${t.renderer.estimateTooltip}</span>${portionText}</div>\n`;
             html += `  <div class="nut-grid">\n`;
             html += `    <div class="nut-item"><span class="label">Calories</span> <strong>${cal} kcal</strong></div>\n`;
             html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small class="nut-item-sugar">(sugar: ${sugar}g)</small></div>\n`;

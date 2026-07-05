@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { VueMonacoEditor } from '@guolao/vue-monaco-editor'
 import { useData } from 'vitepress'
+import { getDictionary } from '@gram/i18n'
 import JsonNode from './JsonNode.vue'
 import { setupMonaco } from './monacoSetup'
 
@@ -16,7 +17,8 @@ const emit = defineEmits<{
   (e: 'scale-update', factor: number): void
 }>()
 
-const { isDark } = useData()
+const { isDark, lang } = useData()
+const t = computed(() => getDictionary(lang.value))
 
 const currentLang = computed(() => {
   if (props.viewMode === 'ast') return 'scheme'
@@ -136,7 +138,7 @@ function handlePreviewClick(e: MouseEvent) {
   <div class="gram-output">
     <div class="output-header" v-if="['json', 'ast', 'markdown'].includes(viewMode)">
       <span class="output-title">{{ viewMode.toUpperCase() }}</span>
-      <button class="copy-btn" @click="copyOutput" title="Copy to clipboard">
+      <button class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
         <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--vp-c-green-1)"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
@@ -152,7 +154,7 @@ function handlePreviewClick(e: MouseEvent) {
           @mount="handleMount"
         />
         <template #fallback>
-          <div class="loading-editor">Loading viewer...</div>
+          <div class="loading-editor">{{ t.playground.output.loading }}</div>
         </template>
       </ClientOnly>
       

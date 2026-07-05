@@ -1,0 +1,100 @@
+export const en = {
+  renderer: {
+    shoppingList: "Shopping List",
+    cookware: "Cookware",
+    equipment: "Equipment",
+    nutrition: "Nutrition",
+    totalTime: "Total Time",
+    cookTime: "Cook Time",
+    activeTime: "Active Time",
+    prepTime: "Prep Time",
+    est: "(est.)",
+    passiveTimeTooltip: "Passive Time (Waiting, resting...)",
+    activeTimeTooltip: "Active Time",
+    estimateTooltip: "Estimate",
+    coverageTooltip: "Coverage",
+    unknownCookware: "[Unknown Cookware]",
+    reset: "Reset",
+    originalRecipe: "Original recipe",
+    sectionStandardizedMass: "Section standardized mass",
+    bakersPercentage: "Baker's Percentage",
+    standardized: "Standardized",
+    optional: "Optional",
+    calculationPartialOrFailed: "Calculation partial or failed",
+    standardizedMass: "Standardized mass",
+    quantity: "Quantity",
+    intermediateIngredient: "Intermediate Ingredient",
+    alternatives: "Alternatives",
+    decreasePortions: "Decrease portions",
+    editPortions: "Edit portions directly",
+    increasePortions: "Increase portions",
+    returnToStep: "Return to step",
+    mixedUnitsTooltip: "Couldn't be combined into one total — add a density to the ingredient database to merge them",
+    mixedUnits: "Mixed units",
+    purchasingWeight: "Purchasing Weight (including waste/peel)",
+    intermediateResult: "Intermediate result for this section",
+    estimatedSuffix: " (Estimated)",
+    missingMass: " (Missing: ",
+    someIngredients: "some ingredients"
+  },
+  playground: {
+    title: "Gram Playground",
+    inputTab: "Input (.gram)",
+    writePlaceholder: "Write your recipe here...",
+    outputTab: "Output",
+    viewLabel: "View:",
+    loadExample: "Load Example...",
+    recipe: "Recipe",
+    scaleFactor: "Scale Factor %",
+    examples: {
+      pancakes: "Simple Pancakes",
+      spaghetti: "Spaghetti Bolognese",
+      torture: "Torture Test (Syntax)"
+    },
+    views: {
+      json: "JSON Output",
+      ast: "AST (Raw)",
+      jsonTree: "Interactive Tree",
+      markdown: "Markdown",
+      preview: "Preview (HTML)"
+    },
+    options: {
+      scaleTitle: "Scale by Ingredient",
+      selectIngredient: "Select ingredient...",
+      qty: "Qty",
+      unit: "Unit",
+      apply: "Apply",
+      bakersMath: "Baker's Math",
+      enableBakersMath: "Enable Baker's Math",
+      bakersMathDesc: "Shows ingredients as % of reference.",
+      hideAbsolute: "Hide absolute weights",
+      forceReference: "Force Reference:",
+      autoDetect: "Auto (detect @*)",
+      physicalAnalysis: "Physical Analysis",
+      massStandardization: "Mass Standardization",
+      massDesc: "Converts all ingredient quantities into grams.",
+      yieldManagement: "Yield Management",
+      nutrition: "Nutrition Estimation"
+    },
+    output: {
+      copy: "Copy to clipboard",
+      loading: "Loading viewer..."
+    },
+    warnings: {
+      warnings: "Warnings",
+      warning: "Warning",
+      item: "Item",
+      show: "Show"
+    },
+    analysisOptions: "Analysis Options",
+    analysis: "Analysis",
+    massNorm: "Mass Normalization",
+    yieldMgmt: "Yield Management (Gross Mass)",
+    nutritionEst: "Nutrition Estimation",
+    statusValid: "Valid",
+    statusWarnings: "Warnings",
+    copyBtn: "Copy to Clipboard"
+  }
+};
+
+export type GramLocale = typeof en;

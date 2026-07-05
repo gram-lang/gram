@@ -2,8 +2,10 @@ import { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
+import { getDictionary } from '@gram/i18n';
 
 export function toMarkdown(data: any, options: RendererOptions = {}): string {
+    const t = getDictionary(options.lang);
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
 
@@ -13,7 +15,8 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
         classes: options.classes,
         formatDuration,
         formatFraction: options.formatFraction,
-        bakersMathOnly: options.bakersMathOnly
+        bakersMathOnly: options.bakersMathOnly,
+        lang: options.lang
     };
 
     let md = '';
@@ -26,16 +29,16 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
         md += `> **Metadata**\n`;
         if (data.metrics) {
             if (data.metrics.totalTime) {
-                md += `> - **Total Time**: ${formatDuration(data.metrics.totalTime)}\n`;
+                md += `> - **${t.renderer.totalTime}**: ${formatDuration(data.metrics.totalTime)}\n`;
             }
             if (data.metrics.cookTime) {
-                md += `> - **Cook Time**: ${formatDuration(data.metrics.cookTime)}\n`;
+                md += `> - **${t.renderer.cookTime}**: ${formatDuration(data.metrics.cookTime)}\n`;
             }
             if (data.metrics.activeTime) {
-                md += `> - **Active Time**: ${formatDuration(data.metrics.activeTime)}\n`;
+                md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;
             }
             if (data.metrics.preparationTime) {
-                md += `> - **Prep Time**: ${formatDuration(data.metrics.preparationTime)} (est.)\n`;
+                md += `> - **${t.renderer.prepTime}**: ${formatDuration(data.metrics.preparationTime)} ${t.renderer.est}\n`;
             }
         }
         if (data.meta) {
@@ -48,7 +51,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 
     // Shopping List
     if (data.shopping_list && data.shopping_list.length > 0) {
-        md += `## 🛒 Shopping List\n\n`;
+        md += `## 🛒 ${t.renderer.shoppingList}\n\n`;
         data.shopping_list.forEach((item: any) => {
             if (item.type === 'alternative' || item.type === 'group') {
                 md += `- **Alternative Group**:\n`;
@@ -72,7 +75,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 
     // Cookware
     if (data.cookware && data.cookware.length > 0) {
-        md += `## 🍳 Cookware\n\n`;
+        md += `## 🍳 ${t.renderer.cookware}\n\n`;
         data.cookware.forEach((cw: any) => {
             if (cw.type === 'alternative' || cw.type === 'group') {
                 md += `- **Alternative Group**:\n`;
