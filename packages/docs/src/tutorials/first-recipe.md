@@ -304,8 +304,8 @@ portions: 8
 ### What did the compiler do?
 
 By running `gram view lemon-tart.gram`, the compiler handled all the math and output formatting for you:
-- **Active Time**: ~23 mins (it intelligently ignores the 3 hours of fridge time).
-- **Total Time**: ~3h 31 mins.
+- **Active Time**: ~24.5 mins (it intelligently ignores the 3 hours of fridge time).
+- **Total Time**: ~3h 44.5 mins.
 - **Shopping List**: It aggregates all ingredients globally. It grouped the `@egg{1}` and `@eggs{3}` into `4 eggs`. It calculated the whole lemons needed for the zest and juice. It automatically converted the relative sugar proportion into exactly `150g` of sugar.
 
 You've just written a highly scalable, data-driven recipe!

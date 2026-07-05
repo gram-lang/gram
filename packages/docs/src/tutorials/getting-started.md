@@ -124,14 +124,14 @@ To see your recipe rendered directly in your terminal, you can use the `view` co
 gram view pancakes.gram
 ```
 
-Alternatively, to see it come to life with a fully formatted visual interface, it is highly recommended to open the recipe using the **VS Code Extension** or the **[Web Playground](../playground/index.md)**.
+Alternatively, to see it come to life with a fully formatted visual interface, it is highly recommended to open the recipe using the **VS Code Extension** or the **[Web Playground](/play/)**.
 
 ::: tip Try the playground
-If you don't want to install anything yet, you can try writing Gram directly in the web-based [Playground](../playground/index.md).
+If you don't want to install anything yet, you can try writing Gram directly in the web-based [Playground](/play/).
 :::
 
 ## Next Steps
 
 Now that you have written your first recipe, it's time to dive deeper into the syntax:
-- Learn about [Document Structure](../syntax/document-structure.md)
-- Learn how to declare [Ingredients](../syntax/ingredients.md)
+- Learn about [Document Structure](../reference/syntax/document-structure.md)
+- Learn how to declare [Ingredients](../reference/syntax/ingredients.md)

@@ -34,7 +34,7 @@ gram db lint
 This command uses the configured AI to detect semantic duplicates in your database. 
 If it finds `egg` and `eggs`, it will ask you which one to keep as the primary key. It will then merge the other into the primary key's `aliases` list.
 
-> **Tip:** The AI respects the default language defined in your `gram.config.yaml`. If it merges English and French terms, it will intelligently propose the term in your preferred language as the primary key!
+> **Tip:** The AI respects the default language defined in your `config.yaml`. If it merges English and French terms, it will intelligently propose the term in your preferred language as the primary key!
 
 From now on, writing `@eggs` will automatically point to the `egg` database entry.
 
