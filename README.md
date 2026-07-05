@@ -1,5 +1,5 @@
 <div align="left">
-  <img src="gram-logo.png" width="130" align="left" hspace="30" alt="Gram Logo"/>
+  <img src="gram-logo.png" width="130" align="left" alt="Gram Logo"/>
   <h1>Gram</h1>
   <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
   <p>
