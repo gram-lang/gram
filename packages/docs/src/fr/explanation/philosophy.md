@@ -8,13 +8,13 @@ La plupart des formats de recettes ne sont que des blocs de texte statiques. Gra
 
 Au fond, cuisiner est un algorithme. Une recette n'est qu'une fonction qui prend des ingrédients bruts et sort un plat fini. Gram a été construit avec cet état d'esprit.
 
-J'ai toujours adoré l'idée d'écrire des recettes en texte brut, largement inspiré par des projets pionniers comme l'excellent [Cooklang](https://cooklang.org). C'est fantastique pour des recettes maison simples et rapides. Mais quand les choses se compliquent — comme des formules de pâtisserie avec de multiples préparations, le pourcentage du boulanger, ou des plannings un peu tordus — s'appuyer uniquement sur du langage naturel montre vite ses limites.
+J'ai toujours adoré l'idée d'écrire des recettes en texte brut, largement inspiré par des projets pionniers comme l'excellent [Cooklang](https://cooklang.org) qui est fantastique pour des recettes maison simples et rapides. Mais quand les choses se compliquent — comme en pâtisserie avec de multiples préparations, l'usage du "pourcentage du boulanger", ou des plannings un peu tordus — s'appuyer uniquement sur du langage naturel montre vite ses limites.
 
 Gram tire également une profonde inspiration structurelle du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes tabulaires. Puisque Gram compile les recettes en un arbre JSON prévisible, la porte est grande ouverte pour développer à l'avenir des rendus visuels poussés, comme des diagrammes de Gantt ou des flux tabulaires.
 
 J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit de la **logique relationnelle** et de **l'intégrité de données** dans la rédaction de vos recettes :
 
-- **Variables Relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez y faire référence comme à un ingrédient à l'étape 5, évitant ainsi les duplications.
+- **Variables Relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez y faire référence en tant qu'ingrédient à l'étape 5, évitant ainsi les duplications.
 - **Précision Physique** : Gram comprend la différence entre "le zeste d'un citron" et "le jus de 2 citrons", s'assurant que votre liste de courses agrège précisément "Acheter 2 citrons" au lieu de 3.
 - **Contrats de Données Stricts** : En utilisant des tags explicites, Gram s'assure que les températures, temps, ingrédients et équipements ne soient jamais confondus par le parseur.
 
@@ -26,10 +26,10 @@ Si vous créez une application de recettes, un planificateur de repas ou un tabl
 ## Pensé pour les Développeurs
 
 L'écosystème Gram fournit tout ce dont vous avez besoin pour traiter vos recettes comme des logiciels :
-- **Parseur & Compilateur (`@gram/kitchen`)** : Aplatit les sous-recettes, résout les pourcentages du boulanger, et met à l'échelle les quantités dynamiques.
-- **Analyseur Sémantique (`@gram/analyzer`)** : Gère l'analyse physique, le calcul des rendements (Yield) et la normalisation des masses grâce à votre base de données locale.
+- **Parseur & Compilateur (`@gram/kitchen`)** : Simule le déroulement de la recette, agrège les listes de courses de base, et met à l'échelle les quantités dynamiques.
+- **Analyseur Sémantique (`@gram/analyzer`)** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
 - **Language Server (LSP)** : Apporte un vrai support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
-- **CLI (`@gram/cli`)** : Compilez, mettez à l'échelle, comparez vos versions et extrayez vos listes de courses directement depuis votre terminal.
+- **CLI (`@gram/cli`)** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
 - **Renderer (`@gram/renderer`)** : Générez instantanément du HTML Sémantique ou du Markdown à partir de votre JSON compilé.
 
 ## À quoi ça ressemble ?
@@ -119,4 +119,4 @@ portions: 10
 
 Remarquez comment l'étape `[Incorporer]` utilise `<@œufs{6}` ? Cette syntaxe *d'ingrédient composite* indique à Gram que vous n'utilisez que les jaunes, mais que la liste de courses doit correctement agréger les œufs entiers pour l'achat. Le tag de section `~{-1d}` met en place un rétro-planning par rapport à l'heure finale de cuisson, et `->&lait chaud{}` prépare une variable intermédiaire que vous pouvez verser plus tard.
 
-Prêt à vous lancer ? Consultez le guide [Pour Commencer](./getting-started.md).
+Prêt à vous lancer ? Consultez le guide [Pour Commencer](../tutorials/getting-started.md).

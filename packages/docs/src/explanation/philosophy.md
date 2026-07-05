@@ -26,10 +26,10 @@ If you're building a recipe app, a meal planner, or a smart kitchen dashboard, y
 ## Designed for Developers
 
 The Gram ecosystem gives you everything you need to treat recipes like software:
-- **Parser & Compiler (`@gram/kitchen`)**: Flattens sub-recipes, resolves baker's percentages, and scales dynamic quantities.
-- **Semantic Analyzer (`@gram/analyzer`)**: Handles deep physical analysis, yield calculation, and mass normalization based on your local database.
+- **Parser & Compiler (`@gram/kitchen`)**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
+- **Semantic Analyzer (`@gram/analyzer`)**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
 - **Language Server (LSP)**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
-- **CLI (`@gram/cli`)**: Compile, scale, diff, and extract shopping lists straight from your terminal.
+- **CLI (`@gram/cli`)**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
 - **Renderer (`@gram/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
 
 ## How it looks
@@ -119,4 +119,4 @@ portions: 10
 
 Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 
-Ready to dive in? Check out the [Getting Started](./getting-started.md) guide.
+Ready to dive in? Check out the [Getting Started](../tutorials/getting-started.md) guide.
