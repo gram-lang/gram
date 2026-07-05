@@ -452,7 +452,6 @@ onUnmounted(() => {
   background-color: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 13px;
-  text-align: right;
   outline: none;
 }
 .scale-factor-input:focus {
