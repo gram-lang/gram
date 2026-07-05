@@ -7,7 +7,7 @@ const main = defineCommand({
   meta: {
     name: 'gram',
     version,
-    description: 'CLI for the GRAM recipe language',
+    description: 'CLI for the Gram recipe language',
   },
   subCommands: {
     init: () => import('./commands/init').then(m => m.default),

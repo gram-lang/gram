@@ -7,7 +7,7 @@ import type { GramConfig } from '../types'
 import { ExitCode } from '../errors'
 import { upsertEnvVar } from '../services/config-manager'
 
-const DB_TEMPLATE = `# GRAM ingredient database
+const DB_TEMPLATE = `# Gram ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
 # Full schema reference: packages/analyzer/tests/fixtures/ingredients.yaml
 #
@@ -43,7 +43,7 @@ function guardCancel<T>(value: T | symbol): T {
 export default defineCommand({
   meta: {
     name: 'init',
-    description: 'Initialize a GRAM project in the current directory',
+    description: 'Initialize a Gram project in the current directory',
   },
   async run() {
     intro('gram init')

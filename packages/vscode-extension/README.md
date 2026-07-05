@@ -1,12 +1,12 @@
 # @gram/vscode-extension
 
-The official Visual Studio Code extension for the GRAM recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting, and a dynamic Live Preview.
+The official Visual Studio Code extension for the Gram recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting, and a dynamic Live Preview.
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](https://codeberg.org/abiwab/gram)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](https://codeberg.org/abiwab/gram)**.
 
 ---
 
@@ -47,7 +47,7 @@ The extension is not yet available on the VS Code Marketplace. You must build an
 
 *   `src/extension.ts`: Main entry point for the extension client.
 *   `src/preview.ts`: Manages the Live Preview webview panel and HTML rendering.
-*   `syntaxes/`: Contains the fallback TextMate grammar for GRAM.
+*   `syntaxes/`: Contains the fallback TextMate grammar for Gram.
 *   `snippets/`: Built-in code snippets for standard recipe structures.
 *   `../language-server`: The LSP implementation providing all intelligence to this extension.
 

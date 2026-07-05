@@ -1,12 +1,12 @@
 # @gram/parser
 
-A robust, 3-stage parser for the GRAM recipe language. It is part of the GRAM monorepo and is strictly limited to text-to-AST parsing.
+A robust, 3-stage parser for the Gram recipe language. It is part of the Gram monorepo and is strictly limited to text-to-AST parsing.
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
 
 ---
 
@@ -25,7 +25,7 @@ This will generate the compiled JavaScript in the `dist/` directory.
 
 ## ⚡ Usage
 
-The package exports `getAST()` to convert GRAM source strings into a typed Recipe AST.
+The package exports `getAST()` to convert Gram source strings into a typed Recipe AST.
 
 ```javascript
 const { getAST } = require('@gram/parser');
@@ -47,7 +47,7 @@ try {
 
 *   `src/index.ts`: Orchestrates parsing and Ohm Semantics to AST conversions.
 *   `src/types.ts`: Declares strictly-typed AST node definitions.
-*   `grammar.ohm`: The official OhmJS grammar defining the GRAM language structure.
+*   `grammar.ohm`: The official OhmJS grammar defining the Gram language structure.
 
 ---
 

@@ -41,7 +41,7 @@ export function provideUnitCompletions(prefix: string): CompletionItem[] {
         add(canon, canon, '0');
     }
 
-    // FR aliases first (primary locale in GRAM)
+    // FR aliases first (primary locale in Gram)
     for (const [canon, aliases] of Object.entries(UNIT_DICTIONARIES.fr)) {
         for (const alias of aliases) add(alias, canon, '1');
     }

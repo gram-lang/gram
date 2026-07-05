@@ -1,6 +1,6 @@
 # Command Line Interface (CLI)
 
-The official GRAM CLI (`@gram/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
+The official Gram CLI (`@gram/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
 
 ## Installation
 
@@ -24,7 +24,7 @@ bun link
 ### Project Management & Developer Workflow
 
 #### `gram init`
-Scaffolds a new GRAM environment in the current directory.
+Scaffolds a new Gram environment in the current directory.
 - Creates a `.gram/` directory.
 - Generates a plain, uncommented `config.yaml`.
 - Interactively configures your preferred recipe language (currently `en` or `fr`).
@@ -329,9 +329,9 @@ The merge is **alias-aware**: if your database has `butter` with alias `beurre`,
 The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
 
 ### Cascading AI Configuration
-GRAM uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
+Gram uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
 1. **Environment Variables**: Variables like `GEMINI_API_KEY` (from the system or a `.env` file) take absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
-2. **`config.yaml` Fallback**: If the environment variable is missing, GRAM falls back to the `ai.apiKey` field in your `config.yaml`. 
+2. **`config.yaml` Fallback**: If the environment variable is missing, Gram falls back to the `ai.apiKey` field in your `config.yaml`. 
 
 ::: warning Protect your Keys!
 Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.

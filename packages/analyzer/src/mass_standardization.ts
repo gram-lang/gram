@@ -33,7 +33,7 @@ import { IngredientData } from './types';
 /**
  * Mass Normalization Module
  * 
- * Responsible for converting physical mass units into a standard GRAM unit (g).
+ * Responsible for converting physical mass units into a standard Gram unit (g).
  */
 
 interface ConversionResult {
@@ -139,16 +139,16 @@ export function parseDensityOverrides(meta: any): Record<string, number> {
 }
 
 export function standardizeMass(
-    amount: number, 
-    unit: string, 
+    amount: number,
+    unit: string,
     database: Record<string, IngredientData>,
-    ingredientName?: string, 
+    ingredientName?: string,
     overrides?: Record<string, number>
 ): ConversionResult & { isEstimate: boolean } | null {
     if (!unit) {
         return null;
     }
-    
+
     const u = normalizeUnit(unit);
 
     // 1. Physical Mass
@@ -188,12 +188,12 @@ export function standardizeMass(
         const slug = slugify(ingredientName);
         const unitWt = overrides ? overrides[slug] : undefined;
         if (unitWt !== undefined) {
-            return { 
-                mass: amount * unitWt, 
-                method: 'explicit', 
+            return {
+                mass: amount * unitWt,
+                method: 'explicit',
                 // Careful: If the override was meant for density (g/ml), this might be ambiguous?
                 // But generally overrides for non-volume things imply unit weight.
-                isEstimate: false 
+                isEstimate: false
             };
         }
 

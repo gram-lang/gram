@@ -26,12 +26,12 @@
     "commands": [
       {
         "command": "gram.showPreview",
-        "title": "GRAM: Live Preview",
+        "title": "Gram: Live Preview",
         "icon": "$(open-preview)"
       },
       {
         "command": "gram.showNutrition",
-        "title": "GRAM: Macros"
+        "title": "Gram: Macros"
       }
     ],
     "languages": [
@@ -61,7 +61,7 @@
       }
     ],
     "configuration": {
-      "title": "GRAM",
+      "title": "Gram",
       "properties": {
         "gram.ingredientDatabase.path": {
           "type": "string",

@@ -1,12 +1,12 @@
 # @gram/i18n
 
-The translation and normalization module for units and time within the GRAM recipe language. It provides high-performance, O(1) lookup dictionaries and normalizers to translate locale-specific aliases (e.g., `càs`, `cuillère à soupe`, `teaspoon`) into standardized canonical representation units (e.g., `tbsp`, `tsp`).
+The translation and normalization module for units and time within the Gram recipe language. It provides high-performance, O(1) lookup dictionaries and normalizers to translate locale-specific aliases (e.g., `càs`, `cuillère à soupe`, `teaspoon`) into standardized canonical representation units (e.g., `tbsp`, `tsp`).
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
 
 ---
 

@@ -10,7 +10,7 @@
 "@gram/vscode-extension": major
 ---
 
-Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+Introduction of the official Gram CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
 **Project & Recipe Management:**
 - **Project Setup**: `gram init` safely scaffolds a `.gram` environment, including interactive AI provider setup (Google, OpenAI, Anthropic, Ollama) and secret management.

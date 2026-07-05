@@ -72,7 +72,7 @@ export class PreviewPanel {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; font-src https://fonts.gstatic.com https://unpkg.com https://cdn.jsdelivr.net; script-src 'nonce-${nonce}' https://unpkg.com;">
-    <title>GRAM Preview</title>
+    <title>Gram Preview</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="${cssUri}" rel="stylesheet">
     <script nonce="${nonce}" src="https://unpkg.com/@phosphor-icons/web"></script>

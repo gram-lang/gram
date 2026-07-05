@@ -1,12 +1,12 @@
 # @gram/renderer
 
-The universal renderer for the GRAM recipe language. It takes compiled or analyzed recipe ASTs and renders them into structured Markdown or semantic HTML with support for custom visual elements and class names.
+The universal renderer for the Gram recipe language. It takes compiled or analyzed recipe ASTs and renders them into structured Markdown or semantic HTML with support for custom visual elements and class names.
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
 
 ---
 

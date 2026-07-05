@@ -1,12 +1,12 @@
 # @gram/kitchen
 
-The compiler for the GRAM recipe language. It takes a typed Recipe AST (produced by `@gram/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
+The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
 
 ---
 

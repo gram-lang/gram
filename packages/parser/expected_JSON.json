@@ -1,12 +1,12 @@
 {
-  "title": "The Ultimate GRAM Torture Test",
+  "title": "The Ultimate Gram Torture Test",
   "slug": "the-ultimate-gram-torture-test",
   "meta": {
-    "title": "The Ultimate GRAM Torture Test",
+    "title": "The Ultimate Gram Torture Test",
     "originalTitle": "Unit Test from Hell",
     "date": "2025-12-17",
     "lastUpdated": "2025-12-18",
-    "description": "A comprehensive recipe designed to break parsers and test every single feature of the GRAM specification, including edge cases, logic combinations, and syntax stressors.",
+    "description": "A comprehensive recipe designed to break parsers and test every single feature of the Gram specification, including edge cases, logic combinations, and syntax stressors.",
     "category": "System Test",
     "size": "∞ servings",
     "author": [

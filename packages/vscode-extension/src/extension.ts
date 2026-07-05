@@ -29,11 +29,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     let latestHtml = '';
 
-    client = new LanguageClient('gramLanguageServer', 'GRAM Language Server', serverOptions, clientOptions);
-    
+    client = new LanguageClient('gramLanguageServer', 'Gram Language Server', serverOptions, clientOptions);
+
     try {
         await client.start();
-        
+
         client.onNotification('gram/previewUpdated', (params: { uri: string; html: string }) => {
             latestHtml = params.html;
             if (PreviewPanel.currentPanel) {
@@ -41,7 +41,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             }
         });
     } catch (error) {
-        vscode.window.showErrorMessage(`Échec du démarrage du serveur de langage GRAM: ${error instanceof Error ? error.message : String(error)}`);
+        vscode.window.showErrorMessage(`Échec du démarrage du serveur de langage Gram: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     context.subscriptions.push(

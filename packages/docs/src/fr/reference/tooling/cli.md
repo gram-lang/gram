@@ -1,6 +1,6 @@
 # Interface en Ligne de Commande (CLI)
 
-Le CLI officiel de GRAM (`@gram/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
+Le CLI officiel de Gram (`@gram/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
 
 ## Installation
 
@@ -24,7 +24,7 @@ bun link
 ### Gestion de Projet & Flux de Travail Développeur
 
 #### `gram init`
-Initialise un nouvel environnement GRAM dans le dossier courant.
+Initialise un nouvel environnement Gram dans le dossier courant.
 - Crée un dossier `.gram/`.
 - Génère un fichier `config.yaml` vierge et sans commentaires.
 - Configure de manière interactive votre langue de recette préférée (actuellement `en` ou `fr`).
@@ -328,9 +328,9 @@ La fusion prend en compte les **alias** : si votre base a `butter` avec l'alias 
 Le CLI fusionne la configuration depuis `~/.config/gram/config.yaml` (globale) et `.gram/config.yaml` (projet).
 
 ### Configuration IA en Cascade
-GRAM utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
+Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
 1. **Variables d'Environnement** : Les variables comme `GEMINI_API_KEY` (du système ou d'un fichier `.env`) ont la priorité absolue. C'est la façon **recommandée** de stocker des secrets localement et dans des environnements CI/CD.
-2. **Secours `config.yaml`** : Si la variable d'environnement manque, GRAM se rabat sur le champ `ai.apiKey` de votre `config.yaml`. 
+2. **Secours `config.yaml`** : Si la variable d'environnement manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml`. 
 
 ::: warning Protégez vos Clés !
 Stocker votre `apiKey` dans `config.yaml` est fortement déconseillé si vous versionnez votre dossier `.gram` avec Git, car cela exposerait votre clé secrète.

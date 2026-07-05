@@ -416,7 +416,7 @@ These are the most common mistakes. Memorize them.
 ❌  @all-purpose-flour{250g}   →   ✅  @all purpose flour{250g}
 ❌  @brown-sugar{100g}         →   ✅  @brown sugar{100g}
 \`\`\`
-GRAM uses real names with spaces. Kebab-case is an internal concept, not syntax.
+Gram uses real names with spaces. Kebab-case is an internal concept, not syntax.
 
 ### ❌ Units inside cookware braces
 

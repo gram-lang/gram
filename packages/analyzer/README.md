@@ -1,12 +1,12 @@
 # @gram/analyzer
 
-The physical and nutritional analysis module for the GRAM recipe language. It takes a structurally compiled recipe (produced by `@gram/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
+The physical and nutritional analysis module for the Gram recipe language. It takes a structurally compiled recipe (produced by `@gram/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
 
 ---
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[GRAM Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
 
 ---
 
