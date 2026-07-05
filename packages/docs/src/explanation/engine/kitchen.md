@@ -33,11 +33,15 @@ The Kitchen calculates four time metrics, combined in `core.ts`:
 
 ### 3. Shopping List Aggregation (`shopping.ts`)
 
-The Kitchen is responsible for generating the final list of ingredients required to cook the recipe.
+The Kitchen builds the base list of ingredients required to cook the recipe.
 
-- **Merging**: It groups all usages of an ingredient by its canonical ID and unit. If you use `@butter{50g}` in the dough and `@butter{20g}` in the frosting, it arithmetically sums them into a single `70g` entry.
+- **Merging**: It groups all usages of an ingredient by its raw id (a slug of the name as written) and unit. If you use `@butter{50g}` in the dough and `@butter{20g}` in the frosting, it arithmetically sums them into a single `70g` entry.
 - **Composite Logic**: It implements the MAX and SUM rules for [Composite Ingredients](../syntax/composite-ingredients.md): the parent quantity required by all composite children is computed as their MAX (e.g. the larger of "zest of 2 lemons" and "juice of 3 lemons" wins), then any quantity of the parent used directly on its own is SUMMED on top.
 - **Hybrid Aggregation**: It handles [Relative Quantities](../syntax/relative-quantities.md) by keeping unresolved/formula-based amounts separate (as text, flagged for review) from absolute numeric masses, so the shopping list remains mathematically accurate even if portions change.
+
+::: tip This is not the final list
+The Kitchen has no access to `ingredients.yaml` — it groups purely by raw id, so `@butter` and `@beurre` (an alias of the same ingredient) stay separate here, and `100g` + `1 cup` of the same ingredient stay as two entries rather than one merged mass. That further resolution — canonical-id aliasing and cross-unit merging via density — happens downstream in `@gram/analyzer`, once an ingredient database is available. See [Shopping List Aggregation](../shopping-list-aggregation.md).
+:::
 
 ::: tip A second, different aggregation exists per-section
 `section.ts` provides a separate helper, `aggregateSectionIngredients`, used to build a compact display of ingredients *within a single section* (as opposed to the recipe-wide shopping list above). Its rules are deliberately different: measured quantities of the same ingredient are **not** summed arithmetically — they're kept side-by-side and joined for display (e.g. `200g + 50g`), since a per-section list is meant to show what's used at each step, not a single purchasing total.

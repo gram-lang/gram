@@ -101,7 +101,7 @@ export default defineConfig({
               { text: 'Parsing & AST', link: '/explanation/engine/parser' },
               { text: 'Compilation & Structure', link: '/explanation/engine/kitchen' },
               { text: 'Semantic Analysis', link: '/explanation/engine/analyzer' },
-              { text: 'JSON Output', link: '/explanation/engine/renderer' },
+              { text: 'Rendering & Output', link: '/explanation/engine/renderer' },
               { text: 'Deep Dive: Mass & Yield', link: '/explanation/mass-and-yield' },
               { text: 'Deep Dive: Nutrition', link: '/explanation/nutrition' },
               { text: 'Deep Dive: Shopping Lists', link: '/explanation/shopping-list-aggregation' },
@@ -169,7 +169,7 @@ export default defineConfig({
               { text: 'Parsing & AST', link: '/fr/explanation/engine/parser' },
               { text: 'Compilation & Structure', link: '/fr/explanation/engine/kitchen' },
               { text: 'Analyse Sémantique', link: '/fr/explanation/engine/analyzer' },
-              { text: 'Sortie JSON', link: '/fr/explanation/engine/renderer' },
+              { text: 'Rendu & Sortie', link: '/fr/explanation/engine/renderer' },
               { text: 'Deep Dive: Masse & Rendement', link: '/fr/explanation/mass-and-yield' },
               { text: 'Deep Dive: Nutrition', link: '/fr/explanation/nutrition' },
               { text: 'Deep Dive: Liste de courses', link: '/fr/explanation/shopping-list-aggregation' }

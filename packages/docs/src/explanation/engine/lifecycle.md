@@ -24,6 +24,7 @@ The output is a logically sound, compiled recipe — a `CompilationResult` objec
 The Analyzer takes the compiled recipe and cross-references it with your project's `ingredients.yaml` database. This is where the physical world meets the digital code:
 - **Mass Standardization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
 - **Yield Calculation**: Calculates purchasing weight versus edible weight.
+- **Shopping List Aggregation**: Resolves database aliases (e.g. `beurre`/`butter`) and merges cross-unit quantities into a single gram total when possible, so Kitchen's raw per-unit grouping becomes the final, deduplicated list.
 - **Nutritional Estimation**: Computes calories and macronutrients based on the standardized masses.
 - **Baker's Percentages**: Expresses every ingredient's mass as a percentage of a reference ingredient (typically flour).
 
