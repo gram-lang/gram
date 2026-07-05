@@ -4,6 +4,7 @@ export * from './mass_standardization';
 export * from './nutrition';
 export * from './metrics';
 export * from './diff';
+export * from './shopping_aggregation';
 
 
 import { CompilationResult, Usage } from '@gram/kitchen';
@@ -12,8 +13,9 @@ import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientDa
 import { ASTNodeType } from '@gram/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
-import { standardizeMass, parseDensityOverrides } from './mass_standardization';
+import { standardizeMass, parseDensityOverrides, applyYield } from './mass_standardization';
 import { getIngredientData } from './ingredient_db';
+import { aggregateShoppingList } from './shopping_aggregation';
 import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 import { z } from 'zod';
 
@@ -57,13 +59,18 @@ export function analyze(
             // Perform physical mass normalization if enabled
             if (opts.enableMassStandardization !== false) {
                  const numericQty = getNumericQty(item.qty);
-                 
+
                  if (numericQty !== null) {
                       const norm = standardizeMass(numericQty, item.unit || 'unit', database, item.name || item.id, overrides);
                       if (norm) {
-                           item.normalizedMass = norm.mass;
                            item.conversionMethod = norm.method;
                            item.isEstimate = norm.isEstimate;
+
+                           const dbData = getIngredientData(item.id, database);
+                           const yieldFactor = opts.enableYieldCalculation !== false ? dbData?.physical?.yield : undefined;
+                           const yielded = applyYield(norm.mass, norm.method, yieldFactor);
+                           item.normalizedMass = yielded.normalizedMass;
+                           if (yielded.purchasingMass !== undefined) item.purchasingMass = yielded.purchasingMass;
                       }
                  }
             }
@@ -144,22 +151,28 @@ export function analyze(
     });
 
     // 2. Traverse and enrich the master Shopping List
-    const shopping_list = result.shopping_list ? JSON.parse(JSON.stringify(result.shopping_list)) : [];
+    let shopping_list = result.shopping_list ? JSON.parse(JSON.stringify(result.shopping_list)) : [];
     shopping_list.forEach((item: any) => {
          if (opts.enableMassStandardization !== false) {
               if (item.type === 'composite' && Array.isArray(item.usage)) {
                    // For composites, sum children masses — NOT the parent unit weight.
                    // e.g. 6 egg yolks + 1 direct egg → 6×17g + 1×50g = 152g, not 7×50g = 350g.
                    let totalMass = 0;
+                   let totalPurchasing = 0;
                    let hasEstimate = false;
                    for (const child of item.usage) {
                         const numericQty = getNumericQty(child.qty);
                         if (numericQty !== null) {
                              const norm = standardizeMass(numericQty, child.unit || 'unit', database, child.name || child.id, overrides);
                              if (norm) {
-                                  child.normalizedMass = parseFloat(norm.mass.toFixed(2));
+                                  const childDbData = getIngredientData(child.id, database);
+                                  const childYieldFactor = opts.enableYieldCalculation !== false ? childDbData?.physical?.yield : undefined;
+                                  const childYielded = applyYield(norm.mass, norm.method, childYieldFactor);
+
+                                  child.normalizedMass = parseFloat(childYielded.normalizedMass.toFixed(2));
                                   child.isEstimate = norm.isEstimate;
-                                  totalMass += norm.mass;
+                                  totalMass += childYielded.normalizedMass;
+                                  totalPurchasing += childYielded.purchasingMass ?? childYielded.normalizedMass;
                                   if (norm.isEstimate) hasEstimate = true;
                              }
                         }
@@ -168,22 +181,27 @@ export function analyze(
                         item.normalizedMass = parseFloat(totalMass.toFixed(2));
                         item.isEstimate = hasEstimate;
                         item.conversionMethod = hasEstimate ? 'estimate' : 'physical';
+                        if (Math.abs(totalPurchasing - totalMass) > 0.001) {
+                             item.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+                        }
                    }
                } else {
                    const usageIds = item._usageIds || (item._usageId ? [item._usageId] : []);
                    const usages = allRawIngredients.filter(u => u._usageId && usageIds.includes(u._usageId));
                    let totalMass = 0;
+                   let totalPurchasing = 0;
                    let hasEstimate = false;
                    let hasRelativeResolved = false;
-                   
+
                    usages.forEach(u => {
                        if (u.normalizedMass !== undefined) {
                            totalMass += u.normalizedMass;
+                           totalPurchasing += u.purchasingMass ?? u.normalizedMass;
                            if (u.isEstimate) hasEstimate = true;
                            if (u.conversionMethod === 'relative') hasRelativeResolved = true;
                        }
                    });
-                   
+
                    if (totalMass > 0) {
                        item.normalizedMass = parseFloat(totalMass.toFixed(2));
                        item.isEstimate = hasEstimate;
@@ -192,6 +210,9 @@ export function analyze(
                        // ingredient's percentage can't be treated as a physical anchor
                        // (e.g. for Baker's Math reference validation below).
                        item.conversionMethod = hasRelativeResolved ? 'relative' : (hasEstimate ? 'estimate' : 'physical');
+                       if (Math.abs(totalPurchasing - totalMass) > 0.001) {
+                            item.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+                       }
 
                        if (hasRelativeResolved) {
                            item.qty = item.normalizedMass;
@@ -201,16 +222,13 @@ export function analyze(
                    }
                }
          }
-
-         // Apply physical yields (waste factor adjustments, e.g. purchasing weight vs net weight)
-         if (opts.enableYieldCalculation !== false && item.normalizedMass && item.normalizedMass > 0) {
-              const dbData = getIngredientData(item.id, database);
-              if (dbData && dbData.physical && dbData.physical.yield && dbData.physical.yield < 1) {
-                  const gross = item.normalizedMass / dbData.physical.yield;
-                  item.purchasingMass = parseFloat(gross.toFixed(2));
-              }
-         }
     });
+
+    // 2.8. Resolve database aliases and merge cross-unit entries for the same
+    // canonical ingredient (e.g. "beurre"/"butter", or "100g" + "1 cup" of flour).
+    if (opts.enableMassStandardization !== false) {
+        shopping_list = aggregateShoppingList(shopping_list, database);
+    }
 
     // 2.5 Calculate Baker's Percentages (if a reference is defined)
     let bakersReferenceMass: number | null = null;

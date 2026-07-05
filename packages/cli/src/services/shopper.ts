@@ -4,6 +4,7 @@ import { normalizeUnit } from '@gram/i18n'
 import { runPipeline } from '../core/pipeline'
 import { fmtNumber } from '../core/format'
 import type { IngredientData } from '@gram/analyzer'
+import { resolveCanonicalId } from '@gram/analyzer'
 import type { ShopResult, ShoppingEntry } from '../types'
 
 export interface ShopOptions {
@@ -36,16 +37,6 @@ export async function buildShoppingList(
   const limit = pLimit(20)
   const allItems: CollectedItem[] = []
 
-  // Build alias → canonical id map so @sel and @salt (same ingredient) are grouped together
-  const aliasMap = new Map<string, string>()
-  if (opts.db) {
-    for (const [canonicalId, data] of Object.entries(opts.db)) {
-      for (const alias of data.aliases ?? []) {
-        aliasMap.set(alias, canonicalId)
-      }
-    }
-  }
-
   await Promise.all(
     files.map(file =>
       limit(async () => {
@@ -54,7 +45,9 @@ export async function buildShoppingList(
         const pushItem = (item: any) => {
           if ((item as any).type === 'alternative' || (item as any).variable_entries) return
           const qty = typeof item.qty === 'number' && isFinite(item.qty) ? item.qty : null
-          const id = aliasMap.get(item.id) ?? item.id
+          // Resolve aliases (e.g. "beurre"/"butter") to a shared canonical id so recipes
+          // that name the same ingredient differently still get grouped together.
+          const id = opts.db ? resolveCanonicalId(item.name ?? item.id, opts.db) : item.id
           allItems.push({ id, name: item.name, qty, unit: item.unit, normalizedMass: item.normalizedMass, isEstimate: item.isEstimate, recipe: slug })
         }
 

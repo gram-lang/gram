@@ -4,6 +4,7 @@ import {
     resolveIngredientDensity,
     parseDensityOverrides,
     standardizeMass,
+    applyYield,
 } from '../src/mass_standardization';
 import type { IngredientData } from '../src/types';
 
@@ -102,5 +103,28 @@ describe('standardizeMass — density resolution regression', () => {
 
     it('returns null for a volume unit with no density available anywhere', () => {
         expect(standardizeMass(100, 'ml', database, 'water')).toBeNull();
+    });
+});
+
+describe('applyYield', () => {
+    it('derives Net Mass forward from a unit_weight (Gross) conversion', () => {
+        // 1 avocado: unit_weight=150g (Gross), yield=0.70 -> Net = 105g, Gross stays 150g
+        const result = applyYield(150, 'unit_weight', 0.7);
+        expect(result).toEqual({ normalizedMass: 105, purchasingMass: 150 });
+    });
+
+    it('derives Gross Mass backward from an explicit mass/volume (Net) conversion', () => {
+        // 200g of avocado written directly: Net = 200g, Gross = 200/0.7 = 285.71g
+        const result = applyYield(200, 'physical', 0.7);
+        expect(result.normalizedMass).toBe(200);
+        expect(result.purchasingMass).toBeCloseTo(285.71, 2);
+    });
+
+    it('is a no-op when there is no yield factor', () => {
+        expect(applyYield(150, 'unit_weight', undefined)).toEqual({ normalizedMass: 150 });
+    });
+
+    it('is a no-op when yield is 1 (no waste)', () => {
+        expect(applyYield(150, 'unit_weight', 1)).toEqual({ normalizedMass: 150 });
     });
 });

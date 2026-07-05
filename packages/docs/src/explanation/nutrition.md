@@ -12,20 +12,18 @@ However, because nutritional data is highly sensitive and impacts dietary choice
 4. **Aggregation**: The scaled values for all ingredients are summed to calculate the Total Recipe Nutrition.
 5. **Portion Division**: If the recipe's frontmatter defines `portions: 4`, the Total Recipe Nutrition is divided by 4 to provide Per-Portion data.
 
-## Strict Partial Data Hiding
+## Transparent Partial Data Reporting
 
-The most important philosophy of Gram's nutritional engine is: **No data is better than wrong data.**
+The most important philosophy of Gram's nutritional engine is: **never hide the estimate, but never let the user mistake it for the truth.**
 
-If you are cooking a meal with 10 ingredients, and only 9 of them have nutritional data in your database, displaying the sum of those 9 ingredients would falsely underestimate the total caloric content of the meal.
+If you are cooking a meal with 10 ingredients, and only 9 of them have nutritional data in your database, silently displaying the sum of those 9 ingredients would risk being read as a complete, precise total when it actually understates the real caloric content.
 
-To prevent this, Gram enforces a strict hiding policy:
-- If **any** ingredient in the recipe is missing from the database.
-- If **any** ingredient is missing its `nutrition` block.
-- If **any** ingredient's mass cannot be normalized (e.g., an unknown unit).
+Rather than withholding the total outright, Gram surfaces it alongside the information needed to judge its reliability:
+- The `total` (and `perPortion`, if `portions` is set) is always computed and returned from whatever data is available — it is never blanked out.
+- A `coverage` ratio is always included (e.g. `0.9` for "90% of ingredients have data"), computed as the share of mass-bearing ingredients that had a `nutrition` block.
+- A `warnings` list flags exactly which ingredients are missing from the database, missing their `nutrition` block, or have an unresolvable mass — so the gap is attributable, not just a vague caveat.
 
-**The entire total nutrition panel will be hidden in the UI.** 
-
-The Analyzer will still output a `coverage` percentage (e.g., "90% of ingredients have data"), which the IDE extension uses to warn you, but it will refuse to display a partial total.
+The reference HTML renderer reflects this directly: it always shows the nutrition panel whenever there is any data (or any warning) to show, with a `Coverage: X%` badge next to it. This gives the cook a genuinely useful number immediately, while making it clear at a glance how much of the recipe that number actually accounts for — rather than replacing a "90% accurate estimate" with nothing at all.
 
 ## Handling Modifiers
 
@@ -33,4 +31,4 @@ Gram's syntax modifiers impact nutritional calculations in specific ways:
 
 - **Optional Ingredients (`?`)**: Ingredients marked as optional (e.g., `@?whipped cream`) are **excluded** from the base nutritional totals. The Analyzer assumes the most conservative dietary baseline.
 - **Alternatives (`|`)**: When a recipe provides alternatives (e.g., `@butter{50g} | @oil{40g}`), the Analyzer only calculates the nutrition for the **first (preferred) option**. It does not average them.
-- **Composite Ingredients (`<@`)**: The nutrition of a composite ingredient is calculated based on its children if they have specific data (e.g., `lemon juice` has different macros than `lemon zest`). If the children do not have specific data, the Analyzer falls back to the parent's nutritional data, scaled by mass.
+- **Composite Ingredients (`<@`)**: The nutrition of a composite ingredient is calculated purely from its children, each looked up independently in the database by its own id (e.g., `lemon juice` and `lemon zest` are two distinct entries with different macros). There is no fallback to the parent's own nutritional data — if a child ingredient has no `nutrition` block, it is treated the same as any other missing ingredient: it contributes to the `MISSING_MACROS` warning and lowers `coverage`, rather than being estimated from the parent.

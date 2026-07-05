@@ -205,3 +205,33 @@ export function standardizeMass(
 
     return null;
 }
+
+export interface YieldedMass {
+    normalizedMass: number;
+    purchasingMass?: number;
+}
+
+/**
+ * Applies the yield (waste factor) to a standardized mass, distinguishing between:
+ * - `unit_weight` conversions (e.g. "1 avocado"), which represent the whole purchased
+ *   unit — i.e. Gross Mass. The recipe/nutrition-facing Net Mass is derived forward
+ *   by multiplying by yield.
+ * - Any other conversion (explicit grams, volume+density), which represents what the
+ *   recipe author put in the bowl — i.e. Net Mass. The purchasing Gross Mass is
+ *   derived backward by dividing by yield.
+ */
+export function applyYield(mass: number, method: ConversionResult['method'], yieldFactor?: number): YieldedMass {
+    if (yieldFactor === undefined || yieldFactor >= 1) {
+        return { normalizedMass: mass };
+    }
+    if (method === 'unit_weight') {
+        return {
+            normalizedMass: parseFloat((mass * yieldFactor).toFixed(2)),
+            purchasingMass: mass,
+        };
+    }
+    return {
+        normalizedMass: mass,
+        purchasingMass: parseFloat((mass / yieldFactor).toFixed(2)),
+    };
+}

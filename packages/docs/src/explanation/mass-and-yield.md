@@ -31,8 +31,7 @@ When the Analyzer encounters an ingredient, it runs it through a strict priority
 2. **User Override**: If you provided a specific density override in the recipe's YAML frontmatter (e.g., `densities: { flour: 0.55 }`), it uses this explicit value to convert the volume you requested into mass.
 3. **Database Density**: If you requested a known volume (`ml`, `cup`, `tbsp`, `tsp`) and your `ingredients.yaml` has a `density` field for that ingredient, it calculates `Volume * Density = Mass`.
 4. **Database Unit Weight**: If you requested a count (`@egg{3}` or `@garlic{2 cloves}`) and your database has a `unit_weight` field, it calculates `Count * Unit Weight = Mass`.
-5. **Water Fallback**: If no specific data is found for a volume conversion, the Analyzer assumes the density of water (`1 ml = 1 g`).
-6. **Incomplete**: If the unit is an unknown count (e.g., `1 piece of mysterious fruit`) and has no unit weight in the database, the mass calculation fails and is marked as "incomplete".
+5. **Incomplete**: If a volume has no density available (no override, no database entry) or a count has no `unit_weight`, the Analyzer refuses to guess. It will **not** assume a default density (e.g. treating everything as water) — doing so would silently corrupt shopping-list totals. The mass calculation fails, the ingredient is marked as "incomplete", and it is listed in its raw, unconverted unit.
 
 ## Yield Calculation (The Waste Factor)
 
@@ -51,8 +50,8 @@ Let's look at two scenarios for an avocado (`unit_weight: 150g`, `yield: 0.70`):
 
 **Scenario A: Writing in Counts (`@avocado{1}`)**
 1. The Analyzer reads "1 unit".
-2. It applies the `unit_weight`: `1 * 150g = 150g`. This is the **Gross Mass** (what you bought).
-3. It applies the `yield` to find what goes into the recipe: `150g * 0.70 = 105g`. This is the **Net Mass**.
+2. It applies the `unit_weight`: `1 * 150g = 150g`. This is the **Gross Mass** (the whole purchased avocado) — stored as the ingredient's `purchasingMass`.
+3. It applies the `yield` forward to find what actually goes into the recipe: `150g * 0.70 = 105g`. This is the **Net Mass** — the value used for the recipe's total mass and nutrition calculation.
 
 **Scenario B: Writing in Mass (`@avocado{200g}`)**
 1. The Analyzer reads "200g". It assumes this is the **Net Mass** you need in the bowl.

@@ -9,12 +9,16 @@ This is not a simple concatenation of ingredients. The compiler performs a compl
 When a recipe (or a batch of multiple recipes) is passed to the Kitchen for shopping list generation, the following pipeline executes:
 
 ### 1. ID Normalization and Aliasing
-The compiler first groups ingredients by their ID. If it encounters `@butter` and `@beurre` (assuming `beurre` is listed as an alias of `butter` in `ingredients.yaml`), it merges them into a single bucket under the primary key `butter`.
+`@gram/kitchen` itself groups ingredients purely by the raw id it assigned during parsing (a slug of the name you wrote) — it has no access to `ingredients.yaml` and can't know that `@butter` and `@beurre` refer to the same ingredient. On its own, kitchen's shopping list lists them as two separate entries.
+
+Alias resolution happens one layer up, in `@gram/analyzer`, which does have access to the ingredient database. If `beurre` is listed as an alias of `butter` in `ingredients.yaml`, the analyzer re-groups kitchen's raw entries by this canonical id, merging `@butter` and `@beurre` into a single `butter` entry. **This step only runs when an ingredient database is supplied** — without one (compiling with `@gram/kitchen` alone, or a CLI command run without a database), aliases are not resolved and the two ingredients stay separate.
 
 ### 2. Unit Merging
-If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`).
+If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`) — this happens directly in `@gram/kitchen`, no database needed.
 
-If they have different units (e.g., `100g` and `1 cup`), the compiler cannot sum them algebraically. Instead, it defers to the Analyzer's Mass Standardization engine to convert the `1 cup` into grams using the ingredient's specific density, and then sums the resulting masses.
+If they have different units (e.g., `100g` and `1 cup`), summing them requires converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
+
+**Fallback: missing density.** If the density can't be resolved for at least one of the units involved, the analyzer can't produce a single reliable mass total. Rather than guessing, it keeps the entries separate, renames them to the canonical id, and flags all of them with `multiUnit: true`. Renderers use this flag to cluster the entries together under one heading (e.g. "⚠️ Mixed units") instead of scattering them across the list — making it clear to the cook that they're the same ingredient, without silently mis-adding incompatible units.
 
 ### 3. Ghosting Relative Quantities
 Relative quantities (like `@water{50% @&flour}`) pose a unique problem for shopping lists, especially in multi-recipe batch processing. 

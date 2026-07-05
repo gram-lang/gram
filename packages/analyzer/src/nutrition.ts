@@ -40,6 +40,10 @@ export function calculateNutrition(
     const flatList: NutritionItem[] = [];
     
     ingredients.forEach(item => {
+        // Optional ingredients (`?`) are excluded from the conservative baseline —
+        // skip the whole item (and its composite children/alternative options) up front.
+        if (item.modifiers?.includes('optional')) return;
+
         if (item.type === 'composite' && item.usage) {
              flatList.push(...item.usage);
         } else if (item.type === 'alternative') {
@@ -54,6 +58,9 @@ export function calculateNutrition(
     flatList.forEach(item => {
         const id = item.id;
         if (!id) return;
+        // A composite child or alternative option can carry its own `optional` modifier
+        // even when the parent/group wasn't marked optional as a whole.
+        if (item.modifiers?.includes('optional')) return;
 
         // Ingredients declared without a quantity (@salt{}, @oil) have negligible/trace mass.
         // They are intentional "to taste" entries — skip silently, no warning, no coverage hit.
