@@ -235,7 +235,6 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             res.qty = parseFloat((item.otherUnits![primaryUnit] || 0).toFixed(2));
             res.unit = primaryUnit || null;
         }
-        if (units.length > 1) res.multiUnit = true;
 
         const hasOther = Object.keys(item.otherUnits!).length > 0;
         
@@ -256,6 +255,19 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         }
 
         return res;
+    });
+
+    // 4.5. Flag ingredients split across incompatible units (e.g. 500g here,
+    // 2 cups elsewhere): since the grouping key above already includes the
+    // unit, each unit produces its own separate entry with the same `id` —
+    // so ambiguity has to be detected *across* entries, not within one.
+    const unitsById = new Map<string, Set<string | null>>();
+    standardList.forEach(item => {
+        if (!unitsById.has(item.id)) unitsById.set(item.id, new Set());
+        unitsById.get(item.id)!.add(item.unit ?? null);
+    });
+    standardList.forEach(item => {
+        if ((unitsById.get(item.id)?.size ?? 0) > 1) item.multiUnit = true;
     });
 
     // 5. Merge direct ingredient usages into their composite parent sub-recipes

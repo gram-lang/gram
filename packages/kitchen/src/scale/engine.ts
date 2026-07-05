@@ -8,7 +8,6 @@ import {
     InvalidFactorError,
     IngredientNotFoundError,
     NestedOnlyTargetError,
-    CompositeTargetError,
     AlternativeTargetError,
     FixedIngredientError,
     RelativeTargetError,
@@ -21,14 +20,6 @@ function isPositiveFinite(n: number): boolean {
     return typeof n === 'number' && isFinite(n) && n > 0;
 }
 
-function findComposite(shoppingList: any[], id: string): any | undefined {
-    return shoppingList.find((i) => i && i.type === 'composite' && i.id === id);
-}
-
-function findAlternativeGroup(shoppingList: any[], id: string): any | undefined {
-    return shoppingList.find((i) => i && i.type === 'alternative' && i.id === id);
-}
-
 function findNestedParent(shoppingList: any[], id: string): string | undefined {
     for (const item of shoppingList) {
         if (item && item.type === 'composite') {
@@ -39,16 +30,33 @@ function findNestedParent(shoppingList: any[], id: string): string | undefined {
     return undefined;
 }
 
+/** Finds the sibling option ids if `id` is one option inside an alternative-ingredient group. */
+function findAlternativeSiblings(shoppingList: any[], id: string): string[] | undefined {
+    for (const item of shoppingList) {
+        if (item && item.type === 'alternative') {
+            const options: any[] = item.options ?? [];
+            if (options.some((o) => o && o.id === id)) {
+                return options.filter((o) => o && o.id !== id).map((o) => o.id);
+            }
+        }
+    }
+    return undefined;
+}
+
+// A composite (sub-recipe) parent's own total is a well-defined absolute
+// quantity — same as any other aggregated ingredient — so it's a valid scale
+// target. Only its *nested* children (see findNestedParent) and alternative
+// groups (see findAlternativeSiblings) are excluded.
 function findStandardItem(shoppingList: any[], id: string): any | undefined {
-    return shoppingList.find((i) => i && i.type !== 'composite' && i.type !== 'alternative' && i.id === id);
+    return shoppingList.find((i) => i && i.type !== 'alternative' && i.id === id);
 }
 
 /**
  * Resolves a scaling request into a single multiplier. This is the one place
  * in the ecosystem that validates a `target` request against fixed (@=),
- * relative, composite, alternative, and multi-unit ingredients — every
- * consumer (CLI, Playground, etc.) should go through this instead of
- * re-deriving these rules against the shopping list itself.
+ * relative, nested-composite-child, alternative-group, and multi-unit
+ * ingredients — every consumer (CLI, Playground, etc.) should go through this
+ * instead of re-deriving these rules against the shopping list itself.
  */
 export function resolveScaleFactor(
     compiled: CompilationResult | null,
@@ -67,8 +75,8 @@ export function resolveScaleFactor(
     const id = slugify(request.id);
     const shoppingList: any[] = (compiled as any)?.shopping_list ?? [];
 
-    if (findComposite(shoppingList, id)) throw new CompositeTargetError(id);
-    if (findAlternativeGroup(shoppingList, id)) throw new AlternativeTargetError(id);
+    const siblings = findAlternativeSiblings(shoppingList, id);
+    if (siblings) throw new AlternativeTargetError(id, siblings);
 
     const nestedParent = findNestedParent(shoppingList, id);
     if (nestedParent) throw new NestedOnlyTargetError(id, nestedParent);
@@ -76,7 +84,7 @@ export function resolveScaleFactor(
     const item = findStandardItem(shoppingList, id);
     if (!item) {
         const available = shoppingList
-            .filter((i) => i && i.type !== 'composite' && i.type !== 'alternative')
+            .filter((i) => i && i.type !== 'alternative')
             .map((i) => i.id);
         throw new IngredientNotFoundError(id, available);
     }

@@ -70,7 +70,8 @@ Since scaling by reference derives the factor from an ingredient's own quantity,
 | :--- | :--- | :--- |
 | A **relative quantity** (e.g. `water`, defined as `70% @&flour`) | Its value is *derived* from another ingredient — it can't also be the reference | Scale the anchor ingredient instead (`--scale flour=400g`) |
 | A **fixed ingredient** (`@=`) or a text quantity like `a pinch` | It never scales, by definition, so it can't describe a scale factor either | Pick a different ingredient that actually changes with the recipe |
-| A **sub-recipe / composite** total, or an **alternative-ingredient** group | These are aggregates, not a single scalable quantity | Scale one of the concrete ingredients inside it |
+| An ingredient only used **inside** a sub-recipe (e.g. `lemon-zest`, part of a `<@lemon` composite) | It's not directly declared with its own quantity — only the composite parent has one | Scale the composite parent instead (e.g. `--scale lemon=4`) — its own total is a valid target |
+| One option inside an **alternative-ingredient** group (`@butter{100g}|@margarine{100g}`) | Picking one option in isolation doesn't represent the either/or choice the recipe expresses | Scale a different, unambiguous ingredient elsewhere in the recipe |
 | An ingredient split across **two incompatible units** in the recipe (e.g. `300g` in one step, `2 cups` in another) | The shopping list total can't be reduced to a single number to divide by | Rewrite the recipe to use one unit for that ingredient, or scale by a different one |
 | A unit from a different physical family (e.g. `flour=1L` against a recipe in `g`) | Converting between mass and volume needs an ingredient-specific density | Add a density via `gram db enrich`, or match the recipe's unit family |
 

@@ -50,17 +50,13 @@ export class NestedOnlyTargetError extends ScaleError {
     }
 }
 
-export class CompositeTargetError extends ScaleError {
-    readonly code = 'COMPOSITE_TARGET';
-    constructor(public readonly targetId: string) {
-        super(`"${targetId}" is a sub-recipe batch total, not a directly scalable ingredient.`);
-    }
-}
-
 export class AlternativeTargetError extends ScaleError {
     readonly code = 'ALTERNATIVE_TARGET';
-    constructor(public readonly targetId: string) {
-        super(`"${targetId}" is part of an alternative-ingredient group and cannot be used as a scale reference.`);
+    constructor(public readonly targetId: string, public readonly siblingIds: string[]) {
+        super(
+            `"${targetId}" is one option in an alternative-ingredient group (${[targetId, ...siblingIds].join(' or ')}) ` +
+            `and can't be used as a scale reference on its own — pick an unambiguous ingredient elsewhere in the recipe.`
+        );
     }
 }
 

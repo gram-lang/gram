@@ -357,7 +357,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "into the ",
             {
-              "_usageId": "0.3841596516755099",
+              "_usageId": "0.3371079087004948",
               "id": "mixture",
               "name": "mixture",
               "type": "reference",
@@ -495,7 +495,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       ],
       "ingredients": [
         {
-          "_usageId": "0.17315698769283716",
+          "_usageId": "0.7828138506347327",
           "id": "batter",
           "name": "batter",
           "type": "reference",
@@ -523,7 +523,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "content": [
             "The ",
             {
-              "_usageId": "0.17315698769283716",
+              "_usageId": "0.7828138506347327",
               "id": "batter",
               "name": "batter",
               "type": "reference",
@@ -747,7 +747,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "cookware": [],
       "ingredients": [
         {
-          "_usageId": "0.43204215277722013",
+          "_usageId": "0.4894003146092091",
           "id": "ghost-step",
           "name": "ghost_step",
           "type": "reference",
@@ -825,7 +825,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "We will use a step reference that does not exist: ",
             {
-              "_usageId": "0.43204215277722013",
+              "_usageId": "0.4894003146092091",
               "id": "ghost-step",
               "name": "ghost_step",
               "type": "reference",

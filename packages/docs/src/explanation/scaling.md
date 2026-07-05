@@ -42,9 +42,8 @@ function resolveScaleFactor(
 | Error code | Why it's rejected | What the message suggests |
 | :--- | :--- | :--- |
 | `INGREDIENT_NOT_FOUND` | No ingredient with that id in the shopping list | A "did you mean" suggestion against the recipe's real ingredient ids |
-| `NESTED_ONLY_TARGET` | Ingredient only exists inside a composite/sub-recipe's `usage[]`, never at top level | Scale the parent composite instead |
-| `COMPOSITE_TARGET` | The id resolves to a composite (sub-recipe) batch total | That's an aggregate, not a scalable quantity |
-| `ALTERNATIVE_TARGET` | The id is part of an alternative-ingredient group | Ambiguous which option you mean |
+| `NESTED_ONLY_TARGET` | Ingredient only exists inside a composite/sub-recipe's `usage[]`, never at top level | Scale the parent composite instead — its own total (e.g. "2 lemons") is itself a valid target |
+| `ALTERNATIVE_TARGET` | The id is one option inside an alternative-ingredient group | Pick a different, unambiguous ingredient — the error lists the sibling options |
 | `FIXED_INGREDIENT` | Marked `@=`, or a `TextQuantity` like "a pinch" (which is fixed by definition) | Never scales, so can't describe a scale factor either |
 | `RELATIVE_TARGET` | Quantity is formula-derived (`70% @&flour`) | Scale the *target* ingredient (`flour`) instead — see [Relative Quantities](/reference/syntax/relative-quantities) |
 | `AMBIGUOUS_MULTI_UNIT` | Same ingredient appears in two incompatible units across the recipe | The shopping list total can't be reduced to one number |

@@ -152,17 +152,22 @@ export function getScaleWarnings(factor: number, totalTimeMinutes: number): stri
  * Zips two shopping lists (original + scaled) into a comparison array.
  * The scaled list comes from Kitchen with scaleFactor already applied.
  */
+// Ingredients can appear as several distinct shopping-list entries sharing the
+// same id when they're used with incompatible units (e.g. 500g here, 2 cups
+// elsewhere) — key by id *and* unit so those rows don't collide in the map.
+const comparisonKey = (i: any): string => `${i.id}::${i.unit ?? ''}`
+
 export function buildScaleComparison(original: any[], scaled: any[]): ScaledItem[] {
   const scaledMap = new Map<string, any>(
     scaled
       .filter((i: any) => i.type !== 'composite' && i.type !== 'alternative')
-      .map((i: any) => [i.id, i]),
+      .map((i: any) => [comparisonKey(i), i]),
   )
 
   return original
     .filter((i: any) => i.type !== 'composite' && i.type !== 'alternative')
     .map((i: any): ScaledItem => {
-      const scaledItem = scaledMap.get(i.id)
+      const scaledItem = scaledMap.get(comparisonKey(i))
       if (typeof i.qty !== 'number') {
         return { id: i.id, name: i.name, unit: i.unit ?? null, nonScalable: true }
       }
