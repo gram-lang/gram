@@ -18,10 +18,6 @@ mkdir -p "$TMP_DIR"
 # Copy Docs to root
 cp -r packages/docs/src/.vitepress/dist/. "$TMP_DIR/"
 
-# Copy Playground to a subfolder
-mkdir -p "$TMP_DIR/playground"
-# Using rsync to exclude node_modules
-rsync -av --exclude='node_modules' --exclude='.git' packages/playground/ "$TMP_DIR/playground/"
 
 # 2. Clean the pages branch
 git checkout pages
@@ -35,7 +31,7 @@ cp -r "$TMP_DIR"/. .
 # 4. Push to Codeberg
 git add .
 # Avoid error if there are no changes to commit
-git commit -m "Update playground [skip ci]" || echo "No changes to commit."
+git commit -m "Update site [skip ci]" || echo "No changes to commit."
 git push origin pages --force
 
 # 5. Return to main branch and open the site

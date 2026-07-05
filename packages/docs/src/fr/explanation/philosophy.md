@@ -6,7 +6,7 @@ La plupart des formats de recettes ne sont que des blocs de texte statiques. Gra
 
 ## La Philosophie
 
-Au fond, cuisiner est un algorithme. Une recette n'est qu'une fonction qui prend des ingrédients bruts et sort un plat fini. Gram a été construit avec cet état d'esprit.
+Cuisiner, c'est un peu comme un algorithme : on prend des ingrédients en entrée et on sort un plat fini. Mais pour moi, c'est surtout une passion. Gram est né de là : j'adore cuisiner et je voulais un outil capable d'allier la rigueur du code à la créativité en cuisine.
 
 J'ai toujours adoré l'idée d'écrire des recettes en texte brut, largement inspiré par des projets pionniers comme l'excellent [Cooklang](https://cooklang.org) qui est fantastique pour des recettes maison simples et rapides. Mais quand les choses se compliquent — comme en pâtisserie avec de multiples préparations, l'usage du "pourcentage du boulanger", ou des plannings un peu tordus — s'appuyer uniquement sur du langage naturel montre vite ses limites.
 

@@ -12,7 +12,6 @@
       "@gram/analyzer",
       "@gram/kitchen",
       "@gram/parser",
-      "@gram/playground",
       "@gram/i18n",
       "@gram/renderer",
       "@gram/vscode-extension"

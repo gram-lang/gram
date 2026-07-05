@@ -34,6 +34,7 @@ export const fr: GramLocale = {
     mixedUnitsTooltip: "Impossible de fusionner en un seul total — ajoutez une densité à la base de données pour les convertir",
     mixedUnits: "Unités mixtes",
     purchasingWeight: "Poids d'achat (incluant déchets/épluchures)",
+    gross: "brut",
     intermediateResult: "Résultat intermédiaire pour cette section",
     estimatedSuffix: " (Estimé)",
     missingMass: " (Manquant : ",
@@ -49,9 +50,8 @@ export const fr: GramLocale = {
     recipe: "Recette",
     scaleFactor: "Facteur d'échelle %",
     examples: {
-      pancakes: "Pancakes Simples",
-      spaghetti: "Spaghetti Bolognaise",
-      torture: "Test de Torture (Syntaxe)"
+      canneles: "Cannelés Bordelais",
+      empanadas: "Empanadas de Boeuf"
     },
     views: {
       json: "Sortie JSON",

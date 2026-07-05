@@ -32,6 +32,7 @@ export const en = {
     mixedUnitsTooltip: "Couldn't be combined into one total — add a density to the ingredient database to merge them",
     mixedUnits: "Mixed units",
     purchasingWeight: "Purchasing Weight (including waste/peel)",
+    gross: "gross",
     intermediateResult: "Intermediate result for this section",
     estimatedSuffix: " (Estimated)",
     missingMass: " (Missing: ",
@@ -47,9 +48,8 @@ export const en = {
     recipe: "Recipe",
     scaleFactor: "Scale Factor %",
     examples: {
-      pancakes: "Simple Pancakes",
-      spaghetti: "Spaghetti Bolognese",
-      torture: "Torture Test (Syntax)"
+      canneles: "Bordeaux Cannelés",
+      empanadas: "Beef Empanadas"
     },
     views: {
       json: "JSON Output",

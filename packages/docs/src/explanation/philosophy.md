@@ -6,7 +6,7 @@ Most recipe formats out there are just static blocks of text. Gram takes a diffe
 
 ## The Philosophy
 
-At its core, cooking is an algorithm. A recipe is just a function that takes raw ingredients and outputs a finished dish. Gram was built with this exact mindset. 
+Cooking is a bit like an algorithm: you take raw ingredients as input and output a finished dish. But to me, it's above all a passion. That's where Gram comes from: I love cooking, and I wanted a tool that combines the rigor of code with creativity in the kitchen. 
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 

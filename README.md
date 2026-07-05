@@ -1,4 +1,4 @@
-# GRAM - General Recipe Abstract Markup
+# Gram - General Recipe Abstract Markup
 **A smart, data-driven recipe markup language for developers.**
 
 ![Status](https://img.shields.io/badge/Status-Beta-blue?style=flat-square)
@@ -7,25 +7,34 @@
 
 ![Gram Banner](gram-banner.jpg "Gram")
 
-GRAM is a markup language designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. It treats your recipes as **code**, compiling ingredients, instructions, and cookware into an Abstract Syntax Tree (AST).
+Gram is a markup language designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. It treats your recipes as **code**, compiling ingredients, instructions, and cookware into an Abstract Syntax Tree (AST).
 
-Because GRAM actually understands the data inside your recipe, it unlocks things that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
+Because Gram actually understands the data inside your recipe, it unlocks things that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
 
-[**→ Try the Online Playground**](https://abiwab.codeberg.page/gram/) *(or install the CLI to get started locally)*
+---
+
+### Explore Gram.
+
+The best way to understand a new language is to play with it! I've put together a couple of resources so you can dive right in:
+
+- [**The Interactive Playground**](https://abiwab.codeberg.page/gram/play) - Write Gram code directly in your browser. Experience real-time parsing, scale recipes on the fly, and test out baker's math without installing a thing locally.
+- [**The Documentation**](https://abiwab.codeberg.page/gram/) - Ready to learn more? Dive into the full docs to learn the syntax, discover the philosophy behind the project, and explore the developer tools. Available in English and French!
+
+---
 
 > **Project Status: Beta (v1.0.0-beta)**
-> GRAM has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
+> Gram has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
 > **This is an Open Source project.** Feedback, feature requests, and code contributions are always welcome!
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to get involved.
 
 ---
 
-## Why GRAM?
+## Why Gram?
 
-Inspired by the excellent [Cooklang](https://cooklang.org), GRAM takes the concept a step further by introducing structure and programmatic logic.
+Inspired by the excellent [Cooklang](https://cooklang.org), Gram takes the concept a step further by introducing structure and programmatic logic.
 
-While other markups focus purely on natural language, GRAM cares deeply about **data integrity** to solve complex culinary problems:
+While other markups focus purely on natural language, Gram cares deeply about **data integrity** to solve complex culinary problems:
 
 1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl`), timers (`~{30min}`), and temperatures (`°{230°C}`).
 2. **Explicit Actions**: Highlight the main method used in a step (e.g., `[Mix]`, `[Bake]`).
@@ -40,9 +49,9 @@ While other markups focus purely on natural language, GRAM cares deeply about **
 
 ## Quick Syntax
 
-GRAM reads like natural language but compiles like code.
+Gram reads like natural language but compiles like code.
 
-*(Note: The author will provide a more comprehensive example here showcasing all capabilities of GRAM)*
+*(Note: The author will provide a more comprehensive example here showcasing all capabilities of Gram)*
 
 ```gram
 ---
@@ -68,7 +77,7 @@ description: A simple, highly hydrated dough.
 
 ## The Developer Toolchain
 
-To support the language, GRAM comes with a suite of official tools that connect everything together.
+To support the language, Gram comes with a suite of official tools that connect everything together.
 
 ### VS Code Extension & Language Server
 Transform your editor into a proper recipe development environment.
@@ -77,7 +86,7 @@ Transform your editor into a proper recipe development environment.
 - **Real-time Diagnostics**: Instantly flags missing ingredients, unused references, or circular dependencies.
 
 ### The Official CLI (`@gram/cli`)
-The command-line interface acts as the keystone of the GRAM workflow.
+The command-line interface acts as the keystone of the Gram workflow.
 - **`gram check` & `gram build`**: Validate syntax and compile your `.gram` files to enriched JSON.
 - **`gram cook`**: An interactive step-by-step cooking assistant right in your terminal, complete with live timers.
 - **`gram scale`**: Dynamically resize your recipes (e.g., `--scale=2` or `--scale flour=300g`) with visual before/after tables.
@@ -96,12 +105,10 @@ Manage your `ingredients.yaml` effortlessly with AI-assisted commands.
 
 ## Documentation
 
-The full technical documentation is available in the `docs/` folder.
+The full technical documentation is available online:
+[**https://abiwab.codeberg.page/gram/**](https://abiwab.codeberg.page/gram/)
 
-* [**Start Here: Features Overview**](./docs/features/README.md)
-* [**Syntax & Cheatsheet**](./docs/syntax_details/100_cheatsheet.md)
-* [**Best Practices**](./docs/syntax_details/98_best_practices.md)
-* [**CLI Reference**](./docs/features/07_cli.md)
+The source code for the VitePress documentation can be found locally in `packages/docs/`.
 
 ---
 
@@ -117,31 +124,28 @@ This monorepo is divided into specialized packages under `packages/`:
 * **`vscode-extension/`**: The Visual Studio Code extension.
 * **`language-server/`**: The LSP providing autocomplete and diagnostics.
 * **`i18n/`**: Localization layer for units, categories, and AI prompts.
-* **`playground/`**: The web-based IDE to write and visualize GRAM output.
+* **`docs/`**: The documentation website, which includes the web-based Playground IDE.
 
 ---
 
 ## Try it out
 
-**Note**: GRAM is built with `bun`. While other package managers might technically work, it is strongly recommended to use Bun when developing within the monorepo.
+**Note**: Gram is built with `bun`. While other package managers might technically work, it is strongly recommended to use Bun when developing within the monorepo.
 
 ### 1. Start a CLI Project
-Get started with GRAM directly in your terminal:
+Get started with Gram directly in your terminal:
 ```bash
 bun add -d @gram/cli
 bunx gram init
 ```
 
-### 2. Run the Playground locally
-To inspect the parser or test your recipes in the web-based playground IDE:
+### 2. Run the Docs & Playground locally
+To read the documentation or test your recipes in the web-based playground IDE:
 ```bash
 # Install dependencies for all packages
 bun install
 
-# Build parser, kitchen, and playground
-bun run build 
-
-# Run the playground
+# Build packages and start the docs dev server
 bun run dev
 ```
 
@@ -160,8 +164,8 @@ console.log(result.shopping_list);
 
 ## Acknowledgments
 
-GRAM stands on the shoulders of giants.
-* **[Cooklang](https://cooklang.org)**: For pioneering the concept of a recipe markup language. GRAM was heavily inspired by their concise syntax.
+Gram stands on the shoulders of giants.
+* **[Cooklang](https://cooklang.org)**: For pioneering the concept of a recipe markup language. Gram was heavily inspired by their concise syntax.
 * **[Ohm.js](https://ohmjs.org)**: For making parsing accessible and incredibly robust.
 * **LLM Assistance**: This project was developed with the assistance of AI for rapid prototyping, refactoring, and generating test cases. All logic and architecture were strictly verified by humans.
 
