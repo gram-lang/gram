@@ -532,6 +532,19 @@ body.vscode-dark,
   border-radius: 4px;
 }
 
+.gram-preview .bakers-badge {
+  font-family: var(--gram-font-mono);
+  font-size: 0.85em;
+  color: var(--item-cookware-text);
+  font-weight: 600;
+  vertical-align: baseline;
+  cursor: help;
+  background-color: var(--color-bg-subtle);
+  border: 1px dashed var(--item-cookware-text);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .hide-mass-badges .mass-badge {
   display: none !important;
 }
@@ -657,7 +670,7 @@ body.vscode-dark,
   cursor: help;
 }
 
-.gram-preview [data-tooltip]:not(.timer):not(.formula-qty):not(.mass-badge):not(.timing-card):not(.gross-mass):not(.section-meta-badge):not(.section-declaration-badge):not(.est-badge) {
+.gram-preview [data-tooltip]:not(.timer):not(.formula-qty):not(.mass-badge):not(.bakers-badge):not(.timing-card):not(.gross-mass):not(.section-meta-badge):not(.section-declaration-badge):not(.est-badge) {
   text-decoration: underline dotted;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;

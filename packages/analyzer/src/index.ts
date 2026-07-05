@@ -215,19 +215,20 @@ export function analyze(
     // 2.5 Calculate Baker's Percentages (if a reference is defined)
     let bakersReferenceMass: number | null = null;
 
-    // Find reference by explicit option or by the `*` modifier
-    let bakersReferenceItem: any = null;
-    for (const item of shopping_list) {
-        if (
-            (opts.bakersReference && item.id === opts.bakersReference) ||
-            (item.modifiers && item.modifiers.includes('bakers_percentage'))
-        ) {
-            bakersReferenceItem = item;
-            break;
+    if (opts.enableBakersMath !== false) {
+        // Find reference by explicit option or by the `*` modifier
+        let bakersReferenceItem: any = null;
+        for (const item of shopping_list) {
+            if (
+                (opts.bakersReference && item.id === opts.bakersReference) ||
+                (item.modifiers && item.modifiers.includes('bakers_percentage'))
+            ) {
+                bakersReferenceItem = item;
+                break;
+            }
         }
-    }
 
-    if (bakersReferenceItem && bakersReferenceItem.conversionMethod === 'relative') {
+        if (bakersReferenceItem && bakersReferenceItem.conversionMethod === 'relative') {
         // The 100% base must be a physical anchor. A reference whose own mass was
         // derived from another ingredient's percentage can't also be the base —
         // that's a circular definition, not a bug in the math, so we refuse
@@ -281,6 +282,7 @@ export function analyze(
                 }
             });
         }
+    }
     }
 
     // 3. Estimate full nutritional profiles (calories, macros) based on portion counts

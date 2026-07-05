@@ -161,7 +161,11 @@ function updateGram() {
       }
     }
     
-    const analysis = analyze(result, fullDatabase, options.value)
+    const analysisOptions = {
+      ...options.value,
+      enableBakersMath: options.value.bakersMath
+    }
+    const analysis = analyze(result, fullDatabase, analysisOptions)
     result = analysis.result
     
     warnings.value = result.warnings || []

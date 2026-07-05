@@ -4,6 +4,7 @@ export const AnalyzerOptionsSchema = z.object({
     enableMassStandardization: z.boolean().optional(),
     enableYieldCalculation: z.boolean().optional(),
     enableNutritionalEstimation: z.boolean().optional(),
+    enableBakersMath: z.boolean().optional(),
     bakersReference: z.string().optional(),
     portions: z.number().positive().optional(),
 });

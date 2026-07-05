@@ -48,6 +48,7 @@ export interface RendererClasses {
   temperature?: string;
   declaration?: string;
   massBadge?: string;
+  bakersBadge?: string;
   prepText?: string;
   optionalText?: string;
   formulaText?: string;

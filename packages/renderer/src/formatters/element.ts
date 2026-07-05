@@ -56,26 +56,39 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         }
 
         let plainQty = '';
+        let originalQtyStr = '';
+        if (qty) {
+            originalQtyStr = (qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : '');
+        }
+
         if (item.bakersPercentage !== undefined) {
             const perc = `${item.bakersPercentage}%`;
             let absMass = '';
             if (normalizedMass !== null) absMass = `${normalizedMass}g`;
-            else if (qty) absMass = (qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : '');
+            else absMass = originalQtyStr;
             plainQty = context.bakersMathOnly ? perc : `${perc} (${absMass})`;
-        } else if (qty) {
-            plainQty = (qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : '');
+        } else {
+            plainQty = originalQtyStr;
         }
+
         if (item.variable_entries && item.variable_entries.length > 0 && item.bakersPercentage === undefined) {
             plainQty = plainQty ? `${plainQty} + ${item.variable_entries.join(' + ')}` : item.variable_entries.join(' + ');
+            if (originalQtyStr) originalQtyStr = `${originalQtyStr} + ${item.variable_entries.join(' + ')}`;
+            else originalQtyStr = item.variable_entries.join(' + ');
         }
 
         let htmlQty = plainQty;
-        if (format === 'html' && item.bakersPercentage !== undefined && !context.bakersMathOnly) {
+        let htmlBakersBadge = '';
+
+        if (format === 'html' && item.bakersPercentage !== undefined) {
             const perc = `${item.bakersPercentage}%`;
-            let absMass = '';
-            if (normalizedMass !== null) absMass = `${normalizedMass}g`;
-            else if (qty) absMass = (qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : '');
-            htmlQty = `${perc} <span class="abs-qty">${escapeHtml(absMass)}</span>`;
+            if (context.bakersMathOnly) {
+                htmlQty = perc;
+            } else {
+                htmlQty = originalQtyStr || (normalizedMass !== null ? `${normalizedMass}g` : '');
+                const bpClass = context.classes?.bakersBadge || 'bakers-badge';
+                htmlBakersBadge = ` <span class="${bpClass}" data-tooltip="Baker's Percentage">${perc}</span>`;
+            }
         }
 
         if (format === 'html') {
@@ -121,9 +134,13 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
                         html += ` <span class="quantity formula-qty${formulaClass}" data-tooltip="Calculation partial or failed">${escapeHtml(formulaStr || '')} ${warningIcon}</span>`;
                     } else {
                         if (htmlQty) {
-                            html += ` <span class="quantity">${htmlQty}</span>`;
+                            html += ` <span class="quantity">${escapeHtml(htmlQty)}</span>`;
                         }
                     }
+                }
+
+                if (htmlBakersBadge) {
+                    html += htmlBakersBadge;
                 }
 
                 if (normalizedMass !== null && conversionMethod !== 'relative') {
