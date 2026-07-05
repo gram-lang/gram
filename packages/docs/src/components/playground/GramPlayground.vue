@@ -55,7 +55,7 @@ let fullDatabase: any = {}
 const manifestData = ref<any[]>([])
 const examples = computed(() => manifestData.value.map((ex: any) => ({
   label: (t.value.playground.examples as any)[ex.id] || ex.title,
-  value: '/examples/' + ex.id
+  value: import.meta.env.BASE_URL + 'examples/' + ex.id
 })))
 const selectedExample = ref('')
 
@@ -68,7 +68,7 @@ onMounted(() => {
   })
 
   // Load Examples
-  fetch('/examples/manifest.json')
+  fetch(import.meta.env.BASE_URL + 'examples/manifest.json')
     .then(res => res.json())
     .then(manifest => {
       manifestData.value = manifest

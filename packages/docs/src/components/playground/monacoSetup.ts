@@ -4,7 +4,7 @@ import { shikiToMonaco } from '@shikijs/monaco'
 // @ts-ignore
 import gramGrammar from '@gram/parser/textmate'
 
-let isSetup = false
+export let isSetup = false
 
 export async function setupMonaco(monaco: any) {
   if (isSetup) return

@@ -20,12 +20,27 @@ const localCode = computed({
 
 const editorRef = shallowRef()
 
-import { setupMonaco } from './monacoSetup'
+const shikiLoaded = ref(false)
+
+import { setupMonaco, isSetup } from './monacoSetup'
 
 const handleMount = async (editor: any, monaco: any) => {
   editorRef.value = editor
   await setupMonaco(monaco)
+  shikiLoaded.value = true
+  
+  // Force theme update: bypass Vue's hydration delay by reading the DOM class directly
+  const isDarkMode = document.documentElement.classList.contains('dark') || isDark.value
+  monaco.editor.setTheme(isDarkMode ? 'github-dark' : 'github-light')
 }
+
+// Ensure theme updates even if Shiki takes a very long time
+import { watch } from 'vue'
+watch(isDark, (dark) => {
+  if (editorRef.value && (window as any).monaco) {
+    (window as any).monaco.editor.setTheme(dark ? 'github-dark' : 'github-light')
+  }
+})
 
 const MONACO_OPTIONS = {
   automaticLayout: true,
@@ -74,7 +89,7 @@ defineExpose({
       <ClientOnly>
         <VueMonacoEditor
           v-model:value="localCode"
-          :theme="isDark ? 'github-dark' : 'github-light'"
+          :theme="(shikiLoaded || isSetup) ? (isDark ? 'github-dark' : 'github-light') : (isDark ? 'vs-dark' : 'vs')"
           language="gram"
           :options="MONACO_OPTIONS"
           @mount="handleMount"

@@ -16,6 +16,12 @@ Because it treats your recipes as code, Gram unlocks features that are impossibl
 
 [Playground](https://abiwab.codeberg.page/gram/play) • [Documentation](https://abiwab.codeberg.page/gram/)
 
+<br/>
+<div align="center">
+  <img src="screenshot.png" alt="Gram Playground Screenshot" style="border-radius: 8px;" />
+</div>
+<br/>
+
 > **Project Status: Beta (v1.0.0-beta)**
 > Gram has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
 > **This is an Open Source project.** Feedback, feature requests, and code contributions are always welcome!

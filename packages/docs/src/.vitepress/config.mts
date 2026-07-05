@@ -54,9 +54,9 @@ export default defineConfig({
           { text: 'Documentation', link: '/explanation/philosophy' },
           { text: 'Playground', link: '/play' },
           {
-            text: 'v1.0.0-beta.0',
+            text: 'v1.0.0-beta.1',
             items: [
-              { text: 'v1.0.0-beta.0 (Current)', link: '/' }
+              { text: 'v1.0.0-beta.1 (Current)', link: '/' }
             ]
           }
         ],

@@ -7,7 +7,7 @@ TMP_DIR="/tmp/gram_build"
 
 echo "🚀 Starting deployment process..."
 
-bun run build
+bunx turbo run build
 
 
 # 1. Back up the compiled content (from main)
@@ -22,23 +22,22 @@ cp -r packages/docs/src/.vitepress/dist/. "$TMP_DIR/"
 touch "$TMP_DIR/.nojekyll"
 
 
-# 2. Clean the pages branch
-git checkout pages
-# Remove everything currently tracked by Git on this branch
-git rm -rf . > /dev/null
-
-# 3. Restore clean content to the root
-# Using a robust copy method to include hidden files if any
-cp -r "$TMP_DIR"/. .
-
-# 4. Push to Codeberg
+# 2. Deploy from TMP_DIR
+echo "📦 Packaging for deployment..."
+cd "$TMP_DIR"
+git init
+git checkout -b pages
 git add .
-# Avoid error if there are no changes to commit
-git commit -m "Update site [skip ci]" || echo "No changes to commit."
-git push origin pages --force
+git commit -m "Update site [skip ci]"
 
-# 5. Return to main branch and open the site
-git checkout main
+echo "🚀 Pushing to Codeberg Pages..."
+# Retrieve the origin URL from the main repo
+REMOTE_URL=$(cd - > /dev/null && git config --get remote.origin.url)
+git push "$REMOTE_URL" pages --force
+
+# 3. Clean up
+cd - > /dev/null
+rm -rf "$TMP_DIR"
 
 echo "✨ Deployment successful!"
 echo "🌍 Opening $URL"
