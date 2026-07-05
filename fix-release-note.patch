@@ -1,0 +1,31 @@
+--- generate-release-note.ts
++++ generate-release-note.ts
+@@ -6,6 +6,7 @@
+ import { writeFile, readFile } from "node:fs/promises";
++import fs from "node:fs";
+ 
+ async function main() {
+     const cwd = process.cwd();
+ 
+     // 1. Read all packages in the monorepo and pending changesets
+     const rawPackages = await getPackages(cwd);
+     const packages = {
+         ...rawPackages,
+         root: rawPackages.root || rawPackages.rootPackage || { dir: cwd }
+     };
+-    const changesets = await readChangesets(cwd);
++    let changesets = await readChangesets(cwd);
++
++    // Filter out changesets already consumed in pre mode
++    try {
++        const preJsonPath = `${cwd}/.changeset/pre.json`;
++        if (fs.existsSync(preJsonPath)) {
++            const preState = JSON.parse(await readFile(preJsonPath, "utf-8"));
++            const consumed = new Set(preState.changesets || []);
++            changesets = changesets.filter(cs => !consumed.has(cs.id));
++        }
++    } catch (e) {
++        // Ignore if pre.json doesn't exist or can't be parsed
++    }
+ 
+     if (changesets.length === 0) {

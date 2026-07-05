@@ -4,6 +4,7 @@ import { read as readConfig } from "@changesets/config";
 import assembleReleasePlan from "@changesets/assemble-release-plan";
 import { getPackages } from "@manypkg/get-packages";
 import { writeFile, readFile } from "node:fs/promises";
+import fs from "node:fs";
 
 async function main() {
     const cwd = process.cwd();

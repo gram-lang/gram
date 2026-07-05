@@ -1,6 +1,5 @@
 ---
 "@gram/docs": minor
-"@gram/playground": minor
 ---
 
 docs: integrate new Vitepress documentation site and embedded playground
