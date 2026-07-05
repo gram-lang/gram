@@ -97,6 +97,7 @@ export interface CompilationResult {
     title: string | null;
     slug: string | null;
     meta: Meta;
+    scaleFactor?: number;
     registry: {
         ingredients: Record<string, RegistryEntry>;
         cookware: Record<string, { id: string; name: string }>;

@@ -7,7 +7,11 @@ export async function exportRecipe(
   format: 'md' | 'html',
   db: Record<string, IngredientData> | null,
   scaleFactor?: number,
-  rendererOptions?: Pick<RendererOptions, 'hideStepQty' | 'bakersReference' | 'bakersMathOnly'>,
+  // bakersReference is an analyzer concern (which ingredient is the 100% base),
+  // not a renderer option — the renderer only reads the already-computed
+  // per-item `bakersPercentage` — so it's threaded through separately here
+  // and only forwarded to the pipeline below, not into RendererOptions.
+  rendererOptions?: Pick<RendererOptions, 'hideStepQty' | 'bakersMathOnly'> & { bakersReference?: string },
 ): Promise<string> {
   const { compiled, analyzed } = await runPipeline(filePath, {
     db,

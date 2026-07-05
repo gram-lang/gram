@@ -14,6 +14,8 @@ export interface RendererIcons {
   clockCounterClockwise?: string;
   arrowElbowDownRight?: string;
   info?: string;
+  minus?: string;
+  plus?: string;
 }
 
 export interface RendererClasses {
@@ -58,8 +60,9 @@ export interface RendererOptions {
   formatDuration?: (minutes: number) => string;
   /** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
   hideStepQty?: boolean;
-  bakersReference?: string;
   bakersMathOnly?: boolean;
+  /** When true, renders interactive controls for scaling portions and ingredients */
+  interactiveScaling?: boolean;
 }
 
 export interface RenderContext {
@@ -76,11 +79,7 @@ export interface RenderContext {
 
   // Passed down from RendererOptions
   bakersMathOnly?: boolean;
-  
-  // Internal properties for formatting
-  _bakersMathEnabled?: boolean;
-  _bakersMathReferenceMass?: number;
-  _bakersMathOnly?: boolean;
+  interactiveScaling?: boolean;
 
   /** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
   formatMode?: 'inline' | 'mise-en-place' | 'shopping-list';

@@ -1,12 +1,11 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem, resolveBakersMath } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
-    const bakersMeta = resolveBakersMath(data, options);
 
     const context: RenderContext = {
         registry,
@@ -15,6 +14,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         formatDuration,
         formatFraction: options.formatFraction,
         bakersMathOnly: options.bakersMathOnly,
+        interactiveScaling: options.interactiveScaling,
         _inlineComments: [],
         _renderId: Math.random().toString(36).substring(2, 9)
     };
@@ -100,7 +100,22 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             if (k !== 'title') {
                 html += `  <div class="${metaSecondaryItemClass}">\n`;
                 html += `    <span class="label">${escapeHtml(k)}</span>\n`;
-                html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
+                if (k === 'portions' && options.interactiveScaling) {
+                    const numericV = typeof v === 'number' ? v : parseFloat(String(v));
+                    const basePortions = (typeof data.scaleFactor === 'number' && data.scaleFactor !== 0 && !isNaN(numericV))
+                        ? parseFloat((numericV / data.scaleFactor).toFixed(2))
+                        : v;
+                    html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
+                    html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="Decrease portions">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
+                    html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="Edit portions directly" />\n`;
+                    html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="Increase portions">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
+                    html += `      <span class="scale-multipliers">\n`;
+                    html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="Original recipe">Reset</button>\n`;
+                    html += `      </span>\n`;
+                    html += `    </span>\n`;
+                } else if (!k.startsWith('_')) {
+                    html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
+                }
                 html += `  </div>\n`;
             }
         }

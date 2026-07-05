@@ -1,5 +1,5 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem, resolveBakersMath } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
 
@@ -330,16 +330,13 @@ const PRINT_ICONS = {
 export function toPrintHTML(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
-    const bakersMeta = resolveBakersMath(data, options);
 
     const context: RenderContext = {
         registry,
         icons: PRINT_ICONS,
         formatDuration,
         formatFraction: options.formatFraction,
-        _bakersMathEnabled: bakersMeta.enabled,
-        _bakersMathReferenceMass: bakersMeta.referenceMass ?? undefined,
-        _bakersMathOnly: bakersMeta.only
+        bakersMathOnly: options.bakersMathOnly
     };
     // Context variant used when rendering inline step tokens — hides qty if flag is set
     const stepContext: RenderContext = options.hideStepQty

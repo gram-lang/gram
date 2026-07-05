@@ -1,12 +1,11 @@
 import { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, aggToRendererItem, resolveBakersMath } from '../utils';
+import { formatDuration as defaultFormatDuration, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram/kitchen';
 
 export function toMarkdown(data: any, options: RendererOptions = {}): string {
     const registry = data.registry || { ingredients: {}, cookware: {} };
     const formatDuration = options.formatDuration || defaultFormatDuration;
-    const bakersMeta = resolveBakersMath(data, options);
 
     const context: RenderContext = {
         registry,

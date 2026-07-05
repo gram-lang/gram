@@ -1,4 +1,5 @@
-import { slugify, cleanObject, applyScaleFactor } from './utils';
+import { slugify, cleanObject } from './utils';
+import { applyScale } from './scale';
 import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
@@ -56,7 +57,9 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
     const result: CompilationResult = {
         title: (ast.meta as any).title || null,
         slug: (ast.meta as any).title ? slugify((ast.meta as any).title) : null,
-        meta: ast.meta,
+        // Cloned defensively: compile() must never mutate the caller's AST,
+        // since applyScale (and future in-place enrichers) writes to `meta`.
+        meta: { ...(ast.meta as any) },
         registry: registry.toPlainObject(),
         shopping_list, 
         cookware: globalCookware,
@@ -72,9 +75,9 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
         })()
     };
 
-    if (options.scaleFactor && options.scaleFactor !== 1) {
-        applyScaleFactor(result, options.scaleFactor);
-    }
+    const scaled = options.scaleFactor && options.scaleFactor !== 1
+        ? applyScale(result, options.scaleFactor)
+        : result;
 
-    return cleanObject(result);
+    return cleanObject(scaled);
 }

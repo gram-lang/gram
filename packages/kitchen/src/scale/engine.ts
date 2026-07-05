@@ -1,0 +1,177 @@
+import { normalizeUnit } from '@gram/i18n';
+import { slugify, scaleQty } from '../utils';
+import { CompilationResult } from '../types';
+import {
+    ScaleRequest,
+    ScaleResolution,
+    UnitConverter,
+    InvalidFactorError,
+    IngredientNotFoundError,
+    NestedOnlyTargetError,
+    CompositeTargetError,
+    AlternativeTargetError,
+    FixedIngredientError,
+    RelativeTargetError,
+    AmbiguousMultiUnitError,
+    NonNumericTargetError,
+    UnitMismatchError,
+} from './types';
+
+function isPositiveFinite(n: number): boolean {
+    return typeof n === 'number' && isFinite(n) && n > 0;
+}
+
+function findComposite(shoppingList: any[], id: string): any | undefined {
+    return shoppingList.find((i) => i && i.type === 'composite' && i.id === id);
+}
+
+function findAlternativeGroup(shoppingList: any[], id: string): any | undefined {
+    return shoppingList.find((i) => i && i.type === 'alternative' && i.id === id);
+}
+
+function findNestedParent(shoppingList: any[], id: string): string | undefined {
+    for (const item of shoppingList) {
+        if (item && item.type === 'composite') {
+            const sub = (item.usage ?? []).find((u: any) => u && u.id === id);
+            if (sub) return item.id;
+        }
+    }
+    return undefined;
+}
+
+function findStandardItem(shoppingList: any[], id: string): any | undefined {
+    return shoppingList.find((i) => i && i.type !== 'composite' && i.type !== 'alternative' && i.id === id);
+}
+
+/**
+ * Resolves a scaling request into a single multiplier. This is the one place
+ * in the ecosystem that validates a `target` request against fixed (@=),
+ * relative, composite, alternative, and multi-unit ingredients — every
+ * consumer (CLI, Playground, etc.) should go through this instead of
+ * re-deriving these rules against the shopping list itself.
+ */
+export function resolveScaleFactor(
+    compiled: CompilationResult | null,
+    request: ScaleRequest,
+    convertUnit?: UnitConverter
+): ScaleResolution {
+    if (request.type === 'factor') {
+        if (!isPositiveFinite(request.value)) throw new InvalidFactorError(request.value);
+        return { factor: request.value, resolvedFrom: 'factor' };
+    }
+
+    if (!isPositiveFinite(request.qty)) {
+        throw new InvalidFactorError(request.qty, `Invalid target quantity "${request.qty}" for "${request.id}". Must be a positive number.`);
+    }
+
+    const id = slugify(request.id);
+    const shoppingList: any[] = (compiled as any)?.shopping_list ?? [];
+
+    if (findComposite(shoppingList, id)) throw new CompositeTargetError(id);
+    if (findAlternativeGroup(shoppingList, id)) throw new AlternativeTargetError(id);
+
+    const nestedParent = findNestedParent(shoppingList, id);
+    if (nestedParent) throw new NestedOnlyTargetError(id, nestedParent);
+
+    const item = findStandardItem(shoppingList, id);
+    if (!item) {
+        const available = shoppingList
+            .filter((i) => i && i.type !== 'composite' && i.type !== 'alternative')
+            .map((i) => i.id);
+        throw new IngredientNotFoundError(id, available);
+    }
+
+    if (item.fixed) {
+        throw new FixedIngredientError(id, typeof item.qty === 'string' ? 'text' : 'protected');
+    }
+    if (item.relative) throw new RelativeTargetError(id);
+    if (item.multiUnit) throw new AmbiguousMultiUnitError(id);
+    if (typeof item.qty !== 'number') throw new NonNumericTargetError(id);
+    if (item.qty === 0) {
+        throw new InvalidFactorError(0, `"${id}" has a quantity of 0 and cannot be used as a scale reference.`);
+    }
+
+    const itemUnit: string | null = item.unit || null;
+    const requestedUnit = request.unit;
+    const normItem = itemUnit ? normalizeUnit(itemUnit) : null;
+    const normReq = requestedUnit ? normalizeUnit(requestedUnit) : null;
+
+    let targetQtyInItemUnit = request.qty;
+    let unitConverted = false;
+
+    if (normReq !== normItem) {
+        if (!requestedUnit || !itemUnit || !convertUnit) {
+            throw new UnitMismatchError(id, requestedUnit, itemUnit);
+        }
+        const converted = convertUnit(request.qty, requestedUnit, itemUnit);
+        if (converted === null) throw new UnitMismatchError(id, requestedUnit, itemUnit);
+        targetQtyInItemUnit = converted;
+        unitConverted = true;
+    }
+
+    const factor = targetQtyInItemUnit / item.qty;
+    if (!isPositiveFinite(factor)) {
+        throw new InvalidFactorError(factor, `Computed scale factor for "${id}" is invalid (${factor}).`);
+    }
+
+    return { factor, resolvedFrom: 'target', targetId: id, unitConverted };
+}
+
+function mutateUsage(item: any, factor: number): void {
+    if (!item || typeof item !== 'object') return;
+    if (item.fixed) return; // @= modifier or TextQuantity — never scaled
+    if ('qty' in item && item.qty !== undefined) {
+        item.qty = scaleQty(item.qty, factor);
+    }
+}
+
+/**
+ * Applies a resolved factor to a CompilationResult. Pure: the input is never
+ * mutated (via structuredClone), so callers can safely re-apply different
+ * factors to the same original result — e.g. a live scale slider — without
+ * ever compounding onto a previous scale or leaking scratch state into the
+ * input AST's shared objects (like `meta`).
+ */
+export function applyScale(result: CompilationResult, factor: number): CompilationResult {
+    if (factor === 1) return result;
+
+    const cloned: any = structuredClone(result);
+    const basePortions = (result as any).meta?.portions;
+
+    if (cloned.meta && basePortions !== undefined) {
+        if (typeof basePortions === 'number') {
+            cloned.meta.portions = parseFloat((basePortions * factor).toFixed(2));
+        } else if (typeof basePortions === 'string') {
+            const num = parseFloat(basePortions);
+            if (!isNaN(num)) cloned.meta.portions = String(parseFloat((num * factor).toFixed(2)));
+        }
+    }
+
+    for (const item of cloned.shopping_list ?? []) {
+        if (!item || typeof item !== 'object') continue;
+        if (item.type === 'alternative') {
+            for (const opt of item.options ?? []) mutateUsage(opt, factor);
+        } else if (item.type === 'composite') {
+            if (typeof item.qty === 'number') item.qty = item.qty * factor;
+            for (const u of item.usage ?? []) mutateUsage(u, factor);
+        } else {
+            mutateUsage(item, factor);
+        }
+    }
+
+    for (const section of cloned.sections ?? []) {
+        for (const ing of section.ingredients ?? []) mutateUsage(ing, factor);
+        for (const stepItem of section.steps ?? []) {
+            if (!stepItem || stepItem.type === 'comment') continue;
+            for (const token of stepItem.content ?? []) {
+                if (!token || typeof token !== 'object') continue;
+                // Ingredient usage tokens have an 'id' and no token-type discriminator
+                if ('id' in token && !('type' in token)) mutateUsage(token, factor);
+            }
+        }
+    }
+
+    cloned.scaleFactor = ((result as any).scaleFactor ?? 1) * factor;
+
+    return cloned;
+}

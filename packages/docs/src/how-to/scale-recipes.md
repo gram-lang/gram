@@ -62,6 +62,20 @@ gram view bread.gram --scale flour=400g
 
 Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
 
+### Limits of Reference Scaling
+
+Since scaling by reference derives the factor from an ingredient's own quantity, not every ingredient can be used as the target — only an ingredient with a genuine, standalone absolute quantity qualifies. If you pass one of the following, Gram rejects it with a specific error rather than silently computing a wrong factor:
+
+| You tried to scale by... | Why it's rejected | What to do instead |
+| :--- | :--- | :--- |
+| A **relative quantity** (e.g. `water`, defined as `70% @&flour`) | Its value is *derived* from another ingredient — it can't also be the reference | Scale the anchor ingredient instead (`--scale flour=400g`) |
+| A **fixed ingredient** (`@=`) or a text quantity like `a pinch` | It never scales, by definition, so it can't describe a scale factor either | Pick a different ingredient that actually changes with the recipe |
+| A **sub-recipe / composite** total, or an **alternative-ingredient** group | These are aggregates, not a single scalable quantity | Scale one of the concrete ingredients inside it |
+| An ingredient split across **two incompatible units** in the recipe (e.g. `300g` in one step, `2 cups` in another) | The shopping list total can't be reduced to a single number to divide by | Rewrite the recipe to use one unit for that ingredient, or scale by a different one |
+| A unit from a different physical family (e.g. `flour=1L` against a recipe in `g`) | Converting between mass and volume needs an ingredient-specific density | Add a density via `gram db enrich`, or match the recipe's unit family |
+
+Units within the *same* family convert automatically — `--scale flour=1kg` against a recipe written in `500g` works out of the box (factor `2`), no database required.
+
 ## Baker's Math
 
 While Relative Quantities are great for *designing* dynamic recipes, professional bakers often use a concept called **Baker's Percentage** to read and analyze *static* recipes. In Baker's Percentage, the main ingredient (usually flour) is defined as 100%, and everything else is displayed as a percentage of that weight.

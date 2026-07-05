@@ -7,3 +7,4 @@ export * from './registry';
 export * from './warnings';
 export * from './types';
 export * from './section';
+export * from './scale';

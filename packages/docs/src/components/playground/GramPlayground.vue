@@ -114,11 +114,13 @@ function renderSExpr(node: any, level = 0): string {
   return `${indent}(${type}${attrs}\n${childrenStr})`
 }
 
+const scaleFactor = ref<number>(1)
+
 function updateGram() {
   errorMsg.value = ''
   try {
     const ast = getAST(code.value)
-    let result = compile(ast, options.value)
+    let result = compile(ast, { ...options.value, scaleFactor: scaleFactor.value })
     const analysis = analyze(result, fullDatabase, options.value)
     result = analysis.result
     
@@ -132,7 +134,7 @@ function updateGram() {
     } else if (viewMode.value === 'markdown') {
       content.value = toMarkdown(result)
     } else if (viewMode.value === 'preview') {
-      htmlPreview.value = toHTML(result)
+      htmlPreview.value = toHTML(result, { interactiveScaling: true })
     }
   } catch (e: any) {
     errorMsg.value = e.message
@@ -140,7 +142,11 @@ function updateGram() {
   }
 }
 
-watch([code, options, viewMode], () => {
+function handleScaleUpdate(factor: number) {
+  scaleFactor.value = factor
+}
+
+watch([code, options, viewMode, scaleFactor], () => {
   updateGram()
 }, { deep: true })
 
@@ -249,6 +255,7 @@ onUnmounted(() => {
             :content="content" 
             :html-preview="htmlPreview" 
             :json-data="jsonData" 
+            @scale-update="handleScaleUpdate"
           />
         </div>
       </div>

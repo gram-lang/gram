@@ -79,3 +79,5 @@ The compiler is designed to catch logic errors in relative quantities and will o
 - **Ghost Reference**: If the target `@ingredient` or `&variable` hasn't been declared previously in the section, the compiler warns `RELATIVE_QUANTITY_UNRESOLVED` (or `VARIABLE_NOT_FOUND`) and outputs `(20% of missing ❓)`.
 - **Circular Reference**: If an `@ingredient` tries to calculate a percentage of itself (e.g., `@flour{10% @&flour}`), the compiler warns `CIRCULAR_REFERENCE` and outputs `(10% of self) ⚠️`.
 - **Unknown Target Mass**: If the target's mass cannot be resolved from the physical database, the analyzer warns `RELATIVE_QUANTITY_UNKNOWN_MASS` and leaves the output unresolved.
+
+Because a relative quantity's value is always derived from another ingredient, it also can't be used as a [`--scale` reference target](/how-to/scale-recipes#limits-of-reference-scaling) or as the Baker's Percentage base — see [Deep Dive: Scaling](/explanation/scaling) for the full set of rules and error codes shared across both.

@@ -224,49 +224,6 @@ export const scaleQty = (qty: any, factor: number): any => {
     return qty;
 };
 
-/**
- * Post-processes a CompilationResult in-place, scaling all numeric ingredient quantities
- * by the given factor. Items marked as fixed (via the @= modifier or TextQuantity) are skipped.
- * Operates on: shopping_list, section ingredients, and step content tokens.
- */
-export const applyScaleFactor = (result: any, factor: number): void => {
-    if (factor === 1) return;
-
-    const scaleUsage = (item: any) => {
-        if (!item || typeof item !== 'object') return;
-        if (item.fixed) return; // @= modifier or TextQuantity — never scaled
-        if ('qty' in item && item.qty !== undefined) {
-            item.qty = scaleQty(item.qty, factor);
-        }
-    };
-
-    // Scale shopping list
-    for (const item of result.shopping_list ?? []) {
-        if (!item || typeof item !== 'object') continue;
-        if (item.type === 'alternative') {
-            for (const opt of item.options ?? []) scaleUsage(opt);
-        } else if (item.type === 'composite') {
-            if (typeof item.qty === 'number') item.qty = item.qty * factor;
-            for (const u of item.usage ?? []) scaleUsage(u);
-        } else {
-            scaleUsage(item);
-        }
-    }
-
-    // Scale section ingredients and step content tokens
-    for (const section of result.sections ?? []) {
-        for (const ing of section.ingredients ?? []) scaleUsage(ing);
-        for (const stepItem of section.steps ?? []) {
-            if (!stepItem || stepItem.type === 'comment') continue;
-            for (const token of stepItem.content ?? []) {
-                if (!token || typeof token !== 'object') continue;
-                // Ingredient usage tokens have an 'id' and no token-type discriminator
-                if ('id' in token && !('type' in token)) scaleUsage(token);
-            }
-        }
-    }
-};
-
 export const getNumericQty = (q: any): number | null => {
     if (q === undefined || q === null) return null;
     if (typeof q === 'number') return q;

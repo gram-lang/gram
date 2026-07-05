@@ -1,7 +1,10 @@
 import { log } from '@clack/prompts'
 import { runPipeline } from '../core/pipeline'
 import { ExitCode } from '../errors'
+import { similarity } from '../core/fuzzy'
 import type { IngredientData } from '@gram/analyzer'
+import { convertUnit } from '@gram/analyzer'
+import { resolveScaleFactor as resolveScaleFactorEngine, ScaleError, IngredientNotFoundError } from '@gram/kitchen'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,8 +63,10 @@ export function parseScaleArg(raw: string): { type: 'factor'; value: number } | 
 // ── Factor resolution ─────────────────────────────────────────────────────────
 
 /**
- * Resolves a --scale flag value to a numeric scale factor.
- * For ref mode, runs a single unscaled pipeline to read the reference ingredient's quantity.
+ * Resolves a --scale flag value to a numeric scale factor via @gram/kitchen's
+ * ScaleEngine — the single place that validates a target ingredient (exists,
+ * not fixed/relative/composite/ambiguous) and reconciles units. For ref mode,
+ * runs a single unscaled pipeline to read the reference ingredient's quantity.
  */
 export async function resolveScaleFactor(
   filePath: string,
@@ -70,50 +75,43 @@ export async function resolveScaleFactor(
 ): Promise<number> {
   const parsed = parseScaleArg(scale)
 
-  if (parsed.type === 'factor') return parsed.value
+  if (parsed.type === 'factor') {
+    return resolveScaleFactorEngine(null, { type: 'factor', value: parsed.value }).factor
+  }
 
-  // Ref mode: need the original shopping list to compute the ratio
   const ref = parseRef(parsed.raw)
   const { compiled } = await runPipeline(filePath, { db, skipAnalyzer: !db })
-  const shoppingList = compiled.shopping_list as any[]
 
-  const item = shoppingList.find(
-    (i: any) => i.type !== 'composite' && i.type !== 'alternative' && i.id === ref.id,
-  )
-  if (!item) {
-    const available = shoppingList
-      .filter((i: any) => i.type !== 'composite' && i.type !== 'alternative')
-      .map((i: any) => i.id)
-      .join(', ')
-    throw new Error(
-      `Ingredient "${ref.id}" not found in recipe shopping list.\nAvailable: ${available}`,
-    )
+  try {
+    return resolveScaleFactorEngine(
+      compiled,
+      { type: 'target', id: ref.id, qty: ref.value, unit: ref.unit },
+      convertUnit,
+    ).factor
+  } catch (err) {
+    if (err instanceof IngredientNotFoundError) {
+      const suggestion = closestMatch(err.targetId, err.availableIds)
+      const available = err.availableIds.join(', ')
+      const hint = suggestion ? ` Did you mean "${suggestion}"?` : ''
+      throw new Error(`${err.message}${hint}\nAvailable: ${available}`)
+    }
+    throw err
   }
-  if (typeof item.qty !== 'number') {
-    throw new Error(
-      `Cannot use "${ref.id}" as reference: its quantity ("${item.qty}") is not a simple number.`,
-    )
-  }
-  if (item.qty === 0) {
-    throw new Error(`Cannot use "${ref.id}" as reference: its quantity is 0.`)
-  }
+}
 
-  const itemUnit = item.unit || null
-  const refUnit = ref.unit
-  if (refUnit && itemUnit && refUnit !== itemUnit) {
-    throw new Error(
-      `Unit mismatch: you specified "${refUnit}" but the recipe uses "${itemUnit}" for "${ref.id}". ` +
-        `Add a density value via "gram db enrich" to allow volume/mass conversion.`,
-    )
+/** Finds the closest known ingredient id to a mistyped --scale reference, for a "did you mean" hint. */
+function closestMatch(id: string, candidates: string[]): string | null {
+  const threshold = 0.6
+  let best: string | null = null
+  let bestScore = 0
+  for (const candidate of candidates) {
+    const score = similarity(id, candidate)
+    if (score >= threshold && score > bestScore) {
+      bestScore = score
+      best = candidate
+    }
   }
-  if (!refUnit && itemUnit) {
-    throw new Error(
-      `No unit specified for "${ref.id}" but the recipe uses "${itemUnit}". ` +
-        `Specify a unit (e.g. --scale ${ref.id}=${ref.value}${itemUnit}).`,
-    )
-  }
-
-  return ref.value / item.qty
+  return best
 }
 
 /**
@@ -129,7 +127,7 @@ export async function resolveScaleArg(
   try {
     return await resolveScaleFactor(filePath, scale, db)
   } catch (err) {
-    log.error(err instanceof Error ? err.message : String(err))
+    log.error(err instanceof ScaleError || err instanceof Error ? err.message : String(err))
     return process.exit(ExitCode.Error)
   }
 }

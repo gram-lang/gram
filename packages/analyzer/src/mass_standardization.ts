@@ -41,6 +41,29 @@ interface ConversionResult {
     method: 'physical' | 'density' | 'unit_weight' | 'default' | 'explicit';
 }
 
+/**
+ * Converts a value between two units of the same physical family (mass-to-mass,
+ * or volume-to-volume), using the same UNIT_CONVERSIONS table standardizeMass
+ * relies on. Returns null for cross-family conversions (mass <-> volume), since
+ * those require an ingredient-specific density and can't be done with a pure
+ * unit table — callers should surface that as a distinct error rather than guess.
+ */
+export function convertUnit(value: number, fromUnit: string, toUnit: string): number | null {
+    const from = normalizeUnit(fromUnit);
+    const to = normalizeUnit(toUnit);
+    if (from === to) return value;
+
+    for (const family of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+        const map: Record<string, number> = family.map;
+        const fromFactor = map[from];
+        const toFactor = map[to];
+        if (fromFactor !== undefined && toFactor !== undefined) {
+            return (value * fromFactor) / toFactor;
+        }
+    }
+    return null;
+}
+
 export function standardizeMass(
     amount: number, 
     unit: string, 

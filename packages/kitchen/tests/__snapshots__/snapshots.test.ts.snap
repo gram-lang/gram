@@ -357,7 +357,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
             },
             "into the ",
             {
-              "_usageId": "0.7239626459483324",
+              "_usageId": "0.3841596516755099",
               "id": "mixture",
               "name": "mixture",
               "type": "reference",
@@ -495,7 +495,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       ],
       "ingredients": [
         {
-          "_usageId": "0.5674243545801662",
+          "_usageId": "0.17315698769283716",
           "id": "batter",
           "name": "batter",
           "type": "reference",
@@ -523,7 +523,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "content": [
             "The ",
             {
-              "_usageId": "0.5674243545801662",
+              "_usageId": "0.17315698769283716",
               "id": "batter",
               "name": "batter",
               "type": "reference",
@@ -592,6 +592,9 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "2",
       ],
       "id": "flour",
+      "modifiers": [
+        "bakers_percentage",
+      ],
       "name": "flour",
       "qty": 250,
       "unit": "g",
@@ -602,6 +605,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       ],
       "id": "milk",
       "name": "milk",
+      "relative": true,
       "variable_entries": [
         "200% of flour",
       ],
@@ -612,6 +616,9 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "14",
       ],
       "id": "butter",
+      "modifiers": [
+        "reference",
+      ],
       "name": "butter",
       "qty": 40,
       "unit": "g",
@@ -628,6 +635,9 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "10",
       ],
       "id": "secret-ingredient",
+      "modifiers": [
+        "hidden",
+      ],
       "name": "secret ingredient",
       "qty": 1,
       "unit": "pinch",
@@ -637,6 +647,9 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "11",
       ],
       "id": "orange-blossom-water",
+      "modifiers": [
+        "optional",
+      ],
       "name": "orange blossom water",
       "qty": 1,
       "unit": "tbsp",
@@ -734,7 +747,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "cookware": [],
       "ingredients": [
         {
-          "_usageId": "0.8144507773316016",
+          "_usageId": "0.43204215277722013",
           "id": "ghost-step",
           "name": "ghost_step",
           "type": "reference",
@@ -812,7 +825,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "We will use a step reference that does not exist: ",
             {
-              "_usageId": "0.8144507773316016",
+              "_usageId": "0.43204215277722013",
               "id": "ghost-step",
               "name": "ghost_step",
               "type": "reference",
@@ -1003,6 +1016,9 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         "15",
       ],
       "id": "ghost-var",
+      "modifiers": [
+        "reference",
+      ],
       "name": "ghost_var",
       "qty": 10,
       "unit": "g",
@@ -1012,6 +1028,10 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         "16",
       ],
       "id": "absurd",
+      "modifiers": [
+        "optional",
+        "bakers_percentage",
+      ],
       "name": "absurd",
       "qty": 10,
       "unit": "g",
@@ -1022,6 +1042,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       ],
       "id": "sugar",
       "name": "sugar",
+      "relative": true,
       "variable_entries": [
         "(50% of flour ❓)",
       ],
@@ -1032,6 +1053,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       ],
       "id": "salt",
       "name": "salt",
+      "relative": true,
       "variable_entries": [
         "(10% of salt ❓)",
       ],

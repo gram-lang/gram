@@ -202,12 +202,16 @@ export function analyze(
                    if (totalMass > 0) {
                        item.normalizedMass = parseFloat(totalMass.toFixed(2));
                        item.isEstimate = hasEstimate;
-                       item.conversionMethod = hasEstimate ? 'estimate' : 'physical';
-                       
+                       // Preserve 'relative' provenance even if only some contributing
+                       // usages were formula-derived: a mass partly built from another
+                       // ingredient's percentage can't be treated as a physical anchor
+                       // (e.g. for Baker's Math reference validation below).
+                       item.conversionMethod = hasRelativeResolved ? 'relative' : (hasEstimate ? 'estimate' : 'physical');
+
                        if (hasRelativeResolved) {
                            item.qty = item.normalizedMass;
                            item.unit = 'g';
-                           item.variable_entries = []; 
+                           item.variable_entries = [];
                        }
                    }
                }
@@ -225,16 +229,38 @@ export function analyze(
 
     // 2.5 Calculate Baker's Percentages (if a reference is defined)
     let bakersReferenceMass: number | null = null;
-    
-    // Find reference by modifier or by explicit option
+
+    // Find reference by explicit option or by the `*` modifier
+    let bakersReferenceItem: any = null;
     for (const item of shopping_list) {
         if (
             (opts.bakersReference && item.id === opts.bakersReference) ||
             (item.modifiers && item.modifiers.includes('bakers_percentage'))
         ) {
-            bakersReferenceMass = item.normalizedMass || null;
+            bakersReferenceItem = item;
             break;
         }
+    }
+
+    if (bakersReferenceItem && bakersReferenceItem.conversionMethod === 'relative') {
+        // The 100% base must be a physical anchor. A reference whose own mass was
+        // derived from another ingredient's percentage can't also be the base —
+        // that's a circular definition, not a bug in the math, so we refuse
+        // silently, disable Baker's Math for this run, and explain why.
+        result.warnings.push({
+            code: 'INVALID_BAKERS_REFERENCE',
+            message: `Cannot use '${bakersReferenceItem.name || bakersReferenceItem.id}' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.`,
+            item: bakersReferenceItem.name || bakersReferenceItem.id
+        });
+    } else if (bakersReferenceItem) {
+        bakersReferenceMass = bakersReferenceItem.normalizedMass || null;
+    } else if (opts.bakersReference !== undefined) {
+        // Baker's Math was explicitly requested (bare --bakers-math or
+        // --bakers-reference=<id>) but nothing matched.
+        result.warnings.push({
+            code: 'NO_BAKERS_REFERENCE',
+            message: `No Baker's Percentage reference found. Mark an ingredient with the \`*\` modifier, or pass --bakers-reference=<id>.`,
+        });
     }
 
     if (bakersReferenceMass !== null && bakersReferenceMass > 0) {

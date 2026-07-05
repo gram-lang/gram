@@ -12,6 +12,10 @@ const props = defineProps<{
   jsonData: any
 }>()
 
+const emit = defineEmits<{
+  (e: 'scale-update', factor: number): void
+}>()
+
 const { isDark } = useData()
 
 const currentLang = computed(() => {
@@ -72,26 +76,56 @@ watch(() => props.htmlPreview, async () => {
   }
 }, { flush: 'pre' })
 
+function handlePreviewChange(e: Event) {
+  if (props.viewMode !== 'preview') return
+  const target = e.target as HTMLElement
+  if (target.classList.contains('portions-input')) {
+    const input = target as HTMLInputElement
+    const newVal = parseFloat(input.value)
+    const interactivePortions = target.closest('.interactive-portions')
+    const basePortions = parseFloat(interactivePortions?.getAttribute('data-base-portions') || '1')
+    if (!isNaN(newVal) && newVal > 0) {
+      emit('scale-update', newVal / basePortions)
+    }
+  }
+}
+
 function handlePreviewClick(e: MouseEvent) {
   if (props.viewMode !== 'preview') return
   const target = e.target as HTMLElement
+  
+  const scaleBtn = target.closest('.scale-btn')
+  if (scaleBtn) {
+    e.preventDefault()
+    const action = scaleBtn.getAttribute('data-scale-action')
+    if (action === 'set-factor') {
+      const val = parseFloat(scaleBtn.getAttribute('data-value') || '1')
+      emit('scale-update', val)
+    } else if (action === 'inc-portions' || action === 'dec-portions') {
+      const interactivePortions = target.closest('.interactive-portions')
+      const basePortions = parseFloat(interactivePortions?.getAttribute('data-base-portions') || '1')
+      const inputEl = interactivePortions?.querySelector('.portions-input') as HTMLInputElement | null
+      const currentPortions = inputEl ? parseFloat(inputEl.value) : basePortions
+      const newPortions = action === 'inc-portions' ? currentPortions + 1 : currentPortions - 1
+      if (newPortions > 0) {
+        emit('scale-update', newPortions / basePortions)
+      }
+    }
+    return
+  }
+
   const a = target.closest('a')
   if (a && a.hash && a.hash.startsWith('#')) {
     const id = a.hash.substring(1)
     const el = document.getElementById(id)
     if (el) {
       e.preventDefault()
-      
-      // Remove highlight from previous
       if (previewContainer.value) {
         previewContainer.value.querySelectorAll('.target-highlight').forEach(n => {
           n.classList.remove('target-highlight')
         })
       }
-      
-      // Add highlight to target
       el.classList.add('target-highlight')
-      
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }
@@ -128,7 +162,14 @@ function handlePreviewClick(e: MouseEvent) {
       </div>
       
       <!-- HTML Preview -->
-      <div ref="previewContainer" @click="handlePreviewClick" v-else-if="viewMode === 'preview'" class="output-preview gram-preview vp-doc show-macros" v-html="htmlPreview"></div>
+      <div 
+        ref="previewContainer" 
+        @click="handlePreviewClick" 
+        @change="handlePreviewChange" 
+        v-else-if="viewMode === 'preview'" 
+        class="output-preview gram-preview vp-doc show-macros" 
+        v-html="htmlPreview"
+      ></div>
     </div>
   </div>
 </template>

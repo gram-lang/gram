@@ -49,7 +49,7 @@ gram build brioche.gram --scale 2 --output ./dist-doubled
 ```
 - By default, outputs pure JSON directly to `stdout` for easy piping.
 - Computes nutritional data and physical mass standardization automatically via the database.
-- `--scale <factor>` bakes the scaling into the JSON output (factor only — reference mode, e.g. `flour=300g`, is not supported by `build`, even for a single file).
+- `--scale <factor>` bakes the scaling into the JSON output. Reference mode (e.g. `flour=300g`) isn't available here by design: `build` can batch multiple files at once, and a reproducible batch output shouldn't depend on reading one specific file's shopping list first. Use `gram view`/`gram scale` to find the factor you want, then pass that numeric factor to `build`.
 - Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`.
 
 #### `gram view <file>`
@@ -147,7 +147,8 @@ gram scale brioche.gram --scale eggs=3       # Scale so that eggs = 3
 - Displays a comparison table: original quantities (dimmed) vs scaled (green).
 - Quantities that cannot be scaled (text values like "1 pinch") are listed separately.
 - Warns on extreme factors (below ×0.1 or above ×20) and notes that cooking times are not adjusted.
-- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units must be compatible (e.g. g↔g) — use `gram db enrich` to add density for volume↔mass conversion.
+- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units in the same family convert automatically (e.g. `flour=1kg` against a recipe written in `500g`); crossing mass↔volume still needs a density — use `gram db enrich`.
+- Not every ingredient can be a reference target: fixed (`@=`) ingredients, relative quantities (`70% @&flour`), sub-recipe/composite totals, and ingredients split across incompatible units are all rejected with a specific error explaining why (and what to scale by instead). See [Deep Dive: Scaling](/explanation/scaling) for the full list.
 - Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 
 #### `gram watch [dir]`

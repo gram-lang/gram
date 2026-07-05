@@ -808,3 +808,70 @@ body.vscode-dark,
 .gram-preview .section-declaration-badge[data-tooltip]:hover::before {
   transform: translateY(-3px);
 }
+/* Interactive Scaling */
+.gram-preview .interactive-portions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gram-preview .scale-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  transition: all 0.2s ease;
+}
+
+.gram-preview .scale-btn.minus,
+.gram-preview .scale-btn.plus {
+  width: 20px;
+  height: 20px;
+}
+
+.gram-preview .scale-multipliers {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  border-left: 1px solid var(--color-border);
+  padding-left: 8px;
+}
+
+.gram-preview .scale-btn.factor {
+  padding: 2px 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.gram-preview .scale-btn:hover {
+  background-color: var(--color-bg-muted, rgba(200, 200, 200, 0.3));
+  color: var(--color-text-strong);
+}
+
+
+.gram-preview .scale-input-inline {
+  width: 4ch;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-text-strong);
+  color: inherit;
+  font: inherit;
+  outline: none;
+  text-align: center;
+  padding: 0;
+}
+
+/* Hide spin buttons for scale input */
+.gram-preview .scale-input-inline::-webkit-outer-spin-button,
+.gram-preview .scale-input-inline::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.gram-preview .scale-input-inline[type=number] {
+  -moz-appearance: textfield;
+}

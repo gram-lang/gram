@@ -1,5 +1,5 @@
 import { RenderContext } from '../types';
-import { escapeHtml, getQty, formatQuantityValue, applyBakersMath } from '../utils';
+import { escapeHtml, getQty, formatQuantityValue } from '../utils';
 
 // Default icons mapping
 export const DEFAULT_ICONS = {
@@ -11,7 +11,9 @@ export const DEFAULT_ICONS = {
         arrowRight: '<i class="ph ph-arrow-right"></i>',
         arrowUDownLeft: '<i class="ph ph-arrow-u-down-left"></i>',
         warning: '<i class="ph ph-warning"></i>',
-        pencilSimple: '<i class="ph ph-pencil-simple"></i>'
+        pencilSimple: '<i class="ph ph-pencil-simple"></i>',
+        minus: '<i class="ph ph-minus"></i>',
+        plus: '<i class="ph ph-plus"></i>'
     },
     md: {
         hourglass: '⏳ ',
@@ -21,7 +23,9 @@ export const DEFAULT_ICONS = {
         arrowRight: '->&',
         arrowUDownLeft: '',
         warning: ' ⚠️',
-        pencilSimple: ''
+        pencilSimple: '',
+        minus: '-',
+        plus: '+'
     }
 };
 

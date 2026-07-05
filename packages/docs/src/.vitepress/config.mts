@@ -86,7 +86,8 @@ export default defineConfig({
               { text: 'JSON Output', link: '/explanation/engine/renderer' },
               { text: 'Deep Dive: Mass & Yield', link: '/explanation/mass-and-yield' },
               { text: 'Deep Dive: Nutrition', link: '/explanation/nutrition' },
-              { text: 'Deep Dive: Shopping Lists', link: '/explanation/shopping-list-aggregation' }
+              { text: 'Deep Dive: Shopping Lists', link: '/explanation/shopping-list-aggregation' },
+              { text: 'Deep Dive: Scaling', link: '/explanation/scaling' }
             ]
           }
         ]

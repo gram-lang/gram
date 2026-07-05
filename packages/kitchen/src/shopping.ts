@@ -10,10 +10,17 @@ interface ShoppingListItem {
     qty?: number;
     unit?: string | null;
     variable_entries?: string[];
+    fixed?: boolean;
+    relative?: boolean;
+    multiUnit?: boolean;
+    modifiers?: string[];
     // Internal fields for calculation
     otherUnits?: Record<string, number>;
     variableParts?: string[];
     _usageIds?: string[];
+    allFixed?: boolean;
+    isRelative?: boolean;
+    modifierSet?: Set<string>;
 }
 
 interface CompositeItem {
@@ -165,7 +172,21 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             if (item._usageId) {
                 existing._usageIds!.push(item._usageId);
             }
-            
+
+            // Track whether every contributing usage is protected (@= or a
+            // TextQuantity like "a pinch"), and whether any is a relative
+            // (formula-derived) quantity — both disqualify this ingredient
+            // as a --scale reference target (see @gram/kitchen's ScaleEngine).
+            existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
+            if (item.formula) existing.isRelative = true;
+            // Propagate modifiers (e.g. the `*` baker's-percentage reference marker)
+            // so consumers reading the shopping list — not just per-usage AST nodes —
+            // can find it too.
+            if (item.modifiers && item.modifiers.length > 0) {
+                if (!existing.modifierSet) existing.modifierSet = new Set();
+                item.modifiers.forEach((m: string) => existing.modifierSet!.add(m));
+            }
+
             // (Numeric extraction moved up above key generation)
             
             // Push ghosts, variables, and circular warnings to alternative descriptions
@@ -204,6 +225,9 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         if (item._usageIds && item._usageIds.length > 0) {
             res._usageIds = item._usageIds;
         }
+        if (item.allFixed) res.fixed = true;
+        if (item.isRelative) res.relative = true;
+        if (item.modifierSet && item.modifierSet.size > 0) res.modifiers = [...item.modifierSet];
 
         const units = Object.keys(item.otherUnits!);
         const primaryUnit = units[0];
@@ -211,7 +235,8 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             res.qty = parseFloat((item.otherUnits![primaryUnit] || 0).toFixed(2));
             res.unit = primaryUnit || null;
         }
-        
+        if (units.length > 1) res.multiUnit = true;
+
         const hasOther = Object.keys(item.otherUnits!).length > 0;
         
         const extraEntries: string[] = [];
