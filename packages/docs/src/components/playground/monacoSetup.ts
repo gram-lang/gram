@@ -1,4 +1,5 @@
-import { createHighlighter } from 'shiki'
+import { createHighlighterCore } from 'shiki/core'
+import { createOnigurumaEngine } from 'shiki/engine/oniguruma'
 import { shikiToMonaco } from '@shikijs/monaco'
 // @ts-ignore
 import gramGrammar from '@gram/parser/textmate'
@@ -17,15 +18,19 @@ export async function setupMonaco(monaco: any) {
     }
   }
 
-  // Initialize Shiki with the official Gram TextMate grammar
-  const highlighter = await createHighlighter({
-    langs: [
-      { ...gramGrammar, name: 'gram' },
-      'json',
-      'scheme',
-      'markdown'
+  // Initialize Shiki core with explicit languages and themes
+  const highlighter = await createHighlighterCore({
+    themes: [
+      import('shiki/themes/github-light.mjs'),
+      import('shiki/themes/github-dark.mjs')
     ],
-    themes: ['github-light', 'github-dark']
+    langs: [
+      { ...gramGrammar, name: 'gram' } as any,
+      import('shiki/langs/json.mjs'),
+      import('shiki/langs/scheme.mjs'),
+      import('shiki/langs/markdown.mjs')
+    ],
+    engine: createOnigurumaEngine(import('shiki/wasm'))
   })
 
   // Bind Shiki to Monaco
