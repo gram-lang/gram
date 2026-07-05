@@ -5,7 +5,7 @@
 "@gram/kitchen": major
 "@gram/language-server": major
 "@gram/parser": major
-"@gram/playground": major
+"@gram/docs": major
 "@gram/renderer": major
 "@gram/vscode-extension": major
 ---

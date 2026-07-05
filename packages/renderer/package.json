@@ -1,6 +1,6 @@
 {
   "name": "@gram/renderer",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "Universal Markdown and HTML AST renderer for the Gram recipe language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

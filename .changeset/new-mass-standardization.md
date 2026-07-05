@@ -1,7 +1,7 @@
 ---
 "@gram/analyzer": major
 "@gram/language-server": patch
-"@gram/playground": patch
+"@gram/docs": patch
 ---
 
 **Breaking Change: Refactored Physical Engine Nomenclature**

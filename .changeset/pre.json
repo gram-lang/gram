@@ -10,16 +10,31 @@
     "@gram/parser": "0.10.1",
     "@gram/playground": "0.10.1",
     "@gram/renderer": "0.10.1",
-    "@gram/vscode-extension": "0.10.1"
+    "@gram/vscode-extension": "0.10.1",
+    "@gram/docs": "1.0.0-beta.0"
   },
   "changesets": [
+    "async-sync-timers",
+    "cold-bears-march",
     "cuddly-tires-crash",
+    "docs-playground-integration",
+    "fix-bare-preparations",
     "forty-lies-guess",
     "good-things-rest",
     "happy-hands-peel",
+    "ispassive-refactor",
     "little-rings-take",
+    "mixed-yields-alias",
+    "modern-colors-shiki",
+    "move-ingredient-preps",
+    "new-mass-standardization",
+    "refactor-textmate",
+    "relative-quantities-formatting",
+    "scale-engine",
     "shaggy-wasps-behave",
+    "shaky-cameras-dig",
     "stale-stamps-tickle",
+    "time-calculations",
     "true-numbers-float"
   ]
 }

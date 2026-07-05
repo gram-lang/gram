@@ -1,5 +1,14 @@
 # @gram/i18n
 
+## 1.0.0-beta.1
+
+### Minor Changes
+
+- a244341: Major overhaul of the documentation and playground infrastructure:
+
+  - **Documentation Rewrite & i18n**: The documentation has been completely rewritten, thoroughly verified, and is now fully translated into French (in addition to the English version).
+  - **Advanced Vue 3 Playground**: The legacy playground has been removed and rebuilt from the ground up using Vue 3. This new version is directly integrated into the documentation and introduces powerful new features, including recipe scaling and baker's math.
+
 ## 1.0.0-beta.0
 
 ### Major Changes

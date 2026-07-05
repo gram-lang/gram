@@ -1,5 +1,5 @@
 ---
-"@gram/playground": minor
+"@gram/docs": minor
 "@gram/vscode-extension": patch
 ---
 

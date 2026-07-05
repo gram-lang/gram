@@ -1,6 +1,6 @@
 ---
 "@gram/language-server": minor
-"@gram/playground": minor
+"@gram/docs": minor
 "@gram/analyzer": minor
 "@gram/kitchen": minor
 ---

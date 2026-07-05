@@ -1,5 +1,62 @@
 # @gram/analyzer
 
+## 1.0.0-beta.1
+
+### Major Changes
+
+- 02d63ff: **Breaking Change: Refactored Physical Engine Nomenclature**
+
+  The physical enrichment options and internal APIs have been renamed for clarity and to align with professional culinary terminology.
+
+  If you are using `@gram/analyzer` programmatically, please update your configuration:
+
+  - `enableMassNormalization` is now **`enableMassStandardization`**
+  - `enableYieldManagement` is now **`enableYieldCalculation`**
+  - The exported `normalizeMass` helper is now **`standardizeMass`**
+
+  This update ensures total parity with the updated official documentation.
+
+### Minor Changes
+
+- a244341: Major overhaul of the documentation and playground infrastructure:
+
+  - **Documentation Rewrite & i18n**: The documentation has been completely rewritten, thoroughly verified, and is now fully translated into French (in addition to the English version).
+  - **Advanced Vue 3 Playground**: The legacy playground has been removed and rebuilt from the ground up using Vue 3. This new version is directly integrated into the documentation and introduces powerful new features, including recipe scaling and baker's math.
+
+- 8921d9d: Fixed several correctness bugs found during a documentation audit, and added alias-aware cross-unit shopping list aggregation.
+
+  - **@gram/analyzer**: `unit_weight`-based conversions (e.g. `@avocado{1}`) were being double-divided by `yield` — the whole-unit weight is now correctly treated as Gross Mass, with Net Mass derived forward (`Gross × yield`), while explicit mass/volume entries keep deriving Gross backward (`Net ÷ yield`) as before. Optional ingredients (`?`) are no longer counted in nutrition totals. New `resolveCanonicalId()` resolves an ingredient name/alias to its database key, and a new `aggregateShoppingList()` step re-groups the shopping list by canonical id — merging aliased ingredients (e.g. `beurre`/`butter`) and cross-unit quantities (e.g. `100g` + `1 cup`) into a single gram total whenever every entry resolves to a mass, falling back to separate entries flagged `multiUnit: true` when a density is missing.
+  - **@gram/renderer**: The HTML shopping list now clusters consecutive `multiUnit`-flagged entries for the same ingredient under one heading with a "⚠️ Mixed units" badge, instead of listing them as unrelated lines.
+  - **@gram/cli**: `shopper`'s alias resolution now reuses `@gram/analyzer`'s `resolveCanonicalId()` instead of a separate, duplicated alias map.
+
+- 2476140: Added a centralized `ScaleEngine` in `@gram/kitchen` to make recipe scaling (`--scale`) and Baker's Percentage math safer and more consistent everywhere.
+
+  - **@gram/kitchen**: New `resolveScaleFactor()`/`applyScale()` API validates a `--scale` target before computing a factor — rejecting fixed (`@=`) ingredients, relative quantities, ingredients only used inside a sub-recipe, ingredients inside an alternative-ingredient group, and ingredients split across incompatible units, with a clear error instead of a silently wrong number. A sub-recipe's own total (e.g. "2 lemons") is itself a valid scale target. Scaling is now a pure operation (never mutates the original recipe), and the compiled recipe now carries an explicit `scaleFactor` field. Covered by a new unit test suite.
+  - **@gram/analyzer**: Fixed the `@*` Baker's-reference auto-detection (it silently never matched before), and it now refuses to use a relative-quantity ingredient as the 100% base instead of computing bogus percentages. The enriched JSON AST now natively includes a `bakersPercentage` field for all ingredients if a reference ingredient is declared or passed via the `bakersReference` option. `convertUnit()` now accepts an optional density (g/mL) to bridge mass ↔ volume conversions; new `resolveIngredientDensity()` and `parseDensityOverrides()` helpers resolve that density from a recipe's `densities:` frontmatter. Also includes a critical null-safety fix when parsing recipes containing standalone comments.
+  - **@gram/renderer**: Natively supports formatting Baker's Percentages provided by the analyzer (for HTML and Markdown exports, and the Playground), removing its legacy calculation logic. Fixed `gram print --bakers-math-only` having no effect.
+  - **@gram/cli**: The CLI now cleanly acts as a presentation layer for Baker's Math, reading percentages directly from the AST. Added `--bakers-math`, `--bakers-reference`, and `--bakers-math-only` flags to the `view`, `print` and `export` commands. `--scale id=value` now supports same-family unit conversion and cross-family conversion when a density is available; suggests the closest matching ingredient name on a typo; no longer shows corrupted comparison rows for an ingredient split across multiple units in `gram scale`.
+
+### Patch Changes
+
+- e6cf842: Refined formatting and mass normalization for relative quantities:
+
+  - **Cleaner Display**: Relative quantities are now seamlessly displayed without internal `@` or `&` markers (e.g., `125% of lemon juice`). The redundant formula brackets `[125% of...]` have been removed from inline instructions.
+  - **Robust Shopping List Aggregation**: The compiler (`@gram/kitchen`) now strictly tracks ingredient lineage using `_usageIds`. This allows the analyzer (`@gram/analyzer`) to flawlessly compute exact masses for complex items in the shopping list without confusing standard ingredients and their alternatives.
+  - **Shopping List Accuracy**: When mass normalization is enabled, the shopping list will now accurately display the fully resolved physical mass for relative quantities (e.g., `sugar (156 g)`) instead of falling back to the formula string.
+
+- Updated dependencies [a244341]
+- Updated dependencies [1eafa64]
+- Updated dependencies [a1e6fe9]
+- Updated dependencies [fbe648e]
+- Updated dependencies [6013e64]
+- Updated dependencies [e6cf842]
+- Updated dependencies [2476140]
+- Updated dependencies [3f7bc5d]
+- Updated dependencies [979f32b]
+  - @gram/kitchen@1.0.0-beta.1
+  - @gram/parser@1.0.0-beta.1
+  - @gram/i18n@1.0.0-beta.1
+
 ## 1.0.0-beta.0
 
 ### Major Changes
