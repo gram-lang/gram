@@ -2,6 +2,7 @@ import { defineCommand } from 'citty'
 import { readFile, writeFile } from 'node:fs/promises'
 import { log } from '@clack/prompts'
 import chalk from 'chalk'
+import pLimit from 'p-limit'
 import { resolveGlob } from '../core/glob'
 import { formatGram, hasChanges, summarizeChanges } from '../services/formatter'
 import { ExitCode, GramCLIError } from '../errors'
@@ -37,33 +38,48 @@ export default defineCommand({
     }
 
     const isCheck = args.check as boolean
-    let needsFormatting = 0
 
-    console.log()
-    for (const file of files) {
+    // Parallelized like builder.ts/db-sync.ts, but results are collected and
+    // printed in the original file order afterward so console output stays
+    // deterministic regardless of which file finishes reading/formatting first.
+    const limit = pLimit(20)
+    const results = await Promise.all(files.map(file => limit(async () => {
       let source: string
       try {
         source = await readFile(file, 'utf-8')
       } catch (err) {
-        log.error(`Cannot read ${file}: ${err instanceof Error ? err.message : String(err)}`)
-        continue
+        return { file, status: 'error' as const, message: err instanceof Error ? err.message : String(err) }
       }
 
       const { content, changes } = formatGram(source)
-      const changed = hasChanges(changes)
+      if (!hasChanges(changes)) {
+        return { file, status: 'unchanged' as const }
+      }
 
-      if (!changed) {
-        console.log(`  ${chalk.green('✔')} ${chalk.dim(file)}  ${chalk.dim('already formatted')}`)
+      if (!isCheck) {
+        await writeFile(file, content, 'utf-8')
+      }
+      return { file, status: 'changed' as const, summary: summarizeChanges(changes) }
+    })))
+
+    let needsFormatting = 0
+
+    console.log()
+    for (const result of results) {
+      if (result.status === 'error') {
+        log.error(`Cannot read ${result.file}: ${result.message}`)
+        continue
+      }
+      if (result.status === 'unchanged') {
+        console.log(`  ${chalk.green('✔')} ${chalk.dim(result.file)}  ${chalk.dim('already formatted')}`)
         continue
       }
 
       needsFormatting++
-
       if (isCheck) {
-        console.log(`  ${chalk.yellow('✗')} ${file}  ${chalk.dim(summarizeChanges(changes))}`)
+        console.log(`  ${chalk.yellow('✗')} ${result.file}  ${chalk.dim(result.summary)}`)
       } else {
-        await writeFile(file, content, 'utf-8')
-        console.log(`  ${chalk.green('✔')} ${file}  ${chalk.dim(summarizeChanges(changes))}`)
+        console.log(`  ${chalk.green('✔')} ${result.file}  ${chalk.dim(result.summary)}`)
       }
     }
 

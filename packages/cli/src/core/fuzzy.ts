@@ -35,6 +35,14 @@ export function findSimilarInDb(
 ): FuzzyMatch | null {
   let best: FuzzyMatch | null = null
   for (const existingId of Object.keys(db)) {
+    // Cheap pre-filter before paying for a full Levenshtein matrix: edit distance
+    // is always >= the length difference between the two strings, so if that
+    // difference alone already exceeds what the threshold could tolerate, this
+    // candidate can never score >= threshold — skip it. Never produces a false
+    // negative (it's a mathematical lower bound on levenshtein), only saves work.
+    const maxLen = Math.max(newId.length, existingId.length)
+    if (maxLen > 0 && Math.abs(newId.length - existingId.length) / maxLen > 1 - threshold) continue
+
     const score = similarity(newId, existingId)
     if (score >= threshold && score < 1 && score > (best?.score ?? 0)) {
       best = { newId, existingId, score }

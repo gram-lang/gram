@@ -22,7 +22,7 @@ import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS }
 import { loadIngredientDB, type IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { provideInlayHints } from './features/inlay-hints';
 import { provideCodeLenses } from './features/code-lens';
-import { toHTML } from '@gram-lang/renderer';
+import { toHTML, escapeHtml } from '@gram-lang/renderer';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -116,21 +116,41 @@ function refresh(uri: string, text: string) {
             console.error('HTML render error', e);
         }
     } else if (state.parseError) {
-        // Fallback for syntax errors
+        // Fallback for syntax errors. ohm-js error messages often embed a snippet of
+        // the offending source line for context, so this must be escaped like any
+        // other user-controlled content reaching the preview webview (audit Chantier 6).
         const html = `
             <div style="padding: 20px; color: var(--vscode-errorForeground);">
                 <h2>Syntax Error</h2>
-                <pre style="background: var(--vscode-editorWidget-background); padding: 10px; border-radius: 6px;">${state.parseError}</pre>
+                <pre style="background: var(--vscode-editorWidget-background); padding: 10px; border-radius: 6px;">${escapeHtml(state.parseError)}</pre>
             </div>
         `;
         connection.sendNotification('gram/previewUpdated', { uri, html });
     }
 }
 
+// Debounced so a full parse + compile + HTML render doesn't run synchronously
+// on every keystroke — same pattern already used in cli/src/commands/watch.ts.
+const pendingRefresh = new Map<string, ReturnType<typeof setTimeout>>();
+
+function scheduleRefresh(uri: string, text: string): void {
+    const existing = pendingRefresh.get(uri);
+    if (existing) clearTimeout(existing);
+    pendingRefresh.set(uri, setTimeout(() => {
+        pendingRefresh.delete(uri);
+        refresh(uri, text);
+    }, 150));
+}
+
 documents.onDidOpen(e => refresh(e.document.uri, e.document.getText()));
-documents.onDidChangeContent(e => refresh(e.document.uri, e.document.getText()));
+documents.onDidChangeContent(e => scheduleRefresh(e.document.uri, e.document.getText()));
 documents.onDidClose(e => {
     states.delete(e.document.uri);
+    const pending = pendingRefresh.get(e.document.uri);
+    if (pending) {
+        clearTimeout(pending);
+        pendingRefresh.delete(e.document.uri);
+    }
     connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
 });
 
