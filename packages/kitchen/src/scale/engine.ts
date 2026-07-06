@@ -1,4 +1,4 @@
-import { normalizeUnit } from '@gram/i18n';
+import { normalizeUnit } from '@gram-lang/i18n';
 import { slugify, scaleQty } from '../utils';
 import { CompilationResult } from '../types';
 import {

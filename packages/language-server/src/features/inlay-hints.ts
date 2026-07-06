@@ -1,8 +1,8 @@
 import { InlayHint, InlayHintKind, Position } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
-import { ASTNodeType } from '@gram/parser';
+import { ASTNodeType } from '@gram-lang/parser';
 import { offsetToPosition } from '../utils/position';
-import { formatDuration } from '@gram/renderer';
+import { formatDuration } from '@gram-lang/renderer';
 
 export function provideInlayHints(state: DocumentState): InlayHint[] {
     const hints: InlayHint[] = [];

@@ -1,6 +1,6 @@
 # Deep Dive: Nutritional Estimation
 
-The `@gram/analyzer` is capable of automatically computing the macronutrient and micronutrient profile of any recipe. 
+The `@gram-lang/analyzer` is capable of automatically computing the macronutrient and micronutrient profile of any recipe. 
 
 However, because nutritional data is highly sensitive and impacts dietary choices, Gram takes a **strict, mathematically conservative approach** to estimating nutrition. This page explains that logic.
 

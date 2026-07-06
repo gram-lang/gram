@@ -1,6 +1,6 @@
 # Interface en Ligne de Commande (CLI)
 
-Le CLI officiel de Gram (`@gram/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
+Le CLI officiel de Gram (`@gram-lang/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
 
 ## Installation
 

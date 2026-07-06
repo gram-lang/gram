@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { UNIT_CONVERSIONS } from '@gram/analyzer'
-import { formatDecimalToFraction } from '@gram/renderer'
+import { UNIT_CONVERSIONS } from '@gram-lang/analyzer'
+import { formatDecimalToFraction } from '@gram-lang/renderer'
 import { useData } from 'vitepress'
-import { getDictionary } from '@gram/i18n'
+import { getDictionary } from '@gram-lang/i18n'
 
 const { lang } = useData()
 const t = computed(() => getDictionary(lang.value))

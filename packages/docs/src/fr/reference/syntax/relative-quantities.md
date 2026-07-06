@@ -38,7 +38,7 @@ Lorsque le compilateur Gram calcule une quantité relative, il suit ces règles 
 
 ## Règles de Calcul des Masses
 
-Puisque les quantités relatives reposent sur le calcul de pourcentages de masses existantes, l'analyseur (`@gram/analyzer`) standardise les masses avant de calculer :
+Puisque les quantités relatives reposent sur le calcul de pourcentages de masses existantes, l'analyseur (`@gram-lang/analyzer`) standardise les masses avant de calculer :
 
 | Type d'Unité Cible | Logique avant d'appliquer le pourcentage | Exemple |
 | :--- | :--- | :--- |

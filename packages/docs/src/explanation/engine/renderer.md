@@ -1,8 +1,8 @@
-# Rendering & Output (`@gram/renderer`)
+# Rendering & Output (`@gram-lang/renderer`)
 
-Once a recipe has been parsed by `@gram/parser`, compiled by `@gram/kitchen`, and (optionally) enriched by `@gram/analyzer`, it's ready to be presented to the user.
+Once a recipe has been parsed by `@gram-lang/parser`, compiled by `@gram-lang/kitchen`, and (optionally) enriched by `@gram-lang/analyzer`, it's ready to be presented to the user.
 
-The `@gram/renderer` package takes this final enriched JSON object and transforms it into structured Markdown or semantic HTML.
+The `@gram-lang/renderer` package takes this final enriched JSON object and transforms it into structured Markdown or semantic HTML.
 
 ## Rendering Formats
 
@@ -20,9 +20,9 @@ Generates a complete, self-contained `<!DOCTYPE html>` document with its own inl
 ## Usage Example
 
 ```typescript
-import { toMarkdown, toHTML } from '@gram/renderer';
+import { toMarkdown, toHTML } from '@gram-lang/renderer';
 
-// Assuming `recipe` is the output from @gram/kitchen or @gram/analyzer
+// Assuming `recipe` is the output from @gram-lang/kitchen or @gram-lang/analyzer
 const recipe = {
   title: "Simple Crepes",
   metrics: { totalTime: 30, activeTime: 10 },
@@ -66,6 +66,6 @@ const html = toHTML(recipe, {
 
 ## Direct JSON Consumption
 
-If you are building a modern web app (e.g., using React, Vue, or Svelte), you **do not** have to use `@gram/renderer`.
+If you are building a modern web app (e.g., using React, Vue, or Svelte), you **do not** have to use `@gram-lang/renderer`.
 
-The JSON output from `@gram/analyzer` is structured and can be iterated over directly — mapping over `recipe.sections` and `recipe.shopping_list` covers the common case. Keep in mind that richer recipes can produce more varied shapes worth handling explicitly, such as ingredient alternatives/groups, composite ingredients, or items carrying `normalizedMass`, `purchasingMass`, and `bakersPercentage` — `@gram/renderer`'s own formatting logic is a good reference for how to handle these if you're building a custom consumer.
+The JSON output from `@gram-lang/analyzer` is structured and can be iterated over directly — mapping over `recipe.sections` and `recipe.shopping_list` covers the common case. Keep in mind that richer recipes can produce more varied shapes worth handling explicitly, such as ingredient alternatives/groups, composite ingredients, or items carrying `normalizedMass`, `purchasingMass`, and `bakersPercentage` — `@gram-lang/renderer`'s own formatting logic is a good reference for how to handle these if you're building a custom consumer.

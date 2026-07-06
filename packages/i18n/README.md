@@ -1,4 +1,4 @@
-# @gram/i18n
+# @gram-lang/i18n
 
 The translation and normalization module for units and time within the Gram recipe language. It provides high-performance, O(1) lookup dictionaries and normalizers to translate locale-specific aliases (e.g., `càs`, `cuillère à soupe`, `teaspoon`) into standardized canonical representation units (e.g., `tbsp`, `tsp`).
 
@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/i18n` via bun:
+Install `@gram-lang/i18n` via bun:
 
 ```bash
-bun install @gram/i18n
+bun install @gram-lang/i18n
 ```
 
 ---
@@ -25,7 +25,7 @@ bun install @gram/i18n
 The package exports two primary normalization functions: `normalizeUnit` (for volumes/masses) and `resolveTimeUnit` (for duration units).
 
 ```javascript
-const { normalizeUnit, resolveTimeUnit } = require('@gram/i18n');
+const { normalizeUnit, resolveTimeUnit } = require('@gram-lang/i18n');
 
 // 1. Normalizing measurement units
 console.log(normalizeUnit('càs', 'fr'));            // 'tbsp' (French alias)

@@ -1,10 +1,10 @@
 # Language Server
 
-The Gram Language Server (`@gram/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, making it possible to provide advanced IDE features for Gram files across multiple editors, not just VS Code.
+The Gram Language Server (`@gram-lang/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, making it possible to provide advanced IDE features for Gram files across multiple editors, not just VS Code.
 
 ## Architecture
 
-The server acts as a persistent background process that analyzes your `.gram` files using the `@gram/parser` and `@gram/kitchen` packages. 
+The server acts as a persistent background process that analyzes your `.gram` files using the `@gram-lang/parser` and `@gram-lang/kitchen` packages. 
 
 **The real-time workflow:**
 1. **Editor** ➔ Sends file changes on every keystroke.

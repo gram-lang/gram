@@ -1,12 +1,12 @@
 ---
-"@gram/vscode-extension": minor
-"@gram/analyzer": minor
-"@gram/renderer": minor
-"@gram/kitchen": minor
-"@gram/parser": minor
-"@gram/docs": minor
-"@gram/i18n": minor
-"@gram/cli": minor
+"@gram-lang/vscode-extension": minor
+"@gram-lang/analyzer": minor
+"@gram-lang/renderer": minor
+"@gram-lang/kitchen": minor
+"@gram-lang/parser": minor
+"@gram-lang/docs": minor
+"@gram-lang/i18n": minor
+"@gram-lang/cli": minor
 ---
 
 Major overhaul of the documentation and playground infrastructure:

@@ -1,12 +1,12 @@
 # Analyse Syntaxique & AST
 
-Le paquet `@gram/parser` est la fondation de l'écosystème Gram. Sa seule responsabilité est de lire le texte brut `.gram` et de le convertir en un Arbre Syntaxique Abstrait (AST).
+Le paquet `@gram-lang/parser` est la fondation de l'écosystème Gram. Sa seule responsabilité est de lire le texte brut `.gram` et de le convertir en un Arbre Syntaxique Abstrait (AST).
 
 ## OhmJS
 
 Les règles de syntaxe de Gram sont définies en utilisant [OhmJS](https://ohmjs.org/), une boîte à outils d'analyse syntaxique orientée objet basée sur les Grammaires d'Expression d'Analyse (PEG - Parsing Expression Grammars).
 
-Ohm rend extrêmement facile la construction de grammaires modulaires. Grâce à cela, `@gram/parser` est incroyablement rapide et applique strictement les règles structurelles du langage — par exemple, un espace est formellement interdit autour du marqueur composite `<@` (`invalidComposite` dans la grammaire), donc `pâte < @pâtefeuilletée` échouera à l'analyse alors que `<@pâtefeuilletée` réussira.
+Ohm rend extrêmement facile la construction de grammaires modulaires. Grâce à cela, `@gram-lang/parser` est incroyablement rapide et applique strictement les règles structurelles du langage — par exemple, un espace est formellement interdit autour du marqueur composite `<@` (`invalidComposite` dans la grammaire), donc `pâte < @pâtefeuilletée` échouera à l'analyse alors que `<@pâtefeuilletée` réussira.
 
 ## L'Arbre Syntaxique Abstrait (AST)
 
@@ -54,9 +54,9 @@ Le tableau `modifiers` sur les nœuds `Ingredient`/`Cookware` contient les carac
 
 ## Purement Syntaxique
 
-`@gram/parser` n'effectue aucun raisonnement métier ou sémantique. Il n'a aucune connaissance sur :
+`@gram-lang/parser` n'effectue aucun raisonnement métier ou sémantique. Il n'a aucune connaissance sur :
 - Le fait qu'une variable référencée `&pâte` ait réellement été déclarée plus tôt.
 - Le fait que `200 g` de `farine` ait besoin d'être mis à l'échelle ou converti.
 - Le fait que la `farine` existe dans votre base de données `ingredients.yaml`.
 
-Cependant, il effectue une petite quantité de travail local, non-sémantique, tout en construisant l'arbre : il valide le frontmatter de la recette par rapport à un schéma (le supprimant silencieusement s'il est invalide), calcule la moyenne des deux limites d'une plage (`2-3` → suivi avec une moyenne de `2.5`) par commodité, et lève une erreur de syntaxe lisible lorsqu'il détecte une référence composite mal formée. Rien de tout cela ne requiert de connaître le reste de la recette — l'analyseur transmet un arbre purement structurel à `@gram/kitchen`, où la véritable résolution de références et la validation auront lieu.
+Cependant, il effectue une petite quantité de travail local, non-sémantique, tout en construisant l'arbre : il valide le frontmatter de la recette par rapport à un schéma (le supprimant silencieusement s'il est invalide), calcule la moyenne des deux limites d'une plage (`2-3` → suivi avec une moyenne de `2.5`) par commodité, et lève une erreur de syntaxe lisible lorsqu'il détecte une référence composite mal formée. Rien de tout cela ne requiert de connaître le reste de la recette — l'analyseur transmet un arbre purement structurel à `@gram-lang/kitchen`, où la véritable résolution de références et la validation auront lieu.

@@ -1,6 +1,6 @@
-# @gram/kitchen
+# @gram-lang/kitchen
 
-The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
+The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
 
 ---
 
@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/kitchen` via bun:
+Install `@gram-lang/kitchen` via bun:
 
 ```bash
-bun install @gram/kitchen
+bun install @gram-lang/kitchen
 ```
 
 ---
@@ -23,8 +23,8 @@ bun install @gram/kitchen
 ## ⚡ Usage
 
 ```javascript
-const { getAST } = require('@gram/parser');
-const { compile } = require('@gram/kitchen');
+const { getAST } = require('@gram-lang/parser');
+const { compile } = require('@gram-lang/kitchen');
 
 const source = `
 ## My Recipe

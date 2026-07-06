@@ -2,9 +2,9 @@ import { log } from '@clack/prompts'
 import { runPipeline } from '../core/pipeline'
 import { ExitCode } from '../errors'
 import { similarity } from '../core/fuzzy'
-import type { IngredientData } from '@gram/analyzer'
-import { convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram/analyzer'
-import { resolveScaleFactor as resolveScaleFactorEngine, ScaleError, IngredientNotFoundError } from '@gram/kitchen'
+import type { IngredientData } from '@gram-lang/analyzer'
+import { convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram-lang/analyzer'
+import { resolveScaleFactor as resolveScaleFactorEngine, ScaleError, IngredientNotFoundError } from '@gram-lang/kitchen'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ export function parseScaleArg(raw: string): { type: 'factor'; value: number } | 
 // ── Factor resolution ─────────────────────────────────────────────────────────
 
 /**
- * Resolves a --scale flag value to a numeric scale factor via @gram/kitchen's
+ * Resolves a --scale flag value to a numeric scale factor via @gram-lang/kitchen's
  * ScaleEngine — the single place that validates a target ingredient (exists,
  * not fixed/relative/composite/ambiguous) and reconciles units. For ref mode,
  * runs a single unscaled pipeline to read the reference ingredient's quantity.
@@ -72,7 +72,7 @@ export function parseScaleArg(raw: string): { type: 'factor'; value: number } | 
  * convert. Crossing families (e.g. "water=150g" against a recipe in ml) also
  * works whenever a density is available — from the recipe's own `densities:`
  * frontmatter override, or the ingredient database — resolved once here and
- * handed to the engine as a plain number, so @gram/kitchen never needs to
+ * handed to the engine as a plain number, so @gram-lang/kitchen never needs to
  * know about ingredient databases or density at all.
  */
 export async function resolveScaleFactor(

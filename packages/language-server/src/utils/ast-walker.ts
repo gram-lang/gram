@@ -1,7 +1,7 @@
 import {
     RecipeAST, SectionAST, StepAST, IntermediateDecl, ReferenceAST, IngredientAST, AlternativeAST,
     isIntermediateDecl, isReference, isIngredient, isAlternative, isStep
-} from '@gram/parser';
+} from '@gram-lang/parser';
 
 export interface IntermediateDeclWithSection {
     decl: IntermediateDecl;

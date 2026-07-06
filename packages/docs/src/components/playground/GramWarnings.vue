@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useData } from 'vitepress'
-import { getDictionary } from '@gram/i18n'
+import { getDictionary } from '@gram-lang/i18n'
 
 defineProps<{
   warnings: Array<{

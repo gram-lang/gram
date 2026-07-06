@@ -1,6 +1,6 @@
 # Deep Dive: Mass Standardization & Yield
 
-Gram is deeply rooted in physical reality. Unlike basic markdown parsers that just bold text, the `@gram/analyzer` understands that a "cup of flour" and a "cup of water" have completely different weights.
+Gram is deeply rooted in physical reality. Unlike basic markdown parsers that just bold text, the `@gram-lang/analyzer` understands that a "cup of flour" and a "cup of water" have completely different weights.
 
 This page explains the physics engine behind Gram's mass and yield calculations.
 

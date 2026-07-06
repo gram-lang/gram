@@ -3,7 +3,7 @@ import {
     ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
     AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
     QuantityValueAST, ASTNodeType, Location
-} from '@gram/parser';
+} from '@gram-lang/parser';
 import { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment } from './types';
 import { CompilerOptions } from './core';
 import { RecipeRegistry } from './registry';

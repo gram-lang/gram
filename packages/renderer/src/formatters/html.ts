@@ -1,8 +1,8 @@
 import { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
-import { aggregateSectionIngredients } from '@gram/kitchen';
-import { getDictionary } from '@gram/i18n';
+import { aggregateSectionIngredients } from '@gram-lang/kitchen';
+import { getDictionary } from '@gram-lang/i18n';
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
     const t = getDictionary(options.lang);

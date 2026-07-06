@@ -1,6 +1,6 @@
-# Analyse Sémantique (`@gram/analyzer`)
+# Analyse Sémantique (`@gram-lang/analyzer`)
 
-Le paquet `@gram/analyzer` représente l'étape analytique finale dans le pipeline de compilation. Il prend le résultat logiquement valide `CompilationResult` produit par `@gram/kitchen` et effectue l'**Enrichissement Physique** en croisant la recette avec une base de données externe `ingredients.yaml`.
+Le paquet `@gram-lang/analyzer` représente l'étape analytique finale dans le pipeline de compilation. Il prend le résultat logiquement valide `CompilationResult` produit par `@gram-lang/kitchen` et effectue l'**Enrichissement Physique** en croisant la recette avec une base de données externe `ingredients.yaml`.
 
 C'est ici que le monde physique rencontre le code numérique. L'analyseur calcule cinq ensembles majeurs de fonctionnalités : Standardisation des Masses, Calcul du Rendement, Agrégation de la Liste de Courses, Estimation Nutritionnelle, et Pourcentages du Boulanger — chacune pouvant être activée ou désactivée individuellement via les options.
 
@@ -29,11 +29,11 @@ Par exemple, si un ingrédient a un facteur de rendement de `0.65` (35 % de déc
 
 La direction de ce calcul dépend de la manière dont la quantité a été écrite. Une masse/volume explicite (comme la banane ci-dessus) est supposée être la masse **Nette**, avec la masse **Brute** (achat) dérivée à l'envers (`Nette ÷ rendement`). Un **nombre** (ex : `@avocat{1}`) fonctionne dans l'autre sens : le poids unitaire (`unit_weight`) de l'ingrédient représente déjà l'unité entière achetée (**Brute**), donc la masse Nette réellement utilisée par la recette et par les calculs de nutrition est dérivée vers l'avant (`Brute × rendement`). Voir [Standardisation des Masses & Rendement](../mass-and-yield.md) pour le détail complet.
 
-Cet ajustement est calculé par utilisation de l'ingrédient — y compris les mentions en ligne dans le texte de la recette, et pas seulement pour le total agrégé de la liste de courses — bien que la sortie HTML de référence `@gram/renderer` n'affiche actuellement le chiffre de Masse Brute que dans la liste de courses.
+Cet ajustement est calculé par utilisation de l'ingrédient — y compris les mentions en ligne dans le texte de la recette, et pas seulement pour le total agrégé de la liste de courses — bien que la sortie HTML de référence `@gram-lang/renderer` n'affiche actuellement le chiffre de Masse Brute que dans la liste de courses.
 
 ## 3. Agrégation de la Liste de Courses
 
-Au-delà d'enrichir les masses individuelles des ingrédients, l'Analyseur regroupe également la liste de courses elle-même. `@gram/kitchen` regroupe purement par l'id brut qu'elle a attribué lors de l'analyse syntaxique, sans connaissance de `ingredients.yaml` — elle ne peut donc pas savoir que `@butter` et `@beurre` sont le même ingrédient, ni fusionner `100 g` d'un ingrédient avec `1 tasse` de ce même ingrédient en un seul total.
+Au-delà d'enrichir les masses individuelles des ingrédients, l'Analyseur regroupe également la liste de courses elle-même. `@gram-lang/kitchen` regroupe purement par l'id brut qu'elle a attribué lors de l'analyse syntaxique, sans connaissance de `ingredients.yaml` — elle ne peut donc pas savoir que `@butter` et `@beurre` sont le même ingrédient, ni fusionner `100 g` d'un ingrédient avec `1 tasse` de ce même ingrédient en un seul total.
 
 En utilisant la base de données des ingrédients, l'Analyseur :
 - Résout chaque ingrédient vers son **id canonique** (`resolveCanonicalId`), fusionnant les entrées aliasées ensemble.
@@ -52,7 +52,7 @@ L'Analyseur peut calculer automatiquement une estimation des Calories et Macronu
 4. Si une valeur `portions` est transmise via les options de l'analyseur, il divise les totaux pour fournir des valeurs **Par Portion**.
 
 ::: tip Des données partielles transparentes, non cachées
-Contrairement à un modèle strict de type tout-ou-rien, l'analyseur renvoie toujours tous les totaux nutritionnels qu'il a pu calculer, accompagnés d'un ratio de `coverage` (couverture) et d'avertissements pour tout ingrédient pour lequel des données nutritionnelles manquaient ou qui n'a pas pu être standardisé en masse. Les consommateurs de ces données (comme le visualiseur CLI ou la sortie HTML de `@gram/renderer`) utilisent cela pour afficher un indicateur explicite de "données incomplètes" à côté des totaux partiels, plutôt que de masquer complètement le panneau.
+Contrairement à un modèle strict de type tout-ou-rien, l'analyseur renvoie toujours tous les totaux nutritionnels qu'il a pu calculer, accompagnés d'un ratio de `coverage` (couverture) et d'avertissements pour tout ingrédient pour lequel des données nutritionnelles manquaient ou qui n'a pas pu être standardisé en masse. Les consommateurs de ces données (comme le visualiseur CLI ou la sortie HTML de `@gram-lang/renderer`) utilisent cela pour afficher un indicateur explicite de "données incomplètes" à côté des totaux partiels, plutôt que de masquer complètement le panneau.
 :::
 
 ## 5. Pourcentages du Boulanger
@@ -61,6 +61,6 @@ Si la recette (ou l'appelant, via une option `bakersReference`) désigne un ingr
 
 ## Architecture Ouverte
 
-`@gram/analyzer` est conçu pour les écosystèmes ouverts. Il **ne lit pas** les fichiers directement depuis le système de fichiers. À la place, l'application hôte (comme le CLI ou le Playground) charge la base de données et la passe en paramètre à la fonction `analyze(compilationResult, database, options?)`, où `options` permet à l'appelant d'activer ou de désactiver chaque fonctionnalité et de configurer des choses comme la référence pour les pourcentages du boulanger ou le nombre de portions.
+`@gram-lang/analyzer` est conçu pour les écosystèmes ouverts. Il **ne lit pas** les fichiers directement depuis le système de fichiers. À la place, l'application hôte (comme le CLI ou le Playground) charge la base de données et la passe en paramètre à la fonction `analyze(compilationResult, database, options?)`, où `options` permet à l'appelant d'activer ou de désactiver chaque fonctionnalité et de configurer des choses comme la référence pour les pourcentages du boulanger ou le nombre de portions.
 
 Cela signifie que vous pouvez facilement brancher une base de données personnalisée provenant d'une API REST, d'un fichier JSON local, ou de n'importe quelle autre source, tant qu'elle est conforme au schéma de données de Gram.

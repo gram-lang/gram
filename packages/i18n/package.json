@@ -1,5 +1,5 @@
 {
-  "name": "@gram/i18n",
+  "name": "@gram-lang/i18n",
   "version": "1.0.0-beta.1",
   "description": "Gram recipe i18n and unit normalization logic",
   "main": "dist/index.js",

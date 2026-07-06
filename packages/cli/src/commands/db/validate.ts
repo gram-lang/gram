@@ -2,8 +2,8 @@ import { defineCommand } from 'citty'
 import { log } from '@clack/prompts'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'yaml'
-import { validateIngredientDatabase } from '@gram/analyzer'
-import type { IngredientData } from '@gram/analyzer'
+import { validateIngredientDatabase } from '@gram-lang/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { resolveDbPath } from '../../core/db'
@@ -48,7 +48,7 @@ export default defineCommand({
     const rawParsed = parse(rawContent) as Record<string, unknown> | null
     const rawIngredients = (rawParsed?.ingredients ?? rawParsed) as unknown
 
-    // Phase 1: Zod schema validation via @gram/analyzer
+    // Phase 1: Zod schema validation via @gram-lang/analyzer
     const schemaIssues: DbIssue[] = []
     let db: Record<string, IngredientData>
     try {

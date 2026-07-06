@@ -1,7 +1,7 @@
 import { DocumentSymbol, SymbolKind, Range } from 'vscode-languageserver';
 import { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
-import { ASTNodeType, SectionAST, StepAST, IntermediateDecl, isIntermediateDecl, isStep } from '@gram/parser';
+import { ASTNodeType, SectionAST, StepAST, IntermediateDecl, isIntermediateDecl, isStep } from '@gram-lang/parser';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } };
 

@@ -38,7 +38,7 @@ When the Gram Compiler calculates a relative quantity, it follows these strict r
 
 ## Mass Calculation Rules
 
-Since relative quantities rely on computing percentages of existing masses, the analyzer (`@gram/analyzer`) standardizes the masses before calculating:
+Since relative quantities rely on computing percentages of existing masses, the analyzer (`@gram-lang/analyzer`) standardizes the masses before calculating:
 
 | Target Unit Type | Logic before applying percentage | Example |
 | :--- | :--- | :--- |

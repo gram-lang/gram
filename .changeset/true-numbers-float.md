@@ -1,16 +1,16 @@
 ---
-"@gram/analyzer": major
-"@gram/cli": major
-"@gram/i18n": major
-"@gram/kitchen": major
-"@gram/language-server": major
-"@gram/parser": major
-"@gram/docs": major
-"@gram/renderer": major
-"@gram/vscode-extension": major
+"@gram-lang/analyzer": major
+"@gram-lang/cli": major
+"@gram-lang/i18n": major
+"@gram-lang/kitchen": major
+"@gram-lang/language-server": major
+"@gram-lang/parser": major
+"@gram-lang/docs": major
+"@gram-lang/renderer": major
+"@gram-lang/vscode-extension": major
 ---
 
-Introduction of the official Gram CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+Introduction of the official Gram CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
 **Project & Recipe Management:**
 - **Project Setup**: `gram init` safely scaffolds a `.gram` environment, including interactive AI provider setup (Google, OpenAI, Anthropic, Ollama) and secret management.

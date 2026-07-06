@@ -1,5 +1,5 @@
 {
-  "name": "@gram/analyzer",
+  "name": "@gram-lang/analyzer",
   "version": "1.0.0-beta.1",
   "description": "Gram recipe analyzer for physical properties (mass, yield, nutrition)",
   "main": "dist/index.js",
@@ -9,9 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@gram/parser": "workspace:*",
-    "@gram/kitchen": "workspace:*",
-    "@gram/i18n": "workspace:*",
+    "@gram-lang/parser": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/i18n": "workspace:*",
     "zod": "^4.4.3"
   },
   "devDependencies": {

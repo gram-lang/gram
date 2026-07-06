@@ -1,10 +1,10 @@
 ---
-"@gram/vscode-extension": minor
-"@gram/docs": minor
-"@gram/analyzer": minor
-"@gram/kitchen": minor
-"@gram/renderer": minor
-"@gram/parser": minor
+"@gram-lang/vscode-extension": minor
+"@gram-lang/docs": minor
+"@gram-lang/analyzer": minor
+"@gram-lang/kitchen": minor
+"@gram-lang/renderer": minor
+"@gram-lang/parser": minor
 ---
 
 Core language update to enforce new syntax adjustments (breaking changes).

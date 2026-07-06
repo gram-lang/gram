@@ -4,7 +4,7 @@ import {
     TimerAST, TemperatureAST, ReferenceAST, IntermediateDecl,
     AlternativeAST, CommentAST, QuantityAST, TextQuantityAST,
     isIngredient, isCookware, isReference, isTimer, isTemperature, isIntermediateDecl, isAlternative, isComment, isStep, isQuantity, isTextQuantity
-} from '@gram/parser';
+} from '@gram-lang/parser';
 import { DocumentState } from '../document-state';
 import { offsetToPosition } from '../utils/position';
 

@@ -5,13 +5,13 @@ import GramOutput from './GramOutput.vue'
 import GramOptions from './GramOptions.vue'
 import GramWarnings from './GramWarnings.vue'
 import PlaygroundDropdown from './PlaygroundDropdown.vue'
-import { getAST } from '@gram/parser'
-import { compile, resolveScaleFactor, applyScale } from '@gram/kitchen'
-import { analyze, convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram/analyzer'
-import { toMarkdown, toHTML } from '@gram/renderer'
+import { getAST } from '@gram-lang/parser'
+import { compile, resolveScaleFactor, applyScale } from '@gram-lang/kitchen'
+import { analyze, convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram-lang/analyzer'
+import { toMarkdown, toHTML } from '@gram-lang/renderer'
 import { DEFAULT_SOURCES } from './db'
 import { useData } from 'vitepress'
-import { getDictionary } from '@gram/i18n'
+import { getDictionary } from '@gram-lang/i18n'
 
 const { lang } = useData()
 const t = computed(() => getDictionary(lang.value))

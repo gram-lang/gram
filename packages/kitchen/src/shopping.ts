@@ -1,6 +1,6 @@
 import { slugify, minifyQuantity, getNumericQty } from './utils';
 import { detectCycles } from './graph';
-import { QuantityValueAST, ASTNodeType } from '@gram/parser';
+import { QuantityValueAST, ASTNodeType } from '@gram-lang/parser';
 import { ProcessedSection, Registry, Usage } from './types';
 import { CompilerOptions } from './core';
 
@@ -176,7 +176,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             // Track whether every contributing usage is protected (@= or a
             // TextQuantity like "a pinch"), and whether any is a relative
             // (formula-derived) quantity — both disqualify this ingredient
-            // as a --scale reference target (see @gram/kitchen's ScaleEngine).
+            // as a --scale reference target (see @gram-lang/kitchen's ScaleEngine).
             existing.allFixed = item.fixed ? (existing.allFixed ?? true) : false;
             if (item.formula) existing.isRelative = true;
             // Propagate modifiers (e.g. the `*` baker's-percentage reference marker)

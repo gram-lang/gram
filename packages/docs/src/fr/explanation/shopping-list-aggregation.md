@@ -1,6 +1,6 @@
 # Analyse approfondie : Agrégation de la Liste de Courses
 
-Lorsque le paquet `@gram/kitchen` traite un Arbre Syntaxique Abstrait (AST), l'une de ses responsabilités principales est la génération de la liste de courses. 
+Lorsque le paquet `@gram-lang/kitchen` traite un Arbre Syntaxique Abstrait (AST), l'une de ses responsabilités principales est la génération de la liste de courses. 
 
 Il ne s'agit pas d'une simple concaténation d'ingrédients. Le compilateur effectue un processus d'agrégation complexe pour garantir que la liste est physiquement exacte et optimisée pour les achats.
 
@@ -9,14 +9,14 @@ Il ne s'agit pas d'une simple concaténation d'ingrédients. Le compilateur effe
 Lorsqu'une recette (ou un lot de plusieurs recettes) est transmise à la Kitchen pour la génération de la liste de courses, le pipeline suivant s'exécute :
 
 ### 1. Normalisation des ID et Alias
-`@gram/kitchen` en lui-même regroupe les ingrédients purement par l'id brut qu'il a attribué lors de l'analyse (un slug du nom que vous avez écrit) — il n'a pas accès à `ingredients.yaml` et ne peut pas savoir que `@butter` et `@beurre` font référence au même ingrédient. En soi, la liste de courses de la Kitchen les liste comme deux entrées séparées.
+`@gram-lang/kitchen` en lui-même regroupe les ingrédients purement par l'id brut qu'il a attribué lors de l'analyse (un slug du nom que vous avez écrit) — il n'a pas accès à `ingredients.yaml` et ne peut pas savoir que `@butter` et `@beurre` font référence au même ingrédient. En soi, la liste de courses de la Kitchen les liste comme deux entrées séparées.
 
-La résolution des alias se produit une couche au-dessus, dans `@gram/analyzer`, qui a accès à la base de données des ingrédients. Si `beurre` est listé comme un alias de `butter` dans `ingredients.yaml`, l'analyseur regroupe les entrées brutes de la Kitchen sous cet id canonique, fusionnant `@butter` et `@beurre` en une seule entrée `butter`. **Cette étape ne s'exécute que lorsqu'une base de données d'ingrédients est fournie** — sans elle (compilation avec `@gram/kitchen` seul, ou une commande CLI lancée sans base de données), les alias ne sont pas résolus et les deux ingrédients restent séparés.
+La résolution des alias se produit une couche au-dessus, dans `@gram-lang/analyzer`, qui a accès à la base de données des ingrédients. Si `beurre` est listé comme un alias de `butter` dans `ingredients.yaml`, l'analyseur regroupe les entrées brutes de la Kitchen sous cet id canonique, fusionnant `@butter` et `@beurre` en une seule entrée `butter`. **Cette étape ne s'exécute que lorsqu'une base de données d'ingrédients est fournie** — sans elle (compilation avec `@gram-lang/kitchen` seul, ou une commande CLI lancée sans base de données), les alias ne sont pas résolus et les deux ingrédients restent séparés.
 
 ### 2. Fusion des Unités
-Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`) — cela se produit directement dans `@gram/kitchen`, sans avoir besoin de base de données.
+Si les ingrédients regroupés partagent la même unité (ex : `100 g` et `50 g`), ils sont simplement additionnés (`150 g`) — cela se produit directement dans `@gram-lang/kitchen`, sans avoir besoin de base de données.
 
-S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui — tout comme la résolution des alias — dépend de la base de données d'ingrédients et se produit donc dans `@gram/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
+S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner nécessite une conversion via la masse, ce qui — tout comme la résolution des alias — dépend de la base de données d'ingrédients et se produit donc dans `@gram-lang/analyzer`. Si chaque quantité contributrice se résout en une masse (densité connue, depuis la BDD ou une surcharge au niveau de la recette), l'analyseur les convertit toutes en grammes et les fusionne en une seule entrée.
 
 **Repli : densité manquante.** Si la densité ne peut pas être résolue pour au moins l'une des unités impliquées, l'analyseur ne peut pas produire un total de masse unique et fiable. Plutôt que de deviner, il garde les entrées séparées, les renomme avec l'id canonique, et les marque toutes avec `multiUnit: true`. Les moteurs de rendu utilisent cet indicateur pour regrouper les entrées sous un même en-tête (ex : "⚠️ Unités mixtes") au lieu de les éparpiller dans la liste — ce qui rend clair pour le cuisinier qu'il s'agit du même ingrédient, sans additionner silencieusement des unités incompatibles.
 

@@ -1,4 +1,4 @@
-import { getNumericQty, WarningCode, pushWarning } from '@gram/kitchen';
+import { getNumericQty, WarningCode, pushWarning } from '@gram-lang/kitchen';
 import { getIngredientData } from './ingredient_db';
 import { standardizeMass } from './mass_standardization';
 import { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';

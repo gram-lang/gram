@@ -2,7 +2,7 @@
 
 If you use Gram for meal prepping or batch cooking, you likely have multiple `.gram` files scattered in a directory. 
 
-Generating a single, consolidated shopping list across multiple recipes is one of Gram's most powerful features. The `@gram/kitchen` compiler aggregates ingredients intelligently, fusing quantities when possible.
+Generating a single, consolidated shopping list across multiple recipes is one of Gram's most powerful features. The `@gram-lang/kitchen` compiler aggregates ingredients intelligently, fusing quantities when possible.
 
 ## The `gram shop` Command
 

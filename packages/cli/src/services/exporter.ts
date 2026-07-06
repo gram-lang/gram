@@ -1,6 +1,6 @@
-import { toMarkdown, toPrintHTML, type RendererOptions } from '@gram/renderer'
+import { toMarkdown, toPrintHTML, type RendererOptions } from '@gram-lang/renderer'
 import { runPipeline } from '../core/pipeline'
-import type { IngredientData } from '@gram/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
 
 export async function exportRecipe(
   filePath: string,

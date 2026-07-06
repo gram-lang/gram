@@ -26,11 +26,11 @@ If you're building a recipe app, a meal planner, or a smart kitchen dashboard, y
 ## Designed for Developers
 
 The Gram ecosystem gives you everything you need to treat recipes like software:
-- **Parser & Compiler (`@gram/kitchen`)**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
-- **Semantic Analyzer (`@gram/analyzer`)**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
+- **Parser & Compiler (`@gram-lang/kitchen`)**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
+- **Semantic Analyzer (`@gram-lang/analyzer`)**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
 - **Language Server (LSP)**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
-- **CLI (`@gram/cli`)**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
-- **Renderer (`@gram/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+- **CLI (`@gram-lang/cli`)**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
+- **Renderer (`@gram-lang/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
 
 ## How it looks
 

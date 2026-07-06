@@ -7,10 +7,10 @@ export * from './diff';
 export * from './shopping_aggregation';
 
 
-import { CompilationResult, Usage } from '@gram/kitchen';
-import { getNumericQty } from '@gram/kitchen';
+import { CompilationResult, Usage } from '@gram-lang/kitchen';
+import { getNumericQty } from '@gram-lang/kitchen';
 import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
-import { ASTNodeType } from '@gram/parser';
+import { ASTNodeType } from '@gram-lang/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
 import { standardizeMass, parseDensityOverrides, applyYield } from './mass_standardization';

@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
-import { validateIngredientDatabase } from '@gram/analyzer'
-import type { IngredientData } from '@gram/analyzer'
-import { slugify } from '@gram/kitchen'
+import { validateIngredientDatabase } from '@gram-lang/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
+import { slugify } from '@gram-lang/kitchen'
 import { withFileLock, atomicWrite } from '../core/lock'
 
 export type ConflictField = 'nutrition' | 'physical' | 'category'

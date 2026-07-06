@@ -1,5 +1,5 @@
 {
-  "name": "@gram/renderer",
+  "name": "@gram-lang/renderer",
   "version": "1.0.0-beta.1",
   "description": "Universal Markdown and HTML AST renderer for the Gram recipe language.",
   "main": "dist/index.js",
@@ -18,8 +18,9 @@
   "author": "abiwab",
   "license": "GPL-3.0",
   "dependencies": {
-    "@gram/parser": "workspace:*",
-    "@gram/kitchen": "workspace:*"
+    "@gram-lang/parser": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/i18n": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

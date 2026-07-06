@@ -1,5 +1,5 @@
-import type { CompilationResult } from '@gram/kitchen'
-import { getNumericQty } from '@gram/kitchen'
+import type { CompilationResult } from '@gram-lang/kitchen'
+import { getNumericQty } from '@gram-lang/kitchen'
 
 // ── Public types ─────────────────────────────────────────────────────────────
 

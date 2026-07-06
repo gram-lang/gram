@@ -1,4 +1,4 @@
-# @gram/vscode-extension
+# @gram-lang/vscode-extension
 
 The official Visual Studio Code extension for the Gram recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting, and a dynamic Live Preview.
 

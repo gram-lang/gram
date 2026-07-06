@@ -1,4 +1,4 @@
-# @gram/kitchen
+# @gram-lang/kitchen
 
 ## 1.0.0-beta.1
 
@@ -24,19 +24,19 @@
   - **Kitchen**: `aggregateSectionIngredients` now groups ingredients by both `id` and `preparation`, creating separate entries for the same ingredient if it requires different preparations (e.g. cold vs melted).
   - **Renderer**: A new `formatMode` option in the render context controls preparation rendering. Preparations remain visible in inline text to prevent information loss. In the section's ingredient list (Mise-en-place), they are cleanly displayed with an em-dash. In the global shopping list, they remain hidden.
 
-- 2476140: Added a centralized `ScaleEngine` in `@gram/kitchen` to make recipe scaling (`--scale`) and Baker's Percentage math safer and more consistent everywhere.
+- 2476140: Added a centralized `ScaleEngine` in `@gram-lang/kitchen` to make recipe scaling (`--scale`) and Baker's Percentage math safer and more consistent everywhere.
 
-  - **@gram/kitchen**: New `resolveScaleFactor()`/`applyScale()` API validates a `--scale` target before computing a factor — rejecting fixed (`@=`) ingredients, relative quantities, ingredients only used inside a sub-recipe, ingredients inside an alternative-ingredient group, and ingredients split across incompatible units, with a clear error instead of a silently wrong number. A sub-recipe's own total (e.g. "2 lemons") is itself a valid scale target. Scaling is now a pure operation (never mutates the original recipe), and the compiled recipe now carries an explicit `scaleFactor` field. Covered by a new unit test suite.
-  - **@gram/analyzer**: Fixed the `@*` Baker's-reference auto-detection (it silently never matched before), and it now refuses to use a relative-quantity ingredient as the 100% base instead of computing bogus percentages. The enriched JSON AST now natively includes a `bakersPercentage` field for all ingredients if a reference ingredient is declared or passed via the `bakersReference` option. `convertUnit()` now accepts an optional density (g/mL) to bridge mass ↔ volume conversions; new `resolveIngredientDensity()` and `parseDensityOverrides()` helpers resolve that density from a recipe's `densities:` frontmatter. Also includes a critical null-safety fix when parsing recipes containing standalone comments.
-  - **@gram/renderer**: Natively supports formatting Baker's Percentages provided by the analyzer (for HTML and Markdown exports, and the Playground), removing its legacy calculation logic. Fixed `gram print --bakers-math-only` having no effect.
-  - **@gram/cli**: The CLI now cleanly acts as a presentation layer for Baker's Math, reading percentages directly from the AST. Added `--bakers-math`, `--bakers-reference`, and `--bakers-math-only` flags to the `view`, `print` and `export` commands. `--scale id=value` now supports same-family unit conversion and cross-family conversion when a density is available; suggests the closest matching ingredient name on a typo; no longer shows corrupted comparison rows for an ingredient split across multiple units in `gram scale`.
+  - **@gram-lang/kitchen**: New `resolveScaleFactor()`/`applyScale()` API validates a `--scale` target before computing a factor — rejecting fixed (`@=`) ingredients, relative quantities, ingredients only used inside a sub-recipe, ingredients inside an alternative-ingredient group, and ingredients split across incompatible units, with a clear error instead of a silently wrong number. A sub-recipe's own total (e.g. "2 lemons") is itself a valid scale target. Scaling is now a pure operation (never mutates the original recipe), and the compiled recipe now carries an explicit `scaleFactor` field. Covered by a new unit test suite.
+  - **@gram-lang/analyzer**: Fixed the `@*` Baker's-reference auto-detection (it silently never matched before), and it now refuses to use a relative-quantity ingredient as the 100% base instead of computing bogus percentages. The enriched JSON AST now natively includes a `bakersPercentage` field for all ingredients if a reference ingredient is declared or passed via the `bakersReference` option. `convertUnit()` now accepts an optional density (g/mL) to bridge mass ↔ volume conversions; new `resolveIngredientDensity()` and `parseDensityOverrides()` helpers resolve that density from a recipe's `densities:` frontmatter. Also includes a critical null-safety fix when parsing recipes containing standalone comments.
+  - **@gram-lang/renderer**: Natively supports formatting Baker's Percentages provided by the analyzer (for HTML and Markdown exports, and the Playground), removing its legacy calculation logic. Fixed `gram print --bakers-math-only` having no effect.
+  - **@gram-lang/cli**: The CLI now cleanly acts as a presentation layer for Baker's Math, reading percentages directly from the AST. Added `--bakers-math`, `--bakers-reference`, and `--bakers-math-only` flags to the `view`, `print` and `export` commands. `--scale id=value` now supports same-family unit conversion and cross-family conversion when a density is available; suggests the closest matching ingredient name on a typo; no longer shows corrupted comparison rows for an ingredient split across multiple units in `gram scale`.
 
 ### Patch Changes
 
 - e6cf842: Refined formatting and mass normalization for relative quantities:
 
   - **Cleaner Display**: Relative quantities are now seamlessly displayed without internal `@` or `&` markers (e.g., `125% of lemon juice`). The redundant formula brackets `[125% of...]` have been removed from inline instructions.
-  - **Robust Shopping List Aggregation**: The compiler (`@gram/kitchen`) now strictly tracks ingredient lineage using `_usageIds`. This allows the analyzer (`@gram/analyzer`) to flawlessly compute exact masses for complex items in the shopping list without confusing standard ingredients and their alternatives.
+  - **Robust Shopping List Aggregation**: The compiler (`@gram-lang/kitchen`) now strictly tracks ingredient lineage using `_usageIds`. This allows the analyzer (`@gram-lang/analyzer`) to flawlessly compute exact masses for complex items in the shopping list without confusing standard ingredients and their alternatives.
   - **Shopping List Accuracy**: When mass normalization is enabled, the shopping list will now accurately display the fully resolved physical mass for relative quantities (e.g., `sugar (156 g)`) instead of falling back to the formula string.
 
 - 3f7bc5d: Fixed an issue in the parser where composite ingredients without braces (e.g., `<@lemon,`) would incorrectly consume subsequent text on the same line, causing missing ingredients and breaking relative quantity resolutions.
@@ -49,14 +49,14 @@
 - Updated dependencies [a1e6fe9]
 - Updated dependencies [6013e64]
 - Updated dependencies [3f7bc5d]
-  - @gram/parser@1.0.0-beta.1
-  - @gram/i18n@1.0.0-beta.1
+  - @gram-lang/parser@1.0.0-beta.1
+  - @gram-lang/i18n@1.0.0-beta.1
 
 ## 1.0.0-beta.0
 
 ### Major Changes
 
-- 2dcd766: Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+- 2dcd766: Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
   **Project & Recipe Management:**
 
@@ -81,7 +81,7 @@
 
 ### Minor Changes
 
-- 6e95e35: The `@gram/compiler` package has been renamed to `@gram/kitchen` to fully embrace the Gram language's domain identity.
+- 6e95e35: The `@gram-lang/compiler` package has been renamed to `@gram-lang/kitchen` to fully embrace the Gram language's domain identity.
 - 79105ce: Complete overhaul of the VS Code Extension with Language Server, Live Preview, and advanced assistance
 
   **Major New Features:**
@@ -170,8 +170,8 @@
 - Updated dependencies [caf1630]
 - Updated dependencies [babbb20]
 - Updated dependencies [2dcd766]
-  - @gram/parser@1.0.0-beta.0
-  - @gram/i18n@1.0.0-beta.0
+  - @gram-lang/parser@1.0.0-beta.0
+  - @gram-lang/i18n@1.0.0-beta.0
 
 ## 0.10.1
 
@@ -180,14 +180,14 @@
 - Cleaned up and updated dependencies.
 - Implemented Turborepo to optimize and simplify project building.
 - Updated dependencies
-  - @gram/parser@0.10.1
-  - @gram/i18n@0.10.1
+  - @gram-lang/parser@0.10.1
+  - @gram-lang/i18n@0.10.1
 
 ## 0.10.0
 
 ### Minor Changes
 
-- cfda9e1: Refactored unit translation and normalization into a new centralized @gram/i18n package to remove redundancy between the compiler and analyzer.
+- cfda9e1: Refactored unit translation and normalization into a new centralized @gram-lang/i18n package to remove redundancy between the compiler and analyzer.
 
 ### Patch Changes
 
@@ -204,8 +204,8 @@
 - Updated dependencies [cfda9e1]
 - Updated dependencies [087b78b]
 - Updated dependencies [69870cc]
-  - @gram/i18n@0.10.0
-  - @gram/parser@0.10.0
+  - @gram-lang/i18n@0.10.0
+  - @gram-lang/parser@0.10.0
 
 ## 0.9.0
 

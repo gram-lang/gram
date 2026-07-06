@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { log, select, note } from '@clack/prompts'
-import type { IngredientData } from '@gram/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
 import type { LintResult, LintIssue, LintDecision } from '../types'
 import { fmtNumber } from '../core/format'
 

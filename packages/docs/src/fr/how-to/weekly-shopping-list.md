@@ -2,7 +2,7 @@
 
 Si vous utilisez Gram pour du *meal prep* ou du *batch cooking*, vous avez probablement plusieurs fichiers `.gram` éparpillés dans un dossier. 
 
-Générer une liste de courses unique et consolidée à partir de multiples recettes est l'une des fonctionnalités les plus puissantes de Gram. Le compilateur `@gram/kitchen` agrège intelligemment les ingrédients, fusionnant les quantités quand c'est possible.
+Générer une liste de courses unique et consolidée à partir de multiples recettes est l'une des fonctionnalités les plus puissantes de Gram. Le compilateur `@gram-lang/kitchen` agrège intelligemment les ingrédients, fusionnant les quantités quand c'est possible.
 
 ## La commande `gram shop`
 

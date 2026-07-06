@@ -1,4 +1,4 @@
-# @gram/parser
+# @gram-lang/parser
 
 A robust, 3-stage parser for the Gram recipe language. It is part of the Gram monorepo and is strictly limited to text-to-AST parsing.
 
@@ -28,7 +28,7 @@ This will generate the compiled JavaScript in the `dist/` directory.
 The package exports `getAST()` to convert Gram source strings into a typed Recipe AST.
 
 ```javascript
-const { getAST } = require('@gram/parser');
+const { getAST } = require('@gram-lang/parser');
 
 const source = `
 ## My Recipe

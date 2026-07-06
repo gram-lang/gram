@@ -26,11 +26,11 @@ Si vous créez une application de recettes, un planificateur de repas ou un tabl
 ## Pensé pour les Développeurs
 
 L'écosystème Gram fournit tout ce dont vous avez besoin pour traiter vos recettes comme des logiciels :
-- **Parseur & Compilateur (`@gram/kitchen`)** : Simule le déroulement de la recette, agrège les listes de courses de base, et met à l'échelle les quantités dynamiques.
-- **Analyseur Sémantique (`@gram/analyzer`)** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
+- **Parseur & Compilateur (`@gram-lang/kitchen`)** : Simule le déroulement de la recette, agrège les listes de courses de base, et met à l'échelle les quantités dynamiques.
+- **Analyseur Sémantique (`@gram-lang/analyzer`)** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
 - **Language Server (LSP)** : Apporte un vrai support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
-- **CLI (`@gram/cli`)** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
-- **Renderer (`@gram/renderer`)** : Générez instantanément du HTML Sémantique ou du Markdown à partir de votre JSON compilé.
+- **CLI (`@gram-lang/cli`)** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
+- **Renderer (`@gram-lang/renderer`)** : Générez instantanément du HTML Sémantique ou du Markdown à partir de votre JSON compilé.
 
 ## À quoi ça ressemble ?
 

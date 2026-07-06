@@ -1,6 +1,6 @@
-# @gram/analyzer
+# @gram-lang/analyzer
 
-The physical and nutritional analysis module for the Gram recipe language. It takes a structurally compiled recipe (produced by `@gram/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
+The physical and nutritional analysis module for the Gram recipe language. It takes a structurally compiled recipe (produced by `@gram-lang/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
 
 ---
 
@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/analyzer` via bun:
+Install `@gram-lang/analyzer` via bun:
 
 ```bash
-bun install @gram/analyzer
+bun install @gram-lang/analyzer
 ```
 
 ---
@@ -23,9 +23,9 @@ bun install @gram/analyzer
 ## ⚡ Usage
 
 ```javascript
-const { getAST } = require('@gram/parser');
-const { compile } = require('@gram/kitchen');
-const { analyze } = require('@gram/analyzer');
+const { getAST } = require('@gram-lang/parser');
+const { compile } = require('@gram-lang/kitchen');
+const { analyze } = require('@gram-lang/analyzer');
 
 // 1. Compile AST
 const ast = getAST("## Salad\nAdd @avocado{1} and @lemon juice{1tbsp}.");

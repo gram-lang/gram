@@ -1,4 +1,4 @@
-# @gram/vscode-extension
+# @gram-lang/vscode-extension
 
 ## 1.0.0-beta.1
 
@@ -21,21 +21,21 @@
 
 - 9ff4563: - **Playground**: Migrated syntax highlighting engine from Highlight.js to Shiki. The playground now natively uses the official VSCode TextMate grammar, ensuring 100% consistency across environments.
   - **VSCode Extension**: Improved syntax coloring by mapping custom Gram tokens (cookware, intermediate ingredients, units) to standard semantic TextMate scopes, restoring vibrant and legible colors across all VSCode themes.
-- 6013e64: Refactor TextMate grammar to `@gram/parser`
+- 6013e64: Refactor TextMate grammar to `@gram-lang/parser`
 
-  The TextMate grammar (`gram.tmLanguage.json`) has been moved from `@gram/vscode-extension` to `@gram/parser` to colocate the structural (Ohm) and lexical (TextMate) definitions of the Gram language.
+  The TextMate grammar (`gram.tmLanguage.json`) has been moved from `@gram-lang/vscode-extension` to `@gram-lang/parser` to colocate the structural (Ohm) and lexical (TextMate) definitions of the Gram language.
 
-  This resolves architectural issues where consumers like the playground had to perform brittle, deep relative imports into the VSCode extension package. The syntax grammar is now officially exported and accessible via `@gram/parser/textmate`.
+  This resolves architectural issues where consumers like the playground had to perform brittle, deep relative imports into the VSCode extension package. The syntax grammar is now officially exported and accessible via `@gram-lang/parser/textmate`.
 
 - Updated dependencies [a1e6fe9]
 - Updated dependencies [02d63ff]
-  - @gram/language-server@1.0.0-beta.1
+  - @gram-lang/language-server@1.0.0-beta.1
 
 ## 1.0.0-beta.0
 
 ### Major Changes
 
-- 2dcd766: Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+- 2dcd766: Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
   **Project & Recipe Management:**
 
@@ -146,7 +146,7 @@
 - Updated dependencies [79105ce]
 - Updated dependencies [caf1630]
 - Updated dependencies [2dcd766]
-  - @gram/language-server@1.0.0-beta.0
+  - @gram-lang/language-server@1.0.0-beta.0
 
 ## 0.10.1
 

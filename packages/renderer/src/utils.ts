@@ -1,5 +1,5 @@
-import { ASTNodeType } from '@gram/parser';
-import type { AggregatedIngredient } from '@gram/kitchen';
+import { ASTNodeType } from '@gram-lang/parser';
+import type { AggregatedIngredient } from '@gram-lang/kitchen';
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.

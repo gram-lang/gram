@@ -2,16 +2,16 @@
 
 Si vous construisez une application web moderne (par ex., avec React, Vue, Svelte ou Next.js), vous devriez consommer directement les **données JSON** compilées par Gram et les lier (mapper) à vos propres composants d'interface utilisateur (UI).
 
-Bien que la sortie brute de l'analyseur (parser) soit un Arbre Syntaxique Abstrait (AST), les paquets `@gram/kitchen` et `@gram/analyzer` transforment cet AST en un objet JSON hautement structuré et prêt à être affiché. Ce guide vous montre comment extraire programmatiquement ces données JSON et comprendre leur structure pour que vous puissiez construire tout ce que vous voulez.
+Bien que la sortie brute de l'analyseur (parser) soit un Arbre Syntaxique Abstrait (AST), les paquets `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un objet JSON hautement structuré et prêt à être affiché. Ce guide vous montre comment extraire programmatiquement ces données JSON et comprendre leur structure pour que vous puissiez construire tout ce que vous voulez.
 
 ## 1. Récupérer les Données JSON
 
 Gram est conçu pour s'exécuter n'importe où (Node.js, Edge, ou directement dans le navigateur). Pour obtenir la représentation JSON entièrement enrichie d'une recette, vous composez les trois paquets principaux :
 
 ```typescript
-import { getAST } from '@gram/parser';
-import { compile } from '@gram/kitchen';
-import { analyze } from '@gram/analyzer';
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
 
 function getRecipeData(sourceCode: string) {
   // 1. Parser le texte en arbre syntaxique
@@ -29,7 +29,7 @@ function getRecipeData(sourceCode: string) {
 }
 ```
 
-> **Astuce** : Si vous vous exécutez exclusivement dans un environnement Node.js (ex : un outil CLI ou un serveur Next.js), vous pouvez utiliser l'utilitaire `runPipeline(filePath)` du paquet `@gram/cli` qui encapsule cette logique et s'occupe de la lecture du fichier pour vous.
+> **Astuce** : Si vous vous exécutez exclusivement dans un environnement Node.js (ex : un outil CLI ou un serveur Next.js), vous pouvez utiliser l'utilitaire `runPipeline(filePath)` du paquet `@gram-lang/cli` qui encapsule cette logique et s'occupe de la lecture du fichier pour vous.
 
 ## 2. Comprendre la Structure du JSON
 

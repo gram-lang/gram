@@ -2,7 +2,7 @@ import { createHighlighterCore } from 'shiki/core'
 import { createOnigurumaEngine } from 'shiki/engine/oniguruma'
 import { shikiToMonaco } from '@shikijs/monaco'
 // @ts-ignore
-import gramGrammar from '@gram/parser/textmate'
+import gramGrammar from '@gram-lang/parser/textmate'
 
 export let isSetup = false
 

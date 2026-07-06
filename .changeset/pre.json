@@ -2,16 +2,16 @@
   "mode": "pre",
   "tag": "beta",
   "initialVersions": {
-    "@gram/analyzer": "0.10.1",
-    "@gram/cli": "0.10.1",
-    "@gram/i18n": "0.10.1",
-    "@gram/kitchen": "0.10.1",
-    "@gram/language-server": "0.10.1",
-    "@gram/parser": "0.10.1",
-    "@gram/playground": "0.10.1",
-    "@gram/renderer": "0.10.1",
-    "@gram/vscode-extension": "0.10.1",
-    "@gram/docs": "1.0.0-beta.0"
+    "@gram-lang/analyzer": "0.10.1",
+    "@gram-lang/cli": "0.10.1",
+    "@gram-lang/i18n": "0.10.1",
+    "@gram-lang/kitchen": "0.10.1",
+    "@gram-lang/language-server": "0.10.1",
+    "@gram-lang/parser": "0.10.1",
+    "@gram-lang/playground": "0.10.1",
+    "@gram-lang/renderer": "0.10.1",
+    "@gram-lang/vscode-extension": "0.10.1",
+    "@gram-lang/docs": "1.0.0-beta.0"
   },
   "changesets": [
     "async-sync-timers",

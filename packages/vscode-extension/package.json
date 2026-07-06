@@ -1,5 +1,5 @@
 {
-  "name": "@gram/vscode-extension",
+  "name": "@gram-lang/vscode-extension",
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
   "version": "1.0.0-beta.1",
@@ -114,7 +114,7 @@
     "package": "node package.cjs"
   },
   "dependencies": {
-    "@gram/language-server": "workspace:*",
+    "@gram-lang/language-server": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {

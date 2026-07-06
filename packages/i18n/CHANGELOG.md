@@ -1,4 +1,4 @@
-# @gram/i18n
+# @gram-lang/i18n
 
 ## 1.0.0-beta.1
 
@@ -13,7 +13,7 @@
 
 ### Major Changes
 
-- 2dcd766: Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+- 2dcd766: Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
   **Project & Recipe Management:**
 
@@ -108,7 +108,7 @@
 
 ### Minor Changes
 
-- cfda9e1: Refactored unit translation and normalization into a new centralized @gram/i18n package to remove redundancy between the compiler and analyzer.
+- cfda9e1: Refactored unit translation and normalization into a new centralized @gram-lang/i18n package to remove redundancy between the compiler and analyzer.
 
 ### Patch Changes
 

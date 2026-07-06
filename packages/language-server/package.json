@@ -1,5 +1,5 @@
 {
-  "name": "@gram/language-server",
+  "name": "@gram-lang/language-server",
   "version": "1.0.0-beta.1",
   "description": "LSP server for the Gram recipe language",
   "main": "dist/server.cjs",
@@ -9,11 +9,11 @@
     "dev": "node build.cjs --watch"
   },
   "dependencies": {
-    "@gram/analyzer": "workspace:*",
-    "@gram/kitchen": "workspace:*",
-    "@gram/i18n": "workspace:*",
-    "@gram/parser": "workspace:*",
-    "@gram/renderer": "workspace:*",
+    "@gram-lang/analyzer": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/i18n": "workspace:*",
+    "@gram-lang/parser": "workspace:*",
+    "@gram-lang/renderer": "workspace:*",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12",
     "yaml": "^2.0.0"

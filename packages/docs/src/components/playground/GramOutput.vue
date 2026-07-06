@@ -2,7 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { VueMonacoEditor } from '@guolao/vue-monaco-editor'
 import { useData } from 'vitepress'
-import { getDictionary } from '@gram/i18n'
+import { getDictionary } from '@gram-lang/i18n'
 import JsonNode from './JsonNode.vue'
 import { setupMonaco } from './monacoSetup'
 

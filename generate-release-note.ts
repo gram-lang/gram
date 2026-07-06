@@ -27,7 +27,7 @@ async function main() {
 
     // 2. Safely resolve the clean version number
     // We target your main package and clean up any pre-release leftovers if present
-    const compilerRelease = releasePlan.releases.find(r => r.name === "@gram/compiler");
+    const compilerRelease = releasePlan.releases.find(r => r.name === "@gram-lang/compiler");
     let nextVersion = compilerRelease?.newVersion || "0.0.0";
     if (nextVersion.includes("-")) {
         nextVersion = nextVersion.split("-")[0]; // Cleans "0.9.0-undefined.0" -> "0.9.0"

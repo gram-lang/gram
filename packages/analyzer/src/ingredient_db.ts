@@ -1,5 +1,5 @@
 import { IngredientData } from './types';
-import { slugify } from '@gram/kitchen';
+import { slugify } from '@gram-lang/kitchen';
 
 function buildAliasIndex(database: Record<string, IngredientData>): Map<string, string> {
     const index = new Map<string, string>();

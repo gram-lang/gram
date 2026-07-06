@@ -1,6 +1,6 @@
 # Analyse approfondie : Standardisation des Masses & Rendement
 
-Gram est profondément ancré dans la réalité physique. Contrairement aux parseurs Markdown basiques qui se contentent de mettre du texte en gras, le `@gram/analyzer` comprend qu'une "tasse de farine" et une "tasse d'eau" ont des poids complètement différents.
+Gram est profondément ancré dans la réalité physique. Contrairement aux parseurs Markdown basiques qui se contentent de mettre du texte en gras, le `@gram-lang/analyzer` comprend qu'une "tasse de farine" et une "tasse d'eau" ont des poids complètement différents.
 
 Cette page explique le moteur physique derrière les calculs de masse et de rendement de Gram.
 

@@ -1,5 +1,5 @@
 // Ingredient database for the playground example recipes (cannelés, empanadas).
-// Keys must match slugify() output from @gram/kitchen: lowercase, spaces→dashes, no accents.
+// Keys must match slugify() output from @gram-lang/kitchen: lowercase, spaces→dashes, no accents.
 // Physical: density in g/ml, unit_weight in g per countable unit.
 // Nutrition: values per 100g.
 export const DEFAULT_SOURCES = [

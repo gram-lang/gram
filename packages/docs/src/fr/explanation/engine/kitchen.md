@@ -1,6 +1,6 @@
-# Compilation (`@gram/kitchen`)
+# Compilation (`@gram-lang/kitchen`)
 
-Si `@gram/parser` fournit le vocabulaire, `@gram/kitchen` fournit la logique.
+Si `@gram-lang/parser` fournit le vocabulaire, `@gram-lang/kitchen` fournit la logique.
 
 Le paquet Kitchen prend l'AST (Arbre Syntaxique Abstrait) généré par l'analyseur (parser) et le "compile". Il est responsable de la simulation de l'exécution de la recette de haut en bas, de la résolution des variables, du calcul des métriques de temps, et de la génération de la liste de courses finale.
 
@@ -20,7 +20,7 @@ Le processeur parcourt chaque section et étape de l'AST séquentiellement pour 
   - **Suivi des Dépendances** : Le moteur suit le "Temps Prêt" (Ready Time) absolu de toutes les préparations intermédiaires (`->&nom`). Si une étape référence cet intermédiaire (`&nom`), le `cookCursor` saute instantanément dans le futur pour "attendre" mathématiquement que l'ingrédient soit prêt (ex : attendre la fin d'un repos de pâte d'une heure avant de l'étaler). Cela garantit que le Temps Total reflète un diagramme de Gantt réaliste et optimisé.
 
   ::: tip
-  La flèche `👉` que vous voyez dans les recettes rendues (ex : `👉*pâte*`) est une icône d'affichage ajoutée par `@gram/renderer`, pas de la syntaxe Gram. Dans le code source `.gram`, un intermédiaire est consommé avec un simple `&nom`.
+  La flèche `👉` que vous voyez dans les recettes rendues (ex : `👉*pâte*`) est une icône d'affichage ajoutée par `@gram-lang/renderer`, pas de la syntaxe Gram. Dans le code source `.gram`, un intermédiaire est consommé avec un simple `&nom`.
   :::
 
 ### 2. Métriques de Temps (`metrics.ts` / `processor.ts`)
@@ -40,7 +40,7 @@ La Kitchen construit la liste de base des ingrédients nécessaires pour cuisine
 - **Agrégation Hybride** : Elle gère les [Quantités Relatives](../syntax/relative-quantities.md) en gardant les quantités basées sur des formules/non résolues séparées (sous forme de texte, marquées pour révision) des masses numériques absolues, de sorte que la liste de courses reste mathématiquement exacte même si les portions changent.
 
 ::: tip Ceci n'est pas la liste finale
-La Kitchen n'a pas accès à `ingredients.yaml` — elle regroupe purement par id brut, donc `@butter` et `@beurre` (un alias du même ingrédient) restent séparés ici, et `100 g` + `1 tasse` du même ingrédient restent sous forme de deux entrées plutôt qu'une masse fusionnée. Cette résolution plus poussée — alias de l'id canonique et fusion inter-unités via la densité — a lieu en aval dans `@gram/analyzer`, une fois qu'une base de données d'ingrédients est disponible. Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md).
+La Kitchen n'a pas accès à `ingredients.yaml` — elle regroupe purement par id brut, donc `@butter` et `@beurre` (un alias du même ingrédient) restent séparés ici, et `100 g` + `1 tasse` du même ingrédient restent sous forme de deux entrées plutôt qu'une masse fusionnée. Cette résolution plus poussée — alias de l'id canonique et fusion inter-unités via la densité — a lieu en aval dans `@gram-lang/analyzer`, une fois qu'une base de données d'ingrédients est disponible. Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md).
 :::
 
 ::: tip Une deuxième agrégation, différente, existe par section
@@ -49,7 +49,7 @@ La Kitchen n'a pas accès à `ingredients.yaml` — elle regroupe purement par i
 
 ## Sortie
 
-La sortie de `@gram/kitchen` est un objet `CompilationResult` (c'est la "recette compilée" à laquelle il est fait référence ailleurs dans la documentation). Il est structurellement sain et mathématiquement agrégé, mais il n'est **pas encore physiquement exact**.
+La sortie de `@gram-lang/kitchen` est un objet `CompilationResult` (c'est la "recette compilée" à laquelle il est fait référence ailleurs dans la documentation). Il est structurellement sain et mathématiquement agrégé, mais il n'est **pas encore physiquement exact**.
 
 Par exemple, la Kitchen sait que vous avez besoin d'une `1 tasse` de farine et de `2 tasses` de sucre, mais elle ne sait pas quel est le poids d'une tasse de farine. Cet enrichissement physique a lieu à l'étape suivante : l'**Analyseur** (Analyzer).
 

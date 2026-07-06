@@ -1,10 +1,10 @@
 # Serveur de Langage (Language Server)
 
-Le Serveur de Langage Gram (`@gram/language-server`) est le moteur d'intelligence derrière les intégrations dans les éditeurs. Il implémente le standard **Language Server Protocol (LSP)**, ce qui rend possible la fourniture de fonctionnalités d'IDE avancées pour les fichiers Gram sur de multiples éditeurs, et pas seulement VS Code.
+Le Serveur de Langage Gram (`@gram-lang/language-server`) est le moteur d'intelligence derrière les intégrations dans les éditeurs. Il implémente le standard **Language Server Protocol (LSP)**, ce qui rend possible la fourniture de fonctionnalités d'IDE avancées pour les fichiers Gram sur de multiples éditeurs, et pas seulement VS Code.
 
 ## Architecture
 
-Le serveur agit comme un processus en arrière-plan persistant qui analyse vos fichiers `.gram` en utilisant les paquets `@gram/parser` et `@gram/kitchen`. 
+Le serveur agit comme un processus en arrière-plan persistant qui analyse vos fichiers `.gram` en utilisant les paquets `@gram-lang/parser` et `@gram-lang/kitchen`. 
 
 **Le flux de travail en temps réel :**
 1. **Éditeur** ➔ Envoie les modifications du fichier à chaque frappe au clavier.

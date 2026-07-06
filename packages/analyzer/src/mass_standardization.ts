@@ -1,5 +1,5 @@
-import { slugify } from '@gram/kitchen';
-import { normalizeUnit } from '@gram/i18n';
+import { slugify } from '@gram-lang/kitchen';
+import { normalizeUnit } from '@gram-lang/i18n';
 
 export interface UnitMap {
     base: string;

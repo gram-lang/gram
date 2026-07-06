@@ -1,6 +1,6 @@
 # Extension VS Code
 
-L'extension officielle Gram pour VS Code transforme votre éditeur en un environnement de développement dédié aux recettes. Propulsée par le `@gram/language-server`, elle offre des diagnostics en temps réel, une assistance avancée à la rédaction et un rendu dynamique en direct.
+L'extension officielle Gram pour VS Code transforme votre éditeur en un environnement de développement dédié aux recettes. Propulsée par le `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance avancée à la rédaction et un rendu dynamique en direct.
 
 ## Capacités Principales
 

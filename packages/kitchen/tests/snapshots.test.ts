@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { getAST } from '@gram/parser';
+import { getAST } from '@gram-lang/parser';
 import { compile } from '../src/index';
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';

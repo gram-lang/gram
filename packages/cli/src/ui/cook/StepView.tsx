@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Text } from 'ink'
 import chalk from 'chalk'
 import type { ActiveTimer, FlatStep } from './types'
-import type { CompilationResult } from '@gram/kitchen'
+import type { CompilationResult } from '@gram-lang/kitchen'
 import { fmtQty, fmtMass, fmtCountdown, shouldShowMass } from './prepare'
 
 function getQtyText(q: any): string {

@@ -1,12 +1,12 @@
 ---
-"@gram/vscode-extension": minor
-"@gram/language-server": minor
-"@gram/docs": minor
-"@gram/analyzer": minor
-"@gram/kitchen": minor
-"@gram/renderer": minor
-"@gram/parser": minor
-"@gram/i18n": minor
+"@gram-lang/vscode-extension": minor
+"@gram-lang/language-server": minor
+"@gram-lang/docs": minor
+"@gram-lang/analyzer": minor
+"@gram-lang/kitchen": minor
+"@gram-lang/renderer": minor
+"@gram-lang/parser": minor
+"@gram-lang/i18n": minor
 ---
 
 Complete overhaul of the VS Code Extension with Language Server, Live Preview, and advanced assistance

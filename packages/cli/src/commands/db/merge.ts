@@ -67,7 +67,7 @@ export default defineCommand({
       process.exit(ExitCode.Error)
     }
 
-    let sourceDb: Record<string, import('@gram/analyzer').IngredientData>
+    let sourceDb: Record<string, import('@gram-lang/analyzer').IngredientData>
     try {
       sourceDb = await loadSourceDb(sourcePath)
     } catch (err) {

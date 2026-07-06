@@ -2,16 +2,16 @@
 
 If you are building a modern web application (e.g., using React, Vue, Svelte, or Next.js), you should consume Gram's compiled **JSON data** directly and map it to your own UI components.
 
-While the raw output of the parser is an Abstract Syntax Tree (AST), the `@gram/kitchen` and `@gram/analyzer` packages transform this AST into a highly structured, render-ready JSON object. This guide shows you how to programmatically extract this JSON data and understand its structure so you can build anything you want.
+While the raw output of the parser is an Abstract Syntax Tree (AST), the `@gram-lang/kitchen` and `@gram-lang/analyzer` packages transform this AST into a highly structured, render-ready JSON object. This guide shows you how to programmatically extract this JSON data and understand its structure so you can build anything you want.
 
 ## 1. Getting the JSON Data
 
 Gram is designed to run anywhere (Node.js, Edge, or directly in the browser). To get the fully enriched JSON representation of a recipe, you compose the three core packages:
 
 ```typescript
-import { getAST } from '@gram/parser';
-import { compile } from '@gram/kitchen';
-import { analyze } from '@gram/analyzer';
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
 
 function getRecipeData(sourceCode: string) {
   // 1. Parse text into syntax tree
@@ -29,7 +29,7 @@ function getRecipeData(sourceCode: string) {
 }
 ```
 
-> **Tip**: If you are exclusively running in a Node.js environment (e.g., a CLI tool or a Next.js server), you can use the `runPipeline(filePath)` helper from `@gram/cli` which wraps this logic and handles file reading for you.
+> **Tip**: If you are exclusively running in a Node.js environment (e.g., a CLI tool or a Next.js server), you can use the `runPipeline(filePath)` helper from `@gram-lang/cli` which wraps this logic and handles file reading for you.
 
 ## 2. Understanding the JSON Structure
 

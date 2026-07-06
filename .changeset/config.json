@@ -9,12 +9,12 @@
   "commit": false,
   "fixed": [
     [
-      "@gram/analyzer",
-      "@gram/kitchen",
-      "@gram/parser",
-      "@gram/i18n",
-      "@gram/renderer",
-      "@gram/vscode-extension"
+      "@gram-lang/analyzer",
+      "@gram-lang/kitchen",
+      "@gram-lang/parser",
+      "@gram-lang/i18n",
+      "@gram-lang/renderer",
+      "@gram-lang/vscode-extension"
     ]
   ],
   "linked": [],

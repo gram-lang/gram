@@ -1,7 +1,7 @@
 import { basename } from 'node:path'
 import { runPipeline } from '../core/pipeline'
 import { fmtNumber } from '../core/format'
-import type { IngredientData } from '@gram/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
 import type { RecipeViewModel } from '../types'
 
 function formatMass(grams: number): string {

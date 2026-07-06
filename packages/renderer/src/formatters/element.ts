@@ -1,6 +1,6 @@
 import { RenderContext } from '../types';
 import { escapeHtml, getQty, formatQuantityValue } from '../utils';
-import { getDictionary } from '@gram/i18n';
+import { getDictionary } from '@gram-lang/i18n';
 
 // Default icons mapping
 export const DEFAULT_ICONS = {

@@ -3,10 +3,10 @@ import { DocumentState } from '../document-state';
 import { locToRange, offsetToPosition, positionToOffset } from '../utils/position';
 import { collectIntermediates, collectIngredients } from '../utils/ast-walker';
 import { IngredientDB, lookupIngredient } from '../ingredient-loader';
-import { normalizeUnit } from '@gram/i18n';
-import { ASTNodeType, QuantityAST } from '@gram/parser';
-import { standardizeMass } from '@gram/analyzer';
-import { getNumericQty } from '@gram/kitchen';
+import { normalizeUnit } from '@gram-lang/i18n';
+import { ASTNodeType, QuantityAST } from '@gram-lang/parser';
+import { standardizeMass } from '@gram-lang/analyzer';
+import { getNumericQty } from '@gram-lang/kitchen';
 
 export function provideCodeActions(
     state: DocumentState,

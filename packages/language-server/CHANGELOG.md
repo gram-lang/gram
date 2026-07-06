@@ -1,4 +1,4 @@
-# @gram/language-server
+# @gram-lang/language-server
 
 ## 1.0.0-beta.1
 
@@ -18,7 +18,7 @@
 
   The physical enrichment options and internal APIs have been renamed for clarity and to align with professional culinary terminology.
 
-  If you are using `@gram/analyzer` programmatically, please update your configuration:
+  If you are using `@gram-lang/analyzer` programmatically, please update your configuration:
 
   - `enableMassNormalization` is now **`enableMassStandardization`**
   - `enableYieldManagement` is now **`enableYieldCalculation`**
@@ -37,17 +37,17 @@
 - Updated dependencies [2476140]
 - Updated dependencies [3f7bc5d]
 - Updated dependencies [979f32b]
-  - @gram/analyzer@1.0.0-beta.1
-  - @gram/renderer@1.0.0-beta.1
-  - @gram/kitchen@1.0.0-beta.1
-  - @gram/parser@1.0.0-beta.1
-  - @gram/i18n@1.0.0-beta.1
+  - @gram-lang/analyzer@1.0.0-beta.1
+  - @gram-lang/renderer@1.0.0-beta.1
+  - @gram-lang/kitchen@1.0.0-beta.1
+  - @gram-lang/parser@1.0.0-beta.1
+  - @gram-lang/i18n@1.0.0-beta.1
 
 ## 1.0.0-beta.0
 
 ### Major Changes
 
-- 2dcd766: Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+- 2dcd766: Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
   **Project & Recipe Management:**
 
@@ -72,7 +72,7 @@
 
 ### Minor Changes
 
-- 6e95e35: The `@gram/compiler` package has been renamed to `@gram/kitchen` to fully embrace the Gram language's domain identity.
+- 6e95e35: The `@gram-lang/compiler` package has been renamed to `@gram-lang/kitchen` to fully embrace the Gram language's domain identity.
 - 79105ce: Complete overhaul of the VS Code Extension with Language Server, Live Preview, and advanced assistance
 
   **Major New Features:**
@@ -142,8 +142,8 @@
 - Updated dependencies [caf1630]
 - Updated dependencies [babbb20]
 - Updated dependencies [2dcd766]
-  - @gram/analyzer@1.0.0-beta.0
-  - @gram/kitchen@1.0.0-beta.0
-  - @gram/renderer@1.0.0-beta.0
-  - @gram/parser@1.0.0-beta.0
-  - @gram/i18n@1.0.0-beta.0
+  - @gram-lang/analyzer@1.0.0-beta.0
+  - @gram-lang/kitchen@1.0.0-beta.0
+  - @gram-lang/renderer@1.0.0-beta.0
+  - @gram-lang/parser@1.0.0-beta.0
+  - @gram-lang/i18n@1.0.0-beta.0

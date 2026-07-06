@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { log } from '@clack/prompts'
-import type { DiffResult, IngredientDelta, TimingDelta, SectionDelta, MetaDelta, TemperatureDelta, TimerDelta, PrepDelta } from '@gram/analyzer'
+import type { DiffResult, IngredientDelta, TimingDelta, SectionDelta, MetaDelta, TemperatureDelta, TimerDelta, PrepDelta } from '@gram-lang/analyzer'
 
 function fmtQty(qty?: number, unit?: string | null): string {
   if (qty === undefined) return '?'

@@ -1,8 +1,8 @@
 import { writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { RendererOptions } from '@gram/renderer'
-import type { IngredientData } from '@gram/analyzer'
+import type { RendererOptions } from '@gram-lang/renderer'
+import type { IngredientData } from '@gram-lang/analyzer'
 import { exportRecipe } from './exporter'
 
 export async function generatePrintHTML(

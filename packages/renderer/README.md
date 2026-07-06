@@ -1,4 +1,4 @@
-# @gram/renderer
+# @gram-lang/renderer
 
 The universal renderer for the Gram recipe language. It takes compiled or analyzed recipe ASTs and renders them into structured Markdown or semantic HTML with support for custom visual elements and class names.
 
@@ -12,10 +12,10 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Install `@gram/renderer` via bun:
+Install `@gram-lang/renderer` via bun:
 
 ```bash
-bun install @gram/renderer
+bun install @gram-lang/renderer
 ```
 
 ---
@@ -23,7 +23,7 @@ bun install @gram/renderer
 ## ⚡ Usage
 
 ```typescript
-import { toMarkdown, toHTML } from '@gram/renderer';
+import { toMarkdown, toHTML } from '@gram-lang/renderer';
 
 const recipe = {
   title: "Simple Crepes",

@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises'
 import { resolve, relative } from 'node:path'
 import { spawn } from 'node:child_process'
-import { getAST } from '@gram/parser'
-import { compile } from '@gram/kitchen'
-import type { CompilationResult } from '@gram/kitchen'
-import { diffRecipes } from '@gram/analyzer'
-import type { DiffResult } from '@gram/analyzer'
+import { getAST } from '@gram-lang/parser'
+import { compile } from '@gram-lang/kitchen'
+import type { CompilationResult } from '@gram-lang/kitchen'
+import { diffRecipes } from '@gram-lang/analyzer'
+import type { DiffResult } from '@gram-lang/analyzer'
 import { GramCLIError, ExitCode } from '../errors'
 
 export type { DiffResult }

@@ -3,7 +3,7 @@ import {
     RelativeQuantityAST,
     TextQuantityAST,
     Meta
-} from '@gram/parser';
+} from '@gram-lang/parser';
 
 export interface RegistryEntry {
     id: string;

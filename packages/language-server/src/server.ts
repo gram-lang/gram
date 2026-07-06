@@ -22,7 +22,7 @@ import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS }
 import { loadIngredientDB, IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { provideInlayHints } from './features/inlay-hints';
 import { provideCodeLenses } from './features/code-lens';
-import { toHTML } from '@gram/renderer';
+import { toHTML } from '@gram-lang/renderer';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';

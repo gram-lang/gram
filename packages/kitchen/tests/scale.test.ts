@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { getAST } from '@gram/parser';
+import { getAST } from '@gram-lang/parser';
 import { compile } from '../src/index';
 import {
     resolveScaleFactor,
@@ -76,7 +76,7 @@ Add @lemon juice{100ml}<@lemon{2}.
     });
 
     it('bridges mass <-> volume when the injected converter resolves a density — the engine itself has no notion of density', () => {
-        // Simulates what a density-aware converter (e.g. @gram/analyzer's convertUnit
+        // Simulates what a density-aware converter (e.g. @gram-lang/analyzer's convertUnit
         // bound to an ingredient's density) would return: 12g of salt at a fictional
         // density of 1.2 g/mL is 10mL, matching the recipe's 10g.
         const convertUnit = (value: number, from: string, to: string) => {

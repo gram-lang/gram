@@ -1,10 +1,10 @@
 ---
-"@gram/parser": major
-"@gram/kitchen": major
-"@gram/renderer": major
-"@gram/language-server": minor
-"@gram/cli": minor
-"@gram/vscode-extension": minor
+"@gram-lang/parser": major
+"@gram-lang/kitchen": major
+"@gram-lang/renderer": major
+"@gram-lang/language-server": minor
+"@gram-lang/cli": minor
+"@gram-lang/vscode-extension": minor
 ---
 
 refactor: rename `isAsync` to `isPassive` to align with domain terminology

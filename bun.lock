@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "gram",
@@ -15,12 +14,12 @@
       },
     },
     "packages/analyzer": {
-      "name": "@gram/analyzer",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/analyzer",
+      "version": "1.0.0-beta.1",
       "dependencies": {
-        "@gram/i18n": "workspace:*",
-        "@gram/kitchen": "workspace:*",
-        "@gram/parser": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -29,8 +28,8 @@
       },
     },
     "packages/cli": {
-      "name": "@gram/cli",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/cli",
+      "version": "1.0.0-beta.1",
       "bin": {
         "gram": "./dist/index.js",
       },
@@ -40,11 +39,11 @@
         "@ai-sdk/openai": "^3.0.73",
         "@ai-sdk/openai-compatible": "^2.0.51",
         "@clack/prompts": "^1.6.0",
-        "@gram/analyzer": "workspace:*",
-        "@gram/i18n": "workspace:*",
-        "@gram/kitchen": "workspace:*",
-        "@gram/parser": "workspace:*",
-        "@gram/renderer": "workspace:*",
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+        "@gram-lang/renderer": "workspace:*",
         "ai": "^6.0.208",
         "chalk": "^5.4.0",
         "citty": "^0.2.2",
@@ -63,36 +62,37 @@
       },
     },
     "packages/docs": {
-      "name": "@gram/docs",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/docs",
+      "version": "1.0.0-beta.1",
       "dependencies": {
         "@guolao/vue-monaco-editor": "^1.6.0",
         "@shikijs/monaco": "^4.3.1",
       },
       "devDependencies": {
-        "@gram/analyzer": "workspace:*",
-        "@gram/kitchen": "workspace:*",
-        "@gram/parser": "workspace:*",
-        "@gram/renderer": "workspace:*",
-        "@gram/vscode-extension": "workspace:*",
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+        "@gram-lang/renderer": "workspace:*",
+        "@gram-lang/vscode-extension": "workspace:*",
         "shiki": "^4.3.0",
         "vitepress": "^1.6.4",
         "vue": "^3.5.39",
       },
     },
     "packages/i18n": {
-      "name": "@gram/i18n",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/i18n",
+      "version": "1.0.0-beta.1",
       "devDependencies": {
         "typescript": "^6.0.3",
       },
     },
     "packages/kitchen": {
-      "name": "@gram/kitchen",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/kitchen",
+      "version": "1.0.0-beta.1",
       "dependencies": {
-        "@gram/i18n": "workspace:*",
-        "@gram/parser": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -101,14 +101,14 @@
       },
     },
     "packages/language-server": {
-      "name": "@gram/language-server",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/language-server",
+      "version": "1.0.0-beta.1",
       "dependencies": {
-        "@gram/analyzer": "workspace:*",
-        "@gram/i18n": "workspace:*",
-        "@gram/kitchen": "workspace:*",
-        "@gram/parser": "workspace:*",
-        "@gram/renderer": "workspace:*",
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+        "@gram-lang/renderer": "workspace:*",
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "yaml": "^2.0.0",
@@ -120,8 +120,8 @@
       },
     },
     "packages/parser": {
-      "name": "@gram/parser",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/parser",
+      "version": "1.0.0-beta.1",
       "dependencies": {
         "ohm-js": "^17.5.0",
         "zod": "^4.4.3",
@@ -131,21 +131,22 @@
       },
     },
     "packages/renderer": {
-      "name": "@gram/renderer",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/renderer",
+      "version": "1.0.0-beta.1",
       "dependencies": {
-        "@gram/kitchen": "workspace:*",
-        "@gram/parser": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^6.0.3",
       },
     },
     "packages/vscode-extension": {
-      "name": "@gram/vscode-extension",
-      "version": "1.0.0-beta.0",
+      "name": "@gram-lang/vscode-extension",
+      "version": "1.0.0-beta.1",
       "dependencies": {
-        "@gram/language-server": "workspace:*",
+        "@gram-lang/language-server": "workspace:*",
         "vscode-languageclient": "^9.0.1",
       },
       "devDependencies": {
@@ -344,23 +345,23 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@gram/analyzer": ["@gram/analyzer@workspace:packages/analyzer"],
+    "@gram-lang/analyzer": ["@gram-lang/analyzer@workspace:packages/analyzer"],
 
-    "@gram/cli": ["@gram/cli@workspace:packages/cli"],
+    "@gram-lang/cli": ["@gram-lang/cli@workspace:packages/cli"],
 
-    "@gram/docs": ["@gram/docs@workspace:packages/docs"],
+    "@gram-lang/docs": ["@gram-lang/docs@workspace:packages/docs"],
 
-    "@gram/i18n": ["@gram/i18n@workspace:packages/i18n"],
+    "@gram-lang/i18n": ["@gram-lang/i18n@workspace:packages/i18n"],
 
-    "@gram/kitchen": ["@gram/kitchen@workspace:packages/kitchen"],
+    "@gram-lang/kitchen": ["@gram-lang/kitchen@workspace:packages/kitchen"],
 
-    "@gram/language-server": ["@gram/language-server@workspace:packages/language-server"],
+    "@gram-lang/language-server": ["@gram-lang/language-server@workspace:packages/language-server"],
 
-    "@gram/parser": ["@gram/parser@workspace:packages/parser"],
+    "@gram-lang/parser": ["@gram-lang/parser@workspace:packages/parser"],
 
-    "@gram/renderer": ["@gram/renderer@workspace:packages/renderer"],
+    "@gram-lang/renderer": ["@gram-lang/renderer@workspace:packages/renderer"],
 
-    "@gram/vscode-extension": ["@gram/vscode-extension@workspace:packages/vscode-extension"],
+    "@gram-lang/vscode-extension": ["@gram-lang/vscode-extension@workspace:packages/vscode-extension"],
 
     "@guolao/vue-monaco-editor": ["@guolao/vue-monaco-editor@1.6.0", "", { "dependencies": { "@monaco-editor/loader": "^1.6.1", "vue-demi": "latest" }, "peerDependencies": { "@vue/composition-api": "^1.7.2", "monaco-editor": ">=0.43.0", "vue": "^2.6.14 || >=3.0.0" }, "optionalPeers": ["@vue/composition-api"] }, "sha512-w2IiJ6eJGGeuIgCK6EKZOAfhHTTUB5aZwslzwGbZ5e89Hb4avx6++GkLTW8p84Sng/arFMjLPPxSBI56cFudyQ=="],
 

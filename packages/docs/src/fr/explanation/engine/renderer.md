@@ -1,8 +1,8 @@
-# Rendu & Sortie (`@gram/renderer`)
+# Rendu & Sortie (`@gram-lang/renderer`)
 
-Une fois qu'une recette a été analysée par `@gram/parser`, compilée par `@gram/kitchen`, et (optionnellement) enrichie par `@gram/analyzer`, elle est prête à être présentée à l'utilisateur.
+Une fois qu'une recette a été analysée par `@gram-lang/parser`, compilée par `@gram-lang/kitchen`, et (optionnellement) enrichie par `@gram-lang/analyzer`, elle est prête à être présentée à l'utilisateur.
 
-Le paquet `@gram/renderer` prend cet objet JSON enrichi final et le transforme en un Markdown structuré ou en HTML sémantique.
+Le paquet `@gram-lang/renderer` prend cet objet JSON enrichi final et le transforme en un Markdown structuré ou en HTML sémantique.
 
 ## Formats de Rendu
 
@@ -20,9 +20,9 @@ Génère un document `<!DOCTYPE html>` complet et autonome avec sa propre feuill
 ## Exemple d'Utilisation
 
 ```typescript
-import { toMarkdown, toHTML } from '@gram/renderer';
+import { toMarkdown, toHTML } from '@gram-lang/renderer';
 
-// En supposant que `recipe` soit la sortie de @gram/kitchen ou @gram/analyzer
+// En supposant que `recipe` soit la sortie de @gram-lang/kitchen ou @gram-lang/analyzer
 const recipe = {
   title: "Crêpes Simples",
   metrics: { totalTime: 30, activeTime: 10 },
@@ -66,6 +66,6 @@ const html = toHTML(recipe, {
 
 ## Consommation Directe du JSON
 
-Si vous construisez une application web moderne (ex : utilisant React, Vue ou Svelte), vous **n'avez pas l'obligation** d'utiliser `@gram/renderer`.
+Si vous construisez une application web moderne (ex : utilisant React, Vue ou Svelte), vous **n'avez pas l'obligation** d'utiliser `@gram-lang/renderer`.
 
-La sortie JSON de `@gram/analyzer` est structurée et vous pouvez itérer dessus directement — mapper sur `recipe.sections` et `recipe.shopping_list` couvre les cas les plus courants. Gardez à l'esprit que des recettes plus riches peuvent produire des formes plus variées qu'il vaut la peine de traiter explicitement, telles que les alternatives/groupes d'ingrédients, les ingrédients composites, ou les articles possédant `normalizedMass`, `purchasingMass`, et `bakersPercentage` — la propre logique de formatage de `@gram/renderer` est une bonne référence pour savoir comment traiter ces cas si vous construisez un consommateur personnalisé.
+La sortie JSON de `@gram-lang/analyzer` est structurée et vous pouvez itérer dessus directement — mapper sur `recipe.sections` et `recipe.shopping_list` couvre les cas les plus courants. Gardez à l'esprit que des recettes plus riches peuvent produire des formes plus variées qu'il vaut la peine de traiter explicitement, telles que les alternatives/groupes d'ingrédients, les ingrédients composites, ou les articles possédant `normalizedMass`, `purchasingMass`, et `bakersPercentage` — la propre logique de formatage de `@gram-lang/renderer` est une bonne référence pour savoir comment traiter ces cas si vous construisez un consommateur personnalisé.

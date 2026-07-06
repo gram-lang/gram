@@ -4,7 +4,7 @@ import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
 import { RecipeRegistry } from './registry';
-import { RecipeAST } from '@gram/parser';
+import { RecipeAST } from '@gram-lang/parser';
 import { Registry, CompilationResult, Usage } from './types';
 
 import { z } from 'zod';

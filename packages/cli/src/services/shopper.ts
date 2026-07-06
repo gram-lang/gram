@@ -1,10 +1,10 @@
 import pLimit from 'p-limit'
 import { basename } from 'node:path'
-import { normalizeUnit } from '@gram/i18n'
+import { normalizeUnit } from '@gram-lang/i18n'
 import { runPipeline } from '../core/pipeline'
 import { fmtNumber } from '../core/format'
-import type { IngredientData } from '@gram/analyzer'
-import { resolveCanonicalId } from '@gram/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
+import { resolveCanonicalId } from '@gram-lang/analyzer'
 import type { ShopResult, ShoppingEntry } from '../types'
 
 export interface ShopOptions {

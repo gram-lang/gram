@@ -1,4 +1,4 @@
-import type { IngredientData } from '@gram/analyzer'
+import type { IngredientData } from '@gram-lang/analyzer'
 import type { FuzzyMatch } from '../types'
 
 function levenshtein(a: string, b: string): number {

@@ -1,8 +1,8 @@
 import { parse } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
-import { slugify } from '@gram/kitchen';
+import { slugify } from '@gram-lang/kitchen';
 
-import { IngredientData } from '@gram/analyzer';
+import { IngredientData } from '@gram-lang/analyzer';
 
 export type IngredientEntry = IngredientData;
 

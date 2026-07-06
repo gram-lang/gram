@@ -1,4 +1,4 @@
-# @gram/parser
+# @gram-lang/parser
 
 ## 1.0.0-beta.1
 
@@ -19,11 +19,11 @@
   - **Documentation Rewrite & i18n**: The documentation has been completely rewritten, thoroughly verified, and is now fully translated into French (in addition to the English version).
   - **Advanced Vue 3 Playground**: The legacy playground has been removed and rebuilt from the ground up using Vue 3. This new version is directly integrated into the documentation and introduces powerful new features, including recipe scaling and baker's math.
 
-- 6013e64: Refactor TextMate grammar to `@gram/parser`
+- 6013e64: Refactor TextMate grammar to `@gram-lang/parser`
 
-  The TextMate grammar (`gram.tmLanguage.json`) has been moved from `@gram/vscode-extension` to `@gram/parser` to colocate the structural (Ohm) and lexical (TextMate) definitions of the Gram language.
+  The TextMate grammar (`gram.tmLanguage.json`) has been moved from `@gram-lang/vscode-extension` to `@gram-lang/parser` to colocate the structural (Ohm) and lexical (TextMate) definitions of the Gram language.
 
-  This resolves architectural issues where consumers like the playground had to perform brittle, deep relative imports into the VSCode extension package. The syntax grammar is now officially exported and accessible via `@gram/parser/textmate`.
+  This resolves architectural issues where consumers like the playground had to perform brittle, deep relative imports into the VSCode extension package. The syntax grammar is now officially exported and accessible via `@gram-lang/parser/textmate`.
 
 ### Patch Changes
 
@@ -36,7 +36,7 @@
 
 ### Major Changes
 
-- 2dcd766: Introduction of the official GRAM CLI (`@gram/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
+- 2dcd766: Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
   **Project & Recipe Management:**
 

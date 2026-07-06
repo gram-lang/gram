@@ -6,7 +6,7 @@ Mettre une recette à l'échelle (scaling) ressemble à une simple multiplicatio
 2. **Mise à l'Échelle Inversée** — une quantité cible pour un ingrédient (`--scale farine=400g`), à partir de laquelle le facteur est dérivé.
 3. **Pourcentage du Boulanger** — ce n'est pas vraiment de la "mise à l'échelle", mais plutôt une transformation d'*affichage* qui montre chaque ingrédient en tant que pourcentage de la masse d'un ingrédient de référence.
 
-Ces trois éléments sont résolus et appliqués via un petit moteur centralisé `ScaleEngine` dans `@gram/kitchen`, plutôt que de laisser chaque consommateur (CLI, Playground) réinventer ses propres règles.
+Ces trois éléments sont résolus et appliqués via un petit moteur centralisé `ScaleEngine` dans `@gram-lang/kitchen`, plutôt que de laisser chaque consommateur (CLI, Playground) réinventer ses propres règles.
 
 ## Pourquoi un moteur dédié
 
@@ -17,7 +17,7 @@ La mise à l'échelle inversée semble simple — diviser la quantité cible par
 - Mettre à l'échelle par rapport à une quantité relative (`@eau{70% @&farine}`) est circulaire : sa valeur est *dérivée* d'un autre ingrédient, elle ne peut donc pas être la référence en même temps.
 - Un ingrédient réparti sur deux unités incompatibles dans la même recette n'a qu'une quantité "primaire" dans la liste de courses agrégée — en dériver un facteur ignorerait silencieusement le reste.
 
-`resolveScaleFactor()` (exportée depuis `@gram/kitchen`) valide tout cela en amont et lève une erreur spécifique et typée au lieu de renvoyer un nombre erroné. Chaque consommateur — l'option `--scale` du CLI aujourd'hui, le Playground demain — appelle la même fonction et obtient les mêmes garanties gratuitement.
+`resolveScaleFactor()` (exportée depuis `@gram-lang/kitchen`) valide tout cela en amont et lève une erreur spécifique et typée au lieu de renvoyer un nombre erroné. Chaque consommateur — l'option `--scale` du CLI aujourd'hui, le Playground demain — appelle la même fonction et obtient les mêmes garanties gratuitement.
 
 ## Le contrat requête/résolution
 
@@ -35,9 +35,9 @@ function resolveScaleFactor(
 
 - **Le mode facteur (factor)** valide simplement que le nombre est positif et fini — `compiled` n'est même pas nécessaire, les appelants peuvent donc valider un facteur brut (ex : venant d'un curseur dans le Playground) sans exécuter de pipeline.
 - **Le mode cible (target)** recherche l'ingrédient dans la `compiled.shopping_list`, le fait passer par les règles de rejet ci-dessous, réconcilie les unités, et renvoie le facteur dérivé.
-- **`convertUnit`** est optionnel et injecté par l'appelant. `@gram/kitchen` ne connaît rien aux densités, bases de données d'ingrédients, ou à la table `UNIT_CONVERSIONS` — tout cela vit entièrement dans `@gram/analyzer` (qui en a de toute façon besoin pour la standardisation des masses). Le moteur l'appelle toujours sous la forme `convertUnit(valeur, de_unite, vers_unite)` ; sans cela, seules les correspondances d'unités exactes (après normalisation des alias, ex : "gramme" → "g") réussissent.
+- **`convertUnit`** est optionnel et injecté par l'appelant. `@gram-lang/kitchen` ne connaît rien aux densités, bases de données d'ingrédients, ou à la table `UNIT_CONVERSIONS` — tout cela vit entièrement dans `@gram-lang/analyzer` (qui en a de toute façon besoin pour la standardisation des masses). Le moteur l'appelle toujours sous la forme `convertUnit(valeur, de_unite, vers_unite)` ; sans cela, seules les correspondances d'unités exactes (après normalisation des alias, ex : "gramme" → "g") réussissent.
 
-  La fonction `convertUnit(valeur, de_unite, vers_unite, densite?)` propre à `@gram/analyzer` prend une densité (g/ml) optionnelle en 4ème argument pour faire le pont entre masse ↔ volume (ex : `farine=1L` face à une recette en `g`) — sans elle, elle ne convertit qu'au sein de la même famille (masse↔masse, volume↔volume), comme le fait la table brute. L'*appelant* résout cette densité une fois, via `resolveIngredientDensity(id, database, overrides)` (en vérifiant une surcharge `densities:` dans le frontmatter avant de chercher en base), et l'attache dans une fermeture (closure) avant de la passer à `resolveScaleFactor` — le moteur lui-même ne voit jamais un id d'ingrédient, une base de données, ou un nombre de densité, seulement une fonction à 3 arguments. Le CLI et le Playground câblent tous deux cela de la même façon.
+  La fonction `convertUnit(valeur, de_unite, vers_unite, densite?)` propre à `@gram-lang/analyzer` prend une densité (g/ml) optionnelle en 4ème argument pour faire le pont entre masse ↔ volume (ex : `farine=1L` face à une recette en `g`) — sans elle, elle ne convertit qu'au sein de la même famille (masse↔masse, volume↔volume), comme le fait la table brute. L'*appelant* résout cette densité une fois, via `resolveIngredientDensity(id, database, overrides)` (en vérifiant une surcharge `densities:` dans le frontmatter avant de chercher en base), et l'attache dans une fermeture (closure) avant de la passer à `resolveScaleFactor` — le moteur lui-même ne voit jamais un id d'ingrédient, une base de données, ou un nombre de densité, seulement une fonction à 3 arguments. Le CLI et le Playground câblent tous deux cela de la même façon.
 
 ### Règles de rejet (mode cible)
 
@@ -63,13 +63,13 @@ Le `CompilationResult` obtenu porte un champ honnête `scaleFactor` (par défaut
 
 ## Validation du Pourcentage du Boulanger
 
-Le pourcentage du boulanger n'est pas une mise à l'échelle, mais il partage la même philosophie "ne pas calculer un nombre faux silencieusement". `@gram/analyzer` le calcule sous la forme d'un champ `bakersPercentage` par article de la liste de courses et par mention d'ingrédient en ligne dans les étapes — `@gram/renderer` se contente d'afficher cette valeur précalculée, il ne la recalcule pas.
+Le pourcentage du boulanger n'est pas une mise à l'échelle, mais il partage la même philosophie "ne pas calculer un nombre faux silencieusement". `@gram-lang/analyzer` le calcule sous la forme d'un champ `bakersPercentage` par article de la liste de courses et par mention d'ingrédient en ligne dans les étapes — `@gram-lang/renderer` se contente d'afficher cette valeur précalculée, il ne la recalcule pas.
 
 L'ingrédient de référence (marqué avec `@*`, ou forcé via `--bakers-reference`) doit être une ancre physique : si sa propre masse a elle-même été dérivée d'une quantité relative (`conversionMethod === 'relative'`), l'analyseur refuse de l'utiliser comme base de 100 % — cela serait circulaire — et émet à la place un avertissement `INVALID_BAKERS_REFERENCE` sur le résultat, laissant les calculs du boulanger désactivés pour cette exécution au lieu d'afficher des pourcentages par rapport à une cible mouvante.
 
 Si les calculs du boulanger ont été demandés (`--bakers-math` ou `--bakers-reference`) mais qu'aucun modificateur `@*` ni aucun id correspondant n'ont été trouvés, un avertissement `NO_BAKERS_REFERENCE` est émis de la même manière — vérifiez `result.warnings` plutôt qu'un `console.log`.
 
-**L'agrégation reste cohérente avec la masse.** Lorsque le même ingrédient est utilisé plus d'une fois dans une section (ex : du sucre ajouté à deux étapes différentes), `aggregateSectionIngredients` de `@gram/kitchen` somme à la fois la masse normalisée (`normalizedMass`) et le `bakersPercentage` à travers les occurrences répétées — puisque le pourcentage est linéaire à la masse pour une référence fixe, les deux concordent toujours (ex : deux occurrences de 100 g/10 % s'agrègent en 200 g/20 %, jamais en un incohérent 200 g/10 %). Chaque moteur de rendu (les formateurs HTML, Markdown, et impression de `@gram/renderer`, ainsi que le TUI `gram cook` du CLI) lit cette même valeur précalculée et déjà agrégée — aucun ne la recalcule de son côté.
+**L'agrégation reste cohérente avec la masse.** Lorsque le même ingrédient est utilisé plus d'une fois dans une section (ex : du sucre ajouté à deux étapes différentes), `aggregateSectionIngredients` de `@gram-lang/kitchen` somme à la fois la masse normalisée (`normalizedMass`) et le `bakersPercentage` à travers les occurrences répétées — puisque le pourcentage est linéaire à la masse pour une référence fixe, les deux concordent toujours (ex : deux occurrences de 100 g/10 % s'agrègent en 200 g/20 %, jamais en un incohérent 200 g/10 %). Chaque moteur de rendu (les formateurs HTML, Markdown, et impression de `@gram-lang/renderer`, ainsi que le TUI `gram cook` du CLI) lit cette même valeur précalculée et déjà agrégée — aucun ne la recalcule de son côté.
 
 ## Consommer ceci depuis un nouveau frontend
 

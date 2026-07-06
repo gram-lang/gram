@@ -1,4 +1,4 @@
-import type { IngredientData, NutritionMetrics } from '@gram/analyzer'
+import type { IngredientData, NutritionMetrics } from '@gram-lang/analyzer'
 
 export type { NutritionMetrics }
 

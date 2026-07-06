@@ -1,8 +1,8 @@
 ---
-"@gram/language-server": minor
-"@gram/docs": minor
-"@gram/analyzer": minor
-"@gram/kitchen": minor
+"@gram-lang/language-server": minor
+"@gram-lang/docs": minor
+"@gram-lang/analyzer": minor
+"@gram-lang/kitchen": minor
 ---
 
-The `@gram/compiler` package has been renamed to `@gram/kitchen` to fully embrace the Gram language's domain identity.
+The `@gram-lang/compiler` package has been renamed to `@gram-lang/kitchen` to fully embrace the Gram language's domain identity.

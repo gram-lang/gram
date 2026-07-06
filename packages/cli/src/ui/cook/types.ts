@@ -1,4 +1,4 @@
-import type { CompilationResult, AggregatedIngredient } from '@gram/kitchen'
+import type { CompilationResult, AggregatedIngredient } from '@gram-lang/kitchen'
 
 export interface CookTimer {
   id: string

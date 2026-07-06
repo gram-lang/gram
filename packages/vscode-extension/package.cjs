@@ -6,7 +6,7 @@ const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 const originalName = pkg.name;
 
 // VS Code extension names cannot contain `@` or `/`
-pkg.name = originalName.replace('@gram/', 'gram-');
+pkg.name = originalName.replace('@gram-lang/', 'gram-');
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
 try {

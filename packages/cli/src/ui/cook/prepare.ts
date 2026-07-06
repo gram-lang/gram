@@ -1,5 +1,5 @@
-import type { CompilationResult } from '@gram/kitchen'
-import { quantityToMinutes, aggregateSectionIngredients } from '@gram/kitchen'
+import type { CompilationResult } from '@gram-lang/kitchen'
+import { quantityToMinutes, aggregateSectionIngredients } from '@gram-lang/kitchen'
 import type { RecipeData, FlatStep, CookTimer } from './types'
 
 // Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit

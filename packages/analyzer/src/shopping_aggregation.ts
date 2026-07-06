@@ -6,7 +6,7 @@ function isStandardItem(item: any): boolean {
 }
 
 /**
- * Re-groups the shopping list produced by `@gram/kitchen` (which groups purely by
+ * Re-groups the shopping list produced by `@gram-lang/kitchen` (which groups purely by
  * raw id + unit, with no knowledge of the ingredient database) by CANONICAL id,
  * merging aliased ingredients (e.g. "beurre"/"butter") and cross-unit entries
  * (e.g. "100g" + "1 cup") into a single line whenever every contributing entry
@@ -17,7 +17,7 @@ function isStandardItem(item: any): boolean {
  * canonical id/name and flagged `multiUnit: true`, so renderers can still group
  * them visually. Composite and alternative entries pass through untouched —
  * their own MAX/SUM and first-choice resolution rules are handled upstream by
- * `@gram/kitchen`.
+ * `@gram-lang/kitchen`.
  */
 export function aggregateShoppingList(shoppingList: any[], database: Record<string, IngredientData>): any[] {
     const passthrough: any[] = [];

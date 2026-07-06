@@ -1,5 +1,5 @@
 ---
-"@gram/kitchen": patch
+"@gram-lang/kitchen": patch
 ---
 
 Fix total recipe time calculation when using background timers

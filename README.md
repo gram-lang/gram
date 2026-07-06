@@ -85,7 +85,7 @@ Transform your editor into a proper recipe development environment.
 - **Smart Autocomplete**: Contextual suggestions for ingredients from your database, units, and references.
 - **Real-time Diagnostics**: Instantly flags missing ingredients, unused references, or circular dependencies.
 
-### The Official CLI (`@gram/cli`)
+### The Official CLI (`@gram-lang/cli`)
 The command-line interface acts as the keystone of the Gram workflow.
 - **`gram check` & `gram build`**: Validate syntax and compile your `.gram` files to enriched JSON.
 - **`gram cook`**: An interactive step-by-step cooking assistant right in your terminal, complete with live timers.
@@ -135,7 +135,7 @@ This monorepo is divided into specialized packages under `packages/`:
 ### 1. Start a CLI Project
 Get started with Gram directly in your terminal:
 ```bash
-bun add -d @gram/cli
+bun add -d @gram-lang/cli
 bunx gram init
 ```
 
@@ -151,8 +151,8 @@ bun run dev
 
 ### 3. Use the Parser in your App
 ```javascript
-import { getAST } from '@gram/parser';
-import { compile } from '@gram/kitchen';
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
 
 const ast = getAST("[Mix] @flour{200g} and @water{100g}.");
 const result = compile(ast);

@@ -1,6 +1,6 @@
 # Analyse approfondie : Estimation Nutritionnelle
 
-Le paquet `@gram/analyzer` est capable de calculer automatiquement le profil des macronutriments et micronutriments de n'importe quelle recette. 
+Le paquet `@gram-lang/analyzer` est capable de calculer automatiquement le profil des macronutriments et micronutriments de n'importe quelle recette. 
 
 Cependant, parce que les données nutritionnelles sont très sensibles et ont un impact sur les choix diététiques, Gram adopte une **approche stricte et mathématiquement conservatrice** pour l'estimation de la nutrition. Cette page explique cette logique.
 

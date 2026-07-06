@@ -1,8 +1,8 @@
 import { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
-import { aggregateSectionIngredients } from '@gram/kitchen';
-import { getDictionary } from '@gram/i18n';
+import { aggregateSectionIngredients } from '@gram-lang/kitchen';
+import { getDictionary } from '@gram-lang/i18n';
 
 const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');

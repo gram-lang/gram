@@ -1,6 +1,6 @@
 ---
-"@gram/kitchen": minor
-"@gram/renderer": minor
+"@gram-lang/kitchen": minor
+"@gram-lang/renderer": minor
 ---
 
 Improve ingredient preparation tracking and display.

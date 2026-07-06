@@ -1,9 +1,9 @@
 import pLimit from 'p-limit'
 import { readFile } from 'node:fs/promises'
-import { getAST, ASTNodeType } from '@gram/parser'
-import type { RecipeAST, SectionAST, StepAST, IngredientAST, AlternativeAST } from '@gram/parser'
-import { slugify } from '@gram/kitchen'
-import type { IngredientData } from '@gram/analyzer'
+import { getAST, ASTNodeType } from '@gram-lang/parser'
+import type { RecipeAST, SectionAST, StepAST, IngredientAST, AlternativeAST } from '@gram-lang/parser'
+import { slugify } from '@gram-lang/kitchen'
+import type { IngredientData } from '@gram-lang/analyzer'
 
 export interface RecipeSuggestion {
   file: string

@@ -6,7 +6,7 @@ Scaling a recipe sounds like a single multiplication, but Gram actually supports
 2. **Reverse Scaling** — a target quantity for one ingredient (`--scale flour=400g`), from which the factor is derived.
 3. **Baker's Percentage** — not really "scaling" at all, but a *display* transform that shows every ingredient as a percentage of a reference ingredient's mass.
 
-All three are resolved and applied through a small, centralized `ScaleEngine` in `@gram/kitchen`, rather than each consumer (CLI, Playground) re-deriving its own rules.
+All three are resolved and applied through a small, centralized `ScaleEngine` in `@gram-lang/kitchen`, rather than each consumer (CLI, Playground) re-deriving its own rules.
 
 ## Why a dedicated engine
 
@@ -17,7 +17,7 @@ Reverse scaling looks simple — divide the target quantity by the ingredient's 
 - Scaling against a relative quantity (`@water{70% @&flour}`) is circular: its value is *derived* from another ingredient, so it can't also be the reference.
 - An ingredient split across two incompatible units in the same recipe only has a "primary" quantity in the aggregated shopping list — deriving a factor from it silently ignores the rest.
 
-`resolveScaleFactor()` (exported from `@gram/kitchen`) validates all of this up front and throws a specific, typed error instead of returning a wrong number. Every consumer — the CLI's `--scale` flag today, the Playground tomorrow — calls the same function and gets the same guarantees for free.
+`resolveScaleFactor()` (exported from `@gram-lang/kitchen`) validates all of this up front and throws a specific, typed error instead of returning a wrong number. Every consumer — the CLI's `--scale` flag today, the Playground tomorrow — calls the same function and gets the same guarantees for free.
 
 ## The request/resolution contract
 
@@ -35,9 +35,9 @@ function resolveScaleFactor(
 
 - **Factor mode** just validates the number is positive and finite — `compiled` isn't even needed, so callers can validate a raw factor (e.g. from a Playground slider) without running a pipeline.
 - **Target mode** looks the ingredient up in `compiled.shopping_list`, runs it through the rejection rules below, reconciles units, and returns the derived factor.
-- **`convertUnit`** is optional and injected by the caller. `@gram/kitchen` doesn't know about density, ingredient databases, or the `UNIT_CONVERSIONS` table at all — those live entirely in `@gram/analyzer` (which needs them anyway for mass standardization). The engine only ever calls it as `convertUnit(value, fromUnit, toUnit)`; without one, only exact unit matches (after alias normalization, e.g. "gram" → "g") succeed.
+- **`convertUnit`** is optional and injected by the caller. `@gram-lang/kitchen` doesn't know about density, ingredient databases, or the `UNIT_CONVERSIONS` table at all — those live entirely in `@gram-lang/analyzer` (which needs them anyway for mass standardization). The engine only ever calls it as `convertUnit(value, fromUnit, toUnit)`; without one, only exact unit matches (after alias normalization, e.g. "gram" → "g") succeed.
 
-  `@gram/analyzer`'s own `convertUnit(value, fromUnit, toUnit, density?)` takes an optional density (g/mL) as its 4th argument to bridge mass ↔ volume (e.g. `flour=1L` against a recipe in `g`) — without one, it only converts within the same family (mass↔mass, volume↔volume), same as the bare table. The *caller* resolves that density once, via `resolveIngredientDensity(id, database, overrides)` (checking a recipe's frontmatter `densities:` override before the ingredient database), and binds it into a closure before handing it to `resolveScaleFactor` — the engine itself never sees an ingredient id, a database, or a density number, only a 3-argument function. The CLI and Playground both wire this up the same way.
+  `@gram-lang/analyzer`'s own `convertUnit(value, fromUnit, toUnit, density?)` takes an optional density (g/mL) as its 4th argument to bridge mass ↔ volume (e.g. `flour=1L` against a recipe in `g`) — without one, it only converts within the same family (mass↔mass, volume↔volume), same as the bare table. The *caller* resolves that density once, via `resolveIngredientDensity(id, database, overrides)` (checking a recipe's frontmatter `densities:` override before the ingredient database), and binds it into a closure before handing it to `resolveScaleFactor` — the engine itself never sees an ingredient id, a database, or a density number, only a 3-argument function. The CLI and Playground both wire this up the same way.
 
 ### Rejection rules (target mode)
 
@@ -63,13 +63,13 @@ The resulting `CompilationResult` carries an honest `scaleFactor` field (default
 
 ## Baker's Percentage validation
 
-Baker's Percentage isn't scaling, but it shares the same "don't compute a wrong number silently" philosophy. `@gram/analyzer` computes it as a `bakersPercentage` field per shopping-list item and per in-step ingredient mention — `@gram/renderer` just displays that precomputed value, it doesn't recompute it.
+Baker's Percentage isn't scaling, but it shares the same "don't compute a wrong number silently" philosophy. `@gram-lang/analyzer` computes it as a `bakersPercentage` field per shopping-list item and per in-step ingredient mention — `@gram-lang/renderer` just displays that precomputed value, it doesn't recompute it.
 
 The reference ingredient (marked with `@*`, or forced via `--bakers-reference`) must be a physical anchor: if its own mass was itself derived from a relative quantity (`conversionMethod === 'relative'`), the analyzer refuses to use it as the 100% base — that would be circular — and instead emits an `INVALID_BAKERS_REFERENCE` warning on the result, leaving Baker's Math disabled for that run rather than showing percentages relative to a moving target.
 
 If Baker's Math was requested (`--bakers-math` or `--bakers-reference`) but no `@*` modifier and no matching id were found at all, a `NO_BAKERS_REFERENCE` warning is emitted the same way — check `result.warnings` rather than a console log.
 
-**Aggregation stays consistent with mass.** When the same ingredient is used more than once within a section (e.g. sugar added at two different steps), `@gram/kitchen`'s `aggregateSectionIngredients` sums both `normalizedMass` and `bakersPercentage` across the repeated occurrences — since percentage is linear in mass for a fixed reference, the two always agree (e.g. two 100g/10% occurrences aggregate to 200g/20%, never a mismatched 200g/10%). Every renderer (`@gram/renderer`'s HTML, Markdown, and print formatters, plus the CLI's `gram cook` TUI) reads this same precomputed, already-aggregated value — none of them recompute it themselves.
+**Aggregation stays consistent with mass.** When the same ingredient is used more than once within a section (e.g. sugar added at two different steps), `@gram-lang/kitchen`'s `aggregateSectionIngredients` sums both `normalizedMass` and `bakersPercentage` across the repeated occurrences — since percentage is linear in mass for a fixed reference, the two always agree (e.g. two 100g/10% occurrences aggregate to 200g/20%, never a mismatched 200g/10%). Every renderer (`@gram-lang/renderer`'s HTML, Markdown, and print formatters, plus the CLI's `gram cook` TUI) reads this same precomputed, already-aggregated value — none of them recompute it themselves.
 
 ## Consuming this from a new frontend
 

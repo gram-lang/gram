@@ -1,6 +1,6 @@
 # Command Line Interface (CLI)
 
-The official Gram CLI (`@gram/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
+The official Gram CLI (`@gram-lang/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
 
 ## Installation
 

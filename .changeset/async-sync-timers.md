@@ -1,5 +1,5 @@
 ---
-"@gram/docs": minor
+"@gram-lang/docs": minor
 ---
 
 docs: update timer terminology from synchronous/asynchronous to active/passive

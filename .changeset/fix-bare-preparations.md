@@ -1,5 +1,5 @@
 ---
-"@gram/parser": patch
+"@gram-lang/parser": patch
 ---
 **Fix: Allow preparations on bare ingredients and cookware**
 Previously, the parser and the TextMate syntax highlighter required quantity braces `{}` to attach a preparation to an element (e.g. `@butter{}(melted)` or `#pan{}(20cm)`). 
