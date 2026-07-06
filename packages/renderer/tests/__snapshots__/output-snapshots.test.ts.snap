@@ -1,0 +1,510 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`renderer output snapshots toHTML output is stable 1`] = `
+"<h1>Crêpes</h1>
+
+<div class="recipe-timings-grid">
+ <div class="timing-card">
+   <div class="meta-label"><i class="ph ph-clock"></i> Total Time</div>
+   <div class="meta-value">42m</div>
+ </div>
+ <div class="timing-card">
+   <div class="meta-label"><i class="ph ph-clock"></i> Cook Time</div>
+   <div class="meta-value">34m</div>
+ </div>
+ <div class="timing-card">
+   <div class="meta-label"><i class="ph ph-fire"></i> Active Time</div>
+   <div class="meta-value">34m</div>
+ </div>
+ <div class="timing-card">
+   <div class="meta-label"><i class="ph ph-knife"></i> Prep Time</div>
+   <div class="meta-value">8m <span class="est">(est.)</span></div>
+ </div>
+</div>
+<div class="recipe-meta-secondary">
+<div class="metadata-grid">
+  <div class="meta-secondary-item">
+    <span class="label">portions</span>
+    <span class="value">4</span>
+  </div>
+</div>
+</div>
+
+<details class="shopping-list">
+  <summary><h2>Shopping List</h2></summary>
+  <ul>
+    <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
+    <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
+    <li><span class="ingredient" data-name="salt">salt</span></li>
+    <li>
+      <strong>Alternative Group</strong>:
+      <ul>
+        <li><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span></li>
+        <li><span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></li>
+      </ul>
+    </li>
+  </ul>
+</details>
+
+<details class="cookware">
+  <summary><h2>Cookware</h2></summary>
+  <ul>
+    <li><span class="cookware" data-name="large bowl">large bowl</span></li>
+    <li><span class="cookware" data-name="pan">pan</span></li>
+  </ul>
+</details>
+
+<div class="instructions">
+  <section>
+    <h3 class="section-header">Batter <span class="section-declaration-badge" data-tooltip="Intermediate result for this section"><i class="ph ph-arrow-right"></i> batter</span></h3>
+    <div class="section-ingredients">
+      <ul>
+        <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
+        <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
+        <li><span class="ingredient" data-name="salt">salt</span></li>
+      </ul>
+    </div>
+    <ol class="steps">
+      <li value="1">
+        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>. Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">2 min</span></span>. <sup class="footnote-ref"><a href="#RENDERID-N" id="RENDERID-N">[1]</a></sup> Let rest at <span class="temp" data-semantic="fridge"><i class="ph ph-thermometer"></i> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">30 min</span></span>.
+      </li>
+    </ol>
+  </section>
+  <section>
+    <h3 class="section-header">Cooking</h3>
+    <div class="section-ingredients">
+      <ul>
+        <li><span class="reference"><i class="ph ph-caret-circle-right"></i> batter</span></li>
+      </ul>
+    </div>
+    <ol class="steps">
+      <li value="1">
+        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><i class="ph ph-thermometer"></i> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient"><i class="ph ph-caret-circle-right"></i> batter</span> and cook for <span class="timer" data-tooltip="Active Time" data-value="" data-unit="active 1min"><i class="ph ph-timer"></i> <span class="timer-text"> active 1min</span></span>.
+      </li>
+    </ol>
+  </section>
+</div>
+<div class="recipe-notes">
+  <h3>Notes</h3>
+  <ol>
+    <li id="RENDERID-N">
+      Rest the batter before cooking
+      <a href="#RENDERID-N" class="note-return" title="Return to step">↩</a>
+    </li>
+  </ol>
+</div>
+"
+`;
+
+exports[`renderer output snapshots toMarkdown output is stable 1`] = `
+"# Crêpes
+
+> **Metadata**
+> - **Total Time**: 42m
+> - **Cook Time**: 34m
+> - **Active Time**: 34m
+> - **Prep Time**: 8m (est.)
+> - portions: 4
+
+## 🛒 Shopping List
+
+- **flour** (200 g)
+- **sugar** (1 tbsp)
+- **salt**
+- **Alternative Group**:
+  - **egg** (2)
+  - **egg substitute** (2)
+
+## 🍳 Cookware
+
+- *large bowl*
+- *pan*
+
+## 👨‍🍳 Instructions
+
+### Batter
+
+**Ingredients**:
+- **flour** (200 g)
+- **sugar** (1 tbsp)
+- **salt**
+
+1. In a *large bowl*, mix **flour** (200 g), **sugar** (1 tbsp) and a pinch of **salt**. Add **egg** (2) or **egg substitute** (2) and whisk for ⏲️ 2 min.  *Rest the batter before cooking* Let rest at 🔥fridge for ⏲️ 30 min.
+
+### Cooking
+
+**Ingredients**:
+- 👉*batter*
+
+1. Heat a *pan* on 🔥medium heat. Pour 👉*batter* and cook for ⏲️  active 1min.
+
+"
+`;
+
+exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
+"<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crêpes</title>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --black: #000000;
+    --dark-grey: #333333;
+    --grey: #666666;
+    --light-grey: #cccccc;
+    --very-light-grey: #e5e5e5;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4;
+    margin: 25mm 20mm;
+  }
+
+  body {
+    font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: var(--black);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Title ── */
+  h1 {
+    font-family: 'Courier Prime', monospace;
+    font-size: 20pt;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 12pt;
+    padding-bottom: 8pt;
+    border-bottom: 2pt solid var(--black);
+    page-break-after: avoid;
+  }
+
+  /* ── Section labels (Shopping, Equipment, Instructions…) ── */
+  h2 {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 6pt;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    page-break-after: avoid;
+  }
+
+  /* ── Sub-section headers (recipe sections) ── */
+  h3 {
+    font-size: 11.5pt;
+    font-weight: 700;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
+    page-break-after: avoid;
+    display: inline-block;
+    border-bottom: 1px dashed var(--black);
+  }
+
+  /* ── Meta bar ── */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4pt 16pt;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 8pt;
+    margin-bottom: 16pt;
+    padding: 4pt 0;
+    border-bottom: 1px solid var(--light-grey);
+  }
+  .meta-item { display: flex; align-items: baseline; }
+  .meta-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 7pt;
+    letter-spacing: 0.1em;
+    margin-right: 6pt;
+    color: var(--grey);
+  }
+
+  /* ── Shopping list ── */
+  .shopping-list ul {
+    columns: 2;
+    column-gap: 24pt;
+    list-style: none;
+    margin-top: 8pt;
+  }
+  .shopping-list li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    position: relative;
+    padding: 3pt 0 3pt 16pt;
+    font-size: 9.5pt;
+    border-bottom: 1px dotted var(--light-grey);
+  }
+  .shopping-list li::before {
+    content: "☐";
+    position: absolute;
+    left: 0;
+    top: 3.5pt;
+    font-size: 11pt;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--grey);
+  }
+
+  /* ── Equipment ── */
+  .cookware-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 12pt;
+    row-gap: 6pt;
+    margin-top: 8pt;
+    font-size: 10pt;
+    font-style: italic;
+  }
+  .cookware-list .cw-item {
+    position: relative;
+  }
+  .cookware-list .cw-item:not(:last-child)::after { 
+    content: "•"; 
+    position: absolute;
+    right: -8pt;
+    color: var(--light-grey); 
+    font-style: normal; 
+  }
+
+  /* ── Instructions ── */
+  .instructions section {
+    margin-bottom: 24pt;
+  }
+
+  /* ── Section-level mise en place ── */
+  .section-ingredients {
+    border: 1px solid var(--black);
+    border-left: 4pt solid var(--black);
+    padding: 10pt 14pt;
+    margin-bottom: 16pt;
+    margin-top: 8pt;
+  }
+  .section-ingredients ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 16pt;
+    row-gap: 6pt;
+    font-size: 9.5pt;
+  }
+  .section-ingredients li { white-space: nowrap; }
+  .section-ingredients li::before { 
+    content: "— "; 
+    color: var(--grey); 
+    font-weight: bold; 
+  }
+
+  /* ── Steps ── */
+  ol.steps {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    counter-reset: step-counter;
+  }
+  ol.steps li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 10pt;
+    font-size: 10pt;
+    position: relative;
+    padding-left: 24pt;
+  }
+  ol.steps li:not(.comment-step)::before {
+    content: counter(step-counter) ".";
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 9pt;
+    color: var(--black);
+  }
+
+  /* ── Action tag ── */
+  .action {
+    display: inline-block;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border: 1px solid var(--black);
+    border-radius: 2px;
+    padding: 2pt 5pt;
+    margin-right: 8pt;
+    vertical-align: text-bottom;
+    white-space: nowrap;
+  }
+
+  /* ── Inline semantic tokens ── */
+  .ingredient {
+    font-weight: 700;
+  }
+  .reference {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-style: solid;
+    text-underline-offset: 2.5pt;
+    text-decoration-thickness: 1px;
+  }
+  .cookware {
+    font-weight: 700;
+  }
+  .timer {
+    font-weight: 700;
+    border-bottom: 2px solid var(--black);
+    white-space: nowrap;
+    padding-bottom: 1px;
+  }
+  .timer.passive {
+    border-bottom: 2px dotted var(--black);
+  }
+  .temp {
+    font-weight: 700;
+    white-space: nowrap;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.9em;
+    letter-spacing: 0.05em;
+  }
+  .quantity { font-weight: normal; }
+  .unit { color: var(--dark-grey); font-size: 0.95em; }
+  .opt { color: var(--grey); font-style: italic; }
+  .declaration {
+    font-size: 9pt;
+    font-style: italic;
+    color: var(--grey);
+  }
+  .comment-step {
+    padding-left: 0 !important;
+    font-style: italic;
+    color: var(--dark-grey);
+    font-size: 9.5pt;
+    margin-top: -4pt;
+    margin-bottom: 10pt !important;
+  }
+
+  /* ── Nutrition ── */
+  .nutrition {
+    margin-top: 24pt;
+    padding-top: 12pt;
+    border-top: 2px solid var(--black);
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .nutrition h2 {
+    border-bottom: none;
+    margin: 0 0 12pt 0;
+    padding: 0;
+  }
+  .nut-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12pt 24pt;
+  }
+  .nut-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nut-item strong { 
+    font-size: 13pt; 
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1;
+    margin-bottom: 4pt;
+  }
+  .nut-item small { 
+    font-size: 7pt; 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em; 
+    color: var(--grey); 
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Screen preview */
+  @media screen {
+    body {
+      max-width: 210mm;
+      margin: 40px auto;
+      padding: 25mm 20mm;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+      border: 1px solid var(--very-light-grey);
+      min-height: 297mm;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Crêpes</h1>
+<div class="meta">
+  <span class="meta-item"><span class="meta-label">Total Time</span>42m</span>
+  <span class="meta-item"><span class="meta-label">Cook Time</span>34m</span>
+  <span class="meta-item"><span class="meta-label">Active Time</span>34m</span>
+  <span class="meta-item"><span class="meta-label">Prep Time</span>8m <em style="opacity:0.55;font-size:0.85em">(est.)</em></span>
+  <span class="meta-item"><span class="meta-label">Portions</span>4</span>
+</div>
+
+<div class="shopping-list">
+<h2>Shopping List</h2>
+<ul>
+  <li><span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span></li>
+  <li><span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span></li>
+  <li><span class="ingredient" data-name="salt">salt</span></li>
+  <li><span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <em>or</em> <span class="ingredient" data-name="egg substitute" data-tooltip="2">egg substitute</span></li>
+</ul>
+</div>
+
+<div>
+<h2>Equipment</h2>
+<div class="cookware-list">
+  <span class="cw-item"><span class="cookware" data-name="large bowl">large bowl</span></span>
+  <span class="cw-item"><span class="cookware" data-name="pan">pan</span></span>
+</div>
+</div>
+
+<div class="instructions">
+<h2>Instructions</h2>
+<section>
+  <h3>Batter</h3>
+  <div class="section-ingredients"><ul>
+    <li><span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span></li>
+    <li><span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span></li>
+    <li><span class="ingredient" data-name="salt">salt</span></li>
+  </ul></div>
+  <ol class="steps">
+    <li value="1">
+      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>. Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">2 min</span></span>. <span class="inline-comment">Rest the batter before cooking</span> Let rest at <span class="temp" data-semantic="fridge"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">30 min</span></span>.
+    </li>
+  </ol>
+</section>
+<section>
+  <h3>Cooking</h3>
+  <div class="section-ingredients"><ul>
+    <li><span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span></li>
+  </ul></div>
+  <ol class="steps">
+    <li value="1">
+      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for <span class="timer" data-tooltip="Active Time" data-value="" data-unit="active 1min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text"> active 1min</span></span>.
+    </li>
+  </ol>
+</section>
+</div>
+
+</body>
+</html>"
+`;

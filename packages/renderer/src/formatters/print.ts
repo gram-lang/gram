@@ -1,5 +1,5 @@
 import type { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem, isAlternativeGroup, isCompositeItem, joinStepTokens } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';
 import { getDictionary } from '@gram-lang/i18n';
@@ -383,9 +383,9 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
         body += `<div class="shopping-list">\n<h2>${t.renderer.shoppingList}</h2>\n<ul>\n`;
         for (const item of data.shopping_list) {
             if (!item || typeof item !== 'object') continue;
-            if (item.type === 'alternative' || item.type === 'group') {
+            if (isAlternativeGroup(item)) {
                 body += `  <li>${item.options.map((o: any) => formatElement(o, 'html', context)).join(' <em>or</em> ')}</li>\n`;
-            } else if (item.type === 'composite') {
+            } else if (isCompositeItem(item)) {
                 body += `  <li>${formatElement(item, 'html', context)}</li>\n`;
                 for (const u of item.usage ?? []) {
                     body += `  <li style="padding-left:12pt">${formatElement(u, 'html', context)}</li>\n`;
@@ -403,7 +403,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
     if (data.cookware?.length > 0) {
         body += `<div>\n<h2>${t.renderer.equipment}</h2>\n<div class="cookware-list">\n`;
         for (const cw of data.cookware) {
-            if (cw.type === 'alternative' || cw.type === 'group') {
+            if (isAlternativeGroup(cw)) {
                 const opts = (cw.options ?? []).map((o: any) => formatElement(o, 'html', context)).join(' or ');
                 body += `  <span class="cw-item">${opts}</span>\n`;
             } else {
@@ -453,20 +453,11 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
                 if (stepItem.type === 'text') {
                     stepContent = escapeHtml(stepItem.value ?? '');
                 } else {
-                    stepContent = (stepItem.content ?? []).map((c: any, i: number, arr: any[]) => {
-                        let str = formatElement(c, 'html', stepContext);
-                        const isToken = c && typeof c === 'object' && c.type !== 'text' && c.type !== 'comment';
-                        if (isToken) {
-                            const next = arr[i + 1];
-                            if (next) {
-                                const nextChar = typeof next === 'string'
-                                    ? next.charAt(0)
-                                    : next.type === 'text' ? (next.value ?? '').charAt(0) : '';
-                                if (nextChar && !/^[.,!?:;)\s]/.test(nextChar)) str += ' ';
-                            }
-                        }
-                        return str;
-                    }).join('');
+                    stepContent = joinStepTokens(
+                        stepItem.content ?? [],
+                        c => formatElement(c, 'html', stepContext),
+                        c => !!c && typeof c === 'object' && c.type !== 'comment',
+                    );
                 }
 
                 body += stepContent ? `      ${stepContent}\n` : '';

@@ -1,5 +1,5 @@
 import type { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, aggToRendererItem } from '../utils';
+import { formatDuration as defaultFormatDuration, aggToRendererItem, isAlternativeGroup, isCompositeItem, joinStepTokens } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';
 import { getDictionary } from '@gram-lang/i18n';
@@ -53,12 +53,12 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
     if (data.shopping_list && data.shopping_list.length > 0) {
         md += `## 🛒 ${t.renderer.shoppingList}\n\n`;
         data.shopping_list.forEach((item: any) => {
-            if (item.type === 'alternative' || item.type === 'group') {
+            if (isAlternativeGroup(item)) {
                 md += `- **Alternative Group**:\n`;
                 item.options.forEach((opt: any) => {
                     md += `  - ${formatElement(opt, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
                 });
-            } else if (item.type === 'composite') {
+            } else if (isCompositeItem(item)) {
                 const parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
                 md += `- ${parentStr} **(Composite)**:\n`;
                 item.usage.forEach((child: any) => {
@@ -77,7 +77,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
     if (data.cookware && data.cookware.length > 0) {
         md += `## 🍳 ${t.renderer.cookware}\n\n`;
         data.cookware.forEach((cw: any) => {
-            if (cw.type === 'alternative' || cw.type === 'group') {
+            if (isAlternativeGroup(cw)) {
                 md += `- **Alternative Group**:\n`;
                 cw.options.forEach((opt: any) => {
                     md += `  - ${formatElement(opt, 'md', context)}\n`;
@@ -128,27 +128,11 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                 if (step.type === 'text') {
                     stepText += step.value;
                 } else if (step.type === 'step') {
-                    stepText += step.content.map((c: any, i: number, arr: any[]) => {
-                        let str = formatElement(c, 'md', context);
-
-                        // Spacing Logic
-                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment');
-                        if (isObject) {
-                            const next = arr[i + 1];
-                            if (next) {
-                                let nextChar = '';
-                                if (typeof next === 'string') nextChar = next.charAt(0);
-                                else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
-
-                                // Don't add space if next is glue (punctuation or space)
-                                const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
-                                if (!isGlue) {
-                                    str += ' ';
-                                }
-                            }
-                        }
-                        return str;
-                    }).join('');
+                    stepText += joinStepTokens(
+                        step.content,
+                        c => formatElement(c, 'md', context),
+                        c => typeof c !== 'string' && c.type !== 'comment',
+                    );
                 }
                 md += `${stepNum}. ${stepText}\n`;
             });

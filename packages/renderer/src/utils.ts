@@ -1,5 +1,5 @@
 import { ASTNodeType } from '@gram-lang/parser';
-import type { AggregatedIngredient } from '@gram-lang/kitchen';
+import type { AggregatedIngredient, StepToken } from '@gram-lang/kitchen';
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
@@ -126,5 +126,55 @@ export function escapeHtml(unsafe: string | null | undefined): string {
          .replace(/>/g, "&gt;")
          .replace(/"/g, "&quot;")
          .replace(/'/g, "&#039;");
+}
+
+/**
+ * True for a shopping-list/cookware entry that's an alternative group
+ * (`@a|@b`). Some older payloads use the `'group'` type instead of
+ * `'alternative'` — both are accepted for backwards compatibility.
+ */
+export function isAlternativeGroup(item: { type?: string }): boolean {
+    return item.type === 'alternative' || item.type === 'group';
+}
+
+/**
+ * True for a composite ingredient entry (`<@parent`), which renders as a
+ * parent line followed by its sub-usages.
+ */
+export function isCompositeItem(item: { type?: string }): boolean {
+    return item.type === 'composite';
+}
+
+// Only bare strings ever occur as plain narrative text inside a processed
+// step's `content` array — @gram-lang/kitchen's processText() never wraps
+// text in a `{ type: 'text' }` object (that shape only exists for Timer/
+// Temperature *quantities*, a different part of the tree).
+function leadingChar(token: StepToken): string {
+    return typeof token === 'string' ? token.charAt(0) : '';
+}
+
+/**
+ * Joins a step's tokens into a single string, inserting a space between two
+ * adjacent tokens unless the next one starts with punctuation or whitespace
+ * (so "flour," never becomes "flour ,"). The three formatters (HTML, print,
+ * Markdown) share this exact spacing rule — only how each token is rendered
+ * to a string, and which tokens are eligible for a trailing space, differ.
+ */
+export function joinStepTokens(
+    tokens: StepToken[],
+    renderToken: (token: StepToken) => string,
+    isSpaceable: (token: StepToken) => boolean,
+): string {
+    return tokens.map((token, i) => {
+        let str = renderToken(token);
+        if (isSpaceable(token)) {
+            const next = tokens[i + 1];
+            if (next !== undefined) {
+                const nextChar = leadingChar(next);
+                if (nextChar && !/^[.,!?:;)\s]/.test(nextChar)) str += ' ';
+            }
+        }
+        return str;
+    }).join('');
 }
 

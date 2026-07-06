@@ -1,5 +1,5 @@
 import type { RendererOptions, RenderContext } from '../types';
-import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
+import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem, isAlternativeGroup, isCompositeItem, joinStepTokens } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';
 import { getDictionary } from '@gram-lang/i18n';
@@ -152,7 +152,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 
         renderGroups.forEach(group => {
             const item = group[0];
-            if (item.type === 'alternative' || item.type === 'group') {
+            if (isAlternativeGroup(item)) {
                 html += `    <li>\n`;
                 html += `      <strong>Alternative Group</strong>:\n`;
                 html += `      <ul>\n`;
@@ -161,7 +161,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 });
                 html += `      </ul>\n`;
                 html += `    </li>\n`;
-            } else if (item.type === 'composite') {
+            } else if (isCompositeItem(item)) {
                 html += `    <li>\n`;
                 html += `      ${formatElement(item, 'html', { ...context, formatMode: 'shopping-list' })} <strong>(Composite)</strong>:\n`;
                 html += `      <ul>\n`;
@@ -202,7 +202,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
         html += `  <summary><h2>${t.renderer.cookware}</h2></summary>\n`;
         html += `  <ul>\n`;
         data.cookware.forEach((cw: any) => {
-            if (cw.type === 'alternative' || cw.type === 'group') {
+            if (isAlternativeGroup(cw)) {
                 html += `    <li>\n`;
                 html += `      <strong>Alternative Group</strong>:\n`;
                 html += `      <ul>\n`;
@@ -297,32 +297,18 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 if (step.type === 'text') {
                     stepContent = escapeHtml(step.value);
                 } else if (step.type === 'step') {
+                    // Declarations always render after every inline token, regardless of
+                    // their original position in the step (html.ts-specific choice — the
+                    // other formatters render declarations inline, in source order).
                     const inlineItems = step.content.filter((c: any) => c.type !== 'declaration');
                     const declItems = step.content.filter((c: any) => c.type === 'declaration');
+                    const renderGroup = (arr: any[]) => joinStepTokens(
+                        arr,
+                        c => formatElement(c, 'html', context),
+                        c => typeof c !== 'string' && c.type !== 'comment' && c.type !== 'declaration',
+                    );
 
-                    const renderArr = (arr: any[]) => arr.map((c: any, i: number, a: any[]) => {
-                        let str = formatElement(c, 'html', context);
-
-                        // Spacing Logic
-                        const isObject = (typeof c !== 'string' && c.type !== 'text' && c.type !== 'comment' && c.type !== 'declaration');
-                        if (isObject) {
-                            const next = a[i + 1];
-                            if (next) {
-                                let nextChar = '';
-                                if (typeof next === 'string') nextChar = next.charAt(0);
-                                else if (next.type === 'text') nextChar = next.value ? next.value.charAt(0) : '';
-
-                                // Don't add space if next is glue (punctuation or space)
-                                const isGlue = nextChar && /^[.,!?:;)]/.test(nextChar) || (nextChar && /^\s/.test(nextChar));
-                                if (!isGlue) {
-                                    str += ' ';
-                                }
-                            }
-                        }
-                        return str;
-                    }).join('');
-
-                    stepContent = renderArr(inlineItems) + renderArr(declItems);
+                    stepContent = renderGroup(inlineItems) + renderGroup(declItems);
                 }
                 html += `        ${stepContent}\n`;
                 html += `      </li>\n`;
