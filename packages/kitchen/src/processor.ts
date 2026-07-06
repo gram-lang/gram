@@ -2,9 +2,9 @@ import { minifyQuantity, createCleanUsage, quantityToMinutes, nextUsageId } from
 import {
     type ASTNode, type SectionAST, type CommentAST, type IngredientAST, type CookwareAST,
     type AlternativeAST, type ReferenceAST, type IntermediateDecl, type TimerAST, type TemperatureAST, type TextAST,
-    type QuantityValueAST, ASTNodeType, type Location
+    ASTNodeType, type Location
 } from '@gram-lang/parser';
-import type { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem } from './types';
+import type { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, StepToken, ProcessedTimer, ProcessedTemperature } from './types';
 import type { CompilerOptions } from './core';
 import type { RecipeRegistry } from './registry';
 import { WarningCode, pushWarning } from './warnings';
@@ -45,13 +45,7 @@ function checkModifiers(ctx: ProcessorContext, modifiers: string[], itemName: st
  * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
  * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
  */
-export type ProcessedBlockResult = 
-    | Usage 
-    | string 
-    | { type: 'declaration'; name: string; id: string } 
-    | { type: 'timer'; name?: string; isPassive?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } 
-    | { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } 
-    | { type: 'comment'; value: string; kind: 'line' | 'block' };
+export type ProcessedBlockResult = StepToken;
 
 /**
  * Processes a single AST item inside a recipe step.
@@ -250,7 +244,7 @@ function processTimer(
     item: TimerAST,
     ctx: ProcessorContext
 ): ProcessedBlockResult {
-    const obj: { type: 'timer'; name?: string; isPassive?: boolean; quantity?: number | string | QuantityValueAST; unit?: string } = { type: 'timer' };
+    const obj: ProcessedTimer = { type: 'timer' };
     if (item.name) obj.name = item.name;
     if (item.isPassive) obj.isPassive = true;
     if (item.quantity) {
@@ -275,7 +269,7 @@ function processTemperature(
     item: TemperatureAST,
     ctx: ProcessorContext
 ): ProcessedBlockResult {
-    const obj: { type: 'temperature'; name?: string; text?: string; quantity?: QuantityValueAST; unit?: string } = { type: 'temperature' };
+    const obj: ProcessedTemperature = { type: 'temperature' };
     if (item.name) obj.name = item.name;
     if (item.text) {
          obj.text = item.text;

@@ -2,8 +2,11 @@ import type {
     QuantityValueAST,
     RelativeQuantityAST,
     TextQuantityAST,
+    CompositeAST,
     Meta
 } from '@gram-lang/parser';
+import type { Warning } from './warnings';
+import type { ShoppingListItem, CompositeItem } from './shopping';
 
 export interface RegistryEntry {
     id: string;
@@ -17,11 +20,11 @@ export interface RegistryEntry {
 export interface Registry {
     ingredients: Map<string, RegistryEntry>;
     cookware: Map<string, { id: string; name: string }>;
-    warnings: any[];
+    warnings: Warning[];
 }
 
 export interface Context {
-    warnings: any[];
+    warnings: Warning[];
     intermediateDecl: string | null;
     seenNames: Set<string>;
     definedIntermediates: Set<string>;
@@ -41,7 +44,7 @@ export interface Usage {
     fixed?: boolean;
     alias?: string | null;
     preparation?: string | null;
-    composite?: any;
+    composite?: CompositeAST | null;
     isCircular?: boolean;
     dependencies?: string[];
     formula?: {
@@ -50,8 +53,8 @@ export interface Usage {
         percent: number;
         isGhost?: boolean;
     };
-    type?: string; 
-    options?: any[]; // For alternatives
+    type?: string;
+    options?: StepToken[]; // For alternatives — recursively processed block results, not raw AST
     name?: string; // Optional name cache
     _usageId?: string;
     normalizedMass?: number;
@@ -65,6 +68,44 @@ export interface ProcessedComment {
     value: string;
     kind: 'line' | 'block';
 }
+
+export interface ProcessedDeclaration {
+    type: 'declaration';
+    name: string;
+    id: string;
+}
+
+export interface ProcessedTimer {
+    type: 'timer';
+    name?: string;
+    isPassive?: boolean;
+    quantity?: number | string | QuantityValueAST;
+    unit?: string;
+}
+
+export interface ProcessedTemperature {
+    type: 'temperature';
+    name?: string;
+    text?: string;
+    quantity?: QuantityValueAST;
+    unit?: string;
+}
+
+/**
+ * A single element inside a processed step's `content` array. Plain narrative
+ * text is a bare `string`; ingredients/cookware/references/alternatives share
+ * the `Usage` shape (distinguished by their optional `.type`); everything else
+ * carries its own `type` discriminant. These are the compiler's actual output
+ * tokens — a deliberately separate, lowercase vocabulary from the parser's
+ * PascalCase `ASTNodeType` (which only describes the input AST).
+ */
+export type StepToken =
+    | string
+    | Usage
+    | ProcessedDeclaration
+    | ProcessedTimer
+    | ProcessedTemperature
+    | ProcessedComment;
 
 export interface ProcessedStep {
     type: 'step';
@@ -81,7 +122,7 @@ export interface ProcessedStep {
         duration: number;    // In minutes
         startOffset: number; // Relative to step start
     }>;
-    content: any[];
+    content: StepToken[];
     intermediate_preparation?: string;
 }
 
@@ -105,10 +146,10 @@ export interface CompilationResult {
         ingredients: Record<string, RegistryEntry>;
         cookware: Record<string, { id: string; name: string }>;
     };
-    shopping_list: any[];
+    shopping_list: (ShoppingListItem | CompositeItem | Usage)[];
     cookware: Usage[];
     sections: ProcessedSection[];
-    warnings: any[];
+    warnings: Warning[];
     metrics: {
         preparationTime: number; // Estimated mise-en-place time
         cookTime: number;    // Critical path duration (end of last passive task)

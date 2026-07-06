@@ -95,9 +95,7 @@ export function validateGram(text: string): string[] {
   try {
     const ast = getAST(text)
     const compiled = compile(ast)
-    return compiled.warnings.map((w: any) =>
-      typeof w === 'string' ? w : w.message ?? String(w),
-    )
+    return compiled.warnings.map(w => w.message)
   } catch (err) {
     return [err instanceof Error ? err.message : String(err)]
   }

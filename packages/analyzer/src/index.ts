@@ -8,7 +8,7 @@ export * from './shopping_aggregation';
 
 
 import type { CompilationResult } from '@gram-lang/kitchen';
-import { getNumericQty } from '@gram-lang/kitchen';
+import { getNumericQty, WarningCode } from '@gram-lang/kitchen';
 import type { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
 import { ASTNodeType } from '@gram-lang/parser';
 import { calculateMassMetrics } from './metrics';
@@ -113,7 +113,7 @@ export function analyze(
                     item.conversionMethod = 'relative';
                 } else {
                     result.warnings.push({
-                        code: 'RELATIVE_QUANTITY_UNKNOWN_MASS',
+                        code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
                         message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
                         item: item.name || item.id
                     });
@@ -252,7 +252,7 @@ export function analyze(
         // that's a circular definition, not a bug in the math, so we refuse
         // silently, disable Baker's Math for this run, and explain why.
         result.warnings.push({
-            code: 'INVALID_BAKERS_REFERENCE',
+            code: WarningCode.INVALID_BAKERS_REFERENCE,
             message: `Cannot use '${bakersReferenceItem.name || bakersReferenceItem.id}' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.`,
             item: bakersReferenceItem.name || bakersReferenceItem.id
         });
@@ -262,7 +262,7 @@ export function analyze(
         // Baker's Math was explicitly requested (bare --bakers-math or
         // --bakers-reference=<id>) but nothing matched.
         result.warnings.push({
-            code: 'NO_BAKERS_REFERENCE',
+            code: WarningCode.NO_BAKERS_REFERENCE,
             message: `No Baker's Percentage reference found. Mark an ingredient with the \`*\` modifier, or pass --bakers-reference=<id>.`,
         });
     }

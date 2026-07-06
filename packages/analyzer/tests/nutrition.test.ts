@@ -96,7 +96,7 @@ describe('calculateNutrition — composites', () => {
         // and is NOT estimated from a parent — it just lowers coverage.
         expect(result.total.calories).toBe(Math.round(22 * 0.3));
         expect(result.coverage).toBe(0.5);
-        expect(result.warnings?.some(w => w.includes('lemon-zest'))).toBe(true);
+        expect(result.warnings?.some(w => w.message.includes('lemon-zest'))).toBe(true);
     });
 });
 

@@ -1,4 +1,4 @@
-import { getNumericQty, WarningCode, pushWarning } from '@gram-lang/kitchen';
+import { getNumericQty, WarningCode, pushWarning, type Warning } from '@gram-lang/kitchen';
 import { getIngredientData } from './ingredient_db';
 import { standardizeMass } from './mass_standardization';
 import type { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';
@@ -35,7 +35,7 @@ export function calculateNutrition(
     let metricsCount = 0;
     let knownCount = 0;
     let anyEstimate = false;
-    const warnings: string[] = [];
+    const warnings: Warning[] = [];
     
     // Flatten composite ingredients and alternatives
     const flatList: NutritionItem[] = [];
@@ -49,7 +49,9 @@ export function calculateNutrition(
              flatList.push(...item.usage);
         } else if (item.type === 'alternative') {
              if (item.options && item.options.length > 0) {
-                 flatList.push(item.options[0]);
+                 // Ingredient/cookware alternative groups only ever contain Usage-shaped
+                 // options (never bare strings, timers, or comments) — see processAlternative().
+                 flatList.push(item.options[0] as NutritionItem);
               }
         } else {
              flatList.push(item);

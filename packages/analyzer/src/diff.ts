@@ -1,4 +1,13 @@
-import type { CompilationResult } from '@gram-lang/kitchen'
+import type {
+  CompilationResult,
+  ProcessedSection,
+  StepToken,
+  ProcessedTimer,
+  ProcessedTemperature,
+  Usage,
+  ShoppingListItem,
+  CompositeItem,
+} from '@gram-lang/kitchen'
 import { getNumericQty } from '@gram-lang/kitchen'
 
 // ── Public types ─────────────────────────────────────────────────────────────
@@ -71,40 +80,69 @@ export interface DiffResult {
   timers: TimerDelta[]
 }
 
+type ShoppingItem = ShoppingListItem | CompositeItem | Usage
+// What's left of ShoppingItem once composite/alternative groups are excluded —
+// both ShoppingListItem and Usage share the .name?/.unit?/.qty? shape diffIngredients needs.
+type SimpleShoppingItem = ShoppingListItem | Usage
+
+function isCompositeOrAlternative(item: ShoppingItem): item is CompositeItem | (Usage & { type: 'alternative' }) {
+  return 'type' in item && (item.type === 'composite' || item.type === 'alternative')
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const numericQty = (item: any): number | null => getNumericQty(item.qty)
+const numericQty = (item: ShoppingItem): number | null => getNumericQty(item.qty)
 
-function fmtTimerQty(qty: any, unit?: string): string {
+function fmtTimerQty(qty: ProcessedTimer['quantity'], unit?: string): string {
   const u = unit ? ` ${unit}` : ''
   if (qty === undefined || qty === null) return `?${u}`
   if (typeof qty === 'number') return `${qty}${u}`
   if (typeof qty === 'string') return `${qty}${u}`
   if (typeof qty === 'object') {
-    if (qty.type === 'range' && qty.from !== undefined && qty.to !== undefined) return `${qty.from}-${qty.to}${u}`
+    // Pre-existing bug fixed here: this used to check qty.from/qty.to, which
+    // never existed on QuantityValueAST (the real range fields are range.min/max),
+    // so range timers silently fell through to the plain .value branch below.
+    if (qty.type === 'range' && qty.range) return `${qty.range.min}-${qty.range.max}${u}`
     if (qty.value !== undefined) return `${qty.value}${u}`
   }
   return `?${u}`
 }
 
-function getTempValue(token: any): { value: number; unit: string } | null {
+function getTempValue(token: ProcessedTemperature): { value: number; unit: string } | null {
   const q = token.quantity
   if (!q) return null
-  const value = typeof q === 'number' ? q : (typeof q?.value === 'number' ? q.value : null)
+  const value = typeof q === 'number' ? q : (typeof q === 'object' && 'value' in q && typeof q.value === 'number' ? q.value : null)
   if (value === null) return null
   return { value, unit: token.unit ?? '°' }
 }
 
-// Extract all tokens of a given type from all steps, keyed by section title/position
-function extractTokensByType(sections: any[], tokenType: string): Map<string, any[]> {
-  const result = new Map<string, any[]>()
+function isProcessedTimer(token: StepToken): token is ProcessedTimer {
+  return typeof token === 'object' && token !== null && 'type' in token && token.type === 'timer'
+}
+
+function isProcessedTemperature(token: StepToken): token is ProcessedTemperature {
+  return typeof token === 'object' && token !== null && 'type' in token && token.type === 'temperature'
+}
+
+// A plain ingredient/cookware/reference usage — the only StepToken variants
+// carrying a `.preparation`/`.id` pair relevant to diffPreparations().
+function isUsageToken(token: StepToken): token is Usage {
+  return typeof token === 'object' && token !== null && 'id' in token && typeof token.id === 'string'
+}
+
+// Extract all tokens matching a type predicate from all steps, keyed by section title/position
+function extractTokensByType<T extends StepToken>(
+  sections: ProcessedSection[],
+  isMatch: (token: StepToken) => token is T,
+): Map<string, T[]> {
+  const result = new Map<string, T[]>()
   sections.forEach((section, i) => {
     const key = section.title ?? `__pos_${i}`
-    const tokens: any[] = []
-    for (const step of (section.steps ?? []) as any[]) {
+    const tokens: T[] = []
+    for (const step of section.steps ?? []) {
       if (step.type !== 'step') continue
-      for (const token of (step.content ?? []) as any[]) {
-        if (token && typeof token === 'object' && token.type === tokenType) tokens.push(token)
+      for (const token of step.content ?? []) {
+        if (isMatch(token)) tokens.push(token)
       }
     }
     if (tokens.length > 0) result.set(key, tokens)
@@ -146,10 +184,10 @@ function diffMeta(a: Record<string, unknown>, b: Record<string, unknown>): MetaD
   return deltas
 }
 
-function diffIngredients(a: any[], b: any[]): IngredientDelta[] {
-  const toMap = (list: any[]) =>
-    new Map<string, any>(
-      list.filter(i => i.type !== 'composite' && i.type !== 'alternative').map(i => [i.id, i]),
+function diffIngredients(a: ShoppingItem[], b: ShoppingItem[]): IngredientDelta[] {
+  const toMap = (list: ShoppingItem[]) =>
+    new Map<string, SimpleShoppingItem>(
+      list.filter((i): i is SimpleShoppingItem => !isCompositeOrAlternative(i)).map(i => [i.id, i]),
     )
 
   const aMap = toMap(a)
@@ -169,6 +207,7 @@ function diffIngredients(a: any[], b: any[]): IngredientDelta[] {
       deltas.push({ id, name: bItem.name || id, change: 'added', toQty: numericQty(bItem) ?? undefined, toUnit: bItem.unit ?? null })
       continue
     }
+    if (!aItem || !bItem) continue
 
     const aQty = numericQty(aItem); const bQty = numericQty(bItem)
     const aUnit = aItem.unit ?? null; const bUnit = bItem.unit ?? null
@@ -206,13 +245,13 @@ function diffTimings(a: CompilationResult['metrics'], b: CompilationResult['metr
   return deltas
 }
 
-function stepCount(section: any): number {
-  return (section.steps ?? []).filter((s: any) => s.type === 'step').length
+function stepCount(section: ProcessedSection): number {
+  return (section.steps ?? []).filter(s => s.type === 'step').length
 }
 
-function diffSections(a: any[], b: any[]): SectionDelta[] {
-  const byTitle = (list: any[]) => {
-    const m = new Map<string, any>()
+function diffSections(a: ProcessedSection[], b: ProcessedSection[]): SectionDelta[] {
+  const byTitle = (list: ProcessedSection[]) => {
+    const m = new Map<string, ProcessedSection>()
     list.forEach((s, i) => { m.set(s.title ?? `__pos_${i}`, s) })
     return m
   }
@@ -232,6 +271,7 @@ function diffSections(a: any[], b: any[]): SectionDelta[] {
       deltas.push({ change: 'added', title: bSection.title, toStepCount: stepCount(bSection) })
       continue
     }
+    if (!aSection || !bSection) continue
 
     const from = stepCount(aSection); const to = stepCount(bSection)
     if (from !== to) deltas.push({ change: 'changed', title: bSection.title, fromStepCount: from, toStepCount: to })
@@ -240,9 +280,9 @@ function diffSections(a: any[], b: any[]): SectionDelta[] {
   return deltas
 }
 
-function diffTemperatures(aSections: any[], bSections: any[]): TemperatureDelta[] {
-  const aMap = extractTokensByType(aSections, 'temperature')
-  const bMap = extractTokensByType(bSections, 'temperature')
+function diffTemperatures(aSections: ProcessedSection[], bSections: ProcessedSection[]): TemperatureDelta[] {
+  const aMap = extractTokensByType(aSections, isProcessedTemperature)
+  const bMap = extractTokensByType(bSections, isProcessedTemperature)
   const allKeys = new Set([...aMap.keys(), ...bMap.keys()])
   const deltas: TemperatureDelta[] = []
 
@@ -275,9 +315,9 @@ function diffTemperatures(aSections: any[], bSections: any[]): TemperatureDelta[
   return deltas
 }
 
-function diffTimers(aSections: any[], bSections: any[]): TimerDelta[] {
-  const aMap = extractTokensByType(aSections, 'timer')
-  const bMap = extractTokensByType(bSections, 'timer')
+function diffTimers(aSections: ProcessedSection[], bSections: ProcessedSection[]): TimerDelta[] {
+  const aMap = extractTokensByType(aSections, isProcessedTimer)
+  const bMap = extractTokensByType(bSections, isProcessedTimer)
   const allKeys = new Set([...aMap.keys(), ...bMap.keys()])
   const deltas: TimerDelta[] = []
 
@@ -309,17 +349,17 @@ function diffTimers(aSections: any[], bSections: any[]): TimerDelta[] {
 
 const SKIP_TOKEN_TYPES = new Set(['declaration', 'timer', 'temperature', 'comment', 'alternative', 'composite'])
 
-function diffPreparations(aSections: any[], bSections: any[]): PrepDelta[] {
-  const extractBySection = (sections: any[]) => {
-    const result = new Map<string, Map<string, any[]>>()
+function diffPreparations(aSections: ProcessedSection[], bSections: ProcessedSection[]): PrepDelta[] {
+  const extractBySection = (sections: ProcessedSection[]) => {
+    const result = new Map<string, Map<string, Usage[]>>()
     sections.forEach((section, i) => {
       const key = section.title ?? `__pos_${i}`
-      const byId = new Map<string, any[]>()
-      for (const step of (section.steps ?? []) as any[]) {
+      const byId = new Map<string, Usage[]>()
+      for (const step of section.steps ?? []) {
         if (step.type !== 'step') continue
-        for (const token of (step.content ?? []) as any[]) {
-          if (!token || typeof token !== 'object' || typeof token.id !== 'string') continue
-          if (SKIP_TOKEN_TYPES.has(token.type)) continue
+        for (const token of step.content ?? []) {
+          if (!isUsageToken(token)) continue
+          if (token.type && SKIP_TOKEN_TYPES.has(token.type)) continue
           const bucket = byId.get(token.id) ?? []
           bucket.push(token)
           byId.set(token.id, bucket)
@@ -337,8 +377,8 @@ function diffPreparations(aSections: any[], bSections: any[]): PrepDelta[] {
 
   for (const key of allKeys) {
     const sectionTitle = key.startsWith('__pos_') ? null : key
-    const aById = aMap.get(key) ?? new Map<string, any[]>()
-    const bById = bMap.get(key) ?? new Map<string, any[]>()
+    const aById = aMap.get(key) ?? new Map<string, Usage[]>()
+    const bById = bMap.get(key) ?? new Map<string, Usage[]>()
     const allIds = new Set([...aById.keys(), ...bById.keys()])
 
     for (const id of allIds) {

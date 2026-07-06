@@ -381,8 +381,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             let warningsHtml = '';
             if (data.nutrition?.warnings && data.nutrition.warnings.length > 0) {
                 warningsHtml = `  <div class="nut-warnings">\n`;
-                data.nutrition.warnings.forEach((w: string) => {
-                    warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w)}</p>\n`;
+                data.nutrition.warnings.forEach((w: { message: string }) => {
+                    warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w.message)}</p>\n`;
                 });
                 warningsHtml += `  </div>\n`;
             }

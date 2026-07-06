@@ -1,4 +1,5 @@
 import type { Registry, RegistryEntry } from './types';
+import type { Warning } from './warnings';
 import { slugify } from './utils';
 
 // Strip punctuation that bleeds into bare element names (e.g. #saucepan, or @salt.)
@@ -7,9 +8,9 @@ const cleanRegistryName = (name: string) => name.trim().replace(/[,;!?.]+$/, '')
 export class RecipeRegistry implements Registry {
     ingredients = new Map<string, RegistryEntry>();
     cookware = new Map<string, { id: string; name: string }>();
-    warnings: any[] = [];
+    warnings: Warning[] = [];
 
-    constructor(initialWarnings: any[] = []) {
+    constructor(initialWarnings: Warning[] = []) {
         this.warnings = initialWarnings;
     }
 

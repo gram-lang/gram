@@ -35,18 +35,12 @@ export async function checkFiles(
 
           // Compiler structural errors (undefined references, scope conflicts, etc.)
           for (const w of compiled.warnings) {
-            const isObj = typeof w !== 'string'
-            const msg = isObj ? (w as any).message : w
-            const loc = isObj ? (w as any).loc : undefined
-            
-            const line = loc?.start?.line ?? loc?.line ?? getLineFromOffset(content, loc?.start ?? loc?.offset)
-
             diagnostics.push({
               level: 'error',
               category: 'Structure',
               file,
-              message: msg,
-              line,
+              message: w.message,
+              line: getLineFromOffset(content, w.loc?.start),
             })
           }
 

@@ -4,7 +4,7 @@ import { ASTNodeType } from '@gram-lang/parser';
 import type { ProcessedSection, Registry, Usage } from './types';
 import type { CompilerOptions } from './core';
 
-interface ShoppingListItem {
+export interface ShoppingListItem {
     id: string;
     name?: string;
     qty?: number;
@@ -23,7 +23,7 @@ interface ShoppingListItem {
     modifierSet?: Set<string>;
 }
 
-interface CompositeItem {
+export interface CompositeItem {
     type: 'composite';
     id: string;
     qty: number; // calculated max parent qty

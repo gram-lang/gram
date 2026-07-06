@@ -3,7 +3,7 @@ import type { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 
 export type AnalyzerOptions = z.infer<typeof AnalyzerOptionsSchema>;
 
-import type { Usage, ProcessedSection, CompilationResult } from '@gram-lang/kitchen';
+import type { Usage, ProcessedSection, CompilationResult, Warning } from '@gram-lang/kitchen';
 
 export interface MassMetrics {
     totalMass: number;
@@ -32,7 +32,7 @@ export interface NutritionMetrics {
     };
     isEstimate: boolean;
     coverage: number;
-    warnings?: string[];
+    warnings?: Warning[];
 }
 
 export type IngredientData = z.infer<typeof IngredientDataSchema>;
