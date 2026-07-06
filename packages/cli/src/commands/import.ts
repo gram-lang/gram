@@ -1,5 +1,5 @@
 import { defineCommand } from 'citty'
-import { log, spinner } from '@clack/prompts'
+import { log, spinner, confirm, isCancel, cancel } from '@clack/prompts'
 import { writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { version } from '../../package.json'
@@ -21,6 +21,12 @@ export default defineCommand({
       type: 'string',
       alias: 'o',
       description: 'Output .gram file (default: stdout)',
+    },
+    yes: {
+      type: 'boolean',
+      alias: 'y',
+      description: 'Skip the review prompt and write the file directly (for scripting)',
+      default: false,
     },
   },
   async run({ args }) {
@@ -57,6 +63,22 @@ export default defineCommand({
     }
 
     if (outputPath) {
+      // `result.gramContent` was produced by an AI model from content fetched from
+      // an external, untrusted source (a scraped web page or a local JSON-LD file).
+      // validateGram() only checks that it's syntactically valid .gram — it says
+      // nothing about whether the quantities/ingredients/steps are faithful to the
+      // source. Review before writing, unless explicitly skipped for scripting.
+      if (!args.yes) {
+        log.message(result.gramContent, { symbol: '·' })
+        const proceed = await confirm({
+          message: `Write this AI-converted recipe (from an untrusted external source) to ${outputPath}?`,
+          initialValue: true,
+        })
+        if (isCancel(proceed) || !proceed) {
+          cancel('Import canceled — nothing was written.')
+          process.exit(ExitCode.Ok)
+        }
+      }
       await writeFile(outputPath, result.gramContent, 'utf-8')
       renderImportResult(result, source, outputPath)
     } else {

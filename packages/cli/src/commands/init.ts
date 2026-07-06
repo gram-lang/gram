@@ -186,10 +186,15 @@ export default defineCommand({
             const envKey = envKeyMap[provider as 'google' | 'openai' | 'anthropic']
             await upsertEnvVar(envPath, envKey, apiKey)
 
-            // Ensure root .gitignore covers .env
+            // Ensure root .gitignore covers .env — checked line-by-line rather than a
+            // substring search, which would be fooled by an unrelated comment mentioning
+            // ".env" or, worse, miss a `!.env` negation pattern that un-ignores it.
             const rootGitignore = join(process.cwd(), '.gitignore')
             const existing = await readFile(rootGitignore, 'utf-8').catch(() => '')
-            if (!existing.includes('.env')) {
+            const lines = existing.split('\n').map(l => l.trim())
+            const isEnvIgnored = lines.some(l => l === '.env' || l === '.env*' || l === '*.env')
+            const hasNegation = lines.some(l => l === '!.env' || l === '!.env*' || l === '!*.env')
+            if (!isEnvIgnored || hasNegation) {
               await appendFile(rootGitignore, '\n# API keys\n.env\n.env.*\n').catch(() => {
                 note('Add ".env" to your root .gitignore to avoid committing your API key.', '⚠ Security')
               })

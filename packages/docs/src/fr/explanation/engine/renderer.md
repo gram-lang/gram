@@ -60,7 +60,9 @@ const html = toHTML(recipe, {
 ## Fonctionnalités
 
 - **Formatage des Fractions** : Convertit les décimales en chaînes de fractions lisibles pour des quantités de cuisine courantes (ex : `0.5` devient `"1/2"`, `0.33` devient `"1/3"`) pour une meilleure lisibilité dans des contextes culinaires. Ce sont des fractions en texte brut (`1/2`), pas un caractère unicode unique.
-- **Échappement Intelligent** : Échappe automatiquement les entités HTML pour éviter l'injection XSS provenant du contenu des recettes généré par l'utilisateur.
+- **Échappement Intelligent (`toHTML`/`toPrintHTML` uniquement)** : Ces deux moteurs de rendu échappent les entités HTML dans le contenu généré par l'utilisateur (titres, noms d'ingrédients, texte des étapes, commentaires) avant de l'insérer — leur sortie est donc sûre à insérer telle quelle dans une page.
+  > [!WARNING]
+  > **`toMarkdown` n'échappe rien du tout.** Les moteurs Markdown standards (`markdown-it`, `remark`, etc.) laissent passer le HTML brut par défaut ; si le titre, un nom d'ingrédient ou le texte d'une étape contient quelque chose comme `<img src=x onerror=...>`, ça survivra tel quel à `toMarkdown()` et pourra s'exécuter comme du script une fois rendu en HTML en aval — un risque réel si vous affichez un jour des fichiers `.gram` importés/partagés (ex. via `gram import`) plutôt que ceux que vous avez écrits vous-même. Si vous transformez la sortie de `toMarkdown()` en HTML, assainissez-la d'abord (ex. `rehype-sanitize`, `markdown-it` avec `html: false`, ou DOMPurify sur le HTML final) — ne présumez pas que la sortie Markdown de Gram est déjà assainie.
 - **Formatage de la Durée** : Convertit les nombres entiers de minutes bruts en chaînes lisibles par l'homme (ex : `90` devient `1 h 30 min`).
 - **Pré-stylisation CSS** : Le paquet fournit une feuille de style `gram.css` avec le thème pour l'aperçu en direct (tokens clair/sombre pour chaque type d'élément, ex : ingrédients, minuteurs). La feuille de style d'impression dédiée utilisée pour `toPrintHTML` est une feuille de style intégrée séparée — vous n'avez pas besoin de charger un fichier CSS vous-même pour utiliser la sortie d'impression.
 

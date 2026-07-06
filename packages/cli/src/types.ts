@@ -1,4 +1,5 @@
 import type { IngredientData, NutritionMetrics } from '@gram-lang/analyzer'
+import { z } from 'zod'
 
 export type { NutritionMetrics }
 
@@ -176,16 +177,23 @@ export interface EnrichOptions {
   onBatchDone?: (done: number, total: number, enriched: string[], failed: string[]) => void
 }
 
-export interface GramConfig {
-  version?: number
-  database?: string
-  language?: string
-  ai?: {
-    provider?: 'google' | 'openai' | 'anthropic' | 'ollama'
-    model?: string
-    apiKey?: string
-    baseUrl?: string
-  }
+// Validates `.gram/config.yaml` / `~/.config/gram/config.yaml` at load time (audit
+// Phase 3/Chantier 5) — these files can be shared/committed in a team repo, so a
+// malformed field should fail with a clear message instead of surfacing as a
+// confusing crash somewhere deep in the pipeline.
+export const GramConfigFileSchema = z.object({
+  version: z.number().optional(),
+  database: z.string().optional(),
+  language: z.string().optional(),
+  ai: z.object({
+    provider: z.enum(['google', 'openai', 'anthropic', 'ollama']).optional(),
+    model: z.string().optional(),
+    apiKey: z.string().optional(),
+    baseUrl: z.string().optional(),
+  }).optional(),
+})
+
+export type GramConfig = z.infer<typeof GramConfigFileSchema> & {
   /** Absolute path to the project root (.gram/ directory ancestor). Set by loadConfig() — never present in the on-disk config.yaml file. */
   projectRoot?: string
 }

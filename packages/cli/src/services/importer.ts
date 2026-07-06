@@ -68,16 +68,52 @@ function flattenInstructions(instructions: any[]): Array<{ text: string; name?: 
 
 // ── Source fetching ───────────────────────────────────────────────────────────
 
+const FETCH_TIMEOUT_MS = 15_000
+const MAX_RESPONSE_BYTES = 10 * 1024 * 1024 // 10 MB — a recipe page is never legitimately bigger than this
+
+// Reads a response body with a hard size cap, regardless of what Content-Length
+// claims (it can be absent or wrong) — protects against a slow/huge/malicious
+// response tying up `gram import` indefinitely or exhausting memory.
+async function readBodyWithLimit(res: Response): Promise<string> {
+  const reader = res.body?.getReader()
+  if (!reader) return res.text()
+
+  const decoder = new TextDecoder()
+  let result = ''
+  let received = 0
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    received += value.byteLength
+    if (received > MAX_RESPONSE_BYTES) {
+      await reader.cancel()
+      throw new GramCLIError(`Response exceeds the ${MAX_RESPONSE_BYTES / (1024 * 1024)}MB limit.`, ExitCode.Error)
+    }
+    result += decoder.decode(value, { stream: true })
+  }
+  result += decoder.decode()
+  return result
+}
+
 export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
   if (source.startsWith('http://') || source.startsWith('https://')) {
-    const res = await fetch(source)
+    let res: Response
+    try {
+      res = await fetch(source, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    } catch (err) {
+      if (err instanceof Error && err.name === 'TimeoutError') {
+        throw new GramCLIError(`Timed out fetching ${source} after ${FETCH_TIMEOUT_MS / 1000}s.`, ExitCode.Error)
+      }
+      throw err
+    }
     if (!res.ok) throw new GramCLIError(`HTTP ${res.status} fetching ${source}`, ExitCode.Error)
 
     const contentType = res.headers.get('content-type') ?? ''
+    const body = await readBodyWithLimit(res)
     if (contentType.includes('json')) {
-      return { jsonLd: await res.json() }
+      return { jsonLd: JSON.parse(body) }
     }
-    return { jsonLd: extractRecipeJsonLd(await res.text()) }
+    return { jsonLd: extractRecipeJsonLd(body) }
   }
 
   const content = await readFile(source, 'utf-8')

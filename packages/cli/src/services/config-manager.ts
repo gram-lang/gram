@@ -133,7 +133,8 @@ async function writeDotEnv(envPath: string, vars: Record<string, string>): Promi
   const lines = `${Object.entries(vars)
     .map(([k, v]) => `${k}="${v.replace(/[\r\n"]/g, '')}"`)
     .join('\n')}\n`
-  await withFileLock(envPath, () => atomicWrite(envPath, lines))
+  // 0o600: .env holds API keys — never leave it group/world-readable on shared machines.
+  await withFileLock(envPath, () => atomicWrite(envPath, lines, 0o600))
 }
 
 export async function upsertEnvVar(envPath: string, key: string, value: string): Promise<void> {

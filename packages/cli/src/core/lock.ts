@@ -1,4 +1,4 @@
-import { open, unlink, rename, writeFile as _writeFile, copyFile } from 'node:fs/promises'
+import { open, unlink, rename, writeFile as _writeFile, copyFile, chmod } from 'node:fs/promises'
 
 export async function withFileLock<T>(targetPath: string, fn: () => Promise<T>): Promise<T> {
   const lockPath = `${targetPath}.lock`
@@ -21,10 +21,11 @@ export async function withFileLock<T>(targetPath: string, fn: () => Promise<T>):
   }
 }
 
-// Write to a .tmp file then rename — atomic on POSIX; fallback copy+delete on Windows EEXIST
-export async function atomicWrite(targetPath: string, content: string): Promise<void> {
+// Write to a .tmp file then rename — atomic on POSIX; fallback copy+delete on Windows EEXIST.
+// `mode` lets callers restrict permissions (e.g. 0o600 for files holding secrets like .env).
+export async function atomicWrite(targetPath: string, content: string, mode?: number): Promise<void> {
   const tmp = `${targetPath}.tmp`
-  await _writeFile(tmp, content, 'utf-8')
+  await _writeFile(tmp, content, mode !== undefined ? { encoding: 'utf-8', mode } : 'utf-8')
   try {
     await rename(tmp, targetPath)
   } catch (err) {
@@ -34,5 +35,8 @@ export async function atomicWrite(targetPath: string, content: string): Promise<
     } else {
       throw err
     }
+  }
+  if (mode !== undefined) {
+    await chmod(targetPath, mode).catch(() => {})
   }
 }
