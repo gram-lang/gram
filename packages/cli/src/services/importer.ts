@@ -68,7 +68,7 @@ function flattenInstructions(instructions: any[]): Array<{ text: string; name?: 
 
 // ── Source fetching ───────────────────────────────────────────────────────────
 
-async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
+export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
   if (source.startsWith('http://') || source.startsWith('https://')) {
     const res = await fetch(source)
     if (!res.ok) throw new GramCLIError(`HTTP ${res.status} fetching ${source}`, ExitCode.Error)
@@ -91,7 +91,7 @@ async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
 
 const AI_MAX_RETRIES = 2
 
-function validateGram(text: string): string[] {
+export function validateGram(text: string): string[] {
   try {
     const ast = getAST(text)
     const compiled = compile(ast)
