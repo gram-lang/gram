@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Box, Text, useInput, useApp, useStdout } from 'ink'
 import type { RecipeData, ActiveTimer, Phase } from './types'
 import MiseEnPlace from './MiseEnPlace'
@@ -48,7 +48,7 @@ export default function App({ recipe }: Props) {
       })
       return changed ? next : prev
     })
-  }, [tick])
+  }, [])
 
   const startTimer = useCallback((timer: { id: string; name: string; durationMs: number }) => {
     setActiveTimers(prev => {
@@ -178,9 +178,10 @@ export default function App({ recipe }: Props) {
               const qtyStr = ing.quantities
                 ? ing.quantities.map(q => fmtQty({ qty: q.qty, unit: q.unit }).trim()).join(' + ')
                 : null
-              const showMass = mass != null && ing.quantities != null &&
-                ing.quantities.some(q => shouldShowMass(q.unit))
+              const showMass = mass &&
+                ing.quantities?.some(q => shouldShowMass(q.unit))
               return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: id+index composite key avoids collisions on repeated ingredients
                 <Text key={`${ing.id}-${idx}`}>
                   {'  • '}
                   <Text color="yellow">{ing.name}</Text>

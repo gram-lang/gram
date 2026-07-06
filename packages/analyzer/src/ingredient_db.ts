@@ -1,4 +1,4 @@
-import { IngredientData } from './types';
+import type { IngredientData } from './types';
 import { slugify } from '@gram-lang/kitchen';
 
 function buildAliasIndex(database: Record<string, IngredientData>): Map<string, string> {
@@ -6,7 +6,7 @@ function buildAliasIndex(database: Record<string, IngredientData>): Map<string, 
     for (const [key, entry] of Object.entries(database)) {
         if (entry.name) index.set(entry.name.toLowerCase(), key);
         if (entry.aliases) {
-            entry.aliases.forEach(a => index.set(a.toLowerCase(), key));
+            entry.aliases.forEach(a => { index.set(a.toLowerCase(), key); });
         }
     }
     return index;

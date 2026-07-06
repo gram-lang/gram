@@ -1,7 +1,7 @@
-import { CodeLens, Command, Range, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type CodeLens, Command, Range, Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 
-export function provideCodeLenses(state: DocumentState): CodeLens[] {
+export function provideCodeLenses(_state: DocumentState): CodeLens[] {
     const lenses: CodeLens[] = [];
     
     // Always put it at the very top of the document

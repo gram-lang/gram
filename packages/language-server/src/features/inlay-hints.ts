@@ -1,12 +1,9 @@
-import { InlayHint, InlayHintKind, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
-import { ASTNodeType } from '@gram-lang/parser';
-import { offsetToPosition } from '../utils/position';
-import { formatDuration } from '@gram-lang/renderer';
+import { type InlayHint, InlayHintKind, Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 
 export function provideInlayHints(state: DocumentState): InlayHint[] {
     const hints: InlayHint[] = [];
-    if (!state.ast || !state.compilation || !state.compilation.metrics) return hints;
+    if (!state.ast || !state.compilation?.metrics) return hints;
 
     const metrics = state.compilation.metrics;
     
@@ -15,9 +12,9 @@ export function provideInlayHints(state: DocumentState): InlayHint[] {
     let titleChar = 0;
     const lines = state.text.split('\n');
     for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().startsWith('title:')) {
+        if (lines[i]!.toLowerCase().startsWith('title:')) {
             titleLine = i;
-            titleChar = lines[i].length;
+            titleChar = lines[i]!.length;
             break;
         }
     }

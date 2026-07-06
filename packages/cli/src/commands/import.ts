@@ -71,7 +71,7 @@ export default defineCommand({
         }
       }
       process.stderr.write('\n')
-      process.stdout.write(result.gramContent + '\n')
+      process.stdout.write(`${result.gramContent}\n`)
     }
 
     process.exit(ExitCode.Ok)

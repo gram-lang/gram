@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef } from 'vue'
-import { VueMonacoEditor } from '@guolao/vue-monaco-editor'
 import { useData } from 'vitepress'
 
 const props = defineProps<{
@@ -13,7 +12,7 @@ const emit = defineEmits<{
 
 const { isDark } = useData()
 
-const localCode = computed({
+const _localCode = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 })
@@ -22,9 +21,9 @@ const editorRef = shallowRef()
 
 const shikiLoaded = ref(false)
 
-import { setupMonaco, isSetup } from './monacoSetup'
+import { setupMonaco, } from './monacoSetup'
 
-const handleMount = async (editor: any, monaco: any) => {
+const _handleMount = async (editor: any, monaco: any) => {
   editorRef.value = editor
   await setupMonaco(monaco)
   shikiLoaded.value = true
@@ -42,7 +41,7 @@ watch(isDark, (dark) => {
   }
 })
 
-const MONACO_OPTIONS = {
+const _MONACO_OPTIONS = {
   automaticLayout: true,
   minimap: { enabled: false },
   wordWrap: 'on',

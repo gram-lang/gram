@@ -89,7 +89,7 @@ export function coerceValue(raw: string): any {
   if (raw === 'true') return true
   if (raw === 'false') return false
   const n = Number(raw)
-  if (!isNaN(n) && raw.trim() !== '') return n
+  if (!Number.isNaN(n) && raw.trim() !== '') return n
   return raw
 }
 
@@ -130,9 +130,9 @@ export async function readDotEnv(envPath: string): Promise<Record<string, string
 }
 
 async function writeDotEnv(envPath: string, vars: Record<string, string>): Promise<void> {
-  const lines = Object.entries(vars)
+  const lines = `${Object.entries(vars)
     .map(([k, v]) => `${k}="${v.replace(/[\r\n"]/g, '')}"`)
-    .join('\n') + '\n'
+    .join('\n')}\n`
   await withFileLock(envPath, () => atomicWrite(envPath, lines))
 }
 

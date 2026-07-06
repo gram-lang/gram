@@ -35,7 +35,7 @@ export const warningTemplates: { [K in WarningCode]: (payload: WarningPayloads[K
     [WarningCode.CIRCULAR_REFERENCE]: (p) => `Circular reference detected: ${p.name} depends on itself.`,
     [WarningCode.UNDEFINED_REFERENCE]: (p) => `Reference to undefined ingredient '${p.prefix}${p.name}'.`,
     [WarningCode.MISSING_UNIT]: (p) => `${p.type} must have an explicit unit.`,
-    [WarningCode.INVALID_UNIT]: (p) => `Invalid text content in Timer.`,
+    [WarningCode.INVALID_UNIT]: (_p) => `Invalid text content in Timer.`,
     [WarningCode.SCOPE_CONFLICT]: (p) => `Global variable '&${p.varName}' is redefined.`,
     [WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,
     [WarningCode.MISSING_MACROS]: (p) => `Ingredient "${p.id}" has no default macro data.`,

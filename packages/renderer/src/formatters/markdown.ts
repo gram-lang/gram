@@ -1,4 +1,4 @@
-import { RendererOptions, RenderContext } from '../types';
+import type { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';
@@ -59,7 +59,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
                     md += `  - ${formatElement(opt, 'md', { ...context, formatMode: 'shopping-list' })}\n`;
                 });
             } else if (item.type === 'composite') {
-                let parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
+                const parentStr = formatElement(item, 'md', { ...context, formatMode: 'shopping-list' });
                 md += `- ${parentStr} **(Composite)**:\n`;
                 item.usage.forEach((child: any) => {
                     md += `  - ${formatElement(child, 'md', { ...context, formatMode: 'shopping-list' })}\n`;

@@ -55,8 +55,6 @@ function renderSection(
 }
 
 function addApiKeyRow(
-  label: string,
-  path: string,
   flat: Record<string, any>,
   envVars: Record<string, string>,
   localConfig: Record<string, any>,
@@ -81,7 +79,7 @@ export default defineCommand({
     const { local, global, envVars } = await snapshotConfig(localPath, globalPath, projectRoot)
 
     const localFlat = flattenConfig(local)
-    addApiKeyRow('Local config', localPath, localFlat, envVars, local)
+    addApiKeyRow(localFlat, envVars, local)
 
     const globalFlat = flattenConfig(global)
 

@@ -1,7 +1,7 @@
-import { CompletionItem, CompletionItemKind, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type CompletionItem, CompletionItemKind, type Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { collectIntermediates } from '../utils/ast-walker';
-import { IngredientDB } from '../ingredient-loader';
+import type { IngredientDB } from '../ingredient-loader';
 import { positionToOffset } from '../utils/position';
 import { isInsideBraces, provideUnitCompletions } from './completions-units';
 import { isAfterAt, provideIngredientCompletions } from './completions-ingredients';

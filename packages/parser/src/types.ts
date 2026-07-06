@@ -3,8 +3,8 @@ export interface Location {
     end: number;
 }
 
-import { z } from 'zod';
-import { MetaSchema } from './schemas';
+import type { z } from 'zod';
+import type { MetaSchema } from './schemas';
 
 export type Meta = z.infer<typeof MetaSchema>;
 

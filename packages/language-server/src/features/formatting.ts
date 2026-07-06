@@ -1,5 +1,5 @@
-import { TextEdit, Range } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import type { TextEdit, Range } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 
 function formatLine(line: string, inFrontmatter: boolean): string {
     if (inFrontmatter) return line.replace(/\s+$/, '');
@@ -20,7 +20,7 @@ function formatLine(line: string, inFrontmatter: boolean): string {
     out = out.replace(/->&([^{\n]+?)\s+\{\}/g, '->&$1{}');
 
     // Normalize section headers: ensure exactly one space after ## (handles ##Title and ##  Title)
-    out = out.replace(/^(#{1,3})\s*(?=\S)/, (_, hashes) => hashes + ' ');
+    out = out.replace(/^(#{1,3})\s*(?=\S)/, (_, hashes) => `${hashes} `);
 
     // Normalize tabs → 4 spaces (in recipe body only)
     out = out.replace(/\t/g, '    ');
@@ -36,7 +36,7 @@ export function provideFormatting(state: DocumentState): TextEdit[] {
     let frontmatterClosed = false;
 
     for (let i = 0; i < lines.length; i++) {
-        const raw = lines[i];
+        const raw = lines[i]!;
 
         // Track frontmatter boundaries
         if (i === 0 && raw.trimEnd() === '---') {

@@ -6,7 +6,7 @@ import type { RecipeSuggestion } from '../services/suggester'
 export function renderSuggestions(
   results: RecipeSuggestion[],
   withTerms: string[],
-  withoutTerms: string[],
+  _withoutTerms: string[],
 ): void {
   if (results.length === 0) {
     log.warn('No matching recipes found.')
@@ -19,7 +19,7 @@ export function renderSuggestions(
     const label = r.title ? `${chalk.bold(r.title)} ${chalk.dim(rel)}` : chalk.bold(rel)
 
     const bar = withTerms.length > 0
-      ? ` ${chalk.green(r.score + '%')}`
+      ? ` ${chalk.green(`${r.score}%`)}`
       : ''
 
     console.log(`  ${label}${bar}`)

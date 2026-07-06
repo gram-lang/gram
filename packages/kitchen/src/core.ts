@@ -4,10 +4,10 @@ import { processSections } from './processor';
 import { generateShoppingList } from './shopping';
 import { calculatePreparationTime } from './metrics';
 import { RecipeRegistry } from './registry';
-import { RecipeAST } from '@gram-lang/parser';
-import { Registry, CompilationResult, Usage } from './types';
+import type { RecipeAST } from '@gram-lang/parser';
+import type { CompilationResult, Usage } from './types';
 
-import { z } from 'zod';
+import type { z } from 'zod';
 import { CompilerOptionsSchema } from './schemas';
 
 export type CompilerOptions = z.infer<typeof CompilerOptionsSchema>;
@@ -34,7 +34,7 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
     const globalCookware: Usage[] = [];
     sections.forEach(sec => {
         sec.cookware.forEach(cw => {
-             if (!cw.modifiers || !cw.modifiers.includes('reference')) {
+             if (!cw.modifiers?.includes('reference')) {
                   globalCookware.push(cw);
              }
         });
@@ -44,7 +44,7 @@ export function compile(ast: RecipeAST, rawOptions?: CompilerOptions): Compilati
     let bakersRefFound = false;
     sections.forEach(sec => {
         sec.ingredients.forEach(ing => {
-            if (ing.modifiers && ing.modifiers.includes('bakers_percentage')) {
+            if (ing.modifiers?.includes('bakers_percentage')) {
                 if (bakersRefFound) {
                     throw new Error("MULTIPLE_BAKERS_PERCENTAGE: Only one ingredient can be marked with the baker's percentage (*) modifier in a recipe.");
                 }

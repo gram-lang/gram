@@ -1,10 +1,10 @@
 import { normalizeUnit } from '@gram-lang/i18n';
 import { slugify, scaleQty } from '../utils';
-import { CompilationResult } from '../types';
+import type { CompilationResult } from '../types';
 import {
-    ScaleRequest,
-    ScaleResolution,
-    UnitConverter,
+    type ScaleRequest,
+    type ScaleResolution,
+    type UnitConverter,
     InvalidFactorError,
     IngredientNotFoundError,
     NestedOnlyTargetError,
@@ -17,7 +17,7 @@ import {
 } from './types';
 
 function isPositiveFinite(n: number): boolean {
-    return typeof n === 'number' && isFinite(n) && n > 0;
+    return typeof n === 'number' && Number.isFinite(n) && n > 0;
 }
 
 function findNestedParent(shoppingList: any[], id: string): string | undefined {
@@ -151,7 +151,7 @@ export function applyScale(result: CompilationResult, factor: number): Compilati
             cloned.meta.portions = parseFloat((basePortions * factor).toFixed(2));
         } else if (typeof basePortions === 'string') {
             const num = parseFloat(basePortions);
-            if (!isNaN(num)) cloned.meta.portions = String(parseFloat((num * factor).toFixed(2)));
+            if (!Number.isNaN(num)) cloned.meta.portions = String(parseFloat((num * factor).toFixed(2)));
         }
     }
 

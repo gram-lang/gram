@@ -3,7 +3,7 @@ import { getAST } from '@gram-lang/parser'
 import { compile } from '@gram-lang/kitchen'
 import { analyze } from '@gram-lang/analyzer'
 import type { CompilationResult } from '@gram-lang/kitchen'
-import type { AnalysisResult, IngredientData } from '@gram-lang/analyzer'
+import type { AnalysisResult } from '@gram-lang/analyzer'
 import type { PipelineOptions } from '../types'
 import { GramCLIError, ExitCode } from '../errors'
 

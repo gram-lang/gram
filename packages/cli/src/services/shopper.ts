@@ -44,7 +44,7 @@ export async function buildShoppingList(
 
         const pushItem = (item: any) => {
           if ((item as any).type === 'alternative' || (item as any).variable_entries) return
-          const qty = typeof item.qty === 'number' && isFinite(item.qty) ? item.qty : null
+          const qty = typeof item.qty === 'number' && Number.isFinite(item.qty) ? item.qty : null
           // Resolve aliases (e.g. "beurre"/"butter") to a shared canonical id so recipes
           // that name the same ingredient differently still get grouped together.
           const id = opts.db ? resolveCanonicalId(item.name ?? item.id, opts.db) : item.id

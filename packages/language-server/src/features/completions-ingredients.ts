@@ -1,5 +1,5 @@
-import { CompletionItem, CompletionItemKind, MarkupKind } from 'vscode-languageserver';
-import { IngredientDB, allIngredientCompletionLabels } from '../ingredient-loader';
+import { type CompletionItem, CompletionItemKind, MarkupKind } from 'vscode-languageserver';
+import { type IngredientDB, allIngredientCompletionLabels } from '../ingredient-loader';
 
 export function isAfterAt(prefix: string): boolean {
     const atIdx = prefix.lastIndexOf('@');

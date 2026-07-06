@@ -1,4 +1,4 @@
-import { compileDictionary, LanguageDict } from './dictionary';
+import { compileDictionary, type LanguageDict } from './dictionary';
 
 const en: LanguageDict = {
     // Volume — spoons
@@ -69,7 +69,7 @@ export function normalizeUnit(rawUnit: string | undefined | null, lang?: string)
     if (!rawUnit) return '';
     const clean = rawUnit.toLowerCase().trim();
     
-    if (lang && UNIT_BY_LANG[lang] && UNIT_BY_LANG[lang][clean]) {
+    if (lang && UNIT_BY_LANG[lang]?.[clean]) {
         return UNIT_BY_LANG[lang][clean];
     }
     

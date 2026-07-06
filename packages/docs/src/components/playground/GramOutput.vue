@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { VueMonacoEditor } from '@guolao/vue-monaco-editor'
 import { useData } from 'vitepress'
 import { getDictionary } from '@gram-lang/i18n'
-import JsonNode from './JsonNode.vue'
 import { setupMonaco } from './monacoSetup'
 
 const props = defineProps<{
@@ -13,21 +11,20 @@ const props = defineProps<{
   jsonData: any
 }>()
 
-const emit = defineEmits<{
-  (e: 'scale-update', factor: number): void
-}>()
+const emit = defineEmits<(e: 'scale-update', factor: number) => void>()
 
+// biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
 const { isDark, lang } = useData()
-const t = computed(() => getDictionary(lang.value))
+const _t = computed(() => getDictionary(lang.value))
 
-const currentLang = computed(() => {
+const _currentLang = computed(() => {
   if (props.viewMode === 'ast') return 'scheme'
   if (props.viewMode === 'markdown') return 'markdown'
   return 'json'
 })
 
 const copied = ref(false)
-function copyOutput() {
+function _copyOutput() {
   if (props.viewMode === 'preview' || props.viewMode === 'json-tree') return
   navigator.clipboard.writeText(props.content).then(() => {
     copied.value = true
@@ -35,11 +32,11 @@ function copyOutput() {
   })
 }
 
-const handleMount = async (editor: any, monaco: any) => {
+const _handleMount = async (_editor: any, monaco: any) => {
   await setupMonaco(monaco)
 }
 
-const MONACO_OPTIONS = {
+const _MONACO_OPTIONS = {
   automaticLayout: true,
   minimap: { enabled: false },
   wordWrap: 'on',
@@ -61,7 +58,7 @@ watch(() => props.htmlPreview, async () => {
   const openDetails = new Set<string>()
   previewContainer.value.querySelectorAll('details[open]').forEach(details => {
     const summary = details.querySelector('summary')
-    if (summary && summary.textContent) {
+    if (summary?.textContent) {
       openDetails.add(summary.textContent.trim())
     }
   })
@@ -71,14 +68,14 @@ watch(() => props.htmlPreview, async () => {
   if (openDetails.size > 0 && previewContainer.value) {
     previewContainer.value.querySelectorAll('details').forEach(details => {
       const summary = details.querySelector('summary')
-      if (summary && summary.textContent && openDetails.has(summary.textContent.trim())) {
+      if (summary?.textContent && openDetails.has(summary.textContent.trim())) {
         details.open = true
       }
     })
   }
 }, { flush: 'pre' })
 
-function handlePreviewChange(e: Event) {
+function _handlePreviewChange(e: Event) {
   if (props.viewMode !== 'preview') return
   const target = e.target as HTMLElement
   if (target.classList.contains('portions-input')) {
@@ -86,13 +83,13 @@ function handlePreviewChange(e: Event) {
     const newVal = parseFloat(input.value)
     const interactivePortions = target.closest('.interactive-portions')
     const basePortions = parseFloat(interactivePortions?.getAttribute('data-base-portions') || '1')
-    if (!isNaN(newVal) && newVal > 0) {
+    if (!Number.isNaN(newVal) && newVal > 0) {
       emit('scale-update', newVal / basePortions)
     }
   }
 }
 
-function handlePreviewClick(e: MouseEvent) {
+function _handlePreviewClick(e: MouseEvent) {
   if (props.viewMode !== 'preview') return
   const target = e.target as HTMLElement
   
@@ -117,7 +114,7 @@ function handlePreviewClick(e: MouseEvent) {
   }
 
   const a = target.closest('a')
-  if (a && a.hash && a.hash.startsWith('#')) {
+  if (a?.hash?.startsWith('#')) {
     const id = a.hash.substring(1)
     const el = document.getElementById(id)
     if (el) {

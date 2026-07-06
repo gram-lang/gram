@@ -2,12 +2,12 @@ import {
     createConnection,
     ProposedFeatures,
     TextDocuments,
-    InitializeParams,
-    InitializeResult,
+    type InitializeParams,
+    type InitializeResult,
     TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { parseDocument, DocumentState } from './document-state';
+import { parseDocument, type DocumentState } from './document-state';
 import { provideDocumentSymbols } from './features/document-symbols';
 import { provideDiagnostics } from './features/diagnostics';
 import { provideDefinition } from './features/go-to-definition';
@@ -19,13 +19,13 @@ import { prepareName, provideRename } from './features/rename';
 import { provideFormatting } from './features/formatting';
 import { provideCodeActions } from './features/code-actions';
 import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS } from './features/semantic-tokens';
-import { loadIngredientDB, IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
+import { loadIngredientDB, type IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { provideInlayHints } from './features/inlay-hints';
 import { provideCodeLenses } from './features/code-lens';
 import { toHTML } from '@gram-lang/renderer';
-import { join } from 'path';
-import { existsSync } from 'fs';
-import { fileURLToPath } from 'url';
+import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -36,7 +36,7 @@ let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
 
 function loadDB(configPath?: string): void {
-    if (configPath && configPath.trim()) {
+    if (configPath?.trim()) {
         ingredientDB = loadIngredientDB(configPath.trim());
     } else {
         ingredientDB = {};

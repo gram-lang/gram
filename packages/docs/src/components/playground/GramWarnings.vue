@@ -12,16 +12,16 @@ defineProps<{
   }>
 }>()
 
-const emit = defineEmits<{
+const _emit = defineEmits<{
   jump: [start: number, end: number]
 }>()
 
 const { lang } = useData()
-const t = computed(() => getDictionary(lang.value))
+const _t = computed(() => getDictionary(lang.value))
 
 const isCollapsed = ref(false)
 
-function toggle() {
+function _toggle() {
   isCollapsed.value = !isCollapsed.value
 }
 </script>

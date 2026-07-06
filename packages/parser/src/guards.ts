@@ -1,19 +1,19 @@
 import { 
-    ASTNode, 
+    type ASTNode, 
     ASTNodeType, 
-    IngredientAST, 
-    CookwareAST, 
-    TimerAST, 
-    TemperatureAST, 
-    ReferenceAST, 
-    IntermediateDecl, 
-    AlternativeAST, 
-    CommentAST, 
-    StepAST, 
-    SectionAST, 
-    QuantityAST, 
-    TextQuantityAST,
-    RelativeQuantityAST
+    type IngredientAST, 
+    type CookwareAST, 
+    type TimerAST, 
+    type TemperatureAST, 
+    type ReferenceAST, 
+    type IntermediateDecl, 
+    type AlternativeAST, 
+    type CommentAST, 
+    type StepAST, 
+    type SectionAST, 
+    type QuantityAST, 
+    type TextQuantityAST,
+    type RelativeQuantityAST
 } from './types';
 
 export function isIngredient(node: ASTNode | null | undefined): node is IngredientAST {

@@ -119,6 +119,7 @@
   },
   "scripts": {
     "build": "node build.cjs",
+    "typecheck": "tsc --noEmit",
     "dev": "node build.cjs --watch",
     "package": "vsce package --no-dependencies"
   },

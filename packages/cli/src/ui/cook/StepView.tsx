@@ -68,7 +68,7 @@ function buildInstruction(content: any[], registry: CompilationResult['registry'
     if (!result) { result = part; continue }
     const last = visibleEnd(result).slice(-1)
     const first = visibleEnd(part)[0] ?? ''
-    if (/\w/.test(last) && /\w/.test(first)) result += ' ' + part
+    if (/\w/.test(last) && /\w/.test(first)) result += ` ${part}`
     else result += part
   }
   return result.trim()
@@ -108,10 +108,10 @@ export default function StepView({
 
   // Distinguish ingredients from cookware via registry (createCleanUsage never sets type:'cookware')
   const stepIngredients = (step.content ?? []).filter(
-    (t: any) => t && t.id && t.type !== 'reference' && !registry.cookware?.[t.id],
+    (t: any) => t?.id && t.type !== 'reference' && !registry.cookware?.[t.id],
   )
   const stepCookware = (step.content ?? []).filter(
-    (t: any) => t && t.id && t.type !== 'reference' && !!registry.cookware?.[t.id],
+    (t: any) => t?.id && t.type !== 'reference' && !!registry.cookware?.[t.id],
   )
   const hasStepContent = stepIngredients.length > 0 || stepCookware.length > 0
 
@@ -127,7 +127,7 @@ export default function StepView({
     mass != null && shouldShowMass(item.unit)
 
   const stepNum = stepIndex + 1
-  const hasAction = step.action && step.action.trim()
+  const hasAction = step.action?.trim()
 
   const runningTimers = activeTimers.filter(t => !t.done)
   const doneTimers = activeTimers.filter(t => t.done)
@@ -156,9 +156,11 @@ export default function StepView({
             return <Text key={t.id} bold color="yellow">⏱ {fmtCountdown(remaining)}  </Text>
           })}
           {stepTempTokens.map((t: any, i: number) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: inline temperature tokens have no natural id
             <Text key={i} color="red">{getTempDisplay(t)}  </Text>
           ))}
           {stepTimerTokens.map((t: any, i: number) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: inline timer tokens have no natural id
             <Text key={i} color="cyan">{getTimerDisplay(t)}  </Text>
           ))}
           <Text dimColor>{stepNum} / {totalSteps}</Text>
@@ -177,7 +179,8 @@ export default function StepView({
             {stepIngredients.map((item: any, i: number) => {
               const mass = massMap[item.id]
               return (
-                <React.Fragment key={i}>
+                // biome-ignore lint/suspicious/noArrayIndexKey: id+index composite key avoids collisions on repeated ingredients
+                <React.Fragment key={`${item.id}-${i}`}>
                   <Text>
                     <Text color="yellow">{'• '}</Text>
                     <Text color="yellow">{getIngredientName(item)}</Text>
@@ -189,7 +192,8 @@ export default function StepView({
             })}
             {stepCookware.length > 0 && stepIngredients.length > 0 && <Text> </Text>}
             {stepCookware.map((item: any, i: number) => (
-              <Text key={i} color="blue">{'○ '}{getCookwareName(item)}</Text>
+              // biome-ignore lint/suspicious/noArrayIndexKey: id+index composite key avoids collisions on repeated ingredients
+              <Text key={`${item.id}-${i}`} color="blue">{'○ '}{getCookwareName(item)}</Text>
             ))}
           </Box>
           <Box flexDirection="column" width={rightW}>
@@ -203,7 +207,8 @@ export default function StepView({
               {stepIngredients.map((item: any, i: number) => {
                 const mass = massMap[item.id]
                 return (
-                  <React.Fragment key={i}>
+                  // biome-ignore lint/suspicious/noArrayIndexKey: id+index composite key avoids collisions on repeated ingredients
+                  <React.Fragment key={`${item.id}-${i}`}>
                     <Text>
                       {'  • '}
                       <Text color="yellow">{getIngredientName(item)}</Text>
@@ -214,7 +219,8 @@ export default function StepView({
                 )
               })}
               {stepCookware.map((item: any, i: number) => (
-                <Text key={i} color="blue">{'  ○ '}{getCookwareName(item)}</Text>
+                // biome-ignore lint/suspicious/noArrayIndexKey: id+index composite key avoids collisions on repeated ingredients
+                <Text key={`${item.id}-${i}`} color="blue">{'  ○ '}{getCookwareName(item)}</Text>
               ))}
               <Text> </Text>
             </>

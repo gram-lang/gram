@@ -93,7 +93,7 @@ export default defineCommand({
           const outDir = resolve(args.output)
           await mkdir(outDir, { recursive: true })
           for (const { slug, data } of results) {
-            await writeFile(join(outDir, `${slug}.json`), JSON.stringify(data) + '\n')
+            await writeFile(join(outDir, `${slug}.json`), `${JSON.stringify(data)}\n`)
           }
           process.stdout.write(`         ${chalk.dim('→ built')}\n`)
         } catch (err) {

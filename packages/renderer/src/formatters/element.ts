@@ -1,4 +1,4 @@
-import { RenderContext } from '../types';
+import type { RenderContext } from '../types';
 import { escapeHtml, getQty, formatQuantityValue } from '../utils';
 import { getDictionary } from '@gram-lang/i18n';
 
@@ -42,11 +42,12 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
 
         const qty = getQty(item);
         const formulaStr = item.formula ? `${item.formula.percent}% of ${item.formula.target}` : null;
-        const isPartial = item.formula && item.formula.is_partial;
+        const isPartial = item.formula?.is_partial;
 
         const prep = item.preparation || '';
-        const isOptional = item.modifiers && item.modifiers.includes('optional');
-        const isReference = item.modifiers && item.modifiers.includes('reference');
+        const isOptional = item.modifiers?.includes('optional');
+        // NOTE: no "reference" (&-prefixed) badge/tooltip currently exists here, unlike
+        // isOptional/isPartial below — likely dropped in a past refactor (audit Chantier 1).
 
         let normalizedMass = null;
         let isEstimate = false;
@@ -102,7 +103,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
             const mode = context.formatMode || 'inline';
 
             if (mode === 'inline') {
-                let tooltipLines = [];
+                const tooltipLines = [];
                 if (plainQty) tooltipLines.push(`${plainQty}`);
 
                 if (item.bakersPercentage === undefined && normalizedMass !== null && conversionMethod !== 'relative') {
@@ -328,7 +329,7 @@ const strategies: Record<string, (item: any, format: 'html' | 'md', context: Ren
         const name = item.name || '';
         if (format === 'html') {
             const arrowIcon = context.icons?.arrowElbowDownRight ?? '<i class="ph ph-arrow-elbow-down-right"></i>';
-            const className = (context.classes?.declaration || 'declaration') + ' declaration-block';
+            const className = `${context.classes?.declaration || 'declaration'} declaration-block`;
             return `<span class="${className}">${arrowIcon} ${escapeHtml(name)}</span>`;
         } else {
             const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
@@ -420,7 +421,7 @@ export function formatElement(element: any, format: 'html' | 'md', context: Rend
     // Check if it looks like an implicit ingredient/cookware step element (no type, has id)
     if (!type && element.id) {
         const registry = context.registry || {};
-        const isCookware = !!(registry.cookware && registry.cookware[element.id]);
+        const isCookware = !!(registry.cookware?.[element.id]);
         const inferredType = isCookware ? 'cookware' : 'ingredient';
         return strategies[inferredType]!({ ...element, type: inferredType }, format, context);
     }

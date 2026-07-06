@@ -1,4 +1,4 @@
-import { RendererOptions, RenderContext } from '../types';
+import type { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';

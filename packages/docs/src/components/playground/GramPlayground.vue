@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, shallowRef, onUnmounted, computed } from 'vue'
-import GramEditor from './GramEditor.vue'
-import GramOutput from './GramOutput.vue'
-import GramOptions from './GramOptions.vue'
-import GramWarnings from './GramWarnings.vue'
-import PlaygroundDropdown from './PlaygroundDropdown.vue'
+import type GramEditor from './GramEditor.vue'
 import { getAST } from '@gram-lang/parser'
 import { compile, resolveScaleFactor, applyScale } from '@gram-lang/kitchen'
 import { analyze, convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram-lang/analyzer'
@@ -33,7 +29,7 @@ const scaleTargetQty = ref<number | null>(null)
 const scaleTargetUnit = ref('')
 const scaleError = ref('')
 
-const viewModeOptions = computed(() => [
+const _viewModeOptions = computed(() => [
   { label: t.value.playground.views.preview, value: 'preview' },
   { label: t.value.playground.views.jsonTree, value: 'json-tree' },
   { label: t.value.playground.views.json, value: 'json' },
@@ -55,7 +51,7 @@ let fullDatabase: any = {}
 const manifestData = ref<any[]>([])
 const examples = computed(() => manifestData.value.map((ex: any) => ({
   label: (t.value.playground.examples as any)[ex.id] || ex.title,
-  value: import.meta.env.BASE_URL + 'examples/' + ex.id
+  value: `${import.meta.env.BASE_URL}examples/${ex.id}`
 })))
 const selectedExample = ref('')
 
@@ -68,7 +64,7 @@ onMounted(() => {
   })
 
   // Load Examples
-  fetch(import.meta.env.BASE_URL + 'examples/manifest.json')
+  fetch(`${import.meta.env.BASE_URL}examples/manifest.json`)
     .then(res => res.json())
     .then(manifest => {
       manifestData.value = manifest
@@ -113,7 +109,7 @@ function renderSExpr(node: any, level = 0): string {
     if (typeof v !== 'object') {
       attrs += ` :${k} ${typeof v === 'string' ? `"${v}"` : v}`
     } else if (Array.isArray(v)) {
-      v.forEach(child => children.push(child))
+      v.forEach(child => { children.push(child) })
     } else {
       if (v && typeof v === 'object' && 'min' in v && 'max' in v) {
         attrs += ` :${k} ${(v as any).min}-${(v as any).max}`
@@ -157,7 +153,7 @@ function updateGram() {
       }
     } else {
       const factor = parseFloat(scaleFactorString.value) / 100
-      if (!isNaN(factor) && factor > 0 && factor !== 1) {
+      if (!Number.isNaN(factor) && factor > 0 && factor !== 1) {
         try {
           const resolution = resolveScaleFactor(result, { type: 'factor', value: factor })
           result = applyScale(result, resolution.factor)
@@ -192,17 +188,17 @@ function updateGram() {
   }
 }
 
-function handleScaleUpdate(factor: number) {
+function _handleScaleUpdate(factor: number) {
   scaleFactorString.value = (factor * 100).toFixed(2).replace(/\.00$/, '')
   scaleTargetId.value = null
   scaleTargetQty.value = null
 }
 
-function handleScaleApply() {
+function _handleScaleApply() {
   updateGram()
 }
 
-function clearTarget() {
+function _clearTarget() {
   scaleTargetId.value = null
   scaleTargetQty.value = null
 }
@@ -213,7 +209,7 @@ watch([code, options, viewMode, scaleFactorString, lang], () => {
   }
 }, { deep: true })
 
-function handleJump(start: number, end: number) {
+function _handleJump(start: number, end: number) {
   if (editorRef.value) {
     editorRef.value.jump(start, end)
   }
@@ -223,7 +219,7 @@ function handleJump(start: number, end: number) {
 const leftPanelWidth = ref(50)
 const isDragging = ref(false)
 
-function startDrag(e: MouseEvent) {
+function _startDrag(_e: MouseEvent) {
   isDragging.value = true
   document.addEventListener('mousemove', onDrag)
   document.addEventListener('mouseup', stopDrag)

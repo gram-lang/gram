@@ -6,7 +6,7 @@ import { loadConfig } from '../core/config'
 import { loadDbSafe } from '../core/db'
 import { resolveScaleArg } from '../services/scaler'
 import { generatePrintHTML, openInBrowser } from '../services/printer'
-import { ExitCode, GramCLIError } from '../errors'
+import { GramCLIError } from '../errors'
 
 export default defineCommand({
   meta: {

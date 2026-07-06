@@ -1,6 +1,6 @@
-import { WorkspaceEdit, TextEdit, Range, Position, PrepareRenameResult } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
-import { positionToOffset, locToRange, offsetToPosition } from '../utils/position';
+import type { WorkspaceEdit, TextEdit, Range, Position, PrepareRenameResult } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
+import { positionToOffset, offsetToPosition } from '../utils/position';
 import { collectIntermediates, collectReferences, findNameAtOffset } from '../utils/ast-walker';
 
 // Returns the range covering only the name portion of a decl/ref token.

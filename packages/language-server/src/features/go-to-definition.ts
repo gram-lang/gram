@@ -1,5 +1,5 @@
-import { Location, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import type { Location, Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { locToRange, positionToOffset } from '../utils/position';
 import { collectIntermediates, collectReferences } from '../utils/ast-walker';
 

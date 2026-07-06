@@ -1,5 +1,5 @@
 import {
-    RecipeAST, SectionAST, StepAST, IntermediateDecl, ReferenceAST, IngredientAST, AlternativeAST,
+    type RecipeAST, type SectionAST, type StepAST, type IntermediateDecl, type ReferenceAST, type IngredientAST,
     isIntermediateDecl, isReference, isIngredient, isAlternative, isStep
 } from '@gram-lang/parser';
 

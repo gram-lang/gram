@@ -36,5 +36,5 @@ const CATEGORIES: Record<string, string[]> = {
 }
 
 export function getDefaultCategories(lang = 'en'): string[] {
-  return CATEGORIES[lang] ?? CATEGORIES['en']!
+  return CATEGORIES[lang] ?? CATEGORIES.en!
 }

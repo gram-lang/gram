@@ -85,10 +85,10 @@ export default defineCommand({
     if (args.format === 'json') {
       const json = renderShopJson(result)
       if (args.output) {
-        await writeFile(args.output, json + '\n')
+        await writeFile(args.output, `${json}\n`)
         log.success(`Wrote shopping list to ${args.output}`)
       } else {
-        process.stdout.write(json + '\n')
+        process.stdout.write(`${json}\n`)
       }
       return
     }
@@ -99,7 +99,7 @@ export default defineCommand({
         await writeFile(args.output, md)
         log.success(`Wrote shopping list to ${args.output}`)
       } else {
-        process.stdout.write(md + '\n')
+        process.stdout.write(`${md}\n`)
       }
       return
     }

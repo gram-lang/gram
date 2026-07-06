@@ -1,8 +1,8 @@
-import { Hover, MarkupContent, MarkupKind, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type Hover, type MarkupContent, MarkupKind, type Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { positionToOffset } from '../utils/position';
 import { collectIntermediates, collectReferences, getStepSourceText } from '../utils/ast-walker';
-import { IngredientDB } from '../ingredient-loader';
+import type { IngredientDB } from '../ingredient-loader';
 import { provideNutritionHover } from './hover-nutrition';
 
 export function provideHover(state: DocumentState, position: Position, db: IngredientDB): Hover | null {
@@ -20,7 +20,7 @@ export function provideHover(state: DocumentState, position: Position, db: Ingre
 
         let description = '';
         if (match.step) {
-            description = '```gram\n' + getStepSourceText(match.step, state.text) + '\n```';
+            description = `\`\`\`gram\n${getStepSourceText(match.step, state.text)}\n\`\`\``;
         } else if (match.section) {
             description = `Section: **${match.section.title ?? '(unnamed)'}**`;
         }

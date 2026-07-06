@@ -1,10 +1,10 @@
 import * as ohm from 'ohm-js';
 import { grammarContent } from './grammar-content';
 import {
-    RecipeAST, SectionAST, StepAST, IngredientAST, CookwareAST,
-    QuantityAST, QuantityValueAST, RelativeQuantityAST, TextQuantityAST,
-    ReferenceAST, TimerAST, TemperatureAST, CommentAST, AlternativeAST,
-    IntermediateDecl, ASTNodeType
+    type RecipeAST, type SectionAST, type StepAST, type IngredientAST, type CookwareAST,
+    type QuantityAST, type QuantityValueAST, type RelativeQuantityAST, type TextQuantityAST,
+    type ReferenceAST, type TimerAST, type TemperatureAST, type CommentAST, type AlternativeAST,
+    type IntermediateDecl, ASTNodeType
 } from './types';
 
 export * from './types';
@@ -39,8 +39,8 @@ const parseNumber = (n: string): QuantityValueAST | null => {
     const numStr = parts[0];
     const denStr = parts[1];
     if (numStr && denStr) {
-        const num = parseInt(numStr);
-        const den = parseInt(denStr);
+        const num = parseInt(numStr, 10);
+        const den = parseInt(denStr, 10);
         return { type: 'fraction', value: num / den, numerator: num, denominator: den, text: n };
     } else {
         return { type: 'single', value: parseFloat(n), text: n };
@@ -91,7 +91,7 @@ semantics.addOperation('toAST', {
         // Merge all KeyValues into a single object
         return kv.children
             .map(c => c.toAST())
-            .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+            .reduce((acc, curr) => Object.assign(acc, curr), {});
     },
 
     KeyValue(_newlines, key, _1, _2, value, _3) {
@@ -105,7 +105,7 @@ semantics.addOperation('toAST', {
         ];
     },
 
-    Content_implicit(nls, blocks) {
+    Content_implicit(_nls, blocks) {
         return blocks.children.map(b => b.toAST());
     },
 

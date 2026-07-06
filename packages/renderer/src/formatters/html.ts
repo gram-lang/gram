@@ -1,4 +1,4 @@
-import { RendererOptions, RenderContext } from '../types';
+import type { RendererOptions, RenderContext } from '../types';
 import { formatDuration as defaultFormatDuration, escapeHtml, aggToRendererItem } from '../utils';
 import { formatElement } from './element';
 import { aggregateSectionIngredients } from '@gram-lang/kitchen';
@@ -31,10 +31,9 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     }
 
     // Display Metadata
-    const recipeMetaClass = options.classes?.recipeMeta || 'recipe-meta';
-    const metaItemClass = options.classes?.metaItem || 'meta-item';
-    const metaIconClass = options.classes?.metaIcon || 'meta-icon';
-    const metaContentClass = options.classes?.metaContent || 'meta-content';
+    // NOTE: RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
+    // accepted for backwards compatibility but currently apply to nothing below — this
+    // markup was restructured around timing cards without updating them (audit Chantier 1).
     const metaLabelClass = options.classes?.metaLabel || 'meta-label';
     const metaValueClass = options.classes?.metaValue || 'meta-value';
     const metaEstClass = options.classes?.metaEst || 'est';
@@ -83,7 +82,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     html += `<div class="${recipeMetaSecondaryClass}">\n`;
     html += `<div class="${metadataGridClass}">\n`;
 
-    if (data.metrics && data.metrics.totalMass) {
+    if (data.metrics?.totalMass) {
         const mass = Math.round(data.metrics.totalMass);
         let msg = `${mass}g`;
         if (data.metrics.massStatus === 'estimated') {
@@ -105,7 +104,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                 html += `    <span class="label">${escapeHtml(k)}</span>\n`;
                 if (k === 'portions' && options.interactiveScaling) {
                     const numericV = typeof v === 'number' ? v : parseFloat(String(v));
-                    const basePortions = (typeof data.scaleFactor === 'number' && data.scaleFactor !== 0 && !isNaN(numericV))
+                    const basePortions = (typeof data.scaleFactor === 'number' && data.scaleFactor !== 0 && !Number.isNaN(numericV))
                         ? parseFloat((numericV / data.scaleFactor).toFixed(2))
                         : v;
                     html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
@@ -247,7 +246,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
                         title += `${t.renderer.missingMass}${missingStr})`;
                     }
                     const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
-                    titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${msg}</small>`;
+                    titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
                 }
 
                 if (sec.intermediate_preparation) {
@@ -352,7 +351,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
     }
 
     // Nutrition Panel (Moved to bottom)
-    if (data.metrics && data.metrics.nutrition) {
+    if (data.metrics?.nutrition) {
         const nut = data.metrics.nutrition;
 
         // Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
@@ -380,7 +379,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
             const sodium = displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : '-';
 
             let warningsHtml = '';
-            if (data.nutrition && data.nutrition.warnings && data.nutrition.warnings.length > 0) {
+            if (data.nutrition?.warnings && data.nutrition.warnings.length > 0) {
                 warningsHtml = `  <div class="nut-warnings">\n`;
                 data.nutrition.warnings.forEach((w: string) => {
                     warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w)}</p>\n`;

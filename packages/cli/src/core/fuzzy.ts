@@ -61,9 +61,10 @@ export function matchInText(
   // Build word-boundary positions from the original text
   const wordRe = /\S+/g
   const words: Array<{ word: string; start: number; end: number }> = []
-  let m: RegExpExecArray | null
-  while ((m = wordRe.exec(normText)) !== null) {
+  let m = wordRe.exec(normText)
+  while (m !== null) {
     words.push({ word: m[0], start: m.index, end: m.index + m[0].length })
+    m = wordRe.exec(normText)
   }
 
   if (words.length === 0) return null

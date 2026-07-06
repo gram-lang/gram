@@ -113,7 +113,7 @@ async function runToStdout(args: Args) {
   const results = await buildFiles(files, { db: db ?? undefined, scaleFactor: args._scaleFactor })
   const indent = args.pretty ? 2 : undefined
   for (const { data } of results) {
-    process.stdout.write(JSON.stringify(data, null, indent) + '\n')
+    process.stdout.write(`${JSON.stringify(data, null, indent)}\n`)
   }
 }
 
@@ -136,7 +136,7 @@ async function runToFiles(args: Args) {
   await Promise.all(
     results.map(({ slug, data }) =>
       writeLimit(() =>
-        writeFile(join(outDir, `${slug}.json`), JSON.stringify(data, null, indent) + '\n'),
+        writeFile(join(outDir, `${slug}.json`), `${JSON.stringify(data, null, indent)}\n`),
       ),
     ),
   )

@@ -140,7 +140,7 @@ export function stepToText(content: any[], registry: CompilationResult['registry
     if (!result) { result = part; continue }
     const last = result[result.length - 1] ?? ''
     const first = part[0] ?? ''
-    if (/\w/.test(last) && /\w/.test(first)) result += ' ' + part
+    if (/\w/.test(last) && /\w/.test(first)) result += ` ${part}`
     else result += part
   }
   return result.trim()

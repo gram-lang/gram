@@ -1,7 +1,7 @@
-import { QuantityAST, RelativeQuantityAST, QuantityValueAST, TextQuantityAST, ASTNodeType } from '@gram-lang/parser';
-import { Usage } from './types';
+import { type QuantityValueAST, ASTNodeType } from '@gram-lang/parser';
+import type { Usage } from './types';
 import { resolveTimeUnit } from '@gram-lang/i18n';
-import { CompilerOptions } from './core';
+import type { CompilerOptions } from './core';
 
 /**
  * Normalizes user-inputted strings (like ingredient names) into URL-friendly, 
@@ -54,9 +54,12 @@ export const minifyQuantity = (q: any): number | QuantityValueAST | undefined =>
  * Generates a unique, deterministic `_usageId` for a Usage object. Shared by
  * every ingredient/cookware/reference usage across the compiler so ids never
  * collide, and compilation is reproducible (no snapshot flakiness).
+ *
+ * `counter` must be a fresh `{ value: 0 }` created per compile() call (see
+ * `Context.usageCounter`) — never a module-level singleton, otherwise ids
+ * leak across unrelated compilations sharing the same process.
  */
-let usageCounter = 0;
-export const nextUsageId = (): string => String(++usageCounter);
+export const nextUsageId = (counter: { value: number }): string => String(++counter.value);
 
 /**
  * Standardizes a raw step/section ingredient or cookware item into a clean, unified `Usage` object.
@@ -64,10 +67,10 @@ export const nextUsageId = (): string => String(++usageCounter);
  * Maps modifier symbols (?, -, &, *) to semantic names, handles fixed quantity states,
  * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
  */
-export const createCleanUsage = (item: any, id: string, options?: CompilerOptions): Usage => {
-    const obj: Usage = { id, _usageId: nextUsageId() };
+export const createCleanUsage = (item: any, id: string, counter: { value: number }, _options?: CompilerOptions): Usage => {
+    const obj: Usage = { id, _usageId: nextUsageId(counter) };
     const qtyNode = item.quantity;
-    let cleanQty: any = undefined;
+    let cleanQty: any ;
     
     if (qtyNode) {
         // If it's a TextQuantity, we use the value directly
@@ -79,7 +82,7 @@ export const createCleanUsage = (item: any, id: string, options?: CompilerOption
     }
     
     if (cleanQty !== undefined) obj.qty = cleanQty;
-    if (qtyNode && qtyNode.unit) obj.unit = qtyNode.unit;
+    if (qtyNode?.unit) obj.unit = qtyNode.unit;
     
 
     if (item.modifiers && item.modifiers.length > 0) {

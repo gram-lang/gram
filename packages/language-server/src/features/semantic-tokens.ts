@@ -1,11 +1,11 @@
-import { SemanticTokens } from 'vscode-languageserver';
+import type { SemanticTokens } from 'vscode-languageserver';
 import {
-    ASTNodeType, SectionAST, StepAST, IngredientAST, CookwareAST,
-    TimerAST, TemperatureAST, ReferenceAST, IntermediateDecl,
-    AlternativeAST, CommentAST, QuantityAST, TextQuantityAST,
+    type SectionAST, type StepAST, type IngredientAST, type CookwareAST,
+    type TimerAST, type TemperatureAST, type ReferenceAST, type IntermediateDecl,
+    type QuantityAST, type TextQuantityAST,
     isIngredient, isCookware, isReference, isTimer, isTemperature, isIntermediateDecl, isAlternative, isComment, isStep, isQuantity, isTextQuantity
 } from '@gram-lang/parser';
-import { DocumentState } from '../document-state';
+import type { DocumentState } from '../document-state';
 import { offsetToPosition } from '../utils/position';
 
 export const SEMANTIC_TOKEN_TYPES = [

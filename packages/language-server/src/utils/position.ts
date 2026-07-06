@@ -1,4 +1,4 @@
-import { Position, Range } from 'vscode-languageserver';
+import type { Position, Range } from 'vscode-languageserver';
 
 export function buildLineIndex(text: string): number[] {
     const starts = [0];
@@ -12,9 +12,9 @@ export function offsetToPosition(lineStarts: number[], offset: number): Position
     let lo = 0, hi = lineStarts.length - 1;
     while (lo < hi) {
         const mid = (lo + hi + 1) >> 1;
-        if (lineStarts[mid] <= offset) lo = mid; else hi = mid - 1;
+        if (lineStarts[mid]! <= offset) lo = mid; else hi = mid - 1;
     }
-    return { line: lo, character: offset - lineStarts[lo] };
+    return { line: lo, character: offset - lineStarts[lo]! };
 }
 
 export function locToRange(lineStarts: number[], loc: { start: number; end: number }): Range {
@@ -25,6 +25,6 @@ export function locToRange(lineStarts: number[], loc: { start: number; end: numb
 }
 
 export function positionToOffset(lineStarts: number[], position: Position): number {
-    const lineStart = lineStarts[position.line] ?? lineStarts[lineStarts.length - 1];
+    const lineStart = (lineStarts[position.line] ?? lineStarts[lineStarts.length - 1])!;
     return lineStart + position.character;
 }

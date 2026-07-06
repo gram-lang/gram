@@ -213,7 +213,7 @@ function stepCount(section: any): number {
 function diffSections(a: any[], b: any[]): SectionDelta[] {
   const byTitle = (list: any[]) => {
     const m = new Map<string, any>()
-    list.forEach((s, i) => m.set(s.title ?? `__pos_${i}`, s))
+    list.forEach((s, i) => { m.set(s.title ?? `__pos_${i}`, s) })
     return m
   }
 

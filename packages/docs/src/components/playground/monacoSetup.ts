@@ -1,7 +1,7 @@
 import { createHighlighterCore } from 'shiki/core'
 import { createOnigurumaEngine } from 'shiki/engine/oniguruma'
 import { shikiToMonaco } from '@shikijs/monaco'
-// @ts-ignore
+// @ts-expect-error
 import gramGrammar from '@gram-lang/parser/textmate'
 
 export let isSetup = false

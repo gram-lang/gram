@@ -1,4 +1,4 @@
-import { IngredientData } from './types';
+import type { IngredientData } from './types';
 import { resolveCanonicalId } from './ingredient_db';
 
 function isStandardItem(item: any): boolean {
@@ -74,7 +74,7 @@ export function aggregateShoppingList(shoppingList: any[], database: Record<stri
             if (usageIds.length > 0) merged._usageIds = usageIds;
 
             const modifiers = new Set<string>();
-            items.forEach(i => (i.modifiers ?? []).forEach((m: string) => modifiers.add(m)));
+            items.forEach(i => { (i.modifiers ?? []).forEach((m: string) => { modifiers.add(m); }); });
             if (modifiers.size > 0) merged.modifiers = [...modifiers];
 
             const variableEntries = items.flatMap(i => i.variable_entries ?? []);

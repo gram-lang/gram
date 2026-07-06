@@ -118,7 +118,7 @@ export function formatGram(source: string): { content: string; changes: Formatte
 
   // Rule 9: Ensure single newline at EOF
   const trimmedEnd = content.trimEnd()
-  const withEof = trimmedEnd + '\n'
+  const withEof = `${trimmedEnd}\n`
   if (withEof !== content) changes.eofNewline = true
   content = withEof
 

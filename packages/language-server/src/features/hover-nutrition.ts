@@ -1,11 +1,11 @@
-import { Hover, MarkupContent, MarkupKind, Position } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type Hover, type MarkupContent, MarkupKind, type Position } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { positionToOffset } from '../utils/position';
 import { collectIngredients } from '../utils/ast-walker';
-import { IngredientDB, lookupIngredient, IngredientEntry } from '../ingredient-loader';
+import { type IngredientDB, lookupIngredient, type IngredientEntry } from '../ingredient-loader';
 import { normalizeUnit } from '@gram-lang/i18n';
-import { UNIT_CONVERSIONS, standardizeMass } from '@gram-lang/analyzer';
-import { ASTNodeType, QuantityAST, QuantityValueAST, isQuantity } from '@gram-lang/parser';
+import { standardizeMass } from '@gram-lang/analyzer';
+import { type QuantityAST, isQuantity } from '@gram-lang/parser';
 import { getNumericQty } from '@gram-lang/kitchen';
 
 function buildConversionSection(qty: QuantityAST, entry: IngredientEntry, rawUnit: string, db: IngredientDB): string | null {

@@ -1,4 +1,4 @@
-import { Registry, RegistryEntry } from './types';
+import type { Registry, RegistryEntry } from './types';
 import { slugify } from './utils';
 
 // Strip punctuation that bleeds into bare element names (e.g. #saucepan, or @salt.)

@@ -1,4 +1,4 @@
-import { ProcessedSection } from './types';
+import type { ProcessedSection } from './types';
 
 /**
  * Runs a Cycle Detection algorithm on the recipe graph using DFS.
@@ -14,7 +14,7 @@ export function detectCycles(sections: ProcessedSection[]): Set<string> {
          sec.ingredients.forEach(ing => {
              if (ing.dependencies) {
                  if (!graph.has(ing.id)) graph.set(ing.id, new Set());
-                 ing.dependencies.forEach(d => graph.get(ing.id)?.add(d));
+                 ing.dependencies.forEach(d => { graph.get(ing.id)?.add(d); });
              }
          });
      });

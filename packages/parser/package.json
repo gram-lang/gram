@@ -38,6 +38,7 @@
   "scripts": {
     "prebuild": "node scripts/build-grammar.cjs",
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
     "test": "bun test",
     "prepublishOnly": "npm run build"
   },

@@ -63,7 +63,7 @@ function stepToRichText(
     if (!text) continue
 
     if (isInlineToken(item) && parts.length > 0) {
-      const last = parts[parts.length - 1]
+      const last = parts[parts.length - 1]!
       // Strip ANSI codes before testing the last character
       const lastPlain = last.replace(/\x1b\[[0-9;]*m/g, '')
       if (lastPlain && !/[\s']$/.test(lastPlain)) parts.push(' ')
@@ -104,7 +104,7 @@ function renderHeader(model: RecipeViewModel): string {
   const servStr = model.servings ? ` ${model.servings} servings ` : ' '
   const maxTitleLen = COL - 6 - servStr.length
   const rawTitle = model.title
-  const title = rawTitle.length > maxTitleLen ? rawTitle.slice(0, maxTitleLen - 1) + '…' : rawTitle
+  const title = rawTitle.length > maxTitleLen ? `${rawTitle.slice(0, maxTitleLen - 1)}…` : rawTitle
   const top = `┌─ ${title} ${'─'.repeat(Math.max(2, COL - 4 - title.length - servStr.length))}${servStr}─┐`
   lines.push(chalk.bold(top))
 
@@ -168,7 +168,7 @@ function renderSections(
       const action = step.action ? chalk.cyan(`[${step.action}]`).padEnd(12) : ''.padEnd(10)
       const timer = step.timerMinutes ? chalk.dim(` (~${formatMinutes(step.timerMinutes)})`) : ''
       const richText = stepToRichText(step._tokens, registries.ingredients, registries.cookware)
-      lines.push(`  ${chalk.dim(num + '.')} ${action} ${richText}${timer}`)
+      lines.push(`  ${chalk.dim(`${num}.`)} ${action} ${richText}${timer}`)
     }
   }
 
@@ -224,7 +224,7 @@ export async function outputRecipe(model: RecipeViewModel, noPager: boolean): Pr
   const usePager = !noPager && process.stdout.isTTY && lineCount > termRows * 0.85
 
   if (usePager) {
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, _reject) => {
       const less = spawn('less', ['-R', '--quit-if-one-screen'], {
         stdio: ['pipe', 'inherit', 'inherit'],
       })

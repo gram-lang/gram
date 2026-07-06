@@ -11,6 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   }
 }

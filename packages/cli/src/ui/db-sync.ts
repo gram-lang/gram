@@ -16,9 +16,9 @@ export function renderSyncResult(result: DbSyncResult, dryRun: boolean): void {
   }
 
   console.log()
-  const parts = [chalk.dim(existingIngredients.length + ' already in database')]
-  if (newIngredients.length > 0) parts.push(chalk.green(newIngredients.length + ' new'))
-  if (aliasedIngredients.length > 0) parts.push(chalk.blue(aliasedIngredients.length + ' aliased'))
+  const parts = [chalk.dim(`${existingIngredients.length} already in database`)]
+  if (newIngredients.length > 0) parts.push(chalk.green(`${newIngredients.length} new`))
+  if (aliasedIngredients.length > 0) parts.push(chalk.blue(`${aliasedIngredients.length} aliased`))
   console.log(`  ${parts.join(' · ')}`)
   console.log()
 

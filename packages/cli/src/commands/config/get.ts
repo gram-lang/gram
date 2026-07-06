@@ -35,6 +35,6 @@ export default defineCommand({
       process.exit(ExitCode.Error)
     }
 
-    process.stdout.write(value + '\n')
+    process.stdout.write(`${value}\n`)
   },
 })

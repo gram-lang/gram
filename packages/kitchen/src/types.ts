@@ -1,4 +1,4 @@
-import {
+import type {
     QuantityValueAST,
     RelativeQuantityAST,
     TextQuantityAST,
@@ -28,6 +28,9 @@ export interface Context {
     usedIntermediates: Set<string>;
     currentSectionIntermediates: Set<string>; // Track intermediates defined in the current section
     globalScopes: Map<string, string>;
+    // Per-compilation counter for `_usageId` — must be created fresh for every
+    // compile() call so ids stay deterministic and never leak across compilations.
+    usageCounter: { value: number };
 }
 
 export interface Usage {

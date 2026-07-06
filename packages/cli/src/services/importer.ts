@@ -13,14 +13,15 @@ import { GRAM_SPEC_PROMPT } from '../prompts/gram-spec'
 function extractRecipeJsonLd(html: string): object {
   const blocks: object[] = []
   const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-  let match: RegExpExecArray | null
-  while ((match = re.exec(html)) !== null) {
+  let match = re.exec(html)
+  while (match !== null) {
     try {
       const parsed = JSON.parse(match[1] ?? '')
       blocks.push(parsed)
     } catch {
       // skip malformed blocks
     }
+    match = re.exec(html)
   }
 
   for (const block of blocks) {

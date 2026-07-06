@@ -747,13 +747,13 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       "cookware": [],
       "ingredients": [
         {
-          "_usageId": "17",
+          "_usageId": "1",
           "id": "ghost-step",
           "name": "ghost_step",
           "type": "reference",
         },
         {
-          "_usageId": "18",
+          "_usageId": "2",
           "id": "ghost-var",
           "modifiers": [
             "reference",
@@ -762,7 +762,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "unit": "g",
         },
         {
-          "_usageId": "19",
+          "_usageId": "3",
           "id": "absurd",
           "modifiers": [
             "optional",
@@ -772,7 +772,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "unit": "g",
         },
         {
-          "_usageId": "20",
+          "_usageId": "4",
           "dependencies": [
             "flour",
           ],
@@ -795,7 +795,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           },
         },
         {
-          "_usageId": "21",
+          "_usageId": "5",
           "dependencies": [
             "salt",
           ],
@@ -825,7 +825,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "We will use a step reference that does not exist: ",
             {
-              "_usageId": "17",
+              "_usageId": "1",
               "id": "ghost-step",
               "name": "ghost_step",
               "type": "reference",
@@ -842,7 +842,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "And an undeclared ingredient variable: ",
             {
-              "_usageId": "18",
+              "_usageId": "2",
               "id": "ghost-var",
               "modifiers": [
                 "reference",
@@ -862,7 +862,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Invalid modifier combination: ",
             {
-              "_usageId": "19",
+              "_usageId": "3",
               "id": "absurd",
               "modifiers": [
                 "optional",
@@ -883,7 +883,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Relative quantity pointing to nothing: ",
             {
-              "_usageId": "20",
+              "_usageId": "4",
               "dependencies": [
                 "flour",
               ],
@@ -917,7 +917,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
           "content": [
             "Circular relative quantity: ",
             {
-              "_usageId": "21",
+              "_usageId": "5",
               "dependencies": [
                 "salt",
               ],
@@ -1013,7 +1013,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
   "shopping_list": [
     {
       "_usageIds": [
-        "18",
+        "2",
       ],
       "id": "ghost-var",
       "modifiers": [
@@ -1025,7 +1025,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "19",
+        "3",
       ],
       "id": "absurd",
       "modifiers": [
@@ -1038,7 +1038,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "20",
+        "4",
       ],
       "id": "sugar",
       "name": "sugar",
@@ -1049,7 +1049,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
     {
       "_usageIds": [
-        "21",
+        "5",
       ],
       "id": "salt",
       "name": "salt",

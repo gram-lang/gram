@@ -186,8 +186,8 @@ export interface GramConfig {
     apiKey?: string
     baseUrl?: string
   }
-  /** Absolute path to the project root (.gram/ directory ancestor). Set by loadConfig(). */
-  projectRoot: string
+  /** Absolute path to the project root (.gram/ directory ancestor). Set by loadConfig() — never present in the on-disk config.yaml file. */
+  projectRoot?: string
 }
 
 export interface PipelineOptions {

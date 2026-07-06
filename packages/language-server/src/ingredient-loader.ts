@@ -1,8 +1,8 @@
 import { parse } from 'yaml';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { slugify } from '@gram-lang/kitchen';
 
-import { IngredientData } from '@gram-lang/analyzer';
+import type { IngredientData } from '@gram-lang/analyzer';
 
 export type IngredientEntry = IngredientData;
 
@@ -12,8 +12,8 @@ export function loadIngredientDB(yamlPath: string): IngredientDB {
     if (!existsSync(yamlPath)) return {};
     try {
         const content = readFileSync(yamlPath, 'utf-8');
-        const parsed = parse(content) as { ingredients?: Record<string, IngredientEntry> };
-        return parsed?.ingredients ?? (parsed as unknown as IngredientDB) ?? {};
+        const parsed = parse(content) as { ingredients?: unknown } | undefined;
+        return (parsed?.ingredients ?? parsed ?? {}) as IngredientDB;
     } catch {
         return {};
     }
@@ -24,10 +24,14 @@ export function lookupIngredient(name: string, db: IngredientDB): IngredientEntr
     const slug = slugify(name);
 
     // Direct match by slug key
-    if (db[slug]) return db[slug];
+    const bySlug = db[slug];
+    if (bySlug) return bySlug;
 
     // Naive singularization
-    if (slug.endsWith('s') && db[slug.slice(0, -1)]) return db[slug.slice(0, -1)];
+    if (slug.endsWith('s')) {
+        const singular = db[slug.slice(0, -1)];
+        if (singular) return singular;
+    }
 
     // Search by name or aliases (case-insensitive)
     const nameLower = name.toLowerCase();
@@ -62,13 +66,13 @@ function levenshtein(a: string, b: string): number {
     for (let i = 1; i <= a.length; i++) {
         let prev = i;
         for (let j = 1; j <= b.length; j++) {
-            const curr = a[i - 1] === b[j - 1] ? row[j - 1] : 1 + Math.min(row[j - 1], row[j], prev);
+            const curr = a[i - 1] === b[j - 1] ? row[j - 1]! : 1 + Math.min(row[j - 1]!, row[j]!, prev);
             row[j - 1] = prev;
             prev = curr;
         }
         row[b.length] = prev;
     }
-    return row[b.length];
+    return row[b.length]!;
 }
 
 // O(1) check — mirrors the lookup order of lookupIngredient() without linear scan.

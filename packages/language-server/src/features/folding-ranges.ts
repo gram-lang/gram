@@ -1,5 +1,5 @@
-import { FoldingRange, FoldingRangeKind } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type FoldingRange, FoldingRangeKind } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { offsetToPosition } from '../utils/position';
 
 export function provideFoldingRanges(state: DocumentState): FoldingRange[] {

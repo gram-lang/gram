@@ -1,11 +1,11 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { ExtensionContext } from 'vscode';
+import type { ExtensionContext } from 'vscode';
 import { PreviewPanel } from './preview';
 import {
     LanguageClient,
-    LanguageClientOptions,
-    ServerOptions,
+    type LanguageClientOptions,
+    type ServerOptions,
     TransportKind,
 } from 'vscode-languageclient/node';
 

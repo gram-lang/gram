@@ -7,9 +7,9 @@ export * from './diff';
 export * from './shopping_aggregation';
 
 
-import { CompilationResult, Usage } from '@gram-lang/kitchen';
+import type { CompilationResult } from '@gram-lang/kitchen';
 import { getNumericQty } from '@gram-lang/kitchen';
-import { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
+import type { AnalyzedCompilationResult, AnalyzedUsage, AnalyzedSection, IngredientData, AnalysisResult, AnalyzerOptions } from './types';
 import { ASTNodeType } from '@gram-lang/parser';
 import { calculateMassMetrics } from './metrics';
 import { calculateNutrition } from './nutrition';
@@ -89,7 +89,7 @@ export function analyze(
     // 1.5. Secondary pass: resolve Relative Quantities
     sections.forEach(sec => {
         sec.ingredients.forEach(item => {
-            if (item.formula && item.formula.target) {
+            if (item.formula?.target) {
                 const targetId = item.dependencies?.[0];
                 const isVariable = item.formula.raw.includes('% of &');
                 
@@ -239,7 +239,7 @@ export function analyze(
         for (const item of shopping_list) {
             if (
                 (opts.bakersReference && item.id === opts.bakersReference) ||
-                (item.modifiers && item.modifiers.includes('bakers_percentage'))
+                (item.modifiers?.includes('bakers_percentage'))
             ) {
                 bakersReferenceItem = item;
                 break;
@@ -304,7 +304,7 @@ export function analyze(
     }
 
     // 3. Estimate full nutritional profiles (calories, macros) based on portion counts
-    let nutrition: any = undefined;
+    let nutrition: any ;
     if (opts.enableNutritionalEstimation !== false) {
          nutrition = calculateNutrition(shopping_list, database, opts.portions || 1);
     }

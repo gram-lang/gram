@@ -1,6 +1,7 @@
 {
   "name": "gram",
   "devDependencies": {
+    "@biomejs/biome": "2.5.2",
     "@changesets/assemble-release-plan": "^6.0.10",
     "@changesets/cli": "^2.31.0",
     "@changesets/config": "^3.1.4",
@@ -15,7 +16,10 @@
   "scripts": {
     "postinstall": "bun run build",
     "build": "turbo run build",
-    "dev": "turbo run start",
+    "dev": "turbo run dev --filter=@gram-lang/docs",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "turbo run typecheck",
     "test": "bun test",
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps<{
+const _props = defineProps<{
   modelValue: string
   options: { label: string; value: string }[]
   placeholder?: string
@@ -15,11 +15,11 @@ const emit = defineEmits<{
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 
-function toggle() {
+function _toggle() {
   isOpen.value = !isOpen.value
 }
 
-function selectOption(value: string) {
+function _selectOption(value: string) {
   emit('update:modelValue', value)
   emit('change', value)
   isOpen.value = false

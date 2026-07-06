@@ -34,13 +34,13 @@ export function parseRef(raw: string): ParsedRef {
   const id = raw.slice(0, eqIdx).trim()
   const valueStr = raw.slice(eqIdx + 1).trim()
   const match = valueStr.match(/^([\d.]+)\s*([a-zA-Z%°]*)$/)
-  if (!match || !match[1]) {
+  if (!match?.[1]) {
     throw new Error(
       `Cannot parse quantity "${valueStr}". Expected a number with optional unit (e.g. 300g, 200ml, 3).`,
     )
   }
   const value = parseFloat(match[1])
-  if (isNaN(value) || value <= 0) {
+  if (Number.isNaN(value) || value <= 0) {
     throw new Error(`Invalid quantity "${valueStr}". Must be a positive number.`)
   }
   return { id, value, unit: match[2]?.trim() || null }
@@ -54,7 +54,7 @@ export function parseRef(raw: string): ParsedRef {
 export function parseScaleArg(raw: string): { type: 'factor'; value: number } | { type: 'ref'; raw: string } {
   if (raw.includes('=')) return { type: 'ref', raw }
   const value = parseFloat(raw)
-  if (isNaN(value) || value <= 0) {
+  if (Number.isNaN(value) || value <= 0) {
     throw new Error(`Invalid --scale value "${raw}". Use a positive number (e.g. 1.5) or a reference (e.g. farine=300g).`)
   }
   return { type: 'factor', value }

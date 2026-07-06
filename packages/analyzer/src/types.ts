@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
+import type { z } from 'zod';
+import type { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
 
 export type AnalyzerOptions = z.infer<typeof AnalyzerOptionsSchema>;
 
-import { Usage, ProcessedSection, CompilationResult } from '@gram-lang/kitchen';
+import type { Usage, ProcessedSection, CompilationResult } from '@gram-lang/kitchen';
 
 export interface MassMetrics {
     totalMass: number;

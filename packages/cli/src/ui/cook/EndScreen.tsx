@@ -1,4 +1,3 @@
-import React from 'react'
 import { Box, Text, useInput } from 'ink'
 
 function fmtDuration(ms: number): string {

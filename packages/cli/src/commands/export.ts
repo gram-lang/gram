@@ -78,10 +78,9 @@ export default defineCommand({
 
     const outputPath = args.output
       ? resolve(args.output as string)
-      : join(dirname(filePath), basename(filePath, extname(filePath)) + '.' + fmt)
+      : join(dirname(filePath), `${basename(filePath, extname(filePath))}.${fmt}`)
 
     let content: string
-    const bakersMath = (args['bakers-reference'] as string) || (args['bakers-math'] as boolean)
 
     try {
       content = await exportRecipe(filePath, fmt, db, scaleFactor, {

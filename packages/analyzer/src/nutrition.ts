@@ -1,7 +1,7 @@
 import { getNumericQty, WarningCode, pushWarning } from '@gram-lang/kitchen';
 import { getIngredientData } from './ingredient_db';
 import { standardizeMass } from './mass_standardization';
-import { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';
+import type { NutritionMetrics, IngredientData, AnalyzedUsage } from './types';
 
 interface Macros {
     calories: number;
@@ -34,6 +34,7 @@ export function calculateNutrition(
 
     let metricsCount = 0;
     let knownCount = 0;
+    let anyEstimate = false;
     const warnings: string[] = [];
     
     // Flatten composite ingredients and alternatives
@@ -89,6 +90,8 @@ export function calculateNutrition(
             }
         }
 
+        if (isEst) anyEstimate = true;
+
         if (mass > 0) {
             const data = getIngredientData(id, database);
             if (!data) {
@@ -128,7 +131,7 @@ export function calculateNutrition(
 
     const res: NutritionMetrics = {
         total,
-        isEstimate: true, 
+        isEstimate: anyEstimate,
         coverage,
         warnings: warnings.length > 0 ? warnings : undefined
     };

@@ -98,7 +98,7 @@ export async function applySync(
   }
 
   await withFileLock(dbPath, async () => {
-    let doc: Document
+    let doc: Document<any, any>
     try {
       const content = await readFile(dbPath, 'utf-8')
       doc = parseDocument(content)

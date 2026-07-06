@@ -1,8 +1,8 @@
-import { slugify, minifyQuantity, getNumericQty } from './utils';
+import { slugify, getNumericQty } from './utils';
 import { detectCycles } from './graph';
-import { QuantityValueAST, ASTNodeType } from '@gram-lang/parser';
-import { ProcessedSection, Registry, Usage } from './types';
-import { CompilerOptions } from './core';
+import { ASTNodeType } from '@gram-lang/parser';
+import type { ProcessedSection, Registry, Usage } from './types';
+import type { CompilerOptions } from './core';
 
 interface ShoppingListItem {
     id: string;
@@ -56,7 +56,7 @@ function formatQuantity(q: any): string | number {
  * Iterates through all compiled sections and merges identical ingredients by ID,
  * aggregates compatible quantities, handles composite/parent sub-recipes, and flags circular references.
  */
-export function generateShoppingList(sections: ProcessedSection[], registry: Registry, options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[] {
+export function generateShoppingList(sections: ProcessedSection[], registry: Registry, _options?: CompilerOptions): (ShoppingListItem | CompositeItem | Usage)[] {
     const listMap = new Map<string, ShoppingListItem>();
     const compositeMap = new Map<string, CompositeItem>();
     const alternatives: Usage[] = [];
@@ -96,7 +96,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
                  
                  // Accumulate declared parent batch requirements (default to 1)
                  let declParentQty = 1;
-                 if (item.composite && item.composite.quantity) {
+                 if (item.composite?.quantity) {
                       const numQ = getNumericQty(item.composite.quantity);
                       if (numQ !== null) declParentQty = numQ;
                  }
@@ -136,7 +136,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             
             // Extract numeric quantities if resolvable
             let numericQty: number | null = null;
-            let unit = item.unit || '';
+            const unit = item.unit || '';
             let isGhost = false;
 
             if (item.formula) {
@@ -156,7 +156,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             const key = `${id}::${unit}::${isGhost ? 'ghost' : 'real'}`;
 
             if (!listMap.has(key)) {
-                let name = registry.ingredients.get(id)?.name || item.name;
+                const name = registry.ingredients.get(id)?.name || item.name;
                 
                 listMap.set(key, {
                     id: id,
@@ -184,7 +184,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
             // can find it too.
             if (item.modifiers && item.modifiers.length > 0) {
                 if (!existing.modifierSet) existing.modifierSet = new Set();
-                item.modifiers.forEach((m: string) => existing.modifierSet!.add(m));
+                item.modifiers.forEach((m: string) => { existing.modifierSet?.add(m); });
             }
 
             // (Numeric extraction moved up above key generation)
@@ -310,7 +310,7 @@ export function generateShoppingList(sections: ProcessedSection[], registry: Reg
         c.qty = maxQ;
         const parentName = registry.ingredients.get(c.id)?.name || c.id;
         
-        let cRes: any = {
+        const cRes: any = {
             type: 'composite',
             id: c.id,
             name: parentName,

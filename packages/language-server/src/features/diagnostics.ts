@@ -1,9 +1,9 @@
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type Diagnostic, DiagnosticSeverity, type Range } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
 import { collectIntermediates, collectReferences, collectIngredients } from '../utils/ast-walker';
 import { WarningCode } from '@gram-lang/kitchen';
-import { isKnownIngredient, findClosestIngredient, IngredientDB } from '../ingredient-loader';
+import { isKnownIngredient, findClosestIngredient, type IngredientDB } from '../ingredient-loader';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } };
 

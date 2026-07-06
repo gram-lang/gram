@@ -30,6 +30,6 @@ html.dark {
 /* Enable natural line wrapping for Gram recipes and previews */
 .vp-doc div[class*="language-gram"] code,
 .vp-doc div[class*="language-markdown"] code {
-  white-space: pre-wrap !important;
+  white-space: pre-wrap;
   word-break: break-word;
 }

@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const isExpanded = ref(props.initialExpanded !== false)
 
-function toggle() {
+function _toggle() {
   isExpanded.value = !isExpanded.value
 }
 
@@ -20,8 +20,8 @@ const type = computed(() => {
   return typeof props.data
 })
 
-const isObjectOrArray = computed(() => type.value === 'object' || type.value === 'array')
-const isEmpty = computed(() => {
+const _isObjectOrArray = computed(() => type.value === 'object' || type.value === 'array')
+const _isEmpty = computed(() => {
   if (type.value === 'array') return props.data.length === 0
   if (type.value === 'object') return Object.keys(props.data).length === 0
   return false
@@ -33,7 +33,7 @@ const keys = computed(() => {
   return []
 })
 
-const count = computed(() => keys.value.length)
+const _count = computed(() => keys.value.length)
 </script>
 
 <template>

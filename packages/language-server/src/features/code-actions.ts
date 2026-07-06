@@ -1,10 +1,10 @@
-import { CodeAction, CodeActionKind, Diagnostic, Range, TextEdit } from 'vscode-languageserver';
-import { DocumentState } from '../document-state';
+import { type CodeAction, CodeActionKind, type Diagnostic, type Range, type TextEdit } from 'vscode-languageserver';
+import type { DocumentState } from '../document-state';
 import { locToRange, offsetToPosition, positionToOffset } from '../utils/position';
 import { collectIntermediates, collectIngredients } from '../utils/ast-walker';
-import { IngredientDB, lookupIngredient } from '../ingredient-loader';
+import { type IngredientDB, lookupIngredient } from '../ingredient-loader';
 import { normalizeUnit } from '@gram-lang/i18n';
-import { ASTNodeType, QuantityAST } from '@gram-lang/parser';
+import { ASTNodeType, type QuantityAST } from '@gram-lang/parser';
 import { standardizeMass } from '@gram-lang/analyzer';
 import { getNumericQty } from '@gram-lang/kitchen';
 
@@ -62,11 +62,11 @@ export function provideCodeActions(
 
                 // Skip @ sigil and any modifiers (?-*&=) to reach the name
                 let nameRelStart = ingText[0] === '@' ? 1 : 0;
-                while (nameRelStart < ingText.length && '-?&*='.includes(ingText[nameRelStart])) nameRelStart++;
+                while (nameRelStart < ingText.length && '-?&*='.includes(ingText[nameRelStart]!)) nameRelStart++;
 
                 // Name ends at the first brace, composite <, parenthesis, pipe, or newline
                 let nameRelEnd = nameRelStart;
-                while (nameRelEnd < ingText.length && !'{<(|\n'.includes(ingText[nameRelEnd])) nameRelEnd++;
+                while (nameRelEnd < ingText.length && !'{<(|\n'.includes(ingText[nameRelEnd]!)) nameRelEnd++;
                 while (nameRelEnd > nameRelStart && ingText[nameRelEnd - 1] === ' ') nameRelEnd--;
 
                 actions.push({

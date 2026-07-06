@@ -1,0 +1,34 @@
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+
+steps:
+  install:
+    image: oven/bun:1
+    commands:
+      - bun install
+
+  lint:
+    image: oven/bun:1
+    commands:
+      - bun run lint
+
+  typecheck:
+    image: oven/bun:1
+    commands:
+      - bun run typecheck
+
+  test:
+    image: oven/bun:1
+    commands:
+      - bun test
+
+  # Non-blocking for now: several known vulnerabilities are tracked and scheduled
+  # to be resolved (dependency updates, see audit Chantier 5). Once addressed,
+  # remove `failure: ignore` so new vulnerabilities start failing the build.
+  audit:
+    image: oven/bun:1
+    commands:
+      - bun audit
+    failure: ignore

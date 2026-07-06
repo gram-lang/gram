@@ -6,9 +6,9 @@ import { useData } from 'vitepress'
 import { getDictionary } from '@gram-lang/i18n'
 
 const { lang } = useData()
-const t = computed(() => getDictionary(lang.value))
+const _t = computed(() => getDictionary(lang.value))
 
-const knownUnits = [
+const _knownUnits = [
   ...Object.keys(UNIT_CONVERSIONS.mass.map),
   ...Object.keys(UNIT_CONVERSIONS.volume.map)
 ]
@@ -36,37 +36,37 @@ const emit = defineEmits<{
   'scale-apply': []
 }>()
 
-const massEnabled = computed({
+const _massEnabled = computed({
   get: () => props.options.enableMassStandardization,
   set: (val) => emit('update:options', { ...props.options, enableMassStandardization: val })
 })
 
-const yieldEnabled = computed({
+const _yieldEnabled = computed({
   get: () => props.options.enableYieldCalculation,
   set: (val) => emit('update:options', { ...props.options, enableYieldCalculation: val })
 })
 
-const nutritionEnabled = computed({
+const _nutritionEnabled = computed({
   get: () => props.options.enableNutritionalEstimation,
   set: (val) => emit('update:options', { ...props.options, enableNutritionalEstimation: val })
 })
 
-const bakersMath = computed({
+const _bakersMath = computed({
   get: () => props.options.bakersMath,
   set: (val) => emit('update:options', { ...props.options, bakersMath: val })
 })
 
-const bakersMathOnly = computed({
+const _bakersMathOnly = computed({
   get: () => props.options.bakersMathOnly,
   set: (val) => emit('update:options', { ...props.options, bakersMathOnly: val })
 })
 
-const bakersReference = computed({
+const _bakersReference = computed({
   get: () => props.options.bakersReference || '',
   set: (val) => emit('update:options', { ...props.options, bakersReference: val || undefined })
 })
 
-const targetId = computed({
+const _targetId = computed({
   get: () => props.scaleTargetId || '',
   set: (val) => {
     emit('update:scaleTargetId', val || null)
@@ -84,7 +84,7 @@ const targetId = computed({
   }
 })
 
-const targetQty = computed({
+const _targetQty = computed({
   get: () => {
     if (props.scaleTargetQty === null) return ''
     return formatDecimalToFraction(props.scaleTargetQty)
@@ -100,12 +100,12 @@ const targetQty = computed({
       if (parts.length === 2) {
         const n = parseFloat(parts[0])
         const d = parseFloat(parts[1])
-        if (!isNaN(n) && !isNaN(d) && d !== 0) parsed = n / d
+        if (!Number.isNaN(n) && !Number.isNaN(d) && d !== 0) parsed = n / d
       }
     } else {
       parsed = parseFloat(val)
     }
-    if (parsed !== null && !isNaN(parsed)) {
+    if (parsed !== null && !Number.isNaN(parsed)) {
       emit('update:scaleTargetQty', parsed)
     } else {
       emit('update:scaleTargetQty', null)
@@ -113,12 +113,12 @@ const targetQty = computed({
   }
 })
 
-const targetUnit = computed({
+const _targetUnit = computed({
   get: () => props.scaleTargetUnit,
   set: (val) => emit('update:scaleTargetUnit', val)
 })
 
-function submitScale() {
+function _submitScale() {
   emit('scale-apply')
 }
 </script>

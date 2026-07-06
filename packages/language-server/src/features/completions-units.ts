@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { type CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { UNIT_DICTIONARIES, TIME_DICTIONARIES } from '@gram-lang/i18n';
 
 export function isInsideBraces(prefix: string): boolean {

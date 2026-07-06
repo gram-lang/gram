@@ -1,6 +1,6 @@
-import { getAST, RecipeAST } from '@gram-lang/parser';
-import { compile, CompilationResult } from '@gram-lang/kitchen';
-import { analyze, AnalyzedCompilationResult, IngredientData } from '@gram-lang/analyzer';
+import { getAST, type RecipeAST } from '@gram-lang/parser';
+import { compile, type CompilationResult } from '@gram-lang/kitchen';
+import { analyze, type AnalyzedCompilationResult, type IngredientData } from '@gram-lang/analyzer';
 import { buildLineIndex } from './utils/position';
 
 export interface DocumentState {

@@ -28,7 +28,7 @@ export const UNIT_CONVERSIONS = {
 };
 
 import { getIngredientData } from './ingredient_db';
-import { IngredientData } from './types';
+import type { IngredientData } from './types';
 
 /**
  * Mass Normalization Module
@@ -108,7 +108,7 @@ export function resolveIngredientDensity(
     }
 
     const data = getIngredientData(ingredientName, database);
-    if (data && data.physical && data.physical.density) {
+    if (data?.physical?.density) {
         return { density: data.physical.density, isEstimate: true };
     }
 
@@ -121,16 +121,16 @@ export function resolveIngredientDensity(
  */
 export function parseDensityOverrides(meta: any): Record<string, number> {
     const overrides: Record<string, number> = {};
-    if (!meta || !meta.densities) return overrides;
+    if (!meta?.densities) return overrides;
 
     const list = Array.isArray(meta.densities) ? meta.densities : [meta.densities];
     list.forEach((entry: any) => {
         if (typeof entry !== 'string') return;
         const parts = entry.split(':');
         if (parts.length === 2) {
-            const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9\-]/g, '');
+            const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
             const density = parseFloat((parts[1] || '').trim());
-            if (!isNaN(density)) {
+            if (!Number.isNaN(density)) {
                 overrides[name] = density;
             }
         }
@@ -198,7 +198,7 @@ export function standardizeMass(
         }
 
         const data = getIngredientData(ingredientName, database);
-        if (data && data.physical && data.physical.unit_weight) {
+        if (data?.physical?.unit_weight) {
             return { mass: amount * data.physical.unit_weight, method: 'unit_weight', isEstimate: true };
         }
     }

@@ -1,4 +1,4 @@
-import { compileDictionary, LanguageDict } from './dictionary';
+import { compileDictionary, type LanguageDict } from './dictionary';
 
 const en: LanguageDict = {
     h: ['hour', 'hours'],
@@ -22,7 +22,7 @@ export const resolveTimeUnit = (unit?: string | null, lang?: string): string => 
     if (!unit) return '';
     const clean = unit.trim().toLowerCase();
     
-    if (lang && TIME_BY_LANG[lang] && TIME_BY_LANG[lang][clean]) {
+    if (lang && TIME_BY_LANG[lang]?.[clean]) {
         return TIME_BY_LANG[lang][clean];
     }
     

@@ -1,12 +1,12 @@
 import { minifyQuantity, createCleanUsage, quantityToMinutes, nextUsageId } from './utils';
-import { 
-    ASTNode, SectionAST, StepAST, CommentAST, IngredientAST, CookwareAST,
-    AlternativeAST, ReferenceAST, IntermediateDecl, TimerAST, TemperatureAST, TextAST,
-    QuantityValueAST, ASTNodeType, Location
+import {
+    type ASTNode, type SectionAST, type CommentAST, type IngredientAST, type CookwareAST,
+    type AlternativeAST, type ReferenceAST, type IntermediateDecl, type TimerAST, type TemperatureAST, type TextAST,
+    type QuantityValueAST, ASTNodeType, type Location
 } from '@gram-lang/parser';
-import { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem, ProcessedComment } from './types';
-import { CompilerOptions } from './core';
-import { RecipeRegistry } from './registry';
+import type { Context, ProcessedSection, ProcessedStep, Usage, ProcessedStepItem } from './types';
+import type { CompilerOptions } from './core';
+import type { RecipeRegistry } from './registry';
 import { WarningCode, pushWarning } from './warnings';
 
 export interface ProcessorContext extends Context {
@@ -98,7 +98,7 @@ function processIngredient(
               }
          }
          
-         const usage = createCleanUsage(item, id, ctx.options);
+         const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
          usage.qty = item.quantity; // Defer evaluation to analyzer
          usage.unit = null;
          
@@ -119,8 +119,8 @@ function processIngredient(
          return usage;
     }
 
-    const usage = createCleanUsage(item, id, ctx.options);
-    if (item.modifiers && item.modifiers.includes('&')) {
+    const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
+    if (item.modifiers?.includes('&')) {
          if (!ctx.seenNames.has(item.name)) {
               pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, { prefix: '@&', name: item.name, item: item.name, loc: item.loc });
          }
@@ -134,7 +134,7 @@ function processIngredient(
          item.quantity.type === ASTNodeType.TextQuantity
     ));
     
-    if (!item.modifiers || !item.modifiers.includes('&') || hasQuantityValue) {
+    if (!item.modifiers?.includes('&') || hasQuantityValue) {
          secIngredients.push(usage);
     }
     
@@ -150,7 +150,7 @@ function processCookware(
     checkModifiers(ctx, item.modifiers, item.name, item.loc);
 
     const id = registry.registerCookware(item.name);
-    const usage = createCleanUsage(item, id, ctx.options);
+    const usage = createCleanUsage(item, id, ctx.usageCounter, ctx.options);
     secCookware.push(usage);
     return usage;
 }
@@ -163,8 +163,8 @@ function processAlternative(
     secCookware: Usage[]
 ): Usage {
     const processedOptions: ProcessedBlockResult[] = [];
-    let tempIngredientsScope = [...secIngredients];
-    let tempCookwareScope = [...secCookware];
+    const tempIngredientsScope = [...secIngredients];
+    const tempCookwareScope = [...secCookware];
 
     item.options.forEach((opt) => {
         const captureIngredients = [...tempIngredientsScope];
@@ -214,7 +214,7 @@ function processReference(
     }
     if (ctx.definedIntermediates.has(cleanName)) ctx.usedIntermediates.add(cleanName);
 
-    const obj: Usage = { type: 'reference', id, name: cleanName, _usageId: nextUsageId() };
+    const obj: Usage = { type: 'reference', id, name: cleanName, _usageId: nextUsageId(ctx.usageCounter) };
 
     if (item.quantity) {
          if (item.quantity.type === ASTNodeType.Quantity) {
@@ -330,9 +330,10 @@ export function processBlockItem(
         case ASTNodeType.Section:
         case ASTNodeType.Step:
             return null;
-        default:
+        default: {
             const _exhaustiveCheck: never = item;
-            throw new Error(`Unhandled AST node type: ${(item as any).type}`);
+            throw new Error(`Unhandled AST node type: ${(_exhaustiveCheck as { type?: string })?.type}`);
+        }
     }
 }
 
@@ -354,6 +355,7 @@ export function processSections(
         usedIntermediates: new Set(),
         currentSectionIntermediates: new Set(),
         globalScopes: new Map(),
+        usageCounter: { value: 0 },
         options
     };
 

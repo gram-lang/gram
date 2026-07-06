@@ -1,4 +1,4 @@
-import { MassMetrics } from './types';
+import type { MassMetrics } from './types';
 
 /**
  * Calculates mass metrics (totals, precision status, and missing data warnings)
