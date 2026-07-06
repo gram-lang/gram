@@ -126,8 +126,14 @@ function isProcessedTemperature(token: StepToken): token is ProcessedTemperature
 
 // A plain ingredient/cookware/reference usage — the only StepToken variants
 // carrying a `.preparation`/`.id` pair relevant to diffPreparations().
+// ProcessedDeclaration also has a string `.id`, so it must be excluded
+// explicitly — it's the only other StepToken variant that does.
 function isUsageToken(token: StepToken): token is Usage {
-  return typeof token === 'object' && token !== null && 'id' in token && typeof token.id === 'string'
+  return (
+    typeof token === 'object' && token !== null &&
+    'id' in token && typeof token.id === 'string' &&
+    (!('type' in token) || token.type !== 'declaration')
+  )
 }
 
 // Extract all tokens matching a type predicate from all steps, keyed by section title/position

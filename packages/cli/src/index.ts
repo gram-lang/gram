@@ -7,8 +7,10 @@ import { version } from '../package.json'
 // every subcommand, since citty has no first-class "shared across all
 // subcommands" mechanism. Stripped from argv before citty ever parses it, so
 // it can't collide with any subcommand's own arg definitions.
+// Deliberately no `-v` shorthand: citty already reserves it as the `--version`
+// shortcut, and stripping it here would silently break `gram -v`.
 const rawArgs = process.argv.slice(2)
-const verboseFlags = new Set(['--verbose', '-v', '--debug'])
+const verboseFlags = new Set(['--verbose', '--debug'])
 const filteredArgs = rawArgs.filter(a => !verboseFlags.has(a))
 if (filteredArgs.length !== rawArgs.length) setVerbose(true)
 

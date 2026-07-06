@@ -97,19 +97,23 @@ async function readBodyWithLimit(res: Response): Promise<string> {
 
 export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
   if (source.startsWith('http://') || source.startsWith('https://')) {
-    let res: Response
+    let body: string
+    let contentType: string
     try {
-      res = await fetch(source, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+      // The same AbortSignal covers both the connection and the body read below
+      // (per the fetch spec, an in-flight body read aborts too), so both must
+      // share this try/catch — otherwise a timeout that fires mid-body-read
+      // leaks the raw "TimeoutError" instead of this friendly message.
+      const res = await fetch(source, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+      if (!res.ok) throw new GramCLIError(`HTTP ${res.status} fetching ${source}`, ExitCode.Error)
+      contentType = res.headers.get('content-type') ?? ''
+      body = await readBodyWithLimit(res)
     } catch (err) {
       if (err instanceof Error && err.name === 'TimeoutError') {
         throw new GramCLIError(`Timed out fetching ${source} after ${FETCH_TIMEOUT_MS / 1000}s.`, ExitCode.Error)
       }
       throw err
     }
-    if (!res.ok) throw new GramCLIError(`HTTP ${res.status} fetching ${source}`, ExitCode.Error)
-
-    const contentType = res.headers.get('content-type') ?? ''
-    const body = await readBodyWithLimit(res)
     if (contentType.includes('json')) {
       return { jsonLd: JSON.parse(body) }
     }
