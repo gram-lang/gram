@@ -12,7 +12,7 @@
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
-    "@gram-lang/vscode-extension": "workspace:*",
+    "gram-lang": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "shiki": "^4.3.0",
     "vitepress": "^1.6.4",

@@ -130,17 +130,21 @@ This monorepo is divided into specialized packages under `packages/`:
 
 ## Try it out
 
-**Note**: Gram is built with `bun`. While other package managers might technically work, it is strongly recommended to use Bun when developing within the monorepo.
-
 ### 1. Start a CLI Project
 Get started with Gram directly in your terminal:
 ```bash
-bun add -d @gram-lang/cli
-bunx gram init
+npm install -g @gram-lang/cli
+gram init
+# or, with Bun
+bun add -g @gram-lang/cli
+gram init
 ```
+The CLI runs on both Node.js (>=20) and Bun — pick whichever you already have installed.
 
 ### 2. Run the Docs & Playground locally
-To read the documentation or test your recipes in the web-based playground IDE:
+
+**Note**: contributing to this monorepo (building every package, running the test suite, the docs dev server) requires `Bun` — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ```bash
 # Install dependencies for all packages
 bun install

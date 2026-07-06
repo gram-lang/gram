@@ -3,9 +3,30 @@
   "version": "1.0.0-beta.1",
   "description": "CLI for the Gram recipe language",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "cli"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/cli#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
-    "node": ">=20",
-    "bun": ">=1.0"
+    "node": ">=20"
   },
   "bin": {
     "gram": "./dist/index.js"
@@ -33,6 +54,7 @@
     "ink": "^7.1.0",
     "p-limit": "^7.3.0",
     "react": "^19.2.7",
+    "tinyglobby": "^0.2.17",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },

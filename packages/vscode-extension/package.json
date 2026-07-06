@@ -1,16 +1,18 @@
 {
-  "name": "@gram-lang/vscode-extension",
+  "name": "gram-lang",
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
   "version": "1.0.0-beta.1",
+  "private": true,
   "publisher": "abiwab",
   "license": "GPL-3.0",
   "author": "abiwab",
   "main": "./dist/extension.cjs",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",
-    "directory": "vscode-extension"
+    "directory": "packages/vscode-extension"
   },
   "bugs": {
     "url": "https://codeberg.org/abiwab/gram/issues"
@@ -21,6 +23,13 @@
   },
   "categories": [
     "Programming Languages"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "cooking",
+    "language server",
+    "syntax highlighting"
   ],
   "contributes": {
     "commands": [
@@ -111,7 +120,7 @@
   "scripts": {
     "build": "node build.cjs",
     "dev": "node build.cjs --watch",
-    "package": "node package.cjs"
+    "package": "vsce package --no-dependencies"
   },
   "dependencies": {
     "@gram-lang/language-server": "workspace:*",

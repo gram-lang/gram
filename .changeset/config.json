@@ -14,11 +14,11 @@
       "@gram-lang/parser",
       "@gram-lang/i18n",
       "@gram-lang/renderer",
-      "@gram-lang/vscode-extension"
+      "gram-lang"
     ]
   ],
   "linked": [],
-  "access": "restricted",
+  "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []

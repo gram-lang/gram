@@ -6,16 +6,16 @@ The compiler for the Gram recipe language. It takes a typed Recipe AST (produced
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
 ## 🛠️ Installation
 
-Install `@gram-lang/kitchen` via bun:
-
 ```bash
-bun install @gram-lang/kitchen
+npm install @gram-lang/kitchen
+# or
+bun add @gram-lang/kitchen
 ```
 
 ---
@@ -23,8 +23,8 @@ bun install @gram-lang/kitchen
 ## ⚡ Usage
 
 ```javascript
-const { getAST } = require('@gram-lang/parser');
-const { compile } = require('@gram-lang/kitchen');
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
 
 const source = `
 ## My Recipe

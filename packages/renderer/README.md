@@ -6,16 +6,16 @@ The universal renderer for the Gram recipe language. It takes compiled or analyz
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
 ## 🛠️ Installation
 
-Install `@gram-lang/renderer` via bun:
-
 ```bash
-bun install @gram-lang/renderer
+npm install @gram-lang/renderer
+# or
+bun add @gram-lang/renderer
 ```
 
 ---

@@ -6,20 +6,17 @@ A robust, 3-stage parser for the Gram recipe language. It is part of the Gram mo
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
-## Building
-
-To build the project from source (TypeScript):
+## 🛠️ Installation
 
 ```bash
-bun install
-bun run build
+npm install @gram-lang/parser
+# or
+bun add @gram-lang/parser
 ```
-
-This will generate the compiled JavaScript in the `dist/` directory.
 
 ---
 
@@ -28,7 +25,7 @@ This will generate the compiled JavaScript in the `dist/` directory.
 The package exports `getAST()` to convert Gram source strings into a typed Recipe AST.
 
 ```javascript
-const { getAST } = require('@gram-lang/parser');
+import { getAST } from '@gram-lang/parser';
 
 const source = `
 ## My Recipe

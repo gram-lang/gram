@@ -4,9 +4,32 @@
   "description": "Gram recipe analyzer for physical properties (mass, yield, nutrition)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "analyzer",
+    "nutrition"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/analyzer"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/analyzer#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "dependencies": {
     "@gram-lang/parser": "workspace:*",

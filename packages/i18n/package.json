@@ -4,9 +4,32 @@
   "description": "Gram recipe i18n and unit normalization logic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "i18n",
+    "units"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/i18n"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/i18n#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

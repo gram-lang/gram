@@ -4,8 +4,12 @@
   "description": "Universal Markdown and HTML AST renderer for the Gram recipe language.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "test": "bun test",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -17,6 +21,18 @@
   ],
   "author": "abiwab",
   "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/renderer"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/renderer#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",

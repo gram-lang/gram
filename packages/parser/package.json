@@ -11,6 +11,10 @@
     },
     "./textmate": "./syntaxes/gram.tmLanguage.json"
   },
+  "files": [
+    "dist",
+    "syntaxes"
+  ],
   "keywords": [
     "gram",
     "recipe",
@@ -28,9 +32,13 @@
     "url": "https://codeberg.org/abiwab/gram/issues"
   },
   "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/parser#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prebuild": "node scripts/build-grammar.cjs",
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "test": "bun test",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

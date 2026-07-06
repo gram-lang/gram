@@ -1,4 +1,4 @@
-import { Glob } from 'bun'
+import { globSync } from 'tinyglobby'
 import { resolve, extname } from 'node:path'
 import { GramCLIError, ExitCode } from '../errors'
 import { findProjectRoot } from './workspace'
@@ -11,7 +11,7 @@ export async function resolveGlob(patterns: string[]): Promise<string[]> {
     if (pattern.includes('*')) {
       let matches: string[] = []
       try {
-        matches = [...new Glob(pattern).scanSync({ cwd: root, absolute: true })]
+        matches = globSync(pattern, { cwd: root, absolute: true })
           .filter(f => extname(f) === '.gram')
       } catch (err) {
         const code = (err as NodeJS.ErrnoException).code

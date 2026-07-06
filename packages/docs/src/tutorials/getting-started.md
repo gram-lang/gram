@@ -4,25 +4,16 @@ This guide will help you install the Gram ecosystem and compile your first recip
 
 ## 1. Installation
 
-Gram is an open-source project. To start using the CLI, clone the repository and build it locally. [Bun](https://bun.sh/) is used as the package manager and runtime.
+Install the `gram` CLI globally with your package manager of choice — it runs on both Node.js (>=20) and [Bun](https://bun.sh/):
 
-1. Clone the repository:
-   ```bash
-   git clone https://codeberg.org/abiwab/gram.git
-   cd gram
-   ```
-2. Install all dependencies across the workspace:
-   ```bash
-   bun install
-   ```
-3. Link the CLI globally:
-   ```bash
-   cd packages/cli
-   bun link
-   ```
+```bash
+npm install -g @gram-lang/cli
+# or
+bun add -g @gram-lang/cli
+```
 
 > [!NOTE]
-> The `bun link` command registers the `gram` executable globally. Ensure that your `~/.bun/bin` folder is in your system's `PATH`.
+> Want to build the CLI from source instead (e.g. to contribute to the project)? See [CONTRIBUTING.md](https://codeberg.org/abiwab/gram/src/branch/main/CONTRIBUTING.md).
 
 ## 2. Editor Setup
 
@@ -36,30 +27,20 @@ Installing the **Gram VS Code Extension** is highly recommended. It provides:
 - Real-time compiler feedback
 :::
 
-Currently, the extension is not available on the VS Code Marketplace, but you can build and install it locally from the source repository you just cloned:
+Search for **"Gram Language Support"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or grab it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=abiwab.gram-lang).
 
+::: details Building from source instead
 ```bash
-# 1. Navigate to the extension folder (from the root of the repository)
-cd packages/vscode-extension
+git clone https://codeberg.org/abiwab/gram.git
+cd gram
+bun install
 
-# 2. Build the extension package (this generates a .vsix file)
+# Build the extension package (this generates a .vsix file)
+cd packages/vscode-extension
 bun run package
 
-# 3. Install the package in VS Code
-code --install-extension gram-vscode-extension-*.vsix
-```
-
-::: details Alternative: Symlink for Extension Development
-For development purposes, you can symlink the extension directly to your local VS Code extensions folder instead of packaging it.
-
-**Linux / macOS**:
-```bash
-ln -s $(pwd) ~/.vscode/extensions/gram-vscode-extension
-```
-
-**Windows (PowerShell)**:
-```powershell
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\gram-vscode-extension" -Target $PWD
+# Install the package in VS Code
+code --install-extension gram-lang-*.vsix
 ```
 :::
 

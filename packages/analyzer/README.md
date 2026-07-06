@@ -6,16 +6,16 @@ The physical and nutritional analysis module for the Gram recipe language. It ta
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
 ## 🛠️ Installation
 
-Install `@gram-lang/analyzer` via bun:
-
 ```bash
-bun install @gram-lang/analyzer
+npm install @gram-lang/analyzer
+# or
+bun add @gram-lang/analyzer
 ```
 
 ---
@@ -23,9 +23,9 @@ bun install @gram-lang/analyzer
 ## ⚡ Usage
 
 ```javascript
-const { getAST } = require('@gram-lang/parser');
-const { compile } = require('@gram-lang/kitchen');
-const { analyze } = require('@gram-lang/analyzer');
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
 
 // 1. Compile AST
 const ast = getAST("## Salad\nAdd @avocado{1} and @lemon juice{1tbsp}.");

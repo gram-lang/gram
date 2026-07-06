@@ -4,6 +4,9 @@
   "description": "Compiler for the Gram recipe language, converting AST to JSON.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "gram",
     "recipe",
@@ -15,14 +18,18 @@
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",
-    "directory": "compiler"
+    "directory": "packages/kitchen"
   },
   "bugs": {
     "url": "https://codeberg.org/abiwab/gram/issues"
   },
-  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/compiler#readme",
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/kitchen#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "test": "bun test",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

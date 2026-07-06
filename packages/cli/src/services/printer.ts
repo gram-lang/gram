@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { spawn } from 'node:child_process'
 import type { RendererOptions } from '@gram-lang/renderer'
 import type { IngredientData } from '@gram-lang/analyzer'
 import { exportRecipe } from './exporter'
@@ -23,9 +24,10 @@ export function openInBrowser(htmlPath: string): boolean {
     win32: ['cmd', '/c', 'start', '', htmlPath],
     linux: ['xdg-open', htmlPath],
   }
-  const argv = cmds[process.platform] ?? ['xdg-open', htmlPath]
+  const [cmd, ...args] = cmds[process.platform] ?? ['xdg-open', htmlPath]
   try {
-    Bun.spawn(argv, { stdio: ['ignore', 'ignore', 'ignore'] })
+    const child = spawn(cmd!, args, { stdio: 'ignore', detached: true })
+    child.unref()
     return true
   } catch {
     return false

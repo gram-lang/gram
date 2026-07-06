@@ -4,18 +4,13 @@ The official Gram CLI (`@gram-lang/cli`) is the primary tool for validating, com
 
 ## Installation
 
-Gram is not yet published to a package registry. To use the CLI, clone the repository and link it locally with [Bun](https://bun.sh/):
-
 ```bash
-git clone https://codeberg.org/abiwab/gram.git
-cd gram
-bun install
-cd packages/cli
-bun link
+npm install -g @gram-lang/cli
+# or
+bun add -g @gram-lang/cli
 ```
 
-> [!NOTE]
-> Bun is required to build and run the CLI, not just to install dependencies — the compiled binary's shebang targets the Bun runtime directly, and core code paths (glob resolution, opening a browser for `gram print`) call Bun-only runtime APIs with no Node.js fallback. `npm`/`pnpm` are not viable substitutes here.
+The CLI runs on both Node.js (>=20) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
 
 ---
 

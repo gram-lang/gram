@@ -6,16 +6,16 @@ The translation and normalization module for units and time within the Gram reci
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](../../docs/README.md)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
 ## 🛠️ Installation
 
-Install `@gram-lang/i18n` via bun:
-
 ```bash
-bun install @gram-lang/i18n
+npm install @gram-lang/i18n
+# or
+bun add @gram-lang/i18n
 ```
 
 ---
@@ -25,7 +25,7 @@ bun install @gram-lang/i18n
 The package exports two primary normalization functions: `normalizeUnit` (for volumes/masses) and `resolveTimeUnit` (for duration units).
 
 ```javascript
-const { normalizeUnit, resolveTimeUnit } = require('@gram-lang/i18n');
+import { normalizeUnit, resolveTimeUnit } from '@gram-lang/i18n';
 
 // 1. Normalizing measurement units
 console.log(normalizeUnit('càs', 'fr'));            // 'tbsp' (French alias)

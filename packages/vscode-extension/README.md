@@ -1,4 +1,4 @@
-# @gram-lang/vscode-extension
+# Gram Language Support
 
 The official Visual Studio Code extension for the Gram recipe language. It provides a full language server with real-time diagnostics, advanced editing assistance, semantic highlighting, and a dynamic Live Preview.
 
@@ -6,13 +6,15 @@ The official Visual Studio Code extension for the Gram recipe language. It provi
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the central **[Gram Documentation Index](https://codeberg.org/abiwab/gram)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
 
 ---
 
 ## 🛠️ Installation
 
-The extension is not yet available on the VS Code Marketplace. You must build and install it from the source:
+Search for **"Gram Language Support"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or install it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram).
+
+### Building from source
 
 1. Clone the repository and navigate to the project root.
 2. Install dependencies and build the monorepo:
