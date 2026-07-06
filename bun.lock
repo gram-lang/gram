@@ -12,6 +12,7 @@
         "@manypkg/get-packages": "^3.1.0",
         "tsup": "^8.5.1",
         "turbo": "^2.9.18",
+        "typescript": "^6.0.3",
       },
     },
     "packages/analyzer": {
@@ -24,7 +25,6 @@
         "zod": "^4.4.3",
       },
       "devDependencies": {
-        "typescript": "^6.0.3",
         "yaml": "^2.9.0",
       },
     },
@@ -59,8 +59,6 @@
       "devDependencies": {
         "@types/bun": "latest",
         "@types/react": "^19.2.17",
-        "tsup": "^8.5.1",
-        "typescript": "^6.0.3",
       },
     },
     "packages/docs": {
@@ -85,9 +83,6 @@
     "packages/i18n": {
       "name": "@gram-lang/i18n",
       "version": "1.0.0-beta.1",
-      "devDependencies": {
-        "typescript": "^6.0.3",
-      },
     },
     "packages/kitchen": {
       "name": "@gram-lang/kitchen",
@@ -99,7 +94,6 @@
       },
       "devDependencies": {
         "@types/node": "^25.9.3",
-        "typescript": "^6.0.3",
       },
     },
     "packages/language-server": {
@@ -118,7 +112,6 @@
       "devDependencies": {
         "@types/node": "^25.9.3",
         "esbuild": "^0.25.5",
-        "typescript": "^6.0.3",
       },
     },
     "packages/parser": {
@@ -128,9 +121,6 @@
         "ohm-js": "^17.5.0",
         "zod": "^4.4.3",
       },
-      "devDependencies": {
-        "typescript": "^6.0.3",
-      },
     },
     "packages/renderer": {
       "name": "@gram-lang/renderer",
@@ -139,9 +129,6 @@
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
-      },
-      "devDependencies": {
-        "typescript": "^6.0.3",
       },
     },
     "packages/vscode-extension": {
@@ -156,7 +143,6 @@
         "@types/vscode": "^1.75.0",
         "@vscode/vsce": "^3.5.0",
         "esbuild": "^0.25.5",
-        "typescript": "^6.0.3",
       },
     },
   },

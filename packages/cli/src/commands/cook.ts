@@ -12,7 +12,7 @@ import { runPipeline } from '../core/pipeline'
 import { resolveScaleArg, getScaleWarnings } from '../services/scaler'
 import { prepareRecipeData } from '../ui/cook/prepare'
 import App from '../ui/cook/App'
-import { ExitCode } from '../errors'
+import { ExitCode, reportError } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -66,7 +66,7 @@ export default defineCommand({
       s.stop(`${recipe.title ?? 'Recipe'}${factorStr} — ${recipe.steps.length} step${recipe.steps.length !== 1 ? 's' : ''} ready.`)
     } catch (err) {
       s.stop('Failed.')
-      log.error(err instanceof Error ? err.message : String(err))
+      reportError(err)
       process.exit(ExitCode.Error)
     }
 

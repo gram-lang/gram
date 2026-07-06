@@ -6,7 +6,7 @@ import { compile } from '@gram-lang/kitchen'
 import type { CompilationResult } from '@gram-lang/kitchen'
 import { diffRecipes } from '@gram-lang/analyzer'
 import type { DiffResult } from '@gram-lang/analyzer'
-import { GramCLIError, ExitCode } from '../errors'
+import { GramCLIError, ExitCode, getErrorMessage } from '../errors'
 
 export type { DiffResult }
 
@@ -58,9 +58,8 @@ async function compileAtRef(ref: string, absPath: string): Promise<CompilationRe
   try {
     content = await run('git', ['show', `${ref}:${relToRoot}`], root)
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
     throw new GramCLIError(
-      `Cannot read "${relToRoot}" at "${ref}".\n${msg}\n\nMake sure the file is tracked by git and the ref exists.`,
+      `Cannot read "${relToRoot}" at "${ref}".\n${getErrorMessage(err)}\n\nMake sure the file is tracked by git and the ref exists.`,
       ExitCode.Error,
     )
   }

@@ -39,8 +39,5 @@
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/i18n": "workspace:*"
   },
-  "devDependencies": {
-    "typescript": "^6.0.3"
-  },
   "type": "module"
 }

@@ -46,8 +46,5 @@
     "ohm-js": "^17.5.0",
     "zod": "^4.4.3"
   },
-  "devDependencies": {
-    "typescript": "^6.0.3"
-  },
   "type": "module"
 }

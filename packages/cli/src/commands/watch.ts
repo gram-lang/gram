@@ -10,6 +10,7 @@ import { loadDbSafe } from '../core/db'
 import { findProjectRoot } from '../core/workspace'
 import { checkFiles } from '../services/checker'
 import { buildFiles } from '../services/builder'
+import { getErrorMessage } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -98,7 +99,7 @@ export default defineCommand({
           process.stdout.write(`         ${chalk.dim('→ built')}\n`)
         } catch (err) {
           process.stdout.write(
-            `         ${chalk.dim('→')} ${chalk.red('build failed:')} ${err instanceof Error ? err.message : String(err)}\n`,
+            `         ${chalk.dim('→')} ${chalk.red('build failed:')} ${getErrorMessage(err)}\n`,
           )
         }
       }

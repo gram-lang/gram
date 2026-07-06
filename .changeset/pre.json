@@ -8,7 +8,6 @@
     "@gram-lang/kitchen": "0.10.1",
     "@gram-lang/language-server": "0.10.1",
     "@gram-lang/parser": "0.10.1",
-    "@gram-lang/playground": "0.10.1",
     "@gram-lang/renderer": "0.10.1",
     "gram-lang": "0.10.1",
     "@gram-lang/docs": "1.0.0-beta.0"

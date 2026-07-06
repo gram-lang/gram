@@ -9,7 +9,7 @@ import { loadDbSafe } from '../core/db'
 import { resolveGlob } from '../core/glob'
 import { buildFiles } from '../services/builder'
 import { parseScaleArg } from '../services/scaler'
-import { ExitCode, GramCLIError } from '../errors'
+import { ExitCode, GramCLIError, getErrorMessage } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -57,7 +57,7 @@ export default defineCommand({
         }
         scaleFactor = parsed.value
       } catch (err) {
-        process.stderr.write(`gram build: ${err instanceof Error ? err.message : String(err)}\n`)
+        process.stderr.write(`gram build: ${getErrorMessage(err)}\n`)
         process.exit(ExitCode.Error)
       }
     }
@@ -69,7 +69,7 @@ export default defineCommand({
       try {
         await runToStdout({ ...args, _scaleFactor: scaleFactor })
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
+        const msg = getErrorMessage(err)
         process.stderr.write(`gram build: ${msg}\n`)
         process.exit(ExitCode.Error)
       }

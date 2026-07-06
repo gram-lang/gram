@@ -7,7 +7,7 @@ import { loadDbSafe } from '../core/db'
 import { runPipeline } from '../core/pipeline'
 import { resolveScaleFactor, buildScaleComparison, getScaleWarnings } from '../services/scaler'
 import { renderScaleResult } from '../ui/scaler'
-import { ExitCode } from '../errors'
+import { ExitCode, reportError } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -63,7 +63,7 @@ export default defineCommand({
       renderScaleResult(original.title, factor, items, warnings)
     } catch (err) {
       s.stop('Failed.')
-      log.error(err instanceof Error ? err.message : String(err))
+      reportError(err)
       process.exit(ExitCode.Error)
     }
   },

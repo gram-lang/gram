@@ -4,7 +4,7 @@ import type { LanguageModel } from 'ai'
 import { getAST } from '@gram-lang/parser'
 import { compile } from '@gram-lang/kitchen'
 import { getAiLanguageInstruction } from '@gram-lang/i18n'
-import { GramCLIError, ExitCode } from '../errors'
+import { GramCLIError, ExitCode, getErrorMessage } from '../errors'
 import type { ImportResult } from '../types'
 import { GRAM_SPEC_PROMPT } from '../prompts/gram-spec'
 
@@ -133,7 +133,7 @@ export function validateGram(text: string): string[] {
     const compiled = compile(ast)
     return compiled.warnings.map(w => w.message)
   } catch (err) {
-    return [err instanceof Error ? err.message : String(err)]
+    return [getErrorMessage(err)]
   }
 }
 
@@ -173,8 +173,7 @@ export async function importWithAI(source: string, model: LanguageModel, lang = 
       gramContent = stripFences(fixed)
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    throw new GramCLIError(`AI import failed: ${msg}`, ExitCode.Error)
+    throw new GramCLIError(`AI import failed: ${getErrorMessage(err)}`, ExitCode.Error)
   }
 
   return {

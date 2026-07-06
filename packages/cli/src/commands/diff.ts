@@ -3,7 +3,7 @@ import { log, spinner } from '@clack/prompts'
 import { version } from '../../package.json'
 import { computeDiff } from '../services/differ'
 import { renderDiffResult } from '../ui/diff'
-import { ExitCode, GramCLIError } from '../errors'
+import { ExitCode, GramCLIError, reportError } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -50,7 +50,7 @@ export default defineCommand({
         log.error(err.message)
         process.exit(err.exitCode)
       }
-      log.error(err instanceof Error ? err.message : String(err))
+      reportError(err)
       process.exit(ExitCode.Error)
     }
 

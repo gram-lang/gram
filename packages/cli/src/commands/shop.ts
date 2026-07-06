@@ -7,7 +7,7 @@ import { resolveGlob } from '../core/glob'
 import { buildShoppingList } from '../services/shopper'
 import { parseScaleArg } from '../services/scaler'
 import { renderShopTerminal, renderShopMarkdown, renderShopJson } from '../ui/shop'
-import { ExitCode, GramCLIError } from '../errors'
+import { ExitCode, GramCLIError, reportError } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -57,7 +57,7 @@ export default defineCommand({
         }
         scaleFactor = parsed.value
       } catch (err) {
-        log.error(err instanceof Error ? err.message : String(err))
+        reportError(err)
         process.exit(ExitCode.Error)
       }
     }

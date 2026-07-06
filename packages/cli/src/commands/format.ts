@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import pLimit from 'p-limit'
 import { resolveGlob } from '../core/glob'
 import { formatGram, hasChanges, summarizeChanges } from '../services/formatter'
-import { ExitCode, GramCLIError } from '../errors'
+import { ExitCode, GramCLIError, getErrorMessage } from '../errors'
 
 export default defineCommand({
   meta: {
@@ -48,7 +48,7 @@ export default defineCommand({
       try {
         source = await readFile(file, 'utf-8')
       } catch (err) {
-        return { file, status: 'error' as const, message: err instanceof Error ? err.message : String(err) }
+        return { file, status: 'error' as const, message: getErrorMessage(err) }
       }
 
       const { content, changes } = formatGram(source)

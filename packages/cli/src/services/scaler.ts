@@ -1,10 +1,9 @@
-import { log } from '@clack/prompts'
 import { runPipeline } from '../core/pipeline'
-import { ExitCode } from '../errors'
+import { ExitCode, reportError } from '../errors'
 import { similarity } from '../core/fuzzy'
 import type { IngredientData } from '@gram-lang/analyzer'
 import { convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram-lang/analyzer'
-import { resolveScaleFactor as resolveScaleFactorEngine, ScaleError, IngredientNotFoundError } from '@gram-lang/kitchen'
+import { resolveScaleFactor as resolveScaleFactorEngine, IngredientNotFoundError } from '@gram-lang/kitchen'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -138,7 +137,7 @@ export async function resolveScaleArg(
   try {
     return await resolveScaleFactor(filePath, scale, db)
   } catch (err) {
-    log.error(err instanceof ScaleError || err instanceof Error ? err.message : String(err))
+    reportError(err)
     return process.exit(ExitCode.Error)
   }
 }

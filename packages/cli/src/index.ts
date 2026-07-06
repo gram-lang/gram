@@ -1,13 +1,22 @@
 import { defineCommand, runMain } from 'citty'
 import { log } from '@clack/prompts'
-import { GramCLIError, ExitCode } from './errors'
+import { GramCLIError, ExitCode, setVerbose, isVerbose } from './errors'
 import { version } from '../package.json'
+
+// --verbose/--debug is a global flag handled here rather than as a citty arg on
+// every subcommand, since citty has no first-class "shared across all
+// subcommands" mechanism. Stripped from argv before citty ever parses it, so
+// it can't collide with any subcommand's own arg definitions.
+const rawArgs = process.argv.slice(2)
+const verboseFlags = new Set(['--verbose', '-v', '--debug'])
+const filteredArgs = rawArgs.filter(a => !verboseFlags.has(a))
+if (filteredArgs.length !== rawArgs.length) setVerbose(true)
 
 const main = defineCommand({
   meta: {
     name: 'gram',
     version,
-    description: 'CLI for the Gram recipe language',
+    description: 'CLI for the Gram recipe language. Pass --verbose/--debug (any command) to print full stack traces on error.',
   },
   subCommands: {
     init: () => import('./commands/init').then(m => m.default),
@@ -30,10 +39,15 @@ const main = defineCommand({
 })
 
 try {
-  await runMain(main)
+  await runMain(main, { rawArgs: filteredArgs })
 } catch (err) {
+  // citty's own runMain() catches and process.exit()s internally on any error
+  // thrown from a command's run(), so in practice this only runs for errors
+  // thrown before/around that call (e.g. in the argv handling above) — most
+  // commands report --verbose-aware errors themselves via reportError().
   if (err instanceof GramCLIError) {
     log.error(err.message)
+    if (isVerbose() && err.stack) console.error(err.stack)
     process.exit(err.exitCode)
   }
   log.error('An unexpected internal error occurred.')

@@ -8,7 +8,7 @@ import {
   isSensitiveKey,
 } from '../../services/config-manager'
 import { requireProjectRoot, findProjectRoot } from '../../core/workspace'
-import { ExitCode } from '../../errors'
+import { ExitCode, reportError } from '../../errors'
 
 export default defineCommand({
   meta: { name: 'set', description: 'Set a configuration value' },
@@ -53,7 +53,7 @@ export default defineCommand({
         log.success(`${key} = ${chalk.green(value)}  ${chalk.dim(`(${scope} config)`)}`)
       }
     } catch (err) {
-      log.error(err instanceof Error ? err.message : String(err))
+      reportError(err)
       process.exit(ExitCode.Error)
     }
   },
