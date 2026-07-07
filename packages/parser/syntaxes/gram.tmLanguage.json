@@ -63,7 +63,7 @@
       "patterns": [
         {
           "name": "meta.ingredient.gram",
-          "begin": "(@)([-?&*=]*)([^\\{\\[@#~°:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(@)([-?&*=]*)([^\\{\\[@#~^:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -83,7 +83,7 @@
         },
         {
           "name": "meta.ingredient.bare.gram",
-          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
+          "match": "(@)([-?&*=]*)([^\\s\\{\\[@#~^:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -99,7 +99,7 @@
       "patterns": [
         {
           "name": "meta.cookware.gram",
-          "begin": "(#)([-?&*=]*)([^\\{\\[@#~°:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
+          "begin": "(#)([-?&*=]*)([^\\{\\[@#~^:<]+?)(?:(:)([\\w\\s]+))?(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -119,7 +119,7 @@
         },
         {
           "name": "meta.cookware.bare.gram",
-          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~°:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
+          "match": "(#)([-?&*=]*)([^\\s\\{\\[@#~^:<]+)(?:(:)([\\w]+))?(?:\\(([^)]+)\\))?",
           "captures": {
             "1": { "name": "keyword.control.cookware.gram" },
             "2": { "name": "storage.modifier.gram" },
@@ -133,7 +133,7 @@
     },
     "timers": {
       "name": "meta.timer.gram",
-      "begin": "(~)(&)?([\\w\\s]+)?(\\{)",
+      "begin": "(~)(_)?([\\w\\s]+)?(\\{)",
       "beginCaptures": {
         "1": { "name": "keyword.control.timer.gram" },
         "2": { "name": "storage.modifier.gram" },
@@ -148,7 +148,7 @@
     },
     "temperatures": {
       "name": "meta.temperature.gram",
-      "begin": "(°)([\\w\\s]+)?(\\{)",
+      "begin": "(\\^)([\\w\\s]+)?(\\{)",
       "beginCaptures": {
         "1": { "name": "keyword.control.temperature.gram" },
         "2": { "name": "constant.numeric.temperature.gram" },
@@ -178,7 +178,7 @@
         },
         {
           "name": "meta.reference.usage.bare.gram",
-          "match": "(&)([^\\s\\{\\[@#~°:<]+)",
+          "match": "(&)([^\\s\\{\\[@#~^:<]+)",
           "captures": {
             "1": { "name": "keyword.control.reference.gram" },
             "2": { "name": "entity.name.tag.reference.gram" }
@@ -190,7 +190,7 @@
       "patterns": [
         {
           "name": "meta.composite.gram",
-          "begin": "(<@)([^\\{\\[@#~°:<]+?)(\\{)",
+          "begin": "(<@)([^\\{\\[@#~^:<]+?)(\\{)",
           "beginCaptures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "entity.name.type.ingredient.gram" },
@@ -204,7 +204,7 @@
         },
         {
           "name": "meta.composite.bare.gram",
-          "match": "(<@)([^\\s\\{\\[@#~°:<]+)",
+          "match": "(<@)([^\\s\\{\\[@#~^:<]+)",
           "captures": {
             "1": { "name": "keyword.control.ingredient.gram" },
             "2": { "name": "entity.name.type.ingredient.gram" }
@@ -222,15 +222,29 @@
     "temperature-content": {
       "patterns": [
         {
-          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)(°[A-Za-z]+|[A-Za-z]+)?",
+          "comment": "Numeric value + a recognized unit (C/F, °C/°F, case-insensitive) — matches the compiler's own whitelist.",
+          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*(°?[CFcf])\\b",
           "captures": {
             "1": { "name": "constant.numeric.gram" },
             "2": { "name": "keyword.other.unit.gram" }
           }
         },
         {
+          "comment": "Numeric value + anything else — same INVALID_UNIT case the compiler warns on.",
+          "match": "(\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?)\\s*([^\\d\\}]+)",
+          "captures": {
+            "1": { "name": "constant.numeric.gram" },
+            "2": { "name": "invalid.illegal.unit.gram" }
+          }
+        },
+        {
+          "match": "\\d+(?:\\.\\d+)?(?:/\\d+(?:\\.\\d+)?)?",
+          "name": "constant.numeric.gram"
+        },
+        {
+          "comment": "No leading digit — a semantic/qualitative temperature (e.g. 'medium heat'), not a unit.",
           "match": "[^\\d\\}]+",
-          "name": "keyword.other.unit.gram"
+          "name": "string.unquoted.descriptor.gram"
         }
       ]
     },
