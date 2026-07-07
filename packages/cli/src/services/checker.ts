@@ -1,7 +1,12 @@
 import pLimit from 'p-limit'
+import { warningSeverity, type WarningSeverity } from '@gram-lang/kitchen'
 import { runPipeline } from '../core/pipeline'
-import type { CheckResult, Diagnostic, CheckOptions } from '../types'
+import type { CheckResult, Diagnostic, CheckOptions, DiagnosticLevel } from '../types'
 import { getErrorMessage } from '../errors'
+
+function diagnosticLevel(severity: WarningSeverity, strict: boolean | undefined): DiagnosticLevel {
+  return strict && severity !== 'error' ? 'error' : severity
+}
 
 function errorToDiagnostic(file: string, err: unknown): Diagnostic {
   const message = getErrorMessage(err)
@@ -34,10 +39,13 @@ export async function checkFiles(
         try {
           const { content, compiled, analyzed } = await runPipeline(file, { db: opts.db })
 
-          // Compiler structural errors (undefined references, scope conflicts, etc.)
+          // Compiler warnings, leveled by warningSeverity — a nutritional/
+          // estimation gap (e.g. RELATIVE_QUANTITY_UNKNOWN_MASS) no longer
+          // fails the build the same way an undefined reference does.
+          // --strict promotes every warning/info to error.
           for (const w of compiled.warnings) {
             diagnostics.push({
-              level: 'error',
+              level: diagnosticLevel(warningSeverity[w.code], opts.strict),
               category: 'Structure',
               file,
               message: w.message,

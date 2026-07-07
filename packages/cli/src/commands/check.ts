@@ -27,6 +27,11 @@ export default defineCommand({
       description: 'Skip ingredient database enrichment',
       default: false,
     },
+    strict: {
+      type: 'boolean',
+      description: 'Treat every warning as an error (e.g. for CI)',
+      default: false,
+    },
   },
   async run({ args }) {
     // args._ holds all positional args; fall back to project-wide glob
@@ -49,7 +54,7 @@ export default defineCommand({
     const s = spinner()
     s.start(`Checking ${n} file${n !== 1 ? 's' : ''}…`)
 
-    const result = await checkFiles(files, { db: db ?? undefined })
+    const result = await checkFiles(files, { db: db ?? undefined, strict: args.strict })
 
     s.stop(`Checked ${n} file${n !== 1 ? 's' : ''}.`)
 

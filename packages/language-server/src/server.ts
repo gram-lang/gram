@@ -5,6 +5,7 @@ import {
     type InitializeParams,
     type InitializeResult,
     TextDocumentSyncKind,
+    DidChangeWatchedFilesNotification,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { parseDocument, type DocumentState } from './document-state';
@@ -22,6 +23,7 @@ import { provideSemanticTokens, SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS }
 import { loadIngredientDB, type IngredientDB, buildIngredientLookupSet } from './ingredient-loader';
 import { provideInlayHints } from './features/inlay-hints';
 import { provideCodeLenses } from './features/code-lens';
+import { positionToOffset } from './utils/position';
 import { toHTML, escapeHtml } from '@gram-lang/renderer';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
@@ -79,24 +81,38 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
     };
 });
 
-connection.onInitialized(async () => {
+async function reloadDbAndRefreshDiagnostics(): Promise<void> {
     try {
         const config = await connection.workspace.getConfiguration('gram');
         loadDB(config?.ingredientDatabase?.path);
     } catch {
         loadDB();
     }
+    for (const [uri, state] of states) {
+        connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB) });
+    }
+}
 
-    connection.onDidChangeConfiguration(async () => {
-        try {
-            const config = await connection.workspace.getConfiguration('gram');
-            loadDB(config?.ingredientDatabase?.path);
-        } catch {
-            loadDB();
-        }
-        for (const [uri, state] of states) {
-            connection.sendDiagnostics({ uri, diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB) });
-        }
+connection.onInitialized(async () => {
+    await reloadDbAndRefreshDiagnostics();
+
+    // Watch ingredients.yaml so edits made outside the editor (gram db sync/enrich,
+    // a hand-edit in another tool) refresh diagnostics without needing a restart —
+    // previously the DB was only (re)loaded at init and on config changes (Phase 1.x).
+    try {
+        await connection.client.register(DidChangeWatchedFilesNotification.type, {
+            watchers: [{ globPattern: '**/.gram/ingredients.yaml' }],
+        });
+    } catch {
+        // Client doesn't support dynamic file watching — degrade silently,
+        // the DB still (re)loads on init/config-change as before.
+    }
+    connection.onDidChangeWatchedFiles(() => {
+        reloadDbAndRefreshDiagnostics();
+    });
+
+    connection.onDidChangeConfiguration(() => {
+        reloadDbAndRefreshDiagnostics();
     });
 });
 
@@ -179,7 +195,14 @@ connection.onFoldingRanges(({ textDocument: { uri } }) => {
 
 connection.onCompletion(({ textDocument: { uri }, position }) => {
     const s = states.get(uri);
-    return s ? provideCompletions(s, position, ingredientDB) : [];
+    if (!s) return [];
+    // Read the prefix from the live document, not the (possibly debounced)
+    // state — see the doc comment on provideCompletions (Phase 1.2).
+    const doc = documents.get(uri);
+    const prefix = doc
+        ? doc.getText({ start: { line: position.line, character: 0 }, end: position })
+        : s.text.slice(s.lineStarts[position.line] ?? 0, positionToOffset(s.lineStarts, position));
+    return provideCompletions(s, ingredientDB, prefix);
 });
 
 connection.onReferences(({ textDocument: { uri }, position }) => {

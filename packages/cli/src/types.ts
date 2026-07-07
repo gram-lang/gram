@@ -208,6 +208,7 @@ export interface PipelineOptions {
 
 export interface CheckOptions {
   db?: Record<string, IngredientData> | null
+  strict?: boolean
 }
 
 export interface BuildOptions {

@@ -1,8 +1,7 @@
-import { type CompletionItem, CompletionItemKind, type Position } from 'vscode-languageserver';
+import { type CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import type { DocumentState } from '../document-state';
 import { collectIntermediates } from '../utils/ast-walker';
 import type { IngredientDB } from '../ingredient-loader';
-import { positionToOffset } from '../utils/position';
 import { isInsideBraces, provideUnitCompletions } from './completions-units';
 import { isAfterAt, provideIngredientCompletions } from './completions-ingredients';
 
@@ -17,12 +16,16 @@ function isAfterReference(prefix: string): boolean {
     return !after.includes('{') && !after.includes('\n');
 }
 
-export function provideCompletions(state: DocumentState, position: Position, db: IngredientDB): CompletionItem[] {
+/**
+ * `prefix` (the line's text from its start up to the cursor) must come from
+ * the *live* document, not `state.text` — `state` is only refreshed on a
+ * 150ms debounce (see server.ts), so on the very keystroke that types the
+ * trigger character (@/&), `state.text` doesn't contain it yet and every
+ * prefix check below would silently fail (Phase 1.2). The AST (`state.ast`)
+ * is fine to stay debounced; only the prefix needs to be fresh.
+ */
+export function provideCompletions(state: DocumentState, db: IngredientDB, prefix: string): CompletionItem[] {
     if (!state.ast) return [];
-
-    const lineStart = state.lineStarts[position.line] ?? 0;
-    const prefixEnd = positionToOffset(state.lineStarts, position);
-    const prefix = state.text.slice(lineStart, prefixEnd);
 
     // Inside {quantity unit} → unit completions
     if (isInsideBraces(prefix)) {

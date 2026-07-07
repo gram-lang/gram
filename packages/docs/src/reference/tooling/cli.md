@@ -12,6 +12,10 @@ bun add -g @gram-lang/cli
 
 The CLI runs on both Node.js (>=20) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
 
+## Global Options
+
+- `--verbose` / `--debug`: works with any command, prints a full stack trace on error instead of just the terse message.
+
 ---
 
 ## Core Commands
@@ -33,7 +37,8 @@ Validates your `.gram` files for syntax errors, structural integrity, and undefi
 - Runs the OhmJS parser to catch syntax errors.
 - Runs the Kitchen compiler to catch structural errors (e.g., cyclic dependencies).
 - Connects to your `ingredients.yaml` to warn about ingredients not documented in your database.
-- Options: `--db <path>`, `--skip-db`.
+- Warnings (nutritional/estimation gaps, incomplete-but-valid annotations) don't fail the command by default — only structural errors (undefined references, scope conflicts) do. Pass `--strict` to treat every warning as an error too (useful in CI).
+- Options: `--db <path>`, `--skip-db`, `--strict`.
 
 #### `gram build [pattern]`
 Compiles your `.gram` recipes into the final, minified JSON format.

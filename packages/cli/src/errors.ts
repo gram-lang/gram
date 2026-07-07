@@ -49,7 +49,9 @@ export class GramCLIError extends Error {
 
 export class GramConfigError extends GramCLIError {
   constructor(message: string) {
-    super(message, ExitCode.InternalError)
+    // A bad config/database is a user error, not an internal crash —
+    // ExitCode.Error (1), not InternalError (2).
+    super(message, ExitCode.Error)
     this.name = 'GramConfigError'
   }
 }

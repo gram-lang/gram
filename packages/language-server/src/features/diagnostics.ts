@@ -2,10 +2,16 @@ import { type Diagnostic, DiagnosticSeverity, type Range } from 'vscode-language
 import type { DocumentState } from '../document-state';
 import { locToRange } from '../utils/position';
 import { collectIntermediates, collectReferences, collectIngredients } from '../utils/ast-walker';
-import { WarningCode } from '@gram-lang/kitchen';
+import { warningSeverity, type WarningSeverity } from '@gram-lang/kitchen';
 import { isKnownIngredient, findClosestIngredient, type IngredientDB } from '../ingredient-loader';
 
 const ZERO_RANGE: Range = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } };
+
+const SEVERITY_MAP: Record<WarningSeverity, DiagnosticSeverity> = {
+    error: DiagnosticSeverity.Error,
+    warning: DiagnosticSeverity.Warning,
+    info: DiagnosticSeverity.Information,
+};
 
 export function provideDiagnostics(
     state: DocumentState,
@@ -30,9 +36,8 @@ export function provideDiagnostics(
     if (state.compilation?.warnings) {
         for (const w of state.compilation.warnings) {
             const range = w.loc ? locToRange(state.lineStarts, w.loc) : ZERO_RANGE;
-            const isError = w.code === WarningCode.UNDEFINED_REFERENCE || w.code === WarningCode.CIRCULAR_REFERENCE;
             diagnostics.push({
-                severity: isError ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+                severity: SEVERITY_MAP[warningSeverity[w.code]],
                 range,
                 message: w.message,
                 code: w.code,
