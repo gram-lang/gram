@@ -4,6 +4,7 @@ import { validateIngredientDatabase } from '@gram-lang/analyzer'
 import type { IngredientData } from '@gram-lang/analyzer'
 import { slugify } from '@gram-lang/kitchen'
 import { withFileLock, atomicWrite } from '../core/lock'
+import { log } from '@clack/prompts'
 
 export type ConflictField = 'nutrition' | 'physical' | 'category'
 export type PreferSide = 'local' | 'remote'
@@ -88,11 +89,11 @@ export async function loadSourceDb(sourcePath: string): Promise<Record<string, I
   }
   const parsed = parseYaml(raw) as Record<string, unknown> | null
   const rawIngredients = (parsed?.ingredients ?? parsed) as unknown
-  let db: Record<string, IngredientData>
-  try {
-    db = validateIngredientDatabase(rawIngredients)
-  } catch {
-    throw new Error(`Source file does not contain a valid ingredient database: ${sourcePath}`)
+  const { data: db, rejected } = validateIngredientDatabase(rawIngredients)
+  if (rejected.length > 0) {
+    log.warn(
+      `Ignoring ${rejected.length} invalid ingredient(s) in ${sourcePath}: ${rejected.map((r) => r.key).join(', ')}`,
+    )
   }
   if (Object.keys(db).length === 0) {
     throw new Error(`Source database is empty: ${sourcePath}`)

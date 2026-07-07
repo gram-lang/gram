@@ -221,7 +221,7 @@ export interface YieldedMass {
  *   derived backward by dividing by yield.
  */
 export function applyYield(mass: number, method: ConversionResult['method'], yieldFactor?: number): YieldedMass {
-    if (yieldFactor === undefined || yieldFactor >= 1) {
+    if (yieldFactor === undefined || yieldFactor <= 0 || yieldFactor >= 1) {
         return { normalizedMass: mass };
     }
     if (method === 'unit_weight') {

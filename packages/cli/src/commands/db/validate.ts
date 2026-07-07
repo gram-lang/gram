@@ -3,7 +3,6 @@ import { log } from '@clack/prompts'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'yaml'
 import { validateIngredientDatabase } from '@gram-lang/analyzer'
-import type { IngredientData } from '@gram-lang/analyzer'
 import { version } from '../../../package.json'
 import { loadConfig } from '../../core/config'
 import { resolveDbPath } from '../../core/db'
@@ -48,36 +47,25 @@ export default defineCommand({
     const rawParsed = parse(rawContent) as Record<string, unknown> | null
     const rawIngredients = (rawParsed?.ingredients ?? rawParsed) as unknown
 
-    // Phase 1: Zod schema validation via @gram-lang/analyzer
-    const schemaIssues: DbIssue[] = []
-    let db: Record<string, IngredientData>
-    try {
-      db = validateIngredientDatabase(rawIngredients)
-    } catch (err) {
-      if (err && typeof err === 'object' && 'issues' in err) {
-        const zodErr = err as { issues: Array<{ path: (string | number)[]; message: string }> }
-        for (const issue of zodErr.issues) {
-          schemaIssues.push({
-            level: 'error',
-            category: 'Schema',
-            ingredient: String(issue.path[0] ?? ''),
-            message: `${issue.path.slice(1).join('.') || '(root)'}: ${issue.message}`,
-          })
-        }
-      } else {
-        schemaIssues.push({ level: 'error', category: 'Schema', message: String(err) })
-      }
-      renderValidateResult({
-        dbPath,
-        ingredientCount: 0,
-        issues: schemaIssues,
-        hasErrors: true,
-      })
-      process.exit(ExitCode.Error)
-    }
+    // Phase 1: Zod schema validation via @gram-lang/analyzer (entry-by-entry:
+    // one malformed ingredient doesn't stop the rest from being reported).
+    const { data: db, rejected } = validateIngredientDatabase(rawIngredients)
+    const schemaIssues: DbIssue[] = rejected.map((r) => ({
+      level: 'error',
+      category: 'Schema',
+      ingredient: r.key,
+      message: r.message,
+    }))
 
-    // Phase 2: Business rule checks
-    const result = validateDb(db, dbPath)
+    // Phase 2: Business rule checks on the entries that did pass schema validation
+    const businessResult = validateDb(db, dbPath)
+
+    const result = {
+      dbPath,
+      ingredientCount: businessResult.ingredientCount,
+      issues: [...schemaIssues, ...businessResult.issues],
+      hasErrors: schemaIssues.length > 0 || businessResult.hasErrors,
+    }
 
     renderValidateResult(result)
 

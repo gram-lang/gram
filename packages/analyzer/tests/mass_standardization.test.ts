@@ -127,4 +127,9 @@ describe('applyYield', () => {
     it('is a no-op when yield is 1 (no waste)', () => {
         expect(applyYield(150, 'unit_weight', 1)).toEqual({ normalizedMass: 150 });
     });
+
+    it('is a no-op instead of dividing by zero when yieldFactor is 0 or negative', () => {
+        expect(applyYield(150, 'physical', 0)).toEqual({ normalizedMass: 150 });
+        expect(applyYield(150, 'physical', -0.5)).toEqual({ normalizedMass: 150 });
+    });
 });

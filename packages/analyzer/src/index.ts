@@ -17,10 +17,47 @@ import { standardizeMass, parseDensityOverrides, applyYield } from './mass_stand
 import { getIngredientData } from './ingredient_db';
 import { aggregateShoppingList } from './shopping_aggregation';
 import { AnalyzerOptionsSchema, IngredientDataSchema } from './schemas';
-import { z } from 'zod';
 
-export function validateIngredientDatabase(rawDb: unknown): Record<string, IngredientData> {
-    return z.record(z.string(), IngredientDataSchema).parse(rawDb);
+export interface IngredientValidationIssue {
+    key: string;
+    message: string;
+}
+
+export interface IngredientValidationResult {
+    data: Record<string, IngredientData>;
+    rejected: IngredientValidationIssue[];
+}
+
+/**
+ * Validates a raw ingredient database entry-by-entry rather than
+ * all-or-nothing: one malformed entry (a typo, a bad density value) no
+ * longer prevents every other valid ingredient from loading. Callers that
+ * need to report exactly what's wrong (e.g. `gram db validate`) can surface
+ * `rejected`; callers that just need a usable database (e.g. compiling a
+ * recipe) can use `data` and warn.
+ */
+export function validateIngredientDatabase(rawDb: unknown): IngredientValidationResult {
+    const data: Record<string, IngredientData> = {};
+    const rejected: IngredientValidationIssue[] = [];
+
+    if (rawDb === null || typeof rawDb !== 'object') {
+        rejected.push({ key: '(root)', message: 'Ingredient database must be an object.' });
+        return { data, rejected };
+    }
+
+    for (const [key, value] of Object.entries(rawDb as Record<string, unknown>)) {
+        const result = IngredientDataSchema.safeParse(value);
+        if (result.success) {
+            data[key] = result.data;
+        } else {
+            const message = result.error.issues
+                .map(issue => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
+                .join('; ');
+            rejected.push({ key, message });
+        }
+    }
+
+    return { data, rejected };
 }
 
 /**

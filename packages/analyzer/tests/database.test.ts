@@ -16,15 +16,28 @@ describe("YAML Database Validation", () => {
         // The file wraps ingredients in an "ingredients:" root key
         const rawDb = parsedYaml.ingredients;
         
-        // This should not throw if the schema matches
-        const validatedDb = validateIngredientDatabase(rawDb);
-        
-        expect(validatedDb).toBeDefined();
-        expect(validatedDb.mustard).toBeDefined();
-        expect(validatedDb.mustard.name).toBe("Moutarde de Dijon");
-        expect(validatedDb.mustard.nutrition?.calories).toBe(151);
-        
-        expect(validatedDb.sugar).toBeDefined();
-        expect(validatedDb.sugar.nutrition?.sugar).toBe(100);
+        const { data, rejected } = validateIngredientDatabase(rawDb);
+
+        expect(rejected).toEqual([]);
+        expect(data.mustard).toBeDefined();
+        expect(data.mustard.name).toBe("Moutarde de Dijon");
+        expect(data.mustard.nutrition?.calories).toBe(151);
+
+        expect(data.sugar).toBeDefined();
+        expect(data.sugar.nutrition?.sugar).toBe(100);
+    });
+
+    it("loads every valid entry and reports rejected ones individually, instead of failing the whole database over a single bad entry", () => {
+        const rawDb = {
+            good: { name: "Good Ingredient", nutrition: { calories: 100, protein: 1, carbs: 1, fat: 1 } },
+            bad: { name: "Bad Ingredient", physical: { density: -1 } },
+        };
+
+        const { data, rejected } = validateIngredientDatabase(rawDb);
+
+        expect(data.good).toBeDefined();
+        expect(data.bad).toBeUndefined();
+        expect(rejected).toHaveLength(1);
+        expect(rejected[0]?.key).toBe("bad");
     });
 });

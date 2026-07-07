@@ -71,9 +71,24 @@ describe('aggregateShoppingList', () => {
             ],
             database
         );
-        expect(result[0].modifiers).toEqual(expect.arrayContaining(['bakers_percentage', 'optional']));
+        // "optional" is an intersection, not a union: only one of the two
+        // contributing entries is optional here (a required 100g + an
+        // optional 50g), so the merged 150g line must NOT be marked optional
+        // — it isn't fully skippable. Other modifiers still union normally.
+        expect(result[0].modifiers).toEqual(['bakers_percentage']);
         expect(result[0]._usageIds).toEqual(['u1', 'u2']);
         expect(result[0].isEstimate).toBe(true);
         expect(result[0].relative).toBe(true);
+    });
+
+    it('keeps "optional" on a merge only when every contributing entry is optional', () => {
+        const result = aggregateShoppingList(
+            [
+                { id: 'butter', name: 'Butter', qty: 100, unit: 'g', normalizedMass: 100, modifiers: ['optional'], _usageIds: ['u1'] },
+                { id: 'beurre', name: 'Beurre', qty: 50, unit: 'g', normalizedMass: 50, modifiers: ['optional'], _usageIds: ['u2'] },
+            ],
+            database
+        );
+        expect(result[0].modifiers).toEqual(['optional']);
     });
 });

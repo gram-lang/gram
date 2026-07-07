@@ -109,4 +109,28 @@ describe('calculateNutrition — portions', () => {
         );
         expect(result.perPortion?.calories).toBe(Math.round(result.total.calories / 4));
     });
+
+    it('propagates undefined (not 0) for sugar/fiber/sodium when no ingredient has that data', () => {
+        // 'flour' and 'lemon-juice' both carry a nutrition block but neither
+        // declares sugar/fiber/sodium — a real "unknown", not a real zero.
+        const result = calculateNutrition(
+            [item({ id: 'flour', normalizedMass: 100 }), item({ id: 'lemon-juice', normalizedMass: 100 })],
+            database,
+            2
+        );
+        expect(result.total.sugar).toBeUndefined();
+        expect(result.perPortion?.sugar).toBeUndefined();
+        expect(result.perPortion?.fiber).toBeUndefined();
+        expect(result.perPortion?.sodium).toBeUndefined();
+    });
+
+    it('still reports a real sugar value (including a genuine 0) when at least one ingredient has that data', () => {
+        const result = calculateNutrition(
+            [item({ id: 'sugar', normalizedMass: 200 }), item({ id: 'flour', normalizedMass: 100 })],
+            database,
+            2
+        );
+        expect(result.total.sugar).toBe(200); // 100% sugar content * 200g / 100
+        expect(result.perPortion?.sugar).toBe(100);
+    });
 });

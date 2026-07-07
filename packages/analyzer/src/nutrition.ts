@@ -22,14 +22,15 @@ export function calculateNutrition(
     database: Record<string, IngredientData>,
     portions: number = 1
 ): NutritionMetrics {
+    // sugar/fiber/sodium start unset (not 0) so that "no ingredient had this
+    // data" stays distinguishable from "this recipe genuinely has none" —
+    // they're only assigned once at least one ingredient actually contributes
+    // a value, below.
     const total: Macros = {
         calories: 0,
         protein: 0,
         carbs: 0,
         fat: 0,
-        sugar: 0,
-        fiber: 0,
-        sodium: 0
     };
 
     let metricsCount = 0;
@@ -144,9 +145,9 @@ export function calculateNutrition(
             protein: Math.round(total.protein / portions * 10) / 10,
             carbs: Math.round(total.carbs / portions * 10) / 10,
             fat: Math.round(total.fat / portions * 10) / 10,
-            sugar: total.sugar !== undefined ? Math.round(total.sugar / portions * 10) / 10 : 0,
-            fiber: total.fiber !== undefined ? Math.round(total.fiber / portions * 10) / 10 : 0,
-            sodium: total.sodium !== undefined ? Math.round(total.sodium / portions) : 0
+            sugar: total.sugar !== undefined ? Math.round(total.sugar / portions * 10) / 10 : undefined,
+            fiber: total.fiber !== undefined ? Math.round(total.fiber / portions * 10) / 10 : undefined,
+            sodium: total.sodium !== undefined ? Math.round(total.sodium / portions) : undefined
         };
     }
 

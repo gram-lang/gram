@@ -54,8 +54,8 @@ export interface TemperatureDelta {
   section: string | null
   name?: string
   change: 'added' | 'removed' | 'changed'
-  from?: { value: number; unit: string }
-  to?: { value: number; unit: string }
+  from?: { value: number; unit: string; range?: { min: number; max: number } }
+  to?: { value: number; unit: string; range?: { min: number; max: number } }
 }
 
 export interface TimerDelta {
@@ -108,12 +108,15 @@ function fmtTimerQty(qty: ProcessedTimer['quantity'], unit?: string): string {
   return `?${u}`
 }
 
-function getTempValue(token: ProcessedTemperature): { value: number; unit: string } | null {
+function getTempValue(token: ProcessedTemperature): { value: number; unit: string; range?: { min: number; max: number } } | null {
   const q = token.quantity
   if (!q) return null
   const value = typeof q === 'number' ? q : (typeof q === 'object' && 'value' in q && typeof q.value === 'number' ? q.value : null)
   if (value === null) return null
-  return { value, unit: token.unit ?? '°' }
+  // Ranges collapse to their average in `.value` — carry the explicit bounds
+  // too, otherwise {2-3} -> {1-4} (same average) would look unchanged.
+  const range = typeof q === 'object' && 'type' in q && q.type === 'range' && q.range ? q.range : undefined
+  return { value, unit: token.unit ?? '°', range }
 }
 
 function isProcessedTimer(token: StepToken): token is ProcessedTimer {
@@ -151,7 +154,16 @@ function extractTokensByType<T extends StepToken>(
         if (isMatch(token)) tokens.push(token)
       }
     }
-    if (tokens.length > 0) result.set(key, tokens)
+    if (tokens.length > 0) {
+      // Two sections can share the same title (or both be untitled and fall
+      // on the same fallback... no — untitled sections get a unique
+      // `__pos_${i}` key). Duplicate *titled* sections must accumulate here
+      // rather than overwrite, otherwise the second section's tokens would
+      // silently replace — and hide from the diff — the first's.
+      const existing = result.get(key)
+      if (existing) existing.push(...tokens)
+      else result.set(key, tokens)
+    }
   })
   return result
 }

@@ -43,13 +43,13 @@ export async function loadDb(
   const hasWrapper = typeof rawObj === 'object' && 'ingredients' in rawObj
   const ingredients = hasWrapper ? (rawObj.ingredients ?? {}) : raw
 
-  try {
-    return validateIngredientDatabase(ingredients)
-  } catch (err) {
-    throw new GramConfigError(
-      `Invalid ingredient database at ${dbPath}: ${(err as Error).message}`,
+  const { data, rejected } = validateIngredientDatabase(ingredients)
+  if (rejected.length > 0) {
+    log.warn(
+      `Ignoring ${rejected.length} invalid ingredient(s) in ${dbPath}: ${rejected.map((r) => r.key).join(', ')}`,
     )
   }
+  return data
 }
 
 export async function loadDbSafe(

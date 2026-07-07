@@ -73,9 +73,16 @@ export function aggregateShoppingList(shoppingList: any[], database: Record<stri
             const usageIds = items.flatMap(i => i._usageIds ?? (i._usageId ? [i._usageId] : []));
             if (usageIds.length > 0) merged._usageIds = usageIds;
 
-            const modifiers = new Set<string>();
-            items.forEach(i => { (i.modifiers ?? []).forEach((m: string) => { modifiers.add(m); }); });
-            if (modifiers.size > 0) merged.modifiers = [...modifiers];
+            const modifierUnion = new Set<string>();
+            items.forEach(i => { (i.modifiers ?? []).forEach((m: string) => { modifierUnion.add(m); }); });
+            // "optional" is an intersection, not a union, like `fixed` above: a
+            // merged line is only optional if every contributing entry is —
+            // otherwise a required 100g merged with an optional 10g garnish
+            // would incorrectly mark the whole 110g line as skippable.
+            const modifiers = [...modifierUnion].filter(m =>
+                m !== 'optional' || items.every(i => (i.modifiers ?? []).includes('optional'))
+            );
+            if (modifiers.length > 0) merged.modifiers = modifiers;
 
             const variableEntries = items.flatMap(i => i.variable_entries ?? []);
             if (variableEntries.length > 0) merged.variable_entries = variableEntries;
