@@ -10,7 +10,7 @@ import { offsetToPosition } from '../utils/position';
 
 export const SEMANTIC_TOKEN_TYPES = [
     'namespace',  // 0 — ## section title
-    'keyword',    // 1 — sigils: @ # ~ ° ->& & <@
+    'keyword',    // 1 — sigils: @ # ~ ^ ->& & <@
     'parameter',  // 2 — ingredient / cookware names
     'variable',   // 3 — intermediate / reference names
     'number',     // 4 — quantity amounts
@@ -157,8 +157,8 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
     // ~ sigil
     if (text[pos] === '~') { emit(out, pos, 1, T.keyword); pos++; }
 
-    // Passive modifier &
-    if (timer.isPassive && text[pos] === '&') {
+    // Passive modifier _
+    if (timer.isPassive && text[pos] === '_') {
         emit(out, pos, 1, T.operator);
         pos++;
     }
@@ -179,10 +179,10 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
 function walkTemperature(out: RawToken[], temp: TemperatureAST, text: string): void {
     if (!temp.loc) return;
 
-    // ° sigil (1 UTF-16 code unit)
+    // ^ sigil (1 UTF-16 code unit)
     emit(out, temp.loc.start, 1, T.keyword);
 
-    // Optional label: °oven{...} → emit "oven" as variable
+    // Optional label: ^oven{...} → emit "oven" as variable
     if (temp.name) {
         emit(out, temp.loc.start + 1, temp.name.length, T.variable);
     }

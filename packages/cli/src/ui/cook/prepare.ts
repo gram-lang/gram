@@ -46,7 +46,7 @@ function extractTimers(step: any, sectionIdx: number, stepIdx: number): CookTime
   const timers: CookTimer[] = []
   const seen = new Set<string>()
 
-  // 1. backgroundTasks (async timers ~&name{})
+  // 1. backgroundTasks (async timers ~_name{})
   if (Array.isArray(step.backgroundTasks)) {
     step.backgroundTasks.forEach((t: any, i: number) => {
       const id = `${sectionIdx}-${stepIdx}-bg-${i}`

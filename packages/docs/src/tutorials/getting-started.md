@@ -78,7 +78,7 @@ To the &dry mix{}, add the @buttermilk{1 cup}, @egg{1} and the @vanilla extract{
 
 ## Cooking
 
-Pour the &batter on a #griddle on °{medium heat} and cook for ~{2min}.
+Pour the &batter on a #griddle on ^{medium heat} and cook for ~{2min}.
 ```
 
 ## 5. Compiling the Recipe

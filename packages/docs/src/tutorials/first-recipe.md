@@ -89,11 +89,11 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 ```gram [Code]
 ## Baking the Tart Shell
 
-[Preheat] Preheat the #oven{} to °{350°F}.
+[Preheat] Preheat the #oven{} to ^{350°F}.
 
 [Roll] Roll out the &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
-[Bake] For ~&{20min} until golden.
+[Bake] For ~_{20min} until golden.
 ```
 
 ```markdown [Preview]
@@ -113,12 +113,12 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 In Step 1, the following was written: `[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}`. 
 By default, timers are **active**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
 
-But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an ampersand `~&`:
+But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an underscore `~_`:
 
 ::: code-group
 
 ```gram [Code]
-[Rest] Wrap in plastic and let it rest in the fridge for ~&{1h}.
+[Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
 ```
 
 ```markdown [Preview]
@@ -143,7 +143,7 @@ Here is the Lemon Curd section:
 
 [Whisk] In a #saucepan{}, whisk the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{150g}, and @eggs{3}.
 
-[Cook] Cook over °{medium heat} for ~{8min} until thickened.
+[Cook] Cook over ^{medium heat} for ~{8min} until thickened.
 ```
 
 ```markdown [Preview]
@@ -203,25 +203,25 @@ portions: 8
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
 
-[Rest] Wrap in plastic and let it rest in the fridge for ~&{1h}.
+[Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
 
 ## Lemon Curd ->&curd
 
 [Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 
-[Cook] Over °{medium heat} for ~{8min} until thickened.
+[Cook] Over ^{medium heat} for ~{8min} until thickened.
 
 ## Baking the Tart Shell ->&baked shell{}
 
-[Preheat] The #oven to °{350°F}.
+[Preheat] The #oven to ^{350°F}.
 
 [Roll out] The &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
-[Bake] For ~&{20min} until golden. Let cool.
+[Bake] For ~_{20min} until golden. Let cool.
 
 ## Assembly
 
-[Pour] The &curd into the &baked shell{}. Chill in the fridge for ~&{2h}.
+[Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
 ```
 
 ```markdown [Preview]

@@ -44,7 +44,7 @@ Le compilateur Gram construit une ligne du temps complète (similaire à un diag
 | Votre Statut | Type de Minuteur | Syntaxe | Exemples |
 | :--- | :--- | :--- | :--- |
 | **OUI** (Attention manuelle requise) | **Actif** | `~` | *Fouetter à la main, remuer un risotto* |
-| **NON** (Une machine/le temps fait le travail) | **Passif** | `~&` | *Cuisson au four, repos, robot pâtissier* |
+| **NON** (Une machine/le temps fait le travail) | **Passif** | `~_` | *Cuisson au four, repos, robot pâtissier* |
 
 :::
 
@@ -60,7 +60,7 @@ Fouetter la @crème liquide{} en continu pendant ~{5 min}.
 Utilisez le modificateur `&` pour rendre un `~minuteur` passif. C'est une **tâche en arrière-plan**. Vous démarrez le `~minuteur` (ex : mettre un plat au four) et passez immédiatement à l'étape suivante.
 
 ```gram
-Cuire dans le #four pendant ~&{45 min}.
+Cuire dans le #four pendant ~_{45 min}.
 
 Pendant ce temps, préparer le glaçage...
 ```
@@ -86,11 +86,11 @@ Voici une décomposition concrète de la manière dont le compilateur calcule au
 | **Nouvel Ingrédient** (`@farine`) | **+ 1 min** | - | - | **+ 1 min** |
 | **Préparation courte** (`@oignon(épluché)`) | **+ 2 min** | - | - | **+ 2 min** |
 | **Minuteur Actif** (`~{10 min}`) | - | **+ 10 min** | **+ 10 min** | **+ 10 min** |
-| **Minuteur Passif** (`~&{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) | **+ 1 heure** |
+| **Minuteur Passif** (`~_{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) | **+ 1 heure** |
 | **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | **+ 2 min** | **+ 2 min** |
 
 ### Suivi Intelligent des Dépendances
-Vous n'avez pas besoin de faire des mathématiques complexes ! Si vous déclarez une pâte qui repose pendant `~&{1 h}` en arrière-plan, et qu'une étape ultérieure requiert cette `&pâte`, le compilateur va automatiquement "mettre en pause" la ligne du temps et attendre que l'heure se termine avant de commencer cette étape.
+Vous n'avez pas besoin de faire des mathématiques complexes ! Si vous déclarez une pâte qui repose pendant `~_{1 h}` en arrière-plan, et qu'une étape ultérieure requiert cette `&pâte`, le compilateur va automatiquement "mettre en pause" la ligne du temps et attendre que l'heure se termine avant de commencer cette étape.
 
 ## Gestion des Erreurs
 

@@ -15,7 +15,7 @@ Lorsqu'elle est placée tout à la fin d'une étape (un paragraphe), la `&variab
 ```gram
 [Ajouter] La @farine{200 g} et l'@eau{100 ml}. Mélanger jusqu'à ce que ce soit homogène. ->&pâte
 
-[Repos] Laisser la &pâte reposer pendant ~&{1 h}.
+[Repos] Laisser la &pâte reposer pendant ~_{1 h}.
 ```
 
 ### Déclaration au niveau de la Section
@@ -27,7 +27,7 @@ Lorsqu'elle est placée à la fin d'un titre de `## Section`, la `&variable` cap
 
 [Mélanger] La @farine{250 g}, l'@eau{120 ml}, et le @sel{5 g}.
 
-[Repos] Au #réfrigérateur pendant ~&{1 h}.
+[Repos] Au #réfrigérateur pendant ~_{1 h}.
 
 [Incorporer] Le @beurre{200 g} en pliant la pâte plusieurs fois.
 

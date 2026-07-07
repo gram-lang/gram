@@ -26,4 +26,4 @@ densities: ["flour: 0.6", "milk: 1.03"]
 
 ## Cooking
 
-[Cook] The &batter in a #=frying pan:pan{2}(25cm)|#griddle with some @&butter{10 g} over °{medium heat} for about ~&{2min}.²
+[Cook] The &batter in a #=frying pan:pan{2}(25cm)|#griddle with some @&butter{10 g} over ^{medium heat} for about ~_{2min}.²

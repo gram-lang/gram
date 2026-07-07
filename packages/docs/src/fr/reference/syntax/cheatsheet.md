@@ -9,7 +9,7 @@ Un guide de référence rapide de la syntaxe Gram.
 | **Ingrédient** | `@nom[{qté}]` | `@farine{200 g}`, `@sel` | Ajoute un `@ingrédient`. Omettre `{}` implique aucune quantité spécifique. |
 | **Matériel** | `#nom[{qté}]` | `#poêle{2}`, `#poêle` | Requiert un `#matériel` spécifique. Omettre `{}` vaut `1` par défaut. |
 | **Minuteur** | `~{temps}` | `~{30 min}` | La durée d'un `~minuteur` actif. |
-| **Température** | `°{temp}` | `°{180°C}` | Une `°température` exacte. |
+| **Température** | `^{temp}` | `^{180C}` | Une `^température` exacte (`C`/`F`, insensible à la casse). |
 
 ## Modificateurs
 
@@ -33,9 +33,11 @@ Les modificateurs sont placés immédiatement après le symbole `@` ou `#`.
 | **Alias (Renommer)** | `:affichage` | `@vin blanc sec:vin{10 ml}` |
 | **Qté Relative** | `% @&cible` | `@eau{70 % @&farine}` |
 | **Composite** | `<@parent` | `@zeste{1}<@citron` |
-| **Minuteur Passif** | `~&` | `~&{1 h}` |
+| **Minuteur Passif** | `~_` | `~_{1 h}` |
 | **Minuteur Nommé** | `~nom{...}`| `~œufs{3 min}` |
-| **Temp. Sémantique**| `°{texte}` | `°{feu moyen}` |
+| **Temp. Sémantique**| `^{texte}` | `^{feu moyen}` |
+| **Fraction mixte** | `n n/d` | `@farine{1 1/2 tasse}` |
+| **Fraction Unicode** | `½` `¾` … | `@sucre{½ tasse}` |
 
 ## Variables Intermédiaires
 

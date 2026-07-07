@@ -48,13 +48,13 @@ portions: 10
 
 [Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
 
-[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to °{85°C}. ->&hot milk{}
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85°C}. ->&hot milk{}
 
 [Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
 
 [Incorporate] Add the @egg yolks{6}<@eggs{6} and the @rum{100 ml}.
 
-[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~&refrigerator{24 h}.
+[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
 ```
 
 ```json [Output Glimpse]

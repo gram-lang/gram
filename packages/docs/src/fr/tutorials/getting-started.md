@@ -78,7 +78,7 @@ Au &mélange sec{}, ajouter le @lait ribot{1 tasse}, l'@œuf{1} et l'@extrait de
 
 ## Cuisson
 
-Verser l'&appareil sur une #plaque de cuisson{} à °{feu moyen} et cuire pendant ~{2 min}.
+Verser l'&appareil sur une #plaque de cuisson{} à ^{feu moyen} et cuire pendant ~{2 min}.
 ```
 
 ## 5. Compiler la Recette

@@ -9,7 +9,7 @@ A quick reference guide to the Gram syntax.
 | **Ingredient** | `@name[{qty}]` | `@flour{200g}`, `@salt` | Adds an `@ingredient`. Omitting `{}` implies no specific quantity. |
 | **Cookware** | `#name[{qty}]` | `#pan{2}`, `#pan` | Requires specific `#cookware`. Omitting `{}` defaults to `1`. |
 | **Timer** | `~{time}` | `~{30min}` | An active `~timer` duration. |
-| **Temperature** | `°{temp}` | `°{180°C}` | An exact `°temperature`. |
+| **Temperature** | `^{temp}` | `^{180C}` | An exact `^temperature` (`C`/`F`, case-insensitive). |
 
 ## Modifiers
 
@@ -33,9 +33,11 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
 | **Composite** | `<@parent` | `@zest{1}<@lemon` |
-| **Passive Timer** | `~&` | `~&{1h}` |
+| **Passive Timer** | `~_` | `~_{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
-| **Semantic Temp**| `°{text}` | `°{medium heat}` |
+| **Semantic Temp**| `^{text}` | `^{medium heat}` |
+| **Mixed Fraction** | `n n/d` | `@flour{1 1/2 cups}` |
+| **Unicode Fraction** | `½` `¾` … | `@sugar{½ cup}` |
 
 ## Intermediate Variables
 

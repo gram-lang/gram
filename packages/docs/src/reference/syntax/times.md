@@ -44,7 +44,7 @@ The Gram compiler builds a complete execution timeline (similar to a Gantt chart
 | Your Status | Timer Type | Syntax | Examples |
 | :--- | :--- | :--- | :--- |
 | **YES** (Manual attention required) | **Active** | `~` | *Whisking by hand, stirring a risotto* |
-| **NO** (A machine/time does the work) | **Passive** | `~&` | *Oven baking, resting, stand mixer* |
+| **NO** (A machine/time does the work) | **Passive** | `~_` | *Oven baking, resting, stand mixer* |
 
 :::
 
@@ -60,7 +60,7 @@ Whisk the @heavy cream{} continuously for ~{5min}.
 Use the `&` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
 
 ```gram
-Bake in the #oven for ~&{45min}.
+Bake in the #oven for ~_{45min}.
 
 Meanwhile, prepare the glaze...
 ```
@@ -86,11 +86,11 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 | **New Ingredient** (`@flour`) | **+ 1 min** | - | - | **+ 1 min** |
 | **Prep shorthand** (`@onion(peeled)`) | **+ 2 min** | - | - | **+ 2 min** |
 | **Active Timer** (`~{10min}`) | - | **+ 10 min** | **+ 10 min** | **+ 10 min** |
-| **Passive Timer** (`~&{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
+| **Passive Timer** (`~_{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
 | **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
 
 ### Smart Dependency Tracking
-You don't need to do complex math! If you declare a dough that rests for `~&{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
+You don't need to do complex math! If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
 
 ## Error Handling
 

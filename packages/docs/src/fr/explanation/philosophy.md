@@ -48,13 +48,13 @@ portions: 10
 
 [Mélanger] Dans un #cul-de-poule{}, combiner la @farine{300 g}, le @sucre{500 g}, et le @sel{3 g}. ->&ingrédients secs{}
 
-[Chauffer] Dans une #grande casserole{}, amener le @lait{1 l}, le @beurre{100 g}, et la @gousse de vanille{1}(fendue et grattée) à °{85°C}. ->&lait chaud{}
+[Chauffer] Dans une #grande casserole{}, amener le @lait{1 l}, le @beurre{100 g}, et la @gousse de vanille{1}(fendue et grattée) à ^{85°C}. ->&lait chaud{}
 
 [Mélanger] Verser le &lait chaud{} sur les &ingrédients secs{} en une seule fois. Fouetter vigoureusement.
 
 [Incorporer] Ajouter les @jaunes d'œufs{6}<@œufs{6} et le @rhum{100 ml}.
 
-[Repos] Couvrir de #film alimentaire{} au contact et réfrigérer pendant au moins ~&réfrigérateur{24 h}.
+[Repos] Couvrir de #film alimentaire{} au contact et réfrigérer pendant au moins ~_réfrigérateur{24 h}.
 ```
 
 ```json [Aperçu de la Sortie]

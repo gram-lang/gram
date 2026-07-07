@@ -16,7 +16,7 @@ Circular relative quantity: @salt{10% @&salt}
 
 Timer missing unit: ~timer{10}
 
-Temperature missing unit: °{180}
+Temperature missing unit: ^{180}
 
 ## Scope Conflict ->&dup
 

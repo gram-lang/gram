@@ -89,11 +89,11 @@ Désormais, dans la section suivante, cette pâte pourra être référencée en 
 ```gram [Code]
 ## Cuisson du Fond de Tarte
 
-[Préchauffer] Préchauffer le #four{} à °{180°C}.
+[Préchauffer] Préchauffer le #four{} à ^{180°C}.
 
 [Étaler] Étaler la &pâte sucrée{} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
 
-[Cuire] Pendant ~&{20 min} jusqu'à coloration dorée.
+[Cuire] Pendant ~_{20 min} jusqu'à coloration dorée.
 ```
 
 ```markdown [Aperçu]
@@ -113,12 +113,12 @@ Désormais, dans la section suivante, cette pâte pourra être référencée en 
 À l'Étape 1, nous avions écrit : `[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}`. 
 Par défaut, les minuteurs sont **actifs**. Le compilateur suppose que vous attendez activement pendant 1 heure, et l'ajoute à votre *Temps Actif*.
 
-Mais laisser reposer une pâte au réfrigérateur est une tâche passive. Vous pouvez faire autre chose pendant qu'elle repose (comme préparer le crémeux au citron). Pour indiquer au compilateur qu'il s'agit d'une tâche passive, on ajoute une esperluette `~&` :
+Mais laisser reposer une pâte au réfrigérateur est une tâche passive. Vous pouvez faire autre chose pendant qu'elle repose (comme préparer le crémeux au citron). Pour indiquer au compilateur qu'il s'agit d'une tâche passive, on ajoute un underscore `~_` :
 
 ::: code-group
 
 ```gram [Code]
-[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~&{1 h}.
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
 ```
 
 ```markdown [Aperçu]
@@ -143,7 +143,7 @@ Voici la section du Crémeux au Citron :
 
 [Fouetter] Dans une #casserole{}, fouetter le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{150 g}, et les @œufs{3}.
 
-[Cuire] Cuire à °{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+[Cuire] Cuire à ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
 ```
 
 ```markdown [Aperçu]
@@ -203,25 +203,25 @@ portions: 8
 
 [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule. 
 
-[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~&{1 h}.
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
 
 ## Crémeux au Citron ->&crémeux
 
 [Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
 
-[Cuire] À °{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+[Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
 
 ## Cuisson du Fond de Tarte ->&fond cuit{}
 
-[Préchauffer] Le #four à °{180°C}.
+[Préchauffer] Le #four à ^{180°C}.
 
 [Étaler] La &pâte sucrée{} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
 
-[Cuire] Pendant ~&{20 min} jusqu'à coloration dorée. Laisser refroidir.
+[Cuire] Pendant ~_{20 min} jusqu'à coloration dorée. Laisser refroidir.
 
 ## Assemblage
 
-[Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~&{2 h}.
+[Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
 ```
 
 ```markdown [Aperçu]

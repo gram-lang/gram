@@ -30,6 +30,28 @@ const clean = (str: string) => str.trim();
 const getOpt = (node: any) => (node.children.length > 0 ? node.children[0].toAST() : null);
 
 /**
+ * Unicode vulgar fraction glyphs, mapped to [numerator, denominator].
+ */
+const UNICODE_FRACTIONS: Record<string, [number, number]> = {
+    '¼': [1, 4], '½': [1, 2], '¾': [3, 4],
+    '⅓': [1, 3], '⅔': [2, 3],
+    '⅕': [1, 5], '⅖': [2, 5], '⅗': [3, 5], '⅘': [4, 5],
+    '⅙': [1, 6], '⅚': [5, 6],
+    '⅛': [1, 8], '⅜': [3, 8], '⅝': [5, 8], '⅞': [7, 8],
+};
+
+/**
+ * Looks up a Unicode vulgar fraction glyph. Safe to call unguarded on any
+ * string matched by the `unicodeFractionChar` grammar rule, which only
+ * accepts glyphs present in this table.
+ */
+const unicodeFractionValue = (glyph: string): [number, number] => {
+    const pair = UNICODE_FRACTIONS[glyph];
+    if (!pair) throw new Error(`Unknown unicode fraction glyph: ${glyph}`);
+    return pair;
+};
+
+/**
  * Parses a fractional or decimal string into a value object.
  * e.g., "1/2" -> { type: 'fraction', value: 0.5, ... }
  */
@@ -314,13 +336,35 @@ semantics.addOperation('toAST', {
         return { type: ASTNodeType.TextQuantity, value: clean(content.sourceString), loc: { start: this.source.startIdx, end: this.source.endIdx } } as TextQuantityAST;
     },
 
-    number(_1, _2, _3, _4, _5) {
+    number(child) {
+        return child.toAST();
+    },
+
+    plainNumber(_1, _2, _3, _4, _5) {
         return parseNumber(this.sourceString);
     },
 
+    mixedFraction(whole, _sp, num, _slash, den) {
+        const w = parseInt(whole.sourceString, 10);
+        const n = parseInt(num.sourceString, 10);
+        const d = parseInt(den.sourceString, 10);
+        return { type: 'fraction', value: w + n / d, numerator: w * d + n, denominator: d, text: this.sourceString } as QuantityValueAST;
+    },
+
+    unicodeFraction_mixed(whole, frac) {
+        const w = parseInt(whole.sourceString, 10);
+        const [n, d] = unicodeFractionValue(frac.sourceString);
+        return { type: 'fraction', value: w + n / d, numerator: w * d + n, denominator: d, text: this.sourceString } as QuantityValueAST;
+    },
+
+    unicodeFraction_bare(frac) {
+        const [n, d] = unicodeFractionValue(frac.sourceString);
+        return { type: 'fraction', value: n / d, numerator: n, denominator: d, text: this.sourceString } as QuantityValueAST;
+    },
+
     range(n1, _s1, _, _s2, n2) {
-        const min = parseNumber(n1.sourceString);
-        const max = parseNumber(n2.sourceString);
+        const min = n1.toAST() as QuantityValueAST;
+        const max = n2.toAST() as QuantityValueAST;
         if (min && max) {
             const avg = ((min.value as number) + (max.value as number)) / 2;
             return { type: 'range', value: avg, range: { min: min.value, max: max.value }, text: this.sourceString };

@@ -35,10 +35,52 @@ describe('basic constructs', () => {
     });
 
     it('parses a timer and a temperature token', () => {
-        const ast = getAST('## Section\nBake at °{180C} for ~{20min}.\n');
+        const ast = getAST('## Section\nBake at ^{180C} for ~{20min}.\n');
         const json = JSON.stringify(ast);
         expect(json).toContain('"Timer"');
         expect(json).toContain('"Temperature"');
+    });
+
+    it('no longer recognizes ° as the Temperature sigil (^ replaced it, not aliased it)', () => {
+        const ast = getAST('## Section\nBake at °{180C} for ~{20min}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).not.toContain('"Temperature"');
+    });
+
+    it('parses a passive timer with the ~_ marker', () => {
+        const ast = getAST('## Section\nProve the dough ~_{45min}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"isPassive":true');
+    });
+
+    it('parses an active timer as isPassive:false', () => {
+        const ast = getAST('## Section\nWhisk for ~{2min}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"isPassive":false');
+    });
+
+    it('parses a mixed-fraction quantity (1 1/2)', () => {
+        const ast = getAST('## Section\nAdd @flour{1 1/2 cups}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"value":1.5');
+    });
+
+    it('parses a Unicode fraction glyph quantity (½)', () => {
+        const ast = getAST('## Section\nAdd @sugar{½ cup}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"value":0.5');
+    });
+
+    it('parses a mixed Unicode fraction glyph quantity (1½)', () => {
+        const ast = getAST('## Section\nAdd @sugar{1½ cups}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"value":1.5');
+    });
+
+    it('averages a range built from mixed fractions correctly', () => {
+        const ast = getAST('## Section\nAdd @flour{1 1/2-2 1/2 cups}.\n');
+        const json = JSON.stringify(ast);
+        expect(json).toContain('"value":2'); // avg of 1.5 and 2.5
     });
 });
 

@@ -15,7 +15,7 @@ When placed at the very end of a step (a paragraph), the `&variable` captures ev
 ```gram
 [Add] @flour{200g} and @water{100ml}. Mix until combined. ->&dough
 
-[Rest] Let the &dough rest for ~&{1h}.
+[Rest] Let the &dough rest for ~_{1h}.
 ```
 
 ### Section-level Declaration
@@ -27,7 +27,7 @@ When placed at the end of a `## Section` title, the `&variable` captures the out
 
 [Mix] @flour{250g}, @water{120ml}, and @salt{5g}.
 
-[Rest] In the #fridge for ~&{1h}.
+[Rest] In the #fridge for ~_{1h}.
 
 [Incorporate] The @butter{200g} by folding the dough multiple times.
 

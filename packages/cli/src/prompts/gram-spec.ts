@@ -14,7 +14,7 @@ express them. In Gram, these dissolve into the syntax itself:
 
   - "Cut the lemon in half" → just @lemon{1}(cut in half) on the ingredient that uses it
   - "Reserve the seasoning" → just &seasoning when you reference it later
-  - "Set aside and let cool" → just ~&{30min} at the end of the step that produces it
+  - "Set aside and let cool" → just ~_{30min} at the end of the step that produces it
 
 The output .gram file will often have FEWER steps than the source recipe, different section
 boundaries, and a different logical flow. This is expected and correct. A 10-step recipe
@@ -42,8 +42,8 @@ CONVERSION PROCESS — work through these steps mentally
 
 4. STEPS  Write each step as a paragraph with a [Verb] action prefix.
           Inline every ingredient with @name{qty unit} syntax.
-          Add cookware (#), timers (~), temperatures (°) where appropriate.
-          Use async timers (~&) for passive waits (oven, resting, chilling, rising).
+          Add cookware (#), timers (~), temperatures (^) where appropriate.
+          Use async timers (~_) for passive waits (oven, resting, chilling, rising).
           Absorb any pure-prep source steps into inline ingredient preparations.
 
 5. REVIEW  Before outputting, verify:
@@ -300,19 +300,19 @@ Braces \`{}\` accept INTEGERS ONLY — absolutely no units, no text:
 
 
 ════════════════════════════════════
-SECTION 5 — TIMERS (~) & TEMPS (°)
+SECTION 5 — TIMERS (~) & TEMPS (^)
 ════════════════════════════════════
 
 ### Timers
 
-Syntax: \`~name?&?{duration}\`
+Syntax: \`~name?_?{duration}\`
 
 A numeric value and a unit are ALWAYS REQUIRED. No fuzzy text.
 
 | Format         | Example           | Meaning                                      |
 |----------------|-------------------|----------------------------------------------|
 | Sync (blocking)| \`~{10min}\`        | Cook is actively busy for 10 minutes         |
-| Async (passive)| \`~&{1h}\`          | Background: oven/rest/chill — cook is free   |
+| Async (passive)| \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
 | Named          | \`~eggs{3min}\`     | Named for UI notifications                   |
 | Range          | \`~{10-15min}\`     | Uncertainty range                            |
 
@@ -321,28 +321,30 @@ Note: \`m\` and \`minutes\` are auto-corrected to \`min\` but prefer \`min\` dir
 
 RULE — sync vs async:
 - Kneading, stirring, whisking, sautéeing → SYNC \`~{10min}\`
-- Baking, roasting, simmering unattended, chilling, rising, marinating → ASYNC \`~&{45min}\`
+- Baking, roasting, simmering unattended, chilling, rising, marinating → ASYNC \`~_{45min}\`
 
 \`\`\`
 [Knead] The &dough on a floured surface for ~{10min}.
 
-[Rise] Cover and let rise in a warm place for ~&{1h}.  // async: cook is free
+[Rise] Cover and let rise in a warm place for ~_{1h}.  // async: cook is free
 
-[Bake] At °{180°C} for ~&{25min}.                     // async: oven does the work
+[Bake] At ^{180C} for ~_{25min}.                      // async: oven does the work
 \`\`\`
 
 ### Temperatures
 
-Syntax: \`°name?{value}\`
+Syntax: \`^name?{value}\`
+
+\`^\` is the ONLY valid temperature sigil — never \`°\`, which is not a recognized element trigger. The degree sign is still used inside the unit itself (\`°C\`/\`°F\`), and is also accepted bare (\`C\`/\`F\`), case-insensitively.
 
 | Format    | Example              | When to use                              |
 |-----------|----------------------|------------------------------------------|
-| Exact     | \`°{180°C}\`          | Numeric temperature, unit mandatory (°C or °F) |
-| Semantic  | \`°{medium heat}\`    | Stove settings, water state, etc.        |
-| Named     | \`°oven{180°C}\`      | When multiple heat sources are active    |
+| Exact     | \`^{180C}\`           | Numeric temperature; unit mandatory, one of \`C\`, \`F\`, \`°C\`, \`°F\` (case-insensitive) |
+| Semantic  | \`^{medium heat}\`    | Stove settings, water state, etc.        |
+| Named     | \`^oven{180C}\`       | When multiple heat sources are active    |
 
-Range: \`°{180-200°C}\`
-The compiler stores the raw value; the display engine handles unit conversion.
+Range: \`^{180-200C}\`
+The compiler stores the raw numeric value and normalizes the unit to \`°C\`/\`°F\`; the display engine handles further formatting. Only Celsius and Fahrenheit are supported — no Kelvin or other scales.
 
 
 ═════════════════════════════════════════
@@ -532,7 +534,7 @@ The output must be raw .gram content. Never wrap it in fences:
 
 \`\`\`
 ❌  Bake for ~{45min}.        // implies cook is actively busy for 45 minutes
-✅  Bake for ~&{45min}.       // oven does the work, cook is free
+✅  Bake for ~_{45min}.       // oven does the work, cook is free
 ✅  Knead for ~{10min}.       // cook IS actively busy — sync is correct here
 \`\`\`
 
@@ -559,17 +561,17 @@ size: '24cm tart tin'
 
 [Bind] Add @powdered sugar{70g} and @yolk{1}<@egg{1}. Mix until the dough just comes together.
 
-[Rest] Shape into a disc, wrap, and chill for ~&{2h}.
+[Rest] Shape into a disc, wrap, and chill for ~_{2h}.
 
 ## Lemon Curd ->&curd
 
-[Cook] In a #saucepan over °{medium heat}, whisk @juice{1}<@lemon{3}, @zest{1}<@lemon{3}, @sugar{150g}, and @white{3}<@egg{3} continuously.
+[Cook] In a #saucepan over ^{medium heat}, whisk @juice{1}<@lemon{3}, @zest{1}<@lemon{3}, @sugar{150g}, and @white{3}<@egg{3} continuously.
 
 [Thicken] Remove from heat and whisk in @butter{50g} until the curd is glossy and coats a spoon.
 
 ## Assembly and Meringue
 
-[Line] Roll out the &pastry and press into a #tart tin(24cm). Blind-bake at °oven{180°C} for ~&{15min}.
+[Line] Roll out the &pastry and press into a #tart tin(24cm). Blind-bake at ^oven{180C} for ~_{15min}.
 
 [Fill] Pour in the &curd and smooth the surface.
 
