@@ -1,125 +1,139 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { UNIT_CONVERSIONS } from '@gram-lang/analyzer'
-import { formatDecimalToFraction } from '@gram-lang/renderer'
-import { useData } from 'vitepress'
-import { getDictionary } from '@gram-lang/i18n'
+import { computed } from "vue";
+import { UNIT_CONVERSIONS } from "@gram-lang/analyzer";
+import { formatDecimalToFraction } from "@gram-lang/renderer";
+import { useData } from "vitepress";
+import { getDictionary } from "@gram-lang/i18n";
 
-const { lang } = useData()
-const _t = computed(() => getDictionary(lang.value))
+const { lang } = useData();
+const _t = computed(() => getDictionary(lang.value));
 
 const _knownUnits = [
-  ...Object.keys(UNIT_CONVERSIONS.mass.map),
-  ...Object.keys(UNIT_CONVERSIONS.volume.map)
-]
+	...Object.keys(UNIT_CONVERSIONS.mass.map),
+	...Object.keys(UNIT_CONVERSIONS.volume.map),
+];
 
 const props = defineProps<{
-  options: {
-    enableMassStandardization: boolean
-    enableYieldCalculation: boolean
-    enableNutritionalEstimation: boolean
-    bakersMath: boolean
-    bakersMathOnly: boolean
-    bakersReference: string | undefined
-  },
-  shoppingList?: any[],
-  scaleTargetId: string | null,
-  scaleTargetQty: number | null,
-  scaleTargetUnit: string
-}>()
+	options: {
+		enableMassStandardization: boolean;
+		enableYieldCalculation: boolean;
+		enableNutritionalEstimation: boolean;
+		bakersMath: boolean;
+		bakersMathOnly: boolean;
+		bakersReference: string | undefined;
+	};
+	shoppingList?: any[];
+	scaleTargetId: string | null;
+	scaleTargetQty: number | null;
+	scaleTargetUnit: string;
+}>();
 
 const emit = defineEmits<{
-  'update:options': [options: typeof props.options],
-  'update:scaleTargetId': [val: string | null],
-  'update:scaleTargetQty': [val: number | null],
-  'update:scaleTargetUnit': [val: string],
-  'scale-apply': []
-}>()
+	"update:options": [options: typeof props.options];
+	"update:scaleTargetId": [val: string | null];
+	"update:scaleTargetQty": [val: number | null];
+	"update:scaleTargetUnit": [val: string];
+	"scale-apply": [];
+}>();
 
 const _massEnabled = computed({
-  get: () => props.options.enableMassStandardization,
-  set: (val) => emit('update:options', { ...props.options, enableMassStandardization: val })
-})
+	get: () => props.options.enableMassStandardization,
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			enableMassStandardization: val,
+		}),
+});
 
 const _yieldEnabled = computed({
-  get: () => props.options.enableYieldCalculation,
-  set: (val) => emit('update:options', { ...props.options, enableYieldCalculation: val })
-})
+	get: () => props.options.enableYieldCalculation,
+	set: (val) =>
+		emit("update:options", { ...props.options, enableYieldCalculation: val }),
+});
 
 const _nutritionEnabled = computed({
-  get: () => props.options.enableNutritionalEstimation,
-  set: (val) => emit('update:options', { ...props.options, enableNutritionalEstimation: val })
-})
+	get: () => props.options.enableNutritionalEstimation,
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			enableNutritionalEstimation: val,
+		}),
+});
 
 const _bakersMath = computed({
-  get: () => props.options.bakersMath,
-  set: (val) => emit('update:options', { ...props.options, bakersMath: val })
-})
+	get: () => props.options.bakersMath,
+	set: (val) => emit("update:options", { ...props.options, bakersMath: val }),
+});
 
 const _bakersMathOnly = computed({
-  get: () => props.options.bakersMathOnly,
-  set: (val) => emit('update:options', { ...props.options, bakersMathOnly: val })
-})
+	get: () => props.options.bakersMathOnly,
+	set: (val) =>
+		emit("update:options", { ...props.options, bakersMathOnly: val }),
+});
 
 const _bakersReference = computed({
-  get: () => props.options.bakersReference || '',
-  set: (val) => emit('update:options', { ...props.options, bakersReference: val || undefined })
-})
+	get: () => props.options.bakersReference || "",
+	set: (val) =>
+		emit("update:options", {
+			...props.options,
+			bakersReference: val || undefined,
+		}),
+});
 
 const _targetId = computed({
-  get: () => props.scaleTargetId || '',
-  set: (val) => {
-    emit('update:scaleTargetId', val || null)
-    if (val && props.shoppingList) {
-      const item = props.shoppingList.find(i => i.id === val)
-      if (item) {
-        emit('update:scaleTargetUnit', item.unit || '')
-        if (item.qty && typeof item.qty === 'number') {
-          emit('update:scaleTargetQty', item.qty)
-        } else {
-          emit('update:scaleTargetQty', null)
-        }
-      }
-    }
-  }
-})
+	get: () => props.scaleTargetId || "",
+	set: (val) => {
+		emit("update:scaleTargetId", val || null);
+		if (val && props.shoppingList) {
+			const item = props.shoppingList.find((i) => i.id === val);
+			if (item) {
+				emit("update:scaleTargetUnit", item.unit || "");
+				if (item.qty && typeof item.qty === "number") {
+					emit("update:scaleTargetQty", item.qty);
+				} else {
+					emit("update:scaleTargetQty", null);
+				}
+			}
+		}
+	},
+});
 
 const _targetQty = computed({
-  get: () => {
-    if (props.scaleTargetQty === null) return ''
-    return formatDecimalToFraction(props.scaleTargetQty)
-  },
-  set: (val: string) => {
-    if (!val) {
-      emit('update:scaleTargetQty', null)
-      return
-    }
-    let parsed: number | null = null
-    if (val.includes('/')) {
-      const parts = val.split('/')
-      if (parts.length === 2) {
-        const n = parseFloat(parts[0])
-        const d = parseFloat(parts[1])
-        if (!Number.isNaN(n) && !Number.isNaN(d) && d !== 0) parsed = n / d
-      }
-    } else {
-      parsed = parseFloat(val)
-    }
-    if (parsed !== null && !Number.isNaN(parsed)) {
-      emit('update:scaleTargetQty', parsed)
-    } else {
-      emit('update:scaleTargetQty', null)
-    }
-  }
-})
+	get: () => {
+		if (props.scaleTargetQty === null) return "";
+		return formatDecimalToFraction(props.scaleTargetQty);
+	},
+	set: (val: string) => {
+		if (!val) {
+			emit("update:scaleTargetQty", null);
+			return;
+		}
+		let parsed: number | null = null;
+		if (val.includes("/")) {
+			const parts = val.split("/");
+			if (parts.length === 2) {
+				const n = parseFloat(parts[0]);
+				const d = parseFloat(parts[1]);
+				if (!Number.isNaN(n) && !Number.isNaN(d) && d !== 0) parsed = n / d;
+			}
+		} else {
+			parsed = parseFloat(val);
+		}
+		if (parsed !== null && !Number.isNaN(parsed)) {
+			emit("update:scaleTargetQty", parsed);
+		} else {
+			emit("update:scaleTargetQty", null);
+		}
+	},
+});
 
 const _targetUnit = computed({
-  get: () => props.scaleTargetUnit,
-  set: (val) => emit('update:scaleTargetUnit', val)
-})
+	get: () => props.scaleTargetUnit,
+	set: (val) => emit("update:scaleTargetUnit", val),
+});
 
 function _submitScale() {
-  emit('scale-apply')
+	emit("scale-apply");
 }
 </script>
 

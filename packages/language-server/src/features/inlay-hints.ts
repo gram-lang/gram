@@ -1,38 +1,39 @@
-import { type InlayHint, InlayHintKind, Position } from 'vscode-languageserver';
-import type { DocumentState } from '../document-state';
+import { type InlayHint, InlayHintKind, Position } from "vscode-languageserver";
+import type { DocumentState } from "../document-state";
 
 export function provideInlayHints(state: DocumentState): InlayHint[] {
-    const hints: InlayHint[] = [];
-    if (!state.ast || !state.compilation?.metrics) return hints;
+	const hints: InlayHint[] = [];
+	if (!state.ast || !state.compilation?.metrics) return hints;
 
-    const metrics = state.compilation.metrics;
-    
-    // Find the exact line of the title in the text
-    let titleLine = 0;
-    let titleChar = 0;
-    const lines = state.text.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i]!.toLowerCase().startsWith('title:')) {
-            titleLine = i;
-            titleChar = lines[i]!.length;
-            break;
-        }
-    }
+	const metrics = state.compilation.metrics;
 
-    if (metrics.cookTime > 0) {
-        // Only show total time if active time is not identical to avoid noise
-        const totalMinutes = Math.round(metrics.cookTime);
-        const hours = Math.floor(totalMinutes / 60);
-        const mins = totalMinutes % 60;
-        const timeStr = hours > 0 ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`) : `${mins}m`;
+	// Find the exact line of the title in the text
+	let titleLine = 0;
+	let titleChar = 0;
+	const lines = state.text.split("\n");
+	for (let i = 0; i < lines.length; i++) {
+		if (lines[i]!.toLowerCase().startsWith("title:")) {
+			titleLine = i;
+			titleChar = lines[i]!.length;
+			break;
+		}
+	}
 
-        hints.push({
-            position: Position.create(titleLine, titleChar),
-            label: `  Total Time: ${timeStr}`,
-            kind: InlayHintKind.Type,
-            paddingLeft: true
-        });
-    }
+	if (metrics.cookTime > 0) {
+		// Only show total time if active time is not identical to avoid noise
+		const totalMinutes = Math.round(metrics.cookTime);
+		const hours = Math.floor(totalMinutes / 60);
+		const mins = totalMinutes % 60;
+		const timeStr =
+			hours > 0 ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`) : `${mins}m`;
 
-    return hints;
+		hints.push({
+			position: Position.create(titleLine, titleChar),
+			label: `  Total Time: ${timeStr}`,
+			kind: InlayHintKind.Type,
+			paddingLeft: true,
+		});
+	}
+
+	return hints;
 }

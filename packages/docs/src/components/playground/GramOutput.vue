@@ -1,133 +1,155 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { useData } from 'vitepress'
-import { getDictionary } from '@gram-lang/i18n'
-import { setupMonaco } from './monacoSetup'
+import { ref, computed, watch, nextTick } from "vue";
+import { useData } from "vitepress";
+import { getDictionary } from "@gram-lang/i18n";
+import { setupMonaco } from "./monacoSetup";
 
 const props = defineProps<{
-  viewMode: 'json' | 'ast' | 'markdown' | 'json-tree' | 'preview'
-  content: string // JSON string, AST string, or Markdown string
-  htmlPreview: string
-  jsonData: any
-}>()
+	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview";
+	content: string; // JSON string, AST string, or Markdown string
+	htmlPreview: string;
+	jsonData: any;
+}>();
 
-const emit = defineEmits<(e: 'scale-update', factor: number) => void>()
+const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
 // biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
-const { isDark, lang } = useData()
-const _t = computed(() => getDictionary(lang.value))
+const { isDark, lang } = useData();
+const _t = computed(() => getDictionary(lang.value));
 
 const _currentLang = computed(() => {
-  if (props.viewMode === 'ast') return 'scheme'
-  if (props.viewMode === 'markdown') return 'markdown'
-  return 'json'
-})
+	if (props.viewMode === "ast") return "scheme";
+	if (props.viewMode === "markdown") return "markdown";
+	return "json";
+});
 
-const copied = ref(false)
+const copied = ref(false);
 function _copyOutput() {
-  if (props.viewMode === 'preview' || props.viewMode === 'json-tree') return
-  navigator.clipboard.writeText(props.content).then(() => {
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  })
+	if (props.viewMode === "preview" || props.viewMode === "json-tree") return;
+	navigator.clipboard.writeText(props.content).then(() => {
+		copied.value = true;
+		setTimeout(() => {
+			copied.value = false;
+		}, 2000);
+	});
 }
 
 const _handleMount = async (_editor: any, monaco: any) => {
-  await setupMonaco(monaco)
-}
+	await setupMonaco(monaco);
+};
 
 const _MONACO_OPTIONS = {
-  automaticLayout: true,
-  minimap: { enabled: false },
-  wordWrap: 'on',
-  fontSize: 14,
-  fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
-  scrollBeyondLastLine: false,
-  lineNumbersMinChars: 3,
-  renderLineHighlight: 'none',
-  padding: { top: 16 },
-  readOnly: true,
-  domReadOnly: true
-}
+	automaticLayout: true,
+	minimap: { enabled: false },
+	wordWrap: "on",
+	fontSize: 14,
+	fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
+	scrollBeyondLastLine: false,
+	lineNumbersMinChars: 3,
+	renderLineHighlight: "none",
+	padding: { top: 16 },
+	readOnly: true,
+	domReadOnly: true,
+};
 
-const previewContainer = ref<HTMLElement | null>(null)
+const previewContainer = ref<HTMLElement | null>(null);
 
-watch(() => props.htmlPreview, async () => {
-  if (props.viewMode !== 'preview' || !previewContainer.value) return
-  
-  const openDetails = new Set<string>()
-  previewContainer.value.querySelectorAll('details[open]').forEach(details => {
-    const summary = details.querySelector('summary')
-    if (summary?.textContent) {
-      openDetails.add(summary.textContent.trim())
-    }
-  })
-  
-  await nextTick()
-  
-  if (openDetails.size > 0 && previewContainer.value) {
-    previewContainer.value.querySelectorAll('details').forEach(details => {
-      const summary = details.querySelector('summary')
-      if (summary?.textContent && openDetails.has(summary.textContent.trim())) {
-        details.open = true
-      }
-    })
-  }
-}, { flush: 'pre' })
+watch(
+	() => props.htmlPreview,
+	async () => {
+		if (props.viewMode !== "preview" || !previewContainer.value) return;
+
+		const openDetails = new Set<string>();
+		previewContainer.value
+			.querySelectorAll("details[open]")
+			.forEach((details) => {
+				const summary = details.querySelector("summary");
+				if (summary?.textContent) {
+					openDetails.add(summary.textContent.trim());
+				}
+			});
+
+		await nextTick();
+
+		if (openDetails.size > 0 && previewContainer.value) {
+			previewContainer.value.querySelectorAll("details").forEach((details) => {
+				const summary = details.querySelector("summary");
+				if (
+					summary?.textContent &&
+					openDetails.has(summary.textContent.trim())
+				) {
+					details.open = true;
+				}
+			});
+		}
+	},
+	{ flush: "pre" },
+);
 
 function _handlePreviewChange(e: Event) {
-  if (props.viewMode !== 'preview') return
-  const target = e.target as HTMLElement
-  if (target.classList.contains('portions-input')) {
-    const input = target as HTMLInputElement
-    const newVal = parseFloat(input.value)
-    const interactivePortions = target.closest('.interactive-portions')
-    const basePortions = parseFloat(interactivePortions?.getAttribute('data-base-portions') || '1')
-    if (!Number.isNaN(newVal) && newVal > 0) {
-      emit('scale-update', newVal / basePortions)
-    }
-  }
+	if (props.viewMode !== "preview") return;
+	const target = e.target as HTMLElement;
+	if (target.classList.contains("portions-input")) {
+		const input = target as HTMLInputElement;
+		const newVal = parseFloat(input.value);
+		const interactivePortions = target.closest(".interactive-portions");
+		const basePortions = parseFloat(
+			interactivePortions?.getAttribute("data-base-portions") || "1",
+		);
+		if (!Number.isNaN(newVal) && newVal > 0) {
+			emit("scale-update", newVal / basePortions);
+		}
+	}
 }
 
 function _handlePreviewClick(e: MouseEvent) {
-  if (props.viewMode !== 'preview') return
-  const target = e.target as HTMLElement
-  
-  const scaleBtn = target.closest('.scale-btn')
-  if (scaleBtn) {
-    e.preventDefault()
-    const action = scaleBtn.getAttribute('data-scale-action')
-    if (action === 'set-factor') {
-      const val = parseFloat(scaleBtn.getAttribute('data-value') || '1')
-      emit('scale-update', val)
-    } else if (action === 'inc-portions' || action === 'dec-portions') {
-      const interactivePortions = target.closest('.interactive-portions')
-      const basePortions = parseFloat(interactivePortions?.getAttribute('data-base-portions') || '1')
-      const inputEl = interactivePortions?.querySelector('.portions-input') as HTMLInputElement | null
-      const currentPortions = inputEl ? parseFloat(inputEl.value) : basePortions
-      const newPortions = action === 'inc-portions' ? currentPortions + 1 : currentPortions - 1
-      if (newPortions > 0) {
-        emit('scale-update', newPortions / basePortions)
-      }
-    }
-    return
-  }
+	if (props.viewMode !== "preview") return;
+	const target = e.target as HTMLElement;
 
-  const a = target.closest('a')
-  if (a?.hash?.startsWith('#')) {
-    const id = a.hash.substring(1)
-    const el = document.getElementById(id)
-    if (el) {
-      e.preventDefault()
-      if (previewContainer.value) {
-        previewContainer.value.querySelectorAll('.target-highlight').forEach(n => {
-          n.classList.remove('target-highlight')
-        })
-      }
-      el.classList.add('target-highlight')
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
-  }
+	const scaleBtn = target.closest(".scale-btn");
+	if (scaleBtn) {
+		e.preventDefault();
+		const action = scaleBtn.getAttribute("data-scale-action");
+		if (action === "set-factor") {
+			const val = parseFloat(scaleBtn.getAttribute("data-value") || "1");
+			emit("scale-update", val);
+		} else if (action === "inc-portions" || action === "dec-portions") {
+			const interactivePortions = target.closest(".interactive-portions");
+			const basePortions = parseFloat(
+				interactivePortions?.getAttribute("data-base-portions") || "1",
+			);
+			const inputEl = interactivePortions?.querySelector(
+				".portions-input",
+			) as HTMLInputElement | null;
+			const currentPortions = inputEl
+				? parseFloat(inputEl.value)
+				: basePortions;
+			const newPortions =
+				action === "inc-portions" ? currentPortions + 1 : currentPortions - 1;
+			if (newPortions > 0) {
+				emit("scale-update", newPortions / basePortions);
+			}
+		}
+		return;
+	}
+
+	const a = target.closest("a");
+	if (a?.hash?.startsWith("#")) {
+		const id = a.hash.substring(1);
+		const el = document.getElementById(id);
+		if (el) {
+			e.preventDefault();
+			if (previewContainer.value) {
+				previewContainer.value
+					.querySelectorAll(".target-highlight")
+					.forEach((n) => {
+						n.classList.remove("target-highlight");
+					});
+			}
+			el.classList.add("target-highlight");
+			el.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}
 }
 </script>
 

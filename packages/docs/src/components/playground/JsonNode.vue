@@ -1,39 +1,41 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps<{
-  data: any
-  name?: string
-  isLast?: boolean
-  initialExpanded?: boolean
-}>()
+	data: any;
+	name?: string;
+	isLast?: boolean;
+	initialExpanded?: boolean;
+}>();
 
-const isExpanded = ref(props.initialExpanded !== false)
+const isExpanded = ref(props.initialExpanded !== false);
 
 function _toggle() {
-  isExpanded.value = !isExpanded.value
+	isExpanded.value = !isExpanded.value;
 }
 
 const type = computed(() => {
-  if (props.data === null) return 'null'
-  if (Array.isArray(props.data)) return 'array'
-  return typeof props.data
-})
+	if (props.data === null) return "null";
+	if (Array.isArray(props.data)) return "array";
+	return typeof props.data;
+});
 
-const _isObjectOrArray = computed(() => type.value === 'object' || type.value === 'array')
+const _isObjectOrArray = computed(
+	() => type.value === "object" || type.value === "array",
+);
 const _isEmpty = computed(() => {
-  if (type.value === 'array') return props.data.length === 0
-  if (type.value === 'object') return Object.keys(props.data).length === 0
-  return false
-})
+	if (type.value === "array") return props.data.length === 0;
+	if (type.value === "object") return Object.keys(props.data).length === 0;
+	return false;
+});
 
 const keys = computed(() => {
-  if (type.value === 'array') return props.data.map((_: any, i: number) => i)
-  if (type.value === 'object') return Object.keys(props.data)
-  return []
-})
+	if (type.value === "array") return props.data.map((_: any, i: number) => i);
+	if (type.value === "object") return Object.keys(props.data);
+	return [];
+});
 
-const _count = computed(() => keys.value.length)
+const _count = computed(() => keys.value.length);
 </script>
 
 <template>

@@ -580,4 +580,4 @@ size: '24cm tart tin'
 [Top] Spread the &meringue over the tart using a #spatula.
 
 [Brown] Torch with a #blowtorch|#kitchen torch or flash under a #=grill for ~{3-5min} until golden.
-`
+`;

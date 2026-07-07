@@ -1,253 +1,289 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, shallowRef, onUnmounted, computed } from 'vue'
-import type GramEditor from './GramEditor.vue'
-import { getAST } from '@gram-lang/parser'
-import { compile, resolveScaleFactor, applyScale } from '@gram-lang/kitchen'
-import { analyze, convertUnit, resolveIngredientDensity, parseDensityOverrides } from '@gram-lang/analyzer'
-import { toMarkdown, toHTML } from '@gram-lang/renderer'
-import { DEFAULT_SOURCES } from './db'
-import { useData } from 'vitepress'
-import { getDictionary } from '@gram-lang/i18n'
+import { ref, watch, onMounted, shallowRef, onUnmounted, computed } from "vue";
+import type GramEditor from "./GramEditor.vue";
+import { getAST } from "@gram-lang/parser";
+import { compile, resolveScaleFactor, applyScale } from "@gram-lang/kitchen";
+import {
+	analyze,
+	convertUnit,
+	resolveIngredientDensity,
+	parseDensityOverrides,
+} from "@gram-lang/analyzer";
+import { toMarkdown, toHTML } from "@gram-lang/renderer";
+import { DEFAULT_SOURCES } from "./db";
+import { useData } from "vitepress";
+import { getDictionary } from "@gram-lang/i18n";
 
-const { lang } = useData()
-const t = computed(() => getDictionary(lang.value))
+const { lang } = useData();
+const t = computed(() => getDictionary(lang.value));
 
-const code = ref('')
-const viewMode = ref<'preview' | 'json' | 'ast' | 'markdown' | 'json-tree'>('preview')
+const code = ref("");
+const viewMode = ref<"preview" | "json" | "ast" | "markdown" | "json-tree">(
+	"preview",
+);
 const options = ref({
-  enableMassStandardization: true,
-  enableYieldCalculation: false,
-  enableNutritionalEstimation: true,
-  bakersMath: false,
-  bakersMathOnly: false,
-  bakersReference: undefined as string | undefined
-})
+	enableMassStandardization: true,
+	enableYieldCalculation: false,
+	enableNutritionalEstimation: true,
+	bakersMath: false,
+	bakersMathOnly: false,
+	bakersReference: undefined as string | undefined,
+});
 
-const scaleFactorString = ref('100')
-const scaleTargetId = ref<string | null>(null)
-const scaleTargetQty = ref<number | null>(null)
-const scaleTargetUnit = ref('')
-const scaleError = ref('')
+const scaleFactorString = ref("100");
+const scaleTargetId = ref<string | null>(null);
+const scaleTargetQty = ref<number | null>(null);
+const scaleTargetUnit = ref("");
+const scaleError = ref("");
 
 const _viewModeOptions = computed(() => [
-  { label: t.value.playground.views.preview, value: 'preview' },
-  { label: t.value.playground.views.jsonTree, value: 'json-tree' },
-  { label: t.value.playground.views.json, value: 'json' },
-  { label: t.value.playground.views.ast, value: 'ast' },
-  { label: t.value.playground.views.markdown, value: 'markdown' }
-])
+	{ label: t.value.playground.views.preview, value: "preview" },
+	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
+	{ label: t.value.playground.views.json, value: "json" },
+	{ label: t.value.playground.views.ast, value: "ast" },
+	{ label: t.value.playground.views.markdown, value: "markdown" },
+]);
 
-const editorRef = ref<InstanceType<typeof GramEditor> | null>(null)
+const editorRef = ref<InstanceType<typeof GramEditor> | null>(null);
 
 // Output State
-const htmlPreview = ref('')
-const content = ref('')
-const jsonData = shallowRef<any>({})
-const warnings = ref<any[]>([])
-const errorMsg = ref('')
+const htmlPreview = ref("");
+const content = ref("");
+const jsonData = shallowRef<any>({});
+const warnings = ref<any[]>([]);
+const errorMsg = ref("");
 
-let fullDatabase: any = {}
+let fullDatabase: any = {};
 
-const manifestData = ref<any[]>([])
-const examples = computed(() => manifestData.value.map((ex: any) => ({
-  label: (t.value.playground.examples as any)[ex.id] || ex.title,
-  value: `${import.meta.env.BASE_URL}examples/${ex.id}`
-})))
-const selectedExample = ref('')
+const manifestData = ref<any[]>([]);
+const examples = computed(() =>
+	manifestData.value.map((ex: any) => ({
+		label: (t.value.playground.examples as any)[ex.id] || ex.title,
+		value: `${import.meta.env.BASE_URL}examples/${ex.id}`,
+	})),
+);
+const selectedExample = ref("");
 
 onMounted(() => {
-  // Build database
-  DEFAULT_SOURCES.forEach(source => {
-    if (source.data) {
-      Object.assign(fullDatabase, source.data)
-    }
-  })
+	// Build database
+	DEFAULT_SOURCES.forEach((source) => {
+		if (source.data) {
+			Object.assign(fullDatabase, source.data);
+		}
+	});
 
-  // Load Examples
-  fetch(`${import.meta.env.BASE_URL}examples/manifest.json`)
-    .then(res => res.json())
-    .then(manifest => {
-      manifestData.value = manifest
-      if (manifestData.value.length > 0 && !code.value) {
-        const defaultEx = examples.value.find((ex: any) => ex.value.includes('empanadas')) || examples.value[0]
-        selectedExample.value = defaultEx.value
-        loadExample(defaultEx.value)
-      }
-    })
-    .catch(err => console.error('Manifest Error:', err))
-    
-  updateGram()
-})
+	// Load Examples
+	fetch(`${import.meta.env.BASE_URL}examples/manifest.json`)
+		.then((res) => res.json())
+		.then((manifest) => {
+			manifestData.value = manifest;
+			if (manifestData.value.length > 0 && !code.value) {
+				const defaultEx =
+					examples.value.find((ex: any) => ex.value.includes("empanadas")) ||
+					examples.value[0];
+				selectedExample.value = defaultEx.value;
+				loadExample(defaultEx.value);
+			}
+		})
+		.catch((err) => console.error("Manifest Error:", err));
+
+	updateGram();
+});
 
 function loadExample(path: string) {
-  if (!path) return
-  fetch(path)
-    .then(res => res.text())
-    .then(text => {
-      code.value = text
-    })
+	if (!path) return;
+	fetch(path)
+		.then((res) => res.text())
+		.then((text) => {
+			code.value = text;
+		});
 }
 
 function renderSExpr(node: any, level = 0): string {
-  if (node === null || node === undefined) return 'nil'
-  if (typeof node !== 'object') {
-    if (typeof node === 'string') return `"${node}"`
-    return String(node)
-  }
-  if (Array.isArray(node)) {
-    return node.map(n => renderSExpr(n, level)).join('\n')
-  }
-  const indent = '  '.repeat(level)
-  const type = node.type || 'Object'
-  let attrs = ''
-  let children: any[] = []
-  const ignore = new Set(['type', 'loc'])
-  
-  Object.entries(node).forEach(([k, v]) => {
-    if (ignore.has(k)) return
-    if (v === null) return
-    if (typeof v !== 'object') {
-      attrs += ` :${k} ${typeof v === 'string' ? `"${v}"` : v}`
-    } else if (Array.isArray(v)) {
-      v.forEach(child => { children.push(child) })
-    } else {
-      if (v && typeof v === 'object' && 'min' in v && 'max' in v) {
-        attrs += ` :${k} ${(v as any).min}-${(v as any).max}`
-      } else {
-        children.push(v)
-      }
-    }
-  })
-  if (children.length === 0) {
-    return `${indent}(${type}${attrs})`
-  }
-  const childrenStr = children.map(c => renderSExpr(c, level + 1)).join('\n')
-  return `${indent}(${type}${attrs}\n${childrenStr})`
+	if (node === null || node === undefined) return "nil";
+	if (typeof node !== "object") {
+		if (typeof node === "string") return `"${node}"`;
+		return String(node);
+	}
+	if (Array.isArray(node)) {
+		return node.map((n) => renderSExpr(n, level)).join("\n");
+	}
+	const indent = "  ".repeat(level);
+	const type = node.type || "Object";
+	let attrs = "";
+	let children: any[] = [];
+	const ignore = new Set(["type", "loc"]);
+
+	Object.entries(node).forEach(([k, v]) => {
+		if (ignore.has(k)) return;
+		if (v === null) return;
+		if (typeof v !== "object") {
+			attrs += ` :${k} ${typeof v === "string" ? `"${v}"` : v}`;
+		} else if (Array.isArray(v)) {
+			v.forEach((child) => {
+				children.push(child);
+			});
+		} else {
+			if (v && typeof v === "object" && "min" in v && "max" in v) {
+				attrs += ` :${k} ${(v as any).min}-${(v as any).max}`;
+			} else {
+				children.push(v);
+			}
+		}
+	});
+	if (children.length === 0) {
+		return `${indent}(${type}${attrs})`;
+	}
+	const childrenStr = children.map((c) => renderSExpr(c, level + 1)).join("\n");
+	return `${indent}(${type}${attrs}\n${childrenStr})`;
 }
 
 function updateGram() {
-  errorMsg.value = ''
-  scaleError.value = ''
-  try {
-    const ast = getAST(code.value)
-    let result = compile(ast, { ...options.value, scaleFactor: 1 })
+	errorMsg.value = "";
+	scaleError.value = "";
+	try {
+		const ast = getAST(code.value);
+		let result = compile(ast, { ...options.value, scaleFactor: 1 });
 
-    if (scaleTargetId.value && scaleTargetQty.value !== null) {
-      try {
-        // Same-family units (g<->kg, ml<->l...) always convert; crossing
-        // mass<->volume (e.g. targeting "water=150g" in a recipe written in
-        // ml) also works whenever a density is available, from the recipe's
-        // own `densities:` frontmatter or the loaded ingredient database.
-        const overrides = parseDensityOverrides(result.meta)
-        const density = resolveIngredientDensity(scaleTargetId.value, fullDatabase, overrides)?.density
-        const resolution = resolveScaleFactor(result, {
-          type: 'target',
-          id: scaleTargetId.value,
-          qty: scaleTargetQty.value,
-          unit: scaleTargetUnit.value || null
-        }, (value, from, to) => convertUnit(value, from, to, density))
-        result = applyScale(result, resolution.factor)
-        scaleFactorString.value = (resolution.factor * 100).toFixed(2).replace(/\.00$/, '')
-      } catch (e: any) {
-        scaleError.value = e.message
-      }
-    } else {
-      const factor = parseFloat(scaleFactorString.value) / 100
-      if (!Number.isNaN(factor) && factor > 0 && factor !== 1) {
-        try {
-          const resolution = resolveScaleFactor(result, { type: 'factor', value: factor })
-          result = applyScale(result, resolution.factor)
-        } catch (e: any) {
-          scaleError.value = e.message
-        }
-      }
-    }
-    
-    const analysisOptions = {
-      ...options.value,
-      enableBakersMath: options.value.bakersMath
-    }
-    const analysis = analyze(result, fullDatabase, analysisOptions)
-    result = analysis.result
-    
-    warnings.value = result.warnings || []
-    jsonData.value = result
+		if (scaleTargetId.value && scaleTargetQty.value !== null) {
+			try {
+				// Same-family units (g<->kg, ml<->l...) always convert; crossing
+				// mass<->volume (e.g. targeting "water=150g" in a recipe written in
+				// ml) also works whenever a density is available, from the recipe's
+				// own `densities:` frontmatter or the loaded ingredient database.
+				const overrides = parseDensityOverrides(result.meta);
+				const density = resolveIngredientDensity(
+					scaleTargetId.value,
+					fullDatabase,
+					overrides,
+				)?.density;
+				const resolution = resolveScaleFactor(
+					result,
+					{
+						type: "target",
+						id: scaleTargetId.value,
+						qty: scaleTargetQty.value,
+						unit: scaleTargetUnit.value || null,
+					},
+					(value, from, to) => convertUnit(value, from, to, density),
+				);
+				result = applyScale(result, resolution.factor);
+				scaleFactorString.value = (resolution.factor * 100)
+					.toFixed(2)
+					.replace(/\.00$/, "");
+			} catch (e: any) {
+				scaleError.value = e.message;
+			}
+		} else {
+			const factor = parseFloat(scaleFactorString.value) / 100;
+			if (!Number.isNaN(factor) && factor > 0 && factor !== 1) {
+				try {
+					const resolution = resolveScaleFactor(result, {
+						type: "factor",
+						value: factor,
+					});
+					result = applyScale(result, resolution.factor);
+				} catch (e: any) {
+					scaleError.value = e.message;
+				}
+			}
+		}
 
-    if (viewMode.value === 'json') {
-      content.value = JSON.stringify(result, null, 2)
-    } else if (viewMode.value === 'ast') {
-      content.value = renderSExpr(ast)
-    } else if (viewMode.value === 'markdown') {
-      content.value = toMarkdown(result, { lang: lang.value })
-    } else if (viewMode.value === 'preview') {
-      htmlPreview.value = toHTML(result, { interactiveScaling: true, bakersMathOnly: options.value.bakersMathOnly, lang: lang.value })
-    }
-  } catch (e: any) {
-    errorMsg.value = e.message
-    warnings.value = []
-  }
+		const analysisOptions = {
+			...options.value,
+			enableBakersMath: options.value.bakersMath,
+		};
+		const analysis = analyze(result, fullDatabase, analysisOptions);
+		result = analysis.result;
+
+		warnings.value = result.warnings || [];
+		jsonData.value = result;
+
+		if (viewMode.value === "json") {
+			content.value = JSON.stringify(result, null, 2);
+		} else if (viewMode.value === "ast") {
+			content.value = renderSExpr(ast);
+		} else if (viewMode.value === "markdown") {
+			content.value = toMarkdown(result, { lang: lang.value });
+		} else if (viewMode.value === "preview") {
+			htmlPreview.value = toHTML(result, {
+				interactiveScaling: true,
+				bakersMathOnly: options.value.bakersMathOnly,
+				lang: lang.value,
+			});
+		}
+	} catch (e: any) {
+		errorMsg.value = e.message;
+		warnings.value = [];
+	}
 }
 
 function _handleScaleUpdate(factor: number) {
-  scaleFactorString.value = (factor * 100).toFixed(2).replace(/\.00$/, '')
-  scaleTargetId.value = null
-  scaleTargetQty.value = null
+	scaleFactorString.value = (factor * 100).toFixed(2).replace(/\.00$/, "");
+	scaleTargetId.value = null;
+	scaleTargetQty.value = null;
 }
 
 function _handleScaleApply() {
-  updateGram()
+	updateGram();
 }
 
 function _clearTarget() {
-  scaleTargetId.value = null
-  scaleTargetQty.value = null
+	scaleTargetId.value = null;
+	scaleTargetQty.value = null;
 }
 
-watch([code, options, viewMode, scaleFactorString, lang], () => {
-  if (!scaleTargetId.value) {
-    updateGram()
-  }
-}, { deep: true })
+watch(
+	[code, options, viewMode, scaleFactorString, lang],
+	() => {
+		if (!scaleTargetId.value) {
+			updateGram();
+		}
+	},
+	{ deep: true },
+);
 
 function _handleJump(start: number, end: number) {
-  if (editorRef.value) {
-    editorRef.value.jump(start, end)
-  }
+	if (editorRef.value) {
+		editorRef.value.jump(start, end);
+	}
 }
 
 // Split Pane Logic
-const leftPanelWidth = ref(50)
-const isDragging = ref(false)
+const leftPanelWidth = ref(50);
+const isDragging = ref(false);
 
 function _startDrag(_e: MouseEvent) {
-  isDragging.value = true
-  document.addEventListener('mousemove', onDrag)
-  document.addEventListener('mouseup', stopDrag)
-  document.body.style.userSelect = 'none'
-  document.body.style.cursor = 'col-resize'
+	isDragging.value = true;
+	document.addEventListener("mousemove", onDrag);
+	document.addEventListener("mouseup", stopDrag);
+	document.body.style.userSelect = "none";
+	document.body.style.cursor = "col-resize";
 }
 
 function onDrag(e: MouseEvent) {
-  if (!isDragging.value) return
-  const workspace = document.querySelector('.playground-workspace') as HTMLElement
-  if (!workspace) return
-  const rect = workspace.getBoundingClientRect()
-  const newWidth = ((e.clientX - rect.left) / rect.width) * 100
-  leftPanelWidth.value = Math.min(Math.max(newWidth, 20), 80)
+	if (!isDragging.value) return;
+	const workspace = document.querySelector(
+		".playground-workspace",
+	) as HTMLElement;
+	if (!workspace) return;
+	const rect = workspace.getBoundingClientRect();
+	const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+	leftPanelWidth.value = Math.min(Math.max(newWidth, 20), 80);
 }
 
 function stopDrag() {
-  isDragging.value = false
-  document.removeEventListener('mousemove', onDrag)
-  document.removeEventListener('mouseup', stopDrag)
-  document.body.style.userSelect = ''
-  document.body.style.cursor = ''
+	isDragging.value = false;
+	document.removeEventListener("mousemove", onDrag);
+	document.removeEventListener("mouseup", stopDrag);
+	document.body.style.userSelect = "";
+	document.body.style.cursor = "";
 }
 
 onUnmounted(() => {
-  document.removeEventListener('mousemove', onDrag)
-  document.removeEventListener('mouseup', stopDrag)
-})
+	document.removeEventListener("mousemove", onDrag);
+	document.removeEventListener("mouseup", stopDrag);
+});
 </script>
 
 <template>

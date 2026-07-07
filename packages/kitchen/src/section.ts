@@ -1,17 +1,20 @@
-import type { Usage } from './types'
+import type { Usage } from "./types";
 
 export interface AggregatedIngredient {
-    id: string
-    name: string
-    type?: string  // 'reference' for cross-section intermediates, undefined for regular ingredients
-    preparation?: string | null
-    // null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
-    // Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
-    quantities: Array<{ qty: NonNullable<Usage['qty']>; unit?: string | null }> | null
-    normalizedMass?: number
-    conversionMethod?: string
-    isEstimate?: boolean
-    bakersPercentage?: number
+	id: string;
+	name: string;
+	type?: string; // 'reference' for cross-section intermediates, undefined for regular ingredients
+	preparation?: string | null;
+	// null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
+	// Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
+	quantities: Array<{
+		qty: NonNullable<Usage["qty"]>;
+		unit?: string | null;
+	}> | null;
+	normalizedMass?: number;
+	conversionMethod?: string;
+	isEstimate?: boolean;
+	bakersPercentage?: number;
 }
 
 /**
@@ -24,63 +27,68 @@ export interface AggregatedIngredient {
  * Insertion order from the source list is preserved.
  * Grouping is done by `id` AND `preparation`.
  */
-export function aggregateSectionIngredients(ingredients: Usage[]): AggregatedIngredient[] {
-    const measuredByKey = new Map<string, AggregatedIngredient>()
-    const unmeasuredByKey = new Map<string, AggregatedIngredient>()
-    const order: AggregatedIngredient[] = []
+export function aggregateSectionIngredients(
+	ingredients: Usage[],
+): AggregatedIngredient[] {
+	const measuredByKey = new Map<string, AggregatedIngredient>();
+	const unmeasuredByKey = new Map<string, AggregatedIngredient>();
+	const order: AggregatedIngredient[] = [];
 
-    for (const ing of ingredients) {
-        if (ing.type === 'composite' || ing.type === 'alternative') continue
+	for (const ing of ingredients) {
+		if (ing.type === "composite" || ing.type === "alternative") continue;
 
-        const name = ing.name ?? ing.id
-        const hasMeasuredQty = ing.qty != null
-        const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
+		const name = ing.name ?? ing.id;
+		const hasMeasuredQty = ing.qty != null;
+		const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
-        if (hasMeasuredQty) {
-            const existing = measuredByKey.get(key)
-            if (existing) {
-                existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null })
-                if (ing.normalizedMass) {
-                    existing.normalizedMass = (existing.normalizedMass || 0) + ing.normalizedMass
-                    if (ing.isEstimate) existing.isEstimate = true
-                }
-                // Baker's percentage is linear in mass for a fixed reference, so it
-                // sums exactly like normalizedMass above — it must not just carry
-                // over the first occurrence's value once more are merged in.
-                if ((ing as any).bakersPercentage !== undefined) {
-                    existing.bakersPercentage = parseFloat(
-                        ((existing.bakersPercentage || 0) + (ing as any).bakersPercentage).toFixed(2)
-                    )
-                }
-            } else {
-                const entry: AggregatedIngredient = {
-                    id: ing.id,
-                    name,
-                    type: ing.type,
-                    preparation: ing.preparation,
-                    quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
-                    normalizedMass: ing.normalizedMass,
-                    conversionMethod: ing.conversionMethod,
-                    isEstimate: ing.isEstimate,
-                    bakersPercentage: (ing as any).bakersPercentage,
-                }
-                measuredByKey.set(key, entry)
-                order.push(entry)
-            }
-        } else {
-            if (!unmeasuredByKey.has(key)) {
-                const entry: AggregatedIngredient = { 
-                    id: ing.id, 
-                    name, 
-                    type: ing.type, 
-                    preparation: ing.preparation,
-                    quantities: null 
-                }
-                unmeasuredByKey.set(key, entry)
-                order.push(entry)
-            }
-        }
-    }
+		if (hasMeasuredQty) {
+			const existing = measuredByKey.get(key);
+			if (existing) {
+				existing.quantities!.push({ qty: ing.qty!, unit: ing.unit ?? null });
+				if (ing.normalizedMass) {
+					existing.normalizedMass =
+						(existing.normalizedMass || 0) + ing.normalizedMass;
+					if (ing.isEstimate) existing.isEstimate = true;
+				}
+				// Baker's percentage is linear in mass for a fixed reference, so it
+				// sums exactly like normalizedMass above — it must not just carry
+				// over the first occurrence's value once more are merged in.
+				if ((ing as any).bakersPercentage !== undefined) {
+					existing.bakersPercentage = parseFloat(
+						(
+							(existing.bakersPercentage || 0) + (ing as any).bakersPercentage
+						).toFixed(2),
+					);
+				}
+			} else {
+				const entry: AggregatedIngredient = {
+					id: ing.id,
+					name,
+					type: ing.type,
+					preparation: ing.preparation,
+					quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
+					normalizedMass: ing.normalizedMass,
+					conversionMethod: ing.conversionMethod,
+					isEstimate: ing.isEstimate,
+					bakersPercentage: (ing as any).bakersPercentage,
+				};
+				measuredByKey.set(key, entry);
+				order.push(entry);
+			}
+		} else {
+			if (!unmeasuredByKey.has(key)) {
+				const entry: AggregatedIngredient = {
+					id: ing.id,
+					name,
+					type: ing.type,
+					preparation: ing.preparation,
+					quantities: null,
+				};
+				unmeasuredByKey.set(key, entry);
+				order.push(entry);
+			}
+		}
+	}
 
-    return order
+	return order;
 }

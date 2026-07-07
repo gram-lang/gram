@@ -1,0 +1,5 @@
+# Commits listed here are ignored by `git blame` (and automatically by GitHub's
+# blame view). Use for mechanical, no-behavior-change commits — mass
+# reformats, not logic changes.
+#
+# Local setup: git config blame.ignoreRevsFile .git-blame-ignore-revs

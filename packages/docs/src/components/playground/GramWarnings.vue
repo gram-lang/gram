@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useData } from 'vitepress'
-import { getDictionary } from '@gram-lang/i18n'
+import { ref, computed } from "vue";
+import { useData } from "vitepress";
+import { getDictionary } from "@gram-lang/i18n";
 
 defineProps<{
-  warnings: Array<{
-    code: string
-    message: string
-    item?: string
-    loc?: { start: number; end: number }
-  }>
-}>()
+	warnings: Array<{
+		code: string;
+		message: string;
+		item?: string;
+		loc?: { start: number; end: number };
+	}>;
+}>();
 
 const _emit = defineEmits<{
-  jump: [start: number, end: number]
-}>()
+	jump: [start: number, end: number];
+}>();
 
-const { lang } = useData()
-const _t = computed(() => getDictionary(lang.value))
+const { lang } = useData();
+const _t = computed(() => getDictionary(lang.value));
 
-const isCollapsed = ref(false)
+const isCollapsed = ref(false);
 
 function _toggle() {
-  isCollapsed.value = !isCollapsed.value
+	isCollapsed.value = !isCollapsed.value;
 }
 </script>
 

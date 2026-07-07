@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
 const _props = defineProps<{
-  modelValue: string
-  options: { label: string; value: string }[]
-  placeholder?: string
-}>()
+	modelValue: string;
+	options: { label: string; value: string }[];
+	placeholder?: string;
+}>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  'change': [value: string]
-}>()
+	"update:modelValue": [value: string];
+	change: [value: string];
+}>();
 
-const isOpen = ref(false)
-const dropdownRef = ref<HTMLElement | null>(null)
+const isOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
 
 function _toggle() {
-  isOpen.value = !isOpen.value
+	isOpen.value = !isOpen.value;
 }
 
 function _selectOption(value: string) {
-  emit('update:modelValue', value)
-  emit('change', value)
-  isOpen.value = false
+	emit("update:modelValue", value);
+	emit("change", value);
+	isOpen.value = false;
 }
 
 function closeDropdown(e: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-    isOpen.value = false
-  }
+	if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+		isOpen.value = false;
+	}
 }
 
 onMounted(() => {
-  document.addEventListener('click', closeDropdown)
-})
+	document.addEventListener("click", closeDropdown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', closeDropdown)
-})
+	document.removeEventListener("click", closeDropdown);
+});
 </script>
 
 <template>

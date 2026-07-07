@@ -1,8 +1,13 @@
-import type { IngredientData } from './types';
-import { resolveCanonicalId } from './ingredient_db';
+import type { IngredientData } from "./types";
+import { resolveCanonicalId } from "./ingredient_db";
 
 function isStandardItem(item: any): boolean {
-    return !!item && item.type !== 'composite' && item.type !== 'alternative' && item.type !== 'group';
+	return (
+		!!item &&
+		item.type !== "composite" &&
+		item.type !== "alternative" &&
+		item.type !== "group"
+	);
 }
 
 /**
@@ -19,84 +24,100 @@ function isStandardItem(item: any): boolean {
  * their own MAX/SUM and first-choice resolution rules are handled upstream by
  * `@gram-lang/kitchen`.
  */
-export function aggregateShoppingList(shoppingList: any[], database: Record<string, IngredientData>): any[] {
-    const passthrough: any[] = [];
-    const standard: any[] = [];
+export function aggregateShoppingList(
+	shoppingList: any[],
+	database: Record<string, IngredientData>,
+): any[] {
+	const passthrough: any[] = [];
+	const standard: any[] = [];
 
-    shoppingList.forEach(item => {
-        (isStandardItem(item) ? standard : passthrough).push(item);
-    });
+	shoppingList.forEach((item) => {
+		(isStandardItem(item) ? standard : passthrough).push(item);
+	});
 
-    const order: string[] = [];
-    const groups = new Map<string, any[]>();
-    standard.forEach(item => {
-        const canonicalId = resolveCanonicalId(item.name ?? item.id, database);
-        if (!groups.has(canonicalId)) {
-            groups.set(canonicalId, []);
-            order.push(canonicalId);
-        }
-        groups.get(canonicalId)!.push(item);
-    });
+	const order: string[] = [];
+	const groups = new Map<string, any[]>();
+	standard.forEach((item) => {
+		const canonicalId = resolveCanonicalId(item.name ?? item.id, database);
+		if (!groups.has(canonicalId)) {
+			groups.set(canonicalId, []);
+			order.push(canonicalId);
+		}
+		groups.get(canonicalId)!.push(item);
+	});
 
-    const result: any[] = [];
-    order.forEach(canonicalId => {
-        const items = groups.get(canonicalId)!;
-        const canonicalName = database[canonicalId]?.name;
+	const result: any[] = [];
+	order.forEach((canonicalId) => {
+		const items = groups.get(canonicalId)!;
+		const canonicalName = database[canonicalId]?.name;
 
-        if (items.length === 1) {
-            const only = items[0];
-            only.id = canonicalId;
-            if (canonicalName) only.name = canonicalName;
-            result.push(only);
-            return;
-        }
+		if (items.length === 1) {
+			const only = items[0];
+			only.id = canonicalId;
+			if (canonicalName) only.name = canonicalName;
+			result.push(only);
+			return;
+		}
 
-        const allHaveMass = items.every(i => typeof i.normalizedMass === 'number');
-        if (allHaveMass) {
-            const totalMass = items.reduce((sum, i) => sum + i.normalizedMass, 0);
-            const totalPurchasing = items.reduce((sum, i) => sum + (i.purchasingMass ?? i.normalizedMass), 0);
+		const allHaveMass = items.every(
+			(i) => typeof i.normalizedMass === "number",
+		);
+		if (allHaveMass) {
+			const totalMass = items.reduce((sum, i) => sum + i.normalizedMass, 0);
+			const totalPurchasing = items.reduce(
+				(sum, i) => sum + (i.purchasingMass ?? i.normalizedMass),
+				0,
+			);
 
-            const merged: any = {
-                id: canonicalId,
-                name: canonicalName ?? items[0].name,
-                qty: parseFloat(totalMass.toFixed(2)),
-                unit: 'g',
-                normalizedMass: parseFloat(totalMass.toFixed(2)),
-                isEstimate: items.some(i => i.isEstimate),
-            };
-            if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-                merged.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
-            }
-            if (items.every(i => i.fixed)) merged.fixed = true;
-            if (items.some(i => i.relative)) merged.relative = true;
+			const merged: any = {
+				id: canonicalId,
+				name: canonicalName ?? items[0].name,
+				qty: parseFloat(totalMass.toFixed(2)),
+				unit: "g",
+				normalizedMass: parseFloat(totalMass.toFixed(2)),
+				isEstimate: items.some((i) => i.isEstimate),
+			};
+			if (Math.abs(totalPurchasing - totalMass) > 0.001) {
+				merged.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+			}
+			if (items.every((i) => i.fixed)) merged.fixed = true;
+			if (items.some((i) => i.relative)) merged.relative = true;
 
-            const usageIds = items.flatMap(i => i._usageIds ?? (i._usageId ? [i._usageId] : []));
-            if (usageIds.length > 0) merged._usageIds = usageIds;
+			const usageIds = items.flatMap(
+				(i) => i._usageIds ?? (i._usageId ? [i._usageId] : []),
+			);
+			if (usageIds.length > 0) merged._usageIds = usageIds;
 
-            const modifierUnion = new Set<string>();
-            items.forEach(i => { (i.modifiers ?? []).forEach((m: string) => { modifierUnion.add(m); }); });
-            // "optional" is an intersection, not a union, like `fixed` above: a
-            // merged line is only optional if every contributing entry is —
-            // otherwise a required 100g merged with an optional 10g garnish
-            // would incorrectly mark the whole 110g line as skippable.
-            const modifiers = [...modifierUnion].filter(m =>
-                m !== 'optional' || items.every(i => (i.modifiers ?? []).includes('optional'))
-            );
-            if (modifiers.length > 0) merged.modifiers = modifiers;
+			const modifierUnion = new Set<string>();
+			items.forEach((i) => {
+				(i.modifiers ?? []).forEach((m: string) => {
+					modifierUnion.add(m);
+				});
+			});
+			// "optional" is an intersection, not a union, like `fixed` above: a
+			// merged line is only optional if every contributing entry is —
+			// otherwise a required 100g merged with an optional 10g garnish
+			// would incorrectly mark the whole 110g line as skippable.
+			const modifiers = [...modifierUnion].filter(
+				(m) =>
+					m !== "optional" ||
+					items.every((i) => (i.modifiers ?? []).includes("optional")),
+			);
+			if (modifiers.length > 0) merged.modifiers = modifiers;
 
-            const variableEntries = items.flatMap(i => i.variable_entries ?? []);
-            if (variableEntries.length > 0) merged.variable_entries = variableEntries;
+			const variableEntries = items.flatMap((i) => i.variable_entries ?? []);
+			if (variableEntries.length > 0) merged.variable_entries = variableEntries;
 
-            result.push(merged);
-        } else {
-            items.forEach(i => {
-                i.id = canonicalId;
-                if (canonicalName) i.name = canonicalName;
-                i.multiUnit = true;
-                result.push(i);
-            });
-        }
-    });
+			result.push(merged);
+		} else {
+			items.forEach((i) => {
+				i.id = canonicalId;
+				if (canonicalName) i.name = canonicalName;
+				i.multiUnit = true;
+				result.push(i);
+			});
+		}
+	});
 
-    return [...result, ...passthrough];
+	return [...result, ...passthrough];
 }

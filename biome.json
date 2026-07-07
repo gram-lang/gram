@@ -9,6 +9,7 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"packages/*/src/**",
+			"packages/*/tests/**",
 			"!**/*.gram",
 			"!**/grammar-content.ts",
 			"!**/*.svg",
@@ -16,14 +17,14 @@
 		]
 	},
 	"formatter": {
-		"enabled": false
+		"enabled": true
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"preset": "recommended",
 			"suspicious": {
-				"noExplicitAny": "off",
+				"noExplicitAny": "warn",
 				"noImplicitAnyLet": "off",
 				"noControlCharactersInRegex": "off"
 			},
@@ -32,6 +33,28 @@
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["packages/analyzer/src/**", "packages/kitchen/src/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/parser/src/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "error"
+					}
+				}
+			}
+		}
+	],
 	"assist": {
 		"enabled": false
 	}

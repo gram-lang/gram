@@ -1,72 +1,84 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class PreviewPanel {
-    public static readonly viewType = 'gramPreview';
-    public static currentPanel: PreviewPanel | undefined;
+	public static readonly viewType = "gramPreview";
+	public static currentPanel: PreviewPanel | undefined;
 
-    private readonly _panel: vscode.WebviewPanel;
-    private _disposables: vscode.Disposable[] = [];
-    private _showMacros = false;
-    private readonly _extensionUri: vscode.Uri;
+	private readonly _panel: vscode.WebviewPanel;
+	private _disposables: vscode.Disposable[] = [];
+	private _showMacros = false;
+	private readonly _extensionUri: vscode.Uri;
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, initialHtml: string) {
-        this._panel = panel;
-        this._extensionUri = extensionUri;
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        this._panel.webview.html = this._getHtmlForWebview(initialHtml);
-    }
+	private constructor(
+		panel: vscode.WebviewPanel,
+		extensionUri: vscode.Uri,
+		initialHtml: string,
+	) {
+		this._panel = panel;
+		this._extensionUri = extensionUri;
+		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+		this._panel.webview.html = this._getHtmlForWebview(initialHtml);
+	}
 
-    public static createOrShow(extensionUri: vscode.Uri, initialHtml = ''): void {
-        const column = vscode.window.activeTextEditor
-            ? vscode.ViewColumn.Beside
-            : vscode.ViewColumn.One;
+	public static createOrShow(extensionUri: vscode.Uri, initialHtml = ""): void {
+		const column = vscode.window.activeTextEditor
+			? vscode.ViewColumn.Beside
+			: vscode.ViewColumn.One;
 
-        if (PreviewPanel.currentPanel) {
-            PreviewPanel.currentPanel._panel.reveal(column, true);
-            return;
-        }
+		if (PreviewPanel.currentPanel) {
+			PreviewPanel.currentPanel._panel.reveal(column, true);
+			return;
+		}
 
-        const panel = vscode.window.createWebviewPanel(
-            PreviewPanel.viewType,
-            'Live Preview',
-            { viewColumn: column, preserveFocus: true },
-            {
-                enableScripts: true,
-                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
-            }
-        );
+		const panel = vscode.window.createWebviewPanel(
+			PreviewPanel.viewType,
+			"Live Preview",
+			{ viewColumn: column, preserveFocus: true },
+			{
+				enableScripts: true,
+				localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
+			},
+		);
 
-        PreviewPanel.currentPanel = new PreviewPanel(panel, extensionUri, initialHtml);
-    }
+		PreviewPanel.currentPanel = new PreviewPanel(
+			panel,
+			extensionUri,
+			initialHtml,
+		);
+	}
 
-    public updateHTML(html: string): void {
-        this._panel.webview.postMessage({ command: 'updateContent', html });
-    }
+	public updateHTML(html: string): void {
+		this._panel.webview.postMessage({ command: "updateContent", html });
+	}
 
-    public showMacros(): void {
-        this._showMacros = true;
-        this._panel.webview.postMessage({ command: 'showMacros' });
-    }
+	public showMacros(): void {
+		this._showMacros = true;
+		this._panel.webview.postMessage({ command: "showMacros" });
+	}
 
-    public dispose(): void {
-        PreviewPanel.currentPanel = undefined;
-        this._panel.dispose();
-        while (this._disposables.length) {
-            const disposable = this._disposables.pop();
-            if (disposable) {
-                disposable.dispose();
-            }
-        }
-    }
+	public dispose(): void {
+		PreviewPanel.currentPanel = undefined;
+		this._panel.dispose();
+		while (this._disposables.length) {
+			const disposable = this._disposables.pop();
+			if (disposable) {
+				disposable.dispose();
+			}
+		}
+	}
 
-    private _getHtmlForWebview(initialHtml: string): string {
-        const nonce = getNonce();
+	private _getHtmlForWebview(initialHtml: string): string {
+		const nonce = getNonce();
 
-        // Link to extracted CSS
-        const cssPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'preview.css');
-        const cssUri = this._panel.webview.asWebviewUri(cssPathOnDisk);
+		// Link to extracted CSS
+		const cssPathOnDisk = vscode.Uri.joinPath(
+			this._extensionUri,
+			"media",
+			"preview.css",
+		);
+		const cssUri = this._panel.webview.asWebviewUri(cssPathOnDisk);
 
-        return `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -95,7 +107,7 @@ export class PreviewPanel {
         }
     </style>
 </head>
-<body class="gram-preview ${this._showMacros ? 'show-macros' : ''}">
+<body class="gram-preview ${this._showMacros ? "show-macros" : ""}">
     <div id="content">${initialHtml}</div>
     <script nonce="${nonce}">
         window.addEventListener('message', event => {
@@ -116,14 +128,15 @@ export class PreviewPanel {
     </script>
 </body>
 </html>`;
-    }
+	}
 }
 
 function getNonce(): string {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
+	let text = "";
+	const possible =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
 }
