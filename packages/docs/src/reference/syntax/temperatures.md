@@ -6,10 +6,10 @@ Gram supports two formats for a `^temperature` to accommodate both precise bakin
 
 ## Exact Temperatures
 
-Exact temperatures must specify a numeric value and a valid unit (`°C` or `°F`).
+Exact temperatures must specify a numeric value and a valid unit: `C` or `F`, case-insensitive, with or without the leading degree sign (`°C`/`°F`). Whatever spelling you use, the compiler normalizes it to the canonical `°C`/`°F` form in its output.
 
 ```gram
-Preheat the #oven to ^{180°C}.
+Preheat the #oven to ^{180C}.
 
 Bake at ^{350°F} until golden brown.
 ```
@@ -32,14 +32,14 @@ Turn down to ^{low} and let simmer.
 ```
 
 ::: info Parsing Rules
-When the Gram compiler encounters a `^temperature`, it checks if the content inside the braces contains a recognized unit (`°C` or `°F`).
-- If it does, it parses it as an Exact Temperature (validating the number).
+When the Gram compiler encounters a `^temperature`, it checks if the content inside the braces starts with a number.
+- If it does, it parses it as an Exact Temperature and validates the unit that follows.
 - If it doesn't, it treats the entire content as a Semantic text string.
 :::
 
 ## Error Handling
 
-The compiler validates `^temperature` declarations and will output specific warnings for malformed exact temperatures:
+Only Celsius and Fahrenheit are supported — no Kelvin or other scales. The compiler validates `^temperature` declarations and will output specific warnings for malformed exact temperatures:
 
 - **Missing Unit**: If you write `^{200}` without specifying `C` or `F`, the compiler warns `MISSING_UNIT`.
-- **Invalid Unit**: If you provide a numeric value with an unrecognized unit (e.g., `^{200°K}`), the compiler warns `INVALID_UNIT`.
+- **Invalid Unit**: If you provide a numeric value with an unrecognized unit (e.g., `^{200K}`), the compiler warns `INVALID_UNIT` and keeps the raw value as written.

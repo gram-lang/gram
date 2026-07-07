@@ -258,11 +258,23 @@ function processTimer(
                  pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Timer', item: item.name || 'Timer', loc: item.loc });
              }
          } else if (q.type === ASTNodeType.TextQuantity) {
-             pushWarning(ctx, WarningCode.INVALID_UNIT, { value: q.value, loc: item.loc });
-             obj.quantity = { type: 'text', value: q.value }; 
+             pushWarning(ctx, WarningCode.INVALID_UNIT, { type: 'Timer', value: q.value, loc: item.loc });
+             obj.quantity = { type: 'text', value: q.value };
          }
     }
     return obj;
+}
+
+/**
+ * Only Celsius and Fahrenheit are supported. Accepts the unit with or
+ * without the leading degree sign, case-insensitively, and normalizes to
+ * the canonical `°C`/`°F` spelling regardless of how it was written.
+ */
+const TEMPERATURE_UNIT_PATTERN = /^°?([cf])$/i;
+
+function normalizeTemperatureUnit(unit: string): string | null {
+    const letter = TEMPERATURE_UNIT_PATTERN.exec(unit.trim())?.[1];
+    return letter ? `°${letter.toUpperCase()}` : null;
 }
 
 function processTemperature(
@@ -276,7 +288,13 @@ function processTemperature(
     } else {
          if (item.value) obj.quantity = item.value;
          if (item.unit) {
-             obj.unit = item.unit;
+             const normalized = normalizeTemperatureUnit(item.unit);
+             if (normalized) {
+                 obj.unit = normalized;
+             } else {
+                 pushWarning(ctx, WarningCode.INVALID_UNIT, { type: 'Temperature', value: item.unit, loc: item.loc });
+                 obj.unit = item.unit;
+             }
          } else {
              pushWarning(ctx, WarningCode.MISSING_UNIT, { type: 'Temperature', item: item.name || 'Temperature', loc: item.loc });
          }

@@ -4,23 +4,41 @@ import { resolveTimeUnit } from '@gram-lang/i18n';
 import type { CompilerOptions } from './core';
 
 /**
- * Normalizes user-inputted strings (like ingredient names) into URL-friendly, 
- * standard alphanumeric identifiers (slugs).
- * 
- * Used globally to generate robust keys/IDs (e.g., "basmati-rice" from "Basmati Rice")
- * to ensure reliable lookups and comparisons across ingredients and databases.
+ * Deterministic short hash (djb2), used as a slug fallback when a name has no
+ * letters/digits left to slugify (e.g. an emoji-only or purely symbolic
+ * title) — a fixed 'unknown' fallback would collide across every such name.
+ */
+const shortHash = (input: string): string => {
+    let hash = 5381;
+    for (let i = 0; i < input.length; i++) {
+        hash = ((hash << 5) + hash + input.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash).toString(36).slice(0, 8);
+};
+
+/**
+ * Normalizes user-inputted strings (like ingredient names) into robust
+ * identifiers (slugs), used globally as keys/IDs (e.g., "basmati-rice" from
+ * "Basmati Rice") for reliable lookups and comparisons across ingredients and
+ * databases.
+ *
+ * Latin diacritics are folded to their base letter via NFD normalization
+ * (e.g. "crème" -> "creme"), but non-Latin letters (CJK, Cyrillic, Arabic…)
+ * have no such decomposition and are preserved as-is via `\p{L}`/`\p{N}`
+ * rather than stripped — two recipes named in different non-Latin scripts
+ * must not collide onto the same id.
  */
 export const slugify = (text: string | number): string => {
-    return text
+    const slug = text
         .toString()
         .toLowerCase()
         .replace(/œ/g, 'oe')
         .replace(/æ/g, 'ae')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        || 'unknown';
+        .replace(/[^\p{L}\p{N}]+/gu, '-')
+        .replace(/^-+|-+$/g, '');
+    return slug || shortHash(text.toString());
 };
 
 /**

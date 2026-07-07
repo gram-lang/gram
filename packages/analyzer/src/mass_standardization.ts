@@ -128,7 +128,7 @@ export function parseDensityOverrides(meta: any): Record<string, number> {
         if (typeof entry !== 'string') return;
         const parts = entry.split(':');
         if (parts.length === 2) {
-            const name = (parts[0] || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const name = slugify(parts[0] || '');
             const density = parseFloat((parts[1] || '').trim());
             if (!Number.isNaN(density)) {
                 overrides[name] = density;

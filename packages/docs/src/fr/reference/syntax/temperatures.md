@@ -6,10 +6,10 @@ Gram prend en charge deux formats pour une `^température` afin de répondre à 
 
 ## Températures Exactes
 
-Les températures exactes doivent spécifier une valeur numérique et une unité valide (`°C` ou `°F`).
+Les températures exactes doivent spécifier une valeur numérique et une unité valide : `C` ou `F`, insensible à la casse, avec ou sans le symbole degré (`°C`/`°F`). Quelle que soit la graphie utilisée, le compilateur la normalise vers la forme canonique `°C`/`°F` dans sa sortie.
 
 ```gram
-Préchauffer le #four à ^{180°C}.
+Préchauffer le #four à ^{180C}.
 
 Cuire à ^{350°F} jusqu'à ce que ce soit bien doré.
 ```
@@ -32,14 +32,14 @@ Baisser à ^{feu doux} et laisser mijoter.
 ```
 
 ::: info Règles d'Analyse (Parsing)
-Lorsque le compilateur Gram rencontre une `^température`, il vérifie si le contenu entre accolades contient une unité reconnue (`°C` ou `°F`).
-- Si c'est le cas, il l'analyse comme une Température Exacte (en validant le nombre).
+Lorsque le compilateur Gram rencontre une `^température`, il vérifie si le contenu entre accolades commence par un nombre.
+- Si c'est le cas, il l'analyse comme une Température Exacte et valide l'unité qui suit.
 - Si ce n'est pas le cas, il traite l'ensemble du contenu comme une chaîne de texte Sémantique.
 :::
 
 ## Gestion des Erreurs
 
-Le compilateur valide les déclarations de `^température` et produira des avertissements spécifiques pour des températures exactes mal formées :
+Seuls Celsius et Fahrenheit sont pris en charge — pas de Kelvin ni d'autre échelle. Le compilateur valide les déclarations de `^température` et produira des avertissements spécifiques pour des températures exactes mal formées :
 
 - **Unité Manquante** : Si vous écrivez `^{200}` sans spécifier `C` ou `F`, le compilateur avertit `MISSING_UNIT`.
-- **Unité Invalide** : Si vous fournissez une valeur numérique avec une unité non reconnue (ex : `^{200°K}`), le compilateur avertit `INVALID_UNIT`.
+- **Unité Invalide** : Si vous fournissez une valeur numérique avec une unité non reconnue (ex : `^{200K}`), le compilateur avertit `INVALID_UNIT` et conserve la valeur brute telle qu'écrite.

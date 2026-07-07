@@ -26,7 +26,7 @@ export interface WarningPayloads {
     [WarningCode.CIRCULAR_REFERENCE]: { name: string; item: string; loc?: Location };
     [WarningCode.UNDEFINED_REFERENCE]: { prefix: string; name: string; item: string; loc?: Location };
     [WarningCode.MISSING_UNIT]: { type: 'Timer' | 'Temperature'; item: string; loc?: Location };
-    [WarningCode.INVALID_UNIT]: { value: string; loc?: Location };
+    [WarningCode.INVALID_UNIT]: { type: 'Timer' | 'Temperature'; value: string; loc?: Location };
     [WarningCode.SCOPE_CONFLICT]: { varName: string; section: string | null; loc?: Location };
     [WarningCode.MISSING_INGREDIENT]: { id: string };
     [WarningCode.MISSING_MACROS]: { id: string };
@@ -43,7 +43,7 @@ export const warningTemplates: { [K in WarningCode]: (payload: WarningPayloads[K
     [WarningCode.CIRCULAR_REFERENCE]: (p) => `Circular reference detected: ${p.name} depends on itself.`,
     [WarningCode.UNDEFINED_REFERENCE]: (p) => `Reference to undefined ingredient '${p.prefix}${p.name}'.`,
     [WarningCode.MISSING_UNIT]: (p) => `${p.type} must have an explicit unit.`,
-    [WarningCode.INVALID_UNIT]: (_p) => `Invalid text content in Timer.`,
+    [WarningCode.INVALID_UNIT]: (p) => `Invalid unit "${p.value}" for ${p.type}.`,
     [WarningCode.SCOPE_CONFLICT]: (p) => `Global variable '&${p.varName}' is redefined.`,
     [WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,
     [WarningCode.MISSING_MACROS]: (p) => `Ingredient "${p.id}" has no default macro data.`,
@@ -69,6 +69,34 @@ export interface Warning {
     loc?: Location;
     section?: string | null;
 }
+
+export type WarningSeverity = 'error' | 'warning' | 'info';
+
+/**
+ * Single source of truth for how each WarningCode should be treated by
+ * consumers (`gram check`, the language server, `--strict`). Structural
+ * integrity issues (a reference to something that doesn't exist, a naming
+ * collision) are `error`; everything else — nutritional/estimation gaps,
+ * incomplete-but-recoverable annotations — is `warning`, so a missing timer
+ * unit doesn't fail a build the same way an undefined reference does.
+ * `--strict` promotes every `warning` to `error`.
+ */
+export const warningSeverity: Record<WarningCode, WarningSeverity> = {
+    [WarningCode.VARIABLE_NOT_FOUND]: 'warning',
+    [WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: 'warning',
+    [WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: 'warning',
+    [WarningCode.CIRCULAR_REFERENCE]: 'error',
+    [WarningCode.UNDEFINED_REFERENCE]: 'error',
+    [WarningCode.MISSING_UNIT]: 'warning',
+    [WarningCode.INVALID_UNIT]: 'warning',
+    [WarningCode.SCOPE_CONFLICT]: 'error',
+    [WarningCode.MISSING_INGREDIENT]: 'warning',
+    [WarningCode.MISSING_MACROS]: 'warning',
+    [WarningCode.UNKNOWN_MASS]: 'warning',
+    [WarningCode.INVALID_MODIFIER_COMBINATION]: 'warning',
+    [WarningCode.INVALID_BAKERS_REFERENCE]: 'warning',
+    [WarningCode.NO_BAKERS_REFERENCE]: 'warning',
+};
 
 export function pushWarning<K extends WarningCode>(
     target: Warning[] | { warnings: Warning[] },

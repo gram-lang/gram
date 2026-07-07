@@ -134,7 +134,8 @@ function StepToken({ token, cookwareRegistry }) {
     case 'timer':
       return <span className="bg-yellow-100 px-1 rounded">{token.quantity?.value}{token.unit}</span>;
     case 'temperature':
-      return <span className="text-red-600">{token.quantity?.value}°{token.unit}</span>;
+      // unit is already normalized to °C/°F — no extra ° to add here
+      return <span className="text-red-600">{token.quantity?.value}{token.unit}</span>;
     default:
       return null;
   }
