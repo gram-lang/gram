@@ -19,6 +19,7 @@ export default defineConfig({
 
 	vite: {
 		build: {
+			target: "esnext",
 			chunkSizeWarningLimit: 4000, // Increase warning limit to 4MB for Monaco Editor
 			rollupOptions: {
 				output: {
