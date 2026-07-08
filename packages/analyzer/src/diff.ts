@@ -114,9 +114,7 @@ function fmtTimerQty(qty: ProcessedTimer["quantity"], unit?: string): string {
 	return `?${u}`;
 }
 
-function getTempValue(
-	token: ProcessedTemperature,
-): {
+function getTempValue(token: ProcessedTemperature): {
 	value: number;
 	unit: string;
 	range?: { min: number; max: number };

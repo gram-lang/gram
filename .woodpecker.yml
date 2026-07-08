@@ -5,30 +5,69 @@ when:
 
 steps:
   install:
-    image: oven/bun:1
+    image: oven/bun:1.3.14
     commands:
       - bun install
 
+  # Explicit and separate from `install`'s postinstall hook (which already runs
+  # this implicitly): if that hook is ever removed or broken, typecheck/test
+  # would otherwise silently run against stale dist/ output instead of failing.
+  build:
+    image: oven/bun:1.3.14
+    commands:
+      - bun run build
+
   lint:
-    image: oven/bun:1
+    image: oven/bun:1.3.14
     commands:
       - bun run lint
 
   typecheck:
-    image: oven/bun:1
+    image: oven/bun:1.3.14
     commands:
       - bun run typecheck
 
   test:
-    image: oven/bun:1
+    image: oven/bun:1.3.14
     commands:
       - bun test
+
+  # `build` above already builds every package including docs (turbo's
+  # dependency graph) — this step is a fast cache-hit re-run, kept separate
+  # purely so a docs-specific failure (broken links, budget overrun) is
+  # attributed to its own step instead of buried in the generic `build` one.
+  docs:
+    image: oven/bun:1.3.14
+    commands:
+      - bun run build --filter=@gram-lang/docs
+
+  # Packs every @gram-lang/* package the CLI depends on with `bun pm pack`
+  # (which resolves `workspace:*` to the real version, same as at publish
+  # time) so node-smoke can install them together with plain npm, without
+  # depending on the npm registry — these betas may not even be published yet.
+  pack:
+    image: oven/bun:1.3.14
+    commands:
+      - mkdir -p .smoke
+      - for p in i18n parser kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
+
+  # Confirms the CLI actually works when installed the way most users get
+  # it — `npm install` on plain Node.js, no Bun anywhere — since the docs
+  # promise Node >=20 support and every other CI step runs under Bun.
+  node-smoke:
+    image: node:20
+    commands:
+      - export REPO_DIR=$(pwd)
+      - mkdir -p /tmp/smoke-install && cd /tmp/smoke-install
+      - npm init -y
+      - npm install $REPO_DIR/.smoke/*.tgz
+      - node_modules/.bin/gram check $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram
 
   # Non-blocking for now: several known vulnerabilities are tracked and scheduled
   # to be resolved (dependency updates, see audit Chantier 5). Once addressed,
   # remove `failure: ignore` so new vulnerabilities start failing the build.
   audit:
-    image: oven/bun:1
+    image: oven/bun:1.3.14
     commands:
       - bun audit
     failure: ignore

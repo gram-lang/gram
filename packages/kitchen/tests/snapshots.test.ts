@@ -1,8 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "../src/index";
-import { readdirSync, readFileSync } from "fs";
-import { join } from "path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 describe("Compiler Snapshots", () => {
 	const fixturesDir = join(import.meta.dir, "fixtures", "valid");

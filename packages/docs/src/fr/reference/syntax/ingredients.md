@@ -150,6 +150,17 @@ Ajouter les @œufs{2-4}.
 Verser l'@eau{1.5-2 L}.
 ```
 
+### Fractions
+Les quantités acceptent les fractions sous trois formes — fraction simple, nombre mixte, ou glyphe de fraction Unicode — toutes normalisées vers la même valeur décimale.
+
+```gram
+Ajouter le @sucre{1/2 tasse}.
+
+Ajouter la @farine{1 1/2 tasse}.
+
+Ajouter le @beurre{1½ plaquette}.
+```
+
 ## Gestion des Erreurs
 
 Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingrédient` et produira des avertissements spécifiques :

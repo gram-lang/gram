@@ -4,6 +4,7 @@
   "description": "Core parser for the Gram recipe language, converting .gram files to JSON AST.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.js",

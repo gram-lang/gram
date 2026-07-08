@@ -3,6 +3,8 @@ dist/
 .turbo/
 .notes/
 .sandbox/
+.smoke/
+*.tgz
 
 # Vitepress
 **/.vitepress/cache

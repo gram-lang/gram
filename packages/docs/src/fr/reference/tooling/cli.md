@@ -298,6 +298,7 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
 #### `gram db validate`
 Valide l'intégrité de votre `ingredients.yaml`.
 - Vérifie les erreurs de schéma, les alias dupliqués, et les valeurs incohérentes (ex : densité > 2.5).
+- Une entrée malformée n'empêche pas la vérification du reste : chaque entrée est validée indépendamment, et le rapport liste tous les problèmes trouvés dans le fichier en une seule passe.
 - Options : `--strict` (exit 1 sur avertissements, utile en CI).
 
 #### `gram db search [requête]`

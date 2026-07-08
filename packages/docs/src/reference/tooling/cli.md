@@ -298,6 +298,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
 #### `gram db validate`
 Validates the integrity of your `ingredients.yaml`.
 - Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
+- A malformed entry doesn't stop the rest from being checked: every entry is validated independently, and the report lists every issue found across the whole file in one pass.
 - Options: `--strict` (exit 1 on warnings, useful in CI).
 
 #### `gram db search [query]`

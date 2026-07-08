@@ -4,6 +4,7 @@
   "description": "Gram recipe i18n and unit normalization logic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],

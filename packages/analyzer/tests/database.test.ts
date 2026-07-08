@@ -1,8 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import { validateIngredientDatabase } from "../src/index";
 import { parse } from "yaml";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 describe("YAML Database Validation", () => {
 	it("should correctly validate the examples/ingredients.yaml file", () => {

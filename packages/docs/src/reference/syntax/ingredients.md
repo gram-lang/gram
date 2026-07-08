@@ -150,6 +150,17 @@ Add @eggs{2-4}.
 Pour @water{1.5-2l}.
 ```
 
+### Fractions
+Quantities accept fractions in three forms — a plain fraction, a mixed number, or a Unicode fraction glyph — all normalized to the same decimal value.
+
+```gram
+Add @sugar{1/2 cup}.
+
+Add @flour{1 1/2 cups}.
+
+Add @butter{1½ sticks}.
+```
+
 ## Error Handling
 
 The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:

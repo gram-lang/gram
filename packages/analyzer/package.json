@@ -4,6 +4,7 @@
   "description": "Gram recipe analyzer for physical properties (mass, yield, nutrition)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
