@@ -305,4 +305,21 @@ Heat @=oil{50ml} in a pan.
 		expect(flourA.qty).toBe(1000);
 		expect(flourB.qty).toBe(1500);
 	});
+
+	// Regression test: processIngredient (processor.ts) pushes the same Usage
+	// object into both section.ingredients and the step's inline content token —
+	// structuredClone preserves that shared reference, so scaling each collection
+	// independently used to multiply the qty by `factor` twice (factor²).
+	it("scales a section ingredient's qty by the factor exactly once, not squared, even though it shares an object reference with its inline step token", () => {
+		const scaled: any = applyScale(recipe, 2);
+		const sectionFlour = scaled.sections[0].ingredients.find(
+			(i: any) => i.id === "flour",
+		);
+		expect(sectionFlour.qty).toBe(1000); // 500 * 2, not 500 * 2 * 2
+
+		const stepToken = scaled.sections[0].steps[0].content.find(
+			(t: any) => t && t.id === "flour",
+		);
+		expect(stepToken.qty).toBe(1000);
+	});
 });

@@ -142,12 +142,17 @@ export function resolveScaleFactor(
 	return { factor, resolvedFrom: "target", targetId: id, unitConverted };
 }
 
-function mutateUsage(item: any, factor: number): void {
+function mutateUsage(item: any, factor: number, scaled: WeakSet<object>): void {
 	if (!item || typeof item !== "object") return;
+	if (scaled.has(item)) return; // already scaled — same Usage object is shared
+	// between section.ingredients and its inline step token (see processIngredient
+	// in processor.ts, which pushes and returns the same object); without this
+	// guard it would be scaled twice (factor²) here.
 	if (item.fixed) return; // @= modifier or TextQuantity — never scaled
 	if ("qty" in item && item.qty !== undefined) {
 		item.qty = scaleQty(item.qty, factor);
 	}
+	scaled.add(item);
 }
 
 /**
@@ -165,6 +170,10 @@ export function applyScale(
 
 	const cloned: any = structuredClone(result);
 	const basePortions = (result as any).meta?.portions;
+	// structuredClone preserves shared references (e.g. a section ingredient's
+	// Usage object is the very same object as its inline step token) — track
+	// what's already been scaled so a shared object is never scaled twice.
+	const scaled = new WeakSet<object>();
 
 	if (cloned.meta && basePortions !== undefined) {
 		if (typeof basePortions === "number") {
@@ -179,23 +188,25 @@ export function applyScale(
 	for (const item of cloned.shopping_list ?? []) {
 		if (!item || typeof item !== "object") continue;
 		if (item.type === "alternative") {
-			for (const opt of item.options ?? []) mutateUsage(opt, factor);
+			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
 		} else if (item.type === "composite") {
 			if (typeof item.qty === "number") item.qty = item.qty * factor;
-			for (const u of item.usage ?? []) mutateUsage(u, factor);
+			for (const u of item.usage ?? []) mutateUsage(u, factor, scaled);
 		} else {
-			mutateUsage(item, factor);
+			mutateUsage(item, factor, scaled);
 		}
 	}
 
 	for (const section of cloned.sections ?? []) {
-		for (const ing of section.ingredients ?? []) mutateUsage(ing, factor);
+		for (const ing of section.ingredients ?? [])
+			mutateUsage(ing, factor, scaled);
 		for (const stepItem of section.steps ?? []) {
 			if (!stepItem || stepItem.type === "comment") continue;
 			for (const token of stepItem.content ?? []) {
 				if (!token || typeof token !== "object") continue;
 				// Ingredient usage tokens have an 'id' and no token-type discriminator
-				if ("id" in token && !("type" in token)) mutateUsage(token, factor);
+				if ("id" in token && !("type" in token))
+					mutateUsage(token, factor, scaled);
 			}
 		}
 	}
