@@ -40,6 +40,11 @@ export default defineConfig({
 				},
 			},
 		},
+		optimizeDeps: {
+			esbuildOptions: {
+				target: "esnext",
+			},
+		},
 	},
 
 	head: [["script", { src: "https://unpkg.com/@phosphor-icons/web" }]],
