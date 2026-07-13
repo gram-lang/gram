@@ -3,6 +3,10 @@ import { ref, computed, watch, nextTick } from "vue";
 import { useData } from "vitepress";
 import { getDictionary } from "@gram-lang/i18n";
 import { setupMonaco } from "./monacoSetup";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import JsonNode from "./JsonNode.vue";
 
 const props = defineProps<{
 	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview";
@@ -15,16 +19,19 @@ const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
 // biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
 const { isDark, lang } = useData();
-const _t = computed(() => getDictionary(lang.value));
+// biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
+const t = computed(() => getDictionary(lang.value));
 
-const _currentLang = computed(() => {
+// biome-ignore lint/correctness/noUnusedVariables: currentLang is used in the <template> block below, which Biome's Vue support doesn't see.
+const currentLang = computed(() => {
 	if (props.viewMode === "ast") return "scheme";
 	if (props.viewMode === "markdown") return "markdown";
 	return "json";
 });
 
 const copied = ref(false);
-function _copyOutput() {
+// biome-ignore lint/correctness/noUnusedVariables: copyOutput is used in the <template> block below, which Biome's Vue support doesn't see.
+function copyOutput() {
 	if (props.viewMode === "preview" || props.viewMode === "json-tree") return;
 	navigator.clipboard.writeText(props.content).then(() => {
 		copied.value = true;
@@ -34,11 +41,13 @@ function _copyOutput() {
 	});
 }
 
-const _handleMount = async (_editor: any, monaco: any) => {
+// biome-ignore lint/correctness/noUnusedVariables: handleMount is used in the <template> block below, which Biome's Vue support doesn't see.
+const handleMount = async (_editor: any, monaco: any) => {
 	await setupMonaco(monaco);
 };
 
-const _MONACO_OPTIONS = {
+// biome-ignore lint/correctness/noUnusedVariables: MONACO_OPTIONS is used in the <template> block below, which Biome's Vue support doesn't see.
+const MONACO_OPTIONS = {
 	automaticLayout: true,
 	minimap: { enabled: false },
 	wordWrap: "on",
@@ -86,7 +95,8 @@ watch(
 	{ flush: "pre" },
 );
 
-function _handlePreviewChange(e: Event) {
+// biome-ignore lint/correctness/noUnusedVariables: handlePreviewChange is used in the <template> block below, which Biome's Vue support doesn't see.
+function handlePreviewChange(e: Event) {
 	if (props.viewMode !== "preview") return;
 	const target = e.target as HTMLElement;
 	if (target.classList.contains("portions-input")) {
@@ -102,7 +112,8 @@ function _handlePreviewChange(e: Event) {
 	}
 }
 
-function _handlePreviewClick(e: MouseEvent) {
+// biome-ignore lint/correctness/noUnusedVariables: handlePreviewClick is used in the <template> block below, which Biome's Vue support doesn't see.
+function handlePreviewClick(e: MouseEvent) {
 	if (props.viewMode !== "preview") return;
 	const target = e.target as HTMLElement;
 

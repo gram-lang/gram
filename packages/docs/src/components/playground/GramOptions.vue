@@ -6,9 +6,11 @@ import { useData } from "vitepress";
 import { getDictionary } from "@gram-lang/i18n";
 
 const { lang } = useData();
-const _t = computed(() => getDictionary(lang.value));
+// biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
+const t = computed(() => getDictionary(lang.value));
 
-const _knownUnits = [
+// biome-ignore lint/correctness/noUnusedVariables: knownUnits is used in the <template> block below, which Biome's Vue support doesn't see.
+const knownUnits = [
 	...Object.keys(UNIT_CONVERSIONS.mass.map),
 	...Object.keys(UNIT_CONVERSIONS.volume.map),
 ];
@@ -36,7 +38,8 @@ const emit = defineEmits<{
 	"scale-apply": [];
 }>();
 
-const _massEnabled = computed({
+// biome-ignore lint/correctness/noUnusedVariables: massEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
+const massEnabled = computed({
 	get: () => props.options.enableMassStandardization,
 	set: (val) =>
 		emit("update:options", {
@@ -45,13 +48,15 @@ const _massEnabled = computed({
 		}),
 });
 
-const _yieldEnabled = computed({
+// biome-ignore lint/correctness/noUnusedVariables: yieldEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
+const yieldEnabled = computed({
 	get: () => props.options.enableYieldCalculation,
 	set: (val) =>
 		emit("update:options", { ...props.options, enableYieldCalculation: val }),
 });
 
-const _nutritionEnabled = computed({
+// biome-ignore lint/correctness/noUnusedVariables: nutritionEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
+const nutritionEnabled = computed({
 	get: () => props.options.enableNutritionalEstimation,
 	set: (val) =>
 		emit("update:options", {
@@ -60,18 +65,21 @@ const _nutritionEnabled = computed({
 		}),
 });
 
-const _bakersMath = computed({
+// biome-ignore lint/correctness/noUnusedVariables: bakersMath is used in the <template> block below, which Biome's Vue support doesn't see.
+const bakersMath = computed({
 	get: () => props.options.bakersMath,
 	set: (val) => emit("update:options", { ...props.options, bakersMath: val }),
 });
 
-const _bakersMathOnly = computed({
+// biome-ignore lint/correctness/noUnusedVariables: bakersMathOnly is used in the <template> block below, which Biome's Vue support doesn't see.
+const bakersMathOnly = computed({
 	get: () => props.options.bakersMathOnly,
 	set: (val) =>
 		emit("update:options", { ...props.options, bakersMathOnly: val }),
 });
 
-const _bakersReference = computed({
+// biome-ignore lint/correctness/noUnusedVariables: bakersReference is used in the <template> block below, which Biome's Vue support doesn't see.
+const bakersReference = computed({
 	get: () => props.options.bakersReference || "",
 	set: (val) =>
 		emit("update:options", {
@@ -80,7 +88,8 @@ const _bakersReference = computed({
 		}),
 });
 
-const _targetId = computed({
+// biome-ignore lint/correctness/noUnusedVariables: targetId is used in the <template> block below, which Biome's Vue support doesn't see.
+const targetId = computed({
 	get: () => props.scaleTargetId || "",
 	set: (val) => {
 		emit("update:scaleTargetId", val || null);
@@ -98,7 +107,8 @@ const _targetId = computed({
 	},
 });
 
-const _targetQty = computed({
+// biome-ignore lint/correctness/noUnusedVariables: targetQty is used in the <template> block below, which Biome's Vue support doesn't see.
+const targetQty = computed({
 	get: () => {
 		if (props.scaleTargetQty === null) return "";
 		return formatDecimalToFraction(props.scaleTargetQty);
@@ -127,12 +137,14 @@ const _targetQty = computed({
 	},
 });
 
-const _targetUnit = computed({
+// biome-ignore lint/correctness/noUnusedVariables: targetUnit is used in the <template> block below, which Biome's Vue support doesn't see.
+const targetUnit = computed({
 	get: () => props.scaleTargetUnit,
 	set: (val) => emit("update:scaleTargetUnit", val),
 });
 
-function _submitScale() {
+// biome-ignore lint/correctness/noUnusedVariables: submitScale is used in the <template> block below, which Biome's Vue support doesn't see.
+function submitScale() {
 	emit("scale-apply");
 }
 </script>

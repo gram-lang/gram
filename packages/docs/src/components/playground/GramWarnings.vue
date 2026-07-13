@@ -12,16 +12,19 @@ defineProps<{
 	}>;
 }>();
 
-const _emit = defineEmits<{
+// biome-ignore lint/correctness/noUnusedVariables: emit is used in the <template> block below, which Biome's Vue support doesn't see.
+const emit = defineEmits<{
 	jump: [start: number, end: number];
 }>();
 
 const { lang } = useData();
-const _t = computed(() => getDictionary(lang.value));
+// biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
+const t = computed(() => getDictionary(lang.value));
 
 const isCollapsed = ref(false);
 
-function _toggle() {
+// biome-ignore lint/correctness/noUnusedVariables: toggle is used in the <template> block below, which Biome's Vue support doesn't see.
+function toggle() {
 	isCollapsed.value = !isCollapsed.value;
 }
 </script>

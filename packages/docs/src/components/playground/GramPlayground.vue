@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, shallowRef, onUnmounted, computed } from "vue";
-import type GramEditor from "./GramEditor.vue";
-import { getAST } from "@gram-lang/parser";
+// biome-ignore lint/style/useImportType: GramEditor is used as a component in the <template> block below, which Biome's Vue support doesn't see — a type-only import breaks the ref.
+import GramEditor from "./GramEditor.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramOptions from "./GramOptions.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramWarnings from "./GramWarnings.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramOutput from "./GramOutput.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import PlaygroundDropdown from "./PlaygroundDropdown.vue";
+import { getAST, GramParseError } from "@gram-lang/parser";
 import { compile, resolveScaleFactor, applyScale } from "@gram-lang/kitchen";
 import {
 	analyze,
@@ -36,7 +45,8 @@ const scaleTargetQty = ref<number | null>(null);
 const scaleTargetUnit = ref("");
 const scaleError = ref("");
 
-const _viewModeOptions = computed(() => [
+// biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const viewModeOptions = computed(() => [
 	{ label: t.value.playground.views.preview, value: "preview" },
 	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
 	{ label: t.value.playground.views.json, value: "json" },
@@ -141,6 +151,7 @@ function renderSExpr(node: any, level = 0): string {
 function updateGram() {
 	errorMsg.value = "";
 	scaleError.value = "";
+	editorRef.value?.setErrorMarker(null, "");
 	try {
 		const ast = getAST(code.value);
 		let result = compile(ast, { ...options.value, scaleFactor: 1 });
@@ -215,20 +226,26 @@ function updateGram() {
 	} catch (e: any) {
 		errorMsg.value = e.message;
 		warnings.value = [];
+		if (e instanceof GramParseError) {
+			editorRef.value?.setErrorMarker(e.offset, e.message);
+		}
 	}
 }
 
-function _handleScaleUpdate(factor: number) {
+// biome-ignore lint/correctness/noUnusedVariables: handleScaleUpdate is used in the <template> block below, which Biome's Vue support doesn't see.
+function handleScaleUpdate(factor: number) {
 	scaleFactorString.value = (factor * 100).toFixed(2).replace(/\.00$/, "");
 	scaleTargetId.value = null;
 	scaleTargetQty.value = null;
 }
 
-function _handleScaleApply() {
+// biome-ignore lint/correctness/noUnusedVariables: handleScaleApply is used in the <template> block below, which Biome's Vue support doesn't see.
+function handleScaleApply() {
 	updateGram();
 }
 
-function _clearTarget() {
+// biome-ignore lint/correctness/noUnusedVariables: clearTarget is used in the <template> block below, which Biome's Vue support doesn't see.
+function clearTarget() {
 	scaleTargetId.value = null;
 	scaleTargetQty.value = null;
 }
@@ -243,7 +260,8 @@ watch(
 	{ deep: true },
 );
 
-function _handleJump(start: number, end: number) {
+// biome-ignore lint/correctness/noUnusedVariables: handleJump is used in the <template> block below, which Biome's Vue support doesn't see.
+function handleJump(start: number, end: number) {
 	if (editorRef.value) {
 		editorRef.value.jump(start, end);
 	}
@@ -253,7 +271,8 @@ function _handleJump(start: number, end: number) {
 const leftPanelWidth = ref(50);
 const isDragging = ref(false);
 
-function _startDrag(_e: MouseEvent) {
+// biome-ignore lint/correctness/noUnusedVariables: startDrag is used in the <template> block below, which Biome's Vue support doesn't see.
+function startDrag(_e: MouseEvent) {
 	isDragging.value = true;
 	document.addEventListener("mousemove", onDrag);
 	document.addEventListener("mouseup", stopDrag);

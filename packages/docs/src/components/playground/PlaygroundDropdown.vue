@@ -15,11 +15,13 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
 
-function _toggle() {
+// biome-ignore lint/correctness/noUnusedVariables: toggle is used in the <template> block below, which Biome's Vue support doesn't see.
+function toggle() {
 	isOpen.value = !isOpen.value;
 }
 
-function _selectOption(value: string) {
+// biome-ignore lint/correctness/noUnusedVariables: selectOption is used in the <template> block below, which Biome's Vue support doesn't see.
+function selectOption(value: string) {
 	emit("update:modelValue", value);
 	emit("change", value);
 	isOpen.value = false;

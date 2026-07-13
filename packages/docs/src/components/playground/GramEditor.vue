@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef } from "vue";
 import { useData } from "vitepress";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
 
 const props = defineProps<{
 	modelValue: string;
@@ -12,19 +14,28 @@ const emit = defineEmits<{
 
 const { isDark } = useData();
 
-const _localCode = computed({
+// biome-ignore lint/correctness/noUnusedVariables: localCode is used in the <template> block below, which Biome's Vue support doesn't see.
+const localCode = computed({
 	get: () => props.modelValue,
 	set: (val) => emit("update:modelValue", val),
 });
 
 const editorRef = shallowRef();
+const monacoRef = shallowRef<any>(null);
 
 const shikiLoaded = ref(false);
 
-import { setupMonaco } from "./monacoSetup";
+// biome-ignore lint/correctness/noUnusedImports: isSetup is used in the <template> block below, which Biome's Vue support doesn't see.
+import { setupMonaco, isSetup } from "./monacoSetup";
 
-const _handleMount = async (editor: any, monaco: any) => {
+function resolveMonaco(): any {
+	return monacoRef.value || (window as any).monaco;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: handleMount is used in the <template> block below, which Biome's Vue support doesn't see.
+const handleMount = async (editor: any, monaco: any) => {
 	editorRef.value = editor;
+	monacoRef.value = monaco;
 	await setupMonaco(monaco);
 	shikiLoaded.value = true;
 
@@ -44,7 +55,8 @@ watch(isDark, (dark) => {
 	}
 });
 
-const _MONACO_OPTIONS = {
+// biome-ignore lint/correctness/noUnusedVariables: MONACO_OPTIONS is used in the <template> block below, which Biome's Vue support doesn't see.
+const MONACO_OPTIONS = {
 	automaticLayout: true,
 	minimap: { enabled: false },
 	wordWrap: "on",
@@ -78,6 +90,45 @@ defineExpose({
 				editorRef.value.focus();
 			}
 		}
+	},
+
+	setErrorMarker(offset: number | null, message: string) {
+		const monaco = resolveMonaco();
+		const editor = editorRef.value;
+		if (!monaco || !editor) return;
+		const model = editor.getModel();
+		if (!model) return;
+
+		if (offset === null) {
+			monaco.editor.setModelMarkers(model, "gram-parser", []);
+			return;
+		}
+
+		const length = model.getValueLength();
+		const clamped = Math.max(0, Math.min(offset, length));
+		let startOffset = clamped;
+		let endOffset = Math.min(clamped + 1, length);
+		if (endOffset === startOffset) {
+			// Error is at end-of-file (e.g. "unexpected end of input"): a
+			// zero-width range renders no squiggly, so underline the
+			// preceding character instead.
+			startOffset = Math.max(0, clamped - 1);
+			endOffset = clamped;
+		}
+
+		const startPos = model.getPositionAt(startOffset);
+		const endPos = model.getPositionAt(endOffset);
+
+		monaco.editor.setModelMarkers(model, "gram-parser", [
+			{
+				severity: monaco.MarkerSeverity.Error,
+				message,
+				startLineNumber: startPos.lineNumber,
+				startColumn: startPos.column,
+				endLineNumber: endPos.lineNumber,
+				endColumn: endPos.column,
+			},
+		]);
 	},
 });
 </script>
