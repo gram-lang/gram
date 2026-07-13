@@ -18,7 +18,8 @@
   "overrides": {
     "dompurify": "^3.4.11",
     "vite": "^6.4.3",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "js-yaml": "^3.15.0"
   },
   "scripts": {
     "postinstall": "bun run build",
