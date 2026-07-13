@@ -36,14 +36,14 @@ Inspired by the excellent [Cooklang](https://cooklang.org), Gram takes the conce
 
 While other markups focus purely on natural language, Gram cares deeply about **data integrity** to solve complex culinary problems:
 
-1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl`), timers (`~{30min}`), and temperatures (`°{230°C}`).
+1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl`), timers (`~{30min}`), and temperatures (`^{230C}`).
 2. **Explicit Actions**: Highlight the main method used in a step (e.g., `[Mix]`, `[Bake]`).
 3. **Composite Ingredients (`<@`)**: Cleanly handle tricky relationships like "Zest of 1 lemon" and "Juice of 2 lemons" while ensuring your shopping list aggregates to exactly "Buy 2 Lemons".
 4. **Intermediate Preparations (`->&dough`)**: Chain recipe parts together just like variables in code, and reuse them later without accidentally doubling your shopping list totals.
 5. **Relative Quantities**: Define `@water{60% @&flour}` to handle dynamic baker's math effortlessly.
 6. **Smart Aggregation & Mise en Place**: Automatically converts volumes to masses (e.g., `1 cup` -> `125g`) to calculate exact purchasing amounts and yield (Gross vs. Net Mass).
 7. **Nutritional Estimation**: Calculates calories and macros automatically using your ingredient database.
-8. **Advanced Timers & Scheduling**: Distinguish between active work (`~{10min}`) and background tasks (`~&{2h}`), and use retro-planning (`~{-2d}`) on sections to organize multi-day recipes perfectly.
+8. **Advanced Timers & Scheduling**: Distinguish between active work (`~{10min}`) and background tasks (`~_{2h}`), and use retro-planning (`~{-2d}`) on sections to organize multi-day recipes perfectly.
 
 ---
 
@@ -64,11 +64,11 @@ description: A simple, highly hydrated dough.
 
 [Mix] The @flour{500g}, @water{70% @&flour}, and @salt{10g} in a #large bowl{}. ->&dough
 
-[Rest] Let the &dough rest for ~&{2h} at °{room temperature} until doubled in size.
+[Rest] Let the &dough rest for ~_{2h} at ^{room temperature} until doubled in size.
 
 ## Baking
 
-[Preheat] The #oven to °{450°F}.
+[Preheat] The #oven to ^{450F}.
 
 [Bake] The &dough for ~{35min} until the crust is deeply golden.
 ```

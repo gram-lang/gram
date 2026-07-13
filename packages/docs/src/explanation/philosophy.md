@@ -48,7 +48,7 @@ portions: 10
 
 [Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
 
-[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85°C}. ->&hot milk{}
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85C}. ->&hot milk{}
 
 [Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
 

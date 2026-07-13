@@ -89,7 +89,7 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 ```gram [Code]
 ## Baking the Tart Shell
 
-[Preheat] Preheat the #oven{} to ^{350°F}.
+[Preheat] Preheat the #oven{} to ^{350F}.
 
 [Roll] Roll out the &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 
@@ -213,7 +213,7 @@ portions: 8
 
 ## Baking the Tart Shell ->&baked shell{}
 
-[Preheat] The #oven to ^{350°F}.
+[Preheat] The #oven to ^{350F}.
 
 [Roll out] The &pastry dough{} for ~{5min} and place it in a #tart ring{}.
 

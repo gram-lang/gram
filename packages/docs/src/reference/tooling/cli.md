@@ -214,7 +214,7 @@ gram format "recipes/**/*.gram" --check  # CI check — exit 1 if any file needs
 2. **Space before brace** — `@ing {10g}` → `@ing{10g}`
 3. **Spaces inside braces** — `@ing{ 10g }` → `@ing{10g}`
 4. **Trailing decimal zeros** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
-5. **Temperature spacing** — `{180 °C}` → `{180°C}`
+5. **Temperature spacing** — `^{180 C}` → `^{180C}`
 6. **Trailing whitespace** — strip end-of-line spaces and tabs
 7. **Max 2 consecutive blank lines** — collapse runs of 4+ newlines to 3
 8. **2 blank lines before section headers** — normalize `##` spacing
