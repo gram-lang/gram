@@ -21,7 +21,7 @@ describe("buildFiles", () => {
 		expect(results).toHaveLength(1);
 		expect(results[0]?.file).toBe(a);
 		expect(results[0]?.slug).toBe(a.split("/").pop()?.replace(".gram", ""));
-		expect((results[0]?.data as any).shopping_list[0].id).toBe("flour");
+		expect((results[0]!.data as any).shopping_list[0].id).toBe("flour");
 	});
 
 	it("builds multiple files concurrently, preserving order", async () => {
@@ -34,6 +34,6 @@ describe("buildFiles", () => {
 	it("applies a scaleFactor when provided", async () => {
 		const a = await tmp("## Prep\n[Mix] Add @flour{200g}.\n");
 		const results = await buildFiles([a], { scaleFactor: 2 });
-		expect((results[0]?.data as any).shopping_list[0].qty).toBe(400);
+		expect((results[0]!.data as any).shopping_list[0].qty).toBe(400);
 	});
 });
