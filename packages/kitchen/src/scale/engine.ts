@@ -1,5 +1,5 @@
 import { normalizeUnit } from "@gram-lang/i18n";
-import { slugify, scaleQty } from "../utils";
+import { slugify, scaleQty, round2 } from "../utils";
 import type { CompilationResult } from "../types";
 import {
 	type ScaleRequest,
@@ -177,11 +177,11 @@ export function applyScale(
 
 	if (cloned.meta && basePortions !== undefined) {
 		if (typeof basePortions === "number") {
-			cloned.meta.portions = parseFloat((basePortions * factor).toFixed(2));
+			cloned.meta.portions = round2(basePortions * factor);
 		} else if (typeof basePortions === "string") {
 			const num = parseFloat(basePortions);
 			if (!Number.isNaN(num))
-				cloned.meta.portions = String(parseFloat((num * factor).toFixed(2)));
+				cloned.meta.portions = String(round2(num * factor));
 		}
 	}
 

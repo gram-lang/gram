@@ -1,4 +1,4 @@
-import { slugify, getNumericQty } from "./utils";
+import { slugify, getNumericQty, round2 } from "./utils";
 import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
 import type { ProcessedSection, Registry, Usage } from "./types";
@@ -241,7 +241,7 @@ export function generateShoppingList(
 		const units = Object.keys(item.otherUnits!);
 		const primaryUnit = units[0];
 		if (primaryUnit !== undefined) {
-			res.qty = parseFloat((item.otherUnits![primaryUnit] || 0).toFixed(2));
+			res.qty = round2(item.otherUnits![primaryUnit] || 0);
 			res.unit = primaryUnit || null;
 		}
 
@@ -254,9 +254,7 @@ export function generateShoppingList(
 				const u = units[i];
 				if (u === undefined) continue;
 				const uStr = u ? ` ${u}` : "";
-				extraEntries.push(
-					`${parseFloat((item.otherUnits![u] || 0).toFixed(2))}${uStr}`,
-				);
+				extraEntries.push(`${round2(item.otherUnits![u] || 0)}${uStr}`);
 			}
 		}
 

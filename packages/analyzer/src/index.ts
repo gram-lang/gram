@@ -7,7 +7,7 @@ export * from "./diff";
 export * from "./shopping_aggregation";
 
 import type { CompilationResult } from "@gram-lang/kitchen";
-import { getNumericQty, WarningCode } from "@gram-lang/kitchen";
+import { getNumericQty, WarningCode, round2 } from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	AnalyzedUsage,
@@ -170,7 +170,7 @@ export function analyze(
 
 				if (foundMass && targetMass > 0) {
 					const calculatedMass = (item.formula.percent / 100) * targetMass;
-					item.normalizedMass = parseFloat(calculatedMass.toFixed(2));
+					item.normalizedMass = round2(calculatedMass);
 					item.qty = {
 						type: ASTNodeType.Quantity,
 						value: item.normalizedMass,
@@ -263,9 +263,7 @@ export function analyze(
 								childYieldFactor,
 							);
 
-							child.normalizedMass = parseFloat(
-								childYielded.normalizedMass.toFixed(2),
-							);
+							child.normalizedMass = round2(childYielded.normalizedMass);
 							child.isEstimate = norm.isEstimate;
 							totalMass += childYielded.normalizedMass;
 							totalPurchasing +=
@@ -275,11 +273,11 @@ export function analyze(
 					}
 				}
 				if (totalMass > 0) {
-					item.normalizedMass = parseFloat(totalMass.toFixed(2));
+					item.normalizedMass = round2(totalMass);
 					item.isEstimate = hasEstimate;
 					item.conversionMethod = hasEstimate ? "estimate" : "physical";
 					if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-						item.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+						item.purchasingMass = round2(totalPurchasing);
 					}
 				}
 			} else {
@@ -303,7 +301,7 @@ export function analyze(
 				});
 
 				if (totalMass > 0) {
-					item.normalizedMass = parseFloat(totalMass.toFixed(2));
+					item.normalizedMass = round2(totalMass);
 					item.isEstimate = hasEstimate;
 					// Preserve 'relative' provenance even if only some contributing
 					// usages were formula-derived: a mass partly built from another
@@ -315,7 +313,7 @@ export function analyze(
 							? "estimate"
 							: "physical";
 					if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-						item.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+						item.purchasingMass = round2(totalPurchasing);
 					}
 
 					if (hasRelativeResolved) {
@@ -377,7 +375,7 @@ export function analyze(
 		if (bakersReferenceMass !== null && bakersReferenceMass > 0) {
 			const computeBakers = (mass?: number) =>
 				mass !== undefined
-					? parseFloat(((mass / bakersReferenceMass!) * 100).toFixed(2))
+					? round2((mass / bakersReferenceMass!) * 100)
 					: undefined;
 
 			// Apply to shopping list

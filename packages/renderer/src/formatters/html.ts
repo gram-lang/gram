@@ -8,7 +8,7 @@ import {
 	joinStepTokens,
 } from "../utils";
 import { formatElement } from "./element";
-import { aggregateSectionIngredients } from "@gram-lang/kitchen";
+import { aggregateSectionIngredients, round2 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
@@ -26,7 +26,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		interactiveScaling: options.interactiveScaling,
 		lang: options.lang,
 		_inlineComments: [],
-		_renderId: Math.random().toString(36).substring(2, 9),
+		_renderId: options.renderId ?? "note",
 	};
 
 	let html = "";
@@ -120,7 +120,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 						typeof data.scaleFactor === "number" &&
 						data.scaleFactor !== 0 &&
 						!Number.isNaN(numericV)
-							? parseFloat((numericV / data.scaleFactor).toFixed(2))
+							? round2(numericV / data.scaleFactor)
 							: v;
 					html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
 					html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;

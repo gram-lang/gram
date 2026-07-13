@@ -267,6 +267,16 @@ export const scaleQty = (qty: any, factor: number): any => {
 	return qty;
 };
 
+/**
+ * Rounds a mass/quantity value to 2 decimal places, returning a `number`
+ * (not a string). Centralizes the `parseFloat(x.toFixed(2))` idiom used
+ * throughout kitchen/analyzer so there is a single, documented rounding rule
+ * to port when the compiler is reimplemented in another language: `toFixed`
+ * uses round-half-away-from-zero on the value's shortest decimal
+ * representation, which differs from IEEE round-half-to-even on exact ties.
+ */
+export const round2 = (value: number): number => parseFloat(value.toFixed(2));
+
 export const getNumericQty = (q: any): number | null => {
 	if (q === undefined || q === null) return null;
 	if (typeof q === "number") return q;

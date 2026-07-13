@@ -1,4 +1,4 @@
-import { slugify } from "@gram-lang/kitchen";
+import { slugify, round2 } from "@gram-lang/kitchen";
 import { normalizeUnit } from "@gram-lang/i18n";
 
 export interface UnitMap {
@@ -258,12 +258,12 @@ export function applyYield(
 	}
 	if (method === "unit_weight") {
 		return {
-			normalizedMass: parseFloat((mass * yieldFactor).toFixed(2)),
+			normalizedMass: round2(mass * yieldFactor),
 			purchasingMass: mass,
 		};
 	}
 	return {
 		normalizedMass: mass,
-		purchasingMass: parseFloat((mass / yieldFactor).toFixed(2)),
+		purchasingMass: round2(mass / yieldFactor),
 	};
 }

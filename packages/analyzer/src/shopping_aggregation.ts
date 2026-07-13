@@ -1,5 +1,6 @@
 import type { IngredientData } from "./types";
 import { resolveCanonicalId } from "./ingredient_db";
+import { round2 } from "@gram-lang/kitchen";
 
 function isStandardItem(item: any): boolean {
 	return (
@@ -72,13 +73,13 @@ export function aggregateShoppingList(
 			const merged: any = {
 				id: canonicalId,
 				name: canonicalName ?? items[0].name,
-				qty: parseFloat(totalMass.toFixed(2)),
+				qty: round2(totalMass),
 				unit: "g",
-				normalizedMass: parseFloat(totalMass.toFixed(2)),
+				normalizedMass: round2(totalMass),
 				isEstimate: items.some((i) => i.isEstimate),
 			};
 			if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-				merged.purchasingMass = parseFloat(totalPurchasing.toFixed(2));
+				merged.purchasingMass = round2(totalPurchasing);
 			}
 			if (items.every((i) => i.fixed)) merged.fixed = true;
 			if (items.some((i) => i.relative)) merged.relative = true;

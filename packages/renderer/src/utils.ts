@@ -1,4 +1,5 @@
 import { ASTNodeType } from "@gram-lang/parser";
+import { round2 } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
@@ -66,7 +67,7 @@ export function formatDecimalToFraction(value: unknown): string {
 		if (match) return match.str;
 	}
 
-	return String(parseFloat(value.toFixed(2)));
+	return String(round2(value));
 }
 
 export interface ExtractedQuantity {

@@ -1,4 +1,5 @@
 import type { Usage } from "./types";
+import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
 	id: string;
@@ -54,10 +55,8 @@ export function aggregateSectionIngredients(
 				// sums exactly like normalizedMass above — it must not just carry
 				// over the first occurrence's value once more are merged in.
 				if ((ing as any).bakersPercentage !== undefined) {
-					existing.bakersPercentage = parseFloat(
-						(
-							(existing.bakersPercentage || 0) + (ing as any).bakersPercentage
-						).toFixed(2),
+					existing.bakersPercentage = round2(
+						(existing.bakersPercentage || 0) + (ing as any).bakersPercentage,
 					);
 				}
 			} else {

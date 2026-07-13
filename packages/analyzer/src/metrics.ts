@@ -1,4 +1,5 @@
 import type { MassMetrics } from "./types";
+import { round2 } from "@gram-lang/kitchen";
 
 /**
  * Calculates mass metrics (totals, precision status, and missing data warnings)
@@ -54,7 +55,7 @@ export function calculateMassMetrics(ingredients: any[]): MassMetrics {
 	else if (!hasPrecise && !hasEstimates) status = "incomplete"; // Safe fallback for empty lists
 
 	return {
-		totalMass: parseFloat(totalMass.toFixed(2)),
+		totalMass: round2(totalMass),
 		massStatus: status,
 		missingMassIngredients: missing,
 	};
