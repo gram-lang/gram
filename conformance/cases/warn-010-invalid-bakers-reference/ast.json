@@ -1,0 +1,104 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Invalid Bakers Reference"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 58,
+                "end": 62
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 62,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": "then use ",
+              "loc": {
+                "start": 75,
+                "end": 84
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [
+                "*"
+              ],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 92,
+                  "end": 103
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 84,
+                "end": 104
+              }
+            },
+            {
+              "type": "Text",
+              "value": "as the base.",
+              "loc": {
+                "start": 105,
+                "end": 117
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 118
+          }
+        }
+      ],
+      "loc": {
+        "start": 46,
+        "end": 118
+      }
+    }
+  ]
+}

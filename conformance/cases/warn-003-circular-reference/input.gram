@@ -1,0 +1,7 @@
+---
+title: Warn Circular Reference
+---
+
+## Section
+
+Mix @flour{200g} then add more @flour{10% @&flour}.

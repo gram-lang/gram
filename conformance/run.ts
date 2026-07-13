@@ -14,8 +14,18 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { analyze } from "@gram-lang/analyzer";
-import { compile } from "@gram-lang/kitchen";
+import {
+	analyze,
+	validateIngredientDatabase,
+	type AnalyzerOptions,
+	type IngredientData,
+} from "@gram-lang/analyzer";
+import {
+	compile,
+	resolveScaleFactor,
+	ScaleError,
+	type CompilerOptions,
+} from "@gram-lang/kitchen";
 import { GramParseError, getAST } from "@gram-lang/parser";
 
 const CASES_DIR = join(dirname(fileURLToPath(import.meta.url)), "cases");
@@ -26,6 +36,32 @@ const filters = args.filter((a) => a !== "--update");
 
 function toJSON(value: unknown): string {
 	return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+interface CaseOptions {
+	compilerOptions?: CompilerOptions;
+	scaleTarget?: { id: string; qty: number; unit?: string | null };
+	analyzerOptions?: AnalyzerOptions;
+}
+
+// Optional per-case input, read *before* the pipeline's try/catch: a
+// malformed fixture is a broken case definition, not a golden mismatch, so
+// it must throw loudly rather than get silently recorded as an error.json.
+function loadCaseOptions(caseDir: string): CaseOptions {
+	const path = join(caseDir, "options.json");
+	if (!existsSync(path)) return {};
+	return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function loadCaseDatabase(caseDir: string): Record<string, IngredientData> {
+	const path = join(caseDir, "database.json");
+	if (!existsSync(path)) return {};
+	const raw = JSON.parse(readFileSync(path, "utf-8"));
+	const { data, rejected } = validateIngredientDatabase(raw);
+	if (rejected.length > 0) {
+		throw new Error(`${path} has invalid entries: ${JSON.stringify(rejected)}`);
+	}
+	return data;
 }
 
 function writeOrCompare(
@@ -50,29 +86,51 @@ function runCase(name: string): { ok: boolean; diffs: string[] } {
 	const errorGoldenPath = join(caseDir, "error.json");
 	const diffs: string[] = [];
 
+	const caseOptions = loadCaseOptions(caseDir);
+	// Empty by default: exercises the deterministic "no data available" path
+	// (missing mass, no nutrition) common to every case that doesn't opt into
+	// a database.json fixture.
+	const database = loadCaseDatabase(caseDir);
+
 	try {
 		const ast = getAST(source);
+		let compiled = compile(ast, caseOptions.compilerOptions);
 
+		if (caseOptions.scaleTarget) {
+			const resolution = resolveScaleFactor(compile(ast), {
+				type: "target",
+				id: caseOptions.scaleTarget.id,
+				qty: caseOptions.scaleTarget.qty,
+				unit: caseOptions.scaleTarget.unit ?? null,
+			});
+			compiled = compile(ast, { scaleFactor: resolution.factor });
+		}
+
+		const { result: analyzed } = analyze(
+			compiled,
+			database,
+			caseOptions.analyzerOptions,
+		);
+
+		// The pipeline ran end-to-end without throwing: only now do we know this
+		// is a "success" case, so only now do we write its goldens. Deferring
+		// this until the whole pipeline completes keeps a case that throws
+		// partway through (a parse error, or a scale error thrown after a
+		// successful parse) from leaving a stray ast.json/compiled.json behind —
+		// an error case has *only* error.json, per the case-directory contract.
 		if (!update && existsSync(errorGoldenPath)) {
 			diffs.push(
-				"expected a parse error (error.json is present) but parsing succeeded",
+				"expected a thrown error (error.json is present) but the pipeline completed successfully",
 			);
 		}
 
 		writeOrCompare(join(caseDir, "ast.json"), toJSON(ast), diffs, "ast.json");
-
-		const compiled = compile(ast);
 		writeOrCompare(
 			join(caseDir, "compiled.json"),
 			toJSON(compiled),
 			diffs,
 			"compiled.json",
 		);
-
-		// Empty ingredient database: exercises the deterministic "no data
-		// available" path (missing mass, no nutrition) common to every case.
-		// A richer, database-backed golden set is a separate future addition.
-		const { result: analyzed } = analyze(compiled, {});
 		writeOrCompare(
 			join(caseDir, "analyzed.json"),
 			toJSON(analyzed),
@@ -84,6 +142,7 @@ function runCase(name: string): { ok: boolean; diffs: string[] } {
 			message: e instanceof Error ? e.message : String(e),
 			offset: e instanceof GramParseError ? e.offset : null,
 			expected: e instanceof GramParseError ? e.expected : null,
+			code: e instanceof ScaleError ? e.code : null,
 		};
 		writeOrCompare(errorGoldenPath, toJSON(info), diffs, "error.json");
 	}

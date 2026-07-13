@@ -1,0 +1,170 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Shopping List Cross Section Aggregation"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 65,
+                "end": 69
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 76,
+                  "end": 80
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 69,
+                "end": 81
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 82,
+                "end": 87
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 93,
+                  "end": 98
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 87,
+                "end": 99
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 99,
+                "end": 100
+              }
+            }
+          ],
+          "loc": {
+            "start": 65,
+            "end": 102
+          }
+        }
+      ],
+      "loc": {
+        "start": 56,
+        "end": 102
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 111,
+                "end": 115
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 150,
+                  "text": "150"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 122,
+                  "end": 126
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 115,
+                "end": 127
+              }
+            },
+            {
+              "type": "Text",
+              "value": "more.",
+              "loc": {
+                "start": 128,
+                "end": 133
+              }
+            }
+          ],
+          "loc": {
+            "start": 111,
+            "end": 134
+          }
+        }
+      ],
+      "loc": {
+        "start": 102,
+        "end": 134
+      }
+    }
+  ]
+}

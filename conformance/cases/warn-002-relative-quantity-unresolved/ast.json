@@ -1,0 +1,68 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Relative Quantity Unresolved"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 62,
+                "end": 66
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 73,
+                  "end": 84
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 66,
+                "end": 85
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 85,
+                "end": 86
+              }
+            }
+          ],
+          "loc": {
+            "start": 62,
+            "end": 87
+          }
+        }
+      ],
+      "loc": {
+        "start": 50,
+        "end": 87
+      }
+    }
+  ]
+}

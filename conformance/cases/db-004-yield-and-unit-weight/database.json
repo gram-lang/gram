@@ -1,0 +1,6 @@
+{
+  "avocado": {
+    "name": "Avocado",
+    "physical": { "density": 0.93, "unit_weight": 200, "yield": 0.7 }
+  }
+}

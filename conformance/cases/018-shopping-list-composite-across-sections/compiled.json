@@ -1,0 +1,168 @@
+{
+  "title": "Shopping List Composite Across Sections",
+  "slug": "shopping-list-composite-across-sections",
+  "meta": {
+    "title": "Shopping List Composite Across Sections"
+  },
+  "registry": {
+    "ingredients": {
+      "egg-whites": {
+        "id": "egg-whites",
+        "name": "egg whites",
+        "is_composite": true,
+        "parent": "eggs"
+      },
+      "eggs": {
+        "id": "eggs",
+        "name": "eggs",
+        "is_composite": true
+      },
+      "egg-yolks": {
+        "id": "egg-yolks",
+        "name": "egg yolks",
+        "is_composite": true,
+        "parent": "eggs"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "type": "composite",
+      "id": "eggs",
+      "name": "eggs",
+      "qty": 4,
+      "usage": [
+        {
+          "id": "egg-whites",
+          "qty": 2
+        },
+        {
+          "id": "egg-yolks",
+          "qty": 3
+        },
+        {
+          "id": "eggs",
+          "alias": "Direct Use",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Whites",
+      "ingredients": [
+        {
+          "id": "egg-whites",
+          "_usageId": "1",
+          "qty": 2,
+          "composite": {
+            "parent": "eggs",
+            "quantity": 2
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg-whites",
+              "_usageId": "1",
+              "qty": 2,
+              "composite": {
+                "parent": "eggs",
+                "quantity": 2
+              }
+            },
+            "for the meringue."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Yolks",
+      "ingredients": [
+        {
+          "id": "egg-yolks",
+          "_usageId": "2",
+          "qty": 3,
+          "composite": {
+            "parent": "eggs",
+            "quantity": 3
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "id": "egg-yolks",
+              "_usageId": "2",
+              "qty": 3,
+              "composite": {
+                "parent": "eggs",
+                "quantity": 3
+              }
+            },
+            "into the custard."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Extra",
+      "ingredients": [
+        {
+          "id": "eggs",
+          "_usageId": "3",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Crack one more ",
+            {
+              "id": "eggs",
+              "_usageId": "3",
+              "qty": 1
+            },
+            "into the bowl."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 6,
+    "activeTime": 6,
+    "preparationTime": 3,
+    "totalTime": 9
+  }
+}

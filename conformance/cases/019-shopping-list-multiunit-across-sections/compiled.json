@@ -1,0 +1,113 @@
+{
+  "title": "Shopping List Multiunit Across Sections",
+  "slug": "shopping-list-multiunit-across-sections",
+  "meta": {
+    "title": "Shopping List Multiunit Across Sections"
+  },
+  "registry": {
+    "ingredients": {
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "multiUnit": true
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Melt",
+      "ingredients": [
+        {
+          "id": "butter",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Melt ",
+            {
+              "id": "butter",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "in a pan."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Whip",
+      "ingredients": [
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "cup"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whip ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "cup"
+            },
+            "until fluffy."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 1,
+    "totalTime": 5
+  }
+}

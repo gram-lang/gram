@@ -1,0 +1,102 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Relative Quantity Unknown Mass"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 64,
+                "end": 68
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "flask",
+                "fixed": false,
+                "loc": {
+                  "start": 75,
+                  "end": 82
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 68,
+                "end": 83
+              }
+            },
+            {
+              "type": "Text",
+              "value": "then mix in ",
+              "loc": {
+                "start": 84,
+                "end": 96
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 103,
+                  "end": 114
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 96,
+                "end": 115
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 115,
+                "end": 116
+              }
+            }
+          ],
+          "loc": {
+            "start": 64,
+            "end": 117
+          }
+        }
+      ],
+      "loc": {
+        "start": 52,
+        "end": 117
+      }
+    }
+  ]
+}

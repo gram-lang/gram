@@ -1,0 +1,142 @@
+{
+  "title": "Warn Relative Quantity Unresolved",
+  "slug": "warn-relative-quantity-unresolved",
+  "meta": {
+    "title": "Warn Relative Quantity Unresolved"
+  },
+  "registry": {
+    "ingredients": {
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "1"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "(50% of flour ❓)"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "sugar",
+          "_usageId": "1",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 50,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 73,
+              "end": 84
+            }
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "50% of flour",
+            "target": "flour",
+            "percent": 50,
+            "isGhost": true
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "sugar",
+              "_usageId": "1",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 73,
+                  "end": 84
+                }
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "50% of flour",
+                "target": "flour",
+                "percent": 50,
+                "isGhost": true
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "sugar"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "RELATIVE_QUANTITY_UNRESOLVED",
+      "message": "Could not resolve relative quantity for '@flour'. Source not found in current section.",
+      "item": "sugar",
+      "loc": {
+        "start": 66,
+        "end": 85
+      }
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute relative quantity for 'sugar' because the mass of target 'flour' is unknown.",
+      "item": "sugar"
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "sugar"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  }
+}

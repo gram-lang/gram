@@ -1,0 +1,6 @@
+{
+  "flour": {
+    "name": "Flour",
+    "physical": { "density": 0.53 }
+  }
+}

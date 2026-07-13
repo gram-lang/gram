@@ -1,0 +1,130 @@
+{
+  "title": "Shopping List Cross Section Aggregation",
+  "slug": "shopping-list-cross-section-aggregation",
+  "meta": {
+    "title": "Shopping List Cross Section Aggregation"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "3"
+      ],
+      "qty": 250,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "3",
+          "qty": 150,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "3",
+              "qty": 150,
+              "unit": "g"
+            },
+            "more."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 2,
+    "totalTime": 6
+  }
+}

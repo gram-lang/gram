@@ -1,0 +1,147 @@
+{
+  "title": "Warn Invalid Bakers Reference",
+  "slug": "warn-invalid-bakers-reference",
+  "meta": {
+    "title": "Warn Invalid Bakers Reference"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "modifiers": [
+        "bakers_percentage"
+      ],
+      "variable_entries": [
+        "50% of flour"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "modifiers": [
+            "bakers_percentage"
+          ],
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 50,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 92,
+              "end": 103
+            }
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "50% of flour",
+            "target": "flour",
+            "percent": 50,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "then use ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "modifiers": [
+                "bakers_percentage"
+              ],
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 92,
+                  "end": 103
+                }
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "50% of flour",
+                "target": "flour",
+                "percent": 50,
+                "isGhost": false
+              }
+            },
+            "as the base."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_BAKERS_REFERENCE",
+      "message": "Cannot use 'sugar' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.",
+      "item": "sugar"
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "title": "Warn Invalid Unit",
+  "slug": "warn-invalid-unit",
+  "meta": {
+    "title": "Warn Invalid Unit"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Bake at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "xyz"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_UNIT",
+      "message": "Invalid unit \"xyz\" for Temperature.",
+      "loc": {
+        "start": 54,
+        "end": 63
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 0,
+    "totalTime": 2
+  }
+}

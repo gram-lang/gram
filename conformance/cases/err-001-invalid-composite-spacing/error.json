@@ -1,5 +1,6 @@
 {
   "message": "Gram Syntax Error: spaces are not allowed around '<' for composite ingredients. Did you mean '<@parent'?",
   "offset": 12,
-  "expected": "'<@' with no surrounding spaces"
+  "expected": "'<@' with no surrounding spaces",
+  "code": null
 }

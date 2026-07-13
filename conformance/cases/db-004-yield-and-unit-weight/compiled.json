@@ -1,0 +1,66 @@
+{
+  "title": "Db Yield And Unit Weight",
+  "slug": "db-yield-and-unit-weight",
+  "meta": {
+    "title": "Db Yield And Unit Weight"
+  },
+  "registry": {
+    "ingredients": {
+      "avocado": {
+        "id": "avocado",
+        "name": "avocado"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "avocado",
+      "name": "avocado",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "avocado",
+          "_usageId": "1",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Slice ",
+            {
+              "id": "avocado",
+              "_usageId": "1",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "title": "Warn Scope Conflict",
+  "slug": "warn-scope-conflict",
+  "meta": {
+    "title": "Warn Scope Conflict"
+  },
+  "registry": {
+    "ingredients": {
+      "dup": {
+        "id": "dup",
+        "name": "dup",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "First",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dup"
+    },
+    {
+      "title": "Second",
+      "ingredients": [
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dup"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "SCOPE_CONFLICT",
+      "message": "Global variable '&dup' is redefined.",
+      "loc": {
+        "start": 82,
+        "end": 88
+      },
+      "section": "Second"
+    }
+  ],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 3,
+    "totalTime": 7
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "title": "Scale Fixed Ingredient Not Scaled",
+  "slug": "scale-fixed-ingredient-not-scaled",
+  "meta": {
+    "title": "Scale Fixed Ingredient Not Scaled"
+  },
+  "registry": {
+    "ingredients": {
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "1"
+      ],
+      "fixed": true,
+      "qty": 5,
+      "unit": "g"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 600,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "salt",
+          "_usageId": "1",
+          "qty": 5,
+          "unit": "g",
+          "fixed": true
+        },
+        {
+          "id": "flour",
+          "_usageId": "2",
+          "qty": 600,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Season with ",
+            {
+              "id": "salt",
+              "_usageId": "1",
+              "qty": 5,
+              "unit": "g",
+              "fixed": true
+            },
+            "and mix in ",
+            {
+              "id": "flour",
+              "_usageId": "2",
+              "qty": 600,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  },
+  "scaleFactor": 3
+}

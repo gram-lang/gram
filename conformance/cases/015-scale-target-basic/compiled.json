@@ -1,0 +1,98 @@
+{
+  "title": "Scale Target Basic",
+  "slug": "scale-target-basic",
+  "meta": {
+    "title": "Scale Target Basic"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 500,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 250,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 500,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 250,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 500,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 250,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  },
+  "scaleFactor": 2
+}

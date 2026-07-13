@@ -1,0 +1,147 @@
+{
+  "title": "Scale Fixed Ingredient Not Scaled",
+  "slug": "scale-fixed-ingredient-not-scaled",
+  "meta": {
+    "title": "Scale Fixed Ingredient Not Scaled"
+  },
+  "registry": {
+    "ingredients": {
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "1"
+      ],
+      "fixed": true,
+      "qty": 5,
+      "unit": "g",
+      "normalizedMass": 5,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 600,
+      "unit": "g",
+      "normalizedMass": 600,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "salt",
+          "_usageId": "1",
+          "qty": 5,
+          "unit": "g",
+          "fixed": true,
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 5
+        },
+        {
+          "id": "flour",
+          "_usageId": "2",
+          "qty": 600,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 600
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Season with ",
+            {
+              "id": "salt",
+              "_usageId": "1",
+              "qty": 5,
+              "unit": "g",
+              "fixed": true,
+              "normalizedMass": 5,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and mix in ",
+            {
+              "id": "flour",
+              "_usageId": "2",
+              "qty": 600,
+              "unit": "g",
+              "normalizedMass": 600,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 605,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 605,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"salt\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        }
+      ]
+    }
+  },
+  "scaleFactor": 3
+}

@@ -1,0 +1,6 @@
+{
+  "message": "Ingredient \"sugar\" not found in recipe shopping list.",
+  "offset": null,
+  "expected": null,
+  "code": "INGREDIENT_NOT_FOUND"
+}

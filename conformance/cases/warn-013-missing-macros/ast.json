@@ -1,0 +1,72 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Missing Macros"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 48,
+                "end": 52
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 59,
+                  "end": 63
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 52,
+                "end": 64
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 64,
+                "end": 65
+              }
+            }
+          ],
+          "loc": {
+            "start": 48,
+            "end": 66
+          }
+        }
+      ],
+      "loc": {
+        "start": 36,
+        "end": 66
+      }
+    }
+  ]
+}

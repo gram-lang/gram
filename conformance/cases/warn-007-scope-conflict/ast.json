@@ -1,0 +1,150 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Scope Conflict"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "First",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dup",
+        "loc": {
+          "start": 45,
+          "end": 51
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 53,
+                "end": 57
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 64,
+                  "end": 68
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 57,
+                "end": 69
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 69,
+                "end": 70
+              }
+            }
+          ],
+          "loc": {
+            "start": 53,
+            "end": 72
+          }
+        }
+      ],
+      "loc": {
+        "start": 36,
+        "end": 72
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Second",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dup",
+        "loc": {
+          "start": 82,
+          "end": 88
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 90,
+                "end": 94
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 100,
+                  "end": 105
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 94,
+                "end": 106
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 106,
+                "end": 107
+              }
+            }
+          ],
+          "loc": {
+            "start": 90,
+            "end": 108
+          }
+        }
+      ],
+      "loc": {
+        "start": 72,
+        "end": 108
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "title": "Warn Missing Ingredient",
+  "slug": "warn-missing-ingredient",
+  "meta": {
+    "title": "Warn Missing Ingredient"
+  },
+  "registry": {
+    "ingredients": {
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 5,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "salt",
+          "_usageId": "1",
+          "qty": 5,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "salt",
+              "_usageId": "1",
+              "qty": 5,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}

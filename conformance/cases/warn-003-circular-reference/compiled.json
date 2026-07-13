@@ -1,0 +1,148 @@
+{
+  "title": "Warn Circular Reference",
+  "slug": "warn-circular-reference",
+  "meta": {
+    "title": "Warn Circular Reference"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "variable_entries": [
+        "⚠️ Circular Ref."
+      ],
+      "multiUnit": true
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "10% of flour",
+        "⚠️ Circular Ref."
+      ],
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "isCircular": true
+        },
+        {
+          "id": "flour",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 10,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 90,
+              "end": 101
+            }
+          },
+          "isCircular": true,
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "10% of flour",
+            "target": "flour",
+            "percent": 10,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "isCircular": true
+            },
+            "then add more ",
+            {
+              "id": "flour",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 10,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 90,
+                  "end": 101
+                }
+              },
+              "isCircular": true,
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "10% of flour",
+                "target": "flour",
+                "percent": 10,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: flour depends on itself.",
+      "item": "flour",
+      "loc": {
+        "start": 83,
+        "end": 102
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}

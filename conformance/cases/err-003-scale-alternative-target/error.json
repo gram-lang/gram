@@ -1,0 +1,6 @@
+{
+  "message": "\"egg\" is one option in an alternative-ingredient group (egg or egg-substitute) and can't be used as a scale reference on its own — pick an unambiguous ingredient elsewhere in the recipe.",
+  "offset": null,
+  "expected": null,
+  "code": "ALTERNATIVE_TARGET"
+}

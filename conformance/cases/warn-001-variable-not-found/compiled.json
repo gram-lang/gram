@@ -1,0 +1,120 @@
+{
+  "title": "Warn Variable Not Found",
+  "slug": "warn-variable-not-found",
+  "meta": {
+    "title": "Warn Variable Not Found"
+  },
+  "registry": {
+    "ingredients": {
+      "salt": {
+        "id": "salt",
+        "name": "salt"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "1"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "(2% of dough ❓)"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "salt",
+          "_usageId": "1",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 2,
+            "target": "dough",
+            "referenceType": "variable",
+            "loc": {
+              "start": 62,
+              "end": 71
+            }
+          },
+          "dependencies": [
+            "dough"
+          ],
+          "formula": {
+            "raw": "2% of dough",
+            "target": "dough",
+            "percent": 2,
+            "isGhost": true
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "salt",
+              "_usageId": "1",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 2,
+                "target": "dough",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 62,
+                  "end": 71
+                }
+              },
+              "dependencies": [
+                "dough"
+              ],
+              "formula": {
+                "raw": "2% of dough",
+                "target": "dough",
+                "percent": 2,
+                "isGhost": true
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "VARIABLE_NOT_FOUND",
+      "message": "Variable '&dough' not found.",
+      "item": "salt",
+      "loc": {
+        "start": 56,
+        "end": 72
+      }
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute relative quantity for 'salt' because the mass of target 'dough' is unknown.",
+      "item": "salt"
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}

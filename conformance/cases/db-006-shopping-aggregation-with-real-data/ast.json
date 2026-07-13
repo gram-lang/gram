@@ -1,0 +1,136 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Db Shopping Aggregation With Real Data"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Melt",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Melt ",
+              "loc": {
+                "start": 64,
+                "end": 69
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 77,
+                  "end": 81
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 69,
+                "end": 82
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a pan.",
+              "loc": {
+                "start": 83,
+                "end": 92
+              }
+            }
+          ],
+          "loc": {
+            "start": 64,
+            "end": 94
+          }
+        }
+      ],
+      "loc": {
+        "start": 55,
+        "end": 94
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Whip",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whip ",
+              "loc": {
+                "start": 103,
+                "end": 108
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "tbsp",
+                "fixed": false,
+                "loc": {
+                  "start": 116,
+                  "end": 122
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 108,
+                "end": 123
+              }
+            },
+            {
+              "type": "Text",
+              "value": "until fluffy.",
+              "loc": {
+                "start": 124,
+                "end": 137
+              }
+            }
+          ],
+          "loc": {
+            "start": 103,
+            "end": 138
+          }
+        }
+      ],
+      "loc": {
+        "start": 94,
+        "end": 138
+      }
+    }
+  ]
+}

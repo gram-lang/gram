@@ -1,0 +1,168 @@
+{
+  "title": "Warn Relative Quantity Unknown Mass",
+  "slug": "warn-relative-quantity-unknown-mass",
+  "meta": {
+    "title": "Warn Relative Quantity Unknown Mass"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "flask"
+      },
+      "water": {
+        "id": "water",
+        "name": "water"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1,
+      "unit": "flask"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "50% of flour"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 1,
+          "unit": "flask"
+        },
+        {
+          "id": "water",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 50,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 103,
+              "end": 114
+            }
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "50% of flour",
+            "target": "flour",
+            "percent": 50,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 1,
+              "unit": "flask"
+            },
+            "then mix in ",
+            {
+              "id": "water",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 103,
+                  "end": 114
+                }
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "50% of flour",
+                "target": "flour",
+                "percent": 50,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour",
+          "water"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
+      "message": "Cannot compute relative quantity for 'water' because the mass of target 'flour' is unknown.",
+      "item": "water"
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour",
+      "water"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"flour\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

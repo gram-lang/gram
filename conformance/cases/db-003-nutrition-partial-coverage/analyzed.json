@@ -1,0 +1,139 @@
+{
+  "title": "Db Nutrition Partial Coverage",
+  "slug": "db-nutrition-partial-coverage",
+  "meta": {
+    "title": "Db Nutrition Partial Coverage"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "Flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 5,
+      "unit": "g",
+      "normalizedMass": 5,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "salt",
+          "_usageId": "2",
+          "qty": 5,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 5
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "salt",
+              "_usageId": "2",
+              "qty": 5,
+              "unit": "g",
+              "normalizedMass": 5,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 205,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 205,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 728,
+        "protein": 20.6,
+        "carbs": 152.6,
+        "fat": 2
+      },
+      "isEstimate": false,
+      "coverage": 0.5,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"salt\" not found in database."
+        }
+      ]
+    }
+  }
+}

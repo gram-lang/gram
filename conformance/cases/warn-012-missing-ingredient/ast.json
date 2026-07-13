@@ -1,0 +1,72 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Missing Ingredient"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 52,
+                "end": 56
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 5,
+                  "text": "5"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 62,
+                  "end": 64
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 56,
+                "end": 65
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 65,
+                "end": 66
+              }
+            }
+          ],
+          "loc": {
+            "start": 52,
+            "end": 67
+          }
+        }
+      ],
+      "loc": {
+        "start": 40,
+        "end": 67
+      }
+    }
+  ]
+}

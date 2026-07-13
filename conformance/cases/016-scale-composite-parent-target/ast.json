@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Scale Composite Parent Target"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Separate ",
+              "loc": {
+                "start": 58,
+                "end": 67
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 78,
+                  "end": 79
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "eggs",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 87,
+                    "end": 88
+                  }
+                }
+              },
+              "loc": {
+                "start": 67,
+                "end": 89
+              }
+            },
+            {
+              "type": "Text",
+              "value": "from the whites.",
+              "loc": {
+                "start": 90,
+                "end": 106
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 107
+          }
+        }
+      ],
+      "loc": {
+        "start": 46,
+        "end": 107
+      }
+    }
+  ]
+}

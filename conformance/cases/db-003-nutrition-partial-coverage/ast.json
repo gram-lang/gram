@@ -1,0 +1,106 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Db Nutrition Partial Coverage"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 58,
+                "end": 62
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 62,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 75,
+                "end": 79
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 5,
+                  "text": "5"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 85,
+                  "end": 87
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 79,
+                "end": 88
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 88,
+                "end": 89
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 90
+          }
+        }
+      ],
+      "loc": {
+        "start": 46,
+        "end": 90
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Db Alias Resolution"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Melt ",
+              "loc": {
+                "start": 48,
+                "end": 53
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "beurre",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 61,
+                  "end": 65
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 53,
+                "end": 66
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 66,
+                "end": 67
+              }
+            }
+          ],
+          "loc": {
+            "start": 48,
+            "end": 68
+          }
+        }
+      ],
+      "loc": {
+        "start": 36,
+        "end": 68
+      }
+    }
+  ]
+}

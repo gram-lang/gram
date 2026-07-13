@@ -1,0 +1,159 @@
+{
+  "title": "Shopping List Multiunit Across Sections",
+  "slug": "shopping-list-multiunit-across-sections",
+  "meta": {
+    "title": "Shopping List Multiunit Across Sections"
+  },
+  "registry": {
+    "ingredients": {
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "multiUnit": true,
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 1,
+      "unit": "cup",
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Melt",
+      "ingredients": [
+        {
+          "id": "butter",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Melt ",
+            {
+              "id": "butter",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "in a pan."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Whip",
+      "ingredients": [
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "cup"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whip ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "cup"
+            },
+            "until fluffy."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "butter"
+        ]
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 1,
+    "totalTime": 5,
+    "totalMass": 100,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "butter"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"butter\" not found in database."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"butter\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

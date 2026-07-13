@@ -1,0 +1,70 @@
+{
+  "title": "Db Alias Resolution",
+  "slug": "db-alias-resolution",
+  "meta": {
+    "title": "Db Alias Resolution"
+  },
+  "registry": {
+    "ingredients": {
+      "beurre": {
+        "id": "beurre",
+        "name": "beurre",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "beurre",
+      "name": "beurre",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "beurre",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Melt ",
+            {
+              "id": "beurre",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}

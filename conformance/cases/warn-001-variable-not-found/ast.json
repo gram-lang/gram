@@ -1,0 +1,68 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Variable Not Found"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 52,
+                "end": 56
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 2,
+                "target": "dough",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 62,
+                  "end": 71
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 56,
+                "end": 72
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 72,
+                "end": 73
+              }
+            }
+          ],
+          "loc": {
+            "start": 52,
+            "end": 74
+          }
+        }
+      ],
+      "loc": {
+        "start": 40,
+        "end": 74
+      }
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Shopping List Composite Across Sections"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Whites",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Separate ",
+              "loc": {
+                "start": 67,
+                "end": 76
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg whites",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 88,
+                  "end": 89
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "eggs",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 97,
+                    "end": 98
+                  }
+                }
+              },
+              "loc": {
+                "start": 76,
+                "end": 99
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for the meringue.",
+              "loc": {
+                "start": 100,
+                "end": 117
+              }
+            }
+          ],
+          "loc": {
+            "start": 67,
+            "end": 119
+          }
+        }
+      ],
+      "loc": {
+        "start": 56,
+        "end": 119
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Yolks",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 129,
+                "end": 135
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 3,
+                  "text": "3"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 146,
+                  "end": 147
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "eggs",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 3,
+                    "text": "3"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 155,
+                    "end": 156
+                  }
+                }
+              },
+              "loc": {
+                "start": 135,
+                "end": 157
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into the custard.",
+              "loc": {
+                "start": 158,
+                "end": 175
+              }
+            }
+          ],
+          "loc": {
+            "start": 129,
+            "end": 177
+          }
+        }
+      ],
+      "loc": {
+        "start": 119,
+        "end": 177
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Extra",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Crack one more ",
+              "loc": {
+                "start": 187,
+                "end": 202
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "eggs",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 208,
+                  "end": 209
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 202,
+                "end": 210
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into the bowl.",
+              "loc": {
+                "start": 211,
+                "end": 225
+              }
+            }
+          ],
+          "loc": {
+            "start": 187,
+            "end": 226
+          }
+        }
+      ],
+      "loc": {
+        "start": 177,
+        "end": 226
+      }
+    }
+  ]
+}

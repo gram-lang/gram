@@ -1,0 +1,140 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Scale Factor Basic"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 47,
+                "end": 51
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 58,
+                  "end": 62
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 51,
+                "end": 63
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 63,
+                "end": 65
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 71,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 65,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 78,
+                "end": 82
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 87,
+                  "end": 88
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 82,
+                "end": 89
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 89,
+                "end": 90
+              }
+            }
+          ],
+          "loc": {
+            "start": 47,
+            "end": 91
+          }
+        }
+      ],
+      "loc": {
+        "start": 35,
+        "end": 91
+      }
+    }
+  ]
+}

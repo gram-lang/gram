@@ -1,0 +1,102 @@
+{
+  "title": "Db Yield And Unit Weight",
+  "slug": "db-yield-and-unit-weight",
+  "meta": {
+    "title": "Db Yield And Unit Weight"
+  },
+  "registry": {
+    "ingredients": {
+      "avocado": {
+        "id": "avocado",
+        "name": "avocado"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "avocado",
+      "name": "Avocado",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1,
+      "normalizedMass": 140,
+      "isEstimate": true,
+      "conversionMethod": "estimate",
+      "purchasingMass": 200
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "avocado",
+          "_usageId": "1",
+          "qty": 1,
+          "conversionMethod": "unit_weight",
+          "isEstimate": true,
+          "normalizedMass": 140,
+          "purchasingMass": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Slice ",
+            {
+              "id": "avocado",
+              "_usageId": "1",
+              "qty": 1,
+              "normalizedMass": 140,
+              "conversionMethod": "unit_weight",
+              "isEstimate": true,
+              "purchasingMass": 200
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 140,
+        "massStatus": "estimated",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3,
+    "totalMass": 140,
+    "massStatus": "estimated",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": true,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_MACROS",
+          "message": "Ingredient \"avocado\" has no default macro data."
+        }
+      ]
+    }
+  }
+}

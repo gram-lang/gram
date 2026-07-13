@@ -1,0 +1,47 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Undefined Reference"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 53,
+                "end": 57
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "ghost.",
+              "quantity": null,
+              "loc": {
+                "start": 57,
+                "end": 64
+              }
+            }
+          ],
+          "loc": {
+            "start": 53,
+            "end": 65
+          }
+        }
+      ],
+      "loc": {
+        "start": 41,
+        "end": 65
+      }
+    }
+  ]
+}

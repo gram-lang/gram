@@ -1,0 +1,60 @@
+{
+  "title": "Warn Missing Unit",
+  "slug": "warn-missing-unit",
+  "meta": {
+    "title": "Warn Missing Unit"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Wait for ",
+            {
+              "type": "timer",
+              "name": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 10,
+                "text": "10"
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 10,
+            "activeDuration": 10
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_UNIT",
+      "message": "Timer must have an explicit unit.",
+      "item": "timer",
+      "loc": {
+        "start": 55,
+        "end": 65
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 10,
+    "activeTime": 10,
+    "preparationTime": 0,
+    "totalTime": 10
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "message": "Unit mismatch for \"flour\": you specified \"cup\" but the recipe uses \"g\". Provide a compatible unit, or a density via \"gram db enrich\" if converting between mass and volume.",
+  "offset": null,
+  "expected": null,
+  "code": "UNIT_MISMATCH"
+}

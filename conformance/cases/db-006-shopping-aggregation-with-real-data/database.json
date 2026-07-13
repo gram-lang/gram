@@ -1,0 +1,7 @@
+{
+  "butter": {
+    "name": "Butter",
+    "physical": { "density": 0.911 },
+    "nutrition": { "calories": 717, "protein": 0.9, "carbs": 0.1, "fat": 81.1 }
+  }
+}

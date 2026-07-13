@@ -1,0 +1,182 @@
+{
+  "title": "Shopping List Cross Section Aggregation",
+  "slug": "shopping-list-cross-section-aggregation",
+  "meta": {
+    "title": "Shopping List Cross Section Aggregation"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "3"
+      ],
+      "qty": 250,
+      "unit": "g",
+      "normalizedMass": 250,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "milk"
+        ]
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "3",
+          "qty": 150,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 150
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "3",
+              "qty": 150,
+              "unit": "g",
+              "normalizedMass": 150,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "more."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 150,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 2,
+    "totalTime": 6,
+    "totalMass": 250,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "milk"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"milk\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

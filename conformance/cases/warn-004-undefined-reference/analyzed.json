@@ -1,0 +1,81 @@
+{
+  "title": "Warn Undefined Reference",
+  "slug": "warn-undefined-reference",
+  "meta": {
+    "title": "Warn Undefined Reference"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "ghost",
+          "name": "ghost",
+          "_usageId": "1"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "ghost",
+              "name": "ghost",
+              "_usageId": "1"
+            }
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "message": "Reference to undefined ingredient '&ghost'.",
+      "item": "ghost",
+      "loc": {
+        "start": 57,
+        "end": 64
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 0,
+    "totalTime": 2,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  }
+}

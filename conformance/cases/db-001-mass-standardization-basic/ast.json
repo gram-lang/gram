@@ -1,0 +1,72 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Db Mass Standardization Basic"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 58,
+                "end": 62
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 75
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 62,
+                "end": 76
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 76,
+                "end": 77
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 78
+          }
+        }
+      ],
+      "loc": {
+        "start": 46,
+        "end": 78
+      }
+    }
+  ]
+}

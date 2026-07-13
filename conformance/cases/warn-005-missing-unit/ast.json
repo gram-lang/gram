@@ -1,0 +1,69 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Warn Missing Unit"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Wait for ",
+              "loc": {
+                "start": 46,
+                "end": 55
+              }
+            },
+            {
+              "type": "Timer",
+              "name": "timer",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 62,
+                  "end": 64
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 55,
+                "end": 65
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 65,
+                "end": 66
+              }
+            }
+          ],
+          "loc": {
+            "start": 46,
+            "end": 67
+          }
+        }
+      ],
+      "loc": {
+        "start": 34,
+        "end": 67
+      }
+    }
+  ]
+}

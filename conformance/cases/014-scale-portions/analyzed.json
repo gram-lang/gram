@@ -1,0 +1,136 @@
+{
+  "title": "Scale Portions",
+  "slug": "scale-portions",
+  "meta": {
+    "title": "Scale Portions",
+    "portions": "8"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 400,
+      "unit": "g",
+      "normalizedMass": 400,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 4
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 400,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 400
+        },
+        {
+          "id": "egg",
+          "_usageId": "2",
+          "qty": 4
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 400,
+              "unit": "g",
+              "normalizedMass": 400,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "egg",
+              "_usageId": "2",
+              "qty": 4
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 400,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "egg"
+        ]
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 400,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "egg"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"egg\" to estimate nutrition."
+        }
+      ]
+    }
+  },
+  "scaleFactor": 2
+}

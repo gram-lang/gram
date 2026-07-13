@@ -1,0 +1,103 @@
+{
+  "title": "Warn Missing Ingredient",
+  "slug": "warn-missing-ingredient",
+  "meta": {
+    "title": "Warn Missing Ingredient"
+  },
+  "registry": {
+    "ingredients": {
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 5,
+      "unit": "g",
+      "normalizedMass": 5,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "salt",
+          "_usageId": "1",
+          "qty": 5,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 5
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "salt",
+              "_usageId": "1",
+              "qty": 5,
+              "unit": "g",
+              "normalizedMass": 5,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 5,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3,
+    "totalMass": 5,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"salt\" not found in database."
+        }
+      ]
+    }
+  }
+}

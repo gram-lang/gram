@@ -1,0 +1,92 @@
+{
+  "title": "Warn Invalid Modifier Combination",
+  "slug": "warn-invalid-modifier-combination",
+  "meta": {
+    "title": "Warn Invalid Modifier Combination"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "modifiers": [
+        "optional",
+        "bakers_percentage"
+      ],
+      "qty": 200,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "modifiers": [
+            "optional",
+            "bakers_percentage"
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "modifiers": [
+                "optional",
+                "bakers_percentage"
+              ]
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_MODIFIER_COMBINATION",
+      "message": "Invalid modifier combination on \"flour\": Optional (?) and Important (*)",
+      "item": "flour",
+      "loc": {
+        "start": 66,
+        "end": 80
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 1,
+    "totalTime": 3
+  }
+}
