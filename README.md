@@ -128,6 +128,17 @@ This monorepo is divided into specialized packages under `packages/`:
 
 ---
 
+## Development & CI
+
+Gram uses **Woodpecker CI** (via Codeberg) to maintain the stability of the language and its tooling.
+On every push and pull request, the CI pipeline automatically runs:
+- **Linting & Formatting**: Enforced by Biome (`bun run lint`).
+- **Typechecking**: Across the entire TypeScript monorepo (`bun run typecheck`).
+- **Unit Tests**: For isolated component logic (`bun test`).
+- **Conformance Tests**: A custom suite of golden tests (`bun run conformance`) that ensures the parser and compiler produce stable, byte-for-byte identical AST and JSON outputs for any given `.gram` input.
+
+---
+
 ## Try it out
 
 ### 1. Start a CLI Project
