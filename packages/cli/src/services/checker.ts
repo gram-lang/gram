@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
 import pLimit from "p-limit";
 import { warningSeverity, type WarningSeverity } from "@gram-lang/kitchen";
+import { GramParseError } from "@gram-lang/parser";
 import { runPipeline } from "../core/pipeline";
 import type {
 	CheckResult,
@@ -16,16 +18,32 @@ function diagnosticLevel(
 	return strict && severity !== "error" ? "error" : severity;
 }
 
-function errorToDiagnostic(file: string, err: unknown): Diagnostic {
+async function errorToDiagnostic(
+	file: string,
+	err: unknown,
+): Promise<Diagnostic> {
 	const message = getErrorMessage(err);
-	// Parser errors often embed "line N" in the message
-	const lineMatch = message.match(/line[: ]+(\d+)/i);
+	let line: number | undefined;
+	if (err instanceof GramParseError) {
+		// content isn't in scope here (the pipeline threw before returning it) —
+		// re-read to resolve the offset into a line number. Error-path only.
+		try {
+			const content = await readFile(file, "utf-8");
+			line = getLineFromOffset(content, err.offset);
+		} catch {
+			line = undefined;
+		}
+	} else {
+		// Some errors still only embed "line N" in prose.
+		const lineMatch = message.match(/line[: ]+(\d+)/i);
+		line = lineMatch ? parseInt(lineMatch[1]!, 10) : undefined;
+	}
 	return {
 		level: "error",
 		category: "Structure",
 		file,
 		message,
-		line: lineMatch ? parseInt(lineMatch[1]!, 10) : undefined,
+		line,
 	};
 }
 
@@ -78,7 +96,7 @@ export async function checkFiles(
 						}
 					}
 				} catch (err) {
-					diagnostics.push(errorToDiagnostic(file, err));
+					diagnostics.push(await errorToDiagnostic(file, err));
 				}
 			}),
 		),
