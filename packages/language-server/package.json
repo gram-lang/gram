@@ -16,13 +16,13 @@
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
-    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver": "^10.1.0",
     "vscode-languageserver-textdocument": "^1.0.12",
-    "yaml": "^2.0.0"
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
-    "esbuild": "^0.25.5"
+    "@types/node": "^26.1.1",
+    "esbuild": "^0.28.1"
   },
   "type": "module"
 }

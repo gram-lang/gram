@@ -49,7 +49,8 @@ export function provideCodeActions(
 
 		// Quick fix: remove unused intermediate declaration
 		if (diag.code === "UNUSED_INTERMEDIATE") {
-			const nameMatch = diag.message.match(/'->& *([^']+)'/);
+			const msg = typeof diag.message === 'string' ? diag.message : diag.message.value;
+			const nameMatch = msg.match(/'->& *([^']+)'/);
 			if (nameMatch && state.ast) {
 				const name = nameMatch[1];
 				const decls = collectIntermediates(state.ast);
@@ -134,7 +135,8 @@ export function provideCodeActions(
 
 		// Quick fix: declare missing intermediate at end of current section
 		if (diag.code === "UNDEFINED_REFERENCE") {
-			const nameMatch = diag.message.match(/'&([^']+)'/);
+			const msg = typeof diag.message === 'string' ? diag.message : diag.message.value;
+			const nameMatch = msg.match(/'&([^']+)'/);
 			if (nameMatch && state.ast) {
 				const name = nameMatch[1];
 				const offset = positionToOffset(state.lineStarts, diag.range.start);

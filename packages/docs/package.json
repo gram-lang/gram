@@ -14,7 +14,7 @@
     "@gram-lang/renderer": "workspace:*",
     "gram-lang": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
-    "shiki": "^4.3.0",
+    "shiki": "^4.3.1",
     "vitepress": "^1.6.4",
     "vue": "^3.5.39"
   },
