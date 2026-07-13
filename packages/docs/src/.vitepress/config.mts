@@ -47,7 +47,23 @@ export default defineConfig({
 		},
 	},
 
-	head: [["script", { src: "https://unpkg.com/@phosphor-icons/web" }]],
+	head: [
+		["link", { rel: "icon", href: "/logo.svg" }],
+		["script", { src: "https://unpkg.com/@phosphor-icons/web" }],
+		[
+			"script",
+			{},
+			`
+			if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
+				var lang = navigator.language || navigator.userLanguage || '';
+				if (lang.toLowerCase().startsWith('fr') && !sessionStorage.getItem('lang_redirected')) {
+					sessionStorage.setItem('lang_redirected', 'true');
+					window.location.replace('/fr/');
+				}
+			}
+			`
+		]
+	],
 
 	markdown: {
 		languages: [

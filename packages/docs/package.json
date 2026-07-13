@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vitepress dev src",
-    "build": "vitepress build src && node scripts/check-bundle-size.mjs",
+    "build": "vitepress build src && echo '/* empty */' > src/.vitepress/dist/vp-icons.css && node scripts/check-bundle-size.mjs",
     "preview": "vitepress preview src"
   },
   "devDependencies": {
