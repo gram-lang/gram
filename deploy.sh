@@ -51,9 +51,6 @@ cp -r packages/docs/src/.vitepress/dist/. "$TMP_DIR/"
 # Bypass Jekyll on Codeberg Pages
 touch "$TMP_DIR/.nojekyll"
 
-# Custom domain for Codeberg Pages
-echo "gram-lang.org" > "$TMP_DIR/.domains"
-
 # 2. Commit and push (fast-forward, not --force, now that history is preserved)
 cd "$TMP_DIR"
 git add -A
