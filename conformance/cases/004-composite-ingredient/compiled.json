@@ -1,0 +1,85 @@
+{
+  "title": "Composite Ingredient",
+  "slug": "composite-ingredient",
+  "meta": {
+    "title": "Composite Ingredient"
+  },
+  "registry": {
+    "ingredients": {
+      "egg-yolks": {
+        "id": "egg-yolks",
+        "name": "egg yolks",
+        "is_composite": true,
+        "parent": "eggs"
+      },
+      "eggs": {
+        "id": "eggs",
+        "name": "eggs",
+        "is_composite": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "type": "composite",
+      "id": "eggs",
+      "name": "eggs",
+      "qty": 2,
+      "usage": [
+        {
+          "id": "egg-yolks",
+          "qty": 2
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "egg-yolks",
+          "_usageId": "1",
+          "qty": 2,
+          "composite": {
+            "parent": "eggs",
+            "quantity": 2
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg-yolks",
+              "_usageId": "1",
+              "qty": 2,
+              "composite": {
+                "parent": "eggs",
+                "quantity": 2
+              }
+            },
+            "from the whites."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  }
+}

@@ -28,9 +28,12 @@
     "typecheck": "turbo run typecheck",
     "test": "bun test",
     "change": "changeset",
-    "version-packages": "bun run generate-release-note.ts && changeset version"
+    "version-packages": "bun run generate-release-note.ts && changeset version",
+    "conformance": "bun run --cwd conformance conformance",
+    "conformance:update": "bun run --cwd conformance conformance:update"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "conformance"
   ]
 }

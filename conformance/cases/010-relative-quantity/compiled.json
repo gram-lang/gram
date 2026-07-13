@@ -1,0 +1,132 @@
+{
+  "title": "Relative Quantity",
+  "slug": "relative-quantity",
+  "meta": {
+    "title": "Relative Quantity"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "water": {
+        "id": "water",
+        "name": "water"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 250,
+      "unit": "g"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "60% of flour"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g"
+        },
+        {
+          "id": "water",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 60,
+            "target": "flour",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 75,
+              "end": 86
+            }
+          },
+          "dependencies": [
+            "flour"
+          ],
+          "formula": {
+            "raw": "60% of flour",
+            "target": "flour",
+            "percent": 60,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "water",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 60,
+                "target": "flour",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 75,
+                  "end": 86
+                }
+              },
+              "dependencies": [
+                "flour"
+              ],
+              "formula": {
+                "raw": "60% of flour",
+                "target": "flour",
+                "percent": 60,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  }
+}

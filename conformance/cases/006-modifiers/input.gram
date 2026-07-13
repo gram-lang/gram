@@ -1,0 +1,11 @@
+---
+title: Ingredient Modifiers
+---
+
+## Prep ->&dough
+
+Mix the @*flour{250 g}, a @-secret spice{1 pinch}, @?vanilla{1 tsp} and @egg{2}.
+
+## Bake
+
+Add more @&flour{10 g} to the &dough.

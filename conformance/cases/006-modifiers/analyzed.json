@@ -1,0 +1,293 @@
+{
+  "title": "Ingredient Modifiers",
+  "slug": "ingredient-modifiers",
+  "meta": {
+    "title": "Ingredient Modifiers"
+  },
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "secret-spice": {
+        "id": "secret-spice",
+        "name": "secret spice",
+        "default_unit": "pinch"
+      },
+      "vanilla": {
+        "id": "vanilla",
+        "name": "vanilla",
+        "default_unit": "tsp"
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "5"
+      ],
+      "modifiers": [
+        "bakers_percentage",
+        "reference"
+      ],
+      "qty": 260,
+      "unit": "g",
+      "normalizedMass": 260,
+      "isEstimate": false,
+      "conversionMethod": "physical",
+      "bakersPercentage": 100
+    },
+    {
+      "id": "secret-spice",
+      "name": "secret spice",
+      "_usageIds": [
+        "2"
+      ],
+      "modifiers": [
+        "hidden"
+      ],
+      "qty": 1,
+      "unit": "pinch"
+    },
+    {
+      "id": "vanilla",
+      "name": "vanilla",
+      "_usageIds": [
+        "3"
+      ],
+      "modifiers": [
+        "optional"
+      ],
+      "qty": 1,
+      "unit": "tsp"
+    },
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 2
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g",
+          "modifiers": [
+            "bakers_percentage"
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 250,
+          "bakersPercentage": 96.15
+        },
+        {
+          "id": "secret-spice",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "pinch",
+          "modifiers": [
+            "hidden"
+          ]
+        },
+        {
+          "id": "vanilla",
+          "_usageId": "3",
+          "qty": 1,
+          "unit": "tsp",
+          "modifiers": [
+            "optional"
+          ]
+        },
+        {
+          "id": "egg",
+          "_usageId": "4",
+          "qty": 2
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix the ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g",
+              "modifiers": [
+                "bakers_percentage"
+              ],
+              "normalizedMass": 250,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", a ",
+            {
+              "id": "secret-spice",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "pinch",
+              "modifiers": [
+                "hidden"
+              ]
+            },
+            ", ",
+            {
+              "id": "vanilla",
+              "_usageId": "3",
+              "qty": 1,
+              "unit": "tsp",
+              "modifiers": [
+                "optional"
+              ]
+            },
+            "and ",
+            {
+              "id": "egg",
+              "_usageId": "4",
+              "qty": 2
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "metrics": {
+        "totalMass": 250,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "secret-spice",
+          "egg"
+        ]
+      }
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "5",
+          "qty": 10,
+          "unit": "g",
+          "modifiers": [
+            "reference"
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 10,
+          "bakersPercentage": 3.85
+        },
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "6"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add more ",
+            {
+              "id": "flour",
+              "_usageId": "5",
+              "qty": 10,
+              "unit": "g",
+              "modifiers": [
+                "reference"
+              ],
+              "normalizedMass": 10,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "to the ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "6"
+            }
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 10,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 5,
+    "totalTime": 9,
+    "totalMass": 260,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "secret-spice",
+      "egg"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"secret-spice\" to estimate nutrition."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"egg\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

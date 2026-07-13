@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "gram",
@@ -14,6 +13,18 @@
         "tsup": "^8.5.1",
         "turbo": "^2.9.18",
         "typescript": "^6.0.3",
+      },
+    },
+    "conformance": {
+      "name": "@gram-lang/conformance",
+      "version": "0.0.0",
+      "dependencies": {
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.9.3",
       },
     },
     "packages/analyzer": {
@@ -360,6 +371,8 @@
     "@gram-lang/analyzer": ["@gram-lang/analyzer@workspace:packages/analyzer"],
 
     "@gram-lang/cli": ["@gram-lang/cli@workspace:packages/cli"],
+
+    "@gram-lang/conformance": ["@gram-lang/conformance@workspace:conformance"],
 
     "@gram-lang/docs": ["@gram-lang/docs@workspace:packages/docs"],
 

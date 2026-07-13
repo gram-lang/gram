@@ -5,6 +5,7 @@ dist/
 .sandbox/
 .smoke/
 *.tgz
+CLAUDE.local.md
 
 # Vitepress
 **/.vitepress/cache

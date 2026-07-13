@@ -1,0 +1,232 @@
+{
+  "title": "Ingredient Modifiers",
+  "slug": "ingredient-modifiers",
+  "meta": {
+    "title": "Ingredient Modifiers"
+  },
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "secret-spice": {
+        "id": "secret-spice",
+        "name": "secret spice",
+        "default_unit": "pinch"
+      },
+      "vanilla": {
+        "id": "vanilla",
+        "name": "vanilla",
+        "default_unit": "tsp"
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "5"
+      ],
+      "modifiers": [
+        "bakers_percentage",
+        "reference"
+      ],
+      "qty": 260,
+      "unit": "g"
+    },
+    {
+      "id": "secret-spice",
+      "name": "secret spice",
+      "_usageIds": [
+        "2"
+      ],
+      "modifiers": [
+        "hidden"
+      ],
+      "qty": 1,
+      "unit": "pinch"
+    },
+    {
+      "id": "vanilla",
+      "name": "vanilla",
+      "_usageIds": [
+        "3"
+      ],
+      "modifiers": [
+        "optional"
+      ],
+      "qty": 1,
+      "unit": "tsp"
+    },
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 2
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g",
+          "modifiers": [
+            "bakers_percentage"
+          ]
+        },
+        {
+          "id": "secret-spice",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "pinch",
+          "modifiers": [
+            "hidden"
+          ]
+        },
+        {
+          "id": "vanilla",
+          "_usageId": "3",
+          "qty": 1,
+          "unit": "tsp",
+          "modifiers": [
+            "optional"
+          ]
+        },
+        {
+          "id": "egg",
+          "_usageId": "4",
+          "qty": 2
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix the ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g",
+              "modifiers": [
+                "bakers_percentage"
+              ]
+            },
+            ", a ",
+            {
+              "id": "secret-spice",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "pinch",
+              "modifiers": [
+                "hidden"
+              ]
+            },
+            ", ",
+            {
+              "id": "vanilla",
+              "_usageId": "3",
+              "qty": 1,
+              "unit": "tsp",
+              "modifiers": [
+                "optional"
+              ]
+            },
+            "and ",
+            {
+              "id": "egg",
+              "_usageId": "4",
+              "qty": 2
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "dough"
+    },
+    {
+      "title": "Bake",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "5",
+          "qty": 10,
+          "unit": "g",
+          "modifiers": [
+            "reference"
+          ]
+        },
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "6"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add more ",
+            {
+              "id": "flour",
+              "_usageId": "5",
+              "qty": 10,
+              "unit": "g",
+              "modifiers": [
+                "reference"
+              ]
+            },
+            "to the ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "6"
+            }
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 5,
+    "totalTime": 9
+  }
+}

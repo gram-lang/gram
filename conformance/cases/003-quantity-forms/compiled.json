@@ -1,0 +1,203 @@
+{
+  "title": "Quantity Forms",
+  "slug": "quantity-forms",
+  "meta": {
+    "title": "Quantity Forms"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "cups"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "cup"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "cups"
+      },
+      "water": {
+        "id": "water",
+        "name": "water",
+        "default_unit": "cups"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1.5,
+      "unit": "cups"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 0.5,
+      "unit": "cup"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 1.5,
+      "unit": "cups"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 2,
+      "unit": "cups"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": {
+            "type": "fraction",
+            "value": 1.5,
+            "numerator": 3,
+            "denominator": 2,
+            "text": "1 1/2"
+          },
+          "unit": "cups"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": {
+            "type": "fraction",
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "text": "½"
+          },
+          "unit": "cup"
+        },
+        {
+          "id": "butter",
+          "_usageId": "3",
+          "qty": {
+            "type": "fraction",
+            "value": 1.5,
+            "numerator": 3,
+            "denominator": 2,
+            "text": "1½"
+          },
+          "unit": "cups"
+        },
+        {
+          "id": "water",
+          "_usageId": "4",
+          "qty": {
+            "type": "range",
+            "value": 2,
+            "range": {
+              "min": 1.5,
+              "max": 2.5
+            },
+            "text": "1 1/2-2 1/2"
+          },
+          "unit": "cups"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": {
+                "type": "fraction",
+                "value": 1.5,
+                "numerator": 3,
+                "denominator": 2,
+                "text": "1 1/2"
+              },
+              "unit": "cups"
+            },
+            ", ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": {
+                "type": "fraction",
+                "value": 0.5,
+                "numerator": 1,
+                "denominator": 2,
+                "text": "½"
+              },
+              "unit": "cup"
+            },
+            ", ",
+            {
+              "id": "butter",
+              "_usageId": "3",
+              "qty": {
+                "type": "fraction",
+                "value": 1.5,
+                "numerator": 3,
+                "denominator": 2,
+                "text": "1½"
+              },
+              "unit": "cups"
+            },
+            "and ",
+            {
+              "id": "water",
+              "_usageId": "4",
+              "qty": {
+                "type": "range",
+                "value": 2,
+                "range": {
+                  "min": 1.5,
+                  "max": 2.5
+                },
+                "text": "1 1/2-2 1/2"
+              },
+              "unit": "cups"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 4,
+    "totalTime": 6
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "title": "Intermediates And References",
+  "slug": "intermediates-and-references",
+  "meta": {
+    "title": "Intermediates And References"
+  },
+  "registry": {
+    "ingredients": {
+      "batter": {
+        "id": "batter",
+        "name": "batter",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [
+    {
+      "id": "pan",
+      "_usageId": "4",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Batter",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "batter"
+    },
+    {
+      "title": "Cooking",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "batter",
+          "name": "batter",
+          "_usageId": "3"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "pan",
+          "_usageId": "4",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Pour ",
+            {
+              "type": "reference",
+              "id": "batter",
+              "name": "batter",
+              "_usageId": "3"
+            },
+            "into a ",
+            {
+              "id": "pan",
+              "_usageId": "4",
+              "fixed": false
+            },
+            "and cook."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 4,
+    "totalTime": 8
+  }
+}

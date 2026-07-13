@@ -1,0 +1,107 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Alternative Ingredients"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 52,
+                "end": 56
+              }
+            },
+            {
+              "type": "Alternative",
+              "options": [
+                {
+                  "type": "Ingredient",
+                  "name": "egg",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "Quantity",
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": null,
+                    "fixed": false,
+                    "loc": {
+                      "start": 61,
+                      "end": 62
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 56,
+                    "end": 63
+                  }
+                },
+                {
+                  "type": "Ingredient",
+                  "name": "egg substitute",
+                  "modifiers": [],
+                  "quantity": {
+                    "type": "Quantity",
+                    "value": {
+                      "type": "single",
+                      "value": 2,
+                      "text": "2"
+                    },
+                    "unit": null,
+                    "fixed": false,
+                    "loc": {
+                      "start": 80,
+                      "end": 81
+                    }
+                  },
+                  "alias": null,
+                  "preparation": null,
+                  "composite": null,
+                  "loc": {
+                    "start": 64,
+                    "end": 82
+                  }
+                }
+              ],
+              "loc": {
+                "start": 56,
+                "end": 82
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and whisk.",
+              "loc": {
+                "start": 83,
+                "end": 93
+              }
+            }
+          ],
+          "loc": {
+            "start": 52,
+            "end": 94
+          }
+        }
+      ],
+      "loc": {
+        "start": 40,
+        "end": 94
+      }
+    }
+  ]
+}

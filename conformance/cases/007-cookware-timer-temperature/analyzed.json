@@ -1,0 +1,145 @@
+{
+  "title": "Cookware Timer Temperature",
+  "slug": "cookware-timer-temperature",
+  "meta": {
+    "title": "Cookware Timer Temperature"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      },
+      "big-pot": {
+        "id": "big-pot",
+        "name": "big pot"
+      }
+    }
+  },
+  "shopping_list": [],
+  "cookware": [
+    {
+      "id": "pan",
+      "_usageId": "1",
+      "fixed": false
+    },
+    {
+      "id": "big-pot",
+      "_usageId": "2",
+      "qty": 1,
+      "alias": "pot",
+      "preparation": "5L"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [],
+      "cookware": [
+        {
+          "id": "pan",
+          "_usageId": "1",
+          "fixed": false
+        },
+        {
+          "id": "big-pot",
+          "_usageId": "2",
+          "qty": 1,
+          "alias": "pot",
+          "preparation": "5L"
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Heat a ",
+            {
+              "id": "pan",
+              "_usageId": "1",
+              "fixed": false
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 5,
+                "text": "5"
+              },
+              "unit": "min"
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            ", then use ",
+            {
+              "id": "big-pot",
+              "_usageId": "2",
+              "qty": 1,
+              "alias": "pot",
+              "preparation": "5L"
+            },
+            "and let it rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 30,
+                "text": "30"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 5,
+            "activeDuration": 5
+          },
+          "backgroundTasks": [
+            {
+              "name": "Timer",
+              "duration": 30,
+              "startOffset": 5
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 35,
+    "activeTime": 5,
+    "preparationTime": 4,
+    "totalTime": 39,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  }
+}

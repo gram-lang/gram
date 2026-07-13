@@ -1,0 +1,100 @@
+{
+  "title": "Alternative Ingredients",
+  "slug": "alternative-ingredients",
+  "meta": {
+    "title": "Alternative Ingredients"
+  },
+  "registry": {
+    "ingredients": {
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      },
+      "egg-substitute": {
+        "id": "egg-substitute",
+        "name": "egg substitute"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "alternative",
+      "type": "alternative",
+      "options": [
+        {
+          "id": "egg",
+          "_usageId": "1",
+          "qty": 2
+        },
+        {
+          "id": "egg-substitute",
+          "_usageId": "2",
+          "qty": 2
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "alternative",
+          "type": "alternative",
+          "options": [
+            {
+              "id": "egg",
+              "_usageId": "1",
+              "qty": 2
+            },
+            {
+              "id": "egg-substitute",
+              "_usageId": "2",
+              "qty": 2
+            }
+          ]
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "alternative",
+              "type": "alternative",
+              "options": [
+                {
+                  "id": "egg",
+                  "_usageId": "1",
+                  "qty": 2
+                },
+                {
+                  "id": "egg-substitute",
+                  "_usageId": "2",
+                  "qty": 2
+                }
+              ]
+            },
+            "and whisk."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  }
+}

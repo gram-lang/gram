@@ -1,0 +1,180 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Basic Ingredients"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "In a ",
+              "loc": {
+                "start": 46,
+                "end": 51
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "bowl",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 51,
+                  "end": 56
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 51,
+                "end": 56
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", mix ",
+              "loc": {
+                "start": 56,
+                "end": 62
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 62,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 74,
+                "end": 76
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 82,
+                  "end": 87
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 76,
+                "end": 88
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 88,
+                "end": 90
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 95,
+                  "end": 96
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 90,
+                "end": 97
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and a pinch of ",
+              "loc": {
+                "start": 98,
+                "end": 113
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "salt.",
+              "modifiers": [],
+              "quantity": null,
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 113,
+                "end": 119
+              }
+            }
+          ],
+          "loc": {
+            "start": 46,
+            "end": 120
+          }
+        }
+      ],
+      "loc": {
+        "start": 34,
+        "end": 120
+      }
+    }
+  ]
+}

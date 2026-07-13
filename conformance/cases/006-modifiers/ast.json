@@ -1,0 +1,262 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Ingredient Modifiers"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 45,
+          "end": 53
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix the ",
+              "loc": {
+                "start": 55,
+                "end": 63
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [
+                "*"
+              ],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 71,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 63,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", a ",
+              "loc": {
+                "start": 77,
+                "end": 81
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "secret spice",
+              "modifiers": [
+                "-"
+              ],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "pinch",
+                "fixed": false,
+                "loc": {
+                  "start": 96,
+                  "end": 103
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 81,
+                "end": 104
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 104,
+                "end": 106
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "vanilla",
+              "modifiers": [
+                "?"
+              ],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "tsp",
+                "fixed": false,
+                "loc": {
+                  "start": 116,
+                  "end": 121
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 106,
+                "end": 122
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 123,
+                "end": 127
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 132,
+                  "end": 133
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 127,
+                "end": 134
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 134,
+                "end": 135
+              }
+            }
+          ],
+          "loc": {
+            "start": 55,
+            "end": 137
+          }
+        }
+      ],
+      "loc": {
+        "start": 37,
+        "end": 137
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add more ",
+              "loc": {
+                "start": 146,
+                "end": 155
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [
+                "&"
+              ],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 163,
+                  "end": 167
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 155,
+                "end": 168
+              }
+            },
+            {
+              "type": "Text",
+              "value": "to the ",
+              "loc": {
+                "start": 169,
+                "end": 176
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough.",
+              "quantity": null,
+              "loc": {
+                "start": 176,
+                "end": 183
+              }
+            }
+          ],
+          "loc": {
+            "start": 146,
+            "end": 184
+          }
+        }
+      ],
+      "loc": {
+        "start": 137,
+        "end": 184
+      }
+    }
+  ]
+}

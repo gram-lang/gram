@@ -1,0 +1,187 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Intermediates And References"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Batter",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "batter",
+        "loc": {
+          "start": 55,
+          "end": 64
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 66,
+                "end": 70
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 77,
+                  "end": 81
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 70,
+                "end": 82
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 83,
+                "end": 87
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 93,
+                  "end": 98
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 87,
+                "end": 99
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 99,
+                "end": 100
+              }
+            }
+          ],
+          "loc": {
+            "start": 66,
+            "end": 102
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 102
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Cooking",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Pour ",
+              "loc": {
+                "start": 114,
+                "end": 119
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "batter",
+              "quantity": null,
+              "loc": {
+                "start": 119,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into a ",
+              "loc": {
+                "start": 127,
+                "end": 134
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 134,
+                  "end": 138
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 134,
+                "end": 138
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and cook.",
+              "loc": {
+                "start": 139,
+                "end": 148
+              }
+            }
+          ],
+          "loc": {
+            "start": 114,
+            "end": 149
+          }
+        }
+      ],
+      "loc": {
+        "start": 102,
+        "end": 149
+      }
+    }
+  ]
+}

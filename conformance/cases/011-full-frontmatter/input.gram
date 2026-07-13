@@ -1,0 +1,15 @@
+---
+title: 'Crepes'
+date: '2026-01-01'
+description: 'A simple crepe batter.'
+category: 'Dessert'
+size: '12 crepes'
+author: ["The Gram chef"]
+source: ['https://example.com/']
+tags: [dessert, easy]
+densities: ["flour: 0.6", "milk: 1.03"]
+---
+
+## Section
+
+Mix @flour{200g} and @milk{200ml}.

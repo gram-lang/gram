@@ -1,0 +1,124 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Crepes",
+    "date": "2026-01-01",
+    "description": "A simple crepe batter.",
+    "category": "Dessert",
+    "size": "12 crepes",
+    "author": [
+      "The Gram chef"
+    ],
+    "source": [
+      "https://example.com/"
+    ],
+    "tags": [
+      "dessert",
+      "easy"
+    ],
+    "densities": [
+      "flour: 0.6",
+      "milk: 1.03"
+    ]
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 253,
+                "end": 257
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 264,
+                  "end": 268
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 257,
+                "end": 269
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 270,
+                "end": 274
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 280,
+                  "end": 285
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 274,
+                "end": 286
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 286,
+                "end": 287
+              }
+            }
+          ],
+          "loc": {
+            "start": 253,
+            "end": 288
+          }
+        }
+      ],
+      "loc": {
+        "start": 241,
+        "end": 288
+      }
+    }
+  ]
+}

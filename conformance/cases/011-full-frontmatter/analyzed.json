@@ -1,0 +1,161 @@
+{
+  "title": "Crepes",
+  "slug": "crepes",
+  "meta": {
+    "title": "Crepes",
+    "date": "2026-01-01",
+    "description": "A simple crepe batter.",
+    "category": "Dessert",
+    "size": "12 crepes",
+    "author": [
+      "The Gram chef"
+    ],
+    "source": [
+      "https://example.com/"
+    ],
+    "tags": [
+      "dessert",
+      "easy"
+    ],
+    "densities": [
+      "flour: 0.6",
+      "milk: 1.03"
+    ]
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "ml",
+      "normalizedMass": 206,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "milk",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "ml",
+          "conversionMethod": "explicit",
+          "isEstimate": false,
+          "normalizedMass": 206
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "milk",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "ml",
+              "normalizedMass": 206,
+              "conversionMethod": "explicit",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 406,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 406,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"milk\" not found in database."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+---
+title: Comments
+---
+
+## Section
+
+/* This is a block comment */
+
+Mix @flour{200g}. // this is a line comment

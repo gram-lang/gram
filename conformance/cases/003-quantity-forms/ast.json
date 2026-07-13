@@ -1,0 +1,184 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Quantity Forms"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 43,
+                "end": 47
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 1.5,
+                  "numerator": 3,
+                  "denominator": 2,
+                  "text": "1 1/2"
+                },
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 54,
+                  "end": 64
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 47,
+                "end": 65
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 65,
+                "end": 67
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "text": "½"
+                },
+                "unit": "cup",
+                "fixed": false,
+                "loc": {
+                  "start": 74,
+                  "end": 79
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 67,
+                "end": 80
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 80,
+                "end": 82
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 1.5,
+                  "numerator": 3,
+                  "denominator": 2,
+                  "text": "1½"
+                },
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 90,
+                  "end": 97
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 82,
+                "end": 98
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 99,
+                "end": 103
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "range",
+                  "value": 2,
+                  "range": {
+                    "min": 1.5,
+                    "max": 2.5
+                  },
+                  "text": "1 1/2-2 1/2"
+                },
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 110,
+                  "end": 126
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 103,
+                "end": 127
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 127,
+                "end": 128
+              }
+            }
+          ],
+          "loc": {
+            "start": 43,
+            "end": 129
+          }
+        }
+      ],
+      "loc": {
+        "start": 31,
+        "end": 129
+      }
+    }
+  ]
+}

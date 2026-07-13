@@ -1,0 +1,100 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Comments"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Comment",
+              "value": "This is a block comment",
+              "kind": "block",
+              "loc": {
+                "start": 37,
+                "end": 66
+              }
+            }
+          ],
+          "loc": {
+            "start": 37,
+            "end": 68
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 68,
+                "end": 72
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 79,
+                  "end": 83
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 72,
+                "end": 84
+              }
+            },
+            {
+              "type": "Text",
+              "value": ". ",
+              "loc": {
+                "start": 84,
+                "end": 86
+              }
+            },
+            {
+              "type": "Comment",
+              "value": "this is a line comment",
+              "kind": "line",
+              "loc": {
+                "start": 86,
+                "end": 111
+              }
+            }
+          ],
+          "loc": {
+            "start": 68,
+            "end": 112
+          }
+        }
+      ],
+      "loc": {
+        "start": 25,
+        "end": 112
+      }
+    }
+  ]
+}

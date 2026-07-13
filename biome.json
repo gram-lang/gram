@@ -10,6 +10,7 @@
 		"includes": [
 			"packages/*/src/**",
 			"packages/*/tests/**",
+			"conformance/*.ts",
 			"!**/*.gram",
 			"!**/grammar-content.ts",
 			"!**/*.svg",

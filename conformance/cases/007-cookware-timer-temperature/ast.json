@@ -1,0 +1,182 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Cookware Timer Temperature"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Heat a ",
+              "loc": {
+                "start": 55,
+                "end": 62
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 62,
+                  "end": 66
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 62,
+                "end": 66
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 67,
+                "end": 71
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 5,
+                  "text": "5"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 73,
+                  "end": 77
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 71,
+                "end": 78
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 79,
+                "end": 82
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 82,
+                "end": 89
+              },
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "C"
+            },
+            {
+              "type": "Text",
+              "value": ", then use ",
+              "loc": {
+                "start": 89,
+                "end": 100
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "big pot",
+              "modifiers": [],
+              "alias": "pot",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": true,
+                "loc": {
+                  "start": 113,
+                  "end": 116
+                }
+              },
+              "preparation": "5L",
+              "loc": {
+                "start": 100,
+                "end": 120
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and let it rest ",
+              "loc": {
+                "start": 121,
+                "end": 137
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 140,
+                  "end": 145
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 137,
+                "end": 146
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 146,
+                "end": 147
+              }
+            }
+          ],
+          "loc": {
+            "start": 55,
+            "end": 148
+          }
+        }
+      ],
+      "loc": {
+        "start": 43,
+        "end": 148
+      }
+    }
+  ]
+}

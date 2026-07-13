@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Composite Ingredient"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Separate ",
+              "loc": {
+                "start": 49,
+                "end": 58
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 69,
+                  "end": 70
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "eggs",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 2,
+                    "text": "2"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 78,
+                    "end": 79
+                  }
+                }
+              },
+              "loc": {
+                "start": 58,
+                "end": 80
+              }
+            },
+            {
+              "type": "Text",
+              "value": "from the whites.",
+              "loc": {
+                "start": 81,
+                "end": 97
+              }
+            }
+          ],
+          "loc": {
+            "start": 49,
+            "end": 98
+          }
+        }
+      ],
+      "loc": {
+        "start": 37,
+        "end": 98
+      }
+    }
+  ]
+}
