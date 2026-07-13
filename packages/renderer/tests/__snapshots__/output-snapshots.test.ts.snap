@@ -67,7 +67,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
     <ol class="steps">
       <li value="1">
         In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>. Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">2 min</span></span>. <sup class="footnote-ref"><a href="#RENDERID-N" id="RENDERID-N">[1]</a></sup> Let rest at <span class="temp" data-semantic="fridge"><i class="ph ph-thermometer"></i> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">30 min</span></span>.
+egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">2 min</span></span>. <sup class="footnote-ref"><a href="#note-1" id="ref-note-1">[1]</a></sup> Let rest at <span class="temp" data-semantic="fridge"><i class="ph ph-thermometer"></i> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">30 min</span></span>.
       </li>
     </ol>
   </section>
@@ -88,9 +88,9 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
 <div class="recipe-notes">
   <h3>Notes</h3>
   <ol>
-    <li id="RENDERID-N">
+    <li id="note-1">
       Rest the batter before cooking
-      <a href="#RENDERID-N" class="note-return" title="Return to step">↩</a>
+      <a href="#ref-note-1" class="note-return" title="Return to step">↩</a>
     </li>
   </ol>
 </div>

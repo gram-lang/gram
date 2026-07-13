@@ -66,6 +66,12 @@ export interface RendererOptions {
 	interactiveScaling?: boolean;
 	/** Locale code (e.g. 'en', 'fr') for translating UI strings */
 	lang?: string;
+	/**
+	 * Prefix used for footnote anchor ids (e.g. "note-1"). Override this when
+	 * rendering multiple recipes on the same page to avoid id collisions.
+	 * Defaults to a fixed value, so output is deterministic across calls.
+	 */
+	renderId?: string;
 }
 
 export interface RenderContext {

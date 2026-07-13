@@ -18,14 +18,9 @@ const source = readFileSync(
 );
 const compiled = compile(getAST(source));
 
-// toHTML() stamps footnote anchor ids with Math.random() (context._renderId) —
-// normalize it so the snapshot is deterministic across runs.
-const normalizeRenderId = (html: string) =>
-	html.replace(/(?:ref-)?[a-z0-9]{7}-\d+/g, "RENDERID-N");
-
 describe("renderer output snapshots", () => {
 	it("toHTML output is stable", () => {
-		expect(normalizeRenderId(toHTML(compiled))).toMatchSnapshot();
+		expect(toHTML(compiled)).toMatchSnapshot();
 	});
 
 	it("toMarkdown output is stable", () => {
