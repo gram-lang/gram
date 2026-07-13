@@ -73,14 +73,19 @@ steps:
       - bun audit
     failure: ignore
 
+  # Runs on bun (not node) so `bunx changeset publish` resolves internal
+  # `workspace:*` dependency ranges to the real pinned version before
+  # publishing — plain npm has no notion of the workspace protocol and would
+  # ship the literal "workspace:*" string into the published manifest.
   publish:
-    image: node:20
+    image: oven/bun:1.3.14
     environment:
       NPM_TOKEN:
         from_secret: npm_token
     commands:
+      - apt-get update && apt-get install -y git
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-      - npx changeset publish
+      - bunx changeset publish
     when:
       event: push
       branch: main
