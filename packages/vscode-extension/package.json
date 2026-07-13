@@ -3,7 +3,8 @@
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
   "version": "1.0.0-beta.1",
-  "private": true,
+  "preview": true,
+  "qna": false,
   "publisher": "abiwab",
   "license": "GPL-3.0",
   "author": "abiwab",
@@ -17,7 +18,7 @@
   "bugs": {
     "url": "https://codeberg.org/abiwab/gram/issues"
   },
-  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/vscode-extension#readme",
+  "homepage": "https://gram-lang.org/",
   "engines": {
     "vscode": "^1.75.0"
   },
