@@ -119,7 +119,7 @@ export default defineConfig({
 					},
 					{
 						text: "Reference",
-						collapsed: false,
+						collapsed: true,
 						items: [
 							{
 								text: "Document Structure",
@@ -155,7 +155,7 @@ export default defineConfig({
 					},
 					{
 						text: "API Reference",
-						collapsed: false,
+						collapsed: true,
 						items: [
 							{ text: "Overview", link: "/reference/api/" },
 							{ text: "@gram-lang/parser", link: "/reference/api/parser" },
@@ -168,8 +168,8 @@ export default defineConfig({
 						],
 					},
 					{
-						text: "Technical",
-						collapsed: false,
+						text: "Gram Engine",
+						collapsed: true,
 						items: [
 							{
 								text: "The Gram Lifecycle",
@@ -188,16 +188,19 @@ export default defineConfig({
 								text: "Rendering & Output",
 								link: "/explanation/engine/renderer",
 							},
+						],
+					},
+					{
+						text: "Deep Dives",
+						collapsed: true,
+						items: [
+							{ text: "Mass & Yield", link: "/explanation/mass-and-yield" },
+							{ text: "Nutrition", link: "/explanation/nutrition" },
 							{
-								text: "Deep Dive: Mass & Yield",
-								link: "/explanation/mass-and-yield",
-							},
-							{ text: "Deep Dive: Nutrition", link: "/explanation/nutrition" },
-							{
-								text: "Deep Dive: Shopping Lists",
+								text: "Shopping Lists",
 								link: "/explanation/shopping-list-aggregation",
 							},
-							{ text: "Deep Dive: Scaling", link: "/explanation/scaling" },
+							{ text: "Scaling", link: "/explanation/scaling" },
 						],
 					},
 				],
@@ -255,7 +258,7 @@ export default defineConfig({
 					},
 					{
 						text: "Référence",
-						collapsed: false,
+						collapsed: true,
 						items: [
 							{
 								text: "Structure du Document",
@@ -294,7 +297,7 @@ export default defineConfig({
 					},
 					{
 						text: "Référence API",
-						collapsed: false,
+						collapsed: true,
 						items: [
 							{ text: "Vue d'ensemble", link: "/fr/reference/api/" },
 							{ text: "@gram-lang/parser", link: "/fr/reference/api/parser" },
@@ -316,8 +319,8 @@ export default defineConfig({
 						],
 					},
 					{
-						text: "Technique",
-						collapsed: false,
+						text: "Moteur Gram",
+						collapsed: true,
 						items: [
 							{
 								text: "Cycle de vie",
@@ -336,22 +339,22 @@ export default defineConfig({
 								text: "Rendu & Sortie",
 								link: "/fr/explanation/engine/renderer",
 							},
+						],
+					},
+					{
+						text: "Analyses approfondies",
+						collapsed: true,
+						items: [
 							{
-								text: "Analyse approfondie: Masse & Rendement",
+								text: "Masse & Rendement",
 								link: "/fr/explanation/mass-and-yield",
 							},
+							{ text: "Nutrition", link: "/fr/explanation/nutrition" },
 							{
-								text: "Analyse approfondie: Nutrition",
-								link: "/fr/explanation/nutrition",
-							},
-							{
-								text: "Analyse approfondie: Liste de courses",
+								text: "Liste de courses",
 								link: "/fr/explanation/shopping-list-aggregation",
 							},
-							{
-								text: "Analyse approfondie: Mise à l'échelle",
-								link: "/fr/explanation/scaling",
-							},
+							{ text: "Mise à l'échelle", link: "/fr/explanation/scaling" },
 						],
 					},
 				],
