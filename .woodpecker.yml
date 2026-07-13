@@ -73,19 +73,22 @@ steps:
       - bun audit
     failure: ignore
 
-  # Runs on bun (not node) so `bunx changeset publish` resolves internal
-  # `workspace:*` dependency ranges to the real pinned version before
-  # publishing — plain npm has no notion of the workspace protocol and would
-  # ship the literal "workspace:*" string into the published manifest.
+  # node:20, not bun: @changesets/cli always shells out to the literal `npm`
+  # binary to publish (see getPublishTool in @changesets/cli) regardless of
+  # whether it's invoked via bunx or npx, and the bun image has no `npm` on
+  # PATH at all (hence the earlier "Executable not found in $PATH: npm").
+  # `resolve-workspace-versions.cjs` runs first to rewrite `workspace:*`
+  # ranges to real pinned versions on disk, since npm doesn't understand that
+  # protocol and would otherwise publish it verbatim into the manifest.
   publish:
-    image: oven/bun:1.3.14
+    image: node:20
     environment:
       NPM_TOKEN:
         from_secret: npm_token
     commands:
-      - apt-get update && apt-get install -y git
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-      - bunx changeset publish
+      - node scripts/resolve-workspace-versions.cjs
+      - npx changeset publish
     when:
       event: push
       branch: main
