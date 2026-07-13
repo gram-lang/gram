@@ -4,7 +4,7 @@
 "@gram-lang/renderer": major
 "@gram-lang/language-server": minor
 "@gram-lang/cli": minor
-"@gram-lang/vscode-extension": minor
+"gram-lang": minor
 ---
 
 refactor: rename `isAsync` to `isPassive` to align with domain terminology

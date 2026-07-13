@@ -7,7 +7,7 @@
 "@gram-lang/parser": major
 "@gram-lang/docs": major
 "@gram-lang/renderer": major
-"@gram-lang/vscode-extension": major
+"gram-lang": major
 ---
 
 Introduction of the official Gram CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.

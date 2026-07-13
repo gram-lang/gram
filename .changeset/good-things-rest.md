@@ -1,5 +1,5 @@
 ---
-"@gram-lang/vscode-extension": minor
+"gram-lang": minor
 "@gram-lang/docs": minor
 "@gram-lang/analyzer": minor
 "@gram-lang/kitchen": minor

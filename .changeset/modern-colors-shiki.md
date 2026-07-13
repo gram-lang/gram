@@ -1,6 +1,6 @@
 ---
 "@gram-lang/docs": minor
-"@gram-lang/vscode-extension": patch
+"gram-lang": patch
 ---
 
 - **Playground**: Migrated syntax highlighting engine from Highlight.js to Shiki. The playground now natively uses the official VSCode TextMate grammar, ensuring 100% consistency across environments.

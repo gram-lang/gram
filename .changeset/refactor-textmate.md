@@ -1,7 +1,7 @@
 ---
 "@gram-lang/parser": minor
 "@gram-lang/docs": patch
-"@gram-lang/vscode-extension": patch
+"gram-lang": patch
 ---
 
 Refactor TextMate grammar to `@gram-lang/parser`
