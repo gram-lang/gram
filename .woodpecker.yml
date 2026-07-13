@@ -30,6 +30,7 @@ steps:
   test:
     image: oven/bun:1.3.14
     commands:
+      - apt-get update && apt-get install -y git
       - bun test
 
   # `build` above already builds every package including docs (turbo's
