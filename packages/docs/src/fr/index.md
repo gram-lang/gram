@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Gram"
-  text: "Codez votre livre de recettes."
+  text: "Codez vos recettes."
   tagline: Un langage de balisage pensé pour la logique culinaire avancée. Écrivez votre recette une seule fois, et laissez le moteur Gram se charger des calculs, de la mise à l'échelle et de l'extraction des données pour vous.
   image:
     light: /logo-gram-light.svg
