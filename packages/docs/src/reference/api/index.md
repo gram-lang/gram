@@ -1,0 +1,71 @@
+# API Reference
+
+Gram is not just a file format — it's a pipeline of small, composable libraries. Each package does one job and hands a plain JSON object to the next. You can use the whole pipeline, or pick out just the piece you need (e.g. only the parser, to build a linter).
+
+## Installation
+
+```bash
+npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+# or
+bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+```
+
+All packages are ESM-only, side-effect free, and run anywhere JavaScript runs — Node.js, Deno, Bun, edge runtimes, or directly in the browser (see the [Playground](/play) for a fully client-side example).
+
+## Package matrix
+
+| Package | Role | Main entry point |
+|---|---|---|
+| [`@gram-lang/parser`](/reference/api/parser) | Turns `.gram` source text into an Abstract Syntax Tree (AST) | `getAST(source)` |
+| [`@gram-lang/kitchen`](/reference/api/kitchen) | Compiles the AST into a structured, render-ready payload (shopping list, timings, registry) | `compile(ast, options?)` |
+| [`@gram-lang/analyzer`](/reference/api/analyzer) | Enriches a compiled recipe with physical properties (mass, yield, nutrition, baker's percentages) using an ingredient database | `analyze(compiled, database, options?)` |
+| [`@gram-lang/renderer`](/reference/api/renderer) | Renders a (compiled or analyzed) recipe to Markdown or HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/i18n`](/reference/api/i18n) | Shared unit/time normalization and UI-string dictionaries used internally by the packages above | `normalizeUnit`, `getDictionary` |
+
+Analysis is optional: `compile()` alone already gives you a complete, renderable recipe (with default un-standardized quantities). You only need `@gram-lang/analyzer` when you want mass conversion, nutrition estimates, or baker's percentages, which requires an ingredient database.
+
+## The full pipeline
+
+```typescript
+import { getAST, GramParseError } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+import { analyze, validateIngredientDatabase } from '@gram-lang/analyzer';
+import { toHTML } from '@gram-lang/renderer';
+
+function renderRecipe(source: string, rawIngredientDb: unknown) {
+  // 1. Parse .gram text into an AST
+  let ast;
+  try {
+    ast = getAST(source);
+  } catch (err) {
+    if (err instanceof GramParseError) {
+      console.error(`Syntax error at offset ${err.offset}: expected ${err.expected}`);
+    }
+    throw err;
+  }
+
+  // 2. Compile the AST into a structured recipe (shopping list, timings, registry)
+  const compiled = compile(ast);
+
+  // 3. Load and validate the ingredient database, then enrich with physical/nutritional data
+  const { data: database, rejected } = validateIngredientDatabase(rawIngredientDb);
+  if (rejected.length > 0) {
+    console.warn('Ignoring invalid ingredient entries:', rejected);
+  }
+  const { result: analyzed, missingIngredients } = analyze(compiled, database);
+
+  // 4. Render to HTML
+  return toHTML(analyzed);
+}
+```
+
+> **Note**: the `analyze()` call above takes the ingredient database as its **second positional argument** — `analyze(compiled, database, options?)` — not as a field on an options object.
+
+### Handling parse errors and warnings
+
+`getAST()` is the only function in the pipeline that **throws**: a syntax error means there's no AST to work with. Every later stage instead **collects warnings** — a malformed recipe still compiles, so you can still render it and show the user what's wrong.
+
+- `GramParseError` (thrown by `getAST`): has `.message` (ohm-js's human-readable prose, source excerpt included), `.offset` (character offset into the input), and `.expected` (what the parser expected there).
+- `CompilationResult.warnings` / `AnalyzedCompilationResult.warnings` (returned by `compile()` and carried through `analyze()`): an array of [`Warning`](/reference/api/warnings) objects — never bare strings. See the [Warnings reference](/reference/api/warnings) for the full list of codes and how to treat them as errors with `--strict`-style logic.
+
+See also: [Data Formats](/reference/api/data-formats) for the shape of the JSON objects flowing between these stages, and [How to Build a Custom UI](/how-to/build-custom-ui) for a walkthrough of consuming the final JSON in a frontend framework.

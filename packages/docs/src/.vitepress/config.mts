@@ -16,6 +16,7 @@ export default defineConfig({
 	base: "/",
 	cleanUrls: true,
 	ignoreDeadLinks: true,
+	srcExclude: ["**/reference/api/parts/**"],
 
 	vite: {
 		build: {
@@ -61,8 +62,8 @@ export default defineConfig({
 					window.location.replace('/fr/');
 				}
 			}
-			`
-		]
+			`,
+		],
 	],
 
 	markdown: {
@@ -150,6 +151,20 @@ export default defineConfig({
 								text: "Language Server",
 								link: "/reference/tooling/language-server",
 							},
+						],
+					},
+					{
+						text: "API Reference",
+						collapsed: false,
+						items: [
+							{ text: "Overview", link: "/reference/api/" },
+							{ text: "@gram-lang/parser", link: "/reference/api/parser" },
+							{ text: "@gram-lang/kitchen", link: "/reference/api/kitchen" },
+							{ text: "@gram-lang/analyzer", link: "/reference/api/analyzer" },
+							{ text: "@gram-lang/renderer", link: "/reference/api/renderer" },
+							{ text: "@gram-lang/i18n", link: "/reference/api/i18n" },
+							{ text: "Data Formats", link: "/reference/api/data-formats" },
+							{ text: "Warnings", link: "/reference/api/warnings" },
 						],
 					},
 					{
@@ -275,6 +290,29 @@ export default defineConfig({
 								text: "Language Server",
 								link: "/fr/reference/tooling/language-server",
 							},
+						],
+					},
+					{
+						text: "Référence API",
+						collapsed: false,
+						items: [
+							{ text: "Vue d'ensemble", link: "/fr/reference/api/" },
+							{ text: "@gram-lang/parser", link: "/fr/reference/api/parser" },
+							{ text: "@gram-lang/kitchen", link: "/fr/reference/api/kitchen" },
+							{
+								text: "@gram-lang/analyzer",
+								link: "/fr/reference/api/analyzer",
+							},
+							{
+								text: "@gram-lang/renderer",
+								link: "/fr/reference/api/renderer",
+							},
+							{ text: "@gram-lang/i18n", link: "/fr/reference/api/i18n" },
+							{
+								text: "Formats de Données",
+								link: "/fr/reference/api/data-formats",
+							},
+							{ text: "Avertissements", link: "/fr/reference/api/warnings" },
 						],
 					},
 					{

@@ -9,6 +9,10 @@
     "prebuild": {
       "outputs": ["src/grammar-content.ts"]
     },
+    "@gram-lang/docs#prebuild": {
+      "dependsOn": ["^build"],
+      "outputs": ["src/reference/api/parts/**"]
+    },
     "typecheck": {
       "dependsOn": ["^build"],
       "outputs": []

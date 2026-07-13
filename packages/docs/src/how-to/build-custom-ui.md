@@ -21,15 +21,15 @@ function getRecipeData(sourceCode: string) {
   const compiled = compile(ast);
 
   // 3. Enrich with culinary math (yields, baker's math, scaling)
-  const analyzed = analyze(compiled, { 
-    db: myDatabase // optional: your loaded ingredients database
-  });
+  const analyzed = analyze(compiled, myDatabase);
 
   return analyzed.result;
 }
 ```
 
 > **Tip**: If you are exclusively running in a Node.js environment (e.g., a CLI tool or a Next.js server), you can use the `runPipeline(filePath)` helper from `@gram-lang/cli` which wraps this logic and handles file reading for you.
+
+> See the [API Reference](/reference/api/) for the full signature of `getAST`, `compile`, and `analyze`, plus everything else the pipeline exposes (scaling, diffing, warnings, i18n).
 
 ## 2. Understanding the JSON Structure
 

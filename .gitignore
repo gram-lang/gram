@@ -10,3 +10,4 @@ CLAUDE.local.md
 # Vitepress
 **/.vitepress/cache
 **/.vitepress/dist
+packages/docs/src/reference/api/parts/
