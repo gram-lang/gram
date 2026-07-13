@@ -23,6 +23,26 @@ export * from "./types";
 export * from "./guards";
 import { MetaSchema } from "./schemas";
 
+/**
+ * Thrown by `getAST` on a syntax error. `message` is ohm-js's human-readable
+ * prose (source excerpt included) — keep using it for display. `offset` and
+ * `expected` are the portable, structured parts of the same failure: a plain
+ * character offset into `input` and a description of what was expected there.
+ * A future non-JS parser implementation only needs to reproduce these two
+ * fields, not ohm's exact wording.
+ */
+export class GramParseError extends Error {
+	readonly offset: number;
+	readonly expected: string;
+
+	constructor(message: string, offset: number, expected: string) {
+		super(message);
+		this.name = "GramParseError";
+		this.offset = offset;
+		this.expected = expected;
+	}
+}
+
 // Load Grammar
 const grammar = ohm.grammar(grammarContent);
 
@@ -254,8 +274,10 @@ semantics.addOperation("toAST", {
 		return child.toAST();
 	},
 	invalidComposite(_s1, _lt, _s2, _at, name) {
-		throw new Error(
+		throw new GramParseError(
 			`Gram Syntax Error: spaces are not allowed around '<' for composite ingredients. Did you mean '<@${name.sourceString}'?`,
+			this.source.startIdx,
+			"'<@' with no surrounding spaces",
 		);
 	},
 
@@ -618,7 +640,11 @@ semantics.addOperation("toAST", {
 export function getAST(input: string): RecipeAST {
 	const match = grammar.match(input);
 	if (match.failed()) {
-		throw new Error(match.message);
+		throw new GramParseError(
+			match.message,
+			match.getRightmostFailurePosition(),
+			match.getExpectedText(),
+		);
 	}
 	return semantics(match).toAST();
 }

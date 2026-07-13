@@ -4,7 +4,7 @@ import {
 	type Range,
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
-import { locToRange } from "../utils/position";
+import { locToRange, offsetToPosition } from "../utils/position";
 import {
 	collectIntermediates,
 	collectReferences,
@@ -36,9 +36,22 @@ export function provideDiagnostics(
 	const diagnostics: Diagnostic[] = [];
 
 	if (state.parseError) {
+		const range =
+			state.parseErrorOffset !== null
+				? (() => {
+						const start = offsetToPosition(
+							state.lineStarts,
+							state.parseErrorOffset!,
+						);
+						return {
+							start,
+							end: { line: start.line, character: start.character + 1 },
+						};
+					})()
+				: ZERO_RANGE;
 		diagnostics.push({
 			severity: DiagnosticSeverity.Error,
-			range: ZERO_RANGE,
+			range,
 			message: state.parseError,
 			source: "gram",
 		});

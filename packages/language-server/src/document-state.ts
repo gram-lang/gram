@@ -1,4 +1,4 @@
-import { getAST, type RecipeAST } from "@gram-lang/parser";
+import { getAST, GramParseError, type RecipeAST } from "@gram-lang/parser";
 import { compile, type CompilationResult } from "@gram-lang/kitchen";
 import {
 	analyze,
@@ -12,6 +12,8 @@ export interface DocumentState {
 	lineStarts: number[];
 	ast: RecipeAST | null;
 	parseError: string | null;
+	/** Character offset of `parseError` into `text`, when known. */
+	parseErrorOffset: number | null;
 	compilation: AnalyzedCompilationResult | CompilationResult | null;
 }
 
@@ -35,13 +37,21 @@ export function parseDocument(
 		} catch {
 			// compilation failures don't invalidate the AST
 		}
-		return { text, lineStarts, ast, parseError: null, compilation };
+		return {
+			text,
+			lineStarts,
+			ast,
+			parseError: null,
+			parseErrorOffset: null,
+			compilation,
+		};
 	} catch (e: any) {
 		return {
 			text,
 			lineStarts,
 			ast: null,
 			parseError: String(e?.message ?? e),
+			parseErrorOffset: e instanceof GramParseError ? e.offset : null,
 			compilation: null,
 		};
 	}
