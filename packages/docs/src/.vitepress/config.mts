@@ -90,6 +90,7 @@ export default defineConfig({
 				sidebar: [
 					{
 						text: "Introduction",
+						collapsed: false,
 						items: [
 							{ text: "What is Gram?", link: "/explanation/philosophy" },
 							{ text: "Getting Started", link: "/tutorials/getting-started" },
@@ -98,6 +99,7 @@ export default defineConfig({
 					},
 					{
 						text: "How-To Guides",
+						collapsed: false,
 						items: [
 							{ text: "Manage Database", link: "/how-to/manage-database" },
 							{
@@ -116,6 +118,7 @@ export default defineConfig({
 					},
 					{
 						text: "Reference",
+						collapsed: false,
 						items: [
 							{
 								text: "Document Structure",
@@ -151,6 +154,7 @@ export default defineConfig({
 					},
 					{
 						text: "Technical",
+						collapsed: false,
 						items: [
 							{
 								text: "The Gram Lifecycle",
@@ -202,6 +206,7 @@ export default defineConfig({
 				sidebar: [
 					{
 						text: "Introduction",
+						collapsed: false,
 						items: [
 							{ text: "C'est quoi Gram ?", link: "/fr/explanation/philosophy" },
 							{ text: "Pour commencer", link: "/fr/tutorials/getting-started" },
@@ -213,6 +218,7 @@ export default defineConfig({
 					},
 					{
 						text: "Guides pratiques",
+						collapsed: false,
 						items: [
 							{
 								text: "Gérer la base de données",
@@ -234,6 +240,7 @@ export default defineConfig({
 					},
 					{
 						text: "Référence",
+						collapsed: false,
 						items: [
 							{
 								text: "Structure du Document",
@@ -272,6 +279,7 @@ export default defineConfig({
 					},
 					{
 						text: "Technique",
+						collapsed: false,
 						items: [
 							{
 								text: "Cycle de vie",
