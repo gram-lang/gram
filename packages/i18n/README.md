@@ -6,7 +6,7 @@ The translation and normalization module for units and time within the Gram reci
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
 
 ---
 

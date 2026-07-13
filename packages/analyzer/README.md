@@ -6,7 +6,7 @@ The physical and nutritional analysis module for the Gram recipe language. It ta
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
 
 ---
 

@@ -14,7 +14,7 @@ Gram is designed to write structured, machine-readable recipes that still read l
 
 Because it treats your recipes as code, Gram unlocks features that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
 
-[Playground](https://abiwab.codeberg.page/gram/play) • [Documentation](https://abiwab.codeberg.page/gram/)
+[Playground](https://gram-lang.org/play) • [Documentation](https://gram-lang.org/)
 
 <br/>
 <div align="center">
@@ -106,7 +106,7 @@ Manage your `ingredients.yaml` effortlessly with AI-assisted commands.
 ## Documentation
 
 The full technical documentation is available online:
-[**https://abiwab.codeberg.page/gram/**](https://abiwab.codeberg.page/gram/)
+[**https://gram-lang.org/**](https://gram-lang.org/)
 
 The source code for the VitePress documentation can be found locally in `packages/docs/`.
 

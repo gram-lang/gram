@@ -6,7 +6,7 @@ The official command-line tool for the Gram recipe language. Validate, compile, 
 
 ## 📚 General Documentation
 
-For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
+For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
 
 ---
 

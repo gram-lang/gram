@@ -6,7 +6,7 @@ The official Visual Studio Code extension for the Gram recipe language. It provi
 
 ## 📚 General Documentation
 
-For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://abiwab.codeberg.page/gram/)**.
+For full syntax specifications, grammar details, cheatsheets, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
 
 ---
 
