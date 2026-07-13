@@ -13,7 +13,7 @@ const gramGrammar = JSON.parse(fs.readFileSync(gramGrammarPath, "utf-8"));
 export default defineConfig({
 	title: "Gram",
 	description: "A smart, data-driven recipe markup language for developers.",
-	base: "/gram/",
+	base: "/",
 	cleanUrls: true,
 	ignoreDeadLinks: true,
 
