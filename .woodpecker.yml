@@ -74,12 +74,10 @@ steps:
     failure: ignore
 
   publish:
-    image: oven/bun:1.3.14
-    secrets: [ NPM_TOKEN ]
+    image: node:20
     commands:
-      - apt-get update && apt-get install -y git
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-      - bunx changeset publish
+      - npx changeset publish
     when:
       event: push
       branch: main
