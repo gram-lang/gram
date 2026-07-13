@@ -14,7 +14,8 @@
       "@gram-lang/parser",
       "@gram-lang/i18n",
       "@gram-lang/renderer",
-      "gram-lang"
+      "@gram-lang/cli",
+      "@gram-lang/language-server"
     ]
   ],
   "linked": [],

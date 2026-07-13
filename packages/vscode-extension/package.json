@@ -3,6 +3,7 @@
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
   "version": "1.0.0-beta.2",
+  "private": true,
   "preview": true,
   "qna": false,
   "publisher": "abiwab",

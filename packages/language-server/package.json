@@ -3,26 +3,47 @@
   "version": "1.0.0-beta.2",
   "description": "LSP server for the Gram recipe language",
   "main": "dist/server.cjs",
-  "private": true,
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "lsp",
+    "language-server"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/language-server"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/language-server#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "node build.cjs",
     "typecheck": "tsc --noEmit",
     "dev": "node build.cjs --watch",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "npm run build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
+    "@types/node": "^26.1.1",
+    "esbuild": "^0.28.1",
     "vscode-languageserver": "^10.1.0",
     "vscode-languageserver-textdocument": "^1.0.12",
     "yaml": "^2.9.0"
-  },
-  "devDependencies": {
-    "@types/node": "^26.1.1",
-    "esbuild": "^0.28.1"
   },
   "type": "module"
 }

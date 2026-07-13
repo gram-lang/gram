@@ -12,7 +12,7 @@
     "cli"
   ],
   "author": "abiwab",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",
@@ -35,7 +35,8 @@
     "build": "tsup && node -e \"require('fs').chmodSync('dist/index.js', 0o755)\"",
     "typecheck": "tsc --noEmit",
     "dev": "bun run src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.12",

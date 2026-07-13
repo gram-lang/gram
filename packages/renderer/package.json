@@ -22,7 +22,7 @@
     "html"
   ],
   "author": "abiwab",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",

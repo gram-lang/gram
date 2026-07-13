@@ -1,5 +1,10 @@
 # @gram-lang/analyzer
 
+[![npm version](https://badge.fury.io/js/@gram-lang%2Fanalyzer.svg)](https://www.npmjs.com/package/@gram-lang/analyzer)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+
 The physical and nutritional analysis module for the Gram recipe language. It takes a structurally compiled recipe (produced by `@gram-lang/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
 
 ---
@@ -59,12 +64,13 @@ console.log(analysisResult.result.shopping_list); // Purchasing mass auto-calcul
 ## 🏗️ Structure
 
 *   `src/index.ts`: The main entry point. Orchestrates the enrichment of sections, steps, and shopping lists.
-*   `src/mass_standardization.ts`: Resolves count/volume quantities to grams (`g`).
-*   `src/yield_management.ts`: Scales ingredient net weights to raw purchase weights.
+*   `src/mass_standardization.ts`: Resolves count/volume quantities to grams (`g`), including yield-scaled purchase weights.
 *   `src/nutrition.ts`: Sums macros and calories per serving.
 *   `src/metrics.ts`: Computes global mass metrics and warning outputs.
-*   `src/ingredient_db.ts`: Handles database lookup maps.
-*   `src/i18n.ts`: Resolves volume unit translations (e.g., càs ➡️ tbsp).
+*   `src/ingredient_db.ts`: Handles database lookup maps and validation.
+*   `src/shopping_aggregation.ts`: Aggregates analyzed quantities into the final shopping list.
+*   `src/diff.ts`: Computes semantic diffs between two analyzed recipes.
+*   `src/schemas.ts`: Zod schemas for analyzer options and ingredient database entries.
 
 ---
 

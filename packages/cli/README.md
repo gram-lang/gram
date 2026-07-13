@@ -1,5 +1,10 @@
 # @gram-lang/cli
 
+[![npm version](https://badge.fury.io/js/@gram-lang%2Fcli.svg)](https://www.npmjs.com/package/@gram-lang/cli)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+
 The official command-line tool for the Gram recipe language. Validate, compile, scale, diff, and manage your ingredient database directly from your terminal.
 
 ---
@@ -52,6 +57,7 @@ Run `gram --help` for the full list of commands.
 *   `src/core/`: Shared building blocks (config loading, ingredient database, pipeline orchestration).
 *   `src/services/`: Business logic backing the commands (formatting, scaling, importing, syncing).
 *   `src/ui/`: Terminal rendering (tables, diffs, interactive views).
+*   `src/prompts/`: AI system prompts used by the `suggest` command.
 
 ---
 

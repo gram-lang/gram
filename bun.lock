@@ -113,19 +113,17 @@
     "packages/language-server": {
       "name": "@gram-lang/language-server",
       "version": "1.0.0-beta.2",
-      "dependencies": {
+      "devDependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
         "@gram-lang/renderer": "workspace:*",
+        "@types/node": "^26.1.1",
+        "esbuild": "^0.28.1",
         "vscode-languageserver": "^10.1.0",
         "vscode-languageserver-textdocument": "^1.0.12",
         "yaml": "^2.9.0",
-      },
-      "devDependencies": {
-        "@types/node": "^26.1.1",
-        "esbuild": "^0.28.1",
       },
     },
     "packages/parser": {

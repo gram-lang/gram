@@ -72,3 +72,13 @@ steps:
     commands:
       - bun audit
     failure: ignore
+
+  publish:
+    image: oven/bun:1.3.14
+    secrets: [ NPM_TOKEN ]
+    commands:
+      - echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > ~/.npmrc
+      - bunx changeset publish
+    when:
+      event: push
+      branch: main

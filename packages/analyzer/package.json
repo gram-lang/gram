@@ -15,7 +15,7 @@
     "nutrition"
   ],
   "author": "abiwab",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://codeberg.org/abiwab/gram.git",
@@ -31,7 +31,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@gram-lang/parser": "workspace:*",
