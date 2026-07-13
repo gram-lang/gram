@@ -55,7 +55,7 @@ const html = toHTML(recipe, {
 });
 ```
 
-`RendererOptions` expose également `bakersReference`/`bakersMathOnly` (pour afficher les calculs en pourcentage du boulanger) et `hideStepQty` (pour omettre les quantités des ingrédients du texte des étapes spécifiquement — notez que cela n'a actuellement un effet que sur `toPrintHTML`, pas sur `toMarkdown`/`toHTML`).
+`RendererOptions` expose également `bakersReference`/`bakersMathOnly` (pour afficher les calculs en pourcentage du boulanger), `hideStepQty` (pour omettre les quantités des ingrédients du texte des étapes spécifiquement — notez que cela n'a actuellement un effet que sur `toPrintHTML`, pas sur `toMarkdown`/`toHTML`), et `renderId` (un préfixe pour les identifiants d'ancre des notes de bas de page, ex. `"note-1"` ; a une valeur fixe par défaut, à surcharger avec quelque chose d'unique — un slug de recette par exemple — lorsque plusieurs recettes sont rendues sur la même page, pour éviter les collisions d'identifiants).
 
 ## Fonctionnalités
 

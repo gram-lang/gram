@@ -55,7 +55,7 @@ const html = toHTML(recipe, {
 });
 ```
 
-`RendererOptions` also exposes `bakersReference`/`bakersMathOnly` (to display baker's-percentage math) and `hideStepQty` (to omit ingredient quantities from step text specifically — note this currently only has an effect on `toPrintHTML`, not on `toMarkdown`/`toHTML`).
+`RendererOptions` also exposes `bakersReference`/`bakersMathOnly` (to display baker's-percentage math), `hideStepQty` (to omit ingredient quantities from step text specifically — note this currently only has an effect on `toPrintHTML`, not on `toMarkdown`/`toHTML`), and `renderId` (a prefix for footnote anchor ids, e.g. `"note-1"`; defaults to a fixed value, so override it with something unique — a recipe slug, for instance — when rendering multiple recipes on the same page, to avoid id collisions).
 
 ## Features
 
