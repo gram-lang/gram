@@ -75,6 +75,9 @@ steps:
 
   publish:
     image: node:20
+    environment:
+      NPM_TOKEN:
+        from_secret: npm_token
     commands:
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - npx changeset publish
