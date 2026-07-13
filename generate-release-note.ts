@@ -26,11 +26,18 @@ async function main() {
     const releasePlan = assembleReleasePlan(changesets, packages, config, []);
 
     // 2. Safely resolve the clean version number
-    // We target your main package and clean up any pre-release leftovers if present
-    const compilerRelease = releasePlan.releases.find(r => r.name === "@gram-lang/compiler");
-    let nextVersion = compilerRelease?.newVersion || "0.0.0";
-    if (nextVersion.includes("-")) {
-        nextVersion = nextVersion.split("-")[0]; // Cleans "0.9.0-undefined.0" -> "0.9.0"
+    const mainRelease = releasePlan.releases.find(r => r.name === "gram-lang") || releasePlan.releases[0];
+    let nextVersion = mainRelease?.newVersion || "0.0.0";
+
+    // 2.b Filter changesets already published in previous pre-releases
+    let changesetsForNote = changesets;
+    try {
+        const preJson = JSON.parse(await readFile(`${cwd}/.changeset/pre.json`, "utf-8"));
+        nextVersion = nextVersion.replace("-undefined.", `-${preJson.tag}.`);
+        const releasedChangesets = new Set(preJson.changesets);
+        changesetsForNote = changesets.filter(cs => !releasedChangesets.has(cs.id));
+    } catch (e) {
+        // ignore
     }
 
     // 3. Initialize the markdown block
@@ -40,31 +47,84 @@ async function main() {
     const minorChanges: string[] = [];
     const patchChanges: string[] = [];
 
+    // Extracted sections mapping
+    const extractedSections: Record<string, string[]> = {};
+
     // 4. Categorize based on the *individual changeset intent* rather than the global package bump type
-    for (const cs of changesets) {
-        const cleanSummary = cs.summary.trim();
-
-        // Find the highest release type inside this specific changeset's releases array
+    for (const cs of changesetsForNote) {
         const types = cs.releases.map(r => r.type);
+        const bumpType = types.includes("major") ? "major" : types.includes("minor") ? "minor" : "patch";
 
-        if (types.includes("major")) {
-            majorChanges.push(`- ${cleanSummary}`);
-        } else if (types.includes("minor")) {
-            minorChanges.push(`- ${cleanSummary}`);
-        } else {
-            patchChanges.push(`- ${cleanSummary}`);
+        const lines = cs.summary.trim().split("\n");
+        let currentSection = "";
+        let titleParts: string[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            const headingMatch = trimmed.match(/^\*\*([^\*]+)\*\*[:]*\s*$/);
+            if (headingMatch) {
+                let sectionName = headingMatch[1].trim().replace(/:$/, '').trim();
+                // Normalize some common names
+                if (sectionName.match(/breaking/i)) sectionName = "Breaking";
+                else if (sectionName.match(/fixed/i) || sectionName.match(/^fix$/i)) sectionName = "Fixed";
+                
+                currentSection = sectionName;
+                if (!extractedSections[currentSection]) extractedSections[currentSection] = [];
+            } else {
+                if (!currentSection) {
+                    titleParts.push(trimmed);
+                } else {
+                    let item = trimmed;
+                    if (!item.startsWith("- ")) {
+                        item = item.replace(/^[-*]\s*/, ""); // strip existing bullet if any
+                        item = `- ${item}`;
+                    }
+                    extractedSections[currentSection].push(item);
+                }
+            }
+        }
+
+        const title = titleParts.join(" ");
+        if (title) {
+            let formattedTitle = title.startsWith("-") ? title : `- ${title}`;
+            if (bumpType === "major") majorChanges.push(formattedTitle);
+            else if (bumpType === "minor") minorChanges.push(formattedTitle);
+            else patchChanges.push(formattedTitle);
         }
     }
 
     // 5. Structure the release content hierarchically
     if (majorChanges.length > 0) {
-        newReleaseMarkdown += `### 🚨 Major Changes (Breaking Changes)\n${majorChanges.join("\n")}\n\n`;
+        newReleaseMarkdown += `### 🚨 Major Changes\n${majorChanges.join("\n")}\n\n`;
     }
     if (minorChanges.length > 0) {
         newReleaseMarkdown += `### ✨ New Features\n${minorChanges.join("\n")}\n\n`;
     }
     if (patchChanges.length > 0) {
         newReleaseMarkdown += `### 🐛 Bug Fixes & Improvements\n${patchChanges.join("\n")}\n\n`;
+    }
+
+    // Append unified sections
+    const prioritySections = ["Breaking", "Fixed", "New syntax", "Kitchen", "Analyzer", "Docs"];
+    const allSections = Object.keys(extractedSections);
+    
+    // Sort sections: priority ones first, then alphabetical
+    allSections.sort((a, b) => {
+        const indexA = prioritySections.indexOf(a);
+        const indexB = prioritySections.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+
+    for (const sec of allSections) {
+        if (extractedSections[sec].length > 0) {
+            const emoji = sec === "Breaking" ? "💥" : sec === "Fixed" ? "🛠️" : "📌";
+            newReleaseMarkdown += `#### ${emoji} ${sec}\n${extractedSections[sec].join("\n")}\n\n`;
+        }
     }
 
     // 6. Handle global root CHANGELOG history (Prepend mechanism)

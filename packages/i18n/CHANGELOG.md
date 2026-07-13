@@ -1,5 +1,17 @@
 # @gram-lang/i18n
 
+## 1.0.0-beta.2
+
+### Minor Changes
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- f5f1efe: chore: declare `sideEffects: false` so bundlers can tree-shake unused exports from these packages
+
+  No package previously declared this, so third-party bundlers had to assume every module might have side effects and couldn't safely drop unused code.
+
 ## 1.0.0-beta.1
 
 ### Minor Changes

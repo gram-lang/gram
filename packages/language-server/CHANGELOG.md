@@ -1,5 +1,60 @@
 # @gram-lang/language-server
 
+## 1.0.0-beta.2
+
+### Minor Changes
+
+- 6e09879: fix!: `gram check` only fails on structural errors by default (use `--strict` for the old behavior), fix LSP completion race, and add ingredients.yaml live reload
+
+  **Breaking:**
+
+  - `gram check` now only fails on structural issues (like undefined references) and uses a shared `warningSeverity` map. Nutritional gaps and incomplete annotations are reported as warnings instead of failing the build. Use `--strict` for the old all-warnings-fail behavior.
+  - `GramConfigError` exit code changed from 2 to 1 (user error, not internal crash).
+
+  **Fixed:**
+
+  - Language Server: Fixed a race condition where completions immediately after `@` or `&` could return nothing.
+  - Language Server: Diagnostics now correctly use the shared `warningSeverity` map.
+  - Language Server: `ingredients.yaml` is now actively watched via LSP. External edits instantly refresh diagnostics without restarting the editor.
+
+- 6eab9b3: feat!: replace the `°` temperature sigil with `^`, the `~&` passive timer marker with `~_`, and add mixed/Unicode fraction support
+
+  **Breaking syntax changes:**
+
+  - The Temperature sigil is now `^` (e.g. `^{180C}`). `°` is no longer a block-opening character, but remains valid inside unit spellings (`°C`).
+  - The Timer passive marker is now `~_` (e.g. `~_{45min}`) instead of `~&`.
+  - Temperature units now accept bare `C`/`F` in addition to `°C`/`°F`.
+
+  **New syntax:**
+
+  - Added support for mixed-number fractions (`1 1/2`) and Unicode vulgar fraction glyphs (`½`).
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- 404198a: `getAST` now throws `GramParseError` instead of a plain `Error` on syntax errors. This new error type includes structured fields (`offset` and `expected`) while preserving the original human-readable message.
+
+  The language server now uses the `offset` field to report parse-error diagnostics at their exact location in the document, rather than defaulting to line 1 column 1.
+
+- Updated dependencies [815ce8c]
+- Updated dependencies [0aec389]
+- Updated dependencies [e192fe2]
+- Updated dependencies [404198a]
+- Updated dependencies [8fca04c]
+- Updated dependencies [d837da3]
+- Updated dependencies [f5f1efe]
+- Updated dependencies [8dc9c60]
+- Updated dependencies [6eab9b3]
+- Updated dependencies [e55940f]
+- Updated dependencies [a46c24f]
+- Updated dependencies [0ccfc99]
+  - @gram-lang/analyzer@1.0.0-beta.2
+  - @gram-lang/kitchen@1.0.0-beta.2
+  - @gram-lang/renderer@1.0.0-beta.2
+  - @gram-lang/parser@1.0.0-beta.2
+  - @gram-lang/i18n@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Minor Changes

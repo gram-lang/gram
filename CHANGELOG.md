@@ -1,5 +1,65 @@
 # Changelog
 
+## [1.0.0-beta.2] - 7/13/2026
+
+### 🚨 Major Changes
+- fix!: load valid ingredients even when the database has a bad entry, and fix five correctness bugs
+- fix!: `gram check` only fails on structural errors by default (use `--strict` for the old behavior), fix LSP completion race, and add ingredients.yaml live reload
+- feat!: validate and normalize temperature units, add a shared warning severity map, and fix accented/non-Latin ingredient slugs
+- feat!: replace the `°` temperature sigil with `^`, the `~&` passive timer marker with `~_`, and add mixed/Unicode fraction support
+
+### ✨ New Features
+- Added a bilingual (EN/FR) "API Reference" section covering the programmatic API of `@gram-lang/parser`, `@gram-lang/kitchen`, `@gram-lang/analyzer`, `@gram-lang/renderer`, and `@gram-lang/i18n` — function signatures, options, JSON data formats, and the full warning-code catalogue. Reference tables (warning codes, AST node types, unit conversions, categories) are generated at build time directly from each package's source, so they can't drift out of sync with the code. Also fixed an incorrect `analyze()` call example in `how-to/build-custom-ui.md`.
+- Export `fetchRecipe` and `validateGram` from the recipe-import service, enabling direct testing and reuse of the import validation pipeline.
+- Add `round2(value: number): number`, exported from `@gram-lang/kitchen`. It centralizes the 2-decimal rounding rule (`parseFloat(x.toFixed(2))`) previously duplicated across kitchen, analyzer, and renderer, giving quantity/mass rounding a single documented implementation. No observable output changes — same rounding rule as before, just in one place.
+- `getAST` now throws `GramParseError` instead of a plain `Error` on syntax errors. This new error type includes structured fields (`offset` and `expected`) while preserving the original human-readable message. The language server now uses the `offset` field to report parse-error diagnostics at their exact location in the document, rather than defaulting to line 1 column 1.
+- The playground now shows a red squiggly marker at the exact location of a syntax error using the new `offset` field. Fixed a crash in the playground on mount in real browsers caused by an aggressive automated lint fix that removed necessary Vue `<template>` bindings and component imports.
+- `toHTML` no longer stamps footnote anchor ids with `Math.random()`. Output is now deterministic by default (ids like `note-1`), which is required for byte-stable golden/conformance testing. If you render multiple recipes on the same page and relied on random ids to avoid anchor collisions, pass a new `renderId` option (e.g. a recipe slug) to disambiguate.
+- Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### 🐛 Bug Fixes & Improvements
+- Added a global `--verbose`/`--debug` flag (works with any subcommand) that prints the full stack trace alongside the usual terse error message — useful when filing a bug report or diagnosing an unexpected failure.
+- Fix `_usageId` leaking a global counter across separate `compile()` calls in the same process (affected the language server and `gram scale`'s parallel compiles, making ids non-deterministic for an unchanged recipe). Fix nutrition analysis always reporting `isEstimate: true` regardless of actual data precision. Fix the section mass badge in HTML output missing its scale icon.
+- Fixed a regression introduced alongside the new `--verbose` flag where `gram -v` stopped printing the version and showed the help text instead (`-v` is citty's own `--version` shorthand — it's no longer swallowed as part of the verbose flag). Also fixed `gram import`'s fetch timeout message not showing up when the timeout fires while reading a slow response body instead of during the initial connection.
+- `.env` is now written with `0600` permissions instead of the OS default, so API keys are no longer group/world-readable on shared machines. `.gram/config.yaml` is now validated at load time (invalid fields fail with a clear error instead of crashing deep in the pipeline). `gram import` now times out after 15s, caps response bodies at 10MB, and asks for confirmation before writing AI-converted content from an untrusted external source to disk (skippable with `--yes`).
+- Performance improvements for CLI tools: - `gram format` now processes files concurrently, significantly speeding up execution on large recipe collections. - `gram db sync` now uses a length-based pre-check for fuzzy matching to speed up similarity comparisons against large databases.
+- Fixed a bug in `applyScale()` where scaled quantities were incorrectly squared instead of multiplied for inline step ingredients, resulting in incorrect values (e.g., displaying `800g` instead of `400g` when using `--scale 2`). The aggregated shopping list was unaffected.
+- chore: declare `sideEffects: false` so bundlers can tree-shake unused exports from these packages No package previously declared this, so third-party bundlers had to assume every module might have side effects and couldn't safely drop unused code.
+- fix: sync TextMate grammar with the `^`/`~_` sigil changes and stop mis-highlighting invalid temperature units - Updated TextMate grammar to use `^` (Temperature) and `~_` (Passive Timer) sigils. - Temperature unit highlighting now mirrors the compiler's whitelist (e.g., `180C`/`180°F`). Invalid units now receive a distinct `invalid.illegal.unit.gram` scope. - Name matching now correctly stops at the new `^` sigil.
+- Compiler warnings (`CompilationResult.warnings`, `NutritionMetrics.warnings`) are now always structured `Warning` objects (`{ code, message, item?, loc?, section? }`) instead of sometimes being plain strings depending on call order — a latent inconsistency that could previously produce `"[object Object]"` in some rendered output. `Usage.composite`, `Usage.options`, and `ProcessedStep.content` are now properly typed instead of `any`. Also fixes range-based timer quantities (e.g. `~{5-10min}`) never displaying correctly in `gram diff` output, due to a pre-existing typo checking non-existent fields.
+
+#### 💥 Breaking
+- `validateIngredientDatabase` no longer throws an error on a single malformed entry. It now validates entry-by-entry, returning both valid data and rejected keys. This prevents `gram check` or `gram cook` from hard-failing due to one unrelated bad line.
+- `physical.yield` must now be `> 0` (previously `>= 0`) to prevent producing `Infinity` mass downstream.
+- `gram check` now only fails on structural issues (like undefined references) and uses a shared `warningSeverity` map. Nutritional gaps and incomplete annotations are reported as warnings instead of failing the build. Use `--strict` for the old all-warnings-fail behavior.
+- `GramConfigError` exit code changed from 2 to 1 (user error, not internal crash).
+- The Temperature sigil is now `^` (e.g. `^{180C}`). `°` is no longer a block-opening character, but remains valid inside unit spellings (`°C`).
+- The Timer passive marker is now `~_` (e.g. `~_{45min}`) instead of `~&`.
+- Temperature units now accept bare `C`/`F` in addition to `°C`/`°F`.
+
+#### 🛠️ Fixed
+- Added a guard in `applyYield` against non-positive yield factors.
+- Shopping list aggregation: The `optional` modifier is now treated as an intersection rather than a union.
+- `diffRecipes`: Temperature ranges that change bounds but keep the same average are now correctly detected in the diff. Fixed an issue where identical section titles would drop timer/temperature tokens.
+- `calculateMassMetrics`: Excludes `optional` ingredients from `totalMass` to match nutritional calculations.
+- `calculateNutrition`: Missing nutrient data now propagates as `undefined` rather than an indistinguishable `0`.
+- Language Server: Fixed a race condition where completions immediately after `@` or `&` could return nothing.
+- Language Server: Diagnostics now correctly use the shared `warningSeverity` map.
+- Language Server: `ingredients.yaml` is now actively watched via LSP. External edits instantly refresh diagnostics without restarting the editor.
+
+#### 📌 New syntax
+- Added support for mixed-number fractions (`1 1/2`) and Unicode vulgar fraction glyphs (`½`).
+
+#### 📌 Kitchen
+- `warningSeverity`: a new exported map to separate structural errors from recoverable warnings.
+- Temperature units are now validated and normalized to canonical `°C`/`°F`.
+- `slugify` now preserves non-Latin letters via `\p{L}`/`\p{N}`.
+
+#### 📌 Analyzer
+- Fixed `parseDensityOverrides` name normalization for accented ingredient names.
+
+---
+
 ## [1.0.0-beta.1] - 7/5/2026
 
 ### 🚨 Major Changes (Breaking Changes)

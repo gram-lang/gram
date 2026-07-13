@@ -1,5 +1,41 @@
 # @gram-lang/parser
 
+## 1.0.0-beta.2
+
+### Major Changes
+
+- 6eab9b3: feat!: replace the `°` temperature sigil with `^`, the `~&` passive timer marker with `~_`, and add mixed/Unicode fraction support
+
+  **Breaking syntax changes:**
+
+  - The Temperature sigil is now `^` (e.g. `^{180C}`). `°` is no longer a block-opening character, but remains valid inside unit spellings (`°C`).
+  - The Timer passive marker is now `~_` (e.g. `~_{45min}`) instead of `~&`.
+  - Temperature units now accept bare `C`/`F` in addition to `°C`/`°F`.
+
+  **New syntax:**
+
+  - Added support for mixed-number fractions (`1 1/2`) and Unicode vulgar fraction glyphs (`½`).
+
+### Minor Changes
+
+- 404198a: `getAST` now throws `GramParseError` instead of a plain `Error` on syntax errors. This new error type includes structured fields (`offset` and `expected`) while preserving the original human-readable message.
+
+  The language server now uses the `offset` field to report parse-error diagnostics at their exact location in the document, rather than defaulting to line 1 column 1.
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- f5f1efe: chore: declare `sideEffects: false` so bundlers can tree-shake unused exports from these packages
+
+  No package previously declared this, so third-party bundlers had to assume every module might have side effects and couldn't safely drop unused code.
+
+- e55940f: fix: sync TextMate grammar with the `^`/`~_` sigil changes and stop mis-highlighting invalid temperature units
+
+  - Updated TextMate grammar to use `^` (Temperature) and `~_` (Passive Timer) sigils.
+  - Temperature unit highlighting now mirrors the compiler's whitelist (e.g., `180C`/`180°F`). Invalid units now receive a distinct `invalid.illegal.unit.gram` scope.
+  - Name matching now correctly stops at the new `^` sigil.
+
 ## 1.0.0-beta.1
 
 ### Major Changes

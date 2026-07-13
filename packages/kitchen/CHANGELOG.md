@@ -1,5 +1,53 @@
 # @gram-lang/kitchen
 
+## 1.0.0-beta.2
+
+### Major Changes
+
+- 8dc9c60: feat!: validate and normalize temperature units, add a shared warning severity map, and fix accented/non-Latin ingredient slugs
+
+  **Kitchen:**
+
+  - `warningSeverity`: a new exported map to separate structural errors from recoverable warnings.
+  - Temperature units are now validated and normalized to canonical `°C`/`°F`.
+  - `slugify` now preserves non-Latin letters via `\p{L}`/`\p{N}`.
+
+  **Analyzer:**
+
+  - Fixed `parseDensityOverrides` name normalization for accented ingredient names.
+
+### Minor Changes
+
+- e192fe2: Add `round2(value: number): number`, exported from `@gram-lang/kitchen`. It centralizes the 2-decimal rounding rule (`parseFloat(x.toFixed(2))`) previously duplicated across kitchen, analyzer, and renderer, giving quantity/mass rounding a single documented implementation. No observable output changes — same rounding rule as before, just in one place.
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- 0aec389: Fix `_usageId` leaking a global counter across separate `compile()` calls in the same
+  process (affected the language server and `gram scale`'s parallel compiles, making ids
+  non-deterministic for an unchanged recipe). Fix nutrition analysis always reporting
+  `isEstimate: true` regardless of actual data precision. Fix the section mass badge in
+  HTML output missing its scale icon.
+- d837da3: Fixed a bug in `applyScale()` where scaled quantities were incorrectly squared instead of multiplied for inline step ingredients, resulting in incorrect values (e.g., displaying `800g` instead of `400g` when using `--scale 2`). The aggregated shopping list was unaffected.
+- f5f1efe: chore: declare `sideEffects: false` so bundlers can tree-shake unused exports from these packages
+
+  No package previously declared this, so third-party bundlers had to assume every module might have side effects and couldn't safely drop unused code.
+
+- 0ccfc99: Compiler warnings (`CompilationResult.warnings`, `NutritionMetrics.warnings`) are now
+  always structured `Warning` objects (`{ code, message, item?, loc?, section? }`) instead
+  of sometimes being plain strings depending on call order — a latent inconsistency that
+  could previously produce `"[object Object]"` in some rendered output. `Usage.composite`,
+  `Usage.options`, and `ProcessedStep.content` are now properly typed instead of `any`.
+  Also fixes range-based timer quantities (e.g. `~{5-10min}`) never displaying correctly
+  in `gram diff` output, due to a pre-existing typo checking non-existent fields.
+- Updated dependencies [404198a]
+- Updated dependencies [f5f1efe]
+- Updated dependencies [6eab9b3]
+- Updated dependencies [e55940f]
+- Updated dependencies [a46c24f]
+  - @gram-lang/parser@1.0.0-beta.2
+  - @gram-lang/i18n@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Major Changes

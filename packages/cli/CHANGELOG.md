@@ -1,5 +1,94 @@
 # @gram-lang/cli
 
+## 1.0.0-beta.2
+
+### Major Changes
+
+- 6e09879: fix!: `gram check` only fails on structural errors by default (use `--strict` for the old behavior), fix LSP completion race, and add ingredients.yaml live reload
+
+  **Breaking:**
+
+  - `gram check` now only fails on structural issues (like undefined references) and uses a shared `warningSeverity` map. Nutritional gaps and incomplete annotations are reported as warnings instead of failing the build. Use `--strict` for the old all-warnings-fail behavior.
+  - `GramConfigError` exit code changed from 2 to 1 (user error, not internal crash).
+
+  **Fixed:**
+
+  - Language Server: Fixed a race condition where completions immediately after `@` or `&` could return nothing.
+  - Language Server: Diagnostics now correctly use the shared `warningSeverity` map.
+  - Language Server: `ingredients.yaml` is now actively watched via LSP. External edits instantly refresh diagnostics without restarting the editor.
+
+### Minor Changes
+
+- 815ce8c: fix!: load valid ingredients even when the database has a bad entry, and fix five correctness bugs
+
+  **Breaking:**
+
+  - `validateIngredientDatabase` no longer throws an error on a single malformed entry. It now validates entry-by-entry, returning both valid data and rejected keys. This prevents `gram check` or `gram cook` from hard-failing due to one unrelated bad line.
+  - `physical.yield` must now be `> 0` (previously `>= 0`) to prevent producing `Infinity` mass downstream.
+
+  **Fixed:**
+
+  - Added a guard in `applyYield` against non-positive yield factors.
+  - Shopping list aggregation: The `optional` modifier is now treated as an intersection rather than a union.
+  - `diffRecipes`: Temperature ranges that change bounds but keep the same average are now correctly detected in the diff. Fixed an issue where identical section titles would drop timer/temperature tokens.
+  - `calculateMassMetrics`: Excludes `optional` ingredients from `totalMass` to match nutritional calculations.
+  - `calculateNutrition`: Missing nutrient data now propagates as `undefined` rather than an indistinguishable `0`.
+
+- 5217ab8: Export `fetchRecipe` and `validateGram` from the recipe-import service, enabling
+  direct testing and reuse of the import validation pipeline.
+- 6eab9b3: feat!: replace the `°` temperature sigil with `^`, the `~&` passive timer marker with `~_`, and add mixed/Unicode fraction support
+
+  **Breaking syntax changes:**
+
+  - The Temperature sigil is now `^` (e.g. `^{180C}`). `°` is no longer a block-opening character, but remains valid inside unit spellings (`°C`).
+  - The Timer passive marker is now `~_` (e.g. `~_{45min}`) instead of `~&`.
+  - Temperature units now accept bare `C`/`F` in addition to `°C`/`°F`.
+
+  **New syntax:**
+
+  - Added support for mixed-number fractions (`1 1/2`) and Unicode vulgar fraction glyphs (`½`).
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- dad09ac: Added a global `--verbose`/`--debug` flag (works with any subcommand) that
+  prints the full stack trace alongside the usual terse error message —
+  useful when filing a bug report or diagnosing an unexpected failure.
+- d202df0: Fixed a regression introduced alongside the new `--verbose` flag where
+  `gram -v` stopped printing the version and showed the help text instead
+  (`-v` is citty's own `--version` shorthand — it's no longer swallowed as
+  part of the verbose flag). Also fixed `gram import`'s fetch timeout message
+  not showing up when the timeout fires while reading a slow response body
+  instead of during the initial connection.
+- 92a0b47: `.env` is now written with `0600` permissions instead of the OS default, so API
+  keys are no longer group/world-readable on shared machines. `.gram/config.yaml`
+  is now validated at load time (invalid fields fail with a clear error instead of
+  crashing deep in the pipeline). `gram import` now times out after 15s, caps
+  response bodies at 10MB, and asks for confirmation before writing AI-converted
+  content from an untrusted external source to disk (skippable with `--yes`).
+- 129736f: Performance improvements for CLI tools:
+  - `gram format` now processes files concurrently, significantly speeding up execution on large recipe collections.
+  - `gram db sync` now uses a length-based pre-check for fuzzy matching to speed up similarity comparisons against large databases.
+- d837da3: Fixed a bug in `applyScale()` where scaled quantities were incorrectly squared instead of multiplied for inline step ingredients, resulting in incorrect values (e.g., displaying `800g` instead of `400g` when using `--scale 2`). The aggregated shopping list was unaffected.
+- Updated dependencies [815ce8c]
+- Updated dependencies [0aec389]
+- Updated dependencies [e192fe2]
+- Updated dependencies [404198a]
+- Updated dependencies [8fca04c]
+- Updated dependencies [d837da3]
+- Updated dependencies [f5f1efe]
+- Updated dependencies [8dc9c60]
+- Updated dependencies [6eab9b3]
+- Updated dependencies [e55940f]
+- Updated dependencies [a46c24f]
+- Updated dependencies [0ccfc99]
+  - @gram-lang/analyzer@1.0.0-beta.2
+  - @gram-lang/kitchen@1.0.0-beta.2
+  - @gram-lang/renderer@1.0.0-beta.2
+  - @gram-lang/parser@1.0.0-beta.2
+  - @gram-lang/i18n@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Minor Changes

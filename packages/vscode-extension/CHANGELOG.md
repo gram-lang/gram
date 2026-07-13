@@ -1,5 +1,19 @@
 # @gram-lang/vscode-extension
 
+## 1.0.0-beta.2
+
+### Minor Changes
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- Updated dependencies [6e09879]
+- Updated dependencies [404198a]
+- Updated dependencies [6eab9b3]
+- Updated dependencies [a46c24f]
+  - @gram-lang/language-server@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Minor Changes

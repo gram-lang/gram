@@ -3,7 +3,6 @@
 "gram-lang": minor
 "@gram-lang/analyzer": minor
 "@gram-lang/cli": minor
-"@gram-lang/conformance": minor
 "@gram-lang/docs": minor
 "@gram-lang/i18n": minor
 "@gram-lang/kitchen": minor

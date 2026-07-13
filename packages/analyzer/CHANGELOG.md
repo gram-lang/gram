@@ -1,5 +1,72 @@
 # @gram-lang/analyzer
 
+## 1.0.0-beta.2
+
+### Major Changes
+
+- 815ce8c: fix!: load valid ingredients even when the database has a bad entry, and fix five correctness bugs
+
+  **Breaking:**
+
+  - `validateIngredientDatabase` no longer throws an error on a single malformed entry. It now validates entry-by-entry, returning both valid data and rejected keys. This prevents `gram check` or `gram cook` from hard-failing due to one unrelated bad line.
+  - `physical.yield` must now be `> 0` (previously `>= 0`) to prevent producing `Infinity` mass downstream.
+
+  **Fixed:**
+
+  - Added a guard in `applyYield` against non-positive yield factors.
+  - Shopping list aggregation: The `optional` modifier is now treated as an intersection rather than a union.
+  - `diffRecipes`: Temperature ranges that change bounds but keep the same average are now correctly detected in the diff. Fixed an issue where identical section titles would drop timer/temperature tokens.
+  - `calculateMassMetrics`: Excludes `optional` ingredients from `totalMass` to match nutritional calculations.
+  - `calculateNutrition`: Missing nutrient data now propagates as `undefined` rather than an indistinguishable `0`.
+
+### Minor Changes
+
+- a46c24f: Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
+
+### Patch Changes
+
+- 0aec389: Fix `_usageId` leaking a global counter across separate `compile()` calls in the same
+  process (affected the language server and `gram scale`'s parallel compiles, making ids
+  non-deterministic for an unchanged recipe). Fix nutrition analysis always reporting
+  `isEstimate: true` regardless of actual data precision. Fix the section mass badge in
+  HTML output missing its scale icon.
+- f5f1efe: chore: declare `sideEffects: false` so bundlers can tree-shake unused exports from these packages
+
+  No package previously declared this, so third-party bundlers had to assume every module might have side effects and couldn't safely drop unused code.
+
+- 8dc9c60: feat!: validate and normalize temperature units, add a shared warning severity map, and fix accented/non-Latin ingredient slugs
+
+  **Kitchen:**
+
+  - `warningSeverity`: a new exported map to separate structural errors from recoverable warnings.
+  - Temperature units are now validated and normalized to canonical `°C`/`°F`.
+  - `slugify` now preserves non-Latin letters via `\p{L}`/`\p{N}`.
+
+  **Analyzer:**
+
+  - Fixed `parseDensityOverrides` name normalization for accented ingredient names.
+
+- 0ccfc99: Compiler warnings (`CompilationResult.warnings`, `NutritionMetrics.warnings`) are now
+  always structured `Warning` objects (`{ code, message, item?, loc?, section? }`) instead
+  of sometimes being plain strings depending on call order — a latent inconsistency that
+  could previously produce `"[object Object]"` in some rendered output. `Usage.composite`,
+  `Usage.options`, and `ProcessedStep.content` are now properly typed instead of `any`.
+  Also fixes range-based timer quantities (e.g. `~{5-10min}`) never displaying correctly
+  in `gram diff` output, due to a pre-existing typo checking non-existent fields.
+- Updated dependencies [0aec389]
+- Updated dependencies [e192fe2]
+- Updated dependencies [404198a]
+- Updated dependencies [d837da3]
+- Updated dependencies [f5f1efe]
+- Updated dependencies [8dc9c60]
+- Updated dependencies [6eab9b3]
+- Updated dependencies [e55940f]
+- Updated dependencies [a46c24f]
+- Updated dependencies [0ccfc99]
+  - @gram-lang/kitchen@1.0.0-beta.2
+  - @gram-lang/parser@1.0.0-beta.2
+  - @gram-lang/i18n@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Major Changes
