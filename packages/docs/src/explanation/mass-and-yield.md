@@ -15,8 +15,6 @@ Gram separates the physical properties of ingredients into three distinct concep
 3. **Yield (`yield`)**: The **Waste Factor**. Used strictly to calculate the ratio of edible **Net Mass** to purchasing **Gross Mass** (due to peels, seeds, bones).
     * *Example*: An avocado has a yield of 0.70 (30% is the pit and skin).
 
----
-
 ## The Goal of Mass Standardization
 
 The primary goal of the Analyzer is to calculate the **Total Mass** of a recipe. This is essential for nutritional estimation, cost calculation, and baking ratios.
