@@ -1,5 +1,18 @@
 # @gram-lang/cli
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- 0438aba: `gram check` now resolves syntax error line numbers from the parser's structured `GramParseError.offset` instead of regexing "line N" out of ohm's prose message — line numbers are now always correct, not just when they happened to match that pattern.
+- Updated deployment configuration to automate npmjs packages publication
+- Updated dependencies
+  - @gram-lang/analyzer@1.0.0-beta.3
+  - @gram-lang/i18n@1.0.0-beta.3
+  - @gram-lang/kitchen@1.0.0-beta.3
+  - @gram-lang/parser@1.0.0-beta.3
+  - @gram-lang/renderer@1.0.0-beta.3
+
 ## 1.0.0-beta.2
 
 ### Major Changes

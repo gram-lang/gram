@@ -1,5 +1,14 @@
 # @gram-lang/kitchen
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- Updated deployment configuration to automate npmjs packages publication
+- Updated dependencies
+  - @gram-lang/i18n@1.0.0-beta.3
+  - @gram-lang/parser@1.0.0-beta.3
+
 ## 1.0.0-beta.2
 
 ### Major Changes

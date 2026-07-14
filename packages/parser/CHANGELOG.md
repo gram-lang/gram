@@ -1,5 +1,11 @@
 # @gram-lang/parser
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- Updated deployment configuration to automate npmjs packages publication
+
 ## 1.0.0-beta.2
 
 ### Major Changes

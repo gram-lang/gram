@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.0-beta.3] - 7/14/2026
+
+### 🐛 Bug Fixes & Improvements
+- `gram check` now resolves syntax error line numbers from the parser's structured `GramParseError.offset` instead of regexing "line N" out of ohm's prose message — line numbers are now always correct, not just when they happened to match that pattern.
+- Downgrade minimum VS Code version requirement to 1.75.0
+- Updated deployment configuration to automate npmjs packages publication
+- Updated docs for clarity and accuracy.
+
+---
+
 ## [1.0.0-beta.2] - 7/13/2026
 
 ### 🚨 Major Changes

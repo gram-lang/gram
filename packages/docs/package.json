@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/docs",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "private": true,
   "scripts": {
     "dev": "bun scripts/generate-api-fragments.ts && vitepress dev src",

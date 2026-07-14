@@ -1,5 +1,14 @@
 # @gram-lang/vscode-extension
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- Downgrade minimum VS Code version requirement to 1.75.0
+- Updated deployment configuration to automate npmjs packages publication
+- Updated dependencies
+  - @gram-lang/language-server@1.0.0-beta.3
+
 ## 1.0.0-beta.2
 
 ### Minor Changes

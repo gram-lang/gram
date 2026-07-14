@@ -2,7 +2,7 @@
   "name": "gram-lang",
   "displayName": "Gram Language Support",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "private": true,
   "preview": true,
   "qna": false,
@@ -21,7 +21,7 @@
   },
   "homepage": "https://gram-lang.org/",
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
@@ -131,7 +131,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "@types/vscode": "^1.125.0",
+    "@types/vscode": "^1.75.0",
     "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.28.1"
   },
