@@ -1,14 +1,14 @@
 {
   "name": "gram-lang",
-  "displayName": "Gram Language Support",
+  "displayName": "Gram - Recipe Language",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
-  "version": "1.0.0-beta.3",
+  "version": "0.1.3",
   "private": true,
   "preview": true,
   "qna": false,
-  "publisher": "abiwab",
+  "publisher": "gram-lang",
   "license": "GPL-3.0",
-  "author": "abiwab",
+  "author": "gram-lang",
   "main": "./dist/extension.cjs",
   "icon": "media/icon.png",
   "repository": {
