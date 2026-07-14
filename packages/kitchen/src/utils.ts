@@ -243,6 +243,10 @@ export const quantityToMinutes = (qty: any): number => {
  * Multiplies a compiled quantity value by a scale factor.
  * Handles plain numbers, single/range/fraction QuantityValueAST objects.
  * String quantities (TextQuantity) and undefined values are left unchanged.
+ *
+ * `text`/`numerator`/`denominator` capture the original source string (e.g. "1/2")
+ * and are only valid for the unscaled value, so they're cleared here rather than
+ * carried over stale — display code must fall back to the scaled numeric `value`.
  */
 export const scaleQty = (qty: any, factor: number): any => {
 	if (factor === 1) return qty;
@@ -250,7 +254,7 @@ export const scaleQty = (qty: any, factor: number): any => {
 	if (!qty || typeof qty !== "object") return qty;
 
 	if (qty.type === "single" && typeof qty.value === "number") {
-		return { ...qty, value: qty.value * factor };
+		return { ...qty, value: qty.value * factor, text: undefined };
 	}
 	if (qty.type === "range") {
 		return {
@@ -259,10 +263,17 @@ export const scaleQty = (qty: any, factor: number): any => {
 			range: qty.range
 				? { min: qty.range.min * factor, max: qty.range.max * factor }
 				: qty.range,
+			text: undefined,
 		};
 	}
 	if (qty.type === "fraction" && typeof qty.value === "number") {
-		return { ...qty, value: qty.value * factor };
+		return {
+			...qty,
+			value: qty.value * factor,
+			text: undefined,
+			numerator: undefined,
+			denominator: undefined,
+		};
 	}
 	return qty;
 };
