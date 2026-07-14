@@ -27,7 +27,7 @@ Il est fortement recommandé d'installer l'**Extension VS Code Gram**. Elle vous
 - Un retour d'information du compilateur en temps réel
 :::
 
-Recherchez **"Gram Language Support"** dans le panneau des extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`) et installez-la, ou récupérez-la directement depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=abiwab.gram-lang).
+Recherchez **"Gram - Recipe Language"** dans le panneau des extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`) et installez-la, ou récupérez-la directement depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang).
 
 ::: details Construire depuis les sources
 ```bash

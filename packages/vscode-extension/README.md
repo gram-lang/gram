@@ -12,7 +12,7 @@ For full syntax specifications, grammar details, cheatsheets, and best practices
 
 ## 🛠️ Installation
 
-Search for **"Gram Language Support"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or install it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram).
+Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or install it directly from the VS Code Marketplace.
 
 ### Building from source
 

@@ -27,7 +27,7 @@ Installing the **Gram VS Code Extension** is highly recommended. It provides:
 - Real-time compiler feedback
 :::
 
-Search for **"Gram Language Support"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or grab it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=abiwab.gram-lang).
+Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`) and install it, or grab it directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang).
 
 ::: details Building from source instead
 ```bash
