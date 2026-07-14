@@ -3,9 +3,10 @@
   <h1>Gram</h1>
   <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/Status-Beta-blue?style=flat-square" alt="Status" />
-    <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen?style=flat-square" alt="Open Source" />
-    <img src="https://img.shields.io/badge/License-GPL_v3-blue.svg?style=flat-square" alt="License" />
+    <img src="https://img.shields.io/badge/Status-Beta-blue" alt="Status" />
+    <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen" alt="Open Source" />
+    <img src="https://img.shields.io/badge/License-GPL_v3-blue.svg" alt="License" />
+    <img src="https://img.shields.io/badge/Made%20in-Europe-003399?labelColor=003399&logo=europeanunion&logoColor=FFFFFF" alt="Made in Europe" />
   </p>
 </div>
 <br clear="left"/>
