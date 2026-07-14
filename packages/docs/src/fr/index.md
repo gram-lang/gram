@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Gram"
   text: "Codez vos recettes."
-  tagline: Un langage de balisage pensé pour la logique culinaire avancée.
+  tagline: Un langage de balisage pensé pour la cuisine de précision.
   image:
     light: /logo-gram-light.svg
     dark: /logo-gram-dark.svg

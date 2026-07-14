@@ -5,7 +5,7 @@ layout: home
 hero:
   name: "Gram"
   text: "Code your cookbook."
-  tagline: A plain-text recipe language built for advanced culinary logic.
+  tagline: A plain-text recipe language built for precision cooking.
   image:
     light: /logo-gram-light.svg
     dark: /logo-gram-dark.svg
