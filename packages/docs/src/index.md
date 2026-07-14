@@ -12,7 +12,7 @@ hero:
     alt: Gram Logo
   actions:
     - theme: brand
-      text: Get Started
+      text: What is Gram ?
       link: /explanation/philosophy
     - theme: alt
       text: Try the Playground
