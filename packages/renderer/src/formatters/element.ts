@@ -1,5 +1,10 @@
 import type { RenderContext } from "../types";
-import { escapeHtml, getQty, formatQuantityValue } from "../utils";
+import {
+	escapeHtml,
+	getQty,
+	formatQuantityValue,
+	formatDecimalToFraction,
+} from "../utils";
 import { getDictionary } from "@gram-lang/i18n";
 
 // Default icons mapping
@@ -67,7 +72,8 @@ const strategies: Record<
 		let originalQtyStr = "";
 		if (qty) {
 			originalQtyStr =
-				(qty.text || String(qty.value)) + (item.unit ? ` ${item.unit}` : "");
+				(qty.text || formatDecimalToFraction(qty.value)) +
+				(item.unit ? ` ${item.unit}` : "");
 		}
 
 		if (item.bakersPercentage !== undefined) {
@@ -323,7 +329,7 @@ const strategies: Record<
 				let tooltipText = t.renderer.intermediateIngredient;
 				if (qty) {
 					const parts = [];
-					const baseQty = qty.text || String(qty.value);
+					const baseQty = qty.text || formatDecimalToFraction(qty.value);
 					parts.push(baseQty + (item.unit ? ` ${item.unit}` : ""));
 					if (item.variable_entries && item.variable_entries.length > 0) {
 						parts.push(...item.variable_entries);
@@ -335,7 +341,7 @@ const strategies: Record<
 				let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
 				if (qty) {
 					const parts = [];
-					const baseQty = qty.text || String(qty.value);
+					const baseQty = qty.text || formatDecimalToFraction(qty.value);
 					let first = escapeHtml(baseQty);
 					if (item.unit)
 						first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
@@ -352,7 +358,7 @@ const strategies: Record<
 			let md = `👉*${name}*`;
 			if (qty) {
 				const parts = [];
-				const qtyVal = qty.text || qty.value;
+				const qtyVal = qty.text || formatDecimalToFraction(qty.value);
 				let first = String(qtyVal);
 				if (item.unit) first += ` ${item.unit}`;
 				parts.push(first);
