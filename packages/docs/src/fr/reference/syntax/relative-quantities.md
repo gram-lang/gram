@@ -13,7 +13,7 @@ Vous pouvez cibler soit un **Ingrédient** de base, soit une **Variable Intermé
 
 Ajouter la @farine{100 g} dans le bol.
 
-Puis incorporer l'@eau{70 % @&farine}. // eau = 70 g
+Puis incorporer l'@eau{70% @&farine}. // eau = 70 g
 
 // Cibler une variable intermédiaire (en utilisant &)
 

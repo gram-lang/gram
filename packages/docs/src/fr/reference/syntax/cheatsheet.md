@@ -31,7 +31,7 @@ Les modificateurs sont placés immédiatement après le symbole `@` ou `#`.
 | **Alternatives** | `\|` | `@lait{100 ml}\|@eau{95 ml}` |
 | **Préparation courte** | `(...)` | `@beurre{10 g}(à temp. ambiante)` |
 | **Alias (Renommer)** | `:affichage` | `@vin blanc sec:vin{10 ml}` |
-| **Qté Relative** | `% @&cible` | `@eau{70 % @&farine}` |
+| **Qté Relative** | `% @&cible` | `@eau{70% @&farine}` |
 | **Composite** | `<@parent` | `@zeste{1}<@citron` |
 | **Minuteur Passif** | `~_` | `~_{1 h}` |
 | **Minuteur Nommé** | `~nom{...}`| `~œufs{3 min}` |
