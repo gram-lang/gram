@@ -24,10 +24,10 @@ portions: 10
 
 [Preheat] The #oven to ^{240C}.
 
-[Grease] Grease the #cannelé molds{38}(lunch/4.5cm).
+[Grease] The #cannelé molds{38}(lunch/4.5cm).
 
 [Fill] Pour the &batter into the molds, filling them 3/4 full.
 
-[Bake] In the #&oven at ^{240C} for ~_{10 min}.
+[Bake] In the #&oven at ^{240C} for ~_baking{10 min}.
 
-[Cook] Lower the temperature to ^{180C} and continue for ~_{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning
+[Cook] Lower the temperature to ^{180C} and continue for ~_cooking{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning

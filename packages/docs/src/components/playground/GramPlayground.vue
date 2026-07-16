@@ -83,7 +83,8 @@ onMounted(() => {
 	});
 
 	// Load Examples
-	fetch(`${import.meta.env.BASE_URL}examples/manifest.json`)
+	const manifestName = lang.value === "fr" ? "manifest-fr.json" : "manifest.json";
+	fetch(`${import.meta.env.BASE_URL}examples/${manifestName}`)
 		.then((res) => res.json())
 		.then((manifest) => {
 			manifestData.value = manifest;

@@ -61,7 +61,7 @@ export const DEFAULT_SOURCES = [
 			},
 			eggs: {
 				name: "Eggs",
-				aliases: ["egg", "whole eggs", "œuf", "oeuf"],
+				aliases: ["egg", "whole eggs", "œuf", "oeufs", "oeuf"],
 				tags: ["poultry", "allergen", "protein-rich"],
 				category: "Meat",
 				physical: { density: 1.05, unit_weight: 50 },
@@ -165,7 +165,7 @@ export const DEFAULT_SOURCES = [
 			},
 			"egg-yolks": {
 				name: "Egg Yolks",
-				aliases: ["yolk", "egg yolk", "jaune d'oeuf"],
+				aliases: ["yolk", "egg yolk", "jaune d'oeuf", "jaunes d'oeufs"],
 				tags: ["poultry", "allergen", "fat-rich"],
 				category: "Meat",
 				physical: { density: 1.03, unit_weight: 17 },
@@ -202,7 +202,7 @@ export const DEFAULT_SOURCES = [
 			// --- Empanadas ---
 			onions: {
 				name: "Onions",
-				aliases: ["onion", "oignon"],
+				aliases: ["onion", "oignon", "oignons"],
 				tags: ["vegetable", "aromatic", "vegan"],
 				category: "Vegetables",
 				physical: { density: 0.45, unit_weight: 110 },
