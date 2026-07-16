@@ -14,7 +14,7 @@ export default defineConfig({
 	title: "Gram",
 	description: "A smart, data-driven recipe markup language for developers.",
 	base: "/",
-	cleanUrls: true,
+	cleanUrls: false,
 	ignoreDeadLinks: true,
 	srcExclude: ["**/reference/api/parts/**"],
 
