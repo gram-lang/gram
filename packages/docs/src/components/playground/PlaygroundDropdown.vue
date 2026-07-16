@@ -87,7 +87,6 @@ onUnmounted(() => {
   user-select: none;
   transition: color 0.25s, background-color 0.25s;
   border: 1px solid var(--vp-c-border);
-  width: 190px;
 }
 
 .dropdown-header:hover, .dropdown-header.is-open {
@@ -113,7 +112,7 @@ onUnmounted(() => {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  width: 100%;
+  width: fit-content;
   background-color: var(--vp-c-bg-elv);
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
