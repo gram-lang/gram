@@ -1,6 +1,6 @@
 import type { IngredientData } from "./types";
 import { resolveCanonicalId } from "./ingredient_db";
-import { round2 } from "@gram-lang/kitchen";
+import { round2, slugify } from "@gram-lang/kitchen";
 
 function isStandardItem(item: any): boolean {
 	return (
@@ -9,6 +9,25 @@ function isStandardItem(item: any): boolean {
 		item.type !== "alternative" &&
 		item.type !== "group"
 	);
+}
+
+/**
+ * Decides the display name for an ingredient once it's been resolved to a
+ * canonical id. The database's `name` is only a same-word enrichment (e.g.
+ * "flour" -> "Wheat Flour") when the recipe already used the canonical word
+ * itself. When resolution went through an alias (e.g. "farine" -> "flour"),
+ * the database's `name` is a *different* word — possibly a different
+ * language entirely — so the recipe's own wording always wins instead.
+ */
+function resolveDisplayName(
+	rawNameOrId: string,
+	ownName: string | undefined,
+	canonicalId: string,
+	canonicalName: string | undefined,
+): string | undefined {
+	const isDirectMatch = slugify(rawNameOrId) === canonicalId;
+	if (isDirectMatch && canonicalName) return canonicalName;
+	return ownName ?? canonicalName;
 }
 
 /**
@@ -54,8 +73,13 @@ export function aggregateShoppingList(
 
 		if (items.length === 1) {
 			const only = items[0];
+			only.name = resolveDisplayName(
+				only.name ?? only.id,
+				only.name,
+				canonicalId,
+				canonicalName,
+			);
 			only.id = canonicalId;
-			if (canonicalName) only.name = canonicalName;
 			result.push(only);
 			return;
 		}
@@ -72,7 +96,12 @@ export function aggregateShoppingList(
 
 			const merged: any = {
 				id: canonicalId,
-				name: canonicalName ?? items[0].name,
+				name: resolveDisplayName(
+					items[0].name ?? items[0].id,
+					items[0].name,
+					canonicalId,
+					canonicalName,
+				),
 				qty: round2(totalMass),
 				unit: "g",
 				normalizedMass: round2(totalMass),
@@ -112,8 +141,13 @@ export function aggregateShoppingList(
 			result.push(merged);
 		} else {
 			items.forEach((i) => {
+				i.name = resolveDisplayName(
+					i.name ?? i.id,
+					i.name,
+					canonicalId,
+					canonicalName,
+				);
 				i.id = canonicalId;
-				if (canonicalName) i.name = canonicalName;
 				i.multiUnit = true;
 				result.push(i);
 			});

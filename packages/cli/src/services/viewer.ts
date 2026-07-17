@@ -178,7 +178,7 @@ export async function buildViewModel(
 	if (analyzed) {
 		for (const item of analyzed.result.shopping_list as any[]) {
 			if (item.type === "alternative" || item.variable_entries) continue;
-			const name = opts.db?.[item.id]?.name ?? item.name ?? item.id;
+			const name = item.name ?? item.id;
 			const displayQty = formatDisplayQty(item, opts);
 			if (displayQty) {
 				shoppingList.push({

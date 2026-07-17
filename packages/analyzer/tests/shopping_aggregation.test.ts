@@ -30,6 +30,38 @@ describe("aggregateShoppingList", () => {
 		});
 	});
 
+	it("preserves the recipe's own (non-English) name instead of the canonical database name", () => {
+		const result = aggregateShoppingList(
+			[
+				{
+					id: "beurre",
+					name: "Beurre",
+					qty: 50,
+					unit: "g",
+					normalizedMass: 50,
+				},
+			],
+			database,
+		);
+		expect(result).toHaveLength(1);
+		expect(result[0]).toMatchObject({
+			id: "butter",
+			name: "Beurre",
+		});
+	});
+
+	it("enriches the name with the database's canonical name when the recipe already used the canonical word directly", () => {
+		const enrichedDb: Record<string, IngredientData> = {
+			flour: { name: "Wheat Flour", physical: { density: 0.53 } },
+		};
+		const result = aggregateShoppingList(
+			[{ id: "flour", name: "flour", qty: 200, unit: "g", normalizedMass: 200 }],
+			enrichedDb,
+		);
+		expect(result).toHaveLength(1);
+		expect(result[0]).toMatchObject({ id: "flour", name: "Wheat Flour" });
+	});
+
 	it("merges aliased ingredients sharing the same unit", () => {
 		const result = aggregateShoppingList(
 			[

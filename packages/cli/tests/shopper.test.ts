@@ -79,6 +79,14 @@ describe("buildShoppingList", () => {
 		expect(flour?.category).toBe("Grains");
 	});
 
+	it("keeps the recipe's own (non-English) name even with an English-only database", async () => {
+		const db = makeDb({ flour: { aliases: ["farine"] } });
+		const a = await tmp("## Prep\n[Mix] Add @farine{200g} to the bowl.\n");
+		const result = await buildShoppingList([a], { db });
+		const flour = result.items.find((i) => i.id === "flour");
+		expect(flour?.name).toBe("farine");
+	});
+
 	it("defaults to category 'Other' without a database", async () => {
 		const a = await tmp("## Prep\n[Mix] Add @flour{200g} to the bowl.\n");
 		const result = await buildShoppingList([a]);

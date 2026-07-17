@@ -109,7 +109,7 @@ export async function buildShoppingList(
 
 	for (const [id, items] of grouped) {
 		const recipes = [...new Set(items.map((i) => i.recipe))];
-		const displayName = opts.db?.[id]?.name ?? items[0]?.name ?? id;
+		const displayName = items[0]?.name ?? id;
 		const category = opts.db?.[id]?.category ?? "Other";
 
 		const qtyItems = items.filter(

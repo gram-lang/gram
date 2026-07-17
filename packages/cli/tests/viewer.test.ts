@@ -60,6 +60,13 @@ describe("buildViewModel", () => {
 		expect(vm.sections[0]?.ingredients[0]?.name).toBe("Wheat Flour");
 	});
 
+	it("keeps the recipe's own (non-English) name in the shopping list even with an English-only database", async () => {
+		const db = makeDb({ flour: { aliases: ["farine"] } });
+		const path = await tmp("## Prep\n[Mix] Add @farine{200g}.\n");
+		const vm = await buildViewModel(path, { db });
+		expect(vm.shoppingList[0]?.name).toBe("farine");
+	});
+
 	it("groups composite ingredient children under their parent with a MAX-rule parent quantity", async () => {
 		const path = await tmp(
 			"## Prep\n[Separate] Crack the @egg yolks{2}<@eggs{2} and @egg whites{4}<@eggs{4}.\n",
