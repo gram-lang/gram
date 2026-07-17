@@ -105,10 +105,10 @@ Pour voir votre recette s'afficher directement et élégamment dans votre termin
 gram view pancakes.gram
 ```
 
-Alternativement, pour lui donner vie avec une interface visuelle entièrement formatée, il est très recommandé d'ouvrir la recette à l'aide de l'**Extension VS Code** ou via le **[Playground Web](/play/)**.
+Alternativement, pour lui donner vie avec une interface visuelle entièrement formatée, il est très recommandé d'ouvrir la recette à l'aide de l'**Extension VS Code** ou via le **[Playground Web](/fr/play/)**.
 
 ::: tip Essayez le playground
-Si vous ne voulez encore rien installer, vous pouvez tester Gram directement sur le web via le [Playground](/play/).
+Si vous ne voulez encore rien installer, vous pouvez tester Gram directement sur le web via le [Playground](/fr/play/).
 :::
 
 ## Étapes Suivantes

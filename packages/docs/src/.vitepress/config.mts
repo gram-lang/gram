@@ -215,7 +215,7 @@ export default defineConfig({
 			themeConfig: {
 				nav: [
 					{ text: "Documentation", link: "/fr/explanation/philosophy" },
-					{ text: "Playground", link: "/play" },
+					{ text: "Playground", link: "/fr/play" },
 					{
 						text: "v1.0.0-beta.3",
 						items: [{ text: "v1.0.0-beta.3 (Actuelle)", link: "/fr/" }],

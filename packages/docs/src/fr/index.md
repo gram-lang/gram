@@ -16,7 +16,7 @@ hero:
       link: /fr/explanation/philosophy
     - theme: alt
       text: Tester le Playground
-      link: /play/
+      link: /fr/play
 
 features:
   - icon:
