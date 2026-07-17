@@ -21,7 +21,7 @@ export async function runPipeline(
 	try {
 		content = await readFile(filePath, "utf-8");
 	} catch (err) {
-		if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+		if ((err as { code?: string }).code === "ENOENT") {
 			throw new GramCLIError(`File not found: ${filePath}`, ExitCode.Error);
 		}
 		throw err;

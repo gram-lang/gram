@@ -28,6 +28,14 @@
   "engines": {
     "node": ">=20"
   },
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.js"
+    }
+  },
   "bin": {
     "gram": "./dist/index.js"
   },
@@ -62,6 +70,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17"
   }
 }

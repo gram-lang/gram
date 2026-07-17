@@ -10,7 +10,7 @@ npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/
 bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
 ```
 
-Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent partout où JavaScript s'exécute — Node.js, Deno, Bun, environnements edge, ou directement dans le navigateur (voir le [Playground](/play) pour un exemple entièrement côté client).
+Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent partout où JavaScript s'exécute — Node.js, Deno, Bun, environnements edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour un exemple entièrement côté client).
 
 ## Matrice des paquets
 
@@ -23,6 +23,22 @@ Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent parto
 | [`@gram-lang/i18n`](/fr/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires de chaînes UI utilisés en interne par les paquets ci-dessus | `normalizeUnit`, `getDictionary` |
 
 L'analyse est optionnelle : `compile()` seul fournit déjà une recette complète et prête au rendu (avec des quantités non standardisées par défaut). `@gram-lang/analyzer` n'est nécessaire que pour la conversion de masse, les estimations nutritionnelles, ou les pourcentages boulanger, ce qui nécessite une base de données d'ingrédients.
+
+## Raccourci optionnel Node uniquement (`@gram-lang/cli`) {#raccourci-optionnel-node-uniquement-gram-lang-cli}
+
+Si vous vous exécutez dans Node.js et n'avez pas besoin de contrôle étape par étape, `@gram-lang/cli` — oui, le même paquet qui fournit le binaire `gram` — exporte aussi une petite surface de bibliothèque :
+
+```typescript
+import { runPipeline, GramCLIError } from '@gram-lang/cli';
+
+const { content, compiled, analyzed } = await runPipeline('recette.gram', {
+  db: myDatabase,             // optionnel — omettez pour sauter l'étape d'analyse
+  scaleFactor: 2,              // optionnel
+  bakersReference: 'farine',   // optionnel
+});
+```
+
+`runPipeline(filePath, options?)` lit le fichier, puis enchaîne `getAST` → `compile` → (seulement si `db` est fourni) `analyze` pour vous, en retournant `{ content, compiled, analyzed }`. Elle lève une `GramCLIError` (une sous-classe d'`Error` portant un `.exitCode` issu de l'enum exporté `ExitCode`) plutôt qu'une erreur brute — pratique si vous voulez faire correspondre les échecs à vos propres codes de sortie. Elle est Node uniquement (lit le disque via `node:fs`) ; pour le navigateur ou les environnements edge, composez les paquets individuels comme montré ci-dessous.
 
 ## Le pipeline complet
 

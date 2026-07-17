@@ -24,6 +24,22 @@ All packages are ESM-only, side-effect free, and run anywhere JavaScript runs �
 
 Analysis is optional: `compile()` alone already gives you a complete, renderable recipe (with default un-standardized quantities). You only need `@gram-lang/analyzer` when you want mass conversion, nutrition estimates, or baker's percentages, which requires an ingredient database.
 
+## Optional: Node-only shortcut (`@gram-lang/cli`) {#optional-node-only-shortcut-gram-lang-cli}
+
+If you're running in Node.js and don't need per-stage control, `@gram-lang/cli` — yes, the same package that ships the `gram` binary — also exports a small library surface:
+
+```typescript
+import { runPipeline, GramCLIError } from '@gram-lang/cli';
+
+const { content, compiled, analyzed } = await runPipeline('recipe.gram', {
+  db: myDatabase,           // optional — omit to skip the analyzer stage
+  scaleFactor: 2,            // optional
+  bakersReference: 'flour',  // optional
+});
+```
+
+`runPipeline(filePath, options?)` reads the file, then runs `getAST` → `compile` → (only if `db` is passed) `analyze` for you, returning `{ content, compiled, analyzed }`. It throws `GramCLIError` (an `Error` subclass carrying an `.exitCode` from the exported `ExitCode` enum) instead of a bare error — handy if you want to map failures to your own exit codes. It's Node-only (reads from disk with `node:fs`); for the browser or edge runtimes, compose the individual packages as shown below.
+
 ## The full pipeline
 
 ```typescript

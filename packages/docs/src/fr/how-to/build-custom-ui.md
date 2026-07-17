@@ -27,7 +27,25 @@ function getRecipeData(sourceCode: string) {
 }
 ```
 
-> **Astuce** : Si vous vous exécutez exclusivement dans un environnement Node.js (ex : un outil CLI ou un serveur Next.js), vous pouvez utiliser l'utilitaire `runPipeline(filePath)` du paquet `@gram-lang/cli` qui encapsule cette logique et s'occupe de la lecture du fichier pour vous.
+::: tip Raccourci Node uniquement
+Si vous vous exécutez exclusivement dans un environnement Node.js (un outil CLI, un serveur Next.js, etc.), le paquet `@gram-lang/cli` exporte un utilitaire `runPipeline(filePath, options?)` qui encapsule les trois étapes ci-dessus et s'occupe de la lecture du fichier pour vous :
+
+```typescript
+import { runPipeline, GramCLIError } from '@gram-lang/cli';
+
+try {
+  const { compiled, analyzed } = await runPipeline('recette.gram', { db: myDatabase });
+  return analyzed ? analyzed.result : compiled;
+} catch (err) {
+  if (err instanceof GramCLIError) {
+    console.error(err.message); // ex : "File not found: recette.gram"
+  }
+  throw err;
+}
+```
+
+Omettez `db` pour sauter entièrement l'étape d'analyse (`analyzed` vaudra alors `null`). Voir la [référence API de `@gram-lang/cli`](/fr/reference/api/#raccourci-optionnel-node-uniquement-gram-lang-cli) pour la liste complète des options (facteur d'échelle, pourcentages boulangers).
+:::
 
 > Voir la [Référence API](/fr/reference/api/) pour la signature complète de `getAST`, `compile`, et `analyze`, ainsi que tout ce que le pipeline expose (mise à l'échelle, diff, avertissements, i18n).
 
