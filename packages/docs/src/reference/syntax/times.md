@@ -56,8 +56,8 @@ Whisk the @heavy cream{} continuously for ~{5min}.
 ```
 > ⏱️ **Result:** Adds 5 minutes to the **Active Time**.
 
-### Passive (`&`)
-Use the `&` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
+### Passive (`_`)
+Use the `_` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
 
 ```gram
 Bake in the #oven for ~_{45min}.

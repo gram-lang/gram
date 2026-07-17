@@ -56,8 +56,8 @@ Fouetter la @crème liquide{} en continu pendant ~{5 min}.
 ```
 > ⏱️ **Résultat :** Ajoute 5 minutes au **Temps Actif**.
 
-### Passif (`&`)
-Utilisez le modificateur `&` pour rendre un `~minuteur` passif. C'est une **tâche en arrière-plan**. Vous démarrez le `~minuteur` (ex : mettre un plat au four) et passez immédiatement à l'étape suivante.
+### Passif (`_`)
+Utilisez le modificateur `_` pour rendre un `~minuteur` passif. C'est une **tâche en arrière-plan**. Vous démarrez le `~minuteur` (ex : mettre un plat au four) et passez immédiatement à l'étape suivante.
 
 ```gram
 Cuire dans le #four pendant ~_{45 min}.
