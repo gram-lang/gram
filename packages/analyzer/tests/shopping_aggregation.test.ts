@@ -55,7 +55,15 @@ describe("aggregateShoppingList", () => {
 			flour: { name: "Wheat Flour", physical: { density: 0.53 } },
 		};
 		const result = aggregateShoppingList(
-			[{ id: "flour", name: "flour", qty: 200, unit: "g", normalizedMass: 200 }],
+			[
+				{
+					id: "flour",
+					name: "flour",
+					qty: 200,
+					unit: "g",
+					normalizedMass: 200,
+				},
+			],
 			enrichedDb,
 		);
 		expect(result).toHaveLength(1);

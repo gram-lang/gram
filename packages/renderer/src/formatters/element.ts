@@ -50,7 +50,8 @@ const strategies: Record<
 		// wins over a registry lookup — the registry is keyed by the recipe's
 		// original ids and misses once `.id` becomes canonical, which used to
 		// silently fall back to that canonical (often English) id.
-		const baseName = item.name || def?.name || item.id || "[Unknown Ingredient]";
+		const baseName =
+			item.name || def?.name || item.id || "[Unknown Ingredient]";
 		const name = item.alias || baseName;
 
 		const qty = getQty(item);
