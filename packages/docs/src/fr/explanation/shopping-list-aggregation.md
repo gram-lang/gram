@@ -20,6 +20,21 @@ S'ils ont des unités différentes (ex : `100 g` et `1 tasse`), les additionner 
 
 **Repli : densité manquante.** Si la densité ne peut pas être résolue pour au moins l'une des unités impliquées, l'analyseur ne peut pas produire un total de masse unique et fiable. Plutôt que de deviner, il garde les entrées séparées, les renomme avec l'id canonique, et les marque toutes avec `multiUnit: true`. Les moteurs de rendu utilisent cet indicateur pour regrouper les entrées sous un même en-tête (ex : "⚠️ Unités mixtes") au lieu de les éparpiller dans la liste — ce qui rend clair pour le cuisinier qu'il s'agit du même ingrédient, sans additionner silencieusement des unités incompatibles.
 
+::: tip Id canonique vs. nom affiché
+L'id canonique (ex : `butter`) n'existe que pour permettre le regroupement et la fusion des entrées — c'est une clé interne, pas le libellé montré au cuisinier. Le **nom** affiché dans une entrée de la liste de courses suit une seule règle, appliquée à l'identique partout (le Playground, `gram view`, `gram shop`, `gram export`) :
+
+| Ce que vous écrivez | ID Canonique trouvé | `name` dans la base | Nom affiché dans la liste | Pourquoi ? |
+| --- | --- | --- | --- | --- |
+| `@flour` | `flour` (Direct) | Wheat Flour | **Wheat Flour** | Correspondance directe = on utilise le nom enrichi de la base. |
+| `@farine` (FR) | `flour` (Alias) | Wheat Flour | **farine** | Alias = on garde le mot de la recette pour préserver sa langue. |
+| `@harina` (ES) | `flour` (Alias) | Wheat Flour | **harina** | L'astuce fonctionne avec n'importe quelle langue configurée dans vos alias. |
+| `@poussière` | *Aucun* | *Aucun* | **poussière** | Inconnu = on garde le mot de la recette. |
+
+C'est ce qui permet à un écosystème Gram d'être véritablement international. Que vous écriviez une recette en français, en espagnol ou en allemand et que vous la compiliez avec une base de données mondiale maintenue en anglais, votre liste de courses conservera toujours votre terminologie locale (`farine`, `harina`, `Mehl`). Pendant ce temps, les recettes utilisant le vocabulaire natif de la base bénéficieront de noms enrichis.
+
+**Pas de base de données, ou pas d'entrée correspondante ?** Il n'y a alors tout simplement aucun `name` canonique à préférer, donc le mot de la recette est toujours utilisé — cela fonctionne avec une base vide (`{}`), une base qui n'a aucune entrée pour cet ingrédient, et avec `compile()` de `@gram-lang/kitchen` utilisé seul, sans jamais appeler `@gram-lang/analyzer`.
+:::
+
 ### 3. Masquage (Ghosting) des Quantités Relatives
 Les quantités relatives (comme `@eau{50 % @&farine}`) posent un problème unique pour les listes de courses, en particulier lors du traitement par lots de multiples recettes. 
 

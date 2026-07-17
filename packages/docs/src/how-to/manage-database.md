@@ -38,6 +38,10 @@ If it finds `egg` and `eggs`, it will ask you which one to keep as the primary k
 
 From now on, writing `@eggs` will automatically point to the `egg` database entry.
 
+::: tip Not the same as the recipe's `:` alias syntax
+This `aliases` list is what shopping-list aggregation uses to group ingredients across recipes. It's unrelated to the recipe-level `@Real Name:Display Name` renaming syntax (see [Ingredients syntax](../reference/syntax/ingredients.md#component-alias-renaming)), which only changes how an ingredient is displayed inline in the recipe steps — it never affects grouping or the shopping list.
+:::
+
 ### 3. Enriching Data
 
 Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 

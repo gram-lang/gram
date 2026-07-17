@@ -130,6 +130,10 @@ The shopping list will aggregate this under "dry white wine", but the rendered r
 Aliases are applied locally. To mention this same `@ingredient` again later in the recipe, you must reference its **real name**, not the alias (e.g. `@&dry white wine`). If you write `@wine`, Gram will treat it as a brand new `@ingredient`.
 :::
 
+::: tip Not the same as a database alias
+This `:` syntax only renames how the ingredient is *displayed* in the rendered steps — it never affects shopping-list grouping. The shopping list and the canonical ingredient id are always derived from the **real name** (before the colon), matched against `ingredients.yaml`'s own `aliases` list — a separate, database-level mechanism used to merge synonyms and cross-language duplicates (e.g. `sugar`/`sucre`/`azúcar`) across recipes, see [Manage an Ingredient Database](../../how-to/manage-database.md). Writing `@egg yolks:eggs{2}` and `@egg whites:eggs{4}` will **not** merge them in the shopping list, even though they share the same display alias `eggs` — they have different real names.
+:::
+
 ### Alternatives (Substitutions)
 You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 

@@ -40,7 +40,13 @@ Using the ingredient database, the Analyzer:
 - Merges cross-unit quantities into a single gram total whenever every contributing entry resolves to a mass (density/unit_weight known).
 - Falls back to keeping entries separate — renamed to the canonical id and flagged `multiUnit: true` — when a mass can't be resolved for at least one of them (e.g. no density available), rather than guessing.
 
-See [Shopping List Aggregation](../shopping-list-aggregation.md) for the full breakdown, including the fallback behavior.
+Only the `id` is rewritten to the canonical form for grouping purposes. The entry's `name` follows a separate rule to ensure translations are preserved when using a global database:
+
+- **Exact matches** use the database's richer name (e.g. `@flour` → "Wheat Flour").
+- **Alias matches** keep the recipe's own wording (e.g. `@farine` → "farine").
+- **Missing entries** keep the recipe's own wording.
+
+See [Shopping List Aggregation](../shopping-list-aggregation.md) for the full breakdown and fallback behavior.
 
 ## 4. Nutritional Estimation
 

@@ -40,7 +40,13 @@ En utilisant la base de données des ingrédients, l'Analyseur :
 - Fusionne les quantités inter-unités en un seul total en grammes chaque fois que toutes les entrées contributives se résolvent en masse (densité/poids unitaire connu).
 - Se rabat sur le maintien des entrées séparées — renommées avec l'id canonique et marquées `multiUnit: true` — lorsqu'une masse ne peut pas être résolue pour au moins l'une d'entre elles (ex : aucune densité disponible), plutôt que de deviner.
 
-Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md) pour le détail complet, y compris le comportement de repli.
+Seul l'`id` est réécrit sous sa forme canonique à des fins de regroupement. Le `name` de l'entrée suit une règle distincte pour garantir que les traductions soient préservées lors de l'utilisation d'une base de données globale :
+
+- **Les correspondances directes** utilisent le nom enrichi de la base (ex : `@flour` → "Wheat Flour").
+- **Les correspondances par alias** conservent le mot de la recette (ex : `@farine` → "farine").
+- **Les entrées manquantes** conservent le mot de la recette.
+
+Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md) pour le détail complet de ces règles de nommage et le comportement de repli.
 
 ## 4. Estimation Nutritionnelle
 

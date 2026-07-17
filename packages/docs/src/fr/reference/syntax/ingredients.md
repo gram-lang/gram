@@ -130,6 +130,10 @@ La liste de courses fera l'agrégation sous "vin blanc sec", mais la recette aff
 Les alias sont appliqués localement. Pour mentionner à nouveau ce même `@ingrédient` plus tard dans la recette, vous devez référencer son **vrai nom**, et non l'alias (ex : `@&vin blanc sec`). Si vous écrivez `@vin`, Gram le considérera comme un tout nouvel `@ingrédient`.
 :::
 
+::: tip Ce n'est pas la même chose qu'un alias de base de données
+Cette syntaxe `:` ne fait que renommer l'*affichage* de l'ingrédient dans les étapes rendues — elle n'a aucun effet sur le regroupement dans la liste de courses. La liste de courses et l'id canonique de l'ingrédient sont toujours dérivés du **vrai nom** (avant les deux-points), comparé à la liste `aliases` propre à `ingredients.yaml` — un mécanisme distinct, au niveau de la base de données, utilisé pour fusionner synonymes et doublons multilingues (ex : `sugar`/`sucre`/`azúcar`) entre les recettes, voir [Gérer une Base de Données d'Ingrédients](../../how-to/manage-database.md). Écrire `@jaunes d'œufs:œufs{2}` et `@blancs d'œufs:œufs{4}` ne les fusionnera **pas** dans la liste de courses, même s'ils partagent le même alias d'affichage `œufs` — ils ont des vrais noms différents.
+:::
+
 ### Alternatives (Substitutions)
 Vous pouvez définir des alternatives acceptables pour un `@ingrédient` en utilisant l'opérateur pipe `|`.
 

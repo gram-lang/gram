@@ -20,6 +20,21 @@ If they have different units (e.g., `100g` and `1 cup`), summing them requires c
 
 **Fallback: missing density.** If the density can't be resolved for at least one of the units involved, the analyzer can't produce a single reliable mass total. Rather than guessing, it keeps the entries separate, renames them to the canonical id, and flags all of them with `multiUnit: true`. Renderers use this flag to cluster the entries together under one heading (e.g. "⚠️ Mixed units") instead of scattering them across the list — making it clear to the cook that they're the same ingredient, without silently mis-adding incompatible units.
 
+::: tip Canonical id vs. displayed name
+The canonical id (e.g. `butter`) exists purely so entries can be grouped and merged — it's an internal key, not the label shown to the cook. The **name** displayed in a shopping-list entry follows one rule, applied identically everywhere (the Playground, `gram view`, `gram shop`, `gram export`):
+
+| In Recipe | Matched ID | Database `name` | Displayed Name | Why? |
+| --- | --- | --- | --- | --- |
+| `@flour` | `flour` (Exact) | Wheat Flour | **Wheat Flour** | Exact match = prefer database's enriched name. |
+| `@farine` (FR) | `flour` (Alias) | Wheat Flour | **farine** | Alias match = keep recipe's wording to preserve language. |
+| `@harina` (ES) | `flour` (Alias) | Wheat Flour | **harina** | The trick works with any language configured in your aliases. |
+| `@moon dust`| *None* | *None* | **moon dust** | No match = keep recipe's wording. |
+
+This is what makes a Gram ecosystem truly international. Whether you write a recipe in Spanish, French, or German, and compile it against a global database maintained in English, your shopping list will always preserve your local terminology (`harina`, `farine`, `Mehl`). Meanwhile, recipes using the database's native vocabulary still benefit from enriched names.
+
+**No database, or no matching entry?** There's simply no canonical `name` to prefer, so the recipe's own wording is always used — this works with an empty database (`{}`), a database that has no entry at all for that ingredient, and with `@gram-lang/kitchen`'s `compile()` used on its own without ever calling `@gram-lang/analyzer`.
+:::
+
 ### 3. Ghosting Relative Quantities
 Relative quantities (like `@water{50% @&flour}`) pose a unique problem for shopping lists, especially in multi-recipe batch processing. 
 

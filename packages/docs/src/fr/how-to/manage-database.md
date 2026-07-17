@@ -38,6 +38,10 @@ Si elle trouve `œuf` et `œufs`, elle vous demandera lequel conserver comme cl�
 
 Désormais, écrire `@œufs` pointera automatiquement vers l'entrée de base de données `œuf`.
 
+::: tip Ce n'est pas la même chose que la syntaxe d'alias `:` de la recette
+Cette liste `aliases` est ce que l'agrégation de la liste de courses utilise pour regrouper les ingrédients entre les recettes. Elle n'a aucun rapport avec la syntaxe de renommage au niveau de la recette `@Vrai Nom:Nom d'Affichage` (voir [Syntaxe des ingrédients](../reference/syntax/ingredients.md)), qui ne fait que changer l'affichage d'un ingrédient dans le texte des étapes — elle n'affecte jamais le regroupement ni la liste de courses.
+:::
+
 ### 3. Enrichir les Données
 
 Maintenant que votre base de données contient des entrées propres et dédupliquées, vous devez renseigner leurs données physiques (densité, poids unitaire, rendement) et nutritionnelles (calories, macros). 
