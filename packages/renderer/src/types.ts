@@ -50,6 +50,7 @@ export interface RendererClasses {
 	massBadge?: string;
 	bakersBadge?: string;
 	prepText?: string;
+	compositeParentText?: string;
 	optionalText?: string;
 	formulaText?: string;
 }

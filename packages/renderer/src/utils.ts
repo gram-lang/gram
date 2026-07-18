@@ -10,6 +10,8 @@ export function aggToRendererItem(
 	const base: Record<string, unknown> = { id: agg.id, name: agg.name };
 	if (agg.type) base.type = agg.type;
 	if (agg.preparation) base.preparation = agg.preparation;
+	if (agg.parent) base.parent = agg.parent;
+	if (agg.parentPreparation) base.parentPreparation = agg.parentPreparation;
 	if (agg.normalizedMass !== undefined)
 		base.normalizedMass = agg.normalizedMass;
 	if (agg.conversionMethod !== undefined)

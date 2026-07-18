@@ -568,6 +568,12 @@ body.vscode-dark,
   font-style: italic;
 }
 
+.gram-preview .composite-parent {
+  color: var(--color-text-muted);
+  font-size: 0.95em;
+  font-style: italic;
+}
+
 .gram-preview .optional {
   font-style: italic;
   color: var(--color-text-muted);

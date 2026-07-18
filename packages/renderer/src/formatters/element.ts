@@ -54,6 +54,29 @@ const strategies: Record<
 			item.name || def?.name || item.id || "[Unknown Ingredient]";
 		const name = item.alias || baseName;
 
+		// item.parent/item.parentPreparation are only ever populated by the
+		// section/mise-en-place aggregation pipeline (never the shopping list or
+		// inline step text), so gating on their presence is inherently scoped to
+		// that context. parentPreparation describes the PARENT (e.g. "cut in
+		// half"), distinct from item.preparation which describes this ingredient
+		// itself — the two are folded into one parenthetical for display.
+		let parentSuffixMd = "";
+		let parentSuffixHtml = "";
+		let parentDataAttr = "";
+		if (item.parent) {
+			const parentLabel = item.parentPreparation
+				? `${item.parent}, ${item.parentPreparation}`
+				: item.parent;
+			const parentClass =
+				context.classes?.compositeParentText || "composite-parent";
+			parentSuffixMd = ` (${parentLabel})`;
+			parentSuffixHtml = ` <span class="${parentClass}">(${escapeHtml(parentLabel)})</span>`;
+			parentDataAttr = ` data-parent="${escapeHtml(item.parent)}"`;
+			if (item.parentPreparation) {
+				parentDataAttr += ` data-parent-preparation="${escapeHtml(item.parentPreparation)}"`;
+			}
+		}
+
 		const qty = getQty(item);
 		const formulaStr = item.formula
 			? `${item.formula.percent}% of ${item.formula.target}`
@@ -147,11 +170,11 @@ const strategies: Record<
 				if (prep) tooltipLines.push(`— ${prep}`);
 				if (isOptional) tooltipLines.push(`(${t.renderer.optional})`);
 
-				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"`;
+				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"${parentDataAttr}`;
 				if (tooltipLines.length > 0) {
 					html += ` data-tooltip="${escapeHtml(tooltipLines.join("\n"))}"`;
 				}
-				html += `>${escapeHtml(name)}`;
+				html += `>${escapeHtml(name)}${parentSuffixHtml}`;
 
 				if (isPartial && !context.hideIngredientQty) {
 					const warningIcon =
@@ -161,7 +184,7 @@ const strategies: Record<
 				html += `</span>`;
 				return html;
 			} else {
-				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}">${escapeHtml(name)}`;
+				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"${parentDataAttr}>${escapeHtml(name)}${parentSuffixHtml}`;
 
 				if (!context.hideIngredientQty) {
 					if (isPartial) {
@@ -206,6 +229,7 @@ const strategies: Record<
 			}
 		} else {
 			let md = item.type === "reference" ? `👉*${name}*` : `**${name}**`;
+			md += parentSuffixMd;
 			if (!context.hideIngredientQty) {
 				if (isPartial) {
 					const warningSymbol =
