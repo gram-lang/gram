@@ -86,6 +86,66 @@ describe("basic constructs", () => {
 	});
 });
 
+describe("section retro-planning", () => {
+	// The grammar rule itself stays a permissive "any text until }" capture —
+	// tightening it was tried and rejected (see plan notes): Ohm's absoluteQuantity
+	// swallows free text like "la veille" as a bogus unit anyway, and inputs that
+	// genuinely fail to match make the whole header vanish silently into the
+	// previous section's body rather than raising a clean error. So strictness is
+	// enforced downstream (kitchen), and the parser's job here is just to
+	// mechanically split sign/value/unit out of whatever text was captured.
+
+	it("extracts a negative signed duration", () => {
+		const ast = getAST("## Dough ~{-2h}\nStep.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "-2h",
+			sign: -1,
+			value: 2,
+			unit: "h",
+		});
+	});
+
+	it("extracts a positive (unsigned) duration", () => {
+		const ast = getAST("## Dough ~{2d}\nStep.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "2d",
+			sign: 1,
+			value: 2,
+			unit: "d",
+		});
+	});
+
+	it("extracts value with no unit (kitchen will flag as MISSING_UNIT)", () => {
+		const ast = getAST("## Dough ~{5}\nStep.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "5",
+			sign: 1,
+			value: 5,
+			unit: null,
+		});
+	});
+
+	it("extracts an unrecognized unit token as-is (kitchen resolves/validates it)", () => {
+		const ast = getAST("## Dough ~{5xyz}\nStep.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "5xyz",
+			sign: 1,
+			value: 5,
+			unit: "xyz",
+		});
+	});
+
+	it("leaves free text with no value/unit extracted (kitchen will flag as invalid)", () => {
+		const ast = getAST("## Dough ~{la veille}\nStep.\n");
+		expect((ast.children[0] as any).retroPlanning).toEqual({
+			raw: "la veille",
+			sign: 1,
+			value: null,
+			unit: null,
+		});
+	});
+});
+
 describe("known hard error", () => {
 	it("throws a descriptive syntax error for a space before the composite `<` sigil", () => {
 		expect(() => getAST("## Section\n@ <@parent\n")).toThrow(/composite/i);

@@ -2,6 +2,7 @@ import * as ohm from "ohm-js";
 import { grammarContent } from "./grammar-content";
 import {
 	type RecipeAST,
+	type RetroPlanningAST,
 	type SectionAST,
 	type StepAST,
 	type IngredientAST,
@@ -54,6 +55,39 @@ const grammar = ohm.grammar(grammarContent);
  * Trims a string.
  */
 const clean = (str: string) => str.trim();
+
+const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:\.\d+)?)\s*(\p{L}+)$/u;
+const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:\.\d+)?)\s*$/;
+
+/**
+ * Mechanically extracts sign/value/unit from a raw `~{...}` retro-planning
+ * capture, without judging whether the unit itself is valid — that requires
+ * the i18n time dictionaries, which live downstream in kitchen. `value`/`unit`
+ * are null when the text doesn't even look like a signed number (free text).
+ */
+const parseRetroPlanning = (raw: string): RetroPlanningAST => {
+	const numberUnit = raw.match(RETRO_PLANNING_NUMBER_UNIT);
+	if (numberUnit) {
+		return {
+			raw,
+			sign: numberUnit[1] ? -1 : 1,
+			value: Number(numberUnit[2]),
+			unit: numberUnit[3] ?? null,
+		};
+	}
+
+	const numberOnly = raw.match(RETRO_PLANNING_NUMBER_ONLY);
+	if (numberOnly) {
+		return {
+			raw,
+			sign: numberOnly[1] ? -1 : 1,
+			value: Number(numberOnly[2]),
+			unit: null,
+		};
+	}
+
+	return { raw, sign: 1, value: null, unit: null };
+};
 
 /**
  * Safely extracts the AST from an optional node (0 or 1 child).
@@ -230,7 +264,7 @@ semantics.addOperation("toAST", {
 	},
 
 	retroPlanning(_1, content, _2) {
-		return clean(content.sourceString);
+		return parseRetroPlanning(clean(content.sourceString));
 	},
 
 	// --- Blocks & Steps ---

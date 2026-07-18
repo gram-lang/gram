@@ -97,6 +97,21 @@ export interface ProcessedTemperature {
 }
 
 /**
+ * `unit`/`sign`/`value`/`minutes` are only present when the section's
+ * `~{...}` annotation resolved to a valid signed duration; an unrecognized
+ * unit or free text degrades to `{ raw }` only (still displayable, but
+ * flagged via a MISSING_UNIT/INVALID_UNIT warning — see processRetroPlanning
+ * in processor.ts).
+ */
+export interface RetroPlanning {
+	raw: string;
+	sign?: 1 | -1;
+	value?: number;
+	unit?: "d" | "h" | "min";
+	minutes?: number;
+}
+
+/**
  * A single element inside a processed step's `content` array. Plain narrative
  * text is a bare `string`; ingredients/cookware/references/alternatives share
  * the `Usage` shape (distinguished by their optional `.type`); everything else
@@ -139,7 +154,7 @@ export interface ProcessedSection {
 	cookware: Usage[];
 	steps: ProcessedStepItem[];
 	intermediate_preparation?: string;
-	retro_planning?: string | null;
+	retro_planning?: RetroPlanning | null;
 }
 
 export interface CompilationResult {
