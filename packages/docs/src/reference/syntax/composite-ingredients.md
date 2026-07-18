@@ -12,9 +12,15 @@ You define a composite ingredient using the `<` operator (which can be read as *
 
 **Format**: `@childName{childQty}<@parentName{parentCost}`
 
-- **`childName{childQty}`**: The specific part you are using in this step (e.g., `@lemon juice{100ml}`).
+- **`childName{childQty}`**: The specific part you are using in this step (e.g., `@lemon juice{100ml}`). Like any other `@ingredient`, `{childQty}` is only required for a multi-word name — a single-word child (e.g. `@juice`) can drop it entirely: `@juice<@lemon{1}`.
 - **`<@parentName`**: The physical item you actually buy at the store (e.g., `<@lemon`).
 - **`{parentCost}`**: *(Optional)* How much of the parent is consumed to yield this child part (e.g., `{2}`). If you don't write it, it defaults to `1`.
+
+Both the child and the parent can carry their own independent `()` preparation notes:
+- **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@juice(strained)<@lemon{1}`.
+- **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@juice<@lemon{1}(cut in half)`.
+
+Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one: `@juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
 ### Example
 
@@ -61,9 +67,9 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
-Add @lemon zest{1}<@lemon.  // Covered by the 1st lemon
+Add @zest{1}<@lemon.  // Covered by the 1st lemon
 
-Add @lemon juice{1}<@lemon. // Covered by the 1st lemon
+Add @juice{1}<@lemon. // Covered by the 1st lemon
 
 Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
@@ -82,9 +88,30 @@ For the example above, the JSON output would look like this:
   "name": "lemon",
   "qty": 3,
   "usage": [
-    { "id": "zest", "unit": null, "qty": 1, "alias": "zest" },
-    { "id": "juice", "unit": null, "qty": 1, "alias": "juice" },
-    { "id": "lemon", "unit": null, "qty": 2, "alias": "Direct Use" }
+    { "id": "zest", "qty": 1 },
+    { "id": "juice", "qty": 1 },
+    { "id": "lemon", "qty": 2, "alias": "Direct Use" }
   ]
 }
 ```
+
+## Section Ingredient Lists
+
+Unlike the shopping list, a section's own ingredient list is flat, not nested — but it still shows which parent a composite child came from, appended in parentheses right after the child's name:
+
+```md
+**Ingredients**:
+- **zest** (lemon)
+- **juice** (lemon)
+```
+
+This lets you write short composite child names (`@zest`, `@juice`) without losing traceability to the parent.
+
+If the parent itself also has a `()` preparation (e.g. `@juice{150ml}<@lemon{1}(cut in half)`), it's folded into the same parenthetical, after the parent's name:
+
+```md
+**Ingredients**:
+- **juice** (lemon, cut in half)
+```
+
+The parent's preparation never appears in the shopping list — like any other preparation note, it's instructional context for the recipe, not a shopping-list attribute.

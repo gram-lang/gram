@@ -80,7 +80,7 @@ See [Intermediate Variables](./intermediate-variables.md) for the full distincti
 
 ✅  [Cook] Squeeze @juice<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
 ```
-Any step whose entire purpose is "take X and do Y to it before the real step" should collapse into the ingredient reference of the step that actually uses it, using the `()` preparation shorthand.
+Any step whose entire purpose is "take X and do Y to it before the real step" should collapse into the ingredient reference of the step that actually uses it, using the `()` preparation shorthand — here it attaches to the composite's parent (`<@lemon{1}(...)`), since "cut in half" describes the lemon, not the juice.
 
 ### "The juice/zest/part of" phrasing instead of composite syntax
 
@@ -97,6 +97,18 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ❌  @zest{1} <@lemon{2}
 ✅  @zest{1}<@lemon{2}
 ```
+
+### Attaching a composite's preparation to the wrong side
+
+```gram
+❌  @juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
+✅  @juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
+```
+Both the child and the parent of a composite can carry their own independent `()` preparation:
+- **Child's preparation** goes right after its own name (and quantity, if any).
+- **Parent's preparation** goes right after `<@parentName{parentCost}`.
+
+Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
 ### A redundant `->&name` when the section title already declares one
 

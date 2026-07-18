@@ -80,7 +80,7 @@ Voir [Variables Intermédiaires](./intermediate-variables.md) pour la distinctio
 
 ✅  [Cuisson] Presser le @jus<@citron{1}(coupé en deux, une moitié émincée pour la décoration) dans la poêle.
 ```
-Toute étape dont l'unique but est « prendre X et lui faire Y avant la vraie étape » devrait être absorbée dans la référence de l'ingrédient de l'étape qui l'utilise réellement, via le raccourci de préparation `()`.
+Toute étape dont l'unique but est « prendre X et lui faire Y avant la vraie étape » devrait être absorbée dans la référence de l'ingrédient de l'étape qui l'utilise réellement, via le raccourci de préparation `()` — ici elle se rattache au parent du composite (`<@citron{1}(...)`), puisque « coupé en deux » décrit le citron, pas le jus.
 
 ### La formulation « le jus/zeste/partie de » au lieu de la syntaxe composite
 
@@ -97,6 +97,18 @@ Les [ingrédients composites](./composite-ingredients.md) gardent la liste de co
 ❌  @zeste{1} <@citron{2}
 ✅  @zeste{1}<@citron{2}
 ```
+
+### Rattacher la préparation d'un composite au mauvais côté
+
+```gram
+❌  @jus(coupé en deux, une moitié émincée pour la décoration)<@citron{1}    // dit que le JUS a été coupé en deux
+✅  @jus<@citron{1}(coupé en deux, une moitié émincée pour la décoration)    // dit que le CITRON a été coupé en deux
+```
+L'enfant et le parent d'un composite peuvent chacun porter leur propre préparation `()`, de manière indépendante :
+- **La préparation de l'enfant** se place juste après son propre nom (et sa quantité, le cas échéant).
+- **La préparation du parent** se place juste après `<@nomParent{coûtParent}`.
+
+Rattachez-la à l'élément que la préparation décrit réellement — « coupé en deux » s'applique au citron entier, pas au jus extrait. Les deux peuvent se combiner quand c'est réellement nécessaire : `@jus{150 ml}(filtré)<@citron{1}(coupé en deux)`.
 
 ### Un `->&nom` redondant quand le titre de section en déclare déjà un
 
