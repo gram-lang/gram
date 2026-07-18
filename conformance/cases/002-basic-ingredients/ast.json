@@ -153,7 +153,7 @@
             },
             {
               "type": "Ingredient",
-              "name": "salt.",
+              "name": "salt",
               "modifiers": [],
               "quantity": null,
               "alias": null,
@@ -161,6 +161,14 @@
               "composite": null,
               "loc": {
                 "start": 113,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 118,
                 "end": 119
               }
             }

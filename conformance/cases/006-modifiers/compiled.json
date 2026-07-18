@@ -211,7 +211,8 @@
               "id": "dough",
               "name": "dough",
               "_usageId": "6"
-            }
+            },
+            "."
           ],
           "timings": {
             "start": 2,

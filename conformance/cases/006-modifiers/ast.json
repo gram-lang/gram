@@ -239,10 +239,18 @@
             },
             {
               "type": "Reference",
-              "name": "dough.",
+              "name": "dough",
               "quantity": null,
               "loc": {
                 "start": 176,
+                "end": 182
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 182,
                 "end": 183
               }
             }

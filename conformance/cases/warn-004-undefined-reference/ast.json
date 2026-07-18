@@ -24,10 +24,18 @@
             },
             {
               "type": "Reference",
-              "name": "ghost.",
+              "name": "ghost",
               "quantity": null,
               "loc": {
                 "start": 57,
+                "end": 63
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 63,
                 "end": 64
               }
             }

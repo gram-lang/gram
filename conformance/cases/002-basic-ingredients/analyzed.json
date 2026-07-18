@@ -150,7 +150,8 @@
             {
               "id": "salt",
               "_usageId": "5"
-            }
+            },
+            "."
           ],
           "timings": {
             "start": 0,

@@ -32,7 +32,8 @@
               "id": "ghost",
               "name": "ghost",
               "_usageId": "1"
-            }
+            },
+            "."
           ],
           "timings": {
             "start": 0,
@@ -50,7 +51,7 @@
       "item": "ghost",
       "loc": {
         "start": 57,
-        "end": 64
+        "end": 63
       }
     }
   ],

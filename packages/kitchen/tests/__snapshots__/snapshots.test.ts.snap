@@ -368,6 +368,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
               "name": "mixture",
               "type": "reference",
             },
+            ". ",
             {
               "kind": "line",
               "type": "comment",
