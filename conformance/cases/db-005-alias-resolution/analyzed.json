@@ -17,7 +17,7 @@
   "shopping_list": [
     {
       "id": "butter",
-      "name": "Butter",
+      "name": "beurre",
       "_usageIds": [
         "1"
       ],
