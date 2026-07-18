@@ -1,4 +1,4 @@
-// GRAM_SPEC_VERSION: 6
+// GRAM_SPEC_VERSION: 7
 // Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
 // Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
@@ -257,6 +257,9 @@ Both appear in the shopping list grouped as an alternative.
 Works with modifiers and preparations:
 \`@onion{1}(diced)|@shallots{2}(minced)\`
 
+IMPORTANT: a multi-word option ALWAYS needs \`{}\`, even with no known quantity — \`@milk{200ml}|@oat milk\`
+(missing \`{}\` on the second option) is now a hard parse error, not a silently broken alternative.
+
 ### Composite ingredients (drawn from a parent)
 
 When you buy one thing but use specific parts of it:
@@ -452,6 +455,18 @@ These are the most common mistakes. Memorize them.
 ❌  @brown-sugar{100g}         →   ✅  @brown sugar{100g}
 \`\`\`
 Gram uses real names with spaces. Kebab-case is an internal concept, not syntax.
+
+### ❌ Multi-word names without {}
+
+\`\`\`
+❌  Add @egg substitute and mix well.        →   ✅  Add @egg substitute{} and mix well.
+❌  X @egg substitute|@tofu and stir.        →   ✅  X @egg substitute{}|@tofu{} and stir.
+\`\`\`
+A multi-word \`@ingredient\`/\`#cookware\` name always needs \`{}\` (or \`{count}\`) as its closing
+delimiter — even with no known quantity, use empty \`{}\`. There is no bare (no-\`{}\`) form for a
+multi-word name; bare only works for a single word (\`@salt\`, \`#pan\`). Without \`{}\`, only the
+first word becomes the name and the rest silently becomes step text — inside an alternative
+(\`|\`) this is now a hard parse error instead of silently breaking the alternative group.
 
 ### ❌ Units inside cookware braces
 
