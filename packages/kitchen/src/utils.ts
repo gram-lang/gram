@@ -232,6 +232,7 @@ export const quantityToMinutes = (qty: any): number => {
 	const u = resolveTimeUnit(unit);
 
 	// Time conversions to minutes
+	if (u === "d") return val * 60 * 24;
 	if (u === "h") return val * 60;
 	if (u === "m") return val;
 	if (u === "s") return val / 60;

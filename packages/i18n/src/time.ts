@@ -1,12 +1,14 @@
 import { compileDictionary, type LanguageDict } from "./dictionary";
 
 const en: LanguageDict = {
+	d: ["day", "days"],
 	h: ["hour", "hours"],
 	m: ["min", "mins", "minute", "minutes"],
 	s: ["sec", "secs", "second", "seconds"],
 };
 
 const fr: LanguageDict = {
+	d: ["j", "jour", "jours"],
 	h: ["heure", "heures"],
 	m: ["min", "mins", "minute", "minutes"],
 	s: ["sec", "secs", "seconde", "secondes"],
