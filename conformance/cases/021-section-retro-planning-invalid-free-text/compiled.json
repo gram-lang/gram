@@ -1,0 +1,110 @@
+{
+  "title": "Section Retro-Planning Invalid Free Text",
+  "slug": "section-retro-planning-invalid-free-text",
+  "meta": {
+    "title": "Section Retro-Planning Invalid Free Text"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Puff Pastry",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "retro_planning": {
+        "raw": "the day before"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_UNIT",
+      "message": "Retro-planning for section \"Puff Pastry\" must have an explicit unit (d, h, or min).",
+      "item": "Puff Pastry",
+      "loc": {
+        "start": 57,
+        "end": 127
+      }
+    }
+  ],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4
+  }
+}

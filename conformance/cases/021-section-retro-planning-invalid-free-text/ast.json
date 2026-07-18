@@ -1,0 +1,111 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Section Retro-Planning Invalid Free Text"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Puff Pastry",
+      "retroPlanning": {
+        "raw": "the day before",
+        "sign": 1,
+        "value": null,
+        "unit": null
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 91,
+                "end": 95
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 102,
+                  "end": 106
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 95,
+                "end": 107
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 108,
+                "end": 112
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 120,
+                  "end": 124
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 112,
+                "end": 125
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 125,
+                "end": 126
+              }
+            }
+          ],
+          "loc": {
+            "start": 91,
+            "end": 127
+          }
+        }
+      ],
+      "loc": {
+        "start": 57,
+        "end": 127
+      }
+    }
+  ]
+}

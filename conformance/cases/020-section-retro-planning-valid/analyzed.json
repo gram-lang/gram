@@ -1,0 +1,214 @@
+{
+  "title": "Section Retro-Planning Valid",
+  "slug": "section-retro-planning-valid",
+  "meta": {
+    "title": "Section Retro-Planning Valid"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "filling": {
+        "id": "filling",
+        "name": "filling",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "filling",
+      "name": "filling",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 300,
+      "unit": "g",
+      "normalizedMass": 300,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Puff Pastry",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "retro_planning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d",
+        "minutes": -2880
+      },
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assembly",
+      "ingredients": [
+        {
+          "id": "filling",
+          "_usageId": "3",
+          "qty": 300,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 300
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Combine the puff pastry with ",
+            {
+              "id": "filling",
+              "_usageId": "3",
+              "qty": 300,
+              "unit": "g",
+              "normalizedMass": 300,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 4,
+    "activeTime": 4,
+    "preparationTime": 3,
+    "totalTime": 7,
+    "totalMass": 600,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"butter\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"filling\" not found in database."
+        }
+      ]
+    }
+  }
+}

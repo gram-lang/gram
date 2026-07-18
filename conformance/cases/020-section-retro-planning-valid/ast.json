@@ -1,0 +1,175 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Section Retro-Planning Valid"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Puff Pastry",
+      "retroPlanning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d"
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 68,
+                "end": 72
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 79,
+                  "end": 83
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 72,
+                "end": 84
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 85,
+                "end": 89
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 97,
+                  "end": 101
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 89,
+                "end": 102
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 102,
+                "end": 103
+              }
+            }
+          ],
+          "loc": {
+            "start": 68,
+            "end": 105
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 105
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Assembly",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Combine the puff pastry with ",
+              "loc": {
+                "start": 118,
+                "end": 147
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "filling",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 156,
+                  "end": 160
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 147,
+                "end": 161
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 161,
+                "end": 162
+              }
+            }
+          ],
+          "loc": {
+            "start": 118,
+            "end": 163
+          }
+        }
+      ],
+      "loc": {
+        "start": 105,
+        "end": 163
+      }
+    }
+  ]
+}
