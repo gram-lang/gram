@@ -253,7 +253,13 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         },
       ],
       "intermediate_preparation": "batter",
-      "retro_planning": "-1h",
+      "retro_planning": {
+        "minutes": -60,
+        "raw": "-1h",
+        "sign": -1,
+        "unit": "h",
+        "value": 1,
+      },
       "steps": [
         {
           "content": [

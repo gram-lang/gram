@@ -40,10 +40,17 @@ export interface RecipeAST extends NodeAST {
 	children: SectionAST[];
 }
 
+export interface RetroPlanningAST {
+	raw: string;
+	sign: 1 | -1;
+	value: number | null;
+	unit: string | null;
+}
+
 export interface SectionAST extends NodeAST {
 	type: ASTNodeType.Section;
 	title: string | null;
-	retroPlanning?: string | null;
+	retroPlanning?: RetroPlanningAST | null;
 	intermediateDecl?: IntermediateDecl | null;
 	children: (StepAST | CommentAST)[];
 }

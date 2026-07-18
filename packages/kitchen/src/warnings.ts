@@ -47,12 +47,12 @@ export interface WarningPayloads {
 		loc?: Location;
 	};
 	[WarningCode.MISSING_UNIT]: {
-		type: "Timer" | "Temperature";
+		type: "Timer" | "Temperature" | "RetroPlanning";
 		item: string;
 		loc?: Location;
 	};
 	[WarningCode.INVALID_UNIT]: {
-		type: "Timer" | "Temperature";
+		type: "Timer" | "Temperature" | "RetroPlanning";
 		value: string;
 		loc?: Location;
 	};
@@ -86,8 +86,14 @@ export const warningTemplates: {
 		`Circular reference detected: ${p.name} depends on itself.`,
 	[WarningCode.UNDEFINED_REFERENCE]: (p) =>
 		`Reference to undefined ingredient '${p.prefix}${p.name}'.`,
-	[WarningCode.MISSING_UNIT]: (p) => `${p.type} must have an explicit unit.`,
-	[WarningCode.INVALID_UNIT]: (p) => `Invalid unit "${p.value}" for ${p.type}.`,
+	[WarningCode.MISSING_UNIT]: (p) =>
+		p.type === "RetroPlanning"
+			? `Retro-planning for section "${p.item}" must have an explicit unit (d, h, or min).`
+			: `${p.type} must have an explicit unit.`,
+	[WarningCode.INVALID_UNIT]: (p) =>
+		p.type === "RetroPlanning"
+			? `Invalid retro-planning unit "${p.value}" — expected d, h, or min.`
+			: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
 		`Global variable '&${p.varName}' is redefined.`,
 	[WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,

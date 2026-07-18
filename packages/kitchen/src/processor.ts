@@ -28,9 +28,11 @@ import type {
 	StepToken,
 	ProcessedTimer,
 	ProcessedTemperature,
+	RetroPlanning,
 } from "./types";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
+import { resolveTimeUnit } from "@gram-lang/i18n";
 import { WarningCode, pushWarning } from "./warnings";
 
 export interface ProcessorContext extends Context {
@@ -418,6 +420,54 @@ function processTemperature(
 	return obj;
 }
 
+// Canonical i18n time-unit keys (see @gram-lang/i18n's resolveTimeUnit) that
+// retro-planning accepts, mapped to the display unit used in compiled output
+// and docs. "s" resolves fine for ~timer but doesn't make sense for a section
+// scheduling offset, so it's deliberately excluded here.
+const RETRO_PLANNING_UNIT_DISPLAY: Record<string, "d" | "h" | "min"> = {
+	d: "d",
+	h: "h",
+	m: "min",
+};
+
+function processRetroPlanning(
+	section: SectionAST,
+	ctx: ProcessorContext,
+): RetroPlanning | undefined {
+	const rp = section.retroPlanning;
+	if (!rp) return undefined;
+
+	const item = section.title || "Section";
+
+	if (rp.value === null || !rp.unit) {
+		pushWarning(ctx, WarningCode.MISSING_UNIT, {
+			type: "RetroPlanning",
+			item,
+			loc: section.loc,
+		});
+		return { raw: rp.raw };
+	}
+
+	const resolved = resolveTimeUnit(rp.unit);
+	const unit = RETRO_PLANNING_UNIT_DISPLAY[resolved];
+	if (!unit) {
+		pushWarning(ctx, WarningCode.INVALID_UNIT, {
+			type: "RetroPlanning",
+			value: rp.unit,
+			loc: section.loc,
+		});
+		return { raw: rp.raw };
+	}
+
+	return {
+		raw: rp.raw,
+		sign: rp.sign,
+		value: rp.value,
+		unit,
+		minutes: quantityToMinutes({ value: rp.value, unit: resolved }) * rp.sign,
+	};
+}
+
 function processText(item: TextAST): ProcessedBlockResult {
 	return item.value;
 }
@@ -711,7 +761,7 @@ export function processSections(
 			);
 		}
 		if (section.retroPlanning) {
-			res.retro_planning = section.retroPlanning;
+			res.retro_planning = processRetroPlanning(section, ctx);
 		}
 		sections.push(res);
 	});
