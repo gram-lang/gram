@@ -1,0 +1,115 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "juice": {
+        "id": "juice",
+        "name": "juice",
+        "default_unit": "ml",
+        "is_composite": true,
+        "parent": "lemon"
+      },
+      "lemon": {
+        "id": "lemon",
+        "name": "lemon",
+        "is_composite": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "type": "composite",
+      "id": "lemon",
+      "name": "lemon",
+      "qty": 1,
+      "usage": [
+        {
+          "id": "juice",
+          "unit": "ml",
+          "qty": 150
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "juice",
+          "_usageId": "1",
+          "qty": 150,
+          "unit": "ml",
+          "composite": {
+            "parent": "lemon",
+            "quantity": 1,
+            "preparation": "cut in half"
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Squeeze the ",
+            {
+              "id": "juice",
+              "_usageId": "1",
+              "qty": 150,
+              "unit": "ml",
+              "composite": {
+                "parent": "lemon",
+                "quantity": 1,
+                "preparation": "cut in half"
+              }
+            },
+            "into the bowl."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "juice"
+        ]
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "cookTime": 2,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "totalTime": 4,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "juice"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"juice\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

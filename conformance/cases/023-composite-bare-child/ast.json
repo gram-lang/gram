@@ -1,12 +1,10 @@
 {
   "type": "Recipe",
-  "meta": {
-    "title": "Composite Ingredient"
-  },
+  "meta": {},
   "children": [
     {
       "type": "Section",
-      "title": "Section",
+      "title": "Prep",
       "retroPlanning": null,
       "intermediateDecl": null,
       "children": [
@@ -16,74 +14,63 @@
           "children": [
             {
               "type": "Text",
-              "value": "Separate ",
+              "value": "Squeeze the ",
               "loc": {
-                "start": 49,
-                "end": 58
+                "start": 8,
+                "end": 20
               }
             },
             {
               "type": "Ingredient",
-              "name": "egg yolks",
+              "name": "juice",
               "modifiers": [],
-              "quantity": {
-                "type": "Quantity",
-                "value": {
-                  "type": "single",
-                  "value": 2,
-                  "text": "2"
-                },
-                "unit": null,
-                "fixed": false,
-                "loc": {
-                  "start": 69,
-                  "end": 70
-                }
-              },
+              "quantity": null,
               "alias": null,
               "preparation": null,
               "composite": {
                 "type": "Composite",
-                "parent": "eggs",
+                "parent": "lemon",
                 "quantity": {
                   "type": "Quantity",
                   "value": {
-                    "type": "single",
-                    "value": 2,
-                    "text": "2"
+                    "type": "fraction",
+                    "value": 0.5,
+                    "numerator": 1,
+                    "denominator": 2,
+                    "text": "1/2"
                   },
                   "unit": null,
                   "fixed": false,
                   "loc": {
-                    "start": 78,
-                    "end": 79
+                    "start": 34,
+                    "end": 37
                   }
                 },
                 "preparation": null
               },
               "loc": {
-                "start": 58,
-                "end": 80
+                "start": 20,
+                "end": 38
               }
             },
             {
               "type": "Text",
-              "value": "from the whites.",
+              "value": "into the bowl.",
               "loc": {
-                "start": 81,
-                "end": 97
+                "start": 39,
+                "end": 53
               }
             }
           ],
           "loc": {
-            "start": 49,
-            "end": 98
+            "start": 8,
+            "end": 54
           }
         }
       ],
       "loc": {
-        "start": 37,
-        "end": 98
+        "start": 0,
+        "end": 54
       }
     }
   ]

@@ -58,7 +58,8 @@
                     "start": 97,
                     "end": 98
                   }
-                }
+                },
+                "preparation": null
               },
               "loc": {
                 "start": 76,
@@ -139,7 +140,8 @@
                     "start": 155,
                     "end": 156
                   }
-                }
+                },
+                "preparation": null
               },
               "loc": {
                 "start": 135,
