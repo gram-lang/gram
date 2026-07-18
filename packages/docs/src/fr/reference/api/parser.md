@@ -61,12 +61,24 @@ interface RecipeAST {
 interface SectionAST {
   type: ASTNodeType.Section;
   title: string | null;
-  retroPlanning?: string | null;       // ex : "~{la veille}"
+  retroPlanning?: RetroPlanningAST | null;
   intermediateDecl?: IntermediateDecl | null;
   children: (StepAST | CommentAST)[];
   loc?: Location;
 }
 
+interface RetroPlanningAST {
+  raw: string;             // ex : "-2h", tel qu'écrit
+  sign: 1 | -1;
+  value: number | null;    // null si aucun nombre n'a pu être extrait (ex : texte libre)
+  unit: string | null;     // null si aucune unité trouvée ; sinon le token brut tel
+                           // qu'écrit (kitchen le résout/valide ensuite contre d/h/min)
+}
+```
+
+Pour `## Pâte Feuilletée ~{-2h}`, `retroPlanning` vaut `{ raw: "-2h", sign: -1, value: 2, unit: "h" }`. Un texte libre comme `~{la veille}` continue de parser (le parser ne lève jamais d'erreur pour ça — voir [Temps & Planification](/fr/reference/syntax/times.html#retroplanning-de-section) pour le pourquoi), mais produit `{ raw: "la veille", sign: 1, value: null, unit: null }` ; c'est `@gram-lang/kitchen` qui signale ce cas comme invalide (`MISSING_UNIT`) lors de la compilation.
+
+```typescript
 interface StepAST {
   type: ASTNodeType.Step;
   action?: string | null;              // ex : "Mélanger" issu de "[Mélanger] ..."

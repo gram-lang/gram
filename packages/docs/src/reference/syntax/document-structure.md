@@ -81,13 +81,15 @@ Combine @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
 ### Retro-planning (Scheduling)
-You can assign a preparation timeframe to a `## Section` by adding a `~timer` anywhere in the title.
+You can assign a preparation timeframe to a `## Section` by adding a `~timer`-like annotation anywhere in the title.
 
 ```gram
 ## Puff Pastry ~{-2d}
 ```
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
-Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes).
+Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
+
+*See [Times & Scheduling](./times.md#section-retro-planning) for the full syntax rules and error handling.*
 
 ### Section Outputs (Declarations)
 If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.

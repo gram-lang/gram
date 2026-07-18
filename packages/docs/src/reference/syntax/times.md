@@ -92,9 +92,42 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 ### Smart Dependency Tracking
 You don't need to do complex math! If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
 
+## Section Retro-Planning
+
+You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This tells the compiler when that section needs to start relative to the rest of the recipe — useful for anything that needs advance preparation (a dough that rests overnight, a stock made two days ahead), and structured enough to drive future tooling like Gantt-style views.
+
+```gram
+## Puff Pastry ~{-2d}
+```
+
+This means the "Puff Pastry" section should be prepared **2 days in advance**.
+
+### Strict syntax
+
+Unlike free text, `~{...}` on a section header requires a **strictly negative** signed number followed by a unit — since this annotation is specifically used to indicate how much time *in advance* the section must be prepared, a zero or positive offset has no meaningful interpretation here:
+
+- A **required** leading `-` (anticipation is the whole point of retro-planning).
+- A non-zero number.
+- A unit: `d` (days), `h` (hours), or `min` (minutes).
+
+```gram
+## Puff Pastry ~{-2d}     <!-- 2 days before -->
+## Ganache ~{-30min}      <!-- 30 minutes before -->
+```
+
+Free text (e.g. `~{the day before}`/`~{la veille}`), an unsigned or positive value (e.g. `~{2h}`), and a zero value (e.g. `~{0h}` or `~{-0h}`) are all **no longer valid** for this annotation — write `~{-1d}` instead. Existing recipes using any of these still compile, but the compiler now flags them as described below.
+
+The unit is resolved through the same multi-language time dictionary used by `~timer` (see [Basic Declaration](#basic-declaration)), so localized words work here too — e.g. in a French recipe, `~{-2j}` resolves the same as `~{-2d}`.
+
+See also: [Retro-planning (Scheduling)](./document-structure.md#retro-planning-scheduling) in the document structure reference.
+
 ## Error Handling
 
-The compiler validates `~timer` declarations to ensure precise scheduling and will output specific warnings for malformed data:
+The compiler validates `~timer` declarations and section retro-planning annotations to ensure precise scheduling, and will output specific warnings for malformed data:
 
-- **Missing Unit**: If you write `~{30}` without specifying minutes or hours, the compiler warns `MISSING_UNIT`.
-- **Invalid Unit**: If you provide a unit the compiler doesn't understand (e.g., `~{30 lightyears}`), it warns `INVALID_UNIT`.
+- **Missing Unit** (`~timer`): If you write `~{30}` without specifying minutes or hours, the compiler warns `MISSING_UNIT`.
+- **Invalid Unit** (`~timer`): If you provide a unit the compiler doesn't understand (e.g., `~{30 lightyears}`), it warns `INVALID_UNIT`.
+- **Missing Unit** (section retro-planning): `~{-2}`, free text like `~{la veille}`, an unsigned/positive value (`~{2h}`), or a zero value (`~{0h}`, `~{-0h}`) all trigger `MISSING_UNIT` — none of them are a strictly negative signed duration.
+- **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
+
+For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.

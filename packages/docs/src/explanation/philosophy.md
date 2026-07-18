@@ -92,7 +92,7 @@ portions: 10
   "sections": [
     {
       "title": "Batter",
-      "retro_planning": "-1d",
+      "retro_planning": { "raw": "-1d", "sign": -1, "value": 1, "unit": "d", "minutes": -1440 },
       "intermediate_preparation": "batter",
       "steps": [
         {

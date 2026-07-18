@@ -61,12 +61,24 @@ interface RecipeAST {
 interface SectionAST {
   type: ASTNodeType.Section;
   title: string | null;
-  retroPlanning?: string | null;       // e.g. "~{the day before}"
+  retroPlanning?: RetroPlanningAST | null;
   intermediateDecl?: IntermediateDecl | null;
   children: (StepAST | CommentAST)[];
   loc?: Location;
 }
 
+interface RetroPlanningAST {
+  raw: string;             // e.g. "-2h", exactly as written
+  sign: 1 | -1;
+  value: number | null;    // null if no number could be extracted (e.g. free text)
+  unit: string | null;     // null if no unit token was found; otherwise the raw token
+                           // as written (kitchen resolves/validates it against d/h/min)
+}
+```
+
+For `## Puff Pastry ~{-2h}`, `retroPlanning` is `{ raw: "-2h", sign: -1, value: 2, unit: "h" }`. Free text like `~{the day before}` still parses (the parser never throws on this — see [Times & Scheduling](/reference/syntax/times.html#section-retro-planning) for why), but produces `{ raw: "the day before", sign: 1, value: null, unit: null }`; it's `@gram-lang/kitchen` that flags this as invalid (`MISSING_UNIT`) when compiling.
+
+```typescript
 interface StepAST {
   type: ASTNodeType.Step;
   action?: string | null;              // e.g. "Mix" from "[Mix] ..."

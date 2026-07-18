@@ -92,9 +92,42 @@ Voici une décomposition concrète de la manière dont le compilateur calcule au
 ### Suivi Intelligent des Dépendances
 Vous n'avez pas besoin de faire des mathématiques complexes ! Si vous déclarez une pâte qui repose pendant `~_{1 h}` en arrière-plan, et qu'une étape ultérieure requiert cette `&pâte`, le compilateur va automatiquement "mettre en pause" la ligne du temps et attendre que l'heure se termine avant de commencer cette étape.
 
+## Rétroplanning de Section
+
+Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant une annotation `~{...}` à son titre. Cela indique au compilateur quand cette section doit démarrer par rapport au reste de la recette — utile pour tout ce qui nécessite une préparation à l'avance (une pâte qui repose une nuit, un fond préparé deux jours avant), et suffisamment structuré pour alimenter de futurs outils comme des vues façon diagramme de Gantt.
+
+```gram
+## Pâte Feuilletée ~{-2j}
+```
+
+Cela signifie que la section "Pâte Feuilletée" doit être préparée **2 jours à l'avance**.
+
+### Syntaxe stricte
+
+Contrairement à du texte libre, `~{...}` sur un titre de section exige un nombre **strictement négatif** suivi d'une unité — puisque cette annotation sert spécifiquement à indiquer combien de temps *à l'avance* la section doit être préparée, une valeur nulle ou positive n'aurait pas de sens ici :
+
+- Un `-` **obligatoire** en préfixe (l'anticipation est tout l'intérêt du rétroplanning).
+- Un nombre non nul.
+- Une unité : `d` (jours), `h` (heures), ou `min` (minutes) — les mêmes unités canoniques que la version anglaise ; voir la note ci-dessous sur les alias localisés comme `j`.
+
+```gram
+## Pâte Feuilletée ~{-2j}   <!-- 2 jours avant -->
+## Ganache ~{-30min}        <!-- 30 minutes avant -->
+```
+
+Un texte libre (ex : `~{la veille}`/`~{the day before}`), une valeur non signée ou positive (ex : `~{2h}`), et une valeur nulle (ex : `~{0h}` ou `~{-0h}`) ne sont **plus valides** pour cette annotation — écrivez `~{-1j}` à la place. Les recettes existantes utilisant l'une de ces formes continuent de compiler, mais le compilateur les signale désormais comme décrit ci-dessous.
+
+L'unité est résolue via le même dictionnaire de temps multilingue que celui utilisé par `~minuteur` (voir [Déclaration de Base](#declaration-de-base)) : `j`, `jour` et `jours` sont tous reconnus comme alias de l'unité canonique `d` (jour), quelle que soit la langue de rédaction de la recette.
+
+Voir aussi : [Rétroplanning (Ordonnancement)](./document-structure.md#retroplanning-ordonnancement) dans la référence de structure de document.
+
 ## Gestion des Erreurs
 
-Le compilateur valide les déclarations de `~minuteur` pour garantir une planification précise et produira des avertissements spécifiques pour des données mal formées :
+Le compilateur valide les déclarations de `~minuteur` et les annotations de rétroplanning de section pour garantir une planification précise, et produira des avertissements spécifiques pour des données mal formées :
 
-- **Unité Manquante** : Si vous écrivez `~{30}` sans préciser s'il s'agit de minutes ou d'heures, le compilateur avertit `MISSING_UNIT`.
-- **Unité Invalide** : Si vous fournissez une unité que le compilateur ne comprend pas (ex : `~{30 années-lumière}`), il avertit `INVALID_UNIT`.
+- **Unité Manquante** (`~minuteur`) : Si vous écrivez `~{30}` sans préciser s'il s'agit de minutes ou d'heures, le compilateur avertit `MISSING_UNIT`.
+- **Unité Invalide** (`~minuteur`) : Si vous fournissez une unité que le compilateur ne comprend pas (ex : `~{30 années-lumière}`), il avertit `INVALID_UNIT`.
+- **Unité Manquante** (rétroplanning de section) : `~{-2}`, du texte libre comme `~{la veille}`, une valeur non signée ou positive (`~{2h}`), ou une valeur nulle (`~{0h}`, `~{-0h}`) déclenchent tous `MISSING_UNIT` — aucun n'est une durée signée strictement négative.
+- **Unité Invalide** (rétroplanning de section) : une unité non reconnue (ex : `~{-2 années-lumière}`) déclenche `INVALID_UNIT`.
+
+Pour le rétroplanning de section, l'annotation d'origine reste affichée telle quelle même en cas d'avertissement. Dans tous les cas, ces avertissements sont non bloquants par défaut (la recette compile toujours), mais sont promus en erreurs bloquantes avec `gram check --strict`.

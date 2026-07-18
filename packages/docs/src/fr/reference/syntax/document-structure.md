@@ -81,13 +81,15 @@ Combiner le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le g
 ```
 
 ### Rétroplanning (Ordonnancement)
-Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant un `~minuteur` n'importe où dans le titre.
+Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant une annotation de type `~minuteur` n'importe où dans le titre.
 
 ```gram
 ## Pâte Feuilletée ~{-2d}
 ```
 Cela indique au compilateur que la section "Pâte Feuilletée" doit être préparée **2 jours à l'avance**.
-Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes).
+Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
+
+*Voir [Temps & Planification](./times.md#retroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 
 ### Sorties de Section (Déclarations)
 Si une `## Section` produit un sous-composant qui sera utilisé plus tard dans la recette, vous pouvez le déclarer avec `->&` à la fin du titre.

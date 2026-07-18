@@ -116,6 +116,7 @@ Voir [parser.md](/fr/reference/api/parser) pour l'ensemble complet des interface
   "sections": [
     {
       "title": "Pâte",
+      "retro_planning": null,
       "ingredients": [ "/* mêmes objets Usage que shopping_list, enrichis à l'identique */" ],
       "cookware": [],
       "steps": [

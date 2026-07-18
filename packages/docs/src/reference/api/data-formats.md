@@ -116,6 +116,7 @@ See [parser.md](/reference/api/parser) for the full set of node interfaces and t
   "sections": [
     {
       "title": "Batter",
+      "retro_planning": null,
       "ingredients": [ "/* same Usage objects as shopping_list, enriched identically */" ],
       "cookware": [],
       "steps": [
