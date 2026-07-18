@@ -4,6 +4,9 @@
   <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
   <p>
     <img src="https://img.shields.io/badge/Status-Beta-blue" alt="Status" />
+    <a href="https://ci.codeberg.org/abiwab/gram"><img src="https://ci.codeberg.org/api/badges/abiwab/gram/status.svg" alt="Build Status" /></a>
+    <a href="https://www.npmjs.com/package/@gram-lang/cli"><img src="https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&logo=npm" alt="NPM Version" /></a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang"><img src="https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc" alt="VS Code Extension" /></a>
     <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen" alt="Open Source" />
     <img src="https://img.shields.io/badge/License-GPL_v3-blue.svg" alt="License" />
     <img src="https://img.shields.io/badge/Made%20in-Europe-003399?labelColor=003399&logo=europeanunion&logoColor=FFFFFF" alt="Made in Europe" />
@@ -81,13 +84,15 @@ description: A simple, highly hydrated dough.
 To support the language, Gram comes with a suite of official tools that connect everything together.
 
 ### VS Code Extension & Language Server
-Transform your editor into a proper recipe development environment.
+Transform your editor into a proper recipe development environment. 
+[**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
 - **Dynamic Live Preview**: See your recipe rendered in a side panel as you type.
 - **Smart Autocomplete**: Contextual suggestions for ingredients from your database, units, and references.
 - **Real-time Diagnostics**: Instantly flags missing ingredients, unused references, or circular dependencies.
 
 ### The Official CLI (`@gram-lang/cli`)
 The command-line interface acts as the keystone of the Gram workflow.
+[**View on npmjs**](https://www.npmjs.com/package/@gram-lang/cli)
 - **`gram check` & `gram build`**: Validate syntax and compile your `.gram` files to enriched JSON.
 - **`gram cook`**: An interactive step-by-step cooking assistant right in your terminal, complete with live timers.
 - **`gram scale`**: Dynamically resize your recipes (e.g., `--scale=2` or `--scale flour=300g`) with visual before/after tables.
@@ -117,15 +122,17 @@ The source code for the VitePress documentation can be found locally in `package
 
 This monorepo is divided into specialized packages under `packages/`:
 
-* **`parser/`**: The core parser using Ohm.js to generate the AST.
-* **`kitchen/`**: The compiler logic, transforming the AST into final JSON structures.
-* **`analyzer/`**: The physical resolver for mass normalization, yield, and nutrition.
-* **`renderer/`**: The display layer converting JSON into HTML or Markdown.
-* **`cli/`**: The official command-line interface.
-* **`vscode-extension/`**: The Visual Studio Code extension.
-* **`language-server/`**: The LSP providing autocomplete and diagnostics.
-* **`i18n/`**: Localization layer for units, categories, and AI prompts.
-* **`docs/`**: The documentation website, which includes the web-based Playground IDE.
+| Package | Version | Description |
+|---|---|---|
+| [**`@gram-lang/parser`**](./packages/parser/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/parser?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/parser) | The core parser using Ohm.js to generate the AST. |
+| [**`@gram-lang/kitchen`**](./packages/kitchen/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/kitchen?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/kitchen) | The compiler logic, transforming the AST into final JSON structures. |
+| [**`@gram-lang/analyzer`**](./packages/analyzer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/analyzer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/analyzer) | The physical resolver for mass normalization, yield, and nutrition. |
+| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML or Markdown. |
+| [**`@gram-lang/cli`**](./packages/cli/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/cli) | The official command-line interface. |
+| [**`@gram-lang/i18n`**](./packages/i18n/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n) | Localization layer for units, categories, and AI prompts. |
+| [**`vscode-extension`**](./packages/vscode-extension/README.md) | [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang) | The Visual Studio Code extension. |
+| [**`@gram-lang/language-server`**](./packages/language-server/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/language-server?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/language-server) | The LSP providing autocomplete and diagnostics. |
+| **`docs`** | - | The documentation website, which includes the web-based Playground IDE. |
 
 ---
 
