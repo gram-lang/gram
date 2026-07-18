@@ -8,6 +8,13 @@ import { getAST, ASTNodeType } from "../src/index";
 // language server parses arbitrary, possibly untrusted, .gram files on every
 // keystroke — see Phase 3/4 — so a crash on bad input is a real concern).
 
+// Digs out the first Ingredient node of a single-step, single-section recipe
+// AST — shared by every composite-syntax test below, which all only care
+// about that one node's `preparation`/`composite` fields.
+function firstIngredient(ast: unknown): any {
+	return (ast as any).children[0].children[0].children[0];
+}
+
 describe("basic constructs", () => {
 	it("parses a minimal recipe with a title, section, and ingredient", () => {
 		const ast = getAST(
@@ -22,6 +29,79 @@ describe("basic constructs", () => {
 		const ast = getAST("## Section\n@egg-yolks{3}<@eggs\n");
 		const json = JSON.stringify(ast);
 		expect(json).toContain('"Composite"');
+	});
+
+	it("parses a composite ingredient on a bare, single-word child with no {qty}", () => {
+		// A single-word ingredient is normally allowed to drop its {qty} braces
+		// entirely (e.g. bare `@salt`) — the composite operator must not be a
+		// special exception to that rule.
+		const ast = getAST("## Section\n@juice<@lemon{1}\n");
+		const ing = firstIngredient(ast);
+		expect(ing.name).toBe("juice");
+		expect(ing.quantity).toBeNull();
+		expect(ing.composite).toEqual(
+			expect.objectContaining({ type: "Composite", parent: "lemon" }),
+		);
+	});
+
+	it("attaches a bare child's () preparation when it precedes the composite operator", () => {
+		const ast = getAST("## Section\n@juice(strained)<@lemon{1}\n");
+		const ing = firstIngredient(ast);
+		expect(ing.preparation).toBe("strained");
+		expect(ing.composite).toEqual(
+			expect.objectContaining({ type: "Composite", parent: "lemon" }),
+		);
+	});
+
+	it("recognizes a () that follows the composite operator as the PARENT's own preparation", () => {
+		// A () right after <@parent{qty} describes the parent (e.g. "the lemon,
+		// cut in half"), independent of the child's own preparation (if any).
+		const ast = getAST(
+			"## Section\n@juice{150ml}<@lemon{1}(cut in half) into the pan.\n",
+		);
+		const ing = firstIngredient(ast);
+		expect(ing.preparation).toBeNull();
+		expect(ing.composite).toEqual(
+			expect.objectContaining({
+				type: "Composite",
+				parent: "lemon",
+				preparation: "cut in half",
+			}),
+		);
+	});
+
+	it("recognizes a () after a bare (no-quantity) composite parent as its preparation", () => {
+		const ast = getAST(
+			"## Section\n@juice<@lemon(cut in half) into the pan.\n",
+		);
+		const ing = firstIngredient(ast);
+		expect(ing.composite).toEqual(
+			expect.objectContaining({
+				type: "Composite",
+				parent: "lemon",
+				quantity: null,
+				preparation: "cut in half",
+			}),
+		);
+	});
+
+	it("keeps the child's own preparation and the parent's preparation independent", () => {
+		// Correct field order for the child: quantity before preparation
+		// (name alias? ingredientQuantity preparation? composite?), matching the
+		// "full" ingredient form's existing rule — preparation before quantity
+		// would not match and silently falls back to the bare alternative.
+		const ast = getAST(
+			"## Section\n@juice{150ml}(strained)<@lemon{1}(cut in half) into the pan.\n",
+		);
+		const ing = firstIngredient(ast);
+		expect(ing.preparation).toBe("strained");
+		expect(ing.composite).toEqual(
+			expect.objectContaining({
+				type: "Composite",
+				parent: "lemon",
+				preparation: "cut in half",
+			}),
+		);
 	});
 
 	it("parses an alternative ingredient group (a|b)", () => {

@@ -139,6 +139,7 @@ export interface CompositeAST {
 	type: ASTNodeType.Composite;
 	parent: string;
 	quantity?: QuantityAST;
+	preparation?: string | null;
 }
 
 // --- Cookware ---

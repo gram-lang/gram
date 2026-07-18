@@ -63,9 +63,9 @@ GRAM {
   Alternative = simpleIngredient ("|" simpleIngredient)+
   
   // Rule: Quantity is mandatory unless it's a single word name
-  simpleIngredient = 
+  simpleIngredient =
     | "@" modifier* name alias? ingredientQuantity preparation? composite? -- full
-    | "@" modifier* singleWordName alias? preparation? -- bare
+    | "@" modifier* singleWordName alias? preparation? composite? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
   alias = ":" name
@@ -77,9 +77,9 @@ GRAM {
   unit = unitName
   unitName = (alnum | sp | "°" | "%")+
   preparation = "(" (~")" any)* ")"
-  composite = 
-    | "<@" refName ingredientQuantity -- full
-    | "<@" singleWordName             -- bare
+  composite =
+    | "<@" refName ingredientQuantity preparation? -- full
+    | "<@" singleWordName preparation?             -- bare
 
   // Cookware
   // Specs say use braces too.

@@ -395,7 +395,7 @@ semantics.addOperation("toAST", {
 		} as IngredientAST;
 	},
 
-	simpleIngredient_bare(_at, _mods, _name, _alias, _prep) {
+	simpleIngredient_bare(_at, _mods, _name, _alias, _prep, _comp) {
 		const modifiers = _mods.children
 			.map((m) => m.sourceString)
 			.filter((m) => m !== "=");
@@ -406,24 +406,26 @@ semantics.addOperation("toAST", {
 			quantity: null,
 			alias: getOpt(_alias),
 			preparation: getOpt(_prep),
-			composite: null,
+			composite: getOpt(_comp),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		} as IngredientAST;
 	},
 
-	composite_full(_ltat, name, _qty) {
+	composite_full(_ltat, name, _qty, _prep) {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),
 			quantity: _qty.toAST(),
+			preparation: getOpt(_prep),
 		};
 	},
 
-	composite_bare(_ltat, name) {
+	composite_bare(_ltat, name, _prep) {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),
 			quantity: null,
+			preparation: getOpt(_prep),
 		};
 	},
 
