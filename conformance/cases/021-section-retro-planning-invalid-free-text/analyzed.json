@@ -116,7 +116,7 @@
   "warnings": [
     {
       "code": "MISSING_UNIT",
-      "message": "Retro-planning for section \"Puff Pastry\" must have an explicit unit (d, h, or min).",
+      "message": "Retro-planning for section \"Puff Pastry\" must be a strictly negative duration with an explicit unit (e.g. -2h, -1d, -30min).",
       "item": "Puff Pastry",
       "loc": {
         "start": 57,

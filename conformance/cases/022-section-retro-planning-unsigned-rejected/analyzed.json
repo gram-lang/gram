@@ -1,8 +1,8 @@
 {
-  "title": "Section Retro-Planning Invalid Free Text",
-  "slug": "section-retro-planning-invalid-free-text",
+  "title": "Section Retro-Planning Unsigned Rejected",
+  "slug": "section-retro-planning-unsigned-rejected",
   "meta": {
-    "title": "Section Retro-Planning Invalid Free Text"
+    "title": "Section Retro-Planning Unsigned Rejected"
   },
   "registry": {
     "ingredients": {
@@ -27,7 +27,10 @@
         "1"
       ],
       "qty": 200,
-      "unit": "g"
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     },
     {
       "id": "butter",
@@ -36,7 +39,10 @@
         "2"
       ],
       "qty": 100,
-      "unit": "g"
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
     }
   ],
   "cookware": [],
@@ -48,13 +54,19 @@
           "id": "flour",
           "_usageId": "1",
           "qty": 200,
-          "unit": "g"
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
         },
         {
           "id": "butter",
           "_usageId": "2",
           "qty": 100,
-          "unit": "g"
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
         }
       ],
       "cookware": [],
@@ -67,14 +79,20 @@
               "id": "flour",
               "_usageId": "1",
               "qty": 200,
-              "unit": "g"
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
             },
             "and ",
             {
               "id": "butter",
               "_usageId": "2",
               "qty": 100,
-              "unit": "g"
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
             },
             "."
           ],
@@ -86,7 +104,12 @@
         }
       ],
       "retro_planning": {
-        "raw": "the day before"
+        "raw": "2d"
+      },
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
       }
     }
   ],
@@ -97,7 +120,7 @@
       "item": "Puff Pastry",
       "loc": {
         "start": 57,
-        "end": 127
+        "end": 115
       }
     }
   ],
@@ -105,6 +128,29 @@
     "cookTime": 2,
     "activeTime": 2,
     "preparationTime": 2,
-    "totalTime": 4
+    "totalTime": 4,
+    "totalMass": 300,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"butter\" not found in database."
+        }
+      ]
+    }
   }
 }

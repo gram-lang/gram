@@ -1,8 +1,8 @@
 {
-  "title": "Section Retro-Planning Invalid Free Text",
-  "slug": "section-retro-planning-invalid-free-text",
+  "title": "Section Retro-Planning Unsigned Rejected",
+  "slug": "section-retro-planning-unsigned-rejected",
   "meta": {
-    "title": "Section Retro-Planning Invalid Free Text"
+    "title": "Section Retro-Planning Unsigned Rejected"
   },
   "registry": {
     "ingredients": {
@@ -86,7 +86,7 @@
         }
       ],
       "retro_planning": {
-        "raw": "the day before"
+        "raw": "2d"
       }
     }
   ],
@@ -97,7 +97,7 @@
       "item": "Puff Pastry",
       "loc": {
         "start": 57,
-        "end": 127
+        "end": 115
       }
     }
   ],
