@@ -18,6 +18,10 @@ Bake for ~{25min}.
 
 > **Note:** `m` or `minutes` will be automatically corrected to `min` by the compiler.
 
+These units are resolved through Gram's multi-language time dictionary: the localized aliases below are also recognized for a `~timer`, regardless of the language the recipe is written in (e.g. in a French recipe, `~{2j}` works exactly like `~{2d}`).
+
+<!--@include: ../api/parts/en/time-units.md-->
+
 ### Timer Names
 You can assign a specific name to a `~timer`. This is especially useful for passive tasks: when multiple `~timer` declarations run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
 

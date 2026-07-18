@@ -18,6 +18,10 @@ Cuire pendant ~{25 min}.
 
 > **Note :** `m` ou `minutes` seront automatiquement corrigés en `min` par le compilateur.
 
+Ces unités sont résolues via le dictionnaire de temps multilingue de Gram : les alias localisés ci-dessous sont donc également reconnus pour un `~minuteur`, quelle que soit la langue de rédaction de la recette (ex : `~{2j}` fonctionne exactement comme `~{2d}`).
+
+<!--@include: ../../../reference/api/parts/fr/time-units.md-->
+
 ### Noms de Minuteur
 Vous pouvez attribuer un nom spécifique à un `~minuteur`. C'est particulièrement utile pour les tâches passives : lorsque plusieurs `~minuteurs` s'exécutent en parallèle (comme une pâte qui repose pendant qu'une sauce mijote), les noms permettent aux outils et aux interfaces d'affichage de les identifier et de les suivre clairement de manière simultanée.
 
