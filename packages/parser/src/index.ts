@@ -256,9 +256,8 @@ semantics.addOperation("toAST", {
 	},
 
 	headerExtension_decl(decl, _sp, retro) {
-		const r = getOpt(retro);
 		return {
-			retroPlanning: r ? r.toAST() : null,
+			retroPlanning: getOpt(retro),
 			intermediateDecl: decl.toAST(),
 		};
 	},

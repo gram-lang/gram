@@ -144,6 +144,24 @@ describe("section retro-planning", () => {
 			unit: null,
 		});
 	});
+
+	it("extracts retroPlanning identically regardless of its order relative to ->&name", () => {
+		// Regression test: headerExtension_decl (retro AFTER ->&name) used to call
+		// .toAST() on an already-converted plain object (getOpt() already resolves
+		// it), throwing "r.toAST is not a function" for every recipe written in
+		// this order. Pre-existing bug, unrelated to retro-planning strictness,
+		// caught only because this order had no test coverage at all before.
+		const retroFirst = getAST("## Dough ~{-2h} ->&dough\nStep.\n")
+			.children[0] as any;
+		const declFirst = getAST("## Dough ->&dough ~{-2h}\nStep.\n")
+			.children[0] as any;
+
+		const expected = { raw: "-2h", sign: -1, value: 2, unit: "h" };
+		expect(retroFirst.retroPlanning).toEqual(expected);
+		expect(declFirst.retroPlanning).toEqual(expected);
+		expect(retroFirst.intermediateDecl.name).toBe("dough");
+		expect(declFirst.intermediateDecl.name).toBe("dough");
+	});
 });
 
 describe("known hard error", () => {
