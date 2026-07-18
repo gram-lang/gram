@@ -100,9 +100,17 @@ export function prepareRecipeData(
 				sectionIndex: sectionIdx,
 				sectionTitle: section.title,
 				isFirstOfSection: localIdx === 0,
+				// aggregateSectionIngredients() leaves `.name` unset for ordinary
+				// ingredients (createCleanUsage() never populates it) — resolve the
+				// display name from the registry here, the same fallback chain
+				// stepToText() below already uses for reference tokens.
 				sectionIngredients: aggregateSectionIngredients(
 					section.ingredients ?? [],
-				),
+				).map((ing) => ({
+					...ing,
+					name:
+						compiled.registry.ingredients[ing.id]?.name ?? ing.name ?? ing.id,
+				})),
 				step,
 				timers: extractTimers(step, sectionIdx, globalIndex),
 			});

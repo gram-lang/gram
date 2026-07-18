@@ -3,7 +3,11 @@ import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
 	id: string;
-	name: string;
+	// Absent unless the source Usage carried its own name (e.g. an alternative
+	// option) — createCleanUsage() never sets it for a regular ingredient, so
+	// callers must fall back to a registry lookup by `id` for display, the way
+	// the renderer's ingredient/cookware strategies already do.
+	name?: string;
 	type?: string; // 'reference' for cross-section intermediates, undefined for regular ingredients
 	preparation?: string | null;
 	// Raw Usage.composite.parent name, when this entry is a composite child (e.g. "citron")
@@ -31,7 +35,7 @@ export interface AggregatedIngredient {
 // one place so the measured/unmeasured branches below can never drift apart.
 function createBaseEntry(
 	ing: Usage,
-	name: string,
+	name: string | undefined,
 ): Pick<
 	AggregatedIngredient,
 	"id" | "name" | "type" | "preparation" | "parent" | "parentPreparation"
@@ -75,7 +79,7 @@ export function aggregateSectionIngredients(
 			// the shopping list already treats alternatives the same way.
 			order.push({
 				id: ing.id,
-				name: ing.name ?? ing.id,
+				name: ing.name,
 				type: ing.type,
 				quantities: null,
 				options: ing.options,
@@ -83,7 +87,7 @@ export function aggregateSectionIngredients(
 			continue;
 		}
 
-		const name = ing.name ?? ing.id;
+		const name = ing.name;
 		const hasMeasuredQty = ing.qty != null;
 		const key = ing.preparation ? `${ing.id}::${ing.preparation}` : ing.id;
 
