@@ -126,3 +126,62 @@ describe("composite parent tracking", () => {
 		expect(entry!.parentPreparation).toBeUndefined();
 	});
 });
+
+describe("alternative group pass-through", () => {
+	function alternativeUsage(
+		options: Partial<Usage>[],
+	): Partial<Usage> & { type: "alternative" } {
+		return {
+			id: "alternative",
+			type: "alternative",
+			options: options.map((o) => usage(o)),
+		};
+	}
+
+	it("includes an alternative group instead of silently dropping it", () => {
+		const entries = aggregateSectionIngredients([
+			alternativeUsage([
+				{ id: "egg", qty: 2 },
+				{ id: "egg substitute", qty: 2 },
+			]) as any,
+		]);
+		expect(entries).toHaveLength(1);
+		expect(entries[0]!.type).toBe("alternative");
+		expect(entries[0]!.options).toHaveLength(2);
+	});
+
+	it("keeps two distinct alternative groups in the same section as separate entries", () => {
+		// Every alternative group shares the literal id "alternative" — without
+		// special-casing them, the measured/unmeasured id-keyed maps would
+		// collide two unrelated groups (e.g. "egg or substitute" and "pan or
+		// skillet") into a single merged entry.
+		const entries = aggregateSectionIngredients([
+			alternativeUsage([{ id: "egg" }, { id: "egg substitute" }]) as any,
+			alternativeUsage([
+				{ id: "pan", type: "cookware" },
+				{ id: "skillet", type: "cookware" },
+			]) as any,
+		]);
+		expect(entries).toHaveLength(2);
+		expect(entries[0]!.options?.map((o: any) => o.id)).toEqual([
+			"egg",
+			"egg substitute",
+		]);
+		expect(entries[1]!.options?.map((o: any) => o.id)).toEqual([
+			"pan",
+			"skillet",
+		]);
+	});
+
+	it("passes each option through with its own preparation intact", () => {
+		const [entry] = aggregateSectionIngredients([
+			alternativeUsage([
+				{ id: "egg", qty: 2 },
+				{ id: "egg substitute", qty: 2, preparation: "vegan" },
+			]) as any,
+		]);
+		const options = entry!.options as any[];
+		expect(options[0].preparation).toBeUndefined();
+		expect(options[1].preparation).toBe("vegan");
+	});
+});

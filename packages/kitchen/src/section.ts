@@ -1,4 +1,4 @@
-import type { Usage } from "./types";
+import type { StepToken, Usage } from "./types";
 import { round2 } from "./utils";
 
 export interface AggregatedIngredient {
@@ -21,6 +21,10 @@ export interface AggregatedIngredient {
 	conversionMethod?: string;
 	isEstimate?: boolean;
 	bakersPercentage?: number;
+	// Present when type === "alternative" — the raw per-option Usage objects
+	// (each already shaped like a regular ingredient/cookware usage), passed
+	// through untouched for the renderer's "alternative" strategy to join.
+	options?: StepToken[];
 }
 
 // Fields shared by every fresh entry, whether measured or unmeasured — kept in
@@ -60,7 +64,24 @@ export function aggregateSectionIngredients(
 	const order: AggregatedIngredient[] = [];
 
 	for (const ing of ingredients) {
-		if (ing.type === "composite" || ing.type === "alternative") continue;
+		if (ing.type === "composite") continue;
+
+		if (ing.type === "alternative") {
+			// Every alternative group shares the literal id "alternative" (see
+			// processAlternative in kitchen/src/processor.ts), so it can't go
+			// through the measured/unmeasured id-keyed maps below without two
+			// unrelated alternative groups in the same section colliding into
+			// one merged entry. Each occurrence is its own standalone line —
+			// the shopping list already treats alternatives the same way.
+			order.push({
+				id: ing.id,
+				name: ing.name ?? ing.id,
+				type: ing.type,
+				quantities: null,
+				options: ing.options,
+			});
+			continue;
+		}
 
 		const name = ing.name ?? ing.id;
 		const hasMeasuredQty = ing.qty != null;
