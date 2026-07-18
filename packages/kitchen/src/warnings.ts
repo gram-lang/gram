@@ -88,7 +88,7 @@ export const warningTemplates: {
 		`Reference to undefined ingredient '${p.prefix}${p.name}'.`,
 	[WarningCode.MISSING_UNIT]: (p) =>
 		p.type === "RetroPlanning"
-			? `Retro-planning for section "${p.item}" must have an explicit unit (d, h, or min).`
+			? `Retro-planning for section "${p.item}" must be a strictly negative duration with an explicit unit (e.g. -2h, -1d, -30min).`
 			: `${p.type} must have an explicit unit.`,
 	[WarningCode.INVALID_UNIT]: (p) =>
 		p.type === "RetroPlanning"

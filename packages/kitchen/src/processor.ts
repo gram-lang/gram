@@ -439,7 +439,12 @@ function processRetroPlanning(
 
 	const item = section.title || "Section";
 
-	if (rp.value === null || !rp.unit) {
+	// Retro-planning only makes sense as anticipation ("prepare N time before
+	// the rest") — a zero or positive offset has no clear meaning here, unlike
+	// ~timer where a plain duration is the whole point. So instead of a
+	// separate check per failure shape, everything that isn't a strictly
+	// negative signed duration collapses into the same MISSING_UNIT warning.
+	if (rp.value === null || rp.value === 0 || rp.sign !== -1 || !rp.unit) {
 		pushWarning(ctx, WarningCode.MISSING_UNIT, {
 			type: "RetroPlanning",
 			item,
