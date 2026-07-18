@@ -430,7 +430,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning)
-					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning)})</small>`;
+					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning.raw)})</small>`;
 				body += `  <h3>${titleHtml}</h3>\n`;
 			}
 

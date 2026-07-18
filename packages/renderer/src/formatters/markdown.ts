@@ -104,7 +104,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${sec.title}`;
-				if (sec.retro_planning) md += ` ~{${sec.retro_planning}}`;
+				if (sec.retro_planning) md += ` ~{${sec.retro_planning.raw}}`;
 				md += `\n\n`;
 			}
 

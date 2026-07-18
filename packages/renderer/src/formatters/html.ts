@@ -254,7 +254,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 					const rIcon =
 						options.icons?.clockCounterClockwise ??
 						'<i class="ph ph-clock-counter-clockwise"></i>';
-					titleHtml += ` <small class="section-meta-badge section-meta-retroplanning">${rIcon} ${escapeHtml(sec.retro_planning)}</small>`;
+					titleHtml += ` <small class="section-meta-badge section-meta-retroplanning">${rIcon} ${escapeHtml(sec.retro_planning.raw)}</small>`;
 				}
 
 				// Section Mass
