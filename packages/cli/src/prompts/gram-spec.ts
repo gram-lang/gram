@@ -1,6 +1,7 @@
-// GRAM_SPEC_VERSION: 5
+// GRAM_SPEC_VERSION: 6
+// Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
-// Each top-level section maps 1-to-1 to a spec document in docs/syntax_details/.
+// Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
 // To add a new syntactic feature: locate the matching section below and append.
 
 export const GRAM_SPEC_PROMPT = `\
@@ -43,7 +44,7 @@ CONVERSION PROCESS — work through these steps mentally
 4. STEPS  Write each step as a paragraph with a [Verb] action prefix.
           Inline every ingredient with @name{qty unit} syntax.
           Add cookware (#), timers (~), temperatures (^) where appropriate.
-          Use async timers (~_) for passive waits (oven, resting, chilling, rising).
+          Use passive timers (~_) for hands-off waits (oven, resting, chilling, rising).
           Absorb any pure-prep source steps into inline ingredient preparations.
 
 5. REVIEW  Before outputting, verify:
@@ -61,29 +62,35 @@ CONVERSION PROCESS — work through these steps mentally
 SECTION 1 — FRONTMATTER
 ════════════════════════
 
-The file starts with a YAML block delimited by ---.
+The file starts with a YAML-like block delimited by --- (see the flat-key rule below).
 
 \`\`\`
 ---
 title: 'Lemon Meringue Pie'
-originalTitle: 'Tarte au Citron Meringuée'   # original language if different
+originalTitle: 'Tarte au Citron Meringuée'   # original language if different (free-form, informational only)
 description: 'A classic French tart with silky lemon curd and toasted meringue.'
 author: 'Auguste Kerflec'                    # or array: ['Name1', 'Name2']
 source: ['https://example.com/recipe']       # always an array
 category: 'Dessert'
 tags: ['tart', 'lemon', 'french']
 date: '2025-06-23'
-size: '24cm tart tin'                        # yield description or mold dimensions
+lastUpdated: '2025-06-23'
+language: 'en'
+makes: '24cm tart tin'                       # yield description or mold dimensions (NOT "size")
 portions: 8                                  # INTEGER — used for scaling and nutrition
 notes: 'Tested June 2025. Reduce sugar by 10g next time.'
-densities:                                   # optional custom density overrides
-  - flour: 0.55
+densities: [flour:0.55, water:1.0]           # optional custom density overrides (g/mL)
 ---
 \`\`\`
 
 Rules:
+- Frontmatter is FLAT key: value lines only — it is NOT real YAML. There is no nested/indented
+  block syntax. The only structured value form is an inline array: \`key: [a, b, c]\`.
+  \`densities\` MUST use this array form with \`name:value\` entries, e.g. \`[flour:0.55, water:1.0]\`.
+  A YAML-style indented list (\`- flour: 0.55\`) does NOT parse — never emit it.
 - String values must be single-quoted when they contain special characters.
 - "portions" is the canonical field for serving count (not "servings").
+- "makes" is the canonical field for yield/mold description (the old field name "size" is obsolete — never emit it).
 - Time fields (prep/active/total in minutes) are NOT part of the frontmatter — they are derived by the compiler from timers.
 - Omit any field for which there is no data. Do not invent values.
 
@@ -101,9 +108,16 @@ Recipes without any ## are a single implicit section (valid for simple recipes).
 ## Shortcrust Pastry ~{-2h} ->&pastry
 \`\`\`
 
-Options (order is free):
+Options (order is free — both \`~{...}\` before \`->&name\` and \`->&name\` before \`~{...}\` are valid):
 - Retroplanning: \`~{-2h}\` means this section must START 2 hours before the rest.
-  Units: d (days), h (hours), min or m (minutes). Example: \`~{-12h}\`, \`~{-30min}\`.
+  Units: d (days), h (hours), min or m (minutes — auto-corrected to min). Example: \`~{-12h}\`, \`~{-30min}\`.
+  STRICT RULE: the duration MUST be a signed NEGATIVE, non-zero number with an explicit unit.
+  All of the following are INVALID and produce a compiler warning — never emit them:
+    ❌ \`~{2h}\`              (unsigned/positive — the leading "-" is mandatory)
+    ❌ \`~{0h}\` or \`~{-0h}\` (zero has no meaning as a lead time)
+    ❌ \`~{the day before}\`  (free text is not accepted, unlike step timers' semantic text)
+    ❌ \`~{-2s}\`             (seconds are not a valid retro-planning unit — use min/h/d)
+  ✅ Only \`~{-<positive number><d|h|min>}\` is valid, e.g. \`~{-2d}\`, \`~{-12h}\`, \`~{-30min}\`.
 - Intermediate output: \`->&name\` captures the section result for later use.
   Example: \`## Béchamel Sauce ->&bechamel\`
 - Both together: \`## Pastry ~{-2h} ->&pastry\` or \`## Pastry ->&pastry ~{-2h}\`
@@ -161,9 +175,14 @@ Braces \`{}\` are MANDATORY when the name contains spaces, even with no quantity
 | Count     | \`@egg{3}\`                  | no unit                            |
 | Spoon     | \`@sugar{1 tbsp}\`           | tbsp, tsp                          |
 | Cup       | \`@flour{1/2 cup}\`          | cup, cups                          |
-| Fraction  | \`@butter{1/2}\`             | use / not ÷                        |
-| Range     | \`@apples{3-4}\`             | hyphen between two numbers         |
+| Fraction  | \`@butter{1/2}\`             | use / not ÷ ; mixed (\`1 1/2\`) and Unicode glyphs (\`1½\`) also accepted |
+| Range     | \`@apples{3-4}\`             | hyphen between two numbers; a unit may follow a range: \`@water{1.5-2l}\` |
 | To taste  | \`@salt{}\` or \`@salt\`        | empty or omitted                   |
+
+CRITICAL — unit tokens are ALWAYS canonical English/SI tokens (g, kg, ml, l, tbsp, tsp, cup, min, h…),
+even when the surrounding recipe text is written in another language. Never emit localized unit words
+(e.g. French "c.à.s", "cuillère à soupe", "pincée") as the unit inside \`{}\` — write \`@butter{2 tbsp}\`,
+not \`@beurre{2 c.à.s}\`, regardless of the language the step text is written in.
 
 ### Modifiers (placed IMMEDIATELY after @, no space)
 
@@ -176,6 +195,7 @@ Braces \`{}\` are MANDATORY when the name contains spaces, even with no quantity
 | \`&\`      | Reference     | \`@&butter{50g}\`          | Refers to an ingredient already declared earlier              |
 
 Modifier combinations are allowed (e.g. \`@?-\`). Avoid absurd pairs: \`?*\`, \`-*\`, \`-&\`, \`**\`.
+Only ONE ingredient in the whole recipe may carry \`*\` — a second \`@*\` triggers a compiler error.
 
 ### The @& reference rule (IMPORTANT)
 
@@ -225,6 +245,11 @@ Shorten a long name for step readability:
 \`@apple cider vinegar:vinegar{1 tbsp}\`
 → Shopping list: "apple cider vinegar" / Step display: "vinegar"
 
+IMPORTANT: any later reference to this ingredient must use the REAL name, not the alias:
+\`@&apple cider vinegar{1 tsp}\` — NOT \`@&vinegar{1 tsp}\`.
+
+Cookware supports the same alias syntax: \`#cast iron skillet:skillet{}\`.
+
 ### Alternatives (buyer's choice)
 
 \`@milk{200ml}|@oat milk{200ml}\`
@@ -244,7 +269,9 @@ CRITICAL: NO spaces are allowed around \`<\`:
 
 If parent quantity is omitted, it defaults to 1: \`@zest{1}<@lemon\` = 1 lemon.
 
-Shopping list uses MAX rule: using zest AND juice from the same lemon = still 1 lemon.
+Shopping list rules:
+- MAX rule: using DIFFERENT parts of the same parent (zest AND juice from lemon) = max(1, 1) = still 1 lemon.
+- SUM rule: reusing the SAME part again (juice from lemon in two different steps) = sums the parent cost.
 
 ### Relative quantities (percentage of another ingredient's mass)
 
@@ -252,7 +279,9 @@ Shopping list uses MAX rule: using zest AND juice from the same lemon = still 1 
 \`@salt{2% &dough}\` — 2% of the intermediate preparation named "dough"
 
 Syntax: \`{value% @&IngredientName}\` or \`{value% &VariableName}\`
-Scope is limited to the CURRENT section.
+Scope: \`@&IngredientName\` targets are resolved within the CURRENT section only (a raw ingredient
+declared in another section cannot be targeted). \`&VariableName\` targets (intermediates) are
+resolved globally — a section-level \`->&name\` can be targeted from any later section.
 
 ### Fixed quantities
 
@@ -309,26 +338,26 @@ Syntax: \`~name?_?{duration}\`
 
 A numeric value and a unit are ALWAYS REQUIRED. No fuzzy text.
 
-| Format         | Example           | Meaning                                      |
-|----------------|-------------------|----------------------------------------------|
-| Sync (blocking)| \`~{10min}\`        | Cook is actively busy for 10 minutes         |
-| Async (passive)| \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
-| Named          | \`~eggs{3min}\`     | Named for UI notifications                   |
-| Range          | \`~{10-15min}\`     | Uncertainty range                            |
+| Format          | Example           | Meaning                                      |
+|-----------------|-------------------|----------------------------------------------|
+| Active (blocking)| \`~{10min}\`       | Cook is actively busy for 10 minutes         |
+| Passive         | \`~_{1h}\`          | Background: oven/rest/chill — cook is free   |
+| Named           | \`~eggs{3min}\`     | Named for UI notifications                   |
+| Range           | \`~{10-15min}\`     | Uncertainty range                            |
 
 Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`
 Note: \`m\` and \`minutes\` are auto-corrected to \`min\` but prefer \`min\` directly.
 
-RULE — sync vs async:
-- Kneading, stirring, whisking, sautéeing → SYNC \`~{10min}\`
-- Baking, roasting, simmering unattended, chilling, rising, marinating → ASYNC \`~_{45min}\`
+RULE — active vs passive:
+- Kneading, stirring, whisking, sautéeing → ACTIVE \`~{10min}\`
+- Baking, roasting, simmering unattended, chilling, rising, marinating → PASSIVE \`~_{45min}\`
 
 \`\`\`
 [Knead] The &dough on a floured surface for ~{10min}.
 
-[Rise] Cover and let rise in a warm place for ~_{1h}.  // async: cook is free
+[Rise] Cover and let rise in a warm place for ~_{1h}.  // passive: cook is free
 
-[Bake] At ^{180C} for ~_{25min}.                      // async: oven does the work
+[Bake] At ^{180C} for ~_{25min}.                      // passive: oven does the work
 \`\`\`
 
 ### Temperatures
@@ -391,8 +420,12 @@ If the result of a step is passed to the next step by a name ("the seasoned chic
 ### Rules
 
 - A declared \`->&name\` MUST be used somewhere in a later step (or the compiler warns).
-- The local form (->&name at end of step) captures only that step's ingredients.
-- The section form (in ## title) captures all section ingredients.
+- The local form (->&name at end of step) captures only that step's ingredients and is scoped
+  to that point in the recipe.
+- The section form (in ## title) captures all section ingredients and is scoped GLOBALLY —
+  usable from any later section, not just the one that declares it.
+- Never declare the same intermediate name twice (two sections both using \`->&dough\`) — this
+  is a hard compiler error (SCOPE_CONFLICT). Use distinct names instead.
 - Intermediates never appear in the shopping list.
 - CRITICAL: If a section already has \`->&name\` in its title, do NOT add another \`->&name\`
   to any step inside that section. The section declaration alone captures all the output.
@@ -530,12 +563,12 @@ The output must be raw .gram content. Never wrap it in fences:
     ...
 \`\`\`
 
-### ❌ Sync timer for passive cooking
+### ❌ Active timer for passive cooking
 
 \`\`\`
 ❌  Bake for ~{45min}.        // implies cook is actively busy for 45 minutes
 ✅  Bake for ~_{45min}.       // oven does the work, cook is free
-✅  Knead for ~{10min}.       // cook IS actively busy — sync is correct here
+✅  Knead for ~{10min}.       // cook IS actively busy — active timer is correct here
 \`\`\`
 
 
@@ -552,7 +585,7 @@ source: ['https://example.com/lemon-tart']
 category: 'Dessert'
 tags: ['tart', 'lemon', 'meringue', 'classic']
 portions: 8
-size: '24cm tart tin'
+makes: '24cm tart tin'
 ---
 
 ## Shortcrust Pastry ~{-2h} ->&pastry
