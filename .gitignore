@@ -12,3 +12,4 @@ CLAUDE.local.md
 **/.vitepress/cache
 **/.vitepress/dist
 packages/docs/src/reference/api/parts/
+packages/docs/src/public/llms-full.txt

@@ -3,9 +3,9 @@
   "version": "1.0.0-beta.3",
   "private": true,
   "scripts": {
-    "dev": "bun scripts/generate-api-fragments.ts && vitepress dev src",
-    "build": "bun scripts/generate-api-fragments.ts && vitepress build src && echo '/* empty */' > src/.vitepress/dist/vp-icons.css && node scripts/check-bundle-size.mjs",
-    "prebuild": "bun scripts/generate-api-fragments.ts",
+    "dev": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts && vitepress dev src",
+    "build": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts && vitepress build src && echo '/* empty */' > src/.vitepress/dist/vp-icons.css && node scripts/check-bundle-size.mjs",
+    "prebuild": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts",
     "preview": "vitepress preview src"
   },
   "devDependencies": {

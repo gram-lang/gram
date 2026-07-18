@@ -11,7 +11,7 @@
     },
     "@gram-lang/docs#prebuild": {
       "dependsOn": ["^build"],
-      "outputs": ["src/reference/api/parts/**"]
+      "outputs": ["src/reference/api/parts/**", "src/public/llms-full.txt"]
     },
     "typecheck": {
       "dependsOn": ["^build"],

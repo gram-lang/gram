@@ -142,6 +142,10 @@ export default defineConfig({
 								link: "/reference/syntax/composite-ingredients",
 							},
 							{ text: "Cheatsheet", link: "/reference/syntax/cheatsheet" },
+							{
+								text: "Writing Gram Programmatically",
+								link: "/reference/syntax/ai-generation-notes",
+							},
 							{ text: "CLI Commands", link: "/reference/tooling/cli" },
 							{
 								text: "VS Code Extension",
@@ -284,6 +288,10 @@ export default defineConfig({
 								link: "/fr/reference/syntax/composite-ingredients",
 							},
 							{ text: "Antisèche", link: "/fr/reference/syntax/cheatsheet" },
+							{
+								text: "Génération Automatisée de Gram",
+								link: "/fr/reference/syntax/ai-generation-notes",
+							},
 							{ text: "Commandes CLI", link: "/fr/reference/tooling/cli" },
 							{
 								text: "Extension VS Code",
