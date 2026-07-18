@@ -314,6 +314,14 @@ semantics.addOperation("toAST", {
 		);
 	},
 
+	invalidAlternativeBar(_bar) {
+		throw new GramParseError(
+			`Gram Syntax Error: '|' is only valid between alternative ingredients/cookware (e.g. @salt|@pepper). If you meant to separate two options, make sure each uses a single-word name or wraps a multi-word name in {} (e.g. @egg substitute{}|@tofu{}).`,
+			this.source.startIdx,
+			"'|' between two complete @ingredient or #cookware alternatives",
+		);
+	},
+
 	intermediateDecl_bare(_1, name) {
 		return {
 			type: ASTNodeType.IntermediateDecl,

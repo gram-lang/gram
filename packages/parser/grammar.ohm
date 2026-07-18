@@ -28,16 +28,19 @@ GRAM {
   step = startAction? line (nl line)* (nl+ | end)
   startAction = "[" (~"]" any)+ "]" sp*
   line = stepContent+
-  stepContent = 
+  stepContent =
     | invalidComposite
+    | invalidAlternativeBar
     | text
     | ws
     | intermediateDecl
-    | applySyntactic<Element> 
+    | applySyntactic<Element>
     | fallback
-    
+
   invalidComposite = space+ "<" space* "@" name
-    
+
+  invalidAlternativeBar = "|"
+
   ws = space+
 
   fallback = ~nl any
@@ -110,7 +113,7 @@ GRAM {
   // Primitives
   name = (~(syntaxChar | nl) any)+
   singleWordName = (~(syntaxChar | space | nl | sentencePunct) any)+
-  sentencePunct = "," | ";" | "!" | "?"
+  sentencePunct = "," | ";" | "!" | "?" | "."
   // Like name, but also stops at element sigils so a bare &dough is not consumed
   // into a Reference -- full when a sigil like # or @ appears later on the line.
   refName = (~(syntaxChar | refSigil | nl) any)+
@@ -125,7 +128,7 @@ GRAM {
   unicodeFractionChar = "¼" | "½" | "¾" | "⅓" | "⅔" | "⅕" | "⅖" | "⅗" | "⅘" | "⅙" | "⅚" | "⅛" | "⅜" | "⅝" | "⅞"
   range = number space* "-" space* number
 
-  text = space* (~(elementStart | nl) any)+
+  text = space* (~(elementStart | nl | "|") any)+
 
   Reference =
     | "&" refName ingredientQuantity -- full

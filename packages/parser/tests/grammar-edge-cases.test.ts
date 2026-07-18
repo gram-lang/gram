@@ -166,6 +166,39 @@ describe("basic constructs", () => {
 	});
 });
 
+describe("trailing sentence punctuation on bare names", () => {
+	// singleWordName previously stopped at "," ";" "!" "?" but not ".", so any
+	// bare name at the end of an ordinary sentence (the single most common
+	// case in natural recipe prose) absorbed the period into its own identity
+	// — silently corrupting shopping-list aggregation and database lookups.
+
+	it("does not absorb a trailing period into a bare ingredient name", () => {
+		const ast = getAST("## Section\nAdd the @salt.\n");
+		const ing = (ast as any).children[0].children[0].children[1];
+		expect(ing.name).toBe("salt");
+	});
+
+	it("does not absorb a trailing period into a bare cookware name", () => {
+		const ast = getAST("## Section\nUse the #pan.\n");
+		const cw = (ast as any).children[0].children[0].children[1];
+		expect(cw.type).toBe("Cookware");
+		expect(cw.name).toBe("pan");
+	});
+
+	it("does not absorb a trailing period into a bare reference name", () => {
+		const ast = getAST("## Section\n->&dough{}\nRoll the &dough.\n");
+		const ref = (ast as any).children[0].children[0].children[3];
+		expect(ref.type).toBe("Reference");
+		expect(ref.name).toBe("dough");
+	});
+
+	it("does not absorb a trailing period into a bare composite parent name", () => {
+		const ast = getAST("## Section\nX @juice<@lemon.\n");
+		const ing = (ast as any).children[0].children[0].children[1];
+		expect(ing.composite.parent).toBe("lemon");
+	});
+});
+
 describe("section retro-planning", () => {
 	// The grammar rule itself stays a permissive "any text until }" capture —
 	// tightening it was tried and rejected (see plan notes): Ohm's absoluteQuantity
@@ -247,6 +280,44 @@ describe("section retro-planning", () => {
 describe("known hard error", () => {
 	it("throws a descriptive syntax error for a space before the composite `<` sigil", () => {
 		expect(() => getAST("## Section\n@ <@parent\n")).toThrow(/composite/i);
+	});
+
+	// A multi-word name always needs {} (the grammar's own rule: quantity is
+	// mandatory unless the name is a single word) — there's no reliable way to
+	// detect this in general (nothing distinguishes a continued name from
+	// ordinary prose that happens to follow). But inside an Alternative, `|`
+	// has no other legitimate meaning in the grammar (verified: it's excluded
+	// from name/singleWordName via syntaxChar, and used nowhere else), so an
+	// orphan `|` that reaches this far is unambiguously a broken alternative
+	// caused by exactly this mistake — worth a hard, actionable error instead
+	// of silently losing the alternative relationship and swallowing the `|`.
+	it("throws a descriptive syntax error for an unbraced multi-word name before '|' in an ingredient alternative", () => {
+		expect(() =>
+			getAST("## Section\nX @egg substitute|@tofu and more.\n"),
+		).toThrow(/alternative/i);
+	});
+
+	it("throws the same error for the same pattern in a cookware alternative", () => {
+		expect(() => getAST("## Section\n#big pot|#small pot\n")).toThrow(
+			/alternative/i,
+		);
+	});
+
+	it("does not throw for a valid single-word ingredient alternative", () => {
+		expect(() => getAST("## Section\nAdd @egg|@yogurt.\n")).not.toThrow();
+	});
+
+	it("does not throw for a valid braced multi-word ingredient alternative", () => {
+		expect(() =>
+			getAST("## Section\nAdd @egg substitute{2}|@tofu{100g}.\n"),
+		).not.toThrow();
+	});
+
+	it("does not throw for '|' inside a comment or a preparation", () => {
+		expect(() => getAST("## Section\n// a | b\nStep.\n")).not.toThrow();
+		expect(() =>
+			getAST("## Section\nAdd @salt{1}(a pinch | to taste).\n"),
+		).not.toThrow();
 	});
 });
 
