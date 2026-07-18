@@ -1,6 +1,6 @@
 # Génération automatisée de Gram
 
-Cette page s'adresse à tout ce qui *génère* des fichiers `.gram` plutôt qu'à une personne qui les tape à la main — un script d'import, un scraper, ou un modèle d'IA qui convertit une recette existante (un site web, le scan d'un livre de cuisine, un objet JSON-LD) en Gram. La commande officielle `gram import` fournit précisément ces directives, sous forme de prompt système, au modèle d'IA qu'elle appelle — considérez donc cette page comme la version publiée et lisible par un humain de ces mêmes instructions.
+Cette page s'adresse à tout ce qui *génère* des fichiers `.gram` plutôt qu'à une personne qui les tape à la main — un script d'import, un scraper, ou un modèle d'IA qui convertit une recette existante (un site web, le scan d'un livre de cuisine, un objet JSON-LD) en Gram. La commande officielle `gram import` fournit au modèle d'IA qu'elle appelle un prompt système (`packages/cli/src/prompts/gram-spec.ts`) maintenu manuellement en synchronisation avec ces directives — considérez donc cette page comme la version publiée et lisible par un humain de ces mêmes instructions.
 
 ## Restructurer, ne pas transposer mot à mot
 
@@ -33,6 +33,17 @@ Voici les erreurs les plus fréquentes dans les fichiers `.gram` générés auto
 ❌  @farine-de-ble{250g}        →   ✅  @farine de blé{250g}
 ```
 Les noms d'`@ingrédient` en Gram sont de vrais mots avec des espaces, pas des slugs. Le kebab-case est un concept interne, propre à la base de données — jamais de la syntaxe.
+
+### Noms multi-mots sans `{}`
+
+```gram
+❌  Ajouter le @jus de citron et mélanger.
+✅  Ajouter le @jus de citron{} et mélanger.
+
+❌  X @jus de citron|@vinaigre et remuer.
+✅  X @jus de citron{}|@vinaigre{} et remuer.
+```
+Un nom `@ingrédient`/`#matériel` à plusieurs mots a toujours besoin de `{}` (ou `{quantité}` pour le matériel) comme délimiteur final — même sans quantité connue, utilisez des accolades vides `{}`. Il n'existe pas de forme sans accolades pour un nom multi-mots ; la forme sans accolades ne fonctionne que pour un seul mot (`@sel`, `#poêle`). Sans `{}`, seul le premier mot devient le nom et tout ce qui suit se transforme silencieusement en texte d'étape ordinaire — à l'intérieur d'une alternative (`|`), cela lève désormais une erreur de parsing claire au lieu de corrompre silencieusement le groupe.
 
 ### Unités dans les accolades de matériel
 

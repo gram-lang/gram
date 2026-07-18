@@ -1,6 +1,6 @@
 # Writing Gram Programmatically
 
-This page is for anything that *generates* `.gram` files rather than a person typing them by hand — an import script, a scraper, or an AI model converting an existing recipe (a website, a cookbook scan, a JSON-LD blob) into Gram. The official `gram import` command feeds a system prompt built on exactly this guidance to the AI model it calls, so treat this page as the published, human-readable version of that same knowledge.
+This page is for anything that *generates* `.gram` files rather than a person typing them by hand — an import script, a scraper, or an AI model converting an existing recipe (a website, a cookbook scan, a JSON-LD blob) into Gram. The official `gram import` command feeds the AI model it calls a system prompt (`packages/cli/src/prompts/gram-spec.ts`) that's kept manually in sync with this guidance, so treat this page as the published, human-readable version of that same knowledge.
 
 ## Restructure, don't transliterate
 
@@ -33,6 +33,17 @@ These are the errors that show up most often in programmatically generated `.gra
 ❌  @all-purpose-flour{250g}   →   ✅  @all purpose flour{250g}
 ```
 Gram ingredient names are real words with spaces, not slugs. Kebab-case is an internal, database-level concept — never syntax.
+
+### Multi-word names without `{}`
+
+```gram
+❌  Add @egg substitute and mix well.
+✅  Add @egg substitute{} and mix well.
+
+❌  X @egg substitute|@tofu and stir.
+✅  X @egg substitute{}|@tofu{} and stir.
+```
+A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for cookware) as its closing delimiter — even when the exact quantity is unknown, use empty braces `{}`. There is no bare (no-`{}`) form for a multi-word name; the bare form only works for a single word (`@salt`, `#pan`). Without `{}`, only the first word becomes the name and everything after it silently becomes ordinary step text — inside an alternative (`|`) this now throws a hard parse error instead of silently corrupting the group.
 
 ### Units inside cookware braces
 
