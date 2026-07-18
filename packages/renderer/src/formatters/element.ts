@@ -457,7 +457,7 @@ const strategies: Record<
 				return html;
 			} else {
 				const separator = ' <span class="keyword">or</span> ';
-				return item.options
+				const joined = item.options
 					.map((opt: any) => {
 						const isCookware =
 							opt.type === "cookware" || !!cookwareList[opt.id];
@@ -468,6 +468,15 @@ const strategies: Record<
 						return formatElement(resolvedOpt, format, context);
 					})
 					.join(separator);
+				// A leaf ingredient/cookware item is always a single <span>, so a
+				// shopping-list/section-list <li> containing it as its only child
+				// lays out fine under the "flex row, justify-content:space-between"
+				// rule those lists use. Joining several options produces multiple
+				// sibling <span>s instead — wrapped here in one container so the
+				// group still counts as a single flex child, not several spread
+				// across the row.
+				const groupClass = context.classes?.alternativeGroup || "alt-group";
+				return `<span class="${groupClass}">${joined}</span>`;
 			}
 		} else {
 			const separator = " or ";

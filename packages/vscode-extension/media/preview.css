@@ -304,6 +304,25 @@ body.vscode-dark,
   padding-bottom: 0;
 }
 
+/* A composite/mixed-units shopping-list or cookware entry wraps a nested
+   <ul> of its own — the flex row layout above (meant for a single
+   name+quantity leaf item) squishes that sub-list onto the same line as the
+   label instead of letting it flow underneath. Switch back to block layout
+   for these wrapper items only; their own nested <li> children still match
+   the flex rule above and lay out normally. */
+.gram-preview .shopping-list ul li.list-item-group,
+.gram-preview .section-ingredients ul li.list-item-group,
+.gram-preview details.cookware ul li.list-item-group {
+  display: block;
+}
+
+.gram-preview .shopping-list ul li.list-item-group > ul,
+.gram-preview .section-ingredients ul li.list-item-group > ul,
+.gram-preview details.cookware ul li.list-item-group > ul {
+  margin-top: 6px;
+  padding-left: 16px;
+}
+
 /* Steps */
 .gram-preview .steps {
   list-style: none;

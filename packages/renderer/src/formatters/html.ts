@@ -173,16 +173,12 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		renderGroups.forEach((group) => {
 			const item = group[0];
 			if (isAlternativeGroup(item)) {
-				html += `    <li>\n`;
-				html += `      <strong>Alternative Group</strong>:\n`;
-				html += `      <ul>\n`;
-				item.options.forEach((opt: any) => {
-					html += `        <li>${formatElement(opt, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
-				});
-				html += `      </ul>\n`;
-				html += `    </li>\n`;
+				// strategies.alternative already joins every option ("egg or egg
+				// substitute") on one line — reuse it instead of hand-rolling the
+				// same join as a nested sub-list.
+				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 			} else if (isCompositeItem(item)) {
-				html += `    <li>\n`;
+				html += `    <li class="list-item-group">\n`;
 				html += `      ${formatElement(item, "html", { ...context, formatMode: "shopping-list" })} <strong>(Composite)</strong>:\n`;
 				html += `      <ul>\n`;
 				item.usage.forEach((child: any) => {
@@ -193,7 +189,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 			} else if (item.display) {
 				html += `    <li>${escapeHtml(item.display)}</li>\n`;
 			} else if (group.length > 1) {
-				html += `    <li>\n`;
+				html += `    <li class="list-item-group">\n`;
 				html += `      <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge" data-tooltip="${escapeHtml(t.renderer.mixedUnitsTooltip)}">⚠️ ${escapeHtml(t.renderer.mixedUnits)}</span>:\n`;
 				html += `      <ul>\n`;
 				group.forEach((entry: any) => {
@@ -225,18 +221,17 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		html += `  <summary><h2>${t.renderer.cookware}</h2></summary>\n`;
 		html += `  <ul>\n`;
 		data.cookware.forEach((cw: any) => {
-			if (isAlternativeGroup(cw)) {
-				html += `    <li>\n`;
-				html += `      <strong>Alternative Group</strong>:\n`;
-				html += `      <ul>\n`;
-				cw.options.forEach((opt: any) => {
-					html += `        <li>${formatElement(opt, "html", context)}</li>\n`;
-				});
-				html += `      </ul>\n`;
-				html += `    </li>\n`;
-			} else {
-				html += `    <li>${formatElement(cw, "html", context)}</li>\n`;
-			}
+			// formatElement dispatches on cw.type, so a plain cookware item and
+			// an alternative group both go through the same call. The context
+			// here never sets formatMode (leaf cookware has always rendered its
+			// quantity as a tooltip, not a visible span — unchanged on purpose),
+			// but strategies.alternative's default "inline" mode only shows the
+			// first option with an "(alt)" badge — force non-inline just for a
+			// group so every option joins on one line ("pan or skillet") instead.
+			const cwContext = isAlternativeGroup(cw)
+				? { ...context, formatMode: "shopping-list" as const }
+				: context;
+			html += `    <li>${formatElement(cw, "html", cwContext)}</li>\n`;
 		});
 		html += `  </ul>\n`;
 		html += `</details>\n\n`;

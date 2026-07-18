@@ -246,6 +246,9 @@ const PRINT_CSS = `
   .quantity { font-weight: normal; }
   .unit { color: var(--dark-grey); font-size: 0.95em; }
   .opt { color: var(--grey); font-style: italic; }
+  /* strategies.alternative's non-inline "or" separator — used when an
+     alternative group now shows up in a section ingredient list. */
+  .keyword { font-style: italic; }
   .declaration {
     font-size: 9pt;
     font-style: italic;

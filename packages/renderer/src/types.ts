@@ -51,6 +51,7 @@ export interface RendererClasses {
 	bakersBadge?: string;
 	prepText?: string;
 	compositeParentText?: string;
+	alternativeGroup?: string;
 	optionalText?: string;
 	formulaText?: string;
 }

@@ -36,13 +36,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
     <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
     <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
     <li><span class="ingredient" data-name="salt">salt</span></li>
-    <li>
-      <strong>Alternative Group</strong>:
-      <ul>
-        <li><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span></li>
-        <li><span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></li>
-      </ul>
-    </li>
+    <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
   </ul>
 </details>
 
@@ -62,6 +56,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
         <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
         <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
         <li><span class="ingredient" data-name="salt">salt</span></li>
+        <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
       </ul>
     </div>
     <ol class="steps">
@@ -112,9 +107,7 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 - **flour** (200 g)
 - **sugar** (1 tbsp)
 - **salt**
-- **Alternative Group**:
-  - **egg** (2)
-  - **egg substitute** (2)
+- **egg** (2) or **egg substitute** (2)
 
 ## 🍳 Cookware
 
@@ -129,6 +122,7 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 - **flour** (200 g)
 - **sugar** (1 tbsp)
 - **salt**
+- **egg** (2) or **egg substitute** (2)
 
 1. In a *large bowl*, mix **flour** (200 g), **sugar** (1 tbsp) and a pinch of **salt**. Add **egg** (2) or **egg substitute** (2) and whisk for ⏲️ 2 min.  *Rest the batter before cooking* Let rest at 🔥fridge for ⏲️ 30 min.
 
@@ -384,6 +378,9 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
   .quantity { font-weight: normal; }
   .unit { color: var(--dark-grey); font-size: 0.95em; }
   .opt { color: var(--grey); font-style: italic; }
+  /* strategies.alternative's non-inline "or" separator — used when an
+     alternative group now shows up in a section ingredient list. */
+  .keyword { font-style: italic; }
   .declaration {
     font-size: 9pt;
     font-style: italic;
@@ -484,6 +481,8 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
     <li><span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span></li>
     <li><span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span></li>
     <li><span class="ingredient" data-name="salt">salt</span></li>
+    <li><span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+egg-substitute">(alt)</span></li>
   </ul></div>
   <ol class="steps">
     <li value="1">

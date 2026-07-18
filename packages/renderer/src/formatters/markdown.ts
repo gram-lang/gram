@@ -60,10 +60,10 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 		md += `## 🛒 ${t.renderer.shoppingList}\n\n`;
 		data.shopping_list.forEach((item: any) => {
 			if (isAlternativeGroup(item)) {
-				md += `- **Alternative Group**:\n`;
-				item.options.forEach((opt: any) => {
-					md += `  - ${formatElement(opt, "md", { ...context, formatMode: "shopping-list" })}\n`;
-				});
+				// strategies.alternative already joins every option ("egg or egg
+				// substitute") on one line — reuse it instead of hand-rolling the
+				// same join as a nested sub-list.
+				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}\n`;
 			} else if (isCompositeItem(item)) {
 				const parentStr = formatElement(item, "md", {
 					...context,
@@ -86,14 +86,10 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 	if (data.cookware && data.cookware.length > 0) {
 		md += `## 🍳 ${t.renderer.cookware}\n\n`;
 		data.cookware.forEach((cw: any) => {
-			if (isAlternativeGroup(cw)) {
-				md += `- **Alternative Group**:\n`;
-				cw.options.forEach((opt: any) => {
-					md += `  - ${formatElement(opt, "md", context)}\n`;
-				});
-			} else {
-				md += `- ${formatElement(cw, "md", context)}\n`;
-			}
+			// formatElement dispatches on cw.type, so this already handles both a
+			// plain cookware item and an alternative group ("pan or skillet",
+			// joined on one line by strategies.alternative) with the same call.
+			md += `- ${formatElement(cw, "md", context)}\n`;
 		});
 		md += "\n";
 	}

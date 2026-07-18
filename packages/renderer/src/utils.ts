@@ -12,6 +12,7 @@ export function aggToRendererItem(
 	if (agg.preparation) base.preparation = agg.preparation;
 	if (agg.parent) base.parent = agg.parent;
 	if (agg.parentPreparation) base.parentPreparation = agg.parentPreparation;
+	if (agg.options) base.options = agg.options;
 	if (agg.normalizedMass !== undefined)
 		base.normalizedMass = agg.normalizedMass;
 	if (agg.conversionMethod !== undefined)
