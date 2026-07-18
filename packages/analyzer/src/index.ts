@@ -76,6 +76,63 @@ export function validateIngredientDatabase(
 }
 
 /**
+ * Standardizes a single ingredient-shaped usage's mass in place (qty/unit/
+ * name/id → normalizedMass/conversionMethod/isEstimate/purchasingMass),
+ * mirroring the per-item logic in `analyze()`'s first pass. Shared so an
+ * alternative's options — each independently standardized, never summed,
+ * since only ONE option is ever actually bought — don't duplicate this
+ * across the section-level and shopping-list enrichment passes.
+ */
+function standardizeUsageMass(
+	usage: any,
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	enableYieldCalculation: boolean,
+): void {
+	const numericQty = getNumericQty(usage.qty);
+	if (numericQty === null) return;
+
+	const norm = standardizeMass(
+		numericQty,
+		usage.unit || "unit",
+		database,
+		usage.name || usage.id,
+		overrides,
+	);
+	if (!norm) return;
+
+	usage.conversionMethod = norm.method;
+	usage.isEstimate = norm.isEstimate;
+
+	const dbData = getIngredientData(usage.id, database);
+	const yieldFactor = enableYieldCalculation
+		? dbData?.physical?.yield
+		: undefined;
+	const yielded = applyYield(norm.mass, norm.method, yieldFactor);
+	usage.normalizedMass = round2(yielded.normalizedMass);
+	if (yielded.purchasingMass !== undefined) {
+		usage.purchasingMass = round2(yielded.purchasingMass);
+	}
+}
+
+/**
+ * Records `usage.id` as missing from the database, unless it's a reference
+ * (intermediates aren't shopping-list items, so they're never "missing" data)
+ * or has no id at all. Shared between top-level items and alternative options
+ * — the only two shapes that currently need this check.
+ */
+function trackMissingIngredient(
+	usage: { type?: string; id?: string },
+	database: Record<string, IngredientData>,
+	missingIngredientsSet: Set<string>,
+): void {
+	if (usage.type === "reference" || !usage.id) return;
+	if (!getIngredientData(usage.id, database)) {
+		missingIngredientsSet.add(usage.id);
+	}
+}
+
+/**
  * Main entry point for recipe physical analysis.
  * Takes a pure structural CompilationResult and a macro-ingredient database,
  * then enriches it with calculated masses, yields, and nutritional profiles.
@@ -102,12 +159,29 @@ export function analyze(
 	sections.forEach((sec) => {
 		if (!sec.ingredients) sec.ingredients = [];
 		sec.ingredients.forEach((item) => {
-			// Track ingredients missing from the database
-			if (item.type !== "reference" && item.id) {
-				if (!getIngredientData(item.id, database)) {
-					missingIngredientsSet.add(item.id);
-				}
+			if (item.type === "alternative" && Array.isArray(item.options)) {
+				// Each option is a mutually-exclusive choice ("egg OR tofu") — the
+				// group itself has no single mass, only whichever option is
+				// actually bought. Standardize every option independently rather
+				// than falling through to the qty/unit check below, which only
+				// ever finds those fields on the wrapper's own top-level item
+				// (never present for an alternative) and would silently no-op.
+				item.options.forEach((opt: any) => {
+					trackMissingIngredient(opt, database, missingIngredientsSet);
+					if (opts.enableMassStandardization !== false) {
+						standardizeUsageMass(
+							opt,
+							database,
+							overrides,
+							opts.enableYieldCalculation !== false,
+						);
+					}
+				});
+				allRawIngredients.push(item);
+				return;
 			}
+
+			trackMissingIngredient(item, database, missingIngredientsSet);
 
 			// Perform physical mass normalization if enabled
 			if (opts.enableMassStandardization !== false) {
@@ -195,6 +269,14 @@ export function analyze(
 		const usageMap = new Map<string, AnalyzedUsage>();
 		sec.ingredients.forEach((i) => {
 			if (i._usageId) usageMap.set(i._usageId, i);
+			// An alternative's own options carry the analyzed data (the group
+			// itself has no single mass) — register them too, so the group's
+			// inline step-text mention can look each option up the same way.
+			if (i.type === "alternative" && Array.isArray(i.options)) {
+				i.options.forEach((opt: any) => {
+					if (opt._usageId) usageMap.set(opt._usageId, opt);
+				});
+			}
 		});
 		if (sec.cookware) {
 			sec.cookware.forEach((c) => {
@@ -202,27 +284,40 @@ export function analyze(
 			});
 		}
 
+		const syncEnrichedFields = (target: any, enriched: AnalyzedUsage) => {
+			if (enriched.normalizedMass !== undefined)
+				target.normalizedMass = enriched.normalizedMass;
+			if (enriched.qty !== undefined) target.qty = enriched.qty;
+			if (enriched.unit !== undefined) target.unit = enriched.unit;
+			if (enriched.conversionMethod !== undefined)
+				target.conversionMethod = enriched.conversionMethod;
+			if (enriched.isEstimate !== undefined)
+				target.isEstimate = enriched.isEstimate;
+			if (enriched.purchasingMass !== undefined)
+				target.purchasingMass = enriched.purchasingMass;
+		};
+
 		sec.steps.forEach((step) => {
 			if (step.type === "step" && Array.isArray(step.content)) {
 				step.content.forEach((contentItem: any) => {
+					if (!contentItem || typeof contentItem !== "object") return;
+
 					if (
-						contentItem &&
-						typeof contentItem === "object" &&
-						contentItem._usageId
+						contentItem.type === "alternative" &&
+						Array.isArray(contentItem.options)
 					) {
+						contentItem.options.forEach((opt: any) => {
+							const enriched = opt._usageId
+								? usageMap.get(opt._usageId)
+								: undefined;
+							if (enriched) syncEnrichedFields(opt, enriched);
+						});
+						return;
+					}
+
+					if (contentItem._usageId) {
 						const enriched = usageMap.get(contentItem._usageId);
-						if (enriched) {
-							if (enriched.normalizedMass !== undefined)
-								contentItem.normalizedMass = enriched.normalizedMass;
-							if (enriched.qty !== undefined) contentItem.qty = enriched.qty;
-							if (enriched.unit !== undefined) contentItem.unit = enriched.unit;
-							if (enriched.conversionMethod !== undefined)
-								contentItem.conversionMethod = enriched.conversionMethod;
-							if (enriched.isEstimate !== undefined)
-								contentItem.isEstimate = enriched.isEstimate;
-							if (enriched.purchasingMass !== undefined)
-								contentItem.purchasingMass = enriched.purchasingMass;
-						}
+						if (enriched) syncEnrichedFields(contentItem, enriched);
 					}
 				});
 			}
@@ -280,6 +375,22 @@ export function analyze(
 						item.purchasingMass = round2(totalPurchasing);
 					}
 				}
+			} else if (item.type === "alternative" && Array.isArray(item.options)) {
+				// Unlike a composite, an alternative's options are mutually
+				// exclusive ("egg OR tofu") — standardize each independently
+				// rather than summing into a single item.normalizedMass, which
+				// would wrongly imply buying every option at once. Renderers and
+				// calculateMassMetrics already read a per-option normalizedMass
+				// directly (the latter picks options[0] as the representative
+				// for aggregate totals), so no wrapper-level field is needed.
+				item.options.forEach((opt: any) => {
+					standardizeUsageMass(
+						opt,
+						database,
+						overrides,
+						opts.enableYieldCalculation !== false,
+					);
+				});
 			} else {
 				const usageIds =
 					item._usageIds || (item._usageId ? [item._usageId] : []);
