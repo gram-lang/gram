@@ -70,6 +70,19 @@ Pendant ce temps, préparer le glaçage...
 ```
 > ⏱️ **Résultat :** N'ajoute aucune (0) minute au Temps Actif, mais garantit que le **Temps de Cuisson** est prolongé pour couvrir cette attente de 45 minutes.
 
+### Timers Passifs Séquentiels (Les "Named Tracks")
+Par défaut, les timers passifs s'exécutent en parallèle du reste de votre recette. Cependant, certaines tâches de fond ne peuvent pas physiquement s'exécuter en même temps (ex: cuire un gâteau pendant 10 minutes, puis baisser la température et cuire encore 30 minutes).
+
+Si vous voulez que vos timers passifs s'exécutent de façon **séquentielle** (l'un après l'autre), il suffit de leur donner le **même nom** :
+
+```gram
+Cuire dans le four à 240°C pendant ~_cuisson{10 min}.
+
+Baisser la température à 180°C et cuire pendant ~_cuisson{30 min}.
+```
+
+> ⏱️ **Résultat :** Comme ces deux timers partagent le nom `cuisson`, Gram les place sur la même "piste" de fond. Le timer de 30 minutes démarrera automatiquement *après* la fin des 10 premières minutes. Le temps total d'Attente augmentera bien de 40 minutes, sans impacter votre Temps Actif (qui reste à zéro) !
+
 ## Comment le Temps est Calculé
 
 En coulisses, Gram calcule quatre métriques de temps distinctes pour vous donner un planning de cuisine réaliste.

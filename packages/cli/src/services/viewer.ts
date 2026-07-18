@@ -158,10 +158,10 @@ export async function buildViewModel(
 
 	const m = compiled.metrics;
 	const times =
-		m && (m.totalTime || m.cookTime || m.activeTime || m.preparationTime)
+		m && (m.totalTime || m.idleTime || m.activeTime || m.preparationTime)
 			? {
 					total: m.totalTime || undefined,
-					cook: m.cookTime || undefined,
+					idle: m.idleTime || undefined,
 					active: m.activeTime || undefined,
 					prep: m.preparationTime || undefined,
 				}

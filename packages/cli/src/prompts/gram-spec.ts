@@ -351,16 +351,18 @@ A numeric value and a unit are ALWAYS REQUIRED. No fuzzy text.
 Supported units: \`min\` (preferred), \`h\`, \`d\`, \`s\`
 Note: \`m\` and \`minutes\` are auto-corrected to \`min\` but prefer \`min\` directly.
 
-RULE — active vs passive:
+RULE — active vs passive vs sequential:
 - Kneading, stirring, whisking, sautéeing → ACTIVE \`~{10min}\`
 - Baking, roasting, simmering unattended, chilling, rising, marinating → PASSIVE \`~_{45min}\`
+- If you have consecutive passive waiting steps that must happen one after another (e.g. baking for 10m, then lowering the heat and baking for 30m), give them the SAME NAME to place them on a "Named Track". Gram will automatically sequence them without blocking the cook's Active Time.
 
 \`\`\`
 [Knead] The &dough on a floured surface for ~{10min}.
 
 [Rise] Cover and let rise in a warm place for ~_{1h}.  // passive: cook is free
 
-[Bake] At ^{180C} for ~_{25min}.                      // passive: oven does the work
+[Bake] At ^{240C} for ~_baking{10min}.                 // named passive
+[Bake] Lower to ^{180C} and bake for ~_baking{30min}.   // same name = runs sequentially AFTER the 10m!
 \`\`\`
 
 ### Temperatures

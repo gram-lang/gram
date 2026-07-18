@@ -7,7 +7,7 @@ export const fr: GramLocale = {
 		equipment: "Équipement",
 		nutrition: "Nutrition",
 		totalTime: "Temps Total",
-		cookTime: "Cuisson",
+		idleTime: "Attente",
 		activeTime: "Actif",
 		prepTime: "Préparation",
 		est: "(est.)",

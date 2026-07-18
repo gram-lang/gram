@@ -549,7 +549,7 @@ export function processSections(
 	options?: CompilerOptions,
 ): {
 	sections: ProcessedSection[];
-	metrics: { cookTime: number; activeTime: number };
+	metrics: { idleTime: number; activeTime: number };
 } {
 	const ctx: ProcessorContext = {
 		warnings: registry.warnings,
@@ -591,6 +591,7 @@ export function processSections(
 	let globalActiveTime = 0;
 	const activeBackgroundTasks: Array<{ end: number }> = [];
 	const intermediateReadyTimes = new Map<string, number>();
+	const backgroundTrackCursors = new Map<string, number>();
 
 	blocksToProcess.forEach((section) => {
 		if (section.type !== ASTNodeType.Section) return;
@@ -622,9 +623,10 @@ export function processSections(
 			if (block.type === ASTNodeType.Step) {
 				let localActiveTime = 0;
 				const stepPassiveTasks: Array<{
-					name?: string;
+					name: string;
 					duration: number;
 					startOffset: number;
+					isNamed: boolean;
 				}> = [];
 				const stepContentObjects: ProcessedBlockResult[] = [];
 
@@ -677,8 +679,9 @@ export function processSections(
 										name: processed.name || "Timer",
 										duration: duration,
 										startOffset: localActiveTime,
+										isNamed: !!processed.name,
 									});
-									// Background tasks are pushed to activeBackgroundTasks after cookCursor is finalized
+									// Background tasks are scheduled into tracks after cookCursor is finalized
 								} else {
 									// Active task (blocks the main workflow)
 									localActiveTime += duration;
@@ -702,13 +705,33 @@ export function processSections(
 
 				let stepMaxTaskEnd = endTime;
 				stepPassiveTasks.forEach((task) => {
-					const taskEndTime = cookCursor + task.startOffset + task.duration;
+					let taskStartTime = cookCursor + task.startOffset;
+
+					// Named Tracks logic: If a passive timer has a name, it automatically
+					// sequences itself after any previous timer with the exact same name.
+					if (task.isNamed) {
+						taskStartTime = Math.max(
+							taskStartTime,
+							backgroundTrackCursors.get(task.name) ?? 0,
+						);
+						backgroundTrackCursors.set(
+							task.name,
+							taskStartTime + task.duration,
+						);
+					}
+
+					const taskEndTime = taskStartTime + task.duration;
+
 					activeBackgroundTasks.push({ end: taskEndTime });
 					sectionMaxBackgroundTaskEnd = Math.max(
 						sectionMaxBackgroundTaskEnd,
 						taskEndTime,
 					);
 					stepMaxTaskEnd = Math.max(stepMaxTaskEnd, taskEndTime);
+
+					// Re-adjust startOffset so it accurately reflects the actual scheduled start
+					// relative to cookCursor, which is useful for renderer/analyzer tools.
+					task.startOffset = taskStartTime - cookCursor;
 				});
 
 				// Add inline intermediates to ready map
@@ -776,12 +799,13 @@ export function processSections(
 	activeBackgroundTasks.forEach((t) => {
 		if (t.end > maxBackgroundTaskEnd) maxBackgroundTaskEnd = t.end;
 	});
-	const cookTime = Math.max(cookCursor, maxBackgroundTaskEnd);
+	const workflowDuration = Math.max(cookCursor, maxBackgroundTaskEnd);
+	const idleTime = workflowDuration - globalActiveTime;
 
 	return {
 		sections,
 		metrics: {
-			cookTime,
+			idleTime,
 			activeTime: globalActiveTime,
 		},
 	};

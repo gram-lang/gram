@@ -75,7 +75,10 @@ export function compile(
 			return {
 				...resultPayload.metrics,
 				preparationTime: prepTime,
-				totalTime: prepTime + resultPayload.metrics.cookTime,
+				totalTime:
+					prepTime +
+					resultPayload.metrics.idleTime +
+					resultPayload.metrics.activeTime,
 			};
 		})(),
 	};

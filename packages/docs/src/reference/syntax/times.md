@@ -70,6 +70,19 @@ Meanwhile, prepare the glaze...
 ```
 > ⏱️ **Result:** Adds 0 minutes to the Active Time, but ensures the **Cook Time** is extended to cover this 45-minute wait.
 
+### Sequential Passive Timers (Named Tracks)
+By default, passive timers run in parallel with the rest of your recipe. However, some background tasks cannot physically run at the same time (e.g. baking something for 10 minutes, then lowering the temperature and baking it for another 30 minutes). 
+
+If you want passive timers to run **sequentially** (one after the other), simply give them the **same name**:
+
+```gram
+Bake in the #oven at 240°C for ~_baking{10min}.
+
+Lower the heat to 180°C and bake for ~_baking{30min}.
+```
+
+> ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The total Cook Time increases by 40 minutes, but your Active Time remains untouched.
+
 ## How Time is Calculated
 
 Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.

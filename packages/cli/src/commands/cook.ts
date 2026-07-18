@@ -61,7 +61,7 @@ export default defineCommand({
 				skipAnalyzer: !db,
 				scaleFactor,
 			});
-			totalTime = compiled.metrics?.cookTime ?? 0;
+			totalTime = compiled.metrics?.totalTime ?? 0;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")

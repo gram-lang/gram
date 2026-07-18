@@ -5,7 +5,7 @@ export const en = {
 		equipment: "Equipment",
 		nutrition: "Nutrition",
 		totalTime: "Total Time",
-		cookTime: "Cook Time",
+		idleTime: "Idle Time",
 		activeTime: "Active Time",
 		prepTime: "Prep Time",
 		est: "(est.)",

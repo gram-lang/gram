@@ -172,8 +172,8 @@ export interface CompilationResult {
 	warnings: Warning[];
 	metrics: {
 		preparationTime: number; // Estimated mise-en-place time
-		cookTime: number; // Critical path duration (end of last passive task)
-		activeTime: number; // Sum of cook work time
-		totalTime: number; // prepTime + cookTime
+		activeTime: number; // Sum of blocking work time (default step durations + active timers)
+		idleTime: number; // Duration of passive background tasks / waiting
+		totalTime: number; // preparationTime + activeTime + idleTime
 	};
 }

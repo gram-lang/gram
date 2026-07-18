@@ -37,8 +37,8 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 			if (data.metrics.totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(data.metrics.totalTime)}\n`;
 			}
-			if (data.metrics.cookTime) {
-				md += `> - **${t.renderer.cookTime}**: ${formatDuration(data.metrics.cookTime)}\n`;
+			if (data.metrics.idleTime) {
+				md += `> - **${t.renderer.idleTime}**: ${formatDuration(data.metrics.idleTime)}\n`;
 			}
 			if (data.metrics.activeTime) {
 				md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;

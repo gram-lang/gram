@@ -52,7 +52,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
   },
   "metrics": {
     "activeTime": 68,
-    "cookTime": 70,
+    "idleTime": 2,
     "preparationTime": 19,
     "totalTime": 89,
   },
@@ -523,6 +523,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "backgroundTasks": [
             {
               "duration": 2,
+              "isNamed": false,
               "name": "Timer",
               "startOffset": 0,
             },
@@ -717,7 +718,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
   },
   "metrics": {
     "activeTime": 24,
-    "cookTime": 24,
+    "idleTime": 0,
     "preparationTime": 5,
     "totalTime": 29,
   },

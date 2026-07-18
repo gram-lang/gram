@@ -60,11 +60,11 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>\n`;
 		html += ` </div>\n`;
 
-		// Cook Time
-		if (data.metrics.cookTime) {
+		// Idle Time
+		if (data.metrics.idleTime) {
 			html += ` <div class="${timingCardClass}">\n`;
-			html += `   <div class="${metaLabelClass}">${options.icons?.clock ?? '<i class="ph ph-clock"></i>'} ${t.renderer.cookTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.cookTime)}</div>\n`;
+			html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.idleTime)}</div>\n`;
 			html += ` </div>\n`;
 		}
 

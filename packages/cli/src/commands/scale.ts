@@ -74,7 +74,7 @@ export default defineCommand({
 				original.shopping_list,
 				scaled.shopping_list,
 			);
-			const warnings = getScaleWarnings(factor, original.metrics.cookTime);
+			const warnings = getScaleWarnings(factor, original.metrics.totalTime);
 			renderScaleResult(original.title, factor, items, warnings);
 		} catch (err) {
 			s.stop("Failed.");

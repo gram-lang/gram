@@ -19,9 +19,9 @@ export function provideInlayHints(state: DocumentState): InlayHint[] {
 		}
 	}
 
-	if (metrics.cookTime > 0) {
+	if (metrics.totalTime > 0) {
 		// Only show total time if active time is not identical to avoid noise
-		const totalMinutes = Math.round(metrics.cookTime);
+		const totalMinutes = Math.round(metrics.totalTime);
 		const hours = Math.floor(totalMinutes / 60);
 		const mins = totalMinutes % 60;
 		const timeStr =

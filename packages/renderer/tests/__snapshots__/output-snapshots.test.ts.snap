@@ -9,10 +9,6 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
    <div class="meta-value">42m</div>
  </div>
  <div class="timing-card">
-   <div class="meta-label"><i class="ph ph-clock"></i> Cook Time</div>
-   <div class="meta-value">34m</div>
- </div>
- <div class="timing-card">
    <div class="meta-label"><i class="ph ph-fire"></i> Active Time</div>
    <div class="meta-value">34m</div>
  </div>
@@ -97,7 +93,6 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 
 > **Metadata**
 > - **Total Time**: 42m
-> - **Cook Time**: 34m
 > - **Active Time**: 34m
 > - **Prep Time**: 8m (est.)
 > - portions: 4
@@ -449,7 +444,6 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 <h1>Crêpes</h1>
 <div class="meta">
   <span class="meta-item"><span class="meta-label">Total Time</span>42m</span>
-  <span class="meta-item"><span class="meta-label">Cook Time</span>34m</span>
   <span class="meta-item"><span class="meta-label">Active Time</span>34m</span>
   <span class="meta-item"><span class="meta-label">Prep Time</span>8m <em style="opacity:0.55;font-size:0.85em">(est.)</em></span>
   <span class="meta-item"><span class="meta-label">Portions</span>4</span>

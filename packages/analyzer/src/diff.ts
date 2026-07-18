@@ -38,7 +38,7 @@ export interface PrepDelta {
 }
 
 export interface TimingDelta {
-	field: "totalTime" | "cookTime" | "activeTime" | "preparationTime";
+	field: "totalTime" | "idleTime" | "activeTime" | "preparationTime";
 	from: number;
 	to: number;
 }
@@ -325,7 +325,7 @@ function diffTimings(
 ): TimingDelta[] {
 	const fields: Array<keyof CompilationResult["metrics"]> = [
 		"totalTime",
-		"cookTime",
+		"idleTime",
 		"activeTime",
 		"preparationTime",
 	];
