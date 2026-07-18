@@ -117,20 +117,19 @@ export function generateShoppingList(
 					comp._usageAccumulator.set(uKey, {
 						id: subId,
 						unit: item.unit,
-						qty: 0,
+						// Left undefined (not 0) until a measured usage is seen, so a
+						// composite child written bare (e.g. `@jus<@citron{1/2}`, no
+						// quantity of its own) doesn't display as "(0)" — it stays
+						// unmeasured, like any other bare ingredient.
+						qty: undefined,
 						alias: item.alias,
 					});
 				}
 				const uEntry = comp._usageAccumulator.get(uKey)!;
 
-				let childVal = 0;
 				const numQ = getNumericQty(item.qty);
 				if (numQ !== null) {
-					childVal = numQ;
-				}
-
-				if (typeof uEntry.qty === "number") {
-					uEntry.qty += childVal;
+					uEntry.qty = (typeof uEntry.qty === "number" ? uEntry.qty : 0) + numQ;
 				}
 				return;
 			}

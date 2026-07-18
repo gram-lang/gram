@@ -6,6 +6,11 @@ export interface AggregatedIngredient {
 	name: string;
 	type?: string; // 'reference' for cross-section intermediates, undefined for regular ingredients
 	preparation?: string | null;
+	// Raw Usage.composite.parent name, when this entry is a composite child (e.g. "citron")
+	parent?: string;
+	// Raw Usage.composite.preparation — a preparation on the PARENT itself (e.g.
+	// "cut in half"), distinct from this entry's own `preparation` above.
+	parentPreparation?: string | null;
 	// null = unmeasured (Rule 2: dedup); array = measured occurrences in order (Rule 1: addition)
 	// Rule 3 (segregation): a given id can have both an unmeasured entry AND a measured entry simultaneously
 	quantities: Array<{
@@ -16,6 +21,25 @@ export interface AggregatedIngredient {
 	conversionMethod?: string;
 	isEstimate?: boolean;
 	bakersPercentage?: number;
+}
+
+// Fields shared by every fresh entry, whether measured or unmeasured — kept in
+// one place so the measured/unmeasured branches below can never drift apart.
+function createBaseEntry(
+	ing: Usage,
+	name: string,
+): Pick<
+	AggregatedIngredient,
+	"id" | "name" | "type" | "preparation" | "parent" | "parentPreparation"
+> {
+	return {
+		id: ing.id,
+		name,
+		type: ing.type,
+		preparation: ing.preparation,
+		parent: ing.composite?.parent,
+		parentPreparation: ing.composite?.preparation,
+	};
 }
 
 /**
@@ -61,10 +85,7 @@ export function aggregateSectionIngredients(
 				}
 			} else {
 				const entry: AggregatedIngredient = {
-					id: ing.id,
-					name,
-					type: ing.type,
-					preparation: ing.preparation,
+					...createBaseEntry(ing, name),
 					quantities: [{ qty: ing.qty!, unit: ing.unit ?? null }],
 					normalizedMass: ing.normalizedMass,
 					conversionMethod: ing.conversionMethod,
@@ -77,10 +98,7 @@ export function aggregateSectionIngredients(
 		} else {
 			if (!unmeasuredByKey.has(key)) {
 				const entry: AggregatedIngredient = {
-					id: ing.id,
-					name,
-					type: ing.type,
-					preparation: ing.preparation,
+					...createBaseEntry(ing, name),
 					quantities: null,
 				};
 				unmeasuredByKey.set(key, entry);

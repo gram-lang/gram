@@ -62,3 +62,67 @@ describe("aggregateSectionIngredients", () => {
 		expect((entry as any).bakersPercentage).toBeCloseTo(0.3, 5);
 	});
 });
+
+describe("composite parent tracking", () => {
+	it("attaches the raw parent name to a composite child entry", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({
+				id: "jus",
+				qty: "1/2",
+				composite: { parent: "citron" } as any,
+			}),
+		]);
+		expect(entry!.parent).toBe("citron");
+	});
+
+	it("does not set parent for a non-composite ingredient", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({ qty: 100, unit: "g" }),
+		]);
+		expect(entry!.parent).toBeUndefined();
+	});
+
+	it("keeps the parent across merged repeated uses of the same composite child", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({
+				id: "jus",
+				qty: 50,
+				unit: "ml",
+				composite: { parent: "citron" } as any,
+			}),
+			usage({
+				id: "jus",
+				qty: 30,
+				unit: "ml",
+				composite: { parent: "citron" } as any,
+			}),
+		]);
+		expect(entry!.parent).toBe("citron");
+		expect(entry!.quantities).toHaveLength(2);
+	});
+
+	it("attaches the parent's own preparation, distinct from this entry's preparation", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({
+				id: "jus",
+				qty: "1/2",
+				preparation: "filtré",
+				composite: { parent: "citron", preparation: "coupé en deux" } as any,
+			}),
+		]);
+		expect(entry!.preparation).toBe("filtré");
+		expect(entry!.parentPreparation).toBe("coupé en deux");
+	});
+
+	it("does not set parentPreparation when the composite has a parent but no preparation", () => {
+		const [entry] = aggregateSectionIngredients([
+			usage({
+				id: "jus",
+				qty: "1/2",
+				composite: { parent: "citron" } as any,
+			}),
+		]);
+		expect(entry!.parent).toBe("citron");
+		expect(entry!.parentPreparation).toBeUndefined();
+	});
+});

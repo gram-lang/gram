@@ -144,6 +144,8 @@ export const createCleanUsage = (
 			if (minified !== undefined) comp.quantity = minified;
 			if (compQty.unit) comp.unit = compQty.unit;
 		}
+		if (item.composite.preparation)
+			comp.preparation = item.composite.preparation;
 		obj.composite = comp;
 	}
 
