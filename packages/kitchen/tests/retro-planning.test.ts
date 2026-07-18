@@ -17,7 +17,9 @@ describe("section retro-planning", () => {
 		});
 		expect(
 			result.warnings.some(
-				(w) => w.code === WarningCode.MISSING_UNIT || w.code === WarningCode.INVALID_UNIT,
+				(w) =>
+					w.code === WarningCode.MISSING_UNIT ||
+					w.code === WarningCode.INVALID_UNIT,
 			),
 		).toBe(false);
 	});
