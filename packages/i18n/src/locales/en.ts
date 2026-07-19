@@ -68,6 +68,7 @@ export const en = {
 			jsonTree: "Interactive Tree",
 			markdown: "Markdown",
 			preview: "Preview (HTML)",
+			gantt: "Gantt Chart",
 		},
 		options: {
 			scaleTitle: "Scale by Ingredient",

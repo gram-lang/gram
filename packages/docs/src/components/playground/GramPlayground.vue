@@ -27,7 +27,7 @@ const { lang } = useData();
 const t = computed(() => getDictionary(lang.value));
 
 const code = ref("");
-const viewMode = ref<"preview" | "json" | "ast" | "markdown" | "json-tree">(
+const viewMode = ref<"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree">(
 	"preview",
 );
 const options = ref({
@@ -48,6 +48,7 @@ const scaleError = ref("");
 // biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 const viewModeOptions = computed(() => [
 	{ label: t.value.playground.views.preview, value: "preview" },
+	{ label: t.value.playground.views.gantt, value: "gantt" },
 	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
 	{ label: t.value.playground.views.json, value: "json" },
 	{ label: t.value.playground.views.ast, value: "ast" },

@@ -7,9 +7,11 @@ import { setupMonaco } from "./monacoSetup";
 import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import JsonNode from "./JsonNode.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
+import GramGantt from "./GramGantt.vue";
 
 const props = defineProps<{
-	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview";
+	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview" | "gantt";
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
@@ -192,6 +194,11 @@ function handlePreviewClick(e: MouseEvent) {
       <div v-else-if="viewMode === 'json-tree'" class="output-tree">
         <JsonNode :data="jsonData" :is-last="true" :initial-expanded="true" />
       </div>
+
+      <!-- Gantt Chart -->
+      <div v-else-if="viewMode === 'gantt'" class="output-gantt">
+        <GramGantt :json-data="jsonData" />
+      </div>
       
       <!-- HTML Preview -->
       <div 
@@ -258,9 +265,14 @@ function handlePreviewClick(e: MouseEvent) {
   background-color: var(--vp-code-bg);
 }
 
-.output-tree, .output-preview {
+.output-tree, .output-preview{
   padding: 16px;
   background-color: var(--vp-c-bg);
+  min-height: 100%;
+}
+
+.output-gantt{
+	  background-color: var(--vp-c-bg);
   min-height: 100%;
 }
 

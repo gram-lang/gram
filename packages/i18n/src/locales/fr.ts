@@ -71,6 +71,7 @@ export const fr: GramLocale = {
 			jsonTree: "Arbre Interactif",
 			markdown: "Markdown",
 			preview: "Aperçu (HTML)",
+			gantt: "Diagramme de Gantt",
 		},
 		options: {
 			scaleTitle: "Mettre à l'échelle par ingrédient",
