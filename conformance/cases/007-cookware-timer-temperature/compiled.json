@@ -110,7 +110,8 @@
             {
               "name": "Timer",
               "duration": 30,
-              "startOffset": 5
+              "startOffset": 5,
+              "isNamed": false
             }
           ]
         }
@@ -119,9 +120,35 @@
   ],
   "warnings": [],
   "metrics": {
-    "cookTime": 35,
+    "idleTime": 30,
     "activeTime": 5,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 5
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 5
+      },
+      {
+        "label": "timer_passive",
+        "duration": 30
+      }
+    ],
     "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "cookware_overhead",
+        "duration": 2
+      },
+      {
+        "label": "prep_big-pot",
+        "duration": 2
+      }
+    ],
     "totalTime": 39
   }
 }

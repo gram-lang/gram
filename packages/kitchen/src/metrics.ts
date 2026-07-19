@@ -1,4 +1,5 @@
-import type { ProcessedSection, Registry } from "./types";
+import type { ProcessedSection, Registry, TimeBreakdownItem } from "./types";
+import { addToBreakdown } from "./utils";
 
 /**
  * Calculates the total active preparation time (in minutes) for a recipe.
@@ -9,17 +10,30 @@ import type { ProcessedSection, Registry } from "./types";
 export function calculatePreparationTime(
 	sections: ProcessedSection[],
 	registry: Registry,
-): number {
-	let t = 0;
+): { total: number; breakdown: TimeBreakdownItem[] } {
+	const breakdown: TimeBreakdownItem[] = [];
 
 	// Base overhead: 1 minute per unique ingredient and cookware item
-	t += registry.ingredients.size * 1;
-	t += registry.cookware.size * 1;
+	if (registry.ingredients.size > 0) {
+		addToBreakdown(
+			breakdown,
+			"ingredients_overhead",
+			registry.ingredients.size * 1,
+		);
+	}
+	if (registry.cookware.size > 0) {
+		addToBreakdown(breakdown, "cookware_overhead", registry.cookware.size * 1);
+	}
 
-	// Helper to recursively calculate prep time for a single item (handles alternatives)
-	const countPrep = (item: any): number => {
+	// Helper to recursively calculate prep time for a single item (handles alternatives).
+	// Tracks the ingredient's stable `id` rather than a display name — the label is
+	// resolved to a name via the registry at render time, the same way every other
+	// ingredient reference in the compiled output is (shopping list, section lists).
+	const countPrep = (item: any): { duration: number; id?: string } => {
 		let localTime = 0;
-		if (!item) return 0;
+		if (!item) return { duration: 0 };
+
+		let itemId = item.id;
 
 		// Add 2 minutes if the ingredient requires preparation (e.g. "chopped", "peeled")
 		if (item.type === "ingredient" && item.preparation) {
@@ -30,15 +44,18 @@ export function calculatePreparationTime(
 			// For alternative choices, take the longest preparation path
 			let maxOpt = 0;
 			item.options.forEach((opt: any) => {
-				const optTime = countPrep(opt);
-				if (optTime > maxOpt) maxOpt = optTime;
+				const res = countPrep(opt);
+				if (res.duration > maxOpt) {
+					maxOpt = res.duration;
+					if (res.id) itemId = res.id;
+				}
 			});
 			localTime += maxOpt;
 		} else if (!item.type && item.id && item.preparation) {
 			localTime += 2;
 		}
 
-		return localTime;
+		return { duration: localTime, id: itemId };
 	};
 
 	// Aggregate preparation time across all steps and sections
@@ -46,10 +63,14 @@ export function calculatePreparationTime(
 		sec.steps.forEach((s) => {
 			if (s.type === "step" && s.content) {
 				s.content.forEach((c: any) => {
-					t += countPrep(c);
+					const prep = countPrep(c);
+					if (prep.duration > 0) {
+						addToBreakdown(breakdown, `prep_${prep.id}`, prep.duration);
+					}
 				});
 			}
 		});
 	});
-	return t;
+	const total = breakdown.reduce((sum, b) => sum + b.duration, 0);
+	return { total, breakdown };
 }

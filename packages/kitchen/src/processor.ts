@@ -3,6 +3,7 @@ import {
 	createCleanUsage,
 	quantityToMinutes,
 	nextUsageId,
+	addToBreakdown,
 } from "./utils";
 import {
 	type ASTNode,
@@ -29,6 +30,7 @@ import type {
 	ProcessedTimer,
 	ProcessedTemperature,
 	RetroPlanning,
+	TimeBreakdownItem,
 } from "./types";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
@@ -549,7 +551,12 @@ export function processSections(
 	options?: CompilerOptions,
 ): {
 	sections: ProcessedSection[];
-	metrics: { idleTime: number; activeTime: number };
+	metrics: {
+		idleTime: number;
+		activeTime: number;
+		activeBreakdown: TimeBreakdownItem[];
+		totalBreakdown: TimeBreakdownItem[];
+	};
 } {
 	const ctx: ProcessorContext = {
 		warnings: registry.warnings,
@@ -593,7 +600,19 @@ export function processSections(
 	const intermediateReadyTimes = new Map<string, number>();
 	const backgroundTrackCursors = new Map<string, number>();
 
-	blocksToProcess.forEach((section) => {
+	const activeBreakdown: TimeBreakdownItem[] = [];
+	// Raw (label, start, end) contributions collected in processing order —
+	// NOT necessarily chronological order, since named-track serialization
+	// (see backgroundTrackCursors below) can push a task's real start far
+	// later than its source position. Sorted by start before the
+	// critical-path union runs, once every section has been processed.
+	const totalContributions: Array<{
+		label: string;
+		start: number;
+		end: number;
+	}> = [];
+
+	blocksToProcess.forEach((section, index) => {
 		if (section.type !== ASTNodeType.Section) return;
 		ctx.currentSectionIntermediates.clear();
 
@@ -618,6 +637,17 @@ export function processSections(
 		const sectionCookware: Usage[] = [];
 		const steps: ProcessedStepItem[] = [];
 		let sectionMaxBackgroundTaskEnd = 0;
+		const sectionTitle = section.title || `Section ${index + 1}`;
+
+		// Local helper to record a candidate critical-path contribution. The
+		// actual union/merge is computed once for the whole recipe, after every
+		// section has been processed and contributions are sorted chronologically
+		// (see totalContributions.sort below) — not here, since this callback
+		// fires in source-processing order, which named-track serialization can
+		// diverge from actual scheduled start times.
+		const pushContribution = (label: string, start: number, end: number) => {
+			totalContributions.push({ label, start, end });
+		};
 
 		section.children.forEach((block) => {
 			if (block.type === ASTNodeType.Step) {
@@ -703,6 +733,13 @@ export function processSections(
 				const startTime = cookCursor;
 				const endTime = cookCursor + localActiveTime;
 
+				// Record active time breakdown
+				if (localActiveTime > 0) {
+					const activeLabel = `section_active:${sectionTitle}`;
+					addToBreakdown(activeBreakdown, activeLabel, localActiveTime);
+					pushContribution(activeLabel, startTime, endTime);
+				}
+
 				let stepMaxTaskEnd = endTime;
 				stepPassiveTasks.forEach((task) => {
 					let taskStartTime = cookCursor + task.startOffset;
@@ -721,6 +758,11 @@ export function processSections(
 					}
 
 					const taskEndTime = taskStartTime + task.duration;
+
+					const timerLabel = task.isNamed
+						? `timer_named:${task.name}`
+						: `timer_passive`;
+					pushContribution(timerLabel, taskStartTime, taskEndTime);
 
 					activeBackgroundTasks.push({ end: taskEndTime });
 					sectionMaxBackgroundTaskEnd = Math.max(
@@ -802,11 +844,29 @@ export function processSections(
 	const workflowDuration = Math.max(cookCursor, maxBackgroundTaskEnd);
 	const idleTime = workflowDuration - globalActiveTime;
 
+	// Critical path: union of every contribution interval, processed in
+	// chronological (start-time) order — required for the greedy
+	// running-max-end union below to be correct, and NOT guaranteed by
+	// collection order (see totalContributions above).
+	totalContributions.sort((a, b) => a.start - b.start || a.end - b.end);
+	const totalBreakdown: TimeBreakdownItem[] = [];
+	let maxEnd = 0;
+	for (const { label, start, end } of totalContributions) {
+		const effectiveStart = Math.max(start, maxEnd);
+		const added = end - effectiveStart;
+		if (added > 0) {
+			addToBreakdown(totalBreakdown, label, added);
+			maxEnd = Math.max(maxEnd, end);
+		}
+	}
+
 	return {
 		sections,
 		metrics: {
 			idleTime,
 			activeTime: globalActiveTime,
+			activeBreakdown,
+			totalBreakdown,
 		},
 	};
 }

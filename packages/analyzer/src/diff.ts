@@ -323,7 +323,11 @@ function diffTimings(
 	a: CompilationResult["metrics"],
 	b: CompilationResult["metrics"],
 ): TimingDelta[] {
-	const fields: Array<keyof CompilationResult["metrics"]> = [
+	// Typed as the narrow TimingDelta["field"] union (not the full
+	// `keyof CompilationResult["metrics"]`, which now also includes the
+	// array-typed *Breakdown fields) so `a[field]`/`b[field]` stay `number`
+	// without needing a cast.
+	const fields: readonly TimingDelta["field"][] = [
 		"totalTime",
 		"idleTime",
 		"activeTime",
@@ -333,8 +337,7 @@ function diffTimings(
 	for (const field of fields) {
 		const from = a[field] ?? 0;
 		const to = b[field] ?? 0;
-		if (from !== to)
-			deltas.push({ field: field as TimingDelta["field"], from, to });
+		if (from !== to) deltas.push({ field, from, to });
 	}
 	return deltas;
 }

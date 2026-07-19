@@ -770,6 +770,121 @@ body.vscode-dark,
   transform: translateX(-50%) translateY(-3px);
 }
 
+/* Timing Tooltips (HTML Content) */
+.gram-preview .timing-card {
+  position: relative;
+}
+
+.gram-preview .timing-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  background: var(--color-surface-raised);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-strong);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--gram-font-sans);
+  width: max-content;
+  max-width: 300px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--gray-1000) 15%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gram-preview .timing-card:hover .timing-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(8px);
+}
+
+/* Smart Edge Alignment: Leftmost card */
+.gram-preview .timing-card:first-child .timing-tooltip {
+  left: 0;
+  transform: translateY(2px);
+}
+.gram-preview .timing-card:first-child:hover .timing-tooltip {
+  transform: translateY(8px);
+}
+.gram-preview .timing-card:first-child .timing-tooltip::before {
+  left: 24px;
+  transform: none;
+}
+
+/* Smart Edge Alignment: Rightmost card */
+.gram-preview .timing-card:last-child .timing-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(2px);
+}
+.gram-preview .timing-card:last-child:hover .timing-tooltip {
+  transform: translateY(8px);
+}
+.gram-preview .timing-card:last-child .timing-tooltip::before {
+  left: auto;
+  right: 24px;
+  transform: none;
+}
+
+.gram-preview .timing-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--color-surface-raised);
+}
+
+.gram-preview .timing-tooltip-title {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.gram-preview .timing-divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 2px 0;
+}
+
+.gram-preview .timing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.gram-preview .timing-label {
+  text-align: left;
+}
+
+.gram-preview .timing-detail-type {
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.gram-preview .timing-val {
+  text-align: right;
+  font-family: var(--gram-font-mono);
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
 /* Declarations */
 .gram-preview .declaration-block {
   display: block;

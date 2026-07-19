@@ -181,9 +181,43 @@
   ],
   "warnings": [],
   "metrics": {
-    "cookTime": 6,
+    "idleTime": 0,
     "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Whites",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Yolks",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Extra",
+        "duration": 2
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Whites",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Yolks",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Extra",
+        "duration": 2
+      }
+    ],
     "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
     "totalTime": 9,
     "totalMass": 0,
     "massStatus": "incomplete",

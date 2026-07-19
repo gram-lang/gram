@@ -171,9 +171,39 @@
   ],
   "warnings": [],
   "metrics": {
-    "cookTime": 4,
+    "idleTime": 0,
     "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Cooking",
+        "duration": 2
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Cooking",
+        "duration": 2
+      }
+    ],
     "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      }
+    ],
     "totalTime": 8,
     "totalMass": 200,
     "massStatus": "incomplete",

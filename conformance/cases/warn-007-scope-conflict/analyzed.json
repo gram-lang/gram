@@ -146,9 +146,35 @@
     }
   ],
   "metrics": {
-    "cookTime": 4,
+    "idleTime": 0,
     "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:First",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Second",
+        "duration": 2
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:First",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Second",
+        "duration": 2
+      }
+    ],
     "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
     "totalTime": 7,
     "totalMass": 200,
     "massStatus": "incomplete",

@@ -7,14 +7,56 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-clock"></i> Total Time</div>
    <div class="meta-value">42m</div>
+    <div class="timing-tooltip">
+      <div class="timing-tooltip-title">Total Time = Prep + Active + Idle</div>
+      <div class="timing-row">
+        <span class="timing-label">Ingredients lookup (base) <span class="timing-detail-type">(6 x 1min)</span></span>
+        <span class="timing-val">+ 6m</span>
+      </div>
+      <div class="timing-row">
+        <span class="timing-label">Cookware lookup (base) <span class="timing-detail-type">(2 x 1min)</span></span>
+        <span class="timing-val">+ 2m</span>
+      </div>
+      <div class="timing-divider"></div>
+      <div class="timing-row">
+        <span class="timing-label">Batter <span class="timing-detail-type">(Active)</span></span>
+        <span class="timing-val">+ 32m</span>
+      </div>
+      <div class="timing-row">
+        <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
+        <span class="timing-val">+ 2m</span>
+      </div>
+    </div>
  </div>
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-fire"></i> Active Time</div>
    <div class="meta-value">34m</div>
+    <div class="timing-tooltip">
+      <div class="timing-tooltip-title">Active Time = Sum of manual work time</div>
+      <div class="timing-row">
+        <span class="timing-label">Batter <span class="timing-detail-type">(Active)</span></span>
+        <span class="timing-val">+ 32m</span>
+      </div>
+      <div class="timing-row">
+        <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
+        <span class="timing-val">+ 2m</span>
+      </div>
+    </div>
  </div>
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-knife"></i> Prep Time</div>
    <div class="meta-value">8m <span class="est">(est.)</span></div>
+    <div class="timing-tooltip">
+      <div class="timing-tooltip-title">Prep Time = Time needed before starting step 1</div>
+      <div class="timing-row">
+        <span class="timing-label">Ingredients lookup (base) <span class="timing-detail-type">(6 x 1min)</span></span>
+        <span class="timing-val">+ 6m</span>
+      </div>
+      <div class="timing-row">
+        <span class="timing-label">Cookware lookup (base) <span class="timing-detail-type">(2 x 1min)</span></span>
+        <span class="timing-val">+ 2m</span>
+      </div>
+    </div>
  </div>
 </div>
 <div class="recipe-meta-secondary">

@@ -149,9 +149,35 @@
   ],
   "warnings": [],
   "metrics": {
-    "cookTime": 4,
+    "idleTime": 0,
     "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Bake",
+        "duration": 2
+      }
+    ],
     "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
     "totalTime": 6,
     "totalMass": 250,
     "massStatus": "incomplete",

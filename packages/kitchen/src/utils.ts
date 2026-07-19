@@ -1,5 +1,5 @@
 import { type QuantityValueAST, ASTNodeType } from "@gram-lang/parser";
-import type { Usage } from "./types";
+import type { Usage, TimeBreakdownItem } from "./types";
 import { resolveTimeUnit } from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
 
@@ -290,6 +290,27 @@ export const scaleQty = (qty: any, factor: number): any => {
  * representation, which differs from IEEE round-half-to-even on exact ties.
  */
 export const round2 = (value: number): number => parseFloat(value.toFixed(2));
+
+/**
+ * Adds a duration to a time breakdown, merging into an existing entry with
+ * the same label regardless of its position in the array. A same-label match
+ * is not guaranteed to be the last entry pushed — e.g. `totalBreakdown`
+ * interleaves section-active and timer contributions — so this always scans
+ * the full list rather than only checking the tail.
+ */
+export const addToBreakdown = (
+	breakdown: TimeBreakdownItem[],
+	label: string,
+	duration: number,
+): void => {
+	if (duration <= 0) return;
+	const existing = breakdown.find((b) => b.label === label);
+	if (existing) {
+		existing.duration += duration;
+	} else {
+		breakdown.push({ label, duration });
+	}
+};
 
 export const getNumericQty = (q: any): number | null => {
 	if (q === undefined || q === null) return null;

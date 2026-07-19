@@ -8,7 +8,11 @@ import {
 	joinStepTokens,
 } from "../utils";
 import { formatElement } from "./element";
-import { aggregateSectionIngredients, round2 } from "@gram-lang/kitchen";
+import {
+	aggregateSectionIngredients,
+	round2,
+	type TimeBreakdownItem,
+} from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
 export function toHTML(data: any, options: RendererOptions = {}): string {
@@ -53,33 +57,114 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 
 	html += `<div class="${timingsGridClass}">\n`;
 	if (data.metrics) {
+		// Prefixes used by kitchen's TimeBreakdownItem labels (processor.ts /
+		// metrics.ts) — kept as named constants and sliced by their own
+		// `.length` so a label check can never silently drift out of sync with
+		// the slice that strips it.
+		const SECTION_ACTIVE_PREFIX = "section_active:";
+		const TIMER_NAMED_PREFIX = "timer_named:";
+		const PREP_PREFIX = "prep_";
+
+		const formatBreakdownHTML = (breakdown?: TimeBreakdownItem[]) => {
+			if (!breakdown || breakdown.length === 0) return "";
+			return breakdown
+				.map((b) => {
+					let label = b.label;
+					if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
+						label = `${label.slice(SECTION_ACTIVE_PREFIX.length)} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
+					} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
+						label = `${t.renderer.breakdownTimer} "${label.slice(TIMER_NAMED_PREFIX.length)}"`;
+					} else if (label === "timer_passive") {
+						label = t.renderer.breakdownPassive;
+					} else if (label === "ingredients_overhead") {
+						label = `${t.renderer.ingredientsOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
+					} else if (label === "cookware_overhead") {
+						label = `${t.renderer.cookwareOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
+					} else if (label.startsWith(PREP_PREFIX)) {
+						const id = label.slice(PREP_PREFIX.length);
+						const name =
+							registry.ingredients?.[id]?.name ??
+							registry.cookware?.[id]?.name ??
+							id;
+						label = `${t.renderer.breakdownPrep} : ${escapeHtml(name)} <span class="timing-detail-type">(+ 2min)</span>`;
+					}
+					
+					return `      <div class="timing-row">
+        <span class="timing-label">${label}</span>
+        <span class="timing-val">+ ${formatDuration(b.duration)}</span>
+      </div>`;
+				})
+				.join("\n");
+		};
+
+		const renderTooltipHTML = (
+			base?: string,
+			breakdown1?: TimeBreakdownItem[],
+			breakdown2?: TimeBreakdownItem[],
+		) => {
+			if (!base && !breakdown1?.length && !breakdown2?.length) return "";
+			
+			let htmlStr = `\n    <div class="timing-tooltip">`;
+			if (base) {
+				htmlStr += `\n      <div class="timing-tooltip-title">${escapeHtml(base)}</div>`;
+			}
+			
+			if (breakdown1 && breakdown1.length > 0) {
+				htmlStr += "\n" + formatBreakdownHTML(breakdown1);
+			}
+			if (breakdown2 && breakdown2.length > 0) {
+				if (breakdown1 && breakdown1.length > 0) {
+					htmlStr += `\n      <div class="timing-divider"></div>`;
+				}
+				htmlStr += "\n" + formatBreakdownHTML(breakdown2);
+			}
+			htmlStr += `\n    </div>`;
+			return htmlStr;
+		};
+
 		// Total Time
 		const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
+		const totalTooltip = renderTooltipHTML(
+			t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
+			data.metrics.prepBreakdown,
+			data.metrics.totalBreakdown,
+		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>${totalTooltip}\n`;
 		html += ` </div>\n`;
 
 		// Idle Time
 		if (data.metrics.idleTime) {
+			const idleTooltip = renderTooltipHTML(
+				t.renderer.idleTimeTooltip ?? "Idle Time = Total Time - Prep - Active",
+			);
 			html += ` <div class="${timingCardClass}">\n`;
 			html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.idleTime)}</div>\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.idleTime)}</div>${idleTooltip}\n`;
 			html += ` </div>\n`;
 		}
 
 		// Active Time
 		const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
+		const activeTooltip = renderTooltipHTML(
+			t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
+			data.metrics.activeBreakdown,
+		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</div>\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</div>${activeTooltip}\n`;
 		html += ` </div>\n`;
 
 		// Prep Time
 		const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
+		const prepTooltip = renderTooltipHTML(
+			t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
+			data.metrics.prepBreakdown,
+		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
 		html += ` </div>\n`;
 	}
 	html += `</div>\n`;

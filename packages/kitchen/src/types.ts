@@ -157,6 +157,11 @@ export interface ProcessedSection {
 	retro_planning?: RetroPlanning | null;
 }
 
+export interface TimeBreakdownItem {
+	label: string;
+	duration: number; // en minutes
+}
+
 export interface CompilationResult {
 	title: string | null;
 	slug: string | null;
@@ -175,5 +180,8 @@ export interface CompilationResult {
 		activeTime: number; // Sum of blocking work time (default step durations + active timers)
 		idleTime: number; // Duration of passive background tasks / waiting
 		totalTime: number; // preparationTime + activeTime + idleTime
+		activeBreakdown: TimeBreakdownItem[]; // Added for exact tooltip calculation
+		prepBreakdown: TimeBreakdownItem[];
+		totalBreakdown: TimeBreakdownItem[]; // The critical path
 	};
 }

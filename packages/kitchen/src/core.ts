@@ -71,14 +71,18 @@ export function compile(
 		sections,
 		warnings: registry.warnings,
 		metrics: (() => {
-			const prepTime = calculatePreparationTime(sections, registry);
+			const prepRes = calculatePreparationTime(sections, registry);
 			return {
-				...resultPayload.metrics,
-				preparationTime: prepTime,
 				totalTime:
-					prepTime +
+					prepRes.total +
 					resultPayload.metrics.idleTime +
 					resultPayload.metrics.activeTime,
+				totalBreakdown: resultPayload.metrics.totalBreakdown,
+				idleTime: resultPayload.metrics.idleTime,
+				activeTime: resultPayload.metrics.activeTime,
+				activeBreakdown: resultPayload.metrics.activeBreakdown,
+				preparationTime: prepRes.total,
+				prepBreakdown: prepRes.breakdown,
 			};
 		})(),
 	};

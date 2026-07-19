@@ -51,9 +51,43 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     "title": "Crepes",
   },
   "metrics": {
+    "activeBreakdown": [
+      {
+        "duration": 68,
+        "label": "section_active:Crepe Batter",
+      },
+    ],
     "activeTime": 68,
     "idleTime": 2,
+    "prepBreakdown": [
+      {
+        "duration": 12,
+        "label": "ingredients_overhead",
+      },
+      {
+        "duration": 3,
+        "label": "cookware_overhead",
+      },
+      {
+        "duration": 2,
+        "label": "prep_butter",
+      },
+      {
+        "duration": 2,
+        "label": "prep_frying-pan",
+      },
+    ],
     "preparationTime": 19,
+    "totalBreakdown": [
+      {
+        "duration": 68,
+        "label": "section_active:Crepe Batter",
+      },
+      {
+        "duration": 2,
+        "label": "timer_passive",
+      },
+    ],
     "totalTime": 89,
   },
   "registry": {
@@ -717,9 +751,35 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     "title": "Recipe with ALL warnings",
   },
   "metrics": {
+    "activeBreakdown": [
+      {
+        "duration": 22,
+        "label": "section_active:Business Errors",
+      },
+      {
+        "duration": 2,
+        "label": "section_active:Scope Conflict",
+      },
+    ],
     "activeTime": 24,
     "idleTime": 0,
+    "prepBreakdown": [
+      {
+        "duration": 5,
+        "label": "ingredients_overhead",
+      },
+    ],
     "preparationTime": 5,
+    "totalBreakdown": [
+      {
+        "duration": 22,
+        "label": "section_active:Business Errors",
+      },
+      {
+        "duration": 2,
+        "label": "section_active:Scope Conflict",
+      },
+    ],
     "totalTime": 29,
   },
   "registry": {

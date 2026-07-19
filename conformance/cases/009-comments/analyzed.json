@@ -96,9 +96,27 @@
   ],
   "warnings": [],
   "metrics": {
-    "cookTime": 4,
+    "idleTime": 0,
     "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 4
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 4
+      }
+    ],
     "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ],
     "totalTime": 5,
     "totalMass": 200,
     "massStatus": "precise",

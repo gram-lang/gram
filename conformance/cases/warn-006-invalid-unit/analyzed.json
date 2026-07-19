@@ -56,8 +56,20 @@
     }
   ],
   "metrics": {
-    "cookTime": 2,
+    "idleTime": 0,
     "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
     "preparationTime": 0,
     "totalTime": 2,
     "totalMass": 0,
