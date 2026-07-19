@@ -106,8 +106,10 @@ Voici une décomposition concrète de la manière dont le compilateur calcule au
 | **Minuteur Passif** (`~_{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) | **+ 1 heure** |
 | **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | **+ 2 min** | **+ 2 min** |
 
-### Suivi Intelligent des Dépendances
-Vous n'avez pas besoin de faire des mathématiques complexes ! Si vous déclarez une pâte qui repose pendant `~_{1 h}` en arrière-plan, et qu'une étape ultérieure requiert cette `&pâte`, le compilateur va automatiquement "mettre en pause" la ligne du temps et attendre que l'heure se termine avant de commencer cette étape.
+### Suivi Intelligent des Dépendances (ALAP)
+Vous n'avez pas besoin de faire des mathématiques complexes ! Gram utilise un algorithme d'ordonnancement **ALAP (As Late As Possible)**. Si vous déclarez une pâte qui repose pendant `~_{1 h}` en arrière-plan, et qu'une étape ultérieure requiert cette `&pâte`, le compilateur repousse automatiquement la préparation de la pâte le plus tard possible. La pâte finira de reposer *exactement* au moment où l'étape suivante commence, évitant ainsi qu'elle ne patiente inutilement sur le plan de travail !
+
+Pour une explication plus détaillée de l'optimisation de la ligne du temps, consultez l'[Analyse approfondie de l'Ordonnancement ALAP](../explanation/alap-scheduling.md).
 
 ## Rétroplanning de Section
 

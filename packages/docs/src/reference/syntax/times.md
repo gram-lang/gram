@@ -106,8 +106,10 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 | **Passive Timer** (`~_{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
 | **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
 
-### Smart Dependency Tracking
-You don't need to do complex math! If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically "pauses" the timeline and waits for the hour to finish before starting that step.
+### Smart Dependency Tracking (ALAP)
+You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
+
+For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](../explanation/alap-scheduling.md).
 
 ## Section Retro-Planning
 

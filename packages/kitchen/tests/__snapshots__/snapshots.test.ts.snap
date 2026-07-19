@@ -1,5 +1,476 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
+{
+  "cookware": [],
+  "meta": {
+    "title": "Recipe with ALL warnings",
+  },
+  "metrics": {
+    "activeBreakdown": [
+      {
+        "duration": 22,
+        "label": "section_active:Business Errors",
+      },
+      {
+        "duration": 2,
+        "label": "section_active:Scope Conflict",
+      },
+    ],
+    "activeTime": 24,
+    "idleTime": 0,
+    "prepBreakdown": [
+      {
+        "duration": 5,
+        "label": "ingredients_overhead",
+      },
+    ],
+    "preparationTime": 5,
+    "totalBreakdown": [
+      {
+        "duration": 22,
+        "label": "section_active:Business Errors",
+      },
+      {
+        "duration": 2,
+        "label": "section_active:Scope Conflict",
+      },
+    ],
+    "totalTime": 29,
+  },
+  "registry": {
+    "cookware": {},
+    "ingredients": {
+      "absurd": {
+        "default_unit": "g",
+        "id": "absurd",
+        "name": "absurd",
+      },
+      "dup": {
+        "id": "dup",
+        "is_intermediate": true,
+        "name": "dup",
+      },
+      "ghost-var": {
+        "default_unit": "g",
+        "id": "ghost-var",
+        "name": "ghost_var",
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+      },
+    },
+  },
+  "sections": [
+    {
+      "cookware": [],
+      "ingredients": [
+        {
+          "_usageId": "1",
+          "id": "ghost-step",
+          "name": "ghost_step",
+          "type": "reference",
+        },
+        {
+          "_usageId": "2",
+          "id": "ghost-var",
+          "modifiers": [
+            "reference",
+          ],
+          "qty": 10,
+          "unit": "g",
+        },
+        {
+          "_usageId": "3",
+          "id": "absurd",
+          "modifiers": [
+            "optional",
+            "bakers_percentage",
+          ],
+          "qty": 10,
+          "unit": "g",
+        },
+        {
+          "_usageId": "4",
+          "dependencies": [
+            "flour",
+          ],
+          "formula": {
+            "isGhost": true,
+            "percent": 50,
+            "raw": "50% of flour",
+            "target": "flour",
+          },
+          "id": "sugar",
+          "qty": {
+            "loc": {
+              "end": 293,
+              "start": 282,
+            },
+            "percent": 50,
+            "referenceType": "ingredient",
+            "target": "flour",
+            "type": "RelativeQuantity",
+          },
+        },
+        {
+          "_usageId": "5",
+          "dependencies": [
+            "salt",
+          ],
+          "formula": {
+            "isGhost": true,
+            "percent": 10,
+            "raw": "10% of salt",
+            "target": "salt",
+          },
+          "id": "salt",
+          "isCircular": true,
+          "qty": {
+            "loc": {
+              "end": 340,
+              "start": 330,
+            },
+            "percent": 10,
+            "referenceType": "ingredient",
+            "target": "salt",
+            "type": "RelativeQuantity",
+          },
+        },
+      ],
+      "intermediate_preparation": "dup",
+      "steps": [
+        {
+          "content": [
+            "We will use a step reference that does not exist: ",
+            {
+              "_usageId": "1",
+              "id": "ghost-step",
+              "name": "ghost_step",
+              "type": "reference",
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 2,
+            "start": 0,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "And an undeclared ingredient variable: ",
+            {
+              "_usageId": "2",
+              "id": "ghost-var",
+              "modifiers": [
+                "reference",
+              ],
+              "qty": 10,
+              "unit": "g",
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 4,
+            "start": 2,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "Invalid modifier combination: ",
+            {
+              "_usageId": "3",
+              "id": "absurd",
+              "modifiers": [
+                "optional",
+                "bakers_percentage",
+              ],
+              "qty": 10,
+              "unit": "g",
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 6,
+            "start": 4,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "Relative quantity pointing to nothing: ",
+            {
+              "_usageId": "4",
+              "dependencies": [
+                "flour",
+              ],
+              "formula": {
+                "isGhost": true,
+                "percent": 50,
+                "raw": "50% of flour",
+                "target": "flour",
+              },
+              "id": "sugar",
+              "qty": {
+                "loc": {
+                  "end": 293,
+                  "start": 282,
+                },
+                "percent": 50,
+                "referenceType": "ingredient",
+                "target": "flour",
+                "type": "RelativeQuantity",
+              },
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 8,
+            "start": 6,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "Circular relative quantity: ",
+            {
+              "_usageId": "5",
+              "dependencies": [
+                "salt",
+              ],
+              "formula": {
+                "isGhost": true,
+                "percent": 10,
+                "raw": "10% of salt",
+                "target": "salt",
+              },
+              "id": "salt",
+              "isCircular": true,
+              "qty": {
+                "loc": {
+                  "end": 340,
+                  "start": 330,
+                },
+                "percent": 10,
+                "referenceType": "ingredient",
+                "target": "salt",
+                "type": "RelativeQuantity",
+              },
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 10,
+            "start": 8,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "Timer missing unit: ",
+            {
+              "name": "timer",
+              "quantity": {
+                "text": "10",
+                "type": "single",
+                "value": 10,
+              },
+              "type": "timer",
+            },
+          ],
+          "timings": {
+            "activeDuration": 10,
+            "end": 20,
+            "start": 10,
+          },
+          "type": "step",
+        },
+        {
+          "content": [
+            "Temperature missing unit: ",
+            {
+              "quantity": {
+                "text": "180",
+                "type": "single",
+                "value": 180,
+              },
+              "type": "temperature",
+            },
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 22,
+            "start": 20,
+          },
+          "type": "step",
+        },
+      ],
+      "title": "Business Errors",
+    },
+    {
+      "cookware": [],
+      "ingredients": [],
+      "intermediate_preparation": "dup",
+      "steps": [
+        {
+          "content": [
+            "This section re-declares the same output variable 'dup', which should trigger a SCOPE_CONFLICT.",
+          ],
+          "timings": {
+            "activeDuration": 2,
+            "end": 24,
+            "start": 22,
+          },
+          "type": "step",
+        },
+      ],
+      "title": "Scope Conflict",
+    },
+  ],
+  "shopping_list": [
+    {
+      "_usageIds": [
+        "2",
+      ],
+      "id": "ghost-var",
+      "modifiers": [
+        "reference",
+      ],
+      "name": "ghost_var",
+      "qty": 10,
+      "unit": "g",
+    },
+    {
+      "_usageIds": [
+        "3",
+      ],
+      "id": "absurd",
+      "modifiers": [
+        "optional",
+        "bakers_percentage",
+      ],
+      "name": "absurd",
+      "qty": 10,
+      "unit": "g",
+    },
+    {
+      "_usageIds": [
+        "4",
+      ],
+      "id": "sugar",
+      "name": "sugar",
+      "relative": true,
+      "variable_entries": [
+        "(50% of flour ❓)",
+      ],
+    },
+    {
+      "_usageIds": [
+        "5",
+      ],
+      "id": "salt",
+      "name": "salt",
+      "relative": true,
+      "variable_entries": [
+        "(10% of salt ❓)",
+      ],
+    },
+  ],
+  "slug": "recipe-with-all-warnings",
+  "title": "Recipe with ALL warnings",
+  "warnings": [
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "item": "ghost_step",
+      "loc": {
+        "end": 131,
+        "start": 120,
+      },
+      "message": "Reference to undefined ingredient '&ghost_step'.",
+    },
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "item": "ghost_var",
+      "loc": {
+        "end": 188,
+        "start": 172,
+      },
+      "message": "Reference to undefined ingredient '@&ghost_var'.",
+    },
+    {
+      "code": "INVALID_MODIFIER_COMBINATION",
+      "item": "absurd",
+      "loc": {
+        "end": 234,
+        "start": 220,
+      },
+      "message": "Invalid modifier combination on "absurd": Optional (?) and Important (*)",
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNRESOLVED",
+      "item": "sugar",
+      "loc": {
+        "end": 294,
+        "start": 275,
+      },
+      "message": "Could not resolve relative quantity for '@flour'. Source not found in current section.",
+    },
+    {
+      "code": "RELATIVE_QUANTITY_UNRESOLVED",
+      "item": "salt",
+      "loc": {
+        "end": 341,
+        "start": 324,
+      },
+      "message": "Could not resolve relative quantity for '@salt'. Source not found in current section.",
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "item": "salt",
+      "loc": {
+        "end": 341,
+        "start": 324,
+      },
+      "message": "Circular reference detected: salt depends on itself.",
+    },
+    {
+      "code": "MISSING_UNIT",
+      "item": "timer",
+      "loc": {
+        "end": 373,
+        "start": 363,
+      },
+      "message": "Timer must have an explicit unit.",
+    },
+    {
+      "code": "MISSING_UNIT",
+      "item": "Temperature",
+      "loc": {
+        "end": 407,
+        "start": 401,
+      },
+      "message": "Temperature must have an explicit unit.",
+    },
+    {
+      "code": "SCOPE_CONFLICT",
+      "loc": {
+        "end": 433,
+        "start": 427,
+      },
+      "message": "Global variable '&dup' is redefined.",
+      "section": "Scope Conflict",
+    },
+  ],
+}
+`;
+
 exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
 {
   "cookware": [
@@ -741,476 +1212,5 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
   "slug": "crepes",
   "title": "Crepes",
   "warnings": [],
-}
-`;
-
-exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
-{
-  "cookware": [],
-  "meta": {
-    "title": "Recipe with ALL warnings",
-  },
-  "metrics": {
-    "activeBreakdown": [
-      {
-        "duration": 22,
-        "label": "section_active:Business Errors",
-      },
-      {
-        "duration": 2,
-        "label": "section_active:Scope Conflict",
-      },
-    ],
-    "activeTime": 24,
-    "idleTime": 0,
-    "prepBreakdown": [
-      {
-        "duration": 5,
-        "label": "ingredients_overhead",
-      },
-    ],
-    "preparationTime": 5,
-    "totalBreakdown": [
-      {
-        "duration": 22,
-        "label": "section_active:Business Errors",
-      },
-      {
-        "duration": 2,
-        "label": "section_active:Scope Conflict",
-      },
-    ],
-    "totalTime": 29,
-  },
-  "registry": {
-    "cookware": {},
-    "ingredients": {
-      "absurd": {
-        "default_unit": "g",
-        "id": "absurd",
-        "name": "absurd",
-      },
-      "dup": {
-        "id": "dup",
-        "is_intermediate": true,
-        "name": "dup",
-      },
-      "ghost-var": {
-        "default_unit": "g",
-        "id": "ghost-var",
-        "name": "ghost_var",
-      },
-      "salt": {
-        "id": "salt",
-        "name": "salt",
-      },
-      "sugar": {
-        "id": "sugar",
-        "name": "sugar",
-      },
-    },
-  },
-  "sections": [
-    {
-      "cookware": [],
-      "ingredients": [
-        {
-          "_usageId": "1",
-          "id": "ghost-step",
-          "name": "ghost_step",
-          "type": "reference",
-        },
-        {
-          "_usageId": "2",
-          "id": "ghost-var",
-          "modifiers": [
-            "reference",
-          ],
-          "qty": 10,
-          "unit": "g",
-        },
-        {
-          "_usageId": "3",
-          "id": "absurd",
-          "modifiers": [
-            "optional",
-            "bakers_percentage",
-          ],
-          "qty": 10,
-          "unit": "g",
-        },
-        {
-          "_usageId": "4",
-          "dependencies": [
-            "flour",
-          ],
-          "formula": {
-            "isGhost": true,
-            "percent": 50,
-            "raw": "50% of flour",
-            "target": "flour",
-          },
-          "id": "sugar",
-          "qty": {
-            "loc": {
-              "end": 293,
-              "start": 282,
-            },
-            "percent": 50,
-            "referenceType": "ingredient",
-            "target": "flour",
-            "type": "RelativeQuantity",
-          },
-        },
-        {
-          "_usageId": "5",
-          "dependencies": [
-            "salt",
-          ],
-          "formula": {
-            "isGhost": true,
-            "percent": 10,
-            "raw": "10% of salt",
-            "target": "salt",
-          },
-          "id": "salt",
-          "isCircular": true,
-          "qty": {
-            "loc": {
-              "end": 340,
-              "start": 330,
-            },
-            "percent": 10,
-            "referenceType": "ingredient",
-            "target": "salt",
-            "type": "RelativeQuantity",
-          },
-        },
-      ],
-      "intermediate_preparation": "dup",
-      "steps": [
-        {
-          "content": [
-            "We will use a step reference that does not exist: ",
-            {
-              "_usageId": "1",
-              "id": "ghost-step",
-              "name": "ghost_step",
-              "type": "reference",
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 2,
-            "start": 0,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "And an undeclared ingredient variable: ",
-            {
-              "_usageId": "2",
-              "id": "ghost-var",
-              "modifiers": [
-                "reference",
-              ],
-              "qty": 10,
-              "unit": "g",
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 4,
-            "start": 2,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "Invalid modifier combination: ",
-            {
-              "_usageId": "3",
-              "id": "absurd",
-              "modifiers": [
-                "optional",
-                "bakers_percentage",
-              ],
-              "qty": 10,
-              "unit": "g",
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 6,
-            "start": 4,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "Relative quantity pointing to nothing: ",
-            {
-              "_usageId": "4",
-              "dependencies": [
-                "flour",
-              ],
-              "formula": {
-                "isGhost": true,
-                "percent": 50,
-                "raw": "50% of flour",
-                "target": "flour",
-              },
-              "id": "sugar",
-              "qty": {
-                "loc": {
-                  "end": 293,
-                  "start": 282,
-                },
-                "percent": 50,
-                "referenceType": "ingredient",
-                "target": "flour",
-                "type": "RelativeQuantity",
-              },
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 8,
-            "start": 6,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "Circular relative quantity: ",
-            {
-              "_usageId": "5",
-              "dependencies": [
-                "salt",
-              ],
-              "formula": {
-                "isGhost": true,
-                "percent": 10,
-                "raw": "10% of salt",
-                "target": "salt",
-              },
-              "id": "salt",
-              "isCircular": true,
-              "qty": {
-                "loc": {
-                  "end": 340,
-                  "start": 330,
-                },
-                "percent": 10,
-                "referenceType": "ingredient",
-                "target": "salt",
-                "type": "RelativeQuantity",
-              },
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 10,
-            "start": 8,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "Timer missing unit: ",
-            {
-              "name": "timer",
-              "quantity": {
-                "text": "10",
-                "type": "single",
-                "value": 10,
-              },
-              "type": "timer",
-            },
-          ],
-          "timings": {
-            "activeDuration": 10,
-            "end": 20,
-            "start": 10,
-          },
-          "type": "step",
-        },
-        {
-          "content": [
-            "Temperature missing unit: ",
-            {
-              "quantity": {
-                "text": "180",
-                "type": "single",
-                "value": 180,
-              },
-              "type": "temperature",
-            },
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 22,
-            "start": 20,
-          },
-          "type": "step",
-        },
-      ],
-      "title": "Business Errors",
-    },
-    {
-      "cookware": [],
-      "ingredients": [],
-      "intermediate_preparation": "dup",
-      "steps": [
-        {
-          "content": [
-            "This section re-declares the same output variable 'dup', which should trigger a SCOPE_CONFLICT.",
-          ],
-          "timings": {
-            "activeDuration": 2,
-            "end": 24,
-            "start": 22,
-          },
-          "type": "step",
-        },
-      ],
-      "title": "Scope Conflict",
-    },
-  ],
-  "shopping_list": [
-    {
-      "_usageIds": [
-        "2",
-      ],
-      "id": "ghost-var",
-      "modifiers": [
-        "reference",
-      ],
-      "name": "ghost_var",
-      "qty": 10,
-      "unit": "g",
-    },
-    {
-      "_usageIds": [
-        "3",
-      ],
-      "id": "absurd",
-      "modifiers": [
-        "optional",
-        "bakers_percentage",
-      ],
-      "name": "absurd",
-      "qty": 10,
-      "unit": "g",
-    },
-    {
-      "_usageIds": [
-        "4",
-      ],
-      "id": "sugar",
-      "name": "sugar",
-      "relative": true,
-      "variable_entries": [
-        "(50% of flour ❓)",
-      ],
-    },
-    {
-      "_usageIds": [
-        "5",
-      ],
-      "id": "salt",
-      "name": "salt",
-      "relative": true,
-      "variable_entries": [
-        "(10% of salt ❓)",
-      ],
-    },
-  ],
-  "slug": "recipe-with-all-warnings",
-  "title": "Recipe with ALL warnings",
-  "warnings": [
-    {
-      "code": "UNDEFINED_REFERENCE",
-      "item": "ghost_step",
-      "loc": {
-        "end": 131,
-        "start": 120,
-      },
-      "message": "Reference to undefined ingredient '&ghost_step'.",
-    },
-    {
-      "code": "UNDEFINED_REFERENCE",
-      "item": "ghost_var",
-      "loc": {
-        "end": 188,
-        "start": 172,
-      },
-      "message": "Reference to undefined ingredient '@&ghost_var'.",
-    },
-    {
-      "code": "INVALID_MODIFIER_COMBINATION",
-      "item": "absurd",
-      "loc": {
-        "end": 234,
-        "start": 220,
-      },
-      "message": "Invalid modifier combination on "absurd": Optional (?) and Important (*)",
-    },
-    {
-      "code": "RELATIVE_QUANTITY_UNRESOLVED",
-      "item": "sugar",
-      "loc": {
-        "end": 294,
-        "start": 275,
-      },
-      "message": "Could not resolve relative quantity for '@flour'. Source not found in current section.",
-    },
-    {
-      "code": "RELATIVE_QUANTITY_UNRESOLVED",
-      "item": "salt",
-      "loc": {
-        "end": 341,
-        "start": 324,
-      },
-      "message": "Could not resolve relative quantity for '@salt'. Source not found in current section.",
-    },
-    {
-      "code": "CIRCULAR_REFERENCE",
-      "item": "salt",
-      "loc": {
-        "end": 341,
-        "start": 324,
-      },
-      "message": "Circular reference detected: salt depends on itself.",
-    },
-    {
-      "code": "MISSING_UNIT",
-      "item": "timer",
-      "loc": {
-        "end": 373,
-        "start": 363,
-      },
-      "message": "Timer must have an explicit unit.",
-    },
-    {
-      "code": "MISSING_UNIT",
-      "item": "Temperature",
-      "loc": {
-        "end": 407,
-        "start": 401,
-      },
-      "message": "Temperature must have an explicit unit.",
-    },
-    {
-      "code": "SCOPE_CONFLICT",
-      "loc": {
-        "end": 433,
-        "start": 427,
-      },
-      "message": "Global variable '&dup' is redefined.",
-      "section": "Scope Conflict",
-    },
-  ],
 }
 `;

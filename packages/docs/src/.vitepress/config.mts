@@ -198,6 +198,7 @@ export default defineConfig({
 						text: "Deep Dives",
 						collapsed: true,
 						items: [
+							{ text: "ALAP Scheduling", link: "/explanation/alap-scheduling" },
 							{ text: "Mass & Yield", link: "/explanation/mass-and-yield" },
 							{ text: "Nutrition", link: "/explanation/nutrition" },
 							{
@@ -353,6 +354,10 @@ export default defineConfig({
 						text: "Analyses approfondies",
 						collapsed: true,
 						items: [
+							{
+								text: "Ordonnancement ALAP",
+								link: "/fr/explanation/alap-scheduling",
+							},
 							{
 								text: "Masse & Rendement",
 								link: "/fr/explanation/mass-and-yield",
