@@ -71,7 +71,7 @@ This "push-backward" mechanism natively powers Gram's `Named Tracks` (sequential
 
 Thanks to the ALAP algorithm, this sequential requirement gracefully ripples backward through the timeline. Their respective preparation steps are pushed back to exactly the right moments to guarantee a continuous background workflow without blocking your active hands.
 
-## Best Practices for a Coherent Gantt Chart
+## Best Practices for a Coherent Timeline
 
 To make the most of Gram's ALAP scheduling and ensure your generated timeline is both realistic and useful, follow these best practices:
 
@@ -86,3 +86,11 @@ To make the most of Gram's ALAP scheduling and ensure your generated timeline is
 
 4. **Keep Active Steps Granular but Realistic**
    Steps without timers default to adding 2 minutes of active time. Do not break a single fluid motion into 10 micro-steps, or you will artificially inflate the timeline by 20 minutes. Keep steps logical to the workflow.
+
+## Use Case: Data Visualization
+
+Because Gram's ALAP scheduling automatically calculates the absolute `start` and `end` times for every step (down to the minute) and pushes them into the final JSON output, front-end interfaces do not need to perform complex date math. They can simply render the data.
+
+The most powerful way to visualize this compiled timeline is through a Gantt chart. It instantly demonstrates how passive tasks overlap and how the ALAP algorithm optimizes your time in the kitchen. 
+
+You can explore a live implementation of a Gantt chart powered by Gram's scheduling engine in the **[Official Playground](https://gram-lang.com/playground)**. Simply write a recipe and toggle the "Gantt" view to see the timeline data visually rendered in real-time.

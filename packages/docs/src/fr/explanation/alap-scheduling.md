@@ -71,7 +71,7 @@ Ce mécanisme de recul alimente nativement les `Named Tracks` (pistes nommées) 
 
 Grâce à l'algorithme ALAP, cette contrainte séquentielle se répercute gracieusement vers l'arrière tout au long de la chronologie. Leurs étapes de préparation respectives sont repoussées exactement aux bons moments pour garantir un flux de travail continu en arrière-plan, sans bloquer vos mains actives.
 
-## Bonnes Pratiques pour un Diagramme de Gantt Cohérent
+## Bonnes Pratiques pour une Chronologie Cohérente
 
 Pour tirer le meilleur parti de l'ordonnancement ALAP de Gram et vous assurer que votre chronologie générée est à la fois réaliste et utile, suivez ces bonnes pratiques :
 
@@ -86,3 +86,11 @@ Pour tirer le meilleur parti de l'ordonnancement ALAP de Gram et vous assurer qu
 
 4. **Gardez les Étapes Actives Logiques mais Réalistes**
    Les étapes sans minuteur ajoutent par défaut 2 minutes de temps actif. Ne divisez pas un seul mouvement fluide en 10 micro-étapes, sinon vous gonflerez artificiellement la ligne du temps de 20 minutes. Gardez des étapes qui ont un sens pour le flux de travail.
+
+## Cas d'usage : Visualisation des données
+
+Puisque l'ordonnancement ALAP de Gram calcule automatiquement les temps absolus de début (`start`) et de fin (`end`) pour chaque étape (à la minute près) et les expose dans le résultat JSON final, les interfaces front-end n'ont plus aucun calcul mathématique complexe à réaliser. Elles peuvent se contenter d'afficher la donnée.
+
+La manière la plus percutante de visualiser cette chronologie compilée est via un diagramme de Gantt. Il démontre instantanément comment les tâches passives se chevauchent et comment l'algorithme ALAP optimise votre temps en cuisine.
+
+Vous pouvez découvrir un exemple concret de diagramme de Gantt propulsé par le moteur de Gram dans le **[Playground Officiel](https://gram-lang.com/playground)**. Il vous suffit d'écrire une recette et d'activer la vue "Gantt" pour voir les données temporelles s'afficher visuellement en temps réel.

@@ -113,7 +113,11 @@ Pour une explication plus détaillée de l'optimisation de la ligne du temps, co
 
 ## Rétroplanning de Section
 
-Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant une annotation `~{...}` à son titre. Cela indique au compilateur quand cette section doit démarrer par rapport au reste de la recette — utile pour tout ce qui nécessite une préparation à l'avance (une pâte qui repose une nuit, un fond préparé deux jours avant), et suffisamment structuré pour alimenter de futurs outils comme des vues façon diagramme de Gantt.
+Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant une annotation `~{...}` à son titre. Cela permet d'indiquer au compilateur quand cette section doit se terminer par rapport à son utilisation finale. 
+
+**Ceci agit comme une ancre temporelle**. En ajoutant `~{-2j}` à une section, vous indiquez au compilateur que cette préparation doit être effectuée **2 jours avant** d'être réellement utilisée. 
+
+Pour que la chronologie générée reste cohérente et que les temps absolus soient positifs (commençant à `0`), le compilateur réinitialise automatiquement le calcul des temps (`timings`) : cette préparation faite en avance devient le nouveau point de départ (Temps 0) de la recette, et toutes les étapes de cuisson suivantes sont décalées proportionnellement. C'est l'outil parfait pour gérer des recettes sur plusieurs jours tout en gardant une structure de données exploitable par les interfaces.
 
 ```gram
 ## Pâte Feuilletée ~{-2j}
@@ -148,5 +152,7 @@ Le compilateur valide les déclarations de `~minuteur` et les annotations de ré
 - **Unité Invalide** (`~minuteur`) : Si vous fournissez une unité que le compilateur ne comprend pas (ex : `~{30 années-lumière}`), il avertit `INVALID_UNIT`.
 - **Unité Manquante** (rétroplanning de section) : `~{-2}`, du texte libre comme `~{la veille}`, une valeur non signée ou positive (`~{2h}`), ou une valeur nulle (`~{0h}`, `~{-0h}`) déclenchent tous `MISSING_UNIT` — aucun n'est une durée signée strictement négative.
 - **Unité Invalide** (rétroplanning de section) : une unité non reconnue (ex : `~{-2 années-lumière}`) déclenche `INVALID_UNIT`.
+- **Paradoxe Temporel** : Si une ancre de rétro-planning de section entre en conflit avec une dépendance requise plus tôt (ex: une section ancrée à `-10 min` mais utilisée dans une section ancrée à `-1 h`), le compilateur avertit `TIME_PARADOX`.
+- **Contention de Pistes** : Si vous utilisez des timers passifs nommés (ex: `~_four{30min}`) et que l'algorithme ALAP se voit forcé de les retarder à cause d'un encombrement (plusieurs timers sur la même piste au même moment), le compilateur avertit `TRACK_CONTENTION`.
 
 Pour le rétroplanning de section, l'annotation d'origine reste affichée telle quelle même en cas d'avertissement. Dans tous les cas, ces avertissements sont non bloquants par défaut (la recette compile toujours), mais sont promus en erreurs bloquantes avec `gram check --strict`.

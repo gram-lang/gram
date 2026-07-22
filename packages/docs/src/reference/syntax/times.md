@@ -113,7 +113,11 @@ For a more detailed explanation of how the timeline is optimized, check out the 
 
 ## Section Retro-Planning
 
-You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This tells the compiler when that section needs to start relative to the rest of the recipe — useful for anything that needs advance preparation (a dough that rests overnight, a stock made two days ahead), and structured enough to drive future tooling like Gantt-style views.
+You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This allows you to indicate to the compiler when that section must end relative to its final use.
+
+**This acts as a time anchor**. If you add `~{-2d}` to a section, you are telling the compiler to schedule this preparation **2 days before** it is actually needed. 
+
+To ensure the generated timeline remains coherent and all absolute times are positive (starting at `0`), the compiler automatically resets the time calculations (`timings`): this early preparation becomes the new starting point (Time 0) of the recipe, and all subsequent cooking steps are shifted proportionally. It is the perfect tool for managing multi-day recipes while keeping the output data easily consumable by user interfaces.
 
 ```gram
 ## Puff Pastry ~{-2d}
@@ -148,5 +152,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (`~timer`): If you provide a unit the compiler doesn't understand (e.g., `~{30 lightyears}`), it warns `INVALID_UNIT`.
 - **Missing Unit** (section retro-planning): `~{-2}`, free text like `~{la veille}`, an unsigned/positive value (`~{2h}`), or a zero value (`~{0h}`, `~{-0h}`) all trigger `MISSING_UNIT` — none of them are a strictly negative signed duration.
 - **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
+- **Time Paradox**: If a section retro-planning anchor conflicts with an earlier required dependency (e.g., a section anchored at `-10 min` but used in a section anchored at `-1 h`), the compiler warns `TIME_PARADOX`.
+- **Track Contention**: If you use named passive timers (e.g. `~_oven{30min}`) and the ALAP algorithm is forced to delay them due to crowding (multiple timers on the same track at the same time), the compiler warns `TRACK_CONTENTION`.
 
 For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.
