@@ -161,7 +161,8 @@ const gaps = computed(() => {
 			const last = merged[merged.length - 1];
 			if (period.start <= last.end) {
 				last.end = Math.max(last.end, period.end);
-				if (period.sectionIndex !== undefined) last.sectionIndex = period.sectionIndex;
+				if (period.sectionIndex !== undefined)
+					last.sectionIndex = period.sectionIndex;
 			} else {
 				merged.push({ ...period });
 			}
@@ -301,7 +302,8 @@ const tracksData = computed(() => {
 					const blockStart = step.timings.start + prepTime;
 					const blockEnd = step.timings.end + prepTime;
 					const fullText = serializeContent(step.content);
-					const label = step.action || t.value.playground.views.gantt_cook || "Actions";
+					const label =
+						step.action || t.value.playground.views.gantt_cook || "Actions";
 					const fitsInside =
 						step.timings.activeDuration * 12 >= label.length * 7 + 36;
 
@@ -373,7 +375,7 @@ const tracks = computed(() => tracksData.value.tracks);
 const totalVirtualTime = computed(() => tracksData.value.totalVirtualTime);
 const maxRealTime = computed(() => tracksData.value.maxRealTime);
 
-const timeMode = ref<'forward' | 'reverse' | 'target'>('forward');
+const timeMode = ref<"forward" | "reverse" | "target">("forward");
 
 const defaultTargetTime = computed(() => {
 	const now = new Date();
@@ -381,7 +383,7 @@ const defaultTargetTime = computed(() => {
 	// Round to nearest 15 minutes
 	const m = (Math.round(now.getMinutes() / 15) * 15) % 60;
 	const h = now.getHours() + (m === 0 && now.getMinutes() > 30 ? 1 : 0);
-	return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+	return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 });
 
 const targetTime = ref(defaultTargetTime.value);
@@ -397,28 +399,28 @@ function formatTime(minutes: number): string {
 }
 
 function formatAxisTime(realTime: number): string {
-	if (timeMode.value === 'reverse') {
+	if (timeMode.value === "reverse") {
 		const diff = maxRealTime.value - realTime;
 		if (diff === 0) return "T-0";
 		return `T-${formatTime(diff)}`;
 	}
-	if (timeMode.value === 'target' && targetTime.value) {
-		const [th, tm] = targetTime.value.split(':').map(Number);
+	if (timeMode.value === "target" && targetTime.value) {
+		const [th, tm] = targetTime.value.split(":").map(Number);
 		if (!isNaN(th) && !isNaN(tm)) {
 			const diff = maxRealTime.value - realTime;
 			const totalTargetMins = th * 60 + tm;
 			const timeAtTick = totalTargetMins - diff;
-			
+
 			// Handle negative times (previous day) or > 24h
 			const normalizedTime = ((timeAtTick % 1440) + 1440) % 1440;
 			const rh = Math.floor(normalizedTime / 60);
 			const rm = normalizedTime % 60;
-			
+
 			const d = new Date();
 			d.setHours(rh, rm, 0, 0);
 			return new Intl.DateTimeFormat(undefined, {
-				hour: 'numeric',
-				minute: '2-digit'
+				hour: "numeric",
+				minute: "2-digit",
 			}).format(d);
 		}
 	}

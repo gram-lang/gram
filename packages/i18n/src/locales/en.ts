@@ -76,7 +76,8 @@ export const en = {
 			gantt_cook: "Actions",
 			gantt_timer: "Timer",
 			gantt_prep: "Prep",
-			gantt_empty: "No timing data available. Write a recipe with steps and durations to see the chart.",
+			gantt_empty:
+				"No timing data available. Write a recipe with steps and durations to see the chart.",
 			gantt_compressed: "Time compressed (idle period)",
 			gantt_assembly: "Assembly / Dependencies",
 			gantt_more_sections: "+{count} more...",

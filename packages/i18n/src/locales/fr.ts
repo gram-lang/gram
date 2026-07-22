@@ -79,7 +79,8 @@ export const fr: GramLocale = {
 			gantt_cook: "Actions",
 			gantt_timer: "Minuteur",
 			gantt_prep: "Préparation",
-			gantt_empty: "Aucune donnée temporelle disponible. Écrivez une recette avec des étapes et des durées pour voir le diagramme.",
+			gantt_empty:
+				"Aucune donnée temporelle disponible. Écrivez une recette avec des étapes et des durées pour voir le diagramme.",
 			gantt_compressed: "Temps compressé (période d'inactivité)",
 			gantt_assembly: "Assemblage / Dépendances",
 			gantt_more_sections: "+{count} autres...",
