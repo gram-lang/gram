@@ -29,6 +29,7 @@ import type {
 	StepToken,
 	ProcessedTimer,
 	ProcessedTemperature,
+	ProcessedComment,
 	RetroPlanning,
 	TimeBreakdownItem,
 } from "./types";
@@ -540,35 +541,6 @@ export function processBlockItem(
 	}
 }
 
-interface PassiveTaskDraft {
-	name: string;
-	duration: number;
-	localOffset: number;
-	isNamed: boolean;
-}
-
-/**
- * Resolves a passive task's start/end against a track-cursor map, queuing it
- * behind any prior task on the same named track. Used against a speculative
- * (per-section, cloned) map in the ALAP forward pass to size dependency gaps,
- * and again against the real `backgroundTrackCursors` map in the commit phase
- * once late-start times are final — see `processSections` phases 1 and 3.
- */
-function resolveTaskTiming(
-	task: PassiveTaskDraft,
-	baseTime: number,
-	trackCursors: Map<string, number>,
-): { start: number; end: number } {
-	let start = baseTime + task.localOffset;
-
-	if (task.isNamed) {
-		start = Math.max(start, trackCursors.get(task.name) ?? 0);
-		trackCursors.set(task.name, start + task.duration);
-	}
-
-	return { start, end: start + task.duration };
-}
-
 /**
  * Main structural step/section processor.
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
@@ -623,90 +595,85 @@ export function processSections(
 		} as SectionAST);
 	}
 
-	let cookCursor = 0;
+	interface GlobalStepSchedule {
+		sectionIndex: number;
+		stepObj: ProcessedStepItem;
+		isComment: boolean;
+		localActiveTime: number;
+		productionTime: number;
+		produced: string[];
+		consumed: string[];
+		passiveTasks: Array<{
+			name: string;
+			duration: number;
+			localOffset: number;
+			isNamed: boolean;
+			sourceName?: string;
+		}>;
+		ls: number;
+		lf: number;
+	}
+
+	const globalSchedules: GlobalStepSchedule[] = [];
+	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised
+	// in Phase 2/3 — `ProcessedSection` is the JSON output shape and doesn't
+	// carry source locations.
+	const sectionASTs: SectionAST[] = [];
 	let globalActiveTime = 0;
-	const activeBackgroundTasks: Array<{ end: number }> = [];
-	const intermediateReadyTimes = new Map<string, number>();
-	const backgroundTrackCursors = new Map<string, number>();
 
-	const activeBreakdown: TimeBreakdownItem[] = [];
-	// Raw (label, start, end) contributions collected in processing order —
-	// NOT necessarily chronological order, since named-track serialization
-	// (see backgroundTrackCursors below) can push a task's real start far
-	// later than its source position. Sorted by start before the
-	// critical-path union runs, once every section has been processed.
-	const totalContributions: Array<{
-		label: string;
-		start: number;
-		end: number;
-	}> = [];
-
-	blocksToProcess.forEach((section, index) => {
-		if (section.type !== ASTNodeType.Section) return;
+	// --- PHASE 1: Forward Pass (Estimation & Flattening) ---
+	blocksToProcess.forEach((node, sectionIndex) => {
+		const sectionAST = node as SectionAST;
+		sectionASTs.push(sectionAST);
 		ctx.currentSectionIntermediates.clear();
 
-		// Register variables outputted by previous sections
-		if (section.intermediateDecl) {
-			const varName = section.intermediateDecl.name;
+		if (sectionAST.intermediateDecl) {
+			const varName = sectionAST.intermediateDecl.name;
 			if (ctx.globalScopes.has(varName)) {
-				pushWarning(registry, WarningCode.SCOPE_CONFLICT, {
+				pushWarning(registry.warnings, WarningCode.SCOPE_CONFLICT, {
 					varName,
-					section: section.title,
-					loc: section.intermediateDecl?.loc,
+					section: sectionAST.title,
+					loc: sectionAST.intermediateDecl?.loc,
 				});
 			} else {
-				ctx.globalScopes.set(varName, section.title || "");
+				ctx.globalScopes.set(varName, sectionAST.title || "");
 			}
-
 			registry.registerIngredient(varName, { is_intermediate: true });
 			ctx.definedIntermediates.add(varName);
+			ctx.currentSectionIntermediates.add(varName);
 		}
 
 		const sectionIngredients: Usage[] = [];
 		const sectionCookware: Usage[] = [];
 		const steps: ProcessedStepItem[] = [];
-		let sectionMaxBackgroundTaskEnd = 0;
-		const sectionTitle = section.title || `Section ${index + 1}`;
 
-		// Local helper to record a candidate critical-path contribution. The
-		// actual union/merge is computed once for the whole recipe, after every
-		// section has been processed and contributions are sorted chronologically
-		// (see totalContributions.sort below) — not here, since this callback
-		// fires in source-processing order, which named-track serialization can
-		// diverge from actual scheduled start times.
-		const pushContribution = (label: string, start: number, end: number) => {
-			totalContributions.push({ label, start, end });
+		const res: ProcessedSection = {
+			title: sectionAST.title,
+			ingredients: sectionIngredients,
+			cookware: sectionCookware,
+			steps,
 		};
 
-		interface StepSchedule {
-			stepObj: ProcessedStep;
-			localActiveTime: number;
-			es: number;
-			ef: number;
-			productionTime: number;
-			produced: string[];
-			consumed: string[];
-			passiveTasks: PassiveTaskDraft[];
-			ls: number;
-			lf: number;
+		if (sectionAST.intermediateDecl) {
+			res.intermediate_preparation = sectionAST.intermediateDecl.name;
 		}
 
-		const sectionStepSchedules: StepSchedule[] = [];
-		const speculativeTrackCursors = new Map(backgroundTrackCursors);
+		if (sectionAST.retroPlanning) {
+			res.retro_planning = processRetroPlanning(sectionAST, ctx);
+		}
 
-		// Phase 1: Forward Pass
-		section.children.forEach((block) => {
+		sections.push(res);
+
+		sectionAST.children.forEach((block) => {
 			if (block.type === ASTNodeType.Step) {
 				let localActiveTime = 0;
-				const stepPassiveTasks: PassiveTaskDraft[] = [];
-				const stepContentObjects: ProcessedBlockResult[] = [];
+				const stepPassiveTasks: GlobalStepSchedule["passiveTasks"] = [];
+				const stepContentObjects: StepToken[] = [];
 				const produced: string[] = [];
 				const consumed: string[] = [];
 
 				ctx.intermediateDecl = null;
-				let maxDependencyReadyTime = 0;
 
-				// Process all items in the step sequentially
 				block.children.forEach((item) => {
 					const processed = processBlockItem(
 						item,
@@ -717,100 +684,75 @@ export function processSections(
 					);
 
 					if (processed) {
-						stepContentObjects.push(processed);
+						if (Array.isArray(processed)) {
+							stepContentObjects.push(...processed);
+						} else {
+							stepContentObjects.push(processed);
 
-						if (typeof processed !== "string" && "type" in processed) {
-							if (processed.type === "reference" && processed.name) {
-								consumed.push(processed.name);
-								const readyTime = intermediateReadyTimes.get(processed.name);
-								if (readyTime !== undefined) {
-									maxDependencyReadyTime = Math.max(
-										maxDependencyReadyTime,
-										readyTime,
-									);
-								}
-							} else if (processed.type === "declaration" && processed.name) {
-								produced.push(processed.name);
-							} else if (
-								processed.type === "timer" &&
-								!("id" in processed) &&
-								processed.quantity
-							) {
-								const duration = quantityToMinutes({
-									value: processed.quantity,
-									unit: processed.unit,
-								});
-
-								// Passive background task (Gantt track split)
-								if (processed.isPassive) {
-									stepPassiveTasks.push({
-										name: processed.name || "Timer",
-										duration: duration,
-										localOffset: localActiveTime,
-										isNamed: !!processed.name,
+							if (typeof processed !== "string" && "type" in processed) {
+								if (processed.type === "reference" && processed.name) {
+									consumed.push(processed.name);
+								} else if (processed.type === "declaration" && processed.name) {
+									produced.push(processed.name);
+								} else if (
+									processed.type === "timer" &&
+									!("id" in processed) &&
+									processed.quantity
+								) {
+									const duration = quantityToMinutes({
+										value: processed.quantity,
+										unit: processed.unit,
 									});
-								} else {
-									// Active task (blocks the main workflow)
-									localActiveTime += duration;
+									if (processed.isPassive) {
+										stepPassiveTasks.push({
+											name: processed.name || "Timer",
+											duration: duration,
+											localOffset: localActiveTime,
+											isNamed: !!processed.name,
+											// Only set for genuinely named tracks — left undefined
+											// for anonymous passive timers so the renderer's own
+											// localized "Timer" fallback applies instead of a
+											// hardcoded English string baked into the JSON.
+											sourceName: processed.name || undefined,
+										});
+									} else {
+										localActiveTime += duration;
+									}
 								}
 							}
 						}
 					}
 				});
 
-				// Apply standard fallback active duration for empty step actions (2 min)
 				if (localActiveTime === 0 && stepPassiveTasks.length === 0) {
-					localActiveTime = 2;
+					localActiveTime = 2; // Default active time
 				}
 
-				if (maxDependencyReadyTime > cookCursor) {
-					cookCursor = maxDependencyReadyTime;
-				}
-
-				const es = cookCursor;
-				const ef = cookCursor + localActiveTime;
-
-				let stepMaxTaskEnd = ef;
-				stepPassiveTasks.forEach((task) => {
-					const { end: taskEndTime } = resolveTaskTiming(
-						task,
-						es,
-						speculativeTrackCursors,
+				let productionTime = localActiveTime;
+				for (const task of stepPassiveTasks) {
+					productionTime = Math.max(
+						productionTime,
+						task.localOffset + task.duration,
 					);
-					stepMaxTaskEnd = Math.max(stepMaxTaskEnd, taskEndTime);
-				});
-
-				const productionTime = stepMaxTaskEnd - es;
-
-				// Speculative inline intermediates update for Phase 1 so later steps in this section can resolve them
-				produced.forEach((p) => {
-					intermediateReadyTimes.set(p, stepMaxTaskEnd);
-				});
+				}
 
 				const stepObj: ProcessedStep = {
 					type: "step",
 					content: stepContentObjects,
-					timings: {
-						start: 0,
-						end: 0,
-						activeDuration: localActiveTime,
-					},
+					timings: { start: 0, end: 0, activeDuration: localActiveTime },
 					backgroundTasks: [],
 				};
-
-				if (block.action) {
-					stepObj.action = block.action;
-				}
-
+				if (block.action) stepObj.action = block.action;
 				if (ctx.intermediateDecl) {
 					stepObj.intermediate_preparation = ctx.intermediateDecl;
 				}
 
-				sectionStepSchedules.push({
+				steps.push(stepObj);
+				globalSchedules.push({
+					sectionIndex,
 					stepObj,
+					isComment: false,
 					localActiveTime,
-					es,
-					ef,
 					productionTime,
 					produced,
 					consumed,
@@ -819,135 +761,253 @@ export function processSections(
 					lf: 0,
 				});
 
-				steps.push(stepObj);
-
-				cookCursor += localActiveTime;
+				globalActiveTime += localActiveTime;
 			} else if (block.type === ASTNodeType.Comment) {
-				steps.push({ type: "comment", value: block.value, kind: block.kind });
+				const commentObj: ProcessedComment = {
+					type: "comment",
+					value: block.value,
+					kind: block.kind,
+				};
+				steps.push(commentObj);
+				globalSchedules.push({
+					sectionIndex,
+					stepObj: commentObj,
+					isComment: true,
+					localActiveTime: 0,
+					productionTime: 0,
+					produced: [],
+					consumed: [],
+					passiveTasks: [],
+					ls: 0,
+					lf: 0,
+				});
 			}
 		});
+	});
 
-		// Phase 2: Backward Pass (ALAP)
-		const latestReady = new Map<string, number>();
-		for (let i = sectionStepSchedules.length - 1; i >= 0; i--) {
-			const sched = sectionStepSchedules[i]!;
-			const lfAdjacent =
-				i === sectionStepSchedules.length - 1
-					? sched.ef
-					: sectionStepSchedules[i + 1]!.ls;
+	// --- PHASE 2: Backward Pass Global (Espace "T-Zéro") ---
+	const latestReady = new Map<string, number>();
 
-			let lfDeps = Infinity;
+	// Group once instead of re-filtering the flattened list on every section
+	// (this loop runs once per section and needs both its own and the next
+	// section's steps).
+	const stepsBySection: GlobalStepSchedule[][] = Array.from(
+		{ length: sections.length },
+		() => [],
+	);
+	for (const sched of globalSchedules) {
+		if (!sched.isComment) stepsBySection[sched.sectionIndex]!.push(sched);
+	}
+
+	for (let sIdx = sections.length - 1; sIdx >= 0; sIdx--) {
+		const section = sections[sIdx]!;
+		const sectionSteps = stepsBySection[sIdx]!;
+
+		if (sectionSteps.length === 0) continue;
+
+		// 1. Default Chaining: End of this section is the start of the next section
+		let chainedLf = 0;
+		if (sIdx < sections.length - 1) {
+			const nextSectionSteps = stepsBySection[sIdx + 1]!;
+			if (nextSectionSteps.length > 0) {
+				chainedLf = nextSectionSteps[0]!.ls;
+			}
+		}
+
+		// 2. Human Anchor: Explicit retro_planning
+		let retroPlanningLf = Infinity;
+		if (
+			section.retro_planning &&
+			section.retro_planning.minutes !== undefined
+		) {
+			retroPlanningLf = -Math.abs(section.retro_planning.minutes);
+		}
+
+		// 3. Mathematical Dependency (Section-level intermediate)
+		let dependencyLf = Infinity;
+		if (section.intermediate_preparation) {
+			const req = latestReady.get(section.intermediate_preparation);
+			if (req !== undefined) {
+				dependencyLf = req;
+				// The section's product isn't necessarily ready when its textually
+				// last step ends — an earlier step's passive tail (e.g. an
+				// overnight ferment followed by a quick finishing step) can easily
+				// outlast everything after it. Inject the requirement into every
+				// step in the section rather than just the last one: each step
+				// independently computes how far back IT would need to move to
+				// have its own active+passive work finish by `req`, and the
+				// `min()`/chaining below naturally lets whichever step is actually
+				// binding win, exactly like today's `Math.max` over all
+				// background-task ends used to before this refactor.
+				for (const step of sectionSteps) {
+					if (!step.produced.includes(section.intermediate_preparation)) {
+						step.produced.push(section.intermediate_preparation);
+					}
+				}
+			}
+		}
+
+		// TIME PARADOX verification
+		if (retroPlanningLf !== Infinity && dependencyLf !== Infinity) {
+			if (dependencyLf < retroPlanningLf) {
+				pushWarning(registry.warnings, WarningCode.TIME_PARADOX, {
+					cause: `Section '${section.title || "unnamed"}' (~{${section.retro_planning!.value}${section.retro_planning!.unit}})`,
+					conflict: `downstream dependency at T${dependencyLf}m`,
+					loc: sectionASTs[sIdx]?.loc,
+				});
+			}
+		}
+
+		let currentLf = Math.min(chainedLf, retroPlanningLf, dependencyLf);
+
+		// Traverse steps backwards within the section
+		for (let i = sectionSteps.length - 1; i >= 0; i--) {
+			const sched = sectionSteps[i]!;
+
+			let stepDependencyLf = Infinity;
 			for (const p of sched.produced) {
-				const requiredBy = latestReady.get(p);
-				if (requiredBy !== undefined) {
-					lfDeps = Math.min(
-						lfDeps,
-						requiredBy - sched.productionTime + sched.localActiveTime,
+				const req = latestReady.get(p);
+				if (req !== undefined) {
+					stepDependencyLf = Math.min(
+						stepDependencyLf,
+						req - sched.productionTime + sched.localActiveTime,
 					);
 				}
 			}
 
-			sched.lf = Math.min(lfAdjacent, lfDeps);
+			sched.lf = Math.min(currentLf, stepDependencyLf);
 			sched.ls = sched.lf - sched.localActiveTime;
 
 			for (const c of sched.consumed) {
 				const current = latestReady.get(c) ?? Infinity;
 				latestReady.set(c, Math.min(current, sched.ls));
 			}
+
+			currentLf = sched.ls;
 		}
+	}
 
-		// Phase 3: Commit and Global Tracking
-		for (const sched of sectionStepSchedules) {
-			sched.stepObj.timings.start = sched.ls;
-			sched.stepObj.timings.end = sched.lf;
+	// --- PHASE 3: Re-sérialisation Chronologique des Named Tracks ---
+	const backgroundTrackCursors = new Map<string, number>();
 
-			// Record active time breakdown
-			if (sched.localActiveTime > 0) {
-				const activeLabel = `section_active:${sectionTitle}`;
-				addToBreakdown(activeBreakdown, activeLabel, sched.localActiveTime);
-				pushContribution(activeLabel, sched.ls, sched.lf);
-			}
+	const allPassiveTasks: Array<{
+		sched: GlobalStepSchedule;
+		task: GlobalStepSchedule["passiveTasks"][0];
+		theoreticalStart: number;
+		actualStart: number;
+		actualEnd: number;
+	}> = [];
 
-			let stepMaxTaskEnd = sched.lf;
-			const committedPassiveTasks: Array<{
-				name: string;
-				duration: number;
-				startOffset: number;
-				isNamed: boolean;
-			}> = [];
-
-			sched.passiveTasks.forEach((task) => {
-				const { start: taskStartTime, end: taskEndTime } = resolveTaskTiming(
-					task,
-					sched.ls,
-					backgroundTrackCursors,
-				);
-
-				const timerLabel = task.isNamed
-					? `timer_named:${task.name}`
-					: `timer_passive`;
-				pushContribution(timerLabel, taskStartTime, taskEndTime);
-
-				activeBackgroundTasks.push({ end: taskEndTime });
-				sectionMaxBackgroundTaskEnd = Math.max(
-					sectionMaxBackgroundTaskEnd,
-					taskEndTime,
-				);
-				stepMaxTaskEnd = Math.max(stepMaxTaskEnd, taskEndTime);
-
-				committedPassiveTasks.push({
-					name: task.name,
-					duration: task.duration,
-					startOffset: taskStartTime - sched.ls,
-					isNamed: task.isNamed,
-				});
+	globalSchedules.forEach((sched) => {
+		if (sched.isComment) return;
+		sched.passiveTasks.forEach((task) => {
+			allPassiveTasks.push({
+				sched,
+				task,
+				theoreticalStart: sched.ls + task.localOffset,
+				actualStart: 0,
+				actualEnd: 0,
 			});
-
-			sched.stepObj.backgroundTasks = committedPassiveTasks;
-
-			// Final inline intermediates update with correct stepMaxTaskEnd
-			sched.produced.forEach((p) => {
-				intermediateReadyTimes.set(p, stepMaxTaskEnd);
-			});
-
-			globalActiveTime += sched.localActiveTime;
-		}
-
-		const res: ProcessedSection = {
-			title: section.title,
-			ingredients: sectionIngredients,
-			cookware: sectionCookware,
-			steps,
-		};
-
-		if (section.intermediateDecl) {
-			res.intermediate_preparation = section.intermediateDecl.name;
-			intermediateReadyTimes.set(
-				section.intermediateDecl.name,
-				Math.max(cookCursor, sectionMaxBackgroundTaskEnd),
-			);
-		}
-		if (section.retroPlanning) {
-			res.retro_planning = processRetroPlanning(section, ctx);
-		}
-		sections.push(res);
+		});
 	});
 
-	// Compute maximum workflow end time including background passive tasks
-	let maxBackgroundTaskEnd = 0;
-	activeBackgroundTasks.forEach((t) => {
-		if (t.end > maxBackgroundTaskEnd) maxBackgroundTaskEnd = t.end;
-	});
-	const workflowDuration = Math.max(cookCursor, maxBackgroundTaskEnd);
-	const idleTime = workflowDuration - globalActiveTime;
+	allPassiveTasks.sort((a, b) => a.theoreticalStart - b.theoreticalStart);
 
-	// Critical path: union of every contribution interval, processed in
-	// chronological (start-time) order — required for the greedy
-	// running-max-end union below to be correct, and NOT guaranteed by
-	// collection order (see totalContributions above).
+	allPassiveTasks.forEach((entry) => {
+		let actualStart = entry.theoreticalStart;
+		if (entry.task.isNamed) {
+			const cursor = backgroundTrackCursors.get(entry.task.name) ?? -Infinity;
+			actualStart = Math.max(actualStart, cursor);
+		}
+
+		entry.actualStart = actualStart;
+		entry.actualEnd = actualStart + entry.task.duration;
+
+		if (entry.task.isNamed) {
+			backgroundTrackCursors.set(entry.task.name, entry.actualEnd);
+		}
+
+		const theoreticalEnd = entry.theoreticalStart + entry.task.duration;
+		const delay = entry.actualEnd - theoreticalEnd;
+
+		if (delay > 0) {
+			pushWarning(registry.warnings, WarningCode.TRACK_CONTENTION, {
+				trackName: entry.task.name,
+				delay: delay,
+				item: `Step in section '${sections[entry.sched.sectionIndex]!.title || "unnamed"}'`,
+				loc: sectionASTs[entry.sched.sectionIndex]?.loc,
+			});
+		}
+	});
+
+	// --- PHASE 4: Rebasage Positif & Commit ---
+	let globalMinStart = 0;
+	globalSchedules.forEach((sched) => {
+		if (!sched.isComment) {
+			globalMinStart = Math.min(globalMinStart, sched.ls);
+		}
+	});
+	allPassiveTasks.forEach((entry) => {
+		globalMinStart = Math.min(globalMinStart, entry.actualStart);
+	});
+
+	const rebaseOffset = Math.abs(globalMinStart);
+
+	const activeBreakdown: TimeBreakdownItem[] = [];
+	const totalContributions: Array<{
+		label: string;
+		start: number;
+		end: number;
+	}> = [];
+
+	globalSchedules.forEach((sched) => {
+		if (sched.isComment) return;
+
+		const stepObj = sched.stepObj as ProcessedStep;
+		const rebasedLs = sched.ls + rebaseOffset;
+		const rebasedLf = sched.lf + rebaseOffset;
+
+		stepObj.timings.start = rebasedLs;
+		stepObj.timings.end = rebasedLf;
+		stepObj.timings.activeDuration = sched.localActiveTime;
+
+		if (sched.localActiveTime > 0) {
+			const sectionTitle = sections[sched.sectionIndex]!.title || "unnamed";
+			const activeLabel = `section_active:${sectionTitle}`;
+			addToBreakdown(activeBreakdown, activeLabel, sched.localActiveTime);
+			totalContributions.push({
+				label: activeLabel,
+				start: rebasedLs,
+				end: rebasedLf,
+			});
+		}
+	});
+
+	allPassiveTasks.forEach((entry) => {
+		const stepObj = entry.sched.stepObj as ProcessedStep;
+		const rebasedStart = entry.actualStart + rebaseOffset;
+		const rebasedEnd = entry.actualEnd + rebaseOffset;
+
+		stepObj.backgroundTasks.push({
+			name: entry.task.sourceName,
+			duration: entry.task.duration,
+			startOffset: rebasedStart - stepObj.timings.start,
+		});
+
+		const timerLabel = entry.task.isNamed
+			? `timer_named:${entry.task.name}`
+			: `timer_passive`;
+		totalContributions.push({
+			label: timerLabel,
+			start: rebasedStart,
+			end: rebasedEnd,
+		});
+	});
+
 	totalContributions.sort((a, b) => a.start - b.start || a.end - b.end);
 	const totalBreakdown: TimeBreakdownItem[] = [];
 	let maxEnd = 0;
+
 	for (const { label, start, end } of totalContributions) {
 		const effectiveStart = Math.max(start, maxEnd);
 		const added = end - effectiveStart;
@@ -956,6 +1016,9 @@ export function processSections(
 			maxEnd = Math.max(maxEnd, end);
 		}
 	}
+
+	const workflowDuration = maxEnd;
+	const idleTime = workflowDuration - globalActiveTime;
 
 	return {
 		sections,

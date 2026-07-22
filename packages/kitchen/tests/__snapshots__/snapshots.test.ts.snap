@@ -529,7 +529,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       },
     ],
     "activeTime": 68,
-    "idleTime": 2,
+    "idleTime": 62,
     "prepBreakdown": [
       {
         "duration": 12,
@@ -559,7 +559,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "label": "timer_passive",
       },
     ],
-    "totalTime": 89,
+    "totalTime": 149,
   },
   "registry": {
     "cookware": {
@@ -1028,8 +1028,6 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           "backgroundTasks": [
             {
               "duration": 2,
-              "isNamed": false,
-              "name": "Timer",
               "startOffset": 0,
             },
           ],
@@ -1090,8 +1088,8 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
           ],
           "timings": {
             "activeDuration": 0,
-            "end": 68,
-            "start": 68,
+            "end": 128,
+            "start": 128,
           },
           "type": "step",
         },

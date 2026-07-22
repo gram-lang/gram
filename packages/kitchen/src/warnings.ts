@@ -17,6 +17,8 @@ export enum WarningCode {
 	// shared warning vocabulary that flows through CompilationResult.warnings.
 	INVALID_BAKERS_REFERENCE = "INVALID_BAKERS_REFERENCE",
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
+	TIME_PARADOX = "TIME_PARADOX",
+	TRACK_CONTENTION = "TRACK_CONTENTION",
 }
 
 export interface WarningPayloads {
@@ -71,6 +73,17 @@ export interface WarningPayloads {
 	};
 	[WarningCode.INVALID_BAKERS_REFERENCE]: { item: string };
 	[WarningCode.NO_BAKERS_REFERENCE]: Record<string, never>;
+	[WarningCode.TIME_PARADOX]: {
+		cause: string;
+		conflict: string;
+		loc?: Location;
+	};
+	[WarningCode.TRACK_CONTENTION]: {
+		trackName: string;
+		delay: number;
+		item: string;
+		loc?: Location;
+	};
 }
 
 export const warningTemplates: {
@@ -110,6 +123,10 @@ export const warningTemplates: {
 		`Cannot use '${p.item}' as the Baker's Percentage reference.`,
 	[WarningCode.NO_BAKERS_REFERENCE]: () =>
 		`No Baker's Percentage reference found.`,
+	[WarningCode.TIME_PARADOX]: (p) =>
+		`TIME_PARADOX: ${p.cause} is pulled backwards to satisfy ${p.conflict}.`,
+	[WarningCode.TRACK_CONTENTION]: (p) =>
+		`TRACK_CONTENTION: Named track '${p.trackName}' experienced a serialization delay of ${p.delay} minutes on '${p.item}'. It will finish later than its scheduled deadline.`,
 };
 
 /**
@@ -152,6 +169,8 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: "warning",
 	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
+	[WarningCode.TIME_PARADOX]: "warning",
+	[WarningCode.TRACK_CONTENTION]: "warning",
 };
 
 export function pushWarning<K extends WarningCode>(
