@@ -17,23 +17,61 @@ const isCompactMode = ref(false);
 const tooltipData = ref<any>(null);
 const tooltipPos = ref({ x: 0, y: 0 });
 
+const showOverflowPopover = ref(false);
+
+const sectionLegendItems = computed(() => {
+	if (!props.jsonData?.sections) return [];
+	const isSingleUnnamed =
+		props.jsonData.sections.length === 1 && !props.jsonData.sections[0].title;
+
+	if (isSingleUnnamed) {
+		return [
+			{
+				id: "default",
+				title: t.value.playground?.views?.gantt_active || "Actions",
+				colorClass: "section-color-default",
+			},
+		];
+	}
+
+	return props.jsonData.sections.map((sec: any, idx: number) => {
+		return {
+			id: sec.id || `section_${idx}`,
+			title:
+				sec.title ||
+				`${t.value.playground?.views?.gantt_section || "Section"} ${idx + 1}`,
+			colorClass: `section-color-${idx % 9}`,
+		};
+	});
+});
+
+const VISIBLE_SECTIONS_LIMIT = 3;
+
+const visibleSectionItems = computed(() => {
+	return sectionLegendItems.value.slice(0, VISIBLE_SECTIONS_LIMIT);
+});
+
+const overflowSectionItems = computed(() => {
+	return sectionLegendItems.value.slice(VISIBLE_SECTIONS_LIMIT);
+});
+
 const handleMouseMove = (e: MouseEvent, block: any) => {
 	tooltipData.value = block;
-	
+
 	const tooltipWidth = 220;
 	const tooltipHeight = 80;
-	
+
 	let x = e.clientX + 15;
 	let y = e.clientY + 15;
-	
+
 	if (x + tooltipWidth > window.innerWidth) {
 		x = e.clientX - tooltipWidth - 15;
 	}
-	
+
 	if (y + tooltipHeight > window.innerHeight) {
 		y = e.clientY - tooltipHeight - 15;
 	}
-	
+
 	tooltipPos.value = { x, y };
 };
 
@@ -75,30 +113,38 @@ const gaps = computed(() => {
 	const prepTime = props.jsonData.metrics?.preparationTime || 0;
 	const activePeriods: { start: number; end: number }[] = [];
 	let overallMaxRealTime = prepTime;
-	
+
 	if (prepTime > 0) {
 		activePeriods.push({ start: 0, end: prepTime });
 	}
 
-	for (const section of props.jsonData.sections) {
+	for (let i = 0; i < props.jsonData.sections.length; i++) {
+		const section = props.jsonData.sections[i];
 		for (const step of section.steps) {
 			if (step.type === "step" && step.timings) {
 				if (step.timings.activeDuration > 0) {
 					activePeriods.push({
 						start: step.timings.start + prepTime,
 						end: step.timings.end + prepTime,
+						sectionIndex: i,
 					});
-					overallMaxRealTime = Math.max(overallMaxRealTime, step.timings.end + prepTime);
+					overallMaxRealTime = Math.max(
+						overallMaxRealTime,
+						step.timings.end + prepTime,
+					);
 				}
 				if (step.backgroundTasks) {
 					for (const task of step.backgroundTasks) {
-						overallMaxRealTime = Math.max(overallMaxRealTime, step.timings.start + prepTime + task.startOffset + task.duration);
+						overallMaxRealTime = Math.max(
+							overallMaxRealTime,
+							step.timings.start + prepTime + task.startOffset + task.duration,
+						);
 					}
 				}
 			}
 		}
 	}
-	
+
 	// Add zero-duration periods at the start and end to compress leading/trailing passive blocks
 	activePeriods.push({ start: 0, end: 0 });
 	if (overallMaxRealTime > 0) {
@@ -107,7 +153,7 @@ const gaps = computed(() => {
 
 	activePeriods.sort((a, b) => a.start - b.start);
 
-	const merged: { start: number; end: number }[] = [];
+	const merged: { start: number; end: number; sectionIndex?: number }[] = [];
 	for (const period of activePeriods) {
 		if (merged.length === 0) {
 			merged.push({ ...period });
@@ -115,6 +161,7 @@ const gaps = computed(() => {
 			const last = merged[merged.length - 1];
 			if (period.start <= last.end) {
 				last.end = Math.max(last.end, period.end);
+				if (period.sectionIndex !== undefined) last.sectionIndex = period.sectionIndex;
 			} else {
 				merged.push({ ...period });
 			}
@@ -126,6 +173,7 @@ const gaps = computed(() => {
 		const current = merged[i];
 		const next = merged[i + 1];
 		const gapDuration = next.start - current.end;
+
 		if (gapDuration >= GAP_THRESHOLD) {
 			foundGaps.push({ start: current.end, end: next.start });
 		}
@@ -141,7 +189,7 @@ function getVirtualTime(realTime: number): number {
 
 	for (const gap of gaps.value) {
 		if (realTime <= gap.start) break;
-		
+
 		if (realTime >= gap.end) {
 			// Passed the whole gap
 			const gapDuration = gap.end - gap.start;
@@ -162,10 +210,16 @@ function getVirtualTime(realTime: number): number {
 
 // 3. Build tracks
 const tracksData = computed(() => {
-	if (!props.jsonData?.sections) return { tracks: [], totalVirtualTime: 0, maxRealTime: 0 };
+	if (!props.jsonData?.sections)
+		return { tracks: [], totalVirtualTime: 0, maxRealTime: 0 };
 
 	const prepTime = props.jsonData.metrics?.preparationTime || 0;
-	const cookTrack: Track = { id: "cook", title: t.value.playground.views.gantt_cook || "Cook", blocks: [], type: "active" };
+	const cookTrack: Track = {
+		id: "cook",
+		title: t.value.playground.views.gantt_cook || "Actions",
+		blocks: [],
+		type: "active",
+	};
 	const passiveTracksMap = new Map<string, Track>();
 
 	let maxRealTime = 0;
@@ -173,8 +227,8 @@ const tracksData = computed(() => {
 
 	if (prepTime > 0) {
 		const label = t.value.renderer?.prepTime || "Prep";
-		const fitsInside = (prepTime * 12) >= (label.length * 7 + 36);
-		
+		const fitsInside = prepTime * 12 >= label.length * 7 + 36;
+
 		cookTrack.blocks.push({
 			id: "cook_prep",
 			start: 0,
@@ -183,7 +237,7 @@ const tracksData = computed(() => {
 			label: label,
 			tooltip: t.value.renderer?.prepTimeTooltip || "Mise en place",
 			verticalIndex: activeStepIndex++,
-			fitsInside
+			fitsInside,
 		});
 		maxRealTime = prepTime;
 	}
@@ -191,43 +245,50 @@ const tracksData = computed(() => {
 	// Helper to stringify step content for the tooltip
 	const serializeContent = (content: any[]) => {
 		if (!content || !Array.isArray(content)) return "";
-		
+
 		const renderContext = {
 			registry: props.jsonData.registry,
-			lang: lang.value
+			lang: lang.value,
 		};
 
 		const joined = joinStepTokens(
 			content,
 			(c: any) => {
-				if (typeof c === 'string') return c;
-				if (c && typeof c === 'object') {
+				if (typeof c === "string") return c;
+				if (c && typeof c === "object") {
 					const md = formatElement(c, "md", renderContext);
 					// Strip basic markdown formatting from tooltip text (safe unicode replace)
-					return md.replace(/[*_👉]/gu, '');
+					return md.replace(/[*_👉]/gu, "");
 				}
-				return '';
+				return "";
 			},
-			(c: any) => typeof c !== "string" && c.type !== "comment"
+			(c: any) => typeof c !== "string" && c.type !== "comment",
 		);
 
-		return joined.replace(/\s+/g, ' ').trim();
+		return joined.replace(/\s+/g, " ").trim();
 	};
 
 	let sectionIndex = 0;
-	const isSingleUnnamedSection = props.jsonData.sections.length === 1 && !props.jsonData.sections[0].title;
+	const isSingleUnnamedSection =
+		props.jsonData.sections.length === 1 && !props.jsonData.sections[0].title;
 
 	for (const section of props.jsonData.sections) {
-		const computedSectionIndex = isSingleUnnamedSection ? 'default' : (sectionIndex % 5);
+		const computedSectionIndex = isSingleUnnamedSection
+			? "default"
+			: sectionIndex % 9;
 
 		for (const step of section.steps) {
 			if (step.type === "step" && step.timings) {
-				let temperature: string | undefined = undefined;
+				let temperature: string | undefined;
 				let isAssembly = false;
 				for (const c of step.content) {
 					if (c && typeof c === "object") {
 						if (c.type === "temperature") {
-							temperature = c.text || (c.quantity ? `${typeof c.quantity === 'object' ? c.quantity.value : c.quantity}${c.unit || 'C'}` : undefined);
+							temperature =
+								c.text ||
+								(c.quantity
+									? `${typeof c.quantity === "object" ? c.quantity.value : c.quantity}${c.unit || "C"}`
+									: undefined);
 						}
 						if (c.type === "reference") {
 							isAssembly = true;
@@ -240,8 +301,9 @@ const tracksData = computed(() => {
 					const blockStart = step.timings.start + prepTime;
 					const blockEnd = step.timings.end + prepTime;
 					const fullText = serializeContent(step.content);
-					const label = step.action || "Cook";
-					const fitsInside = (step.timings.activeDuration * 12) >= (label.length * 7 + 36);
+					const label = step.action || t.value.playground.views.gantt_cook || "Actions";
+					const fitsInside =
+						step.timings.activeDuration * 12 >= label.length * 7 + 36;
 
 					cookTrack.blocks.push({
 						id: `cook_${blockStart}`,
@@ -249,12 +311,15 @@ const tracksData = computed(() => {
 						end: blockEnd,
 						duration: step.timings.activeDuration,
 						label: label,
-						tooltip: fullText.length > 100 ? fullText.substring(0, 100) + "..." : fullText,
+						tooltip:
+							fullText.length > 100
+								? fullText.substring(0, 100) + "..."
+								: fullText,
 						sectionIndex: computedSectionIndex,
 						isAssembly,
 						verticalIndex: activeStepIndex++,
 						fitsInside,
-						temperature
+						temperature,
 					});
 					maxRealTime = Math.max(maxRealTime, blockEnd);
 				}
@@ -262,7 +327,8 @@ const tracksData = computed(() => {
 				// Passive blocks
 				if (step.backgroundTasks) {
 					for (const task of step.backgroundTasks) {
-						const trackName = task.name || (t.value.playground.views.gantt_timer || "Timer");
+						const trackName =
+							task.name || t.value.playground.views.gantt_timer || "Timer";
 						if (!passiveTracksMap.has(trackName)) {
 							passiveTracksMap.set(trackName, {
 								id: `track_${trackName}`,
@@ -271,10 +337,10 @@ const tracksData = computed(() => {
 								type: "passive",
 							});
 						}
-						
+
 						const taskStart = step.timings.start + prepTime + task.startOffset;
 						const taskEnd = taskStart + task.duration;
-						
+
 						passiveTracksMap.get(trackName)!.blocks.push({
 							id: `task_${taskStart}_${task.name}`,
 							start: taskStart,
@@ -284,13 +350,13 @@ const tracksData = computed(() => {
 							tooltip: trackName,
 							temperature,
 						});
-						
+
 						maxRealTime = Math.max(maxRealTime, taskEnd);
 					}
 				}
 			}
 		}
-		
+
 		sectionIndex++;
 	}
 
@@ -305,6 +371,20 @@ const tracksData = computed(() => {
 
 const tracks = computed(() => tracksData.value.tracks);
 const totalVirtualTime = computed(() => tracksData.value.totalVirtualTime);
+const maxRealTime = computed(() => tracksData.value.maxRealTime);
+
+const timeMode = ref<'forward' | 'reverse' | 'target'>('forward');
+
+const defaultTargetTime = computed(() => {
+	const now = new Date();
+	now.setMinutes(now.getMinutes() + maxRealTime.value);
+	// Round to nearest 15 minutes
+	const m = (Math.round(now.getMinutes() / 15) * 15) % 60;
+	const h = now.getHours() + (m === 0 && now.getMinutes() > 30 ? 1 : 0);
+	return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+});
+
+const targetTime = ref(defaultTargetTime.value);
 
 // Format time (minutes to HH:MM)
 function formatTime(minutes: number): string {
@@ -314,6 +394,35 @@ function formatTime(minutes: number): string {
 		return m > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${h}h`;
 	}
 	return `${m}m`;
+}
+
+function formatAxisTime(realTime: number): string {
+	if (timeMode.value === 'reverse') {
+		const diff = maxRealTime.value - realTime;
+		if (diff === 0) return "T-0";
+		return `T-${formatTime(diff)}`;
+	}
+	if (timeMode.value === 'target' && targetTime.value) {
+		const [th, tm] = targetTime.value.split(':').map(Number);
+		if (!isNaN(th) && !isNaN(tm)) {
+			const diff = maxRealTime.value - realTime;
+			const totalTargetMins = th * 60 + tm;
+			const timeAtTick = totalTargetMins - diff;
+			
+			// Handle negative times (previous day) or > 24h
+			const normalizedTime = ((timeAtTick % 1440) + 1440) % 1440;
+			const rh = Math.floor(normalizedTime / 60);
+			const rm = normalizedTime % 60;
+			
+			const d = new Date();
+			d.setHours(rh, rm, 0, 0);
+			return new Intl.DateTimeFormat(undefined, {
+				hour: 'numeric',
+				minute: '2-digit'
+			}).format(d);
+		}
+	}
+	return formatTime(realTime);
 }
 
 // Axis ticks calculation
@@ -340,11 +449,11 @@ const timeTicks = computed(() => {
 		ticks.push({
 			realTime: t,
 			virtualPercent: (getVirtualTime(t) / totalVirtualTime.value) * 100,
-			label: formatTime(t),
+			label: formatAxisTime(t),
 		});
 	}
-	
-	// Add final tick if it doesn't align
+
+	// Add final tick if it doesn't align, avoiding text collisions with the last regular tick
 	if (maxT % interval !== 0 && maxT > 0) {
 		let inGap = false;
 		for (const gap of gaps.value) {
@@ -354,10 +463,19 @@ const timeTicks = computed(() => {
 			}
 		}
 		if (!inGap) {
+			const finalVirtualPercent = 100;
+			// If the previous tick is too close to the end (less than 5% distance),
+			// remove it so its label doesn't collide with the final time label.
+			if (ticks.length > 0) {
+				const lastTick = ticks[ticks.length - 1];
+				if (finalVirtualPercent - lastTick.virtualPercent < 5) {
+					ticks.pop();
+				}
+			}
 			ticks.push({
 				realTime: maxT,
-				virtualPercent: 100,
-				label: formatTime(maxT),
+				virtualPercent: finalVirtualPercent,
+				label: formatAxisTime(maxT),
 			});
 		}
 	}
@@ -367,32 +485,80 @@ const timeTicks = computed(() => {
 
 // Calculate visual gaps to draw zig-zags
 const visualGaps = computed(() => {
-	return gaps.value.map(g => {
+	return gaps.value.map((g) => {
 		const vStart = getVirtualTime(g.start);
 		const vEnd = getVirtualTime(g.end);
 		const skipped = g.end - g.start;
 		return {
 			leftPercent: (vStart / totalVirtualTime.value) * 100,
 			widthPercent: ((vEnd - vStart) / totalVirtualTime.value) * 100,
-			label: `+ ${formatTime(skipped)}`,
+			label: `⏳ ${formatTime(skipped)}`,
 		};
 	});
 });
-
 </script>
 
 <template>
   <div class="gram-gantt-container" v-if="tracks.length > 0 && tracksData.maxRealTime > 0">
     <div class="gantt-header">
       <div class="gantt-legend">
-        <span class="legend-item active"><span class="color-box"></span> {{ t.playground.views.gantt_active || 'Active Task' }}</span>
-        <span class="legend-item passive"><span class="color-box"></span> {{ t.playground.views.gantt_passive || 'Background Task' }}</span>
+        <span 
+          v-for="sec in visibleSectionItems" 
+          :key="sec.id" 
+          class="legend-item"
+        >
+          <span class="color-box" :class="sec.colorClass"></span> 
+          <span class="legend-text" :title="sec.title">{{ sec.title }}</span>
+        </span>
+
+        <div 
+          v-if="overflowSectionItems.length > 0" 
+          class="legend-item overflow-item"
+          @mouseenter="showOverflowPopover = true"
+          @mouseleave="showOverflowPopover = false"
+        >
+          <span class="color-box overflow-box">+{{ overflowSectionItems.length }}</span>
+          <span class="legend-text">{{ t.playground?.views?.gantt_more_sections?.replace('{count}', String(overflowSectionItems.length)) || `+${overflowSectionItems.length} autres` }}</span>
+
+          <div v-if="showOverflowPopover" class="sections-popover">
+            <div v-for="sec in overflowSectionItems" :key="sec.id" class="popover-item">
+              <span class="color-box" :class="sec.colorClass"></span>
+              <span class="popover-text">{{ sec.title }}</span>
+            </div>
+          </div>
+        </div>
+
+        <span class="legend-item passive">
+          <span class="color-box"></span> 
+          {{ t.playground?.views?.gantt_passive || 'Tâche de fond' }}
+        </span>
       </div>
       <div class="gantt-controls">
-        <label class="compact-toggle">
-          <input type="checkbox" v-model="isCompactMode">
-          {{ t.playground.views.gantt_compact || 'Vue Compacte' }}
-        </label>
+        <details class="options-dropdown">
+          <summary class="options-summary" title="Options">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 11.9998C2 11.1353 2.1097 10.2964 2.31595 9.49631C3.40622 9.55283 4.48848 9.01015 5.0718 7.99982C5.65467 6.99025 5.58406 5.78271 4.99121 4.86701C6.18354 3.69529 7.66832 2.82022 9.32603 2.36133C9.8222 3.33385 10.8333 3.99982 12 3.99982C13.1667 3.99982 14.1778 3.33385 14.674 2.36133C16.3317 2.82022 17.8165 3.69529 19.0088 4.86701C18.4159 5.78271 18.3453 6.99025 18.9282 7.99982C19.5115 9.01015 20.5938 9.55283 21.6841 9.49631C21.8903 10.2964 22 11.1353 22 11.9998C22 12.8643 21.8903 13.7032 21.6841 14.5033C20.5938 14.4468 19.5115 14.9895 18.9282 15.9998C18.3453 17.0094 18.4159 18.2169 19.0088 19.1326C17.8165 20.3043 16.3317 21.1794 14.674 21.6383C14.1778 20.6658 13.1667 19.9998 12 19.9998C10.8333 19.9998 9.8222 20.6658 9.32603 21.6383C7.66832 21.1794 6.18354 20.3043 4.99121 19.1326C5.58406 18.2169 5.65467 17.0094 5.0718 15.9998C4.48848 14.9895 3.40622 14.4468 2.31595 14.5033C2.1097 13.7032 2 12.8643 2 11.9998ZM6.80385 14.9998C7.43395 16.0912 7.61458 17.3459 7.36818 18.5236C7.77597 18.8138 8.21005 19.0652 8.66489 19.2741C9.56176 18.4712 10.7392 17.9998 12 17.9998C13.2608 17.9998 14.4382 18.4712 15.3351 19.2741C15.7899 19.0652 16.224 18.8138 16.6318 18.5236C16.3854 17.3459 16.566 16.0912 17.1962 14.9998C17.8262 13.9085 18.8225 13.1248 19.9655 12.7493C19.9884 12.5015 20 12.2516 20 11.9998C20 11.7481 19.9884 11.4981 19.9655 11.2504C18.8225 10.8749 17.8262 10.0912 17.1962 8.99982C16.566 7.90845 16.3854 6.65378 16.6318 5.47605C16.224 5.18588 15.7899 4.93447 15.3351 4.72552C14.4382 5.52844 13.2608 5.99982 12 5.99982C10.7392 5.99982 9.56176 5.52844 8.66489 4.72552C8.21005 4.93447 7.77597 5.18588 7.36818 5.47605C7.61458 6.65378 7.43395 7.90845 6.80385 8.99982C6.17376 10.0912 5.17754 10.8749 4.03451 11.2504C4.01157 11.4981 4 11.7481 4 11.9998C4 12.2516 4.01157 12.5015 4.03451 12.7493C5.17754 13.1248 6.17376 13.9085 6.80385 14.9998ZM12 14.9998C10.3431 14.9998 9 13.6567 9 11.9998C9 10.343 10.3431 8.99982 12 8.99982C13.6569 8.99982 15 10.343 15 11.9998C15 13.6567 13.6569 14.9998 12 14.9998ZM12 12.9998C12.5523 12.9998 13 12.5521 13 11.9998C13 11.4475 12.5523 10.9998 12 10.9998C11.4477 10.9998 11 11.4475 11 11.9998C11 12.5521 11.4477 12.9998 12 12.9998Z"></path></svg>
+          </summary>
+          <div class="options-dropdown-content gantt-options-content">
+            <div class="time-mode-selector">
+              <div class="time-select-wrapper">
+                <select v-model="timeMode" class="time-select">
+                  <option value="forward">{{ t.playground?.views?.gantt_mode_forward || 'Stopwatch (T+)' }}</option>
+                  <option value="reverse">{{ t.playground?.views?.gantt_mode_reverse || 'Countdown (T-)' }}</option>
+                  <option value="target">{{ t.playground?.views?.gantt_mode_target || 'Target Time' }}</option>
+                </select>
+                <svg class="select-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div v-if="timeMode === 'target'" class="target-time-wrapper">
+                 <span>{{ t.playground?.views?.gantt_target_time_label || 'Serve at:' }}</span>
+                 <input type="time" v-model="targetTime" class="target-time-input">
+              </div>
+            </div>
+            <label class="compact-toggle">
+              <input type="checkbox" v-model="isCompactMode">
+              {{ t.playground?.views?.gantt_compact || 'Vue Compacte' }}
+            </label>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -401,10 +567,25 @@ const visualGaps = computed(() => {
       <div class="gantt-axis">
         <div class="track-label axis-label">{{ t.playground.views.gantt_time || 'Time' }}</div>
         <div class="track-content">
+          <!-- Visual Gap Overlay inside Axis -->
+          <div class="gantt-axis-gaps">
+            <div 
+              v-for="(gap, i) in visualGaps" 
+              :key="'axis_gap_'+i" 
+              class="visual-gap"
+              :style="{ left: `${gap.leftPercent}%`, width: `${gap.widthPercent}%` }"
+              :title="t.playground?.views?.gantt_compressed || 'Time compressed (idle period)'"
+            >
+              <div class="gap-pattern"></div>
+              <div class="gap-label">{{ gap.label }}</div>
+            </div>
+          </div>
+
           <div 
-            v-for="tick in timeTicks" 
+            v-for="(tick, index) in timeTicks" 
             :key="tick.realTime"
             class="axis-tick"
+            :class="{ 'is-first-tick': index === 0, 'is-last-tick': index === timeTicks.length - 1 }"
             :style="{ left: `${tick.virtualPercent}%` }"
           >
             <div class="tick-mark"></div>
@@ -414,17 +595,24 @@ const visualGaps = computed(() => {
       </div>
 
       <div class="gantt-tracks">
-        <!-- Visual Gap Overlays -->
+        <!-- Visual Gap Overlays for Tracks -->
         <div class="gantt-tracks-overlay">
+          <!-- Start / End Markers -->
+          <div class="gantt-marker start-marker" style="left: 0%">
+            <div class="marker-line"></div>
+          </div>
+          <div class="gantt-marker end-marker" style="left: 100%">
+            <div class="marker-line"></div>
+          </div>
+
           <div 
             v-for="(gap, i) in visualGaps" 
-            :key="'gap_'+i" 
+            :key="'track_gap_'+i" 
             class="visual-gap"
             :style="{ left: `${gap.leftPercent}%`, width: `${gap.widthPercent}%` }"
-            title="Time compressed (idle period)"
+            :title="t.playground?.views?.gantt_compressed || 'Time compressed (idle period)'"
           >
             <div class="gap-pattern"></div>
-            <div class="gap-label">🕒 {{ gap.label }}</div>
           </div>
         </div>
 
@@ -451,7 +639,7 @@ const visualGaps = computed(() => {
               @mouseleave="handleMouseLeave"
             >
               <div class="block-label" :class="{ 'label-inside': block.fitsInside }" :style="track.type === 'active' ? { opacity: isCompactMode && !block.fitsInside ? 0 : 1, transition: 'opacity 0.2s' } : {}">
-                <span v-if="block.isAssembly" class="assembly-icon" title="Assembly / Dependencies">↳</span>
+                <span v-if="block.isAssembly" class="assembly-icon" :title="t.playground.views.gantt_assembly || 'Assembly / Dependencies'">↳</span>
                 {{ block.label }}
                 <span v-if="block.temperature" class="temp-badge">🌡️ {{ block.temperature }}</span>
               </div>
@@ -473,9 +661,9 @@ const visualGaps = computed(() => {
            <span v-if="tooltipData.temperature" style="font-size: 11px; font-weight: bold; background: var(--vp-c-bg-mute); padding: 2px 6px; border-radius: 4px; color: var(--vp-c-text-2);">🌡️ {{ tooltipData.temperature }}</span>
         </div>
         <div class="tooltip-time">
-          <span class="time-badge">{{ formatTime(tooltipData.start) }}</span>
+          <span class="time-badge">{{ formatAxisTime(tooltipData.start) }}</span>
           <span class="time-arrow">→</span>
-          <span class="time-badge">{{ formatTime(tooltipData.end) }}</span>
+          <span class="time-badge">{{ formatAxisTime(tooltipData.end) }}</span>
           <span class="time-duration">({{ tooltipData.duration }}m)</span>
         </div>
         <div class="tooltip-text" v-if="tooltipData.tooltip && tooltipData.tooltip !== tooltipData.label">{{ tooltipData.tooltip }}</div>
@@ -514,10 +702,10 @@ const visualGaps = computed(() => {
   min-height: 48px;
   box-sizing: border-box;
   display: flex;
-  justify-content: flex-start;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   align-items: center;
-  padding: 0 16px;
+  padding: 8px 16px;
   background-color: var(--vp-c-bg-soft);
   border-bottom: 1px solid var(--vp-c-border);
   justify-content: space-between;
@@ -525,7 +713,9 @@ const visualGaps = computed(() => {
 
 .gantt-legend {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
   font-size: 12px;
   color: var(--vp-c-text-2);
 }
@@ -535,28 +725,154 @@ const visualGaps = computed(() => {
   align-items: center;
 }
 
+/* Options Dropdown */
+.options-dropdown {
+  position: relative;
+}
+
+.options-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--vp-c-border);
+  background-color: var(--vp-c-bg);
+  cursor: pointer;
+  list-style: none;
+  color: var(--vp-c-text-2);
+  transition: border-color 0.2s, background-color 0.2s;
+  padding: 6px;
+}
+
+.options-summary::-webkit-details-marker {
+  display: none;
+}
+
+.options-summary:hover {
+  border-color: var(--vp-c-brand);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.options-dropdown-content {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: max-content;
+  box-shadow: var(--vp-shadow-3);
+  border-radius: 8px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-border);
+}
+
+.gantt-options-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
 .compact-toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--vp-c-text-2);
+  color: var(--vp-c-text-1);
   cursor: pointer;
   user-select: none;
+  line-height: 1;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1;
+}
+
+.legend-text {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overflow-item {
+  position: relative;
+  cursor: pointer;
 }
 
 .color-box {
   width: 12px;
   height: 12px;
   border-radius: 3px;
+  flex-shrink: 0;
 }
+
+.color-box.overflow-box {
+  background-color: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-2);
+  font-size: 9px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 16px;
+  padding: 0 3px;
+  height: 12px;
+  box-sizing: border-box;
+}
+
+.sections-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-border);
+  box-shadow: var(--vp-shadow-3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 100;
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.popover-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--vp-c-text-1);
+}
+
+.color-box.section-color-0 { background-color: #b8cae6; border: 1px solid #98aed4; }
+.color-box.section-color-1 { background-color: #e6c4b8; border: 1px solid #d4a698; }
+.color-box.section-color-2 { background-color: #b8e6ca; border: 1px solid #98d4ae; }
+.color-box.section-color-3 { background-color: #e6b8cc; border: 1px solid #d498b0; }
+.color-box.section-color-4 { background-color: #cbd0f0; border: 1px solid #a8b0e0; }
+.color-box.section-color-5 { background-color: #ebd8b0; border: 1px solid #dac090; }
+.color-box.section-color-6 { background-color: #b0e4e0; border: 1px solid #90d0cc; }
+.color-box.section-color-7 { background-color: #dcb8e6; border: 1px solid #c698d4; }
+.color-box.section-color-8 { background-color: #d8e0b0; border: 1px solid #c0cb90; }
+.color-box.section-color-default { background-color: var(--vp-c-brand-1); }
+
+html.dark .color-box.section-color-0 { background-color: #2b3a52; border: 1px solid #3d506e; }
+html.dark .color-box.section-color-1 { background-color: #52362b; border: 1px solid #6e4b3d; }
+html.dark .color-box.section-color-2 { background-color: #2b5239; border: 1px solid #3d6e4f; }
+html.dark .color-box.section-color-3 { background-color: #522b3b; border: 1px solid #6e3d51; }
+html.dark .color-box.section-color-4 { background-color: #34385a; border: 1px solid #484d7a; }
+html.dark .color-box.section-color-5 { background-color: #4e3f28; border: 1px solid #6a573a; }
+html.dark .color-box.section-color-6 { background-color: #264d4a; border: 1px solid #386864; }
+html.dark .color-box.section-color-7 { background-color: #462b52; border: 1px solid #603d6e; }
+html.dark .color-box.section-color-8 { background-color: #424927; border: 1px solid #5b6539; }
 
 .legend-item.active .color-box {
   background-color: var(--vp-c-brand-1);
@@ -629,6 +945,7 @@ const visualGaps = computed(() => {
   display: flex;
   flex-direction: column;
   transform: translateX(-50%);
+  z-index: 2;
 }
 
 .tick-mark {
@@ -645,12 +962,12 @@ const visualGaps = computed(() => {
   white-space: nowrap;
 }
 
-.axis-tick:first-child .tick-label {
-  transform: translateX(12px);
+.axis-tick.is-first-tick .tick-label {
+  transform: translateX(14px);
 }
 
-.axis-tick:last-child .tick-label {
-  transform: translateX(-12px);
+.axis-tick.is-last-tick .tick-label {
+  transform: translateX(-14px);
 }
 
 .gantt-tracks {
@@ -659,14 +976,19 @@ const visualGaps = computed(() => {
   flex-direction: column;
 }
 
+.gantt-axis-gaps,
 .gantt-tracks-overlay {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 120px;
+  left: 0;
   right: 0;
   pointer-events: none;
   z-index: 1;
+}
+
+.gantt-tracks-overlay {
+  left: 120px;
 }
 
 .visual-gap {
@@ -676,7 +998,7 @@ const visualGaps = computed(() => {
   background-color: var(--vp-c-bg-alt);
   border-left: 1px dashed var(--vp-c-border);
   border-right: 1px dashed var(--vp-c-border);
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .gap-pattern {
@@ -709,6 +1031,8 @@ const visualGaps = computed(() => {
   position: absolute;
   top: 8px;
   height: 32px;
+  min-width: 22px;
+  box-sizing: border-box;
   border-radius: 5px;
   display: flex;
   align-items: center;
@@ -716,7 +1040,7 @@ const visualGaps = computed(() => {
   cursor: help;
   transition: transform 0.1s, box-shadow 0.1s, top 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 2;
-  border:1px solid  var(--vp-c-bg);
+  border: 1px solid var(--vp-c-bg);
 }
 
 .time-block:hover {
@@ -771,19 +1095,14 @@ const visualGaps = computed(() => {
 /* Gap Label */
 .gap-label {
   position: absolute;
-  top: 50%;
+  top: 3px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--vp-c-bg);
-  padding: 4px 8px;
-  border-radius: 12px;
+  transform: translateX(-50%);
+  padding: 1px 7px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--vp-c-text-2);
-  border: 1px solid var(--vp-c-border);
-  box-shadow: var(--vp-shadow-1);
   white-space: nowrap;
-  z-index: 10;
+  z-index: 26;
 }
 
 /* Assembly Icon */
@@ -808,18 +1127,26 @@ html.dark .temp-badge {
 }
 
 /* Section Colors (overrides .active) */
-.time-block.section-color-0 { background-color: #a8c8f9; color: #0a2558; }
-.time-block.section-color-1 { background-color: #f9cca8; color: #582a0a; }
-.time-block.section-color-2 { background-color: #a8f9c8; color: #0a5825; }
-.time-block.section-color-3 { background-color: #f9a8c8; color: #580a25; }
-.time-block.section-color-4 { background-color: #c8a8f9; color: #250a58; }
+.time-block.section-color-0 { background-color: #b8cae6; color: #1e2f4d; }
+.time-block.section-color-1 { background-color: #e6c4b8; color: #4d261e; }
+.time-block.section-color-2 { background-color: #b8e6ca; color: #1e4d2d; }
+.time-block.section-color-3 { background-color: #e6b8cc; color: #4d1e31; }
+.time-block.section-color-4 { background-color: #cbd0f0; color: #252a50; }
+.time-block.section-color-5 { background-color: #ebd8b0; color: #4a3818; }
+.time-block.section-color-6 { background-color: #b0e4e0; color: #184845; }
+.time-block.section-color-7 { background-color: #dcb8e6; color: #3f1e4d; }
+.time-block.section-color-8 { background-color: #d8e0b0; color: #3a4418; }
 .time-block.section-color-default { background-color: var(--vp-c-brand-soft); color: var(--vp-c-brand-1); }
 
-html.dark .time-block.section-color-0 { background-color: #254b8a; color: #d6e4fc; }
-html.dark .time-block.section-color-1 { background-color: #8a5325; color: #fce6d6; }
-html.dark .time-block.section-color-2 { background-color: #258a4b; color: #d6fce4; }
-html.dark .time-block.section-color-3 { background-color: #8a254b; color: #fcd6e4; }
-html.dark .time-block.section-color-4 { background-color: #4b258a; color: #e4d6fc; }
+html.dark .time-block.section-color-0 { background-color: #2b3a52; color: #dce6f5; }
+html.dark .time-block.section-color-1 { background-color: #52362b; color: #f5e4dc; }
+html.dark .time-block.section-color-2 { background-color: #2b5239; color: #dcf5e6; }
+html.dark .time-block.section-color-3 { background-color: #522b3b; color: #f5dce5; }
+html.dark .time-block.section-color-4 { background-color: #34385a; color: #e1e3f8; }
+html.dark .time-block.section-color-5 { background-color: #4e3f28; color: #f6ebd6; }
+html.dark .time-block.section-color-6 { background-color: #264d4a; color: #d4f5f2; }
+html.dark .time-block.section-color-7 { background-color: #462b52; color: #ebdcf5; }
+html.dark .time-block.section-color-8 { background-color: #424927; color: #edf2d5; }
 
 /* Fixed Custom Tooltip */
 .gantt-tooltip-fixed {
@@ -876,4 +1203,89 @@ html.dark .time-block.section-color-4 { background-color: #4b258a; color: #e4d6f
   line-height: 1.4;
   white-space: pre-wrap;
 }
+
+/* Time Mode Selector */
+.time-mode-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.time-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.time-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-1);
+  padding: 6px 32px 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+}
+
+.select-chevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--vp-c-text-2);
+}
+
+.target-time-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+.target-time-input {
+  background-color: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-1);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  width: 110px;
+}
+
+/* Visual Gap styles */
+.gantt-marker {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  z-index: 15;
+}
+
+.start-marker {
+  transform: translateX(-1px);
+}
+
+.start-marker .marker-line {
+  width: 2px;
+  height: 100%;
+  background-color: var(--vp-c-green-1);
+  opacity: 0.5;
+}
+
+.end-marker {
+  transform: translateX(-1px);
+}
+
+.end-marker .marker-line {
+  width: 2px;
+  height: 100%;
+  background-color: var(--vp-c-red-1);
+  opacity: 0.5;
+}
+
 </style>

@@ -27,9 +27,9 @@ const { lang } = useData();
 const t = computed(() => getDictionary(lang.value));
 
 const code = ref("");
-const viewMode = ref<"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree">(
-	"preview",
-);
+const viewMode = ref<
+	"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree"
+>("preview");
 const options = ref({
 	enableMassStandardization: true,
 	enableYieldCalculation: false,

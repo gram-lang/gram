@@ -88,7 +88,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 							id;
 						label = `${t.renderer.breakdownPrep} : ${escapeHtml(name)} <span class="timing-detail-type">(+ 2min)</span>`;
 					}
-					
+
 					return `      <div class="timing-row">
         <span class="timing-label">${label}</span>
         <span class="timing-val">+ ${formatDuration(b.duration)}</span>
@@ -103,12 +103,12 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 			breakdown2?: TimeBreakdownItem[],
 		) => {
 			if (!base && !breakdown1?.length && !breakdown2?.length) return "";
-			
+
 			let htmlStr = `\n    <div class="timing-tooltip">`;
 			if (base) {
 				htmlStr += `\n      <div class="timing-tooltip-title">${escapeHtml(base)}</div>`;
 			}
-			
+
 			if (breakdown1 && breakdown1.length > 0) {
 				htmlStr += "\n" + formatBreakdownHTML(breakdown1);
 			}
