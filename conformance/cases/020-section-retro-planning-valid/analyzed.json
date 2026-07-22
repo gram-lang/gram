@@ -164,8 +164,8 @@
             "."
           ],
           "timings": {
-            "start": 2,
-            "end": 4,
+            "start": 2880,
+            "end": 2882,
             "activeDuration": 2
           }
         }
@@ -179,9 +179,8 @@
   ],
   "warnings": [],
   "metrics": {
-    "idleTime": 0,
-    "activeTime": 4,
-    "activeBreakdown": [
+    "totalTime": 2885,
+    "totalBreakdown": [
       {
         "label": "section_active:Puff Pastry",
         "duration": 2
@@ -191,7 +190,9 @@
         "duration": 2
       }
     ],
-    "totalBreakdown": [
+    "idleTime": 2878,
+    "activeTime": 4,
+    "activeBreakdown": [
       {
         "label": "section_active:Puff Pastry",
         "duration": 2
@@ -208,7 +209,6 @@
         "duration": 3
       }
     ],
-    "totalTime": 7,
     "totalMass": 600,
     "massStatus": "precise",
     "missingMassIngredients": [],

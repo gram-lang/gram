@@ -108,10 +108,8 @@
           },
           "backgroundTasks": [
             {
-              "name": "Timer",
               "duration": 30,
-              "startOffset": 5,
-              "isNamed": false
+              "startOffset": 5
             }
           ]
         }
@@ -120,14 +118,7 @@
   ],
   "warnings": [],
   "metrics": {
-    "idleTime": 30,
-    "activeTime": 5,
-    "activeBreakdown": [
-      {
-        "label": "section_active:Section",
-        "duration": 5
-      }
-    ],
+    "totalTime": 39,
     "totalBreakdown": [
       {
         "label": "section_active:Section",
@@ -136,6 +127,14 @@
       {
         "label": "timer_passive",
         "duration": 30
+      }
+    ],
+    "idleTime": 30,
+    "activeTime": 5,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 5
       }
     ],
     "preparationTime": 4,
@@ -148,7 +147,6 @@
         "label": "prep_big-pot",
         "duration": 2
       }
-    ],
-    "totalTime": 39
+    ]
   }
 }
