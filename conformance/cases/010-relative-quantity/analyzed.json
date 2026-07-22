@@ -139,15 +139,16 @@
   ],
   "warnings": [],
   "metrics": {
-    "idleTime": 0,
-    "activeTime": 2,
-    "activeBreakdown": [
+    "totalTime": 4,
+    "totalBreakdown": [
       {
         "label": "section_active:Section",
         "duration": 2
       }
     ],
-    "totalBreakdown": [
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
       {
         "label": "section_active:Section",
         "duration": 2
@@ -160,7 +161,6 @@
         "duration": 2
       }
     ],
-    "totalTime": 4,
     "totalMass": 250,
     "massStatus": "incomplete",
     "missingMassIngredients": [

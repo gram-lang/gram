@@ -112,15 +112,16 @@
   ],
   "warnings": [],
   "metrics": {
-    "idleTime": 0,
-    "activeTime": 2,
-    "activeBreakdown": [
+    "totalTime": 5,
+    "totalBreakdown": [
       {
         "label": "section_active:Section",
         "duration": 2
       }
     ],
-    "totalBreakdown": [
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
       {
         "label": "section_active:Section",
         "duration": 2
@@ -132,8 +133,7 @@
         "label": "ingredients_overhead",
         "duration": 3
       }
-    ],
-    "totalTime": 5
+    ]
   },
   "scaleFactor": 2
 }

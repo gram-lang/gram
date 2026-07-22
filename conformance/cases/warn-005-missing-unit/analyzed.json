@@ -57,6 +57,13 @@
     }
   ],
   "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 10
+      }
+    ],
     "idleTime": 0,
     "activeTime": 10,
     "activeBreakdown": [
@@ -65,14 +72,7 @@
         "duration": 10
       }
     ],
-    "totalBreakdown": [
-      {
-        "label": "section_active:Section",
-        "duration": 10
-      }
-    ],
     "preparationTime": 0,
-    "totalTime": 10,
     "totalMass": 0,
     "massStatus": "incomplete",
     "missingMassIngredients": [],

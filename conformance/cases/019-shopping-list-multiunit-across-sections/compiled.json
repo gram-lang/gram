@@ -105,9 +105,8 @@
   ],
   "warnings": [],
   "metrics": {
-    "idleTime": 0,
-    "activeTime": 4,
-    "activeBreakdown": [
+    "totalTime": 5,
+    "totalBreakdown": [
       {
         "label": "section_active:Melt",
         "duration": 2
@@ -117,7 +116,9 @@
         "duration": 2
       }
     ],
-    "totalBreakdown": [
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
       {
         "label": "section_active:Melt",
         "duration": 2
@@ -133,7 +134,6 @@
         "label": "ingredients_overhead",
         "duration": 1
       }
-    ],
-    "totalTime": 5
+    ]
   }
 }
