@@ -22,22 +22,25 @@ async function main() {
         return;
     }
 
+    let preState: any = undefined;
+    try {
+        preState = JSON.parse(await readFile(`${cwd}/.changeset/pre.json`, "utf-8"));
+    } catch (e) {
+        // ignore
+    }
+
     const config = await readConfig(cwd, packages);
-    const releasePlan = assembleReleasePlan(changesets, packages, config, []);
+    const releasePlan = assembleReleasePlan(changesets, packages, config, preState);
 
     // 2. Safely resolve the clean version number
-    const mainRelease = releasePlan.releases.find(r => r.name === "gram-lang") || releasePlan.releases[0];
+    const mainRelease = releasePlan.releases.find(r => r.name === "@gram-lang/kitchen") || releasePlan.releases.find(r => r.name === "gram-lang") || releasePlan.releases[0];
     let nextVersion = mainRelease?.newVersion || "0.0.0";
 
     // 2.b Filter changesets already published in previous pre-releases
     let changesetsForNote = changesets;
-    try {
-        const preJson = JSON.parse(await readFile(`${cwd}/.changeset/pre.json`, "utf-8"));
-        nextVersion = nextVersion.replace("-undefined.", `-${preJson.tag}.`);
-        const releasedChangesets = new Set(preJson.changesets);
+    if (preState) {
+        const releasedChangesets = new Set(preState.changesets);
         changesetsForNote = changesets.filter(cs => !releasedChangesets.has(cs.id));
-    } catch (e) {
-        // ignore
     }
 
     // 3. Initialize the markdown block

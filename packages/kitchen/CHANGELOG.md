@@ -1,5 +1,32 @@
 # @gram-lang/kitchen
 
+## 1.0.0-beta.4
+
+### Major Changes
+
+- 68365c4: Section retro-planning (e.g. `## Section ~{-2h}`) now enforces a strict signed-duration syntax instead of accepting arbitrary free text, preventing invalid timeline calculations. Added support for the `d` (day) time unit.
+
+### Minor Changes
+
+- 06039f2: Added support for ALAP (As Late As Possible) scheduling. Passive timers and their dependencies are now natively pushed backwards from the end of the recipe, ensuring ingredients are prepared just-in-time rather than sitting idle on the counter. Also introduces two new compiler warnings for timeline conflicts: `TIME_PARADOX` and `TRACK_CONTENTION`.
+- fc47a86: Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
+
+### Patch Changes
+
+- 7487b09: Fixed the display of alternative ingredient and cookware groups (`@egg|@tofu`). They now correctly render inline as a single joined line in shopping and section lists, rather than being dropped or rendered as oddly-wrapped sub-lists.
+- 0bee2b2: Added support for bare single-word children in composite ingredients (e.g., `@juice<@lemon`), and allowed independent preparation instructions on the parent side. Fixed section ingredient lists silently dropping the parent reference.
+- aa0c082: Fixed a bug where scaled fractions (e.g., when doubling a recipe) would incorrectly display their original, unscaled text values in section ingredient lists instead of the correctly multiplied amount.
+- c1c9b53: Fixed section and mise-en-place ingredient lists displaying raw database slug IDs (e.g., `oeufs`) instead of their correct, localized display names (e.g., `œufs`).
+- 55430e4: Added detailed per-contribution time breakdowns (Active, Prep, Total) to compiled recipe metrics, and surfaced them as explanatory tooltips on the time summary badges in the HTML renderer.
+- Updated dependencies [0bee2b2]
+- Updated dependencies [e659677]
+- Updated dependencies [fc47a86]
+- Updated dependencies [68365c4]
+- Updated dependencies [68365c4]
+- Updated dependencies [55430e4]
+  - @gram-lang/parser@1.0.0-beta.4
+  - @gram-lang/i18n@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

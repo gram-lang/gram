@@ -1,5 +1,27 @@
 # @gram-lang/analyzer
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- 383c825: Fixed mass standardization silently failing for alternative ingredient groups. Mass and estimate metrics are now properly computed for each option independently, fixing missing totals in the shopping list.
+- fc47a86: Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
+- b546f96: Fixed shopping list ingredient names defaulting to the database's canonical wording when the recipe used a valid alias. The lists now correctly preserve the recipe's original wording or translated alias, ensuring consistent language throughout.
+- 55430e4: Added detailed per-contribution time breakdowns (Active, Prep, Total) to compiled recipe metrics, and surfaced them as explanatory tooltips on the time summary badges in the HTML renderer.
+- Updated dependencies [06039f2]
+- Updated dependencies [7487b09]
+- Updated dependencies [0bee2b2]
+- Updated dependencies [e659677]
+- Updated dependencies [aa0c082]
+- Updated dependencies [fc47a86]
+- Updated dependencies [68365c4]
+- Updated dependencies [c1c9b53]
+- Updated dependencies [68365c4]
+- Updated dependencies [55430e4]
+  - @gram-lang/kitchen@1.0.0-beta.4
+  - @gram-lang/parser@1.0.0-beta.4
+  - @gram-lang/i18n@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

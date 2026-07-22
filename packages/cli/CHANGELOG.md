@@ -1,5 +1,37 @@
 # @gram-lang/cli
 
+## 1.0.0-beta.4
+
+### Minor Changes
+
+- 301ad01: Exported the `runPipeline` function alongside its associated types from `@gram-lang/cli` to facilitate library and programmatic usage of the core compiler orchestration.
+- fc47a86: Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
+
+### Patch Changes
+
+- e659677: Fixed bare ingredient names incorrectly absorbing trailing punctuation (like periods). Also fixed multi-word unbraced names breaking alternative group parsing. (An orphan `|` in step text is now correctly flagged as a parse error).
+- 67b6fe4: Updated the AI generation prompt to accurately reflect the latest language syntax, strict retro-planning rules, and active/passive timer terminology.
+- b546f96: Fixed shopping list ingredient names defaulting to the database's canonical wording when the recipe used a valid alias. The lists now correctly preserve the recipe's original wording or translated alias, ensuring consistent language throughout.
+- c1c9b53: Fixed section and mise-en-place ingredient lists displaying raw database slug IDs (e.g., `oeufs`) instead of their correct, localized display names (e.g., `œufs`).
+- Updated dependencies [06039f2]
+- Updated dependencies [7487b09]
+- Updated dependencies [383c825]
+- Updated dependencies [0bee2b2]
+- Updated dependencies [e659677]
+- Updated dependencies [aa0c082]
+- Updated dependencies [cb6b794]
+- Updated dependencies [fc47a86]
+- Updated dependencies [b546f96]
+- Updated dependencies [68365c4]
+- Updated dependencies [c1c9b53]
+- Updated dependencies [68365c4]
+- Updated dependencies [55430e4]
+  - @gram-lang/kitchen@1.0.0-beta.4
+  - @gram-lang/renderer@1.0.0-beta.4
+  - @gram-lang/analyzer@1.0.0-beta.4
+  - @gram-lang/parser@1.0.0-beta.4
+  - @gram-lang/i18n@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

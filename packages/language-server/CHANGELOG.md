@@ -1,5 +1,11 @@
 # @gram-lang/language-server
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- fc47a86: Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

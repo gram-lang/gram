@@ -1,5 +1,17 @@
 # @gram-lang/docs
 
+## 1.0.0-beta.4
+
+### Minor Changes
+
+- 06039f2: Added support for ALAP (As Late As Possible) scheduling. Passive timers and their dependencies are now natively pushed backwards from the end of the recipe, ensuring ingredients are prepared just-in-time rather than sitting idle on the counter. Also introduces two new compiler warnings for timeline conflicts: `TIME_PARADOX` and `TRACK_CONTENTION`.
+- e1d7ece: Added `llms.txt` and `llms-full.txt` to the documentation site, providing a curated index and full concatenated specification tailored for AI assistants and agents.
+- 68365c4: Section retro-planning (e.g. `## Section ~{-2h}`) now enforces a strict signed-duration syntax instead of accepting arbitrary free text, preventing invalid timeline calculations. Added support for the `d` (day) time unit.
+
+### Patch Changes
+
+- b546f96: Fixed shopping list ingredient names defaulting to the database's canonical wording when the recipe used a valid alias. The lists now correctly preserve the recipe's original wording or translated alias, ensuring consistent language throughout.
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

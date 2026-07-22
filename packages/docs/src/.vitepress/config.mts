@@ -84,8 +84,8 @@ export default defineConfig({
 					{ text: "Documentation", link: "/explanation/philosophy" },
 					{ text: "Playground", link: "/play" },
 					{
-						text: "v1.0.0-beta.3",
-						items: [{ text: "v1.0.0-beta.3 (Current)", link: "/" }],
+						text: "v1.0.0-beta.4",
+						items: [{ text: "v1.0.0-beta.4 (Current)", link: "/" }],
 					},
 				],
 				sidebar: [
@@ -222,8 +222,8 @@ export default defineConfig({
 					{ text: "Documentation", link: "/fr/explanation/philosophy" },
 					{ text: "Playground", link: "/fr/play" },
 					{
-						text: "v1.0.0-beta.3",
-						items: [{ text: "v1.0.0-beta.3 (Actuelle)", link: "/fr/" }],
+						text: "v1.0.0-beta.4",
+						items: [{ text: "v1.0.0-beta.4 (Actuelle)", link: "/fr/" }],
 					},
 				],
 				sidebar: [

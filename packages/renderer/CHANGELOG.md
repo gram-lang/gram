@@ -1,5 +1,33 @@
 # @gram-lang/renderer
 
+## 1.0.0-beta.4
+
+### Major Changes
+
+- 68365c4: Section retro-planning (e.g. `## Section ~{-2h}`) now enforces a strict signed-duration syntax instead of accepting arbitrary free text, preventing invalid timeline calculations. Added support for the `d` (day) time unit.
+
+### Patch Changes
+
+- 7487b09: Fixed the display of alternative ingredient and cookware groups (`@egg|@tofu`). They now correctly render inline as a single joined line in shopping and section lists, rather than being dropped or rendered as oddly-wrapped sub-lists.
+- 0bee2b2: Added support for bare single-word children in composite ingredients (e.g., `@juice<@lemon`), and allowed independent preparation instructions on the parent side. Fixed section ingredient lists silently dropping the parent reference.
+- cb6b794: Fixed an issue where scaled fractions resulting in values below 1 (e.g., `0.5`) were rendered as raw decimals instead of common fractions (e.g., `1/2`) in the section ingredient list.
+- fc47a86: Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
+- b546f96: Fixed shopping list ingredient names defaulting to the database's canonical wording when the recipe used a valid alias. The lists now correctly preserve the recipe's original wording or translated alias, ensuring consistent language throughout.
+- 55430e4: Added detailed per-contribution time breakdowns (Active, Prep, Total) to compiled recipe metrics, and surfaced them as explanatory tooltips on the time summary badges in the HTML renderer.
+- Updated dependencies [06039f2]
+- Updated dependencies [7487b09]
+- Updated dependencies [0bee2b2]
+- Updated dependencies [e659677]
+- Updated dependencies [aa0c082]
+- Updated dependencies [fc47a86]
+- Updated dependencies [68365c4]
+- Updated dependencies [c1c9b53]
+- Updated dependencies [68365c4]
+- Updated dependencies [55430e4]
+  - @gram-lang/kitchen@1.0.0-beta.4
+  - @gram-lang/parser@1.0.0-beta.4
+  - @gram-lang/i18n@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes
