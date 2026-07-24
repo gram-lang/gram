@@ -255,16 +255,18 @@ function processAlternative(
 			processedOptions.push(result);
 
 			if (typeof result !== "string") {
+				// Audit 2026-07-22, kitchen finding F-016: createCleanUsage
+				// never sets `.type` on a plain ingredient/cookware Usage, so
+				// `r.type === "ingredient"/"drink"/"cookware"` above were
+				// dead branches — "drink" doesn't appear anywhere else in
+				// the codebase. `opt.type` (the *AST* node, not the
+				// processed Usage) is the reliable discriminant that was
+				// available here all along.
 				const r = result as Usage;
-				if (
-					r.type === "ingredient" ||
-					r.type === "drink" ||
-					(r.id && !r.type)
-				) {
-					tempIngredientsScope.push(r);
-				}
-				if (r.type === "cookware") {
+				if (opt.type === ASTNodeType.Cookware) {
 					tempCookwareScope.push(r);
+				} else {
+					tempIngredientsScope.push(r);
 				}
 			}
 		}
