@@ -35,7 +35,9 @@
     "change": "changeset",
     "version-packages": "bun run generate-release-note.ts && changeset version && bun update",
     "conformance": "bun run --cwd conformance conformance",
-    "conformance:update": "bun run --cwd conformance conformance:update"
+    "conformance:update": "bun run --cwd conformance conformance:update",
+    "any-ratchet": "node scripts/any-ratchet.cjs",
+    "any-ratchet:update": "node scripts/any-ratchet.cjs --update"
   },
   "workspaces": [
     "packages/*",
