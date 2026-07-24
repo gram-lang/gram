@@ -8,6 +8,8 @@ import type {
 	ProcessedSection,
 	CompilationResult,
 	Warning,
+	ShoppingListItem,
+	CompositeItem,
 } from "@gram-lang/kitchen";
 
 export interface MassMetrics {
@@ -66,7 +68,7 @@ export interface AnalyzedSection extends ProcessedSection {
 export interface AnalyzedCompilationResult
 	extends Omit<CompilationResult, "sections" | "metrics"> {
 	sections: AnalyzedSection[];
-	shopping_list: (AnalyzedUsage | any)[]; // Could define proper ShoppingListItem here
+	shopping_list: (AnalyzedUsage | ShoppingListItem | CompositeItem)[];
 	metrics: CompilationResult["metrics"] &
 		MassMetrics & {
 			nutrition?: NutritionMetrics;

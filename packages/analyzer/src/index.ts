@@ -566,7 +566,12 @@ export function analyze(
 	const analyzedResult: AnalyzedCompilationResult = {
 		...result,
 		sections,
-		shopping_list,
+		// shopping_list's working type is kitchen's general
+		// (CompositeItem | ShoppingListItem | Usage)[] throughout this
+		// function, but by this point every entry has actually been enriched
+		// with analyzer's fields (conversionMethod's specific literal values,
+		// etc.) — the same gap as the calculateNutrition() call above.
+		shopping_list: shopping_list as AnalyzedCompilationResult["shopping_list"],
 		metrics: {
 			...result.metrics,
 			...globalMassMetrics,

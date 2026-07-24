@@ -18,17 +18,25 @@ function buildAliasIndex(
 
 // Maps alias/name (lowercased) -> canonical database key. Lazily built and
 // memoized on the database object itself, so repeated lookups don't rebuild it.
+// `__aliasIndex` is a hidden, non-enumerable field attached at runtime — not
+// part of the public `Record<string, IngredientData>` shape callers pass in,
+// so it's typed as its own narrow extension rather than widening that shape.
+type DatabaseWithAliasIndex = Record<string, IngredientData> & {
+	__aliasIndex?: Map<string, string>;
+};
+
 function getAliasIndex(
 	database: Record<string, IngredientData>,
 ): Map<string, string> {
-	if (!(database as any).__aliasIndex) {
-		Object.defineProperty(database, "__aliasIndex", {
+	const db = database as DatabaseWithAliasIndex;
+	if (!db.__aliasIndex) {
+		Object.defineProperty(db, "__aliasIndex", {
 			value: buildAliasIndex(database),
 			enumerable: false,
 			writable: true,
 		});
 	}
-	return (database as any).__aliasIndex as Map<string, string>;
+	return db.__aliasIndex!;
 }
 
 export function getIngredientData(

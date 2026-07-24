@@ -1,11 +1,13 @@
-import type { MassMetrics } from "./types";
+import type { MassMetrics, AnalyzedUsage } from "./types";
 import { round2 } from "@gram-lang/kitchen";
 
 /**
  * Calculates mass metrics (totals, precision status, and missing data warnings)
  * for a list of ingredient usages by querying their normalized masses.
  */
-export function calculateMassMetrics(ingredients: any[]): MassMetrics {
+export function calculateMassMetrics(
+	ingredients: AnalyzedUsage[],
+): MassMetrics {
 	let totalMass = 0;
 	const missing: string[] = [];
 	let hasEstimates = false;
@@ -18,14 +20,18 @@ export function calculateMassMetrics(ingredients: any[]): MassMetrics {
 		// recipe and kcal/100g figures become inconsistent.
 		if (item.modifiers?.includes("optional")) return;
 
-		// Handle alternatives by picking the first option as the representative mass
-		let target = item;
+		// Handle alternatives by picking the first option as the representative
+		// mass — an alternative's options are always ingredient/cookware Usage
+		// objects in practice, never a bare string or other StepToken variant.
+		let target: AnalyzedUsage = item;
+		const firstOption = item.options?.[0];
 		if (
 			item.type === "alternative" &&
-			item.options &&
-			item.options.length > 0
+			firstOption &&
+			typeof firstOption === "object" &&
+			"id" in firstOption
 		) {
-			target = item.options[0];
+			target = firstOption as AnalyzedUsage;
 		}
 		// A composite child or alternative option can carry its own `optional`
 		// modifier even when the parent/group wasn't marked optional as a whole.

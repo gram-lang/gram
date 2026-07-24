@@ -83,7 +83,7 @@ export function calculateNutrition(
 		// Try to obtain mass (reuse normalizedMass if available)
 		if (item.normalizedMass) {
 			mass = item.normalizedMass;
-			if ((item as any).isEstimate) isEst = true;
+			if (item.isEstimate) isEst = true;
 		} else if (item.qty) {
 			const val = getNumericQty(item.qty);
 			if (val !== null) {

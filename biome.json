@@ -36,16 +36,6 @@
 	},
 	"overrides": [
 		{
-			"includes": ["packages/analyzer/src/**"],
-			"linter": {
-				"rules": {
-					"suspicious": {
-						"noExplicitAny": "off"
-					}
-				}
-			}
-		},
-		{
 			"includes": ["packages/parser/src/**"],
 			"linter": {
 				"rules": {

@@ -1,8 +1,11 @@
 import type { IngredientData } from "./types";
 import { resolveCanonicalId } from "./ingredient_db";
 import { round2, slugify } from "@gram-lang/kitchen";
+import type { CompilationResult, ShoppingListItem } from "@gram-lang/kitchen";
 
-function isStandardItem(item: any): boolean {
+type ShoppingListEntry = CompilationResult["shopping_list"][number];
+
+function isStandardItem(item: ShoppingListEntry): item is ShoppingListItem {
 	return (
 		!!item &&
 		item.type !== "composite" &&
@@ -45,18 +48,19 @@ function resolveDisplayName(
  * `@gram-lang/kitchen`.
  */
 export function aggregateShoppingList(
-	shoppingList: any[],
+	shoppingList: ShoppingListEntry[],
 	database: Record<string, IngredientData>,
-): any[] {
-	const passthrough: any[] = [];
-	const standard: any[] = [];
+): ShoppingListEntry[] {
+	const passthrough: ShoppingListEntry[] = [];
+	const standard: ShoppingListItem[] = [];
 
 	shoppingList.forEach((item) => {
-		(isStandardItem(item) ? standard : passthrough).push(item);
+		if (isStandardItem(item)) standard.push(item);
+		else passthrough.push(item);
 	});
 
 	const order: string[] = [];
-	const groups = new Map<string, any[]>();
+	const groups = new Map<string, ShoppingListItem[]>();
 	standard.forEach((item) => {
 		const canonicalId = resolveCanonicalId(item.name ?? item.id, database);
 		if (!groups.has(canonicalId)) {
@@ -66,13 +70,13 @@ export function aggregateShoppingList(
 		groups.get(canonicalId)!.push(item);
 	});
 
-	const result: any[] = [];
+	const result: ShoppingListEntry[] = [];
 	order.forEach((canonicalId) => {
 		const items = groups.get(canonicalId)!;
 		const canonicalName = database[canonicalId]?.name;
 
 		if (items.length === 1) {
-			const only = items[0];
+			const only = items[0]!;
 			only.name = resolveDisplayName(
 				only.name ?? only.id,
 				only.name,
@@ -88,17 +92,17 @@ export function aggregateShoppingList(
 			(i) => typeof i.normalizedMass === "number",
 		);
 		if (allHaveMass) {
-			const totalMass = items.reduce((sum, i) => sum + i.normalizedMass, 0);
+			const totalMass = items.reduce((sum, i) => sum + i.normalizedMass!, 0);
 			const totalPurchasing = items.reduce(
-				(sum, i) => sum + (i.purchasingMass ?? i.normalizedMass),
+				(sum, i) => sum + (i.purchasingMass ?? i.normalizedMass!),
 				0,
 			);
 
-			const merged: any = {
+			const merged: ShoppingListItem = {
 				id: canonicalId,
 				name: resolveDisplayName(
-					items[0].name ?? items[0].id,
-					items[0].name,
+					items[0]!.name ?? items[0]!.id,
+					items[0]!.name,
 					canonicalId,
 					canonicalName,
 				),
@@ -113,14 +117,15 @@ export function aggregateShoppingList(
 			if (items.every((i) => i.fixed)) merged.fixed = true;
 			if (items.some((i) => i.relative)) merged.relative = true;
 
-			const usageIds = items.flatMap(
-				(i) => i._usageIds ?? (i._usageId ? [i._usageId] : []),
-			);
+			// ShoppingListItem only ever carries `_usageIds` (plural, set by
+			// kitchen's generateShoppingList) — the singular `_usageId` this
+			// used to also check for is Usage's own field, never present here.
+			const usageIds = items.flatMap((i) => i._usageIds ?? []);
 			if (usageIds.length > 0) merged._usageIds = usageIds;
 
 			const modifierUnion = new Set<string>();
 			items.forEach((i) => {
-				(i.modifiers ?? []).forEach((m: string) => {
+				(i.modifiers ?? []).forEach((m) => {
 					modifierUnion.add(m);
 				});
 			});

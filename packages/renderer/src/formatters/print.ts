@@ -402,7 +402,12 @@ export function toPrintHTML(
 	// ── Shopping list ──────────────────────────────────────────────────────
 	if (data.shopping_list?.length > 0) {
 		body += `<div class="shopping-list">\n<h2>${t.renderer.shoppingList}</h2>\n<ul>\n`;
-		for (const item of data.shopping_list) {
+		// Same as html.ts's shoppingItems: isAlternativeGroup/isCompositeItem
+		// are plain boolean checks, not type predicates, so the union stays
+		// unnarrowed after them — matches the existing pattern here rather
+		// than introducing a new one.
+		const shoppingItems: any[] = data.shopping_list;
+		for (const item of shoppingItems) {
 			if (!item || typeof item !== "object") continue;
 			if (isAlternativeGroup(item)) {
 				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", context)).join(" <em>or</em> ")}</li>\n`;

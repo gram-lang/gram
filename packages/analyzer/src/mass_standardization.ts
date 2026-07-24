@@ -1,4 +1,5 @@
 import { slugify, round2 } from "@gram-lang/kitchen";
+import type { Meta } from "@gram-lang/parser";
 import { normalizeUnit } from "@gram-lang/i18n";
 
 export interface UnitMap {
@@ -143,14 +144,14 @@ export function resolveIngredientDensity(
  * Parses recipe-level density overrides from frontmatter (e.g.
  * `densities: [water:1.0]`) into a slug -> density (g/mL) map.
  */
-export function parseDensityOverrides(meta: any): Record<string, number> {
+export function parseDensityOverrides(meta: Meta): Record<string, number> {
 	const overrides: Record<string, number> = {};
 	if (!meta?.densities) return overrides;
 
 	const list = Array.isArray(meta.densities)
 		? meta.densities
 		: [meta.densities];
-	list.forEach((entry: any) => {
+	list.forEach((entry) => {
 		if (typeof entry !== "string") return;
 		const parts = entry.split(":");
 		if (parts.length === 2) {
