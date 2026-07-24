@@ -1,6 +1,6 @@
 import pLimit from "p-limit";
 import { basename } from "node:path";
-import { normalizeUnit } from "@gram-lang/i18n";
+import { normalizeUnit, getDefaultCategories } from "@gram-lang/i18n";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
 import type { IngredientData } from "@gram-lang/analyzer";
@@ -27,16 +27,15 @@ function formatMass(grams: number): string {
 	return `${fmtNumber(Math.round(grams), 0)} g`;
 }
 
-const CATEGORY_ORDER = [
-	"Dairy",
-	"Meat",
-	"Fish",
-	"Produce",
-	"Grains",
-	"Fat",
-	"Spice",
-	"Other",
-];
+// Audit 2026-07-22, finding cli(c): this used to be its own hardcoded list
+// that didn't match the canonical categories i18n defines — not even in
+// English ("Fish" vs "Seafood", "Produce" vs "Vegetables", "Fat" vs "Oils",
+// "Spice" vs "Spices"). A category from the ingredient DB that doesn't match
+// any entry here just sorts alphabetically after the matched ones (see
+// below), so this is purely the preferred sort order, not a validation list.
+// TODO(lang): defaults to English; should follow the project's declared
+// language once `lang` is threaded through the CLI pipeline.
+const CATEGORY_ORDER = getDefaultCategories("en");
 
 export async function buildShoppingList(
 	files: string[],
