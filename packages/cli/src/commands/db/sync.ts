@@ -6,6 +6,7 @@ import { loadDb } from "../../core/db";
 import { resolveGlob } from "../../core/glob";
 import { analyzeIngredients, applySync } from "../../services/db-sync";
 import { renderSyncResult } from "../../ui/db-sync";
+import { reportRejectedIngredients } from "../../ui/diagnostics";
 import { ExitCode, GramCLIError } from "../../errors";
 import type { FuzzyMatch } from "../../types";
 
@@ -48,7 +49,9 @@ export default defineCommand({
 		}
 
 		const config = await loadConfig();
-		const db = (await loadDb(config, args.db)) ?? {};
+		const dbResult = await loadDb(config, args.db);
+		reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult.data ?? {};
 
 		const s = spinner();
 		s.start(`Scanning ${files.length} file${files.length !== 1 ? "s" : ""}…`);

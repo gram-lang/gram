@@ -7,6 +7,7 @@ import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { suggestRecipes } from "../services/suggester";
 import { renderSuggestions, renderSuggestionsJson } from "../ui/suggest";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 
 function parseTermList(raw: string | undefined): string[] {
 	if (!raw) return [];
@@ -73,9 +74,11 @@ export default defineCommand({
 		}
 
 		const config = await loadConfig();
-		const db = args["skip-db"]
+		const dbResult = args["skip-db"]
 			? null
 			: await loadDbSafe(config, args.db as string | undefined);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 
 		const patterns = args.pattern ? [args.pattern as string] : ["**/*.gram"];
 		const files = await resolveGlob(patterns);

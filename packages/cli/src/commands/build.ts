@@ -7,6 +7,7 @@ import pLimit from "p-limit";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
 import { parseScaleArg } from "../services/scaler";
 import { ExitCode, GramCLIError, getErrorMessage } from "../errors";
@@ -106,8 +107,9 @@ async function resolveInputs(args: Args) {
 		throw err;
 	}
 	const config = await loadConfig();
-	const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
-	return { files, db };
+	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+	return { files, db: dbResult?.data ?? null };
 }
 
 async function runToStdout(args: Args) {

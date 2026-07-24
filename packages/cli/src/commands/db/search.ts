@@ -6,6 +6,7 @@ import { slugify } from "@gram-lang/kitchen";
 import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
 import { loadDb } from "../../core/db";
+import { reportRejectedIngredients } from "../../ui/diagnostics";
 import { ExitCode } from "../../errors";
 
 type MissingFilter = "nutrition" | "physical" | "aliases";
@@ -154,12 +155,14 @@ export default defineCommand({
 	async run({ args }) {
 		const config = await loadConfig();
 
-		const db = await loadDb(config, args.db as string | undefined);
-		if (!db) {
+		const dbResult = await loadDb(config, args.db as string | undefined);
+		if (!dbResult.data) {
 			log.error("No ingredient database found.");
 			log.info(`Run 'gram init' or 'gram db sync' to create one.`);
 			process.exit(ExitCode.Error);
 		}
+		reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult.data;
 
 		const query = args.query as string | undefined;
 		const tagFilter = args.tag as string | undefined;

@@ -6,6 +6,7 @@ import { loadDb } from "../../core/db";
 import { loadAiModel } from "../../core/ai";
 import { enrichDb } from "../../services/db-enricher";
 import { renderEnrichResult } from "../../ui/db-enrich";
+import { reportRejectedIngredients } from "../../ui/diagnostics";
 import { ExitCode, GramCLIError } from "../../errors";
 
 export default defineCommand({
@@ -53,11 +54,13 @@ export default defineCommand({
 
 		const config = await loadConfig();
 
-		const db = await loadDb(config, args.db);
-		if (!db) {
+		const dbResult = await loadDb(config, args.db);
+		if (!dbResult.data) {
 			log.error("No ingredient database found. Run `gram db sync` first.");
 			process.exit(ExitCode.Error);
 		}
+		reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult.data;
 
 		let model;
 		try {

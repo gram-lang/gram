@@ -5,6 +5,7 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { buildShoppingList } from "../services/shopper";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 import { parseScaleArg } from "../services/scaler";
 import {
 	renderShopTerminal,
@@ -88,7 +89,9 @@ export default defineCommand({
 		}
 
 		const config = await loadConfig();
-		const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 		const result = await buildShoppingList(files, { db, scaleFactor });
 
 		if (args.format === "json") {

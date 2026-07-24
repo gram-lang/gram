@@ -4,7 +4,10 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { checkFiles } from "../services/checker";
-import { renderCheckResult } from "../ui/diagnostics";
+import {
+	renderCheckResult,
+	reportRejectedIngredients,
+} from "../ui/diagnostics";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
@@ -48,7 +51,9 @@ export default defineCommand({
 		}
 
 		const config = await loadConfig();
-		const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 
 		const n = files.length;
 		const s = spinner();

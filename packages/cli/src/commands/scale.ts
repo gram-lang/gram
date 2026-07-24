@@ -5,6 +5,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 import {
 	resolveScaleFactor,
 	buildScaleComparison,
@@ -51,7 +52,9 @@ export default defineCommand({
 
 		const filePath = resolve(args.file as string);
 		const config = await loadConfig();
-		const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 
 		const s = spinner();
 		s.start("Computing scaled quantities…");

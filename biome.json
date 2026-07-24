@@ -44,6 +44,23 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["packages/cli/src/core/**", "packages/cli/src/services/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"@clack/prompts": "core/ and services/ must return data, not perform display I/O — a previous @clack/prompts log.warn() here wrote to stdout and corrupted `gram build | jq` (audit 2026-07-22, cli finding B-3). Return the data/warnings and report them from the commands/ or ui/ layer instead."
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	],
 	"assist": {

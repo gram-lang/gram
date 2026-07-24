@@ -3,7 +3,6 @@ import { resolve, extname } from "node:path";
 import { log } from "@clack/prompts";
 import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
-import { resolveDbPath } from "../../core/db";
 import { loadDb } from "../../core/db";
 import {
 	loadSourceDb,
@@ -15,6 +14,7 @@ import {
 	resolveConflictsInteractively,
 	renderMergeResult,
 } from "../../ui/db-merge";
+import { reportRejectedIngredients } from "../../ui/diagnostics";
 import type { PreferSide } from "../../services/db-merger";
 import { ExitCode } from "../../errors";
 
@@ -69,18 +69,22 @@ export default defineCommand({
 		}
 
 		const config = await loadConfig();
-		const dbPath = resolveDbPath(config, args.db as string | undefined);
 
-		const localDb = await loadDb(config, args.db as string | undefined);
-		if (!localDb) {
+		const localDbResult = await loadDb(config, args.db as string | undefined);
+		const dbPath = localDbResult.dbPath;
+		if (!localDbResult.data) {
 			log.error(`No ingredient database found at ${dbPath}.`);
 			log.info(`Run 'gram init' or 'gram db sync' to create one.`);
 			process.exit(ExitCode.Error);
 		}
+		reportRejectedIngredients(localDbResult.rejected, dbPath);
+		const localDb = localDbResult.data;
 
 		let sourceDb: Record<string, import("@gram-lang/analyzer").IngredientData>;
 		try {
-			sourceDb = await loadSourceDb(sourcePath);
+			const sourceResult = await loadSourceDb(sourcePath);
+			reportRejectedIngredients(sourceResult.rejected, sourcePath);
+			sourceDb = sourceResult.data;
 		} catch (err) {
 			log.error((err as Error).message);
 			process.exit(ExitCode.Error);

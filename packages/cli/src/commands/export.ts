@@ -7,6 +7,7 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
@@ -74,7 +75,9 @@ export default defineCommand({
 
 		const filePath = resolve(args.file as string);
 		const config = await loadConfig();
-		const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 
 		const scaleFactor = await resolveScaleArg(
 			args.scale as string | undefined,

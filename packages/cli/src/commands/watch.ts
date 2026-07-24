@@ -8,6 +8,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { findProjectRoot } from "../core/workspace";
+import { reportRejectedIngredients } from "../ui/diagnostics";
 import { checkFiles } from "../services/checker";
 import { buildFiles } from "../services/builder";
 import { getErrorMessage } from "../errors";
@@ -48,7 +49,9 @@ export default defineCommand({
 		const root = await findProjectRoot();
 		const watchDir = args.dir ? resolve(args.dir as string) : root;
 		const config = await loadConfig();
-		const db = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
+		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+		const db = dbResult?.data ?? null;
 
 		if (args.build && !args.output) {
 			log.warn(

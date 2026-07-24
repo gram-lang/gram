@@ -2,6 +2,26 @@ import chalk from "chalk";
 import { log } from "@clack/prompts";
 import { relative } from "node:path";
 import type { CheckResult, Diagnostic } from "../types";
+import type { IngredientValidationIssue } from "@gram-lang/analyzer";
+
+/**
+ * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14):
+ * `core/db.ts`'s `loadDb` now returns `rejected` as plain data instead of
+ * writing a warning itself — this is the single place that decides how (and
+ * whether) to report it, shared by every command instead of duplicating the
+ * message format at 15 call sites. Always writes to stderr, never stdout —
+ * `gram build | jq` and friends must stay parseable regardless of database
+ * validation problems.
+ */
+export function reportRejectedIngredients(
+	rejected: IngredientValidationIssue[],
+	dbPath: string,
+): void {
+	if (rejected.length === 0) return;
+	process.stderr.write(
+		`Ignoring ${rejected.length} invalid ingredient(s) in ${dbPath}: ${rejected.map((r) => r.key).join(", ")}\n`,
+	);
+}
 
 function groupByFile(diagnostics: Diagnostic[]): Map<string, Diagnostic[]> {
 	const map = new Map<string, Diagnostic[]>();

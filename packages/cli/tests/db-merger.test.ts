@@ -153,7 +153,7 @@ describe("loadSourceDb", () => {
 			"utf-8",
 		);
 		const result = await loadSourceDb(tmpDir);
-		expect(result.flour?.name).toBe("Flour");
+		expect(result.data.flour?.name).toBe("Flour");
 	});
 
 	it("loads a database given as a bare top-level map (no 'ingredients' wrapper)", async () => {
@@ -161,7 +161,7 @@ describe("loadSourceDb", () => {
 		tmpDir = join(dir, "db.yaml");
 		await writeFile(tmpDir, "flour:\n  name: Flour\n", "utf-8");
 		const result = await loadSourceDb(tmpDir);
-		expect(result.flour?.name).toBe("Flour");
+		expect(result.data.flour?.name).toBe("Flour");
 	});
 
 	it("throws when the resulting database is empty", async () => {

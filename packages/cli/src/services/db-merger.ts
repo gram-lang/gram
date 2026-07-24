@@ -1,10 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { validateIngredientDatabase } from "@gram-lang/analyzer";
-import type { IngredientData } from "@gram-lang/analyzer";
+import type {
+	IngredientData,
+	IngredientValidationIssue,
+} from "@gram-lang/analyzer";
 import { slugify } from "@gram-lang/kitchen";
 import { withFileLock, atomicWrite } from "../core/lock";
-import { log } from "@clack/prompts";
 
 export type ConflictField = "nutrition" | "physical" | "category";
 export type PreferSide = "local" | "remote";
@@ -80,9 +82,23 @@ function deepEqual(a: unknown, b: unknown): boolean {
 	);
 }
 
+export interface LoadSourceDbResult {
+	data: Record<string, IngredientData>;
+	rejected: IngredientValidationIssue[];
+}
+
+/**
+ * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14): this
+ * used to report rejected entries itself via `log.warn` (@clack/prompts) —
+ * the same architectural smell as `core/db.ts`'s `loadDb` (a non-`ui`/
+ * `commands` module deciding how to display a warning). `rejected` is now
+ * returned as a value; the caller (`commands/db/merge.ts`) reports it via
+ * `reportRejectedIngredients` (`ui/diagnostics.ts`), like every other
+ * database-loading call site.
+ */
 export async function loadSourceDb(
 	sourcePath: string,
-): Promise<Record<string, IngredientData>> {
+): Promise<LoadSourceDbResult> {
 	let raw: string;
 	try {
 		raw = await readFile(sourcePath, "utf-8");
@@ -96,16 +112,11 @@ export async function loadSourceDb(
 	}
 	const parsed = parseYaml(raw) as Record<string, unknown> | null;
 	const rawIngredients = (parsed?.ingredients ?? parsed) as unknown;
-	const { data: db, rejected } = validateIngredientDatabase(rawIngredients);
-	if (rejected.length > 0) {
-		log.warn(
-			`Ignoring ${rejected.length} invalid ingredient(s) in ${sourcePath}: ${rejected.map((r) => r.key).join(", ")}`,
-		);
-	}
-	if (Object.keys(db).length === 0) {
+	const { data, rejected } = validateIngredientDatabase(rawIngredients);
+	if (Object.keys(data).length === 0) {
 		throw new Error(`Source database is empty: ${sourcePath}`);
 	}
-	return db;
+	return { data, rejected };
 }
 
 export async function analyzeMerge(

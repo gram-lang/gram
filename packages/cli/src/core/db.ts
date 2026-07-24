@@ -2,7 +2,10 @@ import { readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { parse } from "yaml";
 import { validateIngredientDatabase } from "@gram-lang/analyzer";
-import type { IngredientData } from "@gram-lang/analyzer";
+import type {
+	IngredientData,
+	IngredientValidationIssue,
+} from "@gram-lang/analyzer";
 import type { GramConfig } from "../types";
 import { GramConfigError, ExitCode } from "../errors";
 
@@ -16,10 +19,26 @@ export function resolveDbPath(
 	return join(root, ".gram", "ingredients.yaml");
 }
 
+export interface LoadDbResult {
+	data: Record<string, IngredientData> | null;
+	rejected: IngredientValidationIssue[];
+	dbPath: string;
+}
+
+/**
+ * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14): `core/`
+ * must never itself decide to write anything, not even to stderr — the
+ * previous targeted fix (writing rejected-entry warnings via
+ * `process.stderr.write` right here) already fixed the *measured* bug
+ * (`log.warn`/@clack/prompts corrupting `gram build | jq`'s stdout), but
+ * still left `core/` making a display decision. `loadDb` now returns
+ * `rejected` as a value; reporting it (or not) is entirely up to the
+ * `commands/` layer, via `reportRejectedIngredients` (`ui/diagnostics.ts`).
+ */
 export async function loadDb(
 	config: GramConfig,
 	overridePath?: string,
-): Promise<Record<string, IngredientData> | null> {
+): Promise<LoadDbResult> {
 	const dbPath = resolveDbPath(config, overridePath);
 
 	let raw: unknown;
@@ -28,7 +47,7 @@ export async function loadDb(
 		raw = parse(content);
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-			return null;
+			return { data: null, rejected: [], dbPath };
 		}
 		throw new GramConfigError(
 			`Cannot read ingredient database at ${dbPath}: ${(err as Error).message}`,
@@ -36,7 +55,7 @@ export async function loadDb(
 	}
 
 	// Empty file (comments-only YAML parses to null) = no database
-	if (raw == null) return null;
+	if (raw == null) return { data: null, rejected: [], dbPath };
 
 	// Support both formats: with or without top-level 'ingredients:' wrapper.
 	// If the wrapper key exists but is null/empty (e.g. `ingredients:` with no entries),
@@ -46,24 +65,13 @@ export async function loadDb(
 	const ingredients = hasWrapper ? (rawObj.ingredients ?? {}) : raw;
 
 	const { data, rejected } = validateIngredientDatabase(ingredients);
-	if (rejected.length > 0) {
-		// Audit 2026-07-22, cli finding B-3: `core/` must never write to stdout —
-		// `log.warn` (@clack/prompts) does, which corrupted machine-readable
-		// output (`gram build | jq` and friends) the moment a database entry
-		// failed validation. Diagnostics from this layer always go to stderr;
-		// deciding whether/how to *display* them (spinner, color, etc.) is a
-		// `commands/`-layer concern, not `core/`'s.
-		process.stderr.write(
-			`Ignoring ${rejected.length} invalid ingredient(s) in ${dbPath}: ${rejected.map((r) => r.key).join(", ")}\n`,
-		);
-	}
-	return data;
+	return { data, rejected, dbPath };
 }
 
 export async function loadDbSafe(
 	config: GramConfig,
 	overridePath?: string,
-): Promise<Record<string, IngredientData> | null> {
+): Promise<LoadDbResult> {
 	try {
 		return await loadDb(config, overridePath);
 	} catch (err) {
