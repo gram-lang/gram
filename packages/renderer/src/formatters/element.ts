@@ -78,15 +78,11 @@ const strategies: Record<
 		}
 
 		const qty = getQty(item);
-		const formulaStr = item.formula
-			? `${item.formula.percent}% of ${item.formula.target}`
-			: null;
-		const isPartial = item.formula?.is_partial;
 
 		const prep = item.preparation || "";
 		const isOptional = item.modifiers?.includes("optional");
 		// NOTE: no "reference" (&-prefixed) badge/tooltip currently exists here, unlike
-		// isOptional/isPartial below — likely dropped in a past refactor (audit Chantier 1).
+		// isOptional below — likely dropped in a past refactor (audit Chantier 1).
 
 		let normalizedMass = null;
 		let isEstimate = false;
@@ -175,30 +171,13 @@ const strategies: Record<
 					html += ` data-tooltip="${escapeHtml(tooltipLines.join("\n"))}"`;
 				}
 				html += `>${escapeHtml(name)}${parentSuffixHtml}`;
-
-				if (isPartial && !context.hideIngredientQty) {
-					const warningIcon =
-						context.icons?.warning ?? DEFAULT_ICONS.html.warning;
-					html += ` <span class="quantity formula-qty" data-tooltip="${escapeHtml(t.renderer.calculationPartialOrFailed)}">${escapeHtml(formulaStr || "")} ${warningIcon}</span>`;
-				}
 				html += `</span>`;
 				return html;
 			} else {
 				let html = `<span class="${className}" data-name="${escapeHtml(baseName)}"${parentDataAttr}>${escapeHtml(name)}${parentSuffixHtml}`;
 
-				if (!context.hideIngredientQty) {
-					if (isPartial) {
-						const warningIcon =
-							context.icons?.warning ?? DEFAULT_ICONS.html.warning;
-						const formulaClass = context.classes?.formulaText
-							? ` ${context.classes.formulaText}`
-							: "";
-						html += ` <span class="quantity formula-qty${formulaClass}" data-tooltip="${escapeHtml(t.renderer.calculationPartialOrFailed)}">${escapeHtml(formulaStr || "")} ${warningIcon}</span>`;
-					} else {
-						if (htmlQty) {
-							html += ` <span class="quantity">${escapeHtml(htmlQty)}</span>`;
-						}
-					}
+				if (!context.hideIngredientQty && htmlQty) {
+					html += ` <span class="quantity">${escapeHtml(htmlQty)}</span>`;
 				}
 
 				if (htmlBakersBadge) {
@@ -230,16 +209,10 @@ const strategies: Record<
 		} else {
 			let md = item.type === "reference" ? `👉*${name}*` : `**${name}**`;
 			md += parentSuffixMd;
-			if (!context.hideIngredientQty) {
-				if (isPartial) {
-					const warningSymbol =
-						context.icons?.warning ?? DEFAULT_ICONS.md.warning;
-					md = `${name} (${formulaStr}${warningSymbol})`;
-				} else if (plainQty) {
-					// plainQty already accounts for bakersPercentage/bakersMathOnly
-					// and folds in variable_entries — same logic the HTML branch uses.
-					md += ` (${plainQty})`;
-				}
+			if (!context.hideIngredientQty && plainQty) {
+				// plainQty already accounts for bakersPercentage/bakersMathOnly
+				// and folds in variable_entries — same logic the HTML branch uses.
+				md += ` (${plainQty})`;
 			}
 			const mode = context.formatMode || "inline";
 			if (prep && mode !== "shopping-list") {
