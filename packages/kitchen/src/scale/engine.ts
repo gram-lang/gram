@@ -190,7 +190,11 @@ export function applyScale(
 		if (item.type === "alternative") {
 			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
 		} else if (item.type === "composite") {
-			if (typeof item.qty === "number") item.qty = item.qty * factor;
+			// Audit 2026-07-22, kitchen finding F-015: this used to scale the
+			// composite parent's total by hand (`item.qty * factor`), bypassing
+			// scaleQty's rounding, overflow check, and text/numerator/denominator
+			// reset — the exact same treatment every other quantity here gets.
+			if (typeof item.qty === "number") item.qty = scaleQty(item.qty, factor);
 			for (const u of item.usage ?? []) mutateUsage(u, factor, scaled);
 		} else {
 			mutateUsage(item, factor, scaled);
