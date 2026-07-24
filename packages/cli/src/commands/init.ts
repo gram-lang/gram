@@ -21,6 +21,7 @@ import { stringify } from "yaml";
 import type { GramConfig } from "../types";
 import { ExitCode } from "../errors";
 import { upsertEnvVar } from "../services/config-manager";
+import { AI_PROVIDER_ENV_VAR } from "../core/ai";
 
 const DB_TEMPLATE = `# Gram ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
@@ -214,13 +215,10 @@ export default defineCommand({
 					);
 					if (apiKey) {
 						const envPath = join(process.cwd(), ".env");
-						const envKeyMap = {
-							google: "GEMINI_API_KEY",
-							openai: "OPENAI_API_KEY",
-							anthropic: "ANTHROPIC_API_KEY",
-						};
 						const envKey =
-							envKeyMap[provider as "google" | "openai" | "anthropic"];
+							AI_PROVIDER_ENV_VAR[
+								provider as "google" | "openai" | "anthropic"
+							];
 						await upsertEnvVar(envPath, envKey, apiKey);
 
 						// Ensure root .gitignore covers .env — checked line-by-line rather than a

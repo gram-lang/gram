@@ -37,15 +37,13 @@ export async function loadConfig(): Promise<GramConfig> {
 	}
 	const config: GramConfig = result.data;
 
-	// API keys from env vars — provider resolution happens in loadAiModel()
-	if (!config.ai?.apiKey) {
-		if (process.env.GEMINI_API_KEY)
-			config.ai = { ...config.ai, apiKey: process.env.GEMINI_API_KEY };
-		else if (process.env.OPENAI_API_KEY)
-			config.ai = { ...config.ai, apiKey: process.env.OPENAI_API_KEY };
-		else if (process.env.ANTHROPIC_API_KEY)
-			config.ai = { ...config.ai, apiKey: process.env.ANTHROPIC_API_KEY };
-	}
+	// Provider + API key resolution both happen in loadAiModel(), which reads
+	// each provider's own env var directly (audit 2026-07-22, finding 0-a).
+	// This used to also stash "whichever key env var happened to be set" into
+	// config.ai.apiKey here, independently of the provider — which meant a
+	// GEMINI_API_KEY could get sent to OpenAI under `provider: openai`. Do not
+	// reintroduce that: config.ai.apiKey must only ever hold a value the user
+	// explicitly wrote for the provider they configured.
 
 	config.projectRoot = projectRoot;
 
