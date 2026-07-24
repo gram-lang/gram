@@ -9,6 +9,9 @@ import {
 import type { Usage, TimeBreakdownItem, UsageComposite } from "./types";
 import { resolveTimeUnit } from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
+// Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle:
+// "./scale" re-exports engine.ts, which itself imports from this file.
+import { InvalidFactorError } from "./scale/types";
 
 /**
  * Deterministic short hash (djb2), used as a slug fallback when a name has no
@@ -265,21 +268,42 @@ export const quantityToMinutes = (
  * `text`/`numerator`/`denominator` capture the original source string (e.g. "1/2")
  * and are only valid for the unscaled value, so they're cleared here rather than
  * carried over stale — display code must fall back to the scaled numeric `value`.
+ *
+ * Audit 2026-07-22, kitchen finding F-015: the scale *factor* is validated
+ * (`isPositiveFinite` in scale/engine.ts, `CompilerOptionsSchema`), but the
+ * *product* never was — `scaleQty(500, 1e308)` silently produced `Infinity`,
+ * which serializes to JSON `null`. Every multiplication here now goes through
+ * `scaleValue`, which throws `InvalidFactorError` on overflow instead, and
+ * applies `round2` uniformly so scaled quantities don't carry float noise
+ * (`110.00000000000001`) — previously only `applyScale`'s `meta.portions`
+ * was rounded, not the quantities themselves.
  */
 export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
 	if (factor === 1) return qty;
-	if (typeof qty === "number") return qty * factor;
+
+	const scaleValue = (value: number): number => {
+		const scaled = value * factor;
+		if (!Number.isFinite(scaled)) {
+			throw new InvalidFactorError(
+				factor,
+				`Scaling by a factor of ${factor} overflowed a quantity to a non-finite value.`,
+			);
+		}
+		return round2(scaled);
+	};
+
+	if (typeof qty === "number") return scaleValue(qty);
 	if (!qty || typeof qty !== "object") return qty;
 
 	if (qty.type === "single" && typeof qty.value === "number") {
-		return { ...qty, value: qty.value * factor, text: undefined };
+		return { ...qty, value: scaleValue(qty.value), text: undefined };
 	}
 	if (qty.type === "range") {
 		return {
 			...qty,
-			value: typeof qty.value === "number" ? qty.value * factor : qty.value,
+			value: typeof qty.value === "number" ? scaleValue(qty.value) : qty.value,
 			range: qty.range
-				? { min: qty.range.min * factor, max: qty.range.max * factor }
+				? { min: scaleValue(qty.range.min), max: scaleValue(qty.range.max) }
 				: qty.range,
 			text: undefined,
 		};
@@ -293,8 +317,10 @@ export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
 		// Scaling breaks the clean numerator/denominator relationship anyway
 		// (the doc comment above already says display must fall back to the
 		// scaled numeric `value`), so this becomes a "single" value instead —
-		// the type that actually matches what's left.
-		return { type: "single", value: qty.value * factor };
+		// the type that actually matches what's left. Routed through
+		// `scaleValue` (not a raw multiply) for the same overflow/rounding
+		// protection as every other branch here (kitchen finding F-015).
+		return { type: "single", value: scaleValue(qty.value) };
 	}
 	return qty;
 };

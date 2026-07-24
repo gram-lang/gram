@@ -225,6 +225,10 @@ export function applyScale(
 		if (item.type === "alternative" && "options" in item) {
 			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
 		} else if (item.type === "composite" && "usage" in item) {
+			// Audit 2026-07-22, kitchen finding F-015: this used to scale the
+			// composite parent's total by hand (`item.qty * factor`), bypassing
+			// scaleQty's rounding, overflow check, and text/numerator/denominator
+			// reset — the exact same treatment every other quantity here gets.
 			if (typeof item.qty === "number") {
 				// scaleQty(number, ...) always returns a number — its broader
 				// Usage["qty"] return type only matters for the AST-object inputs.

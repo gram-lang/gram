@@ -344,4 +344,32 @@ describe("robustness against malformed / adversarial input", () => {
 		expect(() => getAST(big)).not.toThrow();
 		expect(performance.now() - start).toBeLessThan(5000);
 	});
+
+	// Regression test for the audit (2026-07-22, §6.3/P-005): frontmatter is
+	// merged key-by-key via `Object.assign(acc, { [key]: value })` (parser
+	// src/index.ts). A `__proto__` key uses JS's computed-property-key
+	// semantics (an own data property, not the prototype link) when produced,
+	// but `Object.assign`'s plain `target[key] = value` assignment *does* hit
+	// the inherited `Object.prototype.__proto__` accessor when writing it onto
+	// the merge accumulator — the standard shape of a prototype-pollution bug.
+	// It happens to be inert today only because frontmatter values are always
+	// strings/string-arrays, and the `__proto__` accessor silently ignores a
+	// non-object/non-null assignment — a fragile, accidental safety net (the
+	// exact pattern the audit calls out repeatedly: "safe by construction
+	// accident, not by design"), so this is pinned as an explicit regression.
+	it("does not pollute Object.prototype via a `__proto__` frontmatter key", () => {
+		const before = Object.getOwnPropertyNames(Object.prototype).length;
+
+		const ast = getAST(
+			"---\ntitle: Proto\n__proto__: polluted\n---\n## Section\nMix @flour{200g}.\n",
+		);
+
+		expect(Object.getOwnPropertyNames(Object.prototype).length).toBe(before);
+		expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+		// "__proto__" is inherited by every plain object (an accessor on
+		// Object.prototype), so `toHaveProperty` would always match it —
+		// `Object.keys` (own enumerable keys only) is the correct check here.
+		expect(Object.keys(ast.meta)).not.toContain("__proto__");
+		expect(ast.meta).toEqual({ title: "Proto" });
+	});
 });

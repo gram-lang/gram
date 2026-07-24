@@ -1,0 +1,208 @@
+{
+  "title": "Indirect Intermediate Cycle",
+  "slug": "indirect-intermediate-cycle",
+  "meta": {
+    "title": "Indirect Intermediate Cycle"
+  },
+  "registry": {
+    "ingredients": {
+      "batter": {
+        "id": "batter",
+        "name": "batter",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "glaze": {
+        "id": "glaze",
+        "name": "glaze",
+        "is_intermediate": true
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Make Batter",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "glaze",
+          "name": "glaze",
+          "_usageId": "2"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            ". Needs ",
+            {
+              "type": "reference",
+              "id": "glaze",
+              "name": "glaze",
+              "_usageId": "2"
+            },
+            "to finish."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "batter"
+    },
+    {
+      "title": "Make Glaze",
+      "ingredients": [
+        {
+          "id": "sugar",
+          "_usageId": "3",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "batter",
+          "name": "batter",
+          "_usageId": "4"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "sugar",
+              "_usageId": "3",
+              "qty": 100,
+              "unit": "g"
+            },
+            ". Needs ",
+            {
+              "type": "reference",
+              "id": "batter",
+              "name": "batter",
+              "_usageId": "4"
+            },
+            "to finish."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "glaze"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "message": "Reference to undefined ingredient '&glaze'.",
+      "item": "glaze",
+      "loc": {
+        "start": 94,
+        "end": 100
+      }
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: glaze depends on itself.",
+      "item": "glaze",
+      "loc": {
+        "start": 127,
+        "end": 135
+      }
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: batter depends on itself.",
+      "item": "batter",
+      "loc": {
+        "start": 59,
+        "end": 68
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 8,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Make Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Make Glaze",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Make Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Make Glaze",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  }
+}

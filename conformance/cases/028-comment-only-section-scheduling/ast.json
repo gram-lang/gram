@@ -1,0 +1,120 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Comment-Only Section Scheduling"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "A",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "a",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Wait ",
+              "loc": {
+                "start": 58,
+                "end": 63
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 60,
+                  "text": "60"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 65,
+                  "end": 70
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 63,
+                "end": 71
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 71,
+                "end": 72
+              }
+            }
+          ],
+          "loc": {
+            "start": 54,
+            "end": 74
+          }
+        }
+      ],
+      "loc": {
+        "start": 48,
+        "end": 74
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Note",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Comment",
+          "value": "just a comment, no steps",
+          "kind": "line",
+          "loc": {
+            "start": 82,
+            "end": 109
+          }
+        }
+      ],
+      "loc": {
+        "start": 74,
+        "end": 111
+      }
+    },
+    {
+      "type": "Section",
+      "title": "C",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "c",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Do it.",
+              "loc": {
+                "start": 121,
+                "end": 127
+              }
+            }
+          ],
+          "loc": {
+            "start": 117,
+            "end": 128
+          }
+        }
+      ],
+      "loc": {
+        "start": 111,
+        "end": 128
+      }
+    }
+  ]
+}

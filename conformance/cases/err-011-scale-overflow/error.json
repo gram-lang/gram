@@ -1,0 +1,6 @@
+{
+  "message": "Scaling by a factor of 1e+308 overflowed a quantity to a non-finite value.",
+  "offset": null,
+  "expected": null,
+  "code": "INVALID_FACTOR"
+}

@@ -387,4 +387,35 @@ Heat @=oil{50ml} in a pan.
 
 		expect(flour.qty).toEqual({ type: "single", value: 1 });
 	});
+
+	// Regression tests for the audit (2026-07-22, kitchen finding F-015): the
+	// scale *factor* was validated (isPositiveFinite in scale/engine.ts,
+	// CompilerOptionsSchema), but the *product* of a quantity and a valid,
+	// finite, positive factor never was, and wasn't rounded either.
+	describe("overflow and rounding (F-015)", () => {
+		it("throws InvalidFactorError instead of silently producing Infinity/null on overflow", () => {
+			const recipe = compileRecipe(`## Section\n\nAdd @flour{500g}.\n`);
+			expect(() => applyScale(recipe, 1e308)).toThrow(InvalidFactorError);
+		});
+
+		it("rounds scaled quantities to 2 decimals instead of leaking float noise", () => {
+			const recipe = compileRecipe(`## Section\n\nAdd @flour{100g}.\n`);
+			const scaled: any = applyScale(recipe, 1.1);
+			const flour = scaled.shopping_list.find((i: any) => i.id === "flour");
+			// Raw `100 * 1.1` is `110.00000000000001` in IEEE 754 float.
+			expect(flour.qty).toBe(110);
+		});
+
+		it("scales a composite parent's total through scaleQty (rounded), not a raw multiplication", () => {
+			const recipe = compileRecipe(
+				`## Section\n\nSeparate @egg yolks{3}<@eggs{3} from the whites.\n`,
+			);
+			const scaled: any = applyScale(recipe, 1.1);
+			const composite = scaled.shopping_list.find(
+				(i: any) => i.type === "composite",
+			);
+			// Raw `3 * 1.1` is `3.3000000000000003` in IEEE 754 float.
+			expect(composite.qty).toBe(3.3);
+		});
+	});
 });
