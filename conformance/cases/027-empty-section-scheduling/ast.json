@@ -1,0 +1,110 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Empty Section Scheduling"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "A",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "a",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Wait ",
+              "loc": {
+                "start": 51,
+                "end": 56
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 60,
+                  "text": "60"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 58,
+                  "end": 63
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 56,
+                "end": 64
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 64,
+                "end": 65
+              }
+            }
+          ],
+          "loc": {
+            "start": 47,
+            "end": 67
+          }
+        }
+      ],
+      "loc": {
+        "start": 41,
+        "end": 67
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Empty",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [],
+      "loc": {
+        "start": 67,
+        "end": 77
+      }
+    },
+    {
+      "type": "Section",
+      "title": "C",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "c",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Do it.",
+              "loc": {
+                "start": 87,
+                "end": 93
+              }
+            }
+          ],
+          "loc": {
+            "start": 83,
+            "end": 94
+          }
+        }
+      ],
+      "loc": {
+        "start": 77,
+        "end": 94
+      }
+    }
+  ]
+}

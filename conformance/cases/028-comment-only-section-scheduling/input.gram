@@ -1,0 +1,14 @@
+---
+title: Comment-Only Section Scheduling
+---
+
+## A
+
+[a] Wait ~{60min}.
+
+## Note
+// just a comment, no steps
+
+## C
+
+[c] Do it.

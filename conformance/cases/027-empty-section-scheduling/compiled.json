@@ -1,0 +1,96 @@
+{
+  "title": "Empty Section Scheduling",
+  "slug": "empty-section-scheduling",
+  "meta": {
+    "title": "Empty Section Scheduling"
+  },
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "A",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Wait ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 60,
+                "text": "60"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 60,
+            "activeDuration": 60
+          },
+          "action": "a"
+        }
+      ]
+    },
+    {
+      "title": "Empty",
+      "ingredients": [],
+      "cookware": [],
+      "steps": []
+    },
+    {
+      "title": "C",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Do it."
+          ],
+          "timings": {
+            "start": 60,
+            "end": 62,
+            "activeDuration": 2
+          },
+          "action": "c"
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 62,
+    "totalBreakdown": [
+      {
+        "label": "section_active:A",
+        "duration": 60
+      },
+      {
+        "label": "section_active:C",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 62,
+    "activeBreakdown": [
+      {
+        "label": "section_active:A",
+        "duration": 60
+      },
+      {
+        "label": "section_active:C",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 0
+  }
+}

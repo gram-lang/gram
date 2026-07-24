@@ -1,0 +1,72 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Proto Key Inert"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 64,
+                "end": 68
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 75,
+                  "end": 79
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 68,
+                "end": 80
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 80,
+                "end": 81
+              }
+            }
+          ],
+          "loc": {
+            "start": 64,
+            "end": 82
+          }
+        }
+      ],
+      "loc": {
+        "start": 52,
+        "end": 82
+      }
+    }
+  ]
+}
