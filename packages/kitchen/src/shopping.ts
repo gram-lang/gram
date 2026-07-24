@@ -31,10 +31,21 @@ export interface ShoppingListItem {
 export interface CompositeItem {
 	type: "composite";
 	id: string;
+	// Absent while accumulating (built by generateShoppingList's step 5/6
+	// below); always set by the time this leaves generateShoppingList.
+	name?: string;
 	qty: number; // calculated max parent qty
 	usage: Partial<Usage>[];
-	_subUsageMap: Map<string, number>;
-	_usageAccumulator: Map<string, Partial<Usage>>;
+	// Only present on the in-progress accumulator kept in `compositeMap`
+	// during generateShoppingList — deliberately absent from the finished
+	// item returned in the shopping list itself (internal build state, not
+	// part of its public shape).
+	_subUsageMap?: Map<string, number>;
+	_usageAccumulator?: Map<string, Partial<Usage>>;
+	// Internal accumulator for a direct (non-composite) usage of the parent
+	// ingredient itself (e.g. "3 eggs, 2 used as yolks") — set in step 5,
+	// consumed in step 6 below.
+	_directAddQty?: number;
 	// Never actually set on a composite — always undefined — but declared so
 	// `scale/engine.ts`'s uniform "is this shopping-list entry scalable?"
 	// checks (shared with ShoppingListItem/Usage) can read them without a cast.
@@ -50,9 +61,9 @@ export interface CompositeItem {
  * Format raw quantity AST nodes (fractions, ranges, variables, relative quantities)
  * into human-readable strings for display in the shopping list.
  */
-function formatQuantity(q: any): string | number {
+function formatQuantity(q: Usage["qty"]): string | number {
 	if (!q) return "";
-	if (typeof q === "number") return q;
+	if (typeof q === "number" || typeof q === "string") return q;
 
 	// Handle objects
 	if (q.type === "single") return q.value;
@@ -120,15 +131,17 @@ export function generateShoppingList(
 				}
 
 				const subId = item.id;
-				const currentParentTotal = comp._subUsageMap.get(subId) || 0;
-				comp._subUsageMap.set(subId, currentParentTotal + declParentQty);
+				// Always populated at construction (compositeMap.set above) —
+				// only the *finished* CompositeItem returned to callers omits them.
+				const currentParentTotal = comp._subUsageMap!.get(subId) || 0;
+				comp._subUsageMap!.set(subId, currentParentTotal + declParentQty);
 
 				// Accumulate child quantities inside the sub-recipe
 				const uUnit = item.unit || "";
 				const uKey = `${subId}::${uUnit}`;
 
-				if (!comp._usageAccumulator.has(uKey)) {
-					comp._usageAccumulator.set(uKey, {
+				if (!comp._usageAccumulator!.has(uKey)) {
+					comp._usageAccumulator!.set(uKey, {
 						id: subId,
 						unit: item.unit,
 						// Left undefined (not 0) until a measured usage is seen, so a
@@ -139,7 +152,7 @@ export function generateShoppingList(
 						alias: item.alias,
 					});
 				}
-				const uEntry = comp._usageAccumulator.get(uKey)!;
+				const uEntry = comp._usageAccumulator!.get(uKey)!;
 
 				const numQ = getNumericQty(item.qty);
 				if (numQ !== null) {
@@ -210,12 +223,11 @@ export function generateShoppingList(
 
 			// Push ghosts, variables, and circular warnings to alternative descriptions
 			if (isGhost) {
-				let text = item.formula
-					? item.formula.raw
-					: (item.qty && (item.qty as any).value) || "";
-				if (item.formula) {
-					text = item.formula.raw;
-				}
+				// isGhost is only ever set from `item.formula.isGhost` above, so
+				// `item.formula` is always truthy here — the `.qty`/`.value`
+				// fallback below it was dead code (also, `.value` doesn't exist
+				// on every Usage["qty"] variant, e.g. RelativeQuantityAST).
+				const text = item.formula?.raw ?? "";
 				const display = `${text} ❓`;
 				existing.variableParts!.push(`(${display})`);
 			} else if (numericQty !== null) {
@@ -305,45 +317,42 @@ export function generateShoppingList(
 			}
 
 			const directUsageKey = `__direct_${stdItem.id}`;
-			comp._usageAccumulator.set(directUsageKey, {
+			comp._usageAccumulator!.set(directUsageKey, {
 				id: stdItem.id,
 				alias: "Direct Use",
 				qty: stdItem.qty,
 				unit: stdItem.unit,
 			});
 
-			(comp as any)._directAddQty = addQty;
+			comp._directAddQty = addQty;
 		} else {
 			finalStandardList.push(stdItem);
 		}
 	});
 
 	// 6. Finalize composite parent sub-recipe item listings
-	const compositeList = [...compositeMap.values()].map((c) => {
+	const compositeList: CompositeItem[] = [...compositeMap.values()].map((c) => {
 		let maxQ = 0;
-		for (const q of c._subUsageMap.values()) {
+		for (const q of c._subUsageMap!.values()) {
 			if (q > maxQ) maxQ = q;
 		}
 
-		if ((c as any)._directAddQty) {
-			maxQ += (c as any)._directAddQty;
+		if (c._directAddQty) {
+			maxQ += c._directAddQty;
 		}
 
 		c.qty = maxQ;
 		const parentName = registry.ingredients.get(c.id)?.name || c.id;
 
-		const cRes: any = {
+		// Deliberately excludes _subUsageMap/_usageAccumulator/_directAddQty —
+		// internal accumulator state, not part of a finished shopping-list item.
+		const cRes: CompositeItem = {
 			type: "composite",
 			id: c.id,
 			name: parentName,
 			qty: c.qty,
-			usage: [],
+			usage: [...c._usageAccumulator!.values()],
 		};
-
-		cRes.usage = [...c._usageAccumulator.values()].map((u) => {
-			const childUsage: any = { ...u };
-			return childUsage;
-		});
 
 		return cRes;
 	});
