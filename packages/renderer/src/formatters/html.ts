@@ -71,9 +71,14 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 				.map((b) => {
 					let label = b.label;
 					if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
-						label = `${label.slice(SECTION_ACTIVE_PREFIX.length)} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
+						// Security audit 2026-07-22, finding B-1: the section title and
+						// timer name below come straight from recipe source text (`##
+						// <title>`, `~<name>{...}`) and used to be interpolated here
+						// without escaping — an exploitable HTML injection via the
+						// playground/VS Code preview.
+						label = `${escapeHtml(label.slice(SECTION_ACTIVE_PREFIX.length))} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
 					} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
-						label = `${t.renderer.breakdownTimer} "${label.slice(TIMER_NAMED_PREFIX.length)}"`;
+						label = `${t.renderer.breakdownTimer} "${escapeHtml(label.slice(TIMER_NAMED_PREFIX.length))}"`;
 					} else if (label === "timer_passive") {
 						label = t.renderer.breakdownPassive;
 					} else if (label === "ingredients_overhead") {
