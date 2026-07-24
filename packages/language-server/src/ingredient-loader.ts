@@ -2,20 +2,37 @@ import { parse } from "yaml";
 import { readFileSync, existsSync } from "node:fs";
 import { slugify } from "@gram-lang/kitchen";
 
-import type { IngredientData } from "@gram-lang/analyzer";
+import {
+	validateIngredientDatabase,
+	type IngredientData,
+	type IngredientValidationIssue,
+} from "@gram-lang/analyzer";
 
 export type IngredientEntry = IngredientData;
 
 export type IngredientDB = Record<string, IngredientEntry>;
 
-export function loadIngredientDB(yamlPath: string): IngredientDB {
-	if (!existsSync(yamlPath)) return {};
+export interface LoadIngredientDBResult {
+	db: IngredientDB;
+	rejected: IngredientValidationIssue[];
+}
+
+// Audit 2026-07-22, finding B1: this used to cast the parsed YAML straight to
+// IngredientDB with no validation, so an entry missing `name` (or any other
+// malformed entry) crashed the server the moment a lookup touched it — the
+// CLI's `loadDb` (core/db.ts) already goes through validateIngredientDatabase
+// for exactly this reason. A malformed entry is now dropped and reported
+// instead of taking the whole server down with it.
+export function loadIngredientDB(yamlPath: string): LoadIngredientDBResult {
+	if (!existsSync(yamlPath)) return { db: {}, rejected: [] };
 	try {
 		const content = readFileSync(yamlPath, "utf-8");
 		const parsed = parse(content) as { ingredients?: unknown } | undefined;
-		return (parsed?.ingredients ?? parsed ?? {}) as IngredientDB;
+		const raw = parsed?.ingredients ?? parsed ?? {};
+		const { data, rejected } = validateIngredientDatabase(raw);
+		return { db: data, rejected };
 	} catch {
-		return {};
+		return { db: {}, rejected: [] };
 	}
 }
 

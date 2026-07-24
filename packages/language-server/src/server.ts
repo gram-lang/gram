@@ -32,28 +32,55 @@ import {
 import { provideInlayHints } from "./features/inlay-hints";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
+import { resolveWorkspaceFolders } from "./utils/workspace-folders";
+import { resolveFreshState } from "./utils/fresh-state";
 import { toHTML, escapeHtml } from "@gram-lang/renderer";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const states = new Map<string, DocumentState>();
 
+// Audit 2026-07-22, LSP synthesis: a crash here kills the editor's whole
+// language feature set, not just one command — the bar for "never die" is
+// higher than for the CLI. These are a last resort behind the specific fixes
+// above (B1-B3): log and keep serving requests instead of letting Node exit.
+process.on("uncaughtException", (err) => {
+	connection.console.error(
+		`Uncaught exception: ${err instanceof Error ? (err.stack ?? err.message) : err}`,
+	);
+});
+process.on("unhandledRejection", (reason) => {
+	connection.console.error(
+		`Unhandled rejection: ${reason instanceof Error ? (reason.stack ?? reason.message) : reason}`,
+	);
+});
+
 let ingredientDB: IngredientDB = {};
 let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
 
+function applyLoadResult(result: ReturnType<typeof loadIngredientDB>): void {
+	ingredientDB = result.db;
+	if (result.rejected.length > 0) {
+		connection.console.warn(
+			`Ignoring ${result.rejected.length} invalid ingredient(s): ${result.rejected
+				.map((r) => r.key)
+				.join(", ")}`,
+		);
+	}
+}
+
 function loadDB(configPath?: string): void {
 	if (configPath?.trim()) {
-		ingredientDB = loadIngredientDB(configPath.trim());
+		applyLoadResult(loadIngredientDB(configPath.trim()));
 	} else {
 		ingredientDB = {};
 		for (const folder of workspaceFolders) {
 			const auto = join(folder, ".gram", "ingredients.yaml");
 			if (existsSync(auto)) {
-				ingredientDB = loadIngredientDB(auto);
+				applyLoadResult(loadIngredientDB(auto));
 				break;
 			}
 		}
@@ -63,8 +90,7 @@ function loadDB(configPath?: string): void {
 }
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-	workspaceFolders =
-		params.workspaceFolders?.map((f) => fileURLToPath(f.uri)) ?? [];
+	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -90,18 +116,37 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
+// Audit 2026-07-22, finding B3: called from onDidChangeWatchedFiles/
+// onDidChangeConfiguration without awaiting or catching the returned
+// promise. This function must never reject — every call site treats it as
+// fire-and-forget, and an unhandled rejection here would otherwise crash the
+// whole Node process (Node terminates on unhandled rejection by default).
 async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	try {
 		const config = await connection.workspace.getConfiguration("gram");
 		loadDB(config?.ingredientDatabase?.path);
 	} catch {
-		loadDB();
+		try {
+			loadDB();
+		} catch (e) {
+			connection.console.error(`Failed to load ingredient database: ${e}`);
+		}
 	}
 	for (const [uri, state] of states) {
-		connection.sendDiagnostics({
-			uri,
-			diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB),
-		});
+		try {
+			connection.sendDiagnostics({
+				uri,
+				diagnostics: provideDiagnostics(
+					state,
+					ingredientLookupSet,
+					ingredientDB,
+				),
+			});
+		} catch (e) {
+			connection.console.error(
+				`Failed to refresh diagnostics for ${uri}: ${e}`,
+			);
+		}
 	}
 }
 
@@ -120,16 +165,20 @@ connection.onInitialized(async () => {
 		// the DB still (re)loads on init/config-change as before.
 	}
 	connection.onDidChangeWatchedFiles(() => {
-		reloadDbAndRefreshDiagnostics();
+		reloadDbAndRefreshDiagnostics().catch((e) =>
+			connection.console.error(`DB reload failed: ${e}`),
+		);
 	});
 
 	connection.onDidChangeConfiguration(() => {
-		reloadDbAndRefreshDiagnostics();
+		reloadDbAndRefreshDiagnostics().catch((e) =>
+			connection.console.error(`DB reload failed: ${e}`),
+		);
 	});
 });
 
-function refresh(uri: string, text: string) {
-	const state = parseDocument(text, ingredientDB);
+function refresh(uri: string, text: string, version?: number) {
+	const state = parseDocument(text, ingredientDB, version);
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
@@ -164,21 +213,39 @@ function refresh(uri: string, text: string) {
 // on every keystroke — same pattern already used in cli/src/commands/watch.ts.
 const pendingRefresh = new Map<string, ReturnType<typeof setTimeout>>();
 
-function scheduleRefresh(uri: string, text: string): void {
+function scheduleRefresh(uri: string, text: string, version: number): void {
 	const existing = pendingRefresh.get(uri);
 	if (existing) clearTimeout(existing);
 	pendingRefresh.set(
 		uri,
 		setTimeout(() => {
 			pendingRefresh.delete(uri);
-			refresh(uri, text);
+			refresh(uri, text, version);
 		}, 150),
 	);
 }
 
-documents.onDidOpen((e) => refresh(e.document.uri, e.document.getText()));
+// See utils/fresh-state.ts (audit 2026-07-22, finding B5) — formatting,
+// rename, and code actions call this instead of reading `states` directly,
+// so they always operate on the live text.
+function getFreshState(uri: string): DocumentState | undefined {
+	const doc = documents.get(uri);
+	if (!doc) return states.get(uri);
+	const fresh = resolveFreshState(
+		states.get(uri),
+		doc.getText(),
+		doc.version,
+		ingredientDB,
+	);
+	states.set(uri, fresh);
+	return fresh;
+}
+
+documents.onDidOpen((e) =>
+	refresh(e.document.uri, e.document.getText(), e.document.version),
+);
 documents.onDidChangeContent((e) =>
-	scheduleRefresh(e.document.uri, e.document.getText()),
+	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version),
 );
 documents.onDidClose((e) => {
 	states.delete(e.document.uri);
@@ -238,22 +305,22 @@ connection.onReferences(({ textDocument: { uri }, position }) => {
 });
 
 connection.onPrepareRename(({ textDocument: { uri }, position }) => {
-	const s = states.get(uri);
+	const s = getFreshState(uri);
 	return s ? prepareName(s, position) : null;
 });
 
 connection.onRenameRequest(({ textDocument: { uri }, position, newName }) => {
-	const s = states.get(uri);
+	const s = getFreshState(uri);
 	return s ? provideRename(s, position, newName, uri) : null;
 });
 
 connection.onDocumentFormatting(({ textDocument: { uri } }) => {
-	const s = states.get(uri);
+	const s = getFreshState(uri);
 	return s ? provideFormatting(s) : [];
 });
 
 connection.onCodeAction(({ textDocument: { uri }, range, context }) => {
-	const s = states.get(uri);
+	const s = getFreshState(uri);
 	return s
 		? provideCodeActions(s, range, context.diagnostics, uri, ingredientDB)
 		: [];
