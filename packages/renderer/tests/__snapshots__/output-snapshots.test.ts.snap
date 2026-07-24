@@ -6,7 +6,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
 <div class="recipe-timings-grid">
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-clock"></i> Total Time</div>
-   <div class="meta-value">42m</div>
+   <div class="meta-value">41m</div>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Total Time = Prep + Active + Idle</div>
       <div class="timing-row">
@@ -24,13 +24,13 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
       </div>
       <div class="timing-row">
         <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 2m</span>
+        <span class="timing-val">+ 1m</span>
       </div>
     </div>
  </div>
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-fire"></i> Active Time</div>
-   <div class="meta-value">34m</div>
+   <div class="meta-value">33m</div>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Active Time = Sum of manual work time</div>
       <div class="timing-row">
@@ -39,7 +39,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
       </div>
       <div class="timing-row">
         <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 2m</span>
+        <span class="timing-val">+ 1m</span>
       </div>
     </div>
  </div>
@@ -113,7 +113,7 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
     </div>
     <ol class="steps">
       <li value="1">
-        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><i class="ph ph-thermometer"></i> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient"><i class="ph ph-caret-circle-right"></i> batter</span> and cook for <span class="timer" data-tooltip="Active Time" data-value="" data-unit="active 1min"><i class="ph ph-timer"></i> <span class="timer-text"> active 1min</span></span>.
+        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><i class="ph ph-thermometer"></i> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient"><i class="ph ph-caret-circle-right"></i> batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">1 min</span></span>.
       </li>
     </ol>
   </section>
@@ -134,8 +134,8 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 "# Crêpes
 
 > **Metadata**
-> - **Total Time**: 42m
-> - **Active Time**: 34m
+> - **Total Time**: 41m
+> - **Active Time**: 33m
 > - **Prep Time**: 8m (est.)
 > - portions: 4
 
@@ -168,7 +168,7 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 **Ingredients**:
 - 👉*batter*
 
-1. Heat a *pan* on 🔥medium heat. Pour 👉*batter* and cook for ⏲️  active 1min.
+1. Heat a *pan* on 🔥medium heat. Pour 👉*batter* and cook for active ⏲️ 1 min.
 
 "
 `;
@@ -485,8 +485,8 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 <body>
 <h1>Crêpes</h1>
 <div class="meta">
-  <span class="meta-item"><span class="meta-label">Total Time</span>42m</span>
-  <span class="meta-item"><span class="meta-label">Active Time</span>34m</span>
+  <span class="meta-item"><span class="meta-label">Total Time</span>41m</span>
+  <span class="meta-item"><span class="meta-label">Active Time</span>33m</span>
   <span class="meta-item"><span class="meta-label">Prep Time</span>8m <em style="opacity:0.55;font-size:0.85em">(est.)</em></span>
   <span class="meta-item"><span class="meta-label">Portions</span>4</span>
 </div>
@@ -534,7 +534,7 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
   </ul></div>
   <ol class="steps">
     <li value="1">
-      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for <span class="timer" data-tooltip="Active Time" data-value="" data-unit="active 1min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text"> active 1min</span></span>.
+      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">1 min</span></span>.
     </li>
   </ol>
 </section>

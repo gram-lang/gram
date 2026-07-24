@@ -150,4 +150,152 @@ describe("Global Scheduling and Retro-planning", () => {
 		expect(result.warnings.length).toBe(1);
 		expect(result.warnings[0].code).toBe(WarningCode.TRACK_CONTENTION);
 	});
+
+	// Regression tests for the audit (2026-07-22, finding F-002): default
+	// chaining only looked at the *immediately* following section
+	// (`stepsBySection[sIdx + 1]`), so a section with no steps of its own —
+	// empty, or containing only a comment — left the chained start time at its
+	// 0 default instead of reaching through to the next real section. The
+	// step after the gap then overlapped whatever was still running before it.
+	it("chains across an empty section instead of overlapping with it", () => {
+		const source = `
+## A
+
+[a] Wait ~{60min}.
+
+## Empty
+
+## C
+
+[c] Do it.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		const a = result.sections[0].steps[0];
+		const c = result.sections[2].steps[0];
+
+		expect(a.timings.start).toBe(0);
+		expect(a.timings.end).toBe(60);
+		// C must start no earlier than A ends — the bug scheduled it at 58,
+		// overlapping the still-running 60min timer.
+		expect(c.timings.start).toBeGreaterThanOrEqual(a.timings.end);
+		expect(c.timings.start).toBe(60);
+		expect(c.timings.end).toBe(62);
+	});
+
+	it("chains across a comment-only section the same way", () => {
+		const source = `
+## A
+
+[a] Wait ~{60min}.
+
+## Note
+// just a comment, no steps
+
+## C
+
+[c] Do it.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		const a = result.sections[0].steps[0];
+		const c = result.sections[2].steps[0];
+
+		expect(a.timings.end).toBe(60);
+		expect(c.timings.start).toBe(60);
+	});
+
+	it("reaches through multiple consecutive empty sections", () => {
+		const source = `
+## A
+
+[a] Wait ~{60min}.
+
+## Empty1
+
+## Empty2
+
+## C
+
+[c] Do it.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		const a = result.sections[0].steps[0];
+		const c = result.sections[3].steps[0];
+
+		expect(a.timings.end).toBe(60);
+		expect(c.timings.start).toBe(60);
+	});
+});
+
+// Regression tests for the audit (2026-07-22, findings F-005/F-006): ~timer
+// hand-normalized only "m"/"minutes" to "min" and left every other alias
+// untouched, and a genuinely unrecognized unit fell through
+// quantityToMinutes' d/h/m/s checks and was silently treated as plain
+// minutes (e.g. "3 bananas" -> 3 minutes of active time, no warning).
+describe("Timer unit normalization", () => {
+	it("normalizes every alias of the same physical unit to the same display string", () => {
+		const source = `
+## Section
+
+[a] Rest ~a{5 minutes}.
+
+[b] Rest ~b{5 mins}.
+
+[c] Rest ~c{2 heures}.
+
+[d] Rest ~d{2 h}.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		const timers = result.sections[0].steps
+			.map((s: any) => s.content.find((c: any) => c?.type === "timer"))
+			.map((t: any) => t.unit);
+
+		expect(timers).toEqual(["min", "min", "h", "h"]);
+	});
+
+	it("does not fabricate a duration for a timer with a genuinely unknown unit", () => {
+		const source = `
+## Section
+
+[a] Wait ~{3 bananas}.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		expect(result.warnings).toHaveLength(1);
+		expect(result.warnings[0].code).toBe(WarningCode.INVALID_UNIT);
+
+		const step = result.sections[0].steps[0];
+		expect(
+			step.content.find((c: any) => c?.type === "timer").quantity,
+		).toBeUndefined();
+		// Only the baseline per-step overhead, not the fabricated "3 minutes".
+		expect(step.timings.activeDuration).toBeLessThan(3);
+	});
+
+	it("does not fabricate a duration for a timer with a missing unit", () => {
+		const source = `
+## Section
+
+[a] Wait ~{10}.
+		`;
+		const ast = getAST(source);
+		const result = compile(ast);
+
+		expect(result.warnings).toHaveLength(1);
+		expect(result.warnings[0].code).toBe(WarningCode.MISSING_UNIT);
+
+		const step = result.sections[0].steps[0];
+		expect(
+			step.content.find((c: any) => c?.type === "timer").quantity,
+		).toBeUndefined();
+		expect(step.timings.activeDuration).toBeLessThan(10);
+	});
 });

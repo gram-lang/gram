@@ -22,19 +22,14 @@
             "Wait for ",
             {
               "type": "timer",
-              "name": "timer",
-              "quantity": {
-                "type": "single",
-                "value": 10,
-                "text": "10"
-              }
+              "name": "timer"
             },
             "."
           ],
           "timings": {
             "start": 0,
-            "end": 10,
-            "activeDuration": 10
+            "end": 2,
+            "activeDuration": 2
           }
         }
       ],
@@ -57,19 +52,19 @@
     }
   ],
   "metrics": {
-    "totalTime": 10,
+    "totalTime": 2,
     "totalBreakdown": [
       {
         "label": "section_active:Section",
-        "duration": 10
+        "duration": 2
       }
     ],
     "idleTime": 0,
-    "activeTime": 10,
+    "activeTime": 2,
     "activeBreakdown": [
       {
         "label": "section_active:Section",
-        "duration": 10
+        "duration": 2
       }
     ],
     "preparationTime": 0,

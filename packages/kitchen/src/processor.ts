@@ -42,6 +42,20 @@ export interface ProcessorContext extends Context {
 	options?: CompilerOptions;
 }
 
+// Canonical i18n time-unit keys (see @gram-lang/i18n's resolveTimeUnit),
+// mapped to the display unit used in compiled output. Shared between ~timer
+// and retro-planning (audit 2026-07-22, finding F-005) so a display value
+// change or a `resolveTimeUnit` alias addition can't drift between the two —
+// previously ~timer normalized "m"/"minutes" to "min" by hand and left every
+// other alias (mins, h, heures, ...) untouched, producing up to 4 different
+// display strings for 2 physical units in the same compiled document.
+const TIME_UNIT_DISPLAY: Record<string, "d" | "h" | "min" | "s"> = {
+	d: "d",
+	h: "h",
+	m: "min",
+	s: "s",
+};
+
 function checkModifiers(
 	ctx: ProcessorContext,
 	modifiers: string[],
@@ -355,16 +369,33 @@ function processTimer(
 	if (item.quantity) {
 		const q = item.quantity;
 		if (q.type === ASTNodeType.Quantity) {
-			if (q.value) obj.quantity = q.value;
-			let unit = q.unit;
-			if (unit === "m" || unit === "minutes") unit = "min";
-			if (unit) obj.unit = unit;
-			if (!unit) {
+			if (!q.unit) {
 				pushWarning(ctx, WarningCode.MISSING_UNIT, {
 					type: "Timer",
 					item: item.name || "Timer",
 					loc: item.loc,
 				});
+			} else {
+				const unit = TIME_UNIT_DISPLAY[resolveTimeUnit(q.unit)];
+				if (!unit) {
+					// Audit 2026-07-22, finding F-006: an unrecognized unit
+					// (e.g. "3 bananas") used to fall through
+					// quantityToMinutes' d/h/m/s checks and be silently
+					// treated as plain minutes. Emitting INVALID_UNIT
+					// (matching processTemperature/processRetroPlanning) and
+					// leaving `quantity`/`unit` unset means this timer
+					// contributes zero duration instead of a fabricated one —
+					// the same "degrade to nothing, never guess" choice
+					// processRetroPlanning already makes.
+					pushWarning(ctx, WarningCode.INVALID_UNIT, {
+						type: "Timer",
+						value: q.unit,
+						loc: item.loc,
+					});
+				} else {
+					if (q.value) obj.quantity = q.value;
+					obj.unit = unit;
+				}
 			}
 		} else if (q.type === ASTNodeType.TextQuantity) {
 			pushWarning(ctx, WarningCode.INVALID_UNIT, {
@@ -423,15 +454,12 @@ function processTemperature(
 	return obj;
 }
 
-// Canonical i18n time-unit keys (see @gram-lang/i18n's resolveTimeUnit) that
-// retro-planning accepts, mapped to the display unit used in compiled output
-// and docs. "s" resolves fine for ~timer but doesn't make sense for a section
-// scheduling offset, so it's deliberately excluded here.
-const RETRO_PLANNING_UNIT_DISPLAY: Record<string, "d" | "h" | "min"> = {
-	d: "d",
-	h: "h",
-	m: "min",
-};
+// Retro-planning accepts the same units as ~timer (see TIME_UNIT_DISPLAY)
+// except seconds, which don't make sense for a section scheduling offset.
+const RETRO_PLANNING_UNIT_DISPLAY: Record<string, "d" | "h" | "min"> =
+	Object.fromEntries(
+		Object.entries(TIME_UNIT_DISPLAY).filter(([, v]) => v !== "s"),
+	) as Record<string, "d" | "h" | "min">;
 
 function processRetroPlanning(
 	section: SectionAST,
@@ -805,12 +833,19 @@ export function processSections(
 
 		if (sectionSteps.length === 0) continue;
 
-		// 1. Default Chaining: End of this section is the start of the next section
+		// 1. Default Chaining: End of this section is the start of the next
+		// *non-empty* section. Audit 2026-07-22, finding F-002: reading only
+		// `stepsBySection[sIdx + 1]` left `chainedLf` at its 0 default whenever
+		// the immediately-following section had no steps (empty, or
+		// comment-only — comments are filtered out of stepsBySection above),
+		// which chained the current section to T-zero instead of to whatever
+		// comes after the gap, overlapping it with an still-active timer.
 		let chainedLf = 0;
-		if (sIdx < sections.length - 1) {
-			const nextSectionSteps = stepsBySection[sIdx + 1]!;
-			if (nextSectionSteps.length > 0) {
-				chainedLf = nextSectionSteps[0]!.ls;
+		for (let j = sIdx + 1; j < sections.length; j++) {
+			const laterSectionSteps = stepsBySection[j]!;
+			if (laterSectionSteps.length > 0) {
+				chainedLf = laterSectionSteps[0]!.ls;
+				break;
 			}
 		}
 
