@@ -10,6 +10,7 @@ import {
 	isIngredient,
 	isAlternative,
 	isStep,
+	isSection,
 } from "@gram-lang/parser";
 
 export interface IntermediateDeclWithSection {
@@ -18,20 +19,66 @@ export interface IntermediateDeclWithSection {
 	step: StepAST | null;
 }
 
+// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't always
+// `SectionAST[]` — the grammar's implicit-content path (no `## Section`
+// header anywhere) and the leading-blocks-before-the-first-header case
+// (`Content_explicit`'s optional leading `Block*`) both place `Step`/
+// `Comment` nodes directly under `Recipe`. The 3 walkers below used to
+// assume every top-level child was a section and read `.children`/
+// `.intermediateDecl` off it unconditionally — silently wrong (returned
+// nothing) for a bare top-level Step, and a runtime crash for a bare
+// top-level Comment (`.children` doesn't exist on `CommentAST`, so
+// `for (const block of section.children)` threw).
+//
+// Per-step intermediate declarations (`->&name{}` written inline in a step)
+// on a bare top-level step, with no enclosing Section, are not reachable
+// through this walker — `IntermediateDeclWithSection.section` is
+// non-nullable, and there is no section to attach; this is an accepted gap
+// for the exotic "headerless recipe with an inline intermediate decl" case.
+
+function* iterSectionSteps(
+	ast: RecipeAST,
+): Generator<{ section: SectionAST; step: StepAST }> {
+	for (const section of ast.children) {
+		if (!isSection(section)) continue;
+		for (const block of section.children) {
+			if (isStep(block)) yield { section, step: block };
+		}
+	}
+}
+
+// Unlike iterSectionSteps, also yields a bare top-level step (no enclosing
+// Section) — correct for collectReferences/collectIngredients, which don't
+// need a section to attach to, unlike IntermediateDeclWithSection.
+function* iterAllSteps(ast: RecipeAST): Generator<StepAST> {
+	for (const child of ast.children) {
+		if (isSection(child)) {
+			for (const block of child.children) {
+				if (isStep(block)) yield block;
+			}
+		} else if (isStep(child)) {
+			yield child;
+		}
+	}
+}
+
 export function collectIntermediates(
 	ast: RecipeAST,
 ): IntermediateDeclWithSection[] {
 	const results: IntermediateDeclWithSection[] = [];
-	for (const section of ast.children) {
-		if (section.intermediateDecl) {
-			results.push({ decl: section.intermediateDecl, section, step: null });
+	for (const child of ast.children) {
+		if (isSection(child) && child.intermediateDecl) {
+			results.push({
+				decl: child.intermediateDecl,
+				section: child,
+				step: null,
+			});
 		}
-		for (const block of section.children) {
-			if (!isStep(block)) continue;
-			for (const child of block.children) {
-				if (isIntermediateDecl(child)) {
-					results.push({ decl: child, section, step: block });
-				}
+	}
+	for (const { section, step } of iterSectionSteps(ast)) {
+		for (const child of step.children) {
+			if (isIntermediateDecl(child)) {
+				results.push({ decl: child, section, step });
 			}
 		}
 	}
@@ -40,13 +87,10 @@ export function collectIntermediates(
 
 export function collectReferences(ast: RecipeAST): ReferenceAST[] {
 	const refs: ReferenceAST[] = [];
-	for (const section of ast.children) {
-		for (const block of section.children) {
-			if (!isStep(block)) continue;
-			for (const child of block.children) {
-				if (isReference(child)) {
-					refs.push(child);
-				}
+	for (const step of iterAllSteps(ast)) {
+		for (const child of step.children) {
+			if (isReference(child)) {
+				refs.push(child);
 			}
 		}
 	}
@@ -61,16 +105,13 @@ export function getStepSourceText(step: StepAST, documentText: string): string {
 
 export function collectIngredients(ast: RecipeAST): IngredientAST[] {
 	const results: IngredientAST[] = [];
-	for (const section of ast.children) {
-		for (const block of section.children) {
-			if (!isStep(block)) continue;
-			for (const child of block.children) {
-				if (isIngredient(child)) {
-					results.push(child);
-				} else if (isAlternative(child)) {
-					for (const opt of child.options) {
-						if (isIngredient(opt)) results.push(opt);
-					}
+	for (const step of iterAllSteps(ast)) {
+		for (const child of step.children) {
+			if (isIngredient(child)) {
+				results.push(child);
+			} else if (isAlternative(child)) {
+				for (const opt of child.options) {
+					if (isIngredient(opt)) results.push(opt);
 				}
 			}
 		}

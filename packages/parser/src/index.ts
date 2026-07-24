@@ -1,11 +1,14 @@
 import * as ohm from "ohm-js";
 import { grammarContent } from "./grammar-content";
 import {
+	type Meta,
 	type RecipeAST,
 	type RetroPlanningAST,
 	type SectionAST,
 	type StepAST,
+	type TextAST,
 	type IngredientAST,
+	type CompositeAST,
 	type CookwareAST,
 	type QuantityAST,
 	type QuantityValueAST,
@@ -17,6 +20,7 @@ import {
 	type CommentAST,
 	type AlternativeAST,
 	type IntermediateDecl,
+	type Modifier,
 	ASTNodeType,
 } from "./types";
 
@@ -131,14 +135,28 @@ const parseFrontmatterValue = (val: string): string | string[] => {
 // SEMANTICS
 // ----------------------------------------------------------------------------
 
+// Intermediate shapes returned by grammar actions that never become an
+// exported AST node in their own right (`header`/`headerExtension_*` just
+// feed `Section`'s own fields) — typed here instead of `any` so the actions
+// below get real return-type checking without an `as SectionAST`-style cast
+// papering over a shape mismatch (audit 2026-07-22, parser finding I3).
+interface HeaderExtensionResult {
+	retroPlanning: RetroPlanningAST | null;
+	intermediateDecl: IntermediateDecl | null;
+}
+interface HeaderResult extends HeaderExtensionResult {
+	title: string;
+}
+
 const semantics = grammar.createSemantics();
 
 semantics.addOperation("toAST", {
 	// --- Structure ---
 
-	Recipe(frontmatter, content) {
-		let meta = getOpt(frontmatter) || {};
-		const metaResult = MetaSchema.safeParse(meta);
+	Recipe(frontmatter, content): RecipeAST {
+		const rawMeta = getOpt(frontmatter) || {};
+		const metaResult = MetaSchema.safeParse(rawMeta);
+		let meta: Meta;
 		if (!metaResult.success) {
 			console.warn(
 				"[Gram Parser] Invalid Front-Matter detected, ignoring metadata. Error:",
@@ -149,8 +167,8 @@ semantics.addOperation("toAST", {
 			meta = metaResult.data;
 		}
 
-		const sections = getOpt(content) || [];
-		return { type: ASTNodeType.Recipe, meta, children: sections } as RecipeAST;
+		const children = (getOpt(content) || []) as RecipeAST["children"];
+		return { type: ASTNodeType.Recipe, meta, children };
 	},
 
 	Frontmatter(_1, _2, kv, _3, _4) {
@@ -164,30 +182,30 @@ semantics.addOperation("toAST", {
 		return { [key.sourceString]: parseFrontmatterValue(value.sourceString) };
 	},
 
-	Content_explicit(_nls1, blocks, _nls2, sections) {
+	Content_explicit(_nls1, blocks, _nls2, sections): RecipeAST["children"] {
 		return [
-			...blocks.children.map((c) => c.toAST()),
-			...sections.children.map((s) => s.toAST()),
+			...(blocks.children.map((c) => c.toAST()) as RecipeAST["children"]),
+			...(sections.children.map((s) => s.toAST()) as SectionAST[]),
 		];
 	},
 
-	Content_implicit(_nls, blocks) {
-		return blocks.children.map((b) => b.toAST());
+	Content_implicit(_nls, blocks): RecipeAST["children"] {
+		return blocks.children.map((b) => b.toAST()) as RecipeAST["children"];
 	},
 
-	Section(header, blocks) {
-		const h = header.toAST();
+	Section(header, blocks): SectionAST {
+		const h = header.toAST() as HeaderResult;
 		return {
 			type: ASTNodeType.Section,
 			title: h.title,
 			retroPlanning: h.retroPlanning,
 			intermediateDecl: h.intermediateDecl,
-			children: blocks.children.map((b) => b.toAST()),
+			children: blocks.children.map((b) => b.toAST()) as SectionAST["children"],
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as SectionAST;
+		};
 	},
 
-	header(_1, _2, title, extension, _3, _4) {
+	header(_1, _2, title, extension, _3, _4): HeaderResult {
 		let retroPlanning = null;
 		let intermediateDecl = null;
 
@@ -205,32 +223,32 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	headerExtension_retro(retro, _sp, decl) {
+	headerExtension_retro(retro, _sp, decl): HeaderExtensionResult {
 		const intermediate = getOpt(decl);
 		return { retroPlanning: retro.toAST(), intermediateDecl: intermediate };
 	},
 
-	headerExtension_decl(decl, _sp, retro) {
+	headerExtension_decl(decl, _sp, retro): HeaderExtensionResult {
 		return {
 			retroPlanning: getOpt(retro),
 			intermediateDecl: decl.toAST(),
 		};
 	},
 
-	retroPlanning(_1, content, _2) {
+	retroPlanning(_1, content, _2): RetroPlanningAST {
 		return parseRetroPlanning(clean(content.sourceString));
 	},
 
 	// --- Blocks & Steps ---
 
-	Block_comment(comment, _nls) {
+	Block_comment(comment, _nls): SectionAST["children"][number] {
 		return comment.toAST();
 	},
-	Block_step(child) {
+	Block_step(child): SectionAST["children"][number] {
 		return child.toAST();
 	},
 
-	step(actionNode, line1, _nls, lines, _term) {
+	step(actionNode, line1, _nls, lines, _term): StepAST {
 		const action = getOpt(actionNode);
 
 		// Combine first line with subsequent lines, joined by a space
@@ -241,24 +259,26 @@ semantics.addOperation("toAST", {
 		});
 
 		// Flatten the array to unify text/ingredients flow
-		const flatContent = content.flat().filter((c) => c !== null);
+		const flatContent = content
+			.flat()
+			.filter((c) => c !== null) as StepAST["children"];
 
 		return {
 			type: ASTNodeType.Step,
 			action,
 			children: flatContent,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as StepAST;
+		};
 	},
 
-	startAction(_lb, txt, _rb, _sp) {
+	startAction(_lb, txt, _rb, _sp): string {
 		return clean(txt.sourceString);
 	},
 
-	line(items) {
-		return items.children.map((i) => i.toAST());
+	line(items): StepAST["children"] {
+		return items.children.map((i) => i.toAST()) as StepAST["children"];
 	},
-	stepContent(child) {
+	stepContent(child): StepAST["children"][number] {
 		return child.toAST();
 	},
 	invalidComposite(_s1, _lt, _s2, _at, name) {
@@ -277,25 +297,25 @@ semantics.addOperation("toAST", {
 		);
 	},
 
-	intermediateDecl_bare(_1, name) {
+	intermediateDecl_bare(_1, name): IntermediateDecl {
 		return {
 			type: ASTNodeType.IntermediateDecl,
 			name: clean(name.sourceString),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as IntermediateDecl;
+		};
 	},
 
-	intermediateDecl_full(_1, name, _2) {
+	intermediateDecl_full(_1, name, _2): IntermediateDecl {
 		return {
 			type: ASTNodeType.IntermediateDecl,
 			name: clean(name.sourceString),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as IntermediateDecl;
+		};
 	},
 
 	// --- Text & Primitives ---
 
-	text(spaces, chars) {
+	text(spaces, chars): TextAST {
 		const val = spaces.sourceString + chars.sourceString;
 		return {
 			type: ASTNodeType.Text,
@@ -304,7 +324,7 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	fallback(c) {
+	fallback(c): TextAST {
 		return {
 			type: ASTNodeType.Text,
 			value: c.sourceString,
@@ -313,30 +333,41 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	nl(_r, _n) {
+	nl(_r, _n): null {
 		return null;
 	},
-	ws(s) {
+	ws(s): TextAST {
 		return { type: ASTNodeType.Text, value: s.sourceString };
 	},
 
 	// --- Ingredients ---
 
-	Ingredient(child) {
+	Ingredient(child): IngredientAST | AlternativeAST {
 		return child.toAST();
 	},
 
-	Alternative(first, _bars, rest) {
+	Alternative(first, _bars, rest): AlternativeAST {
 		const options = [first.toAST(), ...rest.children.map((c) => c.toAST())];
 		return {
 			type: ASTNodeType.Alternative,
 			options,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as AlternativeAST;
+		};
 	},
 
-	simpleIngredient_full(_at, _mods, _name, _alias, _qty, _prep, _comp) {
-		let modifiers = _mods.children.map((m) => m.sourceString);
+	simpleIngredient_full(
+		_at,
+		_mods,
+		_name,
+		_alias,
+		_qty,
+		_prep,
+		_comp,
+	): IngredientAST {
+		// Grammar-guaranteed: `modifier = "?" | "-" | "*" | "&" | "="` (grammar.ohm)
+		// is the only production feeding this array, so every sourceString here
+		// is one of Modifier's 5 literal sigils.
+		let modifiers = _mods.children.map((m) => m.sourceString) as Modifier[];
 		const qtyAST = _qty.toAST();
 
 		if (modifiers.includes("=")) {
@@ -355,13 +386,20 @@ semantics.addOperation("toAST", {
 			preparation: getOpt(_prep),
 			composite: getOpt(_comp),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as IngredientAST;
+		};
 	},
 
-	simpleIngredient_bare(_at, _mods, _name, _alias, _prep, _comp) {
+	simpleIngredient_bare(
+		_at,
+		_mods,
+		_name,
+		_alias,
+		_prep,
+		_comp,
+	): IngredientAST {
 		const modifiers = _mods.children
 			.map((m) => m.sourceString)
-			.filter((m) => m !== "=");
+			.filter((m) => m !== "=") as Modifier[];
 		return {
 			type: ASTNodeType.Ingredient,
 			name: _name.sourceString.trim(),
@@ -371,106 +409,122 @@ semantics.addOperation("toAST", {
 			preparation: getOpt(_prep),
 			composite: getOpt(_comp),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as IngredientAST;
+		};
 	},
 
-	composite_full(_ltat, name, _qty, _prep) {
+	composite_full(_ltat, name, _qty, _prep): CompositeAST {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),
 			quantity: _qty.toAST(),
 			preparation: getOpt(_prep),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
-	composite_bare(_ltat, name, _prep) {
+	composite_bare(_ltat, name, _prep): CompositeAST {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),
 			quantity: null,
 			preparation: getOpt(_prep),
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
 
-	alias(_colon, name) {
+	alias(_colon, name): string {
 		return clean(name.sourceString);
 	},
-	preparation(_lp, text, _rp) {
+	preparation(_lp, text, _rp): string {
 		return clean(text.sourceString);
 	},
-	unit(name) {
+	unit(name): string {
 		return clean(name.sourceString);
 	},
 
-	ingredientQuantity(_lb, _s1, content, _s3, _rb) {
+	ingredientQuantity(
+		_lb,
+		_s1,
+		content,
+		_s3,
+		_rb,
+	): RelativeQuantityAST | QuantityAST {
 		return content.toAST();
 	},
 
-	relativeQuantity(val, _s1, _pct, _s2, marker, _s3, name) {
+	relativeQuantity(
+		val,
+		_s1,
+		_pct,
+		_s2,
+		marker,
+		_s3,
+		name,
+	): RelativeQuantityAST {
 		return {
 			type: ASTNodeType.RelativeQuantity,
 			percent: parseFloat(val.sourceString),
 			target: clean(name.sourceString),
 			referenceType: marker.sourceString === "&" ? "variable" : "ingredient",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as RelativeQuantityAST;
+		};
 	},
 
-	absoluteQuantity(val, _s2, unit, _sUnit) {
+	absoluteQuantity(val, _s2, unit, _sUnit): QuantityAST {
 		return {
 			type: ASTNodeType.Quantity,
 			value: getOpt(val),
 			unit: getOpt(unit),
 			fixed: false, // In v1, fixed is a modifier on the element, not the quantity
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as QuantityAST;
+		};
 	},
 
-	cookwareQuantity(_lb, _s1, val, _s2, _rb) {
+	cookwareQuantity(_lb, _s1, val, _s2, _rb): QuantityAST {
 		return {
 			type: ASTNodeType.Quantity,
 			value: getOpt(val),
 			unit: null,
 			fixed: false,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as QuantityAST;
+		};
 	},
 
-	textQuantity(_lb, _s1, content, _s2, _rb) {
+	textQuantity(_lb, _s1, content, _s2, _rb): TextQuantityAST {
 		return {
 			type: ASTNodeType.TextQuantity,
 			value: clean(content.sourceString),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as TextQuantityAST;
+		};
 	},
 
-	number(child) {
+	number(child): QuantityValueAST | null {
 		return child.toAST();
 	},
 
-	plainNumber(_1, _2, _3, _4, _5) {
+	plainNumber(_1, _2, _3, _4, _5): QuantityValueAST | null {
 		return parseNumber(this.sourceString);
 	},
 
-	mixedFraction(whole, _sp, num, _slash, den) {
+	mixedFraction(whole, _sp, num, _slash, den): QuantityValueAST {
 		const w = parseInt(whole.sourceString, 10);
 		const n = parseInt(num.sourceString, 10);
 		const d = parseInt(den.sourceString, 10);
 		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
-	unicodeFraction_mixed(whole, frac) {
+	unicodeFraction_mixed(whole, frac): QuantityValueAST {
 		const w = parseInt(whole.sourceString, 10);
 		const [n, d] = unicodeFractionValue(frac.sourceString);
 		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
-	unicodeFraction_bare(frac) {
+	unicodeFraction_bare(frac): QuantityValueAST {
 		const [n, d] = unicodeFractionValue(frac.sourceString);
 		return makeMixedFraction(0, n, d, this.sourceString);
 	},
 
-	range(n1, _s1, _, _s2, n2) {
+	range(n1, _s1, _, _s2, n2): QuantityValueAST | null {
 		const min = n1.toAST() as QuantityValueAST;
 		const max = n2.toAST() as QuantityValueAST;
 		return makeRange(min, max, this.sourceString);
@@ -478,15 +532,15 @@ semantics.addOperation("toAST", {
 
 	// --- Cookware ---
 
-	CookwareAlternative(first, _bars, rest) {
+	CookwareAlternative(first, _bars, rest): AlternativeAST {
 		return {
 			type: ASTNodeType.Alternative,
 			options: [first.toAST(), ...rest.children.map((c) => c.toAST())],
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as AlternativeAST;
+		};
 	},
 
-	simpleCookware_full(_hash, mods, name, alias, qty, prep) {
+	simpleCookware_full(_hash, mods, name, alias, qty, prep): CookwareAST {
 		let modifiers = mods.children.map((c) => c.sourceString);
 		const qtyAST = qty.toAST();
 
@@ -505,10 +559,10 @@ semantics.addOperation("toAST", {
 			quantity: qtyAST, // Mandatory
 			preparation: getOpt(prep),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as CookwareAST;
+		};
 	},
 
-	simpleCookware_bare(_hash, mods, name, alias, prep) {
+	simpleCookware_bare(_hash, mods, name, alias, prep): CookwareAST {
 		const modifiers = mods.children
 			.map((c) => c.sourceString)
 			.filter((m) => m !== "=");
@@ -524,30 +578,30 @@ semantics.addOperation("toAST", {
 			},
 			preparation: getOpt(prep),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as CookwareAST;
+		};
 	},
 
 	// --- Other Elements ---
 
-	Reference_full(_amp, _name, _qty) {
+	Reference_full(_amp, _name, _qty): ReferenceAST {
 		return {
 			type: ASTNodeType.Reference,
 			name: _name.sourceString,
 			quantity: _qty.toAST(),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as ReferenceAST;
+		};
 	},
 
-	Reference_bare(_amp, _name) {
+	Reference_bare(_amp, _name): ReferenceAST {
 		return {
 			type: ASTNodeType.Reference,
 			name: _name.sourceString,
 			quantity: null,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as ReferenceAST;
+		};
 	},
 
-	Timer(_1, passiveMod, name, qty) {
+	Timer(_1, passiveMod, name, qty): TimerAST {
 		const child = name.children[0];
 		const n = child ? clean(child.sourceString) : null;
 		return {
@@ -556,50 +610,50 @@ semantics.addOperation("toAST", {
 			quantity: qty.toAST(),
 			isPassive: passiveMod.children.length > 0,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as TimerAST;
+		};
 	},
 
-	Temperature(_1, name, qty) {
+	Temperature(_1, name, qty): TemperatureAST {
 		const child = name.children[0];
 		const n = child ? clean(child.sourceString) : null;
 		const qAST = qty.toAST();
 		const base = {
-			type: ASTNodeType.Temperature,
+			type: ASTNodeType.Temperature as const,
 			name: n,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 
 		if (qAST.type === ASTNodeType.TextQuantity) {
-			return { ...base, text: qAST.value } as TemperatureAST;
+			return { ...base, text: qAST.value };
 		}
 		if (qAST.type === ASTNodeType.Quantity && !qAST.value) {
-			return { ...base, text: qAST.unit || "" } as TemperatureAST;
+			return { ...base, text: qAST.unit || "" };
 		}
 		return {
 			...base,
 			value: qAST.value || null,
 			unit: qAST.unit || null,
-		} as TemperatureAST;
+		};
 	},
 
-	Comment(_1, text) {
+	Comment(_1, text): CommentAST {
 		return {
 			type: ASTNodeType.Comment,
 			value: text.sourceString,
 			kind: "line",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as CommentAST;
+		};
 	},
-	CommentBlock(_1, text, _2) {
+	CommentBlock(_1, text, _2): CommentAST {
 		return {
 			type: ASTNodeType.Comment,
 			value: text.sourceString,
 			kind: "block",
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
-		} as CommentAST;
+		};
 	},
 
-	_terminal() {
+	_terminal(): null {
 		return null;
 	},
 });

@@ -57,7 +57,11 @@
                     "end": 42
                   }
                 },
-                "preparation": "cut in half"
+                "preparation": "cut in half",
+                "loc": {
+                  "start": 33,
+                  "end": 56
+                }
               },
               "loc": {
                 "start": 20,

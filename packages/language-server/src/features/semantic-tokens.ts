@@ -19,6 +19,7 @@ import {
 	isAlternative,
 	isComment,
 	isStep,
+	isSection,
 	isQuantity,
 	isTextQuantity,
 } from "@gram-lang/parser";
@@ -384,8 +385,20 @@ export function provideSemanticTokens(state: DocumentState): SemanticTokens {
 	const out: RawToken[] = [];
 	const text = state.text;
 
-	for (const section of state.ast.children) {
-		walkSection(out, section, text);
+	// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't
+	// always `SectionAST[]` — a recipe with no `## Section` header anywhere,
+	// or leading content before the first header, places `Step`/`Comment`
+	// nodes directly under `Recipe`. Dispatch on the real node type instead
+	// of assuming every top-level child is a section (which would crash on
+	// a bare top-level Comment: `.children` doesn't exist on `CommentAST`).
+	for (const child of state.ast.children) {
+		if (isSection(child)) {
+			walkSection(out, child, text);
+		} else if (isStep(child)) {
+			walkStep(out, child, text);
+		} else if (isComment(child) && child.loc) {
+			emit(out, child.loc.start, child.loc.end - child.loc.start, T.comment);
+		}
 	}
 
 	return { data: encodeTokens(out, state.lineStarts) };

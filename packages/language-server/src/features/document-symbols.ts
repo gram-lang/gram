@@ -6,11 +6,11 @@ import {
 import type { DocumentState } from "../document-state";
 import { locToRange } from "../utils/position";
 import {
-	type SectionAST,
 	type StepAST,
 	type IntermediateDecl,
 	isIntermediateDecl,
 	isStep,
+	isSection,
 } from "@gram-lang/parser";
 
 const ZERO_RANGE: Range = {
@@ -60,32 +60,49 @@ function getStepSymbol(
 export function provideDocumentSymbols(state: DocumentState): DocumentSymbol[] {
 	if (!state.ast) return [];
 
-	return state.ast.children.map((section: SectionAST) => {
-		const sectionRange = section.loc
-			? locToRange(state.lineStarts, section.loc)
-			: ZERO_RANGE;
-		const children: DocumentSymbol[] = [];
+	// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't
+	// always `SectionAST[]` — a recipe with no `## Section` header anywhere,
+	// or leading content before the first header, places `Step`/`Comment`
+	// nodes directly under `Recipe`. The old `.map((section: SectionAST) =>
+	// ...)` annotation lied about that and would have crashed on a bare
+	// top-level Comment (`.children` doesn't exist on `CommentAST`).
+	const symbols: DocumentSymbol[] = [];
+	let bareStepIndex = 0;
 
-		// Section-level intermediate declaration (from header: ## Title ->&decl)
-		if (section.intermediateDecl) {
-			children.push(getDeclSymbol(section.intermediateDecl, state.lineStarts));
+	for (const child of state.ast.children) {
+		if (isSection(child)) {
+			const sectionRange = child.loc
+				? locToRange(state.lineStarts, child.loc)
+				: ZERO_RANGE;
+			const children: DocumentSymbol[] = [];
+
+			// Section-level intermediate declaration (from header: ## Title ->&decl)
+			if (child.intermediateDecl) {
+				children.push(getDeclSymbol(child.intermediateDecl, state.lineStarts));
+			}
+
+			// Steps (with their inline ->&decl as children)
+			let stepIndex = 0;
+			for (const block of child.children) {
+				if (!isStep(block)) continue;
+				children.push(getStepSymbol(block, stepIndex, state.lineStarts));
+				stepIndex++;
+			}
+
+			const symbol: DocumentSymbol = {
+				name: child.title ?? "(section)",
+				kind: SymbolKind.Module,
+				range: sectionRange,
+				selectionRange: sectionRange,
+			};
+			if (children.length > 0) symbol.children = children;
+			symbols.push(symbol);
+		} else if (isStep(child)) {
+			symbols.push(getStepSymbol(child, bareStepIndex, state.lineStarts));
+			bareStepIndex++;
 		}
+		// A bare top-level Comment has no useful outline entry of its own.
+	}
 
-		// Steps (with their inline ->&decl as children)
-		let stepIndex = 0;
-		for (const block of section.children) {
-			if (!isStep(block)) continue;
-			children.push(getStepSymbol(block, stepIndex, state.lineStarts));
-			stepIndex++;
-		}
-
-		const symbol: DocumentSymbol = {
-			name: section.title ?? "(section)",
-			kind: SymbolKind.Module,
-			range: sectionRange,
-			selectionRange: sectionRange,
-		};
-		if (children.length > 0) symbol.children = children;
-		return symbol;
-	});
+	return symbols;
 }

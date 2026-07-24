@@ -37,7 +37,12 @@ export interface NodeAST {
 export interface RecipeAST extends NodeAST {
 	type: ASTNodeType.Recipe;
 	meta: Meta;
-	children: SectionAST[];
+	// Audit 2026-07-22, parser finding I3(1): the implicit-content grammar
+	// path (`Content_implicit`, no `## Section` header anywhere in the
+	// source) places `Step`/`Comment` nodes directly under `Recipe`, with no
+	// wrapping `Section` — `getAST("Mix @flour{200g}.\n").children[0].type`
+	// is `"Step"`, not `"Section"`.
+	children: (SectionAST | StepAST | CommentAST)[];
 }
 
 export interface RetroPlanningAST {
@@ -90,12 +95,14 @@ export interface IntermediateDecl extends NodeAST {
 
 // --- Ingredients & Quantities ---
 
-export type Modifier =
-	| "optional"
-	| "hidden"
-	| "reference"
-	| "bakers_percentage"
-	| string;
+// Audit 2026-07-22, parser finding I3(2): the trailing `| string` collapsed
+// this union to plain `string`, and the semantic names it announced were
+// never produced in the first place — the parser emits the raw sigils
+// (`grammar.ohm`'s `modifier = "?" | "-" | "*" | "&" | "="`) untranslated;
+// kitchen's own `checkModifiers`/`processIngredient` test for `"?"`/`"*"`/
+// `"-"`/`"&"` literally, never the semantic names. This documents what the
+// parser actually emits.
+export type Modifier = "?" | "-" | "*" | "&" | "=";
 
 // Audit 2026-07-22, parser finding I4: this used to be a flat interface with
 // every field optional — `type` didn't actually discriminate anything, so
@@ -151,10 +158,19 @@ export interface IngredientAST extends NodeAST {
 	composite?: CompositeAST | null;
 }
 
-export interface CompositeAST {
+// Audit 2026-07-22, parser finding I3(4): didn't extend NodeAST (no `loc`)
+// and was absent from the `ASTNode` union — the same was true of QuantityAST/
+// TextQuantityAST/RelativeQuantityAST, which is exactly why `guards.ts` had
+// to redeclare a local `QuantityValueNode` union instead of reusing
+// `ASTNode`. Now carries `loc` like every other node (composite_full/
+// composite_bare in index.ts set it).
+export interface CompositeAST extends NodeAST {
 	type: ASTNodeType.Composite;
 	parent: string;
-	quantity?: QuantityAST;
+	// `composite_bare` (no `{qty}` at all) genuinely produces `null`, not
+	// `undefined` — matches how every other optional-quantity field here
+	// (e.g. IngredientAST.quantity) distinguishes "absent" from "not parsed".
+	quantity?: QuantityAST | null;
 	preparation?: string | null;
 }
 
@@ -205,9 +221,13 @@ export type ASTNode =
 	| CommentAST
 	| TextAST
 	| IngredientAST
+	| CompositeAST
 	| CookwareAST
 	| ReferenceAST
 	| TimerAST
 	| TemperatureAST
 	| AlternativeAST
-	| IntermediateDecl;
+	| IntermediateDecl
+	| QuantityAST
+	| TextQuantityAST
+	| RelativeQuantityAST;

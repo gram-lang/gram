@@ -7,6 +7,7 @@ import {
 import {
 	type ASTNode,
 	type SectionAST,
+	type StepAST,
 	type CommentAST,
 	type IngredientAST,
 	type CookwareAST,
@@ -524,8 +525,16 @@ function processComment(item: CommentAST): ProcessedBlockResult {
 	return { type: "comment", value: item.value, kind: item.kind };
 }
 
+// Audit 2026-07-22, parser finding I3: `ASTNode` now (correctly) also
+// includes CompositeAST/QuantityAST/TextQuantityAST/RelativeQuantityAST,
+// which only ever appear *nested* inside an Ingredient/Cookware/Reference/
+// Timer node, never directly as a step's own child — narrowed to the real
+// invariant (`StepAST["children"][number]`, which already covers both call
+// sites: a step's own children, and an Alternative's `IngredientAST |
+// CookwareAST` options) instead of the too-broad `ASTNode`, so the
+// exhaustiveness check below stays meaningful.
 export function processBlockItem(
-	item: ASTNode | null | undefined,
+	item: StepAST["children"][number] | null | undefined,
 	ctx: ProcessorContext,
 	registry: RecipeRegistry,
 	secIngredients: Usage[],
@@ -568,10 +577,6 @@ export function processBlockItem(
 			return processTemperature(item as TemperatureAST, ctx);
 		case ASTNodeType.Comment:
 			return processComment(item as CommentAST);
-		case ASTNodeType.Recipe:
-		case ASTNodeType.Section:
-		case ASTNodeType.Step:
-			return null;
 		default: {
 			const _exhaustiveCheck: never = item;
 			throw new Error(
