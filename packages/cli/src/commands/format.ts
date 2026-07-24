@@ -5,11 +5,7 @@ import chalk from "chalk";
 import pLimit from "p-limit";
 import { resolveGlob } from "../core/glob";
 import { withFileLock, atomicWrite } from "../core/lock";
-import {
-	formatGram,
-	hasChanges,
-	summarizeChanges,
-} from "../services/formatter";
+import { formatGram, hasChanges, summarizeChanges } from "@gram-lang/format";
 import { ExitCode, GramCLIError, getErrorMessage } from "../errors";
 
 export default defineCommand({

@@ -64,7 +64,7 @@ steps:
     image: oven/bun:1.3.14
     commands:
       - mkdir -p .smoke
-      - for p in i18n parser kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
+      - for p in i18n format parser kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
 
   # Confirms the CLI actually works when installed the way most users get
   # it — `npm install` on plain Node.js, no Bun anywhere — since the docs

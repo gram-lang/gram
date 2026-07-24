@@ -1,0 +1,37 @@
+{
+  "name": "@gram-lang/format",
+  "version": "1.0.0-beta.4",
+  "description": "Canonical .gram source formatter, shared by the CLI and language server",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "formatter"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://codeberg.org/abiwab/gram.git",
+    "directory": "packages/format"
+  },
+  "bugs": {
+    "url": "https://codeberg.org/abiwab/gram/issues"
+  },
+  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/format#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "npm run build"
+  },
+  "type": "module"
+}

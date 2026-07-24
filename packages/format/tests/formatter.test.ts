@@ -1,9 +1,21 @@
 import { describe, it, expect } from "bun:test";
-import {
-	formatGram,
-	hasChanges,
-	summarizeChanges,
-} from "../src/services/formatter";
+import { formatGram, hasChanges, summarizeChanges } from "../src/index";
+
+const emptyChanges = {
+	lowercasedIds: 0,
+	spacesBeforeBrace: 0,
+	spacesInsideBraces: 0,
+	trailingZeros: 0,
+	temperatureSpacing: 0,
+	compositeSeparatorSpacing: 0,
+	arrowDeclarationSpacing: 0,
+	headerSpacing: 0,
+	tabsToSpaces: 0,
+	consecutiveBlankLines: 0,
+	sectionSpacing: 0,
+	trailingWhitespace: 0,
+	eofNewline: false,
+};
 
 describe("formatGram", () => {
 	it("lowercases ingredient IDs", () => {
@@ -50,6 +62,54 @@ describe("formatGram", () => {
 		const { content, changes } = formatGram("Range ~temp{180 °C-200 °F}.\n");
 		expect(content).toBe("Range ~temp{180°C-200°F}.\n");
 		expect(changes.temperatureSpacing).toBe(2);
+	});
+
+	// Rules 6-9 below came from the language-server's formatter (Phase 3bis
+	// unification) — previously applied only on format-on-save, never by
+	// `gram format`.
+	it("normalizes spacing around the composite separator (@a{} < @b{} → @a{}<@b{})", () => {
+		const { content, changes } = formatGram(
+			"Add @sugar yolks{3} < @eggs{3}.\n",
+		);
+		expect(content).toBe("Add @sugar yolks{3}<@eggs{3}.\n");
+		expect(changes.compositeSeparatorSpacing).toBe(1);
+	});
+
+	it("does not touch an already-normalized composite separator", () => {
+		const { content, changes } = formatGram("Add @sugar<@eggs{3}.\n");
+		expect(content).toBe("Add @sugar<@eggs{3}.\n");
+		expect(changes.compositeSeparatorSpacing).toBe(0);
+	});
+
+	it("normalizes ->&name {} → ->&name{}", () => {
+		const { content, changes } = formatGram(
+			"## Section ->&dough\n\nMix. ->&dough {}\n",
+		);
+		expect(content).toContain("->&dough{}");
+		expect(changes.arrowDeclarationSpacing).toBe(1);
+	});
+
+	it("normalizes header spacing (##Title, ##  Title → ## Title)", () => {
+		const { content, changes } = formatGram("##Prep\nStep.\n");
+		expect(content).toBe("## Prep\nStep.\n");
+		expect(changes.headerSpacing).toBe(1);
+
+		const { content: content2, changes: changes2 } =
+			formatGram("##   Prep\nStep.\n");
+		expect(content2).toBe("## Prep\nStep.\n");
+		expect(changes2.headerSpacing).toBe(1);
+	});
+
+	it("does not touch an already-normalized header", () => {
+		const { content, changes } = formatGram("## Prep\nStep.\n");
+		expect(content).toBe("## Prep\nStep.\n");
+		expect(changes.headerSpacing).toBe(0);
+	});
+
+	it("converts tabs to 4 spaces in the body", () => {
+		const { content, changes } = formatGram("Add\t@flour{200g}.\n");
+		expect(content).toBe("Add    @flour{200g}.\n");
+		expect(changes.tabsToSpaces).toBe(1);
 	});
 
 	it("trims trailing whitespace line by line", () => {
@@ -109,7 +169,7 @@ describe("formatGram", () => {
 
 	it("is idempotent: formatting already-formatted output produces no further changes", () => {
 		const messy =
-			"##   Prep  \nAdd @Flour {500.0g} and @Egg{ 1.50 }.  \n\n\n\n\n## Bake\nSet oven to ~temp{180 °C}.";
+			"##Prep\nAdd @Flour {500.0g} and @Egg{ 1.50 }.  \n\n\n\n\n##Bake\nSet oven to ~temp{180 °C}. ->&dough {}\n";
 		const first = formatGram(messy);
 		const second = formatGram(first.content);
 		expect(second.content).toBe(first.content);
@@ -120,7 +180,7 @@ describe("formatGram", () => {
 	// 0-b): rules meant for gram syntax (@ids, quantities, temperatures) used
 	// to run over the whole file, silently rewriting frontmatter — e.g.
 	// lowercasing the domain of an email address — with no fixed point between
-	// this formatter and the language-server's.
+	// the CLI's formatter and the language-server's (now unified, Phase 3bis).
 	describe("frontmatter", () => {
 		it("does not lowercase an email address in the frontmatter", () => {
 			const input =
@@ -164,61 +224,51 @@ describe("formatGram", () => {
 });
 
 describe("hasChanges", () => {
-	const empty = {
-		lowercasedIds: 0,
-		spacesBeforeBrace: 0,
-		spacesInsideBraces: 0,
-		trailingZeros: 0,
-		temperatureSpacing: 0,
-		consecutiveBlankLines: 0,
-		sectionSpacing: 0,
-		trailingWhitespace: 0,
-		eofNewline: false,
-	};
-
 	it("is false when nothing changed", () => {
-		expect(hasChanges(empty)).toBe(false);
+		expect(hasChanges(emptyChanges)).toBe(false);
 	});
 
 	it("is true when only the boolean eofNewline flag is set", () => {
-		expect(hasChanges({ ...empty, eofNewline: true })).toBe(true);
+		expect(hasChanges({ ...emptyChanges, eofNewline: true })).toBe(true);
 	});
 
 	it("is true when any numeric counter is non-zero", () => {
-		expect(hasChanges({ ...empty, lowercasedIds: 1 })).toBe(true);
+		expect(hasChanges({ ...emptyChanges, lowercasedIds: 1 })).toBe(true);
+	});
+
+	it("is true when only a new (Phase 3bis) counter is non-zero", () => {
+		expect(hasChanges({ ...emptyChanges, headerSpacing: 1 })).toBe(true);
 	});
 });
 
 describe("summarizeChanges", () => {
 	it("returns an empty string when nothing changed", () => {
-		const empty = {
-			lowercasedIds: 0,
-			spacesBeforeBrace: 0,
-			spacesInsideBraces: 0,
-			trailingZeros: 0,
-			temperatureSpacing: 0,
-			consecutiveBlankLines: 0,
-			sectionSpacing: 0,
-			trailingWhitespace: 0,
-			eofNewline: false,
-		};
-		expect(summarizeChanges(empty)).toBe("");
+		expect(summarizeChanges(emptyChanges)).toBe("");
 	});
 
 	it("pluralizes counts correctly", () => {
 		const changes = {
+			...emptyChanges,
 			lowercasedIds: 2,
 			spacesBeforeBrace: 1,
-			spacesInsideBraces: 0,
-			trailingZeros: 0,
-			temperatureSpacing: 0,
-			consecutiveBlankLines: 0,
-			sectionSpacing: 0,
-			trailingWhitespace: 0,
-			eofNewline: false,
 		};
 		const summary = summarizeChanges(changes);
 		expect(summary).toContain("2 IDs lowercased");
 		expect(summary).toContain("1 space before brace removed");
+	});
+
+	it("summarizes the Phase 3bis rules too", () => {
+		const changes = {
+			...emptyChanges,
+			compositeSeparatorSpacing: 1,
+			arrowDeclarationSpacing: 1,
+			headerSpacing: 2,
+			tabsToSpaces: 3,
+		};
+		const summary = summarizeChanges(changes);
+		expect(summary).toContain("1 composite separator normalized");
+		expect(summary).toContain("1 declaration spacing fixed");
+		expect(summary).toContain("2 headers spacing normalized");
+		expect(summary).toContain("3 tabs converted to spaces");
 	});
 });

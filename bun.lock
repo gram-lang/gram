@@ -55,6 +55,7 @@
         "@ai-sdk/openai-compatible": "^3.0.7",
         "@clack/prompts": "^1.7.0",
         "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/format": "workspace:*",
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
@@ -95,6 +96,10 @@
         "vue": "^3.5.39",
       },
     },
+    "packages/format": {
+      "name": "@gram-lang/format",
+      "version": "1.0.0-beta.4",
+    },
     "packages/i18n": {
       "name": "@gram-lang/i18n",
       "version": "1.0.0-beta.4",
@@ -116,6 +121,7 @@
       "version": "1.0.0-beta.4",
       "devDependencies": {
         "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/format": "workspace:*",
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
@@ -381,6 +387,8 @@
     "@gram-lang/conformance": ["@gram-lang/conformance@workspace:conformance"],
 
     "@gram-lang/docs": ["@gram-lang/docs@workspace:packages/docs"],
+
+    "@gram-lang/format": ["@gram-lang/format@workspace:packages/format"],
 
     "@gram-lang/i18n": ["@gram-lang/i18n@workspace:packages/i18n"],
 

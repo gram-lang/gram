@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@gram-lang/analyzer": "workspace:*",
+    "@gram-lang/format": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/parser": "workspace:*",

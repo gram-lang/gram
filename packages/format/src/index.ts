@@ -4,6 +4,10 @@ export interface FormatterChanges {
 	spacesInsideBraces: number;
 	trailingZeros: number;
 	temperatureSpacing: number;
+	compositeSeparatorSpacing: number;
+	arrowDeclarationSpacing: number;
+	headerSpacing: number;
+	tabsToSpaces: number;
 	consecutiveBlankLines: number;
 	sectionSpacing: number;
 	trailingWhitespace: number;
@@ -17,6 +21,10 @@ export function hasChanges(changes: FormatterChanges): boolean {
 		changes.spacesInsideBraces > 0 ||
 		changes.trailingZeros > 0 ||
 		changes.temperatureSpacing > 0 ||
+		changes.compositeSeparatorSpacing > 0 ||
+		changes.arrowDeclarationSpacing > 0 ||
+		changes.headerSpacing > 0 ||
+		changes.tabsToSpaces > 0 ||
 		changes.consecutiveBlankLines > 0 ||
 		changes.sectionSpacing > 0 ||
 		changes.trailingWhitespace > 0 ||
@@ -37,6 +45,18 @@ export function summarizeChanges(changes: FormatterChanges): string {
 		parts.push(`${p(changes.trailingZeros, "trailing zero")} removed`);
 	if (changes.temperatureSpacing > 0)
 		parts.push(`${p(changes.temperatureSpacing, "temperature")} spacing fixed`);
+	if (changes.compositeSeparatorSpacing > 0)
+		parts.push(
+			`${p(changes.compositeSeparatorSpacing, "composite separator")} normalized`,
+		);
+	if (changes.arrowDeclarationSpacing > 0)
+		parts.push(
+			`${p(changes.arrowDeclarationSpacing, "declaration")} spacing fixed`,
+		);
+	if (changes.headerSpacing > 0)
+		parts.push(`${p(changes.headerSpacing, "header")} spacing normalized`);
+	if (changes.tabsToSpaces > 0)
+		parts.push(`${p(changes.tabsToSpaces, "tab")} converted to spaces`);
 	if (changes.consecutiveBlankLines > 0)
 		parts.push(
 			`${p(changes.consecutiveBlankLines, "blank line group")} collapsed`,
@@ -51,9 +71,7 @@ export function summarizeChanges(changes: FormatterChanges): string {
 	return parts.join(" · ");
 }
 
-// Splits `---\n...\n---\n` frontmatter from the recipe body, matching the
-// exact line-based boundary check used by the language-server's own
-// formatter (`language-server/src/features/formatting.ts`) — first line is
+// Splits `---\n...\n---\n` frontmatter from the recipe body. First line is
 // exactly "---", closed by the next line that is exactly "---". Character
 // slicing (not a lines-array rebuild) guarantees `frontmatter + body ===
 // source` always, with no reconstruction edge cases.
@@ -91,6 +109,16 @@ function splitFrontmatter(source: string): {
 	return { frontmatter: "", body: source };
 }
 
+/**
+ * Audit 2026-07-22, cli finding 0-b / B-4, language-server finding B4/P5,
+ * Phase 3bis: the CLI (`gram format`, 9 rules, whole-body regexes) and the
+ * language server (`format on save`, ~6 rules, line-by-line) used to be two
+ * independent implementations with disjoint rule sets — a recipe formatted
+ * by one and re-opened by the other could still show further changes,
+ * defeating the point of a formatter (no fixed point between the two
+ * surfaces). This is the single canonical implementation both now call:
+ * every rule either tool had is here, exactly once.
+ */
 export function formatGram(source: string): {
 	content: string;
 	changes: FormatterChanges;
@@ -101,17 +129,21 @@ export function formatGram(source: string): {
 		spacesInsideBraces: 0,
 		trailingZeros: 0,
 		temperatureSpacing: 0,
+		compositeSeparatorSpacing: 0,
+		arrowDeclarationSpacing: 0,
+		headerSpacing: 0,
+		tabsToSpaces: 0,
 		consecutiveBlankLines: 0,
 		sectionSpacing: 0,
 		trailingWhitespace: 0,
 		eofNewline: false,
 	};
 
-	// Rules 1-5 below operate on gram syntax (@ids, {quantities}, temperatures)
-	// that only ever exists in the recipe body — frontmatter is plain YAML.
-	// Audit 2026-07-22, finding 0-b: running them over the whole source used
-	// to silently rewrite frontmatter values, e.g. lowercasing the domain of
-	// `author: Jean@Example.com` into `Jean@example.com`.
+	// Rules 1-9 below operate on gram syntax (@ids, {quantities}, temperatures,
+	// composites, declarations, headers) that only ever exists in the recipe
+	// body — frontmatter is plain YAML. Audit 2026-07-22, finding 0-b: running
+	// them over the whole source used to silently rewrite frontmatter values,
+	// e.g. lowercasing the domain of `author: Jean@Example.com`.
 	const { frontmatter, body: originalBody } = splitFrontmatter(source);
 	let body = originalBody;
 
@@ -154,12 +186,42 @@ export function formatGram(source: string): {
 		return `{${fixed}}`;
 	});
 
-	// Rules 6-9 below are generic whitespace/newline hygiene, safe and desired
-	// across the whole file — frontmatter included — so they run on the
-	// recombined content rather than `body` alone.
+	// Rule 6 (from language-server): normalize composite separator spacing
+	// (@ingA{} < @ingB{} → @ingA{}<@ingB{})
+	body = body.replace(/ *< *@/g, (match) => {
+		if (match !== "<@") changes.compositeSeparatorSpacing++;
+		return "<@";
+	});
+
+	// Rule 7 (from language-server): normalize ->&name {} → ->&name{}
+	// (handles single and multi-word names)
+	body = body.replace(/->&([^{\n]+?)\s+\{\}/g, (_, name) => {
+		changes.arrowDeclarationSpacing++;
+		return `->&${name}{}`;
+	});
+
+	// Rule 8 (from language-server): ensure exactly one space after a section
+	// header's hashes (##Title, ##  Title → ## Title). Distinct from Rule 12
+	// below (blank lines *before* a header) — this is the space *within* the
+	// header line itself.
+	body = body.replace(/^(#{1,3})[ \t]*(?=\S)/gm, (match, hashes: string) => {
+		const normalized = `${hashes} `;
+		if (match !== normalized) changes.headerSpacing++;
+		return normalized;
+	});
+
+	// Rule 9 (from language-server): tabs → 4 spaces
+	body = body.replace(/\t/g, () => {
+		changes.tabsToSpaces++;
+		return "    ";
+	});
+
+	// Rules 10-13 below are generic whitespace/newline hygiene, safe and
+	// desired across the whole file — frontmatter included — so they run on
+	// the recombined content rather than `body` alone.
 	let content = frontmatter + body;
 
-	// Rule 8: Trim trailing whitespace line by line
+	// Rule 10: Trim trailing whitespace line by line
 	content = content
 		.split("\n")
 		.map((line) => {
@@ -169,20 +231,20 @@ export function formatGram(source: string): {
 		})
 		.join("\n");
 
-	// Rule 6: Collapse 4+ consecutive newlines to 3 (max 2 blank lines globally)
+	// Rule 11: Collapse 4+ consecutive newlines to 3 (max 2 blank lines globally)
 	content = content.replace(/\n{4,}/g, () => {
 		changes.consecutiveBlankLines++;
 		return "\n\n\n";
 	});
 
-	// Rule 7: Promote to exactly 2 blank lines before section headers (##, not ###)
+	// Rule 12: Promote to exactly 2 blank lines before section headers (##, not ###)
 	// Lookbehind prevents re-promoting if 2 blank lines already present (\n\n\n##)
 	content = content.replace(/(?<!\n)\n\n(##(?!#))/g, (_, heading) => {
 		changes.sectionSpacing++;
 		return `\n\n\n${heading}`;
 	});
 
-	// Rule 9: Ensure single newline at EOF
+	// Rule 13: Ensure single newline at EOF
 	const trimmedEnd = content.trimEnd();
 	const withEof = `${trimmedEnd}\n`;
 	if (withEof !== content) changes.eofNewline = true;
