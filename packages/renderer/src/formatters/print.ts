@@ -1,4 +1,9 @@
-import type { RendererOptions, RenderContext } from "../types";
+import type {
+	RendererOptions,
+	RenderContext,
+	RenderableCompilationResult,
+	RenderableMetrics,
+} from "../types";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -338,7 +343,10 @@ const PRINT_ICONS = {
 	clockCounterClockwise: "↺",
 };
 
-export function toPrintHTML(data: any, options: RendererOptions = {}): string {
+export function toPrintHTML(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
 	const t = getDictionary(options.lang);
 	const registry = data.registry || { ingredients: {}, cookware: {} };
 	const formatDuration = options.formatDuration || defaultFormatDuration;
@@ -355,6 +363,9 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 	const stepContext: RenderContext = options.hideStepQty
 		? { ...context, hideIngredientQty: true }
 		: context;
+	// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
+	// result's `metrics` never carries mass/nutrition fields at all.
+	const metrics = data.metrics as RenderableMetrics;
 
 	let body = "";
 
@@ -365,22 +376,22 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 
 	// ── Meta bar ───────────────────────────────────────────────────────────
 	body += `<div class="meta">\n`;
-	if (data.metrics) {
-		if (data.metrics.totalTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(data.metrics.totalTime)}</span>\n`;
+	if (metrics) {
+		if (metrics.totalTime) {
+			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(metrics.totalTime)}</span>\n`;
 		}
-		if (data.metrics.idleTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(data.metrics.idleTime)}</span>\n`;
+		if (metrics.idleTime) {
+			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(metrics.idleTime)}</span>\n`;
 		}
-		if (data.metrics.activeTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(data.metrics.activeTime)}</span>\n`;
+		if (metrics.activeTime) {
+			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(metrics.activeTime)}</span>\n`;
 		}
-		if (data.metrics.preparationTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.prepTime}</span>${formatDuration(data.metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">${t.renderer.est}</em></span>\n`;
+		if (metrics.preparationTime) {
+			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.prepTime}</span>${formatDuration(metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">${t.renderer.est}</em></span>\n`;
 		}
 	}
 	if (data.meta) {
-		for (const [k, v] of Object.entries(data.meta as Record<string, any>)) {
+		for (const [k, v] of Object.entries(data.meta)) {
 			if (k === "title") continue;
 			const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " ");
 			body += `  <span class="meta-item"><span class="meta-label">${escapeHtml(label)}</span>${escapeHtml(String(v))}</span>\n`;
@@ -464,16 +475,18 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 					body += `      <span class="action">${escapeHtml(stepItem.action)}</span>`;
 				}
 
-				let stepContent = "";
-				if (stepItem.type === "text") {
-					stepContent = escapeHtml(stepItem.value ?? "");
-				} else {
-					stepContent = joinStepTokens(
-						stepItem.content ?? [],
-						(c) => formatElement(c, "html", stepContext),
-						(c) => !!c && typeof c === "object" && c.type !== "comment",
-					);
-				}
+				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem` is
+				// only ever `ProcessedStep` ("step") or `ProcessedComment`
+				// ("comment", already handled above) — kitchen never produces a
+				// step-level `type: "text"`; free text lives *inside* a step's
+				// `content` array as a plain string, not as its own wrapper node.
+				// This dead branch (unreachable, confirmed once `data` was typed
+				// instead of `any`) existed identically in all three backends.
+				const stepContent = joinStepTokens(
+					stepItem.content ?? [],
+					(c) => formatElement(c, "html", stepContext),
+					(c) => !!c && typeof c === "object" && c.type !== "comment",
+				);
 
 				body += stepContent ? `      ${stepContent}\n` : "";
 				body += `    </li>\n`;
@@ -484,7 +497,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 	}
 
 	// ── Nutrition ──────────────────────────────────────────────────────────
-	const nut = data.metrics?.nutrition;
+	const nut = metrics?.nutrition;
 	if (nut) {
 		const vals = nut.perPortion || nut.total;
 		const portionNote = nut.perPortion ? " (per portion)" : "";
@@ -497,7 +510,11 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 			if (vals.fiber != null)
 				body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
 			if (vals.sodium != null) {
-				body += `  <span class="nut-item"><small>Sodium</small> <strong>${vals.sodium}g</strong></span>\n`;
+				// Audit 2026-07-22, renderer finding I-2: sodium is stored/
+				// calculated in milligrams (analyzer/src/nutrition.ts), not grams —
+				// html.ts already gets this right (`${sodium}mg`), this was off by
+				// a factor of 1000 on the print/PDF output.
+				body += `  <span class="nut-item"><small>Sodium</small> <strong>${Math.round(vals.sodium)}mg</strong></span>\n`;
 			}
 			body += `</div>\n</div>\n`;
 		}
@@ -508,7 +525,7 @@ export function toPrintHTML(data: any, options: RendererOptions = {}): string {
 		? `<title>${escapeHtml(data.title)}</title>`
 		: "<title>Recipe</title>";
 	return `<!DOCTYPE html>
-<html lang="${escapeHtml((data.meta as any)?.language ?? "en")}">
+<html lang="${escapeHtml(String(data.meta?.language ?? "en"))}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

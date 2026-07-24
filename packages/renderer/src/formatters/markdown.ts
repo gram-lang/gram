@@ -1,4 +1,8 @@
-import type { RendererOptions, RenderContext } from "../types";
+import type {
+	RendererOptions,
+	RenderContext,
+	RenderableCompilationResult,
+} from "../types";
 import {
 	formatDuration as defaultFormatDuration,
 	aggToRendererItem,
@@ -10,7 +14,10 @@ import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-export function toMarkdown(data: any, options: RendererOptions = {}): string {
+export function toMarkdown(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
 	const t = getDictionary(options.lang);
 	const registry = data.registry || { ingredients: {}, cookware: {} };
 	const formatDuration = options.formatDuration || defaultFormatDuration;
@@ -136,16 +143,17 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 				if (step.action) {
 					stepText += `**[${step.action}]** `;
 				}
-
-				if (step.type === "text") {
-					stepText += step.value;
-				} else if (step.type === "step") {
-					stepText += joinStepTokens(
-						step.content,
-						(c) => formatElement(c, "md", stepContext),
-						(c) => typeof c !== "string" && c.type !== "comment",
-					);
-				}
+				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem`
+				// is only ever `ProcessedStep` ("step") or `ProcessedComment`
+				// ("comment", already handled above) — kitchen never produces a
+				// step-level `type: "text"`; free text lives *inside* a step's
+				// `content` array as a plain string. Dead branch identical in
+				// all three backends, confirmed unreachable once typed.
+				stepText += joinStepTokens(
+					step.content,
+					(c) => formatElement(c, "md", stepContext),
+					(c) => typeof c !== "string" && c.type !== "comment",
+				);
 				md += `${stepNum}. ${stepText}\n`;
 			});
 			md += "\n";

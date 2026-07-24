@@ -38,6 +38,7 @@
   "dependencies": {
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/i18n": "workspace:*"
   },
   "type": "module"

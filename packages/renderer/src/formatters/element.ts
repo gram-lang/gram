@@ -521,8 +521,21 @@ const strategies: Record<
 /**
  * Unified entry point to format an AST element.
  */
+/**
+ * Audit 2026-07-22, renderer finding I-6: was `element: any`. Real call
+ * sites pass a `Usage`, a `StepToken`, an aggregated shopping-list record, or
+ * an ad-hoc alternative/composite group — genuinely heterogeneous, and none
+ * of those nominal interfaces has an index signature, so none is assignable
+ * to a `Record<string, unknown>` parameter without a cast at the call site.
+ * `unknown` is the honest declared type for "some renderable JSON value of
+ * unrecognized shape" (only string/null/undefined are handled specially,
+ * checked before the one narrowing cast below); the strategy table's
+ * `.type`-keyed dispatch isn't a real discriminated union today — that's the
+ * `Usage.type` redesign explicitly deferred as too invasive (kitchen finding
+ * F-011/F-016).
+ */
 export function formatElement(
-	element: any,
+	element: unknown,
 	format: "html" | "md",
 	context: RenderContext = {},
 ): string {
@@ -531,16 +544,19 @@ export function formatElement(
 		return format === "html" ? escapeHtml(element) : element;
 	}
 
+	const el = element as Record<string, unknown>;
+
 	// Resolve strategy
-	const type = element.type || "";
+	const type = (el.type as string) || "";
 
 	// Check if it looks like an implicit ingredient/cookware step element (no type, has id)
-	if (!type && element.id) {
+	if (!type && el.id) {
 		const registry = context.registry || {};
-		const isCookware = !!registry.cookware?.[element.id];
+		const id = el.id as string;
+		const isCookware = !!registry.cookware?.[id];
 		const inferredType = isCookware ? "cookware" : "ingredient";
 		return strategies[inferredType]!(
-			{ ...element, type: inferredType },
+			{ ...el, type: inferredType },
 			format,
 			context,
 		);
@@ -548,11 +564,11 @@ export function formatElement(
 
 	const strategy = strategies[type];
 	if (strategy) {
-		return strategy(element, format, context);
+		return strategy(el, format, context);
 	}
 
 	// Fallback for unknown elements
 	return format === "html"
-		? escapeHtml(String(element.value || ""))
-		: String(element.value || "");
+		? escapeHtml(String(el.value || ""))
+		: String(el.value || "");
 }

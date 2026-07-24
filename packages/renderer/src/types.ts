@@ -1,3 +1,33 @@
+import type { CompilationResult } from "@gram-lang/kitchen";
+import type {
+	AnalyzedCompilationResult,
+	MassMetrics,
+	NutritionMetrics,
+} from "@gram-lang/analyzer";
+
+// Audit 2026-07-22, renderer finding I-6: the three public entry points
+// (toHTML/toMarkdown/toPrintHTML) declared `data: any` — the only stage of
+// the pipeline that didn't type its input, even though the exact upstream
+// shape was already exported. A recipe reaches the renderer either straight
+// out of `compile()` (no ingredient database — mass/nutrition fields absent)
+// or out of `analyze()` (enriched with mass standardization and nutrition) —
+// both are valid, tested inputs (see e.g. xss-escaping.test.ts using the
+// former), so the renderer's real contract is the union of both, not either
+// alone.
+export type RenderableCompilationResult =
+	| CompilationResult
+	| AnalyzedCompilationResult;
+
+// `data.metrics` for a plain (un-analyzed) CompilationResult never carries
+// mass/nutrition fields at all — narrowing the union member-by-member at
+// every one of the many read sites below would bury the actual formatting
+// logic in "in" checks, so this models the true runtime contract directly:
+// the base timing fields are always present, the analyzer-only ones are
+// optional. One cast to this type per formatter (at `data.metrics`) is the
+// single, justified narrowing point — same pattern as the parser's `getOpt`.
+export type RenderableMetrics = CompilationResult["metrics"] &
+	Partial<MassMetrics> & { nutrition?: NutritionMetrics };
+
 export interface RendererIcons {
 	hourglass?: string;
 	timer?: string;

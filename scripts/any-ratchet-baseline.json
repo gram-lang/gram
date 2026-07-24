@@ -4,8 +4,8 @@
 	"docs": 37,
 	"i18n": 0,
 	"kitchen": 40,
-	"language-server": 2,
+	"language-server": 1,
 	"parser": 0,
-	"renderer": 37,
+	"renderer": 31,
 	"vscode-extension": 0
 }

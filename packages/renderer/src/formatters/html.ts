@@ -1,4 +1,9 @@
-import type { RendererOptions, RenderContext } from "../types";
+import type {
+	RendererOptions,
+	RenderContext,
+	RenderableCompilationResult,
+	RenderableMetrics,
+} from "../types";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -15,7 +20,10 @@ import {
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-export function toHTML(data: any, options: RendererOptions = {}): string {
+export function toHTML(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
 	const t = getDictionary(options.lang);
 	const registry = data.registry || { ingredients: {}, cookware: {} };
 	const formatDuration = options.formatDuration || defaultFormatDuration;
@@ -37,6 +45,9 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 	const stepContext: RenderContext = options.hideStepQty
 		? { ...context, hideIngredientQty: true }
 		: context;
+	// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
+	// result's `metrics` never carries mass/nutrition fields at all.
+	const metrics = data.metrics as RenderableMetrics;
 
 	let html = "";
 
@@ -61,7 +72,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 	const timingCardClass = options.classes?.timingCard || "timing-card";
 
 	html += `<div class="${timingsGridClass}">\n`;
-	if (data.metrics) {
+	if (metrics) {
 		// Prefixes used by kitchen's TimeBreakdownItem labels (processor.ts /
 		// metrics.ts) — kept as named constants and sliced by their own
 		// `.length` so a label check can never silently drift out of sync with
@@ -136,22 +147,22 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
 		const totalTooltip = renderTooltipHTML(
 			t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
-			data.metrics.prepBreakdown,
-			data.metrics.totalBreakdown,
+			metrics.prepBreakdown,
+			metrics.totalBreakdown,
 		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.totalTime)}</div>${totalTooltip}\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(metrics.totalTime)}</div>${totalTooltip}\n`;
 		html += ` </div>\n`;
 
 		// Idle Time
-		if (data.metrics.idleTime) {
+		if (metrics.idleTime) {
 			const idleTooltip = renderTooltipHTML(
 				t.renderer.idleTimeTooltip ?? "Idle Time = Total Time - Prep - Active",
 			);
 			html += ` <div class="${timingCardClass}">\n`;
 			html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.idleTime)}</div>${idleTooltip}\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(metrics.idleTime)}</div>${idleTooltip}\n`;
 			html += ` </div>\n`;
 		}
 
@@ -159,22 +170,22 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
 		const activeTooltip = renderTooltipHTML(
 			t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
-			data.metrics.activeBreakdown,
+			metrics.activeBreakdown,
 		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.activeTime)}</div>${activeTooltip}\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
 		html += ` </div>\n`;
 
 		// Prep Time
 		const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
 		const prepTooltip = renderTooltipHTML(
 			t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
-			data.metrics.prepBreakdown,
+			metrics.prepBreakdown,
 		);
 		html += ` <div class="${timingCardClass}">\n`;
 		html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(data.metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
+		html += `   <div class="${metaValueClass}">${formatDuration(metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
 		html += ` </div>\n`;
 	}
 	html += `</div>\n`;
@@ -189,13 +200,13 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 	html += `<div class="${recipeMetaSecondaryClass}">\n`;
 	html += `<div class="${metadataGridClass}">\n`;
 
-	if (data.metrics?.totalMass) {
-		const mass = Math.round(data.metrics.totalMass);
+	if (metrics?.totalMass) {
+		const mass = Math.round(metrics.totalMass);
 		let msg = `${mass}g`;
-		if (data.metrics.massStatus === "estimated") {
+		if (metrics.massStatus === "estimated") {
 			msg = `~${mass}g (Estimated)`;
 		}
-		if (data.metrics.massStatus === "incomplete") {
+		if (metrics.massStatus === "incomplete") {
 			msg = `>${mass}g (Incomplete)`;
 		}
 		html += `  <div class="${metaSecondaryItemClass}">\n`;
@@ -422,31 +433,34 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 					html += `        <span${stepActionClass}>${escapeHtml(step.action)}</span> `;
 				}
 
-				let stepContent = "";
-				if (step.type === "text") {
-					stepContent = escapeHtml(step.value);
-				} else if (step.type === "step") {
-					// Declarations always render after every inline token, regardless of
-					// their original position in the step (html.ts-specific choice — the
-					// other formatters render declarations inline, in source order).
-					const inlineItems = step.content.filter(
-						(c: any) => c.type !== "declaration",
+				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem` is
+				// only ever `ProcessedStep` ("step") or `ProcessedComment`
+				// ("comment", already handled above) — kitchen never produces a
+				// step-level `type: "text"`; free text lives *inside* a step's
+				// `content` array as a plain string, not as its own wrapper node.
+				// This dead branch (confirmed unreachable once print.ts's identical
+				// copy was typed instead of `any`) existed identically in all three
+				// backends.
+				// Declarations always render after every inline token, regardless of
+				// their original position in the step (html.ts-specific choice — the
+				// other formatters render declarations inline, in source order).
+				const inlineItems = step.content.filter(
+					(c: any) => c.type !== "declaration",
+				);
+				const declItems = step.content.filter(
+					(c: any) => c.type === "declaration",
+				);
+				const renderGroup = (arr: any[]) =>
+					joinStepTokens(
+						arr,
+						(c) => formatElement(c, "html", stepContext),
+						(c) =>
+							typeof c !== "string" &&
+							c.type !== "comment" &&
+							c.type !== "declaration",
 					);
-					const declItems = step.content.filter(
-						(c: any) => c.type === "declaration",
-					);
-					const renderGroup = (arr: any[]) =>
-						joinStepTokens(
-							arr,
-							(c) => formatElement(c, "html", stepContext),
-							(c) =>
-								typeof c !== "string" &&
-								c.type !== "comment" &&
-								c.type !== "declaration",
-						);
 
-					stepContent = renderGroup(inlineItems) + renderGroup(declItems);
-				}
+				const stepContent = renderGroup(inlineItems) + renderGroup(declItems);
 				html += `        ${stepContent}\n`;
 				html += `      </li>\n`;
 			});
@@ -474,8 +488,8 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 	}
 
 	// Nutrition Panel (Moved to bottom)
-	if (data.metrics?.nutrition) {
-		const nut = data.metrics.nutrition;
+	if (metrics?.nutrition) {
+		const nut = metrics.nutrition;
 
 		// Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
 		if (
@@ -506,9 +520,15 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 				displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : "-";
 
 			let warningsHtml = "";
-			if (data.nutrition?.warnings && data.nutrition.warnings.length > 0) {
+			// Audit 2026-07-22, renderer finding I-1: this read `data.nutrition`,
+			// which never exists — `analyze()` only ever places `nutrition` under
+			// `metrics` (already destructured as `nut` above). Dead branch: the
+			// exact case the surrounding condition (line 490) was written for —
+			// calories are 0 but warnings exist — rendered an unexplained empty
+			// panel instead of the warning text.
+			if (nut.warnings && nut.warnings.length > 0) {
 				warningsHtml = `  <div class="nut-warnings">\n`;
-				data.nutrition.warnings.forEach((w: { message: string }) => {
+				nut.warnings.forEach((w) => {
 					warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w.message)}</p>\n`;
 				});
 				warningsHtml += `  </div>\n`;
