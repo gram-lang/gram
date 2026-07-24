@@ -1,4 +1,9 @@
-import type { ProcessedSection, Registry, TimeBreakdownItem } from "./types";
+import type {
+	ProcessedSection,
+	Registry,
+	TimeBreakdownItem,
+	StepToken,
+} from "./types";
 import { addToBreakdown } from "./utils";
 
 /**
@@ -29,16 +34,19 @@ export function calculatePreparationTime(
 	// Tracks the ingredient's stable `id` rather than a display name — the label is
 	// resolved to a name via the registry at render time, the same way every other
 	// ingredient reference in the compiled output is (shopping list, section lists).
-	const countPrep = (item: any): { duration: number; id?: string } => {
+	const countPrep = (
+		item: StepToken | undefined,
+	): { duration: number; id?: string } => {
 		let localTime = 0;
-		if (!item) return { duration: 0 };
+		if (!item || typeof item === "string") return { duration: 0 };
 
-		let itemId = item.id;
+		let itemId = "id" in item ? item.id : undefined;
 
-		if (item.options && Array.isArray(item.options)) {
+		const options = "options" in item ? item.options : undefined;
+		if (options && Array.isArray(options)) {
 			// For alternative choices, take the longest preparation path
 			let maxOpt = 0;
-			item.options.forEach((opt: any) => {
+			options.forEach((opt) => {
 				const res = countPrep(opt);
 				if (res.duration > maxOpt) {
 					maxOpt = res.duration;
@@ -46,7 +54,13 @@ export function calculatePreparationTime(
 				}
 			});
 			localTime += maxOpt;
-		} else if (!item.type && item.id && item.preparation) {
+		} else if (
+			!item.type &&
+			"id" in item &&
+			item.id &&
+			"preparation" in item &&
+			item.preparation
+		) {
 			// Audit 2026-07-22, kitchen finding F-016: createCleanUsage never
 			// sets `.type` on a plain ingredient, so an `item.type ===
 			// "ingredient"` check (removed above) was always dead — this is
@@ -62,7 +76,7 @@ export function calculatePreparationTime(
 	sections.forEach((sec) => {
 		sec.steps.forEach((s) => {
 			if (s.type === "step" && s.content) {
-				s.content.forEach((c: any) => {
+				s.content.forEach((c) => {
 					const prep = countPrep(c);
 					if (prep.duration > 0) {
 						addToBreakdown(breakdown, `prep_${prep.id}`, prep.duration);

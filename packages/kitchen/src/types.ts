@@ -80,6 +80,10 @@ export interface Usage {
 	conversionMethod?: string;
 	isEstimate?: boolean;
 	purchasingMass?: number;
+	// Set by @gram-lang/analyzer, not by kitchen itself — declared here like
+	// the other analyzer-added fields above, since analyze() enriches the
+	// same Usage objects in place rather than producing a separate type.
+	bakersPercentage?: number;
 }
 
 export interface ProcessedComment {

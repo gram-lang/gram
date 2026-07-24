@@ -103,9 +103,9 @@ export function aggregateSectionIngredients(
 				// Baker's percentage is linear in mass for a fixed reference, so it
 				// sums exactly like normalizedMass above — it must not just carry
 				// over the first occurrence's value once more are merged in.
-				if ((ing as any).bakersPercentage !== undefined) {
+				if (ing.bakersPercentage !== undefined) {
 					existing.bakersPercentage = round2(
-						(existing.bakersPercentage || 0) + (ing as any).bakersPercentage,
+						(existing.bakersPercentage || 0) + ing.bakersPercentage,
 					);
 				}
 			} else {
@@ -115,7 +115,7 @@ export function aggregateSectionIngredients(
 					normalizedMass: ing.normalizedMass,
 					conversionMethod: ing.conversionMethod,
 					isEstimate: ing.isEstimate,
-					bakersPercentage: (ing as any).bakersPercentage,
+					bakersPercentage: ing.bakersPercentage,
 				};
 				measuredByKey.set(key, entry);
 				order.push(entry);
