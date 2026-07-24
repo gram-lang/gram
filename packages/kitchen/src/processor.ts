@@ -3,7 +3,6 @@ import {
 	createCleanUsage,
 	quantityToMinutes,
 	nextUsageId,
-	addToBreakdown,
 } from "./utils";
 import {
 	type ASTNode,
@@ -37,6 +36,12 @@ import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import { resolveTimeUnit } from "@gram-lang/i18n";
 import { WarningCode, pushWarning } from "./warnings";
+import {
+	scheduleALAP,
+	serializeTracks,
+	rebaseAndCommit,
+	type StepSchedule,
+} from "./schedule";
 
 export interface ProcessorContext extends Context {
 	options?: CompilerOptions;
@@ -595,29 +600,10 @@ export function processSections(
 		} as SectionAST);
 	}
 
-	interface GlobalStepSchedule {
-		sectionIndex: number;
-		stepObj: ProcessedStepItem;
-		isComment: boolean;
-		localActiveTime: number;
-		productionTime: number;
-		produced: string[];
-		consumed: string[];
-		passiveTasks: Array<{
-			name: string;
-			duration: number;
-			localOffset: number;
-			isNamed: boolean;
-			sourceName?: string;
-		}>;
-		ls: number;
-		lf: number;
-	}
-
-	const globalSchedules: GlobalStepSchedule[] = [];
+	const globalSchedules: StepSchedule[] = [];
 	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised
-	// in Phase 2/3 — `ProcessedSection` is the JSON output shape and doesn't
-	// carry source locations.
+	// by the schedule module (see ./schedule) — `ProcessedSection` is the JSON
+	// output shape and doesn't carry source locations.
 	const sectionASTs: SectionAST[] = [];
 	let globalActiveTime = 0;
 
@@ -667,7 +653,7 @@ export function processSections(
 		sectionAST.children.forEach((block) => {
 			if (block.type === ASTNodeType.Step) {
 				let localActiveTime = 0;
-				const stepPassiveTasks: GlobalStepSchedule["passiveTasks"] = [];
+				const stepPassiveTasks: StepSchedule["passiveTasks"] = [];
 				const stepContentObjects: StepToken[] = [];
 				const produced: string[] = [];
 				const consumed: string[] = [];
@@ -785,248 +771,23 @@ export function processSections(
 		});
 	});
 
-	// --- PHASE 2: Backward Pass Global (Espace "T-Zéro") ---
-	const latestReady = new Map<string, number>();
-
-	// Group once instead of re-filtering the flattened list on every section
-	// (this loop runs once per section and needs both its own and the next
-	// section's steps).
-	const stepsBySection: GlobalStepSchedule[][] = Array.from(
-		{ length: sections.length },
-		() => [],
-	);
-	for (const sched of globalSchedules) {
-		if (!sched.isComment) stepsBySection[sched.sectionIndex]!.push(sched);
-	}
-
-	for (let sIdx = sections.length - 1; sIdx >= 0; sIdx--) {
-		const section = sections[sIdx]!;
-		const sectionSteps = stepsBySection[sIdx]!;
-
-		if (sectionSteps.length === 0) continue;
-
-		// 1. Default Chaining: End of this section is the start of the next section
-		let chainedLf = 0;
-		if (sIdx < sections.length - 1) {
-			const nextSectionSteps = stepsBySection[sIdx + 1]!;
-			if (nextSectionSteps.length > 0) {
-				chainedLf = nextSectionSteps[0]!.ls;
-			}
-		}
-
-		// 2. Human Anchor: Explicit retro_planning
-		let retroPlanningLf = Infinity;
-		if (
-			section.retro_planning &&
-			section.retro_planning.minutes !== undefined
-		) {
-			retroPlanningLf = -Math.abs(section.retro_planning.minutes);
-		}
-
-		// 3. Mathematical Dependency (Section-level intermediate)
-		let dependencyLf = Infinity;
-		if (section.intermediate_preparation) {
-			const req = latestReady.get(section.intermediate_preparation);
-			if (req !== undefined) {
-				dependencyLf = req;
-				// The section's product isn't necessarily ready when its textually
-				// last step ends — an earlier step's passive tail (e.g. an
-				// overnight ferment followed by a quick finishing step) can easily
-				// outlast everything after it. Inject the requirement into every
-				// step in the section rather than just the last one: each step
-				// independently computes how far back IT would need to move to
-				// have its own active+passive work finish by `req`, and the
-				// `min()`/chaining below naturally lets whichever step is actually
-				// binding win, exactly like today's `Math.max` over all
-				// background-task ends used to before this refactor.
-				for (const step of sectionSteps) {
-					if (!step.produced.includes(section.intermediate_preparation)) {
-						step.produced.push(section.intermediate_preparation);
-					}
-				}
-			}
-		}
-
-		// TIME PARADOX verification
-		if (retroPlanningLf !== Infinity && dependencyLf !== Infinity) {
-			if (dependencyLf < retroPlanningLf) {
-				pushWarning(registry.warnings, WarningCode.TIME_PARADOX, {
-					cause: `Section '${section.title || "unnamed"}' (~{${section.retro_planning!.value}${section.retro_planning!.unit}})`,
-					conflict: `downstream dependency at T${dependencyLf}m`,
-					loc: sectionASTs[sIdx]?.loc,
-				});
-			}
-		}
-
-		let currentLf = Math.min(chainedLf, retroPlanningLf, dependencyLf);
-
-		// Traverse steps backwards within the section
-		for (let i = sectionSteps.length - 1; i >= 0; i--) {
-			const sched = sectionSteps[i]!;
-
-			let stepDependencyLf = Infinity;
-			for (const p of sched.produced) {
-				const req = latestReady.get(p);
-				if (req !== undefined) {
-					stepDependencyLf = Math.min(
-						stepDependencyLf,
-						req - sched.productionTime + sched.localActiveTime,
-					);
-				}
-			}
-
-			sched.lf = Math.min(currentLf, stepDependencyLf);
-			sched.ls = sched.lf - sched.localActiveTime;
-
-			for (const c of sched.consumed) {
-				const current = latestReady.get(c) ?? Infinity;
-				latestReady.set(c, Math.min(current, sched.ls));
-			}
-
-			currentLf = sched.ls;
-		}
-	}
-
-	// --- PHASE 3: Re-sérialisation Chronologique des Named Tracks ---
-	const backgroundTrackCursors = new Map<string, number>();
-
-	const allPassiveTasks: Array<{
-		sched: GlobalStepSchedule;
-		task: GlobalStepSchedule["passiveTasks"][0];
-		theoreticalStart: number;
-		actualStart: number;
-		actualEnd: number;
-	}> = [];
-
-	globalSchedules.forEach((sched) => {
-		if (sched.isComment) return;
-		sched.passiveTasks.forEach((task) => {
-			allPassiveTasks.push({
-				sched,
-				task,
-				theoreticalStart: sched.ls + task.localOffset,
-				actualStart: 0,
-				actualEnd: 0,
-			});
-		});
-	});
-
-	allPassiveTasks.sort((a, b) => a.theoreticalStart - b.theoreticalStart);
-
-	allPassiveTasks.forEach((entry) => {
-		let actualStart = entry.theoreticalStart;
-		if (entry.task.isNamed) {
-			const cursor = backgroundTrackCursors.get(entry.task.name) ?? -Infinity;
-			actualStart = Math.max(actualStart, cursor);
-		}
-
-		entry.actualStart = actualStart;
-		entry.actualEnd = actualStart + entry.task.duration;
-
-		if (entry.task.isNamed) {
-			backgroundTrackCursors.set(entry.task.name, entry.actualEnd);
-		}
-
-		const theoreticalEnd = entry.theoreticalStart + entry.task.duration;
-		const delay = entry.actualEnd - theoreticalEnd;
-
-		if (delay > 0) {
-			pushWarning(registry.warnings, WarningCode.TRACK_CONTENTION, {
-				trackName: entry.task.name,
-				delay: delay,
-				item: `Step in section '${sections[entry.sched.sectionIndex]!.title || "unnamed"}'`,
-				loc: sectionASTs[entry.sched.sectionIndex]?.loc,
-			});
-		}
-	});
-
-	// --- PHASE 4: Rebasage Positif & Commit ---
-	let globalMinStart = 0;
-	globalSchedules.forEach((sched) => {
-		if (!sched.isComment) {
-			globalMinStart = Math.min(globalMinStart, sched.ls);
-		}
-	});
-	allPassiveTasks.forEach((entry) => {
-		globalMinStart = Math.min(globalMinStart, entry.actualStart);
-	});
-
-	const rebaseOffset = Math.abs(globalMinStart);
-
-	const activeBreakdown: TimeBreakdownItem[] = [];
-	const totalContributions: Array<{
-		label: string;
-		start: number;
-		end: number;
-	}> = [];
-
-	globalSchedules.forEach((sched) => {
-		if (sched.isComment) return;
-
-		const stepObj = sched.stepObj as ProcessedStep;
-		const rebasedLs = sched.ls + rebaseOffset;
-		const rebasedLf = sched.lf + rebaseOffset;
-
-		stepObj.timings.start = rebasedLs;
-		stepObj.timings.end = rebasedLf;
-		stepObj.timings.activeDuration = sched.localActiveTime;
-
-		if (sched.localActiveTime > 0) {
-			const sectionTitle = sections[sched.sectionIndex]!.title || "unnamed";
-			const activeLabel = `section_active:${sectionTitle}`;
-			addToBreakdown(activeBreakdown, activeLabel, sched.localActiveTime);
-			totalContributions.push({
-				label: activeLabel,
-				start: rebasedLs,
-				end: rebasedLf,
-			});
-		}
-	});
-
-	allPassiveTasks.forEach((entry) => {
-		const stepObj = entry.sched.stepObj as ProcessedStep;
-		const rebasedStart = entry.actualStart + rebaseOffset;
-		const rebasedEnd = entry.actualEnd + rebaseOffset;
-
-		stepObj.backgroundTasks.push({
-			name: entry.task.sourceName,
-			duration: entry.task.duration,
-			startOffset: rebasedStart - stepObj.timings.start,
-		});
-
-		const timerLabel = entry.task.isNamed
-			? `timer_named:${entry.task.name}`
-			: `timer_passive`;
-		totalContributions.push({
-			label: timerLabel,
-			start: rebasedStart,
-			end: rebasedEnd,
-		});
-	});
-
-	totalContributions.sort((a, b) => a.start - b.start || a.end - b.end);
-	const totalBreakdown: TimeBreakdownItem[] = [];
-	let maxEnd = 0;
-
-	for (const { label, start, end } of totalContributions) {
-		const effectiveStart = Math.max(start, maxEnd);
-		const added = end - effectiveStart;
-		if (added > 0) {
-			addToBreakdown(totalBreakdown, label, added);
-			maxEnd = Math.max(maxEnd, end);
-		}
-	}
-
-	const workflowDuration = maxEnd;
-	const idleTime = workflowDuration - globalActiveTime;
-
-	return {
+	// Phases 2-4 (ALAP backward pass, named-track re-serialization, rebase +
+	// commit) live in ./schedule — extracted so each is independently
+	// unit-testable on synthetic StepSchedule arrays, without going through
+	// the parser (audit 2026-07-22, kitchen finding F-004/P-001).
+	scheduleALAP(globalSchedules, sections, sectionASTs, registry.warnings);
+	const scheduledPassiveTasks = serializeTracks(
+		globalSchedules,
 		sections,
-		metrics: {
-			idleTime,
-			activeTime: globalActiveTime,
-			activeBreakdown,
-			totalBreakdown,
-		},
-	};
+		sectionASTs,
+		registry.warnings,
+	);
+	const metrics = rebaseAndCommit(
+		globalSchedules,
+		scheduledPassiveTasks,
+		sections,
+		globalActiveTime,
+	);
+
+	return { sections, metrics };
 }
