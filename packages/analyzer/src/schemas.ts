@@ -13,7 +13,13 @@ export const IngredientDataSchema = z.object({
 	name: z.string(),
 	physical: z
 		.object({
-			density: z.number().positive(),
+			// Audit 2026-07-22, analyzer finding B1: `density` was required
+			// whenever `physical` was present at all, which rejected any
+			// entry described only by `unit_weight` (count -> mass, e.g. "1
+			// avocado") — including the analyzer's own README example and
+			// test fixtures. An ingredient can legitimately have either,
+			// both, or neither.
+			density: z.number().positive().optional(),
 			yield: z.number().gt(0).max(1).optional(),
 			unit_weight: z.number().positive().optional(),
 		})
