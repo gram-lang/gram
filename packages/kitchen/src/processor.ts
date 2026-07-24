@@ -36,6 +36,7 @@ import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import { resolveTimeUnit } from "@gram-lang/i18n";
 import { WarningCode, pushWarning } from "./warnings";
+import { detectIntermediateCycles } from "./graph";
 import {
 	scheduleALAP,
 	serializeTracks,
@@ -805,6 +806,23 @@ export function processSections(
 			}
 		});
 	});
+
+	// Audit 2026-07-22, kitchen finding F-012: `detectCycles` (./graph, used by
+	// the shopping list for ingredient-formula dependencies) never saw the
+	// language's other dependency domain — section-level `->&produced` /
+	// `&consumed` intermediates — so an indirect cycle (`&a -> &b -> &a`)
+	// went completely undetected. Same algorithm, fed the intermediate graph.
+	const intermediateCycles = detectIntermediateCycles(sections);
+	for (const name of intermediateCycles) {
+		const decl = sectionASTs.find(
+			(s) => s.intermediateDecl?.name === name,
+		)?.intermediateDecl;
+		pushWarning(registry.warnings, WarningCode.CIRCULAR_REFERENCE, {
+			name,
+			item: name,
+			loc: decl?.loc,
+		});
+	}
 
 	// Phases 2-4 (ALAP backward pass, named-track re-serialization, rebase +
 	// commit) live in ./schedule — extracted so each is independently

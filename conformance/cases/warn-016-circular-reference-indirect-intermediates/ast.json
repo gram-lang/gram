@@ -1,0 +1,184 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Indirect Intermediate Cycle"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Make Batter",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "batter",
+        "loc": {
+          "start": 59,
+          "end": 68
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 70,
+                "end": 74
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 81,
+                  "end": 85
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 74,
+                "end": 86
+              }
+            },
+            {
+              "type": "Text",
+              "value": ". Needs ",
+              "loc": {
+                "start": 86,
+                "end": 94
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "glaze",
+              "quantity": null,
+              "loc": {
+                "start": 94,
+                "end": 100
+              }
+            },
+            {
+              "type": "Text",
+              "value": "to finish.",
+              "loc": {
+                "start": 101,
+                "end": 111
+              }
+            }
+          ],
+          "loc": {
+            "start": 70,
+            "end": 113
+          }
+        }
+      ],
+      "loc": {
+        "start": 44,
+        "end": 113
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Make Glaze",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "glaze",
+        "loc": {
+          "start": 127,
+          "end": 135
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 137,
+                "end": 141
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 148,
+                  "end": 152
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 141,
+                "end": 153
+              }
+            },
+            {
+              "type": "Text",
+              "value": ". Needs ",
+              "loc": {
+                "start": 153,
+                "end": 161
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "batter",
+              "quantity": null,
+              "loc": {
+                "start": 161,
+                "end": 168
+              }
+            },
+            {
+              "type": "Text",
+              "value": "to finish.",
+              "loc": {
+                "start": 169,
+                "end": 179
+              }
+            }
+          ],
+          "loc": {
+            "start": 137,
+            "end": 180
+          }
+        }
+      ],
+      "loc": {
+        "start": 113,
+        "end": 180
+      }
+    }
+  ]
+}

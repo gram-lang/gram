@@ -1,0 +1,11 @@
+---
+title: Indirect Intermediate Cycle
+---
+
+## Make Batter ->&batter
+
+Mix @flour{200g}. Needs &glaze to finish.
+
+## Make Glaze ->&glaze
+
+Mix @sugar{100g}. Needs &batter to finish.
