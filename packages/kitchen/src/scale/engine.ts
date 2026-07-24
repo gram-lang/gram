@@ -1,6 +1,7 @@
 import { normalizeUnit } from "@gram-lang/i18n";
 import { slugify, scaleQty, round2 } from "../utils";
-import type { CompilationResult } from "../types";
+import type { CompilationResult, Usage } from "../types";
+import type { ShoppingListItem, CompositeItem } from "../shopping";
 import {
 	type ScaleRequest,
 	type ScaleResolution,
@@ -16,14 +17,27 @@ import {
 	UnitMismatchError,
 } from "./types";
 
+// A shopping-list entry is one of 3 real shapes (see CompilationResult):
+// a plain aggregated ingredient/cookware (ShoppingListItem), a composite
+// sub-recipe parent (CompositeItem), or a Usage — the last one covers an
+// alternative-ingredient group (`type: "alternative"`, `options: [...]`,
+// pushed into the shopping list as a Usage in shopping.ts), since there is
+// no dedicated "AlternativeGroup" type in this package (kitchen finding
+// F-011/F-016: Usage.type is a real discriminant in practice, just not
+// modeled as one yet).
+type ShoppingListEntry = CompilationResult["shopping_list"][number];
+
 function isPositiveFinite(n: number): boolean {
 	return typeof n === "number" && Number.isFinite(n) && n > 0;
 }
 
-function findNestedParent(shoppingList: any[], id: string): string | undefined {
+function findNestedParent(
+	shoppingList: ShoppingListEntry[],
+	id: string,
+): string | undefined {
 	for (const item of shoppingList) {
-		if (item && item.type === "composite") {
-			const sub = (item.usage ?? []).find((u: any) => u && u.id === id);
+		if (item && item.type === "composite" && "usage" in item) {
+			const sub = item.usage.find((u) => u && u.id === id);
 			if (sub) return item.id;
 		}
 	}
@@ -32,14 +46,17 @@ function findNestedParent(shoppingList: any[], id: string): string | undefined {
 
 /** Finds the sibling option ids if `id` is one option inside an alternative-ingredient group. */
 function findAlternativeSiblings(
-	shoppingList: any[],
+	shoppingList: ShoppingListEntry[],
 	id: string,
 ): string[] | undefined {
 	for (const item of shoppingList) {
-		if (item && item.type === "alternative") {
-			const options: any[] = item.options ?? [];
-			if (options.some((o) => o && o.id === id)) {
-				return options.filter((o) => o && o.id !== id).map((o) => o.id);
+		if (item && item.type === "alternative" && "options" in item) {
+			const options = item.options ?? [];
+			const usageOptions = options.filter(
+				(o): o is Usage => typeof o === "object" && o !== null && "id" in o,
+			);
+			if (usageOptions.some((o) => o.id === id)) {
+				return usageOptions.filter((o) => o.id !== id).map((o) => o.id);
 			}
 		}
 	}
@@ -49,9 +66,18 @@ function findAlternativeSiblings(
 // A composite (sub-recipe) parent's own total is a well-defined absolute
 // quantity — same as any other aggregated ingredient — so it's a valid scale
 // target. Only its *nested* children (see findNestedParent) and alternative
-// groups (see findAlternativeSiblings) are excluded.
-function findStandardItem(shoppingList: any[], id: string): any | undefined {
-	return shoppingList.find((i) => i && i.type !== "alternative" && i.id === id);
+// groups (see findAlternativeSiblings) are excluded — a plain Usage only
+// ever appears in the shopping list as an alternative-group container (see
+// ShoppingListEntry's own comment), so excluding `type === "alternative"`
+// also rules out Usage in practice; the type predicate makes that explicit.
+function findStandardItem(
+	shoppingList: ShoppingListEntry[],
+	id: string,
+): ShoppingListItem | CompositeItem | undefined {
+	return shoppingList.find(
+		(i): i is ShoppingListItem | CompositeItem =>
+			!!i && i.type !== "alternative" && i.id === id,
+	);
 }
 
 /**
@@ -80,7 +106,7 @@ export function resolveScaleFactor(
 	}
 
 	const id = slugify(request.id);
-	const shoppingList: any[] = (compiled as any)?.shopping_list ?? [];
+	const shoppingList: ShoppingListEntry[] = compiled?.shopping_list ?? [];
 
 	const siblings = findAlternativeSiblings(shoppingList, id);
 	if (siblings) throw new AlternativeTargetError(id, siblings);
@@ -142,15 +168,26 @@ export function resolveScaleFactor(
 	return { factor, resolvedFrom: "target", targetId: id, unitConverted };
 }
 
-function mutateUsage(item: any, factor: number, scaled: WeakSet<object>): void {
+// Real call sites pass a Usage, a Partial<Usage> (a composite's `.usage`
+// entries), or a StepToken (which includes plain strings — the `typeof
+// item !== "object"` guard below already handles that case safely) — no
+// single nominal type covers all of them, so this narrows once, at the
+// runtime-verified "is an object" boundary, same pattern as
+// formatElement's `element: unknown`.
+function mutateUsage(
+	item: unknown,
+	factor: number,
+	scaled: WeakSet<object>,
+): void {
 	if (!item || typeof item !== "object") return;
 	if (scaled.has(item)) return; // already scaled — same Usage object is shared
 	// between section.ingredients and its inline step token (see processIngredient
 	// in processor.ts, which pushes and returns the same object); without this
 	// guard it would be scaled twice (factor²) here.
-	if (item.fixed) return; // @= modifier or TextQuantity — never scaled
-	if ("qty" in item && item.qty !== undefined) {
-		item.qty = scaleQty(item.qty, factor);
+	const usage = item as Partial<Usage>;
+	if (usage.fixed) return; // @= modifier or TextQuantity — never scaled
+	if ("qty" in usage && usage.qty !== undefined) {
+		usage.qty = scaleQty(usage.qty, factor);
 	}
 	scaled.add(item);
 }
@@ -168,29 +205,31 @@ export function applyScale(
 ): CompilationResult {
 	if (factor === 1) return result;
 
-	const cloned: any = structuredClone(result);
-	const basePortions = (result as any).meta?.portions;
+	const cloned = structuredClone(result);
+	const basePortions = result.meta?.portions;
 	// structuredClone preserves shared references (e.g. a section ingredient's
 	// Usage object is the very same object as its inline step token) — track
 	// what's already been scaled so a shared object is never scaled twice.
 	const scaled = new WeakSet<object>();
 
-	if (cloned.meta && basePortions !== undefined) {
-		if (typeof basePortions === "number") {
-			cloned.meta.portions = round2(basePortions * factor);
-		} else if (typeof basePortions === "string") {
-			const num = parseFloat(basePortions);
-			if (!Number.isNaN(num))
-				cloned.meta.portions = String(round2(num * factor));
-		}
+	// Frontmatter values (Meta) are always string | string[] — see parser
+	// finding I3(3) — never a genuine `number`, so scaling only ever applies
+	// to the string form (e.g. `portions: "4"`).
+	if (cloned.meta && typeof basePortions === "string") {
+		const num = parseFloat(basePortions);
+		if (!Number.isNaN(num)) cloned.meta.portions = String(round2(num * factor));
 	}
 
 	for (const item of cloned.shopping_list ?? []) {
 		if (!item || typeof item !== "object") continue;
-		if (item.type === "alternative") {
+		if (item.type === "alternative" && "options" in item) {
 			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
-		} else if (item.type === "composite") {
-			if (typeof item.qty === "number") item.qty = item.qty * factor;
+		} else if (item.type === "composite" && "usage" in item) {
+			if (typeof item.qty === "number") {
+				// scaleQty(number, ...) always returns a number — its broader
+				// Usage["qty"] return type only matters for the AST-object inputs.
+				item.qty = scaleQty(item.qty, factor) as number;
+			}
 			for (const u of item.usage ?? []) mutateUsage(u, factor, scaled);
 		} else {
 			mutateUsage(item, factor, scaled);
@@ -224,7 +263,7 @@ export function applyScale(
 		}
 	}
 
-	cloned.scaleFactor = ((result as any).scaleFactor ?? 1) * factor;
+	cloned.scaleFactor = (result.scaleFactor ?? 1) * factor;
 
 	return cloned;
 }

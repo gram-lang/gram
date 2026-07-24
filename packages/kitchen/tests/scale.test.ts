@@ -373,4 +373,18 @@ Heat @=oil{50ml} in a pan.
 			expect(viaApplyScale).toEqual(viaCompile);
 		});
 	});
+
+	// Regression test found while typing scaleQty (utils.ts) instead of `any`
+	// as part of the Phase 10bis strict-typing pass: scaling a fraction
+	// quantity kept `type: "fraction"` but set the (non-optional, per
+	// QuantityValueAST) `numerator`/`denominator` fields to `undefined` —
+	// producing a structurally malformed value (`{type:"fraction", value:1}`,
+	// no numerator/denominator at all) once JSON-serialized.
+	it("turns a scaled fraction into a clean 'single' value instead of a malformed fraction", () => {
+		const ast = getAST(`## Section\n\nMix @flour{1/2 cup}.\n`);
+		const scaled: any = applyScale(compile(ast), 2);
+		const flour = scaled.sections[0].ingredients[0];
+
+		expect(flour.qty).toEqual({ type: "single", value: 1 });
+	});
 });

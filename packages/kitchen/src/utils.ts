@@ -1,5 +1,12 @@
-import { type QuantityValueAST, ASTNodeType } from "@gram-lang/parser";
-import type { Usage, TimeBreakdownItem } from "./types";
+import {
+	type QuantityValueAST,
+	type QuantityAST,
+	type RelativeQuantityAST,
+	type IngredientAST,
+	type CookwareAST,
+	ASTNodeType,
+} from "@gram-lang/parser";
+import type { Usage, TimeBreakdownItem, UsageComposite } from "./types";
 import { resolveTimeUnit } from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
 
@@ -49,14 +56,12 @@ export const slugify = (text: string | number): string => {
  * deferred to the analyzer.
  */
 export const minifyQuantity = (
-	q: any,
+	q: QuantityValueAST | QuantityAST | RelativeQuantityAST | null | undefined,
 ): number | QuantityValueAST | undefined => {
 	if (!q) return undefined;
-	if (typeof q === "number") return q;
 
-	// Check for specific AST types or general structures
-	if (q.type === "single" && q.value !== undefined) return q.value;
-	if (q.type === "range" || q.type === "fraction") return q;
+	// Explicitly ignore RelativeQuantity for minification in this context
+	if (q.type === ASTNodeType.RelativeQuantity) return undefined;
 
 	// If it's a full QuantityAST
 	if (q.type === ASTNodeType.Quantity) {
@@ -64,9 +69,8 @@ export const minifyQuantity = (
 		return q.value;
 	}
 
-	// Explicitly ignore RelativeQuantity for minification in this context
-	if (q.type === ASTNodeType.RelativeQuantity) return undefined;
-
+	// Otherwise it's already a QuantityValueAST (single/range/fraction)
+	if (q.type === "single" && q.value !== undefined) return q.value;
 	return q;
 };
 
@@ -89,26 +93,30 @@ export const nextUsageId = (counter: { value: number }): string =>
  * extracts cleaned quantities/units, and retains metadata like parent composite scopes or custom aliases.
  */
 export const createCleanUsage = (
-	item: any,
+	item: IngredientAST | CookwareAST,
 	id: string,
 	counter: { value: number },
 	_options?: CompilerOptions,
 ): Usage => {
 	const obj: Usage = { id, _usageId: nextUsageId(counter) };
 	const qtyNode = item.quantity;
-	let cleanQty: any;
+	let cleanQty: number | QuantityValueAST | string | undefined;
 
 	if (qtyNode) {
 		// If it's a TextQuantity, we use the value directly
 		if (qtyNode.type === ASTNodeType.TextQuantity) {
 			cleanQty = qtyNode.value;
-		} else {
+		} else if (qtyNode.type === ASTNodeType.Quantity) {
 			cleanQty = minifyQuantity(qtyNode.value || qtyNode);
+		} else {
+			cleanQty = minifyQuantity(qtyNode);
 		}
 	}
 
 	if (cleanQty !== undefined) obj.qty = cleanQty;
-	if (qtyNode?.unit) obj.unit = qtyNode.unit;
+	if (qtyNode && qtyNode.type === ASTNodeType.Quantity && qtyNode.unit) {
+		obj.unit = qtyNode.unit;
+	}
 
 	if (item.modifiers && item.modifiers.length > 0) {
 		const MODIFIER_MAP: Record<string, string> = {
@@ -120,10 +128,28 @@ export const createCleanUsage = (
 		obj.modifiers = item.modifiers.map((m: string) => MODIFIER_MAP[m] || m);
 	}
 
-	if (item.type === ASTNodeType.Cookware) {
-		if (qtyNode && qtyNode.fixed === false) obj.fixed = false;
-	} else {
-		if (qtyNode && qtyNode.fixed === true) obj.fixed = true;
+	// CookwareAST.quantity is always a QuantityAST (mandatory, unlike
+	// IngredientAST's union); the `item.type` check narrows `item`, but
+	// `qtyNode` was captured before that, so it still needs its own check.
+	// Two independent checks (not if/else-if): a cookware quantity explicitly
+	// marked non-fixed (`fixed === false`) only ever clears the flag; an
+	// ingredient's `@=` (`fixed === true`) only ever sets it — cookware never
+	// takes the "set true" path here, matching the original branching.
+	if (
+		item.type === ASTNodeType.Cookware &&
+		qtyNode &&
+		qtyNode.type === ASTNodeType.Quantity &&
+		qtyNode.fixed === false
+	) {
+		obj.fixed = false;
+	}
+	if (
+		item.type !== ASTNodeType.Cookware &&
+		qtyNode &&
+		qtyNode.type === ASTNodeType.Quantity &&
+		qtyNode.fixed === true
+	) {
+		obj.fixed = true;
 	}
 
 	// Special handling for TextQuantity override
@@ -135,9 +161,8 @@ export const createCleanUsage = (
 	if (item.alias) obj.alias = item.alias;
 	if (item.preparation) obj.preparation = item.preparation;
 
-	if (item.composite) {
-		const comp: any = {};
-		if (item.composite.parent) comp.parent = item.composite.parent;
+	if (item.type !== ASTNodeType.Cookware && item.composite) {
+		const comp: UsageComposite = { parent: item.composite.parent };
 		if (item.composite.quantity) {
 			const compQty = item.composite.quantity;
 			const minified = minifyQuantity(compQty);
@@ -159,7 +184,9 @@ export const createCleanUsage = (
  * to preserve a guaranteed API schema for consumers (avoiding undefined references),
  * while stripping other empty arrays to keep the JSON output lightweight and neat.
  */
-export const cleanObject = (obj: any): any => {
+// Recurses over an arbitrary JSON-shaped compiled-output tree — genuinely
+// `unknown` at every level, not any one AST/Usage/section type.
+export const cleanObject = (obj: unknown): unknown => {
 	if (obj === null || obj === undefined) return undefined;
 	if (Array.isArray(obj)) {
 		const cleanedArr = obj
@@ -168,9 +195,9 @@ export const cleanObject = (obj: any): any => {
 		return cleanedArr;
 	}
 	if (typeof obj === "object") {
-		const res: any = {};
+		const res: Record<string, unknown> = {};
 		for (const key in obj) {
-			const val = obj[key];
+			const val = (obj as Record<string, unknown>)[key];
 			const cleanedVal = cleanObject(val);
 			if (cleanedVal !== null && cleanedVal !== undefined) {
 				if (Array.isArray(cleanedVal) && cleanedVal.length === 0) {
@@ -198,40 +225,28 @@ export const cleanObject = (obj: any): any => {
  * Supports ranges (takes the average), simple numbers, and fractions, and performs
  * conversions from hours ('h') or seconds ('s') based on the resolved time unit.
  */
-export const quantityToMinutes = (qty: any): number => {
-	if (!qty) return 0;
+// Both real call sites (processRetroPlanning, the timer duration in
+// processSections) construct this exact `{ value, unit }` wrapper — never a
+// raw QuantityAST (with its own `.type`/`.value` nesting), so there is no
+// separate "AST object" branch to handle.
+interface TimeQuantity {
+	value?: number | string | QuantityValueAST | null;
+	unit?: string;
+}
 
-	let val: number = 0;
-	let unit: string = "";
+export const quantityToMinutes = (
+	qty: TimeQuantity | null | undefined,
+): number => {
+	if (!qty || qty.value === undefined || qty.value === null) return 0;
 
-	// Handle AST objects
-	if (typeof qty === "object") {
-		if (qty.type === ASTNodeType.Quantity && qty.value) {
-			const sub = qty.value;
-			if (sub.type === "single") val = sub.value as number;
-			if (sub.type === "fraction") val = sub.value as number;
-			if (sub.type === "range" && sub.range)
-				val = (sub.range.min + sub.range.max) / 2;
-			unit = qty.unit || "";
-		} else if (qty.value !== undefined) {
-			// Fallback for simple objects
-			let raw = qty.value;
-			if (typeof raw === "object" && raw !== null) {
-				if (raw.type === "single") raw = raw.value;
-				else if (raw.type === "fraction") raw = raw.value;
-				else if (raw.type === "range" && raw.range)
-					raw = (raw.range.min + raw.range.max) / 2;
-			}
-			val = raw;
-			unit = qty.unit || "";
-		}
-	} else {
-		return 0;
+	let val: number | string | QuantityValueAST = qty.value;
+	if (typeof val === "object") {
+		if (val.type === "single" || val.type === "fraction") val = val.value;
+		else if (val.type === "range") val = (val.range.min + val.range.max) / 2;
 	}
-
 	if (typeof val !== "number") return 0;
 
-	const u = resolveTimeUnit(unit);
+	const u = resolveTimeUnit(qty.unit || "");
 
 	// Time conversions to minutes
 	if (u === "d") return val * 60 * 24;
@@ -251,7 +266,7 @@ export const quantityToMinutes = (qty: any): number => {
  * and are only valid for the unscaled value, so they're cleared here rather than
  * carried over stale — display code must fall back to the scaled numeric `value`.
  */
-export const scaleQty = (qty: any, factor: number): any => {
+export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
 	if (factor === 1) return qty;
 	if (typeof qty === "number") return qty * factor;
 	if (!qty || typeof qty !== "object") return qty;
@@ -270,13 +285,16 @@ export const scaleQty = (qty: any, factor: number): any => {
 		};
 	}
 	if (qty.type === "fraction" && typeof qty.value === "number") {
-		return {
-			...qty,
-			value: qty.value * factor,
-			text: undefined,
-			numerator: undefined,
-			denominator: undefined,
-		};
+		// Audit 2026-07-22 (found while typing this function instead of `any`):
+		// `numerator`/`denominator` are required, non-optional fields on the
+		// "fraction" variant of QuantityValueAST — setting them `undefined`
+		// while keeping `type: "fraction"` produced a structurally malformed
+		// value (`{type:"fraction", value:1}`, no numerator/denominator).
+		// Scaling breaks the clean numerator/denominator relationship anyway
+		// (the doc comment above already says display must fall back to the
+		// scaled numeric `value`), so this becomes a "single" value instead —
+		// the type that actually matches what's left.
+		return { type: "single", value: qty.value * factor };
 	}
 	return qty;
 };
@@ -312,21 +330,17 @@ export const addToBreakdown = (
 	}
 };
 
-export const getNumericQty = (q: any): number | null => {
+export const getNumericQty = (
+	q: Usage["qty"] | null | undefined,
+): number | null => {
 	if (q === undefined || q === null) return null;
 	if (typeof q === "number") return q;
+	if (typeof q !== "object") return null; // string (TextQuantity's cleaned value)
 
-	const val = q.type === ASTNodeType.Quantity ? q.value : q;
-	if (val && typeof val === "object") {
-		if (
-			val.type === "fraction" ||
-			val.type === "range" ||
-			val.type === "single"
-		) {
-			return val.value !== null ? val.value : null;
-		}
-	} else if (typeof val === "number") {
-		return val;
+	// RelativeQuantityAST/TextQuantityAST have no "fraction"/"range"/"single"
+	// variant — only a real QuantityValueAST does.
+	if (q.type === "fraction" || q.type === "range" || q.type === "single") {
+		return q.value ?? null;
 	}
 	return null;
 };

@@ -2,11 +2,25 @@ import type {
 	QuantityValueAST,
 	RelativeQuantityAST,
 	TextQuantityAST,
-	CompositeAST,
 	Meta,
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
+
+// The compiled-JSON shape kept on a Usage for its composite-child info
+// (`@juice{150ml}<@lemon{1}`) — deliberately narrower than the parser's
+// CompositeAST: createCleanUsage() (utils.ts) strips AST-only fields
+// (`type`, `loc`) when copying from the AST node, so reusing CompositeAST
+// here would claim fields this shape never actually carries.
+export interface UsageComposite {
+	// Always set — CompositeAST.parent is a mandatory, non-empty grammar
+	// capture (`<@parentname`); createCleanUsage's `if (item.composite.parent)`
+	// guard is defensive, not a real "might be absent" case.
+	parent: string;
+	quantity?: number | QuantityValueAST;
+	unit?: string;
+	preparation?: string;
+}
 
 export interface RegistryEntry {
 	id: string;
@@ -49,7 +63,7 @@ export interface Usage {
 	fixed?: boolean;
 	alias?: string | null;
 	preparation?: string | null;
-	composite?: CompositeAST | null;
+	composite?: UsageComposite | null;
 	isCircular?: boolean;
 	dependencies?: string[];
 	formula?: {

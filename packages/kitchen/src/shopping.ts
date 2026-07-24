@@ -5,6 +5,11 @@ import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
 
 export interface ShoppingListItem {
+	// Never actually set at construction — a plain aggregated ingredient has
+	// no discriminant — but declared so code that checks `.type` uniformly
+	// across every shopping-list entry shape (scale/engine.ts,
+	// renderer's isAlternativeGroup/isCompositeItem) doesn't need a cast.
+	type?: string;
 	id: string;
 	name?: string;
 	qty?: number;
@@ -30,6 +35,15 @@ export interface CompositeItem {
 	usage: Partial<Usage>[];
 	_subUsageMap: Map<string, number>;
 	_usageAccumulator: Map<string, Partial<Usage>>;
+	// Never actually set on a composite — always undefined — but declared so
+	// `scale/engine.ts`'s uniform "is this shopping-list entry scalable?"
+	// checks (shared with ShoppingListItem/Usage) can read them without a cast.
+	// A composite parent's own total is always a valid, unfixed, single-unit
+	// scale target (see engine.ts's findStandardItem).
+	fixed?: boolean;
+	relative?: boolean;
+	multiUnit?: boolean;
+	unit?: string | null;
 }
 
 /**

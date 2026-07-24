@@ -58,13 +58,19 @@ export function compile(
 		});
 	});
 
+	// Frontmatter's `title` is conventionally a plain string; Meta's type
+	// (string | string[], see parser finding I3(3)) is wider only because
+	// other frontmatter keys (e.g. `tags`) can be lists.
+	const titleValue = ast.meta.title;
+	const title = typeof titleValue === "string" ? titleValue : null;
+
 	// 5. Assemble and return the clean, compact final compilation payload
 	const result: CompilationResult = {
-		title: (ast.meta as any).title || null,
-		slug: (ast.meta as any).title ? slugify((ast.meta as any).title) : null,
+		title,
+		slug: title ? slugify(title) : null,
 		// Cloned defensively: compile() must never mutate the caller's AST,
 		// since applyScale (and future in-place enrichers) writes to `meta`.
-		meta: { ...(ast.meta as any) },
+		meta: { ...ast.meta },
 		registry: registry.toPlainObject(),
 		shopping_list,
 		cookware: globalCookware,
@@ -92,5 +98,7 @@ export function compile(
 			? applyScale(result, options.scaleFactor)
 			: result;
 
-	return cleanObject(scaled);
+	// cleanObject only prunes null/undefined fields — the shape stays
+	// CompilationResult, just with those keys absent instead of null.
+	return cleanObject(scaled) as CompilationResult;
 }
