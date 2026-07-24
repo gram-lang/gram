@@ -13,6 +13,7 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	groupMultiUnitEntries,
 } from "../utils";
 import { formatElement } from "./element";
 import {
@@ -259,27 +260,8 @@ const htmlBackend: RenderBackend = {
 		html += `  <summary><h2>${t.renderer.shoppingList}</h2></summary>\n`;
 		html += `  <ul>\n`;
 
-		// Group consecutive entries that the analyzer couldn't merge into a single
-		// mass (e.g. missing density between "100g" and "1 cup" of the same
-		// ingredient) so they render as one clustered item instead of scattered
-		// duplicate lines. They share `multiUnit: true` and a canonical `id`.
 		const shoppingItems: any[] = data.shopping_list;
-		const renderGroups: any[][] = [];
-		for (let i = 0; i < shoppingItems.length; i++) {
-			const item = shoppingItems[i];
-			const prevGroup = renderGroups[renderGroups.length - 1];
-			const prevItem = prevGroup?.[0];
-			if (
-				prevGroup &&
-				item.multiUnit &&
-				prevItem?.multiUnit &&
-				prevItem.id === item.id
-			) {
-				prevGroup.push(item);
-			} else {
-				renderGroups.push([item]);
-			}
-		}
+		const renderGroups = groupMultiUnitEntries(shoppingItems);
 
 		renderGroups.forEach((group) => {
 			const item = group[0];

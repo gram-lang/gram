@@ -2,6 +2,7 @@ import type {
 	RendererOptions,
 	RenderContext,
 	RenderableCompilationResult,
+	RenderableMetrics,
 } from "../types";
 import type { RenderBackend, RenderSections } from "../traversal";
 import { renderRecipe } from "../traversal";
@@ -11,6 +12,7 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	groupMultiUnitEntries,
 } from "../utils";
 import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -28,6 +30,10 @@ const markdownBackend: RenderBackend = {
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
+			// Phase 12: markdown now collects footnotes too (GFM `[^id]` refs +
+			// definitions at the bottom via renderFootnotes), matching html.ts.
+			_inlineComments: [],
+			_renderId: options.renderId ?? "note",
 		};
 	},
 
@@ -70,7 +76,15 @@ const markdownBackend: RenderBackend = {
 		if (!data.shopping_list || data.shopping_list.length === 0) return "";
 		const t = getDictionary(options.lang);
 		let md = `## 🛒 ${t.renderer.shoppingList}\n\n`;
-		data.shopping_list.forEach((item: any) => {
+
+		// Phase 12: markdown now also clusters entries the analyzer couldn't
+		// merge into a single mass, and shows the gross-mass note — previously
+		// html.ts-only (audit renderer finding I-4/P-1).
+		const shoppingItems: any[] = data.shopping_list;
+		const renderGroups = groupMultiUnitEntries(shoppingItems);
+
+		renderGroups.forEach((group) => {
+			const item = group[0];
 			if (isAlternativeGroup(item)) {
 				// strategies.alternative already joins every option ("egg or egg
 				// substitute") on one line — reuse it instead of hand-rolling the
@@ -87,8 +101,21 @@ const markdownBackend: RenderBackend = {
 				});
 			} else if (item.display) {
 				md += `- ${item.display}\n`;
+			} else if (group.length > 1) {
+				md += `- **${item.name || item.id}** ⚠️ *${t.renderer.mixedUnits}*:\n`;
+				group.forEach((entry) => {
+					md += `  - ${formatElement(entry, "md", { ...context, formatMode: "shopping-list" })}\n`;
+				});
 			} else {
-				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}\n`;
+				let suffix = "";
+				if (
+					item.purchasingMass &&
+					item.purchasingMass !== item.normalizedMass
+				) {
+					const gross = Math.round(item.purchasingMass * 10) / 10;
+					suffix = ` _(${gross}g ${t.renderer.gross})_`;
+				}
+				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}${suffix}\n`;
 			}
 		});
 		md += "\n";
@@ -170,24 +197,64 @@ const markdownBackend: RenderBackend = {
 		return md;
 	},
 
-	renderFootnotes() {
-		// Audit 2026-07-22, Phase 11: markdown never accumulates inline comments
-		// into footnotes today (its context never sets `_inlineComments`, so
-		// element.ts's comment strategy renders them inline instead). Whether to
-		// converge this with html.ts's footnote behavior is an explicit Phase 12
-		// decision, not made here — this hook exists (required by RenderBackend)
-		// but intentionally emits nothing, matching current behavior exactly.
-		return "";
+	renderFootnotes(_data, context) {
+		// Phase 12: extended to markdown, using GFM `[^id]: text` footnote
+		// definitions at the bottom of the document — element.ts's comment
+		// strategy already emits the matching `[^id]` reference inline (see
+		// its own comment for why collection is now format-agnostic).
+		if (!context._inlineComments || context._inlineComments.length === 0) {
+			return "";
+		}
+		const renderId = context._renderId || "note";
+		let md = "\n---\n\n";
+		context._inlineComments.forEach((note, idx) => {
+			const index = idx + 1;
+			md += `[^${renderId}-${index}]: ${note}\n`;
+		});
+		return md;
 	},
 
-	renderNutrition() {
-		// Audit 2026-07-22, Phase 11: markdown has never rendered a nutrition
-		// section at all, unlike html.ts/print.ts. Confirmed as a real content
-		// gap (not a deliberate design choice) — closing it is an explicit
-		// Phase 12 decision, not made here. This hook exists (required by
-		// RenderBackend) but intentionally emits nothing, matching current
-		// behavior exactly.
-		return "";
+	renderNutrition(data, _context, options) {
+		// Phase 12: extended to markdown — previously nothing was shown here,
+		// not even total calories, which the audit confirmed was a real
+		// content gap rather than a deliberate design choice. Mirrors
+		// html.ts's fuller display condition (calories OR warnings), not
+		// print.ts's simpler one, since markdown has no other way to surface
+		// "ingredients exist but nutrition data is incomplete".
+		const t = getDictionary(options.lang);
+		const metrics = data.metrics as RenderableMetrics;
+		const nut = metrics?.nutrition;
+		if (!nut) return "";
+		if (
+			!(
+				(nut.total && nut.total.calories > 0) ||
+				(nut.warnings && nut.warnings.length > 0)
+			)
+		) {
+			return "";
+		}
+
+		const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+		const portionVals = nut.perPortion;
+		const portionNote = portionVals ? " (Per Portion)" : "";
+		const vals = portionVals || total;
+
+		let md = `## 🥗 ${t.renderer.nutrition}${portionNote}\n\n`;
+		if (nut.warnings && nut.warnings.length > 0) {
+			nut.warnings.forEach((w) => {
+				md += `> **Incomplete data:** ${w.message}\n`;
+			});
+			md += "\n";
+		}
+		md += `- **Calories**: ${Math.round(vals.calories)} kcal\n`;
+		md += `- **Carbs**: ${vals.carbs}g${vals.sugar !== undefined ? ` (sugar: ${vals.sugar}g)` : ""}\n`;
+		md += `- **Protein**: ${vals.protein}g\n`;
+		md += `- **Fat**: ${vals.fat}g\n`;
+		if (vals.fiber !== undefined) md += `- **Fiber**: ${vals.fiber}g\n`;
+		if (vals.sodium !== undefined)
+			md += `- **Sodium**: ${Math.round(vals.sodium)}mg\n`;
+		md += "\n";
+		return md;
 	},
 
 	assembleDocument(sections: RenderSections) {

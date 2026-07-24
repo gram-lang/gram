@@ -421,19 +421,32 @@ const strategies: Record<
 
 	comment: (item, format, context) => {
 		const text = (item.value || "").trim();
-		if (format === "html") {
-			if (context._inlineComments) {
-				context._inlineComments.push(text);
-				const index = context._inlineComments.length;
-				const renderId = context._renderId || "note";
+		// Audit 2026-07-22, renderer finding I-4/P-1 (Phase 12): footnote
+		// accumulation used to be html-only (gated on `format === "html"`
+		// before even checking `_inlineComments`), so markdown could never
+		// collect footnotes even once its backend started initializing
+		// `_inlineComments`. Collection itself is now format-agnostic — only
+		// the reference syntax differs — so any backend that initializes
+		// `context._inlineComments` (see each backend's buildContext) gets
+		// footnotes; one that doesn't keeps rendering the comment inline,
+		// exactly as before.
+		if (context._inlineComments) {
+			context._inlineComments.push(text);
+			const index = context._inlineComments.length;
+			const renderId = context._renderId || "note";
+			if (format === "html") {
 				return `<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
-			} else {
-				// Fallback if state is missing
-				return `<span class="inline-comment">${escapeHtml(text)}</span>`;
 			}
-		} else {
-			return ` *${text}*`;
+			// GFM-style footnote reference; the definition itself is emitted
+			// at the bottom of the document by the backend's renderFootnotes
+			// hook, once every step has been rendered.
+			return `[^${renderId}-${index}]`;
 		}
+		if (format === "html") {
+			// Fallback if state is missing
+			return `<span class="inline-comment">${escapeHtml(text)}</span>`;
+		}
+		return ` *${text}*`;
 	},
 
 	alternative: (item, format, context) => {

@@ -162,6 +162,41 @@ export function isCompositeItem(item: { type?: string }): boolean {
 	return item.type === "composite";
 }
 
+/**
+ * Groups consecutive shopping-list entries the analyzer couldn't merge into a
+ * single mass (e.g. missing density between "100g" and "1 cup" of the same
+ * ingredient) so a backend can render them as one clustered item instead of
+ * scattered duplicate lines. Entries share `multiUnit: true` and a canonical
+ * `id`. Items that aren't part of such a run (including alternative/composite
+ * groups, which never carry `multiUnit`) each come back as their own
+ * single-item group, unchanged.
+ *
+ * Audit 2026-07-22, renderer finding I-4/P-1 (Phase 12): previously
+ * duplicated verbatim inside html.ts only — markdown.ts/print.ts never
+ * clustered mixed-unit entries at all. Shared here so all three backends
+ * apply the same grouping.
+ */
+export function groupMultiUnitEntries<
+	T extends { multiUnit?: boolean; id?: string },
+>(items: T[]): T[][] {
+	const groups: T[][] = [];
+	for (const item of items) {
+		const prevGroup = groups[groups.length - 1];
+		const prevItem = prevGroup?.[0];
+		if (
+			prevGroup &&
+			item.multiUnit &&
+			prevItem?.multiUnit &&
+			prevItem.id === item.id
+		) {
+			prevGroup.push(item);
+		} else {
+			groups.push([item]);
+		}
+	}
+	return groups;
+}
+
 // Only bare strings ever occur as plain narrative text inside a processed
 // step's `content` array — @gram-lang/kitchen's processText() never wraps
 // text in a `{ type: 'text' }` object (that shape only exists for Timer/

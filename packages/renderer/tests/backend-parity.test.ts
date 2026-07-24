@@ -100,13 +100,12 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 		expect(print).toContain('data-tooltip="200 g"');
 	});
 
-	// Content-completeness gaps: pinned as documented, typed no-ops (see
-	// traversal.ts's RenderBackend + each backend's renderNutrition/
-	// renderFootnotes comments) rather than accidental omissions. Extending
-	// any of these to another backend is an explicit Phase 12 decision — if
-	// one of these assertions starts failing, that decision has been made and
-	// this test should be updated deliberately, not silently.
-	describe("documented content-completeness gaps (Phase 12 decisions, not yet made)", () => {
+	// Phase 12: the 4 content-completeness gaps identified in Phase 11 (see
+	// plan doc) have now been converged across all three backends, on
+	// explicit user decision. Declaration placement (the 5th divergence
+	// investigated in Phase 11) was explicitly left backend-specific — no
+	// test needed since it was never covered before either.
+	describe("Phase 12: converged content across backends", () => {
 		const database: Record<string, IngredientData> = {
 			bacon: {
 				name: "Bacon",
@@ -120,19 +119,55 @@ Heat @oil{10ml} in a #pan{}. Cook for ~{10min}.
 			database,
 		);
 
-		it("html and print render a nutrition panel; markdown does not", () => {
+		it("all three backends render nutrition data", () => {
 			expect(toHTML(analyzed)).toContain("nutrition-panel");
 			expect(toPrintHTML(analyzed)).toContain("nutrition");
-			expect(toMarkdown(analyzed)).not.toContain("Calories");
+			expect(toMarkdown(analyzed)).toContain("Calories");
 		});
 
-		it("only html accumulates footnotes; markdown/print render inline comments instead", () => {
+		it("all three backends accumulate footnotes instead of rendering comments inline", () => {
 			const c = compile(
 				getAST("## Section\n\nMix @flour{200g}. // a helpful note\n"),
 			);
 			expect(toHTML(c)).toContain("recipe-notes");
-			expect(toMarkdown(c)).not.toContain("recipe-notes");
-			expect(toPrintHTML(c)).not.toContain("recipe-notes");
+			expect(toMarkdown(c)).toContain("[^note-1]: a helpful note");
+			expect(toPrintHTML(c)).toContain('class="notes"');
+		});
+
+		it("all three backends show the gross-mass note when purchasing mass differs from net mass", () => {
+			// "1 avocado" (unit_weight 200g, yield 0.7) -> net mass (in the bowl)
+			// 140g, purchasing mass (whole fruit, incl. peel/pit) 200g.
+			const avocadoDb: Record<string, IngredientData> = {
+				avocado: {
+					name: "Avocado",
+					physical: { density: 0.93, unit_weight: 200, yield: 0.7 },
+				},
+			};
+			const { result } = analyze(
+				compile(getAST("## Section\n\nSlice @avocado{1}.\n")),
+				avocadoDb,
+			);
+
+			expect(toHTML(result)).toContain("gross-mass");
+			expect(toMarkdown(result)).toContain("200g gross");
+			expect(toPrintHTML(result)).toContain("gross-mass");
+		});
+
+		it("all three backends cluster mixed-unit entries with a warning instead of two separate lines", () => {
+			// Same ingredient in two incompatible units (mass vs. volume) with no
+			// density available to merge them -> analyzer flags both `multiUnit`.
+			const { result } = analyze(
+				compile(
+					getAST(
+						"## Melt\n\nMelt @butter{100g} in a pan.\n\n## Whip\n\nWhip @butter{1 cup} until fluffy.\n",
+					),
+				),
+				{},
+			);
+
+			expect(toHTML(result)).toContain("mixed-units-badge");
+			expect(toMarkdown(result)).toContain("Mixed units");
+			expect(toPrintHTML(result)).toContain("mixed-units-badge");
 		});
 	});
 });

@@ -13,6 +13,7 @@ import {
 	isAlternativeGroup,
 	isCompositeItem,
 	joinStepTokens,
+	groupMultiUnitEntries,
 } from "../utils";
 import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -299,12 +300,66 @@ const PRINT_CSS = `
     line-height: 1;
     margin-bottom: 4pt;
   }
-  .nut-item small { 
-    font-size: 7pt; 
-    text-transform: uppercase; 
-    letter-spacing: 0.1em; 
-    color: var(--grey); 
+  .nut-item small {
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--grey);
     font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ── Mixed units / gross mass (shopping list) ── */
+  .list-item-group ul {
+    list-style: none;
+    margin-top: 2pt;
+    padding-left: 12pt;
+  }
+  .list-item-group ul li {
+    border-bottom: none;
+    padding-left: 12pt;
+  }
+  .mixed-units-badge {
+    display: inline-block;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--grey);
+    border: 1px solid var(--light-grey);
+    border-radius: 2px;
+    padding: 1pt 4pt;
+    margin-left: 4pt;
+    vertical-align: middle;
+  }
+  .gross-mass {
+    font-size: 8pt;
+    color: var(--grey);
+    font-style: italic;
+  }
+
+  /* ── Footnotes ── */
+  .notes {
+    margin-top: 24pt;
+    padding-top: 12pt;
+    border-top: 1px solid var(--light-grey);
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .notes h2 {
+    border-bottom: none;
+    margin: 0 0 10pt 0;
+    padding: 0;
+  }
+  .notes ol {
+    padding-left: 16pt;
+    font-size: 9pt;
+    color: var(--dark-grey);
+  }
+  .notes li { margin-bottom: 4pt; }
+  .footnote-ref a, .note-return {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
   }
 
   /* Screen preview */
@@ -356,6 +411,10 @@ const printBackend: RenderBackend = {
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
+			// Phase 12: print now collects footnotes too, rendered as endnotes
+			// via renderFootnotes, matching html.ts.
+			_inlineComments: [],
+			_renderId: options.renderId ?? "note",
 		};
 	},
 
@@ -404,9 +463,15 @@ const printBackend: RenderBackend = {
 		// are plain boolean checks, not type predicates, so the union stays
 		// unnarrowed after them — matches the existing pattern here rather
 		// than introducing a new one.
-		const shoppingItems: any[] = data.shopping_list;
-		for (const item of shoppingItems) {
-			if (!item || typeof item !== "object") continue;
+		const shoppingItems: any[] = data.shopping_list.filter(
+			(item: unknown) => item && typeof item === "object",
+		);
+		// Phase 12: print now also clusters entries the analyzer couldn't merge
+		// into a single mass, and shows the gross-mass badge — previously
+		// html.ts-only (audit renderer finding I-4/P-1).
+		const renderGroups = groupMultiUnitEntries(shoppingItems);
+		for (const group of renderGroups) {
+			const item = group[0];
 			if (isAlternativeGroup(item)) {
 				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", context)).join(" <em>or</em> ")}</li>\n`;
 			} else if (isCompositeItem(item)) {
@@ -416,8 +481,25 @@ const printBackend: RenderBackend = {
 				}
 			} else if (item.display) {
 				body += `  <li>${escapeHtml(item.display)}</li>\n`;
+			} else if (group.length > 1) {
+				body += `  <li class="list-item-group">\n`;
+				body += `    <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge">${escapeHtml(t.renderer.mixedUnits)}</span>\n`;
+				body += `    <ul>\n`;
+				group.forEach((entry) => {
+					body += `      <li>${formatElement(entry, "html", context)}</li>\n`;
+				});
+				body += `    </ul>\n`;
+				body += `  </li>\n`;
 			} else {
-				body += `  <li>${formatElement(item, "html", context)}</li>\n`;
+				let extra = "";
+				if (
+					item.purchasingMass &&
+					item.purchasingMass !== item.normalizedMass
+				) {
+					const gross = Math.round(item.purchasingMass * 10) / 10;
+					extra = ` <span class="gross-mass">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
+				}
+				body += `  <li>${formatElement(item, "html", context)}${extra}</li>\n`;
 			}
 		}
 		body += `</ul>\n</div>\n\n`;
@@ -508,14 +590,23 @@ const printBackend: RenderBackend = {
 		return body;
 	},
 
-	renderFootnotes() {
-		// Audit 2026-07-22, Phase 11: print.ts never populates `_inlineComments`
-		// (buildContext above doesn't set it), so element.ts's comment strategy
-		// renders long comments inline instead of as endnotes. Whether to
-		// converge this with html.ts's footnote behavior is an explicit Phase 12
-		// decision, not made here — this hook exists (required by RenderBackend)
-		// but intentionally emits nothing, matching current behavior exactly.
-		return "";
+	renderFootnotes(_data, context, options) {
+		// Phase 12: extended to print, rendered as endnotes at the bottom of
+		// the printed page — element.ts's comment strategy already emits the
+		// matching footnote-ref markup inline (print always formats tokens as
+		// "html", same as html.ts).
+		if (!context._inlineComments || context._inlineComments.length === 0) {
+			return "";
+		}
+		const t = getDictionary(options.lang);
+		const renderId = context._renderId || "note";
+		let body = `<div class="notes">\n<h2>Notes</h2>\n<ol>\n`;
+		context._inlineComments.forEach((note, idx) => {
+			const index = idx + 1;
+			body += `  <li id="${renderId}-${index}">${escapeHtml(note)} <a href="#ref-${renderId}-${index}" class="note-return" title="${escapeHtml(t.renderer.returnToStep)}">↩</a></li>\n`;
+		});
+		body += `</ol>\n</div>\n\n`;
+		return body;
 	},
 
 	renderNutrition(data, _context, options) {

@@ -6,6 +6,6 @@
 	"kitchen": 0,
 	"language-server": 1,
 	"parser": 0,
-	"renderer": 32,
+	"renderer": 31,
 	"vscode-extension": 0
 }
