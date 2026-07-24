@@ -1,9 +1,10 @@
 import { defineCommand } from "citty";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { log } from "@clack/prompts";
 import chalk from "chalk";
 import pLimit from "p-limit";
 import { resolveGlob } from "../core/glob";
+import { withFileLock, atomicWrite } from "../core/lock";
 import {
 	formatGram,
 	hasChanges,
@@ -69,7 +70,11 @@ export default defineCommand({
 					}
 
 					if (!isCheck) {
-						await writeFile(file, content, "utf-8");
+						// Same write discipline as db-sync/db-linter/db-merger (audit
+						// 2026-07-22, finding 0-b): a destructive in-place rewrite of a
+						// user's file must be lock-guarded and atomic, not a bare
+						// writeFile that can leave a half-written file on crash.
+						await withFileLock(file, () => atomicWrite(file, content));
 					}
 					return {
 						file,
