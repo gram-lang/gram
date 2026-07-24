@@ -15,6 +15,9 @@ export const UNIT_CONVERSIONS = {
 			kg: 1000,
 			oz: 28.3495,
 			lb: 453.592,
+			// French "livre" (métrique) — see @gram-lang/i18n's units.ts for why
+			// this is a distinct canonical from "lb" rather than an alias of it.
+			livre: 500,
 		},
 	},
 	volume: {
@@ -32,6 +35,9 @@ export const UNIT_CONVERSIONS = {
 			tsp: 4.9289,
 			tbsp: 14.7868,
 			cup: 236.588,
+			// French "tasse" — see @gram-lang/i18n's units.ts for why this is a
+			// distinct canonical from "cup" rather than an alias of it.
+			tasse: 250,
 			pt: 473.176,
 			qt: 946.353,
 			gal: 3785.41,
