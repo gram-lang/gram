@@ -90,6 +90,14 @@ steps:
       # a syntactically invalid recipe must fail loudly (non-zero exit), not
       # silently succeed with empty/partial output.
       - "! node_modules/.bin/gram build $REPO_DIR/conformance/cases/err-001-invalid-composite-spacing/input.gram > /dev/null 2>&1"
+      # stdout purity, malformed-database case (audit 2026-07-22, cli finding
+      # B-3): an invalid ingredient DB entry used to log its warning via
+      # `log.warn` (@clack/prompts), which writes to stdout — corrupting
+      # `gram build | jq` the moment any entry failed validation. The warning
+      # must land on stderr, and stdout must stay valid, parseable JSON.
+      - 'echo "broken: {physical: {density: not-a-number}}" > /tmp/bad-db.yaml'
+      - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram --db /tmp/bad-db.yaml 2>/tmp/bad-db-stderr.txt | jq . > /dev/null
+      - grep -q "Ignoring 1 invalid ingredient" /tmp/bad-db-stderr.txt
 
   # Non-blocking for now: several known vulnerabilities are tracked and scheduled
   # to be resolved (dependency updates, see audit Chantier 5). Once addressed,

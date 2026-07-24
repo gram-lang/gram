@@ -5,7 +5,6 @@ import { validateIngredientDatabase } from "@gram-lang/analyzer";
 import type { IngredientData } from "@gram-lang/analyzer";
 import type { GramConfig } from "../types";
 import { GramConfigError, ExitCode } from "../errors";
-import { log } from "@clack/prompts";
 
 export function resolveDbPath(
 	config: GramConfig,
@@ -48,8 +47,14 @@ export async function loadDb(
 
 	const { data, rejected } = validateIngredientDatabase(ingredients);
 	if (rejected.length > 0) {
-		log.warn(
-			`Ignoring ${rejected.length} invalid ingredient(s) in ${dbPath}: ${rejected.map((r) => r.key).join(", ")}`,
+		// Audit 2026-07-22, cli finding B-3: `core/` must never write to stdout —
+		// `log.warn` (@clack/prompts) does, which corrupted machine-readable
+		// output (`gram build | jq` and friends) the moment a database entry
+		// failed validation. Diagnostics from this layer always go to stderr;
+		// deciding whether/how to *display* them (spinner, color, etc.) is a
+		// `commands/`-layer concern, not `core/`'s.
+		process.stderr.write(
+			`Ignoring ${rejected.length} invalid ingredient(s) in ${dbPath}: ${rejected.map((r) => r.key).join(", ")}\n`,
 		);
 	}
 	return data;
@@ -63,7 +68,7 @@ export async function loadDbSafe(
 		return await loadDb(config, overridePath);
 	} catch (err) {
 		if (err instanceof GramConfigError) {
-			log.error(err.message);
+			process.stderr.write(`${err.message}\n`);
 			process.exit(err.exitCode ?? ExitCode.InternalError);
 		}
 		throw err;
