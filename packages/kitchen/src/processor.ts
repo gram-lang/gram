@@ -372,7 +372,12 @@ function processTimer(
 				value: q.value,
 				loc: item.loc,
 			});
-			obj.quantity = { type: "text", value: q.value };
+			// A plain string, not a fake QuantityValueAST-shaped object —
+			// ProcessedTimer.quantity already has a `string` arm for exactly
+			// this case (audit 2026-07-22, parser finding I4: QuantityValueAST
+			// becoming a real discriminated union stopped this ad-hoc
+			// `{type:"text", value}` object from structurally qualifying).
+			obj.quantity = q.value;
 		}
 	}
 	return obj;

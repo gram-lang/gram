@@ -97,14 +97,30 @@ export type Modifier =
 	| "bakers_percentage"
 	| string;
 
-export interface QuantityValueAST {
-	type: "single" | "fraction" | "range" | "text";
-	value: number | string;
-	text?: string;
-	range?: { min: number; max: number };
-	numerator?: number;
-	denominator?: number;
-}
+// Audit 2026-07-22, parser finding I4: this used to be a flat interface with
+// every field optional — `type` didn't actually discriminate anything, so
+// `qty.range`/`qty.numerator` stayed `| undefined` even after checking
+// `qty.type === "range"`. A real bug shipped because of it: analyzer's
+// diff.ts once checked `qty.from`/`qty.to`, fields that never existed on any
+// variant, and TypeScript had no way to catch it. The "text" variant is
+// removed entirely — grep confirms no producer ever emits it (TextQuantityAST
+// is the actual node type for free-text quantities, a completely separate
+// AST node from this one).
+export type QuantityValueAST =
+	| { type: "single"; value: number; text?: string }
+	| {
+			type: "fraction";
+			value: number;
+			numerator: number;
+			denominator: number;
+			text?: string;
+	  }
+	| {
+			type: "range";
+			value: number;
+			range: { min: number; max: number };
+			text?: string;
+	  };
 
 export interface RelativeQuantityAST extends NodeAST {
 	type: ASTNodeType.RelativeQuantity;

@@ -288,6 +288,10 @@ const strategies: Record<
 	timer: (item, format, context) => {
 		const q = item.quantity || { value: "" };
 		const qVal = formatQuantityValue(q);
+		// item.quantity can be a bare string (a rejected/free-text timer
+		// value — see processor.ts's INVALID_UNIT handling for TextQuantity),
+		// which has no `.value` of its own; the string itself *is* the value.
+		const dataValue = typeof q === "string" ? q : q.value;
 		const unitStr = item.unit ? ` ${item.unit}` : "";
 		const isPassive = !!item.isPassive;
 
@@ -300,7 +304,7 @@ const strategies: Record<
 			const tooltipStr = isPassive
 				? t.renderer.passiveTimeTooltip
 				: t.renderer.activeTimeTooltip;
-			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || "")}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
+			return `<span class="${className}" data-tooltip="${tooltipStr}" data-value="${escapeHtml(dataValue)}" data-unit="${escapeHtml(item.unit || "")}">${icon} <span class="timer-text">${escapeHtml(qVal)}${escapeHtml(unitStr)}</span></span>`;
 		} else {
 			const prefix =
 				context.icons?.hourglass !== undefined
