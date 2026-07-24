@@ -3,6 +3,8 @@ import type {
 	RenderContext,
 	RenderableCompilationResult,
 } from "../types";
+import type { RenderBackend, RenderSections } from "../traversal";
+import { renderRecipe } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	aggToRendererItem,
@@ -14,37 +16,33 @@ import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-export function toMarkdown(
-	data: RenderableCompilationResult,
-	options: RendererOptions = {},
-): string {
-	const t = getDictionary(options.lang);
-	const registry = data.registry || { ingredients: {}, cookware: {} };
-	const formatDuration = options.formatDuration || defaultFormatDuration;
+const markdownBackend: RenderBackend = {
+	buildContext(data, options) {
+		const registry = data.registry || { ingredients: {}, cookware: {} };
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		return {
+			registry,
+			icons: options.icons,
+			classes: options.classes,
+			formatDuration,
+			formatFraction: options.formatFraction,
+			bakersMathOnly: options.bakersMathOnly,
+			lang: options.lang,
+		};
+	},
 
-	const context: RenderContext = {
-		registry,
-		icons: options.icons,
-		classes: options.classes,
-		formatDuration,
-		formatFraction: options.formatFraction,
-		bakersMathOnly: options.bakersMathOnly,
-		lang: options.lang,
-	};
-	// Context variant used when rendering inline step tokens — hides qty if flag is set
-	// (not from shopping list or section mise en place, matches print.ts's stepContext).
-	const stepContext: RenderContext = options.hideStepQty
-		? { ...context, hideIngredientQty: true }
-		: context;
+	renderTitle(data) {
+		return data.title ? `# ${data.title}\n\n` : "";
+	},
 
-	let md = "";
+	renderMeta(data, _context, options) {
+		if (!((data.meta && Object.keys(data.meta).length > 0) || data.metrics)) {
+			return "";
+		}
+		const t = getDictionary(options.lang);
+		const formatDuration = options.formatDuration || defaultFormatDuration;
 
-	// Title
-	if (data.title) md += `# ${data.title}\n\n`;
-
-	// Meta & Metrics
-	if ((data.meta && Object.keys(data.meta).length > 0) || data.metrics) {
-		md += `> **Metadata**\n`;
+		let md = `> **Metadata**\n`;
 		if (data.metrics) {
 			if (data.metrics.totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(data.metrics.totalTime)}\n`;
@@ -65,11 +63,13 @@ export function toMarkdown(
 			}
 		}
 		md += "\n";
-	}
+		return md;
+	},
 
-	// Shopping List
-	if (data.shopping_list && data.shopping_list.length > 0) {
-		md += `## 🛒 ${t.renderer.shoppingList}\n\n`;
+	renderShoppingList(data, context, options) {
+		if (!data.shopping_list || data.shopping_list.length === 0) return "";
+		const t = getDictionary(options.lang);
+		let md = `## 🛒 ${t.renderer.shoppingList}\n\n`;
 		data.shopping_list.forEach((item: any) => {
 			if (isAlternativeGroup(item)) {
 				// strategies.alternative already joins every option ("egg or egg
@@ -92,11 +92,13 @@ export function toMarkdown(
 			}
 		});
 		md += "\n";
-	}
+		return md;
+	},
 
-	// Cookware
-	if (data.cookware && data.cookware.length > 0) {
-		md += `## 🍳 ${t.renderer.cookware}\n\n`;
+	renderCookware(data, context) {
+		if (!data.cookware || data.cookware.length === 0) return "";
+		const t = getDictionary(context.lang);
+		let md = `## 🍳 ${t.renderer.cookware}\n\n`;
 		data.cookware.forEach((cw: any) => {
 			// formatElement dispatches on cw.type, so this already handles both a
 			// plain cookware item and an alternative group ("pan or skillet",
@@ -104,11 +106,18 @@ export function toMarkdown(
 			md += `- ${formatElement(cw, "md", context)}\n`;
 		});
 		md += "\n";
-	}
+		return md;
+	},
 
-	// Instructions
-	if (data.sections && data.sections.length > 0) {
-		md += `## 👨‍🍳 Instructions\n\n`;
+	renderInstructions(data, context, options) {
+		if (!data.sections || data.sections.length === 0) return "";
+		// Context variant used when rendering inline step tokens — hides qty if flag is set
+		// (not from shopping list or section mise en place, matches print.ts's stepContext).
+		const stepContext: RenderContext = options.hideStepQty
+			? { ...context, hideIngredientQty: true }
+			: context;
+
+		let md = `## 👨‍🍳 Instructions\n\n`;
 		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${sec.title}`;
@@ -158,7 +167,45 @@ export function toMarkdown(
 			});
 			md += "\n";
 		});
-	}
+		return md;
+	},
 
-	return md;
+	renderFootnotes() {
+		// Audit 2026-07-22, Phase 11: markdown never accumulates inline comments
+		// into footnotes today (its context never sets `_inlineComments`, so
+		// element.ts's comment strategy renders them inline instead). Whether to
+		// converge this with html.ts's footnote behavior is an explicit Phase 12
+		// decision, not made here — this hook exists (required by RenderBackend)
+		// but intentionally emits nothing, matching current behavior exactly.
+		return "";
+	},
+
+	renderNutrition() {
+		// Audit 2026-07-22, Phase 11: markdown has never rendered a nutrition
+		// section at all, unlike html.ts/print.ts. Confirmed as a real content
+		// gap (not a deliberate design choice) — closing it is an explicit
+		// Phase 12 decision, not made here. This hook exists (required by
+		// RenderBackend) but intentionally emits nothing, matching current
+		// behavior exactly.
+		return "";
+	},
+
+	assembleDocument(sections: RenderSections) {
+		return (
+			sections.title +
+			sections.meta +
+			sections.shoppingList +
+			sections.cookware +
+			sections.instructions +
+			sections.footnotes +
+			sections.nutrition
+		);
+	},
+};
+
+export function toMarkdown(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
+	return renderRecipe(data, options, markdownBackend);
 }

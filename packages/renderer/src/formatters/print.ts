@@ -4,6 +4,8 @@ import type {
 	RenderableCompilationResult,
 	RenderableMetrics,
 } from "../types";
+import type { RenderBackend, RenderSections } from "../traversal";
+import { renderRecipe } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -343,65 +345,61 @@ const PRINT_ICONS = {
 	clockCounterClockwise: "↺",
 };
 
-export function toPrintHTML(
-	data: RenderableCompilationResult,
-	options: RendererOptions = {},
-): string {
-	const t = getDictionary(options.lang);
-	const registry = data.registry || { ingredients: {}, cookware: {} };
-	const formatDuration = options.formatDuration || defaultFormatDuration;
+const printBackend: RenderBackend = {
+	buildContext(data, options) {
+		const registry = data.registry || { ingredients: {}, cookware: {} };
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		return {
+			registry,
+			icons: PRINT_ICONS,
+			formatDuration,
+			formatFraction: options.formatFraction,
+			bakersMathOnly: options.bakersMathOnly,
+			lang: options.lang,
+		};
+	},
 
-	const context: RenderContext = {
-		registry,
-		icons: PRINT_ICONS,
-		formatDuration,
-		formatFraction: options.formatFraction,
-		bakersMathOnly: options.bakersMathOnly,
-		lang: options.lang,
-	};
-	// Context variant used when rendering inline step tokens — hides qty if flag is set
-	const stepContext: RenderContext = options.hideStepQty
-		? { ...context, hideIngredientQty: true }
-		: context;
-	// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
-	// result's `metrics` never carries mass/nutrition fields at all.
-	const metrics = data.metrics as RenderableMetrics;
+	renderTitle(data) {
+		return data.title ? `<h1>${escapeHtml(data.title)}</h1>\n` : "";
+	},
 
-	let body = "";
+	renderMeta(data, _context, options) {
+		const t = getDictionary(options.lang);
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
+		// result's `metrics` never carries mass/nutrition fields at all.
+		const metrics = data.metrics as RenderableMetrics;
 
-	// ── Title ──────────────────────────────────────────────────────────────
-	if (data.title) {
-		body += `<h1>${escapeHtml(data.title)}</h1>\n`;
-	}
+		let body = `<div class="meta">\n`;
+		if (metrics) {
+			if (metrics.totalTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(metrics.totalTime)}</span>\n`;
+			}
+			if (metrics.idleTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(metrics.idleTime)}</span>\n`;
+			}
+			if (metrics.activeTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(metrics.activeTime)}</span>\n`;
+			}
+			if (metrics.preparationTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.prepTime}</span>${formatDuration(metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">${t.renderer.est}</em></span>\n`;
+			}
+		}
+		if (data.meta) {
+			for (const [k, v] of Object.entries(data.meta)) {
+				if (k === "title") continue;
+				const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " ");
+				body += `  <span class="meta-item"><span class="meta-label">${escapeHtml(label)}</span>${escapeHtml(String(v))}</span>\n`;
+			}
+		}
+		body += `</div>\n\n`;
+		return body;
+	},
 
-	// ── Meta bar ───────────────────────────────────────────────────────────
-	body += `<div class="meta">\n`;
-	if (metrics) {
-		if (metrics.totalTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(metrics.totalTime)}</span>\n`;
-		}
-		if (metrics.idleTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(metrics.idleTime)}</span>\n`;
-		}
-		if (metrics.activeTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(metrics.activeTime)}</span>\n`;
-		}
-		if (metrics.preparationTime) {
-			body += `  <span class="meta-item"><span class="meta-label">${t.renderer.prepTime}</span>${formatDuration(metrics.preparationTime)} <em style="opacity:0.55;font-size:0.85em">${t.renderer.est}</em></span>\n`;
-		}
-	}
-	if (data.meta) {
-		for (const [k, v] of Object.entries(data.meta)) {
-			if (k === "title") continue;
-			const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " ");
-			body += `  <span class="meta-item"><span class="meta-label">${escapeHtml(label)}</span>${escapeHtml(String(v))}</span>\n`;
-		}
-	}
-	body += `</div>\n\n`;
-
-	// ── Shopping list ──────────────────────────────────────────────────────
-	if (data.shopping_list?.length > 0) {
-		body += `<div class="shopping-list">\n<h2>${t.renderer.shoppingList}</h2>\n<ul>\n`;
+	renderShoppingList(data, context, options) {
+		if (!(data.shopping_list?.length > 0)) return "";
+		const t = getDictionary(options.lang);
+		let body = `<div class="shopping-list">\n<h2>${t.renderer.shoppingList}</h2>\n<ul>\n`;
 		// Same as html.ts's shoppingItems: isAlternativeGroup/isCompositeItem
 		// are plain boolean checks, not type predicates, so the union stays
 		// unnarrowed after them — matches the existing pattern here rather
@@ -423,11 +421,13 @@ export function toPrintHTML(
 			}
 		}
 		body += `</ul>\n</div>\n\n`;
-	}
+		return body;
+	},
 
-	// ── Equipment ─────────────────────────────────────────────────────────
-	if (data.cookware?.length > 0) {
-		body += `<div>\n<h2>${t.renderer.equipment}</h2>\n<div class="cookware-list">\n`;
+	renderCookware(data, context, options) {
+		if (!(data.cookware?.length > 0)) return "";
+		const t = getDictionary(options.lang);
+		let body = `<div>\n<h2>${t.renderer.equipment}</h2>\n<div class="cookware-list">\n`;
 		for (const cw of data.cookware) {
 			if (isAlternativeGroup(cw)) {
 				const opts = (cw.options ?? [])
@@ -439,11 +439,17 @@ export function toPrintHTML(
 			}
 		}
 		body += `</div>\n</div>\n\n`;
-	}
+		return body;
+	},
 
-	// ── Instructions ───────────────────────────────────────────────────────
-	if (data.sections?.length > 0) {
-		body += `<div class="instructions">\n<h2>Instructions</h2>\n`;
+	renderInstructions(data, context, options) {
+		if (!(data.sections?.length > 0)) return "";
+		// Context variant used when rendering inline step tokens — hides qty if flag is set
+		const stepContext: RenderContext = options.hideStepQty
+			? { ...context, hideIngredientQty: true }
+			: context;
+
+		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
 		for (const sec of data.sections) {
 			body += `<section>\n`;
 			if (sec.title) {
@@ -499,37 +505,60 @@ export function toPrintHTML(
 			body += `  </ol>\n</section>\n`;
 		}
 		body += `</div>\n\n`;
-	}
+		return body;
+	},
 
-	// ── Nutrition ──────────────────────────────────────────────────────────
-	const nut = metrics?.nutrition;
-	if (nut) {
+	renderFootnotes() {
+		// Audit 2026-07-22, Phase 11: print.ts never populates `_inlineComments`
+		// (buildContext above doesn't set it), so element.ts's comment strategy
+		// renders long comments inline instead of as endnotes. Whether to
+		// converge this with html.ts's footnote behavior is an explicit Phase 12
+		// decision, not made here — this hook exists (required by RenderBackend)
+		// but intentionally emits nothing, matching current behavior exactly.
+		return "";
+	},
+
+	renderNutrition(data, _context, options) {
+		const t = getDictionary(options.lang);
+		const metrics = data.metrics as RenderableMetrics;
+		const nut = metrics?.nutrition;
+		if (!nut) return "";
 		const vals = nut.perPortion || nut.total;
 		const portionNote = nut.perPortion ? " (per portion)" : "";
-		if (vals && vals.calories > 0) {
-			body += `<div class="nutrition">\n<h2>${t.renderer.nutrition}${escapeHtml(portionNote)}</h2>\n<div class="nut-grid">\n`;
-			body += `  <span class="nut-item"><strong>${Math.round(vals.calories)}</strong> <small>kcal</small></span>\n`;
-			body += `  <span class="nut-item"><small>Protein</small> <strong>${vals.protein}g</strong></span>\n`;
-			body += `  <span class="nut-item"><small>Carbs</small> <strong>${vals.carbs}g</strong></span>\n`;
-			body += `  <span class="nut-item"><small>Fat</small> <strong>${vals.fat}g</strong></span>\n`;
-			if (vals.fiber != null)
-				body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
-			if (vals.sodium != null) {
-				// Audit 2026-07-22, renderer finding I-2: sodium is stored/
-				// calculated in milligrams (analyzer/src/nutrition.ts), not grams —
-				// html.ts already gets this right (`${sodium}mg`), this was off by
-				// a factor of 1000 on the print/PDF output.
-				body += `  <span class="nut-item"><small>Sodium</small> <strong>${Math.round(vals.sodium)}mg</strong></span>\n`;
-			}
-			body += `</div>\n</div>\n`;
-		}
-	}
+		if (!(vals && vals.calories > 0)) return "";
 
-	// ── Full HTML document ─────────────────────────────────────────────────
-	const titleTag = data.title
-		? `<title>${escapeHtml(data.title)}</title>`
-		: "<title>Recipe</title>";
-	return `<!DOCTYPE html>
+		let body = `<div class="nutrition">\n<h2>${t.renderer.nutrition}${escapeHtml(portionNote)}</h2>\n<div class="nut-grid">\n`;
+		body += `  <span class="nut-item"><strong>${Math.round(vals.calories)}</strong> <small>kcal</small></span>\n`;
+		body += `  <span class="nut-item"><small>Protein</small> <strong>${vals.protein}g</strong></span>\n`;
+		body += `  <span class="nut-item"><small>Carbs</small> <strong>${vals.carbs}g</strong></span>\n`;
+		body += `  <span class="nut-item"><small>Fat</small> <strong>${vals.fat}g</strong></span>\n`;
+		if (vals.fiber != null)
+			body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
+		if (vals.sodium != null) {
+			// Audit 2026-07-22, renderer finding I-2: sodium is stored/
+			// calculated in milligrams (analyzer/src/nutrition.ts), not grams —
+			// html.ts already gets this right (`${sodium}mg`), this was off by
+			// a factor of 1000 on the print/PDF output.
+			body += `  <span class="nut-item"><small>Sodium</small> <strong>${Math.round(vals.sodium)}mg</strong></span>\n`;
+		}
+		body += `</div>\n</div>\n`;
+		return body;
+	},
+
+	assembleDocument(sections: RenderSections, data) {
+		const body =
+			sections.title +
+			sections.meta +
+			sections.shoppingList +
+			sections.cookware +
+			sections.instructions +
+			sections.footnotes +
+			sections.nutrition;
+
+		const titleTag = data.title
+			? `<title>${escapeHtml(data.title)}</title>`
+			: "<title>Recipe</title>";
+		return `<!DOCTYPE html>
 <html lang="${escapeHtml(String(data.meta?.language ?? "en"))}">
 <head>
   <meta charset="UTF-8">
@@ -540,4 +569,12 @@ export function toPrintHTML(
 <body>
 ${body}</body>
 </html>`;
+	},
+};
+
+export function toPrintHTML(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
+	return renderRecipe(data, options, printBackend);
 }

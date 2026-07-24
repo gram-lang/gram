@@ -4,6 +4,8 @@ import type {
 	RenderableCompilationResult,
 	RenderableMetrics,
 } from "../types";
+import type { RenderBackend, RenderSections } from "../traversal";
+import { renderRecipe } from "../traversal";
 import {
 	formatDuration as defaultFormatDuration,
 	escapeHtml,
@@ -20,235 +22,238 @@ import {
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
-export function toHTML(
-	data: RenderableCompilationResult,
-	options: RendererOptions = {},
-): string {
-	const t = getDictionary(options.lang);
-	const registry = data.registry || { ingredients: {}, cookware: {} };
-	const formatDuration = options.formatDuration || defaultFormatDuration;
+const htmlBackend: RenderBackend = {
+	buildContext(data, options) {
+		const registry = data.registry || { ingredients: {}, cookware: {} };
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		return {
+			registry,
+			icons: options.icons,
+			classes: options.classes,
+			formatDuration,
+			formatFraction: options.formatFraction,
+			bakersMathOnly: options.bakersMathOnly,
+			interactiveScaling: options.interactiveScaling,
+			lang: options.lang,
+			_inlineComments: [],
+			_renderId: options.renderId ?? "note",
+		};
+	},
 
-	const context: RenderContext = {
-		registry,
-		icons: options.icons,
-		classes: options.classes,
-		formatDuration,
-		formatFraction: options.formatFraction,
-		bakersMathOnly: options.bakersMathOnly,
-		interactiveScaling: options.interactiveScaling,
-		lang: options.lang,
-		_inlineComments: [],
-		_renderId: options.renderId ?? "note",
-	};
-	// Context variant used when rendering inline step tokens — hides qty if flag is set
-	// (not from shopping list or section mise en place, matches print.ts's stepContext).
-	const stepContext: RenderContext = options.hideStepQty
-		? { ...context, hideIngredientQty: true }
-		: context;
-	// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
-	// result's `metrics` never carries mass/nutrition fields at all.
-	const metrics = data.metrics as RenderableMetrics;
-
-	let html = "";
-
-	// Title
-	if (data.title) {
+	renderTitle(data, _context, options) {
+		if (!data.title) return "";
 		const titleClass = options.classes?.recipeTitle
 			? ` class="${options.classes.recipeTitle}"`
 			: "";
-		html += `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n\n`;
-	}
+		return `<h1${titleClass}>${escapeHtml(data.title)}</h1>\n\n`;
+	},
 
-	// Display Metadata
-	// NOTE: RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
-	// accepted for backwards compatibility but currently apply to nothing below — this
-	// markup was restructured around timing cards without updating them (audit Chantier 1).
-	const metaLabelClass = options.classes?.metaLabel || "meta-label";
-	const metaValueClass = options.classes?.metaValue || "meta-value";
-	const metaEstClass = options.classes?.metaEst || "est";
+	renderMeta(data, _context, options) {
+		const t = getDictionary(options.lang);
+		const registry = data.registry || { ingredients: {}, cookware: {} };
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
+		// result's `metrics` never carries mass/nutrition fields at all.
+		const metrics = data.metrics as RenderableMetrics;
 
-	const timingsGridClass =
-		options.classes?.recipeTimingsGrid || "recipe-timings-grid";
-	const timingCardClass = options.classes?.timingCard || "timing-card";
+		let html = "";
 
-	html += `<div class="${timingsGridClass}">\n`;
-	if (metrics) {
-		// Prefixes used by kitchen's TimeBreakdownItem labels (processor.ts /
-		// metrics.ts) — kept as named constants and sliced by their own
-		// `.length` so a label check can never silently drift out of sync with
-		// the slice that strips it.
-		const SECTION_ACTIVE_PREFIX = "section_active:";
-		const TIMER_NAMED_PREFIX = "timer_named:";
-		const PREP_PREFIX = "prep_";
+		// NOTE: RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
+		// accepted for backwards compatibility but currently apply to nothing below — this
+		// markup was restructured around timing cards without updating them (audit Chantier 1).
+		const metaLabelClass = options.classes?.metaLabel || "meta-label";
+		const metaValueClass = options.classes?.metaValue || "meta-value";
+		const metaEstClass = options.classes?.metaEst || "est";
 
-		const formatBreakdownHTML = (breakdown?: TimeBreakdownItem[]) => {
-			if (!breakdown || breakdown.length === 0) return "";
-			return breakdown
-				.map((b) => {
-					let label = b.label;
-					if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
-						// Security audit 2026-07-22, finding B-1: the section title and
-						// timer name below come straight from recipe source text (`##
-						// <title>`, `~<name>{...}`) and used to be interpolated here
-						// without escaping — an exploitable HTML injection via the
-						// playground/VS Code preview.
-						label = `${escapeHtml(label.slice(SECTION_ACTIVE_PREFIX.length))} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
-					} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
-						label = `${t.renderer.breakdownTimer} "${escapeHtml(label.slice(TIMER_NAMED_PREFIX.length))}"`;
-					} else if (label === "timer_passive") {
-						label = t.renderer.breakdownPassive;
-					} else if (label === "ingredients_overhead") {
-						label = `${t.renderer.ingredientsOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
-					} else if (label === "cookware_overhead") {
-						label = `${t.renderer.cookwareOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
-					} else if (label.startsWith(PREP_PREFIX)) {
-						const id = label.slice(PREP_PREFIX.length);
-						const name =
-							registry.ingredients?.[id]?.name ??
-							registry.cookware?.[id]?.name ??
-							id;
-						label = `${t.renderer.breakdownPrep} : ${escapeHtml(name)} <span class="timing-detail-type">(+ 2min)</span>`;
-					}
+		const timingsGridClass =
+			options.classes?.recipeTimingsGrid || "recipe-timings-grid";
+		const timingCardClass = options.classes?.timingCard || "timing-card";
 
-					return `      <div class="timing-row">
+		html += `<div class="${timingsGridClass}">\n`;
+		if (metrics) {
+			// Prefixes used by kitchen's TimeBreakdownItem labels (processor.ts /
+			// metrics.ts) — kept as named constants and sliced by their own
+			// `.length` so a label check can never silently drift out of sync with
+			// the slice that strips it.
+			const SECTION_ACTIVE_PREFIX = "section_active:";
+			const TIMER_NAMED_PREFIX = "timer_named:";
+			const PREP_PREFIX = "prep_";
+
+			const formatBreakdownHTML = (breakdown?: TimeBreakdownItem[]) => {
+				if (!breakdown || breakdown.length === 0) return "";
+				return breakdown
+					.map((b) => {
+						let label = b.label;
+						if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
+							// Security audit 2026-07-22, finding B-1: the section title and
+							// timer name below come straight from recipe source text (`##
+							// <title>`, `~<name>{...}`) and used to be interpolated here
+							// without escaping — an exploitable HTML injection via the
+							// playground/VS Code preview.
+							label = `${escapeHtml(label.slice(SECTION_ACTIVE_PREFIX.length))} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
+						} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
+							label = `${t.renderer.breakdownTimer} "${escapeHtml(label.slice(TIMER_NAMED_PREFIX.length))}"`;
+						} else if (label === "timer_passive") {
+							label = t.renderer.breakdownPassive;
+						} else if (label === "ingredients_overhead") {
+							label = `${t.renderer.ingredientsOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
+						} else if (label === "cookware_overhead") {
+							label = `${t.renderer.cookwareOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
+						} else if (label.startsWith(PREP_PREFIX)) {
+							const id = label.slice(PREP_PREFIX.length);
+							const name =
+								registry.ingredients?.[id]?.name ??
+								registry.cookware?.[id]?.name ??
+								id;
+							label = `${t.renderer.breakdownPrep} : ${escapeHtml(name)} <span class="timing-detail-type">(+ 2min)</span>`;
+						}
+
+						return `      <div class="timing-row">
         <span class="timing-label">${label}</span>
         <span class="timing-val">+ ${formatDuration(b.duration)}</span>
       </div>`;
-				})
-				.join("\n");
-		};
+					})
+					.join("\n");
+			};
 
-		const renderTooltipHTML = (
-			base?: string,
-			breakdown1?: TimeBreakdownItem[],
-			breakdown2?: TimeBreakdownItem[],
-		) => {
-			if (!base && !breakdown1?.length && !breakdown2?.length) return "";
+			const renderTooltipHTML = (
+				base?: string,
+				breakdown1?: TimeBreakdownItem[],
+				breakdown2?: TimeBreakdownItem[],
+			) => {
+				if (!base && !breakdown1?.length && !breakdown2?.length) return "";
 
-			let htmlStr = `\n    <div class="timing-tooltip">`;
-			if (base) {
-				htmlStr += `\n      <div class="timing-tooltip-title">${escapeHtml(base)}</div>`;
-			}
-
-			if (breakdown1 && breakdown1.length > 0) {
-				htmlStr += "\n" + formatBreakdownHTML(breakdown1);
-			}
-			if (breakdown2 && breakdown2.length > 0) {
-				if (breakdown1 && breakdown1.length > 0) {
-					htmlStr += `\n      <div class="timing-divider"></div>`;
+				let htmlStr = `\n    <div class="timing-tooltip">`;
+				if (base) {
+					htmlStr += `\n      <div class="timing-tooltip-title">${escapeHtml(base)}</div>`;
 				}
-				htmlStr += "\n" + formatBreakdownHTML(breakdown2);
-			}
-			htmlStr += `\n    </div>`;
-			return htmlStr;
-		};
 
-		// Total Time
-		const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
-		const totalTooltip = renderTooltipHTML(
-			t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
-			metrics.prepBreakdown,
-			metrics.totalBreakdown,
-		);
-		html += ` <div class="${timingCardClass}">\n`;
-		html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(metrics.totalTime)}</div>${totalTooltip}\n`;
-		html += ` </div>\n`;
+				if (breakdown1 && breakdown1.length > 0) {
+					htmlStr += "\n" + formatBreakdownHTML(breakdown1);
+				}
+				if (breakdown2 && breakdown2.length > 0) {
+					if (breakdown1 && breakdown1.length > 0) {
+						htmlStr += `\n      <div class="timing-divider"></div>`;
+					}
+					htmlStr += "\n" + formatBreakdownHTML(breakdown2);
+				}
+				htmlStr += `\n    </div>`;
+				return htmlStr;
+			};
 
-		// Idle Time
-		if (metrics.idleTime) {
-			const idleTooltip = renderTooltipHTML(
-				t.renderer.idleTimeTooltip ?? "Idle Time = Total Time - Prep - Active",
+			// Total Time
+			const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
+			const totalTooltip = renderTooltipHTML(
+				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
+				metrics.prepBreakdown,
+				metrics.totalBreakdown,
 			);
 			html += ` <div class="${timingCardClass}">\n`;
-			html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(metrics.idleTime)}</div>${idleTooltip}\n`;
+			html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(metrics.totalTime)}</div>${totalTooltip}\n`;
+			html += ` </div>\n`;
+
+			// Idle Time
+			if (metrics.idleTime) {
+				const idleTooltip = renderTooltipHTML(
+					t.renderer.idleTimeTooltip ??
+						"Idle Time = Total Time - Prep - Active",
+				);
+				html += ` <div class="${timingCardClass}">\n`;
+				html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
+				html += `   <div class="${metaValueClass}">${formatDuration(metrics.idleTime)}</div>${idleTooltip}\n`;
+				html += ` </div>\n`;
+			}
+
+			// Active Time
+			const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
+			const activeTooltip = renderTooltipHTML(
+				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
+				metrics.activeBreakdown,
+			);
+			html += ` <div class="${timingCardClass}">\n`;
+			html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
+			html += ` </div>\n`;
+
+			// Prep Time
+			const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
+			const prepTooltip = renderTooltipHTML(
+				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
+				metrics.prepBreakdown,
+			);
+			html += ` <div class="${timingCardClass}">\n`;
+			html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
 			html += ` </div>\n`;
 		}
+		html += `</div>\n`;
 
-		// Active Time
-		const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
-		const activeTooltip = renderTooltipHTML(
-			t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
-			metrics.activeBreakdown,
-		);
-		html += ` <div class="${timingCardClass}">\n`;
-		html += `   <div class="${metaLabelClass}">${fireIcon} ${t.renderer.activeTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
-		html += ` </div>\n`;
+		// Secondary Metrics (Mass, etc) & Metadata combined
+		const recipeMetaSecondaryClass =
+			options.classes?.recipeMetaSecondary || "recipe-meta-secondary";
+		const metadataGridClass = options.classes?.metadataGrid || "metadata-grid";
+		const metaSecondaryItemClass =
+			options.classes?.metaSecondaryItem || "meta-secondary-item";
 
-		// Prep Time
-		const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
-		const prepTooltip = renderTooltipHTML(
-			t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
-			metrics.prepBreakdown,
-		);
-		html += ` <div class="${timingCardClass}">\n`;
-		html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
-		html += `   <div class="${metaValueClass}">${formatDuration(metrics.preparationTime)} <span class="${metaEstClass}">${t.renderer.est}</span></div>${prepTooltip}\n`;
-		html += ` </div>\n`;
-	}
-	html += `</div>\n`;
+		html += `<div class="${recipeMetaSecondaryClass}">\n`;
+		html += `<div class="${metadataGridClass}">\n`;
 
-	// Secondary Metrics (Mass, etc) & Metadata combined
-	const recipeMetaSecondaryClass =
-		options.classes?.recipeMetaSecondary || "recipe-meta-secondary";
-	const metadataGridClass = options.classes?.metadataGrid || "metadata-grid";
-	const metaSecondaryItemClass =
-		options.classes?.metaSecondaryItem || "meta-secondary-item";
-
-	html += `<div class="${recipeMetaSecondaryClass}">\n`;
-	html += `<div class="${metadataGridClass}">\n`;
-
-	if (metrics?.totalMass) {
-		const mass = Math.round(metrics.totalMass);
-		let msg = `${mass}g`;
-		if (metrics.massStatus === "estimated") {
-			msg = `~${mass}g (Estimated)`;
+		if (metrics?.totalMass) {
+			const mass = Math.round(metrics.totalMass);
+			let msg = `${mass}g`;
+			if (metrics.massStatus === "estimated") {
+				msg = `~${mass}g (Estimated)`;
+			}
+			if (metrics.massStatus === "incomplete") {
+				msg = `>${mass}g (Incomplete)`;
+			}
+			html += `  <div class="${metaSecondaryItemClass}">\n`;
+			html += `    <span class="label">Total Mass</span>\n`;
+			html += `    <span class="value">${msg}</span>\n`;
+			html += `  </div>\n`;
 		}
-		if (metrics.massStatus === "incomplete") {
-			msg = `>${mass}g (Incomplete)`;
-		}
-		html += `  <div class="${metaSecondaryItemClass}">\n`;
-		html += `    <span class="label">Total Mass</span>\n`;
-		html += `    <span class="value">${msg}</span>\n`;
-		html += `  </div>\n`;
-	}
 
-	if (data.meta) {
-		for (const [k, v] of Object.entries(data.meta)) {
-			if (k !== "title") {
-				html += `  <div class="${metaSecondaryItemClass}">\n`;
-				html += `    <span class="label">${escapeHtml(k)}</span>\n`;
-				if (k === "portions" && options.interactiveScaling) {
-					const numericV = typeof v === "number" ? v : parseFloat(String(v));
-					const basePortions =
-						typeof data.scaleFactor === "number" &&
-						data.scaleFactor !== 0 &&
-						!Number.isNaN(numericV)
-							? round2(numericV / data.scaleFactor)
-							: v;
-					html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
-					html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
-					html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="${escapeHtml(t.renderer.editPortions)}" />\n`;
-					html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
-					html += `      <span class="scale-multipliers">\n`;
-					html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="${escapeHtml(t.renderer.originalRecipe)}">${escapeHtml(t.renderer.reset)}</button>\n`;
-					html += `      </span>\n`;
-					html += `    </span>\n`;
-				} else if (!k.startsWith("_")) {
-					html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
+		if (data.meta) {
+			for (const [k, v] of Object.entries(data.meta)) {
+				if (k !== "title") {
+					html += `  <div class="${metaSecondaryItemClass}">\n`;
+					html += `    <span class="label">${escapeHtml(k)}</span>\n`;
+					if (k === "portions" && options.interactiveScaling) {
+						const numericV = typeof v === "number" ? v : parseFloat(String(v));
+						const basePortions =
+							typeof data.scaleFactor === "number" &&
+							data.scaleFactor !== 0 &&
+							!Number.isNaN(numericV)
+								? round2(numericV / data.scaleFactor)
+								: v;
+						html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
+						html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
+						html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="${escapeHtml(t.renderer.editPortions)}" />\n`;
+						html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
+						html += `      <span class="scale-multipliers">\n`;
+						html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="${escapeHtml(t.renderer.originalRecipe)}">${escapeHtml(t.renderer.reset)}</button>\n`;
+						html += `      </span>\n`;
+						html += `    </span>\n`;
+					} else if (!k.startsWith("_")) {
+						html += `    <span class="value">${escapeHtml(String(v))}</span>\n`;
+					}
+					html += `  </div>\n`;
 				}
-				html += `  </div>\n`;
 			}
 		}
-	}
 
-	html += `</div>\n`;
-	html += `</div>\n\n`;
+		html += `</div>\n`;
+		html += `</div>\n\n`;
 
-	// Shopping List
-	if (data.shopping_list && data.shopping_list.length > 0) {
+		return html;
+	},
+
+	renderShoppingList(data, context, options) {
+		if (!data.shopping_list || data.shopping_list.length === 0) return "";
+		const t = getDictionary(options.lang);
+
+		let html = "";
 		const shoppingListClass = options.classes?.shoppingList || "shopping-list";
 		html += `<details class="${shoppingListClass}">\n`;
 		html += `  <summary><h2>${t.renderer.shoppingList}</h2></summary>\n`;
@@ -318,10 +323,14 @@ export function toHTML(
 		});
 		html += `  </ul>\n`;
 		html += `</details>\n\n`;
-	}
+		return html;
+	},
 
-	// Cookware
-	if (data.cookware && data.cookware.length > 0) {
+	renderCookware(data, context, options) {
+		if (!data.cookware || data.cookware.length === 0) return "";
+		const t = getDictionary(options.lang);
+
+		let html = "";
 		const cookwareListClass = options.classes?.cookwareList || "cookware";
 		html += `<details class="${cookwareListClass}">\n`;
 		html += `  <summary><h2>${t.renderer.cookware}</h2></summary>\n`;
@@ -341,10 +350,19 @@ export function toHTML(
 		});
 		html += `  </ul>\n`;
 		html += `</details>\n\n`;
-	}
+		return html;
+	},
 
-	// Instructions
-	if (data.sections && data.sections.length > 0) {
+	renderInstructions(data, context, options) {
+		if (!data.sections || data.sections.length === 0) return "";
+		const t = getDictionary(options.lang);
+		// Context variant used when rendering inline step tokens — hides qty if flag is set
+		// (not from shopping list or section mise en place, matches print.ts's stepContext).
+		const stepContext: RenderContext = options.hideStepQty
+			? { ...context, hideIngredientQty: true }
+			: context;
+
+		let html = "";
 		const instructionsClass = options.classes?.instructions || "instructions";
 		html += `<div class="${instructionsClass}">\n`;
 		data.sections.forEach((sec: any) => {
@@ -468,11 +486,16 @@ export function toHTML(
 			html += `  </section>\n`;
 		});
 		html += `</div>\n`;
-	}
+		return html;
+	},
 
-	// Footnotes / Notes Section
-	if (context._inlineComments && context._inlineComments.length > 0) {
+	renderFootnotes(_data, context, options) {
+		if (!context._inlineComments || context._inlineComments.length === 0) {
+			return "";
+		}
+		const t = getDictionary(options.lang);
 		const renderId = context._renderId || "note";
+		let html = "";
 		html += `<div class="recipe-notes">\n`;
 		html += `  <h3>Notes</h3>\n`;
 		html += `  <ol>\n`;
@@ -485,69 +508,95 @@ export function toHTML(
 		});
 		html += `  </ol>\n`;
 		html += `</div>\n`;
-	}
+		return html;
+	},
 
-	// Nutrition Panel (Moved to bottom)
-	if (metrics?.nutrition) {
+	renderNutrition(data, _context, options) {
+		const t = getDictionary(options.lang);
+		const metrics = data.metrics as RenderableMetrics;
+		if (!metrics?.nutrition) return "";
 		const nut = metrics.nutrition;
 
 		// Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
 		if (
-			(nut.total && nut.total.calories > 0) ||
-			(nut.warnings && nut.warnings.length > 0)
+			!(
+				(nut.total && nut.total.calories > 0) ||
+				(nut.warnings && nut.warnings.length > 0)
+			)
 		) {
-			const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-
-			let portionText = "";
-			let portionVals = null;
-			if (nut.perPortion) {
-				portionText = ` (Per Portion)`;
-				portionVals = nut.perPortion;
-			}
-
-			const displayVals = portionVals || total;
-
-			const cal = Math.round(displayVals.calories);
-			const p = displayVals.protein;
-			const c = displayVals.carbs;
-			const f = displayVals.fat;
-
-			// Granular
-			const sugar = displayVals.sugar !== undefined ? displayVals.sugar : "-";
-			const fiber = displayVals.fiber !== undefined ? displayVals.fiber : "-";
-			// sodium is stored/calculated in mg — round to nearest integer for display
-			const sodium =
-				displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : "-";
-
-			let warningsHtml = "";
-			// Audit 2026-07-22, renderer finding I-1: this read `data.nutrition`,
-			// which never exists — `analyze()` only ever places `nutrition` under
-			// `metrics` (already destructured as `nut` above). Dead branch: the
-			// exact case the surrounding condition (line 490) was written for —
-			// calories are 0 but warnings exist — rendered an unexplained empty
-			// panel instead of the warning text.
-			if (nut.warnings && nut.warnings.length > 0) {
-				warningsHtml = `  <div class="nut-warnings">\n`;
-				nut.warnings.forEach((w) => {
-					warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w.message)}</p>\n`;
-				});
-				warningsHtml += `  </div>\n`;
-			}
-
-			html += `<div class="nutrition-panel">\n`;
-			html += warningsHtml;
-			html += `  <div class="nut-header">${t.renderer.nutrition} <span class="est-badge" data-tooltip="${t.renderer.coverageTooltip}: ${Math.round(nut.coverage * 100)}%">${t.renderer.estimateTooltip}</span>${portionText}</div>\n`;
-			html += `  <div class="nut-grid">\n`;
-			html += `    <div class="nut-item"><span class="label">Calories</span> <strong>${cal} kcal</strong></div>\n`;
-			html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small class="nut-item-sugar">(sugar: ${sugar}g)</small></div>\n`;
-			html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-			html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-			html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-			html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
-			html += `  </div>\n`;
-			html += `</div>\n`;
+			return "";
 		}
-	}
 
-	return html;
+		const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+		let portionText = "";
+		let portionVals = null;
+		if (nut.perPortion) {
+			portionText = ` (Per Portion)`;
+			portionVals = nut.perPortion;
+		}
+
+		const displayVals = portionVals || total;
+
+		const cal = Math.round(displayVals.calories);
+		const p = displayVals.protein;
+		const c = displayVals.carbs;
+		const f = displayVals.fat;
+
+		// Granular
+		const sugar = displayVals.sugar !== undefined ? displayVals.sugar : "-";
+		const fiber = displayVals.fiber !== undefined ? displayVals.fiber : "-";
+		// sodium is stored/calculated in mg — round to nearest integer for display
+		const sodium =
+			displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : "-";
+
+		let warningsHtml = "";
+		// Audit 2026-07-22, renderer finding I-1: this read `data.nutrition`,
+		// which never exists — `analyze()` only ever places `nutrition` under
+		// `metrics` (already destructured as `nut` above). Dead branch: the
+		// exact case the surrounding condition (line 490) was written for —
+		// calories are 0 but warnings exist — rendered an unexplained empty
+		// panel instead of the warning text.
+		if (nut.warnings && nut.warnings.length > 0) {
+			warningsHtml = `  <div class="nut-warnings">\n`;
+			nut.warnings.forEach((w) => {
+				warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w.message)}</p>\n`;
+			});
+			warningsHtml += `  </div>\n`;
+		}
+
+		let html = "";
+		html += `<div class="nutrition-panel">\n`;
+		html += warningsHtml;
+		html += `  <div class="nut-header">${t.renderer.nutrition} <span class="est-badge" data-tooltip="${t.renderer.coverageTooltip}: ${Math.round(nut.coverage * 100)}%">${t.renderer.estimateTooltip}</span>${portionText}</div>\n`;
+		html += `  <div class="nut-grid">\n`;
+		html += `    <div class="nut-item"><span class="label">Calories</span> <strong>${cal} kcal</strong></div>\n`;
+		html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small class="nut-item-sugar">(sugar: ${sugar}g)</small></div>\n`;
+		html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
+		html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
+		html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
+		html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
+		html += `  </div>\n`;
+		html += `</div>\n`;
+		return html;
+	},
+
+	assembleDocument(sections: RenderSections) {
+		return (
+			sections.title +
+			sections.meta +
+			sections.shoppingList +
+			sections.cookware +
+			sections.instructions +
+			sections.footnotes +
+			sections.nutrition
+		);
+	},
+};
+
+export function toHTML(
+	data: RenderableCompilationResult,
+	options: RendererOptions = {},
+): string {
+	return renderRecipe(data, options, htmlBackend);
 }
