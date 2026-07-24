@@ -24,19 +24,14 @@ import {
 	SEMANTIC_TOKEN_TYPES,
 	SEMANTIC_TOKEN_MODIFIERS,
 } from "./features/semantic-tokens";
-import {
-	loadIngredientDB,
-	type IngredientDB,
-	buildIngredientLookupSet,
-} from "./ingredient-loader";
+import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
+import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
 import { toHTML, escapeHtml } from "@gram-lang/renderer";
-import { join } from "node:path";
-import { existsSync } from "node:fs";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -60,34 +55,6 @@ process.on("unhandledRejection", (reason) => {
 let ingredientDB: IngredientDB = {};
 let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
-
-function applyLoadResult(result: ReturnType<typeof loadIngredientDB>): void {
-	ingredientDB = result.db;
-	if (result.rejected.length > 0) {
-		connection.console.warn(
-			`Ignoring ${result.rejected.length} invalid ingredient(s): ${result.rejected
-				.map((r) => r.key)
-				.join(", ")}`,
-		);
-	}
-}
-
-function loadDB(configPath?: string): void {
-	if (configPath?.trim()) {
-		applyLoadResult(loadIngredientDB(configPath.trim()));
-	} else {
-		ingredientDB = {};
-		for (const folder of workspaceFolders) {
-			const auto = join(folder, ".gram", "ingredients.yaml");
-			if (existsSync(auto)) {
-				applyLoadResult(loadIngredientDB(auto));
-				break;
-			}
-		}
-	}
-	// Rebuilt once here — all diagnostic checks are O(1) from this point
-	ingredientLookupSet = buildIngredientLookupSet(ingredientDB);
-}
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
@@ -121,32 +88,24 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 // promise. This function must never reject — every call site treats it as
 // fire-and-forget, and an unhandled rejection here would otherwise crash the
 // whole Node process (Node terminates on unhandled rejection by default).
+// Thin wrapper over utils/db-reload.ts's testable core (Phase 15): supplies
+// the real connection/module-state dependencies, applies the outcome.
 async function reloadDbAndRefreshDiagnostics(): Promise<void> {
-	try {
-		const config = await connection.workspace.getConfiguration("gram");
-		loadDB(config?.ingredientDatabase?.path);
-	} catch {
-		try {
-			loadDB();
-		} catch (e) {
-			connection.console.error(`Failed to load ingredient database: ${e}`);
-		}
-	}
-	for (const [uri, state] of states) {
-		try {
-			connection.sendDiagnostics({
-				uri,
-				diagnostics: provideDiagnostics(
-					state,
-					ingredientLookupSet,
-					ingredientDB,
-				),
-			});
-		} catch (e) {
-			connection.console.error(
-				`Failed to refresh diagnostics for ${uri}: ${e}`,
-			);
-		}
+	const outcome = await computeDbReload({
+		getConfiguredDbPath: async () => {
+			const config = await connection.workspace.getConfiguration("gram");
+			return config?.ingredientDatabase?.path;
+		},
+		workspaceFolders,
+		states,
+		computeDiagnostics: provideDiagnostics,
+		onWarn: (message) => connection.console.warn(message),
+		onError: (message) => connection.console.error(message),
+	});
+	ingredientDB = outcome.ingredientDB;
+	ingredientLookupSet = outcome.ingredientLookupSet;
+	for (const [uri, diagnostics] of outcome.diagnosticsByUri) {
+		connection.sendDiagnostics({ uri, diagnostics });
 	}
 }
 
