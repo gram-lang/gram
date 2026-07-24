@@ -76,18 +76,28 @@ export default defineCommand({
 		const s = spinner();
 		s.start("Calling AI model…");
 
-		const result = await enrichDb(db, config, model, {
-			ingredient: args.ingredient,
-			field,
-			dryRun: args["dry-run"],
-			dbPathOverride: args.db,
-			onBatchDone(done, total, enriched, failed) {
-				const ok = enriched.length > 0 ? `✓ ${enriched.length}` : "";
-				const ko = failed.length > 0 ? `✗ ${failed.length}` : "";
-				const counts = [ok, ko].filter(Boolean).join("  ");
-				s.message(`Batch ${done}/${total} — ${counts || "processing…"}`);
-			},
-		});
+		let result;
+		try {
+			result = await enrichDb(db, config, model, {
+				ingredient: args.ingredient,
+				field,
+				dryRun: args["dry-run"],
+				dbPathOverride: args.db,
+				onBatchDone(done, total, enriched, failed) {
+					const ok = enriched.length > 0 ? `✓ ${enriched.length}` : "";
+					const ko = failed.length > 0 ? `✗ ${failed.length}` : "";
+					const counts = [ok, ko].filter(Boolean).join("  ");
+					s.message(`Batch ${done}/${total} — ${counts || "processing…"}`);
+				},
+			});
+		} catch (err) {
+			s.stop("Failed.");
+			if (err instanceof GramCLIError) {
+				log.error(err.message);
+				process.exit(err.exitCode);
+			}
+			throw err;
+		}
 
 		s.stop("Done.");
 		renderEnrichResult(result, args["dry-run"]);

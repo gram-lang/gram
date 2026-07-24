@@ -8,29 +8,51 @@ import type { LanguageModel } from "ai";
 import type { IngredientData } from "@gram-lang/analyzer";
 import {
 	getAiLanguageInstruction,
-	getDefaultCategories,
+	getCategoryLabels,
+	CATEGORY_KEYS,
 } from "@gram-lang/i18n";
 import { withFileLock, atomicWrite } from "../core/lock";
 import { resolveDbPath } from "../core/db";
+import { MAX_DENSITY, MAX_CALORIES } from "./db-validator";
+import { GramCLIError, ExitCode } from "../errors";
 import type {
 	GramConfig,
 	EnrichEntry,
 	EnrichResult,
+	EnrichWriteResult,
 	EnrichOptions,
 } from "../types";
 
+// Audit 2026-07-22, i18n finding F-03, Phase 18: the prompt used to present
+// (and ask the AI to return) a translated *display label* ("Légumes"), which
+// then got persisted verbatim as data in `ingredients.yaml` — non-portable
+// across languages, and unconstrained (the prompt said "examples like", not
+// a closed list, so the AI could return "Légumes frais" and nothing would
+// catch it). The AI is now shown "key (label)" pairs but told to return the
+// stable key; `EnrichItemSchema.category` enforces it's actually one of them.
 function buildSystemPrompt(lang: string): string {
-	const categories = getDefaultCategories(lang).join(", ");
-	return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category from examples like: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.`;
+	const labels = getCategoryLabels(lang);
+	const categories = CATEGORY_KEYS.map((key) => `${key} (${labels[key]})`).join(
+		", ",
+	);
+	return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category **key** (not the translated label) from this list: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.`;
 }
 
+// Audit 2026-07-22, cli finding I-26: ingredient names reaching this prompt
+// can come from arbitrary sources (`gram db sync` over synced recipes, `gram
+// db merge` over a third-party YAML file), and `generateObject`'s schema is
+// the only real backstop against a prompt-injected response — it constrains
+// *shape*, so it must also constrain *plausibility*. MAX_DENSITY/MAX_CALORIES
+// are the same bounds `db-validator.ts` reports on after the fact; reusing
+// them here rejects an implausible value (a "density" of `1e9`) up front
+// instead of writing it to a versioned file and flagging it later.
 const EnrichItemSchema = z.object({
 	key: z.string(),
-	density: z.number().positive().optional(),
+	density: z.number().positive().max(MAX_DENSITY).optional(),
 	unit_weight: z.number().optional(),
 	nutrition: z
 		.object({
-			calories: z.number().min(0),
+			calories: z.number().min(0).max(MAX_CALORIES),
 			carbs: z.number().min(0),
 			protein: z.number().min(0),
 			fat: z.number().min(0),
@@ -40,7 +62,7 @@ const EnrichItemSchema = z.object({
 			sodium: z.number().min(0).optional(),
 		})
 		.optional(),
-	category: z.string().default("Other"),
+	category: z.enum(CATEGORY_KEYS).default("other"),
 	tagSuggestions: z.array(z.string()).default([]),
 });
 
@@ -79,7 +101,14 @@ export async function enrichDb(
 	);
 
 	if (toEnrich.length === 0) {
-		return { dbPath, totalIncomplete: 0, enriched: [], skipped, failed: [] };
+		return {
+			dbPath,
+			totalIncomplete: 0,
+			enriched: [],
+			skipped,
+			failed: [],
+			write: { written: false, reason: "nothing to enrich" },
+		};
 	}
 
 	const BATCH_SIZE = 8;
@@ -168,61 +197,86 @@ export async function enrichDb(
 		),
 	);
 
-	if (!opts.dryRun && enriched.length > 0) {
-		await withFileLock(dbPath, async () => {
+	let write: EnrichWriteResult;
+	if (opts.dryRun) {
+		write = { written: false, reason: "dry run" };
+	} else if (enriched.length === 0) {
+		write = {
+			written: false,
+			reason: "no ingredient produced a usable AI response",
+		};
+	} else {
+		write = await withFileLock(dbPath, async (): Promise<EnrichWriteResult> => {
+			// Audit 2026-07-22, cli finding B-5: unlike `db-sync` (which
+			// legitimately creates new entries and can recover from a missing/
+			// empty file), enrich only ever *updates* ingredients that must
+			// already exist on disk — a missing file or an unlocatable
+			// ingredients map means there is nothing to update, full stop. This
+			// used to silently skip the write while still returning `enriched`
+			// populated, so the caller reported "Updated" against an unchanged
+			// file. Now a hard error, same as `db-sync.ts`'s equivalent case
+			// (the audit's own "correct, to generalize" reference).
 			const content = await readFile(dbPath, "utf-8").catch(() => "");
-			const doc = content ? parseDocument(content) : null;
+			if (!content) {
+				throw new GramCLIError(
+					`Cannot enrich ${dbPath}: file not found or empty.`,
+					ExitCode.Error,
+				);
+			}
+			const doc = parseDocument(content);
+			const root = doc.toJSON() as Record<string, unknown> | null;
+			const hasWrapper = !!root && "ingredients" in root;
+			const node = hasWrapper ? doc.get("ingredients") : doc.contents;
 
-			if (doc) {
-				const root = doc.toJSON() as Record<string, unknown>;
-				const hasWrapper = root && "ingredients" in root;
-				const node = hasWrapper ? doc.get("ingredients") : doc.contents;
+			if (!isMap(node)) {
+				throw new GramCLIError(
+					`Cannot enrich ${dbPath}: could not locate an ingredients map at its root (or under "ingredients:").`,
+					ExitCode.Error,
+				);
+			}
 
-				if (isMap(node)) {
-					for (const entry of enriched) {
-						const ingNode = node.get(entry.id, true) as any;
-						if (!isMap(ingNode)) continue;
+			for (const entry of enriched) {
+				const ingNode = node.get(entry.id, true) as any;
+				if (!isMap(ingNode)) continue;
 
-						if (entry.density != null || entry.unit_weight != null) {
-							const physNode = ingNode.get("physical", true);
-							if (!isMap(physNode)) {
-								const data: any = {};
-								if (entry.density != null) data.density = entry.density;
-								if (entry.unit_weight != null)
-									data.unit_weight = entry.unit_weight;
-								ingNode.set("physical", doc.createNode(data));
-							} else {
-								if (entry.density != null && !physNode.get("density"))
-									(physNode as any).set("density", entry.density);
-								if (entry.unit_weight != null && !physNode.get("unit_weight"))
-									(physNode as any).set("unit_weight", entry.unit_weight);
-							}
-						}
-
-						if (entry.category) {
-							const existingCategory = ingNode.get("category");
-							if (!existingCategory) {
-								ingNode.set("category", entry.category);
-							}
-						}
-
-						if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
-							const existingTagsNode = ingNode.get("tags", true);
-							const hasExistingTags =
-								isSeq(existingTagsNode) && existingTagsNode.items.length > 0;
-							if (!hasExistingTags) {
-								ingNode.set("tags", doc.createNode(entry.tagSuggestions));
-							}
-						}
-
-						if (entry.nutrition != null && !ingNode.get("nutrition")) {
-							ingNode.set("nutrition", doc.createNode(entry.nutrition));
-						}
+				if (entry.density != null || entry.unit_weight != null) {
+					const physNode = ingNode.get("physical", true);
+					if (!isMap(physNode)) {
+						const data: any = {};
+						if (entry.density != null) data.density = entry.density;
+						if (entry.unit_weight != null) data.unit_weight = entry.unit_weight;
+						ingNode.set("physical", doc.createNode(data));
+					} else {
+						if (entry.density != null && !physNode.get("density"))
+							(physNode as any).set("density", entry.density);
+						if (entry.unit_weight != null && !physNode.get("unit_weight"))
+							(physNode as any).set("unit_weight", entry.unit_weight);
 					}
-					await mkdir(dirname(dbPath), { recursive: true });
-					await atomicWrite(dbPath, String(doc));
+				}
+
+				if (entry.category) {
+					const existingCategory = ingNode.get("category");
+					if (!existingCategory) {
+						ingNode.set("category", entry.category);
+					}
+				}
+
+				if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
+					const existingTagsNode = ingNode.get("tags", true);
+					const hasExistingTags =
+						isSeq(existingTagsNode) && existingTagsNode.items.length > 0;
+					if (!hasExistingTags) {
+						ingNode.set("tags", doc.createNode(entry.tagSuggestions));
+					}
+				}
+
+				if (entry.nutrition != null && !ingNode.get("nutrition")) {
+					ingNode.set("nutrition", doc.createNode(entry.nutrition));
 				}
 			}
+			await mkdir(dirname(dbPath), { recursive: true });
+			await atomicWrite(dbPath, String(doc));
+			return { written: true, path: dbPath, count: enriched.length };
 		});
 	}
 
@@ -232,5 +286,6 @@ export async function enrichDb(
 		enriched,
 		skipped,
 		failed,
+		write,
 	};
 }

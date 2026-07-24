@@ -98,6 +98,18 @@ steps:
       - 'echo "broken: {physical: {density: not-a-number}}" > /tmp/bad-db.yaml'
       - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram --db /tmp/bad-db.yaml 2>/tmp/bad-db-stderr.txt | jq . > /dev/null
       - grep -q "Ignoring 1 invalid ingredient" /tmp/bad-db-stderr.txt
+      # .env loaded under Node (audit 2026-07-22, cli finding B-2): only Bun
+      # auto-loads `.env` — `gram init`/`gram config set` both write API keys
+      # there, so a published binary (shebang #!/usr/bin/env node) silently
+      # ignored it. A nonexistent local path as the import source makes this
+      # fail fast on "file not found" (proving the AI-provider gate was
+      # passed) instead of making a real network call.
+      - export GRAM_BIN=$(pwd)/node_modules/.bin/gram
+      - mkdir -p /tmp/env-smoke && cd /tmp/env-smoke
+      - 'echo "GEMINI_API_KEY=fake-key-for-smoke-test" > .env'
+      - "! $GRAM_BIN import does-not-exist.gram 2>/tmp/env-smoke-stderr.txt"
+      - "! grep -q 'No AI provider configured' /tmp/env-smoke-stderr.txt"
+      - cd /tmp/smoke-install
 
   # Non-blocking for now: several known vulnerabilities are tracked and scheduled
   # to be resolved (dependency updates, see audit Chantier 5). Once addressed,

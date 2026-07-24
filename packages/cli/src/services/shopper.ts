@@ -1,6 +1,11 @@
 import pLimit from "p-limit";
 import { basename } from "node:path";
-import { normalizeUnit, getDefaultCategories } from "@gram-lang/i18n";
+import {
+	normalizeUnit,
+	getDefaultCategories,
+	getCategoryLabels,
+	isCategoryKey,
+} from "@gram-lang/i18n";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
 import type { IngredientData } from "@gram-lang/analyzer";
@@ -42,9 +47,22 @@ export async function buildShoppingList(
 	files: string[],
 	opts: ShopOptions = {},
 ): Promise<ShopResult> {
-	const categoryOrder = getDefaultCategories(opts.lang ?? "en");
+	const lang = opts.lang ?? "en";
+	const categoryOrder = getDefaultCategories(lang);
+	const categoryLabels = getCategoryLabels(lang);
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
+
+	// Audit 2026-07-22, i18n finding F-03, Phase 18: `IngredientData.category`
+	// stores a stable key (e.g. "vegetables") going forward, but a database
+	// enriched before this fix — or authored by hand — may still have a
+	// translated label ("Vegetables"/"Légumes") written there directly.
+	// Resolve a recognized key to its display label; anything else (a legacy
+	// label, or free text) passes through unchanged, matching prior behavior.
+	function resolveCategoryLabel(raw: string | undefined): string {
+		if (!raw) return categoryLabels.other;
+		return isCategoryKey(raw) ? categoryLabels[raw] : raw;
+	}
 
 	await Promise.all(
 		files.map((file) =>
@@ -113,7 +131,7 @@ export async function buildShoppingList(
 	for (const [id, items] of grouped) {
 		const recipes = [...new Set(items.map((i) => i.recipe))];
 		const displayName = items[0]?.name ?? id;
-		const category = opts.db?.[id]?.category ?? "Other";
+		const category = resolveCategoryLabel(opts.db?.[id]?.category);
 
 		const qtyItems = items.filter(
 			(i): i is CollectedItem & { qty: number } => i.qty !== null,

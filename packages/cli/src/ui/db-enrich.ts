@@ -7,7 +7,7 @@ export function renderEnrichResult(
 	result: EnrichResult,
 	dryRun: boolean,
 ): void {
-	const { enriched, failed, totalIncomplete, dbPath } = result;
+	const { enriched, failed, totalIncomplete, dbPath, write } = result;
 	const relPath = relative(process.cwd(), dbPath) || dbPath;
 
 	if (totalIncomplete === 0) {
@@ -33,10 +33,16 @@ export function renderEnrichResult(
 	}
 	console.log();
 
+	// Audit 2026-07-22, cli finding B-5: "Updated" is only ever printed by
+	// reading `write.written` — never inferred from `!dryRun` or from
+	// `enriched.length` being non-zero, either of which used to lie whenever
+	// the write itself was silently skipped underneath.
 	if (dryRun) {
 		log.warn("Dry run — no changes written.");
+	} else if (!write.written) {
+		log.warn(`Nothing written to ${chalk.dim(relPath)} — ${write.reason}.`);
 	} else {
-		const n = enriched.length;
+		const n = write.count;
 		const f = failed.length;
 		log.success(
 			`Updated ${chalk.dim(relPath)} (${n} ingredient${n !== 1 ? "s" : ""} enriched${f ? `, ${f} failed` : ""})`,

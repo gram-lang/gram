@@ -5,6 +5,7 @@ import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
+import { assertPublicUrl } from "../core/ssrf";
 import type { ImportResult } from "../types";
 import { GRAM_SPEC_PROMPT } from "../prompts/gram-spec";
 
@@ -76,6 +77,39 @@ function flattenInstructions(
 
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024; // 10 MB — a recipe page is never legitimately bigger than this
+const MAX_REDIRECTS = 5;
+
+// Audit 2026-07-22, cli finding I-2 (SSRF): `redirect: "manual"` + a manual
+// loop, re-running `assertPublicUrl` on every hop, instead of leaving
+// redirects to `fetch`'s default behavior — a URL that's public on the first
+// request can still redirect (or DNS-rebind) to an internal address, and a
+// check done only once up front would never see that.
+async function fetchWithSsrfGuard(url: string): Promise<Response> {
+	let currentUrl = url;
+	for (let i = 0; i <= MAX_REDIRECTS; i++) {
+		await assertPublicUrl(currentUrl);
+		const res = await fetch(currentUrl, {
+			signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+			redirect: "manual",
+		});
+		if (res.status >= 300 && res.status < 400) {
+			const location = res.headers.get("location");
+			if (!location) {
+				throw new GramCLIError(
+					`Redirect from ${currentUrl} had no Location header.`,
+					ExitCode.Error,
+				);
+			}
+			currentUrl = new URL(location, currentUrl).toString();
+			continue;
+		}
+		return res;
+	}
+	throw new GramCLIError(
+		`Too many redirects (> ${MAX_REDIRECTS}) fetching ${url}.`,
+		ExitCode.Error,
+	);
+}
 
 // Reads a response body with a hard size cap, regardless of what Content-Length
 // claims (it can be absent or wrong) — protects against a slow/huge/malicious
@@ -104,7 +138,24 @@ async function readBodyWithLimit(res: Response): Promise<string> {
 	return result;
 }
 
-export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
+type RecipeFetchResult = { jsonLd: any };
+
+// Split out from fetchRecipe so the response-parsing logic (content-type
+// dispatch, HTML scraping) is testable with plain fixture strings, without
+// needing a real HTTP fetch — a real fetch to a test server is now also a
+// fetch to a loopback address, which `fetchWithSsrfGuard` correctly refuses
+// (see ssrf.test.ts), so it's no longer a viable way to test this part.
+export function parseRecipeResponse(
+	body: string,
+	contentType: string,
+): RecipeFetchResult {
+	if (contentType.includes("json")) {
+		return { jsonLd: JSON.parse(body) };
+	}
+	return { jsonLd: extractRecipeJsonLd(body) };
+}
+
+export async function fetchRecipe(source: string): Promise<RecipeFetchResult> {
 	if (source.startsWith("http://") || source.startsWith("https://")) {
 		let body: string;
 		let contentType: string;
@@ -113,9 +164,7 @@ export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
 			// (per the fetch spec, an in-flight body read aborts too), so both must
 			// share this try/catch — otherwise a timeout that fires mid-body-read
 			// leaks the raw "TimeoutError" instead of this friendly message.
-			const res = await fetch(source, {
-				signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-			});
+			const res = await fetchWithSsrfGuard(source);
 			if (!res.ok)
 				throw new GramCLIError(
 					`HTTP ${res.status} fetching ${source}`,
@@ -132,10 +181,7 @@ export async function fetchRecipe(source: string): Promise<{ jsonLd: any }> {
 			}
 			throw err;
 		}
-		if (contentType.includes("json")) {
-			return { jsonLd: JSON.parse(body) };
-		}
-		return { jsonLd: extractRecipeJsonLd(body) };
+		return parseRecipeResponse(body, contentType);
 	}
 
 	const content = await readFile(source, "utf-8");

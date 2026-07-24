@@ -142,6 +142,23 @@ describe("buildShoppingList", () => {
 		);
 	});
 
+	// Audit 2026-07-22, i18n finding F-03, Phase 18: a *stable key* persisted
+	// in `category` (e.g. "vegetables", the new format `db-enricher` writes)
+	// must resolve to the display label for `lang` before being grouped —
+	// unlike the legacy-label test above, this exercises the actual F-03 key
+	// format, and the resolved label genuinely differs by language (real
+	// discrimination, not just a different code path for the same string).
+	it("resolves a stable category key to the correct display label per language", async () => {
+		const db = makeDb({ carotte: { category: "vegetables" } });
+		const a = await tmp("## Prep\n[Mix] Add @carotte{100g}.\n");
+
+		const french = await buildShoppingList([a], { db, lang: "fr" });
+		expect([...french.byCategory.keys()]).toContain("Légumes");
+
+		const english = await buildShoppingList([a], { db, lang: "en" });
+		expect([...english.byCategory.keys()]).toContain("Vegetables");
+	});
+
 	it("counts unique recipes even when an ingredient repeats within the same file", async () => {
 		const a = await tmp(
 			"## Prep\n[Mix] Add @flour{100g}.\n\n## Bake\n[Mix] Add more @flour{50g}.\n",

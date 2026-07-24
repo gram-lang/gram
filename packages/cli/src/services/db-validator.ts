@@ -1,6 +1,15 @@
 import type { IngredientData } from "@gram-lang/analyzer";
 import type { DbIssue, DbValidateResult } from "../types";
 
+// Audit 2026-07-22, cli finding I-26, Phase 18: these bounds used to exist
+// only here, as an a-posteriori report on data already written to disk.
+// `db-enricher.ts` now imports them to constrain the AI response schema
+// itself, so an implausible value (a prompt-injected density of `1e9`) is
+// rejected before it's ever written — one source of truth for "a plausible
+// ingredient value", not two that can drift apart.
+export const MAX_DENSITY = 2.5;
+export const MAX_CALORIES = 900;
+
 export function validateDb(
 	db: Record<string, IngredientData>,
 	dbPath: string,
@@ -48,7 +57,7 @@ export function validateDb(
 	// 3. Aberrant values
 	for (const [id, data] of Object.entries(db)) {
 		const cal = data.nutrition?.calories;
-		if (cal !== undefined && cal > 900) {
+		if (cal !== undefined && cal > MAX_CALORIES) {
 			issues.push({
 				level: "warning",
 				category: "Coherence",
@@ -57,7 +66,7 @@ export function validateDb(
 			});
 		}
 		const density = data.physical?.density;
-		if (density !== undefined && density > 2.5) {
+		if (density !== undefined && density > MAX_DENSITY) {
 			issues.push({
 				level: "warning",
 				category: "Coherence",

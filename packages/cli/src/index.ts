@@ -2,6 +2,23 @@ import { defineCommand, runMain } from "citty";
 import { log } from "@clack/prompts";
 import { GramCLIError, ExitCode, setVerbose, isVerbose } from "./errors";
 import { version } from "../package.json";
+import { findProjectRoot } from "./core/workspace";
+import { join } from "node:path";
+
+// Audit 2026-07-22, cli finding B-2: Bun auto-loads `.env`, Node doesn't —
+// `gram init`/`gram config set` both write API keys to `.env`
+// (services/config-manager.ts), so every npm-installed user (the published
+// binary's shebang is `#!/usr/bin/env node`) hit "Missing API key" after
+// following the documented onboarding flow, while it worked for whoever
+// happened to run it under Bun. `process.loadEnvFile` never overrides an
+// already-set `process.env` value, matching how `.env` files are expected to
+// behave everywhere else. Silently ignored if there's no `.env` (the normal
+// case) or if the current runtime doesn't support the call at all (Bun
+// already loads `.env` natively, so a failure here costs nothing under Bun).
+try {
+	const projectRoot = await findProjectRoot();
+	process.loadEnvFile(join(projectRoot, ".env"));
+} catch {}
 
 // --verbose/--debug is a global flag handled here rather than as a citty arg on
 // every subcommand, since citty has no first-class "shared across all

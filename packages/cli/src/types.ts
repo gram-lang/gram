@@ -1,4 +1,5 @@
 import type { IngredientData, NutritionMetrics } from "@gram-lang/analyzer";
+import type { CategoryKey } from "@gram-lang/i18n";
 import { z } from "zod";
 
 export type { NutritionMetrics };
@@ -174,9 +175,22 @@ export interface EnrichEntry {
 		fiber?: number;
 		sodium?: number;
 	};
-	category?: string;
+	// Audit 2026-07-22, i18n finding F-03: a stable key persisted as data
+	// (e.g. "vegetables"), never a translated display label — see
+	// @gram-lang/i18n's categories.ts for why.
+	category?: CategoryKey;
 	tagSuggestions: string[];
 }
+
+// Audit 2026-07-22, cli finding B-5: "was the database actually written?"
+// used to be a guess the UI made from `!dryRun` — a missing/unreadable file
+// or an unexpected YAML root silently skipped the write while `enriched`
+// stayed populated, so the UI reported "Updated <path> (N enriched)" against
+// an unchanged file. This is now a typed fact `enrichDb` reports directly;
+// `renderEnrichResult` can only claim "Updated" by reading it.
+export type EnrichWriteResult =
+	| { written: true; path: string; count: number }
+	| { written: false; reason: string };
 
 export interface EnrichResult {
 	dbPath: string;
@@ -184,6 +198,7 @@ export interface EnrichResult {
 	enriched: EnrichEntry[];
 	skipped: string[];
 	failed: string[];
+	write: EnrichWriteResult;
 }
 
 export interface EnrichOptions {

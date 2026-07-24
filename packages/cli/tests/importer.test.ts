@@ -1,14 +1,28 @@
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect } from "bun:test";
 import { writeFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fetchRecipe, validateGram } from "../src/services/importer";
+import {
+	fetchRecipe,
+	parseRecipeResponse,
+	validateGram,
+} from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
 // Regression tests for the two guardrails the security audit (Phase 3) identified
 // on the `gram import` pipeline: fetchRecipe() is the only boundary between
 // untrusted external content and the AI prompt, and validateGram() is the only
 // gate between AI-generated text and a written .gram file.
+//
+// Audit 2026-07-22, cli finding I-2 (SSRF, Phase 18): these used to spin up a
+// real local HTTP server and fetch it via `fetchRecipe` — which is exactly
+// what the SSRF fix (`assertPublicUrl`) now correctly refuses, since a local
+// test server is unavoidably bound to a loopback address. The response-
+// parsing logic they were actually testing (content-type dispatch, HTML
+// JSON-LD scraping) is exercised directly via `parseRecipeResponse` instead,
+// with no network involved; a separate test below confirms `fetchRecipe`
+// itself still refuses a loopback URL end-to-end (see also ssrf.test.ts for
+// the full parameterized sweep over forbidden address ranges).
 
 const RECIPE_JSON_LD = {
 	"@context": "https://schema.org",
@@ -18,64 +32,34 @@ const RECIPE_JSON_LD = {
 	recipeInstructions: ["Mix everything."],
 };
 
-let server: ReturnType<typeof Bun.serve>;
-
-beforeAll(() => {
-	server = Bun.serve({
-		port: 0,
-		fetch(req) {
-			const url = new URL(req.url);
-			if (url.pathname === "/recipe.json") {
-				return new Response(JSON.stringify(RECIPE_JSON_LD), {
-					headers: { "content-type": "application/json" },
-				});
-			}
-			if (url.pathname === "/recipe.html") {
-				const html = `<html><head><script type="application/ld+json">${JSON.stringify(RECIPE_JSON_LD)}</script></head><body></body></html>`;
-				return new Response(html, { headers: { "content-type": "text/html" } });
-			}
-			if (url.pathname === "/no-jsonld.html") {
-				return new Response("<html><body>no recipe here</body></html>", {
-					headers: { "content-type": "text/html" },
-				});
-			}
-			if (url.pathname === "/not-found") {
-				return new Response("not found", { status: 404 });
-			}
-			return new Response("not found", { status: 404 });
-		},
+describe("parseRecipeResponse", () => {
+	it("parses a direct application/json response", () => {
+		const { jsonLd } = parseRecipeResponse(
+			JSON.stringify(RECIPE_JSON_LD),
+			"application/json",
+		);
+		expect(jsonLd["@type"]).toBe("Recipe");
+		expect(jsonLd.name).toBe("Test Pancakes");
 	});
-});
 
-afterAll(() => {
-	server.stop(true);
+	it("extracts JSON-LD embedded in an HTML page (the gram import <url> scraping path)", () => {
+		const html = `<html><head><script type="application/ld+json">${JSON.stringify(RECIPE_JSON_LD)}</script></head><body></body></html>`;
+		const { jsonLd } = parseRecipeResponse(html, "text/html");
+		expect(jsonLd["@type"]).toBe("Recipe");
+		expect(jsonLd.name).toBe("Test Pancakes");
+	});
+
+	it("throws when the page has no schema.org Recipe JSON-LD", () => {
+		expect(() =>
+			parseRecipeResponse(
+				"<html><body>no recipe here</body></html>",
+				"text/html",
+			),
+		).toThrow(GramCLIError);
+	});
 });
 
 describe("fetchRecipe", () => {
-	it("parses a direct application/json response", async () => {
-		const { jsonLd } = await fetchRecipe(`${server.url}recipe.json`);
-		expect(jsonLd["@type"]).toBe("Recipe");
-		expect(jsonLd.name).toBe("Test Pancakes");
-	});
-
-	it("extracts JSON-LD embedded in an HTML page (the gram import <url> scraping path)", async () => {
-		const { jsonLd } = await fetchRecipe(`${server.url}recipe.html`);
-		expect(jsonLd["@type"]).toBe("Recipe");
-		expect(jsonLd.name).toBe("Test Pancakes");
-	});
-
-	it("throws a GramCLIError when the page has no schema.org Recipe JSON-LD", async () => {
-		await expect(fetchRecipe(`${server.url}no-jsonld.html`)).rejects.toThrow(
-			GramCLIError,
-		);
-	});
-
-	it("throws a GramCLIError on a non-2xx HTTP response instead of silently continuing", async () => {
-		await expect(fetchRecipe(`${server.url}not-found`)).rejects.toThrow(
-			GramCLIError,
-		);
-	});
-
 	it("reads and parses a local JSON-LD file when given a filesystem path", async () => {
 		const path = join(tmpdir(), `gram-test-recipe-${Date.now()}.json`);
 		await writeFile(path, JSON.stringify(RECIPE_JSON_LD), "utf-8");
@@ -84,6 +68,23 @@ describe("fetchRecipe", () => {
 			expect(jsonLd.name).toBe("Test Pancakes");
 		} finally {
 			await unlink(path);
+		}
+	});
+
+	// Audit 2026-07-22, cli finding I-2 (SSRF): a URL is refused before any
+	// request is made at all, regardless of what it would have served —
+	// proven here with a real local server that never gets hit.
+	it("refuses to fetch a loopback URL end-to-end (SSRF guard)", async () => {
+		const server = Bun.serve({
+			port: 0,
+			fetch: () => new Response(JSON.stringify(RECIPE_JSON_LD)),
+		});
+		try {
+			await expect(fetchRecipe(`${server.url}recipe.json`)).rejects.toThrow(
+				GramCLIError,
+			);
+		} finally {
+			server.stop(true);
 		}
 	});
 });
