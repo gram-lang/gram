@@ -1,0 +1,84 @@
+{
+  "title": "Fraction Zero Denominator",
+  "slug": "fraction-zero-denominator",
+  "meta": {
+    "title": "Fraction Zero Denominator"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "cups"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "unit": "cups"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "unit": "cups"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ]
+  }
+}

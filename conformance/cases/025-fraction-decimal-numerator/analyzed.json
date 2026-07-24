@@ -1,0 +1,128 @@
+{
+  "title": "Fraction Decimal Numerator",
+  "slug": "fraction-decimal-numerator",
+  "meta": {
+    "title": "Fraction Decimal Numerator"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "cups"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 0.75,
+      "unit": "cups"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": {
+            "type": "fraction",
+            "value": 0.75,
+            "numerator": 1.5,
+            "denominator": 2,
+            "text": "1.5/2"
+          },
+          "unit": "cups"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": {
+                "type": "fraction",
+                "value": 0.75,
+                "numerator": 1.5,
+                "denominator": 2,
+                "text": "1.5/2"
+              },
+              "unit": "cups"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour"
+        ]
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"flour\" to estimate nutrition."
+        }
+      ]
+    }
+  }
+}

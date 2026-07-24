@@ -1,0 +1,68 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Fraction Zero Denominator"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 54,
+                "end": 58
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 65,
+                  "end": 73
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 58,
+                "end": 74
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 74,
+                "end": 75
+              }
+            }
+          ],
+          "loc": {
+            "start": 54,
+            "end": 76
+          }
+        }
+      ],
+      "loc": {
+        "start": 42,
+        "end": 76
+      }
+    }
+  ]
+}
