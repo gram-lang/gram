@@ -197,9 +197,22 @@ export function applyScale(
 		}
 	}
 
+	// Audit 2026-07-22, finding F-001: cookware was never scaled explicitly
+	// here — it only happened to work when applyScale ran *inside* compile()
+	// (before cleanObject destroys the shared references between
+	// result.cookware / section.cookware / the step's inline token), so
+	// `applyScale(compile(ast), f)` silently left cookware unscaled while
+	// `compile(ast, { scaleFactor: f })` didn't. `fixed:false` set on cookware
+	// by createCleanUsage means it's meant to be scalable like any ingredient.
+	// mutateUsage's WeakSet guard makes this safe to call again on an object
+	// already scaled via the step-token pass below, whether or not the two
+	// are still the same shared reference.
+	for (const cw of cloned.cookware ?? []) mutateUsage(cw, factor, scaled);
+
 	for (const section of cloned.sections ?? []) {
 		for (const ing of section.ingredients ?? [])
 			mutateUsage(ing, factor, scaled);
+		for (const cw of section.cookware ?? []) mutateUsage(cw, factor, scaled);
 		for (const stepItem of section.steps ?? []) {
 			if (!stepItem || stepItem.type === "comment") continue;
 			for (const token of stepItem.content ?? []) {

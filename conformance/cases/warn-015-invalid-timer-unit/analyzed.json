@@ -1,8 +1,8 @@
 {
-  "title": "Warn Missing Unit",
-  "slug": "warn-missing-unit",
+  "title": "Warn Invalid Timer Unit",
+  "slug": "warn-invalid-timer-unit",
   "meta": {
-    "title": "Warn Missing Unit"
+    "title": "Warn Invalid Timer Unit"
   },
   "registry": {
     "ingredients": {},
@@ -19,10 +19,9 @@
         {
           "type": "step",
           "content": [
-            "Wait for ",
+            "Wait ",
             {
-              "type": "timer",
-              "name": "timer"
+              "type": "timer"
             },
             "."
           ],
@@ -32,17 +31,21 @@
             "activeDuration": 2
           }
         }
-      ]
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
     }
   ],
   "warnings": [
     {
-      "code": "MISSING_UNIT",
-      "message": "Timer must have an explicit unit.",
-      "item": "timer",
+      "code": "INVALID_UNIT",
+      "message": "Invalid unit \"bananas\" for Timer.",
       "loc": {
-        "start": 55,
-        "end": 65
+        "start": 57,
+        "end": 69
       }
     }
   ],
@@ -62,6 +65,19 @@
         "duration": 2
       }
     ],
-    "preparationTime": 0
+    "preparationTime": 0,
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "fat": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
   }
 }

@@ -306,12 +306,22 @@ Heat @=oil{50ml} in a pan.
 		expect(flourB.qty).toBe(1500);
 	});
 
-	// Regression test: processIngredient (processor.ts) pushes the same Usage
-	// object into both section.ingredients and the step's inline content token —
-	// structuredClone preserves that shared reference, so scaling each collection
-	// independently used to multiply the qty by `factor` twice (factor²).
+	// Regression test, corrected (audit 2026-07-22, finding F-010): the
+	// previous version of this test called `applyScale(recipe, 2)` where
+	// `recipe` came from `compileRecipe()` — i.e. already passed through
+	// `compile()`'s own `cleanObject()`, which rebuilds every object fresh
+	// with no identity table. By that point section.ingredients and the
+	// step's inline token are no longer the same object, so the test passed
+	// without ever exercising the WeakSet dedup guard it claimed to cover —
+	// a "regression test" that could not fail. The shared reference only
+	// exists *inside* compile(), before its own cleanObject() call, which is
+	// exactly what `compile(ast, { scaleFactor })` exercises.
 	it("scales a section ingredient's qty by the factor exactly once, not squared, even though it shares an object reference with its inline step token", () => {
-		const scaled: any = applyScale(recipe, 2);
+		const ast = getAST(`
+[Mix] Add @flour{500g} and @salt{10g}.
+Heat @=oil{50ml} in a pan.
+`);
+		const scaled: any = compile(ast, { scaleFactor: 2 });
 		const sectionFlour = scaled.sections[0].ingredients.find(
 			(i: any) => i.id === "flour",
 		);
@@ -321,5 +331,46 @@ Heat @=oil{50ml} in a pan.
 			(t: any) => t && t.id === "flour",
 		);
 		expect(stepToken.qty).toBe(1000);
+	});
+
+	// Regression test for the audit (2026-07-22, finding F-001): applyScale()
+	// never touched `cookware` explicitly, and only scaled it "by accident"
+	// through a shared object reference that compile()'s own cleanObject()
+	// call destroys — so these two supposedly-equivalent entry points
+	// silently diverged on cookware. Verified: previously
+	// `applyScale(compile(ast), 3).cookware[0].qty` stayed at 2 while
+	// `compile(ast, { scaleFactor: 3 }).cookware[0].qty` was 6.
+	describe("parity with compile({ scaleFactor })", () => {
+		const cookwareSource = `
+[Mix] Use #pan{2} and @flour{500g}.
+`;
+
+		it("scales top-level cookware the same way through both entry points", () => {
+			const ast = getAST(cookwareSource);
+			const viaCompile: any = compile(ast, { scaleFactor: 3 });
+			const viaApplyScale: any = applyScale(compile(getAST(cookwareSource)), 3);
+
+			expect(viaApplyScale.cookware).toEqual(viaCompile.cookware);
+			expect(viaCompile.cookware[0].qty).toBe(6);
+			expect(viaApplyScale.cookware[0].qty).toBe(6);
+		});
+
+		it("scales section-level cookware the same way through both entry points", () => {
+			const ast = getAST(cookwareSource);
+			const viaCompile: any = compile(ast, { scaleFactor: 3 });
+			const viaApplyScale: any = applyScale(compile(getAST(cookwareSource)), 3);
+
+			expect(viaApplyScale.sections[0].cookware).toEqual(
+				viaCompile.sections[0].cookware,
+			);
+		});
+
+		it("produces the same full result through both entry points for a mixed ingredient/cookware recipe", () => {
+			const ast = getAST(cookwareSource);
+			const viaCompile = compile(ast, { scaleFactor: 3 });
+			const viaApplyScale = applyScale(compile(getAST(cookwareSource)), 3);
+
+			expect(viaApplyScale).toEqual(viaCompile);
+		});
 	});
 });
