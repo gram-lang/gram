@@ -9,6 +9,16 @@ import { buildLineIndex } from "./utils/position";
 
 export interface DocumentState {
 	text: string;
+	/**
+	 * The source TextDocument's version at the time this state was computed
+	 * (undefined when parsed outside the LSP document-sync protocol, e.g. in
+	 * tests). Audit 2026-07-22, finding B5: refresh() is debounced, so a
+	 * cached state can lag behind the live document; edit-producing features
+	 * (formatting, rename, code actions) must compare this against the live
+	 * document's version and re-parse synchronously on mismatch rather than
+	 * computing a TextEdit against stale text/offsets.
+	 */
+	version: number | undefined;
 	lineStarts: number[];
 	ast: RecipeAST | null;
 	parseError: string | null;
@@ -20,6 +30,7 @@ export interface DocumentState {
 export function parseDocument(
 	text: string,
 	db?: Record<string, IngredientData>,
+	version?: number,
 ): DocumentState {
 	const lineStarts = buildLineIndex(text);
 	try {
@@ -39,18 +50,20 @@ export function parseDocument(
 		}
 		return {
 			text,
+			version,
 			lineStarts,
 			ast,
 			parseError: null,
 			parseErrorOffset: null,
 			compilation,
 		};
-	} catch (e: any) {
+	} catch (e) {
 		return {
 			text,
+			version,
 			lineStarts,
 			ast: null,
-			parseError: String(e?.message ?? e),
+			parseError: String(e instanceof Error ? e.message : e),
 			parseErrorOffset: e instanceof GramParseError ? e.offset : null,
 			compilation: null,
 		};
