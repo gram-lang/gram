@@ -24,6 +24,11 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 		bakersMathOnly: options.bakersMathOnly,
 		lang: options.lang,
 	};
+	// Context variant used when rendering inline step tokens — hides qty if flag is set
+	// (not from shopping list or section mise en place, matches print.ts's stepContext).
+	const stepContext: RenderContext = options.hideStepQty
+		? { ...context, hideIngredientQty: true }
+		: context;
 
 	let md = "";
 
@@ -137,7 +142,7 @@ export function toMarkdown(data: any, options: RendererOptions = {}): string {
 				} else if (step.type === "step") {
 					stepText += joinStepTokens(
 						step.content,
-						(c) => formatElement(c, "md", context),
+						(c) => formatElement(c, "md", stepContext),
 						(c) => typeof c !== "string" && c.type !== "comment",
 					);
 				}
