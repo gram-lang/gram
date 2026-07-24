@@ -40,7 +40,7 @@
           "unit": "cups",
           "conversionMethod": "density",
           "isEstimate": true,
-          "normalizedMass": 250.78328000000002
+          "normalizedMass": 250.78
         }
       ],
       "cookware": [],
@@ -54,7 +54,7 @@
               "_usageId": "1",
               "qty": 2,
               "unit": "cups",
-              "normalizedMass": 250.78328000000002,
+              "normalizedMass": 250.78,
               "conversionMethod": "density",
               "isEstimate": true
             },

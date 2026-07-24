@@ -183,33 +183,21 @@ export function analyze(
 
 			trackMissingIngredient(item, database, missingIngredientsSet);
 
-			// Perform physical mass normalization if enabled
+			// Perform physical mass normalization if enabled. Audit
+			// 2026-07-22, analyzer finding B6/I10: this used to duplicate
+			// standardizeUsageMass()'s sequence inline, but without its
+			// round2() calls — the same usage ended up with an unrounded
+			// normalizedMass here (e.g. 250.78328000000002) and a rounded
+			// one once aggregated into the shopping list (250.78). Calling
+			// the one shared function both places removes the divergence,
+			// not just the site it was noticed at.
 			if (opts.enableMassStandardization !== false) {
-				const numericQty = getNumericQty(item.qty);
-
-				if (numericQty !== null) {
-					const norm = standardizeMass(
-						numericQty,
-						item.unit || "unit",
-						database,
-						item.name || item.id,
-						overrides,
-					);
-					if (norm) {
-						item.conversionMethod = norm.method;
-						item.isEstimate = norm.isEstimate;
-
-						const dbData = getIngredientData(item.id, database);
-						const yieldFactor =
-							opts.enableYieldCalculation !== false
-								? dbData?.physical?.yield
-								: undefined;
-						const yielded = applyYield(norm.mass, norm.method, yieldFactor);
-						item.normalizedMass = yielded.normalizedMass;
-						if (yielded.purchasingMass !== undefined)
-							item.purchasingMass = yielded.purchasingMass;
-					}
-				}
+				standardizeUsageMass(
+					item,
+					database,
+					overrides,
+					opts.enableYieldCalculation !== false,
+				);
 			}
 			if (item.type !== "reference") {
 				allRawIngredients.push(item);
@@ -336,35 +324,20 @@ export function analyze(
 				let totalMass = 0;
 				let totalPurchasing = 0;
 				let hasEstimate = false;
+				// Same duplication as the section-level pass above (finding
+				// B6/I10): standardize each child through the one shared
+				// function instead of re-deriving the same sequence inline.
 				for (const child of item.usage) {
-					const numericQty = getNumericQty(child.qty);
-					if (numericQty !== null) {
-						const norm = standardizeMass(
-							numericQty,
-							child.unit || "unit",
-							database,
-							child.name || child.id,
-							overrides,
-						);
-						if (norm) {
-							const childDbData = getIngredientData(child.id, database);
-							const childYieldFactor =
-								opts.enableYieldCalculation !== false
-									? childDbData?.physical?.yield
-									: undefined;
-							const childYielded = applyYield(
-								norm.mass,
-								norm.method,
-								childYieldFactor,
-							);
-
-							child.normalizedMass = round2(childYielded.normalizedMass);
-							child.isEstimate = norm.isEstimate;
-							totalMass += childYielded.normalizedMass;
-							totalPurchasing +=
-								childYielded.purchasingMass ?? childYielded.normalizedMass;
-							if (norm.isEstimate) hasEstimate = true;
-						}
+					standardizeUsageMass(
+						child,
+						database,
+						overrides,
+						opts.enableYieldCalculation !== false,
+					);
+					if (child.normalizedMass !== undefined) {
+						totalMass += child.normalizedMass;
+						totalPurchasing += child.purchasingMass ?? child.normalizedMass;
+						if (child.isEstimate) hasEstimate = true;
 					}
 				}
 				if (totalMass > 0) {
