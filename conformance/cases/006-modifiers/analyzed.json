@@ -143,7 +143,8 @@
               ],
               "normalizedMass": 250,
               "conversionMethod": "physical",
-              "isEstimate": false
+              "isEstimate": false,
+              "bakersPercentage": 96.15
             },
             ", a ",
             {
@@ -229,7 +230,8 @@
               ],
               "normalizedMass": 10,
               "conversionMethod": "physical",
-              "isEstimate": false
+              "isEstimate": false,
+              "bakersPercentage": 3.85
             },
             "to the ",
             {
