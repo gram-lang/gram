@@ -32,6 +32,11 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 		_inlineComments: [],
 		_renderId: options.renderId ?? "note",
 	};
+	// Context variant used when rendering inline step tokens — hides qty if flag is set
+	// (not from shopping list or section mise en place, matches print.ts's stepContext).
+	const stepContext: RenderContext = options.hideStepQty
+		? { ...context, hideIngredientQty: true }
+		: context;
 
 	let html = "";
 
@@ -428,7 +433,7 @@ export function toHTML(data: any, options: RendererOptions = {}): string {
 					const renderGroup = (arr: any[]) =>
 						joinStepTokens(
 							arr,
-							(c) => formatElement(c, "html", context),
+							(c) => formatElement(c, "html", stepContext),
 							(c) =>
 								typeof c !== "string" &&
 								c.type !== "comment" &&
