@@ -115,6 +115,52 @@ describe("formatGram", () => {
 		expect(second.content).toBe(first.content);
 		expect(hasChanges(second.changes)).toBe(false);
 	});
+
+	// Regression tests for the security/correctness audit (2026-07-22, finding
+	// 0-b): rules meant for gram syntax (@ids, quantities, temperatures) used
+	// to run over the whole file, silently rewriting frontmatter — e.g.
+	// lowercasing the domain of an email address — with no fixed point between
+	// this formatter and the language-server's.
+	describe("frontmatter", () => {
+		it("does not lowercase an email address in the frontmatter", () => {
+			const input =
+				"---\ntitle: Crepes\nauthor: Jean@Example.com\n---\n## Section\nAdd @Flour{200g}.\n";
+			const { content } = formatGram(input);
+			expect(content).toContain("author: Jean@Example.com");
+			expect(content).toContain("@flour{200g}");
+		});
+
+		it("leaves frontmatter content byte-for-byte untouched by gram-syntax rules", () => {
+			const input =
+				"---\ntitle: Test\ntags: [A, B]\ndescription: 'Contains {braces} and @Words'\n---\n## S\nStep.\n";
+			const { content } = formatGram(input);
+			const frontmatterBlock = content.slice(0, content.indexOf("---\n## S"));
+			expect(frontmatterBlock).toBe(
+				"---\ntitle: Test\ntags: [A, B]\ndescription: 'Contains {braces} and @Words'\n",
+			);
+		});
+
+		it("still trims trailing whitespace inside frontmatter", () => {
+			const input = "---\ntitle: Test   \n---\n## S\nStep.\n";
+			const { content } = formatGram(input);
+			expect(content).toContain("title: Test\n");
+		});
+
+		it("is idempotent on a file with frontmatter", () => {
+			const messy =
+				"---\ntitle: Crepes\nauthor: Jean@Example.com\n---\n##   Prep  \nAdd @Flour {500.0g}.  \n";
+			const first = formatGram(messy);
+			const second = formatGram(first.content);
+			expect(second.content).toBe(first.content);
+			expect(hasChanges(second.changes)).toBe(false);
+		});
+
+		it("treats content as body (applies gram rules) when frontmatter has no closing delimiter", () => {
+			const input = "---\ntitle: Test\n## S\nAdd @Flour{200g}.\n";
+			const { content } = formatGram(input);
+			expect(content).toContain("@flour{200g}");
+		});
+	});
 });
 
 describe("hasChanges", () => {

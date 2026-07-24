@@ -3,14 +3,9 @@ import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 import { parse, stringify } from "yaml";
 import { withFileLock, atomicWrite } from "../core/lock";
+import { AI_PROVIDER_ENV_VAR } from "../core/ai";
 
 const SENSITIVE_KEYS = new Set(["ai.apiKey"]);
-
-const PROVIDER_ENV_MAP: Record<string, string> = {
-	google: "GEMINI_API_KEY",
-	openai: "OPENAI_API_KEY",
-	anthropic: "ANTHROPIC_API_KEY",
-};
 
 export function getLocalConfigPath(projectRoot: string): string {
 	return join(projectRoot, ".gram", "config.yaml");
@@ -25,7 +20,11 @@ export function isSensitiveKey(key: string): boolean {
 }
 
 export function getEnvVarName(provider?: string): string {
-	return (provider && PROVIDER_ENV_MAP[provider]) ?? "GRAM_API_KEY";
+	return (
+		(provider &&
+			AI_PROVIDER_ENV_VAR[provider as keyof typeof AI_PROVIDER_ENV_VAR]) ??
+		"GRAM_API_KEY"
+	);
 }
 
 // ── Dot-notation helpers ──────────────────────────────────────────────────────
@@ -255,7 +254,7 @@ export async function snapshotConfig(
 	const envPath = join(projectRoot, ".env");
 	const allEnvVars = await readDotEnv(envPath);
 	const knownEnvKeys = new Set([
-		...Object.values(PROVIDER_ENV_MAP),
+		...Object.values(AI_PROVIDER_ENV_VAR),
 		"GRAM_API_KEY",
 	]);
 	const envVars = Object.fromEntries(
