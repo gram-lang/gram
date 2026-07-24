@@ -51,9 +51,8 @@
           "id": "flour",
           "_usageId": "2",
           "qty": {
-            "type": "Quantity",
-            "value": 20,
-            "unit": "g"
+            "type": "single",
+            "value": 20
           },
           "isCircular": true,
           "dependencies": [
@@ -91,9 +90,8 @@
               "id": "flour",
               "_usageId": "2",
               "qty": {
-                "type": "Quantity",
-                "value": 20,
-                "unit": "g"
+                "type": "single",
+                "value": 20
               },
               "isCircular": true,
               "dependencies": [

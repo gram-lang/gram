@@ -26,6 +26,14 @@ export interface ShoppingListItem {
 	allFixed?: boolean;
 	isRelative?: boolean;
 	modifierSet?: Set<string>;
+	// Set by @gram-lang/analyzer, not by kitchen itself — same fields as
+	// Usage's own (see that type's comment), declared here too since
+	// analyze() enriches shopping-list items of every shape in place.
+	normalizedMass?: number;
+	conversionMethod?: string;
+	isEstimate?: boolean;
+	purchasingMass?: number;
+	bakersPercentage?: number;
 }
 
 export interface CompositeItem {
@@ -55,6 +63,19 @@ export interface CompositeItem {
 	relative?: boolean;
 	multiUnit?: boolean;
 	unit?: string | null;
+	modifiers?: string[];
+	// Set by @gram-lang/analyzer's Baker's Percentage pass, generic over
+	// every shopping-list entry shape — never actually meaningful for a
+	// composite parent in practice, but declared for the same reason as
+	// fixed/relative/multiUnit above.
+	bakersPercentage?: number;
+	// Set by @gram-lang/analyzer on the composite parent itself (summed from
+	// its children's own normalizedMass, not read off unit_weight) — see
+	// ShoppingListItem's identical fields for why they're declared here.
+	normalizedMass?: number;
+	conversionMethod?: string;
+	isEstimate?: boolean;
+	purchasingMass?: number;
 }
 
 /**

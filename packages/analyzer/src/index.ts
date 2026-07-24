@@ -6,7 +6,11 @@ export * from "./metrics";
 export * from "./diff";
 export * from "./shopping_aggregation";
 
-import type { CompilationResult } from "@gram-lang/kitchen";
+import type {
+	CompilationResult,
+	Usage,
+	ShoppingListItem,
+} from "@gram-lang/kitchen";
 import { getNumericQty, WarningCode, round2 } from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
@@ -15,10 +19,10 @@ import type {
 	IngredientData,
 	AnalysisResult,
 	AnalyzerOptions,
+	NutritionMetrics,
 } from "./types";
-import { ASTNodeType } from "@gram-lang/parser";
 import { calculateMassMetrics } from "./metrics";
-import { calculateNutrition } from "./nutrition";
+import { calculateNutrition, type NutritionItem } from "./nutrition";
 import {
 	standardizeMass,
 	parseDensityOverrides,
@@ -84,7 +88,7 @@ export function validateIngredientDatabase(
  * across the section-level and shopping-list enrichment passes.
  */
 function standardizeUsageMass(
-	usage: any,
+	usage: Partial<Usage> & Pick<Usage, "id">,
 	database: Record<string, IngredientData>,
 	overrides: Record<string, number>,
 	enableYieldCalculation: boolean,
@@ -166,11 +170,12 @@ export function analyze(
 				// than falling through to the qty/unit check below, which only
 				// ever finds those fields on the wrapper's own top-level item
 				// (never present for an alternative) and would silently no-op.
-				item.options.forEach((opt: any) => {
+				item.options.forEach((opt) => {
+					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
 					trackMissingIngredient(opt, database, missingIngredientsSet);
 					if (opts.enableMassStandardization !== false) {
 						standardizeUsageMass(
-							opt,
+							opt as Partial<Usage> & Pick<Usage, "id">,
 							database,
 							overrides,
 							opts.enableYieldCalculation !== false,
@@ -233,11 +238,15 @@ export function analyze(
 				if (foundMass && targetMass > 0) {
 					const calculatedMass = (item.formula.percent / 100) * targetMass;
 					item.normalizedMass = round2(calculatedMass);
-					item.qty = {
-						type: ASTNodeType.Quantity,
-						value: item.normalizedMass,
-						unit: "g",
-					} as any;
+					// `Usage.qty` accepts QuantityValueAST's "single"/"fraction"/
+					// "range" variants, never a raw QuantityAST (`type:
+					// ASTNodeType.Quantity` = the literal string "Quantity") —
+					// this happened to still render correctly only because
+					// renderer's getQty() has an untyped fallback that reads
+					// `.value` off *any* object shape, ignoring `.type`. `unit`
+					// isn't part of QuantityValueAST either — `item.unit` below
+					// is the real, and only, place that's read from.
+					item.qty = { type: "single", value: item.normalizedMass };
 					item.unit = "g";
 					item.conversionMethod = "relative";
 				} else {
@@ -261,8 +270,10 @@ export function analyze(
 			// itself has no single mass) — register them too, so the group's
 			// inline step-text mention can look each option up the same way.
 			if (i.type === "alternative" && Array.isArray(i.options)) {
-				i.options.forEach((opt: any) => {
-					if (opt._usageId) usageMap.set(opt._usageId, opt);
+				i.options.forEach((opt) => {
+					if (typeof opt !== "string" && "_usageId" in opt && opt._usageId) {
+						usageMap.set(opt._usageId, opt as AnalyzedUsage);
+					}
 				});
 			}
 		});
@@ -272,7 +283,10 @@ export function analyze(
 			});
 		}
 
-		const syncEnrichedFields = (target: any, enriched: AnalyzedUsage) => {
+		const syncEnrichedFields = (
+			target: Partial<Usage>,
+			enriched: AnalyzedUsage,
+		) => {
 			if (enriched.normalizedMass !== undefined)
 				target.normalizedMass = enriched.normalizedMass;
 			if (enriched.qty !== undefined) target.qty = enriched.qty;
@@ -287,14 +301,17 @@ export function analyze(
 
 		sec.steps.forEach((step) => {
 			if (step.type === "step" && Array.isArray(step.content)) {
-				step.content.forEach((contentItem: any) => {
+				step.content.forEach((contentItem) => {
 					if (!contentItem || typeof contentItem !== "object") return;
 
 					if (
+						"type" in contentItem &&
 						contentItem.type === "alternative" &&
+						"options" in contentItem &&
 						Array.isArray(contentItem.options)
 					) {
-						contentItem.options.forEach((opt: any) => {
+						contentItem.options.forEach((opt) => {
+							if (typeof opt === "string" || !("_usageId" in opt)) return;
 							const enriched = opt._usageId
 								? usageMap.get(opt._usageId)
 								: undefined;
@@ -303,7 +320,7 @@ export function analyze(
 						return;
 					}
 
-					if (contentItem._usageId) {
+					if ("_usageId" in contentItem && contentItem._usageId) {
 						const enriched = usageMap.get(contentItem._usageId);
 						if (enriched) syncEnrichedFields(contentItem, enriched);
 					}
@@ -313,12 +330,16 @@ export function analyze(
 	});
 
 	// 2. Traverse and enrich the master Shopping List
-	let shopping_list = result.shopping_list
-		? JSON.parse(JSON.stringify(result.shopping_list))
+	let shopping_list: CompilationResult["shopping_list"] = result.shopping_list
+		? structuredClone(result.shopping_list)
 		: [];
-	shopping_list.forEach((item: any) => {
+	shopping_list.forEach((item) => {
 		if (opts.enableMassStandardization !== false) {
-			if (item.type === "composite" && Array.isArray(item.usage)) {
+			if (
+				item.type === "composite" &&
+				"usage" in item &&
+				Array.isArray(item.usage)
+			) {
 				// For composites, sum children masses — NOT the parent unit weight.
 				// e.g. 6 egg yolks + 1 direct egg → 6×17g + 1×50g = 152g, not 7×50g = 350g.
 				let totalMass = 0;
@@ -328,8 +349,9 @@ export function analyze(
 				// B6/I10): standardize each child through the one shared
 				// function instead of re-deriving the same sequence inline.
 				for (const child of item.usage) {
+					if (!child.id) continue;
 					standardizeUsageMass(
-						child,
+						child as Partial<Usage> & Pick<Usage, "id">,
 						database,
 						overrides,
 						opts.enableYieldCalculation !== false,
@@ -348,7 +370,11 @@ export function analyze(
 						item.purchasingMass = round2(totalPurchasing);
 					}
 				}
-			} else if (item.type === "alternative" && Array.isArray(item.options)) {
+			} else if (
+				item.type === "alternative" &&
+				"options" in item &&
+				Array.isArray(item.options)
+			) {
 				// Unlike a composite, an alternative's options are mutually
 				// exclusive ("egg OR tofu") — standardize each independently
 				// rather than summing into a single item.normalizedMass, which
@@ -356,7 +382,10 @@ export function analyze(
 				// calculateMassMetrics already read a per-option normalizedMass
 				// directly (the latter picks options[0] as the representative
 				// for aggregate totals), so no wrapper-level field is needed.
-				item.options.forEach((opt: any) => {
+				// A StepToken option can be a plain string (e.g. free text) —
+				// standardizeUsageMass needs an object with an `id`.
+				item.options.forEach((opt) => {
+					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
 					standardizeUsageMass(
 						opt,
 						database,
@@ -365,8 +394,13 @@ export function analyze(
 					);
 				});
 			} else {
+				// Neither composite nor alternative — the plain aggregated-
+				// ingredient shape (ShoppingListItem), though the original code
+				// also defensively read Usage's singular `_usageId` here, so
+				// this keeps accepting both rather than assuming which one.
+				const stdItem = item as ShoppingListItem & Partial<Usage>;
 				const usageIds =
-					item._usageIds || (item._usageId ? [item._usageId] : []);
+					stdItem._usageIds || (stdItem._usageId ? [stdItem._usageId] : []);
 				const usages = allRawIngredients.filter(
 					(u) => u._usageId && usageIds.includes(u._usageId),
 				);
@@ -385,25 +419,25 @@ export function analyze(
 				});
 
 				if (totalMass > 0) {
-					item.normalizedMass = round2(totalMass);
-					item.isEstimate = hasEstimate;
+					stdItem.normalizedMass = round2(totalMass);
+					stdItem.isEstimate = hasEstimate;
 					// Preserve 'relative' provenance even if only some contributing
 					// usages were formula-derived: a mass partly built from another
 					// ingredient's percentage can't be treated as a physical anchor
 					// (e.g. for Baker's Math reference validation below).
-					item.conversionMethod = hasRelativeResolved
+					stdItem.conversionMethod = hasRelativeResolved
 						? "relative"
 						: hasEstimate
 							? "estimate"
 							: "physical";
 					if (Math.abs(totalPurchasing - totalMass) > 0.001) {
-						item.purchasingMass = round2(totalPurchasing);
+						stdItem.purchasingMass = round2(totalPurchasing);
 					}
 
 					if (hasRelativeResolved) {
-						item.qty = item.normalizedMass;
-						item.unit = "g";
-						item.variable_entries = [];
+						stdItem.qty = stdItem.normalizedMass;
+						stdItem.unit = "g";
+						stdItem.variable_entries = [];
 					}
 				}
 			}
@@ -421,7 +455,8 @@ export function analyze(
 
 	if (opts.enableBakersMath !== false) {
 		// Find reference by explicit option or by the `*` modifier
-		let bakersReferenceItem: any = null;
+		let bakersReferenceItem: CompilationResult["shopping_list"][number] | null =
+			null;
 		for (const item of shopping_list) {
 			if (
 				(opts.bakersReference && item.id === opts.bakersReference) ||
@@ -463,7 +498,7 @@ export function analyze(
 					: undefined;
 
 			// Apply to shopping list
-			shopping_list.forEach((item: any) => {
+			shopping_list.forEach((item) => {
 				const bp = computeBakers(item.normalizedMass);
 				if (bp !== undefined) item.bakersPercentage = bp;
 			});
@@ -472,15 +507,15 @@ export function analyze(
 			if (Array.isArray(sections)) {
 				sections.forEach((section) => {
 					if (Array.isArray(section.ingredients)) {
-						section.ingredients.forEach((item: any) => {
+						section.ingredients.forEach((item) => {
 							const bp = computeBakers(item.normalizedMass);
 							if (bp !== undefined) item.bakersPercentage = bp;
 						});
 					}
 					if (Array.isArray(section.steps)) {
-						section.steps.forEach((step: any) => {
+						section.steps.forEach((step) => {
 							if (step && step.type === "step" && Array.isArray(step.content)) {
-								step.content.forEach((node: any) => {
+								step.content.forEach((node) => {
 									// Audit 2026-07-22, analyzer finding I1/§5(c):
 									// kitchen's createCleanUsage never sets `.type`
 									// on a plain ingredient token, so `node.type ===
@@ -491,7 +526,14 @@ export function analyze(
 									// `type` is the same "plain ingredient usage"
 									// signal kitchen itself relies on elsewhere
 									// (e.g. scale/engine.ts).
-									if (node && node.id && !node.type) {
+									if (
+										node &&
+										typeof node !== "string" &&
+										"id" in node &&
+										node.id &&
+										!node.type &&
+										"normalizedMass" in node
+									) {
 										const bp = computeBakers(node.normalizedMass);
 										if (bp !== undefined) node.bakersPercentage = bp;
 									}
@@ -505,9 +547,19 @@ export function analyze(
 	}
 
 	// 3. Estimate full nutritional profiles (calories, macros) based on portion counts
-	let nutrition: any;
+	let nutrition: NutritionMetrics | undefined;
 	if (opts.enableNutritionalEstimation !== false) {
-		nutrition = calculateNutrition(shopping_list, database, opts.portions || 1);
+		// shopping_list's declared type is kitchen's general
+		// (CompositeItem | ShoppingListItem | Usage)[] — wider than
+		// NutritionItem's AnalyzedUsage-based shape (e.g. `conversionMethod`
+		// is a specific literal union there, plain `string` in kitchen's
+		// type), but this analyzer-internal call always receives exactly the
+		// analyzer-populated values calculateNutrition expects.
+		nutrition = calculateNutrition(
+			shopping_list as NutritionItem[],
+			database,
+			opts.portions || 1,
+		);
 	}
 
 	// 4. Assemble and return the final structurally and physically enriched recipe package

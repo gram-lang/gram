@@ -64,9 +64,8 @@
           "id": "water",
           "_usageId": "2",
           "qty": {
-            "type": "Quantity",
-            "value": 150,
-            "unit": "g"
+            "type": "single",
+            "value": 150
           },
           "dependencies": [
             "flour"
@@ -102,9 +101,8 @@
               "id": "water",
               "_usageId": "2",
               "qty": {
-                "type": "Quantity",
-                "value": 150,
-                "unit": "g"
+                "type": "single",
+                "value": 150
               },
               "dependencies": [
                 "flour"

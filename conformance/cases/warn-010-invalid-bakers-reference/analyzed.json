@@ -70,9 +70,8 @@
             "bakers_percentage"
           ],
           "qty": {
-            "type": "Quantity",
-            "value": 100,
-            "unit": "g"
+            "type": "single",
+            "value": 100
           },
           "dependencies": [
             "flour"
@@ -111,9 +110,8 @@
                 "bakers_percentage"
               ],
               "qty": {
-                "type": "Quantity",
-                "value": 100,
-                "unit": "g"
+                "type": "single",
+                "value": 100
               },
               "dependencies": [
                 "flour"
