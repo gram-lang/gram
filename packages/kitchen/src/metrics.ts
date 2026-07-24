@@ -35,11 +35,6 @@ export function calculatePreparationTime(
 
 		let itemId = item.id;
 
-		// Add 2 minutes if the ingredient requires preparation (e.g. "chopped", "peeled")
-		if (item.type === "ingredient" && item.preparation) {
-			localTime += 2;
-		}
-
 		if (item.options && Array.isArray(item.options)) {
 			// For alternative choices, take the longest preparation path
 			let maxOpt = 0;
@@ -52,6 +47,11 @@ export function calculatePreparationTime(
 			});
 			localTime += maxOpt;
 		} else if (!item.type && item.id && item.preparation) {
+			// Audit 2026-07-22, kitchen finding F-016: createCleanUsage never
+			// sets `.type` on a plain ingredient, so an `item.type ===
+			// "ingredient"` check (removed above) was always dead — this is
+			// the only branch that ever actually added the 2min preparation
+			// overhead for a non-alternative ingredient.
 			localTime += 2;
 		}
 

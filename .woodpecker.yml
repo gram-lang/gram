@@ -32,6 +32,15 @@ steps:
     commands:
       - bun run typecheck
 
+  # `lint` above only fails on biome errors, not warnings — and `noExplicitAny`
+  # is off/warn-only in several packages (see biome.json). This ratchet catches
+  # regressions in those packages by comparing against a checked-in baseline
+  # (audit 2026-07-22, meta-finding on `bun run lint` exiting 0 with warnings).
+  any-ratchet:
+    image: oven/bun:1.3.14
+    commands:
+      - bun run any-ratchet
+
   test:
     image: oven/bun:1.3.14
     commands:

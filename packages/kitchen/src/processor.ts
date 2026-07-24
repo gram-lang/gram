@@ -269,16 +269,18 @@ function processAlternative(
 			processedOptions.push(result);
 
 			if (typeof result !== "string") {
+				// Audit 2026-07-22, kitchen finding F-016: createCleanUsage
+				// never sets `.type` on a plain ingredient/cookware Usage, so
+				// `r.type === "ingredient"/"drink"/"cookware"` above were
+				// dead branches — "drink" doesn't appear anywhere else in
+				// the codebase. `opt.type` (the *AST* node, not the
+				// processed Usage) is the reliable discriminant that was
+				// available here all along.
 				const r = result as Usage;
-				if (
-					r.type === "ingredient" ||
-					r.type === "drink" ||
-					(r.id && !r.type)
-				) {
-					tempIngredientsScope.push(r);
-				}
-				if (r.type === "cookware") {
+				if (opt.type === ASTNodeType.Cookware) {
 					tempCookwareScope.push(r);
+				} else {
+					tempIngredientsScope.push(r);
 				}
 			}
 		}
@@ -403,7 +405,12 @@ function processTimer(
 				value: q.value,
 				loc: item.loc,
 			});
-			obj.quantity = { type: "text", value: q.value };
+			// A plain string, not a fake QuantityValueAST-shaped object —
+			// ProcessedTimer.quantity already has a `string` arm for exactly
+			// this case (audit 2026-07-22, parser finding I4: QuantityValueAST
+			// becoming a real discriminated union stopped this ad-hoc
+			// `{type:"text", value}` object from structurally qualifying).
+			obj.quantity = q.value;
 		}
 	}
 	return obj;

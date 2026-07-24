@@ -70,7 +70,8 @@
               ],
               "normalizedMass": 200,
               "conversionMethod": "physical",
-              "isEstimate": false
+              "isEstimate": false,
+              "bakersPercentage": 100
             },
             "."
           ],
