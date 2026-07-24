@@ -95,6 +95,77 @@ function isCompositeOrAlternative(
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Single grouping primitive, shared by every diff function below that needs
+// to key items by something that isn't guaranteed unique (a section title, a
+// timer/temperature name). Audit 2026-07-22, analyzer findings B3/§6.1: the
+// same "overwrite instead of accumulate" bug — a `Map.set` on a colliding key
+// silently dropping the first item — existed independently in three places
+// here (section-title keying in two functions, token-name keying in a
+// third). One of them had already been fixed at its own site without
+// touching the other two, which is exactly the site-not-class pattern this
+// audit is about — fixing one call site again would leave the class alive in
+// the rest.
+function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, T[]> {
+	const result = new Map<string, T[]>();
+	for (const item of items) {
+		const key = keyOf(item);
+		const bucket = result.get(key);
+		if (bucket) bucket.push(item);
+		else result.set(key, [item]);
+	}
+	return result;
+}
+
+function groupSectionsByKey<T extends { title: string | null }>(
+	sections: T[],
+): Map<string, T[]> {
+	const result = new Map<string, T[]>();
+	sections.forEach((section, i) => {
+		const key = section.title ?? `__pos_${i}`;
+		const bucket = result.get(key);
+		if (bucket) bucket.push(section);
+		else result.set(key, [section]);
+	});
+	return result;
+}
+
+// Audit 2026-07-22, analyzer finding B2: composite and alternative groups
+// were excluded from diffIngredients entirely, so a quantity change inside
+// either (`@lemon{2}` -> `{5}` on a composite parent, `@egg{2}|@tofu{200g}`
+// -> `{9}|{900g}` on an alternative) produced `hasChanges: false` — a diff
+// tool asserting "nothing changed" is worse than no diff tool at all. This
+// recursively unwraps both into the flat, individually-diffable ingredients
+// they're built from, so the existing id-keyed comparison in diffIngredients
+// sees every quantity that can change, not just the ones outside a group.
+function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
+	const result: SimpleShoppingItem[] = [];
+	for (const item of items) {
+		if (!isCompositeOrAlternative(item)) {
+			result.push(item);
+			continue;
+		}
+		if (item.type === "composite") {
+			// The composite parent's own total is itself a well-defined
+			// absolute quantity (see scale/engine.ts's findStandardItem
+			// comment) — diffable exactly like any other ingredient — in
+			// addition to, not instead of, its nested children.
+			result.push({
+				id: item.id,
+				name: (item as { name?: string }).name ?? item.id,
+				qty: item.qty,
+			} as SimpleShoppingItem);
+			result.push(...flattenShoppingItems(item.usage as ShoppingItem[]));
+		} else {
+			// Alternative: "alternative" itself isn't a real ingredient id —
+			// only its options are.
+			result.push(
+				...flattenShoppingItems((item.options ?? []) as ShoppingItem[]),
+			);
+		}
+	}
+	return result;
+}
+
 const numericQty = (item: ShoppingItem): number | null =>
 	getNumericQty(item.qty);
 
@@ -171,56 +242,60 @@ function isUsageToken(token: StepToken): token is Usage {
 	);
 }
 
-// Extract all tokens matching a type predicate from all steps, keyed by section title/position
+// Extract all tokens matching a type predicate from all steps, keyed by
+// section title/position — two sections sharing a title accumulate into the
+// same bucket via groupSectionsByKey rather than the second overwriting the
+// first's tokens.
 function extractTokensByType<T extends StepToken>(
 	sections: ProcessedSection[],
 	isMatch: (token: StepToken) => token is T,
 ): Map<string, T[]> {
 	const result = new Map<string, T[]>();
-	sections.forEach((section, i) => {
-		const key = section.title ?? `__pos_${i}`;
+	for (const [key, group] of groupSectionsByKey(sections)) {
 		const tokens: T[] = [];
-		for (const step of section.steps ?? []) {
-			if (step.type !== "step") continue;
-			for (const token of step.content ?? []) {
-				if (isMatch(token)) tokens.push(token);
+		for (const section of group) {
+			for (const step of section.steps ?? []) {
+				if (step.type !== "step") continue;
+				for (const token of step.content ?? []) {
+					if (isMatch(token)) tokens.push(token);
+				}
 			}
 		}
-		if (tokens.length > 0) {
-			// Two sections can share the same title (or both be untitled and fall
-			// on the same fallback... no — untitled sections get a unique
-			// `__pos_${i}` key). Duplicate *titled* sections must accumulate here
-			// rather than overwrite, otherwise the second section's tokens would
-			// silently replace — and hide from the diff — the first's.
-			const existing = result.get(key);
-			if (existing) existing.push(...tokens);
-			else result.set(key, tokens);
-		}
-	});
+		if (tokens.length > 0) result.set(key, tokens);
+	}
 	return result;
 }
 
-// Match tokens: named by name, unnamed by position
+// Match tokens: named by name (accumulating same-named tokens within a
+// section and pairing them positionally — audit 2026-07-22, analyzer finding
+// B3: `aNamed.set(t.name, t)` used to overwrite on a repeated name, so of two
+// same-named timers in one section, the first silently vanished from the
+// diff), unnamed by position.
 function matchTokenPairs<T extends { name?: string }>(
 	aTokens: T[],
 	bTokens: T[],
 ): Array<[T | null, T | null]> {
 	const pairs: Array<[T | null, T | null]> = [];
 
-	const aNamed = new Map<string, T>();
-	const aUnnamed: T[] = [];
-	for (const t of aTokens) {
-		t.name ? aNamed.set(t.name, t) : aUnnamed.push(t);
-	}
+	const aNamed = groupBy(
+		aTokens.filter((t) => t.name),
+		(t) => t.name!,
+	);
+	const aUnnamed = aTokens.filter((t) => !t.name);
 
-	const bNamed = new Map<string, T>();
-	const bUnnamed: T[] = [];
-	for (const t of bTokens) {
-		t.name ? bNamed.set(t.name, t) : bUnnamed.push(t);
-	}
+	const bNamed = groupBy(
+		bTokens.filter((t) => t.name),
+		(t) => t.name!,
+	);
+	const bUnnamed = bTokens.filter((t) => !t.name);
 
 	for (const name of new Set([...aNamed.keys(), ...bNamed.keys()])) {
-		pairs.push([aNamed.get(name) ?? null, bNamed.get(name) ?? null]);
+		const aList = aNamed.get(name) ?? [];
+		const bList = bNamed.get(name) ?? [];
+		const namedMaxLen = Math.max(aList.length, bList.length);
+		for (let i = 0; i < namedMaxLen; i++) {
+			pairs.push([aList[i] ?? null, bList[i] ?? null]);
+		}
 	}
 
 	const maxLen = Math.max(aUnnamed.length, bUnnamed.length);
@@ -256,9 +331,7 @@ function diffIngredients(
 ): IngredientDelta[] {
 	const toMap = (list: ShoppingItem[]) =>
 		new Map<string, SimpleShoppingItem>(
-			list
-				.filter((i): i is SimpleShoppingItem => !isCompositeOrAlternative(i))
-				.map((i) => [i.id, i]),
+			flattenShoppingItems(list).map((i) => [i.id, i]),
 		);
 
 	const aMap = toMap(a);
@@ -350,50 +423,55 @@ function diffSections(
 	a: ProcessedSection[],
 	b: ProcessedSection[],
 ): SectionDelta[] {
-	const byTitle = (list: ProcessedSection[]) => {
-		const m = new Map<string, ProcessedSection>();
-		list.forEach((s, i) => {
-			m.set(s.title ?? `__pos_${i}`, s);
-		});
-		return m;
-	};
-
-	const aMap = byTitle(a);
-	const bMap = byTitle(b);
-	const allKeys = new Set([...aMap.keys(), ...bMap.keys()]);
+	// Audit 2026-07-22, analyzer finding B3/§6.1: this used to key sections by
+	// title through a plain `Map.set`, so two sections sharing a title (a
+	// perfectly normal recipe, e.g. two "Prep" sections) had the second
+	// silently overwrite the first — exactly the same "overwrite instead of
+	// accumulate" bug that was fixed for section-title keying in
+	// extractTokensByType, left alive here. groupSectionsByKey accumulates
+	// same-titled sections into a list, paired positionally below.
+	const aGroups = groupSectionsByKey(a);
+	const bGroups = groupSectionsByKey(b);
+	const allKeys = new Set([...aGroups.keys(), ...bGroups.keys()]);
 	const deltas: SectionDelta[] = [];
 
 	for (const key of allKeys) {
-		const aSection = aMap.get(key);
-		const bSection = bMap.get(key);
+		const aList = aGroups.get(key) ?? [];
+		const bList = bGroups.get(key) ?? [];
+		const maxLen = Math.max(aList.length, bList.length);
 
-		if (aSection && !bSection) {
-			deltas.push({
-				change: "removed",
-				title: aSection.title,
-				fromStepCount: stepCount(aSection),
-			});
-			continue;
-		}
-		if (!aSection && bSection) {
-			deltas.push({
-				change: "added",
-				title: bSection.title,
-				toStepCount: stepCount(bSection),
-			});
-			continue;
-		}
-		if (!aSection || !bSection) continue;
+		for (let i = 0; i < maxLen; i++) {
+			const aSection = aList[i];
+			const bSection = bList[i];
 
-		const from = stepCount(aSection);
-		const to = stepCount(bSection);
-		if (from !== to)
-			deltas.push({
-				change: "changed",
-				title: bSection.title,
-				fromStepCount: from,
-				toStepCount: to,
-			});
+			if (aSection && !bSection) {
+				deltas.push({
+					change: "removed",
+					title: aSection.title,
+					fromStepCount: stepCount(aSection),
+				});
+				continue;
+			}
+			if (!aSection && bSection) {
+				deltas.push({
+					change: "added",
+					title: bSection.title,
+					toStepCount: stepCount(bSection),
+				});
+				continue;
+			}
+			if (!aSection || !bSection) continue;
+
+			const from = stepCount(aSection);
+			const to = stepCount(bSection);
+			if (from !== to)
+				deltas.push({
+					change: "changed",
+					title: bSection.title,
+					fromStepCount: from,
+					toStepCount: to,
+				});
+		}
 	}
 
 	return deltas;
@@ -521,23 +599,30 @@ function diffPreparations(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
 ): PrepDelta[] {
+	// Audit 2026-07-22, analyzer finding B3/§6.1: same "overwrite instead of
+	// accumulate" bug on section-title keying, a third time in this file —
+	// two same-titled sections used to have the second's `byId` map silently
+	// replace the first's, losing that section's preparations from the diff
+	// entirely. groupSectionsByKey merges same-titled sections' tokens into
+	// one `byId` map instead.
 	const extractBySection = (sections: ProcessedSection[]) => {
 		const result = new Map<string, Map<string, Usage[]>>();
-		sections.forEach((section, i) => {
-			const key = section.title ?? `__pos_${i}`;
+		for (const [key, group] of groupSectionsByKey(sections)) {
 			const byId = new Map<string, Usage[]>();
-			for (const step of section.steps ?? []) {
-				if (step.type !== "step") continue;
-				for (const token of step.content ?? []) {
-					if (!isUsageToken(token)) continue;
-					if (token.type && SKIP_TOKEN_TYPES.has(token.type)) continue;
-					const bucket = byId.get(token.id) ?? [];
-					bucket.push(token);
-					byId.set(token.id, bucket);
+			for (const section of group) {
+				for (const step of section.steps ?? []) {
+					if (step.type !== "step") continue;
+					for (const token of step.content ?? []) {
+						if (!isUsageToken(token)) continue;
+						if (token.type && SKIP_TOKEN_TYPES.has(token.type)) continue;
+						const bucket = byId.get(token.id) ?? [];
+						bucket.push(token);
+						byId.set(token.id, bucket);
+					}
 				}
 			}
 			result.set(key, byId);
-		});
+		}
 		return result;
 	};
 
