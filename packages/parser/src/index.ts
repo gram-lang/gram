@@ -97,61 +97,16 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 const getOpt = (node: any) =>
 	node.children.length > 0 ? node.children[0].toAST() : null;
 
-/**
- * Unicode vulgar fraction glyphs, mapped to [numerator, denominator].
- */
-const UNICODE_FRACTIONS: Record<string, [number, number]> = {
-	"¼": [1, 4],
-	"½": [1, 2],
-	"¾": [3, 4],
-	"⅓": [1, 3],
-	"⅔": [2, 3],
-	"⅕": [1, 5],
-	"⅖": [2, 5],
-	"⅗": [3, 5],
-	"⅘": [4, 5],
-	"⅙": [1, 6],
-	"⅚": [5, 6],
-	"⅛": [1, 8],
-	"⅜": [3, 8],
-	"⅝": [5, 8],
-	"⅞": [7, 8],
-};
-
-/**
- * Looks up a Unicode vulgar fraction glyph. Safe to call unguarded on any
- * string matched by the `unicodeFractionChar` grammar rule, which only
- * accepts glyphs present in this table.
- */
-const unicodeFractionValue = (glyph: string): [number, number] => {
-	const pair = UNICODE_FRACTIONS[glyph];
-	if (!pair) throw new Error(`Unknown unicode fraction glyph: ${glyph}`);
-	return pair;
-};
-
-/**
- * Parses a fractional or decimal string into a value object.
- * e.g., "1/2" -> { type: 'fraction', value: 0.5, ... }
- */
-const parseNumber = (n: string): QuantityValueAST | null => {
-	if (!n) return null;
-	const parts = n.split("/");
-	const numStr = parts[0];
-	const denStr = parts[1];
-	if (numStr && denStr) {
-		const num = parseInt(numStr, 10);
-		const den = parseInt(denStr, 10);
-		return {
-			type: "fraction",
-			value: num / den,
-			numerator: num,
-			denominator: den,
-			text: n,
-		};
-	} else {
-		return { type: "single", value: parseFloat(n), text: n };
-	}
-};
+// The number/fraction layer lives in ./numbers.ts (audit 2026-07-22, parser
+// finding P3), imported (not re-exported) here — it's an internal
+// implementation detail of the grammar actions below, not part of this
+// package's public surface, and stays independently testable in isolation.
+import {
+	parseNumber,
+	unicodeFractionValue,
+	makeMixedFraction,
+	makeRange,
+} from "./numbers";
 
 /**
  * Parses values from Frontmatter (removing quotes, brackets, etc.)
@@ -501,51 +456,24 @@ semantics.addOperation("toAST", {
 		const w = parseInt(whole.sourceString, 10);
 		const n = parseInt(num.sourceString, 10);
 		const d = parseInt(den.sourceString, 10);
-		return {
-			type: "fraction",
-			value: w + n / d,
-			numerator: w * d + n,
-			denominator: d,
-			text: this.sourceString,
-		} as QuantityValueAST;
+		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
 	unicodeFraction_mixed(whole, frac) {
 		const w = parseInt(whole.sourceString, 10);
 		const [n, d] = unicodeFractionValue(frac.sourceString);
-		return {
-			type: "fraction",
-			value: w + n / d,
-			numerator: w * d + n,
-			denominator: d,
-			text: this.sourceString,
-		} as QuantityValueAST;
+		return makeMixedFraction(w, n, d, this.sourceString);
 	},
 
 	unicodeFraction_bare(frac) {
 		const [n, d] = unicodeFractionValue(frac.sourceString);
-		return {
-			type: "fraction",
-			value: n / d,
-			numerator: n,
-			denominator: d,
-			text: this.sourceString,
-		} as QuantityValueAST;
+		return makeMixedFraction(0, n, d, this.sourceString);
 	},
 
 	range(n1, _s1, _, _s2, n2) {
 		const min = n1.toAST() as QuantityValueAST;
 		const max = n2.toAST() as QuantityValueAST;
-		if (min && max) {
-			const avg = ((min.value as number) + (max.value as number)) / 2;
-			return {
-				type: "range",
-				value: avg,
-				range: { min: min.value, max: max.value },
-				text: this.sourceString,
-			};
-		}
-		return null;
+		return makeRange(min, max, this.sourceString);
 	},
 
 	// --- Cookware ---

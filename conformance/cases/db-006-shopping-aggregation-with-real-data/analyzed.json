@@ -83,7 +83,7 @@
           "unit": "tbsp",
           "conversionMethod": "density",
           "isEstimate": true,
-          "normalizedMass": 26.9415496
+          "normalizedMass": 26.94
         }
       ],
       "cookware": [],
@@ -97,7 +97,7 @@
               "_usageId": "2",
               "qty": 2,
               "unit": "tbsp",
-              "normalizedMass": 26.9415496,
+              "normalizedMass": 26.94,
               "conversionMethod": "density",
               "isEstimate": true
             },

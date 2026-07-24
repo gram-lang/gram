@@ -1,8 +1,8 @@
 {
-  "title": "Db Mass Standardization Basic",
-  "slug": "db-mass-standardization-basic",
+  "title": "Fraction Zero Denominator",
+  "slug": "fraction-zero-denominator",
   "meta": {
-    "title": "Db Mass Standardization Basic"
+    "title": "Fraction Zero Denominator"
   },
   "registry": {
     "ingredients": {
@@ -17,15 +17,10 @@
   "shopping_list": [
     {
       "id": "flour",
-      "name": "Flour",
+      "name": "flour",
       "_usageIds": [
         "1"
-      ],
-      "qty": 2,
-      "unit": "cups",
-      "normalizedMass": 250.78,
-      "isEstimate": true,
-      "conversionMethod": "estimate"
+      ]
     }
   ],
   "cookware": [],
@@ -36,11 +31,7 @@
         {
           "id": "flour",
           "_usageId": "1",
-          "qty": 2,
-          "unit": "cups",
-          "conversionMethod": "density",
-          "isEstimate": true,
-          "normalizedMass": 250.78
+          "unit": "cups"
         }
       ],
       "cookware": [],
@@ -48,15 +39,11 @@
         {
           "type": "step",
           "content": [
-            "Mix ",
+            "Add ",
             {
               "id": "flour",
               "_usageId": "1",
-              "qty": 2,
-              "unit": "cups",
-              "normalizedMass": 250.78,
-              "conversionMethod": "density",
-              "isEstimate": true
+              "unit": "cups"
             },
             "."
           ],
@@ -68,9 +55,11 @@
         }
       ],
       "metrics": {
-        "totalMass": 250.78,
-        "massStatus": "estimated",
-        "missingMassIngredients": []
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "flour"
+        ]
       }
     }
   ],
@@ -98,9 +87,11 @@
         "duration": 1
       }
     ],
-    "totalMass": 250.78,
-    "massStatus": "estimated",
-    "missingMassIngredients": [],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "flour"
+    ],
     "nutrition": {
       "total": {
         "calories": 0,
@@ -108,14 +99,8 @@
         "carbs": 0,
         "fat": 0
       },
-      "isEstimate": true,
-      "coverage": 0,
-      "warnings": [
-        {
-          "code": "MISSING_MACROS",
-          "message": "Ingredient \"flour\" has no default macro data."
-        }
-      ]
+      "isEstimate": false,
+      "coverage": 0
     }
   }
 }

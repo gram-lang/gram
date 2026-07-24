@@ -1,0 +1,74 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Fraction Decimal Numerator"
+  },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add ",
+              "loc": {
+                "start": 55,
+                "end": 59
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 0.75,
+                  "numerator": 1.5,
+                  "denominator": 2,
+                  "text": "1.5/2"
+                },
+                "unit": "cups",
+                "fixed": false,
+                "loc": {
+                  "start": 66,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 59,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 77,
+                "end": 78
+              }
+            }
+          ],
+          "loc": {
+            "start": 55,
+            "end": 79
+          }
+        }
+      ],
+      "loc": {
+        "start": 43,
+        "end": 79
+      }
+    }
+  ]
+}
