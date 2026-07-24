@@ -92,7 +92,11 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
-		const result = await buildShoppingList(files, { db, scaleFactor });
+		const result = await buildShoppingList(files, {
+			db,
+			scaleFactor,
+			lang: config.language,
+		});
 
 		if (args.format === "json") {
 			const json = renderShopJson(result);

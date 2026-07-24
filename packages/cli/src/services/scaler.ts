@@ -93,6 +93,7 @@ export async function resolveScaleFactor(
 	filePath: string,
 	scale: string,
 	db: Record<string, IngredientData> | null | undefined,
+	lang?: string,
 ): Promise<number> {
 	const parsed = parseScaleArg(scale);
 
@@ -104,7 +105,11 @@ export async function resolveScaleFactor(
 	}
 
 	const ref = parseRef(parsed.raw);
-	const { compiled } = await runPipeline(filePath, { db, skipAnalyzer: !db });
+	const { compiled } = await runPipeline(filePath, {
+		db,
+		skipAnalyzer: !db,
+		lang,
+	});
 
 	const overrides = parseDensityOverrides(compiled.meta);
 	const density = resolveIngredientDensity(
@@ -113,7 +118,7 @@ export async function resolveScaleFactor(
 		overrides,
 	)?.density;
 	const boundConvertUnit = (value: number, from: string, to: string) =>
-		convertUnit(value, from, to, density);
+		convertUnit(value, from, to, density, lang);
 
 	try {
 		return resolveScaleFactorEngine(
@@ -155,10 +160,11 @@ export async function resolveScaleArg(
 	scale: string | undefined,
 	filePath: string,
 	db: Record<string, IngredientData> | null | undefined,
+	lang?: string,
 ): Promise<number | undefined> {
 	if (!scale) return undefined;
 	try {
-		return await resolveScaleFactor(filePath, scale, db);
+		return await resolveScaleFactor(filePath, scale, db, lang);
 	} catch (err) {
 		reportError(err);
 		return process.exit(ExitCode.Error);

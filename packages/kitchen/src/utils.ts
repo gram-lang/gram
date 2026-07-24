@@ -7,7 +7,7 @@ import {
 	ASTNodeType,
 } from "@gram-lang/parser";
 import type { Usage, TimeBreakdownItem, UsageComposite } from "./types";
-import { resolveTimeUnit } from "@gram-lang/i18n";
+import { resolveTimeUnit, TIME_TO_MINUTES } from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
 // Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle:
 // "./scale" re-exports engine.ts, which itself imports from this file.
@@ -251,13 +251,10 @@ export const quantityToMinutes = (
 
 	const u = resolveTimeUnit(qty.unit || "");
 
-	// Time conversions to minutes
-	if (u === "d") return val * 60 * 24;
-	if (u === "h") return val * 60;
-	if (u === "m") return val;
-	if (u === "s") return val / 60;
-
-	return val;
+	// Time conversions to minutes — factors owned by @gram-lang/i18n (Phase
+	// 17), alongside the unit-name resolution above.
+	const factor = TIME_TO_MINUTES[u];
+	return factor !== undefined ? val * factor : val;
 };
 
 /**

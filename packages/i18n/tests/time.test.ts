@@ -1,5 +1,9 @@
 import { describe, it, expect } from "bun:test";
-import { resolveTimeUnit } from "../src/time";
+import {
+	resolveTimeUnit,
+	TIME_TO_MINUTES,
+	TIME_DICTIONARIES,
+} from "../src/time";
 
 describe("resolveTimeUnit", () => {
 	it("normalizes English time units", () => {
@@ -30,5 +34,27 @@ describe("resolveTimeUnit", () => {
 		expect(resolveTimeUnit(null)).toBe("");
 		expect(resolveTimeUnit(undefined)).toBe("");
 		expect(resolveTimeUnit("")).toBe("");
+	});
+});
+
+// Audit 2026-07-22, i18n finding F-02/F-05, Phase 17: TIME_TO_MINUTES used to
+// be inlined as bare multipliers inside @gram-lang/kitchen's
+// quantityToMinutes, disconnected from the unit-name resolution above.
+describe("TIME_TO_MINUTES", () => {
+	it("has the expected conversion factor for every canonical time unit", () => {
+		expect(TIME_TO_MINUTES.d).toBe(1440);
+		expect(TIME_TO_MINUTES.h).toBe(60);
+		expect(TIME_TO_MINUTES.m).toBe(1);
+		expect(TIME_TO_MINUTES.s).toBeCloseTo(1 / 60);
+	});
+
+	it("has a factor for every canonical time unit declared in the dictionaries", () => {
+		const canonicals = new Set([
+			...Object.keys(TIME_DICTIONARIES.en),
+			...Object.keys(TIME_DICTIONARIES.fr),
+		]);
+		for (const canonical of canonicals) {
+			expect(TIME_TO_MINUTES[canonical]).toBeDefined();
+		}
 	});
 });

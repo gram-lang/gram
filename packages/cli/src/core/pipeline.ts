@@ -37,6 +37,7 @@ export async function runPipeline(
 			? analyze(compiled, opts.db, {
 					portions: opts.scaleFactor,
 					bakersReference: opts.bakersReference,
+					lang: opts.lang,
 				})
 			: null;
 

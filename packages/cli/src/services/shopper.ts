@@ -10,6 +10,7 @@ import type { ShopResult, ShoppingEntry } from "../types";
 export interface ShopOptions {
 	db?: Record<string, IngredientData> | null;
 	scaleFactor?: number;
+	lang?: string;
 }
 
 interface CollectedItem {
@@ -33,14 +34,15 @@ function formatMass(grams: number): string {
 // "Spice" vs "Spices"). A category from the ingredient DB that doesn't match
 // any entry here just sorts alphabetically after the matched ones (see
 // below), so this is purely the preferred sort order, not a validation list.
-// TODO(lang): defaults to English; should follow the project's declared
-// language once `lang` is threaded through the CLI pipeline.
-const CATEGORY_ORDER = getDefaultCategories("en");
+// Phase 17: now follows the project's declared language (`opts.lang`,
+// resolved per call — the TODO this replaces couldn't do that from a
+// module-level constant computed once at import time).
 
 export async function buildShoppingList(
 	files: string[],
 	opts: ShopOptions = {},
 ): Promise<ShopResult> {
+	const categoryOrder = getDefaultCategories(opts.lang ?? "en");
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
 
@@ -79,6 +81,7 @@ export async function buildShoppingList(
 					const { analyzed } = await runPipeline(file, {
 						db: opts.db,
 						scaleFactor: opts.scaleFactor,
+						lang: opts.lang,
 					});
 					if (analyzed) {
 						for (const item of analyzed.result.shopping_list as any[])
@@ -88,6 +91,7 @@ export async function buildShoppingList(
 					const { compiled } = await runPipeline(file, {
 						skipAnalyzer: true,
 						scaleFactor: opts.scaleFactor,
+						lang: opts.lang,
 					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);
 				}
@@ -204,8 +208,8 @@ export async function buildShoppingList(
 
 	const sortedByCategory = new Map(
 		[...byCategory.entries()].sort(([a], [b]) => {
-			const ai = CATEGORY_ORDER.indexOf(a);
-			const bi = CATEGORY_ORDER.indexOf(b);
+			const ai = categoryOrder.indexOf(a);
+			const bi = categoryOrder.indexOf(b);
 			if (ai !== -1 && bi !== -1) return ai - bi;
 			if (ai !== -1) return -1;
 			if (bi !== -1) return 1;

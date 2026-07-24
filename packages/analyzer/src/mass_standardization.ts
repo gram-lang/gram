@@ -1,51 +1,6 @@
 import { slugify, round2 } from "@gram-lang/kitchen";
 import type { Meta } from "@gram-lang/parser";
-import { normalizeUnit } from "@gram-lang/i18n";
-
-export interface UnitMap {
-	base: string;
-	map: Record<string, number>;
-}
-
-export const UNIT_CONVERSIONS = {
-	mass: {
-		base: "g",
-		map: {
-			mg: 0.001,
-			g: 1,
-			kg: 1000,
-			oz: 28.3495,
-			lb: 453.592,
-			// French "livre" (métrique) — see @gram-lang/i18n's units.ts for why
-			// this is a distinct canonical from "lb" rather than an alias of it.
-			livre: 500,
-		},
-	},
-	volume: {
-		base: "ml",
-		map: {
-			ml: 1,
-			cl: 10,
-			dl: 100,
-			l: 1000,
-			drop: 0.078,
-			smidgen: 0.156,
-			pinch: 0.3125,
-			dash: 0.625,
-			tad: 1.25,
-			tsp: 4.9289,
-			tbsp: 14.7868,
-			cup: 236.588,
-			// French "tasse" — see @gram-lang/i18n's units.ts for why this is a
-			// distinct canonical from "cup" rather than an alias of it.
-			tasse: 250,
-			pt: 473.176,
-			qt: 946.353,
-			gal: 3785.41,
-			"fl oz": 29.5735,
-		},
-	},
-};
+import { normalizeUnit, UNIT_CONVERSIONS } from "@gram-lang/i18n";
 
 import { getIngredientData } from "./ingredient_db";
 import type { IngredientData } from "./types";
@@ -69,15 +24,21 @@ interface ConversionResult {
  * `resolveIngredientDensity`) to bridge it. Without one, cross-family
  * conversions return null rather than guess — callers should surface that as
  * a distinct error.
+ *
+ * `lang` (the recipe's own language, e.g. from frontmatter/config) resolves
+ * `fromUnit`/`toUnit` against that language's dictionary first — see
+ * `normalizeUnit`'s own doc comment for why this matters when an alias
+ * collides across languages.
  */
 export function convertUnit(
 	value: number,
 	fromUnit: string,
 	toUnit: string,
 	density?: number,
+	lang?: string,
 ): number | null {
-	const from = normalizeUnit(fromUnit);
-	const to = normalizeUnit(toUnit);
+	const from = normalizeUnit(fromUnit, lang);
+	const to = normalizeUnit(toUnit, lang);
 	if (from === to) return value;
 
 	const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;
@@ -171,12 +132,13 @@ export function standardizeMass(
 	database: Record<string, IngredientData>,
 	ingredientName?: string,
 	overrides?: Record<string, number>,
+	lang?: string,
 ): (ConversionResult & { isEstimate: boolean }) | null {
 	if (!unit) {
 		return null;
 	}
 
-	const u = normalizeUnit(unit);
+	const u = normalizeUnit(unit, lang);
 
 	// 1. Physical Mass
 	const massMap: Record<string, number> = UNIT_CONVERSIONS.mass.map;

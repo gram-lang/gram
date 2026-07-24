@@ -12,10 +12,10 @@ import {
 	warningSeverity,
 } from "@gram-lang/kitchen";
 import { ASTNodeType } from "@gram-lang/parser";
-import { UNIT_CONVERSIONS } from "@gram-lang/analyzer";
 import {
 	UNIT_DICTIONARIES,
 	TIME_DICTIONARIES,
+	UNIT_CONVERSIONS,
 	getDefaultCategories,
 } from "@gram-lang/i18n";
 

@@ -142,12 +142,14 @@ export async function buildViewModel(
 		scaleFactor?: number;
 		bakersReference?: string;
 		bakersMathOnly?: boolean;
+		lang?: string;
 	},
 ): Promise<RecipeViewModel> {
 	const { compiled, analyzed } = await runPipeline(file, {
 		db: opts.db,
 		scaleFactor: opts.scaleFactor,
 		bakersReference: opts.bakersReference,
+		lang: opts.lang,
 	});
 
 	const title =

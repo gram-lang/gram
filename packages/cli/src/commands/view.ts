@@ -64,7 +64,12 @@ export default defineCommand({
 		const db = dbResult?.data ?? null;
 
 		const scaleFactor =
-			(await resolveScaleArg(args.scale as string | undefined, file, db)) ?? 1;
+			(await resolveScaleArg(
+				args.scale as string | undefined,
+				file,
+				db,
+				config.language,
+			)) ?? 1;
 
 		const bakersReference =
 			(args["bakers-reference"] as string) ||
@@ -78,6 +83,7 @@ export default defineCommand({
 				scaleFactor,
 				bakersReference,
 				bakersMathOnly,
+				lang: config.language,
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {

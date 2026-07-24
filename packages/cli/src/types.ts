@@ -228,6 +228,8 @@ export interface PipelineOptions {
 	scaleFactor?: number;
 	bakersReference?: string;
 	bakersMathOnly?: boolean;
+	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
+	lang?: string;
 }
 
 export interface CheckOptions {
@@ -239,4 +241,5 @@ export interface BuildOptions {
 	db?: Record<string, IngredientData> | null;
 	pretty?: boolean;
 	scaleFactor?: number;
+	lang?: string;
 }

@@ -7,6 +7,14 @@ export const AnalyzerOptionsSchema = z.object({
 	enableBakersMath: z.boolean().optional(),
 	bakersReference: z.string().optional(),
 	portions: z.number().positive().optional(),
+	// Audit 2026-07-22, i18n finding F-04/F-07/F-08/F-09, Phase 17: the
+	// recipe's language, used to disambiguate a unit alias that collides
+	// between languages (e.g. a future addition colliding the way "quart"
+	// once did — see @gram-lang/i18n's units.ts) instead of relying on
+	// whichever language happens to be merged last into the global fallback
+	// table. Threaded through to every `normalizeUnit` call this package
+	// makes (`convertUnit`, `standardizeMass`).
+	lang: z.string().optional(),
 });
 
 export const IngredientDataSchema = z.object({

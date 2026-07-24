@@ -50,6 +50,29 @@ describe("convertUnit", () => {
 		expect(convertUnit(150, "g", "ml", 0)).toBeNull();
 		expect(convertUnit(150, "g", "ml", -1)).toBeNull();
 	});
+
+	// Audit 2026-07-22, i18n finding F-04/F-07/F-08/F-09, Phase 17: `lang` is
+	// threaded through to `normalizeUnit` so a unit alias that collides across
+	// languages resolves against the recipe's own language instead of
+	// whichever language happens to be merged last into i18n's global
+	// fallback table. As of this writing there is no live collision between
+	// the en/fr dictionaries (the one that existed, "quart", was fixed by
+	// deleting the alias in both languages instead — see i18n's units.ts) —
+	// these tests only pin that passing `lang` doesn't change behavior for
+	// real, non-colliding units; they can't demonstrate disambiguation
+	// because nothing to disambiguate exists today.
+	describe("lang parameter", () => {
+		it("still resolves correctly when an explicit lang is given for a non-colliding unit", () => {
+			expect(convertUnit(1, "kg", "g", undefined, "fr")).toBe(1000);
+			expect(convertUnit(1, "tasse", "ml", undefined, "fr")).toBeCloseTo(250);
+		});
+
+		it("resolves a language-specific alias via lang the same way the global fallback already does", () => {
+			expect(convertUnit(1, "cuillère à soupe", "ml", undefined, "fr")).toBe(
+				convertUnit(1, "cuillère à soupe", "ml"),
+			);
+		});
+	});
 });
 
 describe("resolveIngredientDensity", () => {
@@ -115,6 +138,21 @@ describe("standardizeMass — density resolution regression", () => {
 
 	it("returns null for a volume unit with no density available anywhere", () => {
 		expect(standardizeMass(100, "ml", database, "water")).toBeNull();
+	});
+
+	// See convertUnit's own "lang parameter" tests above for why there's no
+	// discriminating regression test here today.
+	it("still resolves correctly when an explicit lang is given (French-only unit)", () => {
+		// 1 "tasse" (fr, 250 mL) of honey (density 1.42) = 355g.
+		const result = standardizeMass(
+			1,
+			"tasse",
+			database,
+			"honey",
+			undefined,
+			"fr",
+		);
+		expect(result?.mass).toBeCloseTo(355);
 	});
 });
 

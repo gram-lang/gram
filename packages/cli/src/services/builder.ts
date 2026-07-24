@@ -14,6 +14,7 @@ export async function buildFiles(
 				const { compiled, analyzed } = await runPipeline(file, {
 					db: opts.db,
 					scaleFactor: opts.scaleFactor,
+					lang: opts.lang,
 				});
 				return {
 					slug: basename(file, ".gram"),

@@ -50,8 +50,12 @@ export default defineCommand({
 		const db = dbResult?.data ?? null;
 
 		const scaleFactor =
-			(await resolveScaleArg(args.scale as string | undefined, filePath, db)) ??
-			1;
+			(await resolveScaleArg(
+				args.scale as string | undefined,
+				filePath,
+				db,
+				config.language,
+			)) ?? 1;
 
 		const s = spinner();
 		s.start("Loading recipe…");
@@ -63,6 +67,7 @@ export default defineCommand({
 				db,
 				skipAnalyzer: !db,
 				scaleFactor,
+				lang: config.language,
 			});
 			totalTime = compiled.metrics?.totalTime ?? 0;
 			const massMap: Record<string, number> = {};

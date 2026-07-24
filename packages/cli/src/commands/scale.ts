@@ -64,11 +64,17 @@ export default defineCommand({
 				filePath,
 				args.scale as string,
 				db,
+				config.language,
 			);
 
 			const [{ compiled: original }, { compiled: scaled }] = await Promise.all([
-				runPipeline(filePath, { db, skipAnalyzer: !db }),
-				runPipeline(filePath, { db, skipAnalyzer: !db, scaleFactor: factor }),
+				runPipeline(filePath, { db, skipAnalyzer: !db, lang: config.language }),
+				runPipeline(filePath, {
+					db,
+					skipAnalyzer: !db,
+					scaleFactor: factor,
+					lang: config.language,
+				}),
 			]);
 
 			s.stop("Done.");

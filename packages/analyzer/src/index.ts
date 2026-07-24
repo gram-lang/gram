@@ -92,6 +92,7 @@ function standardizeUsageMass(
 	database: Record<string, IngredientData>,
 	overrides: Record<string, number>,
 	enableYieldCalculation: boolean,
+	lang?: string,
 ): void {
 	const numericQty = getNumericQty(usage.qty);
 	if (numericQty === null) return;
@@ -102,6 +103,7 @@ function standardizeUsageMass(
 		database,
 		usage.name || usage.id,
 		overrides,
+		lang,
 	);
 	if (!norm) return;
 
@@ -179,6 +181,7 @@ export function analyze(
 							database,
 							overrides,
 							opts.enableYieldCalculation !== false,
+							opts.lang,
 						);
 					}
 				});
@@ -202,6 +205,7 @@ export function analyze(
 					database,
 					overrides,
 					opts.enableYieldCalculation !== false,
+					opts.lang,
 				);
 			}
 			if (item.type !== "reference") {
@@ -355,6 +359,7 @@ export function analyze(
 						database,
 						overrides,
 						opts.enableYieldCalculation !== false,
+						opts.lang,
 					);
 					if (child.normalizedMass !== undefined) {
 						totalMass += child.normalizedMass;
@@ -391,6 +396,7 @@ export function analyze(
 						database,
 						overrides,
 						opts.enableYieldCalculation !== false,
+						opts.lang,
 					);
 				});
 			} else {

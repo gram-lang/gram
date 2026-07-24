@@ -179,7 +179,8 @@ function updateGram() {
 						qty: scaleTargetQty.value,
 						unit: scaleTargetUnit.value || null,
 					},
-					(value, from, to) => convertUnit(value, from, to, density),
+					(value, from, to) =>
+						convertUnit(value, from, to, density, lang.value),
 				);
 				result = applyScale(result, resolution.factor);
 				scaleFactorString.value = (resolution.factor * 100)
@@ -206,6 +207,7 @@ function updateGram() {
 		const analysisOptions = {
 			...options.value,
 			enableBakersMath: options.value.bakersMath,
+			lang: lang.value,
 		};
 		const analysis = analyze(result, fullDatabase, analysisOptions);
 		result = analysis.result;

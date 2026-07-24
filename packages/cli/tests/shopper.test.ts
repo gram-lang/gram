@@ -106,6 +106,42 @@ describe("buildShoppingList", () => {
 		);
 	});
 
+	// Audit 2026-07-22, i18n finding F-04/F-07/F-08/F-09, Phase 17: this
+	// resolves the file's own TODO(lang) — the category sort order used to be
+	// a module-level constant fixed to English at import time, so a database
+	// using French category names (a perfectly valid choice for a French
+	// project) always sorted them as "unmatched" (alphabetically, after every
+	// English-matched category) instead of in the intended French order. This
+	// is a real, observable difference — unlike unit conversion (see
+	// mass_standardization.test.ts's "lang parameter" tests), category names
+	// genuinely differ in spelling between languages, so `lang` changes the
+	// actual sort result, not just which code path resolves it.
+	it("sorts by the French category order when lang is 'fr'", async () => {
+		const db = makeDb({
+			poivre: { category: "Épices" },
+			carotte: { category: "Légumes" },
+		});
+		const a = await tmp("## Prep\n[Mix] Add @poivre{5g} and @carotte{100g}.\n");
+
+		const french = await buildShoppingList([a], { db, lang: "fr" });
+		const frenchCategories = [...french.byCategory.keys()];
+		// "Légumes" (vegetables) comes first in the French canonical order;
+		// "Épices" (spices) comes near the end.
+		expect(frenchCategories.indexOf("Légumes")).toBeLessThan(
+			frenchCategories.indexOf("Épices"),
+		);
+
+		// Without `lang` (or with "en"), neither French category name matches
+		// the English canonical list, so both fall back to alphabetical
+		// order — "Épices" sorts before "Légumes" (É < L) — the opposite of
+		// the correct French order above.
+		const noLang = await buildShoppingList([a], { db });
+		const noLangCategories = [...noLang.byCategory.keys()];
+		expect(noLangCategories.indexOf("Épices")).toBeLessThan(
+			noLangCategories.indexOf("Légumes"),
+		);
+	});
+
 	it("counts unique recipes even when an ingredient repeats within the same file", async () => {
 		const a = await tmp(
 			"## Prep\n[Mix] Add @flour{100g}.\n\n## Bake\n[Mix] Add more @flour{50g}.\n",

@@ -105,7 +105,10 @@ export default defineCommand({
 
 			if (args.build && args.output) {
 				try {
-					const results = await buildFiles([abs], { db: db ?? undefined });
+					const results = await buildFiles([abs], {
+						db: db ?? undefined,
+						lang: config.language,
+					});
 					const outDir = resolve(args.output);
 					await mkdir(outDir, { recursive: true });
 					for (const { slug, data } of results) {

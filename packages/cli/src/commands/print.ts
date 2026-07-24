@@ -72,6 +72,7 @@ export default defineCommand({
 			args.scale as string | undefined,
 			filePath,
 			db,
+			config.language,
 		);
 
 		const bakersReference =
@@ -85,6 +86,7 @@ export default defineCommand({
 				hideStepQty: !args["step-qty"],
 				bakersReference,
 				bakersMathOnly,
+				lang: config.language,
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {

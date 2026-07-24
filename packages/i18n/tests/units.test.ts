@@ -1,5 +1,9 @@
 import { describe, it, expect } from "bun:test";
-import { normalizeUnit } from "../src/units";
+import {
+	normalizeUnit,
+	UNIT_CONVERSIONS,
+	UNIT_DICTIONARIES,
+} from "../src/units";
 
 describe("normalizeUnit", () => {
 	it("normalizes an English alias to its canonical unit", () => {
@@ -74,5 +78,34 @@ describe("normalizeUnit", () => {
 			expect(normalizeUnit("gallon")).toBe("gal");
 			expect(normalizeUnit("gallons")).toBe("gal");
 		});
+	});
+});
+
+// Audit 2026-07-22, i18n finding F-02/F-05, Phase 17: UNIT_CONVERSIONS used
+// to live in @gram-lang/analyzer, a second package owning canonical ->
+// physical-factor knowledge for the same units this file already owns
+// alias -> canonical resolution for — now co-located, so the two can't drift
+// out of sync across a package boundary the way `gal` once did (see
+// analyzer/tests/unit-inventory-invariant.test.ts for the full story).
+describe("UNIT_CONVERSIONS", () => {
+	it("has a physical conversion factor for every unit convertible to mass or volume", () => {
+		expect(UNIT_CONVERSIONS.mass.map.g).toBe(1);
+		expect(UNIT_CONVERSIONS.mass.map.kg).toBe(1000);
+		expect(UNIT_CONVERSIONS.volume.map.ml).toBe(1);
+		expect(UNIT_CONVERSIONS.volume.map.cup).toBeCloseTo(236.588);
+	});
+
+	it("every convertible unit is a registered canonical in the unit dictionaries", () => {
+		const canonicals = new Set([
+			...Object.keys(UNIT_DICTIONARIES.en),
+			...Object.keys(UNIT_DICTIONARIES.fr),
+		]);
+		const convertible = [
+			...Object.keys(UNIT_CONVERSIONS.mass.map),
+			...Object.keys(UNIT_CONVERSIONS.volume.map),
+		];
+		for (const unit of convertible) {
+			expect(canonicals.has(unit)).toBe(true);
+		}
 	});
 });

@@ -12,6 +12,7 @@ export async function generatePrintHTML(
 	scaleFactor?: number,
 	rendererOptions?: Pick<RendererOptions, "hideStepQty" | "bakersMathOnly"> & {
 		bakersReference?: string;
+		lang?: string;
 	},
 ): Promise<string> {
 	const html = await exportRecipe(

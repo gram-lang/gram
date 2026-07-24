@@ -109,14 +109,15 @@ async function resolveInputs(args: Args) {
 	const config = await loadConfig();
 	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
-	return { files, db: dbResult?.data ?? null };
+	return { files, db: dbResult?.data ?? null, lang: config.language };
 }
 
 async function runToStdout(args: Args) {
-	const { files, db } = await resolveInputs(args);
+	const { files, db, lang } = await resolveInputs(args);
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
 		scaleFactor: args._scaleFactor,
+		lang,
 	});
 	const indent = args.pretty ? 2 : undefined;
 	for (const { data } of results) {
@@ -125,7 +126,7 @@ async function runToStdout(args: Args) {
 }
 
 async function runToFiles(args: Args) {
-	const { files, db } = await resolveInputs(args);
+	const { files, db, lang } = await resolveInputs(args);
 	const outDir = args.output!;
 	const n = files.length;
 
@@ -135,6 +136,7 @@ async function runToFiles(args: Args) {
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
 		scaleFactor: args._scaleFactor,
+		lang,
 	});
 
 	s.stop(`Built ${n} file${n !== 1 ? "s" : ""}.`);
