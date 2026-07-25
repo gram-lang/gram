@@ -10,13 +10,15 @@
   },
   "devDependencies": {
     "@gram-lang/analyzer": "workspace:*",
+    "@gram-lang/i18n": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
     "gram-lang": "workspace:*",
-    "@gram-lang/i18n": "workspace:*",
+    "mermaid": "^11.16.0",
     "shiki": "^4.3.1",
     "vitepress": "^1.6.4",
+    "vitepress-mermaid-viewer": "^0.5.0",
     "vue": "^3.5.39"
   },
   "dependencies": {
