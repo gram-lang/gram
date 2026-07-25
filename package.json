@@ -37,10 +37,12 @@
     "conformance": "bun run --cwd conformance conformance",
     "conformance:update": "bun run --cwd conformance conformance:update",
     "any-ratchet": "node scripts/any-ratchet.cjs",
-    "any-ratchet:update": "node scripts/any-ratchet.cjs --update"
+    "any-ratchet:update": "node scripts/any-ratchet.cjs --update",
+    "audit": "bun run --cwd audit audit"
   },
   "workspaces": [
     "packages/*",
-    "conformance"
+    "conformance",
+    "audit"
   ]
 }

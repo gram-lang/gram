@@ -17,6 +17,20 @@
         "typescript": "^6.0.3",
       },
     },
+    "audit": {
+      "name": "@gram-lang/audit",
+      "version": "0.0.0",
+      "dependencies": {
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/format": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^26.1.1",
+        "typescript": "^6.0.3",
+      },
+    },
     "conformance": {
       "name": "@gram-lang/conformance",
       "version": "0.0.0",
@@ -389,6 +403,8 @@
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.1", "", { "os": "win32", "cpu": "x64" }, "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A=="],
 
     "@gram-lang/analyzer": ["@gram-lang/analyzer@workspace:packages/analyzer"],
+
+    "@gram-lang/audit": ["@gram-lang/audit@workspace:audit"],
 
     "@gram-lang/cli": ["@gram-lang/cli@workspace:packages/cli"],
 

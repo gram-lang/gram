@@ -1,0 +1,20 @@
+{
+  "name": "@gram-lang/audit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "audit": "bun run audit.ts",
+    "audit:json": "bun run audit.ts --json"
+  },
+  "dependencies": {
+    "@gram-lang/analyzer": "workspace:*",
+    "@gram-lang/format": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/parser": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^6.0.3"
+  }
+}
