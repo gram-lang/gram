@@ -79,13 +79,6 @@ export function printReport(input: ReportInput): void {
 			.map((f) => `${locate(snippetsById, f.snippetId)} — ${f.summary}`),
 	);
 
-	printSection(
-		"Naming — kebab-case ingredient/cookware names",
-		findings
-			.filter((f) => f.check === "naming")
-			.map((f) => `${locate(snippetsById, f.snippetId)} — ${f.summary}`),
-	);
-
 	const formatFindings = findings
 		.filter((f) => f.check === "format-diff")
 		.sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0));

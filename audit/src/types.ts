@@ -27,7 +27,6 @@ export type CheckName =
 	| "warnings"
 	| "format-diff"
 	| "vocabulary"
-	| "naming"
 	| "self-test";
 
 export interface SkippedExtraction {

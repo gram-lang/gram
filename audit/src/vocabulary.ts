@@ -85,31 +85,3 @@ export function collectShapes(ast: unknown): Set<string> {
 	walk(ast, shapes, { inStepScope: false });
 	return shapes;
 }
-
-function collectNames(ast: unknown, names: string[]): void {
-	if (!ast || typeof ast !== "object") return;
-	if (Array.isArray(ast)) {
-		for (const child of ast) collectNames(child, names);
-		return;
-	}
-	const record = ast as Record<string, unknown>;
-	if (
-		(record.type === "Ingredient" || record.type === "Cookware") &&
-		typeof record.name === "string"
-	) {
-		names.push(record.name);
-	}
-	for (const key of Object.keys(record)) {
-		if (key === "type" || key === "loc") continue;
-		const value = record[key];
-		if (Array.isArray(value) || (value && typeof value === "object")) {
-			collectNames(value, names);
-		}
-	}
-}
-
-export function collectIngredientCookwareNames(ast: unknown): string[] {
-	const names: string[] = [];
-	collectNames(ast, names);
-	return names;
-}
