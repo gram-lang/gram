@@ -30,7 +30,6 @@ export function calculatePreparationTime(
 		addToBreakdown(breakdown, "cookware_overhead", registry.cookware.size * 1);
 	}
 
-	// Helper to recursively calculate prep time for a single item (handles alternatives).
 	// Tracks the ingredient's stable `id` rather than a display name — the label is
 	// resolved to a name via the registry at render time, the same way every other
 	// ingredient reference in the compiled output is (shopping list, section lists).
@@ -72,7 +71,6 @@ export function calculatePreparationTime(
 		return { duration: localTime, id: itemId };
 	};
 
-	// Aggregate preparation time across all steps and sections
 	sections.forEach((sec) => {
 		sec.steps.forEach((s) => {
 			if (s.type === "step" && s.content) {

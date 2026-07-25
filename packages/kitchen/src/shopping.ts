@@ -111,12 +111,10 @@ export function generateShoppingList(
 	const compositeMap = new Map<string, CompositeItem>();
 	const alternatives: Usage[] = [];
 
-	// Detect circular dependencies globally
 	const circularIds = detectCycles(sections);
 
 	sections.forEach((sec) => {
 		sec.ingredients.forEach((item) => {
-			// 1. Separate alternatives to be rendered separately at the end
 			if (item.type === "alternative") {
 				alternatives.push(item);
 				return;
@@ -129,7 +127,6 @@ export function generateShoppingList(
 			// Skip pure variable references (they don't go onto a grocery list)
 			if (item.type === "reference") return;
 
-			// 2. Handle composite sub-recipe ingredients
 			if (item.composite) {
 				const parentId = slugify(item.composite.parent);
 				if (!compositeMap.has(parentId)) {
@@ -144,7 +141,6 @@ export function generateShoppingList(
 				}
 				const comp = compositeMap.get(parentId)!;
 
-				// Accumulate declared parent batch requirements (default to 1)
 				let declParentQty = 1;
 				if (item.composite?.quantity) {
 					const numQ = getNumericQty(item.composite.quantity);
@@ -157,7 +153,6 @@ export function generateShoppingList(
 				const currentParentTotal = comp._subUsageMap!.get(subId) || 0;
 				comp._subUsageMap!.set(subId, currentParentTotal + declParentQty);
 
-				// Accumulate child quantities inside the sub-recipe
 				const uUnit = item.unit || "";
 				const uKey = `${subId}::${uUnit}`;
 
@@ -182,10 +177,8 @@ export function generateShoppingList(
 				return;
 			}
 
-			// 3. Normal ingredient aggregation
 			const id = item.id;
 
-			// Extract numeric quantities if resolvable
 			let numericQty: number | null = null;
 			const unit = item.unit || "";
 			let isGhost = false;
@@ -240,9 +233,6 @@ export function generateShoppingList(
 				});
 			}
 
-			// (Numeric extraction moved up above key generation)
-
-			// Push ghosts, variables, and circular warnings to alternative descriptions
 			if (isGhost) {
 				// isGhost is only ever set from `item.formula.isGhost` above, so
 				// `item.formula` is always truthy here — the `.qty`/`.value`
@@ -252,7 +242,6 @@ export function generateShoppingList(
 				const display = `${text} ❓`;
 				existing.variableParts!.push(`(${display})`);
 			} else if (numericQty !== null) {
-				// Sum numeric quantities under matching units
 				const u = unit;
 				if (!existing.otherUnits![u]) existing.otherUnits![u] = 0;
 				existing.otherUnits![u] += numericQty;
@@ -270,7 +259,6 @@ export function generateShoppingList(
 		});
 	});
 
-	// 4. Transform and round aggregated items into a clean standard shopping list schema
 	const standardList = [...listMap.values()].map((item) => {
 		const res: ShoppingListItem = {
 			id: item.id,
@@ -312,10 +300,10 @@ export function generateShoppingList(
 		return res;
 	});
 
-	// 4.5. Flag ingredients split across incompatible units (e.g. 500g here,
-	// 2 cups elsewhere): since the grouping key above already includes the
-	// unit, each unit produces its own separate entry with the same `id` —
-	// so ambiguity has to be detected *across* entries, not within one.
+	// Flag ingredients split across incompatible units (e.g. 500g here, 2 cups
+	// elsewhere): since the grouping key above already includes the unit, each
+	// unit produces its own separate entry with the same `id` — so ambiguity
+	// has to be detected *across* entries, not within one.
 	const unitsById = new Map<string, Set<string | null>>();
 	standardList.forEach((item) => {
 		if (!unitsById.has(item.id)) unitsById.set(item.id, new Set());
@@ -325,7 +313,6 @@ export function generateShoppingList(
 		if ((unitsById.get(item.id)?.size ?? 0) > 1) item.multiUnit = true;
 	});
 
-	// 5. Merge direct ingredient usages into their composite parent sub-recipes
 	const finalStandardList: ShoppingListItem[] = [];
 
 	standardList.forEach((stdItem) => {
@@ -351,7 +338,6 @@ export function generateShoppingList(
 		}
 	});
 
-	// 6. Finalize composite parent sub-recipe item listings
 	const compositeList: CompositeItem[] = [...compositeMap.values()].map((c) => {
 		let maxQ = 0;
 		for (const q of c._subUsageMap!.values()) {

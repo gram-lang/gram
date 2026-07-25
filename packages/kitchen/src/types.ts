@@ -43,7 +43,7 @@ export interface Context {
 	seenNames: Set<string>;
 	definedIntermediates: Set<string>;
 	usedIntermediates: Set<string>;
-	currentSectionIntermediates: Set<string>; // Track intermediates defined in the current section
+	currentSectionIntermediates: Set<string>;
 	globalScopes: Map<string, string>;
 	// Per-compilation counter for `_usageId` — must be created fresh for every
 	// compile() call so ids stay deterministic and never leak across compilations.
@@ -74,7 +74,7 @@ export interface Usage {
 	};
 	type?: string;
 	options?: StepToken[]; // For alternatives — recursively processed block results, not raw AST
-	name?: string; // Optional name cache
+	name?: string;
 	_usageId?: string;
 	normalizedMass?: number;
 	conversionMethod?: string;
@@ -154,7 +154,6 @@ export interface ProcessedStep {
 		end: number; // Global end time (when the cook is free)
 		activeDuration: number; // How long the cook is blocked on this step
 	};
-	// Tasks running in background started during this step
 	backgroundTasks: Array<{
 		name?: string; // E.g., "baking" or the timer name
 		duration: number; // In minutes
@@ -177,7 +176,7 @@ export interface ProcessedSection {
 
 export interface TimeBreakdownItem {
 	label: string;
-	duration: number; // en minutes
+	duration: number; // in minutes
 }
 
 export interface CompilationResult {

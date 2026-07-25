@@ -12,11 +12,7 @@ import { CompilerOptionsSchema } from "./schemas";
 
 export type CompilerOptions = z.infer<typeof CompilerOptionsSchema>;
 
-/**
- * Main entry point of the Gram compiler.
- * Transforms a raw Recipe AST into a clean, structured CompilationResult
- * by compiling sections, generating the shopping list, and calculating preparation times.
- */
+/** Main entry point of the Gram compiler. */
 export function compile(
 	ast: RecipeAST,
 	rawOptions?: CompilerOptions,
@@ -26,14 +22,11 @@ export function compile(
 
 	const registry = new RecipeRegistry();
 
-	// 1. Process steps, scheduling, and build global registries
 	const resultPayload = processSections(ast.children, registry, options);
 	const sections = resultPayload.sections;
 
-	// 2. Aggregate ingredients into a master shopping list
 	const shopping_list = generateShoppingList(sections, registry, options);
 
-	// 3. Extract unique, non-reference cookware items globally
 	const globalCookware: Usage[] = [];
 	sections.forEach((sec) => {
 		sec.cookware.forEach((cw) => {
@@ -43,7 +36,6 @@ export function compile(
 		});
 	});
 
-	// 4. Validate semantic rules (e.g., Baker's Percentage uniqueness)
 	let bakersRefFound = false;
 	sections.forEach((sec) => {
 		sec.ingredients.forEach((ing) => {
@@ -64,7 +56,6 @@ export function compile(
 	const titleValue = ast.meta.title;
 	const title = typeof titleValue === "string" ? titleValue : null;
 
-	// 5. Assemble and return the clean, compact final compilation payload
 	const result: CompilationResult = {
 		title,
 		slug: title ? slugify(title) : null,

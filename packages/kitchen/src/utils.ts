@@ -63,16 +63,13 @@ export const minifyQuantity = (
 ): number | QuantityValueAST | undefined => {
 	if (!q) return undefined;
 
-	// Explicitly ignore RelativeQuantity for minification in this context
 	if (q.type === ASTNodeType.RelativeQuantity) return undefined;
 
-	// If it's a full QuantityAST
 	if (q.type === ASTNodeType.Quantity) {
 		if (q.value && q.value.type === "single") return q.value.value;
 		return q.value;
 	}
 
-	// Otherwise it's already a QuantityValueAST (single/range/fraction)
 	if (q.type === "single" && q.value !== undefined) return q.value;
 	return q;
 };
@@ -106,7 +103,6 @@ export const createCleanUsage = (
 	let cleanQty: number | QuantityValueAST | string | undefined;
 
 	if (qtyNode) {
-		// If it's a TextQuantity, we use the value directly
 		if (qtyNode.type === ASTNodeType.TextQuantity) {
 			cleanQty = qtyNode.value;
 		} else if (qtyNode.type === ASTNodeType.Quantity) {
@@ -155,7 +151,6 @@ export const createCleanUsage = (
 		obj.fixed = true;
 	}
 
-	// Special handling for TextQuantity override
 	if (qtyNode && qtyNode.type === ASTNodeType.TextQuantity) {
 		obj.qty = qtyNode.value;
 		obj.fixed = true;

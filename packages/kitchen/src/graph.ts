@@ -44,7 +44,7 @@ function findCycles(graph: Map<string, Set<string>>): Set<string> {
  * and returns a set of ingredient IDs involved in circular references.
  */
 export function detectCycles(sections: ProcessedSection[]): Set<string> {
-	const graph = new Map<string, Set<string>>(); // id -> [dependencies]
+	const graph = new Map<string, Set<string>>();
 
 	sections.forEach((sec) => {
 		sec.ingredients.forEach((ing) => {
@@ -71,7 +71,7 @@ export function detectCycles(sections: ProcessedSection[]): Set<string> {
 export function detectIntermediateCycles(
 	sections: ProcessedSection[],
 ): Set<string> {
-	const graph = new Map<string, Set<string>>(); // produced name -> consumed names
+	const graph = new Map<string, Set<string>>();
 
 	sections.forEach((sec) => {
 		const produced = sec.intermediate_preparation;

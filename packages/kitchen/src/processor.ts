@@ -111,18 +111,8 @@ function checkModifiers(
 	}
 }
 
-/**
- * Processes a single AST item inside a recipe step.
- * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
- * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
- */
 export type ProcessedBlockResult = StepToken;
 
-/**
- * Processes a single AST item inside a recipe step.
- * Identifies the node type (Ingredient, Cookware, Reference, Timer, etc.), normalizes its properties,
- * pushes it to the local section list, and checks for validation errors (ghosts, circularity).
- */
 function processIngredient(
 	item: IngredientAST,
 	ctx: ProcessorContext,
@@ -752,7 +742,7 @@ export function processSections(
 				});
 
 				if (localActiveTime === 0 && stepPassiveTasks.length === 0) {
-					localActiveTime = 2; // Default active time
+					localActiveTime = 2;
 				}
 
 				let productionTime = localActiveTime;
