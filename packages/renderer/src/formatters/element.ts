@@ -1,6 +1,7 @@
 import type { RenderContext } from "../types";
 import {
 	escapeHtml,
+	escapeMarkdownHtml,
 	getQty,
 	formatQuantityValue,
 	formatDecimalToFraction,
@@ -204,17 +205,19 @@ const strategies: Record<
 				return html;
 			}
 		} else {
-			let md = item.type === "reference" ? `👉*${name}*` : `**${name}**`;
-			md += parentSuffixMd;
+			const mdName = escapeMarkdownHtml(name);
+			let md = item.type === "reference" ? `👉*${mdName}*` : `**${mdName}**`;
+			md += escapeMarkdownHtml(parentSuffixMd);
 			// plainQty already folds in bakersPercentage/bakersMathOnly and variable_entries,
 			// same as the HTML branch above.
 			if (!context.hideIngredientQty && plainQty) {
-				md += ` (${plainQty})`;
+				md += ` (${escapeMarkdownHtml(plainQty)})`;
 			}
 			const mode = context.formatMode || "inline";
 			if (prep && mode !== "shopping-list") {
-				if (mode === "mise-en-place") md += ` — ${prep}`;
-				else md += ` (${prep})`;
+				const mdPrep = escapeMarkdownHtml(prep);
+				if (mode === "mise-en-place") md += ` — ${mdPrep}`;
+				else md += ` (${mdPrep})`;
 			}
 			if (isOptional) md += " (optional)";
 			return md;
@@ -249,7 +252,7 @@ const strategies: Record<
 				return html;
 			}
 		} else {
-			let md = `*${name}*`;
+			let md = `*${escapeMarkdownHtml(name)}*`;
 			if (qtyVal !== null) md += ` (${qtyVal})`;
 			return md;
 		}
@@ -285,7 +288,7 @@ const strategies: Record<
 						? DEFAULT_ICONS.md.hourglass
 						: DEFAULT_ICONS.md.timer;
 			const suffix = isPassive ? " (passive)" : "";
-			return `${prefix}${qVal}${unitStr}${suffix}`;
+			return `${prefix}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}${suffix}`;
 		}
 	},
 
@@ -301,7 +304,7 @@ const strategies: Record<
 			if (format === "html") {
 				return `<span class="${className}" data-semantic="${escapeHtml(textVal)}">${termIcon} ${escapeHtml(textVal)}</span>`;
 			} else {
-				return `${termIcon}${textVal}`;
+				return `${termIcon}${escapeMarkdownHtml(textVal)}`;
 			}
 		} else {
 			const q = item.quantity || { value: "" };
@@ -310,7 +313,7 @@ const strategies: Record<
 			if (format === "html") {
 				return `<span class="${className}" data-value="${escapeHtml(q.value)}" data-unit="${escapeHtml(item.unit || "")}">${termIcon} ${escapeHtml(qVal)}${escapeHtml(unitStr)}</span>`;
 			} else {
-				return `${termIcon}${qVal}${unitStr}`;
+				return `${termIcon}${escapeMarkdownHtml(qVal)}${escapeMarkdownHtml(unitStr)}`;
 			}
 		}
 	},
@@ -359,7 +362,7 @@ const strategies: Record<
 				return html;
 			}
 		} else {
-			let md = `👉*${name}*`;
+			let md = `👉*${escapeMarkdownHtml(name)}*`;
 			if (qty) {
 				const parts = [];
 				const qtyVal = qty.text || formatDecimalToFraction(qty.value);
@@ -369,7 +372,7 @@ const strategies: Record<
 				if (item.variable_entries && item.variable_entries.length > 0) {
 					parts.push(...item.variable_entries);
 				}
-				md += ` (${parts.join(" + ")})`;
+				md += ` (${escapeMarkdownHtml(parts.join(" + "))})`;
 			}
 			return md;
 		}
@@ -385,7 +388,7 @@ const strategies: Record<
 			return `<span class="${className}">${arrowIcon} ${escapeHtml(name)}</span>`;
 		} else {
 			const prefix = context.icons?.arrowRight ?? DEFAULT_ICONS.md.arrowRight;
-			return `${prefix}${name}`;
+			return `${prefix}${escapeMarkdownHtml(name)}`;
 		}
 	},
 
@@ -410,7 +413,7 @@ const strategies: Record<
 		if (format === "html") {
 			return `<span class="inline-comment">${escapeHtml(text)}</span>`;
 		}
-		return ` *${text}*`;
+		return ` *${escapeMarkdownHtml(text)}*`;
 	},
 
 	alternative: (item, format, context) => {
@@ -490,7 +493,7 @@ const strategies: Record<
 
 	text: (item, format) => {
 		const text = item.value || "";
-		return format === "html" ? escapeHtml(text) : text;
+		return format === "html" ? escapeHtml(text) : escapeMarkdownHtml(text);
 	},
 };
 
@@ -511,7 +514,9 @@ export function formatElement(
 ): string {
 	if (element === null || element === undefined) return "";
 	if (typeof element === "string") {
-		return format === "html" ? escapeHtml(element) : element;
+		return format === "html"
+			? escapeHtml(element)
+			: escapeMarkdownHtml(element);
 	}
 
 	const el = element as Record<string, unknown>;
@@ -539,5 +544,5 @@ export function formatElement(
 
 	return format === "html"
 		? escapeHtml(String(el.value || ""))
-		: String(el.value || "");
+		: escapeMarkdownHtml(String(el.value || ""));
 }

@@ -9,5 +9,6 @@ export {
 	formatQuantityValue,
 	formatDuration,
 	escapeHtml,
+	escapeMarkdownHtml,
 	joinStepTokens,
 } from "./utils";

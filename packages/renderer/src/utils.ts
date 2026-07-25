@@ -140,6 +140,19 @@ export function escapeHtml(unsafe: string | null | undefined): string {
 }
 
 /**
+ * Neutralizes raw HTML in Markdown output. Markdown renderers pass raw HTML
+ * through by default (markdown-it, remark), so unescaped `<`/`&` in
+ * user-authored recipe text (title, ingredient names, step content) can
+ * survive as executable markup once the Markdown is rendered to HTML
+ * downstream. Entities render back as literal characters in CommonMark, so
+ * this is transparent for legitimate content.
+ */
+export function escapeMarkdownHtml(unsafe: string | null | undefined): string {
+	if (unsafe === undefined || unsafe === null) return "";
+	return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
+
+/**
  * True for a shopping-list/cookware entry that's an alternative group
  * (`@a|@b`). Some older payloads use the `'group'` type instead of
  * `'alternative'` — both are accepted for backwards compatibility.

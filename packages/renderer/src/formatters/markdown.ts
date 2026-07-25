@@ -13,6 +13,7 @@ import {
 	isCompositeItem,
 	joinStepTokens,
 	groupMultiUnitEntries,
+	escapeMarkdownHtml,
 } from "../utils";
 import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -38,7 +39,7 @@ const markdownBackend: RenderBackend = {
 	},
 
 	renderTitle(data) {
-		return data.title ? `# ${data.title}\n\n` : "";
+		return data.title ? `# ${escapeMarkdownHtml(data.title)}\n\n` : "";
 	},
 
 	renderMeta(data, _context, options) {
@@ -65,7 +66,8 @@ const markdownBackend: RenderBackend = {
 		}
 		if (data.meta) {
 			for (const [k, v] of Object.entries(data.meta)) {
-				if (k !== "title") md += `> - ${k}: ${v}\n`;
+				if (k !== "title")
+					md += `> - ${escapeMarkdownHtml(k)}: ${escapeMarkdownHtml(String(v))}\n`;
 			}
 		}
 		md += "\n";
@@ -97,7 +99,7 @@ const markdownBackend: RenderBackend = {
 					md += `  - ${formatElement(child, "md", { ...context, formatMode: "shopping-list" })}\n`;
 				});
 			} else if (item.display) {
-				md += `- ${item.display}\n`;
+				md += `- ${escapeMarkdownHtml(item.display)}\n`;
 			} else if (group.length > 1) {
 				md += `- **${item.name || item.id}** ⚠️ *${t.renderer.mixedUnits}*:\n`;
 				group.forEach((entry) => {
@@ -144,8 +146,9 @@ const markdownBackend: RenderBackend = {
 		let md = `## 👨‍🍳 Instructions\n\n`;
 		data.sections.forEach((sec: any) => {
 			if (sec.title) {
-				md += `### ${sec.title}`;
-				if (sec.retro_planning) md += ` ~{${sec.retro_planning.raw}}`;
+				md += `### ${escapeMarkdownHtml(sec.title)}`;
+				if (sec.retro_planning)
+					md += ` ~{${escapeMarkdownHtml(sec.retro_planning.raw)}}`;
 				md += `\n\n`;
 			}
 
@@ -164,7 +167,8 @@ const markdownBackend: RenderBackend = {
 			let stepCounter = 0;
 			sec.steps.forEach((step: any) => {
 				if (step.type === "comment") {
-					md += `> *${step.value ? step.value.trim() : ""}*\n\n`;
+					const commentText = step.value ? step.value.trim() : "";
+					md += `> *${escapeMarkdownHtml(commentText)}*\n\n`;
 					return;
 				}
 
@@ -173,7 +177,7 @@ const markdownBackend: RenderBackend = {
 				let stepText = "";
 
 				if (step.action) {
-					stepText += `**[${step.action}]** `;
+					stepText += `**[${escapeMarkdownHtml(step.action)}]** `;
 				}
 				stepText += joinStepTokens(
 					step.content,
@@ -198,7 +202,7 @@ const markdownBackend: RenderBackend = {
 		let md = "\n---\n\n";
 		context._inlineComments.forEach((note, idx) => {
 			const index = idx + 1;
-			md += `[^${renderId}-${index}]: ${note}\n`;
+			md += `[^${renderId}-${index}]: ${escapeMarkdownHtml(note)}\n`;
 		});
 		return md;
 	},
@@ -228,7 +232,7 @@ const markdownBackend: RenderBackend = {
 		let md = `## 🥗 ${t.renderer.nutrition}${portionNote}\n\n`;
 		if (nut.warnings && nut.warnings.length > 0) {
 			nut.warnings.forEach((w) => {
-				md += `> **Incomplete data:** ${w.message}\n`;
+				md += `> **Incomplete data:** ${escapeMarkdownHtml(w.message)}\n`;
 			});
 			md += "\n";
 		}

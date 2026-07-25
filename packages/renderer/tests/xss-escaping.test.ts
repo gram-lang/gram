@@ -100,15 +100,25 @@ describe("escaping sweep — every text field, every HTML backend", () => {
 	}
 });
 
-describe("toMarkdown escaping (known limitation, not a regression)", () => {
-	it("does NOT escape HTML — characterizes existing behavior documented in build-custom-ui.md", () => {
+describe("toMarkdown escaping", () => {
+	it("neutralizes a raw HTML payload in the recipe title (frontmatter)", () => {
 		const source =
 			"---\ntitle: <img src=x onerror=alert(1)>\n---\n## Section\nMix @flour{200g}.\n";
 		const compiled = compile(getAST(source));
 		const md = toMarkdown(compiled);
 
-		// If this assertion ever flips to escaped, update docs/how-to/build-custom-ui.md
-		// (the sanitization warning) accordingly instead of treating it as a silent win.
-		expect(md).toContain("<img src=x onerror=alert(1)>");
+		// toMarkdown escapes `<`/`&` only (not full HTML entity escaping like
+		// toHTML) — see explanation/engine/renderer.md for the rationale.
+		expect(md).not.toContain("<img src=x onerror=alert(1)>");
+		expect(md).toContain("&lt;img src=x onerror=alert(1)>");
+	});
+
+	it("neutralizes a raw HTML payload inside free step text", () => {
+		const source = "## Section\nMix @flour{200g} carefully <b>now</b>.\n";
+		const compiled = compile(getAST(source));
+		const md = toMarkdown(compiled);
+
+		expect(md).not.toContain("<b>now</b>");
+		expect(md).toContain("&lt;b>now&lt;/b>");
 	});
 });
