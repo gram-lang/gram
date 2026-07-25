@@ -11,7 +11,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Bake
 [Bake] In the oven for ~_{30min}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -41,7 +41,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Bake
 [Bake] The &dough for ~_{30min}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -70,7 +70,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Meat ~{-60min}
 [Cook] with &sauce.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -90,7 +90,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Dough ~{-2d}
 [Mix] with &starter.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -118,7 +118,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Bake
 [Bake] Bake with &levain for ~_{30min}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -143,7 +143,7 @@ describe("Global Scheduling and Retro-planning", () => {
 
 ## Cake B ~{-1d}
 [Bake] In the ~_oven{30min}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -168,7 +168,7 @@ describe("Global Scheduling and Retro-planning", () => {
 ## C
 
 [c] Do it.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -196,7 +196,7 @@ describe("Global Scheduling and Retro-planning", () => {
 ## C
 
 [c] Do it.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -220,7 +220,7 @@ describe("Global Scheduling and Retro-planning", () => {
 ## C
 
 [c] Do it.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -249,7 +249,7 @@ describe("Timer unit normalization", () => {
 [c] Rest ~c{2 heures}.
 
 [d] Rest ~d{2 h}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -265,7 +265,7 @@ describe("Timer unit normalization", () => {
 ## Section
 
 [a] Wait ~{3 bananas}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
@@ -285,7 +285,7 @@ describe("Timer unit normalization", () => {
 ## Section
 
 [a] Wait ~{10}.
-		`;
+`;
 		const ast = getAST(source);
 		const result = compile(ast);
 
