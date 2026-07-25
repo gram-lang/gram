@@ -48,15 +48,6 @@ steps:
       - apt-get update && apt-get install -y git
       - bun test
 
-  # `build` above already builds every package including docs (turbo's
-  # dependency graph) — this step is a fast cache-hit re-run, kept separate
-  # purely so a docs-specific failure (broken links, budget overrun) is
-  # attributed to its own step instead of buried in the generic `build` one.
-  docs:
-    image: oven/bun:1.3.14
-    commands:
-      - bun run build --filter=@gram-lang/docs
-
   # Packs every @gram-lang/* package the CLI depends on with `bun pm pack`
   # (which resolves `workspace:*` to the real version, same as at publish
   # time) so node-smoke can install them together with plain npm, without
