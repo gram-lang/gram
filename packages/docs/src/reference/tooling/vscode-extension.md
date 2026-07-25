@@ -12,7 +12,12 @@ The official Gram VS Code extension turns your editor into a dedicated recipe de
 A dedicated `CodeLens` button appears above the recipe title. Clicking it reveals a detailed nutrition panel (calories, proteins, carbs, fats) within the Live Preview. It also flags ingredients missing from the database.
 :::
 
-### 2. Smart Ingredient Management
+### 2. Gantt Chart View
+- **Timeline Panel**: Run `Gram: Gantt Chart` (or click the graph icon in the editor toolbar) to open a dedicated timeline view of the recipe — active preparation steps, background timers, and idle-time compression — in its own WebView panel, independent from the Live Preview.
+- **Time Modes**: Switch between elapsed time (stopwatch, T+), countdown (T-), and clock time based on a target serve time, via the panel's options dropdown.
+- **Compact View**: Toggle a tighter row layout for recipes with many overlapping steps.
+
+### 3. Smart Ingredient Management
 - **Silent Plural Management**: The extension maps simple plural nouns in your recipe (e.g., `@carrots`) to singular entries in your YAML database (`carrot`), maintaining language naturalness without raising false errors.
 - **Fuzzy Matching**: If you misspell an ingredient, a Levenshtein distance algorithm suggests the closest known match via Code Actions (Quick Fixes).
 - **Hover Insights**: Hover over any ingredient to see its full nutritional breakdown. If the database specifies a density, the hover also provides real-time volume-to-mass conversions (e.g., `1 tbsp → 15g`).
@@ -21,7 +26,7 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 The extension automatically locates your `.gram/ingredients.yaml` file in the workspace root. Alternatively, you can explicitly configure `gram.ingredientDatabase.path` in your VS Code settings.
 :::
 
-### 3. Editing Assistance & Navigation
+### 4. Editing Assistance & Navigation
 - **Semantic Tokens**: Regex highlighting is replaced with AST-driven semantic highlighting. This ensures that modifiers, nested units, and composite ingredients (`<@`) are colored accurately based on their role.
 - **Intelligent Autocomplete**:
   - `@` suggests ingredients from your database, automatically appending `{}` for multi-word names.
@@ -36,7 +41,7 @@ The extension automatically locates your `.gram/ingredients.yaml` file in the wo
 | `Shift+F12` | Find All References | Locates every usage of a specific intermediate variable. |
 | `F2` | Rename Symbol | Atomically renames intermediates across your entire document. |
 
-### 4. Diagnostics & Refactoring
+### 5. Diagnostics & Refactoring
 - **Real-Time Validation**: The LSP immediately flags orphaned references, unused declarations, and missing frontmatter fields.
 - **Code Actions 💡**:
   - Add missing `title:` to the frontmatter.
@@ -44,7 +49,7 @@ The extension automatically locates your `.gram/ingredients.yaml` file in the wo
   - Declare a missing intermediate for an existing reference.
   - Convert volume quantities to mass directly in your code (if density is known).
 
-### 5. Auto-formatting
+### 6. Auto-formatting
 Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to instantly clean up syntax:
 
 ```diff

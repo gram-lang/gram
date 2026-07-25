@@ -86,7 +86,7 @@ To support the language, Gram comes with a suite of official tools that connect 
 ### VS Code Extension & Language Server
 Transform your editor into a proper recipe development environment. 
 [**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
-- **Dynamic Live Preview**: See your recipe rendered in a side panel as you type.
+- **Dynamic Live Preview & Gantt Chart**: Side-by-side recipe rendering and a real-time timeline view for precise temporal visualization of active steps, background timers, and service scheduling.
 - **Smart Autocomplete**: Contextual suggestions for ingredients from your database, units, and references.
 - **Real-time Diagnostics**: Instantly flags missing ingredients, unused references, or circular dependencies.
 
@@ -128,7 +128,7 @@ This monorepo is divided into specialized packages under `packages/`:
 | [**`@gram-lang/kitchen`**](./packages/kitchen/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/kitchen?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/kitchen) | The compiler logic, transforming the AST into final JSON structures. |
 | [**`@gram-lang/format`**](./packages/format/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/format?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/format) | Canonical `.gram` source code formatter. |
 | [**`@gram-lang/analyzer`**](./packages/analyzer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/analyzer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/analyzer) | The physical resolver for mass normalization, yield, and nutrition. |
-| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML or Markdown. |
+| [**`@gram-lang/renderer`**](./packages/renderer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/renderer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/renderer) | The display layer converting JSON into HTML, Markdown, or Gantt Charts. |
 | [**`@gram-lang/cli`**](./packages/cli/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/cli) | The official command-line interface. |
 | [**`@gram-lang/i18n`**](./packages/i18n/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/i18n?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/i18n) | Localization layer for units, categories, and AI prompts. |
 | [**`vscode-extension`**](./packages/vscode-extension/README.md) | [![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc)](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang) | The Visual Studio Code extension. |

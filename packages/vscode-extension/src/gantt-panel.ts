@@ -1,13 +1,12 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
 
-export class PreviewPanel {
-	public static readonly viewType = "gramPreview";
-	public static currentPanel: PreviewPanel | undefined;
+export class GanttPanel {
+	public static readonly viewType = "gramGantt";
+	public static currentPanel: GanttPanel | undefined;
 
 	private readonly _panel: vscode.WebviewPanel;
 	private _disposables: vscode.Disposable[] = [];
-	private _showMacros = false;
 	private readonly _extensionUri: vscode.Uri;
 
 	public uri: string;
@@ -35,15 +34,15 @@ export class PreviewPanel {
 			? vscode.ViewColumn.Beside
 			: vscode.ViewColumn.One;
 
-		if (PreviewPanel.currentPanel) {
-			PreviewPanel.currentPanel.setUriAndHTML(uri, initialHtml);
-			PreviewPanel.currentPanel._panel.reveal(column, true);
+		if (GanttPanel.currentPanel) {
+			GanttPanel.currentPanel.setUriAndHTML(uri, initialHtml);
+			GanttPanel.currentPanel._panel.reveal(column, true);
 			return;
 		}
 
 		const panel = vscode.window.createWebviewPanel(
-			PreviewPanel.viewType,
-			"Live Preview",
+			GanttPanel.viewType,
+			"Gantt Chart",
 			{ viewColumn: column, preserveFocus: true },
 			{
 				enableScripts: true,
@@ -51,7 +50,7 @@ export class PreviewPanel {
 			},
 		);
 
-		PreviewPanel.currentPanel = new PreviewPanel(
+		GanttPanel.currentPanel = new GanttPanel(
 			panel,
 			extensionUri,
 			uri,
@@ -67,20 +66,15 @@ export class PreviewPanel {
 
 	private _updateTitle(uri: string): void {
 		const filename = uri ? path.basename(vscode.Uri.parse(uri).fsPath) : "";
-		this._panel.title = filename ? `Aperçu: ${filename}` : "Live Preview";
+		this._panel.title = filename ? `Gantt: ${filename}` : "Gantt Chart";
 	}
 
 	public updateHTML(html: string): void {
 		this._panel.webview.postMessage({ command: "updateContent", html });
 	}
 
-	public showMacros(): void {
-		this._showMacros = true;
-		this._panel.webview.postMessage({ command: "showMacros" });
-	}
-
 	public dispose(): void {
-		PreviewPanel.currentPanel = undefined;
+		GanttPanel.currentPanel = undefined;
 		this._panel.dispose();
 		while (this._disposables.length) {
 			const disposable = this._disposables.pop();
@@ -93,23 +87,26 @@ export class PreviewPanel {
 	private _getHtmlForWebview(initialHtml: string): string {
 		const nonce = getNonce();
 
-		const cssPathOnDisk = vscode.Uri.joinPath(
-			this._extensionUri,
-			"media",
-			"preview.css",
+		const previewCssUri = this._panel.webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "preview.css"),
 		);
-		const cssUri = this._panel.webview.asWebviewUri(cssPathOnDisk);
+		const ganttCssUri = this._panel.webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "gantt.css"),
+		);
+		const scriptUri = this._panel.webview.asWebviewUri(
+			vscode.Uri.joinPath(this._extensionUri, "media", "gantt-webview.js"),
+		);
 
 		return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net; font-src https://fonts.gstatic.com https://unpkg.com https://cdn.jsdelivr.net; script-src 'nonce-${nonce}' https://unpkg.com;">
-    <title>Gram Preview</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'nonce-${nonce}';">
+    <title>Gram Gantt Chart</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="${cssUri}" rel="stylesheet">
-    <script nonce="${nonce}" src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="${previewCssUri}" rel="stylesheet">
+    <link href="${ganttCssUri}" rel="stylesheet">
     <style nonce="${nonce}">
         :root, body.vscode-light, body.vscode-dark, body.vscode-high-contrast {
             /* Override gram.css colors to seamlessly blend with VSCode theme */
@@ -123,31 +120,24 @@ export class PreviewPanel {
             --color-text-muted: var(--vscode-descriptionForeground);
             --color-text: var(--vscode-editor-foreground);
             --color-text-strong: var(--vscode-editor-foreground);
-            
+
             --gram-font-sans: 'Inter', var(--vscode-font-family);
             --gram-font-mono: var(--vscode-editor-font-family);
+
+            --gantt-accent: var(--vscode-charts-blue);
+            --gantt-accent-soft: color-mix(in srgb, var(--vscode-charts-blue) 20%, transparent);
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: var(--gram-font-sans);
+            color: var(--color-text-strong);
         }
     </style>
 </head>
-<body class="gram-preview ${this._showMacros ? "show-macros" : ""}">
+<body>
     <div id="content">${initialHtml}</div>
-    <script nonce="${nonce}">
-        window.addEventListener('message', event => {
-            const message = event.data;
-            if (message.command === 'showMacros') {
-                document.body.classList.add('show-macros');
-                const panel = document.querySelector('.nutrition-panel');
-                if (panel) {
-                    panel.scrollIntoView({ behavior: 'smooth' });
-                }
-            } else if (message.command === 'updateContent') {
-                const contentDiv = document.getElementById('content');
-                if (contentDiv) {
-                    contentDiv.innerHTML = message.html;
-                }
-            }
-        });
-    </script>
+    <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
 	}

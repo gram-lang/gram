@@ -61,6 +61,7 @@ The Gram Language Server currently supports:
 *   **Hover:** Nutritional information and scaled quantities on hover.
 *   **Completion:** Suggestions for units, ingredients (based on the user's local ingredient DB), and cookware.
 *   **Document Formatting:** Automatic formatting of `.gram` files to the standard canonical style (powered by [`@gram-lang/format`](../format/README.md)).
+*   **Live Preview & Gantt Streams:** Pushes rendered HTML (`gram/previewUpdated`) and interactive Gantt chart HTML fragments (`gram/ganttUpdated`) to editor client webviews on document edits.
 
 ---
 

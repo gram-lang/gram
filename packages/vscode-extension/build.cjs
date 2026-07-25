@@ -14,6 +14,17 @@ async function build() {
         external: ['vscode'],
     });
 
+    // Build the Gantt webview's client-side bundle (browser target — runs
+    // inside the webview's isolated document, not the extension host).
+    await esbuild.build({
+        entryPoints: ['src/gantt-webview-entry.ts'],
+        bundle: true,
+        outfile: 'media/gantt-webview.js',
+        format: 'iife',
+        platform: 'browser',
+        target: 'es2020',
+    });
+
     // Copy the language server bundle into the extension's dist/
     // so the extension can reference it as a single self-contained dist/ folder
     const serverSrc = path.join(__dirname, '..', 'language-server', 'dist', 'server.cjs');
@@ -37,6 +48,16 @@ async function build() {
     } else {
         console.warn('[vscode-extension/build] Renderer CSS not found, skipping copy.');
         console.warn('  Expected:', cssSrc);
+    }
+
+    // Copy the shared Gantt CSS
+    const ganttCssSrc = path.join(__dirname, '..', 'renderer', 'gantt.css');
+    const ganttCssDst = path.join(mediaDest, 'gantt.css');
+    if (fs.existsSync(ganttCssSrc)) {
+        fs.copyFileSync(ganttCssSrc, ganttCssDst);
+    } else {
+        console.warn('[vscode-extension/build] Gantt CSS not found, skipping copy.');
+        console.warn('  Expected:', ganttCssSrc);
     }
 
     // Copy the TextMate grammar from parser

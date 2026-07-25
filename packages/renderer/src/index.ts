@@ -12,3 +12,15 @@ export {
 	escapeMarkdownHtml,
 	joinStepTokens,
 } from "./utils";
+export {
+	toGanttHTML,
+	attachGanttInteractivity,
+	formatTime,
+	formatAxisTime,
+} from "./gantt";
+export type {
+	GanttRenderOptions,
+	GanttInteractivityOptions,
+	GanttInteractivityHandle,
+	GanttTimeMode,
+} from "./gantt";

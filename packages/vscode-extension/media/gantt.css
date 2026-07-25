@@ -1,0 +1,886 @@
+/*
+ * Gantt chart styling. Always loaded alongside gram.css (never standalone) —
+ * relies on gram.css's --color-*, --gray-* and --gram-font-* tokens and its
+ * .dark / body.vscode-dark / :root[class~="dark"] dark-mode selector.
+ */
+
+:root {
+	--gantt-accent: #3b82f6;
+	--gantt-accent-soft: color-mix(in srgb, #3b82f6 15%, transparent);
+	--gantt-shadow-sm: 0 2px 6px color-mix(in srgb, var(--gray-1000) 12%, transparent);
+	--gantt-shadow-lg: 0 4px 16px color-mix(in srgb, var(--gray-1000) 18%, transparent);
+}
+
+.dark,
+body.vscode-dark,
+:root[class~="dark"] {
+	--gantt-accent: #60a5fa;
+	--gantt-accent-soft: color-mix(in srgb, #60a5fa 18%, transparent);
+}
+
+.gram-gantt-container {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+	font-family: var(--gram-font-sans);
+	background-color: var(--color-bg);
+	position: absolute;
+	inset: 0;
+	overflow: auto;
+}
+
+.empty-state {
+	color: var(--color-text-muted);
+	text-align: center;
+	padding: 40px;
+	font-style: italic;
+}
+
+.gantt-header {
+	position: sticky;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 30;
+	min-height: 48px;
+	box-sizing: border-box;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 24px;
+	align-items: center;
+	padding: 8px 16px;
+	background-color: var(--color-bg-subtle);
+	border-bottom: 1px solid var(--color-border);
+	justify-content: space-between;
+}
+
+.gantt-legend {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+	font-size: 12px;
+	color: var(--color-text);
+}
+
+.gantt-controls {
+	display: flex;
+	align-items: center;
+}
+
+/* Options Dropdown */
+.options-dropdown {
+	position: relative;
+}
+
+.options-summary {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 6px;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-bg);
+	cursor: pointer;
+	list-style: none;
+	color: var(--color-text);
+	transition:
+		border-color 0.2s,
+		background-color 0.2s;
+	padding: 6px;
+}
+
+.options-summary::-webkit-details-marker {
+	display: none;
+}
+
+.options-summary svg {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}
+
+.options-summary:hover {
+	border-color: var(--gantt-accent);
+	background-color: var(--color-bg-subtle);
+}
+
+.options-dropdown-content {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	z-index: 50;
+	width: max-content;
+	box-shadow: var(--gantt-shadow-lg);
+	border-radius: 8px;
+	background-color: var(--color-bg);
+	border: 1px solid var(--color-border);
+}
+
+.gantt-options-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 16px;
+}
+
+.compact-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--color-text-strong);
+	cursor: pointer;
+	user-select: none;
+	line-height: 1;
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	line-height: 1;
+}
+
+.legend-text {
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.overflow-item {
+	position: relative;
+	cursor: pointer;
+}
+
+.color-box {
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	flex-shrink: 0;
+}
+
+.color-box.overflow-box {
+	background-color: var(--color-bg-muted);
+	border: 1px solid var(--color-border);
+	color: var(--color-text);
+	font-size: 9px;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: auto;
+	min-width: 16px;
+	padding: 0 3px;
+	height: 12px;
+	box-sizing: border-box;
+}
+
+.sections-popover {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	background-color: var(--color-bg);
+	border: 1px solid var(--color-border);
+	box-shadow: var(--gantt-shadow-lg);
+	border-radius: 6px;
+	padding: 8px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	z-index: 100;
+	min-width: 140px;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		opacity 0.15s,
+		visibility 0.15s;
+}
+
+.overflow-item:hover .sections-popover,
+.overflow-item:focus-within .sections-popover {
+	opacity: 1;
+	visibility: visible;
+}
+
+.popover-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--color-text-strong);
+}
+
+.color-box.section-color-0 {
+	background-color: #b8cae6;
+	border: 1px solid #98aed4;
+}
+
+.color-box.section-color-1 {
+	background-color: #e6c4b8;
+	border: 1px solid #d4a698;
+}
+
+.color-box.section-color-2 {
+	background-color: #b8e6ca;
+	border: 1px solid #98d4ae;
+}
+
+.color-box.section-color-3 {
+	background-color: #e6b8cc;
+	border: 1px solid #d498b0;
+}
+
+.color-box.section-color-4 {
+	background-color: #cbd0f0;
+	border: 1px solid #a8b0e0;
+}
+
+.color-box.section-color-5 {
+	background-color: #ebd8b0;
+	border: 1px solid #dac090;
+}
+
+.color-box.section-color-6 {
+	background-color: #b0e4e0;
+	border: 1px solid #90d0cc;
+}
+
+.color-box.section-color-7 {
+	background-color: #dcb8e6;
+	border: 1px solid #c698d4;
+}
+
+.color-box.section-color-8 {
+	background-color: #d8e0b0;
+	border: 1px solid #c0cb90;
+}
+
+.color-box.section-color-default {
+	background-color: var(--gantt-accent);
+}
+
+.dark .color-box.section-color-0,
+body.vscode-dark .color-box.section-color-0,
+:root[class~="dark"] .color-box.section-color-0 {
+	background-color: #2b3a52;
+	border: 1px solid #3d506e;
+}
+
+.dark .color-box.section-color-1,
+body.vscode-dark .color-box.section-color-1,
+:root[class~="dark"] .color-box.section-color-1 {
+	background-color: #52362b;
+	border: 1px solid #6e4b3d;
+}
+
+.dark .color-box.section-color-2,
+body.vscode-dark .color-box.section-color-2,
+:root[class~="dark"] .color-box.section-color-2 {
+	background-color: #2b5239;
+	border: 1px solid #3d6e4f;
+}
+
+.dark .color-box.section-color-3,
+body.vscode-dark .color-box.section-color-3,
+:root[class~="dark"] .color-box.section-color-3 {
+	background-color: #522b3b;
+	border: 1px solid #6e3d51;
+}
+
+.dark .color-box.section-color-4,
+body.vscode-dark .color-box.section-color-4,
+:root[class~="dark"] .color-box.section-color-4 {
+	background-color: #34385a;
+	border: 1px solid #484d7a;
+}
+
+.dark .color-box.section-color-5,
+body.vscode-dark .color-box.section-color-5,
+:root[class~="dark"] .color-box.section-color-5 {
+	background-color: #4e3f28;
+	border: 1px solid #6a573a;
+}
+
+.dark .color-box.section-color-6,
+body.vscode-dark .color-box.section-color-6,
+:root[class~="dark"] .color-box.section-color-6 {
+	background-color: #264d4a;
+	border: 1px solid #386864;
+}
+
+.dark .color-box.section-color-7,
+body.vscode-dark .color-box.section-color-7,
+:root[class~="dark"] .color-box.section-color-7 {
+	background-color: #462b52;
+	border: 1px solid #603d6e;
+}
+
+.dark .color-box.section-color-8,
+body.vscode-dark .color-box.section-color-8,
+:root[class~="dark"] .color-box.section-color-8 {
+	background-color: #424927;
+	border: 1px solid #5b6539;
+}
+
+.legend-item.active .color-box {
+	background-color: var(--gantt-accent);
+}
+
+.legend-item.passive .color-box {
+	background-color: var(--gantt-accent-soft);
+	border: 1px solid var(--gantt-accent);
+}
+
+.gantt-wrapper {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+.gantt-axis {
+	position: sticky;
+	top: 48px;
+	z-index: 20;
+	background-color: var(--color-bg);
+	display: flex;
+	height: 30px;
+	box-sizing: border-box;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.track-label {
+	position: sticky;
+	left: 0;
+	z-index: 10;
+	width: 120px;
+	flex-shrink: 0;
+	font-weight: 600;
+	font-size: 13px;
+	color: var(--color-text-strong);
+	display: flex;
+	align-items: center;
+	padding-right: 12px;
+	padding-left: 12px;
+	box-sizing: border-box;
+	border-right: 1px solid var(--color-border);
+	background-color: var(--color-bg);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.gantt-axis .track-label {
+	z-index: 25;
+}
+
+.axis-label {
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.05em;
+}
+
+.track-content {
+	flex-grow: 1;
+	position: relative;
+	height: 100%;
+}
+
+.axis-tick {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	transform: translateX(-50%);
+	z-index: 2;
+}
+
+.tick-mark {
+	height: 8px;
+	width: 1px;
+	background-color: var(--color-text-muted);
+	margin: 0 auto;
+}
+
+.tick-label {
+	font-size: 11px;
+	color: var(--color-text);
+	margin-top: 4px;
+	white-space: nowrap;
+}
+
+.axis-tick.is-first-tick .tick-label {
+	transform: translateX(14px);
+}
+
+.axis-tick.is-last-tick .tick-label {
+	transform: translateX(-14px);
+}
+
+.gantt-tracks {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+.gantt-axis-gaps,
+.gantt-tracks-overlay {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.gantt-tracks-overlay {
+	left: 120px;
+}
+
+.visual-gap {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background-color: var(--color-bg-muted);
+	border-left: 1px dashed var(--color-border);
+	border-right: 1px dashed var(--color-border);
+	opacity: 0.6;
+}
+
+.gap-pattern {
+	width: 100%;
+	height: 100%;
+	background-image: repeating-linear-gradient(45deg,
+			transparent,
+			transparent 10px,
+			var(--color-border) 10px,
+			var(--color-border) 11px);
+}
+
+.gantt-track {
+	display: flex;
+	position: relative;
+	z-index: 2;
+	height: 48px;
+	min-height: 48px;
+	border-bottom: 1px solid var(--color-border);
+	transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.gantt-track:hover {
+	background-color: var(--color-bg-subtle);
+}
+
+.time-block {
+	position: absolute;
+	top: 8px;
+	height: 32px;
+	min-width: 22px;
+	box-sizing: border-box;
+	border-radius: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: help;
+	transition:
+		transform 0.1s,
+		box-shadow 0.1s,
+		top 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+	z-index: 2;
+	border: 1px solid var(--color-bg);
+}
+
+.time-block:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--gantt-shadow-sm);
+	z-index: 3;
+}
+
+.time-block.active {
+	background-color: var(--gantt-accent);
+	color: white;
+}
+
+.time-block.passive {
+	background-color: var(--gantt-accent-soft);
+	border: 1px solid var(--gantt-accent);
+	color: var(--gantt-accent);
+	overflow: hidden;
+}
+
+.block-label {
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	padding: 0 8px;
+}
+
+.time-block.active .block-label {
+	position: absolute;
+	left: 100%;
+	color: var(--color-text-strong);
+	transition: opacity 0.2s;
+}
+
+.time-block.active .block-label.label-inside {
+	position: static;
+	left: auto;
+	color: inherit;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 4px;
+}
+
+.time-block.passive .block-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Gap Label */
+.gap-label {
+	position: absolute;
+	top: 3px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 1px 7px;
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	z-index: 26;
+}
+
+/* Assembly Icon */
+.assembly-icon {
+	margin-right: 4px;
+	opacity: 0.8;
+}
+
+/* Temp Badge */
+.temp-badge {
+	display: inline-block;
+	padding: 0px 4px;
+	border-radius: 4px;
+	margin-left: 4px;
+	font-size: 10px;
+	color: var(--item-temp-text);
+	font-weight: bold;
+	background: rgba(255, 255, 255, 0.6);
+}
+
+.dark .temp-badge,
+body.vscode-dark .temp-badge,
+:root[class~="dark"] .temp-badge {
+	background: rgba(0, 0, 0, 0.2);
+}
+
+/* Section Colors (overrides .active) */
+.time-block.section-color-0 {
+	background-color: #b8cae6;
+	color: #1e2f4d;
+}
+
+.time-block.section-color-1 {
+	background-color: #e6c4b8;
+	color: #4d261e;
+}
+
+.time-block.section-color-2 {
+	background-color: #b8e6ca;
+	color: #1e4d2d;
+}
+
+.time-block.section-color-3 {
+	background-color: #e6b8cc;
+	color: #4d1e31;
+}
+
+.time-block.section-color-4 {
+	background-color: #cbd0f0;
+	color: #252a50;
+}
+
+.time-block.section-color-5 {
+	background-color: #ebd8b0;
+	color: #4a3818;
+}
+
+.time-block.section-color-6 {
+	background-color: #b0e4e0;
+	color: #184845;
+}
+
+.time-block.section-color-7 {
+	background-color: #dcb8e6;
+	color: #3f1e4d;
+}
+
+.time-block.section-color-8 {
+	background-color: #d8e0b0;
+	color: #3a4418;
+}
+
+.time-block.section-color-default {
+	background-color: var(--gantt-accent-soft);
+	color: var(--gantt-accent);
+}
+
+.dark .time-block.section-color-0,
+body.vscode-dark .time-block.section-color-0,
+:root[class~="dark"] .time-block.section-color-0 {
+	background-color: #2b3a52;
+	color: #dce6f5;
+}
+
+.dark .time-block.section-color-1,
+body.vscode-dark .time-block.section-color-1,
+:root[class~="dark"] .time-block.section-color-1 {
+	background-color: #52362b;
+	color: #f5e4dc;
+}
+
+.dark .time-block.section-color-2,
+body.vscode-dark .time-block.section-color-2,
+:root[class~="dark"] .time-block.section-color-2 {
+	background-color: #2b5239;
+	color: #dcf5e6;
+}
+
+.dark .time-block.section-color-3,
+body.vscode-dark .time-block.section-color-3,
+:root[class~="dark"] .time-block.section-color-3 {
+	background-color: #522b3b;
+	color: #f5dce5;
+}
+
+.dark .time-block.section-color-4,
+body.vscode-dark .time-block.section-color-4,
+:root[class~="dark"] .time-block.section-color-4 {
+	background-color: #34385a;
+	color: #e1e3f8;
+}
+
+.dark .time-block.section-color-5,
+body.vscode-dark .time-block.section-color-5,
+:root[class~="dark"] .time-block.section-color-5 {
+	background-color: #4e3f28;
+	color: #f6ebd6;
+}
+
+.dark .time-block.section-color-6,
+body.vscode-dark .time-block.section-color-6,
+:root[class~="dark"] .time-block.section-color-6 {
+	background-color: #264d4a;
+	color: #d4f5f2;
+}
+
+.dark .time-block.section-color-7,
+body.vscode-dark .time-block.section-color-7,
+:root[class~="dark"] .time-block.section-color-7 {
+	background-color: #462b52;
+	color: #ebdcf5;
+}
+
+.dark .time-block.section-color-8,
+body.vscode-dark .time-block.section-color-8,
+:root[class~="dark"] .time-block.section-color-8 {
+	background-color: #424927;
+	color: #edf2d5;
+}
+
+/* Fixed Custom Tooltip (created dynamically by attachGanttInteractivity) */
+.gantt-tooltip-fixed {
+	position: fixed;
+	background: var(--color-bg);
+	border: 1px solid var(--color-border);
+	box-shadow: var(--gantt-shadow-lg);
+	padding: 8px 12px;
+	border-radius: 6px;
+	font-size: 13px;
+	color: var(--color-text-strong);
+	width: max-content;
+	max-width: 220px;
+	pointer-events: none;
+	z-index: 99999;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	text-align: left;
+	animation: tooltipFadeIn 0.15s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.tooltip-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.tooltip-header strong {
+	color: var(--color-text-strong);
+}
+
+.tooltip-header .temp-badge-tooltip {
+	font-size: 11px;
+	font-weight: bold;
+	background: var(--color-bg-muted);
+	padding: 2px 6px;
+	border-radius: 4px;
+	color: var(--color-text);
+}
+
+.tooltip-time {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-family: var(--gram-font-mono);
+	font-size: 11px;
+	color: var(--color-text);
+	border-bottom: 1px solid var(--color-border);
+	padding-bottom: 6px;
+}
+
+.time-badge {
+	font-weight: 600;
+	color: var(--gantt-accent);
+}
+
+.time-arrow {
+	color: var(--color-text-muted);
+}
+
+.time-duration {
+	margin-left: auto;
+	font-weight: 600;
+}
+
+.tooltip-text {
+	line-height: 1.4;
+	white-space: pre-wrap;
+}
+
+/* Time Mode Selector */
+.time-mode-selector {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.time-select-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.time-select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: var(--color-bg-muted);
+	border: 1px solid var(--color-border);
+	color: var(--color-text-strong);
+	padding: 6px 32px 6px 8px;
+	border-radius: 6px;
+	font-size: 13px;
+	outline: none;
+	width: 100%;
+}
+
+.select-chevron {
+	position: absolute;
+	right: 8px;
+	pointer-events: none;
+	color: var(--color-text);
+}
+
+.target-time-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 13px;
+	color: var(--color-text);
+}
+
+.target-time-wrapper[hidden] {
+	display: none;
+}
+
+.target-time-input {
+	background-color: var(--color-bg-muted);
+	border: 1px solid var(--color-border);
+	color: var(--color-text-strong);
+	padding: 4px 6px;
+	border-radius: 6px;
+	font-family: var(--gram-font-mono);
+	font-size: 13px;
+	width: 110px;
+}
+
+/* Visual Gap styles */
+.gantt-marker {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 2px;
+	z-index: 15;
+}
+
+.start-marker {
+	transform: translateX(-1px);
+}
+
+.start-marker .marker-line {
+	width: 2px;
+	height: 100%;
+	background-color: #10b981;
+	opacity: 0.5;
+}
+
+.end-marker {
+	transform: translateX(-1px);
+}
+
+.end-marker .marker-line {
+	width: 2px;
+	height: 100%;
+	background-color: #ef4444;
+	opacity: 0.5;
+}
+
+/* Compact mode — pure CSS, no re-render needed.
+   Both height AND max-height must be forced: .gantt-track is a flex item of
+   the column-direction .gantt-tracks container, and its absolutely
+   positioned .time-block children (deliberately out of normal flow so they
+   don't affect intrinsic sizing) still get folded into the flex item's used
+   size unless max-height clamps it explicitly — height alone, even
+   !important, isn't enough to shrink it back down. */
+.gantt-wrapper.is-compact .gantt-track.active {
+	height: 48px !important;
+	max-height: 48px !important;
+}
+
+.gantt-wrapper.is-compact .time-block.active {
+	top: 8px !important;
+}
+
+.gantt-wrapper.is-compact .block-label:not(.label-inside) {
+	opacity: 0;
+	pointer-events: none;
+}

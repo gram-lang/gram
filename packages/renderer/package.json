@@ -6,7 +6,9 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "gram.css",
+    "gantt.css"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",

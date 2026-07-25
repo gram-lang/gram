@@ -31,7 +31,7 @@ import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
-import { toHTML, escapeHtml } from "@gram-lang/renderer";
+import { toHTML, toGanttHTML, escapeHtml } from "@gram-lang/renderer";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -151,6 +151,18 @@ function refresh(uri: string, text: string, version?: number) {
 		} catch (e) {
 			console.error("HTML render error", e);
 		}
+
+		// Rendered and sent independently from the main preview — a bug in the
+		// Gantt renderer must not blank the HTML preview, and vice versa.
+		try {
+			const ganttHtml = toGanttHTML(state.compilation, {});
+			connection.sendNotification("gram/ganttUpdated", {
+				uri,
+				html: ganttHtml,
+			});
+		} catch (e) {
+			console.error("Gantt render error", e);
+		}
 	} else if (state.parseError) {
 		// Fallback for syntax errors. ohm-js error messages often embed a snippet of
 		// the offending source line for context, so this must be escaped like any
@@ -162,6 +174,7 @@ function refresh(uri: string, text: string, version?: number) {
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });
+		connection.sendNotification("gram/ganttUpdated", { uri, html });
 	}
 }
 

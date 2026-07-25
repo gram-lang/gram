@@ -42,9 +42,34 @@
       },
       {
         "command": "gram.showNutrition",
-        "title": "Gram: Macros"
+        "title": "Gram: Macros",
+        "icon": "$(symbol-numeric)"
+      },
+      {
+        "command": "gram.showGantt",
+        "title": "Gram: Gantt Chart",
+        "icon": "$(graph)"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "gram.showPreview",
+          "when": "resourceLangId == gram",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gram.showGantt",
+          "when": "resourceLangId == gram",
+          "group": "navigation@2"
+        },
+        {
+          "command": "gram.showNutrition",
+          "when": "resourceLangId == gram",
+          "group": "navigation@3"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "gram",
@@ -127,6 +152,7 @@
   },
   "dependencies": {
     "@gram-lang/language-server": "workspace:*",
+    "@gram-lang/renderer": "workspace:*",
     "vscode-languageclient": "^10.1.0"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import type { ExtensionContext } from "vscode";
 import { PreviewPanel } from "./preview";
+import { GanttPanel } from "./gantt-panel";
 import {
 	LanguageClient,
 	type LanguageClientOptions,
@@ -27,7 +28,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		documentSelector: [{ scheme: "file", language: "gram" }],
 	};
 
-	let latestHtml = "";
+	const previewHtmlCache = new Map<string, string>();
+	const ganttHtmlCache = new Map<string, string>();
 
 	client = new LanguageClient(
 		"gramLanguageServer",
@@ -42,9 +44,25 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		client.onNotification(
 			"gram/previewUpdated",
 			(params: { uri: string; html: string }) => {
-				latestHtml = params.html;
-				if (PreviewPanel.currentPanel) {
+				previewHtmlCache.set(params.uri, params.html);
+				if (
+					PreviewPanel.currentPanel &&
+					PreviewPanel.currentPanel.uri === params.uri
+				) {
 					PreviewPanel.currentPanel.updateHTML(params.html);
+				}
+			},
+		);
+
+		client.onNotification(
+			"gram/ganttUpdated",
+			(params: { uri: string; html: string }) => {
+				ganttHtmlCache.set(params.uri, params.html);
+				if (
+					GanttPanel.currentPanel &&
+					GanttPanel.currentPanel.uri === params.uri
+				) {
+					GanttPanel.currentPanel.updateHTML(params.html);
 				}
 			},
 		);
@@ -54,22 +72,55 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		);
 	}
 
+	const getActiveGramUri = (): string | undefined => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor && editor.document.languageId === "gram") {
+			return editor.document.uri.toString();
+		}
+		return undefined;
+	};
+
 	context.subscriptions.push(
-		vscode.commands.registerCommand("gram.showPreview", () => {
-			PreviewPanel.createOrShow(context.extensionUri, latestHtml);
-			if (PreviewPanel.currentPanel) {
-				PreviewPanel.currentPanel.updateHTML(latestHtml);
+		vscode.window.onDidChangeActiveTextEditor((editor) => {
+			if (editor && editor.document.languageId === "gram") {
+				const uri = editor.document.uri.toString();
+				if (PreviewPanel.currentPanel) {
+					PreviewPanel.currentPanel.setUriAndHTML(
+						uri,
+						previewHtmlCache.get(uri) ?? "",
+					);
+				}
+				if (GanttPanel.currentPanel) {
+					GanttPanel.currentPanel.setUriAndHTML(
+						uri,
+						ganttHtmlCache.get(uri) ?? "",
+					);
+				}
 			}
 		}),
+		vscode.commands.registerCommand("gram.showPreview", () => {
+			const uri = getActiveGramUri();
+			if (!uri) return;
+			const html = previewHtmlCache.get(uri) ?? "";
+			PreviewPanel.createOrShow(context.extensionUri, uri, html);
+		}),
 		vscode.commands.registerCommand("gram.showNutrition", () => {
-			PreviewPanel.createOrShow(context.extensionUri, latestHtml);
+			const uri = getActiveGramUri();
+			if (!uri) return;
+			const html = previewHtmlCache.get(uri) ?? "";
+			PreviewPanel.createOrShow(context.extensionUri, uri, html);
 			if (PreviewPanel.currentPanel) {
-				PreviewPanel.currentPanel.updateHTML(latestHtml);
 				PreviewPanel.currentPanel.showMacros();
 			}
 			vscode.window.showInformationMessage(
 				"Panneau des macros ouvert dans l'Aperçu.",
 			);
+		}),
+		vscode.commands.registerCommand("gram.showGantt", () => {
+			const uri = getActiveGramUri();
+			if (!uri) return;
+			const html = ganttHtmlCache.get(uri) ?? "";
+			GanttPanel.createOrShow(context.extensionUri, uri, html);
 		}),
 	);
 }

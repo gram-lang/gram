@@ -6,7 +6,7 @@ The `@gram-lang/renderer` package takes this final enriched JSON object and tran
 
 ## Rendering Formats
 
-The renderer supports three output formats:
+The renderer supports four output formats:
 
 ### 1. Markdown (`toMarkdown`)
 Generates standard Markdown that includes a formatted shopping list, equipment section, numbered steps, GFM footnotes (`[^1]`), gross mass badges, and an optional nutrition section (`## 🥗 Nutrition`). This is perfect for publishing recipes to static site generators (like VitePress or Hugo) or saving them to a notes app like Obsidian.
@@ -17,9 +17,12 @@ Generates a standalone, semantic HTML document. The HTML renderer is designed wi
 ### 3. Print HTML (`toPrintHTML`)
 Generates a complete, self-contained `<!DOCTYPE html>` document with its own inlined print stylesheet (A4 page size, page-break-aware sections) and a fixed icon set — designed to be opened directly in a browser and printed, with no external stylesheet or asset dependency. Unlike `toHTML`, it does not accept custom `icons`/`classes` overrides, but it does honor `formatDuration`, `formatFraction`, and `hideStepQty`.
 
+### 4. Gantt Chart (`toGanttHTML` + `attachGanttInteractivity`)
+Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract.
+
 ## Unified Traversal (`RenderBackend`)
 
-Under the hood, all three output formatters delegate to a single orchestrator function (`renderRecipe` in `traversal.ts`) which invokes a `RenderBackend` implementation for each format. This guarantees structural parity across output formats — a title, metadata block, shopping list, cookware section, instructions, footnotes, and nutrition panel are traversed in the exact same sequence regardless of whether you're targeting HTML, Markdown, or Print HTML.
+Under the hood, the three document formatters (Markdown, HTML, Print HTML) delegate to a single orchestrator function (`renderRecipe` in `traversal.ts`) which invokes a `RenderBackend` implementation for each format. This guarantees structural parity across those output formats — a title, metadata block, shopping list, cookware section, instructions, footnotes, and nutrition panel are traversed in the exact same sequence regardless of whether you're targeting HTML, Markdown, or Print HTML. The Gantt chart renders a fundamentally different shape of output (a timeline, not a document) and doesn't go through this traversal.
 
 ## Usage Example
 
@@ -68,7 +71,7 @@ const html = toHTML(recipe, {
   > [!WARNING]
   > This escaping neutralizes raw-HTML passthrough (the most common XSS vector with default Markdown renderers like `markdown-it`/`remark`), but `toMarkdown` doesn't do full Markdown sanitization — a `[text](javascript:...)` link, for instance, would still pass through unchanged. If you render `toMarkdown()`'s output to HTML from untrusted sources (e.g. imported/shared `.gram` files via `gram import`), still sanitize the final HTML (e.g. `rehype-sanitize`, DOMPurify) rather than assuming the output is fully safe.
 - **Duration Formatting**: Converts raw minute integers into human-readable strings (e.g., `90` becomes `1h 30m`).
-- **CSS Pre-styling**: The package ships a `gram.css` stylesheet with live-preview theming (light/dark tokens for each element type, e.g. ingredients, timers). The dedicated print stylesheet used for `toPrintHTML` is a separate, inlined stylesheet — you don't need to load any CSS file yourself to use print output.
+- **CSS Pre-styling**: The package ships a `gram.css` stylesheet with live-preview theming (light/dark tokens for each element type, e.g. ingredients, timers) and a `gantt.css` stylesheet for the Gantt chart (loaded alongside `gram.css`, never standalone — it reuses its `--color-*`/`--gray-*`/`--gram-font-*` tokens and dark-mode selector). The dedicated print stylesheet used for `toPrintHTML` is a separate, inlined stylesheet — you don't need to load any CSS file yourself to use print output.
 
 ## Direct JSON Consumption
 

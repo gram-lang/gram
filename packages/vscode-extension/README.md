@@ -43,6 +43,7 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 
 *   **Language Server Protocol (LSP)**: Real-time diagnostics, missing reference checks, and unused declaration warnings.
 *   **Live Preview**: Real-time side-by-side rendering of the recipe with a built-in, togglable nutrition/macros panel.
+*   **Gantt Chart View**: Provides a precise temporal visualization of your recipe, allowing you to instantly map out active preparation, background wait times, and service scheduling.
 *   **Smart Autocomplete**: Contextual suggestions for ingredients (from your local YAML database), units, and intermediate references.
 *   **Advanced Navigation**: Jump to definition, find all references, outline view, and AST-driven semantic highlighting.
 *   **Code Actions & Formatting**: Automatic document formatting (`Format Document` / `Format on Save` via `@gram-lang/format`), quick fixes for common errors, and volume-to-mass conversions.
@@ -54,6 +55,8 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 
 *   `src/extension.ts`: Main entry point for the extension client.
 *   `src/preview.ts`: Manages the Live Preview webview panel and HTML rendering.
+*   `src/gantt-panel.ts`: Manages the Gantt Chart timeline webview panel.
+*   `src/gantt-webview-entry.ts`: Client-side interactivity bundle entry point for the Gantt webview.
 *   `syntaxes/`: Contains the fallback TextMate grammar for Gram.
 *   `snippets/`: Built-in code snippets for standard recipe structures.
 *   `../language-server`: The LSP implementation providing all intelligence to this extension.

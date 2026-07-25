@@ -38,6 +38,47 @@ Les trois formatteurs partagent une architecture de traversée unique (`RenderBa
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI, via les dictionnaires de `@gram-lang/i18n`. |
 | `renderId` | `string` | Préfixe pour les ids d'ancre de notes de bas de page — à redéfinir en cas de rendu de plusieurs recettes sur une même page pour éviter les collisions d'id. |
 
+## Diagramme de Gantt (`toGanttHTML` & `attachGanttInteractivity`)
+
+Génère une vue chronologique interactive sous forme de diagramme de Gantt pour offrir une représentation visuelle et temporelle précise de la recette (étapes actives, minuteurs en tâche de fond et planification du service).
+
+```typescript
+import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
+
+// 1. Génère le fragment HTML statique
+const ganttHtml = toGanttHTML(compiled, { lang: 'fr' });
+container.innerHTML = ganttHtml;
+
+// 2. Attache les événements interactifs et les tooltips au survol
+const handle = attachGanttInteractivity(container, {
+  timeMode: 'forward',   // 'forward' (chronomètre T+), 'reverse' (compte à rebours T-), ou 'target' (heure de service)
+  targetTime: '19:30',   // Heure de service cible (HH:MM)
+  isCompactMode: false   // Active ou désactive la vue compacte
+});
+
+// Met à jour dynamiquement les options
+handle.setOptions({ isCompactMode: true });
+
+// Nettoie les écouteurs d'événements au démontage du composant
+handle.dispose();
+```
+
+### `GanttRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI via `@gram-lang/i18n`. |
+| `gapThresholdMinutes` | `number` | Durée minimale d'inactivité en minutes avant d'appliquer la compression de la période d'attente (par défaut : `60`). |
+| `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`). |
+
+### `GanttInteractivityOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `timeMode` | `'forward' \| 'reverse' \| 'target'` | Mode d'affichage de l'axe temporel : temps écoulé (T+), compte à rebours (T-), ou heure réelle basée sur l'objectif de service. |
+| `targetTime` | `string` | Heure de service cible au format `"HH:MM"`. |
+| `isCompactMode` | `boolean` | Bascule le composant en vue compacte pour optimiser la hauteur verticale. |
+
 ## Icônes
 
 ```typescript
@@ -48,7 +89,7 @@ const html = toHTML(compiled, {
 });
 ```
 
-`DEFAULT_ICONS` a deux variantes, `DEFAULT_ICONS.html` (balises `<i>` Phosphor) et `DEFAULT_ICONS.md` (emoji), chacune indexée par les mêmes noms d'icônes que `RendererIcons` : `hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `warning`, `pencilSimple`, `clock`, `fire`, `knife`, `scales`, `clockCounterClockwise`, `arrowElbowDownRight`, `info`, `minus`, `plus`.
+`DEFAULT_ICONS` a deux variantes, `DEFAULT_ICONS.html` (balises `<i>` Phosphor) et `DEFAULT_ICONS.md` (emoji), chacune indexée par un sous-ensemble de `RendererIcons` : `hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `warning`, `pencilSimple`, `minus`, `plus`. Les autres champs de `RendererIcons` (`clock`, `fire`, `knife`, `scales`, `clockCounterClockwise`, `arrowElbowDownRight`, `info`) ne font pas partie de `DEFAULT_ICONS` — `toHTML` utilise son propre balisage Phosphor codé en dur pour ceux-ci quand `options.icons` ne les redéfinit pas ; les redéfinir n'a donc d'effet que si on les passe directement via `options.icons`, pas via un spread de `DEFAULT_ICONS`.
 
 ## Utilitaires de formatage
 
@@ -60,4 +101,6 @@ function getQty(item: Record<string, unknown>): { value: number | string | null;
 function formatQuantityValue(q: any): string                // Quantité de minuteur/température -> chaîne d'affichage
 function formatDuration(minutes: number): string            // 90 -> "1h 30m"
 function escapeHtml(unsafe: string | null | undefined): string
+function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralise `<`/`&` pour un rendu Markdown vers HTML sûr en aval
+function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
