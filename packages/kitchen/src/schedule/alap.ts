@@ -9,6 +9,20 @@ import type { StepSchedule } from "./types";
  * `ls`/`lf` (latest start/finish, relative to an arbitrary T-zero — rebase.ts
  * shifts everything positive afterward) for every non-comment schedule.
  *
+ * A named passive track (e.g. two steps both using `~_oven{...}`) is treated
+ * as an implicit dependency, exactly like a `produced`/`consumed`
+ * intermediate: a step's own passive-task window on a named track must end
+ * by the time the *next* (textually later) use of that same track begins.
+ * This is what lets a recipe chain several uses of one physical resource
+ * (an oven, a fridge shelf) back-to-back with nothing but the shared name —
+ * without it, two adjacent same-track steps with no active time of their own
+ * get the same theoretical start, and `tracks.ts`'s later serialization pass
+ * has to silently push the second one back, surfacing as a spurious
+ * TRACK_CONTENTION warning on the ordinary, intended use of named tracks.
+ * Keeping the sequencing here means that pass now only warns when a real,
+ * unforeseen conflict survives this adjustment (e.g. two unrelated steps
+ * whose *other* dependencies reorder them relative to their textual order).
+ *
  * Mutates `schedules` in place (sets `.ls`/`.lf`) and may push
  * `TIME_PARADOX` warnings. `sections`/`sectionASTs` are read-only here — only
  * used for `.title`/`.retro_planning`/`.intermediate_preparation` and `.loc`
@@ -21,6 +35,10 @@ export function scheduleALAP(
 	warnings: Warning[],
 ): void {
 	const latestReady = new Map<string, number>();
+	// Earliest theoretical start, seen so far walking backward, of the next
+	// use of each named track — the same role `latestReady` plays for
+	// `&intermediate`s, but keyed by track name instead of intermediate name.
+	const trackNextStart = new Map<string, number>();
 
 	const stepsBySection: StepSchedule[][] = Array.from(
 		{ length: sections.length },
@@ -113,12 +131,36 @@ export function scheduleALAP(
 				}
 			}
 
-			sched.lf = Math.min(currentLf, stepDependencyLf);
+			let trackDependencyLf = Infinity;
+			for (const task of sched.passiveTasks) {
+				if (!task.isNamed) continue;
+				const nextStart = trackNextStart.get(task.name);
+				if (nextStart !== undefined) {
+					trackDependencyLf = Math.min(
+						trackDependencyLf,
+						nextStart -
+							task.duration -
+							task.localOffset +
+							sched.localActiveTime,
+					);
+				}
+			}
+
+			sched.lf = Math.min(currentLf, stepDependencyLf, trackDependencyLf);
 			sched.ls = sched.lf - sched.localActiveTime;
 
 			for (const c of sched.consumed) {
 				const current = latestReady.get(c) ?? Infinity;
 				latestReady.set(c, Math.min(current, sched.ls));
+			}
+
+			for (const task of sched.passiveTasks) {
+				if (!task.isNamed) continue;
+				const start = sched.ls + task.localOffset;
+				const current = trackNextStart.get(task.name);
+				if (current === undefined || start < current) {
+					trackNextStart.set(task.name, start);
+				}
 			}
 
 			currentLf = sched.ls;

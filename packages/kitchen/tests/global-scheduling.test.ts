@@ -136,7 +136,14 @@ describe("Global Scheduling and Retro-planning", () => {
 		expect(fermentTaskEnd).toBeLessThanOrEqual(bakeStep.timings.start);
 	});
 
-	it("warns TRACK_CONTENTION when named tracks collide due to retro-planning", () => {
+	it("serializes named tracks across two independently-anchored sections without warning", () => {
+		// Both sections ask for the same "~{-1d}" deadline and share the
+		// "oven" track. scheduleALAP treats the shared track as an implicit
+		// dependency (same mechanism as produced/consumed &intermediates), so
+		// it finds the one valid ordering satisfying both anchors — baking
+		// Cake A first, then Cake B — instead of leaving that resolution to
+		// tracks.ts's post-hoc serialization, which had no way to know it was
+		// resolvable and reported a TRACK_CONTENTION delay unconditionally.
 		const source = `
 ## Cake A ~{-1d}
 [Bake] In the ~_oven{30min}.
@@ -147,8 +154,15 @@ describe("Global Scheduling and Retro-planning", () => {
 		const ast = getAST(source);
 		const result = compile(ast);
 
-		expect(result.warnings.length).toBe(1);
-		expect(result.warnings[0].code).toBe(WarningCode.TRACK_CONTENTION);
+		expect(result.warnings).toBeEmpty();
+
+		const cakeAStep = result.sections[0].steps[0];
+		const cakeBStep = result.sections[1].steps[0];
+
+		// Cake A's oven use must finish exactly when Cake B's begins.
+		expect(
+			cakeAStep.timings.start + cakeAStep.backgroundTasks![0].duration,
+		).toBe(cakeBStep.timings.start);
 	});
 
 	// Regression tests for the audit (2026-07-22, finding F-002): default

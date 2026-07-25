@@ -126,6 +126,38 @@ describe("scheduleALAP", () => {
 		);
 	});
 
+	it("chains two steps sharing a named track back-to-back, with no produced/consumed link", () => {
+		// Two consecutive bakes in the same oven (`~_cuisson{...}`), exactly
+		// like packages/docs/src/public/examples/canneles-fr.gram's Cuisson
+		// section: neither step has active time of its own, and nothing
+		// connects them via `produced`/`consumed` — only the shared track name.
+		const first = makeSchedule({
+			sectionIndex: 0,
+			localActiveTime: 0,
+			passiveTasks: [
+				{ name: "cuisson", duration: 10, localOffset: 0, isNamed: true },
+			],
+		});
+		const second = makeSchedule({
+			sectionIndex: 0,
+			localActiveTime: 0,
+			passiveTasks: [
+				{ name: "cuisson", duration: 30, localOffset: 0, isNamed: true },
+			],
+		});
+		const sections = [makeSection()];
+
+		scheduleALAP([first, second], sections, [], []);
+
+		// second has nothing after it: ls = 0.
+		expect(second.ls).toBe(0);
+		// first's own "cuisson" window (ls + duration) must end by the time
+		// second's starts (0), so first.ls is pushed back by second's duration
+		// — not left tied with second at ls = 0, which is what would make
+		// tracks.ts's serialization pass silently delay it and warn.
+		expect(first.ls).toBe(-10);
+	});
+
 	it("skips a section with no steps without throwing", () => {
 		const a = makeSchedule({ sectionIndex: 0 });
 		const sections = [makeSection(), makeSection({ title: "Empty" })];
