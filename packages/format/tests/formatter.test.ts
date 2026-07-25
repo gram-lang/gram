@@ -106,9 +106,7 @@ describe("formatGram", () => {
 	});
 
 	it("does not mangle a bare #cookware reference at the start of a line", () => {
-		const { content, changes } = formatGram(
-			"## Prep\n\n#pan(20cm) heat up.\n",
-		);
+		const { content, changes } = formatGram("## Prep\n\n#pan(20cm) heat up.\n");
 		expect(content).toBe("## Prep\n\n#pan(20cm) heat up.\n");
 		expect(changes.headerSpacing).toBe(0);
 	});
