@@ -30,4 +30,4 @@ portions: 10
 
 [Bake] In the #&oven at ^{240C} for ~_baking{10 min}.
 
-[Cook] Lower the temperature to ^{180C} and continue for ~_cooking{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning
+[Cook] Lower the temperature to ^{180C} and continue for ~_baking{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning
