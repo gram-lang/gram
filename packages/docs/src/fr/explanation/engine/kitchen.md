@@ -20,6 +20,15 @@ Le processeur parcourt chaque section et étape de l'AST séquentiellement pour 
   - **Phase 3 (Serialization)** : Le moteur évalue la logique des "Named Tracks" (`tracks.ts`), garantissant que les minuteurs de fond séquentiels partageant le même nom (ex. `~_four`) ne se chevauchent pas, ajustant leurs heures de début chronologiquement pour éviter les conflits (contention).
   - **Phase 4 (Positive Rebasing)** : Enfin (`rebase.ts`), si l'une des étapes a été repoussée dans un temps négatif (par ex. commencer un jour avant de servir), la chronologie entière est décalée vers l'avant de la valeur absolue de l'heure de début minimale (T-Zéro). Cela garantit que la structure de données de la chronologie finale (`timings`) ne contient strictement que des temps absolus positifs commençant exactement à 0, la rendant facilement exploitable par les interfaces utilisateur.
 
+```mermaid
+flowchart LR
+    AST["📄 AST<br/>(depuis le Parser)"] --> P1["Phase 1 : Forward Pass<br/><i>Estimation des durées</i>"]
+    P1 --> P2["Phase 2 : Backward Pass<br/><i>Rétro-planning ALAP</i>"]
+    P2 --> P3["Phase 3 : Serialization<br/><i>File d'attente Named Tracks</i>"]
+    P3 --> P4["Phase 4 : Rebasing<br/><i>Recalage de T-Zéro à 0</i>"]
+    P4 --> Result["⚙️ CompilationResult<br/><i>(Ligne du temps optimisée)</i>"]
+```
+
   ::: tip
   La flèche `👉` que vous voyez dans les recettes rendues (ex : `👉*pâte*`) est une icône d'affichage ajoutée par `@gram-lang/renderer`, pas de la syntaxe Gram. Dans le code source `.gram`, un intermédiaire est consommé avec un simple `&nom`.
   :::

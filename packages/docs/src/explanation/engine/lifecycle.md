@@ -42,12 +42,32 @@ Finally, the fully enriched recipe is ready to be displayed. You can use the off
 This separation of concerns ensures that each package is highly focused and reusable. For example, if you are building an editor extension that only needs to highlight syntax, you only need to import `@gram-lang/parser`.
 
 ```mermaid
-graph LR
-  Raw["Raw Text (.gram)"] --> Parser["@gram-lang/parser<br/>(AST)"]
-  Parser --> Kitchen["@gram-lang/kitchen<br/>(Logic)"]
-  Kitchen --> Analyzer["@gram-lang/analyzer<br/>(Physics & DB)"]
-  Analyzer --> Renderer["@gram-lang/renderer<br/>(HTML/UI)"]
-  Format["@gram-lang/format<br/>(Formatting)"] -. Formatting .-> Raw
-  I18n["@gram-lang/i18n<br/>(Units & Dictionaries)"] -. Shared .-> Kitchen
-  I18n -. Shared .-> Analyzer
+flowchart LR
+    subgraph Input ["Input"]
+        Raw["📄 Raw Text<br/><code>.gram file</code>"]
+    end
+
+    subgraph Pipeline ["Core Pipeline"]
+        direction LR
+        Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammar"]
+        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>DAG & Scheduling"]
+        Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physics & DB"]
+
+        Parser --> Kitchen --> Analyzer
+    end
+
+    subgraph Output ["Presentation"]
+        Renderer["🎨 <b>@gram-lang/renderer</b><br/>HTML / UI / Markdown"]
+    end
+
+    subgraph Infra ["Infrastructure"]
+        Format["✍️ <b>@gram-lang/format</b><br/>Code Formatting"]
+        I18n["🌐 <b>@gram-lang/i18n</b><br/>Units & Dictionaries"]
+    end
+
+    Raw --> Parser
+    Analyzer --> Renderer
+    Format -. Formats .-> Raw
+    I18n -. Dictionaries .-> Kitchen
+    I18n -. Conversions .-> Analyzer
 ```

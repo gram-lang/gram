@@ -18,20 +18,20 @@ If we use a naive top-to-bottom schedule (called *Forward Scheduling*), the time
 
 ```mermaid
 gantt
-    title Naive Forward Schedule
+    title Naive Forward Schedule (50 min Wasted Idle Time)
     dateFormat  m
     axisFormat %M
     
     section Dough
-    Mix Dough : a1, 0, 2m
-    Rest Dough (Passive) : a2, after a1, 60m
+    Mix Dough (Active)             : active, a1, 0, 2m
+    Rest Dough (Passive Rest)      : a2, after a1, 60m
     
     section Sauce
-    Mix Sauce : a3, after a1, 10m
-    Idle Waiting : a4, after a3, 50m
+    Mix Sauce (Active)             : active, a3, after a1, 10m
+    Sauce Sitting Idle (50m Wasted): crit, a4, after a3, 50m
     
     section Bake
-    Bake (Passive) : a5, after a2, 30m
+    Bake (Passive Cooking)         : a5, after a2, 30m
 ```
 
 The problem is obvious: you finish the sauce at minute 12, but the dough doesn't finish resting until minute 62. The sauce sits on the counter getting cold (or spoiling) for 50 minutes! 
@@ -46,19 +46,19 @@ Here is the actual timeline Gram generates:
 
 ```mermaid
 gantt
-    title ALAP Schedule (Gram)
+    title ALAP Schedule (Gram Optimized Interleaving)
     dateFormat  m
     axisFormat %M
     
     section Sauce
-    Mix Sauce : b1, 0, 10m
+    Mix Sauce (Active)             : active, b1, 0, 10m
     
     section Dough
-    Mix Dough : b2, after b1, 2m
-    Rest Dough (Passive) : b3, after b2, 60m
+    Mix Dough (Active)             : active, b2, after b1, 2m
+    Rest Dough (Passive Rest)      : b3, after b2, 60m
     
     section Bake
-    Bake (Passive) : b4, after b3, 30m
+    Bake (Passive Cooking)         : b4, after b3, 30m
 ```
 
 *(Note: The active time for the dough step falls back to the default 2 minutes since it only specifies a passive timer).*
@@ -67,9 +67,26 @@ By pushing the `&dough` generation step backward, Gram automatically interleaves
 
 ## Named Tracks
 
-This "push-backward" mechanism natively powers Gram's `Named Tracks` (sequential passive timers). When you assign multiple passive timers the same name (e.g., `~_baking{10min}` and `~_baking{30min}`), Gram forces them to execute sequentially in the background.
+This "push-backward" mechanism natively powers Gram's `Named Tracks` (sequential passive timers). When you assign multiple passive timers the same name (e.g., `~_oven{20min}` and `~_oven{30min}`), Gram forces them to execute sequentially in the background because they share a single constrained resource (the oven).
 
-Thanks to the ALAP algorithm, this sequential requirement gracefully ripples backward through the timeline. Their respective preparation steps are pushed back to exactly the right moments to guarantee a continuous background workflow without blocking your active hands.
+Thanks to the ALAP algorithm, this sequential requirement gracefully ripples backward through the timeline. Their respective preparation steps are pushed back to exactly the right moments to guarantee a continuous background workflow without blocking your active hands:
+
+```mermaid
+gantt
+    title Named Tracks Sequential Execution (~_oven)
+    dateFormat  m
+    axisFormat %M
+    
+    section Pie Track
+    Prep Pie (Active)            : active, p1, 0, 5m
+    Bake Pie (~_oven)            : p2, after p1, 20m
+    
+    section Bread Track (ALAP Interleaved)
+    Prep Bread (Active)          : active, b1, 15, 5m
+    Bake Bread (~_oven)          : b2, after p2, 30m
+```
+
+Notice how `Prep Bread` is automatically scheduled during Pie's baking time (15m–20m), ensuring Bread is ready to enter `~_oven` the exact minute Pie comes out at minute 25.
 
 ## Best Practices for a Coherent Timeline
 

@@ -15,8 +15,6 @@ Gram sépare les propriétés physiques des ingrédients en trois concepts disti
 3. **Rendement (`yield`)** : Le **Facteur de Déchet**. Utilisé strictement pour calculer le rapport entre la **Masse Nette** comestible et la **Masse Brute** à l'achat (à cause des pelures, graines, os).
     * *Exemple* : Un avocat a un rendement de 0.70 (30 % correspond au noyau et à la peau).
 
----
-
 ## Le But de la Standardisation des Masses
 
 Le but principal de l'Analyseur est de calculer la **Masse Totale** d'une recette. C'est essentiel pour l'estimation nutritionnelle, le calcul du coût, et les ratios de pâtisserie.

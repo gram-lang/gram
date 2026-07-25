@@ -18,20 +18,20 @@ Si nous utilisons un calendrier naïf de haut en bas (appelé *Forward Schedulin
 
 ```mermaid
 gantt
-    title Ordonnancement Naïf (Forward)
+    title Ordonnancement Naïf (50 min d'attente inutile)
     dateFormat  m
     axisFormat %M
     
     section Pâte
-    Mélanger la Pâte : a1, 0, 2m
-    Repos de la Pâte (Passif) : a2, after a1, 60m
+    Mélanger la Pâte (Actif)            : active, a1, 0, 2m
+    Repos de la Pâte (Repos Passif)     : a2, after a1, 60m
     
     section Sauce
-    Mélanger la Sauce : a3, after a1, 10m
-    Attente Inutile : a4, after a3, 50m
+    Mélanger la Sauce (Actif)           : active, a3, after a1, 10m
+    Sauce en attente (50m Inutiles !)   : crit, a4, after a3, 50m
     
     section Cuisson
-    Cuisson (Passif) : a5, after a2, 30m
+    Cuisson (Cuisson Passive)           : a5, after a2, 30m
 ```
 
 Le problème est évident : vous terminez la sauce à la minute 12, mais la pâte ne finit de reposer qu'à la minute 62. La sauce reste sur le comptoir à refroidir (ou à se détériorer) pendant 50 minutes !
@@ -46,19 +46,19 @@ Voici la chronologie réelle générée par Gram :
 
 ```mermaid
 gantt
-    title Ordonnancement ALAP (Gram)
+    title Ordonnancement ALAP (Gram - Optimisé)
     dateFormat  m
     axisFormat %M
     
     section Sauce
-    Mélanger la Sauce : b1, 0, 10m
+    Mélanger la Sauce (Actif)           : active, b1, 0, 10m
     
     section Pâte
-    Mélanger la Pâte : b2, after b1, 2m
-    Repos de la Pâte (Passif) : b3, after b2, 60m
+    Mélanger la Pâte (Actif)            : active, b2, after b1, 2m
+    Repos de la Pâte (Repos Passif)     : b3, after b2, 60m
     
     section Cuisson
-    Cuisson (Passif) : b4, after b3, 30m
+    Cuisson (Cuisson Passive)           : b4, after b3, 30m
 ```
 
 *(Note : Le temps actif pour l'étape de la pâte revient à la valeur par défaut de 2 minutes puisqu'elle ne spécifie qu'un minuteur passif).*
@@ -67,9 +67,26 @@ En repoussant l'étape de création de la `&pâte` vers la fin, Gram intercale a
 
 ## Les "Named Tracks" (Minuteurs séquentiels)
 
-Ce mécanisme de recul alimente nativement les `Named Tracks` (pistes nommées) de Gram. Lorsque vous attribuez le même nom à plusieurs minuteurs passifs (par exemple, `~_cuisson{10min}` et `~_cuisson{30min}`), Gram les force à s'exécuter séquentiellement en arrière-plan.
+Ce mécanisme de recul alimente nativement les `Named Tracks` (pistes nommées) de Gram. Lorsque vous attribuez le même nom à plusieurs minuteurs passifs (par exemple, `~_four{20min}` et `~_four{30min}`), Gram les force à s'exécuter séquentiellement en arrière-plan car ils partagent une même ressource limitée (le four).
 
-Grâce à l'algorithme ALAP, cette contrainte séquentielle se répercute gracieusement vers l'arrière tout au long de la chronologie. Leurs étapes de préparation respectives sont repoussées exactement aux bons moments pour garantir un flux de travail continu en arrière-plan, sans bloquer vos mains actives.
+Grâce à l'algorithme ALAP, cette contrainte séquentielle se répercute gracieusement vers l'arrière tout au long de la chronologie. Leurs étapes de préparation respectives sont repoussées exactement aux bons moments pour garantir un flux de travail continu en arrière-plan, sans bloquer vos mains actives :
+
+```mermaid
+gantt
+    title Exécution Séquentielle des Named Tracks (~_four)
+    dateFormat  m
+    axisFormat %M
+    
+    section Piste Tarte
+    Préparer la Tarte (Actif)         : active, p1, 0, 5m
+    Cuire la Tarte (~_four)           : p2, after p1, 20m
+    
+    section Piste Pain (Intercalé par ALAP)
+    Préparer le Pain (Actif)          : active, b1, 15, 5m
+    Cuire le Pain (~_four)            : b2, after p2, 30m
+```
+
+Remarquez comment l'étape `Préparer le Pain` est automatiquement planifiée pendant la cuisson de la tarte (entre la 15e et la 20e minute), garantissant que le pain est prêt à entrer dans le `~_four` à la minute exacte 25 où la tarte en sort.
 
 ## Bonnes Pratiques pour une Chronologie Cohérente
 

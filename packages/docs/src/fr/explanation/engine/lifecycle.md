@@ -42,12 +42,32 @@ Enfin, la recette entièrement enrichie est prête à être affichée. Vous pouv
 Cette séparation des préoccupations (separation of concerns) garantit que chaque paquet est très ciblé et réutilisable. Par exemple, si vous créez une extension d'éditeur qui n'a besoin que de colorer la syntaxe, vous n'avez besoin d'importer que `@gram-lang/parser`.
 
 ```mermaid
-graph LR
-  Raw["Texte Brut (.gram)"] --> Parser["@gram-lang/parser<br/>(AST)"]
-  Parser --> Kitchen["@gram-lang/kitchen<br/>(Logique)"]
-  Kitchen --> Analyzer["@gram-lang/analyzer<br/>(Physique & BDD)"]
-  Analyzer --> Renderer["@gram-lang/renderer<br/>(HTML/UI)"]
-  Format["@gram-lang/format<br/>(Formatage)"] -. Formatage .-> Raw
-  I18n["@gram-lang/i18n<br/>(Unités & Dictionnaires)"] -. Partagé .-> Kitchen
-  I18n -. Partagé .-> Analyzer
+flowchart LR
+    subgraph Input ["Entrée"]
+        Raw["📄 Texte Brut<br/><code>fichier .gram</code>"]
+    end
+
+    subgraph Pipeline ["Pipeline Principal"]
+        direction LR
+        Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammaire"]
+        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>DAG & Ordonnancement"]
+        Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physique & BDD"]
+
+        Parser --> Kitchen --> Analyzer
+    end
+
+    subgraph Output ["Présentation"]
+        Renderer["🎨 <b>@gram-lang/renderer</b><br/>HTML / UI / Markdown"]
+    end
+
+    subgraph Infra ["Infrastructure"]
+        Format["✍️ <b>@gram-lang/format</b><br/>Formatage du code"]
+        I18n["🌐 <b>@gram-lang/i18n</b><br/>Unités & Dictionnaires"]
+    end
+
+    Raw --> Parser
+    Analyzer --> Renderer
+    Format -. Formate .-> Raw
+    I18n -. Dictionnaires .-> Kitchen
+    I18n -. Conversions .-> Analyzer
 ```

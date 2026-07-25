@@ -8,6 +8,22 @@ Il ne s'agit pas d'une simple concaténation d'ingrédients. Le compilateur effe
 
 Lorsqu'une recette (ou un lot de plusieurs recettes) est transmise à la Kitchen pour la génération de la liste de courses, le pipeline suivant s'exécute :
 
+```mermaid
+flowchart TD
+    Raw["Ingrédients Bruts (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Regroupement par ID brut & unités identiques"]
+    KitchenGroup --> HasDB{Base BDD Fournie ?}
+    
+    HasDB -- Oui --> AliasRes["@gram-lang/analyzer<br/>Résolution des Alias (ex: beurre ➔ butter)"]
+    HasDB -- Non --> UnitsCheck
+    
+    AliasRes --> UnitsCheck{Unités Identiques ?}
+    UnitsCheck -- Oui --> SumUnits["Addition Directe des Quantités"]
+    UnitsCheck -- Non (Mélangées) --> DensityCheck{Densité Disponible ?}
+    
+    DensityCheck -- Oui --> ConvertGram["Conversion en Masse (grammes) & Fusion"]
+    DensityCheck -- Non --> MultiUnit["Fallback : multiUnit=true<br/>(Regroupement sous un titre unique)"]
+```
+
 ### 1. Normalisation des ID et Alias
 `@gram-lang/kitchen` en lui-même regroupe les ingrédients purement par l'id brut qu'il a attribué lors de l'analyse (un slug du nom que vous avez écrit) — il n'a pas accès à `ingredients.yaml` et ne peut pas savoir que `@butter` et `@beurre` font référence au même ingrédient. En soi, la liste de courses de la Kitchen les liste comme deux entrées séparées.
 

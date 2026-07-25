@@ -8,6 +8,22 @@ This is not a simple concatenation of ingredients. The compiler performs a compl
 
 When a recipe (or a batch of multiple recipes) is passed to the Kitchen for shopping list generation, the following pipeline executes:
 
+```mermaid
+flowchart TD
+    Raw["Raw Ingredients (.gram)"] --> KitchenGroup["@gram-lang/kitchen<br/>Group by Raw ID & Identical Units"]
+    KitchenGroup --> HasDB{Ingredient DB Supplied?}
+    
+    HasDB -- Yes --> AliasRes["@gram-lang/analyzer<br/>Alias Resolution (e.g., beurre ➔ butter)"]
+    HasDB -- No --> UnitsCheck
+    
+    AliasRes --> UnitsCheck{Identical Units?}
+    UnitsCheck -- Yes --> SumUnits["Direct Quantity Summation"]
+    UnitsCheck -- No (Mixed) --> DensityCheck{Density Available?}
+    
+    DensityCheck -- Yes --> ConvertGram["Convert to Mass (grams) & Merge"]
+    DensityCheck -- No --> MultiUnit["Fallback: multiUnit=true<br/>(Cluster Entries Under Single Heading)"]
+```
+
 ### 1. ID Normalization and Aliasing
 `@gram-lang/kitchen` itself groups ingredients purely by the raw id it assigned during parsing (a slug of the name you wrote) — it has no access to `ingredients.yaml` and can't know that `@butter` and `@beurre` refer to the same ingredient. On its own, kitchen's shopping list lists them as two separate entries.
 

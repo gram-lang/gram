@@ -20,6 +20,15 @@ The processor walks through every section and step in the AST sequentially to bu
   - **Phase 3 (Serialization)**: The engine evaluates "Named Tracks" logic (`tracks.ts`), ensuring that sequential background timers sharing the same name (e.g., `~_oven`) do not overlap, adjusting their start times chronologically to avoid contention.
   - **Phase 4 (Positive Rebasing)**: Finally (`rebase.ts`), if any steps were pushed into negative time (e.g. starting a day before serving), the entire timeline is shifted forward by the absolute minimum start time (T-Zero). This guarantees the final timeline data (`timings`) strictly contains positive absolute times starting exactly at 0, making it easy for user interfaces to consume.
 
+```mermaid
+flowchart LR
+    AST["📄 AST<br/>(from Parser)"] --> P1["Phase 1: Forward Pass<br/><i>Estimate Durations</i>"]
+    P1 --> P2["Phase 2: Backward Pass<br/><i>ALAP Retro-Planning</i>"]
+    P2 --> P3["Phase 3: Serialization<br/><i>Named Tracks Queueing</i>"]
+    P3 --> P4["Phase 4: Rebasing<br/><i>Shift T-Zero to 0</i>"]
+    P4 --> Result["⚙️ CompilationResult<br/><i>(Optimized Timeline)</i>"]
+```
+
   ::: tip
   The `👉` arrow you see in rendered recipes (e.g. `👉*pastry dough*`) is a display icon added by `@gram-lang/renderer`, not Gram syntax. In `.gram` source, an intermediate is consumed with plain `&name`.
   :::
