@@ -71,7 +71,7 @@ onUnmounted(() => {
 .custom-dropdown {
   position: relative;
   font-size: 14px;
-  min-width: 140px;
+  min-width: 130px;
 }
 
 .dropdown-header {
@@ -87,6 +87,13 @@ onUnmounted(() => {
   user-select: none;
   transition: color 0.25s, background-color 0.25s;
   border: 1px solid var(--vp-c-border);
+  min-width: 0;
+}
+
+.dropdown-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dropdown-header:hover, .dropdown-header.is-open {
@@ -96,6 +103,7 @@ onUnmounted(() => {
 
 .dropdown-icon {
   margin-left: 8px;
+  flex-shrink: 0;
   color: var(--vp-c-text-3);
   transition: transform 0.25s, color 0.25s;
 }
@@ -112,14 +120,17 @@ onUnmounted(() => {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  width: fit-content;
+  min-width: 100%;
+  max-width: calc(100vw - 32px);
+  width: max-content;
   background-color: var(--vp-c-bg-elv);
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   box-shadow: var(--vp-shadow-3);
   z-index: 50;
   padding: 6px 0;
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 300px;
 }
 
 .dropdown-item {
@@ -139,5 +150,12 @@ onUnmounted(() => {
 .dropdown-item.active {
   color: var(--vp-c-brand-1);
   background-color: var(--vp-c-default-soft);
+}
+
+@media (max-width: 640px) {
+  .custom-dropdown {
+    min-width: 90px;
+    flex: 1 1 auto;
+  }
 }
 </style>

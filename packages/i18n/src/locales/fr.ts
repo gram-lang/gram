@@ -60,7 +60,7 @@ export const fr: GramLocale = {
 		viewLabel: "Vue :",
 		loadExample: "Charger un exemple...",
 		recipe: "Recette",
-		scaleFactor: "Facteur d'échelle %",
+		scaleFactor: "Quantités",
 		examples: {
 			canneles: "Cannelés Bordelais",
 			empanadas: "Empanadas de Boeuf",
@@ -91,7 +91,9 @@ export const fr: GramLocale = {
 			gantt_target_time_label: "Servir à :",
 		},
 		options: {
-			scaleTitle: "Mettre à l'échelle par ingrédient",
+			scaleTitle: "Modifier les quantités",
+			scaleGlobal: "Au global",
+			scaleByIngredient: "Par ingrédient",
 			selectIngredient: "Sélectionner un ingrédient...",
 			qty: "Qté",
 			unit: "Unité",

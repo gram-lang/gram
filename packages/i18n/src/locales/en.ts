@@ -88,7 +88,9 @@ export const en = {
 			gantt_target_time_label: "Serve at:",
 		},
 		options: {
-			scaleTitle: "Scale by Ingredient",
+			scaleTitle: "Modify Quantities",
+			scaleGlobal: "Overall Scale",
+			scaleByIngredient: "By Ingredient",
 			selectIngredient: "Select ingredient...",
 			qty: "Qty",
 			unit: "Unit",

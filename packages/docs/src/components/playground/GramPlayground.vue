@@ -331,11 +331,6 @@ onUnmounted(() => {
         </div>
         
         <div class="toolbar-item">
-          <span class="toolbar-label">{{ t.playground.scaleFactor }}</span>
-          <input type="number" class="scale-factor-input" v-model="scaleFactorString" @input="clearTarget" min="1" step="any" />
-        </div>
-
-        <div class="toolbar-item">
           <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
           <PlaygroundDropdown 
             v-model="viewMode" 
@@ -351,9 +346,11 @@ onUnmounted(() => {
             <GramOptions 
               v-model:options="options" 
               :shopping-list="jsonData?.shopping_list || []"
+              v-model:scale-factor-string="scaleFactorString"
               v-model:scale-target-id="scaleTargetId"
               v-model:scale-target-qty="scaleTargetQty"
               v-model:scale-target-unit="scaleTargetUnit"
+              @clear-target="clearTarget"
               @scale-apply="handleScaleApply"
             />
           </div>
@@ -411,6 +408,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   border-radius: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .toolbar-left h2 {
@@ -425,6 +424,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .status-badge {
@@ -457,12 +457,15 @@ onUnmounted(() => {
   font-weight: 600;
   text-transform: uppercase;
   color: var(--vp-c-text-2);
+  white-space: nowrap;
 }
 
 .toolbar-right {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .options-dropdown {
@@ -500,23 +503,48 @@ onUnmounted(() => {
   right: 0;
   z-index: 50;
   width: max-content;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   box-shadow: var(--vp-shadow-3);
   border-radius: 8px;
 }
 
 /* Workspace & Split Pane */
-.scale-factor-input {
-  width: 60px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-border);
-  background-color: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 13px;
-  outline: none;
+@media (max-width: 840px) {
+  .playground-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .toolbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toolbar-right {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px 12px;
+  }
 }
-.scale-factor-input:focus {
-  border-color: var(--vp-c-brand-1);
+
+@media (max-width: 640px) {
+  .toolbar-item {
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
+
+  .toolbar-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar-label {
+    display: none;
+  }
 }
 
 .playground-workspace {
@@ -556,6 +584,10 @@ onUnmounted(() => {
   display: none;
 }
 
+  .right-col {
+    border-block-start: 4px solid var(--color-border);
+  }
+
 @media (min-width: 960px) {
   .playground-workspace {
     flex-direction: row;
@@ -572,6 +604,7 @@ onUnmounted(() => {
   
   .right-col {
     width: calc(100% - var(--left-width));
+    border-block-start: none;
   }
   
   .playground-splitter {

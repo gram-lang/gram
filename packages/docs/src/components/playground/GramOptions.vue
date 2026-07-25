@@ -24,6 +24,7 @@ const props = defineProps<{
 		bakersReference: string | undefined;
 	};
 	shoppingList?: any[];
+	scaleFactorString?: string;
 	scaleTargetId: string | null;
 	scaleTargetQty: number | null;
 	scaleTargetUnit: string;
@@ -31,11 +32,22 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	"update:options": [options: typeof props.options];
+	"update:scaleFactorString": [val: string];
 	"update:scaleTargetId": [val: string | null];
 	"update:scaleTargetQty": [val: number | null];
 	"update:scaleTargetUnit": [val: string];
+	"clear-target": [];
 	"scale-apply": [];
 }>();
+
+// biome-ignore lint/correctness/noUnusedVariables: globalScaleFactor is used in the <template> block below, which Biome's Vue support doesn't see.
+const globalScaleFactor = computed({
+	get: () => props.scaleFactorString || "100",
+	set: (val: string) => {
+		emit("update:scaleFactorString", val);
+		emit("clear-target");
+	},
+});
 
 // biome-ignore lint/correctness/noUnusedVariables: massEnabled is used in the <template> block below, which Biome's Vue support doesn't see.
 const massEnabled = computed({
@@ -155,16 +167,27 @@ function submitScale() {
         <span class="options-title">{{ t.playground.options.scaleTitle }}</span>
       </div>
       <div class="options-body scale-body">
-        <select class="scale-select" v-model="targetId">
-          <option value="">{{ t.playground.options.selectIngredient }}</option>
-          <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
-            {{ item.name }}
-          </option>
-        </select>
-        <div class="scale-inputs" v-if="targetId">
-          <input type="text" class="scale-input qty" v-model.lazy="targetQty" :placeholder="t.playground.options.qty" @keydown.enter="submitScale" />
-          <input type="text" list="gram-units" class="scale-input unit" v-model="targetUnit" :placeholder="t.playground.options.unit" @keydown.enter="submitScale" />
-          <button class="scale-apply-btn" @click="submitScale">{{ t.playground.options.apply }}</button>
+        <div class="scale-group">
+          <span class="scale-subtitle">{{ t.playground.options.scaleGlobal }}</span>
+          <div class="scale-factor-wrapper">
+            <input type="number" class="scale-factor-input" v-model="globalScaleFactor" min="1" step="any" />
+            <span class="scale-factor-unit">%</span>
+          </div>
+        </div>
+
+        <div class="scale-group">
+          <span class="scale-subtitle">{{ t.playground.options.scaleByIngredient }}</span>
+          <select class="scale-select" v-model="targetId">
+            <option value="">{{ t.playground.options.selectIngredient }}</option>
+            <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
+              {{ item.name }}
+            </option>
+          </select>
+          <div class="scale-inputs" v-if="targetId">
+            <input type="text" class="scale-input qty" v-model.lazy="targetQty" :placeholder="t.playground.options.qty" @keydown.enter="submitScale" />
+            <input type="text" list="gram-units" class="scale-input unit" v-model="targetUnit" :placeholder="t.playground.options.unit" @keydown.enter="submitScale" />
+            <button class="scale-apply-btn" @click="submitScale">{{ t.playground.options.apply }}</button>
+          </div>
         </div>
       </div>
     </div>
@@ -277,7 +300,61 @@ function submitScale() {
 }
 
 .scale-body {
-  gap: 8px;
+  gap: 12px;
+}
+
+.scale-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scale-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.scale-factor-wrapper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  background-color: var(--vp-c-bg);
+  padding-right: 8px;
+  width: fit-content;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.scale-factor-wrapper:focus-within {
+  border-color: var(--vp-c-brand-1);
+}
+
+.scale-factor-input {
+  width: 52px;
+  padding: 4px 2px 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  outline: none;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+
+.scale-factor-input::-webkit-inner-spin-button,
+.scale-factor-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.scale-factor-unit {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  user-select: none;
 }
 
 .scale-select {
