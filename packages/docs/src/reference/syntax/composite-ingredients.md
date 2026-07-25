@@ -20,7 +20,11 @@ Both the child and the parent can carry their own independent `()` preparation n
 - **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@juice(strained)<@lemon{1}`.
 - **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@juice<@lemon{1}(cut in half)`.
 
-Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one: `@juice{150ml}(strained)<@lemon{1}(cut in half)`.
+Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one:
+
+```gram
+Add the @juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
+```
 
 ### Example
 

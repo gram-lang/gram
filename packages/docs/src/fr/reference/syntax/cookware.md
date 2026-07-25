@@ -55,10 +55,12 @@ Contrairement à un `@ingrédient` qui se met généralement à l'échelle de fa
 Le `#matériel` prend en charge un grand nombre des fonctionnalités de syntaxe avancée des `@ingrédients`. Pour une explication détaillée de ces concepts, référez-vous à la [documentation sur les Ingrédients](./ingredients.md).
 
 ### [Modificateurs](./ingredients.md#modificateurs-d-ingredient)
-Vous pouvez utiliser les modificateurs Optionnel (`?`), Masqué (`-`), et Fixe (`=`) sur le `#matériel`.
+Vous pouvez utiliser les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`), et Référence (`&`) sur le `#matériel`.
 
 ```gram
 Utiliser un #?wok si vous en avez un, sinon une #-grande poêle fera l'affaire.
+
+Retourner au #&wok pour terminer la sauce.
 ```
 
 ### [Alias de Composant (Renommage)](./ingredients.md#alias-de-composant-renommage)

@@ -50,6 +50,14 @@ Gram provides several modifiers to alter how an `@ingredient` behaves in the par
 You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g. `?*`, `-*`, `-&`) or duplicates (`**`) will generate a compiler warning (`INVALID_MODIFIER_COMBINATION`).
 :::
 
+### Optional and Hidden Modifiers (`?`, `-`)
+
+Use `?` to mark an `@ingredient` as optional — useful for garnishes or substitutions the cook may skip. Use `-` to hide an `@ingredient` from the generated shopping list entirely, e.g. something you always have on hand.
+
+```gram
+[Garnish] Sprinkle with @?thyme{} and a pinch of @-salt{} to taste.
+```
+
 ### The Reference Modifier (`&`)
 
 The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an `@ingredient` after its initial declaration, you should use the `&` modifier.**

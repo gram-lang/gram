@@ -20,7 +20,11 @@ L'enfant comme le parent peuvent chacun porter leur propre note de préparation 
 - **La préparation de l'enfant** se place juste après son nom (et sa quantité, le cas échéant), avant le `<` : `@jus(filtré)<@citron{1}`.
 - **La préparation du parent** se place juste après son coût (ou son nom, si le coût est omis) : `@jus<@citron{1}(coupé en deux)`.
 
-Rattachez la préparation à l'élément qu'elle décrit réellement (ce qui est fait à la partie extraite vs ce qui est fait à l'ingrédient entier). Les deux peuvent également se combiner si nécessaire : `@jus{150 ml}(filtré)<@citron{1}(coupé en deux)`.
+Rattachez la préparation à l'élément qu'elle décrit réellement (ce qui est fait à la partie extraite vs ce qui est fait à l'ingrédient entier). Les deux peuvent également se combiner si nécessaire :
+
+```gram
+Ajouter le @jus{150 ml}(filtré)<@citron{1}(coupé en deux) dans le saladier.
+```
 
 ### Exemple
 

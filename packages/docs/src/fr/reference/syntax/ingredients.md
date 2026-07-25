@@ -50,6 +50,14 @@ Gram fournit plusieurs modificateurs pour altérer le comportement d'un `@ingré
 Vous pouvez combiner des modificateurs (ex : `@?-thym`). Cependant, les combinaisons absurdes (ex : `?*`, `-*`, `-&`) ou les doublons (`**`) généreront un avertissement du compilateur (`INVALID_MODIFIER_COMBINATION`).
 :::
 
+### Les Modificateurs Optionnel et Masqué (`?`, `-`)
+
+Utilisez `?` pour marquer un `@ingrédient` comme facultatif — utile pour une garniture ou une substitution que le cuisinier peut choisir d'omettre. Utilisez `-` pour masquer un `@ingrédient` de la liste de courses générée, par exemple pour quelque chose que vous avez toujours sous la main.
+
+```gram
+[Garnir] Parsemer de @?thym{} et d'une pincée de @-sel{} selon le goût.
+```
+
 ### Le Modificateur de Référence (`&`)
 
 Le modificateur de référence est crucial pour les recettes à plusieurs étapes. **En règle générale, chaque fois que vous mentionnez un `@ingrédient` après sa déclaration initiale, vous devriez utiliser le modificateur `&`.**
