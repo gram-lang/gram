@@ -54,7 +54,6 @@ export function calculateMassMetrics(
 		}
 	});
 
-	// Determine the overall confidence level of the mass calculations
 	let status: "precise" | "estimated" | "incomplete" = "precise";
 	if (missing.length > 0) status = "incomplete";
 	else if (hasEstimates) status = "estimated";

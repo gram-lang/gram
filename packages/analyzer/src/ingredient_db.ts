@@ -44,8 +44,6 @@ export function getIngredientData(
 	database: Record<string, IngredientData>,
 ): IngredientData | null {
 	const slug = slugify(name);
-
-	// Direct match
 	const direct = database[slug];
 	if (direct) return direct;
 

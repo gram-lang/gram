@@ -130,7 +130,6 @@ export function calculateNutrition(
 
 	const coverage = metricsCount > 0 ? knownCount / metricsCount : 0;
 
-	// Rounding
 	total.calories = Math.round(total.calories);
 	total.protein = Math.round(total.protein * 10) / 10;
 	total.carbs = Math.round(total.carbs * 10) / 10;

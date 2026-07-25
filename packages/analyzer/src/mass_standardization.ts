@@ -184,8 +184,8 @@ export function standardizeMass(
 			return {
 				mass: amount * unitWt,
 				method: "explicit",
-				// Careful: If the override was meant for density (g/ml), this might be ambiguous?
-				// But generally overrides for non-volume things imply unit weight.
+				// This override branch only runs for non-volume units, so `unitWt` is
+				// assumed to be a unit weight (g/unit), not a density (g/mL).
 				isEstimate: false,
 			};
 		}

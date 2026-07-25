@@ -151,13 +151,11 @@ export function analyze(
 	const opts = AnalyzerOptionsSchema.parse(options || {});
 	const missingIngredientsSet = new Set<string>();
 
-	// Deep clone the compiled sections to perform safe mutations while preserving internal references
 	const sections: AnalyzedSection[] =
 		typeof structuredClone === "function"
 			? structuredClone(result.sections)
 			: JSON.parse(JSON.stringify(result.sections));
 
-	// Parse custom ingredient density overrides declared in YAML/Frontmatter metadata
 	const overrides = parseDensityOverrides(result.meta);
 
 	// 1. Traverse all recipe sections to calculate physical ingredient masses
@@ -213,11 +211,9 @@ export function analyze(
 			}
 		});
 
-		// Calculate mass metrics specifically for this section
 		sec.metrics = calculateMassMetrics(sec.ingredients);
 	});
 
-	// Compute the global recipe mass totals
 	const globalMassMetrics = calculateMassMetrics(allRawIngredients);
 
 	// 1.5. Secondary pass: resolve Relative Quantities
