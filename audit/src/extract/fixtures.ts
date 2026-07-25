@@ -19,6 +19,11 @@ export function extractPhysicalFixtures(): Snippet[] {
 			line: 1,
 			content: readFileSync(absPath, "utf-8"),
 			expectation: "must-parse",
+			// e.g. kitchen/tests/fixtures/valid/with_warnings.gram is titled
+			// "Recipe with ALL warnings" and deliberately triggers every
+			// WarningCode on purpose (already snapshot-tested by
+			// snapshots.test.ts) — flagging each one here would be pure noise.
+			warningsExpected: /warning/i.test(relPath),
 		});
 	}
 	return snippets;

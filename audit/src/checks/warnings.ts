@@ -8,6 +8,8 @@ import type { Finding, Snippet } from "../types";
 // wraps the same pipeline with file-I/O and line-number resolution that adds
 // nothing here, since every snippet is already in memory.
 export function checkWarnings(snippet: Snippet, ast: RecipeAST): Finding[] {
+	if (snippet.warningsExpected) return [];
+
 	const findings: Finding[] = [];
 
 	try {

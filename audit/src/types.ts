@@ -19,6 +19,7 @@ export interface Snippet {
 	label?: string; // conformance case name, or self-test mistake label
 	expectation: Expectation;
 	expectedWarningCodes?: string[]; // populated for conformance cases from their golden warnings
+	warningsExpected?: boolean; // true: this snippet intentionally triggers warnings by design (e.g. a "with_warnings" fixture), don't flag any of them
 }
 
 export type CheckName =
