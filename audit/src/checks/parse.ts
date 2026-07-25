@@ -23,10 +23,13 @@ export function checkParse(snippet: Snippet): ParseOutcome {
 
 	// parseDocument's whole contract is to catch a parse error internally and
 	// return a null AST rather than throw (used by language-server/CLI tests
-	// to exercise graceful error handling) — a raw getAST() throw on its
-	// input is expected content for those tests, not a mistake, so it's only
-	// worth a look, not a flag.
-	const isNonThrowingWrapper = snippet.label === "parseDocument";
+	// to exercise graceful error handling); tmpfile writes commonly feed a CLI
+	// service (checker/differ) with its own error handling too — a raw
+	// getAST() throw on either's input is plausible, intentional content for
+	// those tests, not necessarily a mistake, so it's only worth a look, not
+	// a flag.
+	const isNonThrowingWrapper =
+		snippet.label === "parseDocument" || snippet.sourceKind === "inline-test-tmpfile";
 
 	if (snippet.expectation === "must-throw" && !threw) {
 		findings.push({
@@ -41,7 +44,7 @@ export function checkParse(snippet: Snippet): ParseOutcome {
 			check: "parse",
 			severity: isNonThrowingWrapper ? "info" : "flag",
 			summary: isNonThrowingWrapper
-				? `parseDocument input causes a parse error (may be intentional, testing graceful handling): ${errorMessage}`
+				? `input causes a parse error (may be intentional, testing graceful handling elsewhere): ${errorMessage}`
 				: `unexpected parse error: ${errorMessage}`,
 		});
 	} else if (snippet.expectation === "unclear" && threw) {

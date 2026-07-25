@@ -23,31 +23,6 @@ function literalText(node: ts.Node): string | null {
 	return null;
 }
 
-const ERROR_PATH_HINT = /error|invalid|syntax/i;
-
-// Soft heuristic: a tmpfile write nested under a describe()/it() block whose
-// name mentions "error"/"invalid"/"syntax" is plausibly intentional invalid
-// Gram (testing error-handling), not a mistake — mark it "unclear" instead
-// of assuming "must-parse" so it surfaces for manual classification instead
-// of a false-positive parse-failure flag.
-function isInsideErrorPathBlock(node: ts.Node): boolean {
-	let current: ts.Node | undefined = node;
-	while (current) {
-		if (
-			ts.isCallExpression(current) &&
-			ts.isIdentifier(current.expression) &&
-			(current.expression.text === "describe" || current.expression.text === "it") &&
-			current.arguments[0] &&
-			ts.isStringLiteral(current.arguments[0]) &&
-			ERROR_PATH_HINT.test(current.arguments[0].text)
-		) {
-			return true;
-		}
-		current = current.parent;
-	}
-	return false;
-}
-
 // Scans for writeFile(path, "gram-looking content") in tests — a third
 // embedding shape distinct from a physical fixture or an inline getAST() arg
 // (e.g. packages/cli/tests/checker.test.ts writes Gram to a runtime tmpfile
@@ -83,7 +58,11 @@ export function extractTmpfileWrites(): Snippet[] {
 						file: relPath,
 						line,
 						content,
-						expectation: isInsideErrorPathBlock(node) ? "unclear" : "must-parse",
+						// Content fed to a CLI service (checker/differ) that may catch
+						// a parse error internally rather than letting it propagate —
+						// checks/parse.ts treats an unexpected throw here as "info",
+						// not "flag", for the same reason as parseDocument below.
+						expectation: "must-parse",
 						// Same reasoning as inline-test-literal: the surrounding
 						// bun test already asserts whatever this content is meant
 						// to produce.

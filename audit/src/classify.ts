@@ -12,12 +12,12 @@ const TEST_BODY_WRAPPERS = new Set([
 ]);
 
 // Walks up from a raw-Gram-source call (getAST(...)/parseDocument(...)) to
-// decide whether the surrounding test expects it to throw. Only recognizes
-// the direct `expect(() => call(...)).toThrow(...)` shape (and its
-// `formatGram`/`parseDocument` equivalents) — anything else that wraps the
-// call (a custom helper, `.not.toThrow()`, `.toThrow()` without an
-// intervening arrow) is reported as "unclear" rather than guessed, so it
-// surfaces in its own report section for manual classification.
+// decide whether the surrounding test expects it to throw. Recognizes the
+// `expect(() => call(...)).toThrow(...)` shape and its negation
+// `.not.toThrow()` (and their `formatGram`/`parseDocument` equivalents) —
+// anything else that wraps the call (a custom helper, `.toBeDefined()`, etc.)
+// is reported as "unclear" rather than guessed, so it surfaces in its own
+// report section for manual classification.
 export function classifyCallExpectation(node: ts.CallExpression): Expectation {
 	let current: ts.Node = node;
 	let innerFn: ts.ArrowFunction | ts.FunctionExpression | undefined;
@@ -40,17 +40,42 @@ export function classifyCallExpectation(node: ts.CallExpression): Expectation {
 	const callee = wrappingCall.expression;
 
 	if (ts.isIdentifier(callee) && callee.text === "expect") {
-		const propAccess = wrappingCall.parent;
+		let propAccess = wrappingCall.parent;
 		if (
 			propAccess &&
 			ts.isPropertyAccessExpression(propAccess) &&
 			propAccess.expression === wrappingCall &&
-			propAccess.name.text === "toThrow"
+			propAccess.name.text === "not"
+		) {
+			// expect(fn).not.<something> — step past `.not` to see what follows.
+			const notAccess = propAccess;
+			propAccess = notAccess.parent;
+			if (
+				propAccess &&
+				ts.isPropertyAccessExpression(propAccess) &&
+				propAccess.expression === notAccess &&
+				propAccess.name.text === "toThrow" &&
+				propAccess.parent &&
+				ts.isCallExpression(propAccess.parent) &&
+				propAccess.parent.expression === propAccess
+			) {
+				return "must-parse"; // .not.toThrow() explicitly expects success
+			}
+			return "unclear";
+		}
+		if (
+			propAccess &&
+			ts.isPropertyAccessExpression(propAccess) &&
+			propAccess.expression === wrappingCall &&
+			propAccess.name.text === "toThrow" &&
+			propAccess.parent &&
+			ts.isCallExpression(propAccess.parent) &&
+			propAccess.parent.expression === propAccess
 		) {
 			return "must-throw";
 		}
-		// expect(() => call(...)) not immediately chained with .toThrow — could
-		// be `.not.toThrow()`, `.toBeDefined()`, etc. Don't guess.
+		// expect(() => call(...)) not immediately chained with .toThrow/.not.toThrow
+		// — could be `.toBeDefined()`, etc. Don't guess.
 		return "unclear";
 	}
 
