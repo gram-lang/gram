@@ -70,7 +70,6 @@ export class PreviewPanel {
 	private _getHtmlForWebview(initialHtml: string): string {
 		const nonce = getNonce();
 
-		// Link to extracted CSS
 		const cssPathOnDisk = vscode.Uri.joinPath(
 			this._extensionUri,
 			"media",
