@@ -6,7 +6,7 @@ import { isSeq, Scalar, type Document } from "yaml";
 // every concrete variant these helpers are actually called with.
 type Doc = Document<any, any>;
 
-export function quotedScalar(doc: Doc, value: string): Scalar {
+function quotedScalar(doc: Doc, value: string): Scalar {
 	const node = doc.createNode(value) as Scalar;
 	node.type = Scalar.QUOTE_DOUBLE;
 	return node;

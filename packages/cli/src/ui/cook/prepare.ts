@@ -102,8 +102,7 @@ export function prepareRecipeData(
 				isFirstOfSection: localIdx === 0,
 				// aggregateSectionIngredients() leaves `.name` unset for ordinary
 				// ingredients (createCleanUsage() never populates it) — resolve the
-				// display name from the registry here, the same fallback chain
-				// stepToText() below already uses for reference tokens.
+				// display name from the registry here.
 				sectionIngredients: aggregateSectionIngredients(
 					section.ingredients ?? [],
 				).map((ing) => ({
@@ -125,71 +124,4 @@ export function prepareRecipeData(
 		registry: compiled.registry,
 		massMap,
 	};
-}
-
-// Convert step content tokens to a plain-text instruction string
-export function stepToText(
-	content: any[],
-	registry: CompilationResult["registry"],
-): string {
-	const parts: string[] = [];
-	for (const token of content) {
-		if (typeof token === "string") {
-			parts.push(token);
-			continue;
-		}
-		if (!token) continue;
-		if (token.type === "comment" || token.type === "declaration") continue;
-		if (token.type === "reference") {
-			parts.push(
-				registry.ingredients[token.id]?.name ?? token.name ?? token.id,
-			);
-			continue;
-		}
-		if (token.type === "timer") {
-			const q = token.quantity;
-			const val =
-				q?.text ??
-				(q?.value != null
-					? String(typeof q.value === "object" ? q.value.value : q.value)
-					: "");
-			parts.push(`~${val}${q?.unit ?? "min"}`);
-			continue;
-		}
-		if (token.type === "temperature") {
-			const q = token.quantity;
-			const val =
-				q?.text ??
-				(q?.value != null
-					? String(typeof q.value === "object" ? q.value.value : q.value)
-					: "");
-			parts.push(`${val}${token.unit ?? "°"}`);
-			continue;
-		}
-		if (token.id) {
-			parts.push(
-				token.alias ??
-					registry.ingredients[token.id]?.name ??
-					registry.cookware?.[token.id]?.name ??
-					token.name ??
-					token.id,
-			);
-			continue;
-		}
-		if (token.value != null) parts.push(String(token.value));
-	}
-
-	// Smart join: insert a space between adjacent word characters (avoids "peacheswith")
-	let result = "";
-	for (const part of parts) {
-		if (!result) {
-			result = part;
-			continue;
-		}
-		const last = result[result.length - 1] ?? "";
-		const first = part[0] ?? "";
-		if (/\w/.test(last) && /\w/.test(first)) result += ` ${part}`;
-		else result += part;
-	}
-	return result.trim();
 }

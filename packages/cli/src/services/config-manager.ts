@@ -91,7 +91,7 @@ export function flattenConfig(
 	return result;
 }
 
-export function coerceValue(raw: string): any {
+function coerceValue(raw: string): any {
 	if (raw === "true") return true;
 	if (raw === "false") return false;
 	const n = Number(raw);
@@ -122,7 +122,7 @@ async function writeConfigFile(
 
 // ── .env helpers ──────────────────────────────────────────────────────────────
 
-export async function readDotEnv(
+async function readDotEnv(
 	envPath: string,
 ): Promise<Record<string, string>> {
 	try {

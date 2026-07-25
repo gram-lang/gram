@@ -230,7 +230,7 @@ function renderMissingWarning(missing: string[]): string {
 	);
 }
 
-export function renderRecipe(model: RecipeViewModel): string {
+function renderRecipe(model: RecipeViewModel): string {
 	return [
 		renderHeader(model),
 		renderShoppingList(model.shoppingList),

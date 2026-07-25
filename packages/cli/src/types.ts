@@ -2,8 +2,6 @@ import type { IngredientData, NutritionMetrics } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
 import { z } from "zod";
 
-export type { NutritionMetrics };
-
 export type DiagnosticLevel = "error" | "warning" | "info";
 
 export interface Diagnostic {
@@ -56,7 +54,7 @@ export interface DbSyncResult {
 	existingIngredients: string[];
 }
 
-export type LintIssueType = "plural" | "duplicate";
+type LintIssueType = "plural" | "duplicate";
 
 export interface LintIssue {
 	type: LintIssueType;

@@ -8,7 +8,7 @@ import type {
 import { slugify } from "@gram-lang/kitchen";
 import { withFileLock, atomicWrite } from "../core/lock";
 
-export type ConflictField = "nutrition" | "physical" | "category";
+type ConflictField = "nutrition" | "physical" | "category";
 export type PreferSide = "local" | "remote";
 
 export interface MergeConflict {
@@ -19,7 +19,7 @@ export interface MergeConflict {
 	remoteValue: unknown;
 }
 
-export interface MergeEntry {
+interface MergeEntry {
 	localKey: string;
 	sourceKey: string;
 	additions: Partial<IngredientData>;

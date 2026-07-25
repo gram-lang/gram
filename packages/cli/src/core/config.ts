@@ -8,8 +8,6 @@ import { GramConfigFileSchema, type GramConfig } from "../types";
 import { GramConfigError } from "../errors";
 import { findProjectRoot } from "./workspace";
 
-export { findProjectRoot };
-
 async function readYaml(path: string): Promise<Partial<GramConfig>> {
 	try {
 		const content = await readFile(path, "utf-8");

@@ -55,14 +55,3 @@ export class GramConfigError extends GramCLIError {
 		this.name = "GramConfigError";
 	}
 }
-
-export class GramParseError extends GramCLIError {
-	constructor(
-		message: string,
-		public readonly file: string,
-		public readonly line?: number,
-	) {
-		super(message, ExitCode.Error);
-		this.name = "GramParseError";
-	}
-}
