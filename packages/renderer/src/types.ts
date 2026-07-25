@@ -5,15 +5,11 @@ import type {
 	NutritionMetrics,
 } from "@gram-lang/analyzer";
 
-// Audit 2026-07-22, renderer finding I-6: the three public entry points
-// (toHTML/toMarkdown/toPrintHTML) declared `data: any` — the only stage of
-// the pipeline that didn't type its input, even though the exact upstream
-// shape was already exported. A recipe reaches the renderer either straight
-// out of `compile()` (no ingredient database — mass/nutrition fields absent)
-// or out of `analyze()` (enriched with mass standardization and nutrition) —
-// both are valid, tested inputs (see e.g. xss-escaping.test.ts using the
-// former), so the renderer's real contract is the union of both, not either
-// alone.
+// A recipe reaches the renderer either straight out of `compile()` (no
+// ingredient database — mass/nutrition fields absent) or out of `analyze()`
+// (enriched with mass standardization and nutrition) — both are valid, tested
+// inputs (see e.g. xss-escaping.test.ts using the former), so the renderer's
+// real contract is the union of both, not either alone.
 export type RenderableCompilationResult =
 	| CompilationResult
 	| AnalyzedCompilationResult;
@@ -94,7 +90,6 @@ export interface RendererOptions {
 	/** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
 	hideStepQty?: boolean;
 	bakersMathOnly?: boolean;
-	/** When true, renders interactive controls for scaling portions and ingredients */
 	interactiveScaling?: boolean;
 	/** Locale code (e.g. 'en', 'fr') for translating UI strings */
 	lang?: string;

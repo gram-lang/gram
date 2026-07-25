@@ -42,9 +42,6 @@ export function aggToRendererItem(
 	return base;
 }
 
-/**
- * Formats a decimal number to a fraction if possible (e.g. 0.5 -> 1/2).
- */
 export function formatDecimalToFraction(value: unknown): string {
 	if (typeof value !== "number") return String(value);
 
@@ -79,9 +76,6 @@ export interface ExtractedQuantity {
 	isRelative?: boolean;
 }
 
-/**
- * Extracts and normalizes quantity information from an item.
- */
 export function getQty(
 	item: Record<string, unknown>,
 ): ExtractedQuantity | undefined {
@@ -169,12 +163,8 @@ export function isCompositeItem(item: { type?: string }): boolean {
  * scattered duplicate lines. Entries share `multiUnit: true` and a canonical
  * `id`. Items that aren't part of such a run (including alternative/composite
  * groups, which never carry `multiUnit`) each come back as their own
- * single-item group, unchanged.
- *
- * Audit 2026-07-22, renderer finding I-4/P-1 (Phase 12): previously
- * duplicated verbatim inside html.ts only — markdown.ts/print.ts never
- * clustered mixed-unit entries at all. Shared here so all three backends
- * apply the same grouping.
+ * single-item group, unchanged. Shared here so all three backends apply the
+ * same grouping.
  */
 export function groupMultiUnitEntries<
 	T extends { multiUnit?: boolean; id?: string },

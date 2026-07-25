@@ -7,7 +7,6 @@ import {
 } from "../utils";
 import { getDictionary } from "@gram-lang/i18n";
 
-// Default icons mapping
 export const DEFAULT_ICONS = {
 	html: {
 		hourglass: '<i class="ph ph-hourglass"></i>',
@@ -81,8 +80,6 @@ const strategies: Record<
 
 		const prep = item.preparation || "";
 		const isOptional = item.modifiers?.includes("optional");
-		// NOTE: no "reference" (&-prefixed) badge/tooltip currently exists here, unlike
-		// isOptional below — likely dropped in a past refactor (audit Chantier 1).
 
 		let normalizedMass = null;
 		let isEstimate = false;
@@ -209,9 +206,9 @@ const strategies: Record<
 		} else {
 			let md = item.type === "reference" ? `👉*${name}*` : `**${name}**`;
 			md += parentSuffixMd;
+			// plainQty already folds in bakersPercentage/bakersMathOnly and variable_entries,
+			// same as the HTML branch above.
 			if (!context.hideIngredientQty && plainQty) {
-				// plainQty already accounts for bakersPercentage/bakersMathOnly
-				// and folds in variable_entries — same logic the HTML branch uses.
 				md += ` (${plainQty})`;
 			}
 			const mode = context.formatMode || "inline";
@@ -394,15 +391,10 @@ const strategies: Record<
 
 	comment: (item, format, context) => {
 		const text = (item.value || "").trim();
-		// Audit 2026-07-22, renderer finding I-4/P-1 (Phase 12): footnote
-		// accumulation used to be html-only (gated on `format === "html"`
-		// before even checking `_inlineComments`), so markdown could never
-		// collect footnotes even once its backend started initializing
-		// `_inlineComments`. Collection itself is now format-agnostic — only
-		// the reference syntax differs — so any backend that initializes
-		// `context._inlineComments` (see each backend's buildContext) gets
-		// footnotes; one that doesn't keeps rendering the comment inline,
-		// exactly as before.
+		// Footnote collection is format-agnostic: any backend that initializes
+		// `context._inlineComments` (see each backend's buildContext) gets footnotes
+		// instead of inline comments, regardless of html/md. Only the reference
+		// syntax differs between the two formats.
 		if (context._inlineComments) {
 			context._inlineComments.push(text);
 			const index = context._inlineComments.length;
@@ -410,13 +402,12 @@ const strategies: Record<
 			if (format === "html") {
 				return `<sup class="footnote-ref"><a href="#${renderId}-${index}" id="ref-${renderId}-${index}">[${index}]</a></sup>`;
 			}
-			// GFM-style footnote reference; the definition itself is emitted
-			// at the bottom of the document by the backend's renderFootnotes
-			// hook, once every step has been rendered.
+			// GFM-style footnote reference; the definition itself is emitted at the
+			// bottom of the document by the backend's renderFootnotes hook, once
+			// every step has been rendered.
 			return `[^${renderId}-${index}]`;
 		}
 		if (format === "html") {
-			// Fallback if state is missing
 			return `<span class="inline-comment">${escapeHtml(text)}</span>`;
 		}
 		return ` *${text}*`;
@@ -458,13 +449,12 @@ const strategies: Record<
 						return formatElement(resolvedOpt, format, context);
 					})
 					.join(separator);
-				// A leaf ingredient/cookware item is always a single <span>, so a
-				// shopping-list/section-list <li> containing it as its only child
-				// lays out fine under the "flex row, justify-content:space-between"
-				// rule those lists use. Joining several options produces multiple
-				// sibling <span>s instead — wrapped here in one container so the
-				// group still counts as a single flex child, not several spread
-				// across the row.
+				// Shopping-list/section-list <li> elements use a "flex row,
+				// justify-content: space-between" layout that expects a single
+				// child. A leaf ingredient/cookware item is naturally one <span>,
+				// but joining several options produces multiple sibling <span>s —
+				// wrap them in one container so the group still counts as a
+				// single flex child.
 				const groupClass = context.classes?.alternativeGroup || "alt-group";
 				return `<span class="${groupClass}">${joined}</span>`;
 			}
@@ -483,14 +473,14 @@ const strategies: Record<
 		}
 	},
 
+	// "group" AST nodes render identically to "alternative" ones.
 	group: (item, format, context) => {
-		// Alias alternative strategy for group AST type
 		return strategies.alternative!(item, format, context);
 	},
 
+	// A composite item in the shopping list is a parent ingredient; reuse the
+	// ingredient formatter rather than duplicating its display logic.
 	composite: (item, format, context) => {
-		// A composite item in the shopping list is essentially a parent ingredient.
-		// We reuse the ingredient formatter to display it identically.
 		return strategies.ingredient!(
 			{ ...item, type: "ingredient" },
 			format,
@@ -505,20 +495,14 @@ const strategies: Record<
 };
 
 /**
- * Unified entry point to format an AST element.
- */
-/**
- * Audit 2026-07-22, renderer finding I-6: was `element: any`. Real call
- * sites pass a `Usage`, a `StepToken`, an aggregated shopping-list record, or
- * an ad-hoc alternative/composite group — genuinely heterogeneous, and none
- * of those nominal interfaces has an index signature, so none is assignable
- * to a `Record<string, unknown>` parameter without a cast at the call site.
- * `unknown` is the honest declared type for "some renderable JSON value of
- * unrecognized shape" (only string/null/undefined are handled specially,
- * checked before the one narrowing cast below); the strategy table's
- * `.type`-keyed dispatch isn't a real discriminated union today — that's the
- * `Usage.type` redesign explicitly deferred as too invasive (kitchen finding
- * F-011/F-016).
+ * Entry point to format an AST element for either the html or md backend.
+ *
+ * `element` is typed `unknown` rather than a union because call sites pass
+ * genuinely heterogeneous shapes (a `Usage`, a `StepToken`, an aggregated
+ * shopping-list record, an ad-hoc alternative/composite group) with no
+ * common index signature. The strategy table's `.type`-keyed dispatch below
+ * is not a real discriminated union — that would require reworking
+ * `Usage.type` across the kitchen package.
  */
 export function formatElement(
 	element: unknown,
@@ -532,10 +516,10 @@ export function formatElement(
 
 	const el = element as Record<string, unknown>;
 
-	// Resolve strategy
 	const type = (el.type as string) || "";
 
-	// Check if it looks like an implicit ingredient/cookware step element (no type, has id)
+	// Untyped elements with an id are implicit ingredient/cookware references;
+	// infer which from the registry.
 	if (!type && el.id) {
 		const registry = context.registry || {};
 		const id = el.id as string;
@@ -553,7 +537,6 @@ export function formatElement(
 		return strategy(el, format, context);
 	}
 
-	// Fallback for unknown elements
 	return format === "html"
 		? escapeHtml(String(el.value || ""))
 		: String(el.value || "");

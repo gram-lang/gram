@@ -30,8 +30,8 @@ const markdownBackend: RenderBackend = {
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
-			// Phase 12: markdown now collects footnotes too (GFM `[^id]` refs +
-			// definitions at the bottom via renderFootnotes), matching html.ts.
+			// Footnotes are collected here too (GFM `[^id]` refs + definitions at
+			// the bottom via renderFootnotes), matching html.ts's behavior.
 			_inlineComments: [],
 			_renderId: options.renderId ?? "note",
 		};
@@ -77,9 +77,6 @@ const markdownBackend: RenderBackend = {
 		const t = getDictionary(options.lang);
 		let md = `## 🛒 ${t.renderer.shoppingList}\n\n`;
 
-		// Phase 12: markdown now also clusters entries the analyzer couldn't
-		// merge into a single mass, and shows the gross-mass note — previously
-		// html.ts-only (audit renderer finding I-4/P-1).
 		const shoppingItems: any[] = data.shopping_list;
 		const renderGroups = groupMultiUnitEntries(shoppingItems);
 
@@ -175,16 +172,9 @@ const markdownBackend: RenderBackend = {
 				const stepNum = stepCounter;
 				let stepText = "";
 
-				// Prepend Action if exists
 				if (step.action) {
 					stepText += `**[${step.action}]** `;
 				}
-				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem`
-				// is only ever `ProcessedStep` ("step") or `ProcessedComment`
-				// ("comment", already handled above) — kitchen never produces a
-				// step-level `type: "text"`; free text lives *inside* a step's
-				// `content` array as a plain string. Dead branch identical in
-				// all three backends, confirmed unreachable once typed.
 				stepText += joinStepTokens(
 					step.content,
 					(c) => formatElement(c, "md", stepContext),
@@ -198,10 +188,9 @@ const markdownBackend: RenderBackend = {
 	},
 
 	renderFootnotes(_data, context) {
-		// Phase 12: extended to markdown, using GFM `[^id]: text` footnote
-		// definitions at the bottom of the document — element.ts's comment
-		// strategy already emits the matching `[^id]` reference inline (see
-		// its own comment for why collection is now format-agnostic).
+		// Uses GFM `[^id]: text` footnote definitions at the bottom of the
+		// document — element.ts's comment strategy emits the matching `[^id]`
+		// reference inline.
 		if (!context._inlineComments || context._inlineComments.length === 0) {
 			return "";
 		}
@@ -215,10 +204,7 @@ const markdownBackend: RenderBackend = {
 	},
 
 	renderNutrition(data, _context, options) {
-		// Phase 12: extended to markdown — previously nothing was shown here,
-		// not even total calories, which the audit confirmed was a real
-		// content gap rather than a deliberate design choice. Mirrors
-		// html.ts's fuller display condition (calories OR warnings), not
+		// Mirrors html.ts's fuller display condition (calories OR warnings), not
 		// print.ts's simpler one, since markdown has no other way to surface
 		// "ingredients exist but nutrition data is incomplete".
 		const t = getDictionary(options.lang);

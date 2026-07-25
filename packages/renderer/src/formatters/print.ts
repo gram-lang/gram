@@ -411,8 +411,8 @@ const printBackend: RenderBackend = {
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,
 			lang: options.lang,
-			// Phase 12: print now collects footnotes too, rendered as endnotes
-			// via renderFootnotes, matching html.ts.
+			// Footnotes are collected here too, rendered as endnotes via
+			// renderFootnotes, matching html.ts.
 			_inlineComments: [],
 			_renderId: options.renderId ?? "note",
 		};
@@ -466,9 +466,6 @@ const printBackend: RenderBackend = {
 		const shoppingItems: any[] = data.shopping_list.filter(
 			(item: unknown) => item && typeof item === "object",
 		);
-		// Phase 12: print now also clusters entries the analyzer couldn't merge
-		// into a single mass, and shows the gross-mass badge — previously
-		// html.ts-only (audit renderer finding I-4/P-1).
 		const renderGroups = groupMultiUnitEntries(shoppingItems);
 		for (const group of renderGroups) {
 			const item = group[0];
@@ -568,13 +565,6 @@ const printBackend: RenderBackend = {
 					body += `      <span class="action">${escapeHtml(stepItem.action)}</span>`;
 				}
 
-				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem` is
-				// only ever `ProcessedStep` ("step") or `ProcessedComment`
-				// ("comment", already handled above) — kitchen never produces a
-				// step-level `type: "text"`; free text lives *inside* a step's
-				// `content` array as a plain string, not as its own wrapper node.
-				// This dead branch (unreachable, confirmed once `data` was typed
-				// instead of `any`) existed identically in all three backends.
 				const stepContent = joinStepTokens(
 					stepItem.content ?? [],
 					(c) => formatElement(c, "html", stepContext),
@@ -591,10 +581,9 @@ const printBackend: RenderBackend = {
 	},
 
 	renderFootnotes(_data, context, options) {
-		// Phase 12: extended to print, rendered as endnotes at the bottom of
-		// the printed page — element.ts's comment strategy already emits the
-		// matching footnote-ref markup inline (print always formats tokens as
-		// "html", same as html.ts).
+		// Rendered as endnotes at the bottom of the printed page — element.ts's
+		// comment strategy emits the matching footnote-ref markup inline (print
+		// always formats tokens as "html", same as html.ts).
 		if (!context._inlineComments || context._inlineComments.length === 0) {
 			return "";
 		}
@@ -626,10 +615,8 @@ const printBackend: RenderBackend = {
 		if (vals.fiber != null)
 			body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
 		if (vals.sodium != null) {
-			// Audit 2026-07-22, renderer finding I-2: sodium is stored/
-			// calculated in milligrams (analyzer/src/nutrition.ts), not grams —
-			// html.ts already gets this right (`${sodium}mg`), this was off by
-			// a factor of 1000 on the print/PDF output.
+			// Sodium is stored/calculated in milligrams (analyzer/src/nutrition.ts),
+			// not grams — display as mg, not g.
 			body += `  <span class="nut-item"><small>Sodium</small> <strong>${Math.round(vals.sodium)}mg</strong></span>\n`;
 		}
 		body += `</div>\n</div>\n`;

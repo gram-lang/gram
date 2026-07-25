@@ -59,9 +59,9 @@ const htmlBackend: RenderBackend = {
 
 		let html = "";
 
-		// NOTE: RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
-		// accepted for backwards compatibility but currently apply to nothing below — this
-		// markup was restructured around timing cards without updating them (audit Chantier 1).
+		// RendererOptions.classes.recipeMeta/metaItem/metaIcon/metaContent are still
+		// accepted for backwards compatibility but apply to nothing below — this
+		// markup was restructured around timing cards without updating them.
 		const metaLabelClass = options.classes?.metaLabel || "meta-label";
 		const metaValueClass = options.classes?.metaValue || "meta-value";
 		const metaEstClass = options.classes?.metaEst || "est";
@@ -86,10 +86,9 @@ const htmlBackend: RenderBackend = {
 					.map((b) => {
 						let label = b.label;
 						if (label.startsWith(SECTION_ACTIVE_PREFIX)) {
-							// Security audit 2026-07-22, finding B-1: the section title and
-							// timer name below come straight from recipe source text (`##
-							// <title>`, `~<name>{...}`) and used to be interpolated here
-							// without escaping — an exploitable HTML injection via the
+							// The section title and timer name here come straight from
+							// recipe source text (`## <title>`, `~<name>{...}`) — must be
+							// escaped, or a recipe author can inject HTML into the
 							// playground/VS Code preview.
 							label = `${escapeHtml(label.slice(SECTION_ACTIVE_PREFIX.length))} <span class="timing-detail-type">(${t.renderer.breakdownActive})</span>`;
 						} else if (label.startsWith(TIMER_NAMED_PREFIX)) {
@@ -142,7 +141,6 @@ const htmlBackend: RenderBackend = {
 				return htmlStr;
 			};
 
-			// Total Time
 			const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
 			const totalTooltip = renderTooltipHTML(
 				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
@@ -154,7 +152,6 @@ const htmlBackend: RenderBackend = {
 			html += `   <div class="${metaValueClass}">${formatDuration(metrics.totalTime)}</div>${totalTooltip}\n`;
 			html += ` </div>\n`;
 
-			// Idle Time
 			if (metrics.idleTime) {
 				const idleTooltip = renderTooltipHTML(
 					t.renderer.idleTimeTooltip ??
@@ -166,7 +163,6 @@ const htmlBackend: RenderBackend = {
 				html += ` </div>\n`;
 			}
 
-			// Active Time
 			const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
 			const activeTooltip = renderTooltipHTML(
 				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
@@ -177,7 +173,6 @@ const htmlBackend: RenderBackend = {
 			html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
 			html += ` </div>\n`;
 
-			// Prep Time
 			const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
 			const prepTooltip = renderTooltipHTML(
 				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
@@ -190,7 +185,6 @@ const htmlBackend: RenderBackend = {
 		}
 		html += `</div>\n`;
 
-		// Secondary Metrics (Mass, etc) & Metadata combined
 		const recipeMetaSecondaryClass =
 			options.classes?.recipeMetaSecondary || "recipe-meta-secondary";
 		const metadataGridClass = options.classes?.metadataGrid || "metadata-grid";
@@ -296,7 +290,6 @@ const htmlBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					// Show Gross Mass if different from Net
 					const gross = Math.round(item.purchasingMass * 10) / 10;
 					extraHtml = ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
@@ -433,14 +426,6 @@ const htmlBackend: RenderBackend = {
 					html += `        <span${stepActionClass}>${escapeHtml(step.action)}</span> `;
 				}
 
-				// Audit 2026-07-22, renderer finding I-3/I-6: `ProcessedStepItem` is
-				// only ever `ProcessedStep` ("step") or `ProcessedComment`
-				// ("comment", already handled above) — kitchen never produces a
-				// step-level `type: "text"`; free text lives *inside* a step's
-				// `content` array as a plain string, not as its own wrapper node.
-				// This dead branch (confirmed unreachable once print.ts's identical
-				// copy was typed instead of `any`) existed identically in all three
-				// backends.
 				// Declarations always render after every inline token, regardless of
 				// their original position in the step (html.ts-specific choice — the
 				// other formatters render declarations inline, in source order).
@@ -525,7 +510,6 @@ const htmlBackend: RenderBackend = {
 		const c = displayVals.carbs;
 		const f = displayVals.fat;
 
-		// Granular
 		const sugar = displayVals.sugar !== undefined ? displayVals.sugar : "-";
 		const fiber = displayVals.fiber !== undefined ? displayVals.fiber : "-";
 		// sodium is stored/calculated in mg — round to nearest integer for display
@@ -533,12 +517,6 @@ const htmlBackend: RenderBackend = {
 			displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : "-";
 
 		let warningsHtml = "";
-		// Audit 2026-07-22, renderer finding I-1: this read `data.nutrition`,
-		// which never exists — `analyze()` only ever places `nutrition` under
-		// `metrics` (already destructured as `nut` above). Dead branch: the
-		// exact case the surrounding condition (line 490) was written for —
-		// calories are 0 but warnings exist — rendered an unexplained empty
-		// panel instead of the warning text.
 		if (nut.warnings && nut.warnings.length > 0) {
 			warningsHtml = `  <div class="nut-warnings">\n`;
 			nut.warnings.forEach((w) => {

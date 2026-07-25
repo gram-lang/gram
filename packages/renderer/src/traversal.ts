@@ -5,21 +5,20 @@ import type {
 } from "./types";
 
 /**
- * Audit 2026-07-22, renderer finding I-4/P-1 (Phase 11): html.ts/markdown.ts/
- * print.ts used to each hand-roll their own top-level document assembly, with
- * no structural guarantee they covered the same set of sections in the same
- * order — that's exactly how Phase 9's `hideStepQty` bug happened (wired into
- * print.ts's context but silently forgotten in html.ts/markdown.ts).
+ * html.ts/markdown.ts/print.ts used to each hand-roll their own top-level
+ * document assembly, with no structural guarantee they covered the same set
+ * of sections in the same order — that's how a `hideStepQty` option once got
+ * wired into print.ts's context but silently forgotten in html.ts/markdown.ts.
  *
  * A `RenderBackend` is required to implement every section hook below, so a
- * newly-added section can't be silently missing from one backend the way
- * `hideStepQty` was: TypeScript enforces the hook exists, even if a backend's
+ * newly-added section can't go silently missing from one backend the same
+ * way: TypeScript enforces the hook exists, even if a backend's
  * implementation is currently a no-op (e.g. markdown's nutrition/footnotes
  * hooks — see markdown.ts). Whether a hook actually emits anything for a
  * given recipe (e.g. "only if shopping_list is non-empty") remains each
- * backend's own decision, preserved exactly as it was before this refactor —
- * this traversal does not itself decide what's visible, only that every
- * backend is asked, in the same order, with the same shared context.
+ * backend's own decision — this traversal does not decide what's visible,
+ * only that every backend is asked, in the same order, with the same shared
+ * context.
  */
 export interface RenderSections {
 	title: string;
