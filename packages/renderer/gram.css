@@ -316,9 +316,9 @@ body.vscode-dark,
   display: block;
 }
 
-.gram-preview .shopping-list ul li.list-item-group > ul,
-.gram-preview .section-ingredients ul li.list-item-group > ul,
-.gram-preview details.cookware ul li.list-item-group > ul {
+.gram-preview .shopping-list ul li.list-item-group>ul,
+.gram-preview .section-ingredients ul li.list-item-group>ul,
+.gram-preview details.cookware ul li.list-item-group>ul {
   margin-top: 6px;
   padding-left: 16px;
 }
@@ -636,8 +636,20 @@ body.vscode-dark,
 .gram-preview .nut-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr 1fr;
+}
+
+@media (min-width: 480px) {
+  .gram-preview .nut-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .gram-preview .nut-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .gram-preview .nut-warnings {
@@ -814,9 +826,11 @@ body.vscode-dark,
   left: 0;
   transform: translateY(2px);
 }
+
 .gram-preview .timing-card:first-child:hover .timing-tooltip {
   transform: translateY(8px);
 }
+
 .gram-preview .timing-card:first-child .timing-tooltip::before {
   left: 24px;
   transform: none;
@@ -828,9 +842,11 @@ body.vscode-dark,
   right: 0;
   transform: translateY(2px);
 }
+
 .gram-preview .timing-card:last-child:hover .timing-tooltip {
   transform: translateY(8px);
 }
+
 .gram-preview .timing-card:last-child .timing-tooltip::before {
   left: auto;
   right: 24px;
