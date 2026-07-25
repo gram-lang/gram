@@ -44,16 +44,6 @@ export interface CompositeItem {
 	name?: string;
 	qty: number; // calculated max parent qty
 	usage: Partial<Usage>[];
-	// Only present on the in-progress accumulator kept in `compositeMap`
-	// during generateShoppingList — deliberately absent from the finished
-	// item returned in the shopping list itself (internal build state, not
-	// part of its public shape).
-	_subUsageMap?: Map<string, number>;
-	_usageAccumulator?: Map<string, Partial<Usage>>;
-	// Internal accumulator for a direct (non-composite) usage of the parent
-	// ingredient itself (e.g. "3 eggs, 2 used as yolks") — set in step 5,
-	// consumed in step 6 below.
-	_directAddQty?: number;
 	// Never actually set on a composite — always undefined — but declared so
 	// `scale/engine.ts`'s uniform "is this shopping-list entry scalable?"
 	// checks (shared with ShoppingListItem/Usage) can read them without a cast.
@@ -98,6 +88,23 @@ function formatQuantity(q: Usage["qty"]): string | number {
 }
 
 /**
+ * Working accumulator for a composite parent while `generateShoppingList` is
+ * still folding sub-ingredient usages into it — kept separate from
+ * `CompositeItem` so that type never has to carry build-only state (it used
+ * to, as optional `_`-prefixed fields cleared before the item left this
+ * function).
+ */
+interface CompositeAccumulator {
+	id: string;
+	subUsageMap: Map<string, number>;
+	usageAccumulator: Map<string, Partial<Usage>>;
+	// Direct (non-composite) usage of the parent ingredient itself (e.g. "3
+	// eggs, 2 used as yolks") — set once the parent's own standardList entry
+	// is folded in, consumed when the accumulator is finalized.
+	directAddQty?: number;
+}
+
+/**
  * Main entry point for shopping list generation.
  * Iterates through all compiled sections and merges identical ingredients by ID,
  * aggregates compatible quantities, handles composite/parent sub-recipes, and flags circular references.
@@ -108,7 +115,7 @@ export function generateShoppingList(
 	_options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[] {
 	const listMap = new Map<string, ShoppingListItem>();
-	const compositeMap = new Map<string, CompositeItem>();
+	const compositeMap = new Map<string, CompositeAccumulator>();
 	const alternatives: Usage[] = [];
 
 	const circularIds = detectCycles(sections);
@@ -131,12 +138,9 @@ export function generateShoppingList(
 				const parentId = slugify(item.composite.parent);
 				if (!compositeMap.has(parentId)) {
 					compositeMap.set(parentId, {
-						type: "composite",
 						id: parentId,
-						qty: 0,
-						usage: [],
-						_subUsageMap: new Map(),
-						_usageAccumulator: new Map(),
+						subUsageMap: new Map(),
+						usageAccumulator: new Map(),
 					});
 				}
 				const comp = compositeMap.get(parentId)!;
@@ -148,16 +152,14 @@ export function generateShoppingList(
 				}
 
 				const subId = item.id;
-				// Always populated at construction (compositeMap.set above) —
-				// only the *finished* CompositeItem returned to callers omits them.
-				const currentParentTotal = comp._subUsageMap!.get(subId) || 0;
-				comp._subUsageMap!.set(subId, currentParentTotal + declParentQty);
+				const currentParentTotal = comp.subUsageMap.get(subId) || 0;
+				comp.subUsageMap.set(subId, currentParentTotal + declParentQty);
 
 				const uUnit = item.unit || "";
 				const uKey = `${subId}::${uUnit}`;
 
-				if (!comp._usageAccumulator!.has(uKey)) {
-					comp._usageAccumulator!.set(uKey, {
+				if (!comp.usageAccumulator.has(uKey)) {
+					comp.usageAccumulator.set(uKey, {
 						id: subId,
 						unit: item.unit,
 						// Left undefined (not 0) until a measured usage is seen, so a
@@ -168,7 +170,7 @@ export function generateShoppingList(
 						alias: item.alias,
 					});
 				}
-				const uEntry = comp._usageAccumulator!.get(uKey)!;
+				const uEntry = comp.usageAccumulator.get(uKey)!;
 
 				const numQ = getNumericQty(item.qty);
 				if (numQ !== null) {
@@ -325,14 +327,14 @@ export function generateShoppingList(
 			}
 
 			const directUsageKey = `__direct_${stdItem.id}`;
-			comp._usageAccumulator!.set(directUsageKey, {
+			comp.usageAccumulator.set(directUsageKey, {
 				id: stdItem.id,
 				alias: "Direct Use",
 				qty: stdItem.qty,
 				unit: stdItem.unit,
 			});
 
-			comp._directAddQty = addQty;
+			comp.directAddQty = addQty;
 		} else {
 			finalStandardList.push(stdItem);
 		}
@@ -340,28 +342,23 @@ export function generateShoppingList(
 
 	const compositeList: CompositeItem[] = [...compositeMap.values()].map((c) => {
 		let maxQ = 0;
-		for (const q of c._subUsageMap!.values()) {
+		for (const q of c.subUsageMap.values()) {
 			if (q > maxQ) maxQ = q;
 		}
 
-		if (c._directAddQty) {
-			maxQ += c._directAddQty;
+		if (c.directAddQty) {
+			maxQ += c.directAddQty;
 		}
 
-		c.qty = maxQ;
 		const parentName = registry.ingredients.get(c.id)?.name || c.id;
 
-		// Deliberately excludes _subUsageMap/_usageAccumulator/_directAddQty —
-		// internal accumulator state, not part of a finished shopping-list item.
-		const cRes: CompositeItem = {
+		return {
 			type: "composite",
 			id: c.id,
 			name: parentName,
-			qty: c.qty,
-			usage: [...c._usageAccumulator!.values()],
+			qty: maxQ,
+			usage: [...c.usageAccumulator.values()],
 		};
-
-		return cRes;
 	});
 
 	return [...finalStandardList, ...compositeList, ...alternatives];
