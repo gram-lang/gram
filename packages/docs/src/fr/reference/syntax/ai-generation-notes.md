@@ -125,9 +125,11 @@ Rattachez-la à l'élément que la préparation décrit réellement — « coup�
 
 ```gram
 ❌ ## Mélange d'Épices ->&assaisonnement
+
    [Mélanger] Le @paprika{2 c.à.c} et le @sel{1 c.à.c}. ->&mix1   // FAUX : la section déclare déjà la sortie
 
 ✅ ## Mélange d'Épices ->&assaisonnement
+
    [Mélanger] Le @paprika{2 c.à.c} et le @sel{1 c.à.c}.           // aucune déclaration locale nécessaire
 ```
 Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étapes qu'elle contient — voir [Variables Intermédiaires](./intermediate-variables.md#declaration-au-niveau-de-la-section).

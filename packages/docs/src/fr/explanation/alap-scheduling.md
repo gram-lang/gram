@@ -9,9 +9,11 @@ Il réalise cela en utilisant un algorithme d'ordonnancement appelé **ALAP (As 
 Imaginez une recette qui vous demande de préparer une pâte et de la laisser reposer pendant 1 heure, puis de préparer une sauce rapide en 10 minutes, avant de finalement cuire le plat.
 
 ```gram
-[Préparer la Pâte] Mélanger la pâte et la laisser reposer ~_{1h}. ->&pâte
-[Préparer la Sauce] Mélanger les ingrédients de la sauce ~{10min}.
-[Cuisson] Cuire la &pâte avec la sauce pendant ~_{30min}.
+[Pétrir] La @farine avec l'@eau et laisser reposer ~_{1h}. ->&pâte
+
+[Mélanger] Les ingrédients de la sauce ~{10min}. ->&sauce
+
+[Cuire] La &pâte avec la &sauce pendant ~_{30min}.
 ```
 
 Si nous utilisons un calendrier naïf de haut en bas (appelé *Forward Scheduling*), la ligne du temps ressemblerait à ceci :
@@ -23,15 +25,15 @@ gantt
     axisFormat %M
     
     section Pâte
-    Mélanger la Pâte (Actif)            : active, a1, 0, 2m
+    Pétrir (Actif)                      : active, a1, 0, 2m
     Repos de la Pâte (Repos Passif)     : a2, after a1, 60m
     
     section Sauce
-    Mélanger la Sauce (Actif)           : active, a3, after a1, 10m
+    Mélanger (Actif)                    : active, a3, after a1, 10m
     Sauce en attente (50m Inutiles !)   : crit, a4, after a3, 50m
     
-    section Cuisson
-    Cuisson (Cuisson Passive)           : a5, after a2, 30m
+    section Cuire
+    Cuire (Cuisson Passive)             : a5, after a2, 30m
 ```
 
 Le problème est évident : vous terminez la sauce à la minute 12, mais la pâte ne finit de reposer qu'à la minute 62. La sauce reste sur le comptoir à refroidir (ou à se détériorer) pendant 50 minutes !
@@ -40,7 +42,7 @@ Le problème est évident : vous terminez la sauce à la minute 12, mais la pât
 
 Au lieu d'ordonnancer les étapes dès que possible, le compilateur de Gram les ordonnance **le plus tard possible**.
 
-Le moteur travaille à l'envers, en partant de la fin de la recette. Lorsqu'il voit que l'étape `[Cuisson]` a besoin de la `&pâte`, il fixe une échéance stricte pour le moment où la `&pâte` doit être prête. Il repousse ensuite l'étape `[Préparer la Pâte]` le plus tard possible afin que le temps de repos de 1 heure se termine *exactement* au moment où l'étape de cuisson commence.
+Le moteur travaille à l'envers, en partant de la fin de la recette. Lorsqu'il voit que l'étape `[Cuire]` a besoin de la `&pâte`, il fixe une échéance stricte pour le moment où la `&pâte` doit être prête. Il repousse ensuite l'étape `[Mélanger]` le plus tard possible afin que le temps de repos de 1 heure se termine *exactement* au moment où l'étape de cuisson commence.
 
 Voici la chronologie réelle générée par Gram :
 
@@ -51,19 +53,19 @@ gantt
     axisFormat %M
     
     section Sauce
-    Mélanger la Sauce (Actif)           : active, b1, 0, 10m
+    Mélanger (Actif)                    : active, b1, 0, 10m
     
     section Pâte
-    Mélanger la Pâte (Actif)            : active, b2, after b1, 2m
+    Pétrir (Actif)                      : active, b2, after b1, 2m
     Repos de la Pâte (Repos Passif)     : b3, after b2, 60m
     
     section Cuisson
-    Cuisson (Cuisson Passive)           : b4, after b3, 30m
+    Cuire (Cuisson Passive)             : b4, after b3, 30m
 ```
 
 *(Note : Le temps actif pour l'étape de la pâte revient à la valeur par défaut de 2 minutes puisqu'elle ne spécifie qu'un minuteur passif).*
 
-En repoussant l'étape de création de la `&pâte` vers la fin, Gram intercale automatiquement l'étape `Mélanger la Sauce` *avant* la préparation de la pâte. Vous êtes maintenu occupé efficacement, et aucun ingrédient ne reste inactif.
+En repoussant l'étape de création de la `&pâte` vers la fin, Gram intercale automatiquement l'étape `Mélanger` *avant* la préparation de la pâte. Vous êtes maintenu occupé efficacement, et aucun ingrédient ne reste inactif.
 
 ## Les "Named Tracks" (Minuteurs séquentiels)
 

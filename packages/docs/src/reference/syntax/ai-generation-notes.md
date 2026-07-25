@@ -125,9 +125,11 @@ Attach it to whichever one it actually describes — "cut in half" happens to th
 
 ```gram
 ❌ ## Seasoning Mix ->&seasoning
+
    [Mix] @paprika{2 tsp} with @salt{1 tsp}. ->&mix1   // WRONG: the section already declares the output
 
 ✅ ## Seasoning Mix ->&seasoning
+
    [Mix] @paprika{2 tsp} with @salt{1 tsp}.            // no local declaration needed
 ```
 A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](./intermediate-variables.md#section-level-declaration).

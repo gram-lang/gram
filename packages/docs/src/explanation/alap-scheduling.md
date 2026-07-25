@@ -9,9 +9,11 @@ It does this using an algorithm called **ALAP (As Late As Possible)** scheduling
 Imagine a recipe that asks you to make a dough and let it rest for 1 hour, and then make a quick sauce that takes 10 minutes, before finally baking the dish.
 
 ```gram
-[Prepare Dough] Mix the dough and let it rest ~_{1h}. ->&dough
-[Prepare Sauce] Mix the sauce ingredients ~{10min}.
-[Bake] Bake the &dough with the sauce for ~_{30min}.
+[Knead] The @flour with the @water and let it rest ~_{1h}. ->&dough
+
+[Mix] The sauce ingredients ~{10min}. ->&sauce  
+
+[Bake] The &dough with the &sauce for ~_{30min}.
 ```
 
 If we use a naive top-to-bottom schedule (called *Forward Scheduling*), the timeline would look like this:
@@ -23,11 +25,11 @@ gantt
     axisFormat %M
     
     section Dough
-    Mix Dough (Active)             : active, a1, 0, 2m
+    Knead (Active)                 : active, a1, 0, 2m
     Rest Dough (Passive Rest)      : a2, after a1, 60m
     
     section Sauce
-    Mix Sauce (Active)             : active, a3, after a1, 10m
+    Mix (Active)                   : active, a3, after a1, 10m
     Sauce Sitting Idle (50m Wasted): crit, a4, after a3, 50m
     
     section Bake
@@ -40,7 +42,7 @@ The problem is obvious: you finish the sauce at minute 12, but the dough doesn't
 
 Instead of scheduling steps as soon as possible, Gram's compiler schedules them **As Late As Possible**. 
 
-The engine works backward from the end of the recipe. When it sees that `[Bake]` requires `&dough`, it sets a hard deadline for when the `&dough` must be ready. It then pushes the `[Prepare Dough]` step back as far as possible so that the 1 hour resting timer finishes *exactly* when the baking step begins.
+The engine works backward from the end of the recipe. When it sees that `[Bake]` requires `&dough`, it sets a hard deadline for when the `&dough` must be ready. It then pushes the `[Knead]` step back as far as possible so that the 1 hour resting timer finishes *exactly* when the baking step begins.
 
 Here is the actual timeline Gram generates:
 
@@ -51,10 +53,10 @@ gantt
     axisFormat %M
     
     section Sauce
-    Mix Sauce (Active)             : active, b1, 0, 10m
+    Mix (Active)                   : active, b1, 0, 10m
     
     section Dough
-    Mix Dough (Active)             : active, b2, after b1, 2m
+    Knead (Active)                 : active, b2, after b1, 2m
     Rest Dough (Passive Rest)      : b3, after b2, 60m
     
     section Bake
@@ -63,7 +65,7 @@ gantt
 
 *(Note: The active time for the dough step falls back to the default 2 minutes since it only specifies a passive timer).*
 
-By pushing the `&dough` generation step backward, Gram automatically interleaves the `Mix Sauce` step *before* the dough preparation. You are kept efficiently busy, and no ingredient sits idle.
+By pushing the `&dough` generation step backward, Gram automatically interleaves the `Mix` step *before* the dough preparation. You are kept efficiently busy, and no ingredient sits idle.
 
 ## Named Tracks
 
