@@ -27,7 +27,7 @@ Attach the preparation to whichever part it actually describes — something don
 Here is how you would declare that 100ml of juice requires 2 lemons, but the zest only requires 1 lemon:
 
 ```gram
-Add the @lemon juice{100ml}<@lemon{2}. 
+Add the @lemon juice{100ml}<@lemon{2}.
 
 Then add the @lemon zest{1}<@lemon. // Implicitly costs 1 lemon
 ```

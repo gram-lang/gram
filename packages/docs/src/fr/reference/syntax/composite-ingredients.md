@@ -27,7 +27,7 @@ Rattachez la préparation à l'élément qu'elle décrit réellement (ce qui est
 Voici comment déclarer que 100 ml de jus nécessitent 2 citrons, mais que le zeste ne nécessite qu'un seul citron :
 
 ```gram
-Ajouter le @jus de citron{100 ml}<@citron{2}. 
+Ajouter le @jus de citron{100 ml}<@citron{2}.
 
 Puis ajouter le @zeste de citron{1}<@citron. // Coûte implicitement 1 citron
 ```
