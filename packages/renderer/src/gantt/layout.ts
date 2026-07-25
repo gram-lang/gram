@@ -264,7 +264,10 @@ export function buildTracks(
 				// member out just to read `.text`/`.quantity`/`.unit` here would
 				// bury the actual logic, same tradeoff html.ts already makes for
 				// step content (see its `(c: any) => ...` filters).
-				for (const c of (step.content ?? []) as unknown as Record<string, unknown>[]) {
+				for (const c of (step.content ?? []) as unknown as Record<
+					string,
+					unknown
+				>[]) {
 					if (c && typeof c === "object") {
 						if (c.type === "temperature") {
 							temperature =
