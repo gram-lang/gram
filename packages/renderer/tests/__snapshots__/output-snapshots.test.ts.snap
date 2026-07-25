@@ -6,7 +6,7 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
 <div class="recipe-timings-grid">
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-clock"></i> Total Time</div>
-   <div class="meta-value">41m</div>
+   <div class="meta-value">45m</div>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Total Time = Prep + Active + Idle</div>
       <div class="timing-row">
@@ -20,26 +20,26 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
       <div class="timing-divider"></div>
       <div class="timing-row">
         <span class="timing-label">Batter <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 32m</span>
+        <span class="timing-val">+ 34m</span>
       </div>
       <div class="timing-row">
         <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 1m</span>
+        <span class="timing-val">+ 3m</span>
       </div>
     </div>
  </div>
  <div class="timing-card">
    <div class="meta-label"><i class="ph ph-fire"></i> Active Time</div>
-   <div class="meta-value">33m</div>
+   <div class="meta-value">37m</div>
     <div class="timing-tooltip">
       <div class="timing-tooltip-title">Active Time = Sum of manual work time</div>
       <div class="timing-row">
         <span class="timing-label">Batter <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 32m</span>
+        <span class="timing-val">+ 34m</span>
       </div>
       <div class="timing-row">
         <span class="timing-label">Cooking <span class="timing-detail-type">(Active)</span></span>
-        <span class="timing-val">+ 1m</span>
+        <span class="timing-val">+ 3m</span>
       </div>
     </div>
  </div>
@@ -99,8 +99,18 @@ exports[`renderer output snapshots toHTML output is stable 1`] = `
     </div>
     <ol class="steps">
       <li value="1">
-        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>. Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">2 min</span></span>. <sup class="footnote-ref"><a href="#note-1" id="ref-note-1">[1]</a></sup> Let rest at <span class="temp" data-semantic="fridge"><i class="ph ph-thermometer"></i> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">30 min</span></span>.
+        In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
+      </li>
+      <li value="2">
+        Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">2 min</span></span>.
+      </li>
+      <li class="step-comment">
+        <span class="comment-icon"><i class="ph ph-info"></i></span>
+        <span class="comment-text">Rest the batter before cooking</span>
+      </li>
+      <li value="3">
+        Let rest at <span class="temp" data-semantic="fridge"><i class="ph ph-thermometer"></i> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">30 min</span></span>.
       </li>
     </ol>
   </section>
@@ -113,19 +123,13 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
     </div>
     <ol class="steps">
       <li value="1">
-        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><i class="ph ph-thermometer"></i> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient"><i class="ph ph-caret-circle-right"></i> batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">1 min</span></span>.
+        Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><i class="ph ph-thermometer"></i> medium heat</span>.
+      </li>
+      <li value="2">
+        Pour <span class="reference" data-tooltip="Intermediate Ingredient"><i class="ph ph-caret-circle-right"></i> batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><i class="ph ph-timer"></i> <span class="timer-text">1 min</span></span>.
       </li>
     </ol>
   </section>
-</div>
-<div class="recipe-notes">
-  <h3>Notes</h3>
-  <ol>
-    <li id="note-1">
-      Rest the batter before cooking
-      <a href="#ref-note-1" class="note-return" title="Return to step">↩</a>
-    </li>
-  </ol>
 </div>
 "
 `;
@@ -134,8 +138,8 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 "# Crêpes
 
 > **Metadata**
-> - **Total Time**: 41m
-> - **Active Time**: 33m
+> - **Total Time**: 45m
+> - **Active Time**: 37m
 > - **Prep Time**: 8m (est.)
 > - portions: 4
 
@@ -161,19 +165,20 @@ exports[`renderer output snapshots toMarkdown output is stable 1`] = `
 - **salt**
 - **egg** (2) or **egg substitute** (2)
 
-1. In a *large bowl*, mix **flour** (200 g), **sugar** (1 tbsp) and a pinch of **salt**. Add **egg** (2) or **egg substitute** (2) and whisk for ⏲️ 2 min. [^note-1] Let rest at 🔥fridge for ⏲️ 30 min.
+1. In a *large bowl*, mix **flour** (200 g), **sugar** (1 tbsp) and a pinch of **salt**.
+2. Add **egg** (2) or **egg substitute** (2) and whisk for ⏲️ 2 min.
+> *Rest the batter before cooking*
+
+3. Let rest at 🔥fridge for ⏲️ 30 min.
 
 ### Cooking
 
 **Ingredients**:
 - 👉*batter*
 
-1. Heat a *pan* on 🔥medium heat. Pour 👉*batter* and cook for active ⏲️ 1 min.
+1. Heat a *pan* on 🔥medium heat.
+2. Pour 👉*batter* and cook for active ⏲️ 1 min.
 
-
----
-
-[^note-1]: Rest the batter before cooking
 "
 `;
 
@@ -543,8 +548,8 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 <body>
 <h1>Crêpes</h1>
 <div class="meta">
-  <span class="meta-item"><span class="meta-label">Total Time</span>41m</span>
-  <span class="meta-item"><span class="meta-label">Active Time</span>33m</span>
+  <span class="meta-item"><span class="meta-label">Total Time</span>45m</span>
+  <span class="meta-item"><span class="meta-label">Active Time</span>37m</span>
   <span class="meta-item"><span class="meta-label">Prep Time</span>8m <em style="opacity:0.55;font-size:0.85em">(est.)</em></span>
   <span class="meta-item"><span class="meta-label">Portions</span>4</span>
 </div>
@@ -580,8 +585,15 @@ egg-substitute">(alt)</span></li>
   </ul></div>
   <ol class="steps">
     <li value="1">
-      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>. Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">2 min</span></span>. <sup class="footnote-ref"><a href="#note-1" id="ref-note-1">[1]</a></sup> Let rest at <span class="temp" data-semantic="fridge"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">30 min</span></span>.
+      In a <span class="cookware" data-name="large bowl">large bowl</span>, mix <span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span>, <span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span> and a pinch of <span class="ingredient" data-name="salt">salt</span>.
+    </li>
+    <li value="2">
+      Add <span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
+egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Active Time" data-value="2" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">2 min</span></span>.
+    </li>
+    <li class="comment-step"><em>Rest the batter before cooking</em></li>
+    <li value="3">
+      Let rest at <span class="temp" data-semantic="fridge"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> fridge</span> for <span class="timer" data-tooltip="Active Time" data-value="30" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">30 min</span></span>.
     </li>
   </ol>
 </section>
@@ -592,17 +604,13 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
   </ul></div>
   <ol class="steps">
     <li value="1">
-      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> medium heat</span>. Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">1 min</span></span>.
+      Heat a <span class="cookware" data-name="pan">pan</span> on <span class="temp" data-semantic="medium heat"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg> medium heat</span>.
+    </li>
+    <li value="2">
+      Pour <span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span> and cook for active <span class="timer" data-tooltip="Active Time" data-value="1" data-unit="min"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span class="timer-text">1 min</span></span>.
     </li>
   </ol>
 </section>
-</div>
-
-<div class="notes">
-<h2>Notes</h2>
-<ol>
-  <li id="note-1">Rest the batter before cooking <a href="#ref-note-1" class="note-return" title="Return to step">↩</a></li>
-</ol>
 </div>
 
 </body>

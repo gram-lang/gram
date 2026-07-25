@@ -5,12 +5,16 @@ portions: 4
 
 ## Batter ->&batter
 
-In a #large bowl{}, mix @flour{200g}, @sugar{1 tbsp} and a pinch of @salt{}.
+In a #large bowl{}, mix @flour{200g}, @sugar{1 tbsp} and a pinch of @salt.
+
 Add @egg{2}|@egg substitute{2} and whisk for ~{2min}.
+
 // Rest the batter before cooking
+
 Let rest at ^{fridge} for ~{30min}.
 
 ## Cooking
 
-Heat a #pan{} on ^{medium heat}.
+Heat a #pan on ^{medium heat}.
+
 Pour &batter{} and cook for active ~{1min}.
