@@ -1,5 +1,5 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type { RenderableCompilationResult } from "../types";
+import type { RenderContext, RenderableCompilationResult } from "../types";
 import { formatElement } from "../formatters/element";
 import { joinStepTokens } from "../utils";
 import type {
@@ -176,17 +176,17 @@ export function getVirtualTime(
 }
 
 function serializeStepContent(
-	content: any[],
-	registry: any,
+	content: unknown[],
+	registry: RenderContext["registry"],
 	lang: string | undefined,
 ): string {
 	if (!content || !Array.isArray(content)) return "";
 
-	const renderContext = { registry, lang };
+	const renderContext: RenderContext = { registry, lang };
 
 	const joined = joinStepTokens(
-		content,
-		(c: any) => {
+		content as Parameters<typeof joinStepTokens>[0],
+		(c) => {
 			if (typeof c === "string") return c;
 			if (c && typeof c === "object") {
 				const md = formatElement(c, "md", renderContext);
@@ -195,7 +195,9 @@ function serializeStepContent(
 			}
 			return "";
 		},
-		(c: any) => typeof c !== "string" && c.type !== "comment",
+		(c) =>
+			typeof c !== "string" &&
+			(c as unknown as Record<string, unknown>).type !== "comment",
 	);
 
 	return joined.replace(/\s+/g, " ").trim();
@@ -262,13 +264,13 @@ export function buildTracks(
 				// member out just to read `.text`/`.quantity`/`.unit` here would
 				// bury the actual logic, same tradeoff html.ts already makes for
 				// step content (see its `(c: any) => ...` filters).
-				for (const c of step.content as any[]) {
+				for (const c of (step.content ?? []) as unknown as Record<string, unknown>[]) {
 					if (c && typeof c === "object") {
 						if (c.type === "temperature") {
 							temperature =
-								c.text ||
+								(c.text as string | undefined) ||
 								(c.quantity
-									? `${typeof c.quantity === "object" ? c.quantity.value : c.quantity}${c.unit || "C"}`
+									? `${typeof c.quantity === "object" ? (c.quantity as Record<string, unknown>).value : c.quantity}${c.unit || "C"}`
 									: undefined);
 						}
 						if (c.type === "reference") {
@@ -457,11 +459,14 @@ export function computeSectionLegendItems(
 		];
 	}
 
-	return sections.map((sec: any, idx: number) => ({
-		id: sec.id || `section_${idx}`,
-		title:
-			sec.title ||
-			`${t.playground?.views?.gantt_section || "Section"} ${idx + 1}`,
-		colorClass: `section-color-${idx % 9}`,
-	}));
+	return sections.map((sec, idx: number) => {
+		const s = sec as unknown as Record<string, unknown>;
+		return {
+			id: (s.id as string | undefined) || `section_${idx}`,
+			title:
+				(s.title as string | undefined) ||
+				`${t.playground?.views?.gantt_section || "Section"} ${idx + 1}`,
+			colorClass: `section-color-${idx % 9}`,
+		};
+	});
 }
