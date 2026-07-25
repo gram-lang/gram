@@ -16,7 +16,7 @@ steps:
     image: oven/bun:1.3.14
     commands:
       - apt-get update && apt-get install -y git
-      - bun run build
+      - bun run build --filter='!@gram-lang/docs'
       # `prebuild` just regenerated grammar-content.ts from grammar.ohm — fail
       # here if a PR edited the grammar without committing the regenerated
       # file, instead of letting src/ and the committed artifact silently
