@@ -66,12 +66,17 @@ GRAM {
   Alternative = simpleIngredient ("|" simpleIngredient)+
   
   // Rule: Quantity is mandatory unless it's a single word name
+  // Uses refName (not name) so a bare @&chicken mention can't have its name
+  // greedily swallow everything up to an unrelated later {...} that happens
+  // to close a valid ingredientQuantity -- e.g. "@&chicken for ~{3min}" must
+  // stop at "~" and fall back to the bare alternative, not consume "chicken
+  // for ~" as a bogus multi-word name with the timer's quantity attached.
   simpleIngredient =
-    | "@" modifier* name alias? ingredientQuantity preparation? composite? -- full
+    | "@" modifier* refName alias? ingredientQuantity preparation? composite? -- full
     | "@" modifier* singleWordName alias? preparation? composite? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
-  alias = ":" name
+  alias = ":" refName
   ingredientQuantity = "{" space* (relativeQuantity | absoluteQuantity) space* "}"
   relativeQuantity = number space* "%" space* ("@&" | "&") space* name
   absoluteQuantity = (range | number)? space* (unit space*)?
@@ -90,8 +95,11 @@ GRAM {
     | simpleCookware
 
   CookwareAlternative = simpleCookware ("|" simpleCookware)+
-  simpleCookware = 
-    | "#" modifier* name alias? cookwareQuantity preparation? -- full
+  // Same refName fix as simpleIngredient above -- a bare #pan mention must not
+  // swallow an unrelated later {...} (e.g. another ingredient's integer-only
+  // quantity) into its own name.
+  simpleCookware =
+    | "#" modifier* refName alias? cookwareQuantity preparation? -- full
     | "#" modifier* singleWordName alias? preparation? -- bare
 
   // Cookware quantity is numbers only, no units (e.g. {}, {2}) -- unlike ingredientQuantity.

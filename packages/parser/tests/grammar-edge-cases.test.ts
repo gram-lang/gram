@@ -199,6 +199,59 @@ describe("trailing sentence punctuation on bare names", () => {
 	});
 });
 
+describe("bare @ingredient/#cookware names stop at a later element's sigil", () => {
+	// `name` (used by simpleIngredient/simpleCookware's "full" alternative)
+	// only excludes syntaxChar ({}()<|:) and newlines, not @ # ~ ^ -- so a bare
+	// mention followed later on the same line by an unrelated {...} that
+	// happens to close a valid quantity used to have its "full" alternative
+	// win, swallowing everything in between (including the other element's
+	// own sigil) into a single bogus name and losing that element entirely.
+	// Fixed by switching to refName, the same fix already used for bare `&`
+	// references (see refSigil).
+
+	it("does not swallow a later timer into a bare ingredient reference", () => {
+		const ast = getAST(
+			"## Section\n\nAdd @chicken{4}.\n\nBrown the @&chicken for ~{3min}.\n",
+		);
+		const step = (ast as any).children[0].children[1];
+		const ing = step.children.find((c: any) => c.type === "Ingredient");
+		const timer = step.children.find((c: any) => c.type === "Timer");
+		expect(ing.name).toBe("chicken");
+		expect(timer).toBeDefined();
+	});
+
+	it("does not swallow a later temperature into a bare ingredient reference", () => {
+		const ast = getAST(
+			"## Section\n\nAdd @chicken{4}.\n\nBrown the @&chicken and rest ^{180C}.\n",
+		);
+		const step = (ast as any).children[0].children[1];
+		const ing = step.children.find((c: any) => c.type === "Ingredient");
+		const temp = step.children.find((c: any) => c.type === "Temperature");
+		expect(ing.name).toBe("chicken");
+		expect(temp).toBeDefined();
+	});
+
+	it("does not swallow a later cookware mention into a bare ingredient reference", () => {
+		const ast = getAST(
+			"## Section\n\nAdd @chicken{4}.\n\nBrown the @&chicken then add #pan{1}.\n",
+		);
+		const step = (ast as any).children[0].children[1];
+		const ing = step.children.find((c: any) => c.type === "Ingredient");
+		const cw = step.children.find((c: any) => c.type === "Cookware");
+		expect(ing.name).toBe("chicken");
+		expect(cw?.name).toBe("pan");
+	});
+
+	it("does not swallow a later ingredient into a bare cookware mention", () => {
+		const ast = getAST("## Section\n\nHeat the #pan then add @flour{2}.\n");
+		const step = (ast as any).children[0].children[0];
+		const cw = step.children.find((c: any) => c.type === "Cookware");
+		const ing = step.children.find((c: any) => c.type === "Ingredient");
+		expect(cw.name).toBe("pan");
+		expect(ing?.name).toBe("flour");
+	});
+});
+
 describe("section retro-planning", () => {
 	// The grammar rule itself stays a permissive "any text until }" capture —
 	// tightening it was tried and rejected (see plan notes): Ohm's absoluteQuantity
