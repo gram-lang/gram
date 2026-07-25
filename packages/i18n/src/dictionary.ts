@@ -1,10 +1,7 @@
 export type LanguageDict = Record<string, string[]>;
 export type CompiledDict = Record<string, string>;
 
-/**
- * Compiles human-readable language dictionaries into optimized O(1) lookup tables.
- * Generates both language-specific lookups and a unified global fallback lookup.
- */
+/** Compiles alias lists into O(1) lookup tables, per language plus a unified global fallback. */
 export function compileDictionary(dictionaries: Record<string, LanguageDict>): {
 	byLang: Record<string, CompiledDict>;
 	global: CompiledDict;

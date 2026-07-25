@@ -30,9 +30,6 @@ export const TIME_TO_MINUTES: Record<string, number> = {
 	s: 1 / 60,
 };
 
-/**
- * Helper to normalize a time unit string into its canonical alias ('h', 'm', 's').
- */
 export const resolveTimeUnit = (
 	unit?: string | null,
 	lang?: string,

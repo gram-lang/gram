@@ -7,7 +7,6 @@ const dictionaries: Record<string, GramLocale> = {
 };
 
 export function getDictionary(lang?: string): GramLocale {
-	// Extract language code (e.g. 'fr-FR' -> 'fr')
 	const parts = (lang || "en").split("-");
 	const code = (parts[0] || "en").toLowerCase();
 	return dictionaries[code] || en;
