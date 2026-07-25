@@ -36,6 +36,9 @@ gram init
 # Validate a recipe file
 gram check my-recipe.gram
 
+# Format a recipe file to canonical style
+gram format my-recipe.gram
+
 # Compile a recipe to JSON
 gram build my-recipe.gram --output dist/
 
@@ -53,7 +56,7 @@ Run `gram --help` for the full list of commands.
 ## 🏗️ Structure
 
 *   `src/index.ts`: CLI entry point, registers all subcommands.
-*   `src/commands/`: One file per subcommand (`init`, `check`, `build`, `scale`, `diff`, `import`, `db`, ...).
+*   `src/commands/`: One file per subcommand (`init`, `check`, `format`, `build`, `scale`, `diff`, `import`, `db`, ...).
 *   `src/core/`: Shared building blocks (config loading, ingredient database, pipeline orchestration).
 *   `src/services/`: Business logic backing the commands (formatting, scaling, importing, syncing).
 *   `src/ui/`: Terminal rendering (tables, diffs, interactive views).

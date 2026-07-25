@@ -17,13 +17,14 @@ Gram is a **monorepo** organized in a `packages/` directory:
 
 1.  **`parser/`**: The core parser. Contains the OhmJS grammar definition and converts strings to an AST.
 2.  **`kitchen/`**: The compiler. Processes the AST to generate structured results and warnings.
-3.  **`analyzer/`**: The physical layer. Connects to ingredient databases to normalize units and calculate nutrition.
-4.  **`renderer/`**: The display layer. Converts the compiled JSON into Markdown or HTML.
-5.  **`i18n/`**: The translation and localization layer.
-6.  **`cli/`**: The official command-line interface (`gram`).
-7.  **`language-server/`**: The LSP implementation providing editor intelligence.
-8.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting, built on `language-server/`.
-9.  **`docs/`**: The documentation website, including the web-based playground.
+3.  **`format/`**: The canonical source code formatter for `.gram` files.
+4.  **`analyzer/`**: The physical layer. Connects to ingredient databases to normalize units and calculate nutrition.
+5.  **`renderer/`**: The display layer. Converts the compiled JSON into Markdown or HTML.
+6.  **`i18n/`**: The translation and localization layer.
+7.  **`cli/`**: The official command-line interface (`gram`).
+8.  **`language-server/`**: The LSP implementation providing editor intelligence.
+9.  **`vscode-extension/`**: The Visual Studio Code extension for syntax highlighting, built on `language-server/`.
+10. **`docs/`**: The documentation website, including the web-based playground.
 
 ## 🤝 How to Contribute
 

@@ -45,7 +45,7 @@ Search for **"Gram - Recipe Language"** in the Extensions view (`Ctrl+Shift+X` /
 *   **Live Preview**: Real-time side-by-side rendering of the recipe with a built-in, togglable nutrition/macros panel.
 *   **Smart Autocomplete**: Contextual suggestions for ingredients (from your local YAML database), units, and intermediate references.
 *   **Advanced Navigation**: Jump to definition, find all references, outline view, and AST-driven semantic highlighting.
-*   **Code Actions**: Quick fixes for common errors and automatic volume-to-mass conversions.
+*   **Code Actions & Formatting**: Automatic document formatting (`Format Document` / `Format on Save` via `@gram-lang/format`), quick fixes for common errors, and volume-to-mass conversions.
 *   **Inlay Hints & CodeLens**: Displays cumulative time and quick action buttons directly in the editor.
 
 ---

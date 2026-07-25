@@ -60,7 +60,7 @@ The Gram Language Server currently supports:
 *   **Semantic Tokens:** Rich semantic highlighting for ingredients, quantities, cookware, and timers.
 *   **Hover:** Nutritional information and scaled quantities on hover.
 *   **Completion:** Suggestions for units, ingredients (based on the user's local ingredient DB), and cookware.
-*   **Document Formatting:** Automatic formatting of `.gram` files to the standard style.
+*   **Document Formatting:** Automatic formatting of `.gram` files to the standard canonical style (powered by [`@gram-lang/format`](../format/README.md)).
 
 ---
 
