@@ -23,7 +23,7 @@ export function extractPhysicalFixtures(): Snippet[] {
 			// "Recipe with ALL warnings" and deliberately triggers every
 			// WarningCode on purpose (already snapshot-tested by
 			// snapshots.test.ts) — flagging each one here would be pure noise.
-			warningsExpected: /warning/i.test(relPath),
+			skipWarningsCheck: /warning/i.test(relPath),
 		});
 	}
 	return snippets;
@@ -63,10 +63,11 @@ export function extractConformanceCases(): Snippet[] {
 			}
 		}
 
-		let expectedWarningCodes: string[] | undefined;
-		if (name.startsWith("warn-")) {
-			expectedWarningCodes = readExpectedWarningCodes(caseDir);
-		}
+		// Every conformance case's golden already records whatever warnings are
+		// correct for it — not just warn-* cases (e.g. 021/022 are ordinary
+		// numbered cases whose golden legitimately includes a MISSING_UNIT
+		// warning for invalid retro-planning input). Read it for all of them.
+		const expectedWarningCodes = readExpectedWarningCodes(caseDir);
 
 		snippets.push({
 			id: `${relPath}:1`,

@@ -123,6 +123,10 @@ export function extractInlineTestLiterals(): {
 				content,
 				label: calleeName,
 				expectation: classifyCallExpectation(call),
+				// The surrounding bun test already asserts whatever warnings it
+				// cares about (or deliberately doesn't) — that's a strictly more
+				// reliable ground truth than re-deriving "expected" warnings here.
+				skipWarningsCheck: true,
 			});
 		}
 	}

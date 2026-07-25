@@ -19,7 +19,14 @@ export interface Snippet {
 	label?: string; // conformance case name, or self-test mistake label
 	expectation: Expectation;
 	expectedWarningCodes?: string[]; // populated for conformance cases from their golden warnings
-	warningsExpected?: boolean; // true: this snippet intentionally triggers warnings by design (e.g. a "with_warnings" fixture), don't flag any of them
+	// true: don't run the warnings check on this snippet at all, because a more
+	// reliable ground truth already exists elsewhere for it — either its own
+	// bun test assertions (inline-test-literal/-tmpfile), or it's a narrative
+	// doc excerpt not meant to be a complete, standalone, warning-free example
+	// (tutorials/how-to fences that build on an earlier fence on the same
+	// page), or it's a fixture that intentionally triggers warnings by design
+	// (e.g. a "with_warnings" fixture).
+	skipWarningsCheck?: boolean;
 }
 
 export type CheckName =

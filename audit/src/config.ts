@@ -33,6 +33,21 @@ export const AI_GENERATION_NOTES_FILES: string[] = [
 	join(SYNTAX_DIR_FR, "ai-generation-notes.md"),
 ];
 
+// Narrative/tutorial doc directories (EN+FR) build up one continuous recipe
+// across several sequential ```gram fences on the same page (e.g.
+// first-recipe.md declares `->&pastry dough{}` in one fence, then reuses
+// `&pastry dough{}` in a later one) — each fence is an intentionally
+// incomplete excerpt, not a standalone example, unlike reference/syntax/*.md.
+// Evaluating one in isolation for semantic warnings produces structural false
+// positives (e.g. UNDEFINED_REFERENCE for something declared in an earlier
+// fence), so the warnings check is skipped for fences under these roots.
+export const NARRATIVE_DOC_DIRS: string[] = [
+	"packages/docs/src/tutorials",
+	"packages/docs/src/fr/tutorials",
+	"packages/docs/src/how-to",
+	"packages/docs/src/fr/how-to",
+];
+
 // Everything under here is scanned for ```gram fences; anything already in
 // TRUSTED_SYNTAX_FILES / AI_GENERATION_NOTES_FILES is skipped by the scanner
 // (see extract/markdown-fences.ts) so it isn't double-counted.

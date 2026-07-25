@@ -4,6 +4,7 @@ import {
 	AI_GENERATION_NOTES_FILES,
 	DOCS_EXCLUDE_DIRS,
 	DOCS_ROOTS,
+	NARRATIVE_DOC_DIRS,
 	REPO_ROOT,
 	TRUSTED_SYNTAX_FILES,
 } from "../config";
@@ -110,6 +111,7 @@ export function extractNonTrustedDocsFences(): Snippet[] {
 					line: fence.line,
 					content: fence.content,
 					expectation: "must-parse",
+					skipWarningsCheck: NARRATIVE_DOC_DIRS.some((dir) => relPath.startsWith(`${dir}/`)),
 				});
 			}
 		}

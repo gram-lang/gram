@@ -84,6 +84,10 @@ export function extractTmpfileWrites(): Snippet[] {
 						line,
 						content,
 						expectation: isInsideErrorPathBlock(node) ? "unclear" : "must-parse",
+						// Same reasoning as inline-test-literal: the surrounding
+						// bun test already asserts whatever this content is meant
+						// to produce.
+						skipWarningsCheck: true,
 					});
 				}
 			}
