@@ -84,9 +84,9 @@ const { factor } = resolveScaleFactor(compiled, { type: 'target', id: 'farine', 
 const scaled = applyScale(compiled, factor);
 ```
 
-`resolveScaleFactor` lève une sous-classe typée de `ScaleError` (chacune avec un `.code`) quand la requête ne peut pas être satisfaite : `InvalidFactorError`, `IngredientNotFoundError`, `NestedOnlyTargetError` (la cible n'existe qu'à l'intérieur d'une sous-recette composite), `AlternativeTargetError` (la cible est une option d'un groupe `@a|@b`), `FixedIngredientError` (marqué `@=` ou non numérique), `RelativeTargetError` (une quantité dérivée d'un `%`), `AmbiguousMultiUnitError` (utilisé avec des unités incompatibles dans la recette), `NonNumericTargetError`, `UnitMismatchError`.
+`resolveScaleFactor` lève une sous-classe typée de `ScaleError` (chacune avec un `.code`) lorsque la demande ne peut être satisfaite : `InvalidFactorError` (levée si le facteur n'est pas strictement positif fini ou si une quantité dépasse `Infinity`), `IngredientNotFoundError`, `NestedOnlyTargetError` (la cible n'existe que dans une sous-recette composite), `AlternativeTargetError` (la cible est une option d'un groupe `@a|@b`), `FixedIngredientError` (marqué `@=` ou non numérique), `RelativeTargetError` (quantité dérivée d'un `%`), `AmbiguousMultiUnitError` (utilisé avec des unités incompatibles dans la recette), `NonNumericTargetError`, `UnitMismatchError`.
 
-`applyScale` est pure — elle ne mute jamais son entrée, si bien que le même `CompilationResult` peut être remis à l'échelle plusieurs fois de suite (ex : à chaque mouvement d'un curseur) sans effet cumulatif.
+`applyScale` est pure — elle ne mute jamais son entrée, de sorte que le même `CompilationResult` peut être remis à l'échelle à plusieurs reprises (ex : à chaque déplacement d'un curseur) sans effet cumulatif. Elle satisfait l'invariant de parité : `applyScale(compile(ast), factor) ≡ compile(ast, { scaleFactor: factor })`.
 
 ## Liste de courses & minutage (bas niveau)
 

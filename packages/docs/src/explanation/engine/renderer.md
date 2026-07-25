@@ -9,13 +9,17 @@ The `@gram-lang/renderer` package takes this final enriched JSON object and tran
 The renderer supports three output formats:
 
 ### 1. Markdown (`toMarkdown`)
-Generates standard Markdown that includes a formatted shopping list, an equipment section, and clearly numbered steps. This is perfect for publishing recipes to static site generators (like VitePress or Hugo) or saving them to a notes app like Obsidian.
+Generates standard Markdown that includes a formatted shopping list, equipment section, numbered steps, GFM footnotes (`[^1]`), gross mass badges, and an optional nutrition section (`## 🥗 Nutrition`). This is perfect for publishing recipes to static site generators (like VitePress or Hugo) or saving them to a notes app like Obsidian.
 
 ### 2. Semantic HTML (`toHTML`)
 Generates a standalone, semantic HTML document. The HTML renderer is designed with an **Inversion of Control** architecture, allowing you to inject custom CSS classes and SVG icons to match your application's design system.
 
 ### 3. Print HTML (`toPrintHTML`)
 Generates a complete, self-contained `<!DOCTYPE html>` document with its own inlined print stylesheet (A4 page size, page-break-aware sections) and a fixed icon set — designed to be opened directly in a browser and printed, with no external stylesheet or asset dependency. Unlike `toHTML`, it does not accept custom `icons`/`classes` overrides, but it does honor `formatDuration`, `formatFraction`, and `hideStepQty`.
+
+## Unified Traversal (`RenderBackend`)
+
+Under the hood, all three output formatters delegate to a single orchestrator function (`renderRecipe` in `traversal.ts`) which invokes a `RenderBackend` implementation for each format. This guarantees structural parity across output formats — a title, metadata block, shopping list, cookware section, instructions, footnotes, and nutrition panel are traversed in the exact same sequence regardless of whether you're targeting HTML, Markdown, or Print HTML.
 
 ## Usage Example
 
@@ -55,7 +59,7 @@ const html = toHTML(recipe, {
 });
 ```
 
-`RendererOptions` also exposes `bakersReference`/`bakersMathOnly` (to display baker's-percentage math), `hideStepQty` (to omit ingredient quantities from step text specifically — note this currently only has an effect on `toPrintHTML`, not on `toMarkdown`/`toHTML`), and `renderId` (a prefix for footnote anchor ids, e.g. `"note-1"`; defaults to a fixed value, so override it with something unique — a recipe slug, for instance — when rendering multiple recipes on the same page, to avoid id collisions).
+`RendererOptions` also exposes `bakersReference`/`bakersMathOnly` (to display baker's-percentage math), `hideStepQty` (to omit ingredient quantities from inline step text across all formatters), and `renderId` (a prefix for footnote anchor ids, e.g. `"note-1"`; defaults to a fixed value, so override it with something unique — a recipe slug, for instance — when rendering multiple recipes on the same page, to avoid id collisions).
 
 ## Features
 

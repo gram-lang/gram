@@ -26,7 +26,7 @@ The Gram Language Server implements the following standard capabilities:
 | **Find References** | Locate all usages of a specific intermediate variable. |
 | **Rename** | Safely and atomically rename intermediate variables. |
 | **Code Actions** | Quick fixes (declaring missing variables, converting volume to mass). |
-| **Document Formatting**| Cleans up spacing, composite syntax, and aligns headers. |
+| **Document Formatting**| Cleans up spacing, composite syntax, and aligns headers via `@gram-lang/format` (13 canonical rules). |
 | **Inlay Hints** | Displays cumulative preparation times inline within the editor. |
 | **Code Lens** | Injects interactive action buttons (like Macros calculation). |
 | **Document Symbol** | Populates the editor's Outline view for structural navigation. |

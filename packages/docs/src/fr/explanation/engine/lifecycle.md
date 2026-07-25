@@ -33,9 +33,13 @@ Chacun de ces ensembles de fonctionnalités peut être activé ou désactivé in
 ### 4. Présentation (`@gram-lang/renderer` ou personnalisé)
 Enfin, la recette entièrement enrichie est prête à être affichée. Vous pouvez utiliser le rendu officiel `@gram-lang/renderer` pour générer du Markdown, une vue web standard, ou un document HTML autonome prêt à imprimer — ou vous pouvez consommer le JSON directement dans votre propre front-end React, Vue ou Mobile.
 
+### Infrastructure de support (`@gram-lang/i18n` & `@gram-lang/format`)
+- **`@gram-lang/i18n`** : Sert de source de vérité unique pour les dictionnaires de normalisation d'unités et de temps, les tables de conversion d'unités (`UNIT_CONVERSIONS`), les multiplicateurs de durées (`TIME_TO_MINUTES`) et les clés de catégories stables (`CATEGORY_KEYS`).
+- **`@gram-lang/format`** : Fournit le moteur de formatage de code canonique (13 règles déterministes) partagé entre la CLI et le Language Server.
+
 ## Architecture des Paquets
 
-Cette séparation des préoccupations (separation of concerns) garantit que chaque paquet est très ciblé et réutilisable. Par exemple, si vous créez une extension d'éditeur qui n'a besoin que de colorer la syntaxe, vous n'avez besoin d'importer que `@gram-lang/parser`. Vous n'avez pas besoin de charger la lourde logique de normalisation des masses de l'Analyzer.
+Cette séparation des préoccupations (separation of concerns) garantit que chaque paquet est très ciblé et réutilisable. Par exemple, si vous créez une extension d'éditeur qui n'a besoin que de colorer la syntaxe, vous n'avez besoin d'importer que `@gram-lang/parser`.
 
 ```mermaid
 graph LR
@@ -43,4 +47,7 @@ graph LR
   Parser --> Kitchen["@gram-lang/kitchen<br/>(Logique)"]
   Kitchen --> Analyzer["@gram-lang/analyzer<br/>(Physique & BDD)"]
   Analyzer --> Renderer["@gram-lang/renderer<br/>(HTML/UI)"]
+  Format["@gram-lang/format<br/>(Formatage)"] -. Formatage .-> Raw
+  I18n["@gram-lang/i18n<br/>(Unités & Dictionnaires)"] -. Partagé .-> Kitchen
+  I18n -. Partagé .-> Analyzer
 ```

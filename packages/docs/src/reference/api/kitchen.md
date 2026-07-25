@@ -84,9 +84,9 @@ const { factor } = resolveScaleFactor(compiled, { type: 'target', id: 'flour', q
 const scaled = applyScale(compiled, factor);
 ```
 
-`resolveScaleFactor` throws a typed `ScaleError` subclass (each with a `.code`) when the request can't be satisfied: `InvalidFactorError`, `IngredientNotFoundError`, `NestedOnlyTargetError` (target only exists inside a composite sub-recipe), `AlternativeTargetError` (target is one option of an `@a|@b` group), `FixedIngredientError` (marked `@=` or non-numeric), `RelativeTargetError` (a `%`-derived quantity), `AmbiguousMultiUnitError` (used with incompatible units across the recipe), `NonNumericTargetError`, `UnitMismatchError`.
+`resolveScaleFactor` throws a typed `ScaleError` subclass (each with a `.code`) when the request can't be satisfied: `InvalidFactorError` (thrown if scale factor is not positive finite, or if a scaled quantity overflows `Infinity`), `IngredientNotFoundError`, `NestedOnlyTargetError` (target only exists inside a composite sub-recipe), `AlternativeTargetError` (target is one option of an `@a|@b` group), `FixedIngredientError` (marked `@=` or non-numeric), `RelativeTargetError` (a `%`-derived quantity), `AmbiguousMultiUnitError` (used with incompatible units across the recipe), `NonNumericTargetError`, `UnitMismatchError`.
 
-`applyScale` is pure — it never mutates its input, so the same `CompilationResult` can be re-scaled repeatedly (e.g. on every slider tick) without compounding.
+`applyScale` is pure — it never mutates its input, so the same `CompilationResult` can be re-scaled repeatedly (e.g. on every slider tick) without compounding. It satisfies the scaling parity invariant: `applyScale(compile(ast), factor) ≡ compile(ast, { scaleFactor: factor })`.
 
 ## Shopping list & timing (lower-level)
 

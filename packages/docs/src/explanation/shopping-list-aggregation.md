@@ -51,4 +51,5 @@ When multiple children point to the same parent, the compiler uses two distinct 
    If the children use the *same part* of the parent (e.g., chicken breast for a salad, and chicken breast for a soup), you cannot reuse the same chicken. The compiler sums the equivalent parent masses required by both children.
 
 ## The Final Output
-The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by their culinary categories, ready to be rendered in the terminal or a web UI.
+The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by stable culinary categories (`CATEGORY_KEYS` from `@gram-lang/i18n`) and sorted according to localized category rules (`getCategoryLabels(lang)`), ready to be rendered in the terminal or a web UI.
+

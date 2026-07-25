@@ -26,7 +26,7 @@ Le Serveur de Langage Gram implémente les capacités standards suivantes :
 | **Find References** | Localiser toutes les utilisations d'une variable intermédiaire spécifique. |
 | **Rename** | Renommer de manière sûre et atomique les variables intermédiaires. |
 | **Code Actions** | Corrections rapides (quick fixes : déclarer des variables manquantes, convertir volume en masse). |
-| **Document Formatting**| Nettoie l'espacement, la syntaxe des composites et aligne les en-têtes. |
+| **Document Formatting**| Nettoie l'espacement, la syntaxe des composites et aligne les en-têtes via `@gram-lang/format` (13 règles canoniques). |
 | **Inlay Hints** | Affiche les temps de préparation cumulés en ligne au sein de l'éditeur. |
 | **Code Lens** | Injecte des boutons d'action interactifs (comme le calcul des Macros). |
 | **Document Symbol** | Remplit la vue Plan (Outline) de l'éditeur pour une navigation structurelle. |

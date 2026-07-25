@@ -166,6 +166,7 @@ export default defineConfig({
 							{ text: "@gram-lang/kitchen", link: "/reference/api/kitchen" },
 							{ text: "@gram-lang/analyzer", link: "/reference/api/analyzer" },
 							{ text: "@gram-lang/renderer", link: "/reference/api/renderer" },
+							{ text: "@gram-lang/format", link: "/reference/api/format" },
 							{ text: "@gram-lang/i18n", link: "/reference/api/i18n" },
 							{ text: "Data Formats", link: "/reference/api/data-formats" },
 							{ text: "Warnings", link: "/reference/api/warnings" },
@@ -319,6 +320,7 @@ export default defineConfig({
 								text: "@gram-lang/renderer",
 								link: "/fr/reference/api/renderer",
 							},
+							{ text: "@gram-lang/format", link: "/fr/reference/api/format" },
 							{ text: "@gram-lang/i18n", link: "/fr/reference/api/i18n" },
 							{
 								text: "Formats de Données",

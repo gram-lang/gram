@@ -10,7 +10,7 @@ npm install -g @gram-lang/cli
 bun add -g @gram-lang/cli
 ```
 
-Le CLI fonctionne aussi bien avec Node.js (>=20) qu'avec [Bun](https://bun.sh/) — aucune API spécifique à un runtime n'est requise, les deux options se valent.
+Le CLI fonctionne aussi bien avec Node.js (>=20.6.0, chargeant automatiquement les fichiers `.env` via `process.loadEnvFile`) qu'avec [Bun](https://bun.sh/) — aucune API spécifique à un runtime n'est requise, les deux options se valent.
 
 ## Options Globales
 
@@ -203,22 +203,26 @@ gram export brioche.gram --format html --scale 2       # exporter aux quantités
 - Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
 
 #### `gram format [motif]`
-Auto-formate les fichiers `.gram` en appliquant 9 règles textuelles sur place.
+Auto-formate les fichiers `.gram` en appliquant 13 règles canoniques sur place via `@gram-lang/format`.
 ```bash
 gram format                              # Formater tous les fichiers *.gram
 gram format brioche.gram                 # Formater un fichier unique
 gram format "recettes/**/*.gram" --check # Vérif CI — exit 1 si un fichier a besoin d'être formaté
 ```
-**Règles appliquées (dans cet ordre) :**
-1. **ID d'ingrédients en minuscules** — `@Farine` → `@farine`
-2. **Espace avant l'accolade** — `@ing {10g}` → `@ing{10g}`
-3. **Espaces dans les accolades** — `@ing{ 10g }` → `@ing{10g}`
-4. **Zéros décimaux finaux** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
-5. **Espacement des températures** — `{180 °C}` → `{180°C}`
-6. **Espaces finaux** — supprime les espaces et tabulations en fin de ligne
-7. **Max 2 lignes vides consécutives** — réduit les suites de 4+ sauts de ligne à 3
-8. **2 lignes vides avant les en-têtes de section** — normalise l'espacement des `##`
-9. **Un seul saut de ligne à la fin du fichier (EOF)**
+**13 Règles canoniques appliquées :**
+1. **Formatage du frontmatter** — normalisation des délimiteurs et nettoyage des espaces
+2. **Titres d'en-tête de section** — espace unique après `##`
+3. **Indexation des étapes** — préfixes d'étape normalisés (`1. `)
+4. **Blocs d'action** — préfixes d'action normalisés (`[Mélanger]`)
+5. **Jetons d'ingrédients** — espacement et syntaxe des crochets `@ingrédient{qte}`
+6. **Jetons de matériel** : espacement et syntaxe `#matériel{qte}`
+7. **Jetons de minuterie** — espacement `~minuterie{durée}` et passif `~_minuterie{durée}`
+8. **Jetons de température** — formatage `^temp{valeur}`
+9. **Déclarations et références d'intermédiaires** — espacement `->&pâte` et `&pâte`
+10. **Syntaxe composite** — syntaxe des ingrédients composites `<@parent`
+11. **Zéros décimaux inutiles** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
+12. **Formatage des commentaires** — espace propre après les sigles de commentaire (`//`)
+13. **Nettoyage des espaces et saut de ligne final (EOF) unique**
 
 Sortie par fichier : `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
 Le formateur est idempotent — l'exécuter deux fois ne produit aucun autre changement.

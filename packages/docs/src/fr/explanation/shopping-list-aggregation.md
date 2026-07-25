@@ -51,4 +51,5 @@ Lorsque plusieurs enfants pointent vers le même parent, le compilateur utilise 
    Si les enfants utilisent la *même partie* du parent (ex : du blanc de poulet pour une salade, et du blanc de poulet pour une soupe), vous ne pouvez pas réutiliser le même poulet. Le compilateur additionne les masses équivalentes de parents requises par les deux enfants.
 
 ## La Sortie Finale
-Le résultat est un tableau d'objets `ShoppingItem` hautement optimisé, dédupliqué et mathématiquement exact, regroupé par catégories culinaires, prêt à être affiché dans le terminal ou sur une interface web.
+Le résultat est un tableau d'objets `ShoppingItem` hautement optimisé, dédupliqué et mathématiquement exact, regroupé par clés de catégories culinaires stables (`CATEGORY_KEYS` issues de `@gram-lang/i18n`) et trié selon les règles de traduction locales (`getCategoryLabels(lang)`), prêt à être affiché dans le terminal ou sur une interface web.
+

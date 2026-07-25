@@ -5,9 +5,9 @@ Gram n'est pas seulement un format de fichier — c'est un pipeline de petites b
 ## Installation
 
 ```bash
-npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 # ou
-bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
 
 Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent partout où JavaScript s'exécute — Node.js, Deno, Bun, environnements edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour un exemple entièrement côté client).
@@ -20,6 +20,7 @@ Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent parto
 | [`@gram-lang/kitchen`](/fr/reference/api/kitchen) | Compile l'AST en une charge utile structurée, prête au rendu (liste de courses, minutages, registre) | `compile(ast, options?)` |
 | [`@gram-lang/analyzer`](/fr/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
 | [`@gram-lang/renderer`](/fr/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/format`](/fr/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles unifiées) | `formatGram(source, options?)` |
 | [`@gram-lang/i18n`](/fr/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires de chaînes UI utilisés en interne par les paquets ci-dessus | `normalizeUnit`, `getDictionary` |
 
 L'analyse est optionnelle : `compile()` seul fournit déjà une recette complète et prête au rendu (avec des quantités non standardisées par défaut). `@gram-lang/analyzer` n'est nécessaire que pour la conversion de masse, les estimations nutritionnelles, ou les pourcentages boulanger, ce qui nécessite une base de données d'ingrédients.

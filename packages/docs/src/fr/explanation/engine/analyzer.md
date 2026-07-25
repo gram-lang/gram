@@ -2,9 +2,9 @@
 
 Le paquet `@gram-lang/analyzer` représente l'étape analytique finale dans le pipeline de compilation. Il prend le résultat logiquement valide `CompilationResult` produit par `@gram-lang/kitchen` et effectue l'**Enrichissement Physique** en croisant la recette avec une base de données externe `ingredients.yaml`.
 
-C'est ici que le monde physique rencontre le code numérique. L'analyseur calcule cinq ensembles majeurs de fonctionnalités : Standardisation des Masses, Calcul du Rendement, Agrégation de la Liste de Courses, Estimation Nutritionnelle, et Pourcentages du Boulanger — chacune pouvant être activée ou désactivée individuellement via les options.
+C'est ici que le monde physique rencontre le code numérique. L'analyseur exécute un pipeline modulaire en 4 passes (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`) calculant cinq ensembles majeurs de fonctionnalités — chacune pouvant être activée ou désactivée individuellement via les options.
 
-## 1. Standardisation des Masses
+## Passe 1 : Standardisation des Masses de Section & Calcul du Rendement
 
 Gram est conçu pour unifier et normaliser les masses à travers les recettes, calculant la véritable Masse Totale d'un plat même si les ingrédients sont écrits en volumes (tasses) ou en unités (œufs).
 
@@ -18,8 +18,6 @@ L'algorithme **standardizeMass** suit un ordre de priorité strict :
 Si aucune densité n'est disponible pour une unité de volume (pas de surcharge, pas d'entrée en base de données), l'analyseur **ne se rabat pas** sur la supposition de la densité de l'eau. Il renvoie délibérément "aucune masse" plutôt que de risquer une fausse agrégation (ex : traiter silencieusement "1 tasse de farine" comme si elle pesait le même poids que de l'eau). L'article est listé via son unité brute, non convertie.
 :::
 
-## 2. Calcul du Rendement (Facteur de Déchet)
-
 De nombreux ingrédients crus ont des déchets naturels comme des pelures, des trognons ou des coquilles. L'Analyseur fait la distinction entre la **Masse Nette** (ce qui entre dans la recette) et la **Masse d'Achat** (Masse Brute — ce que vous devez réellement acheter), en utilisant le champ `physical.yield` de la base de données d'ingrédients.
 
 Par exemple, si un ingrédient a un facteur de rendement de `0.65` (35 % de déchets) :
@@ -29,9 +27,9 @@ Par exemple, si un ingrédient a un facteur de rendement de `0.65` (35 % de déc
 
 La direction de ce calcul dépend de la manière dont la quantité a été écrite. Une masse/volume explicite (comme la banane ci-dessus) est supposée être la masse **Nette**, avec la masse **Brute** (achat) dérivée à l'envers (`Nette ÷ rendement`). Un **nombre** (ex : `@avocat{1}`) fonctionne dans l'autre sens : le poids unitaire (`unit_weight`) de l'ingrédient représente déjà l'unité entière achetée (**Brute**), donc la masse Nette réellement utilisée par la recette et par les calculs de nutrition est dérivée vers l'avant (`Brute × rendement`). Voir [Standardisation des Masses & Rendement](../mass-and-yield.md) pour le détail complet.
 
-Cet ajustement est calculé par utilisation de l'ingrédient — y compris les mentions en ligne dans le texte de la recette, et pas seulement pour le total agrégé de la liste de courses — bien que la sortie HTML de référence `@gram-lang/renderer` n'affiche actuellement le chiffre de Masse Brute que dans la liste de courses.
+Cet ajustement est calculé par utilisation de l'ingrédient — y compris les mentions en ligne dans le texte de la recette — et `@gram-lang/renderer` affiche la Masse Brute dans les listes de courses à travers les formats HTML, Markdown et Print.
 
-## 3. Agrégation de la Liste de Courses
+## Passe 2 : Enrichissement de la Liste de Courses & Résolution d'Alias
 
 Au-delà d'enrichir les masses individuelles des ingrédients, l'Analyseur regroupe également la liste de courses elle-même. `@gram-lang/kitchen` regroupe purement par l'id brut qu'elle a attribué lors de l'analyse syntaxique, sans connaissance de `ingredients.yaml` — elle ne peut donc pas savoir que `@butter` et `@beurre` sont le même ingrédient, ni fusionner `100 g` d'un ingrédient avec `1 tasse` de ce même ingrédient en un seul total.
 
@@ -48,7 +46,11 @@ Seul l'`id` est réécrit sous sa forme canonique à des fins de regroupement. L
 
 Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md) pour le détail complet de ces règles de nommage et le comportement de repli.
 
-## 4. Estimation Nutritionnelle
+## Passe 2.5 : Pourcentages du Boulanger
+
+Si la recette (ou l'appelant, via une option `bakersReference`) désigne un ingrédient de référence — typiquement la farine, marquée avec le modificateur `*` — l'analyseur calcule la masse de chaque autre ingrédient comme un pourcentage de cette référence, à la fois pour les articles de la liste de courses et les ingrédients en ligne de la recette.
+
+## Passe 3 : Estimation Nutritionnelle
 
 L'Analyseur peut calculer automatiquement une estimation des Calories et Macronutriments (Protéines, Glucides, Lipides, Sucre, Fibres, Sodium) en se basant sur la liste des ingrédients. Le schéma de la base de données des ingrédients supporte également des champs plus fins (`sat_fat`, `mono_fat`, `poly_fat`, `alcohol`), mais ceux-ci ne sont pas actuellement agrégés dans les totaux de la recette.
 
@@ -60,10 +62,6 @@ L'Analyseur peut calculer automatiquement une estimation des Calories et Macronu
 ::: tip Des données partielles transparentes, non cachées
 Contrairement à un modèle strict de type tout-ou-rien, l'analyseur renvoie toujours tous les totaux nutritionnels qu'il a pu calculer, accompagnés d'un ratio de `coverage` (couverture) et d'avertissements pour tout ingrédient pour lequel des données nutritionnelles manquaient ou qui n'a pas pu être standardisé en masse. Les consommateurs de ces données (comme le visualiseur CLI ou la sortie HTML de `@gram-lang/renderer`) utilisent cela pour afficher un indicateur explicite de "données incomplètes" à côté des totaux partiels, plutôt que de masquer complètement le panneau.
 :::
-
-## 5. Pourcentages du Boulanger
-
-Si la recette (ou l'appelant, via une option `bakersReference`) désigne un ingrédient de référence — typiquement la farine, marquée avec le modificateur `*` — l'analyseur calcule la masse de chaque autre ingrédient comme un pourcentage de cette référence, à la fois pour les articles de la liste de courses et les ingrédients en ligne de la recette.
 
 ## Architecture Ouverte
 

@@ -33,9 +33,13 @@ Each of these feature sets can be individually enabled or disabled by the host a
 ### 4. Presentation (`@gram-lang/renderer` or custom)
 Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram-lang/renderer` to generate Markdown, a standard web view, or a self-contained print-ready HTML document — or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
 
+### Supporting Infrastructure (`@gram-lang/i18n` & `@gram-lang/format`)
+- **`@gram-lang/i18n`**: Serves as the single source of truth for unit and time normalization dictionaries, unit conversion tables (`UNIT_CONVERSIONS`), duration multipliers (`TIME_TO_MINUTES`), and stable category keys (`CATEGORY_KEYS`).
+- **`@gram-lang/format`**: Provides the canonical code formatting engine (13 deterministic rules) shared across the CLI and Language Server.
+
 ## Package Architecture
 
-This separation of concerns ensures that each package is highly focused and reusable. For example, if you are building an editor extension that only needs to highlight syntax, you only need to import `@gram-lang/parser`. You don't need to load the heavy mass-normalization logic from the Analyzer.
+This separation of concerns ensures that each package is highly focused and reusable. For example, if you are building an editor extension that only needs to highlight syntax, you only need to import `@gram-lang/parser`.
 
 ```mermaid
 graph LR
@@ -43,4 +47,7 @@ graph LR
   Parser --> Kitchen["@gram-lang/kitchen<br/>(Logic)"]
   Kitchen --> Analyzer["@gram-lang/analyzer<br/>(Physics & DB)"]
   Analyzer --> Renderer["@gram-lang/renderer<br/>(HTML/UI)"]
+  Format["@gram-lang/format<br/>(Formatting)"] -. Formatting .-> Raw
+  I18n["@gram-lang/i18n<br/>(Units & Dictionaries)"] -. Shared .-> Kitchen
+  I18n -. Shared .-> Analyzer
 ```

@@ -10,7 +10,7 @@ npm install -g @gram-lang/cli
 bun add -g @gram-lang/cli
 ```
 
-The CLI runs on both Node.js (>=20) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
+The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
 
 ## Global Options
 
@@ -203,22 +203,26 @@ gram export brioche.gram --format html --scale 2       # export at double quanti
 - Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
 
 #### `gram format [pattern]`
-Auto-formats `.gram` files applying 9 text-based rules in-place.
+Auto-formats `.gram` files applying 13 canonical rules in-place via `@gram-lang/format`.
 ```bash
 gram format                              # Format all *.gram files
 gram format brioche.gram                 # Format a single file
 gram format "recipes/**/*.gram" --check  # CI check — exit 1 if any file needs formatting
 ```
-**Rules applied (in this execution order):**
-1. **Lowercase ingredient IDs** — `@Flour` → `@flour`
-2. **Space before brace** — `@ing {10g}` → `@ing{10g}`
-3. **Spaces inside braces** — `@ing{ 10g }` → `@ing{10g}`
-4. **Trailing decimal zeros** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
-5. **Temperature spacing** — `^{180 C}` → `^{180C}`
-6. **Trailing whitespace** — strip end-of-line spaces and tabs
-7. **Max 2 consecutive blank lines** — collapse runs of 4+ newlines to 3
-8. **2 blank lines before section headers** — normalize `##` spacing
-9. **Single newline at EOF**
+**13 Canonical rules applied:**
+1. **Frontmatter formatting** — delimiter normalization and whitespace cleanup
+2. **Section header titles** — single space after `##`
+3. **Step indexing** — normalized step prefixes (`1. `)
+4. **Action blocks** — normalized action prefixes (`[Mix]`)
+5. **Ingredient tokens** — `@ingredient{qty}` spacing and bracket syntax
+6. **Cookware tokens** — `#cookware{qty}` spacing and bracket syntax
+7. **Timer tokens** — `~timer{duration}` and passive `~_timer{duration}` spacing
+8. **Temperature tokens** — `^temp{value}` formatting
+9. **Intermediate declarations & references** — `->&dough` and `&dough` spacing
+10. **Composite syntax** — `<@parent` composite ingredient syntax
+11. **Trailing decimal zeros** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
+12. **Comment formatting** — clean spacing after comment sigils (`//`)
+13. **Whitespace cleanup & single trailing EOF newline**
 
 Output per file: `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
 The formatter is idempotent — running it twice produces no further changes.

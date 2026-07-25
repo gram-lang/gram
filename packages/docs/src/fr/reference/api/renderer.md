@@ -5,9 +5,11 @@ Effectue le rendu d'un `CompilationResult` ou `AnalyzedCompilationResult` en Mar
 ## `toMarkdown` / `toHTML` / `toPrintHTML`
 
 ```typescript
-function toMarkdown(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
-function toHTML(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
-function toPrintHTML(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
+type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
+
+function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
+function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
 ```
 
 ```typescript
@@ -20,6 +22,8 @@ const html = toHTML(compiled, { lang: 'fr' });
 
 `toPrintHTML` retourne un document HTML complet et autonome (`<style>` inline, règles `@page` A4, aucune dépendance à une feuille de style externe) adapté aux fonctionnalités « imprimer cette recette » / export PDF — `toHTML` retourne un simple fragment destiné à être intégré dans une page existante.
 
+Les trois formatteurs partagent une architecture de traversée unique (`RenderBackend`), garantissant que les résumés nutritionnels, les notes de bas de page, les badges de masse brute et les avertissements d'unités mixtes sont rendus de manière homogène en Markdown, HTML et Print.
+
 ### `RendererOptions`
 
 | Option | Type | Description |
@@ -28,7 +32,7 @@ const html = toHTML(compiled, { lang: 'fr' });
 | `classes` | `RendererClasses` | Redéfinit les noms de classes CSS sur les éléments générés (HTML/print uniquement). |
 | `formatFraction` | `(value: number) => string` | Formateur décimal → fraction personnalisé (par défaut : fractions courantes comme `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut : ex. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Omet les quantités d'ingrédients dans le texte des étapes en ligne (la liste de courses et la mise en place ne sont pas affectées). |
+| `hideStepQty` | `boolean` | Omet les quantités d'ingrédients dans le texte des étapes en ligne pour l'ensemble des formatteurs (la liste de courses et la mise en place ne sont pas affectées). |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Affiche des contrôles interactifs de mise à l'échelle des portions/ingrédients (HTML uniquement). |
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI, via les dictionnaires de `@gram-lang/i18n`. |

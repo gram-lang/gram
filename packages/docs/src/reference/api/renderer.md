@@ -5,9 +5,11 @@ Renders a `CompilationResult` or `AnalyzedCompilationResult` to Markdown, HTML, 
 ## `toMarkdown` / `toHTML` / `toPrintHTML`
 
 ```typescript
-function toMarkdown(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
-function toHTML(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
-function toPrintHTML(data: CompilationResult | AnalyzedCompilationResult, options?: RendererOptions): string
+type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
+
+function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
+function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
 ```
 
 ```typescript
@@ -20,6 +22,8 @@ const html = toHTML(compiled, { lang: 'en' });
 
 `toPrintHTML` returns a complete, self-contained HTML document (inline `<style>`, A4 `@page` rules, no external stylesheet dependency) suitable for "print this recipe" / PDF-export features — `toHTML` returns a bare fragment meant to be embedded into an existing page.
 
+All three formatters share a single traversal architecture (`RenderBackend`), ensuring features like nutrition summaries, footnotes, gross mass badges, and mixed-unit warnings render consistently across Markdown, HTML, and Print output.
+
 ### `RendererOptions`
 
 | Option | Type | Description |
@@ -28,7 +32,7 @@ const html = toHTML(compiled, { lang: 'en' });
 | `classes` | `RendererClasses` | Override CSS class names on generated elements (HTML/print only). |
 | `formatFraction` | `(value: number) => string` | Custom decimal → fraction formatter (default: common fractions like `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (default: e.g. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text (shopping list and mise-en-place are unaffected). |
+| `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (shopping list and mise-en-place are unaffected). |
 | `bakersMathOnly` | `boolean` | Show only baker's percentages, hiding absolute quantities. |
 | `interactiveScaling` | `boolean` | Render interactive portion/ingredient scaling controls (HTML only). |
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for translating UI strings, via `@gram-lang/i18n`'s dictionaries. |

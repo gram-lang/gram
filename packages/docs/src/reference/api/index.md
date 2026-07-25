@@ -5,9 +5,9 @@ Gram is not just a file format — it's a pipeline of small, composable librarie
 ## Installation
 
 ```bash
-npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 # or
-bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer
+bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
 
 All packages are ESM-only, side-effect free, and run anywhere JavaScript runs — Node.js, Deno, Bun, edge runtimes, or directly in the browser (see the [Playground](/play) for a fully client-side example).
@@ -20,6 +20,7 @@ All packages are ESM-only, side-effect free, and run anywhere JavaScript runs �
 | [`@gram-lang/kitchen`](/reference/api/kitchen) | Compiles the AST into a structured, render-ready payload (shopping list, timings, registry) | `compile(ast, options?)` |
 | [`@gram-lang/analyzer`](/reference/api/analyzer) | Enriches a compiled recipe with physical properties (mass, yield, nutrition, baker's percentages) using an ingredient database | `analyze(compiled, database, options?)` |
 | [`@gram-lang/renderer`](/reference/api/renderer) | Renders a (compiled or analyzed) recipe to Markdown or HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/format`](/reference/api/format) | Canonical code formatter for `.gram` files (13 unified formatting rules) | `formatGram(source, options?)` |
 | [`@gram-lang/i18n`](/reference/api/i18n) | Shared unit/time normalization and UI-string dictionaries used internally by the packages above | `normalizeUnit`, `getDictionary` |
 
 Analysis is optional: `compile()` alone already gives you a complete, renderable recipe (with default un-standardized quantities). You only need `@gram-lang/analyzer` when you want mass conversion, nutrition estimates, or baker's percentages, which requires an ingredient database.

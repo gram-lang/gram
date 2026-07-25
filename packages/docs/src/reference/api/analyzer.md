@@ -41,6 +41,7 @@ All flags default to enabled (`!== false` checks internally) — pass `false` to
 | `enableBakersMath` | `boolean` | Compute `bakersPercentage` relative to the `*`-marked (or `bakersReference`) ingredient. |
 | `bakersReference` | `string` | Explicit ingredient id to use as the 100% baker's-percentage base, instead of the `*` modifier. |
 | `portions` | `number` | Portion count used to compute `metrics.nutrition.perPortion`. |
+| `lang` | `string` | Optional locale code (e.g. `'en'`, `'fr'`) for locale-scoped unit normalization and category sorting. |
 
 ## `validateIngredientDatabase`
 
@@ -62,9 +63,10 @@ function standardizeMass(
   database: Record<string, IngredientData>,
   ingredientName?: string,
   overrides?: Record<string, number>, // slug -> density (g/mL) or unit weight (g), from frontmatter `densities:`
+  lang?: string,
 ): { mass: number; method: "physical" | "density" | "unit_weight" | "default" | "explicit"; isEstimate: boolean } | null
 
-function convertUnit(value: number, fromUnit: string, toUnit: string, density?: number): number | null
+function convertUnit(value: number, fromUnit: string, toUnit: string, density?: number, lang?: string): number | null
 
 function applyYield(
   mass: number,

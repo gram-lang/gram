@@ -55,7 +55,7 @@ Every node has a `type: ASTNodeType` discriminant and an optional `loc: { start,
 interface RecipeAST {
   type: ASTNodeType.Recipe;
   meta: Meta;              // Parsed frontmatter (title, date, tags, densities, ...)
-  children: SectionAST[];
+  children: (SectionAST | StepAST | CommentAST)[]; // Sections, or top-level steps/comments
 }
 
 interface SectionAST {
@@ -87,10 +87,12 @@ interface StepAST {
   loc?: Location;
 }
 
+type Modifier = "?" | "-" | "*" | "&" | "="; // optional, hidden, baker's %, reference, fixed
+
 interface IngredientAST {
   type: ASTNodeType.Ingredient;
   name: string;
-  modifiers: Modifier[];               // "optional" | "hidden" | "reference" | "bakers_percentage" | ...
+  modifiers: Modifier[];               // Sigil modifiers present on the ingredient
   quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
   alias?: string | null;
   preparation?: string | null;
@@ -100,7 +102,7 @@ interface IngredientAST {
 
 interface QuantityAST {
   type: ASTNodeType.Quantity;
-  value?: QuantityValueAST;            // { type: 'single' | 'fraction' | 'range' | 'text', value, ... }
+  value?: QuantityValueAST;            // Discriminated union: SingleQuantityAST | FractionQuantityAST | RangeQuantityAST
   unit?: string | null;
   fixed: boolean;                      // true for the "@=" (never-scale) modifier
 }

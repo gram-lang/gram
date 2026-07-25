@@ -9,13 +9,17 @@ Le paquet `@gram-lang/renderer` prend cet objet JSON enrichi final et le transfo
 Le moteur de rendu (renderer) prend en charge trois formats de sortie :
 
 ### 1. Markdown (`toMarkdown`)
-Génère un Markdown standard qui inclut une liste de courses formatée, une section équipement, et des étapes clairement numérotées. C'est parfait pour publier des recettes sur des générateurs de sites statiques (comme VitePress ou Hugo) ou les sauvegarder dans une application de notes comme Obsidian.
+Génère un Markdown standard qui inclut une liste de courses formatée, une section équipement, des étapes clairement numérotées, des notes de bas de page GFM (`[^1]`), des badges de masse brute, et une section nutritionnelle optionnelle (`## 🥗 Nutrition`). C'est parfait pour publier des recettes sur des générateurs de sites statiques (comme VitePress ou Hugo) ou les sauvegarder dans une application de notes comme Obsidian.
 
 ### 2. HTML Sémantique (`toHTML`)
 Génère un document HTML sémantique et autonome. Le moteur de rendu HTML est conçu avec une architecture d'**Inversion de Contrôle**, vous permettant d'injecter vos propres classes CSS personnalisées et icônes SVG pour correspondre au design system de votre application.
 
 ### 3. HTML pour Impression (`toPrintHTML`)
 Génère un document `<!DOCTYPE html>` complet et autonome avec sa propre feuille de style d'impression intégrée (taille de page A4, gestion des sauts de page pour les sections) et un jeu d'icônes fixe — conçu pour être ouvert directement dans un navigateur et imprimé, sans dépendance externe pour la feuille de style ou les ressources. Contrairement à `toHTML`, il n'accepte pas de surcharges pour `icons`/`classes`, mais il prend en charge `formatDuration`, `formatFraction`, et `hideStepQty`.
+
+## Traversée Unifiée (`RenderBackend`)
+
+Sous le capot, les trois moteurs de rendu délèguent leur travail à une fonction d'orchestration unique (`renderRecipe` dans `traversal.ts`) qui invoque une implémentation `RenderBackend` propre à chaque format. Cela garantit une parité structurelle totale entre les formats — le titre, le bloc de métadonnées, la liste de courses, la section matériel, les instructions, les notes et le panneau nutrition sont parcourus strictement dans le même ordre, que la cible soit HTML, Markdown ou Print HTML.
 
 ## Exemple d'Utilisation
 
@@ -55,7 +59,7 @@ const html = toHTML(recipe, {
 });
 ```
 
-`RendererOptions` expose également `bakersReference`/`bakersMathOnly` (pour afficher les calculs en pourcentage du boulanger), `hideStepQty` (pour omettre les quantités des ingrédients du texte des étapes spécifiquement — notez que cela n'a actuellement un effet que sur `toPrintHTML`, pas sur `toMarkdown`/`toHTML`), et `renderId` (un préfixe pour les identifiants d'ancre des notes de bas de page, ex. `"note-1"` ; a une valeur fixe par défaut, à surcharger avec quelque chose d'unique — un slug de recette par exemple — lorsque plusieurs recettes sont rendues sur la même page, pour éviter les collisions d'identifiants).
+`RendererOptions` expose également `bakersReference`/`bakersMathOnly` (pour afficher les calculs en pourcentage du boulanger), `hideStepQty` (pour omettre les quantités des ingrédients dans le texte des étapes en ligne sur l'ensemble des formatteurs), et `renderId` (un préfixe pour les identifiants d'ancre des notes de bas de page, ex. `"note-1"` ; a une valeur fixe par défaut, à surcharger avec quelque chose d'unique — un slug de recette par exemple — lorsque plusieurs recettes sont rendues sur la même page, pour éviter les collisions d'identifiants).
 
 ## Fonctionnalités
 

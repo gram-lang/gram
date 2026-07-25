@@ -2,7 +2,7 @@
 
 > Gram is a data-driven recipe markup language built for developers. It treats recipes as code: plain-text `.gram` files compile into structured, predictable JSON — with relational variables, physical-accuracy shopping lists, and strict data contracts for temperatures, times, ingredients, and cookware.
 
-Gram is a four-stage pipeline (parser → kitchen → analyzer → renderer) distributed as composable `@gram-lang/*` npm packages, plus a `gram` CLI, a Language Server, and a VS Code extension. Full documentation is at https://gram-lang.org/ (with a French translation under `/fr/`). For the complete language spec in a single file, see https://gram-lang.org/llms-full.txt.
+Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `kitchen`, `analyzer`, `renderer`, `format`, `i18n`), plus a `gram` CLI, a Language Server, and a VS Code extension. Full documentation is at https://gram-lang.org/ (with a French translation under `/fr/`). For the complete language spec in a single file, see https://gram-lang.org/llms-full.txt.
 
 ## Getting Started
 
@@ -30,6 +30,7 @@ Gram is a four-stage pipeline (parser → kitchen → analyzer → renderer) dis
 - [@gram-lang/kitchen](https://gram-lang.org/reference/api/kitchen): `compile()` — produces the shopping list, timings, registry, and warnings.
 - [@gram-lang/analyzer](https://gram-lang.org/reference/api/analyzer): `analyze()` — enriches a compiled recipe with mass, yield, nutrition, and baker's percentages.
 - [@gram-lang/renderer](https://gram-lang.org/reference/api/renderer): Rendering a compiled/analyzed result to Markdown or HTML.
+- [@gram-lang/format](https://gram-lang.org/reference/api/format): `formatGram()` — canonical code formatter with 13 unified formatting rules.
 - [@gram-lang/i18n](https://gram-lang.org/reference/api/i18n): Unit/time normalization and localization dictionaries.
 - [Data Formats](https://gram-lang.org/reference/api/data-formats): The JSON shapes flowing between pipeline stages, and the ingredient database YAML schema.
 - [Warnings](https://gram-lang.org/reference/api/warnings): The `Warning` interface, all warning codes, and `--strict` severity.

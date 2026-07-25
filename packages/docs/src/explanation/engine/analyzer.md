@@ -2,9 +2,9 @@
 
 The `@gram-lang/analyzer` package represents the final analytical step in the compilation pipeline. It takes the logically sound `CompilationResult` produced by `@gram-lang/kitchen` and performs **Physical Enrichment** by cross-referencing the recipe against an external `ingredients.yaml` database.
 
-This is where the physical world meets the digital code. The analyzer computes five major feature sets: Mass Standardization, Yield Calculation, Shopping List Aggregation, Nutritional Estimation, and Baker's Percentages — each of which can be individually enabled or disabled via options.
+This is where the physical world meets the digital code. The analyzer executes a modular 4-pass pipeline (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`) computing five major feature sets — each of which can be individually enabled or disabled via options.
 
-## 1. Mass Standardization
+## Pass 1: Section Mass Standardization & Yield Calculation
 
 Gram is designed to unify and normalize masses across recipes, calculating the true Total Mass of a dish even if ingredients are written in volumes (cups) or units (eggs).
 
@@ -18,8 +18,6 @@ The **standardizeMass** algorithm follows a strict priority order:
 If a volume unit has no density available (no override, no database entry), the analyzer **does not** fall back to assuming water density. It deliberately returns no mass rather than risk a false aggregation (e.g. silently treating "1 cup of flour" as if it weighed the same as water). The item is instead listed by its raw unit, unconverted.
 :::
 
-## 2. Yield Calculation (Waste Factor)
-
 Many raw ingredients have natural waste like peels, cores, or shells. The Analyzer distinguishes between **Net Mass** (what goes into the recipe) and **Purchasing Mass** (Gross Mass — what you actually need to buy), using the `physical.yield` field from the ingredient database.
 
 For example, if an ingredient has a yield factor of `0.65` (35% waste):
@@ -29,9 +27,9 @@ For example, if an ingredient has a yield factor of `0.65` (35% waste):
 
 The direction of this calculation depends on how the quantity was written. An explicit mass/volume (like the banana above) is assumed to be the **Net** mass, with the **Gross** (purchasing) mass derived backward (`Net ÷ yield`). A **count** (e.g. `@avocado{1}`) works the other way around: the ingredient's `unit_weight` already represents the whole purchased unit (**Gross**), so the Net mass actually used by the recipe and by nutrition calculations is derived forward (`Gross × yield`). See [Mass Standardization & Yield](../mass-and-yield.md) for the full breakdown.
 
-This adjustment is computed per ingredient usage — including inline mentions throughout the recipe text, not only the aggregated shopping-list total — though the reference `@gram-lang/renderer` HTML output currently only surfaces the Gross Mass figure in the shopping list.
+This adjustment is computed per ingredient usage — including inline mentions throughout the recipe text — and `@gram-lang/renderer` surfaces the Gross Mass figure in shopping lists across HTML, Markdown, and Print formats.
 
-## 3. Shopping List Aggregation
+## Pass 2: Shopping List Enrichment & Alias Resolution
 
 Beyond enriching individual ingredient masses, the Analyzer also re-groups the shopping list itself. `@gram-lang/kitchen` groups purely by the raw id it assigned during parsing, with no knowledge of `ingredients.yaml` — so it can't tell that `@butter` and `@beurre` are the same ingredient, nor merge `100g` of an ingredient with `1 cup` of the same ingredient into one total.
 
@@ -48,7 +46,11 @@ Only the `id` is rewritten to the canonical form for grouping purposes. The entr
 
 See [Shopping List Aggregation](../shopping-list-aggregation.md) for the full breakdown and fallback behavior.
 
-## 4. Nutritional Estimation
+## Pass 2.5: Baker's Percentages
+
+If the recipe (or the caller, via a `bakersReference` option) designates a reference ingredient — typically flour, marked with the `*` modifier — the analyzer computes every other ingredient's mass as a percentage of that reference, both for shopping-list items and inline recipe ingredients.
+
+## Pass 3: Nutritional Estimation
 
 The Analyzer can automatically calculate estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) based on the ingredients list. The ingredient database schema also supports finer-grained fields (`sat_fat`, `mono_fat`, `poly_fat`, `alcohol`), but these are not currently aggregated into recipe totals.
 
@@ -60,10 +62,6 @@ The Analyzer can automatically calculate estimated Calories and Macronutrients (
 ::: tip Transparent partial data, not hidden
 Unlike a strict all-or-nothing model, the analyzer always returns whatever nutrition totals it could compute, along with a `coverage` ratio and warnings for any ingredient that was missing nutrition data or couldn't be mass-standardized. Consumers of the data (like the CLI viewer or `@gram-lang/renderer`'s HTML output) use this to show an explicit "incomplete data" indicator alongside the partial totals, rather than hiding the panel outright.
 :::
-
-## 5. Baker's Percentages
-
-If the recipe (or the caller, via a `bakersReference` option) designates a reference ingredient — typically flour, marked with the `*` modifier — the analyzer computes every other ingredient's mass as a percentage of that reference, both for shopping-list items and inline recipe ingredients.
 
 ## Open Architecture
 

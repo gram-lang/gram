@@ -41,6 +41,7 @@ Tous les indicateurs sont activés par défaut (vérifications internes `!== fal
 | `enableBakersMath` | `boolean` | Calcule `bakersPercentage` par rapport à l'ingrédient marqué `*` (ou `bakersReference`). |
 | `bakersReference` | `string` | Id d'ingrédient explicite à utiliser comme base 100% du pourcentage boulanger, au lieu du modificateur `*`. |
 | `portions` | `number` | Nombre de portions utilisé pour calculer `metrics.nutrition.perPortion`. |
+| `lang` | `string` | Code de langue optionnel (ex : `'en'`, `'fr'`) pour la normalisation d'unités et le tri des catégories par langue. |
 
 ## `validateIngredientDatabase`
 
@@ -62,9 +63,10 @@ function standardizeMass(
   database: Record<string, IngredientData>,
   ingredientName?: string,
   overrides?: Record<string, number>, // slug -> densité (g/mL) ou poids unitaire (g), issu du frontmatter `densities:`
+  lang?: string,
 ): { mass: number; method: "physical" | "density" | "unit_weight" | "default" | "explicit"; isEstimate: boolean } | null
 
-function convertUnit(value: number, fromUnit: string, toUnit: string, density?: number): number | null
+function convertUnit(value: number, fromUnit: string, toUnit: string, density?: number, lang?: string): number | null
 
 function applyYield(
   mass: number,
