@@ -84,7 +84,6 @@ export async function checkFiles(
 						});
 					}
 
-					// Analyzer: ingredients absent from the database
 					if (analyzed) {
 						for (const id of analyzed.missingIngredients) {
 							diagnostics.push({

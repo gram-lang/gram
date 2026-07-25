@@ -122,9 +122,7 @@ async function writeConfigFile(
 
 // ── .env helpers ──────────────────────────────────────────────────────────────
 
-async function readDotEnv(
-	envPath: string,
-): Promise<Record<string, string>> {
+async function readDotEnv(envPath: string): Promise<Record<string, string>> {
 	try {
 		const content = await readFile(envPath, "utf-8");
 		const result: Record<string, string> = {};

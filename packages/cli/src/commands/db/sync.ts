@@ -66,12 +66,10 @@ export default defineCommand({
 
 		const decisions = new Map<string, string>();
 
-		// Genuinely new entries are created automatically
 		for (const id of analysis.genuinelyNew) {
 			decisions.set(id, "new");
 		}
 
-		// Fuzzy matches require a decision
 		if (analysis.fuzzyMatches.length > 0) {
 			if (!process.stdout.isTTY || args["dry-run"]) {
 				// CI / non-interactive: create as new, emit warnings

@@ -8,7 +8,6 @@ export const ExitCode = {
 
 export type ExitCode = (typeof ExitCode)[keyof typeof ExitCode];
 
-/** Safely extracts a display message from an unknown catch value. */
 export function getErrorMessage(err: unknown): string {
 	return err instanceof Error ? err.message : String(err);
 }

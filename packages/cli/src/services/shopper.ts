@@ -117,7 +117,6 @@ export async function buildShoppingList(
 		),
 	);
 
-	// Group by ingredient id
 	const grouped = new Map<string, CollectedItem[]>();
 	for (const item of allItems) {
 		const bucket = grouped.get(item.id) ?? [];

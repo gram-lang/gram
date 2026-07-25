@@ -37,7 +37,6 @@ export default defineCommand({
 		},
 	},
 	async run({ args }) {
-		// args._ holds all positional args; fall back to project-wide glob
 		const patterns = args._.length > 0 ? args._ : ["**/*.gram"];
 		let files: string[] = [];
 		try {

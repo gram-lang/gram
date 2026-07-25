@@ -232,7 +232,6 @@ export async function applyMerge(
 	await withFileLock(dbPath, async () => {
 		const db: Record<string, IngredientData> = { ...localDb };
 
-		// Apply new entries
 		for (const { key, entry } of toAdd) {
 			db[key] = entry;
 		}
@@ -263,7 +262,6 @@ export async function applyMerge(
 				`${conflict.localKey}:${conflict.field}`,
 			);
 			if (!side || side === "local") continue;
-			// prefer remote
 			const local = { ...db[conflict.localKey]! };
 			(local as Record<string, unknown>)[conflict.field] = conflict.remoteValue;
 			db[conflict.localKey] = local;

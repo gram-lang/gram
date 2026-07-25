@@ -173,7 +173,6 @@ export async function resolveScaleArg(
 
 // ── Shared warning helper ─────────────────────────────────────────────────────
 
-/** Returns warnings relevant to the given scale factor and recipe. */
 export function getScaleWarnings(
 	factor: number,
 	totalTimeMinutes: number,
