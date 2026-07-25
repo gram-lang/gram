@@ -7,10 +7,7 @@ import {
 	findNameAtOffset,
 } from "../utils/ast-walker";
 
-export function findAllNameLocations(
-	state: DocumentState,
-	name: string,
-): Location[] {
+function findAllNameLocations(state: DocumentState, name: string): Location[] {
 	if (!state.ast) return [];
 	const locations: Location[] = [];
 
