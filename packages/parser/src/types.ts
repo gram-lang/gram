@@ -37,8 +37,8 @@ export interface NodeAST {
 export interface RecipeAST extends NodeAST {
 	type: ASTNodeType.Recipe;
 	meta: Meta;
-	// Audit 2026-07-22, parser finding I3(1): the implicit-content grammar
-	// path (`Content_implicit`, no `## Section` header anywhere in the
+	// The implicit-content grammar path (`Content_implicit`, no `## Section`
+	// header anywhere in the
 	// source) places `Step`/`Comment` nodes directly under `Recipe`, with no
 	// wrapping `Section` — `getAST("Mix @flour{200g}.\n").children[0].type`
 	// is `"Step"`, not `"Section"`.
@@ -95,8 +95,8 @@ export interface IntermediateDecl extends NodeAST {
 
 // --- Ingredients & Quantities ---
 
-// Audit 2026-07-22, parser finding I3(2): the trailing `| string` collapsed
-// this union to plain `string`, and the semantic names it announced were
+// The trailing `| string` used to collapse this union to plain `string`,
+// and the semantic names it announced were
 // never produced in the first place — the parser emits the raw sigils
 // (`grammar.ohm`'s `modifier = "?" | "-" | "*" | "&" | "="`) untranslated;
 // kitchen's own `checkModifiers`/`processIngredient` test for `"?"`/`"*"`/
@@ -104,8 +104,8 @@ export interface IntermediateDecl extends NodeAST {
 // parser actually emits.
 export type Modifier = "?" | "-" | "*" | "&" | "=";
 
-// Audit 2026-07-22, parser finding I4: this used to be a flat interface with
-// every field optional — `type` didn't actually discriminate anything, so
+// This used to be a flat interface with every field optional — `type`
+// didn't actually discriminate anything, so
 // `qty.range`/`qty.numerator` stayed `| undefined` even after checking
 // `qty.type === "range"`. A real bug shipped because of it: analyzer's
 // diff.ts once checked `qty.from`/`qty.to`, fields that never existed on any
@@ -158,8 +158,8 @@ export interface IngredientAST extends NodeAST {
 	composite?: CompositeAST | null;
 }
 
-// Audit 2026-07-22, parser finding I3(4): didn't extend NodeAST (no `loc`)
-// and was absent from the `ASTNode` union — the same was true of QuantityAST/
+// This used to not extend NodeAST (no `loc`) and was absent from the
+// `ASTNode` union — the same was true of QuantityAST/
 // TextQuantityAST/RelativeQuantityAST, which is exactly why `guards.ts` had
 // to redeclare a local `QuantityValueNode` union instead of reusing
 // `ASTNode`. Now carries `loc` like every other node (composite_full/

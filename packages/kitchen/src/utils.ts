@@ -261,9 +261,9 @@ export const quantityToMinutes = (
  * and are only valid for the unscaled value, so they're cleared here rather than
  * carried over stale — display code must fall back to the scaled numeric `value`.
  *
- * Audit 2026-07-22, kitchen finding F-015: the scale *factor* is validated
- * (`isPositiveFinite` in scale/engine.ts, `CompilerOptionsSchema`), but the
- * *product* never was — `scaleQty(500, 1e308)` silently produced `Infinity`,
+ * The scale *factor* is validated (`isPositiveFinite` in scale/engine.ts,
+ * `CompilerOptionsSchema`), but the *product* never was —
+ * `scaleQty(500, 1e308)` silently produced `Infinity`,
  * which serializes to JSON `null`. Every multiplication here now goes through
  * `scaleValue`, which throws `InvalidFactorError` on overflow instead, and
  * applies `round2` uniformly so scaled quantities don't carry float noise
@@ -301,7 +301,6 @@ export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
 		};
 	}
 	if (qty.type === "fraction" && typeof qty.value === "number") {
-		// Audit 2026-07-22 (found while typing this function instead of `any`):
 		// `numerator`/`denominator` are required, non-optional fields on the
 		// "fraction" variant of QuantityValueAST — setting them `undefined`
 		// while keeping `type: "fraction"` produced a structurally malformed

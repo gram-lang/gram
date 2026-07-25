@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
  * that aren't `file:` URIs (a virtual/remote workspace folder —
  * vscode-vfs://, untitled:, etc.) instead of throwing.
  *
- * Audit 2026-07-22, finding B2: `fileURLToPath` throws on any non-`file:`
+ * `fileURLToPath` throws on any non-`file:`
  * URI, which used to crash server initialization for the whole session
  * before it could even respond to the client.
  */

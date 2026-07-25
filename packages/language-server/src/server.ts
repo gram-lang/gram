@@ -37,10 +37,10 @@ const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 const states = new Map<string, DocumentState>();
 
-// Audit 2026-07-22, LSP synthesis: a crash here kills the editor's whole
-// language feature set, not just one command — the bar for "never die" is
-// higher than for the CLI. These are a last resort behind the specific fixes
-// above (B1-B3): log and keep serving requests instead of letting Node exit.
+// A crash here kills the editor's whole language feature set, not just one
+// command — the bar for "never die" is higher than for the CLI. These are a
+// last resort behind the specific fixes elsewhere in this file: log and keep
+// serving requests instead of letting Node exit.
 process.on("uncaughtException", (err) => {
 	connection.console.error(
 		`Uncaught exception: ${err instanceof Error ? (err.stack ?? err.message) : err}`,
@@ -83,7 +83,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
-// Audit 2026-07-22, finding B3: called from onDidChangeWatchedFiles/
+// Called from onDidChangeWatchedFiles/
 // onDidChangeConfiguration without awaiting or catching the returned
 // promise. This function must never reject — every call site treats it as
 // fire-and-forget, and an unhandled rejection here would otherwise crash the

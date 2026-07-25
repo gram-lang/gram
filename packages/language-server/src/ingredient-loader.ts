@@ -17,8 +17,8 @@ export interface LoadIngredientDBResult {
 	rejected: IngredientValidationIssue[];
 }
 
-// Audit 2026-07-22, finding B1: this used to cast the parsed YAML straight to
-// IngredientDB with no validation, so an entry missing `name` (or any other
+// This used to cast the parsed YAML straight to IngredientDB with no
+// validation, so an entry missing `name` (or any other
 // malformed entry) crashed the server the moment a lookup touched it — the
 // CLI's `loadDb` (core/db.ts) already goes through validateIngredientDatabase
 // for exactly this reason. A malformed entry is now dropped and reported

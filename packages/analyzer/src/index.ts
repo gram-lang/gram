@@ -549,16 +549,14 @@ function applyBakersMath(
 						section.steps.forEach((step) => {
 							if (step && step.type === "step" && Array.isArray(step.content)) {
 								step.content.forEach((node) => {
-									// Audit 2026-07-22, analyzer finding I1/§5(c):
-									// kitchen's createCleanUsage never sets `.type`
-									// on a plain ingredient token, so `node.type ===
+									// kitchen's createCleanUsage never sets `.type` on a
+									// plain ingredient token, so `node.type ===
 									// "ingredient"` was always false here — Baker's
-									// Percentage never reached an ingredient's
-									// inline step-text mention, only its section/
-									// shopping-list entries. `id` present with no
-									// `type` is the same "plain ingredient usage"
-									// signal kitchen itself relies on elsewhere
-									// (e.g. scale/engine.ts).
+									// Percentage never reached an ingredient's inline
+									// step-text mention, only its section/shopping-list
+									// entries. `id` present with no `type` is the same
+									// "plain ingredient usage" signal kitchen itself
+									// relies on elsewhere (e.g. scale/engine.ts).
 									if (
 										node &&
 										typeof node !== "string" &&

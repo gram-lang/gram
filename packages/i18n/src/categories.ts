@@ -18,15 +18,15 @@ export const CATEGORY_KEYS = [
 
 export type CategoryKey = (typeof CATEGORY_KEYS)[number];
 
-// Audit 2026-07-22, i18n finding F-03, Phase 18: previously a
-// `Record<lang, string[]>` of translated *labels* only, with no stable,
-// language-independent identity — the label itself got persisted as data in
-// `ingredients.yaml` (`db-enricher.ts`'s AI prompt built directly from
-// `getDefaultCategories(lang).join(", ")`, and the AI's response was written
-// back verbatim). A database enriched with `language: "fr"` ended up with
-// `category: "Légumes"`, which a `gram shop` run in English can't group —
-// string equality, no shared key. `CATEGORY_KEYS` is the stable identity to
-// persist as data; the labels below are display-only, indexed by that same
+// Previously a `Record<lang, string[]>` of translated *labels* only, with
+// no stable, language-independent identity — the label itself got
+// persisted as data in `ingredients.yaml` (`db-enricher.ts`'s AI prompt
+// built directly from `getDefaultCategories(lang).join(", ")`, and the
+// AI's response was written back verbatim). A database enriched with
+// `language: "fr"` ended up with `category: "Légumes"`, which a `gram
+// shop` run in English can't group — string equality, no shared key.
+// `CATEGORY_KEYS` is the stable identity to persist as data; the labels
+// below are display-only, indexed by that same
 // key so the two locales can never silently drift out of parity the way two
 // positional arrays could (TypeScript requires every key present in both).
 const CATEGORY_LABELS: Record<string, Record<CategoryKey, string>> = {

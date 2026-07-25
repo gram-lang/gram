@@ -7,8 +7,7 @@ export const AnalyzerOptionsSchema = z.object({
 	enableBakersMath: z.boolean().optional(),
 	bakersReference: z.string().optional(),
 	portions: z.number().positive().optional(),
-	// Audit 2026-07-22, i18n finding F-04/F-07/F-08/F-09, Phase 17: the
-	// recipe's language, used to disambiguate a unit alias that collides
+	// The recipe's language, used to disambiguate a unit alias that collides
 	// between languages (e.g. a future addition colliding the way "quart"
 	// once did — see @gram-lang/i18n's units.ts) instead of relying on
 	// whichever language happens to be merged last into the global fallback
@@ -21,12 +20,11 @@ export const IngredientDataSchema = z.object({
 	name: z.string(),
 	physical: z
 		.object({
-			// Audit 2026-07-22, analyzer finding B1: `density` was required
-			// whenever `physical` was present at all, which rejected any
-			// entry described only by `unit_weight` (count -> mass, e.g. "1
-			// avocado") — including the analyzer's own README example and
-			// test fixtures. An ingredient can legitimately have either,
-			// both, or neither.
+			// `density` was required whenever `physical` was present at all,
+			// which rejected any entry described only by `unit_weight` (count
+			// -> mass, e.g. "1 avocado") — including the analyzer's own README
+			// example and test fixtures. An ingredient can legitimately have
+			// either, both, or neither.
 			density: z.number().positive().optional(),
 			yield: z.number().gt(0).max(1).optional(),
 			unit_weight: z.number().positive().optional(),

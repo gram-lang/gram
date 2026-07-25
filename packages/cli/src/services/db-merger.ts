@@ -88,9 +88,8 @@ export interface LoadSourceDbResult {
 }
 
 /**
- * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14): this
- * used to report rejected entries itself via `log.warn` (@clack/prompts) —
- * the same architectural smell as `core/db.ts`'s `loadDb` (a non-`ui`/
+ * This used to report rejected entries itself via `log.warn` (@clack/prompts)
+ * — the same architectural smell as `core/db.ts`'s `loadDb` (a non-`ui`/
  * `commands` module deciding how to display a warning). `rejected` is now
  * returned as a value; the caller (`commands/db/merge.ts`) reports it via
  * `reportRejectedIngredients` (`ui/diagnostics.ts`), like every other

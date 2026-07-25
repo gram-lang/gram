@@ -79,8 +79,8 @@ const FETCH_TIMEOUT_MS = 15_000;
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024; // 10 MB — a recipe page is never legitimately bigger than this
 const MAX_REDIRECTS = 5;
 
-// Audit 2026-07-22, cli finding I-2 (SSRF): `redirect: "manual"` + a manual
-// loop, re-running `assertPublicUrl` on every hop, instead of leaving
+// `redirect: "manual"` + a manual loop, re-running `assertPublicUrl` on
+// every hop, instead of leaving
 // redirects to `fetch`'s default behavior — a URL that's public on the first
 // request can still redirect (or DNS-rebind) to an internal address, and a
 // check done only once up front would never see that.

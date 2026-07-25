@@ -26,8 +26,8 @@ export interface LoadDbResult {
 }
 
 /**
- * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14): `core/`
- * must never itself decide to write anything, not even to stderr — the
+ * `core/` must never itself decide to write anything, not even to stderr —
+ * the
  * previous targeted fix (writing rejected-entry warnings via
  * `process.stderr.write` right here) already fixed the *measured* bug
  * (`log.warn`/@clack/prompts corrupting `gram build | jq`'s stdout), but

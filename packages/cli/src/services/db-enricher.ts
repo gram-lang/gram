@@ -23,8 +23,8 @@ import type {
 	EnrichOptions,
 } from "../types";
 
-// Audit 2026-07-22, i18n finding F-03, Phase 18: the prompt used to present
-// (and ask the AI to return) a translated *display label* ("Légumes"), which
+// The prompt used to present (and ask the AI to return) a translated
+// *display label* ("Légumes"), which
 // then got persisted verbatim as data in `ingredients.yaml` — non-portable
 // across languages, and unconstrained (the prompt said "examples like", not
 // a closed list, so the AI could return "Légumes frais" and nothing would
@@ -38,8 +38,8 @@ function buildSystemPrompt(lang: string): string {
 	return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category **key** (not the translated label) from this list: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.`;
 }
 
-// Audit 2026-07-22, cli finding I-26: ingredient names reaching this prompt
-// can come from arbitrary sources (`gram db sync` over synced recipes, `gram
+// Ingredient names reaching this prompt can come from arbitrary sources
+// (`gram db sync` over synced recipes, `gram
 // db merge` over a third-party YAML file), and `generateObject`'s schema is
 // the only real backstop against a prompt-injected response — it constrains
 // *shape*, so it must also constrain *plausibility*. MAX_DENSITY/MAX_CALORIES
@@ -207,8 +207,8 @@ export async function enrichDb(
 		};
 	} else {
 		write = await withFileLock(dbPath, async (): Promise<EnrichWriteResult> => {
-			// Audit 2026-07-22, cli finding B-5: unlike `db-sync` (which
-			// legitimately creates new entries and can recover from a missing/
+			// Unlike `db-sync` (which legitimately creates new entries and can
+			// recover from a missing/
 			// empty file), enrich only ever *updates* ingredients that must
 			// already exist on disk — a missing file or an unlocatable
 			// ingredients map means there is nothing to update, full stop. This

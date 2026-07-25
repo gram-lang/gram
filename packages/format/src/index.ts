@@ -110,8 +110,7 @@ function splitFrontmatter(source: string): {
 }
 
 /**
- * Audit 2026-07-22, cli finding 0-b / B-4, language-server finding B4/P5,
- * Phase 3bis: the CLI (`gram format`, 9 rules, whole-body regexes) and the
+ * The CLI (`gram format`, 9 rules, whole-body regexes) and the
  * language server (`format on save`, ~6 rules, line-by-line) used to be two
  * independent implementations with disjoint rule sets — a recipe formatted
  * by one and re-opened by the other could still show further changes,
@@ -141,8 +140,8 @@ export function formatGram(source: string): {
 
 	// Rules 1-9 below operate on gram syntax (@ids, {quantities}, temperatures,
 	// composites, declarations, headers) that only ever exists in the recipe
-	// body — frontmatter is plain YAML. Audit 2026-07-22, finding 0-b: running
-	// them over the whole source used to silently rewrite frontmatter values,
+	// body — frontmatter is plain YAML. Running them over the whole source
+	// used to silently rewrite frontmatter values,
 	// e.g. lowercasing the domain of `author: Jean@Example.com`.
 	const { frontmatter, body: originalBody } = splitFrontmatter(source);
 	let body = originalBody;

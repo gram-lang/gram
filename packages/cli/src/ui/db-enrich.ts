@@ -33,8 +33,8 @@ export function renderEnrichResult(
 	}
 	console.log();
 
-	// Audit 2026-07-22, cli finding B-5: "Updated" is only ever printed by
-	// reading `write.written` — never inferred from `!dryRun` or from
+	// "Updated" is only ever printed by reading `write.written` — never
+	// inferred from `!dryRun` or from
 	// `enriched.length` being non-zero, either of which used to lie whenever
 	// the write itself was silently skipped underneath.
 	if (dryRun) {

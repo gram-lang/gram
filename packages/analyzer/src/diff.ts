@@ -97,14 +97,12 @@ function isCompositeOrAlternative(
 
 // Single grouping primitive, shared by every diff function below that needs
 // to key items by something that isn't guaranteed unique (a section title, a
-// timer/temperature name). Audit 2026-07-22, analyzer findings B3/§6.1: the
-// same "overwrite instead of accumulate" bug — a `Map.set` on a colliding key
-// silently dropping the first item — existed independently in three places
-// here (section-title keying in two functions, token-name keying in a
-// third). One of them had already been fixed at its own site without
-// touching the other two, which is exactly the site-not-class pattern this
-// audit is about — fixing one call site again would leave the class alive in
-// the rest.
+// timer/temperature name). The same "overwrite instead of accumulate" bug —
+// a `Map.set` on a colliding key silently dropping the first item — existed
+// independently in three places here (section-title keying in two
+// functions, token-name keying in a third). One of them had already been
+// fixed at its own site without touching the other two, so fixing only
+// this call site again would leave the same bug alive in the rest.
 function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, T[]> {
 	const result = new Map<string, T[]>();
 	for (const item of items) {
@@ -129,14 +127,14 @@ function groupSectionsByKey<T extends { title: string | null }>(
 	return result;
 }
 
-// Audit 2026-07-22, analyzer finding B2: composite and alternative groups
-// were excluded from diffIngredients entirely, so a quantity change inside
-// either (`@lemon{2}` -> `{5}` on a composite parent, `@egg{2}|@tofu{200g}`
-// -> `{9}|{900g}` on an alternative) produced `hasChanges: false` — a diff
-// tool asserting "nothing changed" is worse than no diff tool at all. This
-// recursively unwraps both into the flat, individually-diffable ingredients
-// they're built from, so the existing id-keyed comparison in diffIngredients
-// sees every quantity that can change, not just the ones outside a group.
+// Composite and alternative groups used to be excluded from diffIngredients
+// entirely, so a quantity change inside either (`@lemon{2}` -> `{5}` on a
+// composite parent, `@egg{2}|@tofu{200g}` -> `{9}|{900g}` on an alternative)
+// produced `hasChanges: false` — a diff tool asserting "nothing changed" is
+// worse than no diff tool at all. This recursively unwraps both into the
+// flat, individually-diffable ingredients they're built from, so the
+// existing id-keyed comparison in diffIngredients sees every quantity that
+// can change, not just the ones outside a group.
 function flattenShoppingItems(items: ShoppingItem[]): SimpleShoppingItem[] {
 	const result: SimpleShoppingItem[] = [];
 	for (const item of items) {
@@ -423,13 +421,13 @@ function diffSections(
 	a: ProcessedSection[],
 	b: ProcessedSection[],
 ): SectionDelta[] {
-	// Audit 2026-07-22, analyzer finding B3/§6.1: this used to key sections by
-	// title through a plain `Map.set`, so two sections sharing a title (a
-	// perfectly normal recipe, e.g. two "Prep" sections) had the second
-	// silently overwrite the first — exactly the same "overwrite instead of
-	// accumulate" bug that was fixed for section-title keying in
-	// extractTokensByType, left alive here. groupSectionsByKey accumulates
-	// same-titled sections into a list, paired positionally below.
+	// This used to key sections by title through a plain `Map.set`, so two
+	// sections sharing a title (a perfectly normal recipe, e.g. two "Prep"
+	// sections) had the second silently overwrite the first — the same
+	// "overwrite instead of accumulate" bug fixed for section-title keying
+	// in extractTokensByType, left alive here. groupSectionsByKey
+	// accumulates same-titled sections into a list, paired positionally
+	// below.
 	const aGroups = groupSectionsByKey(a);
 	const bGroups = groupSectionsByKey(b);
 	const allKeys = new Set([...aGroups.keys(), ...bGroups.keys()]);
@@ -599,12 +597,11 @@ function diffPreparations(
 	aSections: ProcessedSection[],
 	bSections: ProcessedSection[],
 ): PrepDelta[] {
-	// Audit 2026-07-22, analyzer finding B3/§6.1: same "overwrite instead of
-	// accumulate" bug on section-title keying, a third time in this file —
-	// two same-titled sections used to have the second's `byId` map silently
-	// replace the first's, losing that section's preparations from the diff
-	// entirely. groupSectionsByKey merges same-titled sections' tokens into
-	// one `byId` map instead.
+	// Same "overwrite instead of accumulate" bug on section-title keying, a
+	// third time in this file — two same-titled sections used to have the
+	// second's `byId` map silently replace the first's, losing that
+	// section's preparations from the diff entirely. groupSectionsByKey
+	// merges same-titled sections' tokens into one `byId` map instead.
 	const extractBySection = (sections: ProcessedSection[]) => {
 		const result = new Map<string, Map<string, Usage[]>>();
 		for (const [key, group] of groupSectionsByKey(sections)) {

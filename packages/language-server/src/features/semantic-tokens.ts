@@ -370,8 +370,8 @@ export function provideSemanticTokens(state: DocumentState): SemanticTokens {
 	const out: RawToken[] = [];
 	const text = state.text;
 
-	// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't
-	// always `SectionAST[]` — a recipe with no `## Section` header anywhere,
+	// `RecipeAST.children` isn't always `SectionAST[]` — a recipe with no
+	// `## Section` header anywhere,
 	// or leading content before the first header, places `Step`/`Comment`
 	// nodes directly under `Recipe`. Dispatch on the real node type instead
 	// of assuming every top-level child is a section (which would crash on

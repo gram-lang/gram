@@ -66,9 +66,9 @@ function isForbiddenIPv6(ip: string): boolean {
 }
 
 /**
- * Audit 2026-07-22, cli finding I-2 (SSRF): `gram import <url>` fetched any
- * http(s) URL and sent the response body straight into an AI prompt, with no
- * check on the destination at all — `gram import
+ * `gram import <url>` used to fetch any http(s) URL and send the response
+ * body straight into an AI prompt, with no check on the destination at all —
+ * `gram import
  * http://169.254.169.254/latest/meta-data/...` exfiltrates a cloud metadata
  * endpoint to a third-party LLM. This resolves the hostname via DNS (or reads
  * a literal IP directly) and throws unless every resolved address is public.

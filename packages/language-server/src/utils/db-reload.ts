@@ -69,12 +69,10 @@ export interface DbReloadOutcome {
 }
 
 /**
- * Audit 2026-07-22, LSP finding B3 (Phase 3 backlog item, completed Phase
- * 15): `server.ts`'s `reloadDbAndRefreshDiagnostics` used to close over
+ * `server.ts`'s `reloadDbAndRefreshDiagnostics` used to close over
  * module-level state (`connection`, `states`, `ingredientDB`), making it
- * untestable in isolation — noted at the time as "a refactor plus large, non
- * fait ici". Every dependency is now passed in explicitly, so this can be
- * unit-tested with fakes instead of a real LSP connection. Must never
+ * untestable in isolation. Every dependency is now passed in explicitly, so
+ * this can be unit-tested with fakes instead of a real LSP connection. Must never
  * reject — every real call site in `server.ts` treats it as fire-and-forget
  * (`onDidChangeWatchedFiles`/`onDidChangeConfiguration`), and an unhandled
  * rejection would otherwise crash the whole Node process.

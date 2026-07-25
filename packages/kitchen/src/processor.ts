@@ -266,8 +266,8 @@ function processAlternative(
 			processedOptions.push(result);
 
 			if (typeof result !== "string") {
-				// Audit 2026-07-22, kitchen finding F-016: createCleanUsage
-				// never sets `.type` on a plain ingredient/cookware Usage, so
+				// createCleanUsage never sets `.type` on a plain
+				// ingredient/cookware Usage, so
 				// `r.type === "ingredient"/"drink"/"cookware"` above were
 				// dead branches — "drink" doesn't appear anywhere else in
 				// the codebase. `opt.type` (the *AST* node, not the
@@ -377,8 +377,8 @@ function processTimer(
 			} else {
 				const unit = TIME_UNIT_DISPLAY[resolveTimeUnit(q.unit)];
 				if (!unit) {
-					// Audit 2026-07-22, finding F-006: an unrecognized unit
-					// (e.g. "3 bananas") used to fall through
+					// An unrecognized unit (e.g. "3 bananas") used to fall
+					// through
 					// quantityToMinutes' d/h/m/s checks and be silently
 					// treated as plain minutes. Emitting INVALID_UNIT
 					// (matching processTemperature/processRetroPlanning) and
@@ -516,8 +516,8 @@ function processComment(item: CommentAST): ProcessedBlockResult {
 	return { type: "comment", value: item.value, kind: item.kind };
 }
 
-// Audit 2026-07-22, parser finding I3: `ASTNode` now (correctly) also
-// includes CompositeAST/QuantityAST/TextQuantityAST/RelativeQuantityAST,
+// `ASTNode` now (correctly) also includes
+// CompositeAST/QuantityAST/TextQuantityAST/RelativeQuantityAST,
 // which only ever appear *nested* inside an Ingredient/Cookware/Reference/
 // Timer node, never directly as a step's own child — narrowed to the real
 // invariant (`StepAST["children"][number]`, which already covers both call
@@ -802,7 +802,7 @@ export function processSections(
 		});
 	});
 
-	// Audit 2026-07-22, kitchen finding F-012: `detectCycles` (./graph, used by
+	// `detectCycles` (./graph, used by
 	// the shopping list for ingredient-formula dependencies) never saw the
 	// language's other dependency domain — section-level `->&produced` /
 	// `&consumed` intermediates — so an indirect cycle (`&a -> &b -> &a`)

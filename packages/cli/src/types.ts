@@ -173,15 +173,15 @@ export interface EnrichEntry {
 		fiber?: number;
 		sodium?: number;
 	};
-	// Audit 2026-07-22, i18n finding F-03: a stable key persisted as data
-	// (e.g. "vegetables"), never a translated display label — see
+	// A stable key persisted as data (e.g. "vegetables"), never a translated
+	// display label — see
 	// @gram-lang/i18n's categories.ts for why.
 	category?: CategoryKey;
 	tagSuggestions: string[];
 }
 
-// Audit 2026-07-22, cli finding B-5: "was the database actually written?"
-// used to be a guess the UI made from `!dryRun` — a missing/unreadable file
+// "Was the database actually written?" used to be a guess the UI made from
+// `!dryRun` — a missing/unreadable file
 // or an unexpected YAML root silently skipped the write while `enriched`
 // stayed populated, so the UI reported "Updated <path> (N enriched)" against
 // an unchanged file. This is now a typed fact `enrichDb` reports directly;

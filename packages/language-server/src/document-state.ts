@@ -12,8 +12,8 @@ export interface DocumentState {
 	/**
 	 * The source TextDocument's version at the time this state was computed
 	 * (undefined when parsed outside the LSP document-sync protocol, e.g. in
-	 * tests). Audit 2026-07-22, finding B5: refresh() is debounced, so a
-	 * cached state can lag behind the live document; edit-producing features
+	 * tests). refresh() is debounced, so a cached state can lag behind the
+	 * live document; edit-producing features
 	 * (formatting, rename, code actions) must compare this against the live
 	 * document's version and re-parse synchronously on mismatch rather than
 	 * computing a TextEdit against stale text/offsets.

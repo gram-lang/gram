@@ -5,8 +5,7 @@ import type { CheckResult, Diagnostic } from "../types";
 import type { IngredientValidationIssue } from "@gram-lang/analyzer";
 
 /**
- * Audit 2026-07-22, cli finding B-3 (full recommendation, Phase 14):
- * `core/db.ts`'s `loadDb` now returns `rejected` as plain data instead of
+ * `core/db.ts`'s `loadDb` returns `rejected` as plain data instead of
  * writing a warning itself — this is the single place that decides how (and
  * whether) to report it, shared by every command instead of duplicating the
  * message format at 15 call sites. Always writes to stderr, never stdout —

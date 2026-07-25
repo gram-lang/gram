@@ -60,8 +60,8 @@ function getStepSymbol(
 export function provideDocumentSymbols(state: DocumentState): DocumentSymbol[] {
 	if (!state.ast) return [];
 
-	// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't
-	// always `SectionAST[]` — a recipe with no `## Section` header anywhere,
+	// `RecipeAST.children` isn't always `SectionAST[]` — a recipe with no
+	// `## Section` header anywhere,
 	// or leading content before the first header, places `Step`/`Comment`
 	// nodes directly under `Recipe`. The old `.map((section: SectionAST) =>
 	// ...)` annotation lied about that and would have crashed on a bare

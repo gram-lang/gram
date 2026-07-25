@@ -18,8 +18,7 @@ export const TIME_DICTIONARIES = { en, fr };
 export const { byLang: TIME_BY_LANG, global: TIME_GLOBAL } =
 	compileDictionary(TIME_DICTIONARIES);
 
-// Audit 2026-07-22, i18n finding F-02/F-05, Phase 17: previously inlined as
-// bare multipliers (`* 60 * 24`, `* 60`, `/ 60`) inside
+// Previously inlined as bare multipliers (`* 60 * 24`, `* 60`, `/ 60`) inside
 // `@gram-lang/kitchen`'s `quantityToMinutes` — the numeric relationship
 // between time units belongs alongside the canonical unit names above, not
 // hardcoded in a downstream consumer.

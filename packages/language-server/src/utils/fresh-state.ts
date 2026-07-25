@@ -5,8 +5,8 @@ import type { IngredientData } from "@gram-lang/analyzer";
  * Returns a DocumentState guaranteed to match the live document text/version,
  * re-parsing synchronously when the cached state is behind.
  *
- * Audit 2026-07-22, finding B5: `refresh()` is debounced (150ms), so the
- * cached state in `server.ts`'s `states` map can briefly lag behind the live
+ * `refresh()` is debounced (150ms), so the cached state in `server.ts`'s
+ * `states` map can briefly lag behind the live
  * document. That's harmless for read-only features (hover, semantic tokens,
  * ...) but not for ones that compute a TextEdit against text/offsets —
  * formatting, rename, and code actions must call this instead of reading the

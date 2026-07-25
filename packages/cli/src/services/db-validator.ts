@@ -1,9 +1,9 @@
 import type { IngredientData } from "@gram-lang/analyzer";
 import type { DbIssue, DbValidateResult } from "../types";
 
-// Audit 2026-07-22, cli finding I-26, Phase 18: these bounds used to exist
-// only here, as an a-posteriori report on data already written to disk.
-// `db-enricher.ts` now imports them to constrain the AI response schema
+// These bounds used to exist only here, as an a-posteriori report on data
+// already written to disk. `db-enricher.ts` now imports them to constrain
+// the AI response schema
 // itself, so an implausible value (a prompt-injected density of `1e9`) is
 // rejected before it's ever written — one source of truth for "a plausible
 // ingredient value", not two that can drift apart.

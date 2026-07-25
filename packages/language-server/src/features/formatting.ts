@@ -3,9 +3,9 @@ import type { DocumentState } from "../document-state";
 import { formatGram } from "@gram-lang/format";
 
 /**
- * Audit 2026-07-22, language-server finding B4/P5, Phase 3bis: this used to
- * be an independent, line-by-line implementation with its own (smaller) rule
- * set — now a thin wrapper turning the shared `@gram-lang/format` formatter's
+ * This used to be an independent, line-by-line implementation with its own
+ * (smaller) rule set — now a thin wrapper turning the shared
+ * `@gram-lang/format` formatter's
  * full-text output into the single whole-document `TextEdit` the LSP
  * protocol expects. See `@gram-lang/format` for the actual formatting rules.
  */

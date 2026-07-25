@@ -225,8 +225,8 @@ export function applyScale(
 		if (item.type === "alternative" && "options" in item) {
 			for (const opt of item.options ?? []) mutateUsage(opt, factor, scaled);
 		} else if (item.type === "composite" && "usage" in item) {
-			// Audit 2026-07-22, kitchen finding F-015: this used to scale the
-			// composite parent's total by hand (`item.qty * factor`), bypassing
+			// This used to scale the composite parent's total by hand
+			// (`item.qty * factor`), bypassing
 			// scaleQty's rounding, overflow check, and text/numerator/denominator
 			// reset — the exact same treatment every other quantity here gets.
 			if (typeof item.qty === "number") {
@@ -240,8 +240,8 @@ export function applyScale(
 		}
 	}
 
-	// Audit 2026-07-22, finding F-001: cookware was never scaled explicitly
-	// here — it only happened to work when applyScale ran *inside* compile()
+	// Cookware was never scaled explicitly here — it only happened to work
+	// when applyScale ran *inside* compile()
 	// (before cleanObject destroys the shared references between
 	// result.cookware / section.cookware / the step's inline token), so
 	// `applyScale(compile(ast), f)` silently left cookware unscaled while

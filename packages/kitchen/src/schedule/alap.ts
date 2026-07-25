@@ -37,8 +37,8 @@ export function scheduleALAP(
 		if (sectionSteps.length === 0) continue;
 
 		// 1. Default Chaining: End of this section is the start of the next
-		// *non-empty* section. Audit 2026-07-22, finding F-002: reading only
-		// `stepsBySection[sIdx + 1]` left `chainedLf` at its 0 default whenever
+		// *non-empty* section. Reading only `stepsBySection[sIdx + 1]` left
+		// `chainedLf` at its 0 default whenever
 		// the immediately-following section had no steps (empty, or
 		// comment-only — comments are filtered out of stepsBySection above),
 		// which chained the current section to T-zero instead of to whatever

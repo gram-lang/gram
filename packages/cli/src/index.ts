@@ -5,8 +5,8 @@ import { version } from "../package.json";
 import { findProjectRoot } from "./core/workspace";
 import { join } from "node:path";
 
-// Audit 2026-07-22, cli finding B-2: Bun auto-loads `.env`, Node doesn't —
-// `gram init`/`gram config set` both write API keys to `.env`
+// Bun auto-loads `.env`, Node doesn't — `gram init`/`gram config set` both
+// write API keys to `.env`
 // (services/config-manager.ts), so every npm-installed user (the published
 // binary's shebang is `#!/usr/bin/env node`) hit "Missing API key" after
 // following the documented onboarding flow, while it worked for whoever

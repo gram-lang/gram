@@ -33,14 +33,13 @@ function formatMass(grams: number): string {
 	return `${fmtNumber(Math.round(grams), 0)} g`;
 }
 
-// Audit 2026-07-22, finding cli(c): this used to be its own hardcoded list
-// that didn't match the canonical categories i18n defines — not even in
-// English ("Fish" vs "Seafood", "Produce" vs "Vegetables", "Fat" vs "Oils",
-// "Spice" vs "Spices"). A category from the ingredient DB that doesn't match
-// any entry here just sorts alphabetically after the matched ones (see
-// below), so this is purely the preferred sort order, not a validation list.
-// Phase 17: now follows the project's declared language (`opts.lang`,
-// resolved per call — the TODO this replaces couldn't do that from a
+// This used to be its own hardcoded list that didn't match the canonical
+// categories i18n defines — not even in English ("Fish" vs "Seafood",
+// "Produce" vs "Vegetables", "Fat" vs "Oils", "Spice" vs "Spices"). A
+// category from the ingredient DB that doesn't match any entry here just
+// sorts alphabetically after the matched ones (see below), so this is
+// purely the preferred sort order, not a validation list. It now follows
+// the project's declared language (`opts.lang`, resolved per call, not a
 // module-level constant computed once at import time).
 
 export async function buildShoppingList(
@@ -53,8 +52,8 @@ export async function buildShoppingList(
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
 
-	// Audit 2026-07-22, i18n finding F-03, Phase 18: `IngredientData.category`
-	// stores a stable key (e.g. "vegetables") going forward, but a database
+	// `IngredientData.category` stores a stable key (e.g. "vegetables") going
+	// forward, but a database
 	// enriched before this fix — or authored by hand — may still have a
 	// translated label ("Vegetables"/"Légumes") written there directly.
 	// Resolve a recognized key to its display label; anything else (a legacy

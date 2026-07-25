@@ -97,8 +97,8 @@ export interface UnitMap {
 	map: Record<string, number>;
 }
 
-// Audit 2026-07-22, i18n finding F-02/F-05, Phase 17: previously declared in
-// `@gram-lang/analyzer` (`mass_standardization.ts`) — a second package owning
+// Previously declared in `@gram-lang/analyzer` (`mass_standardization.ts`)
+// — a second package owning
 // canonical -> physical-factor knowledge for the same units i18n already
 // owns alias -> canonical resolution for. `unit-inventory-invariant.test.ts`
 // (this package's tests/) checks the two stay in sync now that they're

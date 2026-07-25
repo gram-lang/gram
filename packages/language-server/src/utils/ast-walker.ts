@@ -19,8 +19,8 @@ export interface IntermediateDeclWithSection {
 	step: StepAST | null;
 }
 
-// Audit 2026-07-22, parser finding I3(1): `RecipeAST.children` isn't always
-// `SectionAST[]` — the grammar's implicit-content path (no `## Section`
+// `RecipeAST.children` isn't always `SectionAST[]` — the grammar's
+// implicit-content path (no `## Section`
 // header anywhere) and the leading-blocks-before-the-first-header case
 // (`Content_explicit`'s optional leading `Block*`) both place `Step`/
 // `Comment` nodes directly under `Recipe`. The 3 walkers below used to

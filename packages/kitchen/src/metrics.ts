@@ -60,8 +60,8 @@ export function calculatePreparationTime(
 			"preparation" in item &&
 			item.preparation
 		) {
-			// Audit 2026-07-22, kitchen finding F-016: createCleanUsage never
-			// sets `.type` on a plain ingredient, so an `item.type ===
+			// createCleanUsage never sets `.type` on a plain ingredient, so an
+			// `item.type ===
 			// "ingredient"` check (removed above) was always dead — this is
 			// the only branch that ever actually added the 2min preparation
 			// overhead for a non-alternative ingredient.
