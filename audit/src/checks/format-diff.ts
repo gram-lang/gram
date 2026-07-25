@@ -11,6 +11,8 @@ function rankOf(changes: FormatterChanges): number {
 }
 
 export function checkFormatDiff(snippet: Snippet): Finding[] {
+	if (snippet.skipFormatCheck) return [];
+
 	try {
 		const { changes } = formatGram(snippet.content);
 		if (!hasChanges(changes)) return [];

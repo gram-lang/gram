@@ -81,7 +81,17 @@ export const RAW_SOURCE_CALL_TARGETS = [
 
 export const TMPFILE_WRITE_CALL_TARGETS = ["writeFile", "writeFileSync"] as const;
 
-// A string must contain at least one of these to be considered plausible
-// Gram content (as opposed to a bare filename/URI string like
-// "file:///a.gram" or a `.gram` config directory name).
-export const GRAM_SIGNAL_PATTERN = /(@|#|~|\^|->&|##|\n)/;
+// Test files whose whole purpose is exercising the formatter on deliberately
+// non-canonical input (that's what they're testing: formatGram fixing it) —
+// a format-diff finding there is never a mistake to review.
+export const FORMATTER_TEST_FILES: string[] = [
+	"packages/format/tests/formatter.test.ts",
+	"packages/language-server/tests/formatting-parity.test.ts",
+];
+
+// A string must contain at least one real Gram sigil to be considered
+// plausible Gram content — NOT a bare newline, which matches almost any
+// multi-line fixture regardless of language (e.g. a YAML ingredient database
+// written via writeFileSync in a language-server test) and would misclassify
+// it as Gram source.
+export const GRAM_SIGNAL_PATTERN = /(@|#|~|\^|->&)/;

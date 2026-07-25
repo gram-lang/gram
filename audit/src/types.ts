@@ -27,6 +27,11 @@ export interface Snippet {
 	// page), or it's a fixture that intentionally triggers warnings by design
 	// (e.g. a "with_warnings" fixture).
 	skipWarningsCheck?: boolean;
+	// true: don't run the format round-trip check on this snippet — it comes
+	// from the formatter's own test suite, where the content is deliberately
+	// non-canonical (that's the whole point: testing that formatGram fixes
+	// it), so a format-diff finding there is never a mistake to review.
+	skipFormatCheck?: boolean;
 }
 
 export type CheckName =

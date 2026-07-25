@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import ts from "typescript";
 import { classifyCallExpectation } from "../classify";
-import { RAW_SOURCE_CALL_TARGETS, REPO_ROOT } from "../config";
+import { FORMATTER_TEST_FILES, RAW_SOURCE_CALL_TARGETS, REPO_ROOT } from "../config";
 import type { Snippet, SkippedExtraction } from "../types";
 import { walkFiles } from "../util/walk-files";
 
@@ -127,6 +127,7 @@ export function extractInlineTestLiterals(): {
 				// cares about (or deliberately doesn't) — that's a strictly more
 				// reliable ground truth than re-deriving "expected" warnings here.
 				skipWarningsCheck: true,
+				skipFormatCheck: FORMATTER_TEST_FILES.includes(relPath),
 			});
 		}
 	}
