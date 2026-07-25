@@ -68,10 +68,10 @@ export function lookupIngredient(
 export function buildIngredientLookupSet(db: IngredientDB): Set<string> {
 	const set = new Set<string>();
 	for (const [key, entry] of Object.entries(db)) {
-		set.add(key); // slug key
-		set.add(entry.name.toLowerCase()); // canonical name
+		set.add(key);
+		set.add(entry.name.toLowerCase());
 		for (const alias of entry.aliases ?? []) {
-			set.add(alias.toLowerCase()); // aliases
+			set.add(alias.toLowerCase());
 		}
 	}
 	return set;

@@ -144,12 +144,9 @@ function refresh(uri: string, text: string, version?: number) {
 		diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB),
 	});
 
-	// Send live preview HTML to the client
 	if (state.compilation) {
 		try {
-			const html = toHTML(state.compilation, {
-				// You can add default styles or icons here if needed, but defaults usually work
-			});
+			const html = toHTML(state.compilation, {});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);

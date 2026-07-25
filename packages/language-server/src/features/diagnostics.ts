@@ -60,7 +60,6 @@ export function provideDiagnostics(
 
 	if (!state.ast) return diagnostics;
 
-	// Compiler warnings → LSP diagnostics
 	if (state.compilation?.warnings) {
 		for (const w of state.compilation.warnings) {
 			const range = w.loc ? locToRange(state.lineStarts, w.loc) : ZERO_RANGE;
@@ -74,7 +73,6 @@ export function provideDiagnostics(
 		}
 	}
 
-	// Unused intermediate declarations (declared but never referenced)
 	const declared = collectIntermediates(state.ast);
 	const usedNames = new Set(collectReferences(state.ast).map((r) => r.name));
 	for (const { decl } of declared) {
@@ -92,7 +90,6 @@ export function provideDiagnostics(
 		}
 	}
 
-	// Unknown ingredients — only when an ingredient DB is loaded
 	if (ingredientLookupSet.size > 0) {
 		const hasDB = Object.keys(ingredientDB).length > 0;
 		for (const ingredient of collectIngredients(state.ast)) {
@@ -117,7 +114,6 @@ export function provideDiagnostics(
 		}
 	}
 
-	// Missing frontmatter title
 	if (!state.ast.meta || !(state.ast.meta as any).title) {
 		diagnostics.push({
 			severity: DiagnosticSeverity.Warning,

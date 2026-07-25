@@ -28,7 +28,6 @@ export function provideCodeActions(
 	const actions: CodeAction[] = [];
 
 	for (const diag of diagnostics) {
-		// Quick fix: add missing title to frontmatter
 		if (diag.code === "MISSING_TITLE") {
 			if (state.text.startsWith("---")) {
 				const titleInsert: TextEdit = {
@@ -47,7 +46,6 @@ export function provideCodeActions(
 			}
 		}
 
-		// Quick fix: remove unused intermediate declaration
 		if (diag.code === "UNUSED_INTERMEDIATE") {
 			const msg =
 				typeof diag.message === "string" ? diag.message : diag.message.value;
@@ -76,7 +74,6 @@ export function provideCodeActions(
 			}
 		}
 
-		// Quick fix: replace misspelled ingredient name with fuzzy suggestion
 		if (diag.code === "UNKNOWN_INGREDIENT") {
 			const suggestion = (diag.data as { suggestion?: string } | undefined)
 				?.suggestion;
@@ -134,7 +131,6 @@ export function provideCodeActions(
 			}
 		}
 
-		// Quick fix: declare missing intermediate at end of current section
 		if (diag.code === "UNDEFINED_REFERENCE") {
 			const msg =
 				typeof diag.message === "string" ? diag.message : diag.message.value;

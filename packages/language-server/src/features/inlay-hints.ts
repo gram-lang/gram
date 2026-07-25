@@ -7,7 +7,6 @@ export function provideInlayHints(state: DocumentState): InlayHint[] {
 
 	const metrics = state.compilation.metrics;
 
-	// Find the exact line of the title in the text
 	let titleLine = 0;
 	let titleChar = 0;
 	const lines = state.text.split("\n");
@@ -20,7 +19,6 @@ export function provideInlayHints(state: DocumentState): InlayHint[] {
 	}
 
 	if (metrics.totalTime > 0) {
-		// Only show total time if active time is not identical to avoid noise
 		const totalMinutes = Math.round(metrics.totalTime);
 		const hours = Math.floor(totalMinutes / 60);
 		const mins = totalMinutes % 60;

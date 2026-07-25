@@ -5,7 +5,6 @@ import { offsetToPosition } from "../utils/position";
 export function provideFoldingRanges(state: DocumentState): FoldingRange[] {
 	const ranges: FoldingRange[] = [];
 
-	// Frontmatter: scan for opening and closing ---
 	const fmMatch = state.text.match(/^---\r?\n[\s\S]*?\n---/m);
 	if (fmMatch) {
 		const fmEnd = state.text.indexOf("\n---", 3);
@@ -17,7 +16,6 @@ export function provideFoldingRanges(state: DocumentState): FoldingRange[] {
 
 	if (!state.ast) return ranges;
 
-	// Sections
 	for (const section of state.ast.children) {
 		if (!section.loc) continue;
 		const startLine = offsetToPosition(

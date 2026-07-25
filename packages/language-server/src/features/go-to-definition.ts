@@ -11,14 +11,12 @@ export function provideDefinition(
 
 	const offset = positionToOffset(state.lineStarts, position);
 
-	// Find which reference is under the cursor
 	const refs = collectReferences(state.ast);
 	const ref = refs.find(
 		(r) => r.loc && r.loc.start <= offset && offset <= r.loc.end,
 	);
 	if (!ref) return null;
 
-	// Find the matching intermediate declaration
 	const decls = collectIntermediates(state.ast);
 	const match = decls.find((d) => d.decl.name === ref.name);
 	if (!match?.decl.loc) return null;

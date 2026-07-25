@@ -39,7 +39,6 @@ export function prepareName(
 	const found = findNameAtOffset(state.ast, offset);
 	if (!found) return null;
 
-	// Find the token to get its start offset
 	const decls = collectIntermediates(state.ast);
 	const decl = decls.find(
 		(d) =>

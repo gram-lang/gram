@@ -111,39 +111,37 @@ function walkIngredient(
 	if (!ing.loc) return;
 	let pos = ing.loc.start;
 
-	// @ sigil
 	if (text[pos] === "@") {
 		emit(out, pos, 1, T.keyword);
 		pos++;
 	}
 
-	// Modifier chars (can be combined: @?- etc.)
+	// Modifier chars can be combined: @?- etc.
 	const modStart = pos;
 	while (pos < ing.loc.end && "-?&*=".includes(text[pos] ?? "")) pos++;
 	if (pos > modStart) emit(out, modStart, pos - modStart, T.operator);
 
-	// Name — ends at { < ( newline or end of token
+	// Name ends at { < ( newline or end of token
 	const nameStart = pos;
 	while (pos < ing.loc.end && !"{<(\n".includes(text[pos] ?? "")) pos++;
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
 	if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.parameter);
 
-	// Main quantity
 	if (isQuantity(ing.quantity)) {
 		emitQuantity(out, ing.quantity, text);
 	} else if (isTextQuantity(ing.quantity)) {
 		emitTextQtyWithText(out, ing.quantity, text);
 	}
 
-	// Composite part: <@name{qty} stored in ing.composite, within the same loc span
+	// Composite part <@name{qty} is stored in ing.composite, within the same loc span
 	if (ing.composite) {
-		// Find <@ in the source after the main ingredient (the composite is always contiguous)
+		// The composite is always contiguous with the main ingredient, so search from just past its start
 		const ltAt = text.indexOf("<@", ing.loc.start + 1);
 		if (ltAt >= 0 && ltAt < ing.loc.end) {
-			emit(out, ltAt, 1, T.operator); // <
-			emit(out, ltAt + 1, 1, T.keyword); // @
+			emit(out, ltAt, 1, T.operator);
+			emit(out, ltAt + 1, 1, T.keyword);
 			const compNameStart = ltAt + 2;
-			emit(out, compNameStart, ing.composite.parent.length, T.parameter); // composite name
+			emit(out, compNameStart, ing.composite.parent.length, T.parameter);
 			if (isQuantity(ing.composite.quantity)) {
 				emitQuantity(out, ing.composite.quantity, text);
 			}
@@ -155,24 +153,20 @@ function walkCookware(out: RawToken[], cw: CookwareAST, text: string): void {
 	if (!cw.loc) return;
 	let pos = cw.loc.start;
 
-	// # sigil
 	if (text[pos] === "#") {
 		emit(out, pos, 1, T.keyword);
 		pos++;
 	}
 
-	// Modifiers
 	const modStart = pos;
 	while (pos < cw.loc.end && "-?&*=".includes(text[pos] ?? "")) pos++;
 	if (pos > modStart) emit(out, modStart, pos - modStart, T.operator);
 
-	// Name
 	const nameStart = pos;
 	while (pos < cw.loc.end && !"{(\n".includes(text[pos] ?? "")) pos++;
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
 	if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.parameter);
 
-	// Quantity
 	if (isQuantity(cw.quantity)) {
 		emitQuantity(out, cw.quantity, text);
 	}
@@ -182,19 +176,16 @@ function walkReference(out: RawToken[], ref: ReferenceAST, text: string): void {
 	if (!ref.loc) return;
 	let pos = ref.loc.start;
 
-	// & sigil
 	if (text[pos] === "&") {
 		emit(out, pos, 1, T.keyword);
 		pos++;
 	}
 
-	// Name
 	const nameStart = pos;
 	while (pos < ref.loc.end && !"{(\n".includes(text[pos] ?? "")) pos++;
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
 	if (nameTrimLen > 0) emit(out, nameStart, nameTrimLen, T.variable);
 
-	// Optional quantity
 	if (isQuantity(ref.quantity)) {
 		emitQuantity(out, ref.quantity, text);
 	} else if (isTextQuantity(ref.quantity)) {
@@ -206,7 +197,6 @@ function walkTimer(out: RawToken[], timer: TimerAST, text: string): void {
 	if (!timer.loc) return;
 	let pos = timer.loc.start;
 
-	// ~ sigil
 	if (text[pos] === "~") {
 		emit(out, pos, 1, T.keyword);
 		pos++;
@@ -257,8 +247,8 @@ function walkTemperature(
 		const absOpen = bodyStart + braceOpen;
 		const absClose =
 			bodyStart + (braceClose >= 0 ? braceClose : body.length - 1);
-		emit(out, absOpen, 1, T.operator); // {
-		emit(out, absClose, 1, T.operator); // }
+		emit(out, absOpen, 1, T.operator);
+		emit(out, absClose, 1, T.operator);
 	}
 }
 
@@ -270,11 +260,9 @@ function walkIntermediate(
 	if (!decl.loc) return;
 	let pos = decl.loc.start;
 
-	// ->&  (3 chars)
-	emit(out, pos, 3, T.keyword);
+	emit(out, pos, 3, T.keyword); // "->&" is always 3 chars
 	pos += 3;
 
-	// Name
 	const nameStart = pos;
 	while (pos < decl.loc.end && text[pos] !== "{" && text[pos] !== "\n") pos++;
 	const nameTrimLen = text.slice(nameStart, pos).trimEnd().length;
@@ -290,7 +278,7 @@ function walkIntermediate(
 function walkStep(out: RawToken[], step: StepAST, text: string): void {
 	if (!step.loc) return;
 
-	// Action verb [Mix]
+	// e.g. an action verb like [Mix]
 	if (step.action && text[step.loc.start] === "[") {
 		const closeIdx = text.indexOf("]", step.loc.start);
 		if (closeIdx > step.loc.start) {
@@ -319,15 +307,13 @@ function walkStep(out: RawToken[], step: StepAST, text: string): void {
 }
 
 function walkSection(out: RawToken[], section: SectionAST, text: string): void {
-	// Section header: ## Title
 	if (
 		section.loc &&
 		text.slice(section.loc.start, section.loc.start + 2) === "##"
 	) {
 		const headerStart = section.loc.start;
-		emit(out, headerStart, 2, T.keyword); // ##
+		emit(out, headerStart, 2, T.keyword);
 
-		// Title starts after ## and optional spaces
 		let titlePos = headerStart + 2;
 		while (titlePos < text.length && text[titlePos] === " ") titlePos++;
 
@@ -339,13 +325,12 @@ function walkSection(out: RawToken[], section: SectionAST, text: string): void {
 			const idx = text.indexOf(marker, titlePos);
 			if (idx >= 0 && idx < titleEnd) titleEnd = idx;
 		}
-		// Trim trailing spaces from title
 		while (titleEnd > titlePos && text[titleEnd - 1] === " ") titleEnd--;
 		if (titleEnd > titlePos)
 			emit(out, titlePos, titleEnd - titlePos, T.namespace);
 	}
 
-	// Intermediate decl in section header (## Title ->&name{})
+	// e.g. a section header with a trailing intermediate decl: ## Title ->&name{}
 	if (section.intermediateDecl) {
 		walkIntermediate(out, section.intermediateDecl, text);
 	}
