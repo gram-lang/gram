@@ -10,11 +10,11 @@ portions: 10
 
 ## Pâte ~{-1d} ->&pâte
 
-[Mélanger] Dans un #cul de poule{}, la @farine{300 g}, le @sucre{500 g}, et le @sel{3 g}. ->&poudres{}
+[Mélanger] Dans un #cul de poule{}, la @farine{300 g}, le @sucre{500 g}, et le @sel{3 g}. ->&poudres
 
 [Chauffer] Dans une #grande casserole{}, porter le @lait{1 l}, le @beurre{100 g}, et la @gousse de vanille{1}(fendue et grattée) à ^{85°C}. ->&lait chaud{}
 
-[Mélanger] Verser le &lait chaud{} sur les &poudres{}. Fouetter vigoureusement.
+[Mélanger] Verser le &lait chaud{} sur les &poudres. Fouetter vigoureusement.
 
 [Incorporer] Les @jaunes d'oeufs{6}<@oeufs{6} et le @rhum{100 ml}.
 
