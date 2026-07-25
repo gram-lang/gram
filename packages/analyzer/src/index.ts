@@ -139,26 +139,18 @@ function trackMissingIngredient(
 }
 
 /**
- * Main entry point for recipe physical analysis.
- * Takes a pure structural CompilationResult and a macro-ingredient database,
- * then enriches it with calculated masses, yields, and nutritional profiles.
+ * Pass 1: traverses all recipe sections to calculate physical ingredient
+ * masses, mutating `sections` in place and returning the flat list of raw
+ * ingredient usages (composites/alternatives excluded per-item as noted
+ * below) that later passes fold into shopping-list and metric totals.
  */
-export function analyze(
-	result: CompilationResult,
+function standardizeSectionMasses(
+	sections: AnalyzedSection[],
 	database: Record<string, IngredientData>,
-	options?: AnalyzerOptions,
-): AnalysisResult {
-	const opts = AnalyzerOptionsSchema.parse(options || {});
-	const missingIngredientsSet = new Set<string>();
-
-	const sections: AnalyzedSection[] =
-		typeof structuredClone === "function"
-			? structuredClone(result.sections)
-			: JSON.parse(JSON.stringify(result.sections));
-
-	const overrides = parseDensityOverrides(result.meta);
-
-	// 1. Traverse all recipe sections to calculate physical ingredient masses
+	overrides: Record<string, number>,
+	opts: AnalyzerOptions,
+	missingIngredientsSet: Set<string>,
+): AnalyzedUsage[] {
 	const allRawIngredients: AnalyzedUsage[] = [];
 	sections.forEach((sec) => {
 		if (!sec.ingredients) sec.ingredients = [];
@@ -214,9 +206,18 @@ export function analyze(
 		sec.metrics = calculateMassMetrics(sec.ingredients);
 	});
 
-	const globalMassMetrics = calculateMassMetrics(allRawIngredients);
+	return allRawIngredients;
+}
 
-	// 1.5. Secondary pass: resolve Relative Quantities
+/**
+ * Pass 1.5: resolves Relative Quantities (`% of &target`), mutating
+ * `sections` in place. Must run after `standardizeSectionMasses` — it reads
+ * the `normalizedMass` that pass just computed on the target ingredient.
+ */
+function resolveRelativeQuantities(
+	sections: AnalyzedSection[],
+	warnings: CompilationResult["warnings"],
+): void {
 	sections.forEach((sec) => {
 		sec.ingredients.forEach((item) => {
 			if (item.formula?.target) {
@@ -250,7 +251,7 @@ export function analyze(
 					item.unit = "g";
 					item.conversionMethod = "relative";
 				} else {
-					result.warnings.push({
+					warnings.push({
 						code: WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS,
 						message: `Cannot compute relative quantity for '${item.name || item.id}' because the mass of target '${item.formula.target}' is unknown.`,
 						item: item.name || item.id,
@@ -259,9 +260,15 @@ export function analyze(
 			}
 		});
 	});
+}
 
-	// 1.8. Sync analyzed values back into step content objects using _usageId
-	// (Because cleanObject deep clones during compilation, referential integrity is lost)
+/**
+ * Pass 1.8: syncs analyzed values back into step content objects using
+ * `_usageId` (because cleanObject deep clones during compilation,
+ * referential integrity between a section's ingredient list and its steps'
+ * inline mentions is lost, so this re-links them by id).
+ */
+function syncEnrichedFieldsIntoSteps(sections: AnalyzedSection[]): void {
 	sections.forEach((sec) => {
 		const usageMap = new Map<string, AnalyzedUsage>();
 		sec.ingredients.forEach((i) => {
@@ -328,12 +335,23 @@ export function analyze(
 			}
 		});
 	});
+}
 
-	// 2. Traverse and enrich the master Shopping List
-	let shopping_list: CompilationResult["shopping_list"] = result.shopping_list
-		? structuredClone(result.shopping_list)
-		: [];
-	shopping_list.forEach((item) => {
+/**
+ * Pass 2: enriches the master Shopping List with the same physical masses
+ * computed per-section in pass 1 (composites/alternatives/plain items each
+ * need their own aggregation rule), then resolves database aliases and
+ * merges cross-unit entries for the same canonical ingredient (e.g.
+ * "beurre"/"butter", or "100g" + "1 cup" of flour).
+ */
+function enrichShoppingList(
+	shoppingList: CompilationResult["shopping_list"],
+	allRawIngredients: AnalyzedUsage[],
+	database: Record<string, IngredientData>,
+	overrides: Record<string, number>,
+	opts: AnalyzerOptions,
+): CompilationResult["shopping_list"] {
+	shoppingList.forEach((item) => {
 		if (opts.enableMassStandardization !== false) {
 			if (
 				item.type === "composite" &&
@@ -449,17 +467,30 @@ export function analyze(
 	// 2.8. Resolve database aliases and merge cross-unit entries for the same
 	// canonical ingredient (e.g. "beurre"/"butter", or "100g" + "1 cup" of flour).
 	if (opts.enableMassStandardization !== false) {
-		shopping_list = aggregateShoppingList(shopping_list, database);
+		shoppingList = aggregateShoppingList(shoppingList, database);
 	}
 
-	// 2.5 Calculate Baker's Percentages (if a reference is defined)
+	return shoppingList;
+}
+
+/**
+ * Pass 2.5: calculates Baker's Percentages (if a reference is defined),
+ * mutating both the shopping list and the AST sections in place. Must run
+ * after `enrichShoppingList` — it needs every item's final `normalizedMass`.
+ */
+function applyBakersMath(
+	shoppingList: CompilationResult["shopping_list"],
+	sections: AnalyzedSection[],
+	opts: AnalyzerOptions,
+	warnings: CompilationResult["warnings"],
+): void {
 	let bakersReferenceMass: number | null = null;
 
 	if (opts.enableBakersMath !== false) {
 		// Find reference by explicit option or by the `*` modifier
 		let bakersReferenceItem: CompilationResult["shopping_list"][number] | null =
 			null;
-		for (const item of shopping_list) {
+		for (const item of shoppingList) {
 			if (
 				(opts.bakersReference && item.id === opts.bakersReference) ||
 				item.modifiers?.includes("bakers_percentage")
@@ -477,7 +508,7 @@ export function analyze(
 			// derived from another ingredient's percentage can't also be the base —
 			// that's a circular definition, not a bug in the math, so we refuse
 			// silently, disable Baker's Math for this run, and explain why.
-			result.warnings.push({
+			warnings.push({
 				code: WarningCode.INVALID_BAKERS_REFERENCE,
 				message: `Cannot use '${bakersReferenceItem.name || bakersReferenceItem.id}' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.`,
 				item: bakersReferenceItem.name || bakersReferenceItem.id,
@@ -487,7 +518,7 @@ export function analyze(
 		} else if (opts.bakersReference !== undefined) {
 			// Baker's Math was explicitly requested (bare --bakers-math or
 			// --bakers-reference=<id>) but nothing matched.
-			result.warnings.push({
+			warnings.push({
 				code: WarningCode.NO_BAKERS_REFERENCE,
 				message: `No Baker's Percentage reference found. Mark an ingredient with the \`*\` modifier, or pass --bakers-reference=<id>.`,
 			});
@@ -500,7 +531,7 @@ export function analyze(
 					: undefined;
 
 			// Apply to shopping list
-			shopping_list.forEach((item) => {
+			shoppingList.forEach((item) => {
 				const bp = computeBakers(item.normalizedMass);
 				if (bp !== undefined) item.bakersPercentage = bp;
 			});
@@ -547,22 +578,77 @@ export function analyze(
 			}
 		}
 	}
+}
 
-	// 3. Estimate full nutritional profiles (calories, macros) based on portion counts
-	let nutrition: NutritionMetrics | undefined;
-	if (opts.enableNutritionalEstimation !== false) {
-		// shopping_list's declared type is kitchen's general
-		// (CompositeItem | ShoppingListItem | Usage)[] — wider than
-		// NutritionItem's AnalyzedUsage-based shape (e.g. `conversionMethod`
-		// is a specific literal union there, plain `string` in kitchen's
-		// type), but this analyzer-internal call always receives exactly the
-		// analyzer-populated values calculateNutrition expects.
-		nutrition = calculateNutrition(
-			shopping_list as NutritionItem[],
-			database,
-			opts.portions || 1,
-		);
-	}
+/**
+ * Pass 3: estimates a full nutritional profile (calories, macros) based on
+ * portion counts, from the fully-enriched shopping list.
+ */
+function estimateNutrition(
+	shoppingList: CompilationResult["shopping_list"],
+	database: Record<string, IngredientData>,
+	opts: AnalyzerOptions,
+): NutritionMetrics | undefined {
+	if (opts.enableNutritionalEstimation === false) return undefined;
+	// shopping_list's declared type is kitchen's general
+	// (CompositeItem | ShoppingListItem | Usage)[] — wider than
+	// NutritionItem's AnalyzedUsage-based shape (e.g. `conversionMethod`
+	// is a specific literal union there, plain `string` in kitchen's
+	// type), but this analyzer-internal call always receives exactly the
+	// analyzer-populated values calculateNutrition expects.
+	return calculateNutrition(
+		shoppingList as NutritionItem[],
+		database,
+		opts.portions || 1,
+	);
+}
+
+/**
+ * Main entry point for recipe physical analysis.
+ * Takes a pure structural CompilationResult and a macro-ingredient database,
+ * then enriches it with calculated masses, yields, and nutritional profiles.
+ */
+export function analyze(
+	result: CompilationResult,
+	database: Record<string, IngredientData>,
+	options?: AnalyzerOptions,
+): AnalysisResult {
+	const opts = AnalyzerOptionsSchema.parse(options || {});
+	const missingIngredientsSet = new Set<string>();
+
+	const sections: AnalyzedSection[] =
+		typeof structuredClone === "function"
+			? structuredClone(result.sections)
+			: JSON.parse(JSON.stringify(result.sections));
+
+	const overrides = parseDensityOverrides(result.meta);
+
+	const allRawIngredients = standardizeSectionMasses(
+		sections,
+		database,
+		overrides,
+		opts,
+		missingIngredientsSet,
+	);
+	const globalMassMetrics = calculateMassMetrics(allRawIngredients);
+
+	resolveRelativeQuantities(sections, result.warnings);
+	syncEnrichedFieldsIntoSteps(sections);
+
+	let shopping_list: CompilationResult["shopping_list"] = result.shopping_list
+		? structuredClone(result.shopping_list)
+		: [];
+	shopping_list = enrichShoppingList(
+		shopping_list,
+		allRawIngredients,
+		database,
+		overrides,
+		opts,
+	);
+
+	applyBakersMath(shopping_list, sections, opts, result.warnings);
+
+	const nutrition = estimateNutrition(shopping_list, database, opts);
 
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {
