@@ -85,8 +85,7 @@ GRAM {
     | "<@" singleWordName preparation?             -- bare
 
   // Cookware
-  // Specs say use braces too.
-  Cookware = 
+  Cookware =
     | CookwareAlternative
     | simpleCookware
 
@@ -95,8 +94,7 @@ GRAM {
     | "#" modifier* name alias? cookwareQuantity preparation? -- full
     | "#" modifier* singleWordName alias? preparation? -- bare
 
-  // Restrict cookware quantity to only numbers, NO UNITS.
-  // Allowed: {}, {2}
+  // Cookware quantity is numbers only, no units (e.g. {}, {2}) -- unlike ingredientQuantity.
   cookwareQuantity = "{" space* number? space* "}"
 
   // Timer
@@ -134,25 +132,12 @@ GRAM {
     | "&" refName ingredientQuantity -- full
     | "&" singleWordName             -- bare
 
-  // SyntaxChar used for name content exclusion
-  // Restricted to true delimiters that start a new component
-  syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":" 
-  
-  // Name can contain '&' or '@' or other symbols, as long as it doesn't look like a start of a new element if specific context requires it?
-  // Actually, standard grammar strategy: consume until a known delimiter.
-  // The delimiters are:
-  // - `{` (start of quantity)
-  // - `[` (start of alias)
-  // - `(` (start of preparation)
-  // - `<` (start of composite)
-  // - `|` (start of alternative)
-  // - newline
-  
-  // We removed @, #, ~, !, &, ?, * from syntaxChar list effectively allowing them in names.
+  // Delimiters that end a name (start of quantity/alias/preparation/composite/alternative).
+  // @, #, ~, !, &, ?, * are deliberately absent here, so names may contain them freely --
+  // only elementStart (below) treats those as starting a new element, and only in free text.
+  syntaxChar = "{" | "}" | "[" | "]" | "(" | ")" | "<" | "|" | ":"
 
-  
-  // ElementStart used for text content exclusion
-  // This remains strict to identify WHERE an element starts in free text.
+  // Stricter than syntaxChar: used to detect where an element starts within free text.
   elementStart = "@" | "#" | "~" | "^" | "//" | "/*" | "->&" | "&"
   
   nl = "\r"? "\n"

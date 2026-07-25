@@ -55,9 +55,6 @@ const grammar = ohm.grammar(grammarContent);
 // HELPERS
 // ----------------------------------------------------------------------------
 
-/**
- * Trims a string.
- */
 const clean = (str: string) => str.trim();
 
 const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:\.\d+)?)\s*(\p{L}+)$/u;
@@ -93,10 +90,6 @@ const parseRetroPlanning = (raw: string): RetroPlanningAST => {
 	return { raw, sign: 1, value: null, unit: null };
 };
 
-/**
- * Safely extracts the AST from an optional node (0 or 1 child).
- * Returns null if the node has no children.
- */
 // biome-ignore lint/suspicious/noExplicitAny: `node` is an Ohm CST node whose `toAST()` is added dynamically by semantics.addOperation below, not part of ohm-js's static Node type.
 const getOpt = (node: any) =>
 	node.children.length > 0 ? node.children[0].toAST() : null;
@@ -112,18 +105,13 @@ import {
 	makeRange,
 } from "./numbers";
 
-/**
- * Parses values from Frontmatter (removing quotes, brackets, etc.)
- */
 const parseFrontmatterValue = (val: string): string | string[] => {
 	val = val.trim();
-	// Helper to strip surrounding quotes
 	const strip = (s: string) =>
 		s && (s.startsWith("'") || s.startsWith('"')) && s[0] === s[s.length - 1]
 			? s.slice(1, -1)
 			: s;
 
-	// Handle Arrays [a, b]
 	if (val.startsWith("[") && val.endsWith("]")) {
 		const inner = val.slice(1, -1).trim();
 		return inner ? inner.split(",").map((s) => strip(s.trim())) : [];
@@ -172,7 +160,6 @@ semantics.addOperation("toAST", {
 	},
 
 	Frontmatter(_1, _2, kv, _3, _4) {
-		// Merge all KeyValues into a single object
 		return kv.children
 			.map((c) => c.toAST())
 			.reduce((acc, curr) => Object.assign(acc, curr), {});
@@ -211,7 +198,6 @@ semantics.addOperation("toAST", {
 
 		const ext = getOpt(extension);
 		if (ext) {
-			// headerExtension semantic action returns { retroPlanning, intermediateDecl }
 			retroPlanning = ext.retroPlanning;
 			intermediateDecl = ext.intermediateDecl;
 		}
@@ -251,10 +237,9 @@ semantics.addOperation("toAST", {
 	step(actionNode, line1, _nls, lines, _term): StepAST {
 		const action = getOpt(actionNode);
 
-		// Combine first line with subsequent lines, joined by a space
 		const content: unknown[] = [line1.toAST()];
 		lines.children.forEach((l) => {
-			content.push([{ type: ASTNodeType.Text, value: " " }]); // Space separator
+			content.push([{ type: ASTNodeType.Text, value: " " }]);
 			content.push(l.toAST());
 		});
 
@@ -673,5 +658,3 @@ export function getAST(input: string): RecipeAST {
 	}
 	return semantics(match).toAST();
 }
-
-// export function parse removed. Use getAST() and then compileFromAST() from gram-compiler.
