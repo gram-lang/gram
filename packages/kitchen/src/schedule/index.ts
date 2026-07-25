@@ -1,4 +1,4 @@
-export type { StepSchedule, PassiveTask, ScheduledPassiveTask } from "./types";
+export type { StepSchedule } from "./types";
 export { scheduleALAP } from "./alap";
 export { serializeTracks } from "./tracks";
-export { rebaseAndCommit, type ScheduleMetrics } from "./rebase";
+export { rebaseAndCommit } from "./rebase";

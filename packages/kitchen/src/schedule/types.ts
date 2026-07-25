@@ -27,7 +27,7 @@ export interface StepSchedule {
 	lf: number;
 }
 
-export interface PassiveTask {
+interface PassiveTask {
 	name: string;
 	duration: number;
 	localOffset: number;

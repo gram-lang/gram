@@ -9,7 +9,7 @@ import type { ProcessedSection } from "./types";
  * kitchen finding F-012: the algorithm was already correct, only ever wired
  * to one of the two dependency domains the language actually has.
  */
-export function findCycles(graph: Map<string, Set<string>>): Set<string> {
+function findCycles(graph: Map<string, Set<string>>): Set<string> {
 	const visited = new Set<string>();
 	const recursionStack = new Set<string>();
 	const cycles = new Set<string>();
