@@ -12,7 +12,6 @@ const emptyChanges = {
 	headerSpacing: 0,
 	tabsToSpaces: 0,
 	consecutiveBlankLines: 0,
-	sectionSpacing: 0,
 	trailingWhitespace: 0,
 	eofNewline: false,
 };
@@ -106,6 +105,14 @@ describe("formatGram", () => {
 		expect(changes.headerSpacing).toBe(0);
 	});
 
+	it("does not mangle a bare #cookware reference at the start of a line", () => {
+		const { content, changes } = formatGram(
+			"## Prep\n\n#pan(20cm) heat up.\n",
+		);
+		expect(content).toBe("## Prep\n\n#pan(20cm) heat up.\n");
+		expect(changes.headerSpacing).toBe(0);
+	});
+
 	it("converts tabs to 4 spaces in the body", () => {
 		const { content, changes } = formatGram("Add\t@flour{200g}.\n");
 		expect(content).toBe("Add    @flour{200g}.\n");
@@ -118,34 +125,34 @@ describe("formatGram", () => {
 		expect(changes.trailingWhitespace).toBe(2);
 	});
 
-	it("collapses 4+ consecutive newlines to 3 (max 2 blank lines)", () => {
-		const { content, changes } = formatGram("Line one.\n\n\n\n\nLine two.\n");
-		expect(content).toBe("Line one.\n\n\nLine two.\n");
+	it("collapses 3+ consecutive newlines to 2 (exactly one blank line)", () => {
+		const { content, changes } = formatGram("Line one.\n\n\n\nLine two.\n");
+		expect(content).toBe("Line one.\n\nLine two.\n");
 		expect(changes.consecutiveBlankLines).toBe(1);
 	});
 
-	it("does not touch exactly 2 blank lines (3 newlines)", () => {
-		const { content, changes } = formatGram("Line one.\n\n\nLine two.\n");
-		expect(content).toBe("Line one.\n\n\nLine two.\n");
+	it("does not touch exactly 1 blank line (2 newlines)", () => {
+		const { content, changes } = formatGram("Line one.\n\nLine two.\n");
+		expect(content).toBe("Line one.\n\nLine two.\n");
 		expect(changes.consecutiveBlankLines).toBe(0);
 	});
 
-	it("promotes single blank line to 2 blank lines before a section header", () => {
-		const { content, changes } = formatGram("Intro.\n\n## Section\nStep.\n");
-		expect(content).toBe("Intro.\n\n\n## Section\nStep.\n");
-		expect(changes.sectionSpacing).toBe(1);
-	});
-
-	it("does not re-promote a section header that already has 2 blank lines", () => {
+	it("collapses 2 blank lines before a section header down to 1", () => {
 		const { content, changes } = formatGram("Intro.\n\n\n## Section\nStep.\n");
-		expect(content).toBe("Intro.\n\n\n## Section\nStep.\n");
-		expect(changes.sectionSpacing).toBe(0);
+		expect(content).toBe("Intro.\n\n## Section\nStep.\n");
+		expect(changes.consecutiveBlankLines).toBe(1);
 	});
 
-	it("does not promote spacing before a sub-section header (###)", () => {
-		const { content, changes } = formatGram("Intro.\n\n### Sub\nStep.\n");
+	it("does not touch a section header that already has exactly 1 blank line", () => {
+		const { content, changes } = formatGram("Intro.\n\n## Section\nStep.\n");
+		expect(content).toBe("Intro.\n\n## Section\nStep.\n");
+		expect(changes.consecutiveBlankLines).toBe(0);
+	});
+
+	it("collapses excess blank lines before a sub-section-looking (###) line too", () => {
+		const { content, changes } = formatGram("Intro.\n\n\n### Sub\nStep.\n");
 		expect(content).toBe("Intro.\n\n### Sub\nStep.\n");
-		expect(changes.sectionSpacing).toBe(0);
+		expect(changes.consecutiveBlankLines).toBe(1);
 	});
 
 	it("ensures a single newline at EOF when missing", () => {
@@ -161,7 +168,7 @@ describe("formatGram", () => {
 	});
 
 	it("reports no changes for already-clean content", () => {
-		const clean = "## Section\n\n\nAdd @flour{200g}.\n";
+		const clean = "## Section\n\nAdd @flour{200g}.\n";
 		const { content, changes } = formatGram(clean);
 		expect(content).toBe(clean);
 		expect(hasChanges(changes)).toBe(false);

@@ -9,7 +9,6 @@ export interface FormatterChanges {
 	headerSpacing: number;
 	tabsToSpaces: number;
 	consecutiveBlankLines: number;
-	sectionSpacing: number;
 	trailingWhitespace: number;
 	eofNewline: boolean;
 }
@@ -26,7 +25,6 @@ export function hasChanges(changes: FormatterChanges): boolean {
 		changes.headerSpacing > 0 ||
 		changes.tabsToSpaces > 0 ||
 		changes.consecutiveBlankLines > 0 ||
-		changes.sectionSpacing > 0 ||
 		changes.trailingWhitespace > 0 ||
 		changes.eofNewline
 	);
@@ -61,8 +59,6 @@ export function summarizeChanges(changes: FormatterChanges): string {
 		parts.push(
 			`${p(changes.consecutiveBlankLines, "blank line group")} collapsed`,
 		);
-	if (changes.sectionSpacing > 0)
-		parts.push(`${p(changes.sectionSpacing, "section")} spacing normalized`);
 	if (changes.trailingWhitespace > 0)
 		parts.push(
 			`${p(changes.trailingWhitespace, "line")} trailing whitespace removed`,
@@ -133,7 +129,6 @@ export function formatGram(source: string): {
 		headerSpacing: 0,
 		tabsToSpaces: 0,
 		consecutiveBlankLines: 0,
-		sectionSpacing: 0,
 		trailingWhitespace: 0,
 		eofNewline: false,
 	};
@@ -202,8 +197,15 @@ export function formatGram(source: string): {
 	// Rule 8 (from language-server): ensure exactly one space after a section
 	// header's hashes (##Title, ##  Title → ## Title). Distinct from Rule 12
 	// below (blank lines *before* a header) — this is the space *within* the
-	// header line itself.
-	body = body.replace(/^(#{1,3})[ \t]*(?=\S)/gm, (match, hashes: string) => {
+	// header line itself. Must match exactly "##" and not "###" (grammar.ohm's
+	// `header = "##" sp+ title ...` — there is no single- or triple-hash
+	// header form; Rule 12 below draws the same "##, not ###" line) — a
+	// `{1,3}` quantifier here previously also matched a bare `#cookware`
+	// reference at the start of a line (e.g. `#pan(20cm)`) and corrupted it
+	// into `# pan(20cm)`, which the parser no longer recognizes as cookware
+	// at all (found via the audit/ tool's calibration check against the
+	// human-verified docs corpus, see cookware.md's `#pan`/`#ramekins` examples).
+	body = body.replace(/^(##(?!#))[ \t]*(?=\S)/gm, (match, hashes: string) => {
 		const normalized = `${hashes} `;
 		if (match !== normalized) changes.headerSpacing++;
 		return normalized;
@@ -215,7 +217,7 @@ export function formatGram(source: string): {
 		return "    ";
 	});
 
-	// Rules 10-13 below are generic whitespace/newline hygiene, safe and
+	// Rules 10-12 below are generic whitespace/newline hygiene, safe and
 	// desired across the whole file — frontmatter included — so they run on
 	// the recombined content rather than `body` alone.
 	let content = frontmatter + body;
@@ -230,20 +232,27 @@ export function formatGram(source: string): {
 		})
 		.join("\n");
 
-	// Rule 11: Collapse 4+ consecutive newlines to 3 (max 2 blank lines globally)
-	content = content.replace(/\n{4,}/g, () => {
+	// Rule 11: Collapse 3+ consecutive newlines to 2 (exactly one blank line,
+	// everywhere — steps, sections, headers alike). Gram's canonical style is
+	// a single blank line between every step and/or section (see
+	// CLAUDE.local.md's "Gram syntax gotcha" and packages/kitchen/tests/
+	// fixtures/valid/*.gram) — never zero (that merges two lines into one
+	// step, a semantic change the formatter must never make on its own) and
+	// never two-or-more (purely cosmetic excess this rule removes). This used
+	// to cap at 2 blank lines and then separately *promote* a single blank
+	// line before a `##` header up to 2 (former Rule 12) — backwards from the
+	// actual convention, caught by the audit/ tool's calibration check
+	// flagging otherwise-correct, human-verified docs examples as
+	// "non-canonical". Collapsing to 1 blank line uniformly here already
+	// produces the right result before headers too, so the header-specific
+	// promotion rule is gone; nothing needs promoting since 1 blank line is
+	// now the target everywhere.
+	content = content.replace(/\n{3,}/g, () => {
 		changes.consecutiveBlankLines++;
-		return "\n\n\n";
+		return "\n\n";
 	});
 
-	// Rule 12: Promote to exactly 2 blank lines before section headers (##, not ###)
-	// Lookbehind prevents re-promoting if 2 blank lines already present (\n\n\n##)
-	content = content.replace(/(?<!\n)\n\n(##(?!#))/g, (_, heading) => {
-		changes.sectionSpacing++;
-		return `\n\n\n${heading}`;
-	});
-
-	// Rule 13: Ensure single newline at EOF
+	// Rule 12: Ensure single newline at EOF
 	const trimmedEnd = content.trimEnd();
 	const withEof = `${trimmedEnd}\n`;
 	if (withEof !== content) changes.eofNewline = true;
