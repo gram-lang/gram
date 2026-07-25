@@ -15,7 +15,7 @@ steps:
   build:
     image: oven/bun:1.3.14
     commands:
-      - apt-get update && apt-get install -y git
+      - apt-get update -qq && apt-get install -y -qq --no-install-recommends git
       - bun run build --filter='!@gram-lang/docs'
       # `prebuild` just regenerated grammar-content.ts from grammar.ohm — fail
       # here if a PR edited the grammar without committing the regenerated
@@ -45,7 +45,7 @@ steps:
   test:
     image: oven/bun:1.3.14
     commands:
-      - apt-get update && apt-get install -y git
+      - apt-get update -qq && apt-get install -y -qq --no-install-recommends git
       - bun test
 
   # Packs every @gram-lang/* package the CLI depends on with `bun pm pack`
@@ -69,15 +69,14 @@ steps:
   node-smoke:
     image: node:20
     commands:
-      - apt-get update && apt-get install -y jq
       - export REPO_DIR=$(pwd)
       - mkdir -p /tmp/smoke-install && cd /tmp/smoke-install
       - npm init -y
       - npm install $REPO_DIR/.smoke/*.tgz
       - node_modules/.bin/gram check $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram
       # stdout purity: `gram build` must emit nothing but the compiled JSON on
-      # stdout, so piping into `jq`/downstream tooling never breaks.
-      - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram | jq . > /dev/null
+      # stdout, so piping into `node`/downstream tooling never breaks.
+      - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram | node -e 'JSON.parse(require("fs").readFileSync(0, "utf-8"))'
       - node_modules/.bin/gram --help > /dev/null
       # a syntactically invalid recipe must fail loudly (non-zero exit), not
       # silently succeed with empty/partial output.
@@ -85,10 +84,10 @@ steps:
       # stdout purity, malformed-database case (audit 2026-07-22, cli finding
       # B-3): an invalid ingredient DB entry used to log its warning via
       # `log.warn` (@clack/prompts), which writes to stdout — corrupting
-      # `gram build | jq` the moment any entry failed validation. The warning
+      # `gram build | node` the moment any entry failed validation. The warning
       # must land on stderr, and stdout must stay valid, parseable JSON.
       - 'echo "broken: {physical: {density: not-a-number}}" > /tmp/bad-db.yaml'
-      - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram --db /tmp/bad-db.yaml 2>/tmp/bad-db-stderr.txt | jq . > /dev/null
+      - node_modules/.bin/gram build $REPO_DIR/packages/kitchen/tests/fixtures/valid/simple_recipe.gram --db /tmp/bad-db.yaml 2>/tmp/bad-db-stderr.txt | node -e 'JSON.parse(require("fs").readFileSync(0, "utf-8"))' > /dev/null
       - grep -q "Ignoring 1 invalid ingredient" /tmp/bad-db-stderr.txt
       # .env loaded under Node (audit 2026-07-22, cli finding B-2): only Bun
       # auto-loads `.env` — `gram init`/`gram config set` both write API keys
