@@ -17,7 +17,7 @@ Commencez par définir la pâte sucrée. Le symbole `@` est utilisé pour les in
 
 [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
 
-[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule. 
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
 [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}.
 ```
@@ -59,7 +59,7 @@ On fait cela à l'aide d'une **Déclaration Intermédiaire** (`->&nom`) à la fi
 
 [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
 
-[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule. 
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
 [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}.
 ```
@@ -201,7 +201,7 @@ portions: 8
 
 [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
 
-[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule. 
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
 [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
 

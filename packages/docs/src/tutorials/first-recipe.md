@@ -17,7 +17,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 
 [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
-[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
+[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
 [Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
 ```
@@ -59,7 +59,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 
 [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
-[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
+[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
 [Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
 ```
@@ -201,7 +201,7 @@ portions: 8
 
 [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
 
-[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together. 
+[Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
 [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
 

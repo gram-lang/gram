@@ -11,7 +11,7 @@ Imagine a recipe that asks you to make a dough and let it rest for 1 hour, and t
 ```gram
 [Knead] The @flour with the @water and let it rest ~_{1h}. ->&dough
 
-[Mix] The sauce ingredients ~{10min}. ->&sauce  
+[Mix] The sauce ingredients ~{10min}. ->&sauce
 
 [Bake] The &dough with the &sauce for ~_{30min}.
 ```
