@@ -1,5 +1,28 @@
 # @gram-lang/vscode-extension
 
+## 0.2.0-beta.0
+
+### Minor Changes
+
+- 938afcd: Add an interactive Gantt Chart view to the VS Code extension and export reusable Gantt chart rendering helpers (`toGanttHTML`, `attachGanttInteractivity`) from `@gram-lang/renderer`. Provides a real-time timeline visualization of recipe steps, background timers, and target serving times directly in your editor and the web playground.
+
+### Patch Changes
+
+- 064ba9f: Fixed syntax highlighting (TextMate grammar): a bare `@ingredient`, `#cookware`, or `<@parent` mention with no `{}` of its own would have its highlighted span incorrectly extend all the way to the next unrelated `{...}` on the line (e.g. a later `&reference{}`), coloring everything in between as if it were part of the same name. The name-matching patterns now stop at `@`, `#`, `~`, `^`, and `&`, the same sigils the compiler itself stops at.
+- Updated dependencies [7b246ae]
+- Updated dependencies [22190b8]
+- Updated dependencies [23e4286]
+- Updated dependencies [19a9f19]
+- Updated dependencies [73fde5e]
+- Updated dependencies [3fae598]
+- Updated dependencies [a55dca8]
+- Updated dependencies [d61d786]
+- Updated dependencies [2ed4707]
+- Updated dependencies [96bfbee]
+- Updated dependencies [938afcd]
+  - @gram-lang/renderer@1.0.0-beta.5
+  - @gram-lang/language-server@1.0.0-beta.5
+
 ## 0.1.4-beta.0
 
 ### Patch Changes

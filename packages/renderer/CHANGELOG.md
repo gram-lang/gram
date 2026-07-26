@@ -1,5 +1,52 @@
 # @gram-lang/renderer
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- 2ed4707: The Markdown, HTML, and printable/PDF outputs now show the same information consistently:
+
+  - Markdown recipes now include a nutrition summary (calories, carbs, protein, fat, etc.), which was previously only shown in HTML and print.
+  - Recipe comments now appear as numbered footnotes in Markdown and print output too, instead of only in HTML.
+  - When a shopping-list ingredient's purchasing weight differs from what actually goes in the bowl (e.g. "1 avocado" vs. its usable flesh), Markdown and print now show the extra "gross weight" note, matching HTML.
+  - When the same ingredient appears in incompatible units that can't be combined (e.g. "100g" and "1 cup" with no density available), Markdown and print now group them together with a "mixed units" warning, matching HTML.
+
+- 938afcd: Add an interactive Gantt Chart view to the VS Code extension and export reusable Gantt chart rendering helpers (`toGanttHTML`, `attachGanttInteractivity`) from `@gram-lang/renderer`. Provides a real-time timeline visualization of recipe steps, background timers, and target serving times directly in your editor and the web playground.
+
+### Patch Changes
+
+- 7b246ae: Removed all uses of `any` from the physical/nutrition analysis layer's internal types, typing them against the real shapes already exported by `@gram-lang/kitchen` and this package's own `AnalyzedUsage`/`NutritionItem`. No behavior change for this package beyond the fixes already released separately (see the relative-quantity type changeset). The renderer's printable/PDF view gained one internal `any` to stay compatible with the analyzer's now-stricter shopping-list type — purely a type-level adjustment, no output change.
+- 19a9f19: The `hideStepQty` rendering option (hides ingredient quantities from step text) now works with `toHTML` and `toMarkdown`, not just `toPrintHTML` — it was previously silently ignored by the other two.
+- 73fde5e: Fixed an HTML injection vulnerability (XSS) in `toHTML`'s timing-card tooltips: a section title or named timer containing HTML would render unescaped in the "Active Time" / "Total Time" tooltips, exploitable via the playground or the VS Code preview. Both are now properly escaped like every other text field.
+- 3fae598: `toHTML`, `toMarkdown`, and `toPrintHTML` now type their `data` parameter instead of accepting `any`. Typing it surfaced two real bugs, now fixed: the HTML nutrition panel's "incomplete data" warning was never actually shown (it read a field that never existed, always showing a blank 0-calorie panel instead), and the printable/PDF view displayed sodium in grams instead of milligrams (1000x too high).
+- a55dca8: `toMarkdown` now neutralizes raw HTML (`<` and `&`) in recipe titles, ingredient names, and step text. Previously, a recipe containing something like `<img onerror=...>` in its title would pass through untouched, which could run as a script if that Markdown was later converted to HTML — this is now escaped automatically, closing that gap for imported or shared recipes.
+- d61d786: `QuantityValueAST` (the parser's internal representation of a parsed number/fraction/range) is now a proper discriminated union instead of a flat interface with every field optional. This is an internal type-safety improvement with no behavior change — it's what would have caught, at compile time, a real bug fixed earlier in `diffRecipes` (checking `qty.from`/`qty.to`, fields that never existed on any variant).
+- Updated dependencies [b1aa8db]
+- Updated dependencies [3afd970]
+- Updated dependencies [8f7e887]
+- Updated dependencies [5194ba4]
+- Updated dependencies [1d86e74]
+- Updated dependencies [7b246ae]
+- Updated dependencies [f147b25]
+- Updated dependencies [9553678]
+- Updated dependencies [68a2a45]
+- Updated dependencies [7c83cf8]
+- Updated dependencies [dcaadd7]
+- Updated dependencies [0c2e818]
+- Updated dependencies [943e9f8]
+- Updated dependencies [24a108c]
+- Updated dependencies [970c32b]
+- Updated dependencies [23e4286]
+- Updated dependencies [901e90e]
+- Updated dependencies [064ba9f]
+- Updated dependencies [b1aa8db]
+- Updated dependencies [79d835c]
+- Updated dependencies [d61d786]
+  - @gram-lang/analyzer@1.0.0-beta.5
+  - @gram-lang/parser@1.0.0-beta.5
+  - @gram-lang/i18n@1.0.0-beta.5
+  - @gram-lang/kitchen@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Major Changes

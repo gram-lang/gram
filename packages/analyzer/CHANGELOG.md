@@ -1,5 +1,47 @@
 # @gram-lang/analyzer
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- b1aa8db: `convertUnit`, `standardizeMass`, and `analyze()` now accept an optional `lang` parameter/option, so unit names are resolved against the recipe's own language when there's an ambiguity between languages, instead of always falling back to a single global guess.
+
+  `UNIT_CONVERSIONS` (the mass/volume conversion table) has moved to `@gram-lang/i18n` — if you imported it from `@gram-lang/analyzer`, import it from `@gram-lang/i18n` instead.
+
+### Patch Changes
+
+- 3afd970: Baker's Percentage is now shown on an ingredient's inline mention within step text, not just in the recipe's ingredient list and shopping list — a dead type check meant this data was computed but never actually reached the inline token.
+- 8f7e887: The ingredient database schema no longer requires `density` on every entry that has a `physical` block — an ingredient described only by `unit_weight` (e.g. "1 avocado") is valid, matching the analyzer's own documented example. Previously, `gram db enrich` could write entries that `gram build`/`gram db validate` would then reject.
+- 5194ba4: `gram diff` (and `diffRecipes`) now detects quantity changes inside composite ingredients (`<@parent`) and alternative groups (`@a|@b`), which it previously ignored entirely — a recipe that doubled a composite or alternative's quantities used to be reported as having no changes at all. It also no longer loses one of two same-titled sections, or two same-named timers/temperatures within a single section, when comparing two recipes.
+- 1d86e74: Fixed the same ingredient sometimes getting two different `normalizedMass` values in one analyzed recipe (e.g. `250.78328000000002` in a recipe section vs. `250.78` in the shopping list) — the section-level and composite-child mass calculations now go through the same rounding as the shopping list, instead of duplicating the sequence without it.
+- 7b246ae: Removed all uses of `any` from the physical/nutrition analysis layer's internal types, typing them against the real shapes already exported by `@gram-lang/kitchen` and this package's own `AnalyzedUsage`/`NutritionItem`. No behavior change for this package beyond the fixes already released separately (see the relative-quantity type changeset). The renderer's printable/PDF view gained one internal `any` to stay compatible with the analyzer's now-stricter shopping-list type — purely a type-level adjustment, no output change.
+- f147b25: A relative-quantity ingredient's resolved quantity (e.g. `@water{50% @&flour}`) is now tagged with the correct `"single"` type instead of a value that didn't match any of the documented quantity shapes — it happened to still render correctly today only because of an unrelated fallback, so this is a safety fix rather than a visible change.
+- 68a2a45: Fixed several French unit words silently resolving to the wrong physical quantity:
+
+  - `quart`/`quarts` no longer resolves to the US liquid quart (946 mL) in French recipes — it's a false friend ("un quart d'heure" means "a quarter of an hour", not a unit of volume). It's now reported as an unknown unit instead of silently misinterpreted. The English word `quart`/`quarts` still works in English recipes; only the spelled-out alias was removed, `qt` still works everywhere.
+  - `livre` now converts using the French "livre métrique" (500 g) instead of being silently treated as the imperial pound (453.592 g) — a ~10% error.
+  - `tasse` now converts using the French cup (250 mL) instead of being silently treated as the US cup (236.588 mL) — a ~6% error.
+  - `pinte` no longer resolves at all: the historical French pinte has no single reliable modern value, so an explicit "unknown unit" is better than a confident-looking wrong number.
+  - `gallon`/`gallons` now resolve correctly (previously only the abbreviation `gal` worked).
+
+- Updated dependencies [9553678]
+- Updated dependencies [68a2a45]
+- Updated dependencies [7c83cf8]
+- Updated dependencies [dcaadd7]
+- Updated dependencies [0c2e818]
+- Updated dependencies [943e9f8]
+- Updated dependencies [24a108c]
+- Updated dependencies [970c32b]
+- Updated dependencies [23e4286]
+- Updated dependencies [901e90e]
+- Updated dependencies [064ba9f]
+- Updated dependencies [b1aa8db]
+- Updated dependencies [79d835c]
+- Updated dependencies [d61d786]
+  - @gram-lang/parser@1.0.0-beta.5
+  - @gram-lang/i18n@1.0.0-beta.5
+  - @gram-lang/kitchen@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Patch Changes

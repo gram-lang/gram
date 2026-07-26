@@ -92,8 +92,8 @@ export default withMermaid(
 						{ text: "Documentation", link: "/explanation/philosophy" },
 						{ text: "Playground", link: "/play" },
 						{
-							text: "v1.0.0-beta.4",
-							items: [{ text: "v1.0.0-beta.4 (Current)", link: "/" }],
+							text: "v1.0.0-beta.5",
+							items: [{ text: "v1.0.0-beta.5 (Current)", link: "/" }],
 						},
 					],
 					sidebar: [
@@ -243,8 +243,8 @@ export default withMermaid(
 						{ text: "Documentation", link: "/fr/explanation/philosophy" },
 						{ text: "Playground", link: "/fr/play" },
 						{
-							text: "v1.0.0-beta.4",
-							items: [{ text: "v1.0.0-beta.4 (Actuelle)", link: "/fr/" }],
+							text: "v1.0.0-beta.5",
+							items: [{ text: "v1.0.0-beta.5 (Actuelle)", link: "/fr/" }],
 						},
 					],
 					sidebar: [

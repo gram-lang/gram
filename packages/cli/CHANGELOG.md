@@ -1,5 +1,57 @@
 # @gram-lang/cli
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- b1aa8db: The `language:` setting in `.gram/config.yaml` now also affects unit conversion and the shopping list's category order (e.g. a database with French category names like "Légumes" now sorts correctly when `language: "fr"` is set) — previously it only affected AI-generated content.
+- 96bfbee: `gram format` and the editor's "format on save" now share the exact same formatting rules, so a recipe formatted by one always looks identical when opened in the other.
+
+  This adds a few new automatic cleanups to both: normalizing spacing around composite ingredients (`@a{} < @b{}` → `@a{}<@b{}`), tidying up intermediate-result declarations (`->&name {}` → `->&name{}`), making sure section headers have exactly one space after the `#`s, and converting tabs to spaces.
+
+### Patch Changes
+
+- 1ade4e1: Fixed a bug where the wrong API key could be sent to the wrong AI provider. If you had, say, `GEMINI_API_KEY` set in your environment but configured `provider: openai` in `.gram/config.yaml`, your Gemini key could be sent to OpenAI instead. Each provider now only ever uses its own key.
+- 72ef907: Warnings about invalid ingredient database entries now go to stderr instead of stdout, so commands like `gram build recipe.gram | jq` no longer break when the database has a bad entry.
+- 2bdd3d7: `gram shop` now groups the shopping list by the same category names used everywhere else in the project (e.g. "Seafood" instead of "Fish", "Vegetables" instead of "Produce") instead of its own inconsistent list.
+- 19f7fe3: Fixed `gram format` rewriting values inside the recipe's frontmatter (the `---` metadata block at the top of a `.gram` file). For example, an email address like `Jean@Example.com` in `author:` used to get incorrectly lowercased to `Jean@example.com`. Frontmatter is no longer touched by formatting rules meant for the recipe body. File writes are also now atomic and lock-protected, matching the rest of the CLI.
+- 293d43e: `gram import <url>` now refuses to fetch addresses that aren't publicly routable (localhost, private networks, link-local/cloud metadata addresses), including on redirects — closing a way for a malicious or compromised page to make the CLI fetch internal network resources. API keys stored via `gram init`/`gram config set` are now actually picked up when running the CLI under Node (previously only worked when run via Bun). `gram db enrich` now clearly reports when nothing was written to disk instead of claiming success; AI-suggested ingredient values that are physically implausible (like an ingredient density far outside any real food) are now rejected instead of being written to your ingredient database.
+- Updated dependencies [cf39429]
+- Updated dependencies [b1aa8db]
+- Updated dependencies [3afd970]
+- Updated dependencies [8f7e887]
+- Updated dependencies [5194ba4]
+- Updated dependencies [1d86e74]
+- Updated dependencies [7b246ae]
+- Updated dependencies [f147b25]
+- Updated dependencies [9553678]
+- Updated dependencies [99aa179]
+- Updated dependencies [68a2a45]
+- Updated dependencies [7c83cf8]
+- Updated dependencies [dcaadd7]
+- Updated dependencies [0c2e818]
+- Updated dependencies [943e9f8]
+- Updated dependencies [24a108c]
+- Updated dependencies [970c32b]
+- Updated dependencies [23e4286]
+- Updated dependencies [901e90e]
+- Updated dependencies [19a9f19]
+- Updated dependencies [73fde5e]
+- Updated dependencies [3fae598]
+- Updated dependencies [064ba9f]
+- Updated dependencies [b1aa8db]
+- Updated dependencies [a55dca8]
+- Updated dependencies [79d835c]
+- Updated dependencies [d61d786]
+- Updated dependencies [2ed4707]
+- Updated dependencies [938afcd]
+  - @gram-lang/format@1.0.0-beta.5
+  - @gram-lang/analyzer@1.0.0-beta.5
+  - @gram-lang/renderer@1.0.0-beta.5
+  - @gram-lang/parser@1.0.0-beta.5
+  - @gram-lang/i18n@1.0.0-beta.5
+  - @gram-lang/kitchen@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/audit",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.0",
   "private": true,
   "type": "module",
   "scripts": {

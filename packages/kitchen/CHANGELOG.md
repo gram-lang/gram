@@ -1,5 +1,37 @@
 # @gram-lang/kitchen
 
+## 1.0.0-beta.5
+
+### Patch Changes
+
+- 7c83cf8: The compiler now detects indirect circular dependencies between section intermediates (e.g. section A's result depends on section B's, whose result depends back on section A's) and reports a `CIRCULAR_REFERENCE` warning for each one — previously only a direct self-reference was caught.
+- dcaadd7: Removed all uses of `any` from the compiler's internal types, replacing them with the real shapes already exported by the package (`Usage`, `CompositeItem`, `StepToken`, etc.), and cleaned up dead code paths in shopping-list aggregation.
+- 0c2e818: Scaling a recipe by an extreme factor now fails with a clear error instead of silently producing `Infinity` (serialized as `null` in the output JSON). Scaled quantities are also rounded consistently, including a composite ingredient's total, so results no longer show float noise like `110.00000000000001`.
+- 943e9f8: Scaling a fraction quantity (e.g. `1/2 cup`) no longer produces a malformed value in the compiled JSON (`{"type": "fraction", "value": 1}` with no numerator/denominator) — it's now correctly represented as a plain numeric quantity.
+- 24a108c: Fixed several compiler correctness bugs:
+
+  - An empty section (or one containing only a comment) between two sections with steps used to break ALAP scheduling: the step right after the gap could get scheduled to overlap a timer still running from before the gap. It now correctly chains past the gap.
+  - `applyScale()` (used by `gram scale` and the playground) now scales cookware quantities. Previously it only scaled cookware "by accident" when called from inside `compile({ scaleFactor })`, so `applyScale(compile(recipe), factor)` silently left cookware unscaled.
+  - A timer with an unrecognized time unit (e.g. `~{3 bananas}`) or a missing unit no longer silently contributes a fabricated duration to the recipe's total/active time. Both now raise a warning instead, matching how temperatures and retro-planning already behave.
+  - Timer units are now displayed consistently (e.g. always "min", never a mix of "min"/"mins"/"minutes" for the same physical duration in the same recipe).
+
+- 970c32b: Fixed a spurious `TRACK_CONTENTION` warning on the ordinary, intended use of named passive tracks (`~_name{...}`) — chaining several steps on the same physical resource (an oven, a fridge shelf) back-to-back no longer warns just because nothing else linked those steps together. The scheduler now understands that shared-track ordering the same way it already understands `&intermediate` dependencies, so the warning only fires when a real, unforeseen conflict remains.
+- 23e4286: `ASTNode` is now a fully exhaustive, discriminated union that matches what the parser actually produces (`CompositeAST`, `QuantityAST`, `TextQuantityAST`, and `RelativeQuantityAST` were previously missing from it), and composite ingredients (`<@parent`) now carry source location info like every other node.
+
+  Making these types honest surfaced and fixed three real bugs in the language server: outline (document symbols), syntax highlighting (semantic tokens), and go-to-definition/rename/hover (reference and intermediate lookups) could silently miss or crash on content that isn't wrapped in a `## Section` header — a recipe with no headers at all, or with a comment before the first header.
+
+- d61d786: `QuantityValueAST` (the parser's internal representation of a parsed number/fraction/range) is now a proper discriminated union instead of a flat interface with every field optional. This is an internal type-safety improvement with no behavior change — it's what would have caught, at compile time, a real bug fixed earlier in `diffRecipes` (checking `qty.from`/`qty.to`, fields that never existed on any variant).
+- Updated dependencies [9553678]
+- Updated dependencies [68a2a45]
+- Updated dependencies [23e4286]
+- Updated dependencies [901e90e]
+- Updated dependencies [064ba9f]
+- Updated dependencies [b1aa8db]
+- Updated dependencies [79d835c]
+- Updated dependencies [d61d786]
+  - @gram-lang/parser@1.0.0-beta.5
+  - @gram-lang/i18n@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Major Changes

@@ -69,32 +69,41 @@ async function main() {
             const headingMatch = trimmed.match(/^\*\*([^\*]+)\*\*[:]*\s*$/);
             if (headingMatch) {
                 let sectionName = headingMatch[1].trim().replace(/:$/, '').trim();
-                // Normalize some common names
                 if (sectionName.match(/breaking/i)) sectionName = "Breaking";
                 else if (sectionName.match(/fixed/i) || sectionName.match(/^fix$/i)) sectionName = "Fixed";
                 
                 currentSection = sectionName;
                 if (!extractedSections[currentSection]) extractedSections[currentSection] = [];
+            } else if (currentSection) {
+                let item = trimmed;
+                if (!item.startsWith("- ")) {
+                    item = item.replace(/^[-*]\s*/, "");
+                    item = `- ${item}`;
+                }
+                extractedSections[currentSection].push(item);
+            } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+                titleParts.push(`  ${trimmed.replace(/^\*\s*/, "- ")}`);
             } else {
-                if (!currentSection) {
-                    titleParts.push(trimmed);
+                if (titleParts.length === 0 || titleParts[0].startsWith("  ")) {
+                    titleParts.unshift(trimmed);
                 } else {
-                    let item = trimmed;
-                    if (!item.startsWith("- ")) {
-                        item = item.replace(/^[-*]\s*/, ""); // strip existing bullet if any
-                        item = `- ${item}`;
-                    }
-                    extractedSections[currentSection].push(item);
+                    titleParts[0] += ` ${trimmed}`;
                 }
             }
         }
 
-        const title = titleParts.join(" ");
-        if (title) {
-            let formattedTitle = title.startsWith("-") ? title : `- ${title}`;
-            if (bumpType === "major") majorChanges.push(formattedTitle);
-            else if (bumpType === "minor") minorChanges.push(formattedTitle);
-            else patchChanges.push(formattedTitle);
+        let formattedEntry = "";
+        if (titleParts.length > 0) {
+            const first = titleParts[0];
+            const head = first.startsWith("  ") ? first.trimStart() : (first.startsWith("-") ? first : `- ${first}`);
+            const rest = titleParts.slice(1);
+            formattedEntry = [head, ...rest].join("\n");
+        }
+
+        if (formattedEntry) {
+            if (bumpType === "major") majorChanges.push(formattedEntry);
+            else if (bumpType === "minor") minorChanges.push(formattedEntry);
+            else patchChanges.push(formattedEntry);
         }
     }
 
