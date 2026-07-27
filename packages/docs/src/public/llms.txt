@@ -44,7 +44,7 @@ Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `kitchen
 
 ## Optional
 
-- [Playground](https://gram-lang.org/play): Interactive in-browser editor with a live compiler preview.
+- [Playground](https://play.gram-lang.org): Interactive in-browser editor with a live compiler preview.
 - [CLI Commands](https://gram-lang.org/reference/tooling/cli): Reference for the `gram` command-line tool.
 - [VS Code Extension](https://gram-lang.org/reference/tooling/vscode-extension): Live preview, nutrition CodeLens, ingredient matching.
 - [Language Server](https://gram-lang.org/reference/tooling/language-server): The LSP implementation powering editor integrations.

@@ -18,7 +18,7 @@ Gram is designed to write structured, machine-readable recipes that still read l
 
 Because it treats your recipes as code, Gram unlocks features that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
 
-[Playground](https://gram-lang.org/play) • [Documentation](https://gram-lang.org/)
+[Playground](https://play.gram-lang.org) • [Documentation](https://gram-lang.org/)
 
 <br/>
 <div align="center">
