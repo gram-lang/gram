@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@gram-lang%2Flanguage-server.svg)](https://www.npmjs.com/package/@gram-lang/language-server)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+*Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
 The official Language Server Protocol (LSP) implementation for the Gram recipe language. It provides language intelligence such as diagnostics (syntax and logic errors), auto-completion, hover information, and semantic tokens.
 

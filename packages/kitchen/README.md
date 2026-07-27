@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@gram-lang%2Fkitchen.svg)](https://www.npmjs.com/package/@gram-lang/kitchen)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+*Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
 The compiler for the Gram recipe language. It takes a typed Recipe AST (produced by `@gram-lang/parser`) and compiles it into a structured, minified recipe JSON (aggregating shopping lists, processing sections, and calculating Gantt-like timings).
 

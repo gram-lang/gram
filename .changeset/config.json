@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/cli/changelog",
     {
-      "repo": "abiwab/gram"
+      "repo": "gram-lang/gram"
     }
   ],
   "commit": false,
@@ -23,5 +23,7 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@gram-lang/conformance"]
+  "ignore": [
+    "@gram-lang/conformance"
+  ]
 }

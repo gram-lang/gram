@@ -4,7 +4,7 @@
   <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
   <p>
     <img src="https://img.shields.io/badge/Status-Beta-blue" alt="Status" />
-    <a href="https://ci.codeberg.org/abiwab/gram"><img src="https://ci.codeberg.org/api/badges/abiwab/gram/status.svg" alt="Build Status" /></a>
+    <a href="https://git.gram-lang.org/gram-lang/gram/actions"><img src="https://git.gram-lang.org/gram-lang/gram/actions/workflows/ci.yml/badge.svg" alt="Build Status" /></a>
     <a href="https://www.npmjs.com/package/@gram-lang/cli"><img src="https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&logo=npm" alt="NPM Version" /></a>
     <a href="https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang"><img src="https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc" alt="VS Code Extension" /></a>
     <img src="https://img.shields.io/badge/Open%20Source-Yes-brightgreen" alt="Open Source" />
@@ -139,7 +139,7 @@ This monorepo is divided into specialized packages under `packages/`:
 
 ## Development & CI
 
-Gram uses **Woodpecker CI** (via Codeberg) to maintain the stability of the language and its tooling.
+Gram uses **Forgejo Actions** to maintain the stability of the language and its tooling.
 On every push and pull request, the CI pipeline automatically runs:
 - **Linting & Formatting**: Enforced by Biome (`bun run lint`).
 - **Typechecking**: Across the entire TypeScript monorepo (`bun run typecheck`).

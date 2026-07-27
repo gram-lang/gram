@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@gram-lang%2Fanalyzer.svg)](https://www.npmjs.com/package/@gram-lang/analyzer)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+*Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
 The physical and nutritional analysis module for the Gram recipe language. It takes a structurally compiled recipe (produced by `@gram-lang/kitchen`) and enriches it with calculated masses, waste yield scaling, and macronutrient estimations based on a provided database.
 

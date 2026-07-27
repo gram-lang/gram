@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@gram-lang%2Fparser.svg)](https://www.npmjs.com/package/@gram-lang/parser)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A robust, 3-stage parser for the Gram recipe language. It is part of the [Gram monorepo](https://codeberg.org/abiwab/gram) and is strictly limited to text-to-AST parsing.
+A robust, 3-stage parser for the Gram recipe language. It is part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram) and is strictly limited to text-to-AST parsing.
 
 ---
 

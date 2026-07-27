@@ -26,13 +26,13 @@
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://codeberg.org/abiwab/gram.git",
+    "url": "https://git.gram-lang.org/gram-lang/gram.git",
     "directory": "packages/parser"
   },
   "bugs": {
-    "url": "https://codeberg.org/abiwab/gram/issues"
+    "url": "https://git.gram-lang.org/gram-lang/gram/issues"
   },
-  "homepage": "https://codeberg.org/abiwab/gram/src/branch/main/packages/parser#readme",
+  "homepage": "https://git.gram-lang.org/gram-lang/gram/src/branch/main/packages/parser#readme",
   "publishConfig": {
     "access": "public"
   },

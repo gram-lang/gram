@@ -13,7 +13,7 @@ bun add -g @gram-lang/cli
 ```
 
 > [!NOTE]
-> Vous préférez construire le CLI depuis les sources (par exemple pour contribuer au projet) ? Consultez [CONTRIBUTING.md](https://codeberg.org/abiwab/gram/src/branch/main/CONTRIBUTING.md).
+> Vous préférez construire le CLI depuis les sources (par exemple pour contribuer au projet) ? Consultez [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
 
 ## 2. Configuration de l'éditeur
 
@@ -31,7 +31,7 @@ Recherchez **"Gram - Recipe Language"** dans le panneau des extensions (`Ctrl+Sh
 
 ::: details Construire depuis les sources
 ```bash
-git clone https://codeberg.org/abiwab/gram.git
+git clone https://git.gram-lang.org/gram-lang/gram.git
 cd gram
 bun install
 

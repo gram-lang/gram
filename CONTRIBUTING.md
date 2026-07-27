@@ -28,8 +28,10 @@ Gram is a **monorepo** organized in a `packages/` directory:
 
 ## 🤝 How to Contribute
 
+All development, issue tracking, and pull requests take place on our primary forge at **[git.gram-lang.org/gram-lang/gram](https://git.gram-lang.org/gram-lang/gram)**.
+
 ### Reporting Bugs
-If you find a bug (parser error, wrong highlighting, etc.), please create a **Codeberg Issue** comprising:
+If you find a bug (parser error, wrong highlighting, etc.), please create an **Issue** comprising:
 *   A clear title and description.
 *   Steps to reproduce (a snippet of the code causing the issue is huge help!).
 *   Expected vs. actual behavior.

@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@gram-lang%2Fi18n.svg)](https://www.npmjs.com/package/@gram-lang/i18n)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-*Part of the [Gram monorepo](https://codeberg.org/abiwab/gram).*
+*Part of the [Gram monorepo](https://git.gram-lang.org/gram-lang/gram).*
 
 The translation and normalization module for units and time within the Gram recipe language. It provides high-performance, O(1) lookup dictionaries and normalizers to translate locale-specific aliases (e.g., `càs`, `cuillère à soupe`, `teaspoon`) into standardized canonical representation units (e.g., `tbsp`, `tsp`).
 

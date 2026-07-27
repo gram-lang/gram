@@ -13,11 +13,11 @@
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://codeberg.org/abiwab/gram.git",
+    "url": "https://git.gram-lang.org/gram-lang/gram.git",
     "directory": "packages/vscode-extension"
   },
   "bugs": {
-    "url": "https://codeberg.org/abiwab/gram/issues"
+    "url": "https://git.gram-lang.org/gram-lang/gram/issues"
   },
   "homepage": "https://gram-lang.org/",
   "engines": {
