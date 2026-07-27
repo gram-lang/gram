@@ -62,9 +62,9 @@ export default withMermaid(
 			[
 				"script",
 				{
-					defer: '',
-					src: '/script.js',
-					'data-website-id': 'fa1b1921-1982-4198-bb2b-c30d24f587ce'
+					defer: "",
+					src: "/script.js",
+					"data-website-id": "fa1b1921-1982-4198-bb2b-c30d24f587ce",
 				},
 				`
 			if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
