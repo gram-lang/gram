@@ -15,8 +15,9 @@ jobs:
     steps:
       - name: Install Git, Node.js, and CA Certificates
         run: |
-          apt-get update -qq && apt-get install -y -qq --no-install-recommends git ca-certificates nodejs npm
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends git ca-certificates curl
           git config --global --add safe.directory '*'
+          curl -fsSL https://nodejs.org/dist/v20.19.2/node-v20.19.2-linux-x64.tar.gz | tar -xz -C /usr/local --strip-components=1
 
       - name: Checkout code
         uses: actions/checkout@v4
