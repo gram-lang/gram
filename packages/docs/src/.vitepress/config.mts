@@ -61,7 +61,11 @@ export default withMermaid(
 			["script", { src: "https://unpkg.com/@phosphor-icons/web" }],
 			[
 				"script",
-				{},
+				{
+					defer: '',
+					src: '/script.js',
+					'data-website-id': 'fa1b1921-1982-4198-bb2b-c30d24f587ce'
+				},
 				`
 			if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
 				var lang = navigator.language || navigator.userLanguage || '';
