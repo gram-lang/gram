@@ -22,6 +22,7 @@ jobs:
       - name: Build
         run: |
           apt-get update -qq && apt-get install -y -qq --no-install-recommends git
+          git config --global --add safe.directory '*'
           bun run build --filter='!@gram-lang/docs'
           git diff --exit-code packages/parser/src/grammar-content.ts
 
@@ -37,6 +38,7 @@ jobs:
       - name: Test
         run: |
           apt-get update -qq && apt-get install -y -qq --no-install-recommends git
+          git config --global --add safe.directory '*'
           bun test
 
       - name: Audit dependencies
@@ -59,7 +61,8 @@ jobs:
 
       - name: Install Bun
         run: |
-          apt-get update -qq && apt-get install -y -qq --no-install-recommends curl unzip
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends curl unzip git
+          git config --global --add safe.directory '*'
           curl -fsSL https://bun.sh/install | bash
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
           export PATH="$HOME/.bun/bin:$PATH"
