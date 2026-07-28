@@ -37,3 +37,29 @@ html.dark {
 	white-space: pre-wrap;
 	word-break: break-word;
 }
+
+/* Tooltip on hover for navbar social links */
+.VPSocialLink {
+	position: relative;
+}
+
+.VPSocialLink[aria-label]:hover::after {
+	content: attr(aria-label);
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	margin-top: 6px;
+	padding: 4px 8px;
+	font-size: 11px;
+	font-weight: 500;
+	line-height: 1.2;
+	white-space: nowrap;
+	background-color: var(--vp-c-bg-elv);
+	color: var(--vp-c-text-1);
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 4px;
+	box-shadow: var(--vp-shadow-2);
+	pointer-events: none;
+	z-index: 100;
+}
