@@ -19,8 +19,17 @@ const { title, description = 'Gram Language Documentation' } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title} | Gram</title>
     
-    <!-- Umami Analytics (Placeholder) -->
-    <!-- <script defer src="https://analytics.umami.is/script.js" data-website-id="..."></script> -->
+    <!-- Umami Analytics -->
+    <script defer src="/script.js" data-website-id="fa1b1921-1982-4198-bb2b-c30d24f587ce"></script>
+    <script>
+      if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
+        var lang = navigator.language || navigator.userLanguage || '';
+        if (lang.toLowerCase().startsWith('fr') && !sessionStorage.getItem('lang_redirected')) {
+          sessionStorage.setItem('lang_redirected', 'true');
+          window.location.replace('/fr/');
+        }
+      }
+    </script>
   </head>
   <body>
     <header class="app-header">
