@@ -1,0 +1,33 @@
+---
+title: 'Cannelés'
+description: 'A classic french dessert, full of rum and vanilla.'
+category: 'Dessert'
+makes: '38 "lunch" cannelés'
+tags: ['bordeaux', 'french', 'traditional', 'pastry','boozy']
+
+portions: 10
+---
+
+## Batter ~{-1d} ->&batter
+
+[Mix] In a #mixing bowl{}, combine the @flour{300 g}, @sugar{500 g}, and @salt{3 g}. ->&dry ingredients{}
+
+[Heat] In a #large saucepan{}, bring the @milk{1 l}, @butter{100 g}, and @vanilla bean{1}(split and scraped) to ^{85C}. ->&hot milk{}
+
+[Mix] Pour the &hot milk{} over the &dry ingredients{} all at once. Whisk vigorously.
+
+[Incorporate] Add the @egg yolks{6}<@eggs{6} and the @rum{100 ml}.
+
+[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
+
+## Baking
+
+[Preheat] The #oven to ^{240C}.
+
+[Grease] The #cannelé molds{38}(lunch/4.5cm).
+
+[Fill] Pour the &batter into the molds, filling them 3/4 full.
+
+[Bake] In the #&oven at ^{240C} for ~_baking{10 min}.
+
+[Cook] Lower the temperature to ^{180C} and continue for ~_baking{30 min}. // Adjust the time between 30 and 60 min depending on the desired browning

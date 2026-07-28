@@ -1,0 +1,33 @@
+---
+title: 'Cannelés'
+description: 'Le classique bordelais, plein de rhum et de vanille.'
+category: 'Dessert'
+makes: '38 cannelés "lunch"'
+tags: ['bordeaux', 'français', 'traditionnel', 'pâtisserie', 'alcoolisé']
+
+portions: 10
+---
+
+## Pâte ~{-1d} ->&pâte
+
+[Mélanger] Dans un #cul de poule{}, la @farine{300 g}, le @sucre{500 g}, et le @sel{3 g}. ->&poudres
+
+[Chauffer] Dans une #grande casserole{}, porter le @lait{1 l}, le @beurre{100 g}, et la @gousse de vanille{1}(fendue et grattée) à ^{85°C}. ->&lait chaud{}
+
+[Mélanger] Verser le &lait chaud{} sur les &poudres. Fouetter vigoureusement.
+
+[Incorporer] Les @jaunes d'oeufs{6}<@oeufs{6} et le @rhum{100 ml}.
+
+[Réfrigérer] Filmer au contact avec du #film plastique{} et réserver au réfrigérateur pendant au moins ~_réfrigérateur{24 h}.
+
+## Cuisson
+
+[Préchauffer] Le #four à ^{240°C}.
+
+[Graisser] Les #moules à cannelés{38}(lunch/4.5cm).
+
+[Remplir] Verser la &pâte dans les moules, en les remplissant aux 3/4.
+
+[Cuire] Dans le #&four à ^{240°C} pendant ~_cuisson{10 min}.
+
+[Cuire] Baisser la température à ^{180°C} et continuer la cuisson pendant ~_cuisson{30 min}. // Ajuster le temps entre 30 et 60 min selon la coloration désirée

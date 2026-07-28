@@ -1,0 +1,12 @@
+[
+  {
+    "id": "canneles.gram",
+    "title": "Cannelés",
+    "path": "/examples/canneles.gram"
+  },
+  {
+    "id": "empanadas.gram",
+    "title": "Brian's Empanadas",
+    "path": "/examples/empanadas.gram"
+  }
+]
