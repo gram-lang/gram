@@ -1,8 +1,8 @@
 ---
-import { getCollection } from 'astro:content';
-import Layout from '../../layouts/Layout.astro';
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
 
-const posts = await getCollection('blog', ({ data }) => data.locale === 'en');
+const posts = await getCollection("blog", ({ data }) => data.locale === "en");
 posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 <Layout title="Blog | Gram" currentLang="en">
