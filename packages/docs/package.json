@@ -19,6 +19,7 @@
     "@guolao/vue-monaco-editor": "^1.6.0",
     "@shikijs/monaco": "^4.3.1",
     "astro": "latest",
+    "vite": "^8.0.13",
     "vue": "^3.5.39"
   },
   "devDependencies": {
