@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const posts = await getCollection('blog', ({ data }) => data.locale === 'en');
+posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Layout title="Blog | Gram" currentLang="en">
+  <div class="blog-container">
+    <h1>Gram Blog</h1>
+    <p>News, updates, and articles about Gram.</p>
+    
+    <div class="posts-list">
+      {posts.map(post => (
+        <a href={`/blog/${post.id.split('/').pop()}`} class="post-card">
+          <h2>{post.data.title}</h2>
+          <div class="post-meta">
+            <time>{post.data.date.toISOString().split('T')[0]}</time>
+            {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+          </div>
+          {post.data.description && <p>{post.data.description}</p>}
+        </a>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .blog-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+  h1 { font-size: 3rem; color: var(--sl-color-white); margin-bottom: 0.5rem; }
+  .blog-container > p { color: var(--sl-color-text-accent); margin-bottom: 3rem; font-size: 1.25rem; }
+  .posts-list { display: flex; flex-direction: column; gap: 2rem; }
+  .post-card {
+    display: block;
+    text-decoration: none;
+    color: var(--sl-color-text);
+    padding: 1.5rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 8px;
+    background-color: var(--sl-color-bg-nav);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--gram-orange);
+  }
+  .post-card h2 { color: var(--gram-orange); margin-bottom: 0.5rem; }
+  .post-meta { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--sl-color-text-accent); }
+  .tag { background: #333; padding: 0.2rem 0.5rem; border-radius: 4px; }
+</style>

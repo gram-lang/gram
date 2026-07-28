@@ -1,9 +1,242 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+const features = [
+  {
+    icon: '/cooking-pot.svg',
+    title: 'Recettes Dynamiques',
+    details: 'Traitez vos recettes comme du code. Gérez des recettes complexes en définissant des variables, en liant les quantités d\'ingrédients entre elles, et en générant des plannings de cuisine intelligents à partir de simples tags.'
+  },
+  {
+    icon: '/brain.svg',
+    title: 'Base de Données Intégrée',
+    details: 'Connectez vos fichiers à une base de données locale pour convertir automatiquement les volumes en masse, calculer les poids bruts et nets, et estimer les valeurs nutritionnelles.'
+  },
+  {
+    icon: '/terminal-window.svg',
+    title: 'Outils pour Développeurs',
+    details: 'Gardez vos recettes dans des fichiers lisibles par Git. Profitez d\'un Language Server (LSP) offrant autocomplétion, diagnostics en temps réel et prévisualisation dans votre éditeur favori.'
+  }
+];
 ---
+
 <Layout title="Gram" currentLang="fr">
-  <div style="padding: 2rem; text-align: center;">
-    <h1>Documentation du langage Gram</h1>
-    <p>Cette page utilise le nouveau Layout et Header ! (La phase 4 construira la vraie page d'accueil ici).</p>
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Gram</h1>
+      <p class="hero-tagline">Codez vos recettes.</p>
+      <p class="hero-description">Un langage de balisage pensé pour la cuisine de précision.</p>
+      
+      <div class="hero-actions">
+        <a href="/fr/explanation/philosophy" class="action-btn primary">C'est quoi Gram ?</a>
+        <a href="/fr/play" class="action-btn secondary">Tester le Playground</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="/logo-gram-dark.svg" alt="Logo Gram" class="logo-image" />
+    </div>
+  </div>
+
+  <div class="features-section">
+    {features.map(f => (
+      <div class="feature-card">
+        <div class="feature-icon">
+          <img src={f.icon} alt={f.title} />
+        </div>
+        <h3 class="feature-title">{f.title}</h3>
+        <p class="feature-details">{f.details}</p>
+      </div>
+    ))}
+  </div>
+  
+  <div class="example-section">
+    <h2>Écrivez des recettes qui passent à l'échelle</h2>
+    <div class="code-window">
+      <div class="window-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="filename">pate_a_pizza.gram</span>
+      </div>
+      <pre><code># Pâte à Pizza (65% hydratation)
+@yield 4 portions
+
+= farine: 500g [farine T65]
+= eau: {farine * 0.65} [eau]
+= sel: {farine * 0.02} [sel]
+= levure: 3g [levure fraîche]
+
+1. Mélanger {farine} et {eau}, laisser reposer 30m (Autolyse).
+2. Ajouter {sel} et {levure}, pétrir 10m.
+3. Fermenter en vrac pendant 2h à 25°C.
+4. Diviser en {yield}, bouler, et pointer au froid 24h.
+</code></pre>
+    </div>
   </div>
 </Layout>
+
+<style>
+  /* Same styles as EN index.astro */
+  .hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 4rem;
+  }
+  .hero-content {
+    flex: 1;
+  }
+  .hero-title {
+    font-size: 5rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(to right, var(--sl-color-white), var(--gram-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-tagline {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    color: var(--sl-color-white);
+  }
+  .hero-description {
+    font-size: 1.25rem;
+    color: var(--sl-color-text-accent);
+    margin-bottom: 2rem;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .action-btn.primary {
+    background-color: var(--gram-orange);
+    color: var(--sl-color-white);
+  }
+  .action-btn.primary:hover {
+    background-color: var(--gram-orange-soft);
+    color: var(--gram-orange);
+  }
+  .action-btn.secondary {
+    background-color: var(--sl-color-bg-nav);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-hairline);
+  }
+  .action-btn.secondary:hover {
+    background-color: var(--sl-color-bg-inline-code);
+  }
+  .hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .logo-image {
+    width: 100%;
+    max-width: 400px;
+    filter: drop-shadow(0 0 40px rgba(255, 127, 0, 0.2));
+  }
+
+  .features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .feature-card {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    padding: 2rem;
+    border-radius: 12px;
+  }
+  .feature-icon img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1.5rem;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(350deg);
+  }
+  .feature-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--sl-color-white);
+  }
+  .feature-details {
+    color: var(--sl-color-text-accent);
+    line-height: 1.6;
+  }
+
+  .example-section {
+    padding: 4rem 2rem;
+    max-width: 800px;
+    margin: 0 auto 6rem;
+    text-align: center;
+  }
+  .example-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--sl-color-white);
+  }
+  .code-window {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-hairline);
+    overflow: hidden;
+    text-align: left;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .window-header {
+    background-color: #2d2d2d;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #444;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background-color: #ff5f56; }
+  .dot.yellow { background-color: #ffbd2e; }
+  .dot.green { background-color: #27c93f; }
+  .filename {
+    margin-left: 1rem;
+    color: #999;
+    font-family: var(--sl-font-mono);
+    font-size: 0.85rem;
+  }
+  .code-window pre {
+    margin: 0;
+    padding: 1.5rem;
+    overflow-x: auto;
+    color: #d4d4d4;
+    font-family: var(--sl-font-mono);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .hero-section {
+      flex-direction: column;
+      text-align: center;
+    }
+    .hero-actions {
+      justify-content: center;
+    }
+    .hero-title { font-size: 3.5rem; }
+    .hero-tagline { font-size: 2rem; }
+  }
+</style>

@@ -1,9 +1,241 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const features = [
+  {
+    icon: '/cooking-pot.svg',
+    title: 'Dynamic Recipes',
+    details: 'Treat recipes like code. Easily manage complex recipes by defining variables, linking ingredient quantities together, and generating smart cooking schedules from simple tags.'
+  },
+  {
+    icon: '/brain.svg',
+    title: 'Integrated Database',
+    details: 'Connect your files to a local database to automatically convert volumes to mass, calculate gross and net weights, and estimate nutritional values.'
+  },
+  {
+    icon: '/terminal-window.svg',
+    title: 'Developer First Tooling',
+    details: 'Keep your cookbook in git-friendly files. Enjoy real-time diagnostics, autocomplete, and live previews in your favorite editor via our Language Server.'
+  }
+];
 ---
+
 <Layout title="Gram" currentLang="en">
-  <div style="padding: 2rem; text-align: center;">
-    <h1>Gram Language Documentation</h1>
-    <p>This page uses the new Layout and Header! (Phase 4 will build the real homepage here).</p>
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Gram</h1>
+      <p class="hero-tagline">Code your cookbook.</p>
+      <p class="hero-description">A plain-text recipe language built for precision cooking.</p>
+      
+      <div class="hero-actions">
+        <a href="/explanation/philosophy" class="action-btn primary">What is Gram ?</a>
+        <a href="/play" class="action-btn secondary">Try the Playground</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="/logo-gram-dark.svg" alt="Gram Logo" class="logo-image" />
+    </div>
+  </div>
+
+  <div class="features-section">
+    {features.map(f => (
+      <div class="feature-card">
+        <div class="feature-icon">
+          <img src={f.icon} alt={f.title} />
+        </div>
+        <h3 class="feature-title">{f.title}</h3>
+        <p class="feature-details">{f.details}</p>
+      </div>
+    ))}
+  </div>
+  
+  <div class="example-section">
+    <h2>Write recipes that scale</h2>
+    <div class="code-window">
+      <div class="window-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="filename">pizza_dough.gram</span>
+      </div>
+      <pre><code># Pizza Dough (65% hydration)
+@yield 4 portions
+
+= flour: 500g [flour]
+= water: {flour * 0.65} [water]
+= salt: {flour * 0.02} [salt]
+= yeast: 3g [fresh yeast]
+
+1. Mix {flour} and {water} and let it rest for 30m (Autolyse).
+2. Add {salt} and {yeast} and knead for 10m.
+3. Bulk ferment for 2h at 25°C.
+4. Divide into {yield}, shape into balls, and cold proof for 24h.
+</code></pre>
+    </div>
   </div>
 </Layout>
+
+<style>
+  .hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 4rem;
+  }
+  .hero-content {
+    flex: 1;
+  }
+  .hero-title {
+    font-size: 5rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(to right, var(--sl-color-white), var(--gram-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-tagline {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    color: var(--sl-color-white);
+  }
+  .hero-description {
+    font-size: 1.25rem;
+    color: var(--sl-color-text-accent);
+    margin-bottom: 2rem;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .action-btn.primary {
+    background-color: var(--gram-orange);
+    color: var(--sl-color-white);
+  }
+  .action-btn.primary:hover {
+    background-color: var(--gram-orange-soft);
+    color: var(--gram-orange);
+  }
+  .action-btn.secondary {
+    background-color: var(--sl-color-bg-nav);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-hairline);
+  }
+  .action-btn.secondary:hover {
+    background-color: var(--sl-color-bg-inline-code);
+  }
+  .hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .logo-image {
+    width: 100%;
+    max-width: 400px;
+    filter: drop-shadow(0 0 40px rgba(255, 127, 0, 0.2));
+  }
+
+  .features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .feature-card {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    padding: 2rem;
+    border-radius: 12px;
+  }
+  .feature-icon img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1.5rem;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(350deg);
+  }
+  .feature-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--sl-color-white);
+  }
+  .feature-details {
+    color: var(--sl-color-text-accent);
+    line-height: 1.6;
+  }
+
+  .example-section {
+    padding: 4rem 2rem;
+    max-width: 800px;
+    margin: 0 auto 6rem;
+    text-align: center;
+  }
+  .example-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--sl-color-white);
+  }
+  .code-window {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-hairline);
+    overflow: hidden;
+    text-align: left;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+  .window-header {
+    background-color: #2d2d2d;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #444;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background-color: #ff5f56; }
+  .dot.yellow { background-color: #ffbd2e; }
+  .dot.green { background-color: #27c93f; }
+  .filename {
+    margin-left: 1rem;
+    color: #999;
+    font-family: var(--sl-font-mono);
+    font-size: 0.85rem;
+  }
+  .code-window pre {
+    margin: 0;
+    padding: 1.5rem;
+    overflow-x: auto;
+    color: #d4d4d4;
+    font-family: var(--sl-font-mono);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .hero-section {
+      flex-direction: column;
+      text-align: center;
+    }
+    .hero-actions {
+      justify-content: center;
+    }
+    .hero-title { font-size: 3.5rem; }
+    .hero-tagline { font-size: 2rem; }
+  }
+</style>
