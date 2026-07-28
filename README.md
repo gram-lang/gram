@@ -28,7 +28,10 @@ Because it treats your recipes as code, Gram unlocks features that are impossibl
 
 > **Project Status: Beta (v1.0.0-beta)**
 > Gram has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
-> **This is an Open Source project.** Feedback, feature requests, and code contributions are always welcome!
+
+> [!NOTE]
+> I develop **Gram** on my primary [Forgejo instance](https://git.gram-lang.org/gram-lang/gram), with automatic mirrors on [GitHub](https://github.com/gram-lang/gram) and [Codeberg](https://codeberg.org/gram-lang/gram).  
+> Contributions, issues, and discussions are welcome on any of these platforms.
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to get involved.
 
