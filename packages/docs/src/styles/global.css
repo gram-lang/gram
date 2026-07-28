@@ -1,48 +1,90 @@
 :root {
-  /* Gram Orange Theme - matching the new logo #FF7F00 */
-  --sl-color-accent-low: #331900;
-  --sl-color-accent: #ff7f00;
-  --sl-color-accent-high: #ffb366;
-  
-  /* Additional branding */
-  --gram-orange: #ff7f00;
-  --gram-orange-light: #ffb347;
-  --gram-orange-dark: #cc6600;
-  --gram-orange-soft: rgba(255, 127, 0, 0.1);
+	/* Gram Orange Theme - matching the new logo #FF7F00 */
+	--sl-color-accent-low: #331900;
+	--sl-color-accent: #ff7f00;
+	--sl-color-accent-high: #ffb366;
 
-  /* Fonts */
-  --sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --sl-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Courier New', monospace;
+	/* Additional branding */
+	--gram-orange: #ff7f00;
+	--gram-orange-light: #ffb347;
+	--gram-orange-dark: #cc6600;
+	--gram-orange-soft: rgba(255, 127, 0, 0.1);
+
+	/* Fonts */
+	--sl-font:
+		"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+		Arial, sans-serif;
+	--sl-font-mono:
+		"JetBrains Mono", "Fira Code", Consolas, Monaco, "Courier New", monospace;
 }
 
-:root[data-theme='light'] {
-  --sl-color-accent-low: #ffcc99;
-  --sl-color-accent: #ff8c1a;
-  --sl-color-accent-high: #cc6600;
+:root[data-theme="light"] {
+	--sl-color-accent-low: #ffcc99;
+	--sl-color-accent: #ff8c1a;
+	--sl-color-accent-high: #cc6600;
 }
 
 /* Reset and base styles for Astro pages */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--sl-font);
-  color: var(--sl-color-white);
-  background-color: var(--sl-color-bg);
+	margin: 0;
+	padding: 0;
+	font-family: var(--sl-font);
+	color: var(--sl-color-white);
+	background-color: var(--sl-color-bg);
 }
 
-:root[data-theme='light'] body {
-  color: var(--sl-color-text);
+:root[data-theme="light"] body {
+	color: var(--sl-color-text);
 }
 
 /* Force natural line wrapping for specific languages like Gram */
 div[class*="language-gram"] code,
 div[class*="language-markdown"] code {
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
+	white-space: pre-wrap !important;
+	word-break: break-word !important;
 }
 
 /* Soft orange background for inline code in light mode */
-:root[data-theme='light'] :not(pre) > code {
-  background-color: var(--gram-orange-soft);
-  color: var(--gram-orange-dark);
+:root[data-theme="light"] :not(pre) > code {
+	background-color: var(--gram-orange-soft);
+	color: var(--gram-orange-dark);
+}
+
+/*
+ * Compatibility layer: the Playground Vue components were ported from VitePress
+ * "as-is" (see migration plan Phase 5) and still reference VitePress's --vp-*
+ * theme tokens. Alias them onto Starlight's --sl-* tokens instead of rewriting
+ * every component's styles.
+ */
+:root {
+	--vp-c-bg: var(--sl-color-bg);
+	--vp-c-bg-elv: var(--sl-color-bg-nav);
+	--vp-c-bg-soft: var(--sl-color-bg-sidebar);
+	--vp-c-bg-mute: var(--sl-color-bg-inline-code);
+	--vp-code-bg: var(--sl-color-bg-inline-code);
+	--vp-c-default-soft: var(--sl-color-gray-6);
+
+	--vp-c-border: var(--sl-color-hairline);
+	--vp-c-divider: var(--sl-color-hairline);
+
+	--vp-c-brand: var(--sl-color-accent);
+	--vp-c-brand-1: var(--sl-color-accent);
+	--vp-c-brand-soft: var(--sl-color-accent-low);
+
+	--vp-c-text-1: var(--sl-color-text);
+	--vp-c-text-2: var(--sl-color-gray-3);
+	--vp-c-text-3: var(--sl-color-gray-4);
+
+	--vp-c-danger-1: var(--sl-color-red);
+	--vp-c-danger-3: var(--sl-color-red-high);
+	--vp-c-danger-soft: var(--sl-color-red-low);
+	--vp-c-red-1: var(--sl-color-red);
+	--vp-c-red-soft: var(--sl-color-red-low);
+	--vp-c-green-1: var(--sl-color-green);
+	--vp-c-green-soft: var(--sl-color-green-low);
+	--vp-c-yellow-1: var(--sl-color-orange);
+
+	--vp-font-family-mono: var(--sl-font-mono);
+	--vp-shadow-1: var(--sl-shadow-sm);
+	--vp-shadow-3: var(--sl-shadow-lg);
 }

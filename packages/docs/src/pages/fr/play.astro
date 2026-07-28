@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GramPlayground from "../../components/playground/GramPlayground.vue";
+---
+
+<Layout title="Playground Gram" currentLang="fr">
+  <div class="playground-wrapper">
+    <GramPlayground client:only="vue" lang="fr" />
+  </div>
+</Layout>
+
+<style>
+  .playground-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    height: 100%;
+  }
+</style>

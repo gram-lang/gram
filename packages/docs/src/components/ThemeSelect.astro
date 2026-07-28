@@ -9,15 +9,13 @@
 </div>
 
 <script>
-  const selector = document.getElementById('theme-selector');
+  const selector = document.getElementById('theme-selector') as HTMLSelectElement | null;
   const getTheme = () => {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme')) {
-      return localStorage.getItem('starlight-theme');
-    }
-    return 'auto';
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('starlight-theme') : null;
+    return stored ?? 'auto';
   };
-  
-  const setTheme = (theme) => {
+
+  const setTheme = (theme: string) => {
     if (theme === 'auto') {
       localStorage.removeItem('starlight-theme');
       document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
@@ -27,8 +25,10 @@
     }
   };
 
-  selector.value = getTheme();
-  selector.addEventListener('change', (e) => setTheme(e.target.value));
+  if (selector) {
+    selector.value = getTheme();
+    selector.addEventListener('change', (e) => setTheme((e.target as HTMLSelectElement).value));
+  }
 </script>
 
 <style>
