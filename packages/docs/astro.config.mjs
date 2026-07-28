@@ -11,10 +11,12 @@ export default defineConfig({
       {
         name: 'force-esnext',
         enforce: 'pre',
-        config(config) {
-          if (config.build) config.build.target = 'esnext';
-          if (config.esbuild) config.esbuild.target = 'esnext';
-          if (config.optimizeDeps?.esbuildOptions) config.optimizeDeps.esbuildOptions.target = 'esnext';
+        config() {
+          return {
+            build: { target: 'esnext' },
+            esbuild: { target: 'esnext' },
+            optimizeDeps: { esbuildOptions: { target: 'esnext' } }
+          };
         }
       }
     ]
