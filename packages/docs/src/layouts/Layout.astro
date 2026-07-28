@@ -1,0 +1,57 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Gram Language Documentation' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description}>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | Gram</title>
+    
+    <!-- Umami Analytics (Placeholder) -->
+    <!-- <script defer src="https://analytics.umami.is/script.js" data-website-id="..."></script> -->
+  </head>
+  <body>
+    <header class="app-header">
+      <!-- Navbar placeholder for Phase 3 -->
+    </header>
+    
+    <main class="app-main">
+      <slot />
+    </main>
+
+    <footer class="app-footer">
+      <!-- Footer placeholder for Phase 3 -->
+    </footer>
+  </body>
+</html>
+
+<style>
+  html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  body {
+    background-color: var(--sl-color-bg);
+    color: var(--sl-color-text);
+  }
+
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
