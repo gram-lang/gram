@@ -40,12 +40,16 @@ export default defineConfig({
 }`
         }
       ],
-      social: {
-        github: 'https://github.com/gram-lang/gram'
-      },
       components: {
         // We'll override components here if needed
-      }
+      },
+      social: [
+        {
+          label: 'GitHub',
+          icon: 'github',
+          href: 'https://github.com/gram-lang/gram'
+        }
+      ]
     })
   ],
   vite: {
