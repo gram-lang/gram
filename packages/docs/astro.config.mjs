@@ -53,18 +53,16 @@ export default defineConfig({
     })
   ],
   vite: {
-    plugins: [
-      {
-        name: 'force-esnext',
-        enforce: 'pre',
-        config() {
-          return {
-            build: { target: 'esnext' },
-            esbuild: { target: 'esnext' },
-            optimizeDeps: { esbuildOptions: { target: 'esnext' } }
-          };
-        }
+    build: {
+      target: 'esnext'
+    },
+    esbuild: {
+      target: 'esnext'
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'esnext'
       }
-    ]
+    }
   }
 });
