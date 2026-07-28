@@ -1,0 +1,43 @@
+---
+---
+<div class="theme-select">
+  <select id="theme-selector">
+    <option value="auto">Auto</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
+</div>
+
+<script>
+  const selector = document.getElementById('theme-selector');
+  const getTheme = () => {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme')) {
+      return localStorage.getItem('starlight-theme');
+    }
+    return 'auto';
+  };
+  
+  const setTheme = (theme) => {
+    if (theme === 'auto') {
+      localStorage.removeItem('starlight-theme');
+      document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    } else {
+      localStorage.setItem('starlight-theme', theme);
+      document.documentElement.dataset.theme = theme;
+    }
+  };
+
+  selector.value = getTheme();
+  selector.addEventListener('change', (e) => setTheme(e.target.value));
+</script>
+
+<style>
+  .theme-select select {
+    background: transparent;
+    color: var(--sl-color-text);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+  }
+</style>

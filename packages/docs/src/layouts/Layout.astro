@@ -1,12 +1,14 @@
 ---
 import '../styles/global.css';
+import Header from '../components/Header.astro';
 
 export interface Props {
   title: string;
   description?: string;
+  currentLang?: string;
 }
 
-const { title, description = 'Gram Language Documentation' } = Astro.props;
+const { title, description = 'Gram Language Documentation', currentLang = 'en' } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -32,9 +34,7 @@ const { title, description = 'Gram Language Documentation' } = Astro.props;
     </script>
   </head>
   <body>
-    <header class="app-header">
-      <!-- Navbar placeholder for Phase 3 -->
-    </header>
+    <Header currentLang={currentLang} />
     
     <main class="app-main">
       <slot />

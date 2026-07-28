@@ -1,0 +1,34 @@
+---
+const { currentLang = 'en' } = Astro.props;
+
+// For non-Starlight pages, we manually toggle between / and /fr/ (or /play and /fr/play)
+const currentPath = Astro.url.pathname;
+
+let enUrl = currentPath;
+let frUrl = currentPath;
+
+if (currentLang === 'fr') {
+  enUrl = currentPath.replace(/^\/fr/, '') || '/';
+  frUrl = currentPath;
+} else {
+  enUrl = currentPath;
+  frUrl = '/fr' + (currentPath === '/' ? '' : currentPath);
+}
+---
+<div class="lang-select">
+  <select id="language-selector" onchange="window.location.href = this.value">
+    <option value={enUrl} selected={currentLang === 'en'}>English</option>
+    <option value={frUrl} selected={currentLang === 'fr'}>Français</option>
+  </select>
+</div>
+
+<style>
+  .lang-select select {
+    background: transparent;
+    color: var(--sl-color-text);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+  }
+</style>

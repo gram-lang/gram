@@ -1,0 +1,99 @@
+---
+import ThemeSelect from './ThemeSelect.astro';
+import LanguageSelect from './LanguageSelect.astro';
+import SocialLinks from './SocialLinks.astro';
+
+const { currentLang = 'en' } = Astro.props;
+---
+<header class="custom-header">
+  <div class="header-container">
+    <div class="logo">
+      <a href={currentLang === 'fr' ? '/fr/' : '/'}>
+        <img src="/logo.svg" alt="Gram Logo" />
+        <span class="site-title">Gram</span>
+      </a>
+      <span class="version-badge">v1.0.0-beta.5</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href={currentLang === 'fr' ? '/fr/explanation/philosophy' : '/explanation/philosophy'}>Documentation</a>
+      <a href={currentLang === 'fr' ? '/fr/play' : '/play'}>Playground</a>
+      <!-- <a href={currentLang === 'fr' ? '/fr/blog' : '/blog'}>Blog</a> -->
+    </nav>
+
+    <div class="actions">
+      <SocialLinks />
+      <div class="divider"></div>
+      <ThemeSelect />
+      <LanguageSelect currentLang={currentLang} />
+    </div>
+  </div>
+</header>
+
+<style>
+  .custom-header {
+    border-bottom: 1px solid var(--sl-color-hairline);
+    background-color: var(--sl-color-bg-nav);
+    padding: 0 var(--sl-content-pad-x);
+    height: var(--sl-nav-height, 3.5rem);
+    display: flex;
+    align-items: center;
+  }
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .logo a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--sl-color-white);
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+  .logo img {
+    height: 2rem;
+  }
+  .version-badge {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    background-color: var(--gram-orange-soft);
+    color: var(--gram-orange);
+    border-radius: 4px;
+    font-family: var(--sl-font-mono);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--sl-color-text);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  .nav-links a:hover {
+    color: var(--gram-orange);
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .divider {
+    width: 1px;
+    height: 1.5rem;
+    background-color: var(--sl-color-hairline);
+  }
+</style>
