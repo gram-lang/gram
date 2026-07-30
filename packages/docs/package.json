@@ -15,6 +15,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "latest",
     "@astrojs/mdx": "latest",
     "@astrojs/starlight": "latest",
     "@astrojs/vue": "latest",

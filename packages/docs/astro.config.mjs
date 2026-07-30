@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import vue from '@astrojs/vue';
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
 
@@ -13,7 +14,7 @@ export default defineConfig({
     enabled: false
   },
   markdown: {
-    remarkPlugins: [remarkMermaid]
+    processor: unified({ remarkPlugins: [remarkMermaid] })
   },
   integrations: [
     vue(),
@@ -154,8 +155,10 @@ export default defineConfig({
       target: 'esnext'
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: 'esnext'
+      rolldownOptions: {
+        transform: {
+          target: 'esnext'
+        }
       }
     }
   }
