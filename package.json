@@ -39,7 +39,7 @@
     "any-ratchet": "node scripts/any-ratchet.cjs",
     "any-ratchet:update": "node scripts/any-ratchet.cjs --update",
     "audit": "bun run --cwd audit audit",
-    "ci": "bun run build --filter='!@gram-lang/docs' && git diff --exit-code packages/parser/src/grammar-content.ts && bun run lint && bun run typecheck && bun run any-ratchet && bun test"
+    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run lint && bun run typecheck && bun run any-ratchet && bun test"
   },
   "workspaces": [
     "packages/*",
