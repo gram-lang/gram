@@ -8,6 +8,8 @@ import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 // https://astro.build/config
 export default defineConfig({
   devToolbar: {
@@ -118,14 +120,14 @@ export default defineConfig({
         }
       ],
       head: [
-        {
-          tag: 'script',
+        ...(isProd ? [{
+          tag: /** @type {'script'} */ ('script'),
           attrs: {
             defer: true,
             src: '/script.js',
             'data-website-id': 'fa1b1921-1982-4198-bb2b-c30d24f587ce'
           }
-        },
+        }] : []),
         {
           tag: 'script',
           content: `if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
