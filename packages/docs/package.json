@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build:astro": "astro build",
+    "prebuild": "bun scripts/generate-llms-full.ts",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check"
