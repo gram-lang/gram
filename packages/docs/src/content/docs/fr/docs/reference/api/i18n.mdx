@@ -1,0 +1,78 @@
+---
+title: "@gram-lang/i18n"
+---
+
+import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import { unitsTable, timeUnitsTable, categoriesTable } from '../../../../../../data/api-reference';
+
+Normalisation partagée des unités/du temps et dictionnaires de chaînes UI, utilisés en interne à travers le pipeline (le parser ne normalise pas les unités — cela se passe dans le moteur de mise à l'échelle de `@gram-lang/kitchen` et dans la standardisation de masse de `@gram-lang/analyzer`), afin que `"càs"`, `"tbsp"`, et `"cuillère à soupe"` soient tous reconnus comme la même unité, quelle que soit la locale dans laquelle une recette ou une entrée de base de données a été écrite.
+
+## Unités canoniques & alias
+
+`normalizeUnit` fait correspondre tout alias reconnu (anglais ou français, insensible à la casse) à sa forme canonique courte :
+
+<GeneratedTable table={unitsTable("fr")} />
+
+```typescript
+function normalizeUnit(rawUnit: string | undefined | null, lang?: string): string
+```
+
+```typescript
+import { normalizeUnit } from '@gram-lang/i18n';
+
+normalizeUnit('càs');              // "tbsp"
+normalizeUnit('Tablespoons');      // "tbsp"
+normalizeUnit('kilo', 'fr');       // "kg" (recherche scopée par langue, avec repli sur le global)
+```
+
+Une entrée non reconnue est retournée en minuscules et sans espaces superflus, inchangée.
+
+## Unités de temps
+
+Le même schéma de normalisation par alias, appliqué aux durées :
+
+<GeneratedTable table={timeUnitsTable("fr")} />
+
+```typescript
+function resolveTimeUnit(unit?: string | null, lang?: string): string
+```
+
+```typescript
+import { resolveTimeUnit } from '@gram-lang/i18n';
+
+resolveTimeUnit('minutes'); // "m"
+resolveTimeUnit('heures', 'fr'); // "h"
+```
+
+## Catégories d'ingrédients par défaut
+
+Utilisées par `gram shop` et d'autres consommateurs pour grouper une liste de courses par famille culinaire quand l'entrée de base de données d'un ingrédient n'a pas de `category` explicite :
+
+<GeneratedTable table={categoriesTable("fr")} />
+
+`CATEGORY_KEYS` exporte les clés stables et invariantes par langue (`produce`, `dairy`, `meat`, `pantry`, ...), et `getCategoryLabels(lang)` résout ces clés en libellés traduits :
+
+```typescript
+function getDefaultCategories(lang?: string): string[] // par défaut 'en'
+function getCategoryLabels(lang?: string): Record<CategoryKey, string>
+```
+
+```typescript
+import { getDefaultCategories, getCategoryLabels, CATEGORY_KEYS } from '@gram-lang/i18n';
+
+getDefaultCategories('fr'); // ["Légumes", "Fruits", "Viandes", ...]
+getCategoryLabels('fr').produce; // "Légumes"
+```
+
+## Tables de conversion d'unités
+
+`@gram-lang/i18n` sert de source de vérité unique pour les facteurs de conversion intra-famille (`UNIT_CONVERSIONS`) et les multiplicateurs de durée en minutes (`TIME_TO_MINUTES`) :
+
+```typescript
+import { UNIT_CONVERSIONS, TIME_TO_MINUTES } from '@gram-lang/i18n';
+
+UNIT_CONVERSIONS.mass.map.kg; // 1000 (grammes)
+UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
+TIME_TO_MINUTES.h; // 60 (minutes)
+```
+

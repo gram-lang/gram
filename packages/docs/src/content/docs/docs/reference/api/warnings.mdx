@@ -1,0 +1,77 @@
+---
+title: "Warnings"
+---
+
+import GeneratedTable from '../../../../../components/GeneratedTable.astro';
+import { warningCodesTable } from '../../../../../data/api-reference';
+
+A malformed or incomplete recipe still compiles — the compiler and analyzer collect structured `Warning` objects instead of throwing, so callers can render a recipe and surface what's wrong at the same time. `WarningCode` and friends are exported from `@gram-lang/kitchen`.
+
+## The `Warning` interface
+
+```typescript
+interface Warning {
+  code: WarningCode;
+  message: string;       // human-readable, ready to display as-is
+  item?: string;
+  loc?: { start: number; end: number }; // character offsets into the source, when available
+  section?: string | null;
+}
+```
+
+`compile()` returns them on `CompilationResult.warnings`; `analyze()` carries those through and may push additional ones onto the same array on `AnalyzedCompilationResult.warnings`. Never a bare string — `.message` is always present.
+
+## Severity & `--strict`
+
+```typescript
+type WarningSeverity = "error" | "warning" | "info";
+const warningSeverity: Record<WarningCode, WarningSeverity>;
+```
+
+Structural integrity issues — a reference to something that doesn't exist, a naming collision — are `error`. Everything else (nutritional/estimation gaps, incomplete-but-recoverable annotations) is `warning`, so e.g. a missing timer unit doesn't fail a build the same way an undefined reference does. This is exactly the distinction the CLI's `gram check --strict` flag uses: without `--strict`, only `error`-severity codes fail the command; with it, every `warning` is promoted to `error` too. Build your own strict-mode logic on `warningSeverity[code]` the same way.
+
+## Codes
+
+<GeneratedTable table={warningCodesTable("en")} />
+
+### `VARIABLE_NOT_FOUND`
+A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
+
+### `RELATIVE_QUANTITY_UNRESOLVED`
+A relative quantity references an ingredient (`50% of @name`) that hasn't appeared earlier **in the same section** — relative-to-ingredient targets are section-scoped, unlike variables. **Fix**: move the referenced ingredient earlier in the same section, or reference a variable (`&name`) instead if it's meant to be recipe-wide.
+
+### `RELATIVE_QUANTITY_UNKNOWN_MASS`
+Pushed during analysis: the target of a relative quantity was found, but its own mass couldn't be computed (no resolvable unit/density), so the percentage can't be applied. **Fix**: give the target ingredient a standardizable unit, or a density/`unit_weight` entry in the ingredient database.
+
+### `CIRCULAR_REFERENCE`
+An ingredient's relative quantity targets itself (`@flour{50% of @flour}`). **Fix**: remove the self-reference — a percentage-based quantity must target a *different* ingredient or variable.
+
+### `UNDEFINED_REFERENCE`
+A bare reference (`&name`) or a referenceable ingredient (`@&name`) points to something that was never registered earlier in the recipe. **Fix**: introduce the ingredient (without `&`) before referencing it, or check for a typo.
+
+### `MISSING_UNIT`
+A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` instead of `~{10 min}`). **Fix**: add an explicit unit.
+
+### `INVALID_UNIT`
+Either a `Timer` was given a non-numeric (text) quantity, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a numeric value + a recognized unit for timers; use `°C` or `°F` for temperatures.
+
+### `SCOPE_CONFLICT`
+Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
+
+### `MISSING_INGREDIENT`
+During nutrition estimation, an ingredient with a computable mass has no matching entry (by id or alias) in the ingredient database at all. **Fix**: add the ingredient (or an alias to an existing entry) to your database.
+
+### `MISSING_MACROS`
+The ingredient exists in the database, but its entry has no `nutrition` block. **Fix**: add a `nutrition` block to that database entry.
+
+### `UNKNOWN_MASS`
+Nutrition estimation couldn't compute a mass for this ingredient at all (unresolvable unit, no density/`unit_weight`), so it's excluded from the totals. **Fix**: same as `RELATIVE_QUANTITY_UNKNOWN_MASS` — give it a standardizable unit or physical data in the database.
+
+### `INVALID_MODIFIER_COMBINATION`
+Conflicting or duplicated modifiers on the same ingredient/cookware — e.g. `optional (?)` with `important (*)`, `hidden (-)` with `important (*)`, `hidden (-)` with `referenceable (&)`, or the same modifier twice. The specific combination is named in `.message`. **Fix**: remove the conflicting modifier.
+
+### `INVALID_BAKERS_REFERENCE`
+The ingredient marked as the baker's-percentage base (via the `*` modifier or the `bakersReference` option) has a mass that was itself derived from *another* ingredient's relative quantity — it can't also serve as the 100% anchor, since that would be circular. **Fix**: mark a different ingredient with an absolute (non-relative) quantity as the reference.
+
+### `NO_BAKERS_REFERENCE`
+Baker's math was explicitly requested (`enableBakersMath` with a bare `*` search, or an explicit `bakersReference` id) but no ingredient matched. **Fix**: mark an ingredient with the `*` modifier, or correct the `bakersReference` id to match an existing ingredient.
