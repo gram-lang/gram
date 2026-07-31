@@ -1,0 +1,45 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+
+const { siteTitleHref } = Astro.props;
+---
+
+<div class="site-title sl-flex">
+	<a href="/" class="main-site-link">Gram</a>
+	<span class="separator">/</span>
+	<a href={siteTitleHref} class="docs-site-link">Documentation</a>
+</div>
+
+<style>
+	.site-title {
+		gap: 0.5rem;
+		align-items: center;
+		font-size: var(--sl-text-h4);
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.site-title a {
+		text-decoration: none;
+		transition: opacity 0.2s;
+	}
+	.main-site-link {
+		color: var(--sl-color-white);
+	}
+	:root[data-theme='light'] .main-site-link {
+		color: var(--sl-color-text);
+	}
+	.docs-site-link {
+		color: var(--sl-color-accent-high);
+	}
+	:root[data-theme='light'] .docs-site-link {
+		color: var(--sl-color-accent);
+	}
+	.docs-site-link:hover, .main-site-link:hover {
+		opacity: 0.7;
+	}
+	.separator {
+		color: var(--sl-color-gray-4);
+		font-weight: 400;
+	}
+</style>

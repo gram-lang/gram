@@ -47,9 +47,9 @@ pre[data-language="markdown"] code {
 }
 
 /* Soft orange background for inline code in light mode */
-:root[data-theme="light"] :not(pre) > code {
-	background-color: var(--gram-orange-soft);
-	color: var(--gram-orange-dark);
+:root[data-theme="light"] :not(pre)>code {
+	/* background-color: var(--gram-orange-soft);
+	color: var(--gram-orange-dark); */
 }
 
 /*
