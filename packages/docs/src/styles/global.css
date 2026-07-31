@@ -38,8 +38,10 @@ body {
 }
 
 /* Force natural line wrapping for specific languages like Gram */
-div[class*="language-gram"] code,
-div[class*="language-markdown"] code {
+pre[data-language="gram"],
+pre[data-language="gram"] code,
+pre[data-language="markdown"],
+pre[data-language="markdown"] code {
 	white-space: pre-wrap !important;
 	word-break: break-word !important;
 }

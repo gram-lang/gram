@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 import starlight from '@astrojs/starlight';
+import starlightThemeNova from 'starlight-theme-nova';
 import vue from '@astrojs/vue';
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
@@ -16,22 +17,21 @@ export default defineConfig({
     enabled: false
   },
   markdown: {
-    processor: unified({ remarkPlugins: [remarkMermaid] })
+    processor: unified({ remarkPlugins: [remarkMermaid] }),
+    shikiConfig: {
+      langs: [{ ...gramGrammar, name: 'gram' }]
+    }
   },
   integrations: [
     vue(),
     starlight({
+      plugins: [starlightThemeNova()],
       title: 'Gram',
       customCss: [
         './src/styles/global.css',
       ],
       components: {
         Footer: './src/components/Footer.astro'
-      },
-      expressiveCode: {
-        shiki: {
-          langs: [{ ...gramGrammar, name: 'gram' }]
-        }
       },
       locales: {
         root: { label: 'English', lang: 'en' },
@@ -147,7 +147,24 @@ export default defineConfig({
         }
       ]
     }),
-    mdx()
+    mdx(),
+    {
+      name: 'override-shiki-themes',
+      hooks: {
+        'astro:config:setup': ({ updateConfig }) => {
+          updateConfig({
+            markdown: {
+              shikiConfig: {
+                themes: {
+                  light: 'github-light',
+                  dark: 'github-dark'
+                }
+              }
+            }
+          });
+        }
+      }
+    }
   ],
   vite: {
     build: {
