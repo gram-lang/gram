@@ -2,7 +2,7 @@
 title: "What is Gram?"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Gram is a data-driven recipe markup language built for developers. 
 
@@ -55,10 +55,8 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
 
 Gram remains highly readable, but quietly introduces some powerful data structures. Here is a look at a classic French pastry recipe written in Gram:
 
-<Tabs>
-<TabItem label="canneles.gram">
-
-```gram
+<CodeTabs>
+```gram title="canneles.gram"
 ---
 title: 'Cannelés'
 portions: 10
@@ -76,11 +74,7 @@ portions: 10
 
 [Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
 ```
-
-</TabItem>
-<TabItem label="Output Glimpse">
-
-```json
+```json title="Output Glimpse"
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
@@ -137,9 +131,7 @@ portions: 10
   ]
 }
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 

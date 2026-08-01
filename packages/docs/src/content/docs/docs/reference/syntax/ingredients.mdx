@@ -2,7 +2,7 @@
 title: "Ingredients"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Ingredients are the core building blocks of any Gram recipe.
 
@@ -124,29 +124,17 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 Deglaze with @dry white wine:wine{100ml}.
 ```
-
-</TabItem>
-<TabItem label="Rendered Recipe">
-
-```markdown
+```markdown title="Rendered Recipe"
 1. Deglaze with **wine** (100ml).
 ```
-
-</TabItem>
-<TabItem label="Shopping List">
-
-```markdown
+```markdown title="Shopping List"
 - **dry white wine**: 100ml
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 The shopping list will aggregate this under "dry white wine", but the rendered recipe will just say "wine".
 

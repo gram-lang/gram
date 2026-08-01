@@ -2,25 +2,22 @@
 title: "Référence API"
 ---
 
-import { Steps, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
+
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Gram n'est pas seulement un format de fichier — c'est un pipeline de petites bibliothèques composables. Chaque paquet fait un seul travail et transmet un objet JSON simple au suivant. Vous pouvez utiliser tout le pipeline, ou ne prendre que la brique dont vous avez besoin (ex : uniquement le parser, pour construire un linter).
 
 ## Installation
 
-<Tabs>
-  <TabItem label="npm">
-  ```bash
+<CodeTabs>
+  ```bash title="npm"
   npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
-  ```
-  </TabItem>
-  <TabItem label="bun">
-  ```bash
+```
+  ```bash title="bun"
   bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
-  ```
-  </TabItem>
-</Tabs>
-
+```
+</CodeTabs>
 
 Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent partout où JavaScript s'exécute — Node.js, Deno, Bun, environnements edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour un exemple entièrement côté client).
 

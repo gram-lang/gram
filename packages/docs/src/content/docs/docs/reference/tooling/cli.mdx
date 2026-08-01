@@ -2,24 +2,22 @@
 title: "Command Line Interface (CLI)"
 ---
 
+import { CodeTabs } from 'starlight-theme-nova/components';
+
 The official Gram CLI (`@gram-lang/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
 
 ## Installation
 
-import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
-<Tabs>
-  <TabItem label="npm">
-  ```bash
+<CodeTabs>
+  ```bash title="npm"
   npm install -g @gram-lang/cli
-  ```
-  </TabItem>
-  <TabItem label="bun">
-  ```bash
+```
+  ```bash title="bun"
   bun add -g @gram-lang/cli
-  ```
-  </TabItem>
-</Tabs>
+```
+</CodeTabs>
 
 The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
 
@@ -376,17 +374,17 @@ language: "en"                 # Language for all AI-generated content (categori
 ai:
   # Supported providers: "google", "openai", "anthropic", "ollama"
   provider: "google"
-  
+
   # Specific model string (defaults to 'gemini-3.5-flash' for google,
   # 'gpt-4.1-nano' for openai, 'claude-haiku-4-5-20251001' for anthropic, 'llama4' for ollama)
   model: "gemini-3.5-flash"
-  
+
   # API key (Can also use ENV variables: GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY —
   # for any other/custom provider name, GRAM_API_KEY is used as a generic fallback.
   # Note: the "ollama" provider does not read an API key at all, from config or env.)
   # WARNING: Prefer using a .env file instead of committing this file with your key.
   apiKey: "YOUR_API_KEY"
-  
+
   # Custom base URL — only read for the "ollama" provider (ignored for openai/anthropic/google).
   # Defaults to "http://localhost:11434/v1" (or the OLLAMA_BASE_URL env var) when unset.
   baseUrl: "http://localhost:11434/v1"

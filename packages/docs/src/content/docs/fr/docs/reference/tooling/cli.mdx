@@ -2,24 +2,22 @@
 title: "Interface en Ligne de Commande (CLI)"
 ---
 
+import { CodeTabs } from 'starlight-theme-nova/components';
+
 Le CLI officiel de Gram (`@gram-lang/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
 
 ## Installation
 
-import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
-<Tabs>
-  <TabItem label="npm">
-  ```bash
+<CodeTabs>
+  ```bash title="npm"
   npm install -g @gram-lang/cli
-  ```
-  </TabItem>
-  <TabItem label="bun">
-  ```bash
+```
+  ```bash title="bun"
   bun add -g @gram-lang/cli
-  ```
-  </TabItem>
-</Tabs>
+```
+</CodeTabs>
 
 Le CLI fonctionne aussi bien avec Node.js (>=20.6.0, chargeant automatiquement les fichiers `.env` via `process.loadEnvFile`) qu'avec [Bun](https://bun.sh/) — aucune API spécifique à un runtime n'est requise, les deux options se valent.
 
@@ -373,17 +371,17 @@ language: "fr"                 # Langue pour tout le contenu généré par l'IA 
 ai:
   # Fournisseurs supportés : "google", "openai", "anthropic", "ollama"
   provider: "google"
-  
+
   # Chaîne de modèle spécifique (défaut 'gemini-3.5-flash' pour google,
   # 'gpt-4.1-nano' pour openai, 'claude-haiku-4-5-20251001' pour anthropic, 'llama4' pour ollama)
   model: "gemini-3.5-flash"
-  
+
   # Clé API (Peut aussi utiliser des variables ENV : GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY —
   # pour n'importe quel nom de fournisseur personnalisé/autre, GRAM_API_KEY est utilisé comme repli générique.
   # Note : le fournisseur "ollama" ne lit aucune clé API, ni de la config ni de l'environnement.)
   # ATTENTION : Préférez utiliser un fichier .env au lieu de versionner ce fichier avec votre clé.
   apiKey: "VOTRE_CLE_API"
-  
+
   # URL de base personnalisée — uniquement lue pour le fournisseur "ollama".
   # Vaut "http://localhost:11434/v1" (ou la var ENV OLLAMA_BASE_URL) par défaut.
   baseUrl: "http://localhost:11434/v1"

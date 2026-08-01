@@ -2,7 +2,7 @@
 title: "Ingrédients"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Les ingrédients sont les éléments fondamentaux de toute recette Gram.
 
@@ -124,29 +124,17 @@ Vous pouvez renommer un `@ingrédient` pour l'affichage à l'aide de deux-points
 
 **Format** : `@Vrai Nom:Nom d'Affichage{Quantité}`
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 Déglacer avec le @vin blanc sec:vin{100 ml}.
 ```
-
-</TabItem>
-<TabItem label="Recette Rendu">
-
-```markdown
+```markdown title="Recette Rendu"
 1. Déglacer avec le **vin** (100 ml).
 ```
-
-</TabItem>
-<TabItem label="Liste de Courses">
-
-```markdown
+```markdown title="Liste de Courses"
 - **vin blanc sec**: 100 ml
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 La liste de courses fera l'agrégation sous "vin blanc sec", mais la recette affichée indiquera simplement "vin".
 

@@ -2,7 +2,7 @@
 title: "Structure du Document"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Un fichier de recette Gram (`.gram`) est structuré en plusieurs parties distinctes : Métadonnées, Sections, Étapes et Commentaires.
 
@@ -31,10 +31,8 @@ Ces clés sont recommandées pour un affichage correct et une bonne gestion des 
 *   `makes` : Le résultat physique ou les dimensions de la recette (ex : "1 gâteau", "24 cookies", "moule de 20x20 cm").
 *   `notes` : Des notes générales sur la recette (ex : "Testé le 07/06/2026. Réduire le sucre la prochaine fois.").
 
-<Tabs>
-<TabItem label="recette.gram">
-
-```gram
+<CodeTabs>
+```gram title="recette.gram"
 ---
 title: 'Brownies au Matcha'
 description: 'Un simple brownie au matcha de style japonais...'
@@ -50,9 +48,7 @@ densities:
   - farine: 0.55
 ---
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 ## 2. Étapes
 

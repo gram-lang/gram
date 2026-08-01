@@ -2,7 +2,7 @@
 title: "Tutorial: Your First Complex Recipe"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Time to bake! In this tutorial, a complete recipe for a **Lemon Tart** is written.
 
@@ -12,10 +12,8 @@ This recipe demonstrates how to move beyond a simple list of ingredients and use
 
 Start by defining the sweet pastry dough. The `@` symbol is used for ingredients and `#` for cookware.
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 ## Sweet Pastry Dough
 
 [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
@@ -26,11 +24,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 
 [Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 ### Sweet Pastry Dough
 
 **Ingredients**:
@@ -46,9 +40,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
 4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]`). While not strictly required, it is a highly recommended convention to start each step with its main action enclosed in brackets. This allows UI tools to generate clean, step-by-step summary views of your recipe.
 
@@ -60,10 +52,8 @@ The dough is currently just a list of steps. To use this dough later (to bake it
 
 This is done using an **Intermediate Declaration** (`->&name`) at the end of the section title.
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 ## Sweet Pastry Dough ->&pastry dough{}
 
 [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
@@ -74,11 +64,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 
 [Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 ### Sweet Pastry Dough
 
 **Ingredients**:
@@ -94,16 +80,12 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
 4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Now, in the next section, this dough can be referenced using `&name` instead of re-typing the ingredients. The compiler knows **not to add the dough to the shopping list**, because it's an intermediate preparation!
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 ## Baking the Tart Shell
 
 [Preheat] Preheat the #oven{} to ^{350F}.
@@ -112,11 +94,7 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 
 [Bake] For ~_{20min} until golden.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 ### Baking the Tart Shell
 
 **Ingredients**:
@@ -126,9 +104,7 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 2. **[Roll]** Roll out the 👉*pastry dough* for ⏲️ 5 min and place it in a *tart ring*.
 3. **[Bake]** For ⏳ 20 min (passive) until golden.
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 ## Step 3: Background Timers
 
@@ -137,22 +113,14 @@ By default, timers are **active**. The compiler assumes you are actively waiting
 
 But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an underscore `~_`:
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 1. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (passive).
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Now, the compiler will subtract 1 hour from your *Active Time* but keep it in the *Total Time*.
 
@@ -164,21 +132,15 @@ This is solved using **Composite Ingredients** (`<@parent`).
 
 Here is the Lemon Curd section:
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 ## Lemon Curd
 
 [Whisk] In a #saucepan{}, whisk the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{150g}, and @eggs{3}.
 
 [Cook] Cook over ^{medium heat} for ~{8min} until thickened.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 ### Lemon Curd
 
 **Ingredients**:
@@ -190,9 +152,7 @@ Here is the Lemon Curd section:
 1. **[Whisk]** In a *saucepan*, whisk the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
 2. **[Cook]** Cook over 🔥medium heat for ⏲️ 8 min until thickened.
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Because both the zest and the juice point to `<@lemon`, the compiler understands they are different parts of the same parent ingredient. Rather than relying on a database to guess yields, it applies the **MAX Rule**: it looks at the parent quantities required for each *distinct* part (`<@lemon` defaults to 1 for the zest, and `<@lemon{2}` for the juice) and takes the maximum. Here, since `max(1, 2) = 2`, the shopping list will smartly require exactly 2 whole lemons!
 
@@ -202,22 +162,14 @@ In pastry, precision is key. What if your lemons are particularly juicy and yiel
 
 You can use **Relative Quantities** (`% @&target`):
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 [Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 1. **[Whisk]** In a *saucepan*, the **lemon zest** (1 tbsp), **lemon juice** (120 g), **sugar** (150 g), and **eggs** (3).
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Now, the sugar is strictly bound to the juice. If you adjust the juice amount later based on the actual yield of your lemons, the compiler will automatically compute the exact mass of sugar needed (here, 150g) to maintain the perfect ratio.
 
@@ -229,10 +181,8 @@ For a deep dive into how Gram handles complex relative calculations (like using 
 
 Here is the complete recipe. Notice how clean and readable it remains, despite packing an incredible amount of logic!
 
-<Tabs>
-<TabItem label="Code">
-
-```gram
+<CodeTabs>
+```gram title="Code"
 ---
 title: Lemon Meringue Tart
 portions: 8
@@ -266,11 +216,7 @@ portions: 8
 
 [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
 ```
-
-</TabItem>
-<TabItem label="Preview">
-
-```markdown
+```markdown title="Preview"
 # Lemon Meringue Tart
 
 > **Metadata**
@@ -345,9 +291,7 @@ portions: 8
 
 1. **[Pour]** The 👉*curd* into the 👉*baked shell*. Chill in the fridge for ⏳ 2 h (passive).
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 ### What did the compiler do?
 

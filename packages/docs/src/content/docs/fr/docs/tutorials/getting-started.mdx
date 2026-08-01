@@ -2,7 +2,8 @@
 title: "Pour commencer"
 ---
 
-import { Steps, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { CodePackageManagers } from 'starlight-theme-nova/components';
 
 Ce guide va vous aider à installer l'écosystème Gram et à compiler votre première recette.
 
@@ -12,18 +13,11 @@ Ce guide va vous aider à installer l'écosystème Gram et à compiler votre pre
 
    Installez le CLI `gram` globalement avec le gestionnaire de paquets de votre choix — il fonctionne aussi bien avec Node.js (>=20) qu'avec [Bun](https://bun.sh/) :
 
-   <Tabs>
-     <TabItem label="npm">
-     ```bash
-     npm install -g @gram-lang/cli
-     ```
-     </TabItem>
-     <TabItem label="bun">
-     ```bash
-     bun add -g @gram-lang/cli
-     ```
-     </TabItem>
-   </Tabs>
+   <CodePackageManagers
+   packages="@gram-lang/cli"
+   dev={true}
+   packageManagers={['npm', 'bun']}
+   />
 
    :::note
    Vous préférez construire le CLI depuis les sources (par exemple pour contribuer au projet) ? Consultez [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
@@ -122,10 +116,8 @@ Ce guide va vous aider à installer l'écosystème Gram et à compiler votre pre
    gram view pancakes.gram
    ```
 
-   Alternativement, pour lui donner vie avec une interface visuelle entièrement formatée, il est très recommandé d'ouvrir la recette à l'aide de l'**Extension VS Code** ou via le **[Playground Web](/fr/play/)**.
-
    :::tip[Essayez le playground]
-   Si vous ne voulez encore rien installer, vous pouvez tester Gram directement sur le web via le [Playground](/fr/play/).
+   Si vous ne voulez encore rien installer, vous pouvez tester Gram directement sur le web via le [Playground](/fr/play/) (ou ouvrir la recette à l'aide de l'[Extension VS Code](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)).
    :::
 
 </Steps>

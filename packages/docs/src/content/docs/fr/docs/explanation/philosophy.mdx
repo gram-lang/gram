@@ -2,7 +2,7 @@
 title: "C'est quoi Gram ?"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { CodeTabs } from 'starlight-theme-nova/components';
 
 Gram est un langage de balisage orienté données, pensé par et pour les développeurs.
 
@@ -55,10 +55,8 @@ L'écosystème Gram fournit tout ce dont vous avez besoin pour traiter vos recet
 
 Gram reste très lisible, mais introduit discrètement des structures de données puissantes. Voici un aperçu avec la recette classique des cannelés bordelais :
 
-<Tabs>
-<TabItem label="canneles.gram">
-
-```gram
+<CodeTabs>
+```gram title="canneles.gram"
 ---
 title: 'Cannelés'
 portions: 10
@@ -76,11 +74,7 @@ portions: 10
 
 [Repos] Couvrir de #film alimentaire{} au contact et réfrigérer pendant au moins ~_réfrigérateur{24 h}.
 ```
-
-</TabItem>
-<TabItem label="Aperçu de la Sortie">
-
-```json
+```json title="Aperçu de la Sortie"
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
@@ -137,9 +131,7 @@ portions: 10
   ]
 }
 ```
-
-</TabItem>
-</Tabs>
+</CodeTabs>
 
 Remarquez comment l'étape `[Incorporer]` utilise `<@œufs{6}` ? Cette syntaxe *d'ingrédient composite* indique à Gram que vous n'utilisez que les jaunes, mais que la liste de courses doit correctement agréger les œufs entiers pour l'achat. Le tag de section `~{-1d}` met en place un rétro-planning par rapport à l'heure finale de cuisson, et `->&lait chaud{}` prépare une variable intermédiaire que vous pouvez verser plus tard.
 
