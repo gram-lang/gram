@@ -142,7 +142,17 @@ export default defineConfig({
       ],
       social: [
         {
-          label: 'GitHub',
+          label: 'Forgejo (Primary repository)',
+          icon: 'seti:git',
+          href: 'https://git.gram-lang.org/gram-lang/gram'
+        },
+        {
+          label: 'Codeberg Mirror',
+          icon: 'codeberg',
+          href: 'https://codeberg.org/gram-lang/gram'
+        },
+        {
+          label: 'GitHub Mirror',
           icon: 'github',
           href: 'https://github.com/gram-lang/gram'
         }

@@ -53,9 +53,8 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
 
 Gram remains highly readable, but quietly introduces some powerful data structures. Here is a look at a classic French pastry recipe written in Gram:
 
-**canneles.gram**
-
-```gram
+<CodeTabs>
+```gram title="canneles.gram"
 ---
 title: 'Cannelés'
 portions: 10
@@ -73,9 +72,7 @@ portions: 10
 
 [Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
 ```
-**Output Glimpse**
-
-```json
+```json title="Output Glimpse"
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
@@ -132,6 +129,7 @@ portions: 10
   ]
 }
 ```
+</CodeTabs>
 
 Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 
@@ -173,9 +171,8 @@ These keys are recommended for proper display and metadata management:
 *   `makes`: The physical output or dimensions of the recipe (e.g., "1 layer cake", "24 cookies", "20x20cm mold").
 *   `notes`: General notes about the recipe (e.g. "Tested on 2026-06-07. Decrease sugar next time.").
 
-**recipe.gram**
-
-```gram
+<CodeTabs>
+```gram title="recipe.gram"
 ---
 title: 'Matcha Brownies'
 description: 'A simple Japanese-style matcha brownie...'
@@ -191,6 +188,7 @@ densities:
   - flour: 0.55
 ---
 ```
+</CodeTabs>
 
 ## 2. Steps
 
@@ -387,21 +385,17 @@ You can rename an `@ingredient` for display purposes using a colon `:` immediate
 
 **Format**: `@Real Name:Display Name{Quantity}`
 
-**Code**
-
-```gram
+<CodeTabs>
+```gram title="Code"
 Deglaze with @dry white wine:wine{100ml}.
 ```
-**Rendered Recipe**
-
-```markdown
+```markdown title="Rendered Recipe"
 1. Deglaze with **wine** (100ml).
 ```
-**Shopping List**
-
-```markdown
+```markdown title="Shopping List"
 - **dry white wine**: 100ml
 ```
+</CodeTabs>
 
 The shopping list will aggregate this under "dry white wine", but the rendered recipe will just say "wine".
 
