@@ -62,7 +62,7 @@ export default defineConfig({
         {
           label: 'Reference',
           translations: { fr: 'Référence' },
-          collapsed: true,
+          collapsed: false,
           items: [
             { label: 'Document Structure', translations: { fr: 'Structure du Document' }, slug: 'docs/reference/syntax/document-structure' },
             { label: 'Ingredients', translations: { fr: 'Ingrédients' }, slug: 'docs/reference/syntax/ingredients' },
