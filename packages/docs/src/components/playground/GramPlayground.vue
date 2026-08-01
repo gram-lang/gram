@@ -564,7 +564,8 @@ onUnmounted(() => {
   flex-direction: column;
   width: 100%;
   position: relative;
-  min-height: 0;
+  min-height: 350px;
+  height: 50vh;
 }
 
 .editor-wrapper {
@@ -596,6 +597,8 @@ onUnmounted(() => {
   
   .playground-col {
     /* No min-height required */
+    min-height: 0;
+    height: auto;
   }
   
   .left-col {
