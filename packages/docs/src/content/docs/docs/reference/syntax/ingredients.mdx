@@ -16,7 +16,9 @@ To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name conta
 [Poke] Holes in @potatoes{2}.
 ```
 
-> **Note:** `@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+:::note
+`@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+:::
 
 ### Units
 To specify a unit of measurement (weight, volume, etc.), add it directly after the numeric value inside the braces, separated by an optional space.
@@ -96,7 +98,9 @@ Gram provides a dedicated modifier to mark the reference `@ingredient`. By placi
 
 This allows tools (like the CLI or web renderers) to automatically calculate and display the baker's percentages for all other items (e.g., Water: 70%, Salt: 2%) without you having to define them manually as relative quantities.
 
-> **Note:** For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.md#bakers-math) guide.
+:::note
+For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.mdx#bakers-math) guide.
+:::
 
 ## Advanced Syntax
 

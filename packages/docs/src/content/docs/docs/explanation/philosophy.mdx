@@ -27,14 +27,29 @@ Gram isn't just a syntax; it's a complete ecosystem for building culinary applic
 If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), and outputs a reliable JSON structure you can actually work with.
 :::
 
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
 ## Designed for Developers
 
 The Gram ecosystem gives you everything you need to treat recipes like software:
-- **Parser & Compiler (`@gram-lang/kitchen`)**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
-- **Semantic Analyzer (`@gram-lang/analyzer`)**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
-- **Language Server (LSP)**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
-- **CLI (`@gram-lang/cli`)**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
-- **Renderer (`@gram-lang/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+
+<CardGrid>
+  <Card title="Parser & Compiler" icon="setting">
+    **`@gram-lang/kitchen`**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
+  </Card>
+  <Card title="Semantic Analyzer" icon="magnifier">
+    **`@gram-lang/analyzer`**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
+  </Card>
+  <Card title="Language Server (LSP)" icon="laptop">
+    Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
+  </Card>
+  <Card title="CLI" icon="window">
+    **`@gram-lang/cli`**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
+  </Card>
+  <Card title="Renderer" icon="document">
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+  </Card>
+</CardGrid>
 
 ## How it looks
 
@@ -128,4 +143,10 @@ portions: 10
 
 Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 
-Ready to dive in? Check out the [Getting Started](../tutorials/getting-started.md) guide.
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="Ready to dive in?"
+  description="Check out the Getting Started guide to install Gram and write your first recipe."
+  href="/docs/tutorials/getting-started/"
+/>

@@ -1,5 +1,5 @@
 ---
-title: "Rendu & Sortie (`@gram-lang/renderer`)"
+title: "Rendu & Sortie (@gram-lang/renderer)"
 ---
 
 Une fois qu'une recette a été analysée par `@gram-lang/parser`, compilée par `@gram-lang/kitchen`, et (optionnellement) enrichie par `@gram-lang/analyzer`, elle est prête à être présentée à l'utilisateur.

@@ -38,7 +38,7 @@ const PAGES: [string, string][] = [
 	["reference/syntax/relative-quantities.md", "/docs/reference/syntax/relative-quantities"],
 	["reference/syntax/composite-ingredients.md", "/docs/reference/syntax/composite-ingredients"],
 	["reference/syntax/cheatsheet.md", "/docs/reference/syntax/cheatsheet"],
-	["reference/syntax/ai-generation-notes.md", "/docs/reference/syntax/ai-generation-notes"],
+	["reference/syntax/ai-generation-notes.mdx", "/docs/reference/syntax/ai-generation-notes"],
 	["reference/api/data-formats.md", "/docs/reference/api/data-formats"],
 	["reference/api/warnings.mdx", "/docs/reference/api/warnings"],
 ];

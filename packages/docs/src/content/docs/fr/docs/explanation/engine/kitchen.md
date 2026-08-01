@@ -1,5 +1,5 @@
 ---
-title: "Compilation (`@gram-lang/kitchen`)"
+title: "Compilation (@gram-lang/kitchen)"
 ---
 
 Si `@gram-lang/parser` fournit le vocabulaire, `@gram-lang/kitchen` fournit la logique.

@@ -26,14 +26,28 @@ Gram isn't just a syntax; it's a complete ecosystem for building culinary applic
 If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), and outputs a reliable JSON structure you can actually work with.
 :::
 
+
 ## Designed for Developers
 
 The Gram ecosystem gives you everything you need to treat recipes like software:
-- **Parser & Compiler (`@gram-lang/kitchen`)**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
-- **Semantic Analyzer (`@gram-lang/analyzer`)**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
-- **Language Server (LSP)**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
-- **CLI (`@gram-lang/cli`)**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
-- **Renderer (`@gram-lang/renderer`)**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+
+<CardGrid>
+  <Card title="Parser & Compiler" icon="setting">
+    **`@gram-lang/kitchen`**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
+  </Card>
+  <Card title="Semantic Analyzer" icon="magnifier">
+    **`@gram-lang/analyzer`**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
+  </Card>
+  <Card title="Language Server (LSP)" icon="laptop">
+    Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
+  </Card>
+  <Card title="CLI" icon="window">
+    **`@gram-lang/cli`**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
+  </Card>
+  <Card title="Renderer" icon="document">
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+  </Card>
+</CardGrid>
 
 ## How it looks
 
@@ -121,7 +135,12 @@ portions: 10
 
 Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient* syntax tells Gram that you are only using the yolks, but the shopping list should correctly aggregate the whole eggs required. The `~{-1d}` section tag creates a retro-planning schedule relative to the final baking time, and `->&hot milk{}` sets up an intermediate variable you can pour later.
 
-Ready to dive in? Check out the [Getting Started](../tutorials/getting-started.md) guide.
+
+<LinkCard
+  title="Ready to dive in?"
+  description="Check out the Getting Started guide to install Gram and write your first recipe."
+  href="/docs/tutorials/getting-started/"
+/>
 
 ---
 
@@ -260,7 +279,9 @@ To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name conta
 [Poke] Holes in @potatoes{2}.
 ```
 
-> **Note:** `@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+:::note
+`@ingredient` names can contain special characters (like `'`, `&`, `.`), except for the dedicated syntax delimiters (`{`, `}`, `:`, `(`, `)`, `<`, `|`).
+:::
 
 ### Units
 To specify a unit of measurement (weight, volume, etc.), add it directly after the numeric value inside the braces, separated by an optional space.
@@ -340,7 +361,9 @@ Gram provides a dedicated modifier to mark the reference `@ingredient`. By placi
 
 This allows tools (like the CLI or web renderers) to automatically calculate and display the baker's percentages for all other items (e.g., Water: 70%, Salt: 2%) without you having to define them manually as relative quantities.
 
-> **Note:** For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.md#bakers-math) guide.
+:::note
+For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.mdx#bakers-math) guide.
+:::
 
 ## Advanced Syntax
 
@@ -532,7 +555,9 @@ Bake for ~{25min}.
 - `d` (days).
 - `s` (seconds).
 
-> **Note:** `m` or `minutes` will be automatically corrected to `min` by the compiler.
+:::note
+`m` or `minutes` will be automatically corrected to `min` by the compiler.
+:::
 
 These units are resolved through Gram's multi-language time dictionary: the localized aliases below are also recognized for a `~timer`, regardless of the language the recipe is written in (e.g. in a French recipe, `~{2j}` works exactly like `~{2d}`).
 
@@ -1095,11 +1120,14 @@ A well-generated `.gram` file often has **fewer steps** than its source, differe
 
 When turning an existing recipe into `.gram`, working through these five points in order catches most structural mistakes before they happen:
 
+
+<Steps>
 1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](./document-structure.md#retro-planning-scheduling)).
 2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions`, and dates from whatever metadata the source provides. Never invent a value that isn't in the source.
 3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](./composite-ingredients.md) instead of a separate prep step.
 4. **Steps** — Write each step as a paragraph with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10m}` then `~_baking{30m}`) to automatically sequence them without adding to the cook's active time.
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
+</Steps>
 
 ## Common mistakes
 

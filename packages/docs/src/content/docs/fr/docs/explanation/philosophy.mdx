@@ -27,14 +27,29 @@ Gram n'est pas juste une syntaxe ; c'est un écosystème complet pour construire
 Si vous créez une application de recettes, un planificateur de repas ou un tableau de bord de cuisine, vous ne devriez pas avoir à parser du texte brut à la main. Le **Moteur Gram** transforme votre texte en un Arbre Syntaxique Abstrait (AST) riche, l'enrichit avec des propriétés physiques (comme la normalisation des masses et la nutrition), et génère une structure JSON sur laquelle vous pouvez vraiment vous appuyer.
 :::
 
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
 ## Pensé pour les Développeurs
 
 L'écosystème Gram fournit tout ce dont vous avez besoin pour traiter vos recettes comme des logiciels :
-- **Parseur & Compilateur (`@gram-lang/kitchen`)** : Simule le déroulement de la recette, agrège les listes de courses de base, et met à l'échelle les quantités dynamiques.
-- **Analyseur Sémantique (`@gram-lang/analyzer`)** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
-- **Language Server (LSP)** : Apporte un vrai support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
-- **CLI (`@gram-lang/cli`)** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
-- **Renderer (`@gram-lang/renderer`)** : Générez instantanément du HTML Sémantique ou du Markdown à partir de votre JSON compilé.
+
+<CardGrid>
+  <Card title="Parseur & Compilateur" icon="setting">
+    **`@gram-lang/kitchen`** : Simule le déroulement de la recette, agrège les listes de courses de base, et met à l'échelle les quantités dynamiques.
+  </Card>
+  <Card title="Analyseur Sémantique" icon="magnifier">
+    **`@gram-lang/analyzer`** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
+  </Card>
+  <Card title="Language Server (LSP)" icon="laptop">
+    Apporte un vrai support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
+  </Card>
+  <Card title="CLI" icon="window">
+    **`@gram-lang/cli`** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
+  </Card>
+  <Card title="Renderer" icon="document">
+    **`@gram-lang/renderer`** : Générez instantanément du HTML Sémantique ou du Markdown à partir de votre JSON compilé.
+  </Card>
+</CardGrid>
 
 ## À quoi ça ressemble ?
 
@@ -128,4 +143,10 @@ portions: 10
 
 Remarquez comment l'étape `[Incorporer]` utilise `<@œufs{6}` ? Cette syntaxe *d'ingrédient composite* indique à Gram que vous n'utilisez que les jaunes, mais que la liste de courses doit correctement agréger les œufs entiers pour l'achat. Le tag de section `~{-1d}` met en place un rétro-planning par rapport à l'heure finale de cuisson, et `->&lait chaud{}` prépare une variable intermédiaire que vous pouvez verser plus tard.
 
-Prêt à vous lancer ? Consultez le guide [Pour Commencer](../tutorials/getting-started.md).
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="Prêt à vous lancer ?"
+  description="Consultez le guide Pour Commencer pour installer Gram et écrire votre première recette."
+  href="/fr/docs/tutorials/getting-started/"
+/>

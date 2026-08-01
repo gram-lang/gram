@@ -1,5 +1,5 @@
 ---
-title: "Rendering & Output (`@gram-lang/renderer`)"
+title: "Rendering & Output (@gram-lang/renderer)"
 ---
 
 Once a recipe has been parsed by `@gram-lang/parser`, compiled by `@gram-lang/kitchen`, and (optionally) enriched by `@gram-lang/analyzer`, it's ready to be presented to the user.
