@@ -2,44 +2,49 @@
 import Layout from "../layouts/Layout.astro";
 
 const philosophy = [
-	{
-		title: "Plain Text & Git Friendly",
-		details:
-			"No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
-	},
-	{
-		title: "Dynamic Evaluation",
-		details:
-			"Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
-	},
-	{
-		title: "Type-Safe Tooling",
-		details:
-			"Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
-	},
+  {
+    title: "Plain Text & Git Friendly",
+    details:
+      "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
+  },
+  {
+    title: "Dynamic Evaluation",
+    details:
+      "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
+  },
+  {
+    title: "Type-Safe Tooling",
+    details:
+      "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
+  },
 ];
 ---
 
 <Layout title="Gram" currentLang="en">
-  
   <!-- Hero Section -->
   <section class="section hero">
     <div class="homepage-container">
       <div class="hero-layout">
         <div class="hero-text">
-          <div class="version-badge">
-          <a href="/docs/changelog">v1.0.0-beta.5</a>
-        </div>
-        <h1 class="title">Gram</h1>
-        <p class="subtitle">The open-source markup language for recipes.</p>
-          <p class="description">A plain-text language built for precision cooking, dynamic calculations, and recipe scaleability.</p>
-          
+          <h1 class="title">Gram</h1>
+          <p class="subtitle">The open-source markup language for recipes.</p>
+          <p class="description">
+            A plain-text language built for precision cooking, dynamic
+            calculations, and recipe scaleability.
+          </p>
+
           <div class="actions">
-            <a href="/docs/explanation/philosophy" class="button primary">Get Started</a>
+            <a href="/docs/explanation/philosophy" class="button primary"
+              >Get Started</a
+            >
             <a href="/play" class="button secondary">Playground</a>
           </div>
+
+          <div class="version-badge">
+            <a href="/docs/changelog">Version 1.0.0-beta.5</a>
+          </div>
         </div>
-        
+
         <div class="hero-code">
           <div class="code-block">
             <div class="code-header">
@@ -67,12 +72,14 @@ const philosophy = [
     <div class="homepage-container">
       <h2>Why Gram?</h2>
       <div class="grid">
-        {philosophy.map(item => (
-          <div class="grid-item">
-            <h3>{item.title}</h3>
-            <p>{item.details}</p>
-          </div>
-        ))}
+        {
+          philosophy.map((item) => (
+            <div class="grid-item">
+              <h3>{item.title}</h3>
+              <p>{item.details}</p>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -81,15 +88,21 @@ const philosophy = [
   <section class="section use-cases">
     <div class="homepage-container">
       <h2>Discover Gram</h2>
-      <p class="section-desc">Explore how Gram solves common culinary management issues.</p>
-      
+      <p class="section-desc">
+        Explore how Gram solves common culinary management issues.
+      </p>
+
       <div class="tabs-container">
         <div class="tab-buttons">
-          <button class="tab-btn active" data-target="tab-scale">Scale & Yield</button>
-          <button class="tab-btn" data-target="tab-nutrition">Database Link</button>
+          <button class="tab-btn active" data-target="tab-scale"
+            >Scale & Yield</button
+          >
+          <button class="tab-btn" data-target="tab-nutrition"
+            >Database Link</button
+          >
           <button class="tab-btn" data-target="tab-schedule">Scheduling</button>
         </div>
-        
+
         <div class="tab-content active" id="tab-scale">
           <div class="two-pane">
             <div class="pane">
@@ -107,7 +120,7 @@ water: 162.5g</code></pre>
             </div>
           </div>
         </div>
-        
+
         <div class="tab-content" id="tab-nutrition">
           <div class="two-pane">
             <div class="pane">
@@ -123,7 +136,7 @@ water: 162.5g</code></pre>
             </div>
           </div>
         </div>
-        
+
         <div class="tab-content" id="tab-schedule">
           <div class="two-pane">
             <div class="pane">
@@ -151,17 +164,31 @@ Active time: 15 minutes</code></pre>
       <div class="grid involved-grid">
         <div class="grid-item card">
           <h3>Read the Book</h3>
-          <p>Learn how to use Gram from scratch. The documentation covers everything from basic syntax to writing complex macros and integrating your own database.</p>
-          <a href="/docs/explanation/philosophy" class="link-btn">Read the docs &rarr;</a>
+          <p>
+            Learn how to use Gram from scratch. The documentation covers
+            everything from basic syntax to writing complex macros and
+            integrating your own database.
+          </p>
+          <a href="/docs/explanation/philosophy" class="link-btn"
+            >Read the docs &rarr;</a
+          >
         </div>
         <div class="grid-item card">
           <h3>Contribute</h3>
-          <p>Gram is open-source. Help us improve the language server, add new features to the CLI, or translate the documentation.</p>
-          <a href="https://codeberg.org/gram-lang/gram" class="link-btn">View on Codeberg &rarr;</a>
+          <p>
+            Gram is open-source. Help us improve the language server, add new
+            features to the CLI, or translate the documentation.
+          </p>
+          <a href="https://codeberg.org/gram-lang/gram" class="link-btn"
+            >View on Codeberg &rarr;</a
+          >
         </div>
         <div class="grid-item card">
           <h3>Try it Instantly</h3>
-          <p>You can initialize a workspace via your terminal without installing anything permanently.</p>
+          <p>
+            You can initialize a workspace via your terminal without installing
+            anything permanently.
+          </p>
           <div class="terminal-mini">
             <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
           </div>
@@ -169,27 +196,26 @@ Active time: 15 minutes</code></pre>
       </div>
     </div>
   </section>
-
 </Layout>
 
 <script>
   // Simple vanilla tab logic
-  document.addEventListener('DOMContentLoaded', () => {
-    const btns = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.tab-content');
-    
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
+  document.addEventListener("DOMContentLoaded", () => {
+    const btns = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    btns.forEach((btn) => {
+      btn.addEventListener("click", () => {
         // Remove active class
-        btns.forEach(b => b.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-        
+        btns.forEach((b) => b.classList.remove("active"));
+        contents.forEach((c) => c.classList.remove("active"));
+
         // Add active class
-        btn.classList.add('active');
-        const targetId = btn.getAttribute('data-target');
+        btn.classList.add("active");
+        const targetId = btn.getAttribute("data-target");
         if (targetId) {
           const target = document.getElementById(targetId);
-          if (target) target.classList.add('active');
+          if (target) target.classList.add("active");
         }
       });
     });
@@ -214,22 +240,25 @@ Active time: 15 minutes</code></pre>
   }
 
   /* Typography & Basics */
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     color: var(--sl-color-white);
     font-weight: 600;
     margin-bottom: 1.5rem;
     line-height: 1.2;
   }
-  
+
   h2 {
     font-size: 2.2rem;
     position: relative;
     padding-left: 1rem;
   }
-  
+
   /* Subtle color accent on headers */
   h2::before {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     top: 10%;
@@ -238,16 +267,24 @@ Active time: 15 minutes</code></pre>
     background-color: var(--sl-color-accent-high, var(--sl-color-text-accent));
     border-radius: 2px;
   }
-  
-  pre, code {
+
+  pre,
+  code {
     font-family: var(--sl-font-mono);
     font-size: 0.9em;
   }
 
   /* Syntax Highlighting overrides for hero/tabs */
-  .comment { color: var(--sl-color-gray-3); }
-  .keyword { color: #ff7b72; font-weight: 500; }
-  .tag { color: #79c0ff; }
+  .comment {
+    color: var(--sl-color-gray-3);
+  }
+  .keyword {
+    color: #ff7b72;
+    font-weight: 500;
+  }
+  .tag {
+    color: #79c0ff;
+  }
 
   /* Hero Section */
   .hero-layout {
@@ -256,29 +293,23 @@ Active time: 15 minutes</code></pre>
     gap: 4rem;
     align-items: center;
   }
-  
+
   .hero-text {
     flex: 1 1 400px;
   }
-  
+
   .version-badge {
-    margin-bottom: 1rem;
+    margin-top: 1rem;
   }
   .version-badge a {
     display: inline-block;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.85rem;
     font-weight: 600;
     font-family: var(--sl-font-mono);
-    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
-    background-color: rgba(255,255,255,0.05);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 999px;
-    text-decoration: none;
+    color: var(--sl-color-text-accent);
     transition: background-color 0.2s;
   }
   .version-badge a:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
   }
 
   .title {
@@ -287,25 +318,25 @@ Active time: 15 minutes</code></pre>
     font-weight: 800;
     letter-spacing: -0.02em;
   }
-  
+
   .subtitle {
     font-size: 1.5rem;
     color: var(--sl-color-white);
     margin: 0 0 1rem 0;
   }
-  
+
   .description {
     font-size: 1.15rem;
     color: var(--sl-color-text-accent);
     margin: 0 0 2rem 0;
     line-height: 1.6;
   }
-  
+
   .actions {
     display: flex;
     gap: 1rem;
   }
-  
+
   .button {
     display: inline-block;
     padding: 0.7rem 1.4rem;
@@ -315,7 +346,7 @@ Active time: 15 minutes</code></pre>
     border: 1px solid transparent;
     transition: all 0.2s ease;
   }
-  
+
   .button.primary {
     background-color: var(--sl-color-accent-high, var(--sl-color-white));
     color: var(--sl-color-black);
@@ -323,7 +354,7 @@ Active time: 15 minutes</code></pre>
   .button.primary:hover {
     filter: brightness(0.9);
   }
-  
+
   .button.secondary {
     background-color: transparent;
     color: var(--sl-color-white);
@@ -338,27 +369,27 @@ Active time: 15 minutes</code></pre>
   .hero-code {
     flex: 1 1 400px;
   }
-  
+
   .code-block {
     background-color: var(--sl-color-black);
     border: 1px solid var(--sl-color-hairline);
     border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   }
-  
+
   .code-header {
     background-color: #1a1a1a;
     border-bottom: 1px solid var(--sl-color-hairline);
     padding: 0.6rem 1rem;
   }
-  
+
   .filename {
     color: var(--sl-color-text-accent);
     font-family: var(--sl-font-mono);
     font-size: 0.85rem;
   }
-  
+
   .code-block pre {
     margin: 0;
     padding: 1.5rem;
@@ -426,20 +457,20 @@ Active time: 15 minutes</code></pre>
     margin-bottom: 3rem;
     font-size: 1.1rem;
   }
-  
+
   .tabs-container {
     border: 1px solid var(--sl-color-hairline);
     border-radius: 6px;
     overflow: hidden;
     background-color: var(--sl-color-black);
   }
-  
+
   .tab-buttons {
     display: flex;
     background-color: #1a1a1a;
     border-bottom: 1px solid var(--sl-color-hairline);
   }
-  
+
   .tab-btn {
     flex: 1;
     background: none;
@@ -453,51 +484,51 @@ Active time: 15 minutes</code></pre>
     font-weight: 500;
     transition: all 0.2s;
   }
-  
+
   .tab-btn:last-child {
     border-right: none;
   }
-  
+
   .tab-btn:hover {
     background-color: var(--sl-color-bg-nav);
   }
-  
+
   .tab-btn.active {
     background-color: var(--sl-color-black);
     color: var(--sl-color-white);
     border-bottom: 2px solid var(--sl-color-accent-high, var(--sl-color-white));
   }
-  
+
   .tab-content {
     display: none;
   }
-  
+
   .tab-content.active {
     display: block;
   }
-  
+
   .two-pane {
     display: flex;
     flex-wrap: wrap;
   }
-  
+
   .pane {
     flex: 1 1 50%;
     padding: 2rem;
   }
-  
+
   .pane.output {
-    background-color: rgba(255,255,255,0.03);
+    background-color: rgba(255, 255, 255, 0.03);
     border-left: 1px solid var(--sl-color-hairline);
   }
-  
+
   @media (max-width: 600px) {
     .pane.output {
       border-left: none;
       border-top: 1px solid var(--sl-color-hairline);
     }
   }
-  
+
   .pane h4 {
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -505,7 +536,7 @@ Active time: 15 minutes</code></pre>
     color: var(--sl-color-text-accent);
     margin: 0 0 1.5rem 0;
   }
-  
+
   .pane pre {
     margin: 0;
     white-space: pre-wrap;

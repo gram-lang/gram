@@ -59,6 +59,18 @@
   </button>
 </div>
 
+<script is:inline>
+  // Synchronously set the initial theme state to avoid layout shift/animation on load
+  (() => {
+    const stored = typeof localStorage !== "undefined" ? localStorage.getItem("starlight-theme") : null;
+    const initialTheme = stored === "light" || stored === "dark" ? stored : "auto";
+    const group = document.getElementById("theme-toggle-group");
+    if (group) {
+      group.setAttribute("data-theme-state", initialTheme);
+    }
+  })();
+</script>
+
 <script>
   const group = document.getElementById("theme-toggle-group");
   const getTheme = () => {
@@ -129,7 +141,7 @@
   }
 
   :root[data-theme="dark"] .theme-select {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--sl-color-gray-7);
   }
 
   .theme-btn {
