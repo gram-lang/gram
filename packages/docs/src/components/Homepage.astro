@@ -502,7 +502,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     </div>
   </section>
 
-  <!-- Get Involved & Getting Started -->
+  <!-- Get Involved -->
   <section class="section get-involved alt-bg">
     <div class="homepage-container">
       <h2>{t.getInvolved}</h2>
@@ -524,19 +524,28 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
           <p>
             {t.contributeDesc}
           </p>
-          <a href="https://codeberg.org/gram-lang/gram" class="link-btn"
+          <a href="https://git.gram-lang.org/gram-lang/gram" class="link-btn"
             >{t.contributeLink} &rarr;</a
           >
         </div>
-        <div class="grid-item card">
-          <h3>{t.tryTitle}</h3>
-          <p>
-            {t.tryDesc}
-          </p>
-          <div class="terminal-mini">
-            <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
-          </div>
-        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Getting Started -->
+  <section class="section getting-started">
+    <div class="homepage-container" style="text-align: center;">
+      <h2 style="margin-bottom: 1rem;">{t.tryTitle}</h2>
+      <p
+        style="margin-bottom: 2rem; color: var(--sl-color-gray-3); font-size: 1.1rem; text-wrap: balance;"
+      >
+        {t.tryDesc}
+      </p>
+      <div
+        class="terminal-mini"
+        style="margin: 0 auto; max-width: fit-content; text-align: left; padding: 1.5rem 2rem;"
+      >
+        <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
       </div>
     </div>
   </section>
@@ -593,6 +602,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+    height: 100%;
   }
 
   /* Base Container */
@@ -822,6 +832,11 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     background-color: var(--sl-color-accent);
   }
 
+  .section.get-involved h2 {
+    margin-top: 0;
+    margin-bottom: 2rem;
+  }
+
   .card {
     background-color: var(--sl-color-bg);
     border: 1px solid var(--sl-color-hairline);
@@ -830,6 +845,10 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     display: flex;
     flex-direction: column;
   }
+  .card h3 {
+    margin-top: 0;
+  }
+
   .card p {
     flex-grow: 1;
   }
