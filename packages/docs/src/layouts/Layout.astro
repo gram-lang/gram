@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Header from "../components/Header.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 
 export interface Props {
 	title: string;
@@ -77,9 +78,7 @@ const {
       <slot />
     </main>
 
-    <footer class="app-footer">
-      <!-- Footer placeholder for Phase 3 -->
-    </footer>
+    <SiteFooter currentLang={currentLang} />
   </body>
 </html>
 

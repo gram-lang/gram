@@ -1,0 +1,238 @@
+---
+import SocialLinks from "./SocialLinks.astro";
+
+const { currentLang = "en" } = Astro.props;
+
+const t = {
+  en: {
+    tagline: "An open-source markup language for culinary precision.",
+    resources: "Resources",
+    coreConcepts: "Core Concepts",
+    tooling: "Tooling",
+    documentation: "Documentation",
+    playground: "Playground",
+    changelog: "Changelog",
+    designPhilosophy: "Design Philosophy",
+    alapScheduling: "ALAP Scheduling",
+    scalingRecipes: "Scaling Recipes",
+    localDatabase: "Local Database",
+    cli: "CLI",
+    vscode: "VSCode Extension",
+    kitchenApi: "Kitchen API",
+    copyright: "© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Brittany</a>, Europe 🇪🇺.",
+  },
+  fr: {
+    tagline: "Un langage de balisage open-source pour la précision culinaire.",
+    resources: "Ressources",
+    coreConcepts: "Concepts Clés",
+    tooling: "Outils",
+    documentation: "Documentation",
+    playground: "Playground",
+    changelog: "Journal des modifications",
+    designPhilosophy: "Philosophie",
+    alapScheduling: "Planification ALAP",
+    scalingRecipes: "Mise à l'échelle",
+    localDatabase: "Base de données",
+    cli: "CLI",
+    vscode: "Extension VSCode",
+    kitchenApi: "API Kitchen",
+    copyright: "© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Bretagne</a>, Europe 🇪🇺.",
+  },
+};
+
+const langText = t[currentLang as keyof typeof t] || t.en;
+const prefix = currentLang === "fr" ? "/fr" : "";
+---
+
+<footer class="gram-footer">
+  <div class="footer-container">
+    <div class="footer-grid">
+      <!-- Column 1: Brand -->
+      <div class="footer-col brand-col">
+        <a href={currentLang === "fr" ? "/fr/" : "/"} class="footer-logo">
+          <img src="/logo.svg" alt="Gram Logo" />
+          <span class="site-title">Gram</span>
+        </a>
+        <p class="tagline">{langText.tagline}</p>
+        <div class="social-wrapper">
+          <SocialLinks />
+        </div>
+      </div>
+
+      <!-- Column 2: Resources -->
+      <div class="footer-col">
+        <h3>{langText.resources}</h3>
+        <ul>
+          <li>
+            <a href={`${prefix}/docs/explanation/philosophy`}
+              >{langText.documentation}</a>
+          </li>
+          <li><a href={`${prefix}/play`}>{langText.playground}</a></li>
+          <li><a href={`${prefix}/docs/changelog`}>{langText.changelog}</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Core Concepts -->
+      <div class="footer-col">
+        <h3>{langText.coreConcepts}</h3>
+        <ul>
+          <li>
+            <a href={`${prefix}/docs/explanation/philosophy`}
+              >{langText.designPhilosophy}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/explanation/alap-scheduling`}
+              >{langText.alapScheduling}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/how-to/scale-recipes/`}
+              >{langText.scalingRecipes}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/how-to/manage-database/`}
+              >{langText.localDatabase}</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Tooling -->
+      <div class="footer-col">
+        <h3>{langText.tooling}</h3>
+        <ul>
+          <li>
+            <a href={`${prefix}/docs/reference/tooling/cli`}>{langText.cli}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/reference/tooling/vscode-extension`}
+              >{langText.vscode}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/reference/api/kitchen`}
+              >{langText.kitchenApi}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p set:html={langText.copyright}></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .gram-footer {
+    background-color: var(--sl-color-bg-nav);
+    border-top: 1px solid var(--sl-color-hairline);
+    padding: 4rem 1.5rem 1.5rem;
+    color: var(--sl-color-text);
+    font-family: var(--sl-font);
+    margin-top: auto; /* Push to bottom if content is short */
+  }
+
+  .footer-container {
+    max-width: 1152px;
+    margin: 0 auto;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    .brand-col {
+      grid-column: 1 / -1;
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .footer-col h3 {
+    color: var(--sl-color-white);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+  }
+
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .footer-col a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .footer-col a:hover {
+    color: var(--gram-orange);
+  }
+
+  .brand-col .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--sl-color-white);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .brand-col img {
+    height: 2.2rem;
+  }
+
+  .brand-col .tagline {
+    color: var(--sl-color-gray-3);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    max-width: 300px;
+  }
+
+  .social-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--sl-color-hairline);
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .footer-bottom p {
+    color: var(--sl-color-gray-4);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  :global(.easter-egg) {
+    color: inherit !important;
+    text-decoration: none !important;
+    cursor: text !important;
+  }
+</style>
