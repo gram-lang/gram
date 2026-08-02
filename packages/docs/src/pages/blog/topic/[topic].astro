@@ -1,64 +1,84 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
-import { getTopicSlug } from "../../../data/blog-topics";
+import { getTopicSlug, getTopicInfo } from "../../../data/blog-topics";
 
-const allPosts = await getCollection("blog");
-const englishPosts = allPosts.filter(post => post.data.locale === "en");
-const frenchPosts = allPosts.filter(post => post.data.locale === "fr");
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+  const englishPosts = allPosts.filter(post => post.data.locale === "en");
 
-const postsToDisplay = englishPosts.map(enPost => {
-  // Try to find the corresponding French translation based on file path logic
-  // Typically, if English is 'en/first-post', French could be 'fr/first-post'
-  const baseId = enPost.id.replace(/^en\//, '');
-  const frPost = frenchPosts.find(p => p.id === `fr/${baseId}`);
-  
-  // Return the French post if it exists, otherwise fallback to English post
-  return frPost || enPost;
-});
+  // Get all unique topics from English posts
+  const uniqueTopicsMap = new Map();
+  englishPosts.forEach(post => {
+    const topic = post.data.topic;
+    const slug = getTopicSlug(topic);
+    if (!uniqueTopicsMap.has(slug)) {
+      uniqueTopicsMap.set(slug, topic);
+    }
+  });
 
-// Sort by date descending
-postsToDisplay.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  const allTopicsList = Array.from(uniqueTopicsMap.values());
 
-const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
+  return Array.from(uniqueTopicsMap.entries()).map(([slug, originalTopic]) => {
+    const topicInfo = getTopicInfo(slug, originalTopic);
+    
+    // Filter posts for this topic
+    const topicPosts = englishPosts.filter(post => getTopicSlug(post.data.topic) === slug);
+    
+    // Sort by date descending
+    topicPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+    return {
+      params: { topic: slug },
+      props: { 
+        topicInfo, 
+        topicPosts,
+        allTopics: allTopicsList 
+      },
+    };
+  });
+}
+
+const { topicInfo, topicPosts, allTopics } = Astro.props;
 ---
 
-<Layout title="Blog" description="Dernières nouveautés et articles de l'équipe Gram." currentLang="fr">
+<Layout title={`Topic: ${topicInfo.name.en}`} description={topicInfo.description.en} currentLang="en">
   <div class="blog-container">
     <header class="blog-header">
-      <h1>Blog</h1>
+      <a href="/blog" class="back-link">← Back to all posts</a>
+      <h1>{topicInfo.name.en}</h1>
       <p class="description">
-        Dernières mises à jour, tutoriels et réflexions de la communauté Gram.
+        {topicInfo.description.en}
       </p>
     </header>
 
     <div class="blog-layout">
       <aside class="topics-sidebar">
-        <h2>Sujets</h2>
+        <h2>Topics</h2>
         <ul class="topic-list">
-          {topics.map(topic => (
+          {allTopics.map(t => (
             <li>
-              <a href={`/fr/blog/topic/${getTopicSlug(topic)}`} class="topic-badge">{topic}</a>
+              <a href={`/blog/topic/${getTopicSlug(t)}`} class={`topic-badge ${getTopicSlug(t) === Astro.params.topic ? 'active' : ''}`}>
+                {t}
+              </a>
             </li>
           ))}
         </ul>
       </aside>
 
       <div class="articles-list">
-        {postsToDisplay.length === 0 ? (
-          <p>Aucun article pour le moment.</p>
+        {topicPosts.length === 0 ? (
+          <p>No articles yet.</p>
         ) : (
-          postsToDisplay.map(post => {
-            // We use the english post slug for the URL to keep URLs consistent across languages 
-            // if we prefer, or we can use the specific post id. Let's use the clean slug.
-            const slug = post.id.replace(/^(en|fr)\//, '').replace(/\.md$/, '');
+          topicPosts.map(post => {
+            const slug = post.id.replace(/^en\//, '').replace(/\.md$/, '');
             return (
               <article class="article-card">
-                <a href={`/fr/blog/topic/${getTopicSlug(post.data.topic)}`} class="article-topic">{post.data.topic}</a>
-                <a href={`/fr/blog/${slug}`} class="article-link">
+                <a href={`/blog/topic/${getTopicSlug(post.data.topic)}`} class="article-topic">{post.data.topic}</a>
+                <a href={`/blog/${slug}`} class="article-link">
                   <h2>{post.data.title}</h2>
                   <time datetime={post.data.date.toISOString()}>
-                    {post.data.date.toLocaleDateString("fr-FR", {
+                    {post.data.date.toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -85,6 +105,19 @@ const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
 
   .blog-header {
     margin-bottom: 3rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover {
+    color: var(--sl-color-white);
   }
 
   .blog-header h1 {
@@ -138,7 +171,7 @@ const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
     transition: color 0.2s;
   }
 
-  .topic-badge:hover {
+  .topic-badge:hover, .topic-badge.active {
     color: var(--sl-color-accent);
   }
 
@@ -154,18 +187,6 @@ const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
   
   .article-card:last-child {
     border-bottom: none;
-  }
-
-  .article-link {
-    display: block;
-    padding: 2rem 0;
-    text-decoration: none;
-    color: inherit;
-    transition: opacity 0.2s;
-  }
-
-  .article-link:hover {
-    opacity: 0.8;
   }
 
   .article-topic {
@@ -190,6 +211,10 @@ const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
     text-decoration: none;
     color: inherit;
     transition: opacity 0.2s;
+  }
+
+  .article-link:hover {
+    opacity: 0.8;
   }
 
   .article-card h2 {

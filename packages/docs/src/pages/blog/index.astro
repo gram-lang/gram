@@ -1,54 +1,216 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
+import { getTopicSlug } from "../../data/blog-topics";
 
-const posts = await getCollection("blog", ({ data }) => data.locale === "en");
-posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const allPosts = await getCollection("blog");
+const englishPosts = allPosts.filter(post => post.data.locale === "en");
+
+// Sort by date descending
+englishPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const topics = [...new Set(englishPosts.map(post => post.data.topic))];
 ---
-<Layout title="Blog | Gram" currentLang="en">
+
+<Layout title="Blog" description="Latest updates and articles from the Gram team." currentLang="en">
   <div class="blog-container">
-    <h1>Gram Blog</h1>
-    <p>News, updates, and articles about Gram.</p>
-    
-    <div class="posts-list">
-      {posts.map(post => (
-        <a href={`/blog/${post.id.split('/').pop()}`} class="post-card">
-          <h2>{post.data.title}</h2>
-          <div class="post-meta">
-            <time>{post.data.date.toISOString().split('T')[0]}</time>
-            {post.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-          </div>
-          {post.data.description && <p>{post.data.description}</p>}
-        </a>
-      ))}
+    <header class="blog-header">
+      <h1>Blog</h1>
+      <p class="description">
+        Latest updates, tutorials, and thoughts from the Gram community.
+      </p>
+    </header>
+
+    <div class="blog-layout">
+      <aside class="topics-sidebar">
+        <h2>Topics</h2>
+        <ul class="topic-list">
+          {topics.map(topic => (
+            <li>
+              <a href={`/blog/topic/${getTopicSlug(topic)}`} class="topic-badge">{topic}</a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <div class="articles-list">
+        {englishPosts.length === 0 ? (
+          <p>No articles yet.</p>
+        ) : (
+          englishPosts.map(post => {
+            const slug = post.id.replace(/^en\//, '').replace(/\.md$/, '');
+            return (
+              <article class="article-card">
+                <a href={`/blog/topic/${getTopicSlug(post.data.topic)}`} class="article-topic">{post.data.topic}</a>
+                <a href={`/blog/${slug}`} class="article-link">
+                  <h2>{post.data.title}</h2>
+                  <time datetime={post.data.date.toISOString()}>
+                    {post.data.date.toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                  {post.data.description && <p class="article-description">{post.data.description}</p>}
+                </a>
+              </article>
+            );
+          })
+        )}
+      </div>
     </div>
   </div>
 </Layout>
 
 <style>
   .blog-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 3rem 1.5rem;
+    width: 100%;
   }
-  h1 { font-size: 3rem; color: var(--sl-color-white); margin-bottom: 0.5rem; }
-  .blog-container > p { color: var(--sl-color-text-accent); margin-bottom: 3rem; font-size: 1.25rem; }
-  .posts-list { display: flex; flex-direction: column; gap: 2rem; }
-  .post-card {
-    display: block;
+
+  .blog-header {
+    margin-bottom: 3rem;
+  }
+
+  .blog-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--sl-color-white);
+  }
+
+  .description {
+    font-size: 1.125rem;
+    color: var(--sl-color-gray-3);
+    max-width: 600px;
+  }
+
+  .blog-layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+  }
+
+  .topics-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+  }
+
+  .topics-sidebar h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--sl-color-gray-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .topic-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .topic-badge {
+    display: inline-block;
+    color: var(--sl-color-gray-3);
+    font-size: 0.95rem;
+    font-weight: 500;
     text-decoration: none;
-    color: var(--sl-color-text);
-    padding: 1.5rem;
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 8px;
-    background-color: var(--sl-color-bg-nav);
-    transition: transform 0.2s, border-color 0.2s;
+    transition: color 0.2s;
   }
-  .post-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--gram-orange);
+
+  .topic-badge:hover {
+    color: var(--sl-color-accent);
   }
-  .post-card h2 { color: var(--gram-orange); margin-bottom: 0.5rem; }
-  .post-meta { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--sl-color-text-accent); }
-  .tag { background: #333; padding: 0.2rem 0.5rem; border-radius: 4px; }
+
+  .articles-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article-card {
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+  
+  .article-card:last-child {
+    border-bottom: none;
+  }
+
+  .article-link {
+    display: block;
+    padding: 2rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+  }
+
+  .article-link:hover {
+    opacity: 0.8;
+  }
+
+  .article-topic {
+    font-size: 0.875rem;
+    color: var(--sl-color-accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+    margin: 2rem 2rem 0.5rem 0;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .article-topic:hover {
+    opacity: 0.8;
+  }
+
+  .article-link {
+    display: block;
+    padding: 0 0 2rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+  }
+
+  .article-card h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--sl-color-white);
+  }
+
+  .article-card time {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-4);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .article-description {
+    margin: 0;
+    color: var(--sl-color-gray-3);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .blog-layout {
+      flex-direction: column;
+    }
+    
+    .topics-sidebar {
+      width: 100%;
+    }
+
+    .topic-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
 </style>

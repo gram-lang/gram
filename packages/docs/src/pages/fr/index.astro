@@ -2,18 +2,18 @@
 import Homepage from "../../components/Homepage.astro";
 
 const t = {
-	versionText: "v1.0.0-beta.5",
+	versionText: "Version 1.0.0-beta.5",
 	heroTitle: "Gram",
-	heroSubtitle: "Le langage de balisage open-source pour recettes.",
+	heroSubtitle: "Un langage de balisage open-source pour la précision culinaire.",
 	heroDescription:
-		"Un langage en texte brut conçu pour la cuisine de précision, les calculs dynamiques et la mise à l'échelle des recettes.",
+		"Écrivez vos recettes en texte brut et laissez le langage faire le reste. Transformez vos connaissances culinaires en données structurées, calculables et parfaitement organisées.",
 	heroGetStarted: "Démarrer",
 	heroPlayground: "Playground",
 
 	recipeFileName: "cremeux-citron.gram",
 	recipeCode: `## Crémeux Citron
 
-[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @jaunes{150 g}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base{}
+[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @œufs{2}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base{}
 
 [Cuire] Chauffer la &base{} à ^{82C} sur feu moyen pendant ~{5m}.
 
@@ -35,7 +35,7 @@ const t = {
 			title: "Évaluation Dynamique",
 			icon: "setting",
 			details:
-				"Arrêtez de calculer l'hydratation ou la taille des portions à la main. Le langage gère nativement les expressions arithmétiques, les déclarations de variables et les conversions d'unités.",
+				"Arrêtez de calculer l'hydratation ou la taille des portions manuellement. Le langage gère nativement les expressions arithmétiques, les déclarations de variables et les conversions d'unités.",
 			link: "/fr/docs/explanation/scaling",
 		},
 		{
@@ -46,17 +46,17 @@ const t = {
 			link: "/fr/docs/reference/tooling/vscode-extension",
 		},
 		{
-			title: "Exportez Partout",
+			title: "Compilez Partout",
 			icon: "puzzle",
 			details:
-				"Gram transforme vos recettes en un AST riche. Exportez-les facilement en JSON, Markdown, rendez-les en HTML, ou injectez-les dans votre générateur de site statique préféré pour créer votre propre livre de recettes sur mesure.",
+				"Gram parse vos recettes en un AST riche. Exportez-les facilement en JSON, Markdown, rendez-les en HTML, ou injectez-les dans votre générateur de site statique préféré pour créer votre propre livre de recettes sur mesure.",
 			link: "/fr/docs/reference/api/kitchen",
 		},
 		{
 			title: "Un CLI Puissant",
 			icon: "rocket",
 			details:
-				"Gérez votre espace de travail depuis le terminal. Le CLI officiel permet d'initialiser des projets, formater vos fichiers et compiler vos recettes en toute simplicité.",
+				"Gérez votre espace de travail directement depuis le terminal. Le CLI officiel permet d'initialiser des projets, formater vos fichiers et compiler vos recettes en toute simplicité.",
 			link: "/fr/docs/reference/tooling/cli",
 		},
 	],
@@ -68,85 +68,171 @@ const t = {
 	tabNutritionTitle: "Base de Données & Nutrition",
 	tabNutritionDesc:
 		"Standardisez les mesures et calculez la nutrition à l'aide d'une base de données locale générée automatiquement depuis votre espace de travail.",
-	tabNutritionLink: "/fr/docs/explanation/nutrition",
+	tabNutritionLink: "/fr/docs/how-to/manage-database/",
 	tabScheduleTitle: "Planification ALAP",
 	tabScheduleDesc:
-		"Extrait les métadonnées de durée pour construire un planning d'exécution, en planifiant les tâches passives 'As Late As Possible'.",
+		"Extrait les métadonnées de durée pour construire un planning d'exécution, en planifiant les tâches passives 'As Late As Possible' (Aussi Tard Que Possible).",
 	tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
-	tabScaleTitle: "Pourcentages du Boulanger",
+	tabScaleTitle: "Pourcentages du Boulanger & Précision",
 	tabScaleDesc:
-		"Prend en charge les pourcentages du boulanger. Déclarez vos ingrédients par rapport à une base pour mettre vos recettes à l'échelle.",
-	tabScaleLink: "/fr/docs/explanation/scaling",
+		"Prend en charge les pourcentages du boulanger. Déclarez vos ingrédients par rapport à un ingrédient de base pour mettre facilement vos recettes à l'échelle.",
+	tabScaleLink: "/fr/docs/how-to/scale-recipes/",
 	tryPlaygroundBtn: "Tester dans le Playground",
 
 	tabInput: "Syntaxe Gram",
 	tabOutput: "Résultat Parsé",
 
-	nutritionInput: `## Crème Chantilly\n[Fouetter] La @crème liquide{240g} et le @sucre glace{25g} jusqu'à obtenir des pics souples.\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
+	nutritionInput: `## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 cup} et le @sucre glace{2 tbsp} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 tsp}.`,
 	nutritionOutput: JSON.stringify(
 		{
 			shopping_list: [
-				{ id: "creme-liquide", qty: 240, unit: "g" },
-				{ id: "sucre-glace", qty: 25, unit: "g" },
-				{ id: "extrait-de-vanille", qty: 4, unit: "g" },
+				{
+					id: "creme-liquide",
+					name: "crème liquide",
+					qty: 1,
+					unit: "cup",
+					normalizedMass: 240,
+					isEstimate: true,
+					conversionMethod: "estimate",
+				},
+				{
+					id: "sucre-glace",
+					name: "sucre glace",
+					qty: 2,
+					unit: "tbsp",
+					normalizedMass: 300,
+					isEstimate: true,
+					conversionMethod: "estimate",
+				},
+				{
+					id: "extrait-de-vanille",
+					name: "extrait de vanille",
+					qty: 1,
+					unit: "tsp",
+					normalizedMass: 300,
+					isEstimate: true,
+					conversionMethod: "estimate",
+				},
 			],
-			nutrition: {
-				calories: 925,
-				carbs: 26,
-				fat: 88,
-				protein: 6,
-				sugar: 25,
-				fiber: 0,
-				sodium: 42,
-			},
 		},
 		null,
 		2,
 	),
 
-	scheduleInput: `## Pain au Levain ~{-2j}\n\n[Mélanger] L'@eau{300g} et la @farine{500g}, laisser reposer ~_repos{1h}.\n\n[Pétrir] Vigoureusement à la main pendant ~petrissage{30min}.\n\n[Apprêt] À ^{4c} pendant ~_frigo{14h}.\n\n[Cuisson] Cuire à ^{250°C} pendant ~_{45m}.`,
+	scheduleInput: `## Pâtes Tomate Basilic\n\n[Bouillir] Les @pâtes{200g} dans de l'eau salée pendant ~_ebullition{10min}. ->&pâtes cuites{}\n\n[Sauter] Les @tomates cerises{200g} et l'@ail{2 gousses} dans de l'@huile d'olive{} pendant ~{5min}. ->&sauce\n\n[Mélanger] Les &pâtes cuites{} dans la &sauce chaude avec du @basilic frais{1 poignée}.`,
 	scheduleOutput: JSON.stringify(
 		{
-			section: "Pain au Levain",
-			schedule: {
-				relative_start: "-2d",
-				tracks: { repos: 60, petrissage: 30, frigo: 840, default: 45 },
+			metrics: {
+				totalTime: 19,
+				totalBreakdown: [
+					{
+						label: "timer_named:ebullition",
+						duration: 10,
+					},
+					{
+						label: "section_active:Pâtes Tomate Basilic",
+						duration: 2,
+					},
+				],
+				idleTime: 5,
+				activeTime: 7,
+				activeBreakdown: [
+					{
+						label: "section_active:Pâtes Tomate Basilic",
+						duration: 7,
+					},
+				],
+				preparationTime: 7,
+				prepBreakdown: [
+					{
+						label: "ingredients_overhead",
+						duration: 7,
+					},
+				],
 			},
-			metrics: { activeDuration: 75, totalDuration: 975 },
 		},
 		null,
 		2,
 	),
 
-	scaleInput: `## Tourte de Meule\n[Mélanger] La @*farine T65{400g}, la @farine complète{100g}, l'@eau{375g}, le @sel{2% @&farine} et le @levain{20% @&farine}.`,
+	scaleInput: `## Pain de Campagne\n\n[Mélanger] La @*farine à pain{400g}, la @farine complète{100g}, l'@eau{75% @&farine à pain}, le @sel{2% @&farine à pain}, et le @levain{20% @&farine à pain}.`,
 	scaleOutput: JSON.stringify(
 		{
-			ingredients: [
-				{ id: "farine-t65", qty: 400, unit: "g", ratio: 0.8 },
-				{ id: "farine-complete", qty: 100, unit: "g", ratio: 0.2 },
-				{ id: "eau", qty: 375, unit: "g", ratio: 0.75 },
-				{ id: "sel", qty: 10, unit: "g", ratio: 0.02, ref: "farine" },
-				{ id: "levain", qty: 100, unit: "g", ratio: 0.2, ref: "farine" },
+			shopping_list: [
+				{
+					id: "farine-a-pain",
+					name: "farine à pain",
+					modifiers: ["bakers_percentage"],
+					qty: 400,
+					unit: "g",
+					normalizedMass: 400,
+					isEstimate: false,
+					conversionMethod: "physical",
+					bakersPercentage: 100,
+				},
+				{
+					id: "farine-complete",
+					name: "farine complète",
+					qty: 100,
+					unit: "g",
+					normalizedMass: 100,
+					isEstimate: false,
+					conversionMethod: "physical",
+					bakersPercentage: 25,
+				},
+				{
+					id: "eau",
+					name: "Eau",
+					relative: true,
+					normalizedMass: 300,
+					isEstimate: false,
+					conversionMethod: "relative",
+					qty: 300,
+					unit: "g",
+					bakersPercentage: 75,
+				},
+				{
+					id: "sel",
+					name: "Sel",
+					relative: true,
+					normalizedMass: 8,
+					isEstimate: false,
+					conversionMethod: "relative",
+					qty: 8,
+					unit: "g",
+					bakersPercentage: 2,
+				},
+				{
+					id: "levain",
+					name: "levain",
+					relative: true,
+					normalizedMass: 80,
+					isEstimate: false,
+					conversionMethod: "relative",
+					qty: 80,
+					unit: "g",
+					bakersPercentage: 20,
+				},
 			],
 		},
 		null,
 		2,
 	),
 
-	getInvolved: "Participer & Essayer",
+	getInvolved: "Participer",
 	readBookTitle: "Lire le Livre",
 	readBookDesc:
-		"Apprenez à utiliser Gram de zéro. La documentation couvre tout, de la syntaxe de base à l'écriture de macros complexes et l'intégration de bases de données.",
+		"La documentation officielle offre un guide complet sur la syntaxe, les outils et le fonctionnement interne de Gram. Idéal pour débuter ou pour approfondir vos connaissances du langage.",
 	readBookLink: "Lire la documentation",
 
 	contributeTitle: "Contribuer",
 	contributeDesc:
-		"Gram est open-source. Aidez-nous à améliorer le Language Server, à ajouter des fonctionnalités au CLI, ou à traduire la documentation.",
-	contributeLink: "Voir sur Codeberg",
+		"Gram est construit ouvertement et de manière collaborative. Vous pouvez parcourir le code source, signaler des problèmes ou soumettre des patchs pour le compilateur et la documentation.",
+	contributeLink: "Voir sur le dépôt officiel",
 
-	tryTitle: "Essayer instantanément",
+	tryTitle: "Commencer à Cuisiner",
 	tryDesc:
-		"Vous pouvez initialiser un espace de travail via votre terminal sans rien installer de manière permanente.",
+		"Générez un nouvel espace de travail de recettes en quelques secondes. Le CLI installe tout ce dont vous avez besoin pour commencer à écrire du Gram localement.",
 };
 ---
 

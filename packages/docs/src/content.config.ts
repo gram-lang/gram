@@ -14,7 +14,7 @@ export const collections = {
 			title: z.string(),
 			date: z.date(),
 			locale: z.enum(["en", "fr"]).default("en"),
-			tags: z.array(z.string()).default([]),
+			topic: z.string(),
 			description: z.string().optional(),
 		}),
 	}),
