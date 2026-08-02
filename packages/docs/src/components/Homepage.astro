@@ -541,11 +541,43 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
       >
         {t.tryDesc}
       </p>
-      <div
-        class="terminal-mini"
-        style="margin: 0 auto; max-width: fit-content; text-align: left; padding: 1.5rem 2rem;"
-      >
-        <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
+      <div class="terminal-mini">
+        <code id="cli-init-cmd"
+          ><span class="prompt">$</span> npx @gram-lang/cli init</code
+        >
+        <button
+          class="copy-cmd-btn"
+          aria-label="Copy command"
+          title="Copy command"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="copy-icon"
+            ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path
+              d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+            ></path></svg
+          >
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="check-icon"
+            style="display: none; color: var(--sl-color-text-accent);"
+            ><polyline points="20 6 9 17 4 12"></polyline></svg
+          >
+        </button>
       </div>
     </div>
   </section>
@@ -590,6 +622,26 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
         });
       });
     });
+
+    // 3. Copy Command Logic
+    const copyBtn = document.querySelector(".copy-cmd-btn");
+    const copyIcon = document.querySelector(".copy-icon");
+    const checkIcon = document.querySelector(".check-icon");
+    if (copyBtn && copyIcon && checkIcon) {
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText("npx @gram-lang/cli init");
+          copyIcon.style.display = "none";
+          checkIcon.style.display = "block";
+          setTimeout(() => {
+            copyIcon.style.display = "block";
+            checkIcon.style.display = "none";
+          }, 2000);
+        } catch (err) {
+          console.error("Failed to copy!", err);
+        }
+      });
+    }
   });
 </script>
 
@@ -839,9 +891,8 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
 
   .card {
     background-color: var(--sl-color-bg);
-    border: 1px solid var(--sl-color-hairline);
     padding: 2rem;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
   }
@@ -866,14 +917,59 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   /* Mini terminal */
   .terminal-mini {
     background-color: var(--sl-color-black);
-    padding: 1rem;
-    border-radius: 4px;
+    border-radius: 6px;
     border: 1px solid var(--sl-color-hairline);
     margin-top: 1rem;
+    box-shadow: var(--shadow-elevation-medium);
+    padding: 1.5rem 2.5rem 1.5rem 2.5rem;
+    font-size: 1.1rem;
+    max-width: fit-content;
+    margin-inline: auto;
+    position: relative;
   }
   .prompt {
     color: var(--sl-color-accent-high, var(--sl-color-text-accent));
     margin-right: 0.5rem;
+  }
+
+  .copy-cmd-btn {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 2rem;
+    height: 2rem;
+    background-color: var(--sl-color-black);
+    border: 1px solid var(--sl-color-hairline);
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition:
+      opacity 0.2s,
+      background-color 0.2s,
+      border-color 0.2s,
+      color 0.2s;
+  }
+
+  @media (hover: hover) {
+    .terminal-mini:hover .copy-cmd-btn {
+      opacity: 1;
+    }
+  }
+
+  @media (hover: none) {
+    .copy-cmd-btn {
+      opacity: 1;
+    }
+  }
+
+  .copy-cmd-btn:hover {
+    background-color: var(--sl-color-gray-6);
+    border-color: var(--sl-color-gray-4);
+    color: var(--sl-color-white);
   }
 
   /* Split View Section */
