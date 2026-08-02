@@ -24,6 +24,68 @@
 	--sl-color-accent-high: #cc6600;
 }
 
+/*
+ * Starlight's own base tokens (--sl-color-*, --sl-shadow-*) are only loaded
+ * by its `Page.astro` component (via `@astrojs/starlight/style/props.css`,
+ * which isn't in the package's public `exports` map, so it can't be imported
+ * here) — pages using this custom Layout (home, blog, playground) never
+ * receive them otherwise. Mirror the subset actually referenced across the
+ * site, using the same values Starlight computes, so these pages render
+ * consistently with /docs.
+ */
+:root {
+	--sl-color-white: hsl(0, 0%, 100%);
+	--sl-color-gray-3: hsl(224, 6%, 56%);
+	--sl-color-gray-4: hsl(224, 7%, 36%);
+	--sl-color-gray-5: hsl(224, 10%, 23%);
+	--sl-color-gray-6: hsl(224, 14%, 16%);
+	--sl-color-bg: hsl(224, 10%, 10%);
+	--sl-color-bg-nav: var(--sl-color-gray-6);
+	--sl-color-bg-sidebar: var(--sl-color-gray-6);
+	--sl-color-bg-inline-code: var(--sl-color-gray-5);
+	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-shade: hsl(224, 10%, 10%);
+	--sl-color-text: hsl(224, 6%, 77%);
+	--sl-color-text-accent: var(--sl-color-accent-high);
+	--sl-color-orange: hsl(41, 82%, 63%);
+	--sl-color-green: hsl(101, 82%, 63%);
+	--sl-color-green-low: hsl(101, 39%, 22%);
+	--sl-color-red: hsl(339, 82%, 63%);
+	--sl-color-red-high: hsl(339, 82%, 87%);
+	--sl-color-red-low: hsl(339, 39%, 22%);
+	--sl-shadow-sm: 0px 1px 1px hsla(0, 0%, 0%, 0.12), 0px 2px 1px hsla(0, 0%, 0%, 0.24);
+	--sl-shadow-lg: 0px 25px 7px hsla(0, 0%, 0%, 0.03), 0px 16px 6px hsla(0, 0%, 0%, 0.1),
+		0px 9px 5px hsla(223, 13%, 10%, 0.33), 0px 4px 4px hsla(0, 0%, 0%, 0.75),
+		0px 4px 2px hsla(0, 0%, 0%, 0.25);
+	--sl-text-h4: 1.25rem;
+}
+
+:root[data-theme="light"] {
+	--sl-color-white: hsl(224, 10%, 10%);
+	--sl-color-gray-3: hsl(224, 7%, 36%);
+	--sl-color-gray-4: hsl(224, 6%, 56%);
+	--sl-color-gray-6: hsl(224, 20%, 94%);
+	--sl-color-gray-7: hsl(224, 19%, 97%);
+	--sl-color-bg: hsl(0, 0%, 100%);
+	--sl-color-bg-nav: var(--sl-color-gray-7);
+	--sl-color-bg-sidebar: var(--sl-color-bg);
+	--sl-color-bg-inline-code: var(--sl-color-gray-6);
+	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-shade: var(--sl-color-gray-6);
+	--sl-color-text: hsl(224, 10%, 23%);
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-orange: hsl(41, 90%, 60%);
+	--sl-color-green: hsl(101, 90%, 46%);
+	--sl-color-green-low: hsl(101, 85%, 90%);
+	--sl-color-red: hsl(339, 90%, 60%);
+	--sl-color-red-high: hsl(339, 80%, 30%);
+	--sl-color-red-low: hsl(339, 80%, 90%);
+	--sl-shadow-sm: 0px 1px 1px hsla(0, 0%, 0%, 0.06), 0px 2px 1px hsla(0, 0%, 0%, 0.06);
+	--sl-shadow-lg: 0px 25px 7px rgba(0, 0, 0, 0.01), 0px 16px 6px hsla(0, 0%, 0%, 0.03),
+		0px 9px 5px hsla(223, 13%, 10%, 0.08), 0px 4px 4px hsla(0, 0%, 0%, 0.16),
+		0px 4px 2px hsla(0, 0%, 0%, 0.04);
+}
+
 /* Reset and base styles for Astro pages */
 body {
 	margin: 0;
@@ -31,6 +93,32 @@ body {
 	font-family: var(--sl-font);
 	color: var(--sl-color-white);
 	background-color: var(--sl-color-bg);
+}
+
+.app-main {
+	flex: 1;
+}
+
+/* Screen reader only */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Language selector fixes (prevent truncation of "Français") */
+starlight-lang-select label {
+	--sl-select-width: 7.5em !important;
+}
+
+starlight-lang-select select {
+	font-size: 0.85rem !important;
 }
 
 :root[data-theme="light"] body {

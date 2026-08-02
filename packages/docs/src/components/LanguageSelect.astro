@@ -1,4 +1,6 @@
 ---
+import Select from '@astrojs/starlight/components/Select.astro';
+
 const { currentLang = "en" } = Astro.props;
 
 // For non-Starlight pages, we manually toggle between / and /fr/ (or /play and /fr/play)
@@ -14,21 +16,33 @@ if (currentLang === "fr") {
 	enUrl = currentPath;
 	frUrl = "/fr" + (currentPath === "/" ? "" : currentPath);
 }
----
-<div class="lang-select">
-  <select id="language-selector" onchange="window.location.href = this.value">
-    <option value={enUrl} selected={currentLang === 'en'}>English</option>
-    <option value={frUrl} selected={currentLang === 'fr'}>Français</option>
-  </select>
-</div>
 
-<style>
-  .lang-select select {
-    background: transparent;
-    color: var(--sl-color-text);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.85rem;
+const options = [
+  { value: enUrl, selected: currentLang === 'en', label: 'English' },
+  { value: frUrl, selected: currentLang === 'fr', label: 'Français' }
+];
+---
+<starlight-lang-select>
+  <Select icon="translate" label="Language" options={options} width="7.5em" />
+</starlight-lang-select>
+
+<script>
+	class StarlightLanguageSelect extends HTMLElement {
+		constructor() {
+			super();
+			const select = this.querySelector('select');
+			if (select) {
+				select.addEventListener('change', (e) => {
+					if (e.currentTarget instanceof HTMLSelectElement) {
+						window.location.pathname = e.currentTarget.value;
+					}
+				});
+			}
+		}
+	}
+  // Prevent duplicate definition if this runs alongside Starlight
+  if (!customElements.get('starlight-lang-select')) {
+	  customElements.define('starlight-lang-select', StarlightLanguageSelect);
   }
-</style>
+</script>
+

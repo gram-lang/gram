@@ -5,27 +5,31 @@ import SocialLinks from "./SocialLinks.astro";
 
 const { currentLang = "en" } = Astro.props;
 ---
+
 <header class="custom-header">
   <div class="header-container">
     <div class="logo">
-      <a href={currentLang === 'fr' ? '/fr/' : '/'}>
+      <a href={currentLang === "fr" ? "/fr/" : "/"}>
         <img src="/logo.svg" alt="Gram Logo" />
         <span class="site-title">Gram</span>
       </a>
-      <span class="version-badge">v1.0.0-beta.5</span>
     </div>
 
     <nav class="nav-links">
-      <a href={currentLang === 'fr' ? '/fr/docs/explanation/philosophy' : '/docs/explanation/philosophy'}>Documentation</a>
-      <a href={currentLang === 'fr' ? '/fr/play' : '/play'}>Playground</a>
+      <a
+        href={currentLang === "fr"
+          ? "/fr/docs/explanation/philosophy"
+          : "/docs/explanation/philosophy"}>Documentation</a
+      >
+      <a href={currentLang === "fr" ? "/fr/play" : "/play"}>Playground</a>
       <!-- <a href={currentLang === 'fr' ? '/fr/blog' : '/blog'}>Blog</a> -->
     </nav>
 
     <div class="actions">
       <SocialLinks />
       <div class="divider"></div>
-      <ThemeSelect />
       <LanguageSelect currentLang={currentLang} />
+      <ThemeSelect />
     </div>
   </div>
 </header>
@@ -33,9 +37,9 @@ const { currentLang = "en" } = Astro.props;
 <style>
   .custom-header {
     border-bottom: 1px solid var(--sl-color-hairline);
-    background-color: var(--sl-color-bg-nav);
+    background-color: var(--sl-color-bg);
     padding: 0 var(--sl-content-pad-x);
-    height: var(--sl-nav-height, 3.5rem);
+    min-height: 64px;
     display: flex;
     align-items: center;
   }
@@ -46,6 +50,7 @@ const { currentLang = "en" } = Astro.props;
     width: 100%;
     max-width: 1440px;
     margin: 0 auto;
+    height: 100%;
   }
   .logo {
     display: flex;
@@ -71,6 +76,7 @@ const { currentLang = "en" } = Astro.props;
     color: var(--gram-orange);
     border-radius: 4px;
     font-family: var(--sl-font-mono);
+    margin-top: 4px;
   }
   .nav-links {
     display: flex;

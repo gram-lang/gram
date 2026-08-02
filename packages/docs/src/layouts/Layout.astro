@@ -3,43 +3,76 @@ import "../styles/global.css";
 import Header from "../components/Header.astro";
 
 export interface Props {
-	title: string;
-	description?: string;
-	currentLang?: string;
+  title: string;
+  description?: string;
+  currentLang?: string;
 }
 
 const {
-	title,
-	description = "Gram Language Documentation",
-	currentLang = "en",
+  title,
+  description = "Gram Language Documentation",
+  currentLang = "en",
 } = Astro.props;
 ---
 
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<!doctype html>
+<html lang={currentLang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description}>
+    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title} | Gram</title>
-    
+
     <!-- Umami Analytics -->
-    {import.meta.env.PROD && <script defer src="/script.js" data-website-id="fa1b1921-1982-4198-bb2b-c30d24f587ce"></script>}
-    <script>
-      if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
-        var lang = navigator.language || (navigator as any).userLanguage || '';
-        if (lang.toLowerCase().startsWith('fr') && !sessionStorage.getItem('lang_redirected')) {
-          sessionStorage.setItem('lang_redirected', 'true');
-          window.location.replace('/fr/');
+    {
+      import.meta.env.PROD && (
+        <script
+          defer
+          src="/script.js"
+          data-website-id="fa1b1921-1982-4198-bb2b-c30d24f587ce"
+        />
+      )
+    }
+    <script is:inline>
+      if (
+        typeof window !== "undefined" &&
+        (window.location.pathname === "/" ||
+          window.location.pathname === "/index.html")
+      ) {
+        var lang = navigator.language || (navigator as any).userLanguage || "";
+        if (
+          lang.toLowerCase().startsWith("fr") &&
+          !sessionStorage.getItem("lang_redirected")
+        ) {
+          sessionStorage.setItem("lang_redirected", "true");
+          window.location.replace("/fr/");
         }
       }
+    </script>
+    <script is:inline>
+      /* Initialize theme to avoid FOUC and restore user preference */
+      (() => {
+        const theme =
+          typeof localStorage !== "undefined"
+            ? localStorage.getItem("starlight-theme")
+            : null;
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        } else {
+          document.documentElement.dataset.theme = window.matchMedia(
+            "(prefers-color-scheme: light)",
+          ).matches
+            ? "light"
+            : "dark";
+        }
+      })();
     </script>
   </head>
   <body>
     <Header currentLang={currentLang} />
-    
+
     <main class="app-main">
       <slot />
     </main>
@@ -51,12 +84,13 @@ const {
 </html>
 
 <style>
-  html, body {
+  html,
+  body {
     height: 100%;
     display: flex;
     flex-direction: column;
   }
-  
+
   body {
     background-color: var(--sl-color-bg);
     color: var(--sl-color-text);

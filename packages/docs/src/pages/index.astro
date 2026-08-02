@@ -1,244 +1,515 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-const features = [
+const philosophy = [
 	{
-		icon: "/cooking-pot.svg",
-		title: "Dynamic Recipes",
+		title: "Plain Text & Git Friendly",
 		details:
-			"Treat recipes like code. Easily manage complex recipes by defining variables, linking ingredient quantities together, and generating smart cooking schedules from simple tags.",
+			"No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
 	},
 	{
-		icon: "/brain.svg",
-		title: "Integrated Database",
+		title: "Dynamic Evaluation",
 		details:
-			"Connect your files to a local database to automatically convert volumes to mass, calculate gross and net weights, and estimate nutritional values.",
+			"Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
 	},
 	{
-		icon: "/terminal-window.svg",
-		title: "Developer First Tooling",
+		title: "Type-Safe Tooling",
 		details:
-			"Keep your cookbook in git-friendly files. Enjoy real-time diagnostics, autocomplete, and live previews in your favorite editor via our Language Server.",
+			"Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
 	},
 ];
 ---
 
 <Layout title="Gram" currentLang="en">
-  <div class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Gram</h1>
-      <p class="hero-tagline">Code your cookbook.</p>
-      <p class="hero-description">A plain-text recipe language built for precision cooking.</p>
-      
-      <div class="hero-actions">
-        <a href="/docs/explanation/philosophy" class="action-btn primary">What is Gram ?</a>
-        <a href="/play" class="action-btn secondary">Try the Playground</a>
-      </div>
-    </div>
-    <div class="hero-image">
-      <img src="/logo-gram-dark.svg" alt="Gram Logo" class="logo-image" />
-    </div>
-  </div>
-
-  <div class="features-section">
-    {features.map(f => (
-      <div class="feature-card">
-        <div class="feature-icon">
-          <img src={f.icon} alt={f.title} />
-        </div>
-        <h3 class="feature-title">{f.title}</h3>
-        <p class="feature-details">{f.details}</p>
-      </div>
-    ))}
-  </div>
   
-  <div class="example-section">
-    <h2>Write recipes that scale</h2>
-    <div class="code-window">
-      <div class="window-header">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
-        <span class="filename">pizza_dough.gram</span>
+  <!-- Hero Section -->
+  <section class="section hero">
+    <div class="homepage-container">
+      <div class="hero-layout">
+        <div class="hero-text">
+          <div class="version-badge">
+          <a href="/docs/changelog">v1.0.0-beta.5</a>
+        </div>
+        <h1 class="title">Gram</h1>
+        <p class="subtitle">The open-source markup language for recipes.</p>
+          <p class="description">A plain-text language built for precision cooking, dynamic calculations, and recipe scaleability.</p>
+          
+          <div class="actions">
+            <a href="/docs/explanation/philosophy" class="button primary">Get Started</a>
+            <a href="/play" class="button secondary">Playground</a>
+          </div>
+        </div>
+        
+        <div class="hero-code">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="filename">pizza.gram</span>
+            </div>
+            <pre><code><span class="comment"># Pizza Dough (65% hydration)</span>
+<span class="keyword">@yield</span> 4 portions
+
+= flour: 500g <span class="tag">[flour]</span>
+= water: {'{flour * 0.65}'} <span class="tag">[water]</span>
+= salt: {'{flour * 0.02}'} <span class="tag">[salt]</span>
+= yeast: 3g <span class="tag">[fresh yeast]</span>
+
+1. Mix {'{flour}'} and {'{water}'} for 30m.
+2. Add {'{salt}'}, {'{yeast}'}. Knead 10m.
+3. Divide into {'{yield}'}, proof 24h.</code></pre>
+          </div>
+        </div>
       </div>
-      <pre><code># Pizza Dough (65% hydration)
-@yield 4 portions
-
-= flour: 500g [flour]
-= water: {'{flour * 0.65}'} [water]
-= salt: {'{flour * 0.02}'} [salt]
-= yeast: 3g [fresh yeast]
-
-1. Mix {'{flour}'} and {'{water}'} and let it rest for 30m (Autolyse).
-2. Add {'{salt}'} and {'{yeast}'} and knead for 10m.
-3. Bulk ferment for 2h at 25°C.
-4. Divide into {'{yield}'}, shape into balls, and cold proof for 24h.
-</code></pre>
     </div>
-  </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="section philosophy alt-bg">
+    <div class="homepage-container">
+      <h2>Why Gram?</h2>
+      <div class="grid">
+        {philosophy.map(item => (
+          <div class="grid-item">
+            <h3>{item.title}</h3>
+            <p>{item.details}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases with Vanilla Tabs -->
+  <section class="section use-cases">
+    <div class="homepage-container">
+      <h2>Discover Gram</h2>
+      <p class="section-desc">Explore how Gram solves common culinary management issues.</p>
+      
+      <div class="tabs-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-target="tab-scale">Scale & Yield</button>
+          <button class="tab-btn" data-target="tab-nutrition">Database Link</button>
+          <button class="tab-btn" data-target="tab-schedule">Scheduling</button>
+        </div>
+        
+        <div class="tab-content active" id="tab-scale">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>Input</h4>
+              <pre><code><span class="keyword">@yield</span> 2 portions
+
+= flour: 250g
+= water: {'{flour * 0.65}'}</code></pre>
+            </div>
+            <div class="pane output">
+              <h4>Evaluated Output</h4>
+              <pre><code>Yield: 2 portions
+flour: 250g
+water: 162.5g</code></pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="tab-nutrition">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>Input</h4>
+              <pre><code><span class="comment"># Reference a known ingredient</span>
+<span class="comment"># to compute nutritional value</span>
+= sugar: 100g <span class="tag">[@sugar]</span></code></pre>
+            </div>
+            <div class="pane output">
+              <h4>Evaluated Output</h4>
+              <pre><code>sugar: 100g
+-> 387 kcal, 100g carbs</code></pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="tab-schedule">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>Input</h4>
+              <pre><code>1. Rest dough (2h)
+2. Shape loaves (15m)
+3. Bake (45m)</code></pre>
+            </div>
+            <div class="pane output">
+              <h4>Evaluated Output</h4>
+              <pre><code>Gantt timeline generated:
+Total time: 3 hours
+Active time: 15 minutes</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Involved & Getting Started -->
+  <section class="section get-involved alt-bg">
+    <div class="homepage-container">
+      <h2>Get Involved</h2>
+      <div class="grid involved-grid">
+        <div class="grid-item card">
+          <h3>Read the Book</h3>
+          <p>Learn how to use Gram from scratch. The documentation covers everything from basic syntax to writing complex macros and integrating your own database.</p>
+          <a href="/docs/explanation/philosophy" class="link-btn">Read the docs &rarr;</a>
+        </div>
+        <div class="grid-item card">
+          <h3>Contribute</h3>
+          <p>Gram is open-source. Help us improve the language server, add new features to the CLI, or translate the documentation.</p>
+          <a href="https://codeberg.org/gram-lang/gram" class="link-btn">View on Codeberg &rarr;</a>
+        </div>
+        <div class="grid-item card">
+          <h3>Try it Instantly</h3>
+          <p>You can initialize a workspace via your terminal without installing anything permanently.</p>
+          <div class="terminal-mini">
+            <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </Layout>
 
+<script>
+  // Simple vanilla tab logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const btns = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class
+        btns.forEach(b => b.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        // Add active class
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-target');
+        if (targetId) {
+          const target = document.getElementById(targetId);
+          if (target) target.classList.add('active');
+        }
+      });
+    });
+  });
+</script>
+
 <style>
-  .hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6rem 2rem;
-    max-width: 1200px;
+  /* Global */
+  .section {
+    padding: 5rem 1.5rem;
+  }
+  .alt-bg {
+    background-color: var(--sl-color-bg-nav);
+    border-top: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+  .homepage-container {
+    max-width: 1000px;
     margin: 0 auto;
-    gap: 4rem;
+    font-family: var(--sl-font);
+    color: var(--sl-color-text);
   }
-  .hero-content {
-    flex: 1;
-  }
-  .hero-title {
-    font-size: 5rem;
-    font-weight: 800;
-    margin: 0;
-    background: linear-gradient(to right, var(--sl-color-white), var(--gram-orange));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .hero-tagline {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin: 1rem 0;
+
+  /* Typography & Basics */
+  h1, h2, h3, h4 {
     color: var(--sl-color-white);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
   }
-  .hero-description {
-    font-size: 1.25rem;
+  
+  h2 {
+    font-size: 2.2rem;
+    position: relative;
+    padding-left: 1rem;
+  }
+  
+  /* Subtle color accent on headers */
+  h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    background-color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    border-radius: 2px;
+  }
+  
+  pre, code {
+    font-family: var(--sl-font-mono);
+    font-size: 0.9em;
+  }
+
+  /* Syntax Highlighting overrides for hero/tabs */
+  .comment { color: var(--sl-color-gray-3); }
+  .keyword { color: #ff7b72; font-weight: 500; }
+  .tag { color: #79c0ff; }
+
+  /* Hero Section */
+  .hero-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .hero-text {
+    flex: 1 1 400px;
+  }
+  
+  .version-badge {
+    margin-bottom: 1rem;
+  }
+  .version-badge a {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  .version-badge a:hover {
+    background-color: rgba(255,255,255,0.1);
+  }
+
+  .title {
+    font-size: 4.5rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  
+  .subtitle {
+    font-size: 1.5rem;
+    color: var(--sl-color-white);
+    margin: 0 0 1rem 0;
+  }
+  
+  .description {
+    font-size: 1.15rem;
     color: var(--sl-color-text-accent);
-    margin-bottom: 2rem;
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
   }
-  .hero-actions {
+  
+  .actions {
     display: flex;
     gap: 1rem;
   }
-  .action-btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
+  
+  .button {
+    display: inline-block;
+    padding: 0.7rem 1.4rem;
     text-decoration: none;
-    transition: all 0.2s;
-  }
-  .action-btn.primary {
-    background-color: var(--gram-orange);
-    color: var(--sl-color-white);
-  }
-  .action-btn.primary:hover {
-    background-color: var(--gram-orange-soft);
-    color: var(--gram-orange);
-  }
-  .action-btn.secondary {
-    background-color: var(--sl-color-bg-nav);
-    color: var(--sl-color-white);
-    border: 1px solid var(--sl-color-hairline);
-  }
-  .action-btn.secondary:hover {
-    background-color: var(--sl-color-bg-inline-code);
-  }
-  .hero-image {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-  .logo-image {
-    width: 100%;
-    max-width: 400px;
-    filter: drop-shadow(0 0 40px rgba(255, 127, 0, 0.2));
-  }
-
-  .features-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    padding: 4rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .feature-card {
-    background: var(--sl-color-bg-nav);
-    border: 1px solid var(--sl-color-hairline);
-    padding: 2rem;
-    border-radius: 12px;
-  }
-  .feature-icon img {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1.5rem;
-    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(350deg);
-  }
-  .feature-title {
-    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--sl-color-white);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
   }
-  .feature-details {
-    color: var(--sl-color-text-accent);
-    line-height: 1.6;
+  
+  .button.primary {
+    background-color: var(--sl-color-accent-high, var(--sl-color-white));
+    color: var(--sl-color-black);
+  }
+  .button.primary:hover {
+    filter: brightness(0.9);
+  }
+  
+  .button.secondary {
+    background-color: transparent;
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-hairline);
+  }
+  .button.secondary:hover {
+    border-color: var(--sl-color-text-accent);
+    background-color: var(--sl-color-bg-nav);
   }
 
-  .example-section {
-    padding: 4rem 2rem;
-    max-width: 800px;
-    margin: 0 auto 6rem;
-    text-align: center;
+  /* Code Block Styling */
+  .hero-code {
+    flex: 1 1 400px;
   }
-  .example-section h2 {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    color: var(--sl-color-white);
-  }
-  .code-window {
-    background-color: #1e1e1e;
-    border-radius: 12px;
+  
+  .code-block {
+    background-color: var(--sl-color-black);
     border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
     overflow: hidden;
-    text-align: left;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   }
-  .window-header {
-    background-color: #2d2d2d;
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-bottom: 1px solid #444;
+  
+  .code-header {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    padding: 0.6rem 1rem;
   }
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-  .dot.red { background-color: #ff5f56; }
-  .dot.yellow { background-color: #ffbd2e; }
-  .dot.green { background-color: #27c93f; }
+  
   .filename {
-    margin-left: 1rem;
-    color: #999;
+    color: var(--sl-color-text-accent);
     font-family: var(--sl-font-mono);
     font-size: 0.85rem;
   }
-  .code-window pre {
+  
+  .code-block pre {
     margin: 0;
     padding: 1.5rem;
     overflow-x: auto;
-    color: #d4d4d4;
-    font-family: var(--sl-font-mono);
-    font-size: 0.95rem;
-    line-height: 1.6;
+    color: var(--sl-color-gray-1);
+    line-height: 1.5;
   }
 
-  @media (max-width: 768px) {
-    .hero-section {
-      flex-direction: column;
-      text-align: center;
+  /* Grid Layouts */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+  }
+  .grid-item h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+  .grid-item p {
+    color: var(--sl-color-text-accent);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  /* Cards for Get Involved */
+  .card {
+    background-color: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline);
+    padding: 2rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card p {
+    flex-grow: 1;
+  }
+  .link-btn {
+    display: inline-block;
+    color: var(--sl-color-accent-high, var(--sl-color-white));
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+  .link-btn:hover {
+    text-decoration: underline;
+  }
+
+  /* Mini terminal */
+  .terminal-mini {
+    background-color: var(--sl-color-black);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--sl-color-hairline);
+    margin-top: 1rem;
+  }
+  .prompt {
+    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    margin-right: 0.5rem;
+  }
+
+  /* Tabs Section */
+  .section-desc {
+    color: var(--sl-color-text-accent);
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+  }
+  
+  .tabs-container {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--sl-color-black);
+  }
+  
+  .tab-buttons {
+    display: flex;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+  
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--sl-color-hairline);
+    padding: 1rem;
+    color: var(--sl-color-text-accent);
+    cursor: pointer;
+    font-family: var(--sl-font);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .tab-btn:last-child {
+    border-right: none;
+  }
+  
+  .tab-btn:hover {
+    background-color: var(--sl-color-bg-nav);
+  }
+  
+  .tab-btn.active {
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-white);
+    border-bottom: 2px solid var(--sl-color-accent-high, var(--sl-color-white));
+  }
+  
+  .tab-content {
+    display: none;
+  }
+  
+  .tab-content.active {
+    display: block;
+  }
+  
+  .two-pane {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .pane {
+    flex: 1 1 50%;
+    padding: 2rem;
+  }
+  
+  .pane.output {
+    background-color: rgba(255,255,255,0.03);
+    border-left: 1px solid var(--sl-color-hairline);
+  }
+  
+  @media (max-width: 600px) {
+    .pane.output {
+      border-left: none;
+      border-top: 1px solid var(--sl-color-hairline);
     }
-    .hero-actions {
-      justify-content: center;
-    }
-    .hero-title { font-size: 3.5rem; }
-    .hero-tagline { font-size: 2rem; }
+  }
+  
+  .pane h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sl-color-text-accent);
+    margin: 0 0 1.5rem 0;
+  }
+  
+  .pane pre {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--sl-color-gray-1);
+    line-height: 1.5;
   }
 </style>

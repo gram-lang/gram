@@ -19,12 +19,9 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
-// biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
 const lang = inject<Ref<"en" | "fr">>("lang")!;
-const isDark = ref(
-	typeof document !== "undefined" &&
-		document.documentElement.dataset.theme === "dark",
-);
+// biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
+const isDark = inject<Ref<boolean>>("isDark")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
 const t = computed(() => getDictionary(lang.value));
 

@@ -50,7 +50,8 @@
 
 .dark,
 body.vscode-dark,
-:root[class~="dark"] {
+:root[class~="dark"],
+:root[data-theme="dark"] {
   --item-ingredient-text: #c68aff;
   --item-cookware-text: #60a5fa;
   --item-timer-text: #fbbf24;

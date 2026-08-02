@@ -27,11 +27,32 @@ import {
 	parseDensityOverrides,
 } from "@gram-lang/analyzer";
 import { toMarkdown, toHTML } from "@gram-lang/renderer";
+import "@gram-lang/renderer/gram.css";
+import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
 import { getDictionary } from "@gram-lang/i18n";
 const props = defineProps<{ lang: "en" | "fr" }>();
 const currentLang = computed(() => props.lang);
 provide("lang", currentLang);
+
+const isDark = ref(
+	typeof document !== "undefined" &&
+		document.documentElement.dataset.theme === "dark",
+);
+provide("isDark", isDark);
+let themeObserver: MutationObserver | undefined;
+onMounted(() => {
+	themeObserver = new MutationObserver(() => {
+		isDark.value = document.documentElement.dataset.theme === "dark";
+	});
+	themeObserver.observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ["data-theme"],
+	});
+});
+onUnmounted(() => {
+	themeObserver?.disconnect();
+});
 
 const t = computed(() => getDictionary(currentLang.value));
 
@@ -573,7 +594,8 @@ onUnmounted(() => {
   flex-direction: column;
   width: 100%;
   position: relative;
-  min-height: 0;
+  min-height: 350px;
+  height: 50vh;
 }
 
 .editor-wrapper {
@@ -605,6 +627,8 @@ onUnmounted(() => {
   
   .playground-col {
     /* No min-height required */
+    min-height: 0;
+    height: auto;
   }
   
   .left-col {

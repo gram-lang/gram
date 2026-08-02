@@ -32,7 +32,8 @@ export default defineConfig({
       ],
       components: {
         Footer: './src/components/Footer.astro',
-        SiteTitle: './src/components/SiteTitle.astro'
+        SiteTitle: './src/components/SiteTitle.astro',
+        ThemeSelect: './src/components/ThemeSelect.astro'
       },
       locales: {
         root: { label: 'English', lang: 'en' },

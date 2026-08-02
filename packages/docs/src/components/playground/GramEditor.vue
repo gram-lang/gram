@@ -4,6 +4,7 @@ import { ref, computed, shallowRef, watch, inject, type Ref } from "vue";
 import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
 
 const lang = inject<Ref<"en" | "fr">>("lang")!;
+const isDark = inject<Ref<boolean>>("isDark")!;
 
 const props = defineProps<{
 	modelValue: string;
@@ -12,11 +13,6 @@ const props = defineProps<{
 const emit = defineEmits<{
 	"update:modelValue": [val: string];
 }>();
-
-const isDark = ref(
-	typeof document !== "undefined" &&
-		document.documentElement.dataset.theme === "dark",
-);
 
 // biome-ignore lint/correctness/noUnusedVariables: localCode is used in the <template> block below, which Biome's Vue support doesn't see.
 const localCode = computed({
@@ -43,10 +39,7 @@ const handleMount = async (editor: any, monaco: any) => {
 	await setupMonaco(monaco);
 	shikiLoaded.value = true;
 
-	// Force theme update: bypass Vue's hydration delay by reading the DOM class directly
-	const isDarkMode =
-		document.documentElement.classList.contains("dark") || isDark.value;
-	monaco.editor.setTheme(isDarkMode ? "github-dark" : "github-light");
+	monaco.editor.setTheme(isDark.value ? "github-dark" : "github-light");
 };
 
 // Ensure theme updates even if Shiki takes a very long time
