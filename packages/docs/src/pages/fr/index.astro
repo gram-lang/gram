@@ -13,28 +13,45 @@ const t = {
   recipeFileName: "cremeux-citron.gram",
   recipeCode: `## Crémeux Citron
 
-[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @jaunes{150 g}<@oeufs{5}, et le @sucre{80% @&jaunes} dans une #casserole{}. ->&base{}
+[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @jaunes{150 g}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base{}
 
 [Cuire] Chauffer la &base{} à ^{82C} sur feu moyen pendant ~{5m}.
 
 [Emulsionner] Retirer du feu et incorporer le @beurre{120 g}. Réserver au frais pendant ~_frigo{2h}.`,
 
-  whyGram: "Pourquoi Gram ?",
+  whyGram: "Philosophie de Conception",
+  whyGramDesc:
+    "Gram est conçu pour être simple à écrire, facile à versionner et puissant à parser.",
   philosophy: [
     {
       title: "Texte Brut & Git",
+      icon: "document",
       details:
         "Pas de base de données propriétaire ou d'enfermement. Vos recettes sont de simples fichiers texte qui peuvent être versionnés avec Git, partagés facilement et édités dans n'importe quel éditeur de texte.",
     },
     {
       title: "Évaluation Dynamique",
+      icon: "setting",
       details:
         "Arrêtez de calculer l'hydratation ou la taille des portions à la main. Le langage gère nativement les expressions arithmétiques, les déclarations de variables et les conversions d'unités.",
     },
     {
       title: "Outils Typés",
+      icon: "laptop",
       details:
         "Propulsé par un serveur de langage dédié (LSP) qui vous offre des diagnostics en temps réel, une coloration sémantique et de l'autocomplétion directement dans votre IDE.",
+    },
+    {
+      title: "Exportez Partout",
+      icon: "puzzle",
+      details:
+        "Gram transforme vos recettes en un AST riche. Exportez-les facilement en JSON, Markdown, rendez-les en HTML, ou injectez-les dans votre générateur de site statique préféré pour créer votre propre livre de recettes sur mesure.",
+    },
+    {
+      title: "Un CLI Puissant",
+      icon: "rocket",
+      details:
+        "Gérez votre espace de travail depuis le terminal. Le CLI officiel permet d'initialiser des projets, formater vos fichiers et compiler vos recettes en toute simplicité.",
     },
   ],
 

@@ -6,35 +6,52 @@ const t = {
   heroTitle: "Gram",
   heroSubtitle: "An open-source markup language for culinary precision.",
   heroDescription:
-    "Express your recipes in plain text and let the language do the rest. Turn your culinary knowledge into structured, calculable, and perfectly organized data.",
+    "Write your recipes in plain text and let the language do the rest. Turn your culinary knowledge into structured, calculable, and perfectly organized data.",
   heroGetStarted: "Get Started",
   heroPlayground: "Playground",
 
   recipeFileName: "lemon-curd.gram",
   recipeCode: `## Lemon Curd
 
-[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @yolks{150 g}<@eggs{5}, and @sugar{80% @&yolks} in a #saucepan{}. ->&base{}
+[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @eggs{2}, and @sugar{120% @&lemon juice} in a #saucepan{}. ->&base{}
 
 [Cook] Heat the &base{} to ^{82C} over medium heat for ~{5m}.
 
-[Emulsify] Remove from heat and blend in @butter{120 g}. Chill for ~_fridge{2h}.`,
+[Emulsify] Remove from heat and blend in @butter{120 g}. Chill for ~_fridge{2h}.`,
 
-  whyGram: "Why Gram?",
+  whyGram: "Design Philosophy",
+  whyGramDesc:
+    "Gram is built to be simple to write, easy to version, and powerful to parse.",
   philosophy: [
     {
       title: "Plain Text & Git Friendly",
+      icon: "document",
       details:
         "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
     },
     {
       title: "Dynamic Evaluation",
+      icon: "setting",
       details:
         "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
     },
     {
       title: "Type-Safe Tooling",
+      icon: "laptop",
       details:
         "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
+    },
+    {
+      title: "Compile Everywhere",
+      icon: "puzzle",
+      details:
+        "Gram parses your recipes into a rich AST. Easily export them to JSON, Markdown, render them as HTML, or feed them into your favorite static site generator to build your own custom cookbook.",
+    },
+    {
+      title: "Powerful CLI",
+      icon: "rocket",
+      details:
+        "Manage your workspace directly from the terminal. The official CLI lets you initialize projects, format files, and compile your recipes with ease.",
     },
   ],
 

@@ -58,9 +58,31 @@
 		0px 9px 5px hsla(223, 13%, 10%, 0.33), 0px 4px 4px hsla(0, 0%, 0%, 0.75),
 		0px 4px 2px hsla(0, 0%, 0%, 0.25);
 	--sl-text-h4: 1.25rem;
+
+	--shadow-color: 228deg 16% 4%;
+
+	--shadow-elevation-low:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.2),
+		0px 0.9px 0.9px -1.5px hsl(var(--shadow-color) / 0.18),
+		0px 2px 2.1px -3px hsl(var(--shadow-color) / 0.16);
+	--shadow-elevation-medium:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.21),
+		0px 1.6px 1.7px -1px hsl(var(--shadow-color) / 0.19),
+		0px 4px 4.2px -2px hsl(var(--shadow-color) / 0.18),
+		0.1px 9.8px 10.3px -3px hsl(var(--shadow-color) / 0.16);
+	--shadow-elevation-high:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.2),
+		0px 1.9px 2px -0.4px hsl(var(--shadow-color) / 0.19),
+		0px 3.4px 3.6px -0.9px hsl(var(--shadow-color) / 0.18),
+		0px 5.5px 5.8px -1.3px hsl(var(--shadow-color) / 0.17),
+		0px 9px 9.5px -1.7px hsl(var(--shadow-color) / 0.16),
+		0.1px 14.3px 15px -2.1px hsl(var(--shadow-color) / 0.15),
+		0.1px 22.1px 23.2px -2.6px hsl(var(--shadow-color) / 0.15),
+		0.2px 32.8px 34.4px -3px hsl(var(--shadow-color) / 0.14);
 }
 
 :root[data-theme="light"] {
+	--shadow-color: 0deg 0% 80%;
 	--sl-color-white: hsl(224, 10%, 10%);
 	--sl-color-gray-3: hsl(224, 7%, 36%);
 	--sl-color-gray-4: hsl(224, 6%, 56%);
