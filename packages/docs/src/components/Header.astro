@@ -15,36 +15,107 @@ const { currentLang = "en" } = Astro.props;
       </a>
     </div>
 
-    <nav class="nav-links">
+    <nav class="nav-links desktop-only">
       <a
         href={currentLang === "fr"
           ? "/fr/docs/explanation/philosophy"
           : "/docs/explanation/philosophy"}>Documentation</a
       >
       <a href={currentLang === "fr" ? "/fr/play" : "/play"}>Playground</a>
-      <!-- <a href={currentLang === 'fr' ? '/fr/blog' : '/blog'}>Blog</a> -->
     </nav>
 
-    <div class="actions">
+    <div class="actions desktop-only">
       <SocialLinks />
       <div class="divider"></div>
       <LanguageSelect currentLang={currentLang} />
       <ThemeSelect />
     </div>
+
+    <div class="mobile-controls mobile-only">
+      <button
+        class="mobile-menu-toggle"
+        id="mobile-menu-btn"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <svg
+          class="icon-open"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><line x1="3" y1="12" x2="21" y2="12"></line><line
+            x1="3"
+            y1="6"
+            x2="21"
+            y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg
+        >
+        <svg
+          class="icon-close"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><line x1="18" y1="6" x2="6" y2="18"></line><line
+            x1="6"
+            y1="6"
+            x2="18"
+            y2="18"></line></svg
+        >
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu-dropdown" id="mobile-menu">
+    <nav class="mobile-nav-links">
+      <a
+        href={currentLang === "fr"
+          ? "/fr/docs/explanation/philosophy"
+          : "/docs/explanation/philosophy"}>Documentation</a
+      >
+      <a href={currentLang === "fr" ? "/fr/play" : "/play"}>Playground</a>
+    </nav>
+    <div class="mobile-actions-row">
+      <SocialLinks />
+      <div class="divider"></div>
+      <LanguageSelect currentLang={currentLang} />
+      <div class="divider"></div>
+      <ThemeSelect />
+    </div>
   </div>
 </header>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("mobile-menu-btn");
+    const menu = document.getElementById("mobile-menu");
+
+    if (btn && menu) {
+      btn.addEventListener("click", () => {
+        const isExpanded = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", (!isExpanded).toString());
+        menu.classList.toggle("open");
+      });
+    }
+  });
+</script>
 
 <style>
   .custom-header {
     border-bottom: 1px solid var(--sl-color-hairline);
     background-color: var(--sl-color-bg);
-    padding: 0 var(--sl-content-pad-x);
-    min-height: 64px;
-    display: flex;
-    align-items: center;
-    position: sticky;
+    padding: 0 1.5rem;
+    position: fixed;
     top: 0;
-    width: 100%;
+    width: calc(100% - 3rem);
     z-index: 100;
   }
   .header-container {
@@ -54,7 +125,7 @@ const { currentLang = "en" } = Astro.props;
     width: 100%;
     max-width: 1440px;
     margin: 0 auto;
-    height: 100%;
+    height: 64px;
     gap: 2rem;
   }
   .logo {
@@ -73,15 +144,6 @@ const { currentLang = "en" } = Astro.props;
   }
   .logo img {
     height: 2rem;
-  }
-  .version-badge {
-    font-size: 0.75rem;
-    padding: 0.1rem 0.4rem;
-    background-color: var(--gram-orange-soft);
-    color: var(--gram-orange);
-    border-radius: 4px;
-    font-family: var(--sl-font-mono);
-    margin-top: 4px;
   }
   .nav-links {
     display: flex;
@@ -107,5 +169,80 @@ const { currentLang = "en" } = Astro.props;
     width: 1px;
     height: 1.5rem;
     background-color: var(--sl-color-hairline);
+  }
+
+  /* Mobile controls */
+  .mobile-only {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    background: transparent;
+    border: none;
+    color: var(--sl-color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+  .mobile-menu-toggle:hover {
+    color: var(--sl-color-white);
+  }
+  .mobile-menu-toggle .icon-close {
+    display: none;
+  }
+  .mobile-menu-toggle[aria-expanded="true"] .icon-open {
+    display: none;
+  }
+  .mobile-menu-toggle[aria-expanded="true"] .icon-close {
+    display: block;
+  }
+
+  /* Mobile Dropdown */
+  .mobile-menu-dropdown {
+    display: none;
+    flex-direction: column;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--sl-color-hairline);
+    background-color: var(--sl-color-bg);
+  }
+
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .mobile-nav-links a {
+    text-decoration: none;
+    color: var(--sl-color-text);
+    font-weight: 500;
+    font-size: 1.1rem;
+  }
+  .mobile-nav-links a:hover {
+    color: var(--gram-orange);
+  }
+  .mobile-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* Responsive Media Query */
+  @media (max-width: 768px) {
+    .desktop-only {
+      display: none !important;
+    }
+    .mobile-only {
+      display: flex;
+    }
+    .header-container {
+      gap: 1rem;
+    }
+
+    .mobile-menu-dropdown.open {
+      display: flex;
+    }
   }
 </style>
