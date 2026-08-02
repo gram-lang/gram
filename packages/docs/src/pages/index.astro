@@ -1,72 +1,76 @@
 ---
-import Homepage from '../components/Homepage.astro';
+import Homepage from "../components/Homepage.astro";
 
 const t = {
   versionText: "Version 1.0.0-beta.5",
   heroTitle: "Gram",
-  heroSubtitle: "The open-source markup language for recipes.",
-  heroDescription: "A plain-text language built for precision cooking, dynamic calculations, and recipe scaleability.",
+  heroSubtitle: "An open-source markup language for culinary precision.",
+  heroDescription:
+    "Express your recipes in plain text and let the language do the rest. Turn your culinary knowledge into structured, calculable, and perfectly organized data.",
   heroGetStarted: "Get Started",
   heroPlayground: "Playground",
-  
-  pizzaCode: `<span class="comment"># Pizza Dough (65% hydration)</span>
-<span class="keyword">@yield</span> 4 portions
 
-= flour: 500g <span class="tag">[flour]</span>
-= water: {'{flour * 0.65}'} <span class="tag">[water]</span>
-= salt: {'{flour * 0.02}'} <span class="tag">[salt]</span>
-= yeast: 3g <span class="tag">[fresh yeast]</span>
+  recipeFileName: "lemon-curd.gram",
+  recipeCode: `## Lemon Curd
 
-1. Mix {'{flour}'} and {'{water}'} for 30m.
-2. Add {'{salt}'}, {'{yeast}'}. Knead 10m.
-3. Divide into {'{yield}'}, proof 24h.`,
+[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @yolks{150 g}<@eggs{5}, and @sugar{80% @&yolks} in a #saucepan{}. ->&base{}
+
+[Cook] Heat the &base{} to ^{82C} over medium heat for ~{5m}.
+
+[Emulsify] Remove from heat and blend in @butter{120 g}. Chill for ~_fridge{2h}.`,
 
   whyGram: "Why Gram?",
   philosophy: [
     {
       title: "Plain Text & Git Friendly",
-      details: "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor."
+      details:
+        "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
     },
     {
       title: "Dynamic Evaluation",
-      details: "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions."
+      details:
+        "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
     },
     {
       title: "Type-Safe Tooling",
-      details: "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE."
-    }
+      details:
+        "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
+    },
   ],
-  
+
   discoverGram: "Discover Gram",
   discoverDesc: "Explore how Gram solves common culinary management issues.",
-  
+
   tabScale: "Scale & Yield",
   tabNutrition: "Database Link",
   tabSchedule: "Scheduling",
-  
+
   tabInput: "Input",
   tabOutput: "Evaluated Output",
-  
-  scaleInput: `<span class="keyword">@yield</span> 2 portions\n\n= flour: 250g\n= water: {'{flour * 0.65}'}`,
+
+  scaleInput: `@yield 2 portions\n\n= flour: 250g\n= water: {'{flour * 0.65}'}`,
   scaleOutput: `Yield: 2 portions\nflour: 250g\nwater: 162.5g`,
-  
-  nutritionInput: `<span class="comment"># Reference a known ingredient</span>\n<span class="comment"># to compute nutritional value</span>\n= sugar: 100g <span class="tag">[@sugar]</span>`,
+
+  nutritionInput: `# Reference a known ingredient\n# to compute nutritional value\n= sugar: 100g [@sugar]`,
   nutritionOutput: `sugar: 100g\n-> 387 kcal, 100g carbs`,
-  
+
   scheduleInput: `1. Rest dough (2h)\n2. Shape loaves (15m)\n3. Bake (45m)`,
   scheduleOutput: `Gantt timeline generated:\nTotal time: 3 hours\nActive time: 15 minutes`,
-  
+
   getInvolved: "Get Involved",
   readBookTitle: "Read the Book",
-  readBookDesc: "Learn how to use Gram from scratch. The documentation covers everything from basic syntax to writing complex macros and integrating your own database.",
+  readBookDesc:
+    "Learn how to use Gram from scratch. The documentation covers everything from basic syntax to writing complex macros and integrating your own database.",
   readBookLink: "Read the docs",
-  
+
   contributeTitle: "Contribute",
-  contributeDesc: "Gram is open-source. Help us improve the language server, add new features to the CLI, or translate the documentation.",
+  contributeDesc:
+    "Gram is open-source. Help us improve the language server, add new features to the CLI, or translate the documentation.",
   contributeLink: "View on Codeberg",
-  
+
   tryTitle: "Try it Instantly",
-  tryDesc: "You can initialize a workspace via your terminal without installing anything permanently."
+  tryDesc:
+    "You can initialize a workspace via your terminal without installing anything permanently.",
 };
 ---
 

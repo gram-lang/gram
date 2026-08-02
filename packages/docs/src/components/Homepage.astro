@@ -1,7 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Code } from 'astro:components';
+import gramGrammar from '@gram-lang/parser/textmate';
 
 const { lang, t } = Astro.props;
+const gramLang = { ...gramGrammar, name: 'gram' } as any;
+const codeThemes = { light: 'github-light', dark: 'github-dark' };
 ---
 
 <Layout title="Gram" currentLang={lang}>
@@ -31,9 +35,9 @@ const { lang, t } = Astro.props;
         <div class="hero-code">
           <div class="code-block">
             <div class="code-header">
-              <span class="filename">pizza.gram</span>
+              <span class="filename">{t.recipeFileName || 'recipe.gram'}</span>
             </div>
-            <pre><code set:html={t.pizzaCode}></code></pre>
+            <Code code={t.recipeCode} lang={gramLang} themes={codeThemes} />
           </div>
         </div>
       </div>
@@ -80,11 +84,11 @@ const { lang, t } = Astro.props;
           <div class="two-pane">
             <div class="pane">
               <h4>{t.tabInput}</h4>
-              <pre><code set:html={t.scaleInput}></code></pre>
+              <Code code={t.scaleInput} lang={gramLang} themes={codeThemes} />
             </div>
             <div class="pane output">
               <h4>{t.tabOutput}</h4>
-              <pre><code set:html={t.scaleOutput}></code></pre>
+              <pre><code set:text={t.scaleOutput} /></pre>
             </div>
           </div>
         </div>
@@ -93,11 +97,11 @@ const { lang, t } = Astro.props;
           <div class="two-pane">
             <div class="pane">
               <h4>{t.tabInput}</h4>
-              <pre><code set:html={t.nutritionInput}></code></pre>
+              <Code code={t.nutritionInput} lang={gramLang} themes={codeThemes} />
             </div>
             <div class="pane output">
               <h4>{t.tabOutput}</h4>
-              <pre><code set:html={t.nutritionOutput}></code></pre>
+              <pre><code set:text={t.nutritionOutput} /></pre>
             </div>
           </div>
         </div>
@@ -106,11 +110,11 @@ const { lang, t } = Astro.props;
           <div class="two-pane">
             <div class="pane">
               <h4>{t.tabInput}</h4>
-              <pre><code set:html={t.scheduleInput}></code></pre>
+              <Code code={t.scheduleInput} lang={gramLang} themes={codeThemes} />
             </div>
             <div class="pane output">
               <h4>{t.tabOutput}</h4>
-              <pre><code set:html={t.scheduleOutput}></code></pre>
+              <pre><code set:text={t.scheduleOutput} /></pre>
             </div>
           </div>
         </div>
@@ -180,7 +184,17 @@ const { lang, t } = Astro.props;
 </script>
 
 <style>
-  /* Global */
+  /* Shiki Multi-theme hook for Starlight */
+  :global(html[data-theme="dark"] .astro-code),
+  :global(html[data-theme="dark"] .astro-code span) {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+
+  /* Base Container */
   .section {
     padding: 5rem 1.5rem;
   }

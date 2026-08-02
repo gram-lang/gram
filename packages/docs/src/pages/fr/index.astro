@@ -1,72 +1,77 @@
 ---
-import Homepage from '../../components/Homepage.astro';
+import Homepage from "../../components/Homepage.astro";
 
 const t = {
   versionText: "v1.0.0-beta.5",
   heroTitle: "Gram",
   heroSubtitle: "Le langage de balisage open-source pour recettes.",
-  heroDescription: "Un langage en texte brut conçu pour la cuisine de précision, les calculs dynamiques et la mise à l'échelle des recettes.",
+  heroDescription:
+    "Un langage en texte brut conçu pour la cuisine de précision, les calculs dynamiques et la mise à l'échelle des recettes.",
   heroGetStarted: "Démarrer",
   heroPlayground: "Playground",
-  
-  pizzaCode: `<span class="comment"># Pâte à Pizza (65% hydratation)</span>
-<span class="keyword">@yield</span> 4 portions
 
-= farine: 500g <span class="tag">[farine T65]</span>
-= eau: {'{farine * 0.65}'} <span class="tag">[eau]</span>
-= sel: {'{farine * 0.02}'} <span class="tag">[sel]</span>
-= levure: 3g <span class="tag">[levure fraîche]</span>
+  recipeFileName: "cremeux-citron.gram",
+  recipeCode: `## Crémeux Citron
 
-1. Mélanger {'{farine}'} et {'{eau}'} 30m.
-2. Ajouter {'{sel}'}, {'{levure}'}. Pétrir 10m.
-3. Diviser en {'{yield}'}, pointer 24h.`,
+[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @jaunes{150 g}<@oeufs{5}, et le @sucre{80% @&jaunes} dans une #casserole{}. ->&base{}
+
+[Cuire] Chauffer la &base{} à ^{82C} sur feu moyen pendant ~{5m}.
+
+[Emulsionner] Retirer du feu et incorporer le @beurre{120 g}. Réserver au frais pendant ~_frigo{2h}.`,
 
   whyGram: "Pourquoi Gram ?",
   philosophy: [
     {
       title: "Texte Brut & Git",
-      details: "Pas de base de données propriétaire ou d'enfermement. Vos recettes sont de simples fichiers texte qui peuvent être versionnés avec Git, partagés facilement et édités dans n'importe quel éditeur de texte."
+      details:
+        "Pas de base de données propriétaire ou d'enfermement. Vos recettes sont de simples fichiers texte qui peuvent être versionnés avec Git, partagés facilement et édités dans n'importe quel éditeur de texte.",
     },
     {
       title: "Évaluation Dynamique",
-      details: "Arrêtez de calculer l'hydratation ou la taille des portions à la main. Le langage gère nativement les expressions arithmétiques, les déclarations de variables et les conversions d'unités."
+      details:
+        "Arrêtez de calculer l'hydratation ou la taille des portions à la main. Le langage gère nativement les expressions arithmétiques, les déclarations de variables et les conversions d'unités.",
     },
     {
       title: "Outils Typés",
-      details: "Propulsé par un serveur de langage dédié (LSP) qui vous offre des diagnostics en temps réel, une coloration sémantique et de l'autocomplétion directement dans votre IDE."
-    }
+      details:
+        "Propulsé par un serveur de langage dédié (LSP) qui vous offre des diagnostics en temps réel, une coloration sémantique et de l'autocomplétion directement dans votre IDE.",
+    },
   ],
-  
+
   discoverGram: "Découvrir Gram",
-  discoverDesc: "Découvrez comment Gram résout les problèmes courants de gestion culinaire.",
-  
+  discoverDesc:
+    "Découvrez comment Gram résout les problèmes courants de gestion culinaire.",
+
   tabScale: "Proportions",
   tabNutrition: "Base de Données",
   tabSchedule: "Plannings",
-  
+
   tabInput: "Entrée",
   tabOutput: "Résultat Évalué",
-  
-  scaleInput: `<span class="keyword">@yield</span> 2 portions\n\n= farine: 250g\n= eau: {'{farine * 0.65}'}`,
+
+  scaleInput: `@yield 2 portions\n\n= farine: 250g\n= eau: {'{farine * 0.65}'}`,
   scaleOutput: `Rendement: 2 portions\nfarine: 250g\neau: 162.5g`,
-  
-  nutritionInput: `<span class="comment"># Lier un ingrédient connu</span>\n<span class="comment"># pour obtenir sa valeur nutritionnelle</span>\n= sucre: 100g <span class="tag">[@sucre]</span>`,
+
+  nutritionInput: `# Lier un ingrédient connu\n# pour obtenir sa valeur nutritionnelle\n= sucre: 100g [@sucre]`,
   nutritionOutput: `sucre: 100g\n-> 387 kcal, 100g glucides`,
-  
+
   scheduleInput: `1. Repos pâte (2h)\n2. Façonnage (15m)\n3. Cuisson (45m)`,
   scheduleOutput: `Diagramme de Gantt généré:\nTemps total: 3 heures\nTemps actif: 15 minutes`,
-  
+
   getInvolved: "Participer & Essayer",
   readBookTitle: "Lire le Livre",
-  readBookDesc: "Apprenez à utiliser Gram de zéro. La documentation couvre tout, de la syntaxe de base à l'écriture de macros complexes et l'intégration de bases de données.",
+  readBookDesc:
+    "Apprenez à utiliser Gram de zéro. La documentation couvre tout, de la syntaxe de base à l'écriture de macros complexes et l'intégration de bases de données.",
   readBookLink: "Lire la documentation",
-  
+
   contributeTitle: "Contribuer",
-  contributeDesc: "Gram est open-source. Aidez-nous à améliorer le Language Server, à ajouter des fonctionnalités au CLI, ou à traduire la documentation.",
+  contributeDesc:
+    "Gram est open-source. Aidez-nous à améliorer le Language Server, à ajouter des fonctionnalités au CLI, ou à traduire la documentation.",
   contributeLink: "Voir sur Codeberg",
-  
+
   tryTitle: "Essayer instantanément",
-  tryDesc: "Vous pouvez initialiser un espace de travail via votre terminal sans rien installer de manière permanente."
+  tryDesc:
+    "Vous pouvez initialiser un espace de travail via votre terminal sans rien installer de manière permanente.",
 };
 ---
 
