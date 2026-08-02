@@ -1,56 +1,15 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Homepage from '../components/Homepage.astro';
 
-const philosophy = [
-  {
-    title: "Plain Text & Git Friendly",
-    details:
-      "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
-  },
-  {
-    title: "Dynamic Evaluation",
-    details:
-      "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
-  },
-  {
-    title: "Type-Safe Tooling",
-    details:
-      "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
-  },
-];
----
-
-<Layout title="Gram" currentLang="en">
-  <!-- Hero Section -->
-  <section class="section hero">
-    <div class="homepage-container">
-      <div class="hero-layout">
-        <div class="hero-text">
-          <h1 class="title">Gram</h1>
-          <p class="subtitle">The open-source markup language for recipes.</p>
-          <p class="description">
-            A plain-text language built for precision cooking, dynamic
-            calculations, and recipe scaleability.
-          </p>
-
-          <div class="actions">
-            <a href="/docs/explanation/philosophy" class="button primary"
-              >Get Started</a
-            >
-            <a href="/play" class="button secondary">Playground</a>
-          </div>
-
-          <div class="version-badge">
-            <a href="/docs/changelog">Version 1.0.0-beta.5</a>
-          </div>
-        </div>
-
-        <div class="hero-code">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="filename">pizza.gram</span>
-            </div>
-            <pre><code><span class="comment"># Pizza Dough (65% hydration)</span>
+const t = {
+  versionText: "Version 1.0.0-beta.5",
+  heroTitle: "Gram",
+  heroSubtitle: "The open-source markup language for recipes.",
+  heroDescription: "A plain-text language built for precision cooking, dynamic calculations, and recipe scaleability.",
+  heroGetStarted: "Get Started",
+  heroPlayground: "Playground",
+  
+  pizzaCode: `<span class="comment"># Pizza Dough (65% hydration)</span>
 <span class="keyword">@yield</span> 4 portions
 
 = flour: 500g <span class="tag">[flour]</span>
@@ -60,487 +19,55 @@ const philosophy = [
 
 1. Mix {'{flour}'} and {'{water}'} for 30m.
 2. Add {'{salt}'}, {'{yeast}'}. Knead 10m.
-3. Divide into {'{yield}'}, proof 24h.</code></pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+3. Divide into {'{yield}'}, proof 24h.`,
 
-  <!-- Philosophy -->
-  <section class="section philosophy alt-bg">
-    <div class="homepage-container">
-      <h2>Why Gram?</h2>
-      <div class="grid">
-        {
-          philosophy.map((item) => (
-            <div class="grid-item">
-              <h3>{item.title}</h3>
-              <p>{item.details}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Use Cases with Vanilla Tabs -->
-  <section class="section use-cases">
-    <div class="homepage-container">
-      <h2>Discover Gram</h2>
-      <p class="section-desc">
-        Explore how Gram solves common culinary management issues.
-      </p>
-
-      <div class="tabs-container">
-        <div class="tab-buttons">
-          <button class="tab-btn active" data-target="tab-scale"
-            >Scale & Yield</button
-          >
-          <button class="tab-btn" data-target="tab-nutrition"
-            >Database Link</button
-          >
-          <button class="tab-btn" data-target="tab-schedule">Scheduling</button>
-        </div>
-
-        <div class="tab-content active" id="tab-scale">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>Input</h4>
-              <pre><code><span class="keyword">@yield</span> 2 portions
-
-= flour: 250g
-= water: {'{flour * 0.65}'}</code></pre>
-            </div>
-            <div class="pane output">
-              <h4>Evaluated Output</h4>
-              <pre><code>Yield: 2 portions
-flour: 250g
-water: 162.5g</code></pre>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-nutrition">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>Input</h4>
-              <pre><code><span class="comment"># Reference a known ingredient</span>
-<span class="comment"># to compute nutritional value</span>
-= sugar: 100g <span class="tag">[@sugar]</span></code></pre>
-            </div>
-            <div class="pane output">
-              <h4>Evaluated Output</h4>
-              <pre><code>sugar: 100g
--> 387 kcal, 100g carbs</code></pre>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-schedule">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>Input</h4>
-              <pre><code>1. Rest dough (2h)
-2. Shape loaves (15m)
-3. Bake (45m)</code></pre>
-            </div>
-            <div class="pane output">
-              <h4>Evaluated Output</h4>
-              <pre><code>Gantt timeline generated:
-Total time: 3 hours
-Active time: 15 minutes</code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Get Involved & Getting Started -->
-  <section class="section get-involved alt-bg">
-    <div class="homepage-container">
-      <h2>Get Involved</h2>
-      <div class="grid involved-grid">
-        <div class="grid-item card">
-          <h3>Read the Book</h3>
-          <p>
-            Learn how to use Gram from scratch. The documentation covers
-            everything from basic syntax to writing complex macros and
-            integrating your own database.
-          </p>
-          <a href="/docs/explanation/philosophy" class="link-btn"
-            >Read the docs &rarr;</a
-          >
-        </div>
-        <div class="grid-item card">
-          <h3>Contribute</h3>
-          <p>
-            Gram is open-source. Help us improve the language server, add new
-            features to the CLI, or translate the documentation.
-          </p>
-          <a href="https://codeberg.org/gram-lang/gram" class="link-btn"
-            >View on Codeberg &rarr;</a
-          >
-        </div>
-        <div class="grid-item card">
-          <h3>Try it Instantly</h3>
-          <p>
-            You can initialize a workspace via your terminal without installing
-            anything permanently.
-          </p>
-          <div class="terminal-mini">
-            <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</Layout>
-
-<script>
-  // Simple vanilla tab logic
-  document.addEventListener("DOMContentLoaded", () => {
-    const btns = document.querySelectorAll(".tab-btn");
-    const contents = document.querySelectorAll(".tab-content");
-
-    btns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        // Remove active class
-        btns.forEach((b) => b.classList.remove("active"));
-        contents.forEach((c) => c.classList.remove("active"));
-
-        // Add active class
-        btn.classList.add("active");
-        const targetId = btn.getAttribute("data-target");
-        if (targetId) {
-          const target = document.getElementById(targetId);
-          if (target) target.classList.add("active");
-        }
-      });
-    });
-  });
-</script>
-
-<style>
-  /* Global */
-  .section {
-    padding: 5rem 1.5rem;
-  }
-  .alt-bg {
-    background-color: var(--sl-color-bg-nav);
-    border-top: 1px solid var(--sl-color-hairline);
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-  .homepage-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    font-family: var(--sl-font);
-    color: var(--sl-color-text);
-  }
-
-  /* Typography & Basics */
-  h1,
-  h2,
-  h3,
-  h4 {
-    color: var(--sl-color-white);
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    line-height: 1.2;
-  }
-
-  h2 {
-    font-size: 2.2rem;
-    position: relative;
-    padding-left: 1rem;
-  }
-
-  /* Subtle color accent on headers */
-  h2::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10%;
-    height: 80%;
-    width: 4px;
-    background-color: var(--sl-color-accent-high, var(--sl-color-text-accent));
-    border-radius: 2px;
-  }
-
-  pre,
-  code {
-    font-family: var(--sl-font-mono);
-    font-size: 0.9em;
-  }
-
-  /* Syntax Highlighting overrides for hero/tabs */
-  .comment {
-    color: var(--sl-color-gray-3);
-  }
-  .keyword {
-    color: #ff7b72;
-    font-weight: 500;
-  }
-  .tag {
-    color: #79c0ff;
-  }
-
-  /* Hero Section */
-  .hero-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4rem;
-    align-items: center;
-  }
-
-  .hero-text {
-    flex: 1 1 400px;
-  }
-
-  .version-badge {
-    margin-top: 1rem;
-  }
-  .version-badge a {
-    display: inline-block;
-    font-weight: 600;
-    font-family: var(--sl-font-mono);
-    color: var(--sl-color-text-accent);
-    transition: background-color 0.2s;
-  }
-  .version-badge a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .title {
-    font-size: 4.5rem;
-    margin: 0 0 0.5rem 0;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    font-size: 1.5rem;
-    color: var(--sl-color-white);
-    margin: 0 0 1rem 0;
-  }
-
-  .description {
-    font-size: 1.15rem;
-    color: var(--sl-color-text-accent);
-    margin: 0 0 2rem 0;
-    line-height: 1.6;
-  }
-
-  .actions {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .button {
-    display: inline-block;
-    padding: 0.7rem 1.4rem;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
-  }
-
-  .button.primary {
-    background-color: var(--sl-color-accent-high, var(--sl-color-white));
-    color: var(--sl-color-black);
-  }
-  .button.primary:hover {
-    filter: brightness(0.9);
-  }
-
-  .button.secondary {
-    background-color: transparent;
-    color: var(--sl-color-white);
-    border-color: var(--sl-color-hairline);
-  }
-  .button.secondary:hover {
-    border-color: var(--sl-color-text-accent);
-    background-color: var(--sl-color-bg-nav);
-  }
-
-  /* Code Block Styling */
-  .hero-code {
-    flex: 1 1 400px;
-  }
-
-  .code-block {
-    background-color: var(--sl-color-black);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  }
-
-  .code-header {
-    background-color: #1a1a1a;
-    border-bottom: 1px solid var(--sl-color-hairline);
-    padding: 0.6rem 1rem;
-  }
-
-  .filename {
-    color: var(--sl-color-text-accent);
-    font-family: var(--sl-font-mono);
-    font-size: 0.85rem;
-  }
-
-  .code-block pre {
-    margin: 0;
-    padding: 1.5rem;
-    overflow-x: auto;
-    color: var(--sl-color-gray-1);
-    line-height: 1.5;
-  }
-
-  /* Grid Layouts */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 3rem;
-  }
-  .grid-item h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.8rem;
-  }
-  .grid-item p {
-    color: var(--sl-color-text-accent);
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-  }
-
-  /* Cards for Get Involved */
-  .card {
-    background-color: var(--sl-color-bg);
-    border: 1px solid var(--sl-color-hairline);
-    padding: 2rem;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-  }
-  .card p {
-    flex-grow: 1;
-  }
-  .link-btn {
-    display: inline-block;
-    color: var(--sl-color-accent-high, var(--sl-color-white));
-    text-decoration: none;
-    font-weight: 500;
-    margin-top: 1rem;
-  }
-  .link-btn:hover {
-    text-decoration: underline;
-  }
-
-  /* Mini terminal */
-  .terminal-mini {
-    background-color: var(--sl-color-black);
-    padding: 1rem;
-    border-radius: 4px;
-    border: 1px solid var(--sl-color-hairline);
-    margin-top: 1rem;
-  }
-  .prompt {
-    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
-    margin-right: 0.5rem;
-  }
-
-  /* Tabs Section */
-  .section-desc {
-    color: var(--sl-color-text-accent);
-    margin-bottom: 3rem;
-    font-size: 1.1rem;
-  }
-
-  .tabs-container {
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 6px;
-    overflow: hidden;
-    background-color: var(--sl-color-black);
-  }
-
-  .tab-buttons {
-    display: flex;
-    background-color: #1a1a1a;
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-
-  .tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    border-right: 1px solid var(--sl-color-hairline);
-    padding: 1rem;
-    color: var(--sl-color-text-accent);
-    cursor: pointer;
-    font-family: var(--sl-font);
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-
-  .tab-btn:last-child {
-    border-right: none;
-  }
-
-  .tab-btn:hover {
-    background-color: var(--sl-color-bg-nav);
-  }
-
-  .tab-btn.active {
-    background-color: var(--sl-color-black);
-    color: var(--sl-color-white);
-    border-bottom: 2px solid var(--sl-color-accent-high, var(--sl-color-white));
-  }
-
-  .tab-content {
-    display: none;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-
-  .two-pane {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .pane {
-    flex: 1 1 50%;
-    padding: 2rem;
-  }
-
-  .pane.output {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-left: 1px solid var(--sl-color-hairline);
-  }
-
-  @media (max-width: 600px) {
-    .pane.output {
-      border-left: none;
-      border-top: 1px solid var(--sl-color-hairline);
+  whyGram: "Why Gram?",
+  philosophy: [
+    {
+      title: "Plain Text & Git Friendly",
+      details: "No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor."
+    },
+    {
+      title: "Dynamic Evaluation",
+      details: "Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions."
+    },
+    {
+      title: "Type-Safe Tooling",
+      details: "Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE."
     }
-  }
+  ],
+  
+  discoverGram: "Discover Gram",
+  discoverDesc: "Explore how Gram solves common culinary management issues.",
+  
+  tabScale: "Scale & Yield",
+  tabNutrition: "Database Link",
+  tabSchedule: "Scheduling",
+  
+  tabInput: "Input",
+  tabOutput: "Evaluated Output",
+  
+  scaleInput: `<span class="keyword">@yield</span> 2 portions\n\n= flour: 250g\n= water: {'{flour * 0.65}'}`,
+  scaleOutput: `Yield: 2 portions\nflour: 250g\nwater: 162.5g`,
+  
+  nutritionInput: `<span class="comment"># Reference a known ingredient</span>\n<span class="comment"># to compute nutritional value</span>\n= sugar: 100g <span class="tag">[@sugar]</span>`,
+  nutritionOutput: `sugar: 100g\n-> 387 kcal, 100g carbs`,
+  
+  scheduleInput: `1. Rest dough (2h)\n2. Shape loaves (15m)\n3. Bake (45m)`,
+  scheduleOutput: `Gantt timeline generated:\nTotal time: 3 hours\nActive time: 15 minutes`,
+  
+  getInvolved: "Get Involved",
+  readBookTitle: "Read the Book",
+  readBookDesc: "Learn how to use Gram from scratch. The documentation covers everything from basic syntax to writing complex macros and integrating your own database.",
+  readBookLink: "Read the docs",
+  
+  contributeTitle: "Contribute",
+  contributeDesc: "Gram is open-source. Help us improve the language server, add new features to the CLI, or translate the documentation.",
+  contributeLink: "View on Codeberg",
+  
+  tryTitle: "Try it Instantly",
+  tryDesc: "You can initialize a workspace via your terminal without installing anything permanently."
+};
+---
 
-  .pane h4 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--sl-color-text-accent);
-    margin: 0 0 1.5rem 0;
-  }
-
-  .pane pre {
-    margin: 0;
-    white-space: pre-wrap;
-    color: var(--sl-color-gray-1);
-    line-height: 1.5;
-  }
-</style>
+<Homepage lang="en" t={t} />

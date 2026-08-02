@@ -1,0 +1,509 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const { lang, t } = Astro.props;
+---
+
+<Layout title="Gram" currentLang={lang}>
+  <!-- Hero Section -->
+  <section class="section hero">
+    <div class="homepage-container">
+      <div class="hero-layout">
+        <div class="hero-text">
+          <h1 class="title">{t.heroTitle}</h1>
+          <p class="subtitle">{t.heroSubtitle}</p>
+          <p class="description">
+            {t.heroDescription}
+          </p>
+
+          <div class="actions">
+            <a href={lang === 'fr' ? '/fr/docs/explanation/philosophy' : '/docs/explanation/philosophy'} class="button primary"
+              >{t.heroGetStarted}</a
+            >
+            <a href={lang === 'fr' ? '/fr/play' : '/play'} class="button secondary">{t.heroPlayground}</a>
+          </div>
+
+          <div class="version-badge">
+            <a href={lang === 'fr' ? '/fr/docs/changelog' : '/docs/changelog'}>{t.versionText}</a>
+          </div>
+        </div>
+
+        <div class="hero-code">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="filename">pizza.gram</span>
+            </div>
+            <pre><code set:html={t.pizzaCode}></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="section philosophy alt-bg">
+    <div class="homepage-container">
+      <h2>{t.whyGram}</h2>
+      <div class="grid">
+        {
+          t.philosophy.map((item: { title: string, details: string }) => (
+            <div class="grid-item">
+              <h3>{item.title}</h3>
+              <p>{item.details}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases with Vanilla Tabs -->
+  <section class="section use-cases">
+    <div class="homepage-container">
+      <h2>{t.discoverGram}</h2>
+      <p class="section-desc">
+        {t.discoverDesc}
+      </p>
+
+      <div class="tabs-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-target="tab-scale"
+            >{t.tabScale}</button
+          >
+          <button class="tab-btn" data-target="tab-nutrition"
+            >{t.tabNutrition}</button
+          >
+          <button class="tab-btn" data-target="tab-schedule">{t.tabSchedule}</button>
+        </div>
+
+        <div class="tab-content active" id="tab-scale">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>{t.tabInput}</h4>
+              <pre><code set:html={t.scaleInput}></code></pre>
+            </div>
+            <div class="pane output">
+              <h4>{t.tabOutput}</h4>
+              <pre><code set:html={t.scaleOutput}></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-nutrition">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>{t.tabInput}</h4>
+              <pre><code set:html={t.nutritionInput}></code></pre>
+            </div>
+            <div class="pane output">
+              <h4>{t.tabOutput}</h4>
+              <pre><code set:html={t.nutritionOutput}></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-schedule">
+          <div class="two-pane">
+            <div class="pane">
+              <h4>{t.tabInput}</h4>
+              <pre><code set:html={t.scheduleInput}></code></pre>
+            </div>
+            <div class="pane output">
+              <h4>{t.tabOutput}</h4>
+              <pre><code set:html={t.scheduleOutput}></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Involved & Getting Started -->
+  <section class="section get-involved alt-bg">
+    <div class="homepage-container">
+      <h2>{t.getInvolved}</h2>
+      <div class="grid involved-grid">
+        <div class="grid-item card">
+          <h3>{t.readBookTitle}</h3>
+          <p>
+            {t.readBookDesc}
+          </p>
+          <a href={lang === 'fr' ? '/fr/docs/explanation/philosophy' : '/docs/explanation/philosophy'} class="link-btn"
+            >{t.readBookLink} &rarr;</a
+          >
+        </div>
+        <div class="grid-item card">
+          <h3>{t.contributeTitle}</h3>
+          <p>
+            {t.contributeDesc}
+          </p>
+          <a href="https://codeberg.org/gram-lang/gram" class="link-btn"
+            >{t.contributeLink} &rarr;</a
+          >
+        </div>
+        <div class="grid-item card">
+          <h3>{t.tryTitle}</h3>
+          <p>
+            {t.tryDesc}
+          </p>
+          <div class="terminal-mini">
+            <code><span class="prompt">$</span> npx @gram-lang/cli init</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Simple vanilla tab logic
+  document.addEventListener("DOMContentLoaded", () => {
+    const btns = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    btns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        // Remove active class
+        btns.forEach((b) => b.classList.remove("active"));
+        contents.forEach((c) => c.classList.remove("active"));
+
+        // Add active class
+        btn.classList.add("active");
+        const targetId = btn.getAttribute("data-target");
+        if (targetId) {
+          const target = document.getElementById(targetId);
+          if (target) target.classList.add("active");
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Global */
+  .section {
+    padding: 5rem 1.5rem;
+  }
+  .alt-bg {
+    background-color: var(--sl-color-bg-nav);
+    border-top: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+  .homepage-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: var(--sl-font);
+    color: var(--sl-color-text);
+  }
+
+  /* Typography & Basics */
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--sl-color-white);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  /* Subtle color accent on headers */
+  h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10%;
+    height: 80%;
+    width: 4px;
+    background-color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    border-radius: 2px;
+  }
+
+  pre,
+  code {
+    font-family: var(--sl-font-mono);
+    font-size: 0.9em;
+  }
+
+  /* Syntax Highlighting overrides for hero/tabs */
+  .comment {
+    color: var(--sl-color-gray-3);
+  }
+  .keyword {
+    color: #ff7b72;
+    font-weight: 500;
+  }
+  .tag {
+    color: #79c0ff;
+  }
+
+  /* Hero Section */
+  .hero-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .hero-text {
+    flex: 1 1 400px;
+  }
+
+  .version-badge {
+    margin-top: 1rem;
+  }
+  .version-badge a {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  .version-badge a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .title {
+    font-size: 4.5rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: 1.5rem;
+    color: var(--sl-color-white);
+    margin: 0 0 1rem 0;
+  }
+
+  .description {
+    font-size: 1.15rem;
+    color: var(--sl-color-text-accent);
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 0.7rem 1.4rem;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .button.primary {
+    background-color: var(--sl-color-accent-high, var(--sl-color-white));
+    color: var(--sl-color-black);
+  }
+  .button.primary:hover {
+    filter: brightness(0.9);
+  }
+
+  .button.secondary {
+    background-color: transparent;
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-hairline);
+  }
+  .button.secondary:hover {
+    border-color: var(--sl-color-text-accent);
+    background-color: var(--sl-color-bg-nav);
+  }
+
+  /* Code Block Styling */
+  .hero-code {
+    flex: 1 1 400px;
+  }
+
+  .code-block {
+    background-color: var(--sl-color-black);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .code-header {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    padding: 0.6rem 1rem;
+  }
+
+  .filename {
+    color: var(--sl-color-text-accent);
+    font-family: var(--sl-font-mono);
+    font-size: 0.85rem;
+  }
+
+  .code-block pre {
+    margin: 0;
+    padding: 1.5rem;
+    overflow-x: auto;
+    color: var(--sl-color-gray-1);
+    line-height: 1.5;
+  }
+
+  /* Grid Layouts */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+  }
+  .grid-item h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+  .grid-item p {
+    color: var(--sl-color-text-accent);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  /* Cards for Get Involved */
+  .card {
+    background-color: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline);
+    padding: 2rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card p {
+    flex-grow: 1;
+  }
+  .link-btn {
+    display: inline-block;
+    color: var(--sl-color-accent-high, var(--sl-color-white));
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+  .link-btn:hover {
+    text-decoration: underline;
+  }
+
+  /* Mini terminal */
+  .terminal-mini {
+    background-color: var(--sl-color-black);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--sl-color-hairline);
+    margin-top: 1rem;
+  }
+  .prompt {
+    color: var(--sl-color-accent-high, var(--sl-color-text-accent));
+    margin-right: 0.5rem;
+  }
+
+  /* Tabs Section */
+  .section-desc {
+    color: var(--sl-color-text-accent);
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+  }
+
+  .tabs-container {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--sl-color-black);
+  }
+
+  .tab-buttons {
+    display: flex;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--sl-color-hairline);
+    padding: 1rem;
+    color: var(--sl-color-text-accent);
+    cursor: pointer;
+    font-family: var(--sl-font);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:last-child {
+    border-right: none;
+  }
+
+  .tab-btn:hover {
+    background-color: var(--sl-color-bg-nav);
+  }
+
+  .tab-btn.active {
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-white);
+    border-bottom: 2px solid var(--sl-color-accent-high, var(--sl-color-white));
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .two-pane {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .pane {
+    flex: 1 1 50%;
+    padding: 2rem;
+  }
+
+  .pane.output {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-left: 1px solid var(--sl-color-hairline);
+  }
+
+  @media (max-width: 600px) {
+    .pane.output {
+      border-left: none;
+      border-top: 1px solid var(--sl-color-hairline);
+    }
+  }
+
+  .pane h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sl-color-text-accent);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .pane pre {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--sl-color-gray-1);
+    line-height: 1.5;
+  }
+</style>
