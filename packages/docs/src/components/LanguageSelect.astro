@@ -1,5 +1,5 @@
 ---
-import Select from '@astrojs/starlight/components/Select.astro';
+import Select from "@astrojs/starlight/components/Select.astro";
 
 const { currentLang = "en" } = Astro.props;
 
@@ -18,8 +18,8 @@ if (currentLang === "fr") {
 }
 
 const options = [
-  { value: enUrl, selected: currentLang === 'en', label: 'English' },
-  { value: frUrl, selected: currentLang === 'fr', label: 'Français' }
+	{ value: enUrl, selected: currentLang === "en", label: "English" },
+	{ value: frUrl, selected: currentLang === "fr", label: "Français" },
 ];
 ---
 <starlight-lang-select>

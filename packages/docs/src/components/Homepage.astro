@@ -67,7 +67,12 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
       <div class="grid">
         {
           t.philosophy.map(
-            (item: { title: string; details: string; icon?: string }) => (
+            (item: {
+              title: string;
+              details: string;
+              icon?: string;
+              link?: string;
+            }) => (
               <div class="grid-item">
                 <div class="item-header">
                   {item.icon && (
@@ -76,6 +81,11 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
                   <h3>{item.title}</h3>
                 </div>
                 <p>{item.details}</p>
+                {item.link && (
+                  <a href={item.link} class="learn-more-link">
+                    {t.learnMore} &rarr;
+                  </a>
+                )}
               </div>
             ),
           )
@@ -92,65 +102,402 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
         {t.discoverDesc}
       </p>
 
-      <div class="tabs-container">
-        <div class="tab-buttons">
-          <button class="tab-btn active" data-target="tab-scale"
-            >{t.tabScale}</button
+      <div class="modern-features-container">
+        <!-- Horizontal Tabs -->
+        <div class="features-tabs">
+          <button
+            class="feature-tab-btn active"
+            data-target="feature-nutrition"
           >
-          <button class="tab-btn" data-target="tab-nutrition"
-            >{t.tabNutrition}</button
-          >
-          <button class="tab-btn" data-target="tab-schedule"
-            >{t.tabSchedule}</button
-          >
+            {t.tabNutritionTitle}
+          </button>
+          <button class="feature-tab-btn" data-target="feature-schedule">
+            {t.tabScheduleTitle}
+          </button>
+          <button class="feature-tab-btn" data-target="feature-scale">
+            {t.tabScaleTitle}
+          </button>
         </div>
 
-        <div class="tab-content active" id="tab-scale">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>{t.tabInput}</h4>
-              <Code code={t.scaleInput} lang={gramLang} themes={codeThemes} />
+        <!-- Content Area -->
+        <div class="features-content">
+          <!-- Feature: Nutrition -->
+          <div class="feature-panel active" id="feature-nutrition">
+            <p class="feature-desc">
+              {t.tabNutritionDesc}
+              <a
+                href={t.tabNutritionLink}
+                class="learn-more-link"
+                style="margin-left: 0.5rem;"
+              >
+                {t.learnMore} &rarr;
+              </a>
+            </p>
+            <div class="feature-columns">
+              <div class="col-input">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="filename">input.gram</span>
+                  </div>
+                  <Code
+                    code={t.nutritionInput}
+                    lang={gramLang}
+                    themes={codeThemes}
+                  />
+                </div>
+              </div>
+              <div class="col-arrow">
+                <Icon name="right-arrow" class="arrow-icon" />
+              </div>
+              <div class="col-output">
+                <div class="modern-output-pane">
+                  <div class="output-header">
+                    <div class="view-toggles pill-toggles">
+                      <button class="pill-btn active" data-view="preview"
+                        >Preview</button
+                      >
+                      <button class="pill-btn" data-view="json">JSON</button>
+                    </div>
+                  </div>
+                  <div class="view-content preview-view active">
+                    <div class="modern-mockup-card nut-card-mock">
+                      <div class="mockup-steps">
+                        <ol class="gram-steps">
+                          <li>
+                            <span class="action"
+                              >{lang === "fr" ? "Fouetter" : "Whisk"}</span
+                            >
+                            {lang === "fr" ? "la " : ""}<strong
+                              >{
+                                lang === "fr" ? "crème liquide" : "heavy cream"
+                              }</strong
+                            > (240g)
+                            {lang === "fr" ? "et le " : " and "}
+                            <strong
+                              >{
+                                lang === "fr" ? "sucre glace" : "powdered sugar"
+                              }</strong
+                            > (25g)
+                            {
+                              lang === "fr"
+                                ? " jusqu'à obtenir des pics souples."
+                                : " until soft peaks form."
+                            }
+                          </li>
+                          <li>
+                            <span class="action"
+                              >{lang === "fr" ? "Incorporer" : "Fold"}</span
+                            >
+                            {
+                              lang === "fr"
+                                ? "Ajouter délicatement l'"
+                                : "Gently incorporate "
+                            }<strong
+                              >{
+                                lang === "fr"
+                                  ? "extrait de vanille"
+                                  : "vanilla extract"
+                              }</strong
+                            > (4g).
+                          </li>
+                        </ol>
+                      </div>
+                      <div class="nut-panel-mock">
+                        <div class="nut-header-mock">
+                          Nutrition <span>EST.</span>
+                        </div>
+                        <div class="nut-grid-mock">
+                          <div class="nut-item-mock">
+                            <span class="label">Calories</span><strong
+                              >925 kcal</strong
+                            >
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label">Carbs</span><strong>26 g</strong
+                            >
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label">Fat</span><strong>88 g</strong>
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label">Protein</span><strong
+                              >6 g</strong
+                            >
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label"
+                              >{lang === "fr" ? "Sucres" : "Sugar"}</span
+                            ><strong>25 g</strong>
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label"
+                              >{lang === "fr" ? "Fibres" : "Fiber"}</span
+                            ><strong>0 g</strong>
+                          </div>
+                          <div class="nut-item-mock">
+                            <span class="label">Sodium</span><strong
+                              >42 mg</strong
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="view-content json-view">
+                    <div class="code-block json-block">
+                      <Code
+                        code={t.nutritionOutput}
+                        lang="json"
+                        themes={codeThemes}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="pane output">
-              <h4>{t.tabOutput}</h4>
-              <pre><code set:text={t.scaleOutput} /></pre>
+          </div>
+
+          <!-- Feature: Schedule -->
+          <div class="feature-panel" id="feature-schedule">
+            <p class="feature-desc">
+              {t.tabScheduleDesc}
+              <a
+                href={t.tabScheduleLink}
+                class="learn-more-link"
+                style="margin-left: 0.5rem;"
+              >
+                {t.learnMore} &rarr;
+              </a>
+            </p>
+            <div class="feature-columns">
+              <div class="col-input">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="filename">input.gram</span>
+                  </div>
+                  <Code
+                    code={t.scheduleInput}
+                    lang={gramLang}
+                    themes={codeThemes}
+                  />
+                </div>
+              </div>
+              <div class="col-arrow">
+                <Icon name="right-arrow" class="arrow-icon" />
+              </div>
+              <div class="col-output">
+                <div class="modern-output-pane">
+                  <div class="output-header">
+                    <div class="view-toggles pill-toggles">
+                      <button class="pill-btn active" data-view="preview"
+                        >Preview</button
+                      >
+                      <button class="pill-btn" data-view="json">JSON</button>
+                    </div>
+                  </div>
+                  <div class="view-content preview-view active">
+                    <div class="modern-mockup-card timeline-mockup-card">
+                      <div class="gantt-header-mock">
+                        <span
+                          >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
+                            >17m</strong
+                          ></span
+                        >
+                        <span
+                          >{lang === "fr" ? "Actif" : " · Active"}: <strong
+                            >7m</strong
+                          ></span
+                        >
+                      </div>
+                      <div class="gantt-tracks-container">
+                        <div class="gantt-track-mock" style="height: 120px;">
+                          <div class="track-label-mock">
+                            {lang === "fr" ? "Actions" : "Actions"}
+                          </div>
+                          <div class="track-content-mock">
+                            <div
+                              class="time-block-mock passive-mock"
+                              style="width: 26%; left: 0; top: 8px; border: none;"
+                            >
+                              <span
+                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                                >Prep Time</span
+                              >
+                            </div>
+                            <div
+                              class="time-block-mock active-mock"
+                              style="width: 26%; left: 52%; top: 44px;"
+                            >
+                              <span
+                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                                >{lang === "fr" ? "Sauté" : "Sauté"}</span
+                              >
+                            </div>
+                            <div
+                              class="time-block-mock active-mock"
+                              style="width: 10%; left: 78%; top: 80px;"
+                            >
+                              <span
+                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                                >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+                        <div class="gantt-track-mock">
+                          <div class="track-label-mock">
+                            {lang === "fr" ? "Bouillir" : "Boiling"}
+                          </div>
+                          <div class="track-content-mock">
+                            <div
+                              class="time-block-mock passive-mock"
+                              style="width: 52%; left: 26%;"
+                            >
+                              <span class="block-label-mock">10m</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          class="gantt-track-mock"
+                          style="height: 36px; border-bottom: none;"
+                        >
+                          <div
+                            class="track-label-mock"
+                            style="border-right: none;"
+                          >
+                          </div>
+                          <div
+                            class="track-content-mock"
+                            style="position: relative;"
+                          >
+                            <div class="gantt-tick" style="left: 0%;">0m</div>
+                            <div class="gantt-tick" style="left: 26%;">5m</div>
+                            <div class="gantt-tick" style="left: 52%;">10m</div>
+                            <div class="gantt-tick" style="left: 78%;">15m</div>
+                            <div class="gantt-tick" style="left: 88%;">17m</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="view-content json-view">
+                    <div class="code-block json-block">
+                      <Code
+                        code={t.scheduleOutput}
+                        lang="json"
+                        themes={codeThemes}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature: Scale -->
+          <div class="feature-panel" id="feature-scale">
+            <p class="feature-desc">
+              {t.tabScaleDesc}
+              <a
+                href={t.tabScaleLink}
+                class="learn-more-link"
+                style="margin-left: 0.5rem;"
+              >
+                {t.learnMore} &rarr;
+              </a>
+            </p>
+            <div class="feature-columns">
+              <div class="col-input">
+                <div class="code-block">
+                  <div class="code-header">
+                    <span class="filename">input.gram</span>
+                  </div>
+                  <Code
+                    code={t.scaleInput}
+                    lang={gramLang}
+                    themes={codeThemes}
+                  />
+                </div>
+              </div>
+              <div class="col-arrow">
+                <Icon name="right-arrow" class="arrow-icon" />
+              </div>
+              <div class="col-output">
+                <div class="modern-output-pane">
+                  <div class="output-header">
+                    <div class="view-toggles pill-toggles">
+                      <button class="pill-btn active" data-view="preview"
+                        >Preview</button
+                      >
+                      <button class="pill-btn" data-view="json">JSON</button>
+                    </div>
+                  </div>
+                  <div class="view-content preview-view active">
+                    <div class="modern-mockup-card tabular-mockup">
+                      <div class="tab-row reference-row">
+                        <span class="tab-name"
+                          ><strong
+                            >{
+                              lang === "fr" ? "Farine T65" : "Bread Flour"
+                            }</strong
+                          > - 400g</span
+                        >
+                        <span class="tab-val tab-val-ref">100%</span>
+                      </div>
+                      <div class="tab-row reference-row">
+                        <span class="tab-name"
+                          ><strong
+                            >{
+                              lang === "fr" ? "Farine Complète" : "Whole Wheat"
+                            }</strong
+                          > - 100g</span
+                        >
+                        <span class="tab-val">25%</span>
+                      </div>
+                      <div class="tab-row">
+                        <span class="tab-name"
+                          ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
+                        >
+                        <span class="tab-val">75%</span>
+                      </div>
+                      <div class="tab-row">
+                        <span class="tab-name"
+                          ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong
+                          > - 100g</span
+                        >
+                        <span class="tab-val">20%</span>
+                      </div>
+                      <div class="tab-row">
+                        <span class="tab-name"
+                          ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
+                        >
+                        <span class="tab-val">2%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="view-content json-view">
+                    <div class="code-block json-block">
+                      <Code
+                        code={t.scaleOutput}
+                        lang="json"
+                        themes={codeThemes}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="tab-content" id="tab-nutrition">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>{t.tabInput}</h4>
-              <Code
-                code={t.nutritionInput}
-                lang={gramLang}
-                themes={codeThemes}
-              />
-            </div>
-            <div class="pane output">
-              <h4>{t.tabOutput}</h4>
-              <pre><code set:text={t.nutritionOutput} /></pre>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-content" id="tab-schedule">
-          <div class="two-pane">
-            <div class="pane">
-              <h4>{t.tabInput}</h4>
-              <Code
-                code={t.scheduleInput}
-                lang={gramLang}
-                themes={codeThemes}
-              />
-            </div>
-            <div class="pane output">
-              <h4>{t.tabOutput}</h4>
-              <pre><code set:text={t.scheduleOutput} /></pre>
-            </div>
-          </div>
-        </div>
+      <div
+        class="try-playground-container"
+        style="text-align: center; margin-top: 3rem;"
+      >
+        <a href={lang === "fr" ? "/fr/play" : "/play"} class="button primary">
+          {t.tryPlaygroundBtn || "Try it in the Playground"}
+        </a>
       </div>
     </div>
   </section>
@@ -196,24 +543,42 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
 </Layout>
 
 <script>
-  // Simple vanilla tab logic
+  // Modern Features Tabs and Preview/JSON toggles
   document.addEventListener("DOMContentLoaded", () => {
-    const btns = document.querySelectorAll(".tab-btn");
-    const contents = document.querySelectorAll(".tab-content");
+    // 1. Feature Tabs Logic
+    const tabBtns = document.querySelectorAll(".feature-tab-btn");
+    const panels = document.querySelectorAll(".feature-panel");
 
-    btns.forEach((btn) => {
+    tabBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        // Remove active class
-        btns.forEach((b) => b.classList.remove("active"));
-        contents.forEach((c) => c.classList.remove("active"));
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        panels.forEach((p) => p.classList.remove("active"));
 
-        // Add active class
         btn.classList.add("active");
         const targetId = btn.getAttribute("data-target");
         if (targetId) {
           const target = document.getElementById(targetId);
           if (target) target.classList.add("active");
         }
+      });
+    });
+
+    // 2. Preview/JSON Toggle Logic
+    const featurePanels = document.querySelectorAll(".feature-panel");
+    featurePanels.forEach((panel) => {
+      const toggleBtns = panel.querySelectorAll(".pill-btn");
+      const viewContents = panel.querySelectorAll(".view-content");
+
+      toggleBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          toggleBtns.forEach((b) => b.classList.remove("active"));
+          viewContents.forEach((vc) => vc.classList.remove("active"));
+
+          btn.classList.add("active");
+          const viewType = btn.getAttribute("data-view");
+          const targetView = panel.querySelector(`.${viewType}-view`);
+          if (targetView) targetView.classList.add("active");
+        });
       });
     });
   });
@@ -240,7 +605,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     border-bottom: 1px solid var(--sl-color-hairline);
   }
   .homepage-container {
-    max-width: 1000px;
+    max-width: 1152px;
     margin: 0 auto;
     font-family: var(--sl-font);
     color: var(--sl-color-text);
@@ -252,7 +617,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   h3,
   h4 {
     color: var(--sl-color-white);
-    font-weight: 600;
+    font-weight: 800;
     margin-bottom: 1.5rem;
     line-height: 1.2;
   }
@@ -260,6 +625,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   h2 {
     font-size: 2.2rem;
     position: relative;
+    margin-bottom: 0.75rem;
   }
 
   /* Subtle color accent on headers */
@@ -431,12 +797,31 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     line-height: 1.6;
     margin-bottom: 1rem;
   }
+  .learn-more-link {
+    display: inline-block;
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .learn-more-link:hover {
+    text-decoration: underline;
+  }
 
   .philosophy h3 {
     margin-top: 0;
   }
 
+  .section.philosophy {
+    border-block-start: 10px solid var(--sl-color-accent);
+  }
+
   /* Cards for Get Involved */
+
+  .section.get-involved {
+    background-color: var(--sl-color-accent);
+  }
+
   .card {
     background-color: var(--sl-color-bg);
     border: 1px solid var(--sl-color-hairline);
@@ -472,96 +857,442 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
     margin-right: 0.5rem;
   }
 
-  /* Tabs Section */
+  /* Split View Section */
   .section-desc {
-    color: var(--sl-color-text-accent);
-    margin-bottom: 3rem;
+    color: var(--sl-color-gray-3);
+    margin-bottom: 4rem;
     font-size: 1.1rem;
+    font-weight: 600;
+    position: relative;
   }
 
-  .tabs-container {
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 6px;
-    overflow: hidden;
-    background-color: var(--sl-color-black);
+  .section-desc:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -30px;
+    height: 4px;
+    width: 50px;
+    background-color: var(--sl-color-accent);
   }
 
-  .tab-buttons {
-    display: flex;
-    background-color: #1a1a1a;
-    border-bottom: 1px solid var(--sl-color-hairline);
+  /* Modern Features Section */
+
+  .section.use-cases .code-block {
+    box-shadow: var(--shadow-elevation-medium);
   }
 
-  .tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    border-right: 1px solid var(--sl-color-hairline);
-    padding: 1rem;
-    color: var(--sl-color-text-accent);
-    cursor: pointer;
-    font-family: var(--sl-font);
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.2s;
+  .section.use-cases h2,
+  .section.use-cases .section-desc {
+    text-align: center;
   }
 
-  .tab-btn:last-child {
-    border-right: none;
+  .section.use-cases .section-desc {
+    margin-bottom: 3rem;
   }
 
-  .tab-btn:hover {
-    background-color: var(--sl-color-bg-nav);
-  }
-
-  .tab-btn.active {
-    background-color: var(--sl-color-black);
-    color: var(--sl-color-white);
-    border-bottom: 2px solid var(--sl-color-accent-high, var(--sl-color-white));
-  }
-
-  .tab-content {
+  .section.use-cases .section-desc:after {
     display: none;
   }
 
-  .tab-content.active {
-    display: block;
-  }
-
-  .two-pane {
+  .modern-features-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
 
-  .pane {
-    flex: 1 1 50%;
-    padding: 2rem;
-  }
-
-  .pane.output {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-left: 1px solid var(--sl-color-hairline);
+  .features-tabs {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+    width: fit-content;
+    background-color: var(--sl-color-black);
+    padding: 0.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--sl-color-hairline);
+    gap: 0.25rem;
   }
 
   @media (max-width: 600px) {
-    .pane.output {
-      border-left: none;
-      border-top: 1px solid var(--sl-color-hairline);
+    .features-tabs {
+      flex-direction: column;
+      width: 100%;
     }
   }
 
-  .pane h4 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--sl-color-text-accent);
-    margin: 0 0 1.5rem 0;
+  .feature-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--sl-color-gray-3);
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 0.7rem 2rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: var(--sl-font);
   }
 
-  .pane pre {
+  .feature-tab-btn:hover {
+    color: var(--sl-color-white);
+  }
+
+  .feature-tab-btn.active {
+    background-color: var(--sl-color-accent);
+    color: var(--sl-color-bg);
+  }
+
+  .features-content {
+    position: relative;
+  }
+
+  .feature-panel {
+    display: none;
+    flex-direction: column;
+  }
+
+  .feature-panel.active {
+    display: flex;
+  }
+
+  .feature-desc {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--sl-color-gray-3);
+    max-width: 650px;
+    margin: 0 auto 3rem auto;
+    line-height: 1.6;
+    text-wrap: balance;
+  }
+
+  .feature-columns {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .col-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sl-color-gray-3);
+  }
+
+  .col-arrow :global(.arrow-icon) {
+    width: 2rem;
+    height: 2rem;
+    transition: transform 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .feature-columns {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .col-arrow {
+      padding: 0.5rem 0;
+    }
+    .col-arrow :global(.arrow-icon) {
+      transform: rotate(90deg);
+    }
+  }
+
+  .col-input,
+  .col-output {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .col-input .code-block {
+    height: 100%;
+  }
+
+  /* Output Pane Modern Styling */
+  .modern-output-pane {
+    background-color: var(--sl-color-black);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: var(--shadow-elevation-medium);
+  }
+
+  .output-header {
+    background-color: var(--sl-color-gray-7);
+    border-bottom: 1px solid var(--sl-color-hairline);
+    padding: 0.4rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .pill-toggles {
+    display: flex;
+    background-color: var(--sl-color-bg);
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  .pill-btn {
+    background: transparent;
+    border: none;
+    color: var(--sl-color-text-accent);
+    padding: 4px 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .pill-btn:hover {
+    color: var(--sl-color-white);
+  }
+
+  .pill-btn.active {
+    background-color: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+
+  .view-content {
+    display: none;
+    flex: 1;
+  }
+
+  .view-content.active {
+    display: block;
+  }
+
+  .json-view {
+    padding: 0;
+  }
+
+  .json-block {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    height: 100%;
+  }
+  .json-block pre {
+    border-radius: 0;
     margin: 0;
-    white-space: pre-wrap;
-    color: var(--sl-color-gray-1);
+  }
+
+  /* Mockups */
+  .modern-mockup-card {
+  }
+
+  .mockup-text {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--sl-color-white);
     line-height: 1.5;
+  }
+
+  .gram-steps {
+    list-style-type: decimal;
+    padding-inline: 3rem 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--sl-color-white);
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+  .gram-steps li {
+    margin-bottom: 0.8rem;
+  }
+  .gram-steps .action {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    margin-right: 6px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  /* Nutrition Panel Mockup */
+  .nut-panel-mock {
+    margin-top: 1rem;
+    background-color: var(--sl-color-bg-nav);
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-hairline);
+    margin: 1rem;
+  }
+  .nut-header-mock {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sl-color-white);
+  }
+  .nut-header-mock span {
+    font-size: 0.6em;
+    text-transform: uppercase;
+    background-color: var(--sl-color-gray-4);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: var(--sl-color-bg);
+  }
+  .nut-grid-mock {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 480px) {
+    .nut-grid-mock {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .nut-item-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background-color: var(--sl-color-bg);
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-hairline);
+  }
+  .nut-item-mock .label {
+    font-size: 0.65em;
+    text-transform: uppercase;
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+  }
+  .nut-item-mock strong {
+    font-size: 1em;
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-white);
+  }
+
+  /* Gantt Timeline Mockup */
+  .timeline-mockup-card {
+    padding: 1rem 0;
+  }
+  .gantt-header-mock {
+    display: flex;
+    padding: 0 1.5rem 1rem 1.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    font-size: 0.85rem;
+    color: var(--sl-color-gray-3);
+  }
+  .gantt-header-mock strong {
+    color: var(--sl-color-white);
+  }
+  .gantt-track-mock {
+    display: flex;
+    height: 48px;
+    align-items: center;
+    border-bottom: 1px solid var(--sl-color-hairline);
+    padding-right: 1rem;
+  }
+  .track-label-mock {
+    width: 80px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    border-right: 1px solid var(--sl-color-hairline);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 1.5rem;
+  }
+  .track-content-mock {
+    flex-grow: 1;
+    position: relative;
+    height: 100%;
+  }
+  .gantt-tick {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--sl-color-gray-3);
+    font-size: 0.75rem;
+    font-family: var(--sl-font-mono);
+    transform: translateX(-50%);
+  }
+  .gantt-tick::before {
+    content: "";
+    width: 1px;
+    height: 6px;
+    background-color: var(--sl-color-hairline);
+    margin-bottom: 4px;
+  }
+  .track-content-mock {
+    margin-left: 1rem;
+  }
+  .time-block-mock {
+    position: absolute;
+    top: 8px;
+    height: 32px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+  }
+  .time-block-mock:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sl-shadow-sm);
+  }
+  .active-mock {
+    background-color: var(--sl-color-accent);
+    color: var(--sl-color-white);
+  }
+  .passive-mock {
+    background-color: var(--sl-color-gray-6);
+    border: 1px solid var(--sl-color-accent);
+    color: var(--sl-color-accent);
+  }
+  .block-label-mock {
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Tabular Mockup */
+  .tabular-mockup {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .tab-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .tab-row:last-child {
+    border-bottom: none;
+  }
+
+  .reference-row {
+    background-color: var(--sl-color-bg);
+  }
+
+  .tab-name {
+    color: var(--sl-color-white);
+  }
+
+  .tab-val {
+    color: var(--sl-color-text-accent);
+    font-family: var(--sl-font-mono);
+    font-weight: bold;
+  }
+
+  .tab-val-ref {
+    color: var(--sl-color-text);
   }
 </style>
