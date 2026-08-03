@@ -81,12 +81,12 @@ onUnmounted(() => {
   padding: 6px 12px;
   border-radius: 6px;
   background-color: transparent;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   font-weight: 500;
   cursor: pointer;
   user-select: none;
   transition: color 0.25s, background-color 0.25s;
-  border: 1px solid var(--vp-c-border);
+  border: 1px solid var(--sl-color-hairline);
   min-width: 0;
 }
 
@@ -97,19 +97,19 @@ onUnmounted(() => {
 }
 
 .dropdown-header:hover, .dropdown-header.is-open {
-  color: var(--vp-c-text-1);
-  background-color: var(--vp-c-bg-soft);
+  color: var(--sl-color-text);
+  background-color: var(--sl-color-bg-sidebar);
 }
 
 .dropdown-icon {
   margin-left: 8px;
   flex-shrink: 0;
-  color: var(--vp-c-text-3);
+  color: var(--sl-color-gray-4);
   transition: transform 0.25s, color 0.25s;
 }
 
 .dropdown-header:hover .dropdown-icon, .dropdown-header.is-open .dropdown-icon {
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .dropdown-header.is-open .dropdown-icon {
@@ -123,10 +123,10 @@ onUnmounted(() => {
   min-width: 100%;
   max-width: calc(100vw - 32px);
   width: max-content;
-  background-color: var(--vp-c-bg-elv);
-  border: 1px solid var(--vp-c-divider);
+  background-color: var(--sl-color-bg-nav);
+  border: 1px solid var(--sl-color-hairline);
   border-radius: 8px;
-  box-shadow: var(--vp-shadow-3);
+  box-shadow: var(--sl-shadow-lg);
   z-index: 50;
   padding: 6px 0;
   overflow-y: auto;
@@ -136,20 +136,20 @@ onUnmounted(() => {
 .dropdown-item {
   padding: 6px 16px;
   cursor: pointer;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   font-weight: 500;
   transition: color 0.25s, background-color 0.25s;
   white-space: nowrap;
 }
 
 .dropdown-item:hover {
-  color: var(--vp-c-brand-1);
-  background-color: var(--vp-c-default-soft);
+  color: var(--sl-color-accent);
+  background-color: var(--sl-color-gray-6);
 }
 
 .dropdown-item.active {
-  color: var(--vp-c-brand-1);
-  background-color: var(--vp-c-default-soft);
+  color: var(--sl-color-accent);
+  background-color: var(--sl-color-gray-6);
 }
 
 @media (max-width: 640px) {

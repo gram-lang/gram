@@ -58,7 +58,7 @@ function toggle() {
 
 <style scoped>
 .gram-warnings {
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--sl-color-bg-sidebar);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 8px;
   overflow: hidden;
@@ -116,7 +116,7 @@ background-color: rgba(220, 38, 38, 0.1);
   padding: 12px 16px;
   border-bottom: 1px solid rgba(220, 38, 38, 0.1);
   transition: background-color 0.2s;
-  background-color: var(--vp-c-bg);
+  background-color: var(--sl-color-bg);
   border-radius: 7px;
 }
 
@@ -139,10 +139,10 @@ background-color: rgba(220, 38, 38, 0.1);
 
 .warning-code {
   font-weight: 600;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   font-size: 12px;
-  font-family: var(--vp-font-family-mono);
-  background-color: var(--vp-c-bg-soft);
+  font-family: var(--sl-font-mono);
+  background-color: var(--sl-color-bg-sidebar);
   padding: 0px 6px;
   border-radius: 4px;
   align-self: flex-start;
@@ -150,12 +150,12 @@ background-color: rgba(220, 38, 38, 0.1);
 
 .warning-message {
   font-size: 14px;
-  color: var(--vp-c-text-1);
+  color: var(--sl-color-text);
 }
 
 .warning-item-name {
   font-size: 12px;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .warning-jump {
@@ -165,16 +165,16 @@ background-color: rgba(220, 38, 38, 0.1);
   padding: 4px 12px;
   border-radius: 4px;
   background-color: transparent;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   font-size: 12px;
-  border: 1px solid var(--vp-c-border);
+  border: 1px solid var(--sl-color-hairline);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .warning-jump:hover {
-  background-color: var(--vp-c-bg-mute);
-  color: var(--vp-c-text-1);
-  border-color: var(--vp-c-text-3);
+  background-color: var(--sl-color-bg-inline-code);
+  color: var(--sl-color-text);
+  border-color: var(--sl-color-gray-4);
 }
 </style>

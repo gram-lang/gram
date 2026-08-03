@@ -163,7 +163,7 @@ function handlePreviewClick(e: MouseEvent) {
       <span class="output-title">{{ viewMode.toUpperCase() }}</span>
       <button class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
         <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--vp-c-green-1)"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
     </div>
     <div class="output-container">
@@ -203,7 +203,7 @@ function handlePreviewClick(e: MouseEvent) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--sl-color-bg-sidebar);
   overflow: hidden;
 }
 
@@ -212,8 +212,8 @@ function handlePreviewClick(e: MouseEvent) {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background-color: var(--vp-c-bg-mute);
-  border-bottom: 1px solid var(--vp-c-border);
+  background-color: var(--sl-color-bg-inline-code);
+  border-bottom: 1px solid var(--sl-color-hairline);
 }
 
 .output-title {
@@ -221,7 +221,7 @@ function handlePreviewClick(e: MouseEvent) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .copy-btn {
@@ -231,7 +231,7 @@ function handlePreviewClick(e: MouseEvent) {
   width: 26px;
   height: 26px;
   border-radius: 4px;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
   border: none;
@@ -239,15 +239,15 @@ function handlePreviewClick(e: MouseEvent) {
 }
 
 .copy-btn:hover {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
+  background-color: var(--sl-color-bg-sidebar);
+  color: var(--sl-color-text);
 }
 
 .output-container {
   flex: 1;
   overflow: auto;
   position: relative;
-  background-color: var(--vp-code-bg);
+  background-color: var(--sl-color-bg-inline-code);
 }
 
 .output-code {
@@ -261,19 +261,19 @@ function handlePreviewClick(e: MouseEvent) {
   box-sizing: border-box;
   background: transparent !important;
   line-height: 1.6;
-  font-family: var(--vp-font-family-mono), "Fira Code", monospace;
+  font-family: var(--sl-font-mono), "Fira Code", monospace;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .output-tree, .output-preview{
   padding: 16px;
-  background-color: var(--vp-c-bg);
+  background-color: var(--sl-color-bg);
   min-height: 100%;
 }
 
 .output-gantt{
-	  background-color: var(--vp-c-bg);
+	  background-color: var(--sl-color-bg);
   min-height: 100%;
 }
 
@@ -282,7 +282,7 @@ function handlePreviewClick(e: MouseEvent) {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--vp-c-text-3);
+  color: var(--sl-color-gray-4);
   font-size: 14px;
 }
 

@@ -161,40 +161,12 @@ pre[data-language="markdown"] code {
 }
 
 /*
- * Compatibility layer: the Playground Vue components were ported from VitePress
- * "as-is" (see migration plan Phase 5) and still reference VitePress's --vp-*
- * theme tokens. Alias them onto Starlight's --sl-* tokens instead of rewriting
- * every component's styles.
+ * @gram-lang/renderer's gram.css derives its dark-mode preview palette from
+ * --bg-dark-anchor: var(--vp-c-bg, #1a1a1a) — a generic host-site theming hook,
+ * not VitePress-specific. Feed it Starlight's own background so the recipe
+ * preview/Gantt chart track the site's dark theme instead of its hardcoded
+ * fallback.
  */
 :root {
 	--vp-c-bg: var(--sl-color-bg);
-	--vp-c-bg-elv: var(--sl-color-bg-nav);
-	--vp-c-bg-soft: var(--sl-color-bg-sidebar);
-	--vp-c-bg-mute: var(--sl-color-bg-inline-code);
-	--vp-code-bg: var(--sl-color-bg-inline-code);
-	--vp-c-default-soft: var(--sl-color-gray-6);
-
-	--vp-c-border: var(--sl-color-hairline);
-	--vp-c-divider: var(--sl-color-hairline);
-
-	--vp-c-brand: var(--sl-color-accent);
-	--vp-c-brand-1: var(--sl-color-accent);
-	--vp-c-brand-soft: var(--sl-color-accent-low);
-
-	--vp-c-text-1: var(--sl-color-text);
-	--vp-c-text-2: var(--sl-color-gray-3);
-	--vp-c-text-3: var(--sl-color-gray-4);
-
-	--vp-c-danger-1: var(--sl-color-red);
-	--vp-c-danger-3: var(--sl-color-red-high);
-	--vp-c-danger-soft: var(--sl-color-red-low);
-	--vp-c-red-1: var(--sl-color-red);
-	--vp-c-red-soft: var(--sl-color-red-low);
-	--vp-c-green-1: var(--sl-color-green);
-	--vp-c-green-soft: var(--sl-color-green-low);
-	--vp-c-yellow-1: var(--sl-color-orange);
-
-	--vp-font-family-mono: var(--sl-font-mono);
-	--vp-shadow-1: var(--sl-shadow-sm);
-	--vp-shadow-3: var(--sl-shadow-lg);
 }

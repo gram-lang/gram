@@ -98,7 +98,7 @@ const count = computed(() => keys.value.length);
 
 <style scoped>
 .json-node {
-  font-family: var(--vp-font-family-mono);
+  font-family: var(--sl-font-mono);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -113,12 +113,12 @@ const count = computed(() => keys.value.length);
 }
 
 .json-header:hover {
-  background-color: var(--vp-c-bg-mute);
+  background-color: var(--sl-color-bg-inline-code);
 }
 
 .json-children {
   padding-left: 20px;
-  border-left: 1px dotted var(--vp-c-divider);
+  border-left: 1px dotted var(--sl-color-hairline);
   margin-left: 5px;
 }
 
@@ -127,15 +127,15 @@ const count = computed(() => keys.value.length);
   width: 14px;
   text-align: center;
   font-size: 10px;
-  color: var(--vp-c-text-3);
+  color: var(--sl-color-gray-4);
   margin-right: 4px;
 }
 
-.json-key { color: var(--vp-c-brand-1); }
-.json-string { color: var(--vp-c-green-1); }
-.json-number { color: var(--vp-c-yellow-1); }
-.json-boolean { color: var(--vp-c-red-1); }
-.json-null { color: var(--vp-c-text-3); }
-.json-colon, .json-comma, .json-bracket, .json-brace { color: var(--vp-c-text-1); }
-.json-count { color: var(--vp-c-text-3); font-style: italic; margin: 0 4px; }
+.json-key { color: var(--sl-color-accent); }
+.json-string { color: var(--sl-color-green); }
+.json-number { color: var(--sl-color-orange); }
+.json-boolean { color: var(--sl-color-red); }
+.json-null { color: var(--sl-color-gray-4); }
+.json-colon, .json-comma, .json-bracket, .json-brace { color: var(--sl-color-text); }
+.json-count { color: var(--sl-color-gray-4); font-style: italic; margin: 0 4px; }
 </style>

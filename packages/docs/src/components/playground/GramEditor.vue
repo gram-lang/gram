@@ -44,19 +44,19 @@ let currentDiagnostics: Diagnostic[] = [];
 const editorTheme = EditorView.theme({
 	"&": {
 		height: "100%",
-		backgroundColor: "var(--vp-c-bg-soft)",
+		backgroundColor: "var(--sl-color-bg-sidebar)",
 		fontSize: "14px",
 	},
 	".cm-scroller": {
-		fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
+		fontFamily: 'var(--sl-font-mono), "Fira Code", monospace',
 		overflow: "auto",
 	},
 	".cm-content": {
 		padding: "16px 0",
 	},
 	".cm-gutters": {
-		backgroundColor: "var(--vp-c-bg-soft)",
-		color: "var(--vp-c-text-3)",
+		backgroundColor: "var(--sl-color-bg-sidebar)",
+		color: "var(--sl-color-gray-4)",
 		border: "none",
 	},
 	"&.cm-focused": {
@@ -186,14 +186,14 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--sl-color-bg-sidebar);
   overflow: hidden;
 }
 
 .editor-header {
   padding: 8px 12px;
-  background-color: var(--vp-c-bg-mute);
-  border-bottom: 1px solid var(--vp-c-border);
+  background-color: var(--sl-color-bg-inline-code);
+  border-bottom: 1px solid var(--sl-color-hairline);
 }
 
 .editor-title {
@@ -201,7 +201,7 @@ defineExpose({
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .editor-container {
