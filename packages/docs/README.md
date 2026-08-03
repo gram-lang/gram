@@ -1,43 +1,40 @@
-# Astro Starter Kit: Minimal
+# @gram-lang/docs
 
-```sh
-bun create astro@latest -- --template minimal
-```
+The Gram documentation site and browser playground: [gram-lang.org](https://gram-lang.org). Built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build), with a Vue-based playground island.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## Structure
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/
+├── components/       # Astro components (homepage, header/footer, Starlight overrides)
+│   └── playground/    # Vue playground: editor, output panes, options
+├── content/
+│   ├── docs/           # Starlight docs collection (EN at docs/docs/**, FR at docs/fr/docs/**)
+│   └── blog/            # Blog posts (en/, fr/)
+├── data/              # Structured content: homepage copy, blog topics, API reference data
+├── layouts/           # Layout.astro — shared shell for non-Starlight pages (home, blog, playground)
+├── lib/               # Shared utilities (head scripts, FR/EN post resolution)
+├── pages/             # Astro routes; fr/ mirrors the English tree
+└── styles/            # global.css, passed to Starlight via customCss
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Routing: Starlight docs live under `/docs/**` and `/fr/docs/**` (not at the root) purely via content-collection file layout, so they don't collide with the Astro-native homepage at `/`.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Commands
 
-Any static assets, like images, can be placed in the `public/` directory.
+Run from this directory, or via `turbo`/`bun run --filter=@gram-lang/docs <script>` from the repo root:
 
-## 🧞 Commands
+| Command          | Action                                                    |
+| :--------------- | :--------------------------------------------------------- |
+| `bun dev`        | Start the dev server at `localhost:4321`                    |
+| `bun run build`  | Build the static site to `./dist/`, then check bundle size |
+| `bun run preview`| Preview the production build locally                       |
+| `bun run typecheck` | Run `astro check`                                        |
 
-All commands are run from the root of the project, from a terminal:
+No environment variables are required — the site builds fully statically, with no runtime secrets.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+## Notes
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- `astro`/`@astrojs/starlight`/`@astrojs/vue`/`@astrojs/mdx`/`@astrojs/markdown-remark` are pinned to the current stable range in `package.json`; keep them on `^7.1.x`/Starlight `^0.41.x` or later — `astro@7.0.2`'s dev server is broken in this hoisted Bun monorepo (fixed in `7.1.5`).
+- `scripts/check-bundle-size.mjs` enforces a size budget on the playground's JS chunk (CodeMirror 6 + Shiki, self-hosted); raise the budget deliberately in that file if a change legitimately grows it.
+- `scripts/generate-llms-full.ts` regenerates `public/llms-full.txt`/`llms.txt` as a `prebuild` step.
