@@ -3,7 +3,11 @@ import Layout from "../../layouts/Layout.astro";
 import GramPlayground from "../../components/playground/GramPlayground.vue";
 ---
 
-<Layout title="Playground Gram" currentLang="fr">
+<Layout
+  title="Playground Gram"
+  description="Écrivez des recettes Gram dans votre navigateur et visualisez en direct l'AST, le JSON compilé et le rendu final."
+  currentLang="fr"
+>
   <div class="playground-wrapper">
     <GramPlayground client:only="vue" lang="fr" />
   </div>
