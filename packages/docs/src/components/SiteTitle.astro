@@ -1,7 +1,5 @@
 ---
-import type { Props } from "@astrojs/starlight/props";
-
-const { siteTitleHref } = Astro.props;
+const { siteTitleHref } = Astro.locals.starlightRoute;
 ---
 
 <div class="site-title sl-flex">
