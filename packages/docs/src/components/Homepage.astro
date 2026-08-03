@@ -55,9 +55,9 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   </section>
 
   <!-- Philosophy -->
-  <section class="section philosophy alt-bg">
+  <section class="section philosophy alt-bg" aria-labelledby="philosophy-heading">
     <div class="homepage-container">
-      <h2>{t.whyGram}</h2>
+      <h2 id="philosophy-heading">{t.whyGram}</h2>
       {
         t.whyGramDesc && (
           <p class="section-desc" style="margin-top: -0.5rem;">
@@ -96,9 +96,9 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   </section>
 
   <!-- Use Cases with Vanilla Tabs -->
-  <section class="section use-cases">
+  <section class="section use-cases" aria-labelledby="use-cases-heading">
     <div class="homepage-container">
-      <h2>{t.discoverGram}</h2>
+      <h2 id="use-cases-heading">{t.discoverGram}</h2>
       <p class="section-desc">
         {t.discoverDesc}
       </p>
@@ -382,9 +382,9 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   </section>
 
   <!-- Get Involved -->
-  <section class="section get-involved alt-bg">
+  <section class="section get-involved alt-bg" aria-labelledby="get-involved-heading">
     <div class="homepage-container">
-      <h2>{t.getInvolved}</h2>
+      <h2 id="get-involved-heading">{t.getInvolved}</h2>
       <div class="grid involved-grid">
         <div class="grid-item card">
           <h3>{t.readBookTitle}</h3>
@@ -412,9 +412,9 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
   </section>
 
   <!-- Getting Started -->
-  <section class="section getting-started">
+  <section class="section getting-started" aria-labelledby="getting-started-heading">
     <div class="homepage-container" style="text-align: center;">
-      <h2 style="margin-bottom: 1rem;">{t.tryTitle}</h2>
+      <h2 id="getting-started-heading" style="margin-bottom: 1rem;">{t.tryTitle}</h2>
       <p
         style="margin-bottom: 2rem; color: var(--sl-color-gray-3); font-size: 1.1rem; text-wrap: balance;"
       >
