@@ -160,12 +160,6 @@ pre[data-language="markdown"] code {
 	word-break: break-word !important;
 }
 
-/* Soft orange background for inline code in light mode */
-:root[data-theme="light"] :not(pre) > code {
-	/* background-color: var(--gram-orange-soft);
-	color: var(--gram-orange-dark); */
-}
-
 /*
  * Compatibility layer: the Playground Vue components were ported from VitePress
  * "as-is" (see migration plan Phase 5) and still reference VitePress's --vp-*
