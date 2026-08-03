@@ -2,9 +2,7 @@
 import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
 
 import { getDictionary } from "@gram-lang/i18n";
-import { setupMonaco } from "./monacoSetup";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
+import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
@@ -20,12 +18,10 @@ const props = defineProps<{
 const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
 const lang = inject<Ref<"en" | "fr">>("lang")!;
-// biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
 const isDark = inject<Ref<boolean>>("isDark")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
 const t = computed(() => getDictionary(lang.value));
 
-// biome-ignore lint/correctness/noUnusedVariables: currentLang is used in the <template> block below, which Biome's Vue support doesn't see.
 const currentLang = computed(() => {
 	if (props.viewMode === "ast") return "scheme";
 	if (props.viewMode === "markdown") return "markdown";
@@ -44,25 +40,20 @@ function copyOutput() {
 	});
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: handleMount is used in the <template> block below, which Biome's Vue support doesn't see.
-const handleMount = async (_editor: any, monaco: any) => {
-	await setupMonaco(monaco);
-};
+const highlightedHtml = ref("");
 
-// biome-ignore lint/correctness/noUnusedVariables: MONACO_OPTIONS is used in the <template> block below, which Biome's Vue support doesn't see.
-const MONACO_OPTIONS = {
-	automaticLayout: true,
-	minimap: { enabled: false },
-	wordWrap: "on",
-	fontSize: 14,
-	fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
-	scrollBeyondLastLine: false,
-	lineNumbersMinChars: 3,
-	renderLineHighlight: "none",
-	padding: { top: 16 },
-	readOnly: true,
-	domReadOnly: true,
-};
+watch(
+	[() => props.content, currentLang, isDark],
+	async ([content, shikiLang, dark]) => {
+		if (!["json", "ast", "markdown"].includes(props.viewMode)) return;
+		const highlighter = await getHighlighter();
+		highlightedHtml.value = highlighter.codeToHtml(content, {
+			lang: shikiLang,
+			theme: dark ? SHIKI_THEMES.dark : SHIKI_THEMES.light,
+		});
+	},
+	{ immediate: true },
+);
 
 const previewContainer = ref<HTMLElement | null>(null);
 
@@ -177,15 +168,13 @@ function handlePreviewClick(e: MouseEvent) {
       </button>
     </div>
     <div class="output-container">
-      <!-- Monaco Editor (JSON, AST, Markdown) -->
-      <VueMonacoEditor
+      <!-- Shiki-highlighted read-only output (JSON, AST, Markdown) -->
+      <!-- Shiki's codeToHtml() already emits its own <pre><code> wrapper -->
+      <div
         v-if="['json', 'ast', 'markdown'].includes(viewMode)"
-        :value="content"
-        :theme="isDark ? 'github-dark' : 'github-light'"
-        :language="currentLang"
-        :options="MONACO_OPTIONS"
-        @mount="handleMount"
-      />
+        class="output-code"
+        v-html="highlightedHtml"
+      ></div>
 
       <!-- Interactive JSON Tree -->
       <div v-else-if="viewMode === 'json-tree'" class="output-tree">
@@ -260,6 +249,22 @@ function handlePreviewClick(e: MouseEvent) {
   overflow: auto;
   position: relative;
   background-color: var(--vp-code-bg);
+}
+
+.output-code {
+  min-height: 100%;
+  font-size: 14px;
+}
+
+.output-code :deep(pre) {
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  background: transparent !important;
+  line-height: 1.6;
+  font-family: var(--vp-font-family-mono), "Fira Code", monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .output-tree, .output-preview{
