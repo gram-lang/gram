@@ -7,7 +7,7 @@ import FeaturePanel from "./FeaturePanel.astro";
 
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
-const codeThemes = { light: "github-light", dark: "github-dark" };
+const codeThemes: Record<string, any> = { light: "github-light", dark: "github-dark" };
 ---
 
 <Layout title="Gram" description={t.heroDescription} currentLang={lang}>
@@ -504,8 +504,8 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
 
     // 3. Copy Command Logic
     const copyBtn = document.querySelector(".copy-cmd-btn");
-    const copyIcon = document.querySelector(".copy-icon");
-    const checkIcon = document.querySelector(".check-icon");
+    const copyIcon = document.querySelector(".copy-icon") as HTMLElement;
+    const checkIcon = document.querySelector(".check-icon") as HTMLElement;
     if (copyBtn && copyIcon && checkIcon) {
       copyBtn.addEventListener("click", async () => {
         try {
