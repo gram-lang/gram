@@ -2,20 +2,10 @@
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import { getTopicSlug } from "../../../data/blog-topics";
+import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
 
 const allPosts = await getCollection("blog");
-const englishPosts = allPosts.filter(post => post.data.locale === "en");
-const frenchPosts = allPosts.filter(post => post.data.locale === "fr");
-
-const postsToDisplay = englishPosts.map(enPost => {
-  // Try to find the corresponding French translation based on file path logic
-  // Typically, if English is 'en/first-post', French could be 'fr/first-post'
-  const baseId = enPost.id.replace(/^en\//, '');
-  const frPost = frenchPosts.find(p => p.id === `fr/${baseId}`);
-  
-  // Return the French post if it exists, otherwise fallback to English post
-  return frPost || enPost;
-});
+const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
 
 // Sort by date descending
 postsToDisplay.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
