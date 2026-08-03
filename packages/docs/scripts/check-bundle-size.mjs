@@ -32,9 +32,10 @@ let failed = false;
 for (const [label, { pattern, maxKb }] of Object.entries(BUDGETS_KB)) {
 	const match = files.find((f) => pattern.test(f));
 	if (!match) {
-		console.warn(
-			`⚠ No file matched for "${label}" (pattern ${pattern}) — skipping, build output may have changed shape.`,
+		console.error(
+			`✗ No file matched for "${label}" (pattern ${pattern}) — build output may have changed shape, so this budget can no longer be enforced.`,
 		);
+		failed = true;
 		continue;
 	}
 	const sizeKb = statSync(join(ASSETS_DIR, match)).size / 1024;
