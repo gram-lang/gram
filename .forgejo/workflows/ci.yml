@@ -30,6 +30,9 @@ jobs:
           bun run build --filter='!@gram-lang/docs'
           git diff --exit-code packages/parser/src/grammar-content.ts
 
+      - name: Build docs
+        run: bun run build --filter='@gram-lang/docs'
+
       - name: Lint
         run: bun run lint
 
