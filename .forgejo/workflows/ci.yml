@@ -46,7 +46,7 @@ jobs:
         run: bun test
 
       - name: Audit dependencies
-        run: bun audit || true
+        run: bun audit --audit-level=high
 
       - name: Pack CLI dependencies
         run: |
