@@ -8,6 +8,7 @@ import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
+import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT } from './src/lib/head-scripts.ts';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -126,19 +127,13 @@ export default defineConfig({
           tag: /** @type {'script'} */ ('script'),
           attrs: {
             defer: true,
-            src: '/script.js',
-            'data-website-id': 'fa1b1921-1982-4198-bb2b-c30d24f587ce'
+            src: UMAMI_SCRIPT_SRC,
+            'data-website-id': UMAMI_WEBSITE_ID
           }
         }] : []),
         {
           tag: 'script',
-          content: `if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
-  var lang = navigator.language || navigator.userLanguage || '';
-  if (lang.toLowerCase().startsWith('fr') && !sessionStorage.getItem('lang_redirected')) {
-    sessionStorage.setItem('lang_redirected', 'true');
-    window.location.replace('/fr/');
-  }
-}`
+          content: FR_REDIRECT_SCRIPT
         }
       ],
       social: [

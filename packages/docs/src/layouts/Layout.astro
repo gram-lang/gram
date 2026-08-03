@@ -2,6 +2,11 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import {
+  UMAMI_WEBSITE_ID,
+  UMAMI_SCRIPT_SRC,
+  FR_REDIRECT_SCRIPT,
+} from "../lib/head-scripts";
 
 export interface Props {
   title: string;
@@ -29,29 +34,10 @@ const {
     <!-- Umami Analytics -->
     {
       import.meta.env.PROD && (
-        <script
-          defer
-          src="/script.js"
-          data-website-id="fa1b1921-1982-4198-bb2b-c30d24f587ce"
-        />
+        <script is:inline defer src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} />
       )
     }
-    <script is:inline>
-      if (
-        typeof window !== "undefined" &&
-        (window.location.pathname === "/" ||
-          window.location.pathname === "/index.html")
-      ) {
-        var lang = navigator.language || navigator["userLanguage"] || "";
-        if (
-          lang.toLowerCase().startsWith("fr") &&
-          !sessionStorage.getItem("lang_redirected")
-        ) {
-          sessionStorage.setItem("lang_redirected", "true");
-          window.location.replace("/fr/");
-        }
-      }
-    </script>
+    <script is:inline set:html={FR_REDIRECT_SCRIPT} />
     <script is:inline>
       /* Initialize theme to avoid FOUC and restore user preference */
       (() => {
