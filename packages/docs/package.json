@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "astro dev",
     "prebuild": "bun scripts/generate-llms-full.ts",
-    "build": "astro build",
+    "build": "astro build && node scripts/check-bundle-size.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check"
