@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import { Code } from "astro:components";
 import { Icon } from "@astrojs/starlight/components";
 import gramGrammar from "@gram-lang/parser/textmate";
+import FeaturePanel from "./FeaturePanel.astro";
 
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
@@ -122,44 +123,17 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
         <!-- Content Area -->
         <div class="features-content">
           <!-- Feature: Nutrition -->
-          <div class="feature-panel active" id="feature-nutrition">
-            <p class="feature-desc">
-              {t.tabNutritionDesc}
-              <a
-                href={t.tabNutritionLink}
-                class="learn-more-link"
-                style="margin-left: 0.5rem;"
-              >
-                {t.learnMore} &rarr;
-              </a>
-            </p>
-            <div class="feature-columns">
-              <div class="col-input">
-                <div class="code-block">
-                  <div class="code-header">
-                    <span class="filename">input.gram</span>
-                  </div>
-                  <Code
-                    code={t.nutritionInput}
-                    lang={gramLang}
-                    themes={codeThemes}
-                  />
-                </div>
-              </div>
-              <div class="col-arrow">
-                <Icon name="right-arrow" class="arrow-icon" />
-              </div>
-              <div class="col-output">
-                <div class="modern-output-pane">
-                  <div class="output-header">
-                    <div class="view-toggles pill-toggles">
-                      <button class="pill-btn active" data-view="preview"
-                        >Preview</button
-                      >
-                      <button class="pill-btn" data-view="json">JSON</button>
-                    </div>
-                  </div>
-                  <div class="view-content preview-view active">
+          <FeaturePanel
+            id="feature-nutrition"
+            active
+            desc={t.tabNutritionDesc}
+            link={t.tabNutritionLink}
+            learnMoreText={t.learnMore}
+            inputCode={t.nutritionInput}
+            outputCode={t.nutritionOutput}
+            gramLang={gramLang}
+            codeThemes={codeThemes}
+          >
                     <div class="modern-mockup-card nut-card-mock">
                       <div class="mockup-steps">
                         <ol class="gram-steps">
@@ -242,60 +216,19 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="view-content json-view">
-                    <div class="code-block json-block">
-                      <Code
-                        code={t.nutritionOutput}
-                        lang="json"
-                        themes={codeThemes}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </FeaturePanel>
 
           <!-- Feature: Schedule -->
-          <div class="feature-panel" id="feature-schedule">
-            <p class="feature-desc">
-              {t.tabScheduleDesc}
-              <a
-                href={t.tabScheduleLink}
-                class="learn-more-link"
-                style="margin-left: 0.5rem;"
-              >
-                {t.learnMore} &rarr;
-              </a>
-            </p>
-            <div class="feature-columns">
-              <div class="col-input">
-                <div class="code-block">
-                  <div class="code-header">
-                    <span class="filename">input.gram</span>
-                  </div>
-                  <Code
-                    code={t.scheduleInput}
-                    lang={gramLang}
-                    themes={codeThemes}
-                  />
-                </div>
-              </div>
-              <div class="col-arrow">
-                <Icon name="right-arrow" class="arrow-icon" />
-              </div>
-              <div class="col-output">
-                <div class="modern-output-pane">
-                  <div class="output-header">
-                    <div class="view-toggles pill-toggles">
-                      <button class="pill-btn active" data-view="preview"
-                        >Preview</button
-                      >
-                      <button class="pill-btn" data-view="json">JSON</button>
-                    </div>
-                  </div>
-                  <div class="view-content preview-view active">
+          <FeaturePanel
+            id="feature-schedule"
+            desc={t.tabScheduleDesc}
+            link={t.tabScheduleLink}
+            learnMoreText={t.learnMore}
+            inputCode={t.scheduleInput}
+            outputCode={t.scheduleOutput}
+            gramLang={gramLang}
+            codeThemes={codeThemes}
+          >
                     <div class="modern-mockup-card timeline-mockup-card">
                       <div class="gantt-header-mock">
                         <span
@@ -379,60 +312,19 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="view-content json-view">
-                    <div class="code-block json-block">
-                      <Code
-                        code={t.scheduleOutput}
-                        lang="json"
-                        themes={codeThemes}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </FeaturePanel>
 
           <!-- Feature: Scale -->
-          <div class="feature-panel" id="feature-scale">
-            <p class="feature-desc">
-              {t.tabScaleDesc}
-              <a
-                href={t.tabScaleLink}
-                class="learn-more-link"
-                style="margin-left: 0.5rem;"
-              >
-                {t.learnMore} &rarr;
-              </a>
-            </p>
-            <div class="feature-columns">
-              <div class="col-input">
-                <div class="code-block">
-                  <div class="code-header">
-                    <span class="filename">input.gram</span>
-                  </div>
-                  <Code
-                    code={t.scaleInput}
-                    lang={gramLang}
-                    themes={codeThemes}
-                  />
-                </div>
-              </div>
-              <div class="col-arrow">
-                <Icon name="right-arrow" class="arrow-icon" />
-              </div>
-              <div class="col-output">
-                <div class="modern-output-pane">
-                  <div class="output-header">
-                    <div class="view-toggles pill-toggles">
-                      <button class="pill-btn active" data-view="preview"
-                        >Preview</button
-                      >
-                      <button class="pill-btn" data-view="json">JSON</button>
-                    </div>
-                  </div>
-                  <div class="view-content preview-view active">
+          <FeaturePanel
+            id="feature-scale"
+            desc={t.tabScaleDesc}
+            link={t.tabScaleLink}
+            learnMoreText={t.learnMore}
+            inputCode={t.scaleInput}
+            outputCode={t.scaleOutput}
+            gramLang={gramLang}
+            codeThemes={codeThemes}
+          >
                     <div class="modern-mockup-card tabular-mockup">
                       <div class="tab-row reference-row">
                         <span class="tab-name"
@@ -474,20 +366,7 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
                         <span class="tab-val">2%</span>
                       </div>
                     </div>
-                  </div>
-                  <div class="view-content json-view">
-                    <div class="code-block json-block">
-                      <Code
-                        code={t.scaleOutput}
-                        lang="json"
-                        themes={codeThemes}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </FeaturePanel>
         </div>
       </div>
 
@@ -992,10 +871,6 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
 
   /* Modern Features Section */
 
-  .section.use-cases .code-block {
-    box-shadow: var(--shadow-elevation-medium);
-  }
-
   .section.use-cases h2,
   .section.use-cases .section-desc {
     text-align: center;
@@ -1056,140 +931,6 @@ const codeThemes = { light: "github-light", dark: "github-dark" };
 
   .features-content {
     position: relative;
-  }
-
-  .feature-panel {
-    display: none;
-    flex-direction: column;
-  }
-
-  .feature-panel.active {
-    display: flex;
-  }
-
-  .feature-desc {
-    text-align: center;
-    font-size: 1.1rem;
-    color: var(--sl-color-gray-3);
-    max-width: 650px;
-    margin: 0 auto 3rem auto;
-    line-height: 1.6;
-    text-wrap: balance;
-  }
-
-  .feature-columns {
-    display: flex;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .col-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--sl-color-gray-3);
-  }
-
-  .col-arrow :global(.arrow-icon) {
-    width: 2rem;
-    height: 2rem;
-    transition: transform 0.3s ease;
-  }
-
-  @media (max-width: 768px) {
-    .feature-columns {
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .col-arrow {
-      padding: 0.5rem 0;
-    }
-    .col-arrow :global(.arrow-icon) {
-      transform: rotate(90deg);
-    }
-  }
-
-  .col-input,
-  .col-output {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .col-input .code-block {
-    height: 100%;
-  }
-
-  /* Output Pane Modern Styling */
-  .modern-output-pane {
-    background-color: var(--sl-color-black);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    box-shadow: var(--shadow-elevation-medium);
-  }
-
-  .output-header {
-    background-color: var(--sl-color-gray-7);
-    border-bottom: 1px solid var(--sl-color-hairline);
-    padding: 0.4rem 1rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .pill-toggles {
-    display: flex;
-    background-color: var(--sl-color-bg);
-    border-radius: 6px;
-    padding: 3px;
-    border: 1px solid var(--sl-color-hairline);
-  }
-
-  .pill-btn {
-    background: transparent;
-    border: none;
-    color: var(--sl-color-text-accent);
-    padding: 4px 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .pill-btn:hover {
-    color: var(--sl-color-white);
-  }
-
-  .pill-btn.active {
-    background-color: var(--sl-color-gray-6);
-    color: var(--sl-color-white);
-  }
-
-  .view-content {
-    display: none;
-    flex: 1;
-  }
-
-  .view-content.active {
-    display: block;
-  }
-
-  .json-view {
-    padding: 0;
-  }
-
-  .json-block {
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    height: 100%;
-  }
-  .json-block pre {
-    border-radius: 0;
-    margin: 0;
   }
 
   /* Mockups */
