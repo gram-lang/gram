@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gram-lang.org/sitemap-index.xml
