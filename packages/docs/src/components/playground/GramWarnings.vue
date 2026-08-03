@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, ref, type Ref } from "vue";
-import { getDictionary } from "@gram-lang/i18n";
-
-const lang = inject<Ref<"en" | "fr">>("lang")!;
+import { ref } from "vue";
+import { useI18n } from "./useI18n";
 
 defineProps<{
 	warnings: Array<{
@@ -19,7 +17,7 @@ const emit = defineEmits<{
 }>();
 
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
-const t = computed(() => getDictionary(lang.value));
+const { t } = useI18n();
 
 const isCollapsed = ref(false);
 

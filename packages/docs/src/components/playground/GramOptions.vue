@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, inject, type Ref } from "vue";
+import { computed } from "vue";
 import { formatDecimalToFraction } from "@gram-lang/renderer";
-import { getDictionary, UNIT_CONVERSIONS } from "@gram-lang/i18n";
+import { UNIT_CONVERSIONS } from "@gram-lang/i18n";
+import { useI18n } from "./useI18n";
 
-const lang = inject<Ref<"en" | "fr">>("lang")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
-const t = computed(() => getDictionary(lang.value));
+const { t } = useI18n();
 
 // biome-ignore lint/correctness/noUnusedVariables: knownUnits is used in the <template> block below, which Biome's Vue support doesn't see.
 const knownUnits = [

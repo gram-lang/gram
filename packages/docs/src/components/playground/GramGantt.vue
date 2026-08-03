@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import {
-	ref,
-	computed,
-	onMounted,
-	watch,
-	inject,
-	type Ref,
-	onBeforeUnmount,
-} from "vue";
-import { getDictionary } from "@gram-lang/i18n";
+import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
+import { useI18n } from "./useI18n";
 import {
 	toGanttHTML,
 	attachGanttInteractivity,
 	type GanttInteractivityHandle,
 } from "@gram-lang/renderer";
 
-const lang = inject<Ref<"en" | "fr">>("lang")!;
+const { lang } = useI18n();
 
 const props = defineProps<{
 	jsonData: any;

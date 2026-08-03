@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
 
-import { getDictionary } from "@gram-lang/i18n";
+import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import JsonNode from "./JsonNode.vue";
@@ -17,10 +17,9 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
-const lang = inject<Ref<"en" | "fr">>("lang")!;
 const isDark = inject<Ref<boolean>>("isDark")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
-const t = computed(() => getDictionary(lang.value));
+const { lang, t } = useI18n();
 
 const currentLang = computed(() => {
 	if (props.viewMode === "ast") return "scheme";
