@@ -3,6 +3,7 @@ export interface HomepageCopy {
 	heroTitle: string;
 	heroSubtitle: string;
 	heroDescription: string;
+	metaDescription: string;
 	heroGetStarted: string;
 	heroPlayground: string;
 
@@ -63,6 +64,8 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		heroSubtitle: "An open-source markup language for recipes.",
 		heroDescription:
 			"Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.",
+		metaDescription:
+			"Treat your recipes like code. Gram compiles plain-text instructions into structured, predictable data.",
 		heroGetStarted: "Get Started",
 		heroPlayground: "Playground",
 
@@ -296,6 +299,8 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		heroSubtitle: "Un langage de balisage open-source pour vos recettes.",
 		heroDescription:
 			"Traitez vos recettes comme du code. Conçu pour gérer la complexité de la logique culinaire, Gram compile vos instructions en texte brut vers des données structurées, prévisibles et relationnelles.",
+		metaDescription:
+			"Traitez vos recettes comme du code. Gram compile vos instructions en texte brut vers des données structurées et prévisibles.",
 		heroGetStarted: "Démarrer",
 		heroPlayground: "Playground",
 

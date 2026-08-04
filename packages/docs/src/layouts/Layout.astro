@@ -3,21 +3,21 @@ import "../styles/global.css";
 import Header from "../components/Header.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import {
-  UMAMI_WEBSITE_ID,
-  UMAMI_SCRIPT_SRC,
-  FR_REDIRECT_SCRIPT,
+	UMAMI_WEBSITE_ID,
+	UMAMI_SCRIPT_SRC,
+	FR_REDIRECT_SCRIPT,
 } from "../lib/head-scripts";
 
 export interface Props {
-  title: string;
-  description?: string;
-  currentLang?: string;
+	title: string;
+	description?: string;
+	currentLang?: string;
 }
 
 const {
-  title,
-  description = "Gram Language Documentation",
-  currentLang = "en",
+	title,
+	description = "Gram Language Documentation",
+	currentLang = "en",
 } = Astro.props;
 ---
 
@@ -36,11 +36,13 @@ const {
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url.href} />
-    <meta property="og:image" content={new URL("/logo.svg", Astro.site)} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL("/gram-social-wide.png", Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL("/logo.svg", Astro.site)} />
+    <meta name="twitter:image" content={new URL("/gram-social-wide.png", Astro.site)} />
 
     <!-- Umami Analytics -->
     {
@@ -53,6 +55,7 @@ const {
         />
       )
     }
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script is:inline set:html={FR_REDIRECT_SCRIPT} />
     <script is:inline>
       /* Initialize theme to avoid FOUC and restore user preference */

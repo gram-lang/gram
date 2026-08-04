@@ -11,6 +11,7 @@ import gramGrammar from '@gram-lang/parser/textmate';
 import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT } from './src/lib/head-scripts.ts';
 
 const isProd = process.env.NODE_ENV === 'production';
+const SITE_URL = 'https://gram-lang.org';
 
 // https://astro.build/config
 export default defineConfig({
@@ -125,6 +126,40 @@ export default defineConfig({
         }
       ],
       head: [
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image',
+            content: `${SITE_URL}/gram-social-wide.png`
+          }
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image:width',
+            content: '1200'
+          }
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image:height',
+            content: '630'
+          }
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'twitter:image',
+            content: `${SITE_URL}/gram-social-wide.png`
+          }
+        },
+        {
+          tag: 'script',
+          attrs: {
+            src: 'https://unpkg.com/@phosphor-icons/web'
+          }
+        },
         ...(isProd ? [{
           tag: /** @type {'script'} */ ('script'),
           attrs: {
