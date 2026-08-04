@@ -1,5 +1,6 @@
 ---
 title: "Compilation (@gram-lang/kitchen)"
+description: "How @gram-lang/kitchen compiles the AST into a scheduled recipe with time metrics and a shopping list."
 ---
 
 If `@gram-lang/parser` provides the vocabulary, `@gram-lang/kitchen` provides the logic.

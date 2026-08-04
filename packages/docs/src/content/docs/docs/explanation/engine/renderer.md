@@ -1,5 +1,6 @@
 ---
 title: "Rendering & Output (@gram-lang/renderer)"
+description: "How @gram-lang/renderer turns compiled recipe JSON into Markdown, HTML, print, and Gantt output."
 ---
 
 Once a recipe has been parsed by `@gram-lang/parser`, compiled by `@gram-lang/kitchen`, and (optionally) enriched by `@gram-lang/analyzer`, it's ready to be presented to the user.

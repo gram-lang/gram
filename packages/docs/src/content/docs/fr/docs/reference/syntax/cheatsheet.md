@@ -1,5 +1,6 @@
 ---
 title: "Antisèche (Cheatsheet)"
+description: "Un tableau de référence rapide de la syntaxe Gram : ingrédients, matériel, minuteurs, températures et leurs modificateurs."
 ---
 
 Un guide de référence rapide de la syntaxe Gram.

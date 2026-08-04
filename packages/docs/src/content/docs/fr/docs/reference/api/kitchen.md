@@ -1,5 +1,6 @@
 ---
 title: "@gram-lang/kitchen"
+description: "Le compilateur : transforme une recette parsée en une charge JSON structurée avec liste de courses, minutages et avertissements."
 ---
 
 Le compilateur. Prend un `RecipeAST` (issu de `@gram-lang/parser`) et produit un `CompilationResult` : une charge JSON propre, structurée, prête au rendu — liste de courses, instructions par section avec minutages, un registre global d'ingrédients/matériel, et les éventuels avertissements structurels. Aucune base de données d'ingrédients n'intervient à cette étape ; c'est le travail de `@gram-lang/analyzer`.

@@ -1,5 +1,6 @@
 ---
 title: "Matériel (Cookware)"
+description: "Comment déclarer le matériel de cuisine avec le symbole #, entre nombre d'unités et dimensions physiques."
 ---
 
 Vous pouvez définir les ustensiles et l'équipement nécessaires pour une recette à l'aide du symbole `#`.

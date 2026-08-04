@@ -1,5 +1,6 @@
 ---
 title: "VS Code Extension"
+description: "Overview of the Gram VS Code extension: live preview, nutrition panel, Gantt chart view, and smart ingredient matching."
 ---
 
 The official Gram VS Code extension turns your editor into a dedicated recipe development environment. Powered by the `@gram-lang/language-server`, it provides real-time diagnostics, advanced editing assistance, and dynamic live rendering.

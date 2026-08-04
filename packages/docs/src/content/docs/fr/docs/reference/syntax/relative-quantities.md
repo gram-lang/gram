@@ -1,5 +1,6 @@
 ---
 title: "Quantités Relatives"
+description: "Définissez la quantité d'un ingrédient en pourcentage d'un autre ingrédient ou d'une variable pour équilibrer la recette."
 ---
 
 En cuisine, et particulièrement en pâtisserie, la précision est primordiale. Se reposer sur des quantités fixes peut parfois mener à des recettes déséquilibrées lorsque le rendement des ingrédients crus varie (ex : un citron qui donne plus de jus que prévu).

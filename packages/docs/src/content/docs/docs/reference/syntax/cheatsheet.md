@@ -1,5 +1,6 @@
 ---
 title: "Cheatsheet"
+description: "A quick reference table of Gram's syntax: ingredients, cookware, timers, temperatures, and their modifiers."
 ---
 
 A quick reference guide to the Gram syntax.

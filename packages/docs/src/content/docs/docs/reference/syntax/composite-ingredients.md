@@ -1,5 +1,6 @@
 ---
 title: "Composite Ingredients"
+description: "Group related ingredient parts like zest and juice under one parent so Gram computes an accurate shopping list."
 ---
 
 In real-world cooking, recipes often require specific parts of an `@ingredient`—like the **zest** and **juice** of a lemon. 

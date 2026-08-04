@@ -1,5 +1,6 @@
 ---
 title: "Intermediate Variables"
+description: "Declare reusable sub-components like dough or sauce as intermediate &variables at the step or section level."
 ---
 
 In complex recipes, you often create sub-components (like a dough, a sauce, or a frosting) that are then used in later steps. Gram allows you to declare these sub-components as **Intermediate Variables**.

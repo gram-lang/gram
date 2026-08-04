@@ -1,5 +1,6 @@
 ---
 title: "Relative Quantities"
+description: "Define an ingredient's quantity as a percentage of another ingredient or variable to keep recipes balanced."
 ---
 
 In cooking, and especially in baking, precision is key. Relying on fixed quantities can sometimes lead to unbalanced recipes when the yield of raw ingredients varies (e.g., a lemon yielding more juice than expected).

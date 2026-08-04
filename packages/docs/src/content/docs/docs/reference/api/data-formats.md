@@ -1,5 +1,6 @@
 ---
 title: "Data Formats"
+description: "Reference JSON shapes for the AST, compiled and analyzed recipes, plus the YAML schema for the ingredient database."
 ---
 
 The JSON shapes that flow between pipeline stages, and the YAML schema for the ingredient database. This page complements the per-package references — it's the "what does the data actually look like" companion to their "what functions exist" content.

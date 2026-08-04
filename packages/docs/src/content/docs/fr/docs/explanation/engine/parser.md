@@ -1,5 +1,6 @@
 ---
 title: "Analyse Syntaxique & AST"
+description: "Comment @gram-lang/parser utilise une grammaire OhmJS pour transformer le texte .gram en Arbre Syntaxique Abstrait."
 ---
 
 Le paquet `@gram-lang/parser` est la fondation de l'écosystème Gram. Sa seule responsabilité est de lire le texte brut `.gram` et de le convertir en un Arbre Syntaxique Abstrait (AST).

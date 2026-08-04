@@ -1,5 +1,6 @@
 ---
 title: "@gram-lang/format"
+description: "The canonical code formatter for .gram files, applying 13 deterministic formatting rules used by the CLI and editor tooling."
 ---
 
 Canonical code formatter for `.gram` files, used by both the `gram format` CLI command and the VS Code extension / Language Server. It unifies 13 formatting rules into a single deterministic pass.

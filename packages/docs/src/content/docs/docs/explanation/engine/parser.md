@@ -1,5 +1,6 @@
 ---
 title: "Parsing & AST"
+description: "How @gram-lang/parser uses an OhmJS grammar to turn .gram text into an Abstract Syntax Tree."
 ---
 
 The `@gram-lang/parser` package is the foundation of the Gram ecosystem. Its sole responsibility is to read raw `.gram` text and convert it into an Abstract Syntax Tree (AST).

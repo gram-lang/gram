@@ -1,5 +1,6 @@
 ---
 title: "Extension VS Code"
+description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, diagramme de Gantt et correspondance d'ingrédients."
 ---
 
 L'extension officielle Gram pour VS Code transforme votre éditeur en un environnement de développement dédié aux recettes. Propulsée par le `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance avancée à la rédaction et un rendu dynamique en direct.

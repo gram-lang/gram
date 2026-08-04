@@ -1,5 +1,6 @@
 ---
 title: "Ingrédients Composites"
+description: "Regroupez les parties d'un même ingrédient, comme le zeste et le jus, pour que Gram calcule une liste de courses juste."
 ---
 
 Dans la vraie cuisine, les recettes nécessitent souvent des parties spécifiques d'un `@ingrédient` — comme le **zeste** et le **jus** d'un citron.

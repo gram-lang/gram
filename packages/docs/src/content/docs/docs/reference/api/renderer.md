@@ -1,5 +1,6 @@
 ---
 title: "@gram-lang/renderer"
+description: "Render compiled recipes to Markdown, HTML, print-ready documents, or an interactive Gantt timeline."
 ---
 
 Renders a `CompilationResult` or `AnalyzedCompilationResult` to Markdown, HTML, or a print-optimized standalone HTML document. If you're building a custom UI instead (React, Vue, Svelte), you likely don't need this package at all — consume the JSON directly, see [How to Build a Custom UI](/docs/how-to/build-custom-ui).

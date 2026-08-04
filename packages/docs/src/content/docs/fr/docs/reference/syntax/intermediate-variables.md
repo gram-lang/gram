@@ -1,5 +1,6 @@
 ---
 title: "Variables Intermédiaires"
+description: "Déclarez des sous-composants réutilisables comme une pâte ou une sauce en tant que &variables intermédiaires."
 ---
 
 Dans les recettes complexes, vous créez souvent des sous-composants (comme une pâte, une sauce ou un glaçage) qui sont ensuite utilisés dans des étapes ultérieures. Gram vous permet de déclarer ces sous-composants comme des **Variables Intermédiaires**.

@@ -1,5 +1,6 @@
 ---
 title: "Deep Dive: Scaling"
+description: "How Gram's ScaleEngine resolves global, reverse, and baker's-percentage scaling for recipes."
 ---
 
 Scaling a recipe sounds like a single multiplication, but Gram actually supports three distinct mechanisms that all end up producing one number — a **scale factor** — and then apply it consistently everywhere: the shopping list, every ingredient mention inside step text, and the recipe's `portions` metadata.

@@ -1,5 +1,6 @@
 ---
 title: "@gram-lang/kitchen"
+description: "The compiler: turns a parsed recipe into a structured JSON payload with shopping list, timings, and warnings."
 ---
 
 The compiler. Takes a `RecipeAST` (from `@gram-lang/parser`) and produces a `CompilationResult`: a clean, structured, render-ready JSON payload — shopping list, per-section instructions with timings, a global ingredient/cookware registry, and any structural warnings. No ingredient database is involved at this stage; that's `@gram-lang/analyzer`'s job.

@@ -1,5 +1,6 @@
 ---
 title: "@gram-lang/renderer"
+description: "Rendu des recettes compilées en Markdown, HTML, document prêt à imprimer, ou frise chronologique interactive (Gantt)."
 ---
 
 Effectue le rendu d'un `CompilationResult` ou `AnalyzedCompilationResult` en Markdown, HTML, ou un document HTML autonome optimisé pour l'impression. Si vous construisez une UI personnalisée à la place (React, Vue, Svelte), vous n'avez probablement pas besoin de ce paquet du tout — consommez le JSON directement, voir [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).

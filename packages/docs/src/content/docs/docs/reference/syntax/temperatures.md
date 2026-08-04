@@ -1,5 +1,6 @@
 ---
 title: "Temperatures"
+description: "Define exact or semantic ^temperatures in Celsius or Fahrenheit, with optional names for key steps."
 ---
 
 You can define `^temperature` declarations in your recipes using the `^` symbol.

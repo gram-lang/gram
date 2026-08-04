@@ -1,5 +1,6 @@
 ---
 title: "Formats de Données"
+description: "Référence des formes JSON de l'AST, des recettes compilées et analysées, ainsi que du schéma YAML de la base d'ingrédients."
 ---
 
 Les formes JSON qui circulent entre les étapes du pipeline, et le schéma YAML de la base de données d'ingrédients. Cette page complète les références par paquet — c'est le compagnon « à quoi ressemblent réellement les données » de leur contenu « quelles fonctions existent ».

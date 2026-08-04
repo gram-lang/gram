@@ -1,5 +1,6 @@
 ---
 title: "Cookware"
+description: "How to declare cookware with the # symbol, including quantity counts and physical dimensions."
 ---
 
 You can define the tools and equipment needed for a recipe using the `#` symbol.
