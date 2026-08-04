@@ -261,8 +261,6 @@ function submitScale() {
 <style scoped>
 .gram-options {
   background-color: var(--sl-color-bg-sidebar);
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 8px;
   padding: 16px;
   font-size: 14px;
   width: 340px;
@@ -281,7 +279,7 @@ function submitScale() {
 .options-header {
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--sl-color-hairline);
+  border-bottom: 1px solid var(--sl-color-border);
 }
 
 .options-title {
@@ -319,16 +317,14 @@ function submitScale() {
 .scale-factor-wrapper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 6px;
+  border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
   padding-right: 8px;
   width: fit-content;
-  transition: border-color 0.2s, background-color 0.2s;
 }
 
 .scale-factor-wrapper:focus-within {
-  border-color: var(--sl-color-accent);
+  border-color: var(--sl-color-gray-3);
 }
 
 .scale-factor-input {
@@ -359,15 +355,14 @@ function submitScale() {
 .scale-select {
   width: 100%;
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--sl-color-hairline);
+  border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
   color: var(--sl-color-text);
   font-size: 13px;
   outline: none;
 }
 .scale-select:focus {
-  border-color: var(--sl-color-accent);
+  border-color: var(--sl-color-gray-3);
 }
 
 .scale-inputs {
@@ -378,22 +373,20 @@ function submitScale() {
 
 .scale-input {
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--sl-color-hairline);
+  border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
   color: var(--sl-color-text);
   font-size: 13px;
   outline: none;
 }
 .scale-input:focus {
-  border-color: var(--sl-color-accent);
+  border-color: var(--sl-color-gray-3);
 }
 .scale-input.qty { flex: 2; min-width: 0; }
 .scale-input.unit { flex: 1; min-width: 0; }
 
 .scale-apply-btn {
   padding: 6px 12px;
-  border-radius: 6px;
   background-color: var(--sl-color-accent);
   color: var(--sl-color-bg);
   font-size: 13px;
@@ -423,7 +416,6 @@ function submitScale() {
   color: var(--sl-color-text);
   font-weight: 500;
   line-height: 1.2;
-  transition: color 0.2s;
 }
 
 .option-desc {
@@ -448,7 +440,7 @@ function submitScale() {
   top: -16px;
   width: 2px;
   height: 24px;
-  background-color: var(--sl-color-hairline);
+  background-color: var(--sl-color-border);
   border-bottom-left-radius: 4px;
 }
 
@@ -459,7 +451,7 @@ function submitScale() {
   top: 8px;
   width: 12px;
   height: 2px;
-  background-color: var(--sl-color-hairline);
+  background-color: var(--sl-color-border);
 }
 
 .select-wrapper::after {

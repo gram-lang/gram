@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, inject, type Ref } from "vue";
 
 const props = defineProps<{
 	data: any;
@@ -7,6 +7,8 @@ const props = defineProps<{
 	isLast?: boolean;
 	initialExpanded?: boolean;
 }>();
+
+const isDark = inject<Ref<boolean>>("isDark", ref(true));
 
 const isExpanded = ref(props.initialExpanded !== false);
 
@@ -43,7 +45,7 @@ const count = computed(() => keys.value.length);
 </script>
 
 <template>
-  <div class="json-node">
+  <div class="json-node" :class="isDark ? 'is-dark' : 'is-light'">
     <!-- Primitives and Empty Objects/Arrays -->
     <template v-if="!isObjectOrArray || isEmpty">
       <div class="json-line">
@@ -99,8 +101,20 @@ const count = computed(() => keys.value.length);
 <style scoped>
 .json-node {
   font-family: var(--sl-font-mono);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
+}
+
+.json-node.is-dark {
+  --json-key-color: #79b8ff;
+  --json-str-color: #9ecbff;
+  --json-punct-color: #e1e4e8;
+}
+
+.json-node.is-light {
+  --json-key-color: #005cc5;
+  --json-str-color: #032f62;
+  --json-punct-color: #24292e;
 }
 
 .json-line {
@@ -131,11 +145,20 @@ const count = computed(() => keys.value.length);
   margin-right: 4px;
 }
 
-.json-key { color: var(--sl-color-accent); }
-.json-string { color: var(--sl-color-green); }
-.json-number { color: var(--sl-color-orange); }
-.json-boolean { color: var(--sl-color-red); }
-.json-null { color: var(--sl-color-gray-4); }
-.json-colon, .json-comma, .json-bracket, .json-brace { color: var(--sl-color-text); }
+.json-key,
+.json-number,
+.json-boolean,
+.json-null {
+  color: var(--json-key-color);
+}
+.json-string {
+  color: var(--json-str-color);
+}
+.json-colon,
+.json-comma,
+.json-bracket,
+.json-brace {
+  color: var(--json-punct-color);
+}
 .json-count { color: var(--sl-color-gray-4); font-style: italic; margin: 0 4px; }
 </style>

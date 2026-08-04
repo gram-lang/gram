@@ -39,6 +39,7 @@
 	--sl-color-gray-4: hsl(224, 7%, 36%);
 	--sl-color-gray-5: hsl(224, 10%, 23%);
 	--sl-color-gray-6: hsl(224, 14%, 16%);
+	--sl-color-gray-7: hsl(224, 14%, 7%);
 	--sl-color-bg: hsl(224, 10%, 10%);
 	--sl-color-bg-nav: var(--sl-color-gray-6);
 	--sl-color-bg-sidebar: var(--sl-color-gray-6);
@@ -100,8 +101,8 @@
 	--sl-color-hairline-shade: var(--sl-color-gray-6);
 	--sl-color-text: hsl(224, 10%, 23%);
 	--sl-color-text-accent: var(--sl-color-accent);
-	--sl-color-orange: hsl(41, 90%, 60%);
-	--sl-color-green: hsl(101, 90%, 46%);
+	--sl-color-orange: hsl(32, 100%, 42%);
+	--sl-color-green: hsl(91, 100%, 28%);
 	--sl-color-green-low: hsl(101, 85%, 90%);
 	--sl-color-red: hsl(339, 90%, 60%);
 	--sl-color-red-high: hsl(339, 80%, 30%);

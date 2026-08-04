@@ -159,9 +159,9 @@ function handlePreviewClick(e: MouseEvent) {
 
 <template>
   <div class="gram-output">
-    <div class="output-header" v-if="['json', 'ast', 'markdown'].includes(viewMode)">
-      <span class="output-title">{{ viewMode.toUpperCase() }}</span>
-      <button class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
+    <div class="output-header">
+      <span class="output-title">{{ viewMode.replace('-', ' ') }}</span>
+      <button v-if="['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
         <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
@@ -203,17 +203,20 @@ function handlePreviewClick(e: MouseEvent) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--sl-color-bg-sidebar);
+  background-color: var(--sl-color-bg);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .output-header {
+  padding-inline:12px;
+  background-color: var(--sl-color-gray-7);
+  border-bottom: 1px solid var(--sl-color-border);
+  height: 42px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background-color: var(--sl-color-bg-inline-code);
-  border-bottom: 1px solid var(--sl-color-hairline);
+  justify-content: space-between;
 }
 
 .output-title {
@@ -228,26 +231,25 @@ function handlePreviewClick(e: MouseEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
   color: var(--sl-color-gray-3);
-  transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
-  border: none;
+  border: 1px solid var(--sl-color-border);
   background: transparent;
 }
 
 .copy-btn:hover {
-  background-color: var(--sl-color-bg-sidebar);
-  color: var(--sl-color-text);
+	border-color: var(--sl-color-gray-3);
+  color: var(--sl-color-white);
 }
 
 .output-container {
   flex: 1;
   overflow: auto;
   position: relative;
-  background-color: var(--sl-color-bg-inline-code);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .output-code {
@@ -266,10 +268,23 @@ function handlePreviewClick(e: MouseEvent) {
   word-break: break-word;
 }
 
-.output-tree, .output-preview{
+.output-tree {
   padding: 16px;
   background-color: var(--sl-color-bg);
   min-height: 100%;
+  display: inline-block;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.output-preview{
+  padding: 16px;
+  background-color: var(--sl-color-bg);
+  min-height: 100%;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .output-gantt{

@@ -191,9 +191,12 @@ defineExpose({
 }
 
 .editor-header {
-  padding: 8px 12px;
-  background-color: var(--sl-color-bg-inline-code);
-  border-bottom: 1px solid var(--sl-color-hairline);
+  padding-inline:12px;
+  background-color: var(--sl-color-gray-7);
+  border-bottom: 1px solid var(--sl-color-border);
+  height: 42px;
+  display: flex;
+  align-items: center;
 }
 
 .editor-title {

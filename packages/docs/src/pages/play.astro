@@ -15,9 +15,12 @@ import GramPlayground from "../components/playground/GramPlayground.vue";
 
 <style>
   .playground-wrapper {
-    max-width: 1400px;
+    max-width: calc(1400px + 3rem);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.5rem;
     height: 100%;
   }
 </style>

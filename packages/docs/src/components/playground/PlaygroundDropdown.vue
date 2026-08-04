@@ -79,15 +79,17 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  border-radius: 6px;
   background-color: transparent;
   color: var(--sl-color-gray-3);
   font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: color 0.25s, background-color 0.25s;
-  border: 1px solid var(--sl-color-hairline);
+  border: 1px solid var(--sl-color-border);
   min-width: 0;
+}
+
+.dropdown-header:hover{
+  border: 1px solid var(--sl-color-gray-3);
 }
 
 .dropdown-label {
@@ -105,7 +107,6 @@ onUnmounted(() => {
   margin-left: 8px;
   flex-shrink: 0;
   color: var(--sl-color-gray-4);
-  transition: transform 0.25s, color 0.25s;
 }
 
 .dropdown-header:hover .dropdown-icon, .dropdown-header.is-open .dropdown-icon {
@@ -123,12 +124,10 @@ onUnmounted(() => {
   min-width: 100%;
   max-width: calc(100vw - 32px);
   width: max-content;
-  background-color: var(--sl-color-bg-nav);
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: 8px;
-  box-shadow: var(--sl-shadow-lg);
+  background-color: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-border);
   z-index: 50;
-  padding: 6px 0;
+  padding: 0;
   overflow-y: auto;
   max-height: 300px;
 }
@@ -138,18 +137,17 @@ onUnmounted(() => {
   cursor: pointer;
   color: var(--sl-color-gray-3);
   font-weight: 500;
-  transition: color 0.25s, background-color 0.25s;
   white-space: nowrap;
 }
 
 .dropdown-item:hover {
-  color: var(--sl-color-accent);
-  background-color: var(--sl-color-gray-6);
+  background-color: var(--sl-color-gray-7);
 }
 
 .dropdown-item.active {
-  color: var(--sl-color-accent);
-  background-color: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+  background-color: var(--sl-color-gray-7);
+  font-weight:bold;
 }
 
 @media (max-width: 640px) {
