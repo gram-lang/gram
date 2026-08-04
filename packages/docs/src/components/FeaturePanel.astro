@@ -4,7 +4,6 @@ import { Icon } from "@astrojs/starlight/components";
 
 interface Props {
 	id: string;
-	active?: boolean;
 	desc: string;
 	link: string;
 	learnMoreText: string;
@@ -16,7 +15,6 @@ interface Props {
 
 const {
 	id,
-	active = false,
 	desc,
 	link,
 	learnMoreText,
@@ -27,7 +25,7 @@ const {
 } = Astro.props;
 ---
 
-<div class={`feature-panel${active ? " active" : ""}`} id={id}>
+<div class="feature-panel" id={id}>
 	<p class="feature-desc">
 		{desc}
 		<a href={link} class="learn-more-link" style="margin-left: 0.5rem;">
@@ -50,7 +48,9 @@ const {
 			<div class="modern-output-pane">
 				<div class="output-header">
 					<div class="view-toggles pill-toggles">
-						<button class="pill-btn active" data-view="preview">Preview</button>
+						<button class="pill-btn active" data-view="preview"
+							>Preview</button
+						>
 						<button class="pill-btn" data-view="json">JSON</button>
 					</div>
 				</div>
@@ -59,7 +59,11 @@ const {
 				</div>
 				<div class="view-content json-view">
 					<div class="code-block json-block">
-						<Code code={outputCode} lang="json" themes={codeThemes} />
+						<Code
+							code={outputCode}
+							lang="json"
+							themes={codeThemes}
+						/>
 					</div>
 				</div>
 			</div>
@@ -69,28 +73,23 @@ const {
 
 <style>
 	.feature-panel {
-		display: none;
+		display: flex;
 		flex-direction: column;
 	}
 
-	.feature-panel.active {
-		display: flex;
-	}
-
 	.feature-desc {
-		text-align: center;
 		font-size: 1.1rem;
 		color: var(--sl-color-gray-3);
-		max-width: 650px;
-		margin: 0 auto 3rem auto;
+		margin-bottom: 1.5rem;
 		line-height: 1.6;
-		text-wrap: balance;
+		margin-top: 0.5rem;
 	}
 
 	.feature-columns {
 		display: flex;
 		gap: 1rem;
 		align-items: stretch;
+		margin-block-end: 3rem;
 	}
 
 	.col-arrow {
@@ -126,17 +125,18 @@ const {
 	}
 
 	.code-block {
-		border: 1px solid var(--sl-color-hairline);
-		border-radius: 10px;
+		border: 1px solid var(--sl-color-border);
 		overflow: hidden;
-		font-size: 1rem;
-		box-shadow: var(--shadow-elevation-medium);
+		font-size: 0.9rem;
 	}
 
 	.code-header {
 		background-color: var(--sl-color-gray-7);
-		border-bottom: 1px solid var(--sl-color-hairline);
-		padding: 0.6rem 1rem;
+		border-bottom: 1px solid var(--sl-color-border);
+		padding: 0 1rem;
+		height: 42px;
+		display: flex;
+		align-items: center;
 	}
 
 	.filename {
@@ -161,51 +161,42 @@ const {
 	.learn-more-link {
 		display: inline-block;
 		color: var(--sl-color-text-accent);
-		text-decoration: none;
 		font-weight: 600;
-		font-size: 0.95rem;
-	}
-	.learn-more-link:hover {
-		text-decoration: underline;
 	}
 
 	/* Output Pane */
 	.modern-output-pane {
 		background-color: var(--sl-color-black);
-		border: 1px solid var(--sl-color-hairline);
-		border-radius: 10px;
+		border: 1px solid var(--sl-color-border);
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		box-shadow: var(--shadow-elevation-medium);
 	}
 
 	.output-header {
 		background-color: var(--sl-color-gray-7);
-		border-bottom: 1px solid var(--sl-color-hairline);
-		padding: 0.4rem 1rem;
+		border-bottom: 1px solid var(--sl-color-border);
+		padding: 0 1rem;
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
+		height: 42px;
 	}
 
 	.pill-toggles {
 		display: flex;
-		background-color: var(--sl-color-bg);
-		border-radius: 6px;
-		padding: 3px;
-		border: 1px solid var(--sl-color-hairline);
+		gap: 1rem;
 	}
 
 	.pill-btn {
 		background: transparent;
 		border: none;
-		color: var(--sl-color-text-accent);
-		padding: 4px 1rem;
+		border-bottom: 2px solid transparent;
+		color: var(--sl-color-gray-3);
+		padding: 0.2rem 0;
 		font-size: 0.8rem;
 		font-weight: 600;
-		border-radius: 4px;
 		cursor: pointer;
 	}
 
@@ -214,8 +205,8 @@ const {
 	}
 
 	.pill-btn.active {
-		background-color: var(--sl-color-gray-6);
-		color: var(--sl-color-white);
+		color: var(--sl-color-text-accent);
+		border-bottom-color: var(--sl-color-text-accent);
 	}
 
 	.view-content {

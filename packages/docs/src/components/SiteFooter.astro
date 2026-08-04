@@ -19,7 +19,8 @@ const t = {
     cli: "CLI",
     vscode: "VSCode Extension",
     kitchenApi: "Kitchen API",
-    copyright: "© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Brittany</a>, Europe 🇪🇺.",
+    copyright:
+      "© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Brittany</a>, Europe 🇪🇺.",
   },
   fr: {
     tagline: "Un langage de balisage open-source pour la précision culinaire.",
@@ -36,7 +37,8 @@ const t = {
     cli: "CLI",
     vscode: "Extension VSCode",
     kitchenApi: "API Kitchen",
-    copyright: "© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Bretagne</a>, Europe 🇪🇺.",
+    copyright:
+      "© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Bretagne</a>, Europe 🇪🇺.",
   },
 };
 
@@ -55,7 +57,7 @@ const prefix = currentLang === "fr" ? "/fr" : "";
         </a>
         <p class="tagline">{langText.tagline}</p>
         <div class="social-wrapper">
-          <SocialLinks />
+          <SocialLinks variant="footer" />
         </div>
       </div>
 
@@ -65,7 +67,8 @@ const prefix = currentLang === "fr" ? "/fr" : "";
         <ul>
           <li>
             <a href={`${prefix}/docs/explanation/philosophy`}
-              >{langText.documentation}</a>
+              >{langText.documentation}</a
+            >
           </li>
           <li><a href={`${prefix}/play`}>{langText.playground}</a></li>
           <li><a href={`${prefix}/docs/changelog`}>{langText.changelog}</a></li>
@@ -78,19 +81,23 @@ const prefix = currentLang === "fr" ? "/fr" : "";
         <ul>
           <li>
             <a href={`${prefix}/docs/explanation/philosophy`}
-              >{langText.designPhilosophy}</a>
+              >{langText.designPhilosophy}</a
+            >
           </li>
           <li>
             <a href={`${prefix}/docs/explanation/alap-scheduling`}
-              >{langText.alapScheduling}</a>
+              >{langText.alapScheduling}</a
+            >
           </li>
           <li>
             <a href={`${prefix}/docs/how-to/scale-recipes/`}
-              >{langText.scalingRecipes}</a>
+              >{langText.scalingRecipes}</a
+            >
           </li>
           <li>
             <a href={`${prefix}/docs/how-to/manage-database/`}
-              >{langText.localDatabase}</a>
+              >{langText.localDatabase}</a
+            >
           </li>
         </ul>
       </div>
@@ -104,28 +111,29 @@ const prefix = currentLang === "fr" ? "/fr" : "";
           </li>
           <li>
             <a href={`${prefix}/docs/reference/tooling/vscode-extension`}
-              >{langText.vscode}</a>
+              >{langText.vscode}</a
+            >
           </li>
           <li>
             <a href={`${prefix}/docs/reference/api/kitchen`}
-              >{langText.kitchenApi}</a>
+              >{langText.kitchenApi}</a
+            >
           </li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <p set:html={langText.copyright}></p>
+      <p set:html={langText.copyright} />
     </div>
   </div>
 </footer>
 
 <style>
   .gram-footer {
-    background-color: var(--sl-color-bg-nav);
-    border-top: 1px solid var(--sl-color-hairline);
+    background-color: #111111;
     padding: 4rem 1.5rem 1.5rem;
-    color: var(--sl-color-text);
+    color: #e5e7eb;
     font-family: var(--sl-font);
     margin-top: auto; /* Push to bottom if content is short */
   }
@@ -160,7 +168,7 @@ const prefix = currentLang === "fr" ? "/fr" : "";
   }
 
   .footer-col h3 {
-    color: var(--sl-color-white);
+    color: #ffffff;
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -177,14 +185,12 @@ const prefix = currentLang === "fr" ? "/fr" : "";
   }
 
   .footer-col a {
-    color: var(--sl-color-gray-3);
-    text-decoration: none;
+    color: #9ca3af;
     font-size: 0.95rem;
-    transition: color 0.2s ease;
   }
 
   .footer-col a:hover {
-    color: var(--gram-orange);
+    color: var(--gram-orange, #ff5a00);
   }
 
   .brand-col .footer-logo {
@@ -192,7 +198,7 @@ const prefix = currentLang === "fr" ? "/fr" : "";
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
-    color: var(--sl-color-white);
+    color: #ffffff;
     font-weight: 700;
     font-size: 1.5rem;
     margin-bottom: 1rem;
@@ -203,29 +209,20 @@ const prefix = currentLang === "fr" ? "/fr" : "";
   }
 
   .brand-col .tagline {
-    color: var(--sl-color-gray-3);
+    color: #9ca3af;
     font-size: 0.95rem;
     line-height: 1.5;
     margin-bottom: 1.5rem;
     max-width: 300px;
   }
 
-  .social-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
   .footer-bottom {
-    border-top: 1px solid var(--sl-color-hairline);
     padding-top: 1.5rem;
-    display: flex;
-    justify-content: center;
-    text-align: center;
+    border-top: 1px solid #333333;
   }
 
   .footer-bottom p {
-    color: var(--sl-color-gray-4);
+    color: #9ca3af;
     font-size: 0.85rem;
     margin: 0;
   }

@@ -29,6 +29,7 @@ export default defineConfig({
     starlight({
       plugins: [starlightThemeNova()],
       title: 'Gram',
+      disable404Route: true,
       customCss: [
         './src/styles/global.css',
       ],

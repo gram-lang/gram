@@ -45,6 +45,7 @@
 	--sl-color-bg-inline-code: var(--sl-color-gray-5);
 	--sl-color-hairline: var(--sl-color-gray-6);
 	--sl-color-hairline-shade: hsl(224, 10%, 10%);
+	--sl-color-border: var(--sl-color-gray-5);
 	--sl-color-text: hsl(224, 6%, 77%);
 	--sl-color-text-accent: var(--sl-color-accent-high);
 	--sl-color-orange: hsl(41, 82%, 63%);
@@ -90,6 +91,7 @@
 	--sl-color-gray-4: hsl(224, 6%, 56%);
 	--sl-color-gray-6: hsl(224, 20%, 94%);
 	--sl-color-gray-7: hsl(224, 19%, 97%);
+	--sl-color-border: #cecece;
 	--sl-color-bg: hsl(0, 0%, 100%);
 	--sl-color-bg-nav: var(--sl-color-gray-7);
 	--sl-color-bg-sidebar: var(--sl-color-bg);
@@ -143,8 +145,11 @@ starlight-lang-select label {
 	--sl-select-width: 7.5em !important;
 }
 
-starlight-lang-select select {
+starlight-lang-select select,
+gram-theme-select select {
 	font-size: 0.85rem !important;
+	padding-inline: 0.5rem 0;
+	padding-block: 0.45rem;
 }
 
 :root[data-theme="light"] body {

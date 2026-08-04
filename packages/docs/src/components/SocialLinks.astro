@@ -1,8 +1,12 @@
 ---
+export interface Props {
+  variant?: "header" | "footer";
+}
 
+const { variant = "header" } = Astro.props;
 ---
 
-<div class="social-links">
+<div class:list={["social-links", variant]}>
   <a
     href="https://git.gram-lang.org/gram-lang/gram"
     title="Forgejo (Primary Repository)"
@@ -85,15 +89,26 @@
     gap: 0.35rem;
     align-items: center;
   }
-  .social-links a {
+
+  .social-links.header {
     color: var(--sl-color-gray-3);
+  }
+  .social-links.header a:hover {
+    color: var(--sl-color-white);
+  }
+
+  .social-links.footer {
+    color: white;
+  }
+  .social-links.footer a:hover {
+    color: var(--sl-color-text-accent);
+  }
+
+  .social-links a {
+    color: currentColor;
     display: flex;
     align-items: center;
     padding: 0.5rem;
     border-radius: 5px;
-  }
-  .social-links a:hover {
-    color: var(--sl-color-white);
-    background-color: var(--sl-color-gray-6);
   }
 </style>

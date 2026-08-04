@@ -45,7 +45,12 @@ const {
     <!-- Umami Analytics -->
     {
       import.meta.env.PROD && (
-        <script is:inline defer src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} />
+        <script
+          is:inline
+          defer
+          src={UMAMI_SCRIPT_SRC}
+          data-website-id={UMAMI_WEBSITE_ID}
+        />
       )
     }
     <script is:inline set:html={FR_REDIRECT_SCRIPT} />
@@ -96,6 +101,5 @@ const {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-top: 64px;
   }
 </style>

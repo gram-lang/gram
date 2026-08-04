@@ -18,21 +18,22 @@ if (currentLang === "fr") {
 }
 
 const options = [
-	{ value: enUrl, selected: currentLang === "en", label: "English" },
-	{ value: frUrl, selected: currentLang === "fr", label: "Français" },
+	{ value: enUrl, selected: currentLang === "en", label: "English (en-US)" },
+	{ value: frUrl, selected: currentLang === "fr", label: "Français (fr-FR)" },
 ];
 ---
+
 <starlight-lang-select>
-  <Select icon="translate" label="Language" options={options} width="7.5em" />
+	<Select icon="translate" label="Language" options={options} />
 </starlight-lang-select>
 
 <script>
 	class StarlightLanguageSelect extends HTMLElement {
 		constructor() {
 			super();
-			const select = this.querySelector('select');
+			const select = this.querySelector("select");
 			if (select) {
-				select.addEventListener('change', (e) => {
+				select.addEventListener("change", (e) => {
 					if (e.currentTarget instanceof HTMLSelectElement) {
 						window.location.pathname = e.currentTarget.value;
 					}
@@ -40,9 +41,27 @@ const options = [
 			}
 		}
 	}
-  // Prevent duplicate definition if this runs alongside Starlight
-  if (!customElements.get('starlight-lang-select')) {
-	  customElements.define('starlight-lang-select', StarlightLanguageSelect);
-  }
+	// Prevent duplicate definition if this runs alongside Starlight
+	if (!customElements.get("starlight-lang-select")) {
+		customElements.define("starlight-lang-select", StarlightLanguageSelect);
+	}
 </script>
 
+<style>
+	starlight-lang-select :global(label) {
+		--sl-label-icon-size: 0px;
+		border: 1px solid var(--sl-color-border);
+		color: var(--sl-color-gray-3);
+		width: 120px;
+		padding-left: 0.5rem;
+	}
+
+	starlight-lang-select :global(.label-icon) {
+		display: none;
+	}
+
+	starlight-lang-select :global(label:hover) {
+		border-color: var(--sl-color-gray-4);
+		color: var(--sl-color-white);
+	}
+</style>

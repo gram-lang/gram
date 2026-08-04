@@ -7,7 +7,10 @@ import FeaturePanel from "./FeaturePanel.astro";
 
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
-const codeThemes: Record<string, any> = { light: "github-light", dark: "github-dark" };
+const codeThemes: Record<string, any> = {
+  light: "github-light",
+  dark: "github-dark",
+};
 ---
 
 <Layout title="Gram" description={t.heroDescription} currentLang={lang}>
@@ -55,16 +58,13 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   </section>
 
   <!-- Philosophy -->
-  <section class="section philosophy alt-bg" aria-labelledby="philosophy-heading">
+  <section
+    class="section philosophy alt-bg"
+    aria-labelledby="philosophy-heading"
+  >
     <div class="homepage-container">
       <h2 id="philosophy-heading">{t.whyGram}</h2>
-      {
-        t.whyGramDesc && (
-          <p class="section-desc" style="margin-top: -0.5rem;">
-            {t.whyGramDesc}
-          </p>
-        )
-      }
+      {t.whyGramDesc && <p class="section-desc">{t.whyGramDesc}</p>}
       <div class="grid">
         {
           t.philosophy.map(
@@ -104,28 +104,12 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
       </p>
 
       <div class="modern-features-container">
-        <!-- Horizontal Tabs -->
-        <div class="features-tabs">
-          <button
-            class="feature-tab-btn active"
-            data-target="feature-nutrition"
-          >
-            {t.tabNutritionTitle}
-          </button>
-          <button class="feature-tab-btn" data-target="feature-schedule">
-            {t.tabScheduleTitle}
-          </button>
-          <button class="feature-tab-btn" data-target="feature-scale">
-            {t.tabScaleTitle}
-          </button>
-        </div>
-
         <!-- Content Area -->
         <div class="features-content">
           <!-- Feature: Nutrition -->
+          <h3 class="feature-title">{t.tabNutritionTitle}</h3>
           <FeaturePanel
             id="feature-nutrition"
-            active
             desc={t.tabNutritionDesc}
             link={t.tabNutritionLink}
             learnMoreText={t.learnMore}
@@ -134,91 +118,81 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
             gramLang={gramLang}
             codeThemes={codeThemes}
           >
-                    <div class="modern-mockup-card nut-card-mock">
-                      <div class="mockup-steps">
-                        <ol class="gram-steps">
-                          <li>
-                            <span class="action"
-                              >{lang === "fr" ? "Fouetter" : "Whisk"}</span
-                            >
-                            {lang === "fr" ? "la " : ""}<strong
-                              >{
-                                lang === "fr" ? "crème liquide" : "heavy cream"
-                              }</strong
-                            > (240g)
-                            {lang === "fr" ? "et le " : " and "}
-                            <strong
-                              >{
-                                lang === "fr" ? "sucre glace" : "powdered sugar"
-                              }</strong
-                            > (25g)
-                            {
-                              lang === "fr"
-                                ? " jusqu'à obtenir des pics souples."
-                                : " until soft peaks form."
-                            }
-                          </li>
-                          <li>
-                            <span class="action"
-                              >{lang === "fr" ? "Incorporer" : "Fold"}</span
-                            >
-                            {
-                              lang === "fr"
-                                ? "Ajouter délicatement l'"
-                                : "Gently incorporate "
-                            }<strong
-                              >{
-                                lang === "fr"
-                                  ? "extrait de vanille"
-                                  : "vanilla extract"
-                              }</strong
-                            > (4g).
-                          </li>
-                        </ol>
-                      </div>
-                      <div class="nut-panel-mock">
-                        <div class="nut-header-mock">
-                          Nutrition <span>EST.</span>
-                        </div>
-                        <div class="nut-grid-mock">
-                          <div class="nut-item-mock">
-                            <span class="label">Calories</span><strong
-                              >925 kcal</strong
-                            >
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label">Carbs</span><strong>26 g</strong
-                            >
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label">Fat</span><strong>88 g</strong>
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label">Protein</span><strong
-                              >6 g</strong
-                            >
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label"
-                              >{lang === "fr" ? "Sucres" : "Sugar"}</span
-                            ><strong>25 g</strong>
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label"
-                              >{lang === "fr" ? "Fibres" : "Fiber"}</span
-                            ><strong>0 g</strong>
-                          </div>
-                          <div class="nut-item-mock">
-                            <span class="label">Sodium</span><strong
-                              >42 mg</strong
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </FeaturePanel>
+            <div class="modern-mockup-card nut-card-mock">
+              <div class="mockup-steps">
+                <ol class="gram-steps">
+                  <li>
+                    <span class="action"
+                      >{lang === "fr" ? "Fouetter" : "Whisk"}</span
+                    >
+                    {lang === "fr" ? "la " : ""}<strong
+                      >{lang === "fr" ? "crème liquide" : "heavy cream"}</strong
+                    > (240g)
+                    {lang === "fr" ? "et le " : " and "}
+                    <strong
+                      >{
+                        lang === "fr" ? "sucre glace" : "powdered sugar"
+                      }</strong
+                    > (25g)
+                    {
+                      lang === "fr"
+                        ? " jusqu'à obtenir des pics souples."
+                        : " until soft peaks form."
+                    }
+                  </li>
+                  <li>
+                    <span class="action"
+                      >{lang === "fr" ? "Incorporer" : "Fold"}</span
+                    >
+                    {
+                      lang === "fr"
+                        ? "Ajouter délicatement l'"
+                        : "Gently incorporate "
+                    }<strong
+                      >{
+                        lang === "fr" ? "extrait de vanille" : "vanilla extract"
+                      }</strong
+                    > (4g).
+                  </li>
+                </ol>
+              </div>
+              <div class="nut-panel-mock">
+                <div class="nut-header-mock">
+                  Nutrition <span>EST.</span>
+                </div>
+                <div class="nut-grid-mock">
+                  <div class="nut-item-mock">
+                    <span class="label">Calories</span><strong>925 kcal</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label">Carbs</span><strong>26 g</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label">Fat</span><strong>88 g</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label">Protein</span><strong>6 g</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label"
+                      >{lang === "fr" ? "Sucres" : "Sugar"}</span
+                    ><strong>25 g</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label"
+                      >{lang === "fr" ? "Fibres" : "Fiber"}</span
+                    ><strong>0 g</strong>
+                  </div>
+                  <div class="nut-item-mock">
+                    <span class="label">Sodium</span><strong>42 mg</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FeaturePanel>
 
           <!-- Feature: Schedule -->
+          <h3 class="feature-title">{t.tabScheduleTitle}</h3>
           <FeaturePanel
             id="feature-schedule"
             desc={t.tabScheduleDesc}
@@ -229,92 +203,86 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
             gramLang={gramLang}
             codeThemes={codeThemes}
           >
-                    <div class="modern-mockup-card timeline-mockup-card">
-                      <div class="gantt-header-mock">
-                        <span
-                          >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
-                            >17m</strong
-                          ></span
-                        >
-                        <span
-                          >{lang === "fr" ? "Actif" : " · Active"}: <strong
-                            >7m</strong
-                          ></span
-                        >
-                      </div>
-                      <div class="gantt-tracks-container">
-                        <div class="gantt-track-mock" style="height: 120px;">
-                          <div class="track-label-mock">
-                            {lang === "fr" ? "Actions" : "Actions"}
-                          </div>
-                          <div class="track-content-mock">
-                            <div
-                              class="time-block-mock passive-mock"
-                              style="width: 26%; left: 0; top: 8px; border: none;"
-                            >
-                              <span
-                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                                >Prep Time</span
-                              >
-                            </div>
-                            <div
-                              class="time-block-mock active-mock"
-                              style="width: 26%; left: 52%; top: 44px;"
-                            >
-                              <span
-                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                                >{lang === "fr" ? "Sauté" : "Sauté"}</span
-                              >
-                            </div>
-                            <div
-                              class="time-block-mock active-mock"
-                              style="width: 10%; left: 78%; top: 80px;"
-                            >
-                              <span
-                                style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                                >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
-                              >
-                            </div>
-                          </div>
-                        </div>
-                        <div class="gantt-track-mock">
-                          <div class="track-label-mock">
-                            {lang === "fr" ? "Bouillir" : "Boiling"}
-                          </div>
-                          <div class="track-content-mock">
-                            <div
-                              class="time-block-mock passive-mock"
-                              style="width: 52%; left: 26%;"
-                            >
-                              <span class="block-label-mock">10m</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          class="gantt-track-mock"
-                          style="height: 36px; border-bottom: none;"
-                        >
-                          <div
-                            class="track-label-mock"
-                            style="border-right: none;"
-                          >
-                          </div>
-                          <div
-                            class="track-content-mock"
-                            style="position: relative;"
-                          >
-                            <div class="gantt-tick" style="left: 0%;">0m</div>
-                            <div class="gantt-tick" style="left: 26%;">5m</div>
-                            <div class="gantt-tick" style="left: 52%;">10m</div>
-                            <div class="gantt-tick" style="left: 78%;">15m</div>
-                            <div class="gantt-tick" style="left: 88%;">17m</div>
-                          </div>
-                        </div>
-                      </div>
+            <div class="modern-mockup-card timeline-mockup-card">
+              <div class="gantt-header-mock">
+                <span
+                  >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
+                    >17m</strong
+                  ></span
+                >
+                <span
+                  >{lang === "fr" ? "Actif" : " · Active"}: <strong>7m</strong
+                  ></span
+                >
+              </div>
+              <div class="gantt-tracks-container">
+                <div class="gantt-track-mock" style="height: 120px;">
+                  <div class="track-label-mock">
+                    {lang === "fr" ? "Actions" : "Actions"}
+                  </div>
+                  <div class="track-content-mock">
+                    <div
+                      class="time-block-mock passive-mock"
+                      style="width: 26%; left: 0; top: 8px; border: none;"
+                    >
+                      <span
+                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                        >Prep Time</span
+                      >
                     </div>
-                  </FeaturePanel>
+                    <div
+                      class="time-block-mock active-mock"
+                      style="width: 26%; left: 52%; top: 44px;"
+                    >
+                      <span
+                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                        >{lang === "fr" ? "Sauté" : "Sauté"}</span
+                      >
+                    </div>
+                    <div
+                      class="time-block-mock active-mock"
+                      style="width: 10%; left: 78%; top: 80px;"
+                    >
+                      <span
+                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                        >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="gantt-track-mock">
+                  <div class="track-label-mock">
+                    {lang === "fr" ? "Bouillir" : "Boiling"}
+                  </div>
+                  <div class="track-content-mock">
+                    <div
+                      class="time-block-mock passive-mock"
+                      style="width: 52%; left: 26%;"
+                    >
+                      <span class="block-label-mock">10m</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="gantt-track-mock"
+                  style="height: 36px; border-bottom: none;"
+                >
+                  <div class="track-label-mock" style="border-right: none;">
+                  </div>
+                  <div class="track-content-mock" style="position: relative;">
+                    <div class="gantt-tick" style="left: 0%;">0m</div>
+                    <div class="gantt-tick" style="left: 26%;">5m</div>
+                    <div class="gantt-tick" style="left: 52%;">10m</div>
+                    <div class="gantt-tick" style="left: 78%;">15m</div>
+                    <div class="gantt-tick" style="left: 88%;">17m</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FeaturePanel>
 
           <!-- Feature: Scale -->
+          <h3 class="feature-title">{t.tabScaleTitle}</h3>
           <FeaturePanel
             id="feature-scale"
             desc={t.tabScaleDesc}
@@ -325,55 +293,47 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
             gramLang={gramLang}
             codeThemes={codeThemes}
           >
-                    <div class="modern-mockup-card tabular-mockup">
-                      <div class="tab-row reference-row">
-                        <span class="tab-name"
-                          ><strong
-                            >{
-                              lang === "fr" ? "Farine T65" : "Bread Flour"
-                            }</strong
-                          > - 400g</span
-                        >
-                        <span class="tab-val tab-val-ref">100%</span>
-                      </div>
-                      <div class="tab-row reference-row">
-                        <span class="tab-name"
-                          ><strong
-                            >{
-                              lang === "fr" ? "Farine Complète" : "Whole Wheat"
-                            }</strong
-                          > - 100g</span
-                        >
-                        <span class="tab-val">25%</span>
-                      </div>
-                      <div class="tab-row">
-                        <span class="tab-name"
-                          ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
-                        >
-                        <span class="tab-val">75%</span>
-                      </div>
-                      <div class="tab-row">
-                        <span class="tab-name"
-                          ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong
-                          > - 100g</span
-                        >
-                        <span class="tab-val">20%</span>
-                      </div>
-                      <div class="tab-row">
-                        <span class="tab-name"
-                          ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
-                        >
-                        <span class="tab-val">2%</span>
-                      </div>
-                    </div>
-                  </FeaturePanel>
+            <div class="modern-mockup-card tabular-mockup">
+              <div class="tab-row reference-row">
+                <span class="tab-name"
+                  ><strong
+                    >{lang === "fr" ? "Farine T65" : "Bread Flour"}</strong
+                  > - 400g</span
+                >
+                <span class="tab-val tab-val-ref">100%</span>
+              </div>
+              <div class="tab-row reference-row">
+                <span class="tab-name"
+                  ><strong
+                    >{lang === "fr" ? "Farine Complète" : "Whole Wheat"}</strong
+                  > - 100g</span
+                >
+                <span class="tab-val">25%</span>
+              </div>
+              <div class="tab-row">
+                <span class="tab-name"
+                  ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
+                >
+                <span class="tab-val">75%</span>
+              </div>
+              <div class="tab-row">
+                <span class="tab-name"
+                  ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong> - 100g</span
+                >
+                <span class="tab-val">20%</span>
+              </div>
+              <div class="tab-row">
+                <span class="tab-name"
+                  ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
+                >
+                <span class="tab-val">2%</span>
+              </div>
+            </div>
+          </FeaturePanel>
         </div>
       </div>
 
-      <div
-        class="try-playground-container"
-        style="text-align: center; margin-top: 3rem;"
-      >
+      <div class="try-playground-container">
         <a href={lang === "fr" ? "/fr/play" : "/play"} class="button primary">
           {t.tryPlaygroundBtn || "Try it in the Playground"}
         </a>
@@ -382,7 +342,10 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   </section>
 
   <!-- Get Involved -->
-  <section class="section get-involved alt-bg" aria-labelledby="get-involved-heading">
+  <section
+    class="section get-involved alt-bg"
+    aria-labelledby="get-involved-heading"
+  >
     <div class="homepage-container">
       <h2 id="get-involved-heading">{t.getInvolved}</h2>
       <div class="grid involved-grid">
@@ -412,9 +375,14 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   </section>
 
   <!-- Getting Started -->
-  <section class="section getting-started" aria-labelledby="getting-started-heading">
-    <div class="homepage-container" style="text-align: center;">
-      <h2 id="getting-started-heading" style="margin-bottom: 1rem;">{t.tryTitle}</h2>
+  <section
+    class="section getting-started"
+    aria-labelledby="getting-started-heading"
+  >
+    <div class="homepage-container">
+      <h2 id="getting-started-heading" style="margin-bottom: 1rem;">
+        {t.tryTitle}
+      </h2>
       <p
         style="margin-bottom: 2rem; color: var(--sl-color-gray-3); font-size: 1.1rem; text-wrap: balance;"
       >
@@ -424,66 +392,16 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
         <code id="cli-init-cmd"
           ><span class="prompt">$</span> npx @gram-lang/cli init</code
         >
-        <button
-          class="copy-cmd-btn"
-          aria-label="Copy command"
-          title="Copy command"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="copy-icon"
-            ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path
-              d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-            ></path></svg
-          >
-          <svg
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="check-icon"
-            style="display: none; color: var(--sl-color-text-accent);"
-            ><polyline points="20 6 9 17 4 12"></polyline></svg
-          >
-        </button>
+        <button class="copy-cmd-btn" aria-label="Copy command">Copy</button>
       </div>
     </div>
   </section>
 </Layout>
 
 <script>
-  // Modern Features Tabs and Preview/JSON toggles
+  // Preview/JSON toggles and copy-to-clipboard
   document.addEventListener("DOMContentLoaded", () => {
-    // 1. Feature Tabs Logic
-    const tabBtns = document.querySelectorAll(".feature-tab-btn");
-    const panels = document.querySelectorAll(".feature-panel");
-
-    tabBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        tabBtns.forEach((b) => b.classList.remove("active"));
-        panels.forEach((p) => p.classList.remove("active"));
-
-        btn.classList.add("active");
-        const targetId = btn.getAttribute("data-target");
-        if (targetId) {
-          const target = document.getElementById(targetId);
-          if (target) target.classList.add("active");
-        }
-      });
-    });
-
-    // 2. Preview/JSON Toggle Logic
+    // Preview/JSON Toggle Logic
     const featurePanels = document.querySelectorAll(".feature-panel");
     featurePanels.forEach((panel) => {
       const toggleBtns = panel.querySelectorAll(".pill-btn");
@@ -502,19 +420,16 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
       });
     });
 
-    // 3. Copy Command Logic
-    const copyBtn = document.querySelector(".copy-cmd-btn");
-    const copyIcon = document.querySelector(".copy-icon") as HTMLElement;
-    const checkIcon = document.querySelector(".check-icon") as HTMLElement;
-    if (copyBtn && copyIcon && checkIcon) {
+    // Copy Command Logic
+    const copyBtn = document.querySelector(".copy-cmd-btn") as HTMLElement;
+    if (copyBtn) {
+      const defaultLabel = copyBtn.textContent;
       copyBtn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText("npx @gram-lang/cli init");
-          copyIcon.style.display = "none";
-          checkIcon.style.display = "block";
+          copyBtn.textContent = "Copied";
           setTimeout(() => {
-            copyIcon.style.display = "block";
-            checkIcon.style.display = "none";
+            copyBtn.textContent = defaultLabel;
           }, 2000);
         } catch (err) {
           console.error("Failed to copy!", err);
@@ -542,8 +457,6 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   }
   .alt-bg {
     background-color: var(--sl-color-bg-nav);
-    border-top: 1px solid var(--sl-color-hairline);
-    border-bottom: 1px solid var(--sl-color-hairline);
   }
   .homepage-container {
     max-width: 1152px;
@@ -566,7 +479,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   h2 {
     font-size: 2.2rem;
     position: relative;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.85rem;
   }
 
   /* Subtle color accent on headers */
@@ -615,12 +528,9 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     margin-top: 1rem;
   }
   .version-badge a {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--sl-color-text-accent);
-  }
-  .version-badge a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
   }
 
   .title {
@@ -655,7 +565,6 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     padding: 0.7rem 1.4rem;
     text-decoration: none;
     font-weight: 600;
-    border-radius: 4px;
     border: 1px solid transparent;
   }
 
@@ -670,7 +579,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   .button.secondary {
     background-color: transparent;
     color: var(--sl-color-white);
-    border-color: var(--sl-color-hairline);
+    border-color: var(--sl-color-border);
   }
   .button.secondary:hover {
     border-color: var(--sl-color-text-accent);
@@ -683,17 +592,18 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   }
 
   .code-block {
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 10px;
+    border: 1px solid var(--sl-color-border);
     overflow: hidden;
     font-size: 1rem;
-    box-shadow: var(--shadow-elevation-high);
   }
 
   .code-header {
     background-color: var(--sl-color-gray-7);
-    border-bottom: 1px solid var(--sl-color-hairline);
-    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--sl-color-border);
+    padding: 0 1rem;
+    height: 42px;
+    display: flex;
+    align-items: center;
   }
 
   .filename {
@@ -740,12 +650,8 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   .learn-more-link {
     display: inline-block;
     color: var(--sl-color-text-accent);
-    text-decoration: none;
     font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .learn-more-link:hover {
-    text-decoration: underline;
+    font-size: 1rem;
   }
 
   .philosophy h3 {
@@ -758,10 +664,6 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
 
   /* Cards for Get Involved */
 
-  .section.get-involved {
-    background-color: var(--sl-color-accent);
-  }
-
   .section.get-involved h2 {
     margin-top: 0;
     margin-bottom: 2rem;
@@ -770,9 +672,9 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   .card {
     background-color: var(--sl-color-bg);
     padding: 2rem;
-    border-radius: 8px;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--sl-color-border);
   }
   .card h3 {
     margin-top: 0;
@@ -783,8 +685,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   }
   .link-btn {
     display: inline-block;
-    color: var(--sl-color-accent);
-    text-decoration: none;
+    color: var(--sl-color-text-accent);
     font-weight: 500;
     margin-top: 1rem;
   }
@@ -795,14 +696,11 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   /* Mini terminal */
   .terminal-mini {
     background-color: var(--sl-color-black);
-    border-radius: 6px;
-    border: 1px solid var(--sl-color-hairline);
+    border: 1px solid var(--sl-color-border);
     margin-top: 1rem;
-    box-shadow: var(--shadow-elevation-medium);
-    padding: 1.5rem 2.5rem 1.5rem 2.5rem;
+    padding: 1.5rem 5.5rem 1.5rem 2.5rem;
     font-size: 1.1rem;
     max-width: fit-content;
-    margin-inline: auto;
     position: relative;
   }
   .prompt {
@@ -812,72 +710,40 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
 
   .copy-cmd-btn {
     position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    width: 2rem;
-    height: 2rem;
-    background-color: var(--sl-color-black);
-    border: 1px solid var(--sl-color-hairline);
+    top: 1.3rem;
+    right: 0.8rem;
+    background: transparent;
+    border: 1px solid var(--sl-color-border);
     color: var(--sl-color-gray-3);
     cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition:
-      opacity 0.2s,
-      background-color 0.2s,
-      border-color 0.2s,
-      color 0.2s;
-  }
-
-  @media (hover: hover) {
-    .terminal-mini:hover .copy-cmd-btn {
-      opacity: 1;
-    }
-  }
-
-  @media (hover: none) {
-    .copy-cmd-btn {
-      opacity: 1;
-    }
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
   }
 
   .copy-cmd-btn:hover {
-    background-color: var(--sl-color-gray-6);
-    border-color: var(--sl-color-gray-4);
     color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-4);
   }
 
   /* Split View Section */
   .section-desc {
     color: var(--sl-color-gray-3);
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
     font-size: 1.1rem;
     font-weight: 600;
     position: relative;
-  }
-
-  .section-desc:after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -30px;
-    height: 4px;
-    width: 50px;
-    background-color: var(--sl-color-accent);
+    margin-top: 0;
   }
 
   /* Modern Features Section */
 
   .section.use-cases h2,
   .section.use-cases .section-desc {
-    text-align: center;
   }
 
   .section.use-cases .section-desc {
     margin-bottom: 3rem;
+    margin-top: 0;
   }
 
   .section.use-cases .section-desc:after {
@@ -889,48 +755,14 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     flex-direction: column;
   }
 
-  .features-tabs {
-    display: flex;
-    justify-content: center;
-    margin: 0 auto 1.5rem auto;
-    width: fit-content;
-    background-color: var(--sl-color-black);
-    padding: 0.2rem;
-    border-radius: 8px;
-    border: 1px solid var(--sl-color-hairline);
-    gap: 0.25rem;
-  }
-
-  @media (max-width: 600px) {
-    .features-tabs {
-      flex-direction: column;
-      width: 100%;
-    }
-  }
-
-  .feature-tab-btn {
-    background: transparent;
-    border: none;
-    color: var(--sl-color-gray-3);
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding: 0.7rem 2rem;
-    cursor: pointer;
-    border-radius: 6px;
-    font-family: var(--sl-font);
-  }
-
-  .feature-tab-btn:hover {
-    color: var(--sl-color-white);
-  }
-
-  .feature-tab-btn.active {
-    background-color: var(--sl-color-gray-5);
-    color: var(--sl-color-bg);
-  }
-
   .features-content {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-title {
+    font-size: 1.3rem;
+    margin: 0;
   }
 
   /* Mockups */
@@ -950,7 +782,6 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     margin-bottom: 1.5rem;
     color: var(--sl-color-white);
     line-height: 1.6;
-    font-size: 1.1rem;
   }
   .gram-steps li {
     margin-bottom: 0.8rem;
@@ -961,7 +792,6 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     font-size: 0.8em;
     margin-right: 6px;
     padding: 2px 5px;
-    border-radius: 4px;
     border: 1px solid var(--sl-color-hairline);
   }
 
@@ -969,18 +799,17 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   .nut-panel-mock {
     margin-top: 1rem;
     background-color: var(--sl-color-bg-nav);
-    padding: 1.2rem;
-    border-radius: 12px;
+    padding: 0.75rem;
     border: 1px solid var(--sl-color-hairline);
     margin: 1rem;
   }
   .nut-header-mock {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--sl-color-white);
   }
   .nut-header-mock span {
@@ -988,13 +817,12 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     text-transform: uppercase;
     background-color: var(--sl-color-gray-4);
     padding: 2px 6px;
-    border-radius: 4px;
     font-weight: 700;
     color: var(--sl-color-bg);
   }
   .nut-grid-mock {
     display: grid;
-    gap: 10px;
+    gap: 6px;
     grid-template-columns: repeat(2, 1fr);
   }
   @media (min-width: 480px) {
@@ -1007,8 +835,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     flex-direction: column;
     gap: 2px;
     background-color: var(--sl-color-bg);
-    padding: 12px 14px;
-    border-radius: 12px;
+    padding: 10px 12px;
     border: 1px solid var(--sl-color-hairline);
   }
   .nut-item-mock .label {
@@ -1030,7 +857,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
   .gantt-header-mock {
     display: flex;
     padding: 0 1.5rem 1rem 1.5rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-border);
     font-size: 0.85rem;
     color: var(--sl-color-gray-3);
   }
@@ -1041,7 +868,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     display: flex;
     height: 48px;
     align-items: center;
-    border-bottom: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-border);
     padding-right: 1rem;
   }
   .track-label-mock {
@@ -1049,7 +876,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--sl-color-white);
-    border-right: 1px solid var(--sl-color-hairline);
+    border-right: 1px solid var(--sl-color-border);
     height: 100%;
     display: flex;
     align-items: center;
@@ -1075,29 +902,21 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     content: "";
     width: 1px;
     height: 6px;
-    background-color: var(--sl-color-hairline);
+    background-color: var(--sl-color-border);
     margin-bottom: 4px;
   }
   .track-content-mock {
-    margin-left: 1rem;
+    margin-left: 0.5rem;
   }
   .time-block-mock {
     position: absolute;
     top: 8px;
     height: 32px;
-    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 600;
-    transition:
-      transform 0.2s,
-      box-shadow 0.2s;
-  }
-  .time-block-mock:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--sl-shadow-sm);
   }
   .active-mock {
     background-color: var(--sl-color-accent);
@@ -1126,7 +945,7 @@ const codeThemes: Record<string, any> = { light: "github-light", dark: "github-d
     display: flex;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-border);
   }
 
   .tab-row:last-child {

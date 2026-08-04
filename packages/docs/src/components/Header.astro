@@ -27,7 +27,6 @@ const { currentLang = "en" } = Astro.props;
 
     <div class="actions desktop-only">
       <SocialLinks />
-      <div class="divider"></div>
       <LanguageSelect currentLang={currentLang} />
       <ThemeSelect />
     </div>
@@ -112,13 +111,8 @@ const { currentLang = "en" } = Astro.props;
 
 <style>
   .custom-header {
-    border-bottom: 1px solid var(--sl-color-hairline);
     background-color: var(--sl-color-bg);
     padding: 0 1.5rem;
-    position: fixed;
-    top: 0;
-    width: calc(100% - 3rem);
-    z-index: 100;
   }
   .header-container {
     display: flex;
@@ -144,8 +138,9 @@ const { currentLang = "en" } = Astro.props;
     font-weight: 600;
     font-size: 1.25rem;
   }
-  .logo img {
+  .logo img {J
     height: 2rem;
+    width: 2rem;
   }
   .nav-links {
     display: flex;
@@ -153,10 +148,9 @@ const { currentLang = "en" } = Astro.props;
     align-items: center;
   }
   .nav-links a {
-    text-decoration: none;
     color: var(--sl-color-text);
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
   }
   .nav-links a:hover {
     color: var(--gram-orange);
