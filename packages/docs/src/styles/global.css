@@ -46,7 +46,7 @@
 	--sl-color-bg-inline-code: var(--sl-color-gray-5);
 	--sl-color-hairline: var(--sl-color-gray-6);
 	--sl-color-hairline-shade: hsl(224, 10%, 10%);
-	--sl-color-border: var(--sl-color-gray-5);
+	--sl-color-border: var(--sl-color-gray-4);
 	--sl-color-text: hsl(224, 6%, 77%);
 	--sl-color-text-accent: var(--sl-color-accent-high);
 	--sl-color-orange: hsl(41, 82%, 63%);

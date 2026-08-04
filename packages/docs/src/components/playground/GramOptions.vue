@@ -260,7 +260,7 @@ function submitScale() {
 
 <style scoped>
 .gram-options {
-  background-color: var(--sl-color-bg-sidebar);
+  background-color: var(--sl-color-bg);
   padding: 16px;
   font-size: 14px;
   width: 340px;
