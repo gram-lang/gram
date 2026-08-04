@@ -107,229 +107,249 @@ const codeThemes: Record<string, any> = {
         <!-- Content Area -->
         <div class="features-content">
           <!-- Feature: Nutrition -->
-          <h3 class="feature-title">{t.tabNutritionTitle}</h3>
-          <FeaturePanel
-            id="feature-nutrition"
-            desc={t.tabNutritionDesc}
-            link={t.tabNutritionLink}
-            learnMoreText={t.learnMore}
-            inputCode={t.nutritionInput}
-            outputCode={t.nutritionOutput}
-            gramLang={gramLang}
-            codeThemes={codeThemes}
-          >
-            <div class="modern-mockup-card nut-card-mock">
-              <div class="mockup-steps">
-                <ol class="gram-steps">
-                  <li>
-                    <span class="action"
-                      >{lang === "fr" ? "Fouetter" : "Whisk"}</span
-                    >
-                    {lang === "fr" ? "la " : ""}<strong
-                      >{lang === "fr" ? "crème liquide" : "heavy cream"}</strong
-                    > (240g)
-                    {lang === "fr" ? "et le " : " and "}
-                    <strong
-                      >{
-                        lang === "fr" ? "sucre glace" : "powdered sugar"
-                      }</strong
-                    > (25g)
-                    {
-                      lang === "fr"
-                        ? " jusqu'à obtenir des pics souples."
-                        : " until soft peaks form."
-                    }
-                  </li>
-                  <li>
-                    <span class="action"
-                      >{lang === "fr" ? "Incorporer" : "Fold"}</span
-                    >
-                    {
-                      lang === "fr"
-                        ? "Ajouter délicatement l'"
-                        : "Gently incorporate "
-                    }<strong
-                      >{
-                        lang === "fr" ? "extrait de vanille" : "vanilla extract"
-                      }</strong
-                    > (4g).
-                  </li>
-                </ol>
-              </div>
-              <div class="nut-panel-mock">
-                <div class="nut-header-mock">
-                  Nutrition <span>EST.</span>
+          <details class="feature-accordion" open>
+            <summary class="feature-summary">
+              <h3 class="feature-title">{t.tabNutritionTitle}</h3>
+            </summary>
+            <FeaturePanel
+              id="feature-nutrition"
+              desc={t.tabNutritionDesc}
+              link={t.tabNutritionLink}
+              learnMoreText={t.learnMore}
+              inputCode={t.nutritionInput}
+              outputCode={t.nutritionOutput}
+              gramLang={gramLang}
+              codeThemes={codeThemes}
+            >
+              <div class="modern-mockup-card nut-card-mock">
+                <div class="mockup-steps">
+                  <ol class="gram-steps">
+                    <li>
+                      <span class="action"
+                        >{lang === "fr" ? "Fouetter" : "Whisk"}</span
+                      >
+                      {lang === "fr" ? "la " : ""}<strong
+                        >{
+                          lang === "fr" ? "crème liquide" : "heavy cream"
+                        }</strong
+                      > (240g)
+                      {lang === "fr" ? "et le " : " and "}
+                      <strong
+                        >{
+                          lang === "fr" ? "sucre glace" : "powdered sugar"
+                        }</strong
+                      > (25g)
+                      {
+                        lang === "fr"
+                          ? " jusqu'à obtenir des pics souples."
+                          : " until soft peaks form."
+                      }
+                    </li>
+                    <li>
+                      <span class="action"
+                        >{lang === "fr" ? "Incorporer" : "Fold"}</span
+                      >
+                      {
+                        lang === "fr"
+                          ? "Ajouter délicatement l'"
+                          : "Gently incorporate "
+                      }<strong
+                        >{
+                          lang === "fr"
+                            ? "extrait de vanille"
+                            : "vanilla extract"
+                        }</strong
+                      > (4g).
+                    </li>
+                  </ol>
                 </div>
-                <div class="nut-grid-mock">
-                  <div class="nut-item-mock">
-                    <span class="label">Calories</span><strong>925 kcal</strong>
+                <div class="nut-panel-mock">
+                  <div class="nut-header-mock">
+                    Nutrition <span>EST.</span>
                   </div>
-                  <div class="nut-item-mock">
-                    <span class="label">Carbs</span><strong>26 g</strong>
-                  </div>
-                  <div class="nut-item-mock">
-                    <span class="label">Fat</span><strong>88 g</strong>
-                  </div>
-                  <div class="nut-item-mock">
-                    <span class="label">Protein</span><strong>6 g</strong>
-                  </div>
-                  <div class="nut-item-mock">
-                    <span class="label"
-                      >{lang === "fr" ? "Sucres" : "Sugar"}</span
-                    ><strong>25 g</strong>
-                  </div>
-                  <div class="nut-item-mock">
-                    <span class="label"
-                      >{lang === "fr" ? "Fibres" : "Fiber"}</span
-                    ><strong>0 g</strong>
-                  </div>
-                  <div class="nut-item-mock">
-                    <span class="label">Sodium</span><strong>42 mg</strong>
+                  <div class="nut-grid-mock">
+                    <div class="nut-item-mock">
+                      <span class="label">Calories</span><strong
+                        >925 kcal</strong
+                      >
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label">Carbs</span><strong>26 g</strong>
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label">Fat</span><strong>88 g</strong>
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label">Protein</span><strong>6 g</strong>
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label"
+                        >{lang === "fr" ? "Sucres" : "Sugar"}</span
+                      ><strong>25 g</strong>
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label"
+                        >{lang === "fr" ? "Fibres" : "Fiber"}</span
+                      ><strong>0 g</strong>
+                    </div>
+                    <div class="nut-item-mock">
+                      <span class="label">Sodium</span><strong>42 mg</strong>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </FeaturePanel>
+            </FeaturePanel>
+          </details>
 
           <!-- Feature: Schedule -->
-          <h3 class="feature-title">{t.tabScheduleTitle}</h3>
-          <FeaturePanel
-            id="feature-schedule"
-            desc={t.tabScheduleDesc}
-            link={t.tabScheduleLink}
-            learnMoreText={t.learnMore}
-            inputCode={t.scheduleInput}
-            outputCode={t.scheduleOutput}
-            gramLang={gramLang}
-            codeThemes={codeThemes}
-          >
-            <div class="modern-mockup-card timeline-mockup-card">
-              <div class="gantt-header-mock">
-                <span
-                  >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
-                    >17m</strong
-                  ></span
-                >
-                <span
-                  >{lang === "fr" ? "Actif" : " · Active"}: <strong>7m</strong
-                  ></span
-                >
+          <details class="feature-accordion">
+            <summary class="feature-summary">
+              <h3 class="feature-title">{t.tabScheduleTitle}</h3>
+            </summary>
+            <FeaturePanel
+              id="feature-schedule"
+              desc={t.tabScheduleDesc}
+              link={t.tabScheduleLink}
+              learnMoreText={t.learnMore}
+              inputCode={t.scheduleInput}
+              outputCode={t.scheduleOutput}
+              gramLang={gramLang}
+              codeThemes={codeThemes}
+            >
+              <div class="modern-mockup-card timeline-mockup-card">
+                <div class="gantt-header-mock">
+                  <span
+                    >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
+                      >17m</strong
+                    ></span
+                  >
+                  <span
+                    >{lang === "fr" ? "Actif" : " · Active"}: <strong>7m</strong
+                    ></span
+                  >
+                </div>
+                <div class="gantt-tracks-container">
+                  <div class="gantt-track-mock" style="height: 120px;">
+                    <div class="track-label-mock">
+                      {lang === "fr" ? "Actions" : "Actions"}
+                    </div>
+                    <div class="track-content-mock">
+                      <div
+                        class="time-block-mock passive-mock"
+                        style="width: 26%; left: 0; top: 8px; border: none;"
+                      >
+                        <span
+                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                          >Prep Time</span
+                        >
+                      </div>
+                      <div
+                        class="time-block-mock active-mock"
+                        style="width: 26%; left: 52%; top: 44px;"
+                      >
+                        <span
+                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                          >{lang === "fr" ? "Sauté" : "Sauté"}</span
+                        >
+                      </div>
+                      <div
+                        class="time-block-mock active-mock"
+                        style="width: 10%; left: 78%; top: 80px;"
+                      >
+                        <span
+                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                          >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="gantt-track-mock">
+                    <div class="track-label-mock">
+                      {lang === "fr" ? "Bouillir" : "Boiling"}
+                    </div>
+                    <div class="track-content-mock">
+                      <div
+                        class="time-block-mock passive-mock"
+                        style="width: 52%; left: 26%;"
+                      >
+                        <span class="block-label-mock">10m</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="gantt-track-mock"
+                    style="height: 36px; border-bottom: none;"
+                  >
+                    <div class="track-label-mock" style="border-right: none;">
+                    </div>
+                    <div class="track-content-mock" style="position: relative;">
+                      <div class="gantt-tick" style="left: 0%;">0m</div>
+                      <div class="gantt-tick" style="left: 26%;">5m</div>
+                      <div class="gantt-tick" style="left: 52%;">10m</div>
+                      <div class="gantt-tick" style="left: 78%;">15m</div>
+                      <div class="gantt-tick" style="left: 88%;">17m</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="gantt-tracks-container">
-                <div class="gantt-track-mock" style="height: 120px;">
-                  <div class="track-label-mock">
-                    {lang === "fr" ? "Actions" : "Actions"}
-                  </div>
-                  <div class="track-content-mock">
-                    <div
-                      class="time-block-mock passive-mock"
-                      style="width: 26%; left: 0; top: 8px; border: none;"
-                    >
-                      <span
-                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                        >Prep Time</span
-                      >
-                    </div>
-                    <div
-                      class="time-block-mock active-mock"
-                      style="width: 26%; left: 52%; top: 44px;"
-                    >
-                      <span
-                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                        >{lang === "fr" ? "Sauté" : "Sauté"}</span
-                      >
-                    </div>
-                    <div
-                      class="time-block-mock active-mock"
-                      style="width: 10%; left: 78%; top: 80px;"
-                    >
-                      <span
-                        style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                        >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="gantt-track-mock">
-                  <div class="track-label-mock">
-                    {lang === "fr" ? "Bouillir" : "Boiling"}
-                  </div>
-                  <div class="track-content-mock">
-                    <div
-                      class="time-block-mock passive-mock"
-                      style="width: 52%; left: 26%;"
-                    >
-                      <span class="block-label-mock">10m</span>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="gantt-track-mock"
-                  style="height: 36px; border-bottom: none;"
-                >
-                  <div class="track-label-mock" style="border-right: none;">
-                  </div>
-                  <div class="track-content-mock" style="position: relative;">
-                    <div class="gantt-tick" style="left: 0%;">0m</div>
-                    <div class="gantt-tick" style="left: 26%;">5m</div>
-                    <div class="gantt-tick" style="left: 52%;">10m</div>
-                    <div class="gantt-tick" style="left: 78%;">15m</div>
-                    <div class="gantt-tick" style="left: 88%;">17m</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </FeaturePanel>
+            </FeaturePanel>
+          </details>
 
           <!-- Feature: Scale -->
-          <h3 class="feature-title">{t.tabScaleTitle}</h3>
-          <FeaturePanel
-            id="feature-scale"
-            desc={t.tabScaleDesc}
-            link={t.tabScaleLink}
-            learnMoreText={t.learnMore}
-            inputCode={t.scaleInput}
-            outputCode={t.scaleOutput}
-            gramLang={gramLang}
-            codeThemes={codeThemes}
-          >
-            <div class="modern-mockup-card tabular-mockup">
-              <div class="tab-row reference-row">
-                <span class="tab-name"
-                  ><strong
-                    >{lang === "fr" ? "Farine T65" : "Bread Flour"}</strong
-                  > - 400g</span
-                >
-                <span class="tab-val tab-val-ref">100%</span>
+          <details class="feature-accordion">
+            <summary class="feature-summary">
+              <h3 class="feature-title">{t.tabScaleTitle}</h3>
+            </summary>
+            <FeaturePanel
+              id="feature-scale"
+              desc={t.tabScaleDesc}
+              link={t.tabScaleLink}
+              learnMoreText={t.learnMore}
+              inputCode={t.scaleInput}
+              outputCode={t.scaleOutput}
+              gramLang={gramLang}
+              codeThemes={codeThemes}
+            >
+              <div class="modern-mockup-card tabular-mockup">
+                <div class="tab-row reference-row">
+                  <span class="tab-name"
+                    ><strong
+                      >{lang === "fr" ? "Farine T65" : "Bread Flour"}</strong
+                    > - 400g</span
+                  >
+                  <span class="tab-val tab-val-ref">100%</span>
+                </div>
+                <div class="tab-row reference-row">
+                  <span class="tab-name"
+                    ><strong
+                      >{
+                        lang === "fr" ? "Farine Complète" : "Whole Wheat"
+                      }</strong
+                    > - 100g</span
+                  >
+                  <span class="tab-val">25%</span>
+                </div>
+                <div class="tab-row">
+                  <span class="tab-name"
+                    ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
+                  >
+                  <span class="tab-val">75%</span>
+                </div>
+                <div class="tab-row">
+                  <span class="tab-name"
+                    ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong> - 100g</span
+                  >
+                  <span class="tab-val">20%</span>
+                </div>
+                <div class="tab-row">
+                  <span class="tab-name"
+                    ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
+                  >
+                  <span class="tab-val">2%</span>
+                </div>
               </div>
-              <div class="tab-row reference-row">
-                <span class="tab-name"
-                  ><strong
-                    >{lang === "fr" ? "Farine Complète" : "Whole Wheat"}</strong
-                  > - 100g</span
-                >
-                <span class="tab-val">25%</span>
-              </div>
-              <div class="tab-row">
-                <span class="tab-name"
-                  ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
-                >
-                <span class="tab-val">75%</span>
-              </div>
-              <div class="tab-row">
-                <span class="tab-name"
-                  ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong> - 100g</span
-                >
-                <span class="tab-val">20%</span>
-              </div>
-              <div class="tab-row">
-                <span class="tab-name"
-                  ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
-                >
-                <span class="tab-val">2%</span>
-              </div>
-            </div>
-          </FeaturePanel>
+            </FeaturePanel>
+          </details>
         </div>
       </div>
 
@@ -758,9 +778,32 @@ const codeThemes: Record<string, any> = {
   .features-content {
     display: flex;
     flex-direction: column;
+    margin-block-end: 3rem;
+  }
+
+  .feature-accordion {
+    border-top: 1px solid var(--sl-color-border);
+    padding-block: 1.75rem;
+  }
+
+  .feature-accordion:last-child {
+    border-bottom: 1px solid var(--sl-color-border);
+  }
+
+  .feature-summary {
+    cursor: pointer;
+  }
+
+  .feature-summary:hover .feature-title {
+    color: var(--gram-orange);
+  }
+
+  .feature-accordion[open] .feature-summary {
+    margin-bottom: 1.75rem;
   }
 
   .feature-title {
+    display: inline;
     font-size: 1.3rem;
     margin: 0;
   }

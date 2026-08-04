@@ -276,7 +276,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		),
 
 		getInvolved: "Get Involved",
-		readBookTitle: "Read the Book",
+		readBookTitle: "Explore the Language",
 		readBookDesc:
 			"The official documentation provides a complete guide to Gram's syntax, tooling, and inner workings. Ideal for getting started or deep-diving into the language.",
 		readBookLink: "Read the docs",
@@ -509,7 +509,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		),
 
 		getInvolved: "Participer",
-		readBookTitle: "Lire le Livre",
+		readBookTitle: "Découvrir le langage",
 		readBookDesc:
 			"La documentation officielle offre un guide complet sur la syntaxe, les outils et le fonctionnement interne de Gram. Idéal pour débuter ou pour approfondir vos connaissances du langage.",
 		readBookLink: "Lire la documentation",
