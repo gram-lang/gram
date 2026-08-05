@@ -20,6 +20,9 @@ const OUT_FILE = join(
 const FRONTMATTER = `---
 title: Changelog
 description: Every release of Gram — new features, fixes, and breaking changes.
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
 ---
 
 `;
