@@ -298,9 +298,9 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		heroTitle: "Gram",
 		heroSubtitle: "Un langage de balisage open-source pour vos recettes.",
 		heroDescription:
-			"Traitez vos recettes comme du code. Conçu pour gérer la complexité de la logique culinaire, Gram compile vos instructions en texte brut vers des données structurées, prévisibles et relationnelles.",
+			"Codez vos recettes. Conçu pour dompter la logique culinaire, Gram compile vos instructions texte en données structurées, prévisibles et relationnelles.",
 		metaDescription:
-			"Traitez vos recettes comme du code. Gram compile vos instructions en texte brut vers des données structurées et prévisibles.",
+			"Codez vos recettes. Gram compile vos instructions texte en données structurées et prévisibles.",
 		heroGetStarted: "Démarrer",
 		heroPlayground: "Playground",
 
@@ -315,57 +315,56 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 
 		whyGram: "Philosophie",
 		whyGramDesc:
-			"Pensé pour être simple à écrire, intuitif à versionner et redoutable au parsing.",
+			"Pensé pour être fluide à écrire, intuitif à versionner et redoutable au parsing.",
 		learnMore: "En savoir plus",
 		philosophy: [
 			{
 				title: "Texte Brut & Git",
 				icon: "document",
 				details:
-					"Aucune base de données propriétaire ni d'enfermement. Vos recettes sont de simples fichiers texte, prêts à être versionnés sur Git, partagés librement et édités où vous le souhaitez.",
+					"Zéro vendor lock-in. Vos recettes sont de simples fichiers texte, prêts à être poussés sur Git, partagés librement et édités où vous le souhaitez.",
 				link: "/fr/docs/explanation/philosophy",
 			},
 			{
 				title: "Évaluation Dynamique",
 				icon: "setting",
 				details:
-					"Fini les calculs manuels pour l'hydratation ou le redimensionnement de vos plats. Gram interprète nativement l'arithmétique, les variables et la conversion d'unités.",
+					"Fini les calculs mentaux pour l'hydratation ou le scaling de vos plats. Gram gère l'arithmétique, les variables et la conversion d'unités nativement.",
 				link: "/fr/docs/explanation/scaling",
 			},
 			{
 				title: "Un Outillage Robuste",
 				icon: "laptop",
 				details:
-					"Grâce à son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et du retour d'erreurs en temps réel, directement dans votre éditeur favori.",
+					"Avec son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et de la détection d'erreurs en live, direct dans votre éditeur favori.",
 				link: "/fr/docs/reference/tooling/vscode-extension",
 			},
 			{
 				title: "Exportez Partout",
 				icon: "puzzle",
 				details:
-					"Gram transforme vos recettes en un arbre de données (AST) riche. Générez du JSON ou du Markdown, et alimentez n'importe quel générateur de site statique pour créer le livre de recettes de vos rêves.",
+					"Gram compile vos recettes en un arbre de données (AST) complet. Générez du JSON ou du Markdown, et alimentez le générateur de site statique de votre choix pour builder le carnet de recettes ultime.",
 				link: "/fr/docs/reference/api/kitchen",
 			},
 			{
 				title: "Une CLI pour les Devs",
 				icon: "rocket",
 				details:
-					"Pilotez votre espace de travail depuis le terminal. La CLI officielle vous permet d'initialiser un projet, de formater vos fichiers et de compiler vos recettes en une seule commande.",
+					"Pilotez votre espace de travail direct depuis le terminal. Le CLI officiel permet d'initialiser un projet, de formater et de compiler vos recettes en une seule commande.",
 				link: "/fr/docs/reference/tooling/cli",
 			},
 		],
 
 		discoverGram: "Gram en Pratique",
 		discoverDesc:
-			"Découvrez comment le compilateur transforme vos instructions textuelles en données structurées.",
-
+			"Découvrez comment le compilateur transforme vos instructions texte en données typées et exploitables.",
 		tabNutritionTitle: "Base de Données & Nutrition",
 		tabNutritionDesc:
-			"Uniformisez vos mesures et calculez les apports nutritionnels grâce à une base de données locale générée automatiquement à partir de vos fichiers.",
+			"Standardisez vos mesures et calculez vos macros grâce à une base de données locale auto-générée à partir de vos fichiers.",
 		tabNutritionLink: "/fr/docs/how-to/manage-database/",
 		tabScheduleTitle: "Planification Intelligente (ALAP)",
 		tabScheduleDesc:
-			"Générez des diagrammes d'exécution. Gram extrait vos temps de cuisson et repousse les tâches passives 'Aussi Tard Que Possible' pour optimiser votre temps en cuisine.",
+			"Visualisez votre rétroplanning. Gram capte vos timers et repousse les tâches passives « Aussi Tard Que Possible » pour optimiser vos temps morts en cuisine.",
 		tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
 		tabScaleTitle: "Le Pourcentage du Boulanger",
 		tabScaleDesc:
@@ -516,16 +515,16 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		getInvolved: "Rejoindre le Projet",
 		readBookTitle: "Découvrir le Langage",
 		readBookDesc:
-			"Le guide de référence pour tout comprendre de Gram : sa syntaxe, son outillage et son moteur. Le point d'entrée idéal pour se lancer ou creuser les concepts avancés.",
+			"Le guide de référence pour tout comprendre de Gram : sa syntaxe, son outillage et son moteur. Le point d'entrée idéal pour démarrer ou creuser les concepts avancés.",
 		readBookLink: "Lire la documentation",
 
 		contributeTitle: "Contribuer",
 		contributeDesc:
-			"Gram est un projet ouvert et collaboratif. N'hésitez pas à explorer le code source, signaler un bug ou proposer des améliorations sur le compilateur et la documentation.",
+			"Gram est un projet open-source et collaboratif. N'hésitez pas à explorer le code, remonter un bug ou proposer une PR sur le compilateur ou la doc.",
 		contributeLink: "Voir sur le dépôt officiel",
 
 		tryTitle: "Créer un Projet",
 		tryDesc:
-			"Démarrez un nouvel espace de travail en quelques secondes. Notre CLI s'occupe de générer tout le nécessaire pour que vous puissiez écrire vos premières recettes en un clin d'œil.",
+			"Initialisez votre espace de travail en quelques secondes. Le CLI s'occupe de tout générer pour que vous puissiez coder votre première recette.",
 	},
 };
