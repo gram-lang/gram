@@ -44,7 +44,7 @@ let currentDiagnostics: Diagnostic[] = [];
 const editorTheme = EditorView.theme({
 	"&": {
 		height: "100%",
-		backgroundColor: "var(--sl-color-bg-sidebar)",
+		backgroundColor: "var(--sl-color-bg)",
 		fontSize: "14px",
 	},
 	".cm-scroller": {
@@ -55,7 +55,7 @@ const editorTheme = EditorView.theme({
 		padding: "16px 0",
 	},
 	".cm-gutters": {
-		backgroundColor: "var(--sl-color-bg-sidebar)",
+		backgroundColor: "var(--sl-color-bg)",
 		color: "var(--sl-color-gray-4)",
 		border: "none",
 	},
@@ -186,7 +186,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--sl-color-bg-sidebar);
+  background-color: var(--sl-color-bg);
   overflow: hidden;
 }
 
@@ -216,5 +216,19 @@ defineExpose({
 
 .editor-container :deep(.cm-editor) {
   height: 100%;
+}
+
+.editor-container :deep(.cm-activeLine),
+.editor-container :deep(.cm-activeLineGutter) {
+  background-color: var(--gram-active-line-bg, rgba(0, 0, 0, 0.04));
+}
+</style>
+
+<style>
+:root {
+  --gram-active-line-bg: rgba(0, 0, 0, 0.04);
+}
+:root[data-theme='dark'] {
+  --gram-active-line-bg: rgba(255, 255, 255, 0.03); /* Adjust opacity as needed */
 }
 </style>
