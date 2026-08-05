@@ -1,18 +1,18 @@
 ---
-title: "Pour commencer"
-description: "Installez le CLI Gram, configurez votre éditeur et compilez votre première recette avec ce guide de démarrage."
+title: "Premiers pas"
+description: "Installez le CLI Gram, configurez votre éditeur et compilez votre première recette grâce à ce guide."
 ---
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import { CodePackageManagers } from 'starlight-theme-nova/components';
 
-Ce guide va vous aider à installer l'écosystème Gram et à compiler votre première recette.
+Ce guide vous prend par la main pour installer l'écosystème Gram et compiler votre première recette.
 
 <Steps>
 
 1. **Installation**
 
-   Installez le CLI `gram` globalement avec le gestionnaire de paquets de votre choix — il fonctionne aussi bien avec Node.js (>=20) qu'avec [Bun](https://bun.sh/) :
+   Installez le CLI `gram` en global via votre gestionnaire de paquets favori. Il tourne indifféremment sur Node.js (>=20) ou [Bun](https://bun.sh/) :
 
    <CodePackageManagers
    packages="@gram-lang/cli"
@@ -21,25 +21,25 @@ Ce guide va vous aider à installer l'écosystème Gram et à compiler votre pre
    />
 
    :::note
-   Vous préférez construire le CLI depuis les sources (par exemple pour contribuer au projet) ? Consultez [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
+   Vous préférez compiler le CLI depuis les sources (pour contribuer au projet, par exemple) ? Jetez un œil à [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
    :::
 
 2. **Configuration de l'éditeur**
 
-   Étant donné que Gram traite les recettes comme du code, avoir le bon éditeur fait une énorme différence.
+   Gram traitant les recettes comme du code, un éditeur aux petits oignons fait toute la différence.
 
    :::note[Extension VS Code Gram]
-   Il est fortement recommandé d'installer l'**Extension VS Code Gram**. Elle vous offre :
+   Nous vous recommandons vivement d'installer l'**extension Gram pour VS Code**. Elle apporte :
    - La coloration syntaxique
    - L'autocomplétion
-   - Des diagnostics en ligne et la vérification des erreurs
-   - Un retour d'information du compilateur en temps réel
+   - La détection d'erreurs et des diagnostics en temps réel
+   - Le rendu du compilateur en direct (*Live Preview*)
    :::
 
-   Recherchez **"Gram - Recipe Language"** dans le panneau des extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`) et installez-la, ou récupérez-la directement depuis le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang).
+   Cherchez **« Gram - Recipe Language »** dans le panneau des extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`) et installez-la, ou téléchargez-la directement sur le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang).
 
    <details>
-   <summary>Construire depuis les sources</summary>
+   <summary>Compiler depuis les sources</summary>
 
    ```bash
    git clone https://git.gram-lang.org/gram-lang/gram.git
@@ -56,25 +56,25 @@ Ce guide va vous aider à installer l'écosystème Gram et à compiler votre pre
 
    </details>
 
-3. **Initialiser un Projet**
+3. **Initialiser un projet**
 
-   Avant d'écrire la moindre recette, il est fortement conseillé d'initialiser un espace de travail (workspace) Gram. Lancez cette commande dans un **nouveau dossier** :
+   Avant de taper votre première recette, on vous conseille d'initialiser un espace de travail (*workspace*) Gram. Dans un **nouveau dossier**, lancez :
 
    ```bash
    gram init
    ```
 
-   Cette commande va créer un répertoire `.gram/` contenant un fichier de configuration et une base de données de départ.
+   Bim, cela va générer un répertoire `.gram/` abritant votre config et une base de données initiale.
 
-   :::tip[Configuration Interactive]
-   Le CLI vous posera quelques questions pour configurer votre fournisseur d'IA (qui servira plus tard pour des fonctionnalités avancées comme l'enrichissement de la base de données ou l'import de recettes). Vous n'en avez pas besoin pour votre première recette ! N'hésitez pas à appuyer simplement sur `Entrée` pour ignorer ces étapes ou accepter les choix par défaut pour le moment.
+   :::tip[Configuration interactive]
+   Le CLI va vous poser quelques questions pour configurer votre fournisseur d'IA (utile plus tard pour *scraper* ou importer des recettes). Zéro stress, vous n'en aurez pas besoin pour votre première recette ! Appuyez juste sur `Entrée` pour *skipper* ces étapes et garder les choix par défaut.
    :::
 
-4. **Écrire une Recette Simple**
+4. **Écrire une recette simple**
 
-   Allons préparer des pancakes ! 
+   C'est parti pour des pancakes ! 
 
-   Créez un nouveau fichier nommé `pancakes.gram`, ouvrez-le dans l'éditeur, et ajoutez-y la recette de base suivante :
+   Créez un fichier `pancakes.gram`, ouvrez-le dans votre éditeur et copiez-y cette recette de base :
 
    ```gram title="pancakes.gram"
    ---
@@ -93,40 +93,40 @@ Ce guide va vous aider à installer l'écosystème Gram et à compiler votre pre
    Verser l'&appareil sur une #plaque de cuisson{} à ^{feu moyen} et cuire pendant ~{2 min}.
    ```
 
-5. **Compiler la Recette**
+5. **Compiler la recette**
 
-   Il est temps de voir le compilateur en action !
+   Il est temps de voir le compilateur à l'œuvre !
 
-   Lancez la commande suivante dans le terminal pour compiler la recette vers un format JSON structuré :
+   Dans votre terminal, exécutez la commande suivante pour compiler la recette en un fichier JSON structuré :
 
    ```bash
    gram build pancakes.gram
    ```
 
-   Cette commande va parser la recette et produire sa représentation JSON structurée. Par défaut, elle l'affiche dans la console, mais vous pouvez la sauvegarder dans un fichier :
+   Elle va analyser (*parser*) la recette et générer sa représentation JSON. Par défaut, le résultat s'affiche directement dans la console, mais vous pouvez aussi l'enregistrer dans un fichier :
 
    ```bash
    gram build pancakes.gram -o pancakes.json
    ```
 
-   Bien que la sortie JSON soit incroyablement utile pour construire des applications autour de Gram, ce n'est pas le format le plus lisible pour des humains !
+   Le JSON, c'est redoutable pour *builder* des apps avec Gram, mais avouons-le : niveau lisibilité humaine, on a vu mieux !
 
-   Pour voir votre recette s'afficher directement et élégamment dans votre terminal, vous pouvez utiliser la commande `view` :
+   Pour un affichage élégant directement dans votre terminal, dégainez la commande `view` :
 
    ```bash
    gram view pancakes.gram
    ```
 
    :::tip[Essayez le playground]
-   Si vous ne voulez encore rien installer, vous pouvez tester Gram directement sur le web via le [Playground](/fr/play/) (ou ouvrir la recette à l'aide de l'[Extension VS Code](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)).
+   Pas envie d'installer quoi que ce soit pour le moment ? Testez Gram directement dans votre navigateur grâce au [Playground](/fr/play/) (ou visualisez la recette via l'[extension VS Code](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)).
    :::
 
 </Steps>
 
-## Étapes Suivantes
+## Prochaines étapes
 
-Maintenant que vous avez vu les bases, il est temps de découvrir la véritable puissance des variables relationnelles, des minuteurs et de la mise à l'échelle automatique en écrivant une recette plus complexe :
+Maintenant que vous avez les bases, explorons la vraie puissance de Gram : variables, *timers* passifs et *scaling* automatique. Passons aux choses sérieuses :
 <CardGrid>
-  <LinkCard title="Tutoriel : Votre Première Recette Complexe" description="Apprenez à utiliser les variables intermédiaires, les minuteurs passifs et les ingrédients composites." href="/fr/docs/tutorials/first-recipe/" />
-  <LinkCard title="Structure du Document" description="Découvrez comment est organisé un fichier Gram." href="/fr/docs/reference/syntax/document-structure/" />
+  <LinkCard title="Tutoriel : votre première recette complexe" description="Apprenez à utiliser les variables intermédiaires, les minuteurs passifs et les ingrédients composites." href="/fr/docs/tutorials/first-recipe/" />
+  <LinkCard title="Structure du document" description="Découvrez comment est organisé un fichier Gram." href="/fr/docs/reference/syntax/document-structure/" />
 </CardGrid>

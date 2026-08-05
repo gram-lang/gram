@@ -11,21 +11,21 @@ La plupart des formats de recettes ne sont que des blocs de texte statiques. Gra
 
 ## La Philosophie
 
-Cuisiner, c'est un peu comme un algorithme : on prend des ingrédients en entrée et on sort un plat fini. Mais pour moi, c'est surtout une passion. Gram est né de là : j'adore cuisiner et je voulais un outil capable d'allier la rigueur du code à la créativité en cuisine.
+Cuisiner, c'est un peu comme exécuter un algorithme : on prend des ingrédients en entrée et on obtient un plat en sortie. Mais c'est avant tout une passion. Gram est né de ce constat : passionné de cuisine, je cherchais un outil capable d'allier la rigueur du code à la créativité culinaire.
 
-J'ai toujours adoré l'idée d'écrire des recettes en texte brut, largement inspiré par des projets pionniers comme l'excellent [Cooklang](https://cooklang.org) qui est fantastique pour des recettes maison simples et rapides. Mais quand les choses se compliquent — comme en pâtisserie avec de multiples préparations, l'usage du "pourcentage du boulanger", ou des plannings un peu tordus — s'appuyer uniquement sur du langage naturel montre vite ses limites.
+J'ai toujours aimé l'idée d'écrire des recettes en texte brut (*plain text*), très inspiré par des projets pionniers comme l'excellent [Cooklang](https://cooklang.org) (idéal pour des recettes maison simples et rapides). Mais dès que les choses se compliquent — comme en pâtisserie, avec ses multiples préparations, le "pourcentage du boulanger" ou des plannings complexes — s'appuyer uniquement sur du langage naturel montre vite ses limites.
 
-Gram tire également une profonde inspiration structurelle du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes tabulaires. Puisque Gram compile les recettes en un arbre JSON prévisible, la porte est grande ouverte pour développer à l'avenir des rendus visuels poussés, comme des diagrammes de Gantt ou des flux tabulaires.
+Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON prédictible, la porte est grande ouverte pour développer à terme des rendus visuels avancés (diagrammes de Gantt, flux tabulaires, etc.).
 
 J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit de la **logique relationnelle** et de **l'intégrité de données** dans la rédaction de vos recettes :
 
-- **Variables Relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez y faire référence en tant qu'ingrédient à l'étape 5, évitant ainsi les duplications.
+- **Variables Relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez l'utiliser comme ingrédient à l'étape 5. Fini les duplications.
 - **Précision Physique** : Gram comprend la différence entre "le zeste d'un citron" et "le jus de 2 citrons", s'assurant que votre liste de courses agrège précisément "Acheter 2 citrons" au lieu de 3.
-- **Contrats de Données Stricts** : En utilisant des tags explicites, Gram s'assure que les températures, temps, ingrédients et équipements ne soient jamais confondus par le parseur.
+- **Contrats de Données Stricts** : En utilisant des tags explicites, Gram garantit que le *parseur* ne confondra jamais les températures, les temps, les ingrédients et le matériel.
 
 :::tip[L'Approche Écosystème]
 Gram n'est pas juste une syntaxe ; c'est un écosystème complet pour construire des applications culinaires.
-Si vous créez une application de recettes, un planificateur de repas ou un tableau de bord de cuisine, vous ne devriez pas avoir à parser du texte brut à la main. Le **Moteur Gram** transforme votre texte en un Arbre Syntaxique Abstrait (AST) riche, l'enrichit avec des propriétés physiques (comme la normalisation des masses et la nutrition), et génère une structure JSON sur laquelle vous pouvez vraiment vous appuyer.
+Que vous conceviez une application de recettes, un planificateur de repas ou un tableau de bord pour la cuisine, vous ne devriez pas avoir à *parser* du texte brut à la main. Le **Moteur Gram** transforme votre texte en un Arbre Syntaxique Abstrait (AST) riche, y injecte des propriétés physiques (comme la normalisation des masses ou le calcul nutritionnel), et génère une structure JSON sur laquelle vous pouvez bâtir en toute confiance.
 :::
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
@@ -42,7 +42,7 @@ L'écosystème Gram fournit tout ce dont vous avez besoin pour traiter vos recet
     **`@gram-lang/analyzer`** : Gère la standardisation des masses, le calcul des rendements (Yield), l'estimation nutritionnelle et l'agrégation avancée des listes de courses grâce à votre base de données locale.
   </Card>
   <Card title="Language Server (LSP)" icon="laptop">
-    Apporte un vrai support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
+    Apporte un véritable support éditeur à vos recettes (autocomplétion, diagnostics, infobulles).
   </Card>
   <Card title="CLI" icon="window">
     **`@gram-lang/cli`** : Compilez, mettez à l'échelle, comparez vos versions (diff) et gérez votre base d'ingrédients directement depuis votre terminal.
@@ -134,12 +134,12 @@ portions: 10
 ```
 </CodeTabs>
 
-Remarquez comment l'étape `[Incorporer]` utilise `<@œufs{6}` ? Cette syntaxe *d'ingrédient composite* indique à Gram que vous n'utilisez que les jaunes, mais que la liste de courses doit correctement agréger les œufs entiers pour l'achat. Le tag de section `~{-1d}` met en place un rétro-planning par rapport à l'heure finale de cuisson, et `->&lait chaud{}` prépare une variable intermédiaire que vous pouvez verser plus tard.
+Vous avez remarqué l'étape `[Incorporer]` qui utilise `<@œufs{6}` ? Cette syntaxe *d'ingrédient composite* indique à Gram que vous n'utilisez que les jaunes, tout en précisant que la liste de courses devra comptabiliser des œufs entiers. Le tag de section `~{-1d}` met en place un rétro-planning basé sur l'heure finale de cuisson, et `->&lait chaud{}` déclare une variable intermédiaire prête à être réutilisée plus loin.
 
 import { LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="Prêt à vous lancer ?"
-  description="Consultez le guide Pour Commencer pour installer Gram et écrire votre première recette."
+  description="Consultez le guide « Premiers pas » pour installer Gram et écrire votre première recette."
   href="/fr/docs/tutorials/getting-started/"
 />

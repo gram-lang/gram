@@ -3,29 +3,29 @@ title: "Rendu & Sortie (@gram-lang/renderer)"
 description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, impression et diagramme de Gantt."
 ---
 
-Une fois qu'une recette a été analysée par `@gram-lang/parser`, compilée par `@gram-lang/kitchen`, et (optionnellement) enrichie par `@gram-lang/analyzer`, elle est prête à être présentée à l'utilisateur.
+Une fois la recette ingérée par `@gram-lang/parser`, compilée par `@gram-lang/kitchen`, et (idéalement) boostée par `@gram-lang/analyzer`, il ne reste plus qu'à l'afficher.
 
-Le paquet `@gram-lang/renderer` prend cet objet JSON enrichi final et le transforme en un Markdown structuré ou en HTML sémantique.
+Le *package* `@gram-lang/renderer` embarque ce gros JSON final pour le recracher en Markdown ou en HTML sémantique.
 
 ## Formats de Rendu
 
-Le moteur de rendu (renderer) prend en charge quatre formats de sortie :
+Le *renderer* supporte quatre exports :
 
 ### 1. Markdown (`toMarkdown`)
-Génère un Markdown standard qui inclut une liste de courses formatée, une section équipement, des étapes clairement numérotées, des notes de bas de page GFM (`[^1]`), des badges de masse brute, et une section nutritionnelle optionnelle (`## 🥗 Nutrition`). C'est parfait pour publier des recettes sur des générateurs de sites statiques (comme VitePress ou Hugo) ou les sauvegarder dans une application de notes comme Obsidian.
+Génère un Markdown propre (GFM), incluant la liste de courses, le matos, des étapes numérotées, des notes de bas de page (`[^1]`), les badges de masse brute, et les macros nutritionnels (`## 🥗 Nutrition`). C'est l'export roi pour les générateurs de sites statiques (VitePress, Hugo, Astro) ou les apps de prise de notes (Obsidian).
 
 ### 2. HTML Sémantique (`toHTML`)
-Génère un document HTML sémantique et autonome. Le moteur de rendu HTML est conçu avec une architecture d'**Inversion de Contrôle**, vous permettant d'injecter vos propres classes CSS personnalisées et icônes SVG pour correspondre au design system de votre application.
+Génère un DOM HTML sémantique. L'export HTML repose sur l'**Inversion de Contrôle** : vous injectez vos propres classes CSS (coucou Tailwind) et vos SVG pour épouser le *Design System* de votre application.
 
 ### 3. HTML pour Impression (`toPrintHTML`)
-Génère un document `<!DOCTYPE html>` complet et autonome avec sa propre feuille de style d'impression intégrée (taille de page A4, gestion des sauts de page pour les sections) et un jeu d'icônes fixe — conçu pour être ouvert directement dans un navigateur et imprimé, sans dépendance externe pour la feuille de style ou les ressources. Contrairement à `toHTML`, il n'accepte pas de surcharges pour `icons`/`classes`, mais il prend en charge `formatDuration`, `formatFraction`, et `hideStepQty`.
+Crache un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
 
 ### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Génère une vue chronologique interactive de la recette — étapes actives, minuteurs en tâche de fond, et compression des temps morts — sous forme de fragment HTML. Contrairement aux trois formateurs ci-dessus, ce n'est pas une simple fonction pure : `toGanttHTML` produit un balisage statique (sans état de mode horaire/vue compacte figé), et un appel compagnon `attachGanttInteractivity(container, options)` connecte les tooltips au survol et les contrôles de mode horaire/heure cible/vue compacte côté client, via de la délégation d'événements DOM plutôt que la traversée `RenderBackend` partagée. Voir la [Référence API](/fr/docs/reference/api/renderer) pour le contrat complet de `GanttRenderOptions`/`GanttInteractivityOptions`.
+Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` crache le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`.
 
 ## Traversée Unifiée (`RenderBackend`)
 
-Sous le capot, les trois moteurs de rendu de documents (Markdown, HTML, Print HTML) délèguent leur travail à une fonction d'orchestration unique (`renderRecipe` dans `traversal.ts`) qui invoque une implémentation `RenderBackend` propre à chaque format. Cela garantit une parité structurelle totale entre ces formats — le titre, le bloc de métadonnées, la liste de courses, la section matériel, les instructions, les notes et le panneau nutrition sont parcourus strictement dans le même ordre, que la cible soit HTML, Markdown ou Print HTML. Le diagramme de Gantt produit une sortie de nature fondamentalement différente (une chronologie, pas un document) et ne passe pas par cette traversée.
+Sous le capot, Markdown, HTML et Print HTML délèguent le sale boulot à un orchestrateur unique (`renderRecipe` dans `traversal.ts`). Ce dernier invoque l'interface `RenderBackend` de chaque formateur. Cette architecture bétonne une parité absolue : titre, méta, caddie, matos, étapes, notes et macros seront toujours parcourus dans cet ordre strict, peu importe le format de sortie cible. Le Gantt fait figure d'exception, produisant un graphe et non un document.
 
 ## Exemple d'Utilisation
 
@@ -52,7 +52,7 @@ const recipe = {
 // 1. Rendu Markdown simple
 const markdown = toMarkdown(recipe);
 
-// 2. Rendu HTML personnalisé avec icônes sur mesure (Inversion de Contrôle)
+// 2. Rendu HTML sur-mesure (Inversion de Contrôle)
 const html = toHTML(recipe, {
   icons: {
     clock: '<svg class="icon-clock">...</svg>',
@@ -65,20 +65,20 @@ const html = toHTML(recipe, {
 });
 ```
 
-`RendererOptions` expose également `bakersReference`/`bakersMathOnly` (pour afficher les calculs en pourcentage du boulanger), `hideStepQty` (pour omettre les quantités des ingrédients dans le texte des étapes en ligne sur l'ensemble des formatteurs), et `renderId` (un préfixe pour les identifiants d'ancre des notes de bas de page, ex. `"note-1"` ; a une valeur fixe par défaut, à surcharger avec quelque chose d'unique — un slug de recette par exemple — lorsque plusieurs recettes sont rendues sur la même page, pour éviter les collisions d'identifiants).
+L'objet `RendererOptions` offre aussi `bakersReference`/`bakersMathOnly` (pour les calculs de boulange), l'astucieux `hideStepQty` (pour expurger les quantités des phrases *inline*), ou encore `renderId`. Ce dernier préfixe les ancres HTML (ex: `"note-1"`) et s'avère indispensable (ex: avec un slug de recette) pour éviter les collisions d'ID si vous affichez plusieurs recettes sur la même page Web.
 
 ## Fonctionnalités
 
-- **Formatage des Fractions** : Convertit les décimales en chaînes de fractions lisibles pour des quantités de cuisine courantes (ex : `0.5` devient `"1/2"`, `0.33` devient `"1/3"`) pour une meilleure lisibilité dans des contextes culinaires. Ce sont des fractions en texte brut (`1/2`), pas un caractère unicode unique.
-- **Échappement Intelligent** : les trois moteurs de rendu échappent le contenu généré par l'utilisateur (titres, noms d'ingrédients, texte des étapes, commentaires) avant de l'insérer. `toHTML`/`toPrintHTML` échappent les entités HTML, donc leur sortie est sûre à insérer telle quelle dans une page. `toMarkdown` neutralise spécifiquement `<` et `&` (encodés en entités `&lt;`/`&amp;`, qui s'affichent comme des caractères littéraux dans n'importe quel lecteur Markdown) afin qu'une balise brute comme `<img src=x onerror=...>` dans un titre ou un nom d'ingrédient ne puisse pas survivre en HTML exécutable si vous convertissez ensuite ce Markdown en HTML.
+- **Formatage des Fractions** : Mue les horribles décimales en fractions de cuisine (`0.5` → `"1/2"`, `0.33` → `"1/3"`). Attention, ce sont de vraies *strings* ascii (`1/2`), pas des caractères unicode.
+- **Échappement Malin** : Les formateurs échappent tous les contenus saisis par l'utilisateur. `toHTML`/`toPrintHTML` sont donc *safe* à injecter cash dans votre DOM. `toMarkdown` va jusqu'à assainir préventivement `<` et `&` (en `&lt;`/`&amp;`). Ainsi, si un petit malin glisse un `<img src=x onerror=...>` dans un titre, ce code malveillant ne s'exécutera pas quand vous compilerez ce Markdown pour le web.
   :::caution
-  Cet échappement neutralise le passthrough HTML brut (le vecteur XSS le plus courant avec les moteurs Markdown par défaut comme `markdown-it`/`remark`), mais `toMarkdown` ne fait pas de sanitization Markdown complète — un lien `[texte](javascript:...)` par exemple resterait tel quel. Si vous transformez la sortie de `toMarkdown()` en HTML à partir de sources non fiables (ex. fichiers `.gram` importés/partagés via `gram import`), assainissez tout de même le HTML final (ex. `rehype-sanitize`, DOMPurify) plutôt que de présumer la sortie entièrement sûre.
+  Même si cet échappement bloque les injections HTML vicieuses (le vecteur XSS classique via `markdown-it`/`remark`), `toMarkdown` ne purge **pas** tout. Un lien `[texte](javascript:...)` passera. Si vous rendez des `.gram` issus de sources douteuses, passez un coup de `DOMPurify` ou `rehype-sanitize` sur le HTML final par principe.
   :::
-- **Formatage de la Durée** : Convertit les nombres entiers de minutes bruts en chaînes lisibles par l'homme (ex : `90` devient `1 h 30 min`).
-- **Pré-stylisation CSS** : Le paquet fournit une feuille de style `gram.css` avec le thème pour l'aperçu en direct (tokens clair/sombre pour chaque type d'élément, ex : ingrédients, minuteurs) et une feuille de style `gantt.css` pour le diagramme de Gantt (chargée aux côtés de `gram.css`, jamais seule — elle réutilise ses tokens `--color-*`/`--gray-*`/`--gram-font-*` et son sélecteur de mode sombre). La feuille de style d'impression dédiée utilisée pour `toPrintHTML` est une feuille de style intégrée séparée — vous n'avez pas besoin de charger un fichier CSS vous-même pour utiliser la sortie d'impression.
+- **Formatage des Durées** : Transforme d'infâmes minutes brutes en temps humain (`90` → `1 h 30 min`).
+- **Pré-stylisation CSS** : Le *package* *ship* un fichier `gram.css` embarquant le thème officiel (tokens clair/sombre par composant) ainsi qu'un `gantt.css` (dépendant du premier). Le Print HTML, lui, a sa propre CSS directement injectée dans son *header* : c'est *plug and play*.
 
 ## Consommation Directe du JSON
 
-Si vous construisez une application web moderne (ex : utilisant React, Vue ou Svelte), vous **n'avez pas l'obligation** d'utiliser `@gram-lang/renderer`.
+Si vous *buildez* une app frontend (React, Vue, Svelte), vous **n'êtes absolument pas forcé** d'utiliser `@gram-lang/renderer`.
 
-La sortie JSON de `@gram-lang/analyzer` est structurée et vous pouvez itérer dessus directement — mapper sur `recipe.sections` et `recipe.shopping_list` couvre les cas les plus courants. Gardez à l'esprit que des recettes plus riches peuvent produire des formes plus variées qu'il vaut la peine de traiter explicitement, telles que les alternatives/groupes d'ingrédients, les ingrédients composites, ou les articles possédant `normalizedMass`, `purchasingMass`, et `bakersPercentage` — la propre logique de formatage de `@gram-lang/renderer` est une bonne référence pour savoir comment traiter ces cas si vous construisez un consommateur personnalisé.
+Le JSON recraché par `@gram-lang/analyzer` est typé, prêt à être itéré. Mapper bêtement sur `recipe.sections` et `recipe.shopping_list` fera l'affaire 90% du temps. N'oubliez pas les *edge cases* sympas des recettes riches (alternatives, composites, pourcentage du boulanger, `purchasingMass`). Si vous codez votre propre affichage, n'hésitez pas à jeter un œil au code source de `@gram-lang/renderer` pour vous inspirer !

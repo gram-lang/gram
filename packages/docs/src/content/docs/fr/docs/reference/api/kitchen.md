@@ -1,9 +1,9 @@
 ---
 title: "@gram-lang/kitchen"
-description: "Le compilateur : transforme une recette parsée en une charge JSON structurée avec liste de courses, minutages et avertissements."
+description: "Le compilateur : transforme une recette parsée en un JSON structuré avec liste de courses, minutages et avertissements."
 ---
 
-Le compilateur. Prend un `RecipeAST` (issu de `@gram-lang/parser`) et produit un `CompilationResult` : une charge JSON propre, structurée, prête au rendu — liste de courses, instructions par section avec minutages, un registre global d'ingrédients/matériel, et les éventuels avertissements structurels. Aucune base de données d'ingrédients n'intervient à cette étape ; c'est le travail de `@gram-lang/analyzer`.
+Il s'agit du compilateur. Il prend un `RecipeAST` (issu de `@gram-lang/parser`) et recrache un `CompilationResult` : un objet JSON propre, structuré, prêt au rendu (liste de courses, instructions découpées par section avec leurs minutages, un registre global d'ingrédients/matériel, et les éventuels *warnings* structurels). Aucune base de données d'ingrédients n'est nécessaire à cette étape : ce sera le job de `@gram-lang/analyzer`.
 
 ## `compile`
 
@@ -20,7 +20,7 @@ const compiled = compile(ast);
 // compiled.shopping_list, compiled.sections, compiled.metrics, compiled.warnings, ...
 ```
 
-Lève une `Error` simple pour les violations structurelles qui ne peuvent pas être représentées comme un avertissement récupérable — ex : plus d'un ingrédient marqué avec le modificateur pourcentage boulanger (`*`).
+Cette fonction *throw* une `Error` simple pour toute violation structurelle impossible à représenter via un *warning* récupérable (ex : plus d'un ingrédient marqué avec le modificateur *Baker's Math* `*`).
 
 ### `CompilerOptions`
 
@@ -55,11 +55,11 @@ interface CompilationResult {
 }
 ```
 
-Voir [Formats de Données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté de cette forme, et [Avertissements](/fr/docs/reference/api/warnings) pour ce qui peut apparaître dans `.warnings`.
+Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté de cette structure, et [Avertissements](/fr/docs/reference/api/warnings) pour le catalogue de ce qui peut apparaître dans `.warnings`.
 
 ## Mise à l'échelle
 
-Les recettes sont compilées à leurs quantités de base ; la mise à l'échelle est une étape séparée et composable afin que les appelants (ex : un curseur « portions » en temps réel dans une UI) puissent remettre à l'échelle sans re-parser ni recompiler.
+Les recettes sont d'abord compilées avec leurs quantités par défaut ; la mise à l'échelle (*scaling*) est une étape séparée et composable. Ainsi, les appelants (ex : un *slider* « portions » temps réel dans une UI) peuvent recalculer les quantités à la volée, sans devoir re-parser ni recompiler.
 
 ```typescript
 function resolveScaleFactor(
@@ -89,11 +89,11 @@ const scaled = applyScale(compiled, factor);
 
 `resolveScaleFactor` lève une sous-classe typée de `ScaleError` (chacune avec un `.code`) lorsque la demande ne peut être satisfaite : `InvalidFactorError` (levée si le facteur n'est pas strictement positif fini ou si une quantité dépasse `Infinity`), `IngredientNotFoundError`, `NestedOnlyTargetError` (la cible n'existe que dans une sous-recette composite), `AlternativeTargetError` (la cible est une option d'un groupe `@a|@b`), `FixedIngredientError` (marqué `@=` ou non numérique), `RelativeTargetError` (quantité dérivée d'un `%`), `AmbiguousMultiUnitError` (utilisé avec des unités incompatibles dans la recette), `NonNumericTargetError`, `UnitMismatchError`.
 
-`applyScale` est pure — elle ne mute jamais son entrée, de sorte que le même `CompilationResult` peut être remis à l'échelle à plusieurs reprises (ex : à chaque déplacement d'un curseur) sans effet cumulatif. Elle satisfait l'invariant de parité : `applyScale(compile(ast), factor) ≡ compile(ast, { scaleFactor: factor })`.
+`applyScale` est une fonction pure : elle ne mute jamais son entrée. Le même `CompilationResult` peut donc être *scalé* à de multiples reprises (ex : à chaque mouvement de souris sur un *slider*) sans accumuler de dérives. Elle garantit l'invariant de parité suivant : `applyScale(compile(ast), factor) ≡ compile(ast, { scaleFactor: factor })`.
 
 ## Liste de courses & minutage (bas niveau)
 
-`compile()` appelle déjà ces fonctions en interne ; elles sont exportées pour un usage avancé (ex : recalculer une liste de courses à partir d'un `ProcessedSection[]` construit sur mesure).
+`compile()` appelle déjà ces fonctions sous le capot ; elles ne sont exportées que pour des cas d'usage très avancés (ex : regénérer une liste de courses depuis un `ProcessedSection[]` reconstitué de toutes pièces).
 
 ```typescript
 function generateShoppingList(
@@ -107,7 +107,7 @@ function calculatePreparationTime(sections: ProcessedSection[], registry: Regist
 
 ## `RecipeRegistry`
 
-Le registre mutable d'ingrédients/matériel construit pendant la compilation, indexé par `slugify(name)`. Implémente l'interface `Registry` (`ingredients: Map`, `cookware: Map`, `warnings: Warning[]`).
+Il s'agit du registre mutable (ingrédients et matériel) instancié pendant la compilation, et indexé par `slugify(name)`. Il implémente l'interface `Registry` (`ingredients: Map`, `cookware: Map`, `warnings: Warning[]`).
 
 ```typescript
 class RecipeRegistry implements Registry {
@@ -122,4 +122,4 @@ class RecipeRegistry implements Registry {
 
 ## Avertissements
 
-`CompilationResult.warnings` est un `Warning[]` — les problèmes structurels détectés pendant la compilation (références indéfinies, conflits de portée, unités de minuteur/température invalides, références circulaires...). Voir la [référence des avertissements](/fr/docs/reference/api/warnings) pour la liste complète des codes, les sévérités, et les exports `WarningCode`/`pushWarning`.
+`CompilationResult.warnings` est un tableau de `Warning[]` recensant les problèmes structurels détectés pendant la compilation (références fantômes, conflits de portée, unités de minuteur/température invalides, références circulaires...). Consultez la [référence des avertissements](/fr/docs/reference/api/warnings) pour la liste exhaustive des codes, des niveaux de sévérité, et des utilitaires `WarningCode`/`pushWarning`.

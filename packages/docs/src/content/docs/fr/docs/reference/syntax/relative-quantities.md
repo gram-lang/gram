@@ -3,9 +3,9 @@ title: "Quantités Relatives"
 description: "Définissez la quantité d'un ingrédient en pourcentage d'un autre ingrédient ou d'une variable pour équilibrer la recette."
 ---
 
-En cuisine, et particulièrement en pâtisserie, la précision est primordiale. Se reposer sur des quantités fixes peut parfois mener à des recettes déséquilibrées lorsque le rendement des ingrédients crus varie (ex : un citron qui donne plus de jus que prévu).
+En cuisine (et particulièrement en pâtisserie), la précision est souveraine. S'appuyer sur des quantités absolues mène parfois à des recettes déséquilibrées, surtout face au rendement variable des produits crus (ex : un citron anormalement juteux).
 
-Gram résout ce problème en vous permettant de définir la quantité d'un `@ingrédient` dynamiquement comme un pourcentage d'un autre `@ingrédient` ou d'une `&variable` intermédiaire. Cela garantit que votre recette reste parfaitement équilibrée, quelles que soient les variations de la vie réelle.
+Gram résout cette équation en vous permettant de définir la quantité d'un `@ingrédient` dynamiquement : en pourcentage d'un autre `@ingrédient` ou d'une `&variable` intermédiaire. La garantie d'une recette inébranlable, peu importe les caprices du réel.
 
 ## Syntaxe
 
@@ -35,9 +35,9 @@ Lorsque le compilateur Gram calcule une quantité relative, il suit ces règles 
 
 | Règle | Ce que cela signifie pour vous |
 | :--- | :--- |
-| **Portée de la Section** | Vous ne **pouvez pas** cibler un `@ingrédient` ou une `&variable` déclaré(e) dans une `## Section` différente. Le compilateur ne regarde que la section courante. |
-| **Accumulation** | Si vous déclarez le même `@ingrédient` plusieurs fois dans une `## Section`, le pourcentage sera appliqué à la **somme totale** de ces quantités. |
-| **Basé sur la Masse** | Le calcul est toujours basé sur le **poids en grammes**. Par exemple, 50 % de "2 œufs" (50 g chacun) donnera **50 g**, et non 1 œuf. |
+| **Portée** | Les cibles relatives sur un `@ingrédient` sont limitées à la `## Section` courante. Pour cibler un composant d'une autre section, passez par une `&variable` globale. |
+| **Accumulation** | Si vous déclarez plusieurs fois le même `@ingrédient` dans une `## Section`, le pourcentage s'appliquera sur la **somme cumulée** de ses quantités. |
+| **Basé sur la Masse** | Le calcul repose invariablement sur la **masse en grammes**. Par exemple, 50 % de « 2 œufs » (estimés à 50 g l'unité) donnera **50 g**, et non 1 œuf. |
 
 ## Règles de Calcul des Masses
 
@@ -52,11 +52,11 @@ Puisque les quantités relatives reposent sur le calcul de pourcentages de masse
 
 ## Comportement de la Liste de Courses
 
-Parce que les quantités relatives sont essentiellement des formules mathématiques (ex : `125 % du jus de citron`), le compilateur Gram doit décider comment les afficher dans la **Liste de Courses** finale. Il le fait en fonction de sa capacité à résoudre la formule en une masse physique.
+Étant donné que les quantités relatives sont de pures formules mathématiques (ex : `125 % du jus de citron`), le compilateur Gram doit arbitrer leur affichage dans la **liste de courses** finale. Sa décision dépend de sa capacité à résoudre la formule pour obtenir une masse physique.
 
 ### 1. Entièrement Résolue (Comportement Standard)
 
-Si le compilateur parvient à déterminer la masse physique de la cible (en utilisant les règles de calcul ci-dessus), il évalue la formule. Le résultat est traité exactement comme une masse physique fixe et est agrégé de manière transparente dans votre liste de courses. Vous ne verrez pas les mathématiques internes, seulement le poids final requis pour les achats.
+Si le compilateur parvient à déterminer la masse physique de la cible (via les règles ci-dessus), il évalue la formule. Le résultat est traité exactement comme une masse fixe et s'agrège de façon transparente à la liste de courses. Vous ne verrez pas les rouages mathématiques : seul le poids d'achat final subsiste.
 
 *Exemple de Liste de Courses :*
 ```text
@@ -65,15 +65,15 @@ Si le compilateur parvient à déterminer la masse physique de la cible (en util
 
 ### 2. Non Résolue & Sortie Hybride
 
-Parfois, le compilateur ne peut pas évaluer la formule. Cela se produit si vous avez désactivé la standardisation des masses globalement, ou si la masse de la cible est totalement inconnue (ex : la cible utilise une unité non standardisée comme `1 flasque`, ou bien elle nécessite une conversion volume-masse mais l'`@ingrédient` est absent de votre base `ingredients.yaml`).
+Il arrive que le compilateur bute sur la formule. C'est le cas si vous avez désactivé la standardisation des masses, ou si la masse de la cible est une impasse (ex : la cible emploie une unité non standardisée comme `1 louche`, ou nécessite une conversion volume-masse mais l'`@ingrédient` manque à l'appel dans `ingredients.yaml`).
 
-Dans ce cas, Gram ne peut pas vous donner un poids final en grammes. Au lieu de cela, il recourt à une **Sortie Hybride**. Il affichera le texte brut de la formule, et y ajoutera proprement toute autre quantité fixe de cet `@ingrédient` qu'il a trouvée dans la recette.
+Dans ce cas, Gram est incapable de sortir un poids final en grammes. Il bascule alors sur une **sortie hybride**. Il affichera le texte brut de la formule, auquel il greffera proprement toute autre quantité fixe de cet `@ingrédient` trouvée dans la recette.
 
 *Exemple de Liste de Courses (en supposant que la recette utilise aussi un `@sucre{20 g}` fixe ailleurs) :*
 ```text
 - Sucre : 20g + (125 % du jus de citron)
 ```
-Cela garantit que vous ne perdez jamais vos exigences d'achat, même si les calculs ne peuvent pas être parfaitement résolus !
+Une parade robuste pour ne jamais perdre une exigence d'achat en route, même quand les calculs échouent !
 
 ## Gestion des Erreurs
 
@@ -83,4 +83,4 @@ Le compilateur est conçu pour attraper les erreurs de logique dans les quantit�
 - **Référence Circulaire** : Si un `@ingrédient` essaie de calculer un pourcentage de lui-même (ex : `@farine{10 % @&farine}`), le compilateur avertit `CIRCULAR_REFERENCE` et affiche `(10 % de lui-même) ⚠️`.
 - **Masse Cible Inconnue** : Si la masse de la cible ne peut pas être résolue depuis la base de données physique, l'analyseur avertit `RELATIVE_QUANTITY_UNKNOWN_MASS` et laisse la sortie non résolue.
 
-Puisque la valeur d'une quantité relative est toujours dérivée d'un autre ingrédient, elle ne peut pas non plus être utilisée comme [cible de référence pour `--scale`](/fr/docs/how-to/scale-recipes#limits-of-reference-scaling) ou comme base de Pourcentage du Boulanger — voir le [Guide détaillé : Mise à l'échelle](/fr/docs/explanation/scaling) pour l'ensemble complet des règles et codes d'erreur partagés entre les deux.
+Puisque la valeur d'une quantité relative dérive par nature d'un autre ingrédient, elle ne peut logiquement pas servir de [cible de référence pour `--scale`](/fr/docs/how-to/scale-recipes#limits-of-reference-scaling) ni de base de % du Boulanger. Consultez le [Guide détaillé : Mise à l'échelle](/fr/docs/explanation/scaling) pour plonger dans les règles et codes d'erreur qui régissent ces limitations.

@@ -3,7 +3,7 @@ title: "Analyse approfondie : Mise à l'Échelle (Scaling)"
 description: "Comment le ScaleEngine de Gram gère la mise à l'échelle globale, inversée et le pourcentage du boulanger."
 ---
 
-Mettre une recette à l'échelle (scaling) ressemble à une simple multiplication, mais Gram prend en charge en réalité trois mécanismes distincts qui finissent tous par produire un seul nombre — un **facteur d'échelle** — et l'appliquent ensuite uniformément partout : la liste de courses, chaque mention d'ingrédient dans le texte des étapes, et les métadonnées de `portions` de la recette.
+Mettre une recette à l'échelle (*scaling*) s'apparente à une simple multiplication, mais Gram gère en réalité trois mécanismes distincts. Ces mécanismes aboutissent tous à la production d'un nombre unique — le **facteur d'échelle** — qui est ensuite appliqué uniformément partout : liste de courses, mentions d'ingrédients dans les étapes, et métadonnées des `portions`.
 
 1. **Mise à l'Échelle Globale** — un facteur fixe (`--scale 2`).
 2. **Mise à l'Échelle Inversée** — une quantité cible pour un ingrédient (`--scale farine=400g`), à partir de laquelle le facteur est dérivé.
@@ -13,14 +13,14 @@ Ces trois éléments sont résolus et appliqués via un petit moteur centralisé
 
 ## Pourquoi un moteur dédié
 
-La mise à l'échelle inversée semble simple — diviser la quantité cible par la quantité actuelle de l'ingrédient — mais une implémentation naïve se trompe silencieusement sur un nombre surprenant de points :
+La mise à l'échelle inversée paraît simple sur le papier — il suffit de diviser la quantité cible par la quantité actuelle de l'ingrédient. Pourtant, une implémentation naïve se trompe silencieusement sur un nombre surprenant de cas :
 
 - Mettre à l'échelle par rapport à `farine=1kg` quand la recette est écrite avec `500g` calcule un facteur de `0.002` au lieu de `2` si on ne réconcilie pas les unités d'abord.
 - Mettre à l'échelle par rapport à un ingrédient marqué comme fixe (`@=`, ne se met jamais à l'échelle) produit un facteur qui ne décrit pas réellement ce qui arrive à la recette.
 - Mettre à l'échelle par rapport à une quantité relative (`@eau{70% @&farine}`) est circulaire : sa valeur est *dérivée* d'un autre ingrédient, elle ne peut donc pas être la référence en même temps.
-- Un ingrédient réparti sur deux unités incompatibles dans la même recette n'a qu'une quantité "primaire" dans la liste de courses agrégée — en dériver un facteur ignorerait silencieusement le reste.
+- Si un ingrédient est utilisé avec deux unités incompatibles dans la même recette, seule sa quantité "primaire" figure dans la liste de courses agrégée. En déduire un facteur d'échelle reviendrait à ignorer le reste silencieusement.
 
-`resolveScaleFactor()` (exportée depuis `@gram-lang/kitchen`) valide tout cela en amont et lève une erreur spécifique et typée au lieu de renvoyer un nombre erroné. Chaque consommateur — l'option `--scale` du CLI aujourd'hui, le Playground demain — appelle la même fonction et obtient les mêmes garanties gratuitement.
+Exportée depuis `@gram-lang/kitchen`, la fonction `resolveScaleFactor()` valide tout cela en amont et lève une erreur fortement typée au lieu de renvoyer une valeur fantaisiste. Tous les consommateurs (l'option `--scale` du CLI aujourd'hui, le Playground demain) appellent cette même fonction et bénéficient de ces garanties gratuitement.
 
 ## Le contrat requête/résolution
 
@@ -57,12 +57,12 @@ function resolveScaleFactor(
 
 ## Immuabilité
 
-`applyScale(result, factor)` — la fonction qui multiplie réellement chaque quantité — est une fonction pure : elle fait un clone (`structuredClone`) de l'entrée avant de modifier quoi que ce soit, et renvoie un nouveau `CompilationResult`. Deux avantages en découlent gratuitement :
+La fonction qui applique réellement la multiplication sur chaque quantité, `applyScale(result, factor)`, est une fonction pure : elle clone l'entrée (`structuredClone`) avant toute modification, puis renvoie un nouveau `CompilationResult`. Cela offre deux avantages majeurs :
 
 - **Pas de cumul.** Réappliquer un facteur différent repart toujours du même original non modifié, il n'y a donc aucun risque d'appliquer un facteur deux fois sur une valeur `portions` déjà mise à l'échelle.
 - **Pas de corruption par référence partagée.** `compile()` lui-même clone défensivement l'objet `meta` de l'AST avant de le passer au résultat, donc mettre à l'échelle une recette compilée ne modifie jamais l'AST de l'analyseur syntaxique — c'est sans danger même si un futur appelant (ex : un Playground qui met en cache l'AST analysé et ne recompile que sur un mouvement du curseur d'échelle, au lieu de re-parser à chaque mouvement) réutilise le même AST à travers plusieurs appels.
 
-Le `CompilationResult` obtenu porte un champ honnête `scaleFactor` (par défaut `1`) enregistrant comment il se rapporte à l'original non mis à l'échelle — c'est ce que lisent les interfaces interactives (comme le widget de portions HTML du renderer) pour calculer une base, plutôt qu'un champ caché/préfixé par un tiret bas.
+Le `CompilationResult` final porte un champ explicite `scaleFactor` (défini à `1` par défaut) qui consigne son ratio par rapport à l'original. C'est cette valeur que lisent les interfaces interactives (comme le widget des portions HTML du *renderer*) pour calculer leur base, évitant ainsi de s'appuyer sur des champs masqués.
 
 ## Validation du Pourcentage du Boulanger
 
@@ -72,7 +72,7 @@ L'ingrédient de référence (marqué avec `@*`, ou forcé via `--bakers-referen
 
 Si les calculs du boulanger ont été demandés (`--bakers-math` ou `--bakers-reference`) mais qu'aucun modificateur `@*` ni aucun id correspondant n'ont été trouvés, un avertissement `NO_BAKERS_REFERENCE` est émis de la même manière — vérifiez `result.warnings` plutôt qu'un `console.log`.
 
-**L'agrégation reste cohérente avec la masse.** Lorsque le même ingrédient est utilisé plus d'une fois dans une section (ex : du sucre ajouté à deux étapes différentes), `aggregateSectionIngredients` de `@gram-lang/kitchen` somme à la fois la masse normalisée (`normalizedMass`) et le `bakersPercentage` à travers les occurrences répétées — puisque le pourcentage est linéaire à la masse pour une référence fixe, les deux concordent toujours (ex : deux occurrences de 100 g/10 % s'agrègent en 200 g/20 %, jamais en un incohérent 200 g/10 %). Chaque moteur de rendu (les formateurs HTML, Markdown, et impression de `@gram-lang/renderer`, ainsi que le TUI `gram cook` du CLI) lit cette même valeur précalculée et déjà agrégée — aucun ne la recalcule de son côté.
+**L'agrégation reste cohérente avec la masse.** Si un même ingrédient est utilisé plusieurs fois dans une section (ex : du sucre ajouté à deux étapes distinctes), la méthode `aggregateSectionIngredients` de `@gram-lang/kitchen` additionne à la fois sa `normalizedMass` et son `bakersPercentage`. Puisque le pourcentage est linéaire par rapport à la masse de référence, les deux valeurs concordent systématiquement (ex: 100 g/10 % + 100 g/10 % donne bien 200 g/20 %, et non un aberrant 200 g/10 %). Tous les moteurs de rendu lisent cette valeur précalculée et agrégée sans jamais la recalculer de leur côté.
 
 ## Consommer ceci depuis un nouveau frontend
 

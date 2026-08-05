@@ -3,11 +3,11 @@ title: "Matériel (Cookware)"
 description: "Comment déclarer le matériel de cuisine avec le symbole #, entre nombre d'unités et dimensions physiques."
 ---
 
-Vous pouvez définir les ustensiles et l'équipement nécessaires pour une recette à l'aide du symbole `#`.
+Le matériel, les ustensiles et l'équipement requis par une recette se déclarent via le symbole `#`.
 
 ## Déclaration de Base
 
-Tout comme pour un `@ingrédient`, si le nom du `#matériel` est un mot unique et que vous n'en avez besoin que d'un seul, vous pouvez omettre les accolades `{}`.
+À l'instar d'un `@ingrédient`, si le nom du `#matériel` tient en un seul mot et que vous n'en réclamez qu'un exemplaire, les accolades `{}` sont facultatives.
 
 ```gram
 Faire chauffer la #poêle.
@@ -21,10 +21,10 @@ Prendre une #plaque de cuisson{}.
 
 ## Quantités vs Dimensions
 
-Contrairement à un `@ingrédient` (qui peut avoir des unités complexes comme des grammes ou des tasses), le `#matériel` possède une séparation syntaxique stricte entre son **nombre** et sa **description physique**.
+Contrairement à un `@ingrédient` (qui encaisse des unités complexes comme des grammes ou des tasses), le `#matériel` impose une séparation syntaxique stricte entre sa **quantité** et sa **description physique**.
 
 ### 1. Quantité (Nombre Entier)
-Les accolades `{}` sont strictement réservées au nombre d'éléments dont vous avez besoin. Ce doit être un entier pur.
+Les accolades `{}` sont strictement réservées au nombre d'ustensiles nécessaires. Il doit impérativement s'agir d'un entier.
 
 ```gram
 #poêle              // Vaut 1 poêle par défaut
@@ -32,7 +32,7 @@ Les accolades `{}` sont strictement réservées au nombre d'éléments dont vous
 ```
 
 ### 2. Dimensions et Matériaux
-Pour spécifier la taille, les dimensions, le matériau, ou toute autre description du `#matériel`, vous devez utiliser des parenthèses `()`.
+Pour préciser la taille, les dimensions, le matériau ou tout autre qualificatif du `#matériel`, utilisez les parenthèses `()`.
 
 ```gram
 #poêle(20cm)                        // 1 poêle, de taille 20cm
@@ -45,7 +45,7 @@ Ne mettez pas les dimensions à l'intérieur des accolades de quantité (ex : �
 
 ## Comportement de Mise à l'échelle
 
-Contrairement à un `@ingrédient` qui se met généralement à l'échelle de façon linéaire par défaut, le comportement de mise à l'échelle du `#matériel` dépend de la façon dont la quantité est spécifiée :
+Contrairement à un `@ingrédient` dont les quantités sont par défaut proportionnelles au nombre de portions, le comportement de mise à l'échelle (*scaling*) du `#matériel` dépend de la façon dont sa quantité a été formulée :
 
 | Format | Exemple | Comportement | Description |
 | :--- | :--- | :--- | :--- |

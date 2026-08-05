@@ -3,54 +3,54 @@ title: "Extension VS Code"
 description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, diagramme de Gantt et correspondance d'ingrédients."
 ---
 
-L'extension officielle Gram pour VS Code transforme votre éditeur en un environnement de développement dédié aux recettes. Propulsée par le `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance avancée à la rédaction et un rendu dynamique en direct.
+L'extension officielle Gram pour VS Code transforme votre éditeur en un véritable IDE dédié aux recettes. Propulsée par le `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance à la saisie avancée et un rendu dynamique en direct.
 
 ## Capacités Principales
 
 ### 1. Aperçu en Direct Dynamique & Nutrition
-- **Rendu Côte-à-Côte** : À mesure que vous tapez, l'extension effectue le rendu de votre fichier `.gram` en HTML dans un panneau WebView dédié. Elle utilise les styles officiels du Playground, garantissant une correspondance parfaite avec les sorties de production.
-- **Gestion des Erreurs de Syntaxe** : Si votre recette contient des erreurs de syntaxe qui empêchent la compilation, le panneau d'aperçu affiche le message d'erreur, vous tenant informé sans pour autant planter.
+- **Rendu Côte-à-Côte** : Au fil de votre frappe, l'extension compile à la volée votre `.gram` en HTML dans un panneau WebView dédié. Elle embarque les styles officiels du Playground, garantissant un rendu fidèle au pixel près par rapport à la production.
+- **Résilience aux erreurs** : Si votre recette contient des erreurs de syntaxe bloquant la compilation, l'aperçu affiche gracieusement le message d'erreur pour vous tenir informé, sans jamais faire crasher l'extension.
 
 :::note[📊 CodeLens des Macros]
-Un bouton `CodeLens` dédié apparaît au-dessus du titre de la recette. Cliquer dessus révèle un panneau nutritionnel détaillé (calories, protéines, glucides, lipides) au sein de l'Aperçu en Direct. Il signale également les ingrédients absents de la base de données.
+Un bouton `CodeLens` magique apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'Aperçu. Il mettra également en surbrillance les ingrédients introuvables dans votre base de données.
 :::
 
 ### 2. Vue Diagramme de Gantt
-- **Panneau Chronologique** : Lancez `Gram: Gantt Chart` (ou cliquez sur l'icône graphique dans la barre d'outils de l'éditeur) pour ouvrir une vue chronologique dédiée de la recette — étapes actives, minuteurs en tâche de fond, et compression des temps morts — dans son propre panneau WebView, indépendant de l'Aperçu en Direct.
-- **Modes Horaires** : Basculez entre le temps écoulé (chronomètre, T+), le compte à rebours (T-), et l'heure réelle basée sur une heure de service cible, via le menu d'options du panneau.
-- **Vue Compacte** : Activez une mise en page plus dense pour les recettes comportant de nombreuses étapes qui se chevauchent.
+- **Panneau Chronologique** : Lancez `Gram: Gantt Chart` (ou cliquez sur l'icône de graphique dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, *timers* passifs, et compression des temps morts. Le tout dans une WebView dédiée, indépendante de l'Aperçu en Direct.
+- **Modes Horaires** : Depuis le menu du panneau, basculez à l'envie entre le temps écoulé (chronomètre, T+), le compte à rebours (T-), et un rétroplanning basé sur l'heure de service souhaitée.
+- **Vue Compacte** : Pour les recettes complexes grouillant d'étapes simultanées, activez une mise en page densifiée.
 
 ### 3. Gestion Intelligente des Ingrédients
-- **Gestion Silencieuse des Pluriels** : L'extension fait correspondre les noms au pluriel simples dans votre recette (ex : `@carottes`) aux entrées singulières de votre base de données YAML (`carotte`), maintenant ainsi le côté naturel du langage sans déclencher de fausses erreurs.
-- **Correspondance Approximative** : Si vous faites une faute de frappe sur un ingrédient, un algorithme de distance de Levenshtein suggère la correspondance connue la plus proche via des Actions de Code (Corrections Rapides / Quick Fixes).
-- **Informations au Survol** : Survolez n'importe quel ingrédient pour voir sa répartition nutritionnelle complète. Si la base de données spécifie une densité, le survol fournit également des conversions volume-masse en temps réel (ex : `1 c.à.s → 15 g`).
+- **Gestion silencieuse des pluriels** : L'extension fait intelligemment correspondre les pluriels basiques de votre recette (ex : `@carottes`) aux entrées singulières de votre base YAML (`carotte`). Vous conservez une rédaction naturelle sans déclencher de fausses alertes.
+- **Fuzzy Matching** : Une faute de frappe sur un ingrédient ? Un algorithme de Levenshtein vous suggère la correspondance la plus probable via les Actions de Code (*Quick Fixes*).
+- **Informations au Survol** : Survolez n'importe quel ingrédient pour inspecter ses macros. Si la base lui associe une densité, le survol convertit instantanément les volumes en masse (ex : `1 c.à.s → 15 g`).
 
 :::tip[Chargement Automatique de la Base de Données]
-L'extension localise automatiquement votre fichier `.gram/ingredients.yaml` à la racine de l'espace de travail. Vous pouvez également configurer explicitement `gram.ingredientDatabase.path` dans vos paramètres VS Code.
+L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` à la racine de votre *workspace*. Pour des configurations avancées, surchargez `gram.ingredientDatabase.path` dans vos paramètres VS Code.
 :::
 
 ### 4. Assistance à l'Édition & Navigation
-- **Jetons Sémantiques (Semantic Tokens)** : La coloration par expressions régulières (Regex) est remplacée par une coloration sémantique pilotée par l'AST. Cela garantit que les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés de manière précise en fonction de leur rôle.
+- **Jetons Sémantiques (*Semantic Tokens*)** : Oubliez la coloration syntaxique bancale par Regex, place à une coloration sémantique robuste pilotée par l'AST. Les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés avec une précision chirurgicale selon leur rôle.
 - **Autocomplétion Intelligente** :
-  - `@` suggère les ingrédients de votre base de données, en ajoutant automatiquement `{}` pour les noms composés de plusieurs mots.
-  - `&` suggère les déclarations intermédiaires disponibles (ex : `->&pâte`).
-  - `{}` suggère de manière contextuelle les unités canoniques (masse, volume, temps) et leurs alias dès qu'un chiffre est tapé.
+  - `@` suggère les ingrédients de la base, en encapsulant automatiquement de `{}` les noms composés.
+  - `&` suggère les variables intermédiaires déclarées en amont (ex : `->&pâte`).
+  - `{}` suggère contextuellement les unités canoniques (masse, volume, temps) et leurs alias dès que vous tapez un chiffre.
 
 #### Raccourcis de Navigation
 
 | Raccourci | Commande | Comportement |
 |---|---|---|
-| `F12` | Aller à la Définition | Saute d'une référence (`&ref`) à sa déclaration (`->&ref`). |
-| `Maj+F12` | Trouver Toutes les Références | Localise chaque utilisation d'une variable intermédiaire spécifique. |
-| `F2` | Renommer le Symbole | Renomme de manière atomique les variables intermédiaires à travers tout votre document. |
+| `F12` | Aller à la Définition | Saute d'une référence (`&ref`) vers sa déclaration initiale (`->&ref`). |
+| `Maj+F12` | Trouver Toutes les Références | Liste toutes les occurrences d'une variable intermédiaire. |
+| `F2` | Renommer le Symbole | Renomme de manière sûre et atomique une variable dans tout le document. |
 
 ### 5. Diagnostics & Refactorisation
-- **Validation en Temps Réel** : Le LSP signale immédiatement les références orphelines, les déclarations inutilisées et les champs de frontmatter manquants.
+- **Validation en Temps Réel** : Le LSP lève un drapeau instantanément sur les références orphelines, les déclarations inutilisées et les clés de frontmatter manquantes.
 - **Actions de Code 💡** :
-  - Ajouter un `title:` manquant dans le frontmatter.
-  - Supprimer les déclarations intermédiaires inutilisées.
-  - Déclarer un intermédiaire manquant pour une référence existante.
-  - Convertir les quantités en volume directement en masse dans votre code (si la densité est connue).
+  - Ajouter une clé `title:` manquante au frontmatter.
+  - Nettoyer les déclarations intermédiaires fantômes.
+  - Déclarer une variable manquante pour une référence orpheline.
+  - Convertir un volume en masse directement dans le code source (si la densité est connue).
 
 ### 6. Auto-formatage
 Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sur macOS) pour nettoyer instantanément la syntaxe :
@@ -63,7 +63,7 @@ Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sur macOS) p
 ```
 
 ## Améliorations de l'Interface de l'Éditeur
-- **Indications en Ligne (Inlay Hints)** : Affiche le temps écoulé cumulé (en texte gris) à côté des en-têtes de section, vous aidant à évaluer les durées totales de préparation d'un coup d'œil.
-- **Vue Plan (Outline)** : Le panneau natif Outline de VS Code se remplit d'une hiérarchie claire des sections et des intermédiaires de votre recette, rendant la navigation dans les grands documents très facile.
-- **Pliage (Gutter Folding)** : Les sections et les blocs frontmatter peuvent être repliés pour gagner de l'espace à l'écran.
-- **Extraits de Code Riches (Snippets)** : Tapez des raccourcis comme `recipe`, `##`, `step`, `@ing`, ou `#cw` pour générer rapidement des structures de recettes courantes.
+- **Indications *inline* (*Inlay Hints*)** : Injecte le temps cumulé (en texte grisé) en fin de ligne de chaque en-tête de section. Parfait pour évaluer la durée de préparation d'un seul coup d'œil.
+- **Vue Plan (*Outline*)** : Le panneau natif *Outline* de VS Code s'enrichit de la hiérarchie des sections et des variables intermédiaires : un atout majeur pour naviguer dans de longues recettes.
+- **Pliage (*Gutter Folding*)** : Le frontmatter et le contenu des sections peuvent être repliés pour alléger votre écran.
+- **Snippets malins** : Tapez des raccourcis comme `recipe`, `##`, `step`, `@ing` ou `#cw` pour *bootstrapper* rapidement des blocs entiers.

@@ -3,24 +3,24 @@ title: "Analyse Syntaxique & AST"
 description: "Comment @gram-lang/parser utilise une grammaire OhmJS pour transformer le texte .gram en Arbre Syntaxique Abstrait."
 ---
 
-Le paquet `@gram-lang/parser` est la fondation de l'écosystème Gram. Sa seule responsabilité est de lire le texte brut `.gram` et de le convertir en un Arbre Syntaxique Abstrait (AST).
+Le *package* `@gram-lang/parser` est le socle de l'écosystème Gram. Son unique responsabilité ? Avaler le texte `.gram` brut et accoucher d'un Arbre Syntaxique Abstrait (AST).
 
 ## OhmJS
 
-Les règles de syntaxe de Gram sont définies en utilisant [OhmJS](https://ohmjs.org/), une boîte à outils d'analyse syntaxique orientée objet basée sur les Grammaires d'Expression d'Analyse (PEG - Parsing Expression Grammars).
+Les règles de Gram sont codées en [OhmJS](https://ohmjs.org/), un *toolkit* de *parsing* orienté objet, fondé sur les *Parsing Expression Grammars* (PEG).
 
-Ohm rend extrêmement facile la construction de grammaires modulaires. Grâce à cela, `@gram-lang/parser` est incroyablement rapide et applique strictement les règles structurelles du langage — par exemple, un espace est formellement interdit autour du marqueur composite `<@` (`invalidComposite` dans la grammaire), donc `pâte < @pâtefeuilletée` échouera à l'analyse alors que `<@pâtefeuilletée` réussira.
+Ohm permet de construire des grammaires modulaires avec une facilité déconcertante. Le `@gram-lang/parser` est donc ultra-rapide et intransigeant sur les règles : par exemple, tout espace autour du marqueur composite `<@` est banni (`invalidComposite` dans la grammaire). Ainsi, `pâte < @pâtefeuilletée` crashera le *parser*, tandis que `<@pâtefeuilletée` passera crème.
 
 ## L'Arbre Syntaxique Abstrait (AST)
 
-Si l'analyseur réussit, il produit un AST. Il s'agit d'un arbre d'objets JavaScript représentant chaque jeton (token) sémantique de la recette.
+En cas de succès, le *parser* retourne un AST. Il s'agit d'un arbre d'objets JavaScript matérialisant chaque *token* sémantique de votre recette.
 
 Par exemple, cette simple étape :
 ```gram
 Ajouter la @farine{200 g}.
 ```
 
-Est analysée en un nœud `Step` contenant un nœud `Text` ("Ajouter la "), un nœud `Ingredient`, et un nœud `Text` de fin (".") :
+Sera décomposée en un nœud `Step` abritant un nœud `Text` ("Ajouter la "), un nœud `Ingredient`, et un dernier `Text` pour la ponctuation (".") :
 ```json
 {
   "type": "Ingredient",
@@ -38,28 +38,28 @@ Est analysée en un nœud `Step` contenant un nœud `Text` ("Ajouter la "), un n
 }
 ```
 
-Notez que `quantity.value` est toujours un objet `QuantityValueAST`, jamais un simple nombre — c'est ce qui permet à l'analyseur de représenter aussi des fractions (`1/2`) et des plages (`2-3`) sans perdre la représentation textuelle d'origine.
+Notez bien : `quantity.value` est systématiquement un objet `QuantityValueAST`, jamais un *Number* primitif. C'est l'astuce qui permet de supporter les fractions (`1/2`) et les fourchettes (`2-3`), tout en préservant le texte saisi par l'utilisateur.
 
 ### Nœuds AST Supportés
 
-L'analyseur expose des types de nœuds spécifiques pour tout ce qui existe dans le langage Gram (`ASTNodeType` dans `src/types.ts`) :
-- `Recipe` : Le nœud racine contenant le frontmatter (`meta`) et une liste de nœuds `Section`.
-- `Section` : Un groupe de nœuds `Step` et `Comment` de premier niveau. Une section peut également porter un en-tête de rétroplanning optionnel (`~{...}`) et une déclaration intermédiaire.
-- `Step` : Un paragraphe unique contenant des nœuds `Text`, `Ingredient`, `Cookware`, `Timer`, `Temperature`, `Reference`, `Alternative`, `IntermediateDecl`, et `Comment`. Une étape peut aussi commencer par une balise optionnelle `action` entre crochets (ex : `[Préchauffer]`).
-- `Ingredient` / `Cookware` : Peuvent eux-mêmes être enveloppés dans un nœud `Alternative` lorsqu'ils sont écrits avec l'opérateur `|` (ex : `@beurre|@margarine`).
-- `Quantity`, `RelativeQuantity`, `TextQuantity` : Les trois formes possibles qu'une quantité peut prendre — une valeur numérique/fraction/plage avec une unité, un pourcentage relatif à un autre ingrédient (`50 % @farine`), ou un texte libre qui n'a pas pu être analysé comme un nombre.
-- `Composite` : Représente une référence d'ingrédient composite (`<@citron`), utilisée pour regrouper les parties (zeste, jus) en un article entier.
+Le *parser* exporte un type de nœud spécifique pour chaque concept du langage (`ASTNodeType` dans `src/types.ts`) :
+- `Recipe` : Le nœud racine, porteur du frontmatter (`meta`) et des `Section`.
+- `Section` : Un groupe de `Step` et `Comment`. Elle peut porter en bonus une ancre de rétroplanning (`~{...}`) et une variable intermédiaire.
+- `Step` : Un paragraphe contenant des `Text`, `Ingredient`, `Cookware`, `Timer`, `Temperature`, `Reference`, `Alternative`, `IntermediateDecl`, ou `Comment`. Elle peut s'ouvrir sur une balise d'action `[Préchauffer]`.
+- `Ingredient` / `Cookware` : Peuvent être encapsulés dans une `Alternative` s'ils exploitent l'opérateur `|` (`@beurre|@margarine`).
+- `Quantity`, `RelativeQuantity`, `TextQuantity` : Les trois profils d'une quantité — classique (valeur/fraction/plage + unité), relative (`50 % @farine`), ou texte libre non-numérique.
+- `Composite` : Le marqueur magique (`<@citron`) pour ré-assembler les morceaux (zeste, jus) en un article parent unifié.
 - `Comment` : Un commentaire de ligne `//` ou un commentaire de bloc `/* */`.
 
 :::tip[Les modificateurs sont des symboles bruts]
-Le tableau `modifiers` sur les nœuds `Ingredient`/`Cookware` contient les caractères de ponctuation bruts tels qu'écrits dans le fichier source (`?`, `-`, `*`, `&`), et non des libellés sémantiques. `=` est géré séparément : il n'apparaît pas du tout dans `modifiers`, il passe plutôt `quantity.fixed` à `true`.
+Le tableau `modifiers` des nœuds `Ingredient`/`Cookware` stocke bêtement les caractères bruts saisis (`?`, `-`, `*`, `&`), pas de jolis labels sémantiques. Seule exception : `=`, qui est intercepté pour flagger `quantity.fixed` à `true` sans figurer dans le tableau.
 :::
 
 ## Purement Syntaxique
 
-`@gram-lang/parser` n'effectue aucun raisonnement métier ou sémantique. Il n'a aucune connaissance sur :
-- Le fait qu'une variable référencée `&pâte` ait réellement été déclarée plus tôt.
-- Le fait que `200 g` de `farine` ait besoin d'être mis à l'échelle ou converti.
-- Le fait que la `farine` existe dans votre base de données `ingredients.yaml`.
+`@gram-lang/parser` est bête et discipliné : aucune sémantique, aucune *business logic*. Il ignore totalement :
+- Si la variable `&pâte` a bien été déclarée en amont.
+- Si vos `200 g` de `farine` sont convertibles ou proportionnels.
+- Si votre foutue `farine` existe dans `ingredients.yaml`.
 
-Cependant, il effectue une petite quantité de travail local, non-sémantique, tout en construisant l'arbre : il valide le frontmatter de la recette par rapport à un schéma (le supprimant silencieusement s'il est invalide), calcule la moyenne des deux limites d'une plage (`2-3` → suivi avec une moyenne de `2.5`) par commodité, et lève une erreur de syntaxe lisible lorsqu'il détecte une référence composite mal formée. Rien de tout cela ne requiert de connaître le reste de la recette — l'analyseur transmet un arbre purement structurel à `@gram-lang/kitchen`, où la véritable résolution de références et la validation auront lieu.
+Il s'autorise néanmoins quelques micro-ajustements purement locaux en montant l'arbre : valider le frontmatter Zod (et le *dropper* silencieusement s'il est invalide), faire la moyenne d'une plage par courtoisie (`2-3` donne `2.5`), et lever une belle erreur sur les composites mal formés. Rien de tout ça ne nécessite de contexte global. L'arbre final, vierge de tout état, sera refilé à `@gram-lang/kitchen` pour la vraie validation métier.

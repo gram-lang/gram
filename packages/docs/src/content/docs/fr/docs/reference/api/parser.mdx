@@ -1,12 +1,12 @@
 ---
 title: "@gram-lang/parser"
-description: "Référence de getAST, de la forme GramParseError, des types de nœuds AST et des type guards pour transformer du texte .gram en AST."
+description: "Référence de getAST, structure d'erreur GramParseError, types de nœuds AST et type guards pour compiler du texte .gram en AST."
 ---
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { astNodeTypesTable } from '../../../../../../data/api-reference';
 
-Transforme le texte source `.gram` en un Arbre Syntaxique Abstrait (AST) fait d'objets simples. C'est la seule étape du pipeline qui peut échouer sur une entrée malformée — tous les autres paquets font confiance au fait que s'ils ont reçu un AST, il est structurellement valide.
+Transforme le code source `.gram` en un Arbre Syntaxique Abstrait (AST) constitué de simples objets JSON. C'est la seule étape du *pipeline* qui peut planter sur une entrée malformée : tous les packages en aval partent du principe que s'ils reçoivent un AST, c'est qu'il est structurellement valide.
 
 ## `getAST`
 
@@ -14,7 +14,7 @@ Transforme le texte source `.gram` en un Arbre Syntaxique Abstrait (AST) fait d'
 function getAST(input: string): RecipeAST
 ```
 
-Parse une chaîne source `.gram` et retourne le nœud racine `RecipeAST`. Lève une `GramParseError` en cas de syntaxe invalide.
+Parse une chaîne source `.gram` et retourne le nœud racine `RecipeAST`. *Throw* une `GramParseError` si la syntaxe est invalide.
 
 ```typescript
 import { getAST } from '@gram-lang/parser';
@@ -39,7 +39,7 @@ class GramParseError extends Error {
 }
 ```
 
-Levée par `getAST` en cas d'erreur de syntaxe.
+Levée (*throw*) par `getAST` en cas d'erreur de syntaxe.
 
 | Champ | Description |
 |---|---|
@@ -47,11 +47,11 @@ Levée par `getAST` en cas d'erreur de syntaxe.
 | `offset` | Décalage en caractères dans `input` où l'échec est survenu. |
 | `expected` | Description de ce que le parser attendait à cet endroit. |
 
-`offset` et `expected` sont les parties portables et structurées de l'échec — utiles pour les intégrations éditeur (soulignement, correctifs rapides) qui ne veulent pas parser le texte d'ohm.
+`offset` et `expected` constituent la charge utile structurée de l'erreur — particulièrement utile pour les intégrations d'éditeur (soulignement, fix rapides) qui n'ont pas besoin de re-parser le message d'ohm-js.
 
 ## Types de nœuds AST
 
-Chaque nœud a un discriminant `type: ASTNodeType` et un `loc: { start, end }` optionnel (décalages en caractères dans la source, présent sur la plupart mais pas tous les types de nœuds — voir les interfaces ci-dessous).
+Chaque nœud possède un discriminant `type: ASTNodeType` et un `loc: { start, end }` optionnel (décalages de caractères dans le code source, présents sur la majorité des nœuds — voir les interfaces ci-dessous).
 
 <GeneratedTable table={astNodeTypesTable("fr")} />
 
@@ -82,7 +82,7 @@ interface RetroPlanningAST {
 }
 ```
 
-Pour `## Pâte Feuilletée ~{-2h}`, `retroPlanning` vaut `{ raw: "-2h", sign: -1, value: 2, unit: "h" }`. Un texte libre comme `~{la veille}` continue de parser (le parser ne lève jamais d'erreur pour ça — voir [Temps & Planification](/fr/docs/reference/syntax/times/#rétroplanning-de-section) pour le pourquoi), mais produit `{ raw: "la veille", sign: 1, value: null, unit: null }` ; c'est `@gram-lang/kitchen` qui signale ce cas comme invalide (`MISSING_UNIT`) lors de la compilation.
+Pour `## Pâte Feuilletée ~{-2h}`, `retroPlanning` vaut `{ raw: "-2h", sign: -1, value: 2, unit: "h" }`. Du texte libre comme `~{la veille}` passe le parsing avec succès (le *parser* ne jette jamais d'erreur pour ce cas — voir [Temps & Planification](/fr/docs/reference/syntax/times/#rétroplanning-de-section) pour comprendre pourquoi), mais produit `{ raw: "la veille", sign: 1, value: null, unit: null }` ; c'est `@gram-lang/kitchen` qui flaggera ce cas en erreur (`MISSING_UNIT`) au moment de la compilation.
 
 ```typescript
 interface StepAST {
@@ -125,7 +125,7 @@ Les autres interfaces de nœuds (`CookwareAST`, `ReferenceAST`, `TimerAST`, `Tem
 
 ## Type guards
 
-13 fonctions de garde de type (« type guards ») sont exportées pour restreindre en toute sécurité des entrées `ASTNode | StepAST | ... | null | undefined` sans vérifications manuelles de `.type` :
+13 fonctions de garde (*type guards*) sont exportées pour *narrow* de manière sécurisée des entrées `ASTNode | StepAST | ... | null | undefined`, et vous éviter les vérifications manuelles du champ `.type` :
 
 `isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
 

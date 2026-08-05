@@ -1,13 +1,13 @@
 ---
-title: "Formats de Données"
+title: "Formats de données"
 description: "Référence des formes JSON de l'AST, des recettes compilées et analysées, ainsi que du schéma YAML de la base d'ingrédients."
 ---
 
-Les formes JSON qui circulent entre les étapes du pipeline, et le schéma YAML de la base de données d'ingrédients. Cette page complète les références par paquet — c'est le compagnon « à quoi ressemblent réellement les données » de leur contenu « quelles fonctions existent ».
+Voici les structures JSON qui transitent entre les étapes du *pipeline*, ainsi que le schéma YAML de la base de données d'ingrédients. Cette page vient en renfort des références de *packages* : c'est le pendant « à quoi ressemblent concrètement les données » de la documentation orientée fonctions.
 
 ## 1. L'AST (`@gram-lang/parser`)
 
-Pour cette source :
+Pour le code source suivant :
 
 ```gram
 ---
@@ -19,7 +19,7 @@ title: 'Crêpes'
 Mélanger @farine{200g} et @lait{200ml}.
 ```
 
-`getAST()` retourne (annoté, les décalages `loc` omis pour la lisibilité — chaque nœud sauf `RecipeAST` lui-même en porte un) :
+`getAST()` retourne l'objet suivant (annoté, avec les offsets `loc` omis pour la lisibilité — notez que chaque nœud, hormis `RecipeAST` lui-même, en possède un) :
 
 ```json
 {
@@ -72,11 +72,11 @@ Mélanger @farine{200g} et @lait{200ml}.
 }
 ```
 
-Voir [parser.md](/fr/docs/reference/api/parser) pour l'ensemble complet des interfaces de nœuds et l'énumération `ASTNodeType`.
+Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif des interfaces de nœuds et l'énumération `ASTNodeType`.
 
 ## 2. Recettes compilées & analysées (`@gram-lang/kitchen`, `@gram-lang/analyzer`)
 
-`compile()` produit un `CompilationResult` ; `analyze()` retourne cette même forme enrichie de champs masse/nutrition (`AnalyzedCompilationResult`). Différence ci-dessous — les champs propres à l'analyseur sont marqués :
+`compile()` produit un `CompilationResult` ; `analyze()` recrache cette même structure enrichie des champs de masse/nutrition (`AnalyzedCompilationResult`). Voici le diff (les champs injectés par l'Analyseur sont commentés) :
 
 ```json
 {
@@ -162,11 +162,11 @@ Voir [parser.md](/fr/docs/reference/api/parser) pour l'ensemble complet des inte
 }
 ```
 
-Remarquez le vocabulaire `StepToken` du compilateur à l'intérieur de `content` : le texte narratif simple est une `string` brute ; les ingrédients/matériel/références partagent la forme `Usage` (pas de champ `type`, identifiés par la présence d'un `id`) ; les minuteurs/températures/commentaires/déclarations portent chacun leur propre `type` en minuscules. C'est volontairement distinct du `ASTNodeType` en PascalCase du parser — cela décrit la *sortie* compilée, pas l'entrée parsée. Voir [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un tutoriel de consommation de cette forme dans un framework frontend.
+Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (ils n'ont pas de champ `type` et sont identifiés par la présence d'un `id`) ; les minuteurs, températures, commentaires et déclarations portent chacun un `type` explicite en minuscules. Cette distinction avec le `ASTNodeType` (en PascalCase) du *parser* est volontaire : on décrit ici la *sortie* compilée, non l'entrée. Consultez [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un tutoriel d'intégration de ces données dans un framework front-end.
 
 ## 3. Base de données d'ingrédients (YAML)
 
-La base de données passée à `validateIngredientDatabase()` / `analyze()` est un `Record<string, IngredientData>` plat, indexé par slug d'ingrédient. Le CLI `gram` accepte en plus (et déballe) une clé optionnelle `ingredients:` de premier niveau, si bien que ces deux fichiers `.gram/ingredients.yaml` sont valides :
+La base de données passée à `validateIngredientDatabase()` ou `analyze()` est un dictionnaire plat `Record<string, IngredientData>`, indexé par *slug* d'ingrédient. Le CLI `gram` tolère également (et aplatit) une clé racine optionnelle `ingredients:`. Les deux formats suivants pour `.gram/ingredients.yaml` sont donc valides :
 
 ```yaml
 # Avec le wrapper optionnel (ce que `gram init` génère)
@@ -195,4 +195,4 @@ farine:
     density: 0.59
 ```
 
-`physical` et `nutrition` sont tous deux optionnels — une entrée sans aucun des deux reste valide (elle ne contribue simplement aucune donnée de masse/nutrition, ce qui apparaît comme `missingMassIngredients` / un avertissement `MISSING_MACROS`). Seul `name` est requis. `nutrition.calories`/`protein`/`carbs`/`fat` sont requis dès que `nutrition` est présent ; `sugar`/`fiber`/`sodium`/`sat_fat`/`mono_fat`/`poly_fat`/`alcohol` sont tous optionnels.
+Les blocs `physical` et `nutrition` sont tous deux optionnels. Une entrée dépourvue des deux reste valide (elle ne remontera juste aucune donnée de masse/nutrition, ce qui déclenchera un `missingMassIngredients` ou un *warning* `MISSING_MACROS`). Seul le champ `name` est strictement requis. Les sous-champs `nutrition.calories`/`protein`/`carbs`/`fat` deviennent obligatoires dès l'instant où la clé `nutrition` est déclarée. Les autres (`sugar`, `fiber`, `sodium`, `sat_fat`, `mono_fat`, `poly_fat`, `alcohol`) sont optionnels.

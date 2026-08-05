@@ -1,9 +1,9 @@
 ---
 title: "@gram-lang/renderer"
-description: "Rendu des recettes compilées en Markdown, HTML, document prêt à imprimer, ou frise chronologique interactive (Gantt)."
+description: "Rendu des recettes compilées en Markdown, HTML, document PDF-ready ou frise chronologique interactive (Gantt)."
 ---
 
-Effectue le rendu d'un `CompilationResult` ou `AnalyzedCompilationResult` en Markdown, HTML, ou un document HTML autonome optimisé pour l'impression. Si vous construisez une UI personnalisée à la place (React, Vue, Svelte), vous n'avez probablement pas besoin de ce paquet du tout — consommez le JSON directement, voir [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).
+Gère le rendu d'un `CompilationResult` (ou d'un `AnalyzedCompilationResult`) en Markdown, en HTML, ou en un document HTML autonome optimisé pour l'impression. Si vous construisez une interface front-end native (React, Vue, Svelte, etc.), vous n'aurez probablement pas besoin de ce *package* : vous consommerez le JSON directement. Voir [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).
 
 ## `toMarkdown` / `toHTML` / `toPrintHTML`
 
@@ -23,19 +23,19 @@ const compiled = compile(ast);
 const html = toHTML(compiled, { lang: 'fr' });
 ```
 
-`toPrintHTML` retourne un document HTML complet et autonome (`<style>` inline, règles `@page` A4, aucune dépendance à une feuille de style externe) adapté aux fonctionnalités « imprimer cette recette » / export PDF — `toHTML` retourne un simple fragment destiné à être intégré dans une page existante.
+`toPrintHTML` génère un document HTML complet et autonome (`<style>` *inline*, règles `@page` A4, aucune dépendance externe), idéal pour des fonctionnalités « exporter en PDF » ou « imprimer la recette ». À l'inverse, `toHTML` retourne un simple fragment conçu pour s'intégrer discrètement dans une page existante.
 
-Les trois formatteurs partagent une architecture de traversée unique (`RenderBackend`), garantissant que les résumés nutritionnels, les notes de bas de page, les badges de masse brute et les avertissements d'unités mixtes sont rendus de manière homogène en Markdown, HTML et Print.
+Ces trois formateurs partagent un seul et même moteur de traversée sous le capot (`RenderBackend`). Cela garantit que les résumés nutritionnels, les notes de bas de page, les badges de masse brute ou les avertissements d'unités incompatibles seront rendus de manière parfaitement homogène, que vous cibliez du Markdown, du HTML ou du *Print*.
 
 ### `RendererOptions`
 
 | Option | Type | Description |
 |---|---|---|
-| `icons` | `RendererIcons` | Redéfinit tout sous-ensemble des glyphes d'icônes par défaut (voir `DEFAULT_ICONS` ci-dessous). |
-| `classes` | `RendererClasses` | Redéfinit les noms de classes CSS sur les éléments générés (HTML/print uniquement). |
-| `formatFraction` | `(value: number) => string` | Formateur décimal → fraction personnalisé (par défaut : fractions courantes comme `0.5` → `"1/2"`). |
+| `icons` | `RendererIcons` | Surcharge tout ou partie des icônes par défaut (voir `DEFAULT_ICONS` ci-dessous). |
+| `classes` | `RendererClasses` | Surcharge les noms de classes CSS appliquées aux éléments générés (HTML/print uniquement). |
+| `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (par défaut, on gère les fractions courantes, ex : `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut : ex. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Omet les quantités d'ingrédients dans le texte des étapes en ligne pour l'ensemble des formatteurs (la liste de courses et la mise en place ne sont pas affectées). |
+| `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et les instructions de mise en place restent intactes). |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Affiche des contrôles interactifs de mise à l'échelle des portions/ingrédients (HTML uniquement). |
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI, via les dictionnaires de `@gram-lang/i18n`. |
@@ -43,7 +43,7 @@ Les trois formatteurs partagent une architecture de traversée unique (`RenderBa
 
 ## Diagramme de Gantt (`toGanttHTML` & `attachGanttInteractivity`)
 
-Génère une vue chronologique interactive sous forme de diagramme de Gantt pour offrir une représentation visuelle et temporelle précise de la recette (étapes actives, minuteurs en tâche de fond et planification du service).
+Génère une chronologie interactive (diagramme de Gantt) pour offrir une représentation visuelle fidèle de la recette (étapes actives, temps d'attente en arrière-plan, etc.).
 
 ```typescript
 import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
@@ -96,7 +96,7 @@ const html = toHTML(compiled, {
 
 ## Utilitaires de formatage
 
-Des helpers de plus bas niveau utilisés en interne par les trois formateurs, exportés pour construire des rendus personnalisés sur les mêmes conventions :
+Une poignée d'utilitaires bas niveau (utilisés en interne par les formateurs) est exportée si vous avez besoin de bricoler vos propres rendus sur-mesure tout en respectant les conventions existantes :
 
 ```typescript
 function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"

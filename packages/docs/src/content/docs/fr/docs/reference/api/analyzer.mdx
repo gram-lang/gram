@@ -1,12 +1,12 @@
 ---
 title: "@gram-lang/analyzer"
-description: "Enrichit les recettes compilées avec masse standardisée, rendement, nutrition estimée et pourcentages boulanger via une base d'ingrédients."
+description: "Enrichit les recettes compilées avec masses standardisées, rendements, nutrition estimée et pourcentages du boulanger via une base d'ingrédients."
 ---
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { unitConversionsTable } from '../../../../../../data/api-reference';
 
-Enrichit un `CompilationResult` (issu de `@gram-lang/kitchen`) avec des propriétés physiques — masse standardisée, rendement d'achat, estimations nutritionnelles, et pourcentages boulanger — en croisant les données avec une base de données d'ingrédients. C'est la seule étape qui nécessite une base de données ; le parsing et la compilation fonctionnent sur n'importe quelle recette sans données externes.
+Enrichit un `CompilationResult` (issu de `@gram-lang/kitchen`) avec des propriétés physiques (masse standardisée, rendement d'achat, estimations nutritionnelles et % du boulanger) en les croisant avec une base de données d'ingrédients. C'est la seule étape qui requiert une base de données : le *parsing* et la compilation fonctionnent sur n'importe quelle recette, sans la moindre donnée externe.
 
 ## `analyze`
 
@@ -33,11 +33,11 @@ const { result: analyzed, missingIngredients } = analyze(compiled, myIngredientD
 
 > La base de données d'ingrédients est le **deuxième argument positionnel**, pas un champ de `options` — `analyze(compiled, database, options?)`.
 
-`analyze()` est pure et ne mute jamais `result`. `AnalyzedCompilationResult` étend `CompilationResult` — même forme, plus des champs `normalizedMass`/`conversionMethod`/`isEstimate`/`purchasingMass`/`bakersPercentage` par usage et un bloc `metrics.nutrition`. Voir [Formats de Données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté.
+`analyze()` est une fonction pure et ne mute jamais `result`. `AnalyzedCompilationResult` étend `CompilationResult` (même forme) en y ajoutant les champs `normalizedMass`/`conversionMethod`/`isEstimate`/`purchasingMass`/`bakersPercentage` pour chaque ingrédient, ainsi qu'un bloc `metrics.nutrition`. Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté.
 
 ### `AnalyzerOptions`
 
-Tous les indicateurs sont activés par défaut (vérifications internes `!== false`) — passez `false` pour désactiver une passe d'enrichissement donnée.
+Tous les *flags* d'enrichissement sont activés par défaut (via des vérifications internes `!== false`). Il suffit de passer `false` pour désactiver l'enrichissement correspondant.
 
 | Option | Type | Description |
 |---|---|---|
@@ -58,7 +58,7 @@ function validateIngredientDatabase(rawDb: unknown): {
 }
 ```
 
-Valide entrée par entrée plutôt que tout-ou-rien : un ingrédient malformé n'empêche pas le chargement de tous les autres. Utilisez `data` pour compiler/analyser ; affichez `rejected` à l'utilisateur (ex : `gram db validate`). Voir [Formats de Données](/fr/docs/reference/api/data-formats) pour le schéma YAML `IngredientData`.
+Valide la base entrée par entrée plutôt qu'en bloc : un ingrédient malformé ne fera pas planter le chargement des autres. Utilisez `data` pour la compilation/analyse, et remontez `rejected` à l'utilisateur (ex : `gram db validate`). Voir [Formats de données](/fr/docs/reference/api/data-formats) pour le schéma YAML de `IngredientData`.
 
 ## Utilitaires de masse
 
@@ -81,13 +81,13 @@ function applyYield(
 ): { normalizedMass: number; purchasingMass?: number }
 ```
 
-`standardizeMass` résout une quantité en grammes via, dans l'ordre : (1) une unité de masse directe (`g`, `kg`, `oz`...), (2) une unité de volume convertie via la densité résolue de l'ingrédient, (3) une unité non reconnue (`gousse`, `tranche`...) traitée comme un décompte via le `unit_weight` de l'ingrédient. Retourne `null` — sans jamais deviner — quand une unité de volume n'a aucune densité résolvable.
+`standardizeMass` résout une quantité en grammes selon l'ordre suivant : (1) une unité de masse directe (`g`, `kg`, `oz`...), (2) une unité de volume convertie grâce à la densité de l'ingrédient, (3) une unité non reconnue (`gousse`, `tranche`...) traitée comme un comptage via le `unit_weight` de l'ingrédient. La fonction retourne `null` (elle ne devine jamais) lorsqu'une unité de volume n'a aucune densité résolue.
 
-`convertUnit` convertit entre deux chaînes d'unité arbitraires, faisant le pont masse↔volume via `density` (g/mL) si fournie. Retourne `null` pour une conversion inter-famille non résolvable sans densité.
+`convertUnit` convertit entre deux chaînes d'unités arbitraires, et jette un pont masse↔volume si une `density` (g/mL) est fournie. Retourne `null` lorsqu'une conversion inter-famille est impossible faute de densité.
 
 ### Table de conversion masse & volume
 
-Les facteurs de conversion de base utilisés par `standardizeMass`/`convertUnit` pour les conversions intra-famille (masse↔masse, volume↔volume), avant toute densité :
+Voici les facteurs de conversion par défaut employés par `standardizeMass` et `convertUnit` pour les conversions intra-famille (masse↔masse, volume↔volume), c'est-à-dire avant même de requérir une densité :
 
 <GeneratedTable table={unitConversionsTable("fr")} />
 
@@ -101,7 +101,7 @@ function calculateNutrition(
 ): NutritionMetrics
 ```
 
-Aplatit les composites et les alternatives (en prenant la première option), ignore les ingrédients marqués `optional` et ceux à quantité nulle, et somme les champs `nutrition` (déclarés **pour 100g** dans la base de données — voir [Formats de Données](/fr/docs/reference/api/data-formats)) mis à l'échelle par la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si l'une des masses contributrices était elle-même une estimation, et `coverage` (0–1 : fraction des ingrédients avec des données nutritionnelles connues).
+Aplatit les composites et les alternatives (en conservant la première option), ignore les ingrédients marqués `optional` et les quantités nulles, puis fait la somme des champs `nutrition` (déclarés **pour 100g** dans la base de données — voir [Formats de données](/fr/docs/reference/api/data-formats)) mis à l'échelle (*scale*) via la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si au moins une masse contributrice était déjà une estimation, ainsi qu'un taux de `coverage` de 0 à 1 (fraction d'ingrédients possédant des données nutritionnelles).
 
 ## `diffRecipes`
 
@@ -109,4 +109,4 @@ Aplatit les composites et les alternatives (en prenant la première option), ign
 function diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult
 ```
 
-Diff structurel entre deux recettes compilées (ex : deux versions d'un même fichier, ou un résultat mis à l'échelle vs. non mis à l'échelle) — changements de quantité/unité d'ingrédients (avec `percentChange` quand comparable), changements de préparation, écarts de minutage, sections ajoutées/supprimées/modifiées, changements de température et de minuteur, et changements de frontmatter (`meta`). `hasChanges` vaut `true` si une catégorie au moins est non vide.
+Calcule le diff structurel entre deux recettes compilées (ex : deux versions d'un même fichier, ou la version de base contre la version *scalée*). Il gère les changements de quantité/unité des ingrédients (incluant un `percentChange` pertinent), de préparation, d'écarts de durée, les ajouts/modifications/suppressions de sections, les variations de température et de minuteur, ainsi que les altérations du *frontmatter* (`meta`). `hasChanges` vaut `true` dès qu'une catégorie n'est pas vide.

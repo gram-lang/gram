@@ -5,22 +5,22 @@ description: "Référence de la structure d'un fichier .gram : frontmatter YAML,
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Un fichier de recette Gram (`.gram`) est structuré en plusieurs parties distinctes : Métadonnées, Sections, Étapes et Commentaires.
+Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
 
 ## 1. Métadonnées (Frontmatter)
 
-Le *frontmatter* est un bloc **YAML** tout au début du fichier, délimité par `---`.
+Le *frontmatter* est un bloc de configuration **YAML** situé tout en haut du fichier et délimité par `---`.
 
-L'analyseur Gram accepte **n'importe quelle** paire clé-valeur dans ce bloc. Vous pouvez ajouter des champs personnalisés pour les besoins de votre propre application. Cependant, le compilateur Gram reconnaît deux types de clés : **Fonctionnelles** et **Informatives**.
+Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans ce bloc. Vous êtes libre d'y injecter des champs sur-mesure pour les besoins spécifiques de votre application. Cela dit, le compilateur Gram reconnaît nativement deux catégories de clés : les **Fonctionnelles** et les **Informatives**.
 
 ### Clés Fonctionnelles
-Ces clés modifient directement la façon dont le compilateur Gram traite la recette :
+Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
 *   `portions` : (Entier) Le nombre de portions de base. Utilisé comme référence pour l'[Estimation Nutritionnelle](../../explanation/engine/analyzer.md).
 *   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](../../explanation/engine/kitchen.md).
 
 ### Clés Informatives
-Ces clés sont recommandées pour un affichage correct et une bonne gestion des métadonnées :
+Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
 
 *   `title` : Le nom de la recette.
 *   `description` : Un court résumé (utile pour les balises méta SEO).
@@ -53,7 +53,7 @@ densities:
 
 ## 2. Étapes
 
-Chaque paragraphe dans un fichier Gram représente une seule étape de préparation. Les étapes sont séparées par une ou plusieurs lignes vides.
+Dans un fichier Gram, chaque paragraphe représente une seule et unique étape de préparation. Les étapes sont séparées par une ou plusieurs lignes vides.
 
 ```gram
 Une étape,
@@ -63,7 +63,7 @@ Une étape différente.
 ```
 
 ### Verbes d'Action
-Les étapes peuvent optionnellement commencer par une **Action** entre crochets `[]`. Cela met en évidence la méthode principale utilisée dans cette étape, ce qui la rend facile à analyser visuellement ou programmatiquement.
+Les étapes peuvent optionnellement démarrer par une **Action** entre crochets `[]`. Ce marqueur met en exergue la technique principale employée dans l'étape, facilitant ainsi son repérage visuel (ou son *parsing* programmatique).
 
 ```gram
 [Mélanger] La @farine et l'@eau.
@@ -73,7 +73,7 @@ Les étapes peuvent optionnellement commencer par une **Action** entre crochets 
 
 ## 3. Sections
 
-Les recettes complexes comportent souvent plusieurs composants (ex : pâte, garniture, glaçage) qui sont préparés séparément. Vous pouvez regrouper les étapes dans des blocs `## Section` en utilisant des titres de style Markdown (ex : `## Pâte`).
+Les recettes un peu touffues comportent souvent plusieurs sous-préparations (ex : pâte, garniture, glaçage). Vous pouvez regrouper ces étapes au sein de blocs `## Section` en utilisant de simples titres Markdown (ex : `## Pâte`).
 
 ```gram
 ## Pâte
@@ -86,18 +86,18 @@ Combiner le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le g
 ```
 
 ### Rétroplanning (Ordonnancement)
-Vous pouvez assigner un délai de préparation à une `## Section` en ajoutant une annotation de type `~minuteur` n'importe où dans le titre.
+Il est possible d'assigner un délai de rétroplanning à une `## Section` en glissant un `~minuteur` n'importe où dans son titre.
 
 ```gram
 ## Pâte Feuilletée ~{-2d}
 ```
-Cela indique au compilateur que la section "Pâte Feuilletée" doit être préparée **2 jours à l'avance**.
+Cette annotation indique au compilateur que la section "Pâte Feuilletée" doit être anticipée **2 jours à l'avance**.
 Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
 
 *Voir [Temps & Planification](./times.md#retroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 
 ### Sorties de Section (Déclarations)
-Si une `## Section` produit un sous-composant qui sera utilisé plus tard dans la recette, vous pouvez le déclarer avec `->&` à la fin du titre.
+Si une `## Section` génère une sous-préparation destinée à être réutilisée plus tard, vous pouvez la déclarer en ajoutant `->&` à la toute fin du titre.
 
 ```gram
 ## Pâte Feuilletée ->&pâte
@@ -106,7 +106,7 @@ Si une `## Section` produit un sous-composant qui sera utilisé plus tard dans l
 
 ## 4. Commentaires
 
-Vous pouvez ajouter des commentaires pour expliquer des instructions sans affecter le résultat compilé.
+Les commentaires vous permettent d'expliciter vos instructions sans pour autant impacter le rendu compilé.
 
 **Commentaires en ligne (`//`)** :
 ```gram

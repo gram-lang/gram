@@ -1,6 +1,6 @@
 ---
-title: "Antisèche (Cheatsheet)"
-description: "Un tableau de référence rapide de la syntaxe Gram : ingrédients, matériel, minuteurs, températures et leurs modificateurs."
+title: "Antisèche (*Cheatsheet*)"
+description: "Référence rapide de la syntaxe Gram : ingrédients, matériel, minuteurs, températures et leurs modificateurs."
 ---
 
 Un guide de référence rapide de la syntaxe Gram.
@@ -21,7 +21,7 @@ Les modificateurs sont placés immédiatement après le symbole `@` ou `#`.
 | Modificateur | Exemple | Effet |
 |---|---|---|
 | `&` (Référence) | `@&farine` | Fait référence à un `@ingrédient` déclaré précédemment. Ne l'ajoute PAS une seconde fois à la liste de courses. |
-| `=` (Fixe) | `@=sel{1 c.à.c}` | Marque la quantité comme fixe. Elle **ne sera pas** mise à l'échelle avec les portions. |
+| `=` (Fixe) | `@=sel{1 c.à.c}` | Marque la quantité comme inaltérable. Elle **ne sera pas** *scalée* avec les portions. |
 | `?` (Optionnel) | `@?thym` | Marque l'`@ingrédient` comme facultatif. |
 | `-` (Masqué) | `@-sucre` | Masque l'`@ingrédient` de la liste de courses générée. |
 | `*` (% Boulanger)| `@*farine{500 g}` | Marque l'`@ingrédient` comme référence (100 %) pour les pourcentages du boulanger. |

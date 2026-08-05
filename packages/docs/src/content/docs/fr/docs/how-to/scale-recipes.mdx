@@ -3,29 +3,29 @@ title: "Mise à l'échelle dynamique des recettes"
 description: "Utilisez les Quantités Relatives et le Pourcentage du Boulanger pour écrire des recettes par ratios qui se recalculent automatiquement."
 ---
 
-Gram est conçu pour s'assurer que les recettes se mettent à l'échelle mathématiquement de manière parfaite à travers tout son écosystème. Que vous utilisiez le Playground interactif, que vous génériez des documents HTML/Markdown, ou que vous exécutiez des commandes CLI, Gram prend en charge nativement deux fonctionnalités puissantes pour la cuisine basée sur des ratios (comme la pâtisserie ou la boulangerie) : les **Quantités Relatives** et le **Pourcentage du Boulanger**.
+Gram est conçu pour que les recettes se mettent à l'échelle (*scale*) avec une précision mathématique parfaite dans tout l'écosystème. Que vous utilisiez le Playground interactif, génériez des documents HTML/Markdown ou lanciez des commandes CLI, Gram intègre nativement deux fonctionnalités taillées pour la cuisine basée sur les ratios (comme la boulangerie ou la pâtisserie) : les **Quantités Relatives** et le **Pourcentage du Boulanger** (*Baker's Math*).
 
-Ce guide vous montre comment utiliser les **Quantités Relatives** pour construire des recettes dynamiques et auto-documentées basées sur des ratios, et comment utiliser le **Pourcentage du Boulanger** (Baker's Math) pour afficher des recettes traditionnelles au format de pourcentage.
+Ce guide vous montre comment exploiter les **Quantités Relatives** pour architecturer des recettes dynamiques et auto-documentées, et comment utiliser le **Pourcentage du Boulanger** pour formater des recettes traditionnelles en pourcentages purs.
 
 ## Les limites des quantités statiques
 
-Imaginez une recette de pain :
+Prenons une recette de pain classique :
 ```gram
 [Mélanger] La @farine{500 g}, l'@eau{350 ml}, le @sel{10 g} et la @levure{5 g}.
 ```
 
-Si vous mettez cette recette à l'échelle avec un facteur 2 (ex : via `gram build --scale 2`), tout est doublé. Et si vous n'avez plus que `400 g` de farine, vous pouvez utiliser la mise à l'échelle par référence : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
+Si vous *scalez* cette recette avec un facteur 2 (via `gram build --scale 2`), tout est bêtement doublé. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser la mise à l'échelle par référence : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
 
 Alors, pourquoi aurions-nous besoin d'autre chose ?
 
-Le problème survient **lorsque vous voulez modifier la recette elle-même**. 
-Que se passe-t-il si vous voulez augmenter l'hydratation de 70 % à 75 % ? Vous devriez calculer manuellement ce que représentent 75 % de 500 g, et modifier `350 ml` en `375 ml`. La logique sous-jacente de la recette (les ratios) est cachée derrière des nombres statiques, ce qui la rend difficile à lire et difficile à ajuster.
+Le hic survient **lorsque vous voulez modifier la logique de la recette elle-même**. 
+Et si vous vouliez passer l'hydratation de 70 % à 75 % ? Vous devriez calculer de tête ce que représentent 75 % de 500 g, puis remplacer `350 ml` par `375 ml`. La logique métier de la recette (ses ratios) est masquée par des valeurs statiques (hardcodées), la rendant laborieuse à lire et à maintenir.
 
 ## La solution pour les recettes par ratios : Les Quantités Relatives
 
-Certaines recettes sont fondamentalement construites autour de la relation mathématique entre les ingrédients, plutôt que sur des quantités absolues strictes (ex: une pâte à pain définie par ses 70 % d'hydratation).
+Certaines préparations reposent fondamentalement sur des relations mathématiques entre leurs composants, plutôt que sur des quantités absolues (ex: une pâte à pain entièrement définie par son hydratation à 70 %).
 
-Dans Gram, vous pouvez exprimer ces relations directement dans le code source en utilisant des **Quantités Relatives** (`% @&cible` pour les ingrédients, ou `% &cible` pour les variables intermédiaires). Cela permet à la recette de se recalculer dynamiquement lorsque vous modifiez un seul pourcentage.
+Gram permet d'exprimer ces relations directement dans le code source via des **Quantités Relatives** (`% @&cible` pour un ingrédient, ou `% &cible` pour une variable intermédiaire). La recette devient alors capable de se recalculer dynamiquement à la volée dès que vous tweakez un seul pourcentage.
 
 import { Steps } from '@astrojs/starlight/components';
 
@@ -53,13 +53,13 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## Mettre à l'échelle la recette dynamique
 
-Parce que les relations sont encodées directement dans la recette, Gram gère les mathématiques dynamiquement. Tout boulanger qui lit votre fichier `.gram` voit immédiatement qu'il s'agit d'une pâte hydratée à 70 %. 
+Puisque ces relations sont encodées à la racine de la recette, Gram assure toute la gymnastique mathématique dynamiquement. Tout développeur ou boulanger lisant le `.gram` comprend instantanément qu'il s'agit d'une pâte hydratée à 70 %. 
 
 Si vous voulez ajuster la recette pour une pâte plus humide à 75 % d'hydratation, vous ne changez qu'un seul nombre :
 ```gram
 [Verser] L'@eau{75% @&farine}
 ```
-Gram se charge des calculs. Vous n'aurez plus jamais à calculer manuellement des poids absolus lors de la conception ou de l'ajustement de vos recettes.
+Et Gram s'occupe du reste. Fini le calcul mental fastidieux des poids absolus pour ajuster vos recettes.
 
 ### Mise à l'échelle universelle
 
@@ -69,11 +69,11 @@ Vous pouvez mettre à l'échelle les recettes visuellement dans le Playground, o
 gram view pain.gram --scale farine=400g
 ```
 
-Gram calculera le facteur global (400/500 = 0.8), mettra l'ancre (farine) à l'échelle (400 g), et les ingrédients relatifs s'évalueront parfaitement sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
+Gram va résoudre le facteur global (400/500 = 0.8), *scaler* l'ancre `farine` à 400 g, et tous les ingrédients relatifs s'évalueront en cascade sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
 
 ### Les limites de la mise à l'échelle par référence
 
-Puisque la mise à l'échelle par référence dérive le facteur à partir de la quantité d'un ingrédient, tous les ingrédients ne peuvent pas servir de cible — seul un ingrédient avec une quantité absolue propre et authentique se qualifie. Si vous tentez de passer l'un des éléments suivants, Gram le rejettera avec une erreur spécifique plutôt que de calculer silencieusement un facteur erroné :
+Puisque la mise à l'échelle par référence dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram jettera une erreur (*throw*) plutôt que de calculer silencieusement un facteur aberrant :
 
 | Vous avez tenté d'utiliser... | Pourquoi c'est rejeté | Que faire à la place |
 | :--- | :--- | :--- |
@@ -96,7 +96,7 @@ Avec cela, `--scale eau=150g` sur une recette écrite en `ml` se résout correct
 
 ## Pourcentage du Boulanger (Baker's Math)
 
-Si les Quantités Relatives sont parfaites pour *concevoir* des recettes dynamiques, les professionnels utilisent souvent un concept appelé **Pourcentage du Boulanger** pour lire et analyser des recettes *statiques*. Avec le Pourcentage du Boulanger, l'ingrédient principal (généralement la farine) est défini comme valant 100 %, et tout le reste est affiché en pourcentage de ce poids.
+Si les Quantités Relatives sont idéales pour *concevoir* des recettes dynamiques, les professionnels se reposent souvent sur un concept appelé **Pourcentage du Boulanger** (*Baker's Math*) pour déchiffrer et analyser des recettes *statiques*. Dans ce paradigme, l'ingrédient phare (généralement la farine) fait office de base de référence (100 %), et tous les autres ingrédients s'expriment en pourcentage de ce poids.
 
 Si vous avez une recette classique avec des poids absolus, vous pouvez utiliser le **Modificateur de Pourcentage du Boulanger** (`*`) pour indiquer explicitement à Gram : *"Cet ingrédient est le point de référence de 100 %"*.
 
@@ -129,7 +129,7 @@ gram view pain.gram --bakers-reference=farine
 
 ## Ingrédients Fixes
 
-Parfois, une recette contient des ingrédients qui ne doivent **jamais** être mis à l'échelle, peu importe le nombre de portions que vous réalisez. Par exemple, l'huile de friture dans une poêle, ou une pincée de sel.
+Parfois, une recette contient des ingrédients qui ne doivent **jamais** être *scalés*, peu importe le nombre de portions générées. Pensez à l'huile de friture au fond d'une poêle, ou à une pincée de sel pour l'assaisonnement.
 
 Vous pouvez utiliser le **Modificateur Fixe** (`=`) pour protéger un ingrédient de la mise à l'échelle :
 

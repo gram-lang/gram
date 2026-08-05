@@ -3,13 +3,13 @@ title: "Analyse Sémantique (@gram-lang/analyzer)"
 description: "Comment @gram-lang/analyzer standardise les masses, résout les alias et estime la nutrition via une base de données."
 ---
 
-Le paquet `@gram-lang/analyzer` représente l'étape analytique finale dans le pipeline de compilation. Il prend le résultat logiquement valide `CompilationResult` produit par `@gram-lang/kitchen` et effectue l'**Enrichissement Physique** en croisant la recette avec une base de données externe `ingredients.yaml`.
+Le *package* `@gram-lang/analyzer` incarne l'étape analytique finale du pipeline de compilation. Il récupère le `CompilationResult` (logiquement valide) craché par `@gram-lang/kitchen` et procède à un **Enrichissement Physique** en croisant la recette avec votre base de données `ingredients.yaml`.
 
-C'est ici que le monde physique rencontre le code numérique. L'analyseur exécute un pipeline modulaire en 4 passes (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`) calculant cinq ensembles majeurs de fonctionnalités — chacune pouvant être activée ou désactivée individuellement via les options.
+C'est ici que le monde physique percute le code numérique. L'analyseur exécute un pipeline modulaire en 4 passes (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`), calculant cinq grands blocs de fonctionnalités (chacun étant désactivable à la carte via les options).
 
 ## Passe 1 : Standardisation des Masses de Section & Calcul du Rendement
 
-Gram est conçu pour unifier et normaliser les masses à travers les recettes, calculant la véritable Masse Totale d'un plat même si les ingrédients sont écrits en volumes (tasses) ou en unités (œufs).
+Gram est conçu pour unifier et normaliser les masses, afin de calculer le poids total réel d'un plat, et ce même si les ingrédients ont été saisis en volumes (tasses) ou en unités (œufs).
 
 L'algorithme **standardizeMass** suit un ordre de priorité strict :
 
@@ -17,34 +17,34 @@ import { Steps, LinkCard } from '@astrojs/starlight/components';
 
 <Steps>
 
-1. **Masse Physique** : Si l'unité est déjà un poids (`g`, `kg`, `oz`, `mg`, `lb`), elle est simplement convertie en grammes.
-2. **Volume → Densité** : Si l'unité est un volume connu (ex : `tasse`, `c.à.s`, `ml`), l'analyseur vérifie d'abord une **surcharge explicite** — un bloc `densities` dans le frontmatter YAML de la recette — et l'utilise si présent. Sinon, il recherche la densité de l'ingrédient (`g/ml`) dans la base de données `ingredients.yaml`.
-3. **Nombre → Poids Unitaire** : Si l'unité n'est ni une masse ni un volume (ex : `@ail{3 gousses}`), l'analyseur vérifie là encore s'il y a une surcharge, puis se rabat sur un `unit_weight` (poids unitaire) spécifique dans la base de données pour estimer la masse.
+1. **Masse Physique** : Si l'unité est déjà un poids (`g`, `kg`, `oz`, `mg`, `lb`), elle est bêtement convertie en grammes.
+2. **Volume → Densité** : Si l'unité est un volume connu (`tasse`, `c.à.s`, `ml`), l'analyseur guette d'abord une **surcharge explicite** (via le bloc `densities` du frontmatter de la recette). Sans ça, il ira piocher la densité de l'ingrédient (`g/ml`) dans le `ingredients.yaml`.
+3. **Nombre → Poids unitaire** : Si l'unité n'est ni une masse ni un volume (ex : `@ail{3 gousses}`), l'analyseur cherche là aussi une éventuelle surcharge locale, puis se rabat en dernier recours sur le champ `unit_weight` de la base de données.
 </Steps>
 
 :::caution[Pas de devinette silencieuse]
-Si aucune densité n'est disponible pour une unité de volume (pas de surcharge, pas d'entrée en base de données), l'analyseur **ne se rabat pas** sur la supposition de la densité de l'eau. Il renvoie délibérément "aucune masse" plutôt que de risquer une fausse agrégation (ex : traiter silencieusement "1 tasse de farine" comme si elle pesait le même poids que de l'eau). L'article est listé via son unité brute, non convertie.
+Sans densité disponible pour un volume, l'analyseur **refuse** de faire la supposition aveugle qu'il s'agit d'eau. Il préfère cracher un *warning* « aucune masse » plutôt que de risquer une agrégation bancale (traiter "1 tasse de farine" comme de l'eau ruinerait une recette). L'ingrédient reste listé dans son unité brute.
 :::
 
-De nombreux ingrédients crus ont des déchets naturels comme des pelures, des trognons ou des coquilles. L'Analyseur fait la distinction entre la **Masse Nette** (ce qui entre dans la recette) et la **Masse d'Achat** (Masse Brute — ce que vous devez réellement acheter), en utilisant le champ `physical.yield` de la base de données d'ingrédients.
+Beaucoup d'ingrédients bruts génèrent des déchets (pelures, trognons, coquilles). Grâce au champ `physical.yield` de la base, l'Analyseur fait le distinguo entre la **Masse Nette** (la matière utile pour la recette) et la **Masse d'Achat** (la Masse Brute à glisser dans le caddie).
 
 Par exemple, si un ingrédient a un facteur de rendement de `0.65` (35 % de déchets) :
 - **Recette** : `@banane{100 g}` (Ceci fait référence à 100 g de chair comestible).
 - **Calcul de l'Analyseur** : `100 g / 0.65 ≈ 154 g`.
 - **Sortie de la Liste de Courses** : Le système vous indiquera d'acheter **~154 g** de l'ingrédient non pelé pour s'assurer que vous avez 100 g de chair utilisable.
 
-La direction de ce calcul dépend de la manière dont la quantité a été écrite. Une masse/volume explicite (comme la banane ci-dessus) est supposée être la masse **Nette**, avec la masse **Brute** (achat) dérivée à l'envers (`Nette ÷ rendement`). Un **nombre** (ex : `@avocat{1}`) fonctionne dans l'autre sens : le poids unitaire (`unit_weight`) de l'ingrédient représente déjà l'unité entière achetée (**Brute**), donc la masse Nette réellement utilisée par la recette et par les calculs de nutrition est dérivée vers l'avant (`Brute × rendement`). Voir [Standardisation des Masses & Rendement](../mass-and-yield.md) pour le détail complet.
+Le sens de ce calcul dépend de la saisie. Une masse/volume explicite (ex: la banane) est considérée comme une masse **Nette** ; la masse **Brute** d'achat est donc calculée à l'envers (`Nette ÷ rendement`). À l'inverse, un **nombre** (ex: `@avocat{1}`) est naturellement considéré comme un produit entier (**Brut**) ; sa masse Nette sera calculée dans l'autre sens (`Brute × rendement`). Rendez-vous sur [Standardisation des Masses & Rendement](../mass-and-yield.md) pour creuser le sujet.
 
-Cet ajustement est calculé par utilisation de l'ingrédient — y compris les mentions en ligne dans le texte de la recette — et `@gram-lang/renderer` affiche la Masse Brute dans les listes de courses à travers les formats HTML, Markdown et Print.
+Cet ajustement est calculé par utilisation de l'ingrédient (y compris ses mentions *inline* dans le texte). En aval, `@gram-lang/renderer` injectera la Masse Brute dans la liste de courses de vos exports HTML et Markdown.
 
 ## Passe 2 : Enrichissement de la Liste de Courses & Résolution d'Alias
 
-Au-delà d'enrichir les masses individuelles des ingrédients, l'Analyseur regroupe également la liste de courses elle-même. `@gram-lang/kitchen` regroupe purement par l'id brut qu'elle a attribué lors de l'analyse syntaxique, sans connaissance de `ingredients.yaml` — elle ne peut donc pas savoir que `@butter` et `@beurre` sont le même ingrédient, ni fusionner `100 g` d'un ingrédient avec `1 tasse` de ce même ingrédient en un seul total.
+Au-delà d'hydrater les masses individuelles, l'Analyseur re-consolide entièrement la liste de courses. En effet, `@gram-lang/kitchen` se contentait d'un groupement basique sur l'ID textuel : sans accès à `ingredients.yaml`, elle ignorait totalement que `@butter` et `@beurre` étaient la même chose, ou comment additionner `100 g` et `1 tasse` de farine.
 
 En utilisant la base de données des ingrédients, l'Analyseur :
-- Résout chaque ingrédient vers son **id canonique** (`resolveCanonicalId`), fusionnant les entrées aliasées ensemble.
+- Résout l'**ID canonique** de chaque ingrédient (`resolveCanonicalId`), fusionnant les alias au passage.
 - Fusionne les quantités inter-unités en un seul total en grammes chaque fois que toutes les entrées contributives se résolvent en masse (densité/poids unitaire connu).
-- Se rabat sur le maintien des entrées séparées — renommées avec l'id canonique et marquées `multiUnit: true` — lorsqu'une masse ne peut pas être résolue pour au moins l'une d'entre elles (ex : aucune densité disponible), plutôt que de deviner.
+- Garde prudemment des entrées séparées — estampillées de l'ID canonique avec un flag `multiUnit: true` — si la masse est insoluble (ex: manque de densité), refusant là encore de jouer aux devinettes.
 
 Seul l'`id` est réécrit sous sa forme canonique à des fins de regroupement. Le `name` de l'entrée suit une règle distincte pour garantir que les traductions soient préservées lors de l'utilisation d'une base de données globale :
 
@@ -64,22 +64,22 @@ Si la recette (ou l'appelant, via une option `bakersReference`) désigne un ingr
 
 ## Passe 3 : Estimation Nutritionnelle
 
-L'Analyseur peut calculer automatiquement une estimation des Calories et Macronutriments (Protéines, Glucides, Lipides, Sucre, Fibres, Sodium) en se basant sur la liste des ingrédients. Le schéma de la base de données des ingrédients supporte également des champs plus fins (`sat_fat`, `mono_fat`, `poly_fat`, `alcohol`), mais ceux-ci ne sont pas actuellement agrégés dans les totaux de la recette.
+L'Analyseur dresse une estimation redoutable des Calories et Macros (Protéines, Glucides, Lipides, Sucre, Fibres, Sodium). Si la base supporte des données très fines (`sat_fat`, `mono_fat`, etc.), celles-ci ne sont pas (encore) agrégées à l'échelle de la recette.
 
 <Steps>
 
-1. Premièrement, chaque ingrédient passe par l'algorithme de Standardisation des Masses.
-2. L'analyseur recherche les données nutritionnelles (pour 100 g) de chaque ingrédient dans la base de données.
+1. Chaque ingrédient passe d'abord dans la moulinette de Standardisation des Masses.
+2. L'analyseur va piocher les valeurs nutritionnelles (pour 100 g) de l'ingrédient en base.
 3. Il agrège la contribution de chaque ingrédient dans une somme totale.
 4. Si une valeur `portions` est transmise via les options de l'analyseur, il divise les totaux pour fournir des valeurs **Par Portion**.
 </Steps>
 
 :::tip[Des données partielles transparentes, non cachées]
-Contrairement à un modèle strict de type tout-ou-rien, l'analyseur renvoie toujours tous les totaux nutritionnels qu'il a pu calculer, accompagnés d'un ratio de `coverage` (couverture) et d'avertissements pour tout ingrédient pour lequel des données nutritionnelles manquaient ou qui n'a pas pu être standardisé en masse. Les consommateurs de ces données (comme le visualiseur CLI ou la sortie HTML de `@gram-lang/renderer`) utilisent cela pour afficher un indicateur explicite de "données incomplètes" à côté des totaux partiels, plutôt que de masquer complètement le panneau.
+Loin d'une approche « tout ou rien », l'analyseur retourne toujours ce qu'il a pu calculer, flanqué d'un score de couverture (`coverage`) et de *warnings* ciblés pour les ingrédients manquant de données ou de densité. C'est grâce à ça que le CLI ou les exports HTML peuvent fièrement afficher des totaux assortis d'un badge « données partielles », plutôt que de cacher le panneau entier.
 :::
 
 ## Architecture Ouverte
 
-`@gram-lang/analyzer` est conçu pour les écosystèmes ouverts. Il **ne lit pas** les fichiers directement depuis le système de fichiers. À la place, l'application hôte (comme le CLI ou le Playground) charge la base de données et la passe en paramètre à la fonction `analyze(compilationResult, database, options?)`, où `options` permet à l'appelant d'activer ou de désactiver chaque fonctionnalité et de configurer des choses comme la référence pour les pourcentages du boulanger ou le nombre de portions.
+`@gram-lang/analyzer` a été taillé pour des écosystèmes ouverts. Il **ne touche pas** au système de fichiers local. C'est l'application appelante (le CLI ou votre serveur Node) qui charge la base et l'injecte dans la fonction `analyze(compilationResult, database, options?)`. L'argument `options` permet d'activer chaque feature à la carte, ou de *set* un nombre de portions.
 
-Cela signifie que vous pouvez facilement brancher une base de données personnalisée provenant d'une API REST, d'un fichier JSON local, ou de n'importe quelle autre source, tant qu'elle est conforme au schéma de données de Gram.
+Cette abstraction vous permet de brancher votre propre base (API REST, dump JSON...) les yeux fermés, tant qu'elle colle au schéma Gram.

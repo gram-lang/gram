@@ -5,7 +5,7 @@ description: "Référence du CLI Gram : installation, options globales et comman
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Le CLI officiel de Gram (`@gram-lang/cli`) est l'outil principal pour valider, compiler et gérer vos collections de recettes localement. Il agit comme un pont entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, applications mobiles, etc.).
+Le CLI officiel de Gram (`@gram-lang/cli`) est l'outil de référence pour valider, compiler et gérer vos collections de recettes en local. Il fait office de passerelle entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, apps mobiles, etc.).
 
 ## Installation
 
@@ -20,7 +20,7 @@ import { Steps } from '@astrojs/starlight/components';
 ```
 </CodeTabs>
 
-Le CLI fonctionne aussi bien avec Node.js (>=20.6.0, chargeant automatiquement les fichiers `.env` via `process.loadEnvFile`) qu'avec [Bun](https://bun.sh/) — aucune API spécifique à un runtime n'est requise, les deux options se valent.
+Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un *runtime* n'est requise, les deux options sont strictement équivalentes.
 
 ## Options Globales
 
@@ -35,7 +35,7 @@ Le CLI fonctionne aussi bien avec Node.js (>=20.6.0, chargeant automatiquement l
 #### `gram init`
 Initialise un nouvel environnement Gram dans le dossier courant.
 - Crée un dossier `.gram/`.
-- Génère un fichier `config.yaml` vierge et sans commentaires.
+- Génère un fichier `config.yaml` vierge (sans commentaires parasites).
 - Configure de manière interactive votre langue de recette préférée (actuellement `en` ou `fr`).
 - Configure de manière interactive votre fournisseur d'IA et modèle préférés.
 - Génère/met à jour un fichier `.env` pour vos clés d'API IA.
@@ -45,25 +45,25 @@ Initialise un nouvel environnement Gram dans le dossier courant.
 #### `gram check [motif]`
 Valide vos fichiers `.gram` pour détecter les erreurs de syntaxe, l'intégrité structurelle, et les ingrédients non définis.
 - Exécute l'analyseur (parser) OhmJS pour attraper les erreurs de syntaxe.
-- Exécute le compilateur Kitchen pour attraper les erreurs structurelles (ex : dépendances cycliques).
-- Se connecte à votre `ingredients.yaml` pour vous avertir des ingrédients non documentés dans votre base de données.
-- Les avertissements (estimations nutritionnelles, annotations incomplètes mais valides) ne font pas échouer la commande par défaut — seules les erreurs structurelles (références indéfinies, conflits de portée) le font. Passez `--strict` pour traiter tout avertissement comme une erreur (utile en CI).
+- Exécute le compilateur Kitchen pour débusquer les erreurs structurelles (ex : dépendances circulaires).
+- Se connecte à votre base `ingredients.yaml` pour épingler les ingrédients non documentés.
+- Les simples avertissements (estimations nutritionnelles, annotations incomplètes) ne font pas échouer la commande par défaut — seules les vraies erreurs structurelles (références introuvables, conflits de portée) déclenchent un exit 1. Passez `--strict` pour traiter la moindre alerte comme une erreur bloquante (parfait pour vos pipelines CI).
 - Options : `--db <chemin>`, `--skip-db`, `--strict`.
 
 #### `gram build [motif]`
-Compile vos recettes `.gram` dans le format final JSON minifié.
+Compile vos recettes `.gram` au format JSON final minifié.
 ```bash
 gram build "**/*.gram" --output ./dist
 gram build brioche.gram --pretty
 gram build brioche.gram --scale 2 --output ./dist-double
 ```
-- Par défaut, sort le JSON pur directement sur la sortie standard (`stdout`) pour faciliter le chaînage (piping).
+- Par défaut, recrache le JSON pur directement sur la sortie standard (`stdout`) pour faciliter le *piping*.
 - Calcule automatiquement les données nutritionnelles et la standardisation des masses physiques via la base de données.
-- `--scale <facteur>` intègre la mise à l'échelle directement dans la sortie JSON. Le mode référence (ex. `farine=300g`) n'est pas disponible ici volontairement : `build` peut traiter plusieurs fichiers à la fois, et une sortie par lot reproductible ne doit pas dépendre de la lecture de la liste de courses d'un fichier spécifique au préalable. Utilisez `gram view`/`gram scale` pour trouver le facteur que vous voulez, puis passez ce facteur numérique à `build`.
+- `--scale <facteur>` intègre la mise à l'échelle (*scaling*) en dur dans le JSON de sortie. Le mode par référence (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un *build* reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour trouver votre facteur, puis passez ce multiplicateur numérique à `build`.
 - Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`.
 
 #### `gram view <fichier>`
-Affiche une recette directement dans le terminal dans une belle boîte ASCII.
+Affiche une recette directement dans le terminal, proprement formatée dans une boîte ASCII.
 ```bash
 gram view brioche.gram                      # Vue par défaut
 gram view brioche.gram --scale 2            # Voir avec des quantités doublées
@@ -71,7 +71,7 @@ gram view brioche.gram --scale farine=300g  # Voir mis à l'échelle pour farine
 ```
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la nutrition calculée, les minutages, et les listes d'ingrédients à cocher.
-- Avec `--scale`, toutes les quantités d'ingrédients (liste de courses et références dans les étapes) sont ajustées.
+- Le flag `--scale` ajuste toutes les quantités d'ingrédients (liste de courses *et* références *inline* dans les étapes).
 - Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
 
 #### `gram import <source>`
@@ -82,7 +82,7 @@ Importe une recette depuis un fichier JSON-LD ou une URL et la convertit en un f
 - Options : `--output <fichier>`.
 
 #### `gram shop [motif]`
-Génère une liste de courses agrégée pour plusieurs recettes.
+Compile une liste de courses globale en agrégeant plusieurs recettes.
 ```bash
 gram shop "**/*.gram"                 # Toutes les recettes
 gram shop brioche.gram --scale 2      # Doubler toutes les quantités
@@ -90,14 +90,14 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 ```
 - Agrège intelligemment les quantités via la densité (volume → grammes quand la densité est connue).
 - Regroupe les ingrédients par leur champ `category` (famille culinaire : Fruits & Légumes, Produits Laitiers, Céréales, etc.).
-- **Regroupement par alias** : si deux recettes utilisent des noms différents pour le même ingrédient (ex : `butter` et `beurre`), ils sont fusionnés sous la clé canonique via les alias de la base de données.
+- **Fusion par alias** : si deux recettes utilisent des mots différents pour le même ingrédient (ex : `butter` et `beurre`), ils seront fusionnés sous leur clé canonique commune grâce aux alias de la base de données.
 - Les ingrédients sans quantité (ex : `@sel{}`) sont listés à côté de leur entrée principale plutôt que dans une section séparée.
-- Supporte les petites unités : `pincée`, `trait`, `goutte` sont gérées sans erreurs d'agrégation.
+- Support complet des micro-unités : `pincée`, `trait` ou `goutte` s'agrègent sans broncher.
 - `--scale <facteur>` applique un multiplicateur numérique à toutes les recettes (uniquement facteur — le mode référence n'est pas disponible pour plusieurs fichiers).
 - Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`.
 
 #### `gram cook <fichier>`
-Lance un guide de cuisine interactif étape par étape directement dans le terminal.
+Lance un assistant de cuisine interactif étape par étape, directement dans le terminal.
 ```bash
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
@@ -118,7 +118,7 @@ Les ingrédients sont **agrégés par section** : les utilisations répétées d
 **Minuteurs** — les minuteurs annotés dans la recette (`~label{30min}`) apparaissent dans la vue de l'étape :
 - Appuyez sur `T` pour lancer un minuteur ; s'il y en a plusieurs de disponibles, un sélecteur apparaît.
 - Les minuteurs s'exécutent en arrière-plan — ils restent visibles pendant que vous avancez dans les étapes.
-- Une cloche (bell) du terminal retentit et l'affichage du minuteur passe à un état statique "terminé" quand il arrive à zéro.
+- Une cloche (*terminal bell*) retentit et l'affichage du minuteur bascule sur l'état statique « terminé » lorsqu'il tombe à zéro.
 - `Q`/`Échap` déclenchent le flux de confirmation de sortie plutôt que de rejeter un minuteur terminé.
 
 **Raccourcis clavier :**
@@ -132,7 +132,7 @@ Les ingrédients sont **agrégés par section** : les utilisations répétées d
 - Options : `--scale <facteur|réf>`, `--skip-db`, `--db`.
 
 #### `gram diff <fichier> [fichier-b]`
-Affiche un diff sémantique d'une recette — en comparant les ingrédients, les minutages, les sections, les températures, les minuteurs et le frontmatter, plutôt que le texte brut.
+Affiche un *diff* sémantique de la recette (en comparant logiquement les ingrédients, minutages, sections et températures, plutôt qu'un bête *diff* de texte brut).
 ```bash
 gram diff brioche.gram                        # Arbre de travail vs HEAD (plus courant)
 gram diff brioche.gram --ref HEAD~2           # vs un commit git spécifique
@@ -147,8 +147,8 @@ Le diff couvre **six axes** :
 - **Préparations** — modes de préparation modifiés par ingrédient (ex : "en dés" → "émincé").
 - **Températures & Minuteurs** — cibles de température et durées de minuteur ajoutées/retirées/modifiées par section.
 
-- Fonctionne sur des objets compilés (sortie de Kitchen), pas du texte brut — un reformatage syntaxique ne produit aucun diff.
-- Le mode Git nécessite que le fichier soit suivi. Renvoie une erreur gracieuse si `git` est indisponible.
+- Calcule le *diff* sur les objets compilés par le moteur Kitchen. Ainsi, un simple reformatage syntaxique (espaces, sauts de ligne) ne remontera aucun *diff*.
+- Le mode Git exige que le fichier soit suivi (*tracked*). Renvoie une erreur gracieuse si `git` est introuvable sur la machine.
 - Options : `--ref <réf-git>`.
 
 #### `gram scale <fichier>`
@@ -161,32 +161,32 @@ gram scale brioche.gram --scale oeufs=3      # Mettre à l'échelle pour oeufs =
 ```
 - Affiche un tableau de comparaison : quantités d'origine (estompées) vs mises à l'échelle (en vert).
 - Les quantités qui ne peuvent pas être mises à l'échelle (valeurs textuelles comme "1 pincée") sont listées séparément.
-- Avertit sur les facteurs extrêmes (en-dessous de ×0.1 ou au-dessus de ×20) et note que les temps de cuisson ne sont pas ajustés.
-- Le mode référence (`id=valeur`) calcule le facteur à partir de la quantité actuelle de l'ingrédient. L'ID doit correspondre à la clé de l'ingrédient dans la recette. Les unités de la même famille se convertissent automatiquement (ex. `farine=1kg` pour une recette écrite en `500g`); le passage masse↔volume (ex. `eau=150g` pour une recette en `ml`) fonctionne aussi dès lors qu'une densité est disponible — provenant de `gram db enrich`, ou d'une surcharge `densities: ["eau:1.0"]` dans le frontmatter de la recette elle-même.
+- Lève un *warning* pour les facteurs extrêmes (en-deçà de ×0.1 ou au-delà de ×20) et rappelle que les temps de cuisson, eux, ne sont jamais modifiés.
+- Le mode par référence (`id=valeur`) déduit le facteur à partir de la quantité actuelle de l'ingrédient ciblé (l'ID doit correspondre à sa clé). Les unités de la même famille sont converties à la volée (ex. `farine=1kg` pour une recette écrite en `500g`). La passerelle masse ↔ volume (ex. `eau=150g` pour une recette en `ml`) fonctionne aussi, à condition qu'une densité soit connue (soit via `gram db enrich`, soit via une surcharge `densities: ["eau:1.0"]` dans le frontmatter).
 - Tous les ingrédients ne peuvent pas être une cible de référence : les ingrédients fixes (`@=`), les quantités relatives (`70% @&farine`), les ingrédients utilisés uniquement dans une sous-recette, les ingrédients dans un groupe d'alternatives, et les ingrédients divisés entre des unités incompatibles sont rejetés avec une erreur spécifique expliquant pourquoi. Voir la [Analyse approfondie : Mise à l'échelle](/fr/docs/explanation/scaling) pour la liste complète.
 - Options : `--scale <facteur|réf>`, `--skip-db`, `--db`.
 
 #### `gram watch [dossier]`
-Observe un dossier pour les modifications de fichiers `.gram` et relance `gram check` automatiquement à chaque sauvegarde.
+Observe un dossier (*watch*) et relance automatiquement `gram check` à chaque sauvegarde de vos fichiers `.gram`.
 ```bash
 gram watch                              # Observe la racine du projet
 gram watch recettes/                    # Observe un dossier spécifique
 gram watch --build --output ./dist      # Compile aussi les fichiers modifiés en JSON
 ```
 - Affiche une ligne de résultat horodatée par changement : `[12:34:01] ✓ brioche.gram` ou `✗ brioche.gram — 1 error`.
-- Les erreurs sont affichées en ligne en dessous du nom de fichier — le watcher ne s'arrête jamais sur une erreur.
+- Les erreurs s'affichent *inline* sous le nom du fichier. Le *watcher* ne crashe jamais suite à une erreur.
 - Un délai antirebond (debounce) de 150ms évite les exécutions redondantes.
 - Options : `--build`, `--output/-o <dossier>`, `--skip-db`, `--db`.
 
 #### `gram suggest`
-Trouve des recettes dans votre projet qui utilisent un ensemble donné d'ingrédients.
+Fouille votre projet pour trouver des recettes utilisant une combinaison précise d'ingrédients.
 ```bash
 gram suggest --with "beurre, oeufs"
 gram suggest --with "poulet" --without "crème"
 gram suggest --with "citron, ail" --top 5 --min-match 50
 gram suggest --with "butter" --json           # prise en compte des alias: butter → beurre
 ```
-- Parcourt tous les fichiers `.gram` en parallèle — utilise uniquement le parser (sans la compilation complète du pipeline), c'est donc rapide même sur de grandes collections.
+- *Parse* tous les fichiers `.gram` en parallèle (sans aller jusqu'à la compilation complète). C'est extrêmement rapide, même sur un répertoire massif.
 - **Correspondance tenant compte des alias** : si une base de données est configurée, les noms d'ingrédients sont résolus via l'index d'alias. Chercher `"butter"` fera correspondre les recettes contenant `@beurre`.
 - Attribue un score à chaque recette par pourcentage de correspondance (`correspondance / total avec-termes`). Utilisez `--min-match` pour filtrer les résultats à faible score.
 - `--without` exclut immédiatement toute recette contenant un de ces ingrédients.
@@ -218,7 +218,7 @@ gram export brioche.gram --format html --scale 2       # exporter aux quantités
 - Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
 
 #### `gram format [motif]`
-Auto-formate les fichiers `.gram` en appliquant 13 règles canoniques sur place via `@gram-lang/format`.
+Formate automatiquement les fichiers `.gram` (*in-place*) en appliquant 13 règles canoniques via le package `@gram-lang/format`.
 ```bash
 gram format                              # Formater tous les fichiers *.gram
 gram format brioche.gram                 # Formater un fichier unique
@@ -240,7 +240,7 @@ gram format "recettes/**/*.gram" --check # Vérif CI — exit 1 si un fichier a 
 13. **Nettoyage des espaces et saut de ligne final (EOF) unique**
 
 Sortie par fichier : `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
-Le formateur est idempotent — l'exécuter deux fois ne produit aucun autre changement.
+Le *formatter* est strictement idempotent : l'exécuter deux fois de suite ne modifiera jamais le code une seconde fois.
 - Options : `--check`.
 
 ### Configuration
@@ -291,35 +291,35 @@ Exécutez toujours dans cet ordre :
 ```
 gram db sync → gram db lint → gram db enrich
 ```
-Lancer `lint` avant `enrich` évite de gaspiller des appels d'IA à enrichir des ingrédients qui seront plus tard fusionnés en tant que doublons.
+Lancer le `lint` avant d'`enrich` vous évite de griller de précieux tokens d'IA pour enrichir des doublons qui finiront de toute façon fusionnés.
 Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifier si c'est complet. Utilisez `gram db merge` pour intégrer une base de données externe à la vôtre.
 :::
 
 <Steps>
 1. #### `gram db sync [motif]`
-   Parcourt vos recettes pour trouver des ingrédients non documentés et les ajoute à votre base de données.
-   - La correspondance approximative (fuzzy matching via Levenshtein) interactive vous aide à éviter les doublons pour les pluriels ou les fautes de frappe.
+   Scanne vos recettes pour débusquer les ingrédients manquants et les injecter dans la base de données.
+   - L'assistant interactif de *fuzzy matching* (distance de Levenshtein) vous aide à esquiver les doublons (fautes de frappe, pluriels).
    - Options : `--dry-run/-n` (aperçu sans écriture), `--db <chemin>`.
 
 2. #### `gram db lint`
-   Utilise l'IA pour détecter et résoudre les doublons sémantiques et les pluriels dans votre base de données.
+   Fait appel à l'IA pour traquer et résoudre les doublons sémantiques et les pluriels de la base de données.
    - Détecte les doublons inter-langues (ex : `sucre` / `sugar`) et les formes plurielles (ex : `oeufs` → `oeuf`).
-   - Pour chaque doublon, vous laisse choisir quelle clé conserver — la clé supprimée est automatiquement ajoutée comme alias.
+   - Pour chaque conflit, vous décidez de la clé à conserver. La clé écartée est automatiquement recyclée en alias.
    - Affiche un diff nutritionnel (uniquement les champs qui diffèrent) quand les deux entrées ont des données contradictoires, pour que vous puissiez faire un choix éclairé.
    - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`.
 
 3. #### `gram db enrich`
-   Utilise l'IA pour compléter automatiquement les données manquantes dans votre base de données.
+   Lâche l'IA sur votre base de données pour boucher les trous et auto-compléter les données manquantes.
    - Enrichit les champs `density`, `unit_weight`, `nutrition`, `category`, et `tags` par lots (`unit_weight` est rempli avec `density`).
    - `category` est une famille culinaire (ex : Légumes, Produits Laitiers, Céréales) — distincte des `tags` libres.
-   - Idempotent : peut être relancé en toute sécurité, ne remplit que les champs qui sont encore manquants.
+   - Idempotent : la commande peut être relancée sans crainte, elle n'hydratera que les champs encore vides.
    - Options : `--ingredient <slug>` (enrichir une seule entrée), `--field density|nutrition|tags|category|all` (défaut `all`), `--dry-run/-n`, `--db <chemin>`.
 </Steps>
 
 #### `gram db validate`
 Valide l'intégrité de votre `ingredients.yaml`.
 - Vérifie les erreurs de schéma, les alias dupliqués, et les valeurs incohérentes (ex : densité > 2.5).
-- Une entrée malformée n'empêche pas la vérification du reste : chaque entrée est validée indépendamment, et le rapport liste tous les problèmes trouvés dans le fichier en une seule passe.
+- Une entrée viciée ne fait pas crasher l'outil : chaque ligne est validée indépendamment. Le rapport final recrachera la liste exhaustive des problèmes en une seule passe.
 - Options : `--strict` (exit 1 sur avertissements, utile en CI).
 
 #### `gram db search [requête]`
@@ -334,7 +334,7 @@ gram db search --exact beurre --count  # Imprimer seulement le nombre de corresp
 - Options : `--tag <tag>`, `--category/-c <category>`, `--missing nutrition|physical|aliases`, `--exact`, `--count`, `--json`, `--db <chemin>`.
 
 #### `gram db merge <source.yaml>`
-Fusionne une base de données d'ingrédients externe avec votre base locale.
+Fusionne une base de données d'ingrédients distante avec votre base locale.
 ```bash
 gram db merge ~/shared-ingredients.yaml          # Résolution de conflit interactive
 gram db merge community.yaml --prefer remote     # Utilise toujours les valeurs distantes en cas de conflit
@@ -351,11 +351,11 @@ Le CLI fusionne la configuration depuis `~/.config/gram/config.yaml` (globale) e
 
 ### Configuration IA en Cascade
 Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
-1. **Variables d'Environnement** : Les variables comme `GEMINI_API_KEY` (du système ou d'un fichier `.env`) ont la priorité absolue. C'est la façon **recommandée** de stocker des secrets localement et dans des environnements CI/CD.
+1. **Variables d'Environnement** : Les variables comme `GEMINI_API_KEY` (du système ou d'un `.env`) ont toujours le dernier mot. C'est l'approche **recommandée** pour sécuriser des secrets en local comme en CI/CD.
 2. **Secours `config.yaml`** : Si la variable d'environnement manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml`. 
 
 :::caution[Protégez vos Clés !]
-Stocker votre `apiKey` dans `config.yaml` est fortement déconseillé si vous versionnez votre dossier `.gram` avec Git, car cela exposerait votre clé secrète.
+Ne stockez surtout pas votre `apiKey` en dur dans `config.yaml` si vous versionnez le dossier `.gram` sur Git : votre clé secrète serait exposée au grand jour.
 :::
 
 ### Paramètres de `config.yaml`

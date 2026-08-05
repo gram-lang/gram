@@ -1,18 +1,18 @@
 ---
-title: "Comment Créer une UI Personnalisée (Consommer du JSON)"
-description: "Consommez directement le JSON compilé par Gram dans React, Vue ou Svelte pour créer une UI de recette entièrement personnalisée."
+title: "Créer une interface (UI) personnalisée à partir du JSON"
+description: "Consommez le JSON compilé par Gram directement dans React, Vue ou Svelte pour concevoir votre propre interface."
 ---
 
-Si vous construisez une application web moderne (par ex., avec React, Vue, Svelte ou Next.js), vous devriez consommer directement les **données JSON** compilées par Gram et les lier (mapper) à vos propres composants d'interface utilisateur (UI).
+Si vous construisez une application web moderne (avec React, Vue, Svelte ou Next.js, par exemple), vous avez tout intérêt à consommer directement le **JSON** compilé par Gram et à le *mapper* sur vos propres composants d'interface utilisateur (UI).
 
-Bien que la sortie brute de l'analyseur (parser) soit un Arbre Syntaxique Abstrait (AST), les paquets `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un objet JSON hautement structuré et prêt à être affiché. Ce guide vous montre comment extraire programmatiquement ces données JSON et comprendre leur structure pour que vous puissiez construire tout ce que vous voulez.
+Bien que le *parser* recrache d'abord un Arbre Syntaxique Abstrait (AST) brut, les *packages* `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un JSON hyper-structuré, prêt à l'emploi. Ce guide vous montre comment l'extraire programmatiquement et comment il est architecturé, afin que vous puissiez l'exploiter librement.
 
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. ### Récupérer les Données JSON
+1. ### Récupérer le JSON
    
-   Gram est conçu pour s'exécuter n'importe où (Node.js, Edge, ou directement dans le navigateur). Pour obtenir la représentation JSON entièrement enrichie d'une recette, vous composez les trois paquets principaux :
+   Gram est conçu pour s'exécuter n'importe où (Node.js, environnements Edge ou directement dans le navigateur). Pour récupérer le JSON intégralement enrichi d'une recette, vous devez combiner ses trois *packages* fondamentaux :
    
    ```typescript
    import { getAST } from '@gram-lang/parser';
@@ -26,7 +26,7 @@ import { Steps } from '@astrojs/starlight/components';
      // 2. Compiler en sections structurées
      const compiled = compile(ast);
    
-     // 3. Enrichir avec les mathématiques culinaires (rendements, pourcentages, mise à l'échelle)
+     // 3. Enrichir avec les calculs culinaires (rendements, % du boulanger, mise à l'échelle)
      const analyzed = analyze(compiled, myDatabase);
    
      return analyzed.result;
@@ -34,7 +34,7 @@ import { Steps } from '@astrojs/starlight/components';
    ```
    
    :::tip[Raccourci Node uniquement]
-   Si vous vous exécutez exclusivement dans un environnement Node.js (un outil CLI, un serveur Next.js, etc.), le paquet `@gram-lang/cli` exporte un utilitaire `runPipeline(filePath, options?)` qui encapsule les trois étapes ci-dessus et s'occupe de la lecture du fichier pour vous :
+   Si vous tournez exclusivement côté serveur sous Node.js (via un CLI ou un backend Next.js), le *package* `@gram-lang/cli` exporte un utilitaire `runPipeline(filePath, options?)`. Il orchestre les trois étapes ci-dessus et se charge même de la lecture du fichier à votre place :
    
    ```typescript
    import { runPipeline, GramCLIError } from '@gram-lang/cli';
@@ -50,7 +50,7 @@ import { Steps } from '@astrojs/starlight/components';
    }
    ```
    
-   Omettez `db` pour sauter entièrement l'étape d'analyse (`analyzed` vaudra alors `null`). Voir la [référence API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-lang-cli) pour la liste complète des options (facteur d'échelle, pourcentages boulangers).
+   Si vous omettez `db`, l'étape d'analyse est totalement ignorée (`analyzed` vaudra `null`). Jetez un œil à la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-lang-cli) pour découvrir la liste exhaustive des options (facteur d'échelle, % du boulanger, etc.).
    :::
    
    :::note
@@ -59,7 +59,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 2. ### Comprendre la Structure du JSON
    
-   L'objet JSON retourné représente la recette complète et structurée. Il contient tout ce dont vous avez besoin pour construire une interface utilisateur.
+   L'objet JSON retourné encapsule toute la recette de manière structurée. C'est votre matière première pour bâtir votre UI.
    
    Voici les champs les plus importants dans l'objet racine :
    - `title` *(string)* : Le nom de la recette (issu du `# Titre`).
@@ -110,11 +110,11 @@ import { Steps } from '@astrojs/starlight/components';
 
 3. ### Logique de Rendu
    
-   Parce que les données JSON de Gram sont très structurées, construire une UI n'est qu'une question de boucles ou de fonctions `map` dans votre framework frontend.
+   Puisque le JSON de Gram est hautement prévisible, générer l'UI n'est souvent qu'une affaire de simples boucles ou de `.map()` dans votre *framework* front-end.
    
    #### Exemple : Rendu des Étapes en React
    
-   Voici un exemple conceptuel de la façon dont vous pourriez faire le rendu du tableau `steps` en React :
+   Voici une implémentation théorique illustrant comment itérer sur le tableau `steps` avec React :
    
    ```tsx
    function RecipeStep({ step }) {
@@ -168,5 +168,5 @@ import { Steps } from '@astrojs/starlight/components';
    }
    ```
    
-   En associant la propriété `type` à vos propres composants, vous avez un **contrôle total** sur le design, l'interactivité et l'accessibilité de votre application de recettes !
+   En mappant intelligemment la propriété `type` sur vos propres composants, vous gardez un **contrôle total** sur le design, l'interactivité et l'accessibilité de votre application !
 </Steps>

@@ -3,41 +3,41 @@ title: "Serveur de Langage (Language Server)"
 description: "Comment le Serveur de Langage Gram implémente le LSP pour les diagnostics, jetons sémantiques et fonctionnalités d'IDE."
 ---
 
-Le Serveur de Langage Gram (`@gram-lang/language-server`) est le moteur d'intelligence derrière les intégrations dans les éditeurs. Il implémente le standard **Language Server Protocol (LSP)**, ce qui rend possible la fourniture de fonctionnalités d'IDE avancées pour les fichiers Gram sur de multiples éditeurs, et pas seulement VS Code.
+Le Serveur de Langage Gram (`@gram-lang/language-server`) est le cerveau derrière l'intégration de Gram dans vos éditeurs. En implémentant le standard **Language Server Protocol (LSP)**, il déploie des fonctionnalités d'IDE avancées pour les fichiers `.gram` sur une multitude d'éditeurs (et pas uniquement VS Code).
 
 import { Steps } from '@astrojs/starlight/components';
 
 ## Architecture
 
-Le serveur agit comme un processus en arrière-plan persistant qui analyse vos fichiers `.gram` en utilisant les paquets `@gram-lang/parser` et `@gram-lang/kitchen`. 
+Le serveur agit comme un processus de fond persistant, qui analyse vos fichiers `.gram` à l'aide des paquets `@gram-lang/parser` et `@gram-lang/kitchen`. 
 
-**Le flux de travail en temps réel :**
+**Le workflow en temps réel :**
 <Steps>
-1. **Éditeur** ➔ Envoie les modifications du fichier à chaque frappe au clavier.
+1. **Éditeur** ➔ Dispatche les modifications du fichier à chaque frappe au clavier.
 
-2. **Serveur de Langage** ➔ Intercepte les modifications et demande au Compilateur Gram de réévaluer l'AST en mémoire.
+2. **Serveur de Langage** ➔ Intercepte les *diffs* et demande au Compilateur Gram de réévaluer l'AST en mémoire.
 
 3. **Compilateur Gram** ➔ Analyse la nouvelle structure et émet les avertissements, les macros, et les dépendances.
 
-4. **Serveur de Langage** ➔ Traduit ces données en messages LSP standards (Diagnostics, Jetons Sémantiques, Inlay Hints) et les renvoie à l'éditeur.
+4. **Serveur de Langage** ➔ Traduit ces données en requêtes LSP standards (Diagnostics, Jetons sémantiques, Inlay Hints) et les renvoie à l'éditeur.
 </Steps>
 
 ## Fonctionnalités LSP Supportées
 
-Le Serveur de Langage Gram implémente les capacités standards suivantes :
+Le Serveur de Langage Gram couvre les capacités standards suivantes :
 
 | Capacité LSP | Implémentation Gram |
 |---|---|
-| **Diagnostics** | Signalement en temps réel des erreurs de syntaxe et de structure (ex : dépendances circulaires). |
-| **Semantic Tokens** | Coloration syntaxique pilotée par l'AST pour les modificateurs, les unités et les ingrédients composites. |
+| **Diagnostics** | Remontée en temps réel des erreurs de syntaxe et de structure (ex : dépendances circulaires). |
+| **Semantic Tokens** | Coloration syntaxique pilotée par l'AST, idéale pour différencier les modificateurs, unités et ingrédients composites. |
 | **Completion** | Autocomplétion intelligente pour les ingrédients, les unités et les variables. |
-| **Hover** | Affiche les répartitions nutritionnelles et les conversions volume-masse au survol. |
-| **Go to Definition** | Naviguer d'une référence intermédiaire directement vers sa déclaration. |
+| **Hover** | Affiche les macros nutritionnels et les conversions volume-masse au survol de la souris. |
+| **Go to Definition** | Navigue d'une référence intermédiaire directement vers sa déclaration initiale. |
 | **Find References** | Localiser toutes les utilisations d'une variable intermédiaire spécifique. |
-| **Rename** | Renommer de manière sûre et atomique les variables intermédiaires. |
-| **Code Actions** | Corrections rapides (quick fixes : déclarer des variables manquantes, convertir volume en masse). |
-| **Document Formatting**| Nettoie l'espacement, la syntaxe des composites et aligne les en-têtes via `@gram-lang/format` (13 règles canoniques). |
-| **Inlay Hints** | Affiche les temps de préparation cumulés en ligne au sein de l'éditeur. |
+| **Rename** | Renomme de manière sûre et atomique une variable intermédiaire (partout où elle est utilisée). |
+| **Code Actions** | Suggestions de corrections rapides (*quick fixes* : déclarer une variable manquante, convertir un volume en masse). |
+| **Document Formatting**| Nettoie les espaces, la syntaxe des composites et les en-têtes via `@gram-lang/format` (13 règles canoniques). |
+| **Inlay Hints** | Affiche les temps de préparation cumulés directement *inline* dans l'éditeur. |
 | **Code Lens** | Injecte des boutons d'action interactifs (comme le calcul des Macros). |
-| **Document Symbol** | Remplit la vue Plan (Outline) de l'éditeur pour une navigation structurelle. |
-| **Folding Range** | Permet de replier les `## Sections` de la recette et le frontmatter YAML. |
+| **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour naviguer dans la structure de la recette. |
+| **Folding Range** | Permet de replier proprement le frontmatter YAML et les `## Sections` de la recette. |

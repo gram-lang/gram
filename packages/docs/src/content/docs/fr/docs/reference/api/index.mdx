@@ -1,13 +1,13 @@
 ---
 title: "Référence API"
-description: "Vue d'ensemble des paquets composables de Gram — parser, kitchen, analyzer, renderer, format et i18n — et de leur articulation."
+description: "Vue d'ensemble des packages composables de Gram (parser, kitchen, analyzer, renderer, format, i18n) et de leur articulation."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Gram n'est pas seulement un format de fichier — c'est un pipeline de petites bibliothèques composables. Chaque paquet fait un seul travail et transmet un objet JSON simple au suivant. Vous pouvez utiliser tout le pipeline, ou ne prendre que la brique dont vous avez besoin (ex : uniquement le parser, pour construire un linter).
+Gram n'est pas qu'un simple format de fichier : c'est un *pipeline* de petites bibliothèques composables. Chaque *package* accomplit une seule tâche et transmet un objet JSON au suivant. Vous pouvez utiliser le pipeline complet, ou piocher uniquement la brique dont vous avez besoin (ex : utiliser juste le *parser* pour construire un linter).
 
 ## Installation
 
@@ -20,9 +20,9 @@ Gram n'est pas seulement un format de fichier — c'est un pipeline de petites b
 ```
 </CodeTabs>
 
-Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent partout où JavaScript s'exécute — Node.js, Deno, Bun, environnements edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour un exemple entièrement côté client).
+Tous ces *packages* sont `ESM only`, *side-effect free*, et tournent partout où du JavaScript s'exécute : Node.js, Deno, Bun, environnements Edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour une démo 100 % côté client).
 
-## Matrice des paquets
+## Matrice des packages
 
 | Paquet | Rôle | Point d'entrée principal |
 |---|---|---|
@@ -33,11 +33,11 @@ Tous les paquets sont ESM uniquement, sans effets de bord, et s'exécutent parto
 | [`@gram-lang/format`](/fr/docs/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles unifiées) | `formatGram(source, options?)` |
 | [`@gram-lang/i18n`](/fr/docs/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires de chaînes UI utilisés en interne par les paquets ci-dessus | `normalizeUnit`, `getDictionary` |
 
-L'analyse est optionnelle : `compile()` seul fournit déjà une recette complète et prête au rendu (avec des quantités non standardisées par défaut). `@gram-lang/analyzer` n'est nécessaire que pour la conversion de masse, les estimations nutritionnelles, ou les pourcentages boulanger, ce qui nécessite une base de données d'ingrédients.
+L'étape d'analyse est purement optionnelle : `compile()` fournit à lui seul une recette structurée et prête au rendu (bien qu'avec des quantités brutes). `@gram-lang/analyzer` n'est requis que si vous avez besoin de la conversion de masse, des estimations nutritionnelles, ou du % du boulanger — opérations qui exigent une base de données d'ingrédients.
 
 ## Raccourci optionnel Node uniquement (`@gram-lang/cli`)
 
-Si vous vous exécutez dans Node.js et n'avez pas besoin de contrôle étape par étape, `@gram-lang/cli` — oui, le même paquet qui fournit le binaire `gram` — exporte aussi une petite surface de bibliothèque :
+Si vous évoluez sous Node.js et n'avez pas besoin d'un contrôle granulaire, le *package* `@gram-lang/cli` (celui-là même qui propulse le binaire `gram`) expose également une petite API très pratique :
 
 ```typescript
 import { runPipeline, GramCLIError } from '@gram-lang/cli';
@@ -49,7 +49,7 @@ const { content, compiled, analyzed } = await runPipeline('recette.gram', {
 });
 ```
 
-`runPipeline(filePath, options?)` lit le fichier, puis enchaîne `getAST` → `compile` → (seulement si `db` est fourni) `analyze` pour vous, en retournant `{ content, compiled, analyzed }`. Elle lève une `GramCLIError` (une sous-classe d'`Error` portant un `.exitCode` issu de l'enum exporté `ExitCode`) plutôt qu'une erreur brute — pratique si vous voulez faire correspondre les échecs à vos propres codes de sortie. Elle est Node uniquement (lit le disque via `node:fs`) ; pour le navigateur ou les environnements edge, composez les paquets individuels comme montré ci-dessous.
+`runPipeline(filePath, options?)` lit le fichier, puis enchaîne automatiquement `getAST` → `compile` → `analyze` (si la `db` est fournie) et vous renvoie un objet `{ content, compiled, analyzed }`. Elle *throw* une `GramCLIError` (sous-classe d'`Error` portant un `.exitCode` via l'énumération exportée `ExitCode`) au lieu d'une erreur standard, ce qui facilite le *mapping* avec vos propres codes de retour CLI. Attention, cette fonction est réservée à Node.js (elle tape sur le disque via `node:fs`) : pour les navigateurs ou les environnements *Edge*, vous devrez brancher les *packages* manuellement comme illustré ci-dessous.
 
 ## Le pipeline complet
 
@@ -92,14 +92,14 @@ l'appel `analyze()` ci-dessus prend la base de données d'ingrédients comme **d
 
 ### Gérer les erreurs de parsing et les avertissements
 
-`getAST()` est la seule fonction du pipeline qui **lève une exception** : une erreur de syntaxe signifie qu'il n'y a pas d'AST à traiter. Chaque étape suivante **collecte des avertissements** à la place — une recette malformée compile quand même, afin que vous puissiez toujours l'afficher et montrer à l'utilisateur ce qui ne va pas.
+`getAST()` est la seule fonction du pipeline qui **throw une exception** : s'il y a une erreur de syntaxe, l'AST ne peut tout simplement pas être généré. Toutes les étapes ultérieures se contentent de **collecter des avertissements** (*warnings*) : une recette bancale finira toujours de compiler, pour vous laisser l'opportunité de l'afficher et de remonter visuellement le problème à l'utilisateur.
 
-- `GramParseError` (levée par `getAST`) : possède `.message` (le texte lisible d'ohm-js, extrait de la source inclus), `.offset` (décalage en caractères dans l'entrée), et `.expected` (ce que le parser attendait à cet endroit).
+- `GramParseError` (levée par `getAST`) : transporte `.message` (le log lisible renvoyé par ohm-js, extrait de source inclus), `.offset` (la position du curseur dans la chaîne d'entrée), et `.expected` (ce que le *parser* attendait à cet endroit).
 - `CompilationResult.warnings` / `AnalyzedCompilationResult.warnings` (retournés par `compile()` et propagés par `analyze()`) : un tableau d'objets [`Warning`](/fr/docs/reference/api/warnings) — jamais de simples chaînes. Voir la [référence des avertissements](/fr/docs/reference/api/warnings) pour la liste complète des codes et comment les traiter comme des erreurs façon `--strict`.
 
 <CardGrid>
   <LinkCard
-    title="Formats de Données"
+    title="Formats de données"
     description="La forme des objets JSON circulant entre ces étapes."
     href="/fr/docs/reference/api/data-formats"
   />

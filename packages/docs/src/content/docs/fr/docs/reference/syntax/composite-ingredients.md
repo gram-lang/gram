@@ -3,15 +3,15 @@ title: "Ingrédients Composites"
 description: "Regroupez les parties d'un même ingrédient, comme le zeste et le jus, pour que Gram calcule une liste de courses juste."
 ---
 
-Dans la vraie cuisine, les recettes nécessitent souvent des parties spécifiques d'un `@ingrédient` — comme le **zeste** et le **jus** d'un citron.
+En cuisine, les recettes réclament souvent des parties spécifiques d'un même `@ingrédient` (ex : le **zeste** et le **jus** d'un citron).
 
-Si vous écrivez `@zeste de citron` et `@jus de citron` séparément, votre liste de courses les traitera comme deux produits complètement différents. Mais les citrons s'achètent entiers !
+Si vous déclarez `@zeste de citron` et `@jus de citron` séparément, votre liste de courses les considèrera comme deux produits distincts. Or, les citrons s'achètent entiers !
 
-Pour résoudre cela, Gram introduit les **Ingrédients Composites**. En indiquant à Gram que le jus et le zeste proviennent tous les deux d'un parent `<@citron`, le compilateur peut optimiser mathématiquement votre liste de courses. Si vous avez besoin du jus de 2 citrons et du zeste d'un citron, Gram comprend qu'ils partagent la même source physique et ajoutera intelligemment exactement **2 citrons entiers** à votre liste de courses.
+C'est là qu'interviennent les **ingrédients composites**. En précisant à Gram que le jus et le zeste proviennent tous deux d'un parent commun `<@citron`, le compilateur peut optimiser mathématiquement votre liste de courses. S'il vous faut le jus de 2 citrons et le zeste d'un seul, Gram déduit qu'ils partagent la même source physique et inscrira exactement **2 citrons entiers** sur votre liste, sans doublon.
 
 ## Syntaxe
 
-Vous définissez un ingrédient composite en utilisant l'opérateur `<` (qui peut se lire *"provient de"*). Vous l'ajoutez simplement juste après l'`@ingrédient` enfant.
+Un ingrédient composite se déclare via l'opérateur `<` (qui se lit *« provient de »*). Il suffit de l'accoler juste après l'`@ingrédient` enfant.
 
 **Format** : `@nomEnfant{qtéEnfant}<@nomParent{coûtParent}`
 
@@ -19,11 +19,11 @@ Vous définissez un ingrédient composite en utilisant l'opérateur `<` (qui peu
 - **`<@nomParent`** : L'article physique que vous achetez réellement au magasin (ex : `<@citron`).
 - **`{coûtParent}`** : *(Optionnel)* La quantité du parent qui est consommée pour obtenir cette partie enfant (ex : `{2}`). Si vous ne l'écrivez pas, la valeur par défaut est `1`.
 
-L'enfant comme le parent peuvent chacun porter leur propre note de préparation `()`, de manière indépendante :
+L'enfant comme le parent peuvent chacun porter leur propre note de préparation `()`, et ce de manière totalement indépendante :
 - **La préparation de l'enfant** se place juste après son nom (et sa quantité, le cas échéant), avant le `<` : `@jus(filtré)<@citron{1}`.
 - **La préparation du parent** se place juste après son coût (ou son nom, si le coût est omis) : `@jus<@citron{1}(coupé en deux)`.
 
-Rattachez la préparation à l'élément qu'elle décrit réellement (ce qui est fait à la partie extraite vs ce qui est fait à l'ingrédient entier). Les deux peuvent également se combiner si nécessaire :
+Accrochez toujours la préparation à l'élément qu'elle qualifie réellement (l'action subie par la partie extraite *vs* l'action subie par l'ingrédient entier). Les deux peuvent bien sûr se combiner :
 
 ```gram
 Ajouter le @jus{150 ml}(filtré)<@citron{1}(coupé en deux) dans le saladier.
@@ -48,7 +48,7 @@ Les espaces sont **strictement interdits** autour de l'opérateur `<`.
 
 ## Règles de Calcul
 
-Comment le compilateur calcule-t-il réellement le nombre total de citrons que vous devez acheter ? Il utilise trois règles simples pour optimiser automatiquement votre liste de courses.
+Comment le compilateur déduit-il le nombre total de citrons à acheter ? Il s'appuie sur trois règles très simples pour optimiser automatiquement la liste de courses.
 
 ### 1. La Règle de Chevauchement (Parties Différentes)
 Si vous utilisez différentes parties d'un même parent (comme le zeste et le jus), Gram sait qu'elles peuvent provenir du même citron physique. Il prend la quantité **maximale** requise parmi ces parties.
@@ -84,7 +84,7 @@ Couper le @citron{2} en quartiers.       // Nécessite 2 citrons entiers
 
 ## Sortie de la Liste de Courses
 
-La structure de la liste de courses générée gère élégamment les ingrédients composites, permettant aux applications front-end de les afficher de manière hiérarchique.
+La structure de la liste de courses générée prend nativement en charge ces ingrédients composites, ce qui permet aux applications *front-end* de les afficher sous forme de hiérarchie.
 
 Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
 
@@ -104,7 +104,7 @@ Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
 
 ## Listes d'Ingrédients de Section
 
-Contrairement à la liste de courses, la liste d'ingrédients propre à une section reste plate — mais elle indique tout de même de quel parent provient un enfant composite, ajouté entre parenthèses juste après le nom de l'enfant :
+À l'inverse de la liste de courses globale, la liste d'ingrédients spécifique à une section reste plate. Néanmoins, elle mentionne clairement de quel parent provient un enfant composite (l'info est ajoutée entre parenthèses juste après le nom de l'enfant) :
 
 ```md
 **Ingrédients** :
@@ -112,7 +112,7 @@ Contrairement à la liste de courses, la liste d'ingrédients propre à une sect
 - **jus** (citron)
 ```
 
-Cela permet d'écrire des noms courts pour les enfants composites (`@zeste`, `@jus`) sans perdre la traçabilité vers le parent.
+Cette astuce permet d'utiliser des noms raccourcis pour les enfants composites (`@zeste`, `@jus`) sans jamais perdre leur traçabilité vers l'ingrédient parent.
 
 Si le parent lui-même a aussi une préparation `()` (ex : `@jus{150 ml}<@citron{1}(coupé en deux)`), elle est repliée dans la même parenthèse, après le nom du parent :
 
@@ -121,4 +121,4 @@ Si le parent lui-même a aussi une préparation `()` (ex : `@jus{150 ml}<@citron
 - **jus** (citron, coupé en deux)
 ```
 
-La préparation du parent n'apparaît jamais dans la liste de courses — comme toute autre note de préparation, c'est une information pour la recette, pas un attribut de liste de courses.
+Notez que la préparation du parent n'apparaîtra **jamais** dans la liste de courses globale : au même titre que n'importe quelle autre note de préparation, il s'agit d'une consigne de recette, et non d'un attribut d'achat.

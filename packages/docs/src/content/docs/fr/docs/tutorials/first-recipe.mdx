@@ -7,11 +7,11 @@ import { CodeTabs } from 'starlight-theme-nova/components';
 
 À vos fourneaux ! Dans ce tutoriel, nous allons écrire une recette complète de **Tarte au Citron**.
 
-Cette recette montre comment aller au-delà d'une simple liste d'ingrédients et utiliser les fonctionnalités avancées du compilateur Gram pour écrire une recette véritablement dynamique, scalable et orientée données.
+Cette recette va bien au-delà de la classique liste d'ingrédients. On va exploiter le compilateur Gram pour écrire une recette dynamique, ultra-*scalable* et orientée données.
 
 ## Étape 1 : Les Bases (La Pâte)
 
-Commencez par définir la pâte sucrée. Le symbole `@` est utilisé pour les ingrédients et `#` pour le matériel (cookware).
+On attaque avec la pâte sucrée. Le symbole `@` cible les ingrédients, et `#` le matériel (*cookware*).
 
 <CodeTabs>
 ```gram title="Code"
@@ -43,15 +43,15 @@ Commencez par définir la pâte sucrée. Le symbole `@` est utilisé pour les in
 ```
 </CodeTabs>
 
-Remarquez les tags `[Action]` au début de chaque ligne (ex : `[Mixer]`, `[Repos]`). Bien que ce ne soit pas strictement obligatoire, il est fortement recommandé de commencer chaque étape par son action principale entre crochets. Cela permet aux interfaces utilisateurs (UI) de générer des résumés clairs, étape par étape, de votre recette.
+Vous avez repéré les balises `[Action]` (ex: `[Mixer]`, `[Repos]`) ? Ce n'est pas strictement obligatoire, mais c'est une excellente pratique. Ça permet aux interfaces utilisateur (UI) de générer des résumés ultra-clairs de vos étapes.
 
-De plus, cette syntaxe est très lisible. Le compilateur va automatiquement extraire les ingrédients dans une liste de courses et sommer le temps actif (en supposant 2 minutes par étape par défaut) avec l'heure de repos.
+Surtout, cette syntaxe est redoutable. Le compilateur va automatiquement pomper les ingrédients pour la liste de courses, et estimer le temps actif total (en forfaitisant 2 minutes par étape) en plus des temps de repos.
 
 ## Étape 2 : Les Variables Intermédiaires
 
-La pâte n'est pour l'instant qu'une liste d'étapes. Pour pouvoir l'utiliser plus tard (pour la cuire), il faut indiquer au compilateur que le résultat de cette section forme une entité unifiée.
+Pour l'instant, notre pâte n'est qu'une bête suite d'étapes. Pour la réutiliser plus tard (à la cuisson), il faut dire au compilateur que le résultat de cette section forme un tout unifié.
 
-On fait cela à l'aide d'une **Déclaration Intermédiaire** (`->&nom`) à la fin du titre de la section.
+On dégaine pour ça la **Déclaration Intermédiaire** (`->&nom`) en fin de titre de section.
 
 <CodeTabs>
 ```gram title="Code"
@@ -83,7 +83,7 @@ On fait cela à l'aide d'une **Déclaration Intermédiaire** (`->&nom`) à la fi
 ```
 </CodeTabs>
 
-Désormais, dans la section suivante, cette pâte pourra être référencée en utilisant `&nom` au lieu de retaper tous les ingrédients. Le compilateur sait **qu'il ne faut pas ajouter la pâte à la liste de courses**, car il s'agit d'une préparation intermédiaire !
+Désormais, vous pourrez invoquer cette pâte via `&nom` dans les étapes suivantes, sans retaper un seul ingrédient. Le compilateur captera direct **qu'il ne faut pas l'ajouter à la liste de courses**, puisqu'elle est déjà produite en interne.
 
 <CodeTabs>
 ```gram title="Code"
@@ -109,10 +109,10 @@ Désormais, dans la section suivante, cette pâte pourra être référencée en 
 
 ## Étape 3 : Minuteurs en Arrière-plan (Passifs)
 
-À l'Étape 1, nous avions écrit : `[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}`. 
-Par défaut, les minuteurs sont **actifs**. Le compilateur suppose que vous attendez activement pendant 1 heure, et l'ajoute à votre *Temps Actif*.
+À l'Étape 1, on avait lâché un : `[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}`. 
+Par défaut, les *timers* sont **actifs**. Le compilateur croit dur comme fer que vous êtes occupé pendant 1h, et l'ajoute au *Temps Actif*.
 
-Mais laisser reposer une pâte au réfrigérateur est une tâche passive. Vous pouvez faire autre chose pendant qu'elle repose (comme préparer le crémeux au citron). Pour indiquer au compilateur qu'il s'agit d'une tâche passive, on ajoute un underscore `~_` :
+Sauf que laisser dormir une pâte au frigo, c'est 100% passif. Vous avez largement le temps de préparer le crémeux citron à côté. Pour flagger ça en tâche passive, on glisse un *underscore* `~_` :
 
 <CodeTabs>
 ```gram title="Code"
@@ -123,13 +123,13 @@ Mais laisser reposer une pâte au réfrigérateur est une tâche passive. Vous p
 ```
 </CodeTabs>
 
-Maintenant, le compilateur soustraira 1 heure de votre *Temps Actif* mais la gardera dans le *Temps Total*.
+Hop, le compilateur purge cette heure du *Temps Actif* tout en la conservant dans le *Temps Total*.
 
 ## Étape 4 : Ingrédients Composites
 
-Une tarte au citron nécessite des zestes de citron et du jus de citron. Si vous écrivez `@zeste de citron{1 c.à.s}` et `@jus de citron{120 g}`, la liste de courses les considérera comme deux produits complètement différents. Or, on achète les citrons entiers !
+La tarte réclame des zestes et du jus. Si vous tapez `@zeste de citron{1 c.à.s}` et `@jus de citron{120 g}`, la liste de courses va bêtement compter deux produits. Mais en vrai, on achète des citrons entiers !
 
-Cela se résout avec les **Ingrédients Composites** (`<@parent`).
+C'est là qu'interviennent les **Ingrédients Composites** (`<@parent`).
 
 Voici la section du Crémeux au Citron :
 
@@ -155,13 +155,13 @@ Voici la section du Crémeux au Citron :
 ```
 </CodeTabs>
 
-Étant donné que le zeste et le jus pointent tous les deux vers `<@citron` (ou `<@citrons`), le compilateur comprend qu'il s'agit de différentes parties du même ingrédient parent. Plutôt que de s'en remettre à une base de données pour deviner les rendements, il applique la **Règle du MAX** : il regarde les quantités du parent nécessaires pour chaque partie distincte (`<@citron` vaut 1 par défaut pour le zeste, et `<@citrons{2}` vaut 2 pour le jus) et prend le maximum. Ici, puisque `max(1, 2) = 2`, la liste de courses va intelligemment réclamer exactement 2 citrons entiers !
+Puisque le zeste et le jus pointent vers `<@citron` (ou `<@citrons`), le compilateur comprend que ce sont les organes d'un même parent. Pas besoin de *database* pour deviner le rendement : il applique sauvagement la **Règle du MAX**. Il regarde la quantité parent requise pour chaque morceau (`<@citron` vaut 1 pour le zeste, `<@citrons{2}` vaut 2 pour le jus) et prend le max. Ici `max(1, 2) = 2` : la liste de courses va brillamment vous faire acheter 2 citrons entiers !
 
 ## Étape 5 : Quantités Relatives
 
-En pâtisserie, la précision est primordiale. Que se passe-t-il si vos citrons sont particulièrement dodus et donnent 140 g de jus au lieu des 120 g attendus ? Si la quantité de sucre était fixe, le crémeux deviendrait trop acide. Pour garantir que le crémeux soit parfaitement équilibré quel que soit le rendement réel du jus, le sucre doit s'ajuster dynamiquement pour représenter très exactement 125 % du poids du jus.
+En pâtisserie, on ne rigole pas avec la chimie. Et si vos citrons sont des monstres de jus et lâchent 140 g au lieu des 120 g prévus ? Avec un sucre figé, votre crémeux finira horriblement acide. Pour garantir un équilibre atomique, le sucre doit s'adapter dynamiquement pour peser exactement 125% du poids du jus.
 
-Vous pouvez utiliser les **Quantités Relatives** (`% @&cible`) :
+Dites bonjour aux **Quantités Relatives** (`% @&cible`) :
 
 <CodeTabs>
 ```gram title="Code"
@@ -172,7 +172,7 @@ Vous pouvez utiliser les **Quantités Relatives** (`% @&cible`) :
 ```
 </CodeTabs>
 
-À présent, le sucre est strictement lié au jus. Si vous ajustez la quantité de jus plus tard en fonction du rendement réel de vos citrons, le compilateur calculera automatiquement la masse exacte de sucre nécessaire (ici, 150 g) pour conserver le ratio parfait.
+Le sucre est désormais asservi au jus. Si vous ajustez la ligne du jus selon votre rendement réel, le compilateur recalculera automatiquement la masse de sucre (ici, 150 g) pour sauver votre ratio.
 
 :::note
 Pour approfondir la manière dont Gram gère les calculs relatifs complexes (comme l'utilisation de volumes ou d'unités comme cibles), consultez la référence sur les [Quantités Relatives](../reference/syntax/relative-quantities.md).
@@ -180,7 +180,7 @@ Pour approfondir la manière dont Gram gère les calculs relatifs complexes (com
 
 ## La Recette Finale
 
-Voici la recette complète. Remarquez à quel point elle reste propre et lisible, malgré l'incroyable quantité de logique qu'elle embarque !
+Voici la bête complète. Admirez la clarté et la fluidité de lecture, malgré l'avalanche de logique *under the hood* !
 
 <CodeTabs>
 ```gram title="Code"
@@ -299,6 +299,6 @@ portions: 8
 En lançant `gram view tarte-citron.gram`, le compilateur s'est chargé de tous les calculs et du formatage à votre place :
 - **Temps Actif** : ~24.5 mins (il ignore intelligemment les 3 heures de repos au frigo).
 - **Temps Total** : ~3h 44.5 mins.
-- **Liste de Courses** : Il a agrégé l'intégralité des ingrédients. Il a combiné l'`@œuf{1}` et les `@œufs{3}` en `4 œufs`. Il a calculé les citrons entiers nécessaires pour le zeste et le jus. Il a automatiquement converti la proportion relative de sucre en exactement `150 g` de sucre.
+- **Liste de Courses** : Il a agrégé l'intégralité des ingrédients. Il a combiné l'`@œuf{1}` et les `@œufs{3}` en `4 œufs`. Il a calculé les citrons entiers nécessaires pour le zeste et le jus. Il a automatiquement converti la proportion relative en exactement `150 g` de sucre.
 
-Vous venez d'écrire une recette ultra-scalable, orientée données !
+Félicitations, vous venez de coder une recette *data-driven* et ultra-*scalable* !

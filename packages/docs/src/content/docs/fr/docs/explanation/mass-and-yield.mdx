@@ -3,7 +3,7 @@ title: "Analyse approfondie : Standardisation des Masses & Rendement"
 description: "Comment Gram convertit volumes et nombres en grammes, et calcule le poids d'achat à partir du rendement."
 ---
 
-Gram est profondément ancré dans la réalité physique. Contrairement aux parseurs Markdown basiques qui se contentent de mettre du texte en gras, le `@gram-lang/analyzer` comprend qu'une "tasse de farine" et une "tasse d'eau" ont des poids complètement différents.
+Gram est profondément ancré dans la réalité physique. Contrairement aux *parseurs* Markdown basiques qui se contentent de formater du texte, `@gram-lang/analyzer` comprend qu'une "tasse de farine" et une "tasse d'eau" ont des poids radicalement différents.
 
 Cette page explique le moteur physique derrière les calculs de masse et de rendement de Gram.
 
@@ -11,13 +11,13 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## Les Trois Piliers de la Physique
 
-Gram sépare les propriétés physiques des ingrédients en trois concepts distincts au sein de votre base de données. Cette séparation stricte garantit que les mathématiques sont toujours exactes, que vous écriviez en volumes, en nombres, ou en poids.
+Gram modélise les propriétés physiques des ingrédients selon trois concepts distincts au sein de votre base de données. Cette séparation stricte garantit l'exactitude des calculs, que vous exprimiez vos quantités en volumes, en unités ou en poids.
 
 1. **Densité (`density`)** : Utilisée strictement pour convertir les **Volumes** en **Masse**.
     * *Exemple* : `1 tasse de lait -> 240 g` (en utilisant une densité de 1,03 g/ml).
 2. **Poids Unitaire (`unit_weight`)** : Utilisé strictement pour convertir les **Nombres** en **Masse**.
     * *Exemple* : `1 avocat -> 150 g` (le poids moyen d'un avocat entier).
-3. **Rendement (`yield`)** : Le **Facteur de Déchet**. Utilisé strictement pour calculer le rapport entre la **Masse Nette** comestible et la **Masse Brute** à l'achat (à cause des pelures, graines, os).
+3. **Rendement (`yield`)** : Le **Facteur de Déchet**. Il sert strictement à calculer le ratio entre la **Masse Nette** comestible et la **Masse Brute** à l'achat (en déduisant épluchures, noyaux, os, etc.).
     * *Exemple* : Un avocat a un rendement de 0.70 (30 % correspond au noyau et à la peau).
 
 ## Le But de la Standardisation des Masses
@@ -35,7 +35,7 @@ Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de p
 2. **Surcharge Utilisateur** : Si vous avez fourni une surcharge de densité spécifique dans le frontmatter YAML de la recette (ex : `densities: { farine: 0.55 }`), il utilise cette valeur explicite pour convertir le volume demandé en masse.
 3. **Densité de la Base de Données** : Si vous avez demandé un volume connu (`ml`, `tasse`, `c.à.s`, `c.à.c`) et que votre `ingredients.yaml` contient un champ `density` pour cet ingrédient, il calcule `Volume * Densité = Masse`.
 4. **Poids Unitaire de la Base de Données** : Si vous avez demandé un nombre (`@oeuf{3}` ou `@ail{2 gousses}`) et que votre base de données contient un champ `unit_weight`, il calcule `Nombre * Poids Unitaire = Masse`.
-5. **Incomplet** : Si un volume n'a aucune densité disponible (pas de surcharge, pas d'entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse de deviner. Il ne va **pas** supposer une densité par défaut (ex : traiter n'importe quoi comme de l'eau) — cela fausserait silencieusement les totaux de la liste de courses. Le calcul de la masse échoue, l'ingrédient est marqué comme "incomplet", et il est listé dans son unité brute non convertie.
+5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse de jouer aux devinettes. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
 </Steps>
 
 ## Calcul du Rendement (Le Facteur de Déchet)
@@ -49,7 +49,7 @@ Le rapport entre ces deux éléments est le **Facteur de Rendement**.
 
 ### Comment Gram gère le Rendement
 
-Par défaut, Gram suppose que tout ingrédient écrit dans votre recette fait référence à la **Masse Nette**. Le générateur de liste de courses travaille ensuite à l'envers en utilisant le rendement (`yield`) et le poids unitaire (`unit_weight`) pour vous dire exactement quelle quantité acheter.
+Par défaut, Gram part du principe que tout ingrédient mentionné dans une recette correspond à sa **Masse Nette**. Le générateur de liste de courses remonte ensuite la chaîne à l'envers : il utilise le rendement (`yield`) et le poids unitaire (`unit_weight`) pour déterminer la quantité exacte à acheter.
 
 Regardons deux scénarios pour un avocat (`unit_weight: 150g`, `yield: 0.70`) :
 
