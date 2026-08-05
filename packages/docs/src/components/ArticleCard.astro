@@ -2,10 +2,10 @@
 import type { CollectionEntry } from "astro:content";
 
 interface Props {
-	post: CollectionEntry<"blog">;
-	postHref: string;
-	topicHref: string;
-	locale: "en" | "fr";
+  post: CollectionEntry<"blog">;
+  postHref: string;
+  topicHref: string;
+  locale: "en" | "fr";
 }
 
 const { post, postHref, topicHref, locale } = Astro.props;
@@ -16,19 +16,26 @@ const { post, postHref, topicHref, locale } = Astro.props;
   <a href={postHref} class="article-link">
     <h2>{post.data.title}</h2>
     <time datetime={post.data.date.toISOString()}>
-      {post.data.date.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}
+      {
+        post.data.date.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      }
     </time>
-    {post.data.description && <p class="article-description">{post.data.description}</p>}
+    {
+      post.data.description && (
+        <p class="article-description">{post.data.description}</p>
+      )
+    }
   </a>
 </article>
 
 <style>
   .article-card {
-    border-bottom: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-border);
+    padding-block: 1.5rem;
   }
 
   .article-card:last-child {
@@ -36,13 +43,13 @@ const { post, postHref, topicHref, locale } = Astro.props;
   }
 
   .article-topic {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--sl-color-accent);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     display: inline-block;
-    margin: 2rem 2rem 0.5rem 0;
+    margin: 0;
     text-decoration: none;
     transition: opacity 0.2s;
   }
@@ -53,10 +60,8 @@ const { post, postHref, topicHref, locale } = Astro.props;
 
   .article-link {
     display: block;
-    padding: 0 0 2rem 0;
     text-decoration: none;
     color: inherit;
-    transition: opacity 0.2s;
   }
 
   .article-link:hover {
@@ -66,7 +71,7 @@ const { post, postHref, topicHref, locale } = Astro.props;
   .article-card h2 {
     font-size: 1.75rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     color: var(--sl-color-white);
   }
 
