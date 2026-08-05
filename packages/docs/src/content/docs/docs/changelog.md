@@ -1,6 +1,9 @@
 ---
 title: Changelog
 description: Every release of Gram — new features, fixes, and breaking changes.
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
 ---
 
 ## [1.0.0-beta.5] - 7/26/2026
