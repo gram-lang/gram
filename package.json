@@ -35,6 +35,7 @@
     "typecheck": "turbo run typecheck",
     "test": "bun test",
     "change": "changeset",
+    "check-changesets": "bun run check-changesets.ts",
     "version-packages": "bun run generate-release-note.ts && changeset version && bun update",
     "conformance": "bun run --cwd conformance conformance",
     "conformance:update": "bun run --cwd conformance conformance:update",

@@ -5,6 +5,18 @@ import assembleReleasePlan from "@changesets/assemble-release-plan";
 import { getPackages } from "@manypkg/get-packages";
 import { writeFile, readFile } from "node:fs/promises";
 import fs from "node:fs";
+import { execSync } from "node:child_process";
+import { parseChangesetSummary, findLikelyDuplicates, extractRecentChangelogLines, filterUnreleasedChangesets } from "./changeset-utils";
+
+const REPO_COMPARE_URL = "https://git.gram-lang.org/gram-lang/gram/compare";
+
+function getPreviousTag(): string | undefined {
+    try {
+        return execSync("git describe --tags --abbrev=0", { encoding: "utf-8" }).trim();
+    } catch (e) {
+        return undefined;
+    }
+}
 
 async function main() {
     const cwd = process.cwd();
@@ -37,18 +49,33 @@ async function main() {
     let nextVersion = mainRelease?.newVersion || "0.0.0";
 
     // 2.b Filter changesets already published in previous pre-releases
-    let changesetsForNote = changesets;
-    if (preState) {
-        const releasedChangesets = new Set(preState.changesets);
-        changesetsForNote = changesets.filter(cs => !releasedChangesets.has(cs.id));
+    const changesetsForNote = filterUnreleasedChangesets(changesets, preState);
+
+    // 2.c Read the existing CHANGELOG.md once — used both for duplicate
+    // detection against recent history and for the final prepend.
+    const changelogPath = "./CHANGELOG.md";
+    let existingContent = "";
+    try {
+        existingContent = await readFile(changelogPath, "utf-8");
+        existingContent = existingContent.replace("# Changelog\n\n", "");
+    } catch (e) {
+        existingContent = "";
     }
 
-    // 3. Initialize the markdown block
-    let newReleaseMarkdown = `## [${nextVersion}] - ${new Date().toLocaleDateString('en-US')}\n\n`;
+    // 3. Initialize the markdown block. The heading links to a compare view
+    // against the previous tag, so readers can see the exact commit range —
+    // there's no PR-based workflow here to link back to instead.
+    const previousTag = getPreviousTag();
+    const newTag = `v.${nextVersion}`;
+    const versionHeading = previousTag
+        ? `[${nextVersion}](${REPO_COMPARE_URL}/${previousTag}...${newTag})`
+        : `[${nextVersion}]`;
+    let newReleaseMarkdown = `## ${versionHeading} - ${new Date().toLocaleDateString('en-US')}\n\n`;
 
     const majorChanges: string[] = [];
     const minorChanges: string[] = [];
     const patchChanges: string[] = [];
+    const newTitlesForDupeCheck: string[] = [];
 
     // Extracted sections mapping
     const extractedSections: Record<string, string[]> = {};
@@ -58,52 +85,32 @@ async function main() {
         const types = cs.releases.map(r => r.type);
         const bumpType = types.includes("major") ? "major" : types.includes("minor") ? "minor" : "patch";
 
-        const lines = cs.summary.trim().split("\n");
-        let currentSection = "";
-        let titleParts: string[] = [];
+        const { formattedEntry, head, sections } = parseChangesetSummary(cs.summary);
 
-        for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-
-            const headingMatch = trimmed.match(/^\*\*([^\*]+)\*\*[:]*\s*$/);
-            if (headingMatch) {
-                let sectionName = headingMatch[1].trim().replace(/:$/, '').trim();
-                if (sectionName.match(/breaking/i)) sectionName = "Breaking";
-                else if (sectionName.match(/fixed/i) || sectionName.match(/^fix$/i)) sectionName = "Fixed";
-                
-                currentSection = sectionName;
-                if (!extractedSections[currentSection]) extractedSections[currentSection] = [];
-            } else if (currentSection) {
-                let item = trimmed;
-                if (!item.startsWith("- ")) {
-                    item = item.replace(/^[-*]\s*/, "");
-                    item = `- ${item}`;
-                }
-                extractedSections[currentSection].push(item);
-            } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-                titleParts.push(`  ${trimmed.replace(/^\*\s*/, "- ")}`);
-            } else {
-                if (titleParts.length === 0 || titleParts[0].startsWith("  ")) {
-                    titleParts.unshift(trimmed);
-                } else {
-                    titleParts[0] += ` ${trimmed}`;
-                }
-            }
-        }
-
-        let formattedEntry = "";
-        if (titleParts.length > 0) {
-            const first = titleParts[0];
-            const head = first.startsWith("  ") ? first.trimStart() : (first.startsWith("-") ? first : `- ${first}`);
-            const rest = titleParts.slice(1);
-            formattedEntry = [head, ...rest].join("\n");
+        for (const [sectionName, items] of Object.entries(sections)) {
+            if (!extractedSections[sectionName]) extractedSections[sectionName] = [];
+            extractedSections[sectionName].push(...items);
         }
 
         if (formattedEntry) {
+            newTitlesForDupeCheck.push(head);
             if (bumpType === "major") majorChanges.push(formattedEntry);
             else if (bumpType === "minor") minorChanges.push(formattedEntry);
             else patchChanges.push(formattedEntry);
+        }
+    }
+
+    // 4.b Flag likely duplicates against this batch and recent release history,
+    // so overlapping changesets can be merged before they're locked into
+    // CHANGELOG.md — much easier here than after the fact.
+    const duplicateWarnings = findLikelyDuplicates(
+        newTitlesForDupeCheck,
+        extractRecentChangelogLines(existingContent),
+    );
+    if (duplicateWarnings.length > 0) {
+        console.warn(`\n⚠️  ${duplicateWarnings.length} possible duplicate changelog entr${duplicateWarnings.length === 1 ? "y" : "ies"} detected — review before publishing:\n`);
+        for (const w of duplicateWarnings) {
+            console.warn(`  - "${w.title}"\n    ~ "${w.matchedAgainst}" (${Math.round(w.similarity * 100)}% word overlap)\n`);
         }
     }
 
@@ -139,17 +146,7 @@ async function main() {
         }
     }
 
-    // 6. Handle global root CHANGELOG history (Prepend mechanism)
-    const changelogPath = "./CHANGELOG.md";
-    let existingContent = "";
-
-    try {
-        existingContent = await readFile(changelogPath, "utf-8");
-        existingContent = existingContent.replace("# Changelog\n\n", "");
-    } catch (e) {
-        existingContent = "";
-    }
-
+    // 6. Prepend to the root CHANGELOG.md (existingContent was read in step 2.c)
     const finalChangelogContent = `# Changelog\n\n${newReleaseMarkdown}---\n\n${existingContent}`.trim() + "\n";
 
     await writeFile(changelogPath, finalChangelogContent, "utf-8");
