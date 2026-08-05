@@ -30,6 +30,14 @@ import Select from "@astrojs/starlight/components/Select.astro";
 					? "light"
 					: "dark"
 				: initial;
+
+		// Update select elements synchronously to avoid FOUC
+		const selects = document.querySelectorAll("gram-theme-select select");
+		selects.forEach((select) => {
+			if (select instanceof HTMLSelectElement) {
+				select.value = initial;
+			}
+		});
 	})();
 </script>
 
