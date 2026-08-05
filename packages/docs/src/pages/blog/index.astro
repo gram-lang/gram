@@ -7,8 +7,12 @@ import ArticleCard from "../../components/ArticleCard.astro";
 const allPosts = await getCollection("blog");
 const englishPosts = allPosts.filter((post) => post.data.locale === "en");
 
-// Sort by date descending
-englishPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+// Sort by date descending, then by id descending (for releases on the same day)
+englishPosts.sort((a, b) => {
+  const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+  if (dateDiff !== 0) return dateDiff;
+  return b.id.localeCompare(a.id);
+});
 
 const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
 ---

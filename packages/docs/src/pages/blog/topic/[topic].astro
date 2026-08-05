@@ -29,8 +29,12 @@ export async function getStaticPaths() {
 			(post) => getTopicSlug(post.data.topic) === slug,
 		);
 
-		// Sort by date descending
-		topicPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+		// Sort by date descending, then by id descending (for releases on the same day)
+		topicPosts.sort((a, b) => {
+			const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+			if (dateDiff !== 0) return dateDiff;
+			return b.id.localeCompare(a.id);
+		});
 
 		return {
 			params: { topic: slug },
