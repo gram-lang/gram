@@ -90,6 +90,7 @@
 	--sl-color-white: hsl(30, 12%, 10%);
 	--sl-color-gray-3: hsl(30, 9%, 36%);
 	--sl-color-gray-4: hsl(30, 8%, 56%);
+	--sl-color-gray-5: hsl(30, 33%, 88%);
 	--sl-color-gray-6: hsl(30, 20%, 94%);
 	--sl-color-gray-7: hsl(30, 19%, 97%);
 	--sl-color-border: #cecece;
@@ -210,5 +211,5 @@ pre[data-language="markdown"] code {
 .expressive-code .frame,
 pre.astro-code,
 pre.shiki {
-	background-color: var(--sl-color-bg-nav) !important;
+	background-color: var(--sl-color-bg) !important;
 }
