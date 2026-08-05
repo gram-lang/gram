@@ -26,7 +26,7 @@ bun test
 
 # 3. Uploading documentation & playground to VPS via rsync
 echo "🚀 Uploading documentation & playground to VPS..."
-rsync -avz --delete packages/docs/src/.vitepress/dist/ VPS:/var/www/gram-lang.org/
+rsync -avz --delete packages/docs/dist/ VPS:/var/www/gram-lang.org/
 
 echo "✨ Deployment successful!"
 echo "🌍 Opening $URL"
