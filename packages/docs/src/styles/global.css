@@ -141,16 +141,41 @@ body {
 	border-width: 0;
 }
 
-/* Language selector fixes (prevent truncation of "Français") */
+/* Unified styling for Language and Theme Selectors (Starlight Docs + Astro Site) */
+starlight-lang-select label,
+gram-theme-select label {
+	--sl-label-icon-size: 0px !important;
+	border: 1px solid var(--sl-color-border) !important;
+	padding-left: 0.5rem !important;
+	color: var(--sl-color-gray-3) !important;
+	max-height: 34px;
+}
+
 starlight-lang-select label {
 	--sl-select-width: 7.5em !important;
+	width: 120px !important;
+}
+
+gram-theme-select label {
+	width: 60px !important;
+}
+
+starlight-lang-select .label-icon,
+gram-theme-select .label-icon {
+	display: none !important;
+}
+
+starlight-lang-select label:hover,
+gram-theme-select label:hover {
+	border-color: var(--sl-color-gray-4) !important;
+	color: var(--sl-color-white) !important;
 }
 
 starlight-lang-select select,
 gram-theme-select select {
 	font-size: 0.85rem !important;
-	padding-inline: 0.5rem 0;
-	padding-block: 0.45rem;
+	padding-inline: 0.5rem 0 !important;
+	padding-block: 0.45rem !important;
 }
 
 :root[data-theme="light"] body {
