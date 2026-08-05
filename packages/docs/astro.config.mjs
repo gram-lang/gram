@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 
 import starlight from '@astrojs/starlight';
 import starlightThemeNova from 'starlight-theme-nova';
+import starlightLinksValidator from 'starlight-links-validator';
 import vue from '@astrojs/vue';
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
@@ -28,7 +29,14 @@ export default defineConfig({
   integrations: [
     vue(),
     starlight({
-      plugins: [starlightThemeNova()],
+      plugins: [
+        starlightThemeNova(),
+        starlightLinksValidator({
+          errorOnFallbackPages: false,
+          errorOnInconsistentLocale: true,
+          exclude: ['/play', '/play/', '/fr/play', '/fr/play/']
+        })
+      ],
       title: 'Gram',
       disable404Route: true,
       customCss: [

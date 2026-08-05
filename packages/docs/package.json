@@ -37,6 +37,7 @@
     "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@types/mdast": "^4.0.4"
+    "@types/mdast": "^4.0.4",
+    "starlight-links-validator": "^0.25.2"
   }
 }
