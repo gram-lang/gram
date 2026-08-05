@@ -4,39 +4,41 @@ import Layout from "../../../layouts/Layout.astro";
 import { getTopicSlug, getTopicInfo } from "../../../data/blog-topics";
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection("blog");
-  const englishPosts = allPosts.filter(post => post.data.locale === "en");
+	const allPosts = await getCollection("blog");
+	const englishPosts = allPosts.filter((post) => post.data.locale === "en");
 
-  // Get all unique topics from English posts
-  const uniqueTopicsMap = new Map();
-  englishPosts.forEach(post => {
-    const topic = post.data.topic;
-    const slug = getTopicSlug(topic);
-    if (!uniqueTopicsMap.has(slug)) {
-      uniqueTopicsMap.set(slug, topic);
-    }
-  });
+	// Get all unique topics from English posts
+	const uniqueTopicsMap = new Map();
+	englishPosts.forEach((post) => {
+		const topic = post.data.topic;
+		const slug = getTopicSlug(topic);
+		if (!uniqueTopicsMap.has(slug)) {
+			uniqueTopicsMap.set(slug, topic);
+		}
+	});
 
-  const allTopicsList = Array.from(uniqueTopicsMap.values());
+	const allTopicsList = Array.from(uniqueTopicsMap.values());
 
-  return Array.from(uniqueTopicsMap.entries()).map(([slug, originalTopic]) => {
-    const topicInfo = getTopicInfo(slug, originalTopic);
-    
-    // Filter posts for this topic
-    const topicPosts = englishPosts.filter(post => getTopicSlug(post.data.topic) === slug);
-    
-    // Sort by date descending
-    topicPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+	return Array.from(uniqueTopicsMap.entries()).map(([slug, originalTopic]) => {
+		const topicInfo = getTopicInfo(slug, originalTopic);
 
-    return {
-      params: { topic: slug },
-      props: { 
-        topicInfo, 
-        topicPosts,
-        allTopics: allTopicsList 
-      },
-    };
-  });
+		// Filter posts for this topic
+		const topicPosts = englishPosts.filter(
+			(post) => getTopicSlug(post.data.topic) === slug,
+		);
+
+		// Sort by date descending
+		topicPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+		return {
+			params: { topic: slug },
+			props: {
+				topicInfo,
+				topicPosts,
+				allTopics: allTopicsList,
+			},
+		};
+	});
 }
 
 const { topicInfo, topicPosts, allTopics } = Astro.props;

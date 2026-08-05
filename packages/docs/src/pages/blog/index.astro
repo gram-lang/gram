@@ -4,12 +4,12 @@ import Layout from "../../layouts/Layout.astro";
 import { getTopicSlug } from "../../data/blog-topics";
 
 const allPosts = await getCollection("blog");
-const englishPosts = allPosts.filter(post => post.data.locale === "en");
+const englishPosts = allPosts.filter((post) => post.data.locale === "en");
 
 // Sort by date descending
 englishPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const topics = [...new Set(englishPosts.map(post => post.data.topic))];
+const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
 ---
 
 <Layout title="Blog" description="Latest updates and articles from the Gram team." currentLang="en">

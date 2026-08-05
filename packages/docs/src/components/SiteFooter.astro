@@ -4,40 +4,40 @@ import SocialLinks from "./SocialLinks.astro";
 const { currentLang = "en" } = Astro.props;
 
 const t = {
-  en: {
-    tagline: "An open-source markup language for recipes.",
-    resources: "Resources",
-    coreConcepts: "Core Concepts",
-    tooling: "Tooling",
-    documentation: "Documentation",
-    playground: "Playground",
-    designPhilosophy: "Design Philosophy",
-    alapScheduling: "ALAP Scheduling",
-    scalingRecipes: "Scaling Recipes",
-    localDatabase: "Local Database",
-    cli: "CLI",
-    vscode: "VSCode Extension",
-    kitchenApi: "Kitchen API",
-    copyright:
-      "© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
-  },
-  fr: {
-    tagline: "Un langage de balisage open-source pour vos recettes.",
-    resources: "Ressources",
-    coreConcepts: "Concepts Clés",
-    tooling: "Outils",
-    documentation: "Documentation",
-    playground: "Playground",
-    designPhilosophy: "Philosophie",
-    alapScheduling: "Planification ALAP",
-    scalingRecipes: "Mise à l'échelle",
-    localDatabase: "Base de données",
-    cli: "CLI",
-    vscode: "Extension VSCode",
-    kitchenApi: "API Kitchen",
-    copyright:
-      "© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
-  },
+	en: {
+		tagline: "An open-source markup language for recipes.",
+		resources: "Resources",
+		coreConcepts: "Core Concepts",
+		tooling: "Tooling",
+		documentation: "Documentation",
+		playground: "Playground",
+		designPhilosophy: "Design Philosophy",
+		alapScheduling: "ALAP Scheduling",
+		scalingRecipes: "Scaling Recipes",
+		localDatabase: "Local Database",
+		cli: "CLI",
+		vscode: "VSCode Extension",
+		kitchenApi: "Kitchen API",
+		copyright:
+			"© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+	},
+	fr: {
+		tagline: "Un langage de balisage open-source pour vos recettes.",
+		resources: "Ressources",
+		coreConcepts: "Concepts Clés",
+		tooling: "Outils",
+		documentation: "Documentation",
+		playground: "Playground",
+		designPhilosophy: "Philosophie",
+		alapScheduling: "Planification ALAP",
+		scalingRecipes: "Mise à l'échelle",
+		localDatabase: "Base de données",
+		cli: "CLI",
+		vscode: "Extension VSCode",
+		kitchenApi: "API Kitchen",
+		copyright:
+			"© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+	},
 };
 
 const langText = t[currentLang as keyof typeof t] || t.en;

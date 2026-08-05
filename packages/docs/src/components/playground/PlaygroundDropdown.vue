@@ -86,6 +86,7 @@ onUnmounted(() => {
   user-select: none;
   border: 1px solid var(--sl-color-border);
   min-width: 0;
+  border:1px solid var(--sl-color-border);
 }
 
 .dropdown-header:hover{
@@ -100,7 +101,6 @@ onUnmounted(() => {
 
 .dropdown-header:hover, .dropdown-header.is-open {
   color: var(--sl-color-text);
-  background-color: var(--sl-color-bg-sidebar);
 }
 
 .dropdown-icon {

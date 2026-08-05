@@ -14,7 +14,9 @@ export function resolveLocalizedPosts(
 
 	return englishPosts.map((enPost) => {
 		const baseId = enPost.id.replace(/^en\//, "");
-		const localizedPost = localizedPosts.find((p) => p.id === `${locale}/${baseId}`);
+		const localizedPost = localizedPosts.find(
+			(p) => p.id === `${locale}/${baseId}`,
+		);
 		return localizedPost ?? enPost;
 	});
 }

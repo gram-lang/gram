@@ -10,7 +10,7 @@ const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
 // Sort by date descending
 postsToDisplay.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const topics = [...new Set(postsToDisplay.map(post => post.data.topic))];
+const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
 ---
 
 <Layout title="Blog" description="Dernières nouveautés et articles de l'équipe Gram." currentLang="fr">
