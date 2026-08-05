@@ -375,7 +375,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabInput: "Syntaxe Gram",
 		tabOutput: "Résultat Parsé",
 
-		nutritionInput: `## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 cup} et le @sucre glace{2 tbsp} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 tsp}.`,
+		nutritionInput: `## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [
@@ -448,7 +448,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		scaleInput: `## Pain de Campagne\n\n[Mélanger] La @*farine à pain{400g}, la @farine complète{100g}, l'@eau{75% @&farine à pain}, le @sel{2% @&farine à pain}, et le @levain{20% @&farine à pain}.`,
+		scaleInput: `## Pain de Campagne\n\n[Mélanger] La @*farine T65{400g}, la @farine complète{100g}, l'@eau{75% @&farine T65}, le @sel{2% @&farine T65}, et le @levain{20% @&farine T65}.`,
 		scaleOutput: JSON.stringify(
 			{
 				shopping_list: [
