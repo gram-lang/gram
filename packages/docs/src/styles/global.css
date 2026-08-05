@@ -35,19 +35,19 @@
  */
 :root {
 	--sl-color-white: hsl(0, 0%, 100%);
-	--sl-color-gray-3: hsl(224, 6%, 56%);
-	--sl-color-gray-4: hsl(224, 7%, 36%);
-	--sl-color-gray-5: hsl(224, 10%, 23%);
-	--sl-color-gray-6: hsl(224, 14%, 16%);
-	--sl-color-gray-7: hsl(224, 14%, 7%);
-	--sl-color-bg: hsl(224, 10%, 10%);
+	--sl-color-gray-3: hsl(30, 8%, 56%);
+	--sl-color-gray-4: hsl(30, 9%, 36%);
+	--sl-color-gray-5: hsl(30, 12%, 23%);
+	--sl-color-gray-6: hsl(30, 16%, 16%);
+	--sl-color-gray-7: hsl(30, 16%, 7%);
+	--sl-color-bg: hsl(30, 12%, 10%);
 	--sl-color-bg-nav: var(--sl-color-gray-6);
 	--sl-color-bg-sidebar: var(--sl-color-gray-6);
 	--sl-color-bg-inline-code: var(--sl-color-gray-5);
 	--sl-color-hairline: var(--sl-color-gray-6);
-	--sl-color-hairline-shade: hsl(224, 10%, 10%);
+	--sl-color-hairline-shade: hsl(30, 12%, 10%);
 	--sl-color-border: var(--sl-color-gray-4);
-	--sl-color-text: hsl(224, 6%, 77%);
+	--sl-color-text: hsl(30, 8%, 77%);
 	--sl-color-text-accent: var(--sl-color-accent-high);
 	--sl-color-orange: hsl(41, 82%, 63%);
 	--sl-color-green: hsl(101, 82%, 63%);
@@ -63,7 +63,7 @@
 		0px 4px 2px hsla(0, 0%, 0%, 0.25);
 	--sl-text-h4: 1.25rem;
 
-	--shadow-color: 228deg 16% 4%;
+	--shadow-color: 30deg 16% 4%;
 
 	--shadow-elevation-low:
 		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.2),
@@ -86,12 +86,12 @@
 }
 
 :root[data-theme="light"] {
-	--shadow-color: 0deg 0% 80%;
-	--sl-color-white: hsl(224, 10%, 10%);
-	--sl-color-gray-3: hsl(224, 7%, 36%);
-	--sl-color-gray-4: hsl(224, 6%, 56%);
-	--sl-color-gray-6: hsl(224, 20%, 94%);
-	--sl-color-gray-7: hsl(224, 19%, 97%);
+	--shadow-color: 30deg 10% 80%;
+	--sl-color-white: hsl(30, 12%, 10%);
+	--sl-color-gray-3: hsl(30, 9%, 36%);
+	--sl-color-gray-4: hsl(30, 8%, 56%);
+	--sl-color-gray-6: hsl(30, 20%, 94%);
+	--sl-color-gray-7: hsl(30, 19%, 97%);
 	--sl-color-border: #cecece;
 	--sl-color-bg: hsl(0, 0%, 100%);
 	--sl-color-bg-nav: var(--sl-color-gray-7);
@@ -99,7 +99,7 @@
 	--sl-color-bg-inline-code: var(--sl-color-gray-6);
 	--sl-color-hairline: var(--sl-color-gray-6);
 	--sl-color-hairline-shade: var(--sl-color-gray-6);
-	--sl-color-text: hsl(224, 10%, 23%);
+	--sl-color-text: hsl(30, 12%, 23%);
 	--sl-color-text-accent: var(--sl-color-accent);
 	--sl-color-orange: hsl(32, 100%, 42%);
 	--sl-color-green: hsl(91, 100%, 28%);
@@ -200,4 +200,15 @@ pre[data-language="markdown"] code {
  */
 :root {
 	--vp-c-bg: var(--sl-color-bg);
+}
+
+/*
+ * Override code block backgrounds to match the site's warm theme.
+ * This overrides the default Shiki themes (like github-dark) which have
+ * hardcoded blueish backgrounds.
+ */
+.expressive-code .frame,
+pre.astro-code,
+pre.shiki {
+	background-color: var(--sl-color-bg-nav) !important;
 }
