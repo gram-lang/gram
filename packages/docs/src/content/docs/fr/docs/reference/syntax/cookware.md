@@ -57,7 +57,7 @@ Contrairement à un `@ingrédient` dont les quantités sont par défaut proporti
 
 Le `#matériel` prend en charge un grand nombre des fonctionnalités de syntaxe avancée des `@ingrédients`. Pour une explication détaillée de ces concepts, référez-vous à la [documentation sur les Ingrédients](./ingredients.md).
 
-### [Modificateurs](./ingredients.md#modificateurs-d-ingredient)
+### [Modificateurs](./ingredients.md#modificateurs-dingrédient)
 Vous pouvez utiliser les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`), et Référence (`&`) sur le `#matériel`.
 
 ```gram

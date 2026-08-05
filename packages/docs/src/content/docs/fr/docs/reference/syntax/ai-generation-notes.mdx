@@ -22,7 +22,7 @@ Pour transformer une recette existante en `.gram`, parcourir ces cinq points dan
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. **Structure** — Identifier les phases distinctes (pâte, garniture, sauce, montage…). Chaque phase avec sa propre liste d'ingrédients est une candidate pour une `## Section`. Tout ce qui doit être préparé à l'avance reçoit un délai de rétroplanning (voir [Structure du Document](./document-structure.md#retroplanning-ordonnancement)).
+1. **Structure** — Identifier les phases distinctes (pâte, garniture, sauce, montage…). Chaque phase avec sa propre liste d'ingrédients est une candidate pour une `## Section`. Tout ce qui doit être préparé à l'avance reçoit un délai de rétroplanning (voir [Structure du Document](./document-structure.md#rétroplanning-ordonnancement)).
 2. **Frontmatter** — Extraire `title`, `author`, `source`, `category`, `portions` et les dates depuis les métadonnées disponibles dans la source. Ne jamais inventer une valeur absente de la source.
 3. **Ingrédients** : Listez chaque `@ingrédient` unique avec son nom complet et ses espaces (`"huile d'olive"`, jamais `"huile-d-olive"`). Traquez ceux qui apparaissent plusieurs fois : la seconde mention (et les suivantes) doit impérativement utiliser la référence `@&`. Privilégiez les unités du système international pour la rigueur, mais tolérez `c.à.s`/`c.à.c`/`tasse` pour les petites quantités si la source l'exige. Pour désigner la fraction d'un ingrédient (jus, zeste, jaune d'œuf…), anticipez l'usage de la [syntaxe composite](./composite-ingredients.md) plutôt qu'une étape de préparation isolée.
 4. **Étapes** : Rédigez chaque étape sous forme de paragraphe, précédé d'un préfixe d'action `[Verbe]`, en injectant vos tags `@ingrédient`, `#matériel`, `~minuteur` et `^température` au fil de l'eau. Dégainez les minuteurs passifs (`~_`) pour les phases d'attente libérant le cuisinier (four, repos, réfrigération, pousse) et les minuteurs actifs (`~`) pour les tâches chronophages. Si plusieurs minuteurs passifs doivent s'enchaîner (ex: cuisson séquentielle), attribuez-leur le MÊME NOM (`~_cuisson{10m}` suivi de `~_cuisson{30m}`) pour les séquencer automatiquement, sans pénaliser le temps actif.
@@ -139,7 +139,7 @@ Rattachez-la à l'élément que la préparation décrit réellement — « coup�
 
    [Mélanger] Le @paprika{2 c.à.c} et le @sel{1 c.à.c}.           // aucune déclaration locale nécessaire
 ```
-Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étapes qu'elle contient — voir [Variables Intermédiaires](./intermediate-variables.md#declaration-au-niveau-de-la-section).
+Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étapes qu'elle contient — voir [Variables Intermédiaires](./intermediate-variables.md#déclaration-au-niveau-de-la-section).
 
 ### Un minuteur actif pour une cuisson passive
 
