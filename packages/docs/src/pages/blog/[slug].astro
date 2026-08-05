@@ -20,5 +20,5 @@ const { post } = Astro.props;
 ---
 
 <Layout title={post.data.title} description={post.data.description} currentLang="en">
-  <BlogPostLayout post={post} locale="en" />
+  <BlogPostLayout post={post} locale="en" basePath="/blog" />
 </Layout>

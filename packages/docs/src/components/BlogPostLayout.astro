@@ -1,27 +1,37 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
+import { getTopicSlug } from "../data/blog-topics";
 
 interface Props {
-	post: CollectionEntry<"blog">;
-	locale: "en" | "fr";
+  post: CollectionEntry<"blog">;
+  locale: "en" | "fr";
+  basePath: string;
 }
 
-const { post, locale } = Astro.props;
+const { post, locale, basePath } = Astro.props;
 const { Content } = await render(post);
+const topicHref = `${basePath}/topic/${getTopicSlug(post.data.topic)}`;
 ---
 
 <article class="blog-post-container">
   <header class="post-header">
-    <span class="post-topic">{post.data.topic}</span>
     <h1>{post.data.title}</h1>
-    <time datetime={post.data.date.toISOString()}>
-      {post.data.date.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}
-    </time>
+    <p class="post-meta">
+      <time datetime={post.data.date.toISOString()}>
+        {
+          post.data.date.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        }
+      </time>
+      <span class="meta-separator" aria-hidden="true">·</span>
+      <a href={topicHref} class="post-topic">{post.data.topic}</a>
+      <span class="meta-separator" aria-hidden="true">·</span>
+      <span class="post-author">{locale === "fr" ? "Par" : "By"} William</span>
+    </p>
   </header>
 
   <div class="post-content">
@@ -42,16 +52,6 @@ const { Content } = await render(post);
     text-align: left;
   }
 
-  .post-topic {
-    font-size: 0.875rem;
-    color: var(--sl-color-accent);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-    margin-bottom: 0.5rem;
-  }
-
   .post-header h1 {
     font-size: 2.5rem;
     font-weight: 700;
@@ -60,10 +60,28 @@ const { Content } = await render(post);
     line-height: 1.2;
   }
 
-  .post-header time {
-    font-size: 0.875rem;
+  .post-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
     color: var(--sl-color-gray-4);
-    display: block;
+  }
+
+  .meta-separator {
+    color: var(--sl-color-gray-5, var(--sl-color-gray-4));
+  }
+
+  .post-topic {
+    color: var(--sl-color-gray-4);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .post-topic:hover {
+    color: var(--sl-color-accent);
   }
 
   /* Basic markdown styling matching the sober theme */
@@ -101,7 +119,8 @@ const { Content } = await render(post);
     color: var(--sl-color-accent-high);
   }
 
-  .post-content :global(ul), .post-content :global(ol) {
+  .post-content :global(ul),
+  .post-content :global(ol) {
     margin-bottom: 1.5rem;
     padding-left: 1.5rem;
   }
