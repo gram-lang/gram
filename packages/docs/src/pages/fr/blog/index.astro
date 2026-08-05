@@ -3,6 +3,8 @@ import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
 import { getTopicSlug } from "../../../data/blog-topics";
 import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
+import BlogListLayout from "../../../components/BlogListLayout.astro";
+import ArticleCard from "../../../components/ArticleCard.astro";
 
 const allPosts = await getCollection("blog");
 const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
@@ -14,206 +16,29 @@ const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
 ---
 
 <Layout title="Blog" description="Dernières nouveautés et articles autour du projet Gram." currentLang="fr">
-  <div class="blog-container">
-    <header class="blog-header">
-      <h1>Blog</h1>
-      <p class="description">
-        Dernières mises à jour, tutoriels et réflexions autour du projet Gram.
-      </p>
-    </header>
-
-    <div class="blog-layout">
-      <aside class="topics-sidebar">
-        <h2>Sujets</h2>
-        <ul class="topic-list">
-          {topics.map(topic => (
-            <li>
-              <a href={`/fr/blog/topic/${getTopicSlug(topic)}`} class="topic-badge">{topic}</a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <div class="articles-list">
-        {postsToDisplay.length === 0 ? (
-          <p>Aucun article pour le moment.</p>
-        ) : (
-          postsToDisplay.map(post => {
-            // We use the english post slug for the URL to keep URLs consistent across languages 
-            // if we prefer, or we can use the specific post id. Let's use the clean slug.
-            const slug = post.id.replace(/^(en|fr)\//, '').replace(/\.md$/, '');
-            return (
-              <article class="article-card">
-                <a href={`/fr/blog/topic/${getTopicSlug(post.data.topic)}`} class="article-topic">{post.data.topic}</a>
-                <a href={`/fr/blog/${slug}`} class="article-link">
-                  <h2>{post.data.title}</h2>
-                  <time datetime={post.data.date.toISOString()}>
-                    {post.data.date.toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
-                  {post.data.description && <p class="article-description">{post.data.description}</p>}
-                </a>
-              </article>
-            );
-          })
-        )}
-      </div>
-    </div>
-  </div>
+  <BlogListLayout
+    title="Blog"
+    description="Dernières mises à jour, tutoriels et réflexions autour du projet Gram."
+    basePath="/fr/blog"
+    topics={topics}
+    sidebarTitle="Sujets"
+  >
+    {postsToDisplay.length === 0 ? (
+      <p>Aucun article pour le moment.</p>
+    ) : (
+      postsToDisplay.map(post => {
+        // We use the english post slug for the URL to keep URLs consistent across languages
+        // if we prefer, or we can use the specific post id. Let's use the clean slug.
+        const slug = post.id.replace(/^(en|fr)\//, '').replace(/\.md$/, '');
+        return (
+          <ArticleCard
+            post={post}
+            postHref={`/fr/blog/${slug}`}
+            topicHref={`/fr/blog/topic/${getTopicSlug(post.data.topic)}`}
+            locale="fr"
+          />
+        );
+      })
+    )}
+  </BlogListLayout>
 </Layout>
-
-<style>
-  .blog-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
-    width: 100%;
-  }
-
-  .blog-header {
-    margin-bottom: 3rem;
-  }
-
-  .blog-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--sl-color-white);
-  }
-
-  .description {
-    font-size: 1.125rem;
-    color: var(--sl-color-gray-3);
-    max-width: 600px;
-  }
-
-  .blog-layout {
-    display: flex;
-    gap: 3rem;
-    align-items: flex-start;
-  }
-
-  .topics-sidebar {
-    width: 200px;
-    flex-shrink: 0;
-  }
-
-  .topics-sidebar h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--sl-color-gray-3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .topic-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .topic-badge {
-    display: inline-block;
-    color: var(--sl-color-gray-3);
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .topic-badge:hover {
-    color: var(--sl-color-accent);
-  }
-
-  .articles-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .article-card {
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-  
-  .article-card:last-child {
-    border-bottom: none;
-  }
-
-  .article-link {
-    display: block;
-    padding: 2rem 0;
-    text-decoration: none;
-    color: inherit;
-    transition: opacity 0.2s;
-  }
-
-  .article-link:hover {
-    opacity: 0.8;
-  }
-
-  .article-topic {
-    font-size: 0.875rem;
-    color: var(--sl-color-accent);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-    margin: 2rem 2rem 0.5rem 0;
-    text-decoration: none;
-    transition: opacity 0.2s;
-  }
-
-  .article-topic:hover {
-    opacity: 0.8;
-  }
-
-  .article-link {
-    display: block;
-    padding: 0 0 2rem 0;
-    text-decoration: none;
-    color: inherit;
-    transition: opacity 0.2s;
-  }
-
-  .article-card h2 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: var(--sl-color-white);
-  }
-
-  .article-card time {
-    font-size: 0.875rem;
-    color: var(--sl-color-gray-4);
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  .article-description {
-    margin: 0;
-    color: var(--sl-color-gray-3);
-    line-height: 1.6;
-  }
-
-  @media (max-width: 768px) {
-    .blog-layout {
-      flex-direction: column;
-    }
-    
-    .topics-sidebar {
-      width: 100%;
-    }
-
-    .topic-list {
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-  }
-</style>
