@@ -10,44 +10,24 @@ export interface TopicInfo {
 }
 
 export const TOPICS: Record<string, TopicInfo> = {
-	news: {
-		name: {
-			en: "News",
-			fr: "Nouvelles",
-		},
-		description: {
-			en: "The latest announcements, updates, and news from the Gram team.",
-			fr: "Les dernières annonces, mises à jour et nouvelles de l'équipe Gram.",
-		},
-	},
 	announcements: {
 		name: {
 			en: "Announcements",
 			fr: "Annonces",
 		},
 		description: {
-			en: "Important project announcements and milestones.",
-			fr: "Annonces importantes et jalons du projet.",
-		},
-	},
-	testing: {
-		name: {
-			en: "Testing",
-			fr: "Tests",
-		},
-		description: {
-			en: "Articles about testing, QA, and platform stability.",
-			fr: "Articles sur les tests, l'assurance qualité et la stabilité de la plateforme.",
+			en: "Important news, major updates, and milestones for the Gram project.",
+			fr: "L'actualité marquante, les grandes annonces et les étapes clés du projet.",
 		},
 	},
 	releases: {
 		name: {
 			en: "Releases",
-			fr: "Sorties",
+			fr: "Mises à jour",
 		},
 		description: {
-			en: "Release notes and new feature highlights.",
-			fr: "Notes de mise à jour et mise en évidence des nouvelles fonctionnalités.",
+			en: "Release notes, changelogs, and deep dives into new features.",
+			fr: "Notes de version, journaux des modifications et présentation des nouveautés.",
 		},
 	},
 	tutorials: {
@@ -56,8 +36,18 @@ export const TOPICS: Record<string, TopicInfo> = {
 			fr: "Tutoriels",
 		},
 		description: {
-			en: "Guides and tutorials for getting the most out of Gram.",
-			fr: "Guides et tutoriels pour tirer le meilleur parti de Gram.",
+			en: "Step-by-step guides and tutorials to help you master Gram.",
+			fr: "Guides pratiques et tutoriels pas-à-pas pour apprendre à maîtriser Gram.",
+		},
+	},
+	devlog: {
+		name: {
+			en: "Devlog",
+			fr: "Journal de bord",
+		},
+		description: {
+			en: "A behind-the-scenes look at the development of Gram and its ecosystem.",
+			fr: "Les coulisses du développement de Gram, pour suivre le projet de l'intérieur.",
 		},
 	},
 };

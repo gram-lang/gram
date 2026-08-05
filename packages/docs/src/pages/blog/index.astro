@@ -12,12 +12,12 @@ englishPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
 ---
 
-<Layout title="Blog" description="Latest updates and articles from the Gram team." currentLang="en">
+<Layout title="Blog" description="Latest updates and articles about the Gram project." currentLang="en">
   <div class="blog-container">
     <header class="blog-header">
       <h1>Blog</h1>
       <p class="description">
-        Latest updates, tutorials, and thoughts from the Gram community.
+        Latest updates, tutorials, and thoughts about the Gram project.
       </p>
     </header>
 

@@ -13,12 +13,12 @@ postsToDisplay.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
 ---
 
-<Layout title="Blog" description="Dernières nouveautés et articles de l'équipe Gram." currentLang="fr">
+<Layout title="Blog" description="Dernières nouveautés et articles autour du projet Gram." currentLang="fr">
   <div class="blog-container">
     <header class="blog-header">
       <h1>Blog</h1>
       <p class="description">
-        Dernières mises à jour, tutoriels et réflexions de la communauté Gram.
+        Dernières mises à jour, tutoriels et réflexions autour du projet Gram.
       </p>
     </header>
 
