@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
-import { getTopicSlug } from "../../data/blog-topics";
 import BlogListLayout from "../../components/BlogListLayout.astro";
 import ArticleCard from "../../components/ArticleCard.astro";
 
@@ -20,7 +19,7 @@ const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
     description="Latest updates, tutorials, and thoughts about the Gram project."
     basePath="/blog"
     topics={topics}
-    sidebarTitle="Topics"
+    topicsLabel="Topics"
   >
     {englishPosts.length === 0 ? (
       <p>No articles yet.</p>
@@ -31,7 +30,6 @@ const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
           <ArticleCard
             post={post}
             postHref={`/blog/${slug}`}
-            topicHref={`/blog/topic/${getTopicSlug(post.data.topic)}`}
             locale="en"
           />
         );

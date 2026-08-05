@@ -54,7 +54,7 @@ const { topicInfo, topicPosts, allTopics } = Astro.props;
     basePath="/blog"
     topics={allTopics}
     activeTopicSlug={Astro.params.topic}
-    sidebarTitle="Topics"
+    topicsLabel="Topics"
   >
     {topicPosts.length === 0 ? (
       <p>No articles yet.</p>
@@ -65,7 +65,6 @@ const { topicInfo, topicPosts, allTopics } = Astro.props;
           <ArticleCard
             post={post}
             postHref={`/blog/${slug}`}
-            topicHref={`/blog/topic/${getTopicSlug(post.data.topic)}`}
             locale="en"
           />
         );

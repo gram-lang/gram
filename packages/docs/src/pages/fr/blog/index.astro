@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../../layouts/Layout.astro";
-import { getTopicSlug } from "../../../data/blog-topics";
 import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
 import BlogListLayout from "../../../components/BlogListLayout.astro";
 import ArticleCard from "../../../components/ArticleCard.astro";
@@ -21,7 +20,7 @@ const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
     description="Dernières mises à jour, tutoriels et réflexions autour du projet Gram."
     basePath="/fr/blog"
     topics={topics}
-    sidebarTitle="Sujets"
+    topicsLabel="Sujets"
   >
     {postsToDisplay.length === 0 ? (
       <p>Aucun article pour le moment.</p>
@@ -34,7 +33,6 @@ const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
           <ArticleCard
             post={post}
             postHref={`/fr/blog/${slug}`}
-            topicHref={`/fr/blog/topic/${getTopicSlug(post.data.topic)}`}
             locale="fr"
           />
         );

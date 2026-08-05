@@ -8,10 +8,10 @@ interface Props {
 	basePath: string;
 	topics: string[];
 	activeTopicSlug?: string;
-	sidebarTitle: string;
+	topicsLabel: string;
 }
 
-const { title, description, backLink, basePath, topics, activeTopicSlug, sidebarTitle } = Astro.props;
+const { title, description, backLink, basePath, topics, activeTopicSlug, topicsLabel } = Astro.props;
 ---
 
 <div class="blog-container">
@@ -21,26 +21,23 @@ const { title, description, backLink, basePath, topics, activeTopicSlug, sidebar
     <p class="description">{description}</p>
   </header>
 
-  <div class="blog-layout">
-    <aside class="topics-sidebar">
-      <h2>{sidebarTitle}</h2>
-      <ul class="topic-list">
-        {topics.map(topic => {
-          const slug = getTopicSlug(topic);
-          return (
-            <li>
-              <a href={`${basePath}/topic/${slug}`} class={`topic-badge ${slug === activeTopicSlug ? 'active' : ''}`}>
-                {topic}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </aside>
+  <nav class="topics-nav" aria-label={topicsLabel}>
+    <ul class="topic-list">
+      {topics.map(topic => {
+        const slug = getTopicSlug(topic);
+        return (
+          <li>
+            <a href={`${basePath}/topic/${slug}`} class={`topic-badge ${slug === activeTopicSlug ? 'active' : ''}`}>
+              {topic}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </nav>
 
-    <div class="articles-list">
-      <slot />
-    </div>
+  <div class="articles-list">
+    <slot />
   </div>
 </div>
 
@@ -82,24 +79,8 @@ const { title, description, backLink, basePath, topics, activeTopicSlug, sidebar
     max-width: 600px;
   }
 
-  .blog-layout {
-    display: flex;
-    gap: 3rem;
-    align-items: flex-start;
-  }
-
-  .topics-sidebar {
-    width: 200px;
-    flex-shrink: 0;
-  }
-
-  .topics-sidebar h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--sl-color-gray-3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  .topics-nav {
+    margin-bottom: 2.5rem;
   }
 
   .topic-list {
@@ -107,8 +88,8 @@ const { title, description, backLink, basePath, topics, activeTopicSlug, sidebar
     padding: 0;
     margin: 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
   }
 
   .topic-badge {
@@ -126,23 +107,7 @@ const { title, description, backLink, basePath, topics, activeTopicSlug, sidebar
   }
 
   .articles-list {
-    flex: 1;
     display: flex;
     flex-direction: column;
-  }
-
-  @media (max-width: 768px) {
-    .blog-layout {
-      flex-direction: column;
-    }
-
-    .topics-sidebar {
-      width: 100%;
-    }
-
-    .topic-list {
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
   }
 </style>

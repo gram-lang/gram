@@ -4,87 +4,62 @@ import type { CollectionEntry } from "astro:content";
 interface Props {
   post: CollectionEntry<"blog">;
   postHref: string;
-  topicHref: string;
   locale: "en" | "fr";
 }
 
-const { post, postHref, topicHref, locale } = Astro.props;
+const { post, postHref, locale } = Astro.props;
+
+function formatCardDate(date: Date, locale: "en" | "fr") {
+  const month = date
+    .toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", { month: "short" })
+    .replace(/\.$/, "");
+  return `${month.charAt(0).toUpperCase()}${month.slice(1)}. ${date.getDate()}`;
+}
 ---
 
 <article class="article-card">
-  <a href={topicHref} class="article-topic">{post.data.topic}</a>
   <a href={postHref} class="article-link">
-    <h2>{post.data.title}</h2>
-    <time datetime={post.data.date.toISOString()}>
-      {
-        post.data.date.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      }
+    <time datetime={post.data.date.toISOString()} class="article-date">
+      {formatCardDate(post.data.date, locale)}
     </time>
-    {
-      post.data.description && (
-        <p class="article-description">{post.data.description}</p>
-      )
-    }
+    <h2 class="article-title">{post.data.title}</h2>
   </a>
 </article>
 
 <style>
   .article-card {
     border-bottom: 1px solid var(--sl-color-border);
-    padding-block: 1.5rem;
   }
 
   .article-card:last-child {
     border-bottom: none;
   }
 
-  .article-topic {
-    font-size: 0.75rem;
-    color: var(--sl-color-accent);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: inline-block;
-    margin: 0;
-    text-decoration: none;
-    transition: opacity 0.2s;
-  }
-
-  .article-topic:hover {
-    opacity: 0.8;
-  }
-
   .article-link {
-    display: block;
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1.5rem;
+    align-items: baseline;
+    padding-block: 1rem;
     text-decoration: none;
     color: inherit;
+    transition: opacity 0.2s;
   }
 
   .article-link:hover {
     opacity: 0.8;
   }
 
-  .article-card h2 {
-    font-size: 1.75rem;
+  .article-date {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-4);
+    white-space: nowrap;
+  }
+
+  .article-title {
+    font-size: 1.125rem;
     font-weight: 600;
     margin: 0;
     color: var(--sl-color-white);
-  }
-
-  .article-card time {
-    font-size: 0.875rem;
-    color: var(--sl-color-gray-4);
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  .article-description {
-    margin: 0;
-    color: var(--sl-color-gray-3);
-    line-height: 1.6;
   }
 </style>
