@@ -4,6 +4,7 @@ import { Code } from "astro:components";
 import { Icon } from "@astrojs/starlight/components";
 import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
+import { GRAM_VERSION } from "../lib/gram-version";
 
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
@@ -40,7 +41,7 @@ const codeThemes: Record<string, any> = {
 
           <div class="version-badge">
             <a href={lang === "fr" ? "/fr/docs/changelog" : "/docs/changelog"}
-              >{t.versionText}</a
+              >Version {GRAM_VERSION}</a
             >
           </div>
         </div>

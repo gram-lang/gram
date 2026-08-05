@@ -65,8 +65,8 @@ export default defineConfig({
           ]
         },
         {
-          label: 'Reference',
-          translations: { fr: 'Référence' },
+          label: 'Language Reference',
+          translations: { fr: 'Référence du langage' },
           collapsed: false,
           items: [
             { label: 'Document Structure', translations: { fr: 'Structure du Document' }, slug: 'docs/reference/syntax/document-structure' },
@@ -78,7 +78,14 @@ export default defineConfig({
             { label: 'Relative Quantities', translations: { fr: 'Quantités Relatives' }, slug: 'docs/reference/syntax/relative-quantities' },
             { label: 'Composite Ingredients', translations: { fr: 'Ingrédients Composites' }, slug: 'docs/reference/syntax/composite-ingredients' },
             { label: 'Cheatsheet', translations: { fr: 'Antisèche' }, slug: 'docs/reference/syntax/cheatsheet' },
-            { label: 'Writing Gram Programmatically', translations: { fr: 'Génération Automatisée de Gram' }, slug: 'docs/reference/syntax/ai-generation-notes' },
+            { label: 'Writing Gram Programmatically', translations: { fr: 'Génération Automatisée de Gram' }, slug: 'docs/reference/syntax/ai-generation-notes' }
+          ]
+        },
+        {
+          label: 'Tooling Reference',
+          translations: { fr: 'Référence des outils' },
+          collapsed: false,
+          items: [
             { label: 'CLI Commands', translations: { fr: 'Commandes CLI' }, slug: 'docs/reference/tooling/cli' },
             { label: 'VS Code Extension', translations: { fr: 'Extension VS Code' }, slug: 'docs/reference/tooling/vscode-extension' },
             { label: 'Language Server', slug: 'docs/reference/tooling/language-server' }
@@ -123,7 +130,8 @@ export default defineConfig({
             { label: 'Shopping Lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
             { label: 'Scaling', translations: { fr: "Mise à l'échelle" }, slug: 'docs/explanation/scaling' }
           ]
-        }
+        },
+        { label: 'Changelog', translations: { fr: 'Changelog' }, slug: 'docs/changelog' }
       ],
       head: [
         {
