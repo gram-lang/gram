@@ -55,9 +55,9 @@ Contrairement à un `@ingrédient` dont les quantités sont par défaut proporti
 
 ## Modificateurs et Syntaxe Avancée
 
-Le `#matériel` prend en charge un grand nombre des fonctionnalités de syntaxe avancée des `@ingrédients`. Pour une explication détaillée de ces concepts, référez-vous à la [documentation sur les Ingrédients](./ingredients.md).
+Le `#matériel` prend en charge un grand nombre des fonctionnalités de syntaxe avancée des `@ingrédients`. Pour une explication détaillée de ces concepts, référez-vous à la [documentation sur les Ingrédients](/fr/docs/reference/syntax/ingredients).
 
-### [Modificateurs](./ingredients.md#modificateurs-dingrédient)
+### [Modificateurs](/fr/docs/reference/syntax/ingredients#modificateurs-dingrédient)
 Vous pouvez utiliser les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`), et Référence (`&`) sur le `#matériel`.
 
 ```gram
@@ -66,14 +66,14 @@ Utiliser un #?wok si vous en avez un, sinon une #-grande poêle fera l'affaire.
 Retourner au #&wok pour terminer la sauce.
 ```
 
-### [Alias de Composant (Renommage)](./ingredients.md#alias-de-composant-renommage)
+### [Alias de Composant (Renommage)](/fr/docs/reference/syntax/ingredients#alias-de-composant-renommage)
 Vous pouvez renommer un `#matériel` pour l'affichage en utilisant l'opérateur `:`.
 
 ```gram
 Utiliser la #poêle en fonte:poêle{}.
 ```
 
-### [Alternatives](./ingredients.md#alternatives-substitutions)
+### [Alternatives](/fr/docs/reference/syntax/ingredients#alternatives-substitutions)
 Vous pouvez définir des alternatives acceptables en utilisant l'opérateur pipe `|`.
 
 ```gram

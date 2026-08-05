@@ -49,11 +49,11 @@ The Kitchen calculates four time metrics, combined in `core.ts`:
 The Kitchen builds the base list of ingredients required to cook the recipe.
 
 - **Merging**: It groups all usages of an ingredient by its raw id (a slug of the name as written) and unit. If you use `@butter{50g}` in the dough and `@butter{20g}` in the frosting, it arithmetically sums them into a single `70g` entry.
-- **Composite Logic**: It implements the MAX and SUM rules for [Composite Ingredients](../../reference/syntax/composite-ingredients.md): the parent quantity required by all composite children is computed as their MAX (e.g. the larger of "zest of 2 lemons" and "juice of 3 lemons" wins), then any quantity of the parent used directly on its own is SUMMED on top.
-- **Hybrid Aggregation**: It handles [Relative Quantities](../../reference/syntax/relative-quantities.md) by keeping unresolved/formula-based amounts separate (as text, flagged for review) from absolute numeric masses, so the shopping list remains mathematically accurate even if portions change.
+- **Composite Logic**: It implements the MAX and SUM rules for [Composite Ingredients](/docs/reference/syntax/composite-ingredients): the parent quantity required by all composite children is computed as their MAX (e.g. the larger of "zest of 2 lemons" and "juice of 3 lemons" wins), then any quantity of the parent used directly on its own is SUMMED on top.
+- **Hybrid Aggregation**: It handles [Relative Quantities](/docs/reference/syntax/relative-quantities) by keeping unresolved/formula-based amounts separate (as text, flagged for review) from absolute numeric masses, so the shopping list remains mathematically accurate even if portions change.
 
 :::tip[This is not the final list]
-The Kitchen has no access to `ingredients.yaml` — it groups purely by raw id, so `@butter` and `@beurre` (an alias of the same ingredient) stay separate here, and `100g` + `1 cup` of the same ingredient stay as two entries rather than one merged mass. That further resolution — canonical-id aliasing and cross-unit merging via density — happens downstream in `@gram-lang/analyzer`, once an ingredient database is available. See [Shopping List Aggregation](../shopping-list-aggregation.md).
+The Kitchen has no access to `ingredients.yaml` — it groups purely by raw id, so `@butter` and `@beurre` (an alias of the same ingredient) stay separate here, and `100g` + `1 cup` of the same ingredient stay as two entries rather than one merged mass. That further resolution — canonical-id aliasing and cross-unit merging via density — happens downstream in `@gram-lang/analyzer`, once an ingredient database is available. See [Shopping List Aggregation](/docs/explanation/shopping-list-aggregation).
 :::
 
 :::tip[A second, different aggregation exists per-section]

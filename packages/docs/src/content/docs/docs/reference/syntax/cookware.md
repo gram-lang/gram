@@ -55,9 +55,9 @@ Unlike an `@ingredient` which usually scales linearly by default, `#cookware` sc
 
 ## Modifiers and Advanced Syntax
 
-`#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](./ingredients.md).
+`#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](/docs/reference/syntax/ingredients).
 
-### [Modifiers](./ingredients.md#ingredient-modifiers)
+### [Modifiers](/docs/reference/syntax/ingredients#ingredient-modifiers)
 You can use the Optional (`?`), Hidden (`-`), Fixed (`=`), and Reference (`&`) modifiers on `#cookware`.
 
 ```gram
@@ -66,14 +66,14 @@ Use a #?wok if you have one, otherwise a #-large pan will do.
 Return to the #&wok to finish the sauce.
 ```
 
-### [Component Alias (Renaming)](./ingredients.md#component-alias-renaming)
+### [Component Alias (Renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
 You can rename `#cookware` for display purposes using the `:` operator.
 
 ```gram
 Use the #cast iron skillet:skillet{}.
 ```
 
-### [Alternatives](./ingredients.md#alternatives-substitutions)
+### [Alternatives](/docs/reference/syntax/ingredients#alternatives-substitutions)
 You can define acceptable alternatives using the pipe `|` operator.
 
 ```gram

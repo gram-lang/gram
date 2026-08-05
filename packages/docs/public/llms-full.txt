@@ -155,8 +155,8 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 ### Functional Keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../../explanation/engine/analyzer.md).
-*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](../../explanation/engine/kitchen.md) algorithm.
+*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](/docs/explanation/engine/analyzer).
+*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
@@ -233,7 +233,7 @@ You can assign a preparation timeframe to a `## Section` by adding a `~timer`-li
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
 Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
 
-*See [Times & Scheduling](./times.md#section-retro-planning) for the full syntax rules and error handling.*
+*See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
 ### Section Outputs (Declarations)
 If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
@@ -241,7 +241,7 @@ If a `## Section` produces a sub-component that will be used later in the recipe
 ```gram
 ## Puff Pastry ->&dough
 ```
-*See [Intermediate Variables](./intermediate-variables.md) for more details.*
+*See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for more details.*
 
 ## 4. Comments
 
@@ -360,7 +360,7 @@ Gram provides a dedicated modifier to mark the reference `@ingredient`. By placi
 This allows tools (like the CLI or web renderers) to automatically calculate and display the baker's percentages for all other items (e.g., Water: 70%, Salt: 2%) without you having to define them manually as relative quantities.
 
 :::note
-For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](../../how-to/scale-recipes.mdx#bakers-math) guide.
+For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](/docs/how-to/scale-recipes#bakers-math) guide.
 :::
 
 ## Advanced Syntax
@@ -404,7 +404,7 @@ Aliases are applied locally. To mention this same `@ingredient` again later in t
 :::
 
 :::tip[Not the same as a database alias]
-This `:` syntax only renames how the ingredient is *displayed* in the rendered steps — it never affects shopping-list grouping. The shopping list and the canonical ingredient id are always derived from the **real name** (before the colon), matched against `ingredients.yaml`'s own `aliases` list — a separate, database-level mechanism used to merge synonyms and cross-language duplicates (e.g. `sugar`/`sucre`/`azúcar`) across recipes, see [Manage an Ingredient Database](../../how-to/manage-database.md). Writing `@egg yolks:eggs{2}` and `@egg whites:eggs{4}` will **not** merge them in the shopping list, even though they share the same display alias `eggs` — they have different real names.
+This `:` syntax only renames how the ingredient is *displayed* in the rendered steps — it never affects shopping-list grouping. The shopping list and the canonical ingredient id are always derived from the **real name** (before the colon), matched against `ingredients.yaml`'s own `aliases` list — a separate, database-level mechanism used to merge synonyms and cross-language duplicates (e.g. `sugar`/`sucre`/`azúcar`) across recipes, see [Manage an Ingredient Database](/docs/how-to/manage-database). Writing `@egg yolks:eggs{2}` and `@egg whites:eggs{4}` will **not** merge them in the shopping list, even though they share the same display alias `eggs` — they have different real names.
 :::
 
 ### Alternatives (Substitutions)
@@ -504,9 +504,9 @@ Unlike an `@ingredient` which usually scales linearly by default, `#cookware` sc
 
 ## Modifiers and Advanced Syntax
 
-`#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](./ingredients.md).
+`#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](/docs/reference/syntax/ingredients).
 
-### [Modifiers](./ingredients.md#ingredient-modifiers)
+### [Modifiers](/docs/reference/syntax/ingredients#ingredient-modifiers)
 You can use the Optional (`?`), Hidden (`-`), Fixed (`=`), and Reference (`&`) modifiers on `#cookware`.
 
 ```gram
@@ -515,14 +515,14 @@ Use a #?wok if you have one, otherwise a #-large pan will do.
 Return to the #&wok to finish the sauce.
 ```
 
-### [Component Alias (Renaming)](./ingredients.md#component-alias-renaming)
+### [Component Alias (Renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
 You can rename `#cookware` for display purposes using the `:` operator.
 
 ```gram
 Use the #cast iron skillet:skillet{}.
 ```
 
-### [Alternatives](./ingredients.md#alternatives-substitutions)
+### [Alternatives](/docs/reference/syntax/ingredients#alternatives-substitutions)
 You can define acceptable alternatives using the pipe `|` operator.
 
 ```gram
@@ -649,7 +649,7 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 ### Smart Dependency Tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
 
-For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](../../explanation/alap-scheduling.md).
+For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](/docs/explanation/alap-scheduling).
 
 ## Section Retro-Planning
 
@@ -682,7 +682,7 @@ Free text (e.g. `~{the day before}`/`~{la veille}`), an unsigned or positive val
 
 The unit is resolved through the same multi-language time dictionary used by `~timer` (see [Basic Declaration](#basic-declaration)), so localized words work here too — e.g. in a French recipe, `~{-2j}` resolves the same as `~{-2d}`.
 
-See also: [Retro-planning (Scheduling)](./document-structure.md#retro-planning-scheduling) in the document structure reference.
+See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
 
 ## Error Handling
 
@@ -809,7 +809,7 @@ However, it **will not** appear in the global **Shopping List**. The Gram Compil
 When a `&variable` is declared at the Section-level, it is registered in the **Global Scope**. This means you can declare a `&variable` in the first section of your recipe and safely reference it in the last section.
 
 ### Relative Quantities
-As detailed in the [Relative Quantities](./relative-quantities.md) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
+As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantities) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
 
 ```gram
 [Mix] The ingredients to form the dough. ->&dough
@@ -1116,9 +1116,9 @@ When turning an existing recipe into `.gram`, working through these five points 
 
 
 <Steps>
-1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](./document-structure.md#retro-planning-scheduling)).
+1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](/docs/reference/syntax/document-structure#retro-planning-scheduling)).
 2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions`, and dates from whatever metadata the source provides. Never invent a value that isn't in the source.
-3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](./composite-ingredients.md) instead of a separate prep step.
+3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
 4. **Steps** — Write each step as a paragraph with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10m}` then `~_baking{30m}`) to automatically sequence them without adding to the cook's active time.
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
 </Steps>
@@ -1152,7 +1152,7 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  #pan{20cm}      →   ✅  #pan(20cm)
 ❌  #bowl{large}    →   ✅  #bowl(large)
 ```
-`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](./cookware.md).
+`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware).
 
 ### Free text where a number is required
 
@@ -1182,7 +1182,7 @@ Quantities and timers need a real number (or empty braces for "to taste"); fuzzy
 ❌  Roll out the @&dough.              // @& implies a shopping-list ingredient
 ✅  Roll out the &dough.               // & = reference to the declared intermediate
 ```
-See [Intermediate Variables](./intermediate-variables.md) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
+See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
 
 ### Standalone steps that only prepare an ingredient
 
@@ -1200,7 +1200,7 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ❌  the juice from @lemon{1/2}    →   ✅  @juice<@lemon{1/2}
 ❌  the zest of @lemon{2}         →   ✅  @zest{1}<@lemon{2}
 ```
-[Composite ingredients](./composite-ingredients.md) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
+[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
 
 ### Spaces around the composite operator
 
@@ -1233,7 +1233,7 @@ Attach it to whichever one it actually describes — "cut in half" happens to th
 
    [Mix] @paprika{2 tsp} with @salt{1 tsp}.            // no local declaration needed
 ```
-A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](./intermediate-variables.md#section-level-declaration).
+A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
 
 ### An active timer for passive cooking
 

@@ -16,8 +16,8 @@ Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans 
 ### Clés Fonctionnelles
 Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
-*   `portions` : (Entier) Le nombre de portions de base. Utilisé comme référence pour l'[Estimation Nutritionnelle](../../explanation/engine/analyzer.md).
-*   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](../../explanation/engine/kitchen.md).
+*   `portions` : (Entier) Le nombre de portions de base. Utilisé comme référence pour l'[Estimation Nutritionnelle](/fr/docs/explanation/engine/analyzer).
+*   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen).
 
 ### Clés Informatives
 Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
@@ -94,7 +94,7 @@ Il est possible d'assigner un délai de rétroplanning à une `## Section` en gl
 Cette annotation indique au compilateur que la section "Pâte Feuilletée" doit être anticipée **2 jours à l'avance**.
 Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
 
-*Voir [Temps & Planification](./times.md#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
+*Voir [Temps & Planification](/fr/docs/reference/syntax/times#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 
 ### Sorties de Section (Déclarations)
 Si une `## Section` génère une sous-préparation destinée à être réutilisée plus tard, vous pouvez la déclarer en ajoutant `->&` à la toute fin du titre.
@@ -102,7 +102,7 @@ Si une `## Section` génère une sous-préparation destinée à être réutilis�
 ```gram
 ## Pâte Feuilletée ->&pâte
 ```
-*Voir les [Variables Intermédiaires](./intermediate-variables.md) pour plus de détails.*
+*Voir les [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour plus de détails.*
 
 ## 4. Commentaires
 

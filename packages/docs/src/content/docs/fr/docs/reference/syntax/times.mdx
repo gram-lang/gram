@@ -117,7 +117,7 @@ Voici une antisèche de la façon dont le compilateur convertit automatiquement 
 ### Suivi Intelligent des Dépendances (ALAP)
 Inutile de dégainer la calculatrice : Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur repoussera automatiquement son pétrissage le plus tard possible. Le repos de la pâte se terminera *pile-poil* au moment où l'étape suivante débutera (terminé les pâtes qui poireautent 2h sur le plan de travail) !
 
-Pour une explication plus détaillée de l'optimisation de la ligne du temps, consultez l'[Analyse approfondie de l'Ordonnancement ALAP](../../explanation/alap-scheduling.md).
+Pour une explication plus détaillée de l'optimisation de la ligne du temps, consultez l'[Analyse approfondie de l'Ordonnancement ALAP](/fr/docs/explanation/alap-scheduling).
 
 ## Rétroplanning de Section
 
@@ -150,7 +150,7 @@ Un texte libre (`~{la veille}`), une valeur non signée/positive (`~{2h}`), ou u
 
 L'unité est résolue via le même dictionnaire de temps multilingue que celui utilisé par `~minuteur` (voir [Déclaration de Base](#déclaration-de-base)) : `j`, `jour` et `jours` sont tous reconnus comme alias de l'unité canonique `d` (jour), quelle que soit la langue de rédaction de la recette.
 
-Voir aussi : [Rétroplanning (Ordonnancement)](./document-structure.md#rétroplanning-ordonnancement) dans la référence de structure de document.
+Voir aussi : [Rétroplanning (Ordonnancement)](/fr/docs/reference/syntax/document-structure#rétroplanning-ordonnancement) dans la référence de structure de document.
 
 ## Gestion des Erreurs
 

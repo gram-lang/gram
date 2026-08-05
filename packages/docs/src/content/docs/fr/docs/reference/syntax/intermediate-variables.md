@@ -63,7 +63,7 @@ Néanmoins, elle **n'apparaîtra jamais** dans la **liste de courses globale**. 
 Lorsqu'une `&variable` est déclarée au niveau d'une section, elle intègre la **portée globale** (*global scope*). Cela signifie que vous pouvez déclarer une `&variable` dans la toute première section de votre recette et la référencer sans risque dans la dernière.
 
 ### Quantités Relatives
-Comme détaillé dans la documentation sur les [Quantités Relatives](./relative-quantities.md), vous pouvez calculer la masse d'un ingrédient en fonction de la masse totale d'une variable intermédiaire.
+Comme détaillé dans la documentation sur les [Quantités Relatives](/fr/docs/reference/syntax/relative-quantities), vous pouvez calculer la masse d'un ingrédient en fonction de la masse totale d'une variable intermédiaire.
 
 ```gram
 [Mélanger] Les ingrédients pour former la pâte. ->&pâte

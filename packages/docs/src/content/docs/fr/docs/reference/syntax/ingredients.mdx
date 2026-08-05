@@ -100,7 +100,7 @@ Gram fournit un modificateur dédié pour marquer l'`@ingrédient` de référenc
 Cela permet aux outils (comme le CLI ou les interfaces web) de calculer et d'afficher automatiquement les pourcentages du boulanger pour tous les autres éléments (ex : Eau : 70 %, Sel : 2 %) sans que vous n'ayez à les définir manuellement comme quantités relatives.
 
 :::note
-Pour un guide complet sur l'utilisation de cette fonctionnalité, consultez le guide sur la [Mise à l'échelle dynamique des Recettes](../../how-to/scale-recipes.mdx#pourcentage-du-boulanger-bakers-math).
+Pour un guide complet sur l'utilisation de cette fonctionnalité, consultez le guide sur la [Mise à l'échelle dynamique des Recettes](/fr/docs/how-to/scale-recipes#pourcentage-du-boulanger-bakers-math).
 :::
 
 ## Syntaxe Avancée
@@ -144,7 +144,7 @@ Les alias sont appliqués localement. Pour mentionner à nouveau ce même `@ingr
 :::
 
 :::tip[Ce n'est pas la même chose qu'un alias de base de données]
-Attention, la syntaxe `:` ne fait que maquiller l'*affichage* de l'ingrédient dans les étapes lues par l'utilisateur : elle n'a strictement aucune incidence sur la consolidation de la liste de courses. Cette dernière (tout comme l'ID canonique de l'ingrédient) se base exclusivement sur le **vrai nom** (celui avant les deux-points), lequel est ensuite confronté aux `aliases` de la base `ingredients.yaml` (un mécanisme distinct servant à fusionner les synonymes inter-recettes, cf. [Gérer une Base de Données d'Ingrédients](../../how-to/manage-database.md)). Par conséquent, déclarer `@jaunes d'œufs:œufs{2}` et `@blancs d'œufs:œufs{4}` ne les fusionnera **jamais** dans votre liste de courses, malgré leur alias d'affichage commun `œufs` — leurs vrais noms diffèrent.
+Attention, la syntaxe `:` ne fait que maquiller l'*affichage* de l'ingrédient dans les étapes lues par l'utilisateur : elle n'a strictement aucune incidence sur la consolidation de la liste de courses. Cette dernière (tout comme l'ID canonique de l'ingrédient) se base exclusivement sur le **vrai nom** (celui avant les deux-points), lequel est ensuite confronté aux `aliases` de la base `ingredients.yaml` (un mécanisme distinct servant à fusionner les synonymes inter-recettes, cf. [Gérer une Base de Données d'Ingrédients](/fr/docs/how-to/manage-database)). Par conséquent, déclarer `@jaunes d'œufs:œufs{2}` et `@blancs d'œufs:œufs{4}` ne les fusionnera **jamais** dans votre liste de courses, malgré leur alias d'affichage commun `œufs` — leurs vrais noms diffèrent.
 :::
 
 ### Alternatives (Substitutions)

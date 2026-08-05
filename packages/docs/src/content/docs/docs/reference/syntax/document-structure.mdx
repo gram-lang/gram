@@ -16,8 +16,8 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 ### Functional Keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](../../explanation/engine/analyzer.md).
-*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](../../explanation/engine/kitchen.md) algorithm.
+*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](/docs/explanation/engine/analyzer).
+*   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
@@ -94,7 +94,7 @@ You can assign a preparation timeframe to a `## Section` by adding a `~timer`-li
 This tells the compiler that the "Puff Pastry" `## Section` should be prepared **2 days in advance**.
 Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free text (e.g. `~{the day before}`) is not valid here and is flagged by the compiler.
 
-*See [Times & Scheduling](./times.md#section-retro-planning) for the full syntax rules and error handling.*
+*See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
 ### Section Outputs (Declarations)
 If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
@@ -102,7 +102,7 @@ If a `## Section` produces a sub-component that will be used later in the recipe
 ```gram
 ## Puff Pastry ->&dough
 ```
-*See [Intermediate Variables](./intermediate-variables.md) for more details.*
+*See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for more details.*
 
 ## 4. Comments
 

@@ -22,9 +22,9 @@ When turning an existing recipe into `.gram`, working through these five points 
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](./document-structure.md#retro-planning-scheduling)).
+1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](/docs/reference/syntax/document-structure#retro-planning-scheduling)).
 2. **Frontmatter** — Extract `title`, `author`, `source`, `category`, `portions`, and dates from whatever metadata the source provides. Never invent a value that isn't in the source.
-3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](./composite-ingredients.md) instead of a separate prep step.
+3. **Ingredients** — List every unique `@ingredient` using its full name with spaces (`"olive oil"`, not `"olive-oil"`). Note which ones appear more than once — the second and later mentions should use `@&`. Prefer SI units for precision, but keep `tbsp`/`tsp`/`cup` for small amounts when that's how the source expresses them. For parts of an ingredient (juice, zest, yolk…), plan the [composite syntax](/docs/reference/syntax/composite-ingredients) instead of a separate prep step.
 4. **Steps** — Write each step as a paragraph with a `[Verb]` action prefix, inlining every `@ingredient`, `#cookware`, `~timer`, and `^temperature` as it's introduced. Use passive timers (`~_`) for hands-off waits (oven, resting, chilling, rising) and active timers (`~`) for anything that keeps the cook busy. If multiple passive timers must happen sequentially (one after another, e.g. baking in stages), give them the SAME NAME (`~_baking{10m}` then `~_baking{30m}`) to automatically sequence them without adding to the cook's active time.
 5. **Review** — Before finalizing, check for the mistakes listed below: kebab-case names, units inside cookware braces, missing `@&` on repeat mentions, redundant `->&name` declarations, and standalone steps that only prepare an ingredient for a later step.
 </Steps>
@@ -58,7 +58,7 @@ A multi-word `@ingredient`/`#cookware` name always needs `{}` (or `{count}` for 
 ❌  #pan{20cm}      →   ✅  #pan(20cm)
 ❌  #bowl{large}    →   ✅  #bowl(large)
 ```
-`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](./cookware.md).
+`#cookware` braces accept integer counts only. Dimensions, materials, and descriptions always go in parentheses — see [Cookware](/docs/reference/syntax/cookware).
 
 ### Free text where a number is required
 
@@ -88,7 +88,7 @@ Quantities and timers need a real number (or empty braces for "to taste"); fuzzy
 ❌  Roll out the @&dough.              // @& implies a shopping-list ingredient
 ✅  Roll out the &dough.               // & = reference to the declared intermediate
 ```
-See [Intermediate Variables](./intermediate-variables.md) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
+See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for the full distinction. More generally, whenever a step transforms an ingredient into a new product referenced by name in later steps ("the seasoned chicken", "the dough"), declaring it with `->&name` avoids this ambiguity entirely.
 
 ### Standalone steps that only prepare an ingredient
 
@@ -106,7 +106,7 @@ Any step whose entire purpose is "take X and do Y to it before the real step" sh
 ❌  the juice from @lemon{1/2}    →   ✅  @juice<@lemon{1/2}
 ❌  the zest of @lemon{2}         →   ✅  @zest{1}<@lemon{2}
 ```
-[Composite ingredients](./composite-ingredients.md) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
+[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
 
 ### Spaces around the composite operator
 
@@ -139,7 +139,7 @@ Attach it to whichever one it actually describes — "cut in half" happens to th
 
    [Mix] @paprika{2 tsp} with @salt{1 tsp}.            // no local declaration needed
 ```
-A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](./intermediate-variables.md#section-level-declaration).
+A section-level `->&name` already captures the output of every step inside it — see [Intermediate Variables](/docs/reference/syntax/intermediate-variables#section-level-declaration).
 
 ### An active timer for passive cooking
 

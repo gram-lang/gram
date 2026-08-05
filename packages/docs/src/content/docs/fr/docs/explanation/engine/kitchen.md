@@ -49,11 +49,11 @@ La Kitchen calcule quatre métriques de temps, combinées dans `core.ts` :
 La Kitchen construit la liste de base des ingrédients nécessaires pour cuisiner la recette.
 
 - **Fusion** : Elle empile les mentions d'un ingrédient via son ID brut (le slug du texte) et son unité. Ainsi, `@beurre{50 g}` dans la pâte et `@beurre{20 g}` dans le glaçage seront sommés arithmétiquement en une ligne unique de `70 g`.
-- **Logique des Composites** : Elle orchestre l'impitoyable logique MAX et SUM des [Ingrédients Composites](../../reference/syntax/composite-ingredients.md). La quantité réclamée pour les enfants passe à la moulinette du MAX (ex: le plus gros entre « zeste de 2 citrons » et « jus de 3 citrons » gagne). Ensuite, toute quantité du parent utilisée « telle quelle » est sommée (SUM) par-dessus.
-- **Agrégation Hybride** : Pour ne rien casser, les [Quantités Relatives](../../reference/syntax/relative-quantities.md) (basées sur des formules) sont stockées à part de la masse numérique absolue. La liste de courses est ainsi garantie mathématiquement exacte en toute circonstance.
+- **Logique des Composites** : Elle orchestre l'impitoyable logique MAX et SUM des [Ingrédients Composites](/fr/docs/reference/syntax/composite-ingredients). La quantité réclamée pour les enfants passe à la moulinette du MAX (ex: le plus gros entre « zeste de 2 citrons » et « jus de 3 citrons » gagne). Ensuite, toute quantité du parent utilisée « telle quelle » est sommée (SUM) par-dessus.
+- **Agrégation Hybride** : Pour ne rien casser, les [Quantités Relatives](/fr/docs/reference/syntax/relative-quantities) (basées sur des formules) sont stockées à part de la masse numérique absolue. La liste de courses est ainsi garantie mathématiquement exacte en toute circonstance.
 
 :::tip[Ceci n'est pas la liste finale]
-La Kitchen tournant à l'aveugle sans accès à `ingredients.yaml`, le regroupement repose bêtement sur l'ID brut. `@butter` et `@beurre` restent donc décorrélés à ce stade, tout comme `100 g` et `1 tasse` de farine ne seront pas fusionnés. L'intelligence métier avancée (ID canonique, conversion masse/volume via la densité) sera injectée plus tard par `@gram-lang/analyzer`. Voir [Agrégation de la Liste de Courses](../shopping-list-aggregation.md).
+La Kitchen tournant à l'aveugle sans accès à `ingredients.yaml`, le regroupement repose bêtement sur l'ID brut. `@butter` et `@beurre` restent donc décorrélés à ce stade, tout comme `100 g` et `1 tasse` de farine ne seront pas fusionnés. L'intelligence métier avancée (ID canonique, conversion masse/volume via la densité) sera injectée plus tard par `@gram-lang/analyzer`. Voir [Agrégation de la Liste de Courses](/fr/docs/explanation/shopping-list-aggregation).
 :::
 
 :::tip[Une deuxième agrégation, différente, existe par section]

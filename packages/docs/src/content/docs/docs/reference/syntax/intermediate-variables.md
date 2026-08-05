@@ -63,7 +63,7 @@ However, it **will not** appear in the global **Shopping List**. The Gram Compil
 When a `&variable` is declared at the Section-level, it is registered in the **Global Scope**. This means you can declare a `&variable` in the first section of your recipe and safely reference it in the last section.
 
 ### Relative Quantities
-As detailed in the [Relative Quantities](./relative-quantities.md) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
+As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantities) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
 
 ```gram
 [Mix] The ingredients to form the dough. ->&dough

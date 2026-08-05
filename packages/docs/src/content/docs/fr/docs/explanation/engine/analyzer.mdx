@@ -33,7 +33,7 @@ Par exemple, si un ingrédient a un facteur de rendement de `0.65` (35 % de déc
 - **Calcul de l'Analyseur** : `100 g / 0.65 ≈ 154 g`.
 - **Sortie de la Liste de Courses** : Le système vous indiquera d'acheter **~154 g** de l'ingrédient non pelé pour s'assurer que vous avez 100 g de chair utilisable.
 
-Le sens de ce calcul dépend de la saisie. Une masse/volume explicite (ex: la banane) est considérée comme une masse **Nette** ; la masse **Brute** d'achat est donc calculée à l'envers (`Nette ÷ rendement`). À l'inverse, un **nombre** (ex: `@avocat{1}`) est naturellement considéré comme un produit entier (**Brut**) ; sa masse Nette sera calculée dans l'autre sens (`Brute × rendement`). Rendez-vous sur [Standardisation des Masses & Rendement](../mass-and-yield.md) pour creuser le sujet.
+Le sens de ce calcul dépend de la saisie. Une masse/volume explicite (ex: la banane) est considérée comme une masse **Nette** ; la masse **Brute** d'achat est donc calculée à l'envers (`Nette ÷ rendement`). À l'inverse, un **nombre** (ex: `@avocat{1}`) est naturellement considéré comme un produit entier (**Brut**) ; sa masse Nette sera calculée dans l'autre sens (`Brute × rendement`). Rendez-vous sur [Standardisation des Masses & Rendement](/fr/docs/explanation/mass-and-yield) pour creuser le sujet.
 
 Cet ajustement est calculé par utilisation de l'ingrédient (y compris ses mentions *inline* dans le texte). En aval, `@gram-lang/renderer` injectera la Masse Brute dans la liste de courses de vos exports HTML et Markdown.
 

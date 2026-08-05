@@ -33,7 +33,7 @@ For example, if an ingredient has a yield factor of `0.65` (35% waste):
 - **Analyzer Calculation**: `100g / 0.65 ≈ 154g`.
 - **Shopping List Output**: The system will instruct you to buy **~154g** of the unpeeled ingredient to ensure you have 100g of usable flesh.
 
-The direction of this calculation depends on how the quantity was written. An explicit mass/volume (like the banana above) is assumed to be the **Net** mass, with the **Gross** (purchasing) mass derived backward (`Net ÷ yield`). A **count** (e.g. `@avocado{1}`) works the other way around: the ingredient's `unit_weight` already represents the whole purchased unit (**Gross**), so the Net mass actually used by the recipe and by nutrition calculations is derived forward (`Gross × yield`). See [Mass Standardization & Yield](../mass-and-yield.md) for the full breakdown.
+The direction of this calculation depends on how the quantity was written. An explicit mass/volume (like the banana above) is assumed to be the **Net** mass, with the **Gross** (purchasing) mass derived backward (`Net ÷ yield`). A **count** (e.g. `@avocado{1}`) works the other way around: the ingredient's `unit_weight` already represents the whole purchased unit (**Gross**), so the Net mass actually used by the recipe and by nutrition calculations is derived forward (`Gross × yield`). See [Mass Standardization & Yield](/docs/explanation/mass-and-yield) for the full breakdown.
 
 This adjustment is computed per ingredient usage — including inline mentions throughout the recipe text — and `@gram-lang/renderer` surfaces the Gross Mass figure in shopping lists across HTML, Markdown, and Print formats.
 
