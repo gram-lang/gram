@@ -1,5 +1,4 @@
 export interface HomepageCopy {
-	versionText: string;
 	heroTitle: string;
 	heroSubtitle: string;
 	heroDescription: string;
@@ -59,7 +58,6 @@ export interface HomepageCopy {
 
 export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 	en: {
-		versionText: "Version 1.0.0-beta.5",
 		heroTitle: "Gram",
 		heroSubtitle: "An open-source markup language for recipes.",
 		heroDescription:
@@ -294,7 +292,6 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			"Scaffold a new recipe workspace in seconds. The CLI sets up everything you need to start writing Gram locally.",
 	},
 	fr: {
-		versionText: "Version 1.0.0-beta.5",
 		heroTitle: "Gram",
 		heroSubtitle: "Un langage de balisage open-source pour vos recettes.",
 		heroDescription:
@@ -326,7 +323,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 				link: "/fr/docs/explanation/philosophy",
 			},
 			{
-				title: "Évaluation Dynamique",
+				title: "Calculs Automatiques",
 				icon: "setting",
 				details:
 					"Fini les calculs mentaux pour l'hydratation ou le scaling de vos plats. Gram gère l'arithmétique, les variables et la conversion d'unités nativement.",
