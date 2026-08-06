@@ -11,7 +11,7 @@ The official Language Server Protocol (LSP) implementation for the Gram recipe l
 
 ## 📚 General Documentation
 
-For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
+For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
 
 ---
 

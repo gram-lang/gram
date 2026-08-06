@@ -11,7 +11,7 @@ Canonical `.gram` source code formatter, shared by the CLI (`gram format`) and L
 
 ## 📚 General Documentation
 
-For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://gram-lang.org/)**.
+For full syntax specifications, command reference, and best practices, please refer to the **[Gram Documentation](https://docs.gram-lang.org/)**.
 
 ---
 

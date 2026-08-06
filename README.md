@@ -1,9 +1,8 @@
 <div align="left">
   <img src="gram-logo.png" width="130" align="left" alt="Gram Logo"/>
   <h1>Gram</h1>
-  <p><strong>A smart, data-driven recipe markup language for developers.</strong></p>
+  <p><strong>An open-source markup language for recipes.</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/Status-Beta-blue" alt="Status" />
     <a href="https://git.gram-lang.org/gram-lang/gram/actions"><img src="https://git.gram-lang.org/gram-lang/gram/actions/workflows/ci.yml/badge.svg" alt="Build Status" /></a>
     <a href="https://www.npmjs.com/package/@gram-lang/cli"><img src="https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&logo=npm" alt="NPM Version" /></a>
     <a href="https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang"><img src="https://vsmarketplacebadges.dev/version-short/gram-lang.gram-lang.svg?style=flat-square&color=007acc" alt="VS Code Extension" /></a>
@@ -14,11 +13,9 @@
 </div>
 <br clear="left"/>
 
-Gram is designed to write structured, machine-readable recipes that still read like a normal, human-friendly recipe. 
+Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.
 
-Because it treats your recipes as code, Gram unlocks features that are impossible with plain text: precise physical analysis, dynamic scaling, semantic diffs, and interactive cooking.
-
-[Playground](https://play.gram-lang.org) • [Documentation](https://gram-lang.org/)
+[Playground](https://play.gram-lang.org) • [Documentation](https://docs.gram-lang.org/)
 
 <br/>
 <div align="center">
@@ -26,39 +23,30 @@ Because it treats your recipes as code, Gram unlocks features that are impossibl
 </div>
 <br/>
 
-> **Project Status: Beta (v1.0.0-beta)**
-> Gram has officially entered its Beta phase! The language syntax has stabilized, and a comprehensive suite of developer tools is now available, including a CLI and a Language Server.
-
 > [!NOTE]
 > I develop **Gram** on my primary [Forgejo instance](https://git.gram-lang.org/gram-lang/gram), with automatic mirrors on [GitHub](https://github.com/gram-lang/gram) and [Codeberg](https://codeberg.org/gram-lang/gram).  
+
 > Contributions, issues, and discussions are welcome on any of these platforms.
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to get involved.
 
 ---
 
-## Why Gram?
+## Design Philosophy & Key Features
 
-Inspired by the excellent [Cooklang](https://cooklang.org), Gram takes the concept a step further by introducing structure and programmatic logic.
+Gram turns plain-text recipes into structured, queryable data while keeping them easy to read and write.
 
-While other markups focus purely on natural language, Gram cares deeply about **data integrity** to solve complex culinary problems:
-
-1. **Clear Data Separation**: Explicitly tag ingredients (`@flour{200g}`), cookware (`#bowl`), timers (`~{30min}`), and temperatures (`^{230C}`).
-2. **Explicit Actions**: Highlight the main method used in a step (e.g., `[Mix]`, `[Bake]`).
-3. **Composite Ingredients (`<@`)**: Cleanly handle tricky relationships like "Zest of 1 lemon" and "Juice of 2 lemons" while ensuring your shopping list aggregates to exactly "Buy 2 Lemons".
-4. **Intermediate Preparations (`->&dough`)**: Chain recipe parts together just like variables in code, and reuse them later without accidentally doubling your shopping list totals.
-5. **Relative Quantities**: Define `@water{60% @&flour}` to handle dynamic baker's math effortlessly.
-6. **Smart Aggregation & Mise en Place**: Automatically converts volumes to masses (e.g., `1 cup` -> `125g`) to calculate exact purchasing amounts and yield (Gross vs. Net Mass).
-7. **Nutritional Estimation**: Calculates calories and macros automatically using your ingredient database.
-8. **Advanced Timers & Scheduling**: Distinguish between active work (`~{10min}`) and background tasks (`~_{2h}`), and use retro-planning (`~{-2d}`) on sections to organize multi-day recipes perfectly.
+* **Plain Text**: Recipes are saved as simple `.gram` text files, so you can track changes with Git and use any text editor.
+* **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), and automatic unit conversions directly in your recipe.
+* **Step References & Variables**: Reuse intermediate preparations (`->&dough`) and sub-ingredients (`<@lemons{2}`) without messing up shopping list totals.
+* **Timers & Gantt Charts**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`) to generate recipe timelines and Gantt charts.
+* **Developer Tooling**: Includes a Language Server (LSP), a VS Code extension with real-time diagnostics, a CLI tool, and a TypeScript API.
 
 ---
 
 ## Quick Syntax
 
 Gram reads like natural language but compiles like code.
-
-*(Note: The author will provide a more comprehensive example here showcasing all capabilities of Gram)*
 
 ```gram
 ---
@@ -82,42 +70,40 @@ description: A simple, highly hydrated dough.
 
 ---
 
-## The Developer Toolchain
+## Tooling
 
-To support the language, Gram comes with a suite of official tools that connect everything together.
+Gram comes with tools to help write, inspect, and compile recipes.
 
 ### VS Code Extension & Language Server
-Transform your editor into a proper recipe development environment. 
 [**Available on the VS Code Marketplace**](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)
-- **Dynamic Live Preview & Gantt Chart**: Side-by-side recipe rendering and a real-time timeline view for precise temporal visualization of active steps, background timers, and service scheduling.
-- **Smart Autocomplete**: Contextual suggestions for ingredients from your database, units, and references.
-- **Real-time Diagnostics**: Instantly flags missing ingredients, unused references, or circular dependencies.
+- **Live Preview & Gantt View**: Side-by-side recipe rendering and real-time Gantt charts for active steps and background timers.
+- **Autocomplete**: Contextual suggestions for ingredients from your database, units, and step references.
+- **Diagnostics**: Real-time error checking for missing ingredients, unused references, or circular dependencies.
 
-### The Official CLI (`@gram-lang/cli`)
-The command-line interface acts as the keystone of the Gram workflow.
+### CLI (`@gram-lang/cli`)
 [**View on npmjs**](https://www.npmjs.com/package/@gram-lang/cli)
-- **`gram check` & `gram build`**: Validate syntax and compile your `.gram` files to enriched JSON.
-- **`gram cook`**: An interactive step-by-step cooking assistant right in your terminal, complete with live timers.
-- **`gram scale`**: Dynamically resize your recipes (e.g., `--scale=2` or `--scale flour=300g`) with visual before/after tables.
-- **`gram diff`**: A semantic "git diff" for recipes. Instantly see if quantities, timings, or temperatures changed between versions.
+- **`gram check` & `gram build`**: Validate syntax and compile `.gram` files to JSON.
+- **`gram cook`**: Step-by-step cooking assistant in your terminal with live timers.
+- **`gram scale`**: Resize recipes (e.g., `--scale=2` or `--scale flour=300g`) with before/after comparison tables.
+- **`gram diff`**: Semantic diff to compare quantities, timings, or temperatures between recipe versions.
 - **`gram shop`**: Generate aggregated shopping lists across multiple recipes.
-- **`gram suggest`**: Find recipes based on your available ingredients (e.g., `--with "butter, eggs" --without "milk"`).
-- **`gram import`**: Scrape a recipe from any URL and let AI automatically translate and convert it into native `.gram` syntax.
+- **`gram suggest`**: Find recipes based on available ingredients (e.g., `--with "butter, eggs"`).
+- **`gram import`**: Convert recipes from external URLs into `.gram` files.
 
-### Smart Database Management (`gram db`)
-Manage your `ingredients.yaml` effortlessly with AI-assisted commands.
-- **`gram db sync`**: Scan your recipes and automatically track new ingredients.
-- **`gram db enrich`**: Missing density or nutrition data? Let the AI automatically fill in the gaps.
-- **`gram db lint`**: Track down semantic duplicates (e.g., `scallion` vs `green onion`) and plural mistakes to keep your database pristine.
+### Database Tooling (`gram db`)
+Commands to maintain your `ingredients.yaml` file:
+- **`gram db sync`**: Scan recipes and add missing ingredients to your database.
+- **`gram db enrich`**: Fill in missing density and nutrition data using AI suggestions.
+- **`gram db lint`**: Find duplicates (e.g., `scallion` vs `green onion`) and fix plural inconsistencies.
 
 ---
 
 ## Documentation
 
 The full technical documentation is available online:
-[**https://gram-lang.org/**](https://gram-lang.org/)
+[**https://docs.gram-lang.org/**](https://docs.gram-lang.org/)
 
-The source code for the VitePress documentation can be found locally in `packages/docs/`.
+The source code for the Astro & Starlight documentation can be found locally in `packages/docs/`.
 
 ---
 
