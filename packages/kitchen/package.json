@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/kitchen",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0",
   "description": "Compiler for the Gram recipe language, converting AST to JSON.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

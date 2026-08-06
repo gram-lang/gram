@@ -6,6 +6,16 @@ tableOfContents:
   maxHeadingLevel: 2
 ---
 
+## [1.0.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.0-beta.5...v.1.0.0) - 8/6/2026
+
+### 🚨 Major Changes
+- Gram v1.0.0 Official Launch! 🎉 This milestone release marks the official 1.0.0 launch of Gram:
+  - **Brand-New Website & Documentation**: Rebuilt using Astro and Starlight with refined guides and an integrated blog.
+  - **Refreshed Visual Identity**: Brand-new logo.
+  - **Infrastructure & Stability**: Monorepo stability, test coverage, and migration to new Forgejo (`git.gram-lang.org`) mirrored to GitHub and Codeberg.
+
+---
+
 ## [1.0.0-beta.5] - 7/26/2026
 
 ### ✨ New Features

@@ -1,5 +1,17 @@
 # @gram-lang/cli
 
+## 1.0.0
+
+### Major Changes
+
+- Gram v1.0.0 Official Launch! 🎉
+
+  This milestone release marks the official 1.0.0 launch of Gram:
+
+  - **Brand-New Website & Documentation**: Rebuilt using Astro and Starlight with refined guides and an integrated blog.
+  - **Refreshed Visual Identity**: Brand-new logo.
+  - **Infrastructure & Stability**: Monorepo stability, test coverage, and migration to self-hosted Forgejo (`git.gram-lang.org`) mirrored to GitHub and Codeberg.
+
 ## 1.0.0-beta.5
 
 ### Minor Changes
