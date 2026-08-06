@@ -14,7 +14,8 @@
 			"!**/*.gram",
 			"!**/grammar-content.ts",
 			"!**/*.svg",
-			"!packages/*/src/public"
+			"!packages/*/src/public",
+			"!packages/docs/src/styles/starlight/**"
 		]
 	},
 	"formatter": {
