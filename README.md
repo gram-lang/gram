@@ -1,5 +1,5 @@
-<div align="left">
-  <img src="gram-logo.png" width="130" align="left" alt="Gram Logo"/>
+<div align="center">
+  <img src="gram-logo.png" width="130" alt="Gram Logo" />
   <h1>Gram</h1>
   <p><strong>An open-source markup language for recipes.</strong></p>
   <p>
@@ -10,15 +10,13 @@
     <img src="https://img.shields.io/badge/License-GPL_v3-blue.svg" alt="License" />
     <img src="https://img.shields.io/badge/Made%20in-Europe-003399?labelColor=003399&logo=europeanunion&logoColor=FFFFFF" alt="Made in Europe" />
   </p>
-</div>
-<br clear="left"/>
-
-Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.
-
-[Playground](https://play.gram-lang.org) • [Documentation](https://docs.gram-lang.org/)
-
-<br/>
-<div align="center">
+  <p>
+    Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.
+  </p>
+  <p>
+    <a href="https://gram-lang.org">Website</a> • <a href="https://play.gram-lang.org">Playground</a> • <a href="https://docs.gram-lang.org/">Documentation</a>
+  </p>
+  <br/>
   <img src="screenshot.png" alt="Gram Playground Screenshot" style="border-radius: 8px;" />
 </div>
 <br/>
