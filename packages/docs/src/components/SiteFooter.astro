@@ -4,40 +4,46 @@ import SocialLinks from "./SocialLinks.astro";
 const { currentLang = "en" } = Astro.props;
 
 const t = {
-	en: {
-		tagline: "An open-source markup language for recipes.",
-		resources: "Resources",
-		coreConcepts: "Core Concepts",
-		tooling: "Tooling",
-		documentation: "Documentation",
-		playground: "Playground",
-		designPhilosophy: "Design Philosophy",
-		alapScheduling: "ALAP Scheduling",
-		scalingRecipes: "Scaling Recipes",
-		localDatabase: "Local Database",
-		cli: "CLI",
-		vscode: "VSCode Extension",
-		kitchenApi: "Kitchen API",
-		copyright:
-			"© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
-	},
-	fr: {
-		tagline: "Un langage de balisage open-source pour vos recettes.",
-		resources: "Ressources",
-		coreConcepts: "Concepts Clés",
-		tooling: "Outils",
-		documentation: "Documentation",
-		playground: "Playground",
-		designPhilosophy: "Philosophie",
-		alapScheduling: "Planification ALAP",
-		scalingRecipes: "Mise à l'échelle",
-		localDatabase: "Base de données",
-		cli: "CLI",
-		vscode: "Extension VSCode",
-		kitchenApi: "API Kitchen",
-		copyright:
-			"© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
-	},
+  en: {
+    tagline: "An open-source markup language for recipes.",
+    resources: "Resources",
+    ecosystemTooling: "Ecosystem & Tooling",
+    community: "Community",
+    documentation: "Documentation",
+    playground: "Playground",
+    blog: "Blog",
+    changelog: "Changelog",
+    vscode: "VSCode Extension",
+    cli: "CLI",
+    languageServer: "Language Server",
+    kitchenApi: "Kitchen API",
+    reportIssue: "Report an Issue",
+    contributing: "Contributing Guide",
+    discord: "Discord",
+    reddit: "Reddit",
+    copyright:
+      "© 2026 Gram Language. Proudly crafted in <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Licensed under <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+  },
+  fr: {
+    tagline: "Un langage de balisage open-source pour vos recettes.",
+    resources: "Ressources",
+    ecosystemTooling: "Écosystème & Outils",
+    community: "Communauté",
+    documentation: "Documentation",
+    playground: "Playground",
+    blog: "Blog",
+    changelog: "Changelog",
+    vscode: "Extension VSCode",
+    cli: "CLI",
+    languageServer: "Serveur de langage (LSP)",
+    kitchenApi: "API Kitchen",
+    reportIssue: "Signaler un problème",
+    contributing: "Guide de contribution",
+    discord: "Discord",
+    reddit: "Reddit",
+    copyright:
+      "© 2026 Gram Language. Fièrement conçu en <a href='https://www.youtube.com/watch?v=P9Woz1g0jnM' target='_blank' class='easter-egg'>Rennes</a>, France 🇪🇺. Sous licence <a href='https://codeberg.org/gram-lang/gram/src/branch/main/LICENSE' target='_blank' class='license-link'>GPL-3.0</a>.",
+  },
 };
 
 const langText = t[currentLang as keyof typeof t] || t.en;
@@ -69,51 +75,68 @@ const prefix = currentLang === "fr" ? "/fr" : "";
             >
           </li>
           <li><a href={`${prefix}/play`}>{langText.playground}</a></li>
-        </ul>
-      </div>
-
-      <!-- Column 3: Core Concepts -->
-      <div class="footer-col">
-        <h3>{langText.coreConcepts}</h3>
-        <ul>
+          <li><a href={`${prefix}/blog`}>{langText.blog}</a></li>
           <li>
-            <a href={`${prefix}/docs/explanation/philosophy`}
-              >{langText.designPhilosophy}</a
-            >
-          </li>
-          <li>
-            <a href={`${prefix}/docs/explanation/alap-scheduling`}
-              >{langText.alapScheduling}</a
-            >
-          </li>
-          <li>
-            <a href={`${prefix}/docs/how-to/scale-recipes/`}
-              >{langText.scalingRecipes}</a
-            >
-          </li>
-          <li>
-            <a href={`${prefix}/docs/how-to/manage-database/`}
-              >{langText.localDatabase}</a
-            >
+            <a href={`${prefix}/docs/changelog`}>{langText.changelog}</a>
           </li>
         </ul>
       </div>
 
-      <!-- Column 4: Tooling -->
+      <!-- Column 3: Ecosystem & Tooling -->
       <div class="footer-col">
-        <h3>{langText.tooling}</h3>
+        <h3>{langText.ecosystemTooling}</h3>
         <ul>
-          <li>
-            <a href={`${prefix}/docs/reference/tooling/cli`}>{langText.cli}</a>
-          </li>
           <li>
             <a href={`${prefix}/docs/reference/tooling/vscode-extension`}
               >{langText.vscode}</a
             >
           </li>
           <li>
+            <a href={`${prefix}/docs/reference/tooling/cli`}>{langText.cli}</a>
+          </li>
+          <li>
+            <a href={`${prefix}/docs/reference/tooling/language-server`}
+              >{langText.languageServer}</a
+            >
+          </li>
+          <li>
             <a href={`${prefix}/docs/reference/api/kitchen`}
               >{langText.kitchenApi}</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Community -->
+      <div class="footer-col">
+        <h3>{langText.community}</h3>
+        <ul>
+          <li>
+            <a
+              href="https://git.gram-lang.org/gram-lang/gram/issues"
+              target="_blank"
+              rel="noopener">{langText.reportIssue}</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md"
+              target="_blank"
+              rel="noopener">{langText.contributing}</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://discord.gg/nsCBkhjuAR"
+              target="_blank"
+              rel="noopener">{langText.discord}</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.reddit.com/r/gramlang/"
+              target="_blank"
+              rel="noopener">{langText.reddit}</a
             >
           </li>
         </ul>

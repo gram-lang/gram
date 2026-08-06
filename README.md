@@ -180,6 +180,15 @@ Gram stands on the shoulders of giants.
 * **[Ohm.js](https://ohmjs.org)**: For making parsing accessible and incredibly robust.
 * **LLM Assistance**: This project was developed with the assistance of AI for rapid prototyping, refactoring, and generating test cases. All logic and architecture were strictly verified by humans.
 
+---
+
+## Community & Support
+
+- **Bugs & Feature Requests**: Please use our primary [Forgejo issues](https://git.gram-lang.org/gram-lang/gram/issues) (or [GitHub mirror](https://github.com/gram-lang/gram/issues)).
+- **Chat & Discussions**: Join us on [Discord](https://discord.gg/) or visit [r/gram-lang](https://www.reddit.com/r/) for casual community discussions.
+
+---
+
 ## License
 
 Distributed under the GPL-3.0 License.
