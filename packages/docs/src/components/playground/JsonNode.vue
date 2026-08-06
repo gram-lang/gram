@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, inject, type Ref } from "vue";
 
 const props = defineProps<{
 	data: any;
@@ -7,6 +7,8 @@ const props = defineProps<{
 	isLast?: boolean;
 	initialExpanded?: boolean;
 }>();
+
+const isDark = inject<Ref<boolean>>("isDark", ref(true));
 
 const isExpanded = ref(props.initialExpanded !== false);
 
@@ -43,7 +45,7 @@ const count = computed(() => keys.value.length);
 </script>
 
 <template>
-  <div class="json-node">
+  <div class="json-node" :class="isDark ? 'is-dark' : 'is-light'">
     <!-- Primitives and Empty Objects/Arrays -->
     <template v-if="!isObjectOrArray || isEmpty">
       <div class="json-line">
@@ -98,9 +100,21 @@ const count = computed(() => keys.value.length);
 
 <style scoped>
 .json-node {
-  font-family: var(--vp-font-family-mono);
-  font-size: 13px;
+  font-family: var(--sl-font-mono);
+  font-size: 14px;
   line-height: 1.5;
+}
+
+.json-node.is-dark {
+  --json-key-color: #79b8ff;
+  --json-str-color: #9ecbff;
+  --json-punct-color: #e1e4e8;
+}
+
+.json-node.is-light {
+  --json-key-color: #005cc5;
+  --json-str-color: #032f62;
+  --json-punct-color: #24292e;
 }
 
 .json-line {
@@ -113,12 +127,12 @@ const count = computed(() => keys.value.length);
 }
 
 .json-header:hover {
-  background-color: var(--vp-c-bg-mute);
+  background-color: var(--sl-color-bg-inline-code);
 }
 
 .json-children {
   padding-left: 20px;
-  border-left: 1px dotted var(--vp-c-divider);
+  border-left: 1px dotted var(--sl-color-hairline);
   margin-left: 5px;
 }
 
@@ -127,15 +141,24 @@ const count = computed(() => keys.value.length);
   width: 14px;
   text-align: center;
   font-size: 10px;
-  color: var(--vp-c-text-3);
+  color: var(--sl-color-gray-4);
   margin-right: 4px;
 }
 
-.json-key { color: var(--vp-c-brand-1); }
-.json-string { color: var(--vp-c-green-1); }
-.json-number { color: var(--vp-c-yellow-1); }
-.json-boolean { color: var(--vp-c-red-1); }
-.json-null { color: var(--vp-c-text-3); }
-.json-colon, .json-comma, .json-bracket, .json-brace { color: var(--vp-c-text-1); }
-.json-count { color: var(--vp-c-text-3); font-style: italic; margin: 0 4px; }
+.json-key,
+.json-number,
+.json-boolean,
+.json-null {
+  color: var(--json-key-color);
+}
+.json-string {
+  color: var(--json-str-color);
+}
+.json-colon,
+.json-comma,
+.json-bracket,
+.json-brace {
+  color: var(--json-punct-color);
+}
+.json-count { color: var(--sl-color-gray-4); font-style: italic; margin: 0 4px; }
 </style>

@@ -1,0 +1,46 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../../layouts/Layout.astro";
+import { resolveLocalizedPosts } from "../../../lib/resolveLocalizedPosts";
+import BlogListLayout from "../../../components/BlogListLayout.astro";
+import ArticleCard from "../../../components/ArticleCard.astro";
+
+const allPosts = await getCollection("blog");
+const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
+
+// Sort by date descending, then by id descending (for releases on the same day)
+postsToDisplay.sort((a, b) => {
+	const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+	if (dateDiff !== 0) return dateDiff;
+	return b.id.localeCompare(a.id);
+});
+
+const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];
+---
+
+<Layout title="Blog" description="Dernières nouveautés et articles autour du projet Gram." currentLang="fr">
+  <BlogListLayout
+    title="Blog"
+    description="Dernières mises à jour, tutoriels et réflexions autour du projet Gram."
+    basePath="/fr/blog"
+    topics={topics}
+    topicsLabel="Sujets"
+  >
+    {postsToDisplay.length === 0 ? (
+      <p>Aucun article pour le moment.</p>
+    ) : (
+      postsToDisplay.map(post => {
+        // We use the english post slug for the URL to keep URLs consistent across languages
+        // if we prefer, or we can use the specific post id. Let's use the clean slug.
+        const slug = post.id.replace(/^(en|fr)\//, '').replace(/\.md$/, '');
+        return (
+          <ArticleCard
+            post={post}
+            postHref={`/fr/blog/${slug}`}
+            locale="fr"
+          />
+        );
+      })
+    )}
+  </BlogListLayout>
+</Layout>

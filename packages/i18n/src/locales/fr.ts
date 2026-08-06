@@ -62,6 +62,7 @@ export const fr: GramLocale = {
 		recipe: "Recette",
 		scaleFactor: "Quantités",
 		examples: {
+			newRecipe: "Vide (Nouvelle recette)",
 			canneles: "Cannelés Bordelais",
 			empanadas: "Empanadas de Boeuf",
 		},

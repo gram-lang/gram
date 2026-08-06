@@ -1,0 +1,132 @@
+---
+title: "Premiers pas"
+description: "Installez le CLI Gram, configurez votre éditeur et compilez votre première recette grâce à ce guide."
+---
+
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { CodePackageManagers } from 'starlight-theme-nova/components';
+
+Ce guide vous prend par la main pour installer l'écosystème Gram et compiler votre première recette.
+
+<Steps>
+
+1. **Installation**
+
+   Installez le CLI `gram` en global via votre gestionnaire de paquets favori. Il tourne indifféremment sur Node.js (>=20) ou [Bun](https://bun.sh/) :
+
+   <CodePackageManagers
+   packages="@gram-lang/cli"
+   dev={true}
+   packageManagers={['npm', 'bun']}
+   />
+
+   :::note
+   Vous préférez compiler le CLI depuis les sources (pour contribuer au projet, par exemple) ? Jetez un œil à [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
+   :::
+
+2. **Configuration de l'éditeur**
+
+   Gram traitant les recettes comme du code, un éditeur aux petits oignons fait toute la différence.
+
+   :::note[Extension VS Code Gram]
+   Nous vous recommandons vivement d'installer l'**extension Gram pour VS Code**. Elle apporte :
+   - La coloration syntaxique
+   - L'autocomplétion
+   - La détection d'erreurs et des diagnostics en temps réel
+   - Le rendu du compilateur en direct (*Live Preview*)
+   :::
+
+   Cherchez **« Gram - Recipe Language »** dans le panneau des extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`) et installez-la, ou téléchargez-la directement sur le [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang).
+
+   <details>
+   <summary>Compiler depuis les sources</summary>
+
+   ```bash
+   git clone https://git.gram-lang.org/gram-lang/gram.git
+   cd gram
+   bun install
+
+   # Packager l'extension (cela génère un fichier .vsix)
+   cd packages/vscode-extension
+   bun run package
+
+   # Installer le paquet dans VS Code
+   code --install-extension gram-lang-*.vsix
+   ```
+
+   </details>
+
+3. **Initialiser un projet**
+
+   Avant de taper votre première recette, on vous conseille d'initialiser un espace de travail (*workspace*) Gram. Dans un **nouveau dossier**, lancez :
+
+   ```bash
+   gram init
+   ```
+
+   Bim, cela va générer un répertoire `.gram/` abritant votre config et une base de données initiale.
+
+   :::tip[Configuration interactive]
+   Le CLI va vous poser quelques questions pour configurer votre fournisseur d'IA (utile plus tard pour *scraper* ou importer des recettes). Zéro stress, vous n'en aurez pas besoin pour votre première recette ! Appuyez juste sur `Entrée` pour *skipper* ces étapes et garder les choix par défaut.
+   :::
+
+4. **Écrire une recette simple**
+
+   C'est parti pour des pancakes ! 
+
+   Créez un fichier `pancakes.gram`, ouvrez-le dans votre éditeur et copiez-y cette recette de base :
+
+   ```gram title="pancakes.gram"
+   ---
+   title: Pancakes
+   portions: 2
+   ---
+
+   ## Appareil ->&appareil
+
+   Dans un #bol moyen{}, mélanger la @farine{160 g}, la @levure chimique{1 c.à.c}, le @sucre{1 c.à.s} et le @sel{1/4 c.à.c}. ->&mélange sec{}
+
+   Au &mélange sec{}, ajouter le @lait ribot{1 tasse}, l'@œuf{1} et l'@extrait de vanille{1/2 c.à.c}.
+
+   ## Cuisson
+
+   Verser l'&appareil sur une #plaque de cuisson{} à ^{feu moyen} et cuire pendant ~{2 min}.
+   ```
+
+5. **Compiler la recette**
+
+   Il est temps de voir le compilateur à l'œuvre !
+
+   Dans votre terminal, exécutez la commande suivante pour compiler la recette en un fichier JSON structuré :
+
+   ```bash
+   gram build pancakes.gram
+   ```
+
+   Elle va analyser (*parser*) la recette et générer sa représentation JSON. Par défaut, le résultat s'affiche directement dans la console, mais vous pouvez aussi l'enregistrer dans un fichier :
+
+   ```bash
+   gram build pancakes.gram -o pancakes.json
+   ```
+
+   Le JSON, c'est redoutable pour *builder* des apps avec Gram, mais avouons-le : niveau lisibilité humaine, on a vu mieux !
+
+   Pour un affichage élégant directement dans votre terminal, dégainez la commande `view` :
+
+   ```bash
+   gram view pancakes.gram
+   ```
+
+   :::tip[Essayez le playground]
+   Pas envie d'installer quoi que ce soit pour le moment ? Testez Gram directement dans votre navigateur grâce au [Playground](/fr/play/) (ou visualisez la recette via l'[extension VS Code](https://marketplace.visualstudio.com/items?itemName=gram-lang.gram-lang)).
+   :::
+
+</Steps>
+
+## Prochaines étapes
+
+Maintenant que vous avez les bases, explorons la vraie puissance de Gram : variables, *timers* passifs et *scaling* automatique. Passons aux choses sérieuses :
+<CardGrid>
+  <LinkCard title="Tutoriel : votre première recette complexe" description="Apprenez à utiliser les variables intermédiaires, les minuteurs passifs et les ingrédients composites." href="/fr/docs/tutorials/first-recipe/" />
+  <LinkCard title="Structure du document" description="Découvrez comment est organisé un fichier Gram." href="/fr/docs/reference/syntax/document-structure/" />
+</CardGrid>

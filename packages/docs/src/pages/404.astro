@@ -1,0 +1,94 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const isFr = Astro.url.pathname.startsWith("/fr");
+
+const copy = isFr
+	? {
+			lang: "fr",
+			title: "Page introuvable",
+			heading: "404",
+			message: "Cette page n'existe pas ou plus.",
+			homeLabel: "Retour à l'accueil",
+			docsLabel: "Voir la documentation",
+			homeHref: "/fr",
+			docsHref: "/fr/docs/explanation/philosophy",
+		}
+	: {
+			lang: "en",
+			title: "Page not found",
+			heading: "404",
+			message: "This page doesn't exist, or has moved.",
+			homeLabel: "Back to home",
+			docsLabel: "Browse the docs",
+			homeHref: "/",
+			docsHref: "/docs/explanation/philosophy",
+		};
+---
+
+<Layout title={copy.title} currentLang={copy.lang}>
+	<div class="not-found">
+		<p class="code">{copy.heading}</p>
+		<p class="message">{copy.message}</p>
+		<div class="actions">
+			<a href={copy.homeHref} class="button primary">{copy.homeLabel}</a>
+			<a href={copy.docsHref} class="button secondary">{copy.docsLabel}</a>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.not-found {
+		max-width: 32rem;
+		margin: 0 auto;
+		padding: 6rem 1.5rem;
+		text-align: center;
+	}
+
+	.code {
+		font-family: var(--sl-font-mono);
+		font-size: 4rem;
+		font-weight: 700;
+		color: var(--sl-color-text-accent);
+		margin: 0 0 0.5rem 0;
+	}
+
+	.message {
+		font-size: 1.15rem;
+		color: var(--sl-color-gray-3);
+		margin: 0 0 2rem 0;
+	}
+
+	.actions {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.button {
+		display: inline-block;
+		padding: 0.7rem 1.4rem;
+		text-decoration: none;
+		font-weight: 600;
+		border-radius: 4px;
+		border: 1px solid transparent;
+	}
+
+	.button.primary {
+		background-color: var(--sl-color-accent);
+		color: var(--sl-color-white);
+	}
+	.button.primary:hover {
+		filter: brightness(1.1);
+	}
+
+	.button.secondary {
+		background-color: transparent;
+		color: var(--sl-color-white);
+		border-color: var(--sl-color-hairline);
+	}
+	.button.secondary:hover {
+		border-color: var(--sl-color-text-accent);
+		background-color: var(--sl-color-bg-nav);
+	}
+</style>

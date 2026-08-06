@@ -1,8 +1,30 @@
 <script setup lang="ts">
-import { ref, computed, shallowRef } from "vue";
-import { useData } from "vitepress";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
+import { onMounted, onUnmounted, inject, ref, watch, type Ref } from "vue";
+import { Compartment, EditorSelection, EditorState } from "@codemirror/state";
+import {
+	EditorView,
+	keymap,
+	lineNumbers,
+	highlightActiveLine,
+} from "@codemirror/view";
+import {
+	defaultKeymap,
+	history,
+	historyKeymap,
+	indentWithTab,
+} from "@codemirror/commands";
+import {
+	type Diagnostic,
+	forceLinting,
+	lintGutter,
+	linter,
+} from "@codemirror/lint";
+import type { HighlighterCore } from "shiki/core";
+
+import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
+import { shikiHighlightExtension } from "./codemirror/shikiHighlightExtension";
+
+const isDark = inject<Ref<boolean>>("isDark")!;
 
 const props = defineProps<{
 	modelValue: string;
@@ -12,123 +34,140 @@ const emit = defineEmits<{
 	"update:modelValue": [val: string];
 }>();
 
-const { isDark } = useData();
+const editorContainer = ref<HTMLDivElement | null>(null);
+let view: EditorView | undefined;
+let highlighter: HighlighterCore | undefined;
 
-// biome-ignore lint/correctness/noUnusedVariables: localCode is used in the <template> block below, which Biome's Vue support doesn't see.
-const localCode = computed({
-	get: () => props.modelValue,
-	set: (val) => emit("update:modelValue", val),
+const highlightCompartment = new Compartment();
+let currentDiagnostics: Diagnostic[] = [];
+
+const editorTheme = EditorView.theme({
+	"&": {
+		height: "100%",
+		backgroundColor: "var(--sl-color-bg)",
+		fontSize: "14px",
+	},
+	".cm-scroller": {
+		fontFamily: 'var(--sl-font-mono), "Fira Code", monospace',
+		overflow: "auto",
+	},
+	".cm-content": {
+		padding: "16px 0",
+	},
+	".cm-gutters": {
+		backgroundColor: "var(--sl-color-bg)",
+		color: "var(--sl-color-gray-4)",
+		border: "none",
+	},
+	"&.cm-focused": {
+		outline: "none",
+	},
 });
 
-const editorRef = shallowRef();
-const monacoRef = shallowRef<any>(null);
-
-const shikiLoaded = ref(false);
-
-// biome-ignore lint/correctness/noUnusedImports: isSetup is used in the <template> block below, which Biome's Vue support doesn't see.
-import { setupMonaco, isSetup } from "./monacoSetup";
-
-function resolveMonaco(): any {
-	return monacoRef.value || (window as any).monaco;
+function makeExtensions(theme: string) {
+	return [
+		lineNumbers(),
+		highlightActiveLine(),
+		EditorView.lineWrapping,
+		history(),
+		keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+		editorTheme,
+		lintGutter(),
+		linter(() => currentDiagnostics, { delay: 0 }),
+		highlightCompartment.of(
+			highlighter ? shikiHighlightExtension(highlighter, "gram", theme) : [],
+		),
+		EditorView.updateListener.of((update) => {
+			if (update.docChanged) {
+				emit("update:modelValue", update.state.doc.toString());
+			}
+		}),
+	];
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: handleMount is used in the <template> block below, which Biome's Vue support doesn't see.
-const handleMount = async (editor: any, monaco: any) => {
-	editorRef.value = editor;
-	monacoRef.value = monaco;
-	await setupMonaco(monaco);
-	shikiLoaded.value = true;
+onMounted(async () => {
+	highlighter = await getHighlighter();
+	if (!editorContainer.value) return;
 
-	// Force theme update: bypass Vue's hydration delay by reading the DOM class directly
-	const isDarkMode =
-		document.documentElement.classList.contains("dark") || isDark.value;
-	monaco.editor.setTheme(isDarkMode ? "github-dark" : "github-light");
-};
+	const state = EditorState.create({
+		doc: props.modelValue,
+		extensions: makeExtensions(
+			isDark.value ? SHIKI_THEMES.dark : SHIKI_THEMES.light,
+		),
+	});
 
-// Ensure theme updates even if Shiki takes a very long time
-import { watch } from "vue";
-watch(isDark, (dark) => {
-	if (editorRef.value && (window as any).monaco) {
-		(window as any).monaco.editor.setTheme(
-			dark ? "github-dark" : "github-light",
-		);
-	}
+	view = new EditorView({
+		state,
+		parent: editorContainer.value,
+	});
 });
 
-// biome-ignore lint/correctness/noUnusedVariables: MONACO_OPTIONS is used in the <template> block below, which Biome's Vue support doesn't see.
-const MONACO_OPTIONS = {
-	automaticLayout: true,
-	minimap: { enabled: false },
-	wordWrap: "on",
-	fontSize: 14,
-	fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
-	scrollBeyondLastLine: false,
-	lineNumbersMinChars: 3,
-	renderLineHighlight: "all",
-	padding: { top: 16 },
-};
+onUnmounted(() => {
+	view?.destroy();
+});
+
+watch(
+	() => props.modelValue,
+	(newValue) => {
+		if (!view) return;
+		const current = view.state.doc.toString();
+		if (newValue !== current) {
+			view.dispatch({
+				changes: { from: 0, to: current.length, insert: newValue },
+			});
+		}
+	},
+);
+
+watch(isDark, (dark) => {
+	if (!view || !highlighter) return;
+	view.dispatch({
+		effects: highlightCompartment.reconfigure(
+			shikiHighlightExtension(
+				highlighter,
+				"gram",
+				dark ? SHIKI_THEMES.dark : SHIKI_THEMES.light,
+			),
+		),
+	});
+});
 
 defineExpose({
 	jump(start: number, end: number) {
-		if (editorRef.value) {
-			const model = editorRef.value.getModel();
-			if (model) {
-				const startPos = model.getPositionAt(start);
-				const endPos = model.getPositionAt(end);
-				editorRef.value.setSelection({
-					startLineNumber: startPos.lineNumber,
-					startColumn: startPos.column,
-					endLineNumber: endPos.lineNumber,
-					endColumn: endPos.column,
-				});
-				editorRef.value.revealRangeInCenter({
-					startLineNumber: startPos.lineNumber,
-					startColumn: startPos.column,
-					endLineNumber: endPos.lineNumber,
-					endColumn: endPos.column,
-				});
-				editorRef.value.focus();
-			}
-		}
+		if (!view) return;
+		const length = view.state.doc.length;
+		const from = Math.max(0, Math.min(start, length));
+		const to = Math.max(from, Math.min(end, length));
+		view.dispatch({
+			selection: EditorSelection.single(from, to),
+			effects: EditorView.scrollIntoView(from, { y: "center" }),
+		});
+		view.focus();
 	},
 
 	setErrorMarker(offset: number | null, message: string) {
-		const monaco = resolveMonaco();
-		const editor = editorRef.value;
-		if (!monaco || !editor) return;
-		const model = editor.getModel();
-		if (!model) return;
+		if (!view) return;
 
 		if (offset === null) {
-			monaco.editor.setModelMarkers(model, "gram-parser", []);
+			currentDiagnostics = [];
+			forceLinting(view);
 			return;
 		}
 
-		const length = model.getValueLength();
+		const length = view.state.doc.length;
 		const clamped = Math.max(0, Math.min(offset, length));
-		let startOffset = clamped;
-		let endOffset = Math.min(clamped + 1, length);
-		if (endOffset === startOffset) {
+		let from = clamped;
+		let to = Math.min(clamped + 1, length);
+		if (to === from) {
 			// Error is at end-of-file (e.g. "unexpected end of input"): a
 			// zero-width range renders no squiggly, so underline the
 			// preceding character instead.
-			startOffset = Math.max(0, clamped - 1);
-			endOffset = clamped;
+			from = Math.max(0, clamped - 1);
+			to = clamped;
 		}
 
-		const startPos = model.getPositionAt(startOffset);
-		const endPos = model.getPositionAt(endOffset);
-
-		monaco.editor.setModelMarkers(model, "gram-parser", [
-			{
-				severity: monaco.MarkerSeverity.Error,
-				message,
-				startLineNumber: startPos.lineNumber,
-				startColumn: startPos.column,
-				endLineNumber: endPos.lineNumber,
-				endColumn: endPos.column,
-			},
-		]);
+		currentDiagnostics = [{ from, to, severity: "error", message }];
+		forceLinting(view);
 	},
 });
 </script>
@@ -138,20 +177,7 @@ defineExpose({
     <div class="editor-header">
       <span class="editor-title">Input (.gram)</span>
     </div>
-    <div class="editor-container">
-      <ClientOnly>
-        <VueMonacoEditor
-          v-model:value="localCode"
-          :theme="(shikiLoaded || isSetup) ? (isDark ? 'github-dark' : 'github-light') : (isDark ? 'vs-dark' : 'vs')"
-          language="gram"
-          :options="MONACO_OPTIONS"
-          @mount="handleMount"
-        />
-        <template #fallback>
-          <div class="loading-editor">Loading editor...</div>
-        </template>
-      </ClientOnly>
-    </div>
+    <div class="editor-container" ref="editorContainer"></div>
   </div>
 </template>
 
@@ -160,14 +186,17 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--sl-color-bg);
   overflow: hidden;
 }
 
 .editor-header {
-  padding: 8px 12px;
-  background-color: var(--vp-c-bg-mute);
-  border-bottom: 1px solid var(--vp-c-border);
+  padding-inline:12px;
+  background-color: var(--sl-color-gray-7);
+  border-bottom: 1px solid var(--sl-color-border);
+  height: 42px;
+  display: flex;
+  align-items: center;
 }
 
 .editor-title {
@@ -175,21 +204,31 @@ defineExpose({
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .editor-container {
   flex: 1;
   position: relative;
   min-height: 0;
+  overflow: hidden;
 }
 
-.loading-editor {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.editor-container :deep(.cm-editor) {
   height: 100%;
-  color: var(--vp-c-text-3);
-  font-size: 14px;
+}
+
+.editor-container :deep(.cm-activeLine),
+.editor-container :deep(.cm-activeLineGutter) {
+  background-color: var(--gram-active-line-bg, rgba(0, 0, 0, 0.04));
+}
+</style>
+
+<style>
+:root {
+  --gram-active-line-bg: rgba(0, 0, 0, 0.04);
+}
+:root[data-theme='dark'] {
+  --gram-active-line-bg: rgba(255, 255, 255, 0.03); /* Adjust opacity as needed */
 }
 </style>

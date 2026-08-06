@@ -1,0 +1,110 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import {
+	UMAMI_WEBSITE_ID,
+	UMAMI_SCRIPT_SRC,
+	FR_REDIRECT_SCRIPT,
+} from "../lib/head-scripts";
+
+export interface Props {
+	title: string;
+	description?: string;
+	currentLang?: string;
+}
+
+const {
+	title,
+	description = "Gram Language Documentation",
+	currentLang = "en",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={currentLang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title === "Gram" ? title : `${title} | Gram`}</title>
+    <link rel="canonical" href={Astro.url.href} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:image" content={new URL("/gram-social-wide.png", Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL("/gram-social-wide.png", Astro.site)} />
+
+    <!-- Umami Analytics -->
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src={UMAMI_SCRIPT_SRC}
+          data-website-id={UMAMI_WEBSITE_ID}
+        />
+      )
+    }
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script is:inline set:html={FR_REDIRECT_SCRIPT} />
+    <script is:inline>
+      /* Initialize theme to avoid FOUC and restore user preference */
+      (() => {
+        const theme =
+          typeof localStorage !== "undefined"
+            ? localStorage.getItem("starlight-theme")
+            : null;
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        } else {
+          document.documentElement.dataset.theme = window.matchMedia(
+            "(prefers-color-scheme: light)",
+          ).matches
+            ? "light"
+            : "dark";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <Header currentLang={currentLang} />
+
+    <main class="app-main">
+      <slot />
+    </main>
+
+    <SiteFooter currentLang={currentLang} />
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body {
+    background-color: var(--sl-color-bg);
+    color: var(--sl-color-text);
+  }
+
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+  }
+</style>

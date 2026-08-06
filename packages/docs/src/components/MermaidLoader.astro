@@ -1,0 +1,157 @@
+---
+---
+
+<script>
+	function renderDiagrams() {
+		const nodes = document.querySelectorAll<HTMLElement>(
+			"pre.mermaid-diagram:not([data-rendered])",
+		);
+		if (nodes.length === 0) return;
+
+		import("mermaid").then(({ default: mermaid }) => {
+			const isDark = document.documentElement.dataset.theme === "dark";
+			mermaid.initialize({
+				startOnLoad: false,
+				theme: isDark ? "dark" : "default",
+			});
+
+			nodes.forEach(async (node, i) => {
+				node.dataset.rendered = "true";
+				const source = node.textContent ?? "";
+				try {
+					const { svg } = await mermaid.render(`mermaid-${Date.now()}-${i}`, source);
+					
+					const wrapper = document.createElement('div');
+					wrapper.className = 'mermaid-wrapper';
+					wrapper.innerHTML = `
+						<button class="mermaid-fullscreen-btn" aria-label="Toggle Fullscreen" title="Toggle Fullscreen">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+						</button>
+						<div class="mermaid-diagram">${svg}</div>
+					`;
+
+					const placeholder = document.createElement('div');
+
+					wrapper.querySelector('.mermaid-fullscreen-btn')?.addEventListener('click', () => {
+						wrapper.classList.toggle('is-fullscreen');
+						const btn = wrapper.querySelector('.mermaid-fullscreen-btn path');
+						if (wrapper.classList.contains('is-fullscreen')) {
+							// Move to body to bypass stacking context issues
+							wrapper.parentNode?.insertBefore(placeholder, wrapper);
+							document.body.appendChild(wrapper);
+
+							document.body.style.overflow = 'hidden';
+							btn?.setAttribute('d', 'M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3');
+						} else {
+							// Put it back
+							placeholder.parentNode?.insertBefore(wrapper, placeholder);
+							
+							document.body.style.overflow = '';
+							btn?.setAttribute('d', 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3');
+						}
+					});
+
+					node.replaceWith(wrapper);
+				} catch (err) {
+					console.error("Mermaid render failed", err);
+				}
+			});
+		});
+	}
+
+	renderDiagrams();
+	document.addEventListener("astro:page-load", renderDiagrams);
+</script>
+
+<style is:global>
+	pre.mermaid-diagram {
+		visibility: hidden;
+		height: 0;
+		overflow: hidden;
+	}
+
+	.mermaid-wrapper {
+		position: relative;
+		margin: 1.5rem 0;
+		border: 1px solid var(--sl-color-hairline-shade, var(--sl-color-hairline));
+		border-radius: 0.5rem;
+		background: var(--sl-color-bg-nav);
+	}
+
+	.mermaid-fullscreen-btn {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		background: var(--sl-color-bg);
+		border: 1px solid var(--sl-color-hairline);
+		border-radius: 0.25rem;
+		color: var(--sl-color-text);
+		padding: 0.35rem;
+		cursor: pointer;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.2s, background-color 0.2s;
+	}
+	
+	.mermaid-wrapper:hover .mermaid-fullscreen-btn {
+		opacity: 1;
+	}
+	
+	.mermaid-fullscreen-btn:hover {
+		background: var(--sl-color-bg-inline-code);
+	}
+
+	div.mermaid-diagram {
+		display: flex;
+		justify-content: center;
+		background: transparent;
+		overflow-x: auto;
+		padding: 1.5rem;
+	}
+	
+	div.mermaid-diagram svg {
+		max-width: none !important;
+	}
+
+	/* Fullscreen styles */
+	.mermaid-wrapper.is-fullscreen {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 999999;
+		background: var(--sl-color-bg);
+		margin: 0;
+		border: none;
+		border-radius: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.mermaid-wrapper.is-fullscreen .mermaid-fullscreen-btn {
+		opacity: 1;
+		top: 1rem;
+		right: 1rem;
+		padding: 0.5rem;
+		background: var(--sl-color-bg-nav);
+	}
+
+	.mermaid-wrapper.is-fullscreen .mermaid-diagram {
+		flex: 1;
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		overflow: auto;
+		padding: 2rem;
+	}
+	
+	.mermaid-wrapper.is-fullscreen .mermaid-diagram svg {
+		min-width: 80%;
+		height: auto;
+	}
+</style>

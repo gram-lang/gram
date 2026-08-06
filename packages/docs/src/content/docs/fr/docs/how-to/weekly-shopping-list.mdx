@@ -1,0 +1,54 @@
+---
+title: "Générer une liste de courses consolidée"
+description: "Générez une liste de courses unique à partir d'un lot de recettes .gram via la commande CLI gram shop."
+---
+
+Si vous utilisez Gram pour du *meal prep* ou du *batch cooking*, vous avez sans doute plusieurs fichiers `.gram` éparpillés dans un dossier. 
+
+L'agrégation d'une liste de courses consolidée depuis de multiples recettes est l'une des fonctionnalités les plus puissantes de Gram. Le compilateur `@gram-lang/kitchen` s'occupe de regrouper intelligemment les ingrédients, fusionnant les quantités dès que possible.
+
+## La commande `gram shop`
+
+Dégainez la commande CLI `gram shop` et passez-lui un chemin générique (un *glob pattern*) ciblant vos recettes.
+
+```bash
+# Cibler un dossier spécifique
+gram shop "menus/semaine-1/*.gram"
+```
+
+import { Steps } from '@astrojs/starlight/components';
+
+### Sous le capot de l'agrégation
+
+<Steps>
+1. **Correspondance des ID** : Le compilateur regroupe tous les ingrédients qui partagent le même ID de base (ex : toutes les occurrences de `@beurre`).
+2. **Résolution des alias** : Si votre base de données déclare `beurre doux` comme alias de `beurre`, Gram fusionnera de manière transparente `@beurre doux{50 g}` et `@beurre{50 g}` en une seule ligne de `100 g`, regroupée en interne sous l'identifiant canonique `beurre`. Le nom *affiché* n'est pour autant pas écrasé par `beurre` : il reprend la formulation de la première recette traitée (et ne pioche le nom propre de la base de données que si la recette utilisait déjà le terme canonique). Voir [Agrégation de la Liste de Courses](/fr/docs/explanation/shopping-list-aggregation) pour l'explication complète.
+3. **Normalisation des unités** : Si une recette exige `@lait{200 ml}` et qu'une autre réclame `@lait{1 tasse}`, l'Analyseur s'appuie sur la base de données pour les normaliser (généralement en grammes, ou toute autre unité d'affichage configurée).
+4. **Catégorisation** : La liste de courses finale est regroupée par rayons (ex : *Produits laitiers*, *Fruits & légumes*, *Épicerie*) en se basant sur les données de `ingredients.yaml`, ce qui facilite grandement la navigation au supermarché.
+</Steps>
+
+## Mise à l'échelle par lot (*Batch scaling*)
+
+Vous pouvez *scaler* tout votre plan de repas en une seule commande. Si vos recettes sont calibrées pour 2 portions mais que vous recevez 4 invités cette semaine, passez simplement un multiplicateur global :
+
+```bash
+gram shop "menus/semaine-1/*.gram" --scale 2
+```
+
+:::note
+Lorsqu'on *scale* plusieurs fichiers d'un coup, on doit impérativement utiliser un multiplicateur numérique (`--scale 2`). Impossible d'utiliser une mise à l'échelle par référence (`--scale farine=500g`), car le compilateur ne saurait pas sur la farine de *quelle* recette s'aligner.
+:::
+
+## Formats de Sortie
+
+Par défaut, `gram shop` recrache une liste superbement formatée en ASCII, directement dans votre terminal.
+
+Cependant, vous pouvez l'exporter dans différents formats pour la partager avec votre famille ou l'intégrer à d'autres outils :
+
+```bash
+# Exporter en Markdown
+gram shop "menus/*.gram" --format md --output liste-de-courses.md
+
+# Exporter en JSON
+gram shop "menus/*.gram" --format json --output liste-de-courses.json
+```

@@ -1,0 +1,172 @@
+---
+title: "Créer une interface (UI) personnalisée à partir du JSON"
+description: "Consommez le JSON compilé par Gram directement dans React, Vue ou Svelte pour concevoir votre propre interface."
+---
+
+Si vous construisez une application web moderne (avec React, Vue, Svelte ou Next.js, par exemple), vous avez tout intérêt à consommer directement le **JSON** compilé par Gram et à le *mapper* sur vos propres composants d'interface utilisateur (UI).
+
+Bien que le *parser* recrache d'abord un Arbre Syntaxique Abstrait (AST) brut, les *packages* `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un JSON hyper-structuré, prêt à l'emploi. Ce guide vous montre comment l'extraire programmatiquement et comment il est architecturé, afin que vous puissiez l'exploiter librement.
+
+import { Steps } from '@astrojs/starlight/components';
+
+<Steps>
+1. ### Récupérer le JSON
+   
+   Gram est conçu pour s'exécuter n'importe où (Node.js, environnements Edge ou directement dans le navigateur). Pour récupérer le JSON intégralement enrichi d'une recette, vous devez combiner ses trois *packages* fondamentaux :
+   
+   ```typescript
+   import { getAST } from '@gram-lang/parser';
+   import { compile } from '@gram-lang/kitchen';
+   import { analyze } from '@gram-lang/analyzer';
+   
+   function getRecipeData(sourceCode: string) {
+     // 1. Parser le texte en arbre syntaxique
+     const ast = getAST(sourceCode);
+     
+     // 2. Compiler en sections structurées
+     const compiled = compile(ast);
+   
+     // 3. Enrichir avec les calculs culinaires (rendements, % du boulanger, mise à l'échelle)
+     const analyzed = analyze(compiled, myDatabase);
+   
+     return analyzed.result;
+   }
+   ```
+   
+   :::tip[Raccourci Node uniquement]
+   Si vous tournez exclusivement côté serveur sous Node.js (via un CLI ou un backend Next.js), le *package* `@gram-lang/cli` exporte un utilitaire `runPipeline(filePath, options?)`. Il orchestre les trois étapes ci-dessus et se charge même de la lecture du fichier à votre place :
+   
+   ```typescript
+   import { runPipeline, GramCLIError } from '@gram-lang/cli';
+   
+   try {
+     const { compiled, analyzed } = await runPipeline('recette.gram', { db: myDatabase });
+     return analyzed ? analyzed.result : compiled;
+   } catch (err) {
+     if (err instanceof GramCLIError) {
+       console.error(err.message); // ex : "File not found: recette.gram"
+     }
+     throw err;
+   }
+   ```
+   
+   Si vous omettez `db`, l'étape d'analyse est totalement ignorée (`analyzed` vaudra `null`). Jetez un œil à la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-langcli) pour découvrir la liste exhaustive des options (facteur d'échelle, % du boulanger, etc.).
+   :::
+   
+   :::note
+   Voir la [Référence API](/fr/docs/reference/api/) pour la signature complète de `getAST`, `compile`, et `analyze`, ainsi que tout ce que le pipeline expose (mise à l'échelle, diff, avertissements, i18n).
+   :::
+
+2. ### Comprendre la Structure du JSON
+   
+   L'objet JSON retourné encapsule toute la recette de manière structurée. C'est votre matière première pour bâtir votre UI.
+   
+   Voici les champs les plus importants dans l'objet racine :
+   - `title` *(string)* : Le nom de la recette (issu du `# Titre`).
+   - `meta` *(object)* : Paires clé-valeur pour les métadonnées (ex : `author`, `yield`).
+   - `shopping_list` *(array)* : Une liste agrégée de tous les ingrédients de toutes les sections.
+   - `sections` *(array)* : Les instructions elles-mêmes, découpées par section de recette.
+   
+   #### À l'intérieur d'une Section
+   
+   Chaque `section` dans le tableau `sections` possède ses propres `ingredients`, `cookware` (matériel), et `steps` (étapes).
+   
+   ```json
+   {
+     "title": "Pâte",
+     "ingredients": [ ... ],
+     "cookware": [ ... ],
+     "steps": [
+       {
+         "type": "step",
+         "action": "Mélanger",
+         "content": [
+           "La ",
+           {
+             "id": "farine",
+             "_usageId": "1",
+             "qty": 500,
+             "unit": "g",
+             "normalizedMass": 500
+           },
+           " et l'",
+           {
+             "id": "eau",
+             "_usageId": "2",
+             "qty": 350,
+             "unit": "ml"
+           },
+           "."
+         ],
+         "timings": {
+           "start": 0,
+           "end": 2,
+           "activeDuration": 2
+         }
+       }
+     ]
+   }
+   ```
+
+3. ### Logique de Rendu
+   
+   Puisque le JSON de Gram est hautement prévisible, générer l'UI n'est souvent qu'une affaire de simples boucles ou de `.map()` dans votre *framework* front-end.
+   
+   #### Exemple : Rendu des Étapes en React
+   
+   Voici une implémentation théorique illustrant comment itérer sur le tableau `steps` avec React :
+   
+   ```tsx
+   function RecipeStep({ step }) {
+     // Si c'est un simple nœud de commentaire
+     if (step.type === 'comment') {
+       return <p className="text-gray-500 italic">{step.value}</p>;
+     }
+   
+     // Si c'est une étape d'instruction standard
+     if (step.type === 'step') {
+       return (
+         <li>
+           {step.action && <strong>[{step.action}] </strong>}
+           {step.content.map((token, i) => (
+             <StepToken key={i} token={token} />
+           ))}
+         </li>
+       );
+     }
+   }
+   
+   // Un composant polymorphe pour afficher les tokens en ligne
+   function StepToken({ token, cookwareRegistry }) {
+     // 1. Les chaînes de caractères (strings) sont du simple texte brut
+     if (typeof token === 'string') {
+       return <span>{token}</span>;
+     }
+   
+     // 2. Les Ingrédients et le Matériel sont des objets optimisés sans champ 'type', mais avec un 'id'.
+     // On déduit le type en vérifiant si l'ID existe dans notre registre de matériel.
+     if (!token.type && token.id) {
+       const isCookware = !!cookwareRegistry[token.id];
+       
+       if (isCookware) {
+         return <span className="text-blue-600 font-bold">{token.id}</span>;
+       } else {
+         return <span className="text-green-600 font-bold">{token.id} ({token.qty}{token.unit})</span>;
+       }
+     }
+   
+     // 3. Les autres tokens (minuteurs, températures) ont des champs 'type' explicites
+     switch (token.type) {
+       case 'timer':
+         return <span className="bg-yellow-100 px-1 rounded">{token.quantity?.value}{token.unit}</span>;
+       case 'temperature':
+         // l'unité est déjà normalisée en °C/°F — pas de ° supplémentaire à ajouter ici
+         return <span className="text-red-600">{token.quantity?.value}{token.unit}</span>;
+       default:
+         return null;
+     }
+   }
+   ```
+   
+   En mappant intelligemment la propriété `type` sur vos propres composants, vous gardez un **contrôle total** sur le design, l'interactivité et l'accessibilité de votre application !
+</Steps>

@@ -2,27 +2,42 @@
   "name": "@gram-lang/docs",
   "version": "1.0.0-beta.5",
   "private": true,
-  "scripts": {
-    "dev": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts && vitepress dev src",
-    "build": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts && vitepress build src && echo '/* empty */' > src/.vitepress/dist/vp-icons.css && node scripts/check-bundle-size.mjs",
-    "prebuild": "bun scripts/generate-api-fragments.ts && bun scripts/generate-llms-full.ts",
-    "preview": "vitepress preview src"
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   },
-  "devDependencies": {
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "bun scripts/generate-changelog.ts && bun scripts/generate-llms-full.ts",
+    "build": "astro build && node scripts/check-bundle-size.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.2.2",
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/starlight": "^0.41.6",
+    "@astrojs/vue": "^7.0.1",
+    "@codemirror/commands": "^6.10.4",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.7",
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
-    "gram-lang": "workspace:*",
+    "astro": "^7.1.6",
     "mermaid": "^11.16.0",
     "shiki": "^4.3.1",
-    "vitepress": "^1.6.4",
-    "vitepress-mermaid-viewer": "^0.5.0",
+    "starlight-theme-nova": "^0.12.2",
+    "unist-util-visit": "^5.1.0",
+    "vite": "^8.0.13",
     "vue": "^3.5.39"
   },
-  "dependencies": {
-    "@guolao/vue-monaco-editor": "^1.6.0",
-    "@shikijs/monaco": "^4.3.1"
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "starlight-links-validator": "^0.25.2"
   }
 }

@@ -1,0 +1,42 @@
+---
+title: "Analyse approfondie : Estimation Nutritionnelle"
+description: "Comment Gram estime la nutrition d'une recette à partir des ingrédients, avec un taux de couverture transparent."
+---
+
+Le *package* `@gram-lang/analyzer` est capable de calculer automatiquement le profil en macro et micronutriments de n'importe quelle recette.
+
+Néanmoins, les données nutritionnelles étant particulièrement sensibles (avec un impact direct sur les choix diététiques), Gram adopte une **approche stricte et mathématiquement conservatrice** pour ses estimations. Cette page détaille cette logique.
+
+## Le Flux de Calcul
+
+import { Steps } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. **Standardisation des masses** : Avant le moindre calcul nutritionnel, l'Analyseur doit convertir chaque ingrédient de la recette en une masse standard exprimée en grammes. (Voir [Standardisation des masses](/fr/docs/explanation/mass-and-yield)).
+2. **Recherche dans la Base de Données** : L'Analyseur interroge votre base de données `ingredients.yaml` pour le bloc `nutrition` de chaque ingrédient. Les valeurs de la base de données doivent toujours représenter les nutriments **pour 100 g** de l'ingrédient cru.
+3. **Mise à l'échelle proportionnelle** : L'Analyseur met à l'échelle (*scale*) les valeurs aux 100 g issues de la base de données pour correspondre à la masse réellement utilisée dans la recette.
+4. **Agrégation** : Les valeurs mises à l'échelle pour tous les ingrédients sont additionnées pour calculer la Nutrition Totale de la Recette.
+5. **Division par Portions** : Si le frontmatter de la recette définit `portions: 4`, la Nutrition Totale de la Recette est divisée par 4 pour fournir des données Par Portion.
+</Steps>
+
+## Rapport Transparent des Données Partielles
+
+La règle d'or du moteur nutritionnel de Gram : **ne jamais masquer l'estimation, mais ne jamais laisser l'utilisateur la prendre pour parole d'évangile.**
+
+Si vous préparez un repas contenant 10 ingrédients et que votre base de données n'en couvre que 9, afficher silencieusement la somme de ces 9 ingrédients pourrait laisser croire à un total exact, alors qu'il sous-estimerait la réalité calorique.
+
+Plutôt que de purement et simplement cacher le total, Gram l'affiche en y adossant les indicateurs nécessaires pour juger de sa fiabilité :
+- Le `total` (et `perPortion`, si `portions` est défini) est toujours calculé et renvoyé à partir de toutes les données disponibles — il n'est jamais masqué.
+- Un ratio de `coverage` (couverture) est toujours inclus (ex : `0.9` pour "90 % des ingrédients ont des données"), calculé comme la part des ingrédients ayant une masse qui possèdent un bloc `nutrition`.
+- Une liste `warnings` signale exactement quels ingrédients sont absents de la base de données, manquent de bloc `nutrition`, ou ont une masse non résolvable — ainsi la lacune est attribuable, et n'est pas juste une mise en garde floue.
+
+Le *renderer* HTML de référence reflète directement ce parti pris : il affiche systématiquement le panneau nutritionnel (dès lors qu'il y a des données ou un avertissement), flanqué d'un badge `Couverture : X %`. Le cuisinier accède ainsi instantanément à une valeur utile, tout en mesurant d'un coup d'œil la proportion réelle de la recette couverte par l'estimation (plutôt que de cacher totalement une estimation exacte à 90 %).
+
+## Gestion des Modificateurs
+
+Les modificateurs de syntaxe de Gram ont un impact sur les calculs nutritionnels de manières spécifiques :
+
+- **Ingrédients Optionnels (`?`)** : Les ingrédients marqués comme optionnels (ex : `@?crème chantilly`) sont **exclus** des totaux nutritionnels de base. L'Analyseur suppose le profil diététique le plus conservateur.
+- **Alternatives (`|`)** : Lorsqu'une recette propose des alternatives (ex : `@beurre{50 g} | @huile{40 g}`), l'Analyseur ne calcule la nutrition que pour la **première option (préférée)**. Il ne fait pas la moyenne entre elles.
+- **Ingrédients Composites (`<@`)** : La nutrition d'un composite est calculée strictement à partir de ses enfants. Chacun est recherché indépendamment dans la base de données via son propre identifiant (ex : `jus de citron` et `zeste de citron` sont deux entrées distinctes avec des macros spécifiques). Il n'y a pas de système de repli (*fallback*) vers les macros du parent : si un enfant n'a pas de bloc `nutrition`, il est traité comme n'importe quel ingrédient manquant, lève un avertissement `MISSING_MACROS` et ampute la `coverage`, plutôt que d'être grossièrement estimé depuis son parent.

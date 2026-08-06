@@ -1,0 +1,123 @@
+---
+title: "Structure du Document"
+description: "Référence de la structure d'un fichier .gram : frontmatter YAML, clés de métadonnées fonctionnelles et informatives, sections, étapes et commentaires."
+---
+
+import { CodeTabs } from 'starlight-theme-nova/components';
+
+Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
+
+## 1. Métadonnées (Frontmatter)
+
+Le *frontmatter* est un bloc de configuration **YAML** situé tout en haut du fichier et délimité par `---`.
+
+Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans ce bloc. Vous êtes libre d'y injecter des champs sur-mesure pour les besoins spécifiques de votre application. Cela dit, le compilateur Gram reconnaît nativement deux catégories de clés : les **Fonctionnelles** et les **Informatives**.
+
+### Clés Fonctionnelles
+Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
+
+*   `portions` : (Entier) Le nombre de portions de base. Utilisé comme référence pour l'[Estimation Nutritionnelle](/fr/docs/explanation/engine/analyzer).
+*   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen).
+
+### Clés Informatives
+Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
+
+*   `title` : Le nom de la recette.
+*   `description` : Un court résumé (utile pour les balises méta SEO).
+*   `tags` : Une liste de catégories ou mots-clés.
+*   `category` : La catégorie principale (ex : "Dessert", "Plat Principal").
+*   `author` : Nom ou liste d'auteurs.
+*   `source` : URL(s) vers la recette d'origine.
+*   `date`, `lastUpdated` : AAAA-MM-JJ.
+*   `makes` : Le résultat physique ou les dimensions de la recette (ex : "1 gâteau", "24 cookies", "moule de 20x20 cm").
+*   `notes` : Des notes générales sur la recette (ex : "Testé le 07/06/2026. Réduire le sucre la prochaine fois.").
+
+<CodeTabs>
+```gram title="recette.gram"
+---
+title: 'Brownies au Matcha'
+description: 'Un simple brownie au matcha de style japonais...'
+author: ["Auguste Kerflec"]
+tags: ['brownie', 'matcha']
+category: 'Dessert'
+source: ['https://example.com/matcha-brownie']
+makes: 'moule de 20x20 cm'
+
+# Champs Fonctionnels
+portions: 4
+densities:
+  - farine: 0.55
+---
+```
+</CodeTabs>
+
+## 2. Étapes
+
+Dans un fichier Gram, chaque paragraphe représente une seule et unique étape de préparation. Les étapes sont séparées par une ou plusieurs lignes vides.
+
+```gram
+Une étape,
+la même étape.
+
+Une étape différente.
+```
+
+### Verbes d'Action
+Les étapes peuvent optionnellement démarrer par une **Action** entre crochets `[]`. Ce marqueur met en exergue la technique principale employée dans l'étape, facilitant ainsi son repérage visuel (ou son *parsing* programmatique).
+
+```gram
+[Mélanger] La @farine et l'@eau.
+
+[Cuire] Dans le #four pendant ~{30 min}.
+```
+
+## 3. Sections
+
+Les recettes un peu touffues comportent souvent plusieurs sous-préparations (ex : pâte, garniture, glaçage). Vous pouvez regrouper ces étapes au sein de blocs `## Section` en utilisant de simples titres Markdown (ex : `## Pâte`).
+
+```gram
+## Pâte
+
+Mélanger la @farine{200 g} et l'@eau{100 ml} jusqu'à obtenir un mélange lisse.
+
+## Garniture
+
+Combiner le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le goût.
+```
+
+### Rétroplanning (Ordonnancement)
+Il est possible d'assigner un délai de rétroplanning à une `## Section` en glissant un `~minuteur` n'importe où dans son titre.
+
+```gram
+## Pâte Feuilletée ~{-2d}
+```
+Cette annotation indique au compilateur que la section "Pâte Feuilletée" doit être anticipée **2 jours à l'avance**.
+Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) — un texte libre (ex : `~{la veille}`) n'est pas valide ici et est signalé par le compilateur.
+
+*Voir [Temps & Planification](/fr/docs/reference/syntax/times#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
+
+### Sorties de Section (Déclarations)
+Si une `## Section` génère une sous-préparation destinée à être réutilisée plus tard, vous pouvez la déclarer en ajoutant `->&` à la toute fin du titre.
+
+```gram
+## Pâte Feuilletée ->&pâte
+```
+*Voir les [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour plus de détails.*
+
+## 4. Commentaires
+
+Les commentaires vous permettent d'expliciter vos instructions sans pour autant impacter le rendu compilé.
+
+**Commentaires en ligne (`//`)** :
+```gram
+Écraser les @pommes de terre{2 kg} jusqu'à obtenir une purée lisse // sinon, vous pouvez les faire bouillir avant.
+```
+
+**Commentaires en bloc (`/* ... */`)** :
+```gram
+Ajouter doucement le @lait{4 tasses} /* TODO changer les unités en litres */, et continuer à mélanger.
+```
+
+:::note[Commentaires vs Notes YAML]
+Les commentaires sont préservés lors de la compilation et sont affichés à côté des instructions (généralement en gris italique). Ils sont parfaits pour de petites astuces spécifiques à une étape. Cependant, si vous avez des observations globales ou des retours généraux sur la recette (ex : "Réduire le sucre la prochaine fois", "Meilleur servi froid"), il est recommandé de les placer dans le Frontmatter YAML sous la clé `notes` pour qu'ils soient affichés de manière bien visible en haut de la page.
+:::

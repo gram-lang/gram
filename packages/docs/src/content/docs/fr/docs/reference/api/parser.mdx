@@ -1,0 +1,159 @@
+---
+title: "@gram-lang/parser"
+description: "Référence de getAST, structure d'erreur GramParseError, types de nœuds AST et type guards pour compiler du texte .gram en AST."
+---
+
+import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import { astNodeTypesTable } from '../../../../../../data/api-reference';
+
+Transforme le code source `.gram` en un Arbre Syntaxique Abstrait (AST) constitué de simples objets JSON. C'est la seule étape du *pipeline* qui peut planter sur une entrée malformée : tous les packages en aval partent du principe que s'ils reçoivent un AST, c'est qu'il est structurellement valide.
+
+## `getAST`
+
+```typescript
+function getAST(input: string): RecipeAST
+```
+
+Parse une chaîne source `.gram` et retourne le nœud racine `RecipeAST`. *Throw* une `GramParseError` si la syntaxe est invalide.
+
+```typescript
+import { getAST } from '@gram-lang/parser';
+
+const ast = getAST(`
+---
+title: 'Crêpes'
+---
+
+## Pâte
+
+Mélanger @farine{200g} et @lait{200ml}.
+`);
+```
+
+## `GramParseError`
+
+```typescript
+class GramParseError extends Error {
+  readonly offset: number;
+  readonly expected: string;
+}
+```
+
+Levée (*throw*) par `getAST` en cas d'erreur de syntaxe.
+
+| Champ | Description |
+|---|---|
+| `message` | Le texte lisible d'ohm-js (extrait de la source inclus) — peut être affiché tel quel. |
+| `offset` | Décalage en caractères dans `input` où l'échec est survenu. |
+| `expected` | Description de ce que le parser attendait à cet endroit. |
+
+`offset` et `expected` constituent la charge utile structurée de l'erreur — particulièrement utile pour les intégrations d'éditeur (soulignement, fix rapides) qui n'ont pas besoin de re-parser le message d'ohm-js.
+
+## Types de nœuds AST
+
+Chaque nœud possède un discriminant `type: ASTNodeType` et un `loc: { start, end }` optionnel (décalages de caractères dans le code source, présents sur la majorité des nœuds — voir les interfaces ci-dessous).
+
+<GeneratedTable table={astNodeTypesTable("fr")} />
+
+## Interfaces clés
+
+```typescript
+interface RecipeAST {
+  type: ASTNodeType.Recipe;
+  meta: Meta;              // Frontmatter parsé (title, date, tags, densities, ...)
+  children: (SectionAST | StepAST | CommentAST)[]; // Sections, ou étapes/commentaires de premier niveau
+}
+
+interface SectionAST {
+  type: ASTNodeType.Section;
+  title: string | null;
+  retroPlanning?: RetroPlanningAST | null;
+  intermediateDecl?: IntermediateDecl | null;
+  children: (StepAST | CommentAST)[];
+  loc?: Location;
+}
+
+interface RetroPlanningAST {
+  raw: string;             // ex : "-2h", tel qu'écrit
+  sign: 1 | -1;
+  value: number | null;    // null si aucun nombre n'a pu être extrait (ex : texte libre)
+  unit: string | null;     // null si aucune unité trouvée ; sinon le token brut tel
+                           // qu'écrit (kitchen le résout/valide ensuite contre d/h/min)
+}
+```
+
+Pour `## Pâte Feuilletée ~{-2h}`, `retroPlanning` vaut `{ raw: "-2h", sign: -1, value: 2, unit: "h" }`. Du texte libre comme `~{la veille}` passe le parsing avec succès (le *parser* ne jette jamais d'erreur pour ce cas — voir [Temps & Planification](/fr/docs/reference/syntax/times/#rétroplanning-de-section) pour comprendre pourquoi), mais produit `{ raw: "la veille", sign: 1, value: null, unit: null }` ; c'est `@gram-lang/kitchen` qui flaggera ce cas en erreur (`MISSING_UNIT`) au moment de la compilation.
+
+```typescript
+interface StepAST {
+  type: ASTNodeType.Step;
+  action?: string | null;              // ex : "Mélanger" issu de "[Mélanger] ..."
+  children: (TextAST | IngredientAST | CookwareAST | TimerAST | TemperatureAST
+    | ReferenceAST | AlternativeAST | IntermediateDecl | CommentAST)[];
+  loc?: Location;
+}
+
+type Modifier = "?" | "-" | "*" | "&" | "="; // optionnel, masqué, % boulanger, référence, fixe
+
+interface IngredientAST {
+  type: ASTNodeType.Ingredient;
+  name: string;
+  modifiers: Modifier[];               // Modificateurs sous forme de sigles présents sur l'ingrédient
+  quantity: QuantityAST | RelativeQuantityAST | TextQuantityAST | null;
+  alias?: string | null;
+  preparation?: string | null;
+  composite?: CompositeAST | null;     // défini pour les ingrédients composites "<@parent"
+  loc?: Location;
+}
+
+interface QuantityAST {
+  type: ASTNodeType.Quantity;
+  value?: QuantityValueAST;            // Union discriminée : SingleQuantityAST | FractionQuantityAST | RangeQuantityAST
+  unit?: string | null;
+  fixed: boolean;                      // true pour le modificateur "@=" (jamais mis à l'échelle)
+}
+
+interface RelativeQuantityAST {
+  type: ASTNodeType.RelativeQuantity;
+  percent: number;
+  target: string;
+  referenceType: "variable" | "ingredient"; // "&nom" vs "@nom"
+}
+```
+
+Les autres interfaces de nœuds (`CookwareAST`, `ReferenceAST`, `TimerAST`, `TemperatureAST`, `CommentAST`, `AlternativeAST`, `IntermediateDecl`, `TextQuantityAST`) suivent le même schéma — voir `packages/parser/src/types.ts` pour la liste exhaustive.
+
+## Type guards
+
+13 fonctions de garde (*type guards*) sont exportées pour *narrow* de manière sécurisée des entrées `ASTNode | StepAST | ... | null | undefined`, et vous éviter les vérifications manuelles du champ `.type` :
+
+`isIngredient`, `isCookware`, `isTimer`, `isTemperature`, `isReference`, `isIntermediateDecl`, `isAlternative`, `isComment`, `isStep`, `isSection`, `isQuantity`, `isTextQuantity`, `isRelativeQuantity`.
+
+```typescript
+import { getAST, isIngredient, isTimer } from '@gram-lang/parser';
+
+const ast = getAST(source);
+
+for (const section of ast.children) {
+  for (const step of section.children) {
+    if (step.type !== 'Step') continue;
+    for (const node of step.children) {
+      if (isIngredient(node)) {
+        console.log('Ingrédient :', node.name);
+      } else if (isTimer(node)) {
+        console.log('Minuteur :', node.name, node.quantity);
+      }
+    }
+  }
+}
+```
+
+## Coloration syntaxique : `@gram-lang/parser/textmate`
+
+Un export de sous-chemin fournit la grammaire TextMate utilisée par l'extension VS Code et par les blocs de code Shiki de cette documentation :
+
+```typescript
+import gramGrammar from '@gram-lang/parser/textmate' with { type: 'json' };
+```
+
+Il résout vers un fichier `.tmLanguage.json` — passez-le directement à n'importe quel colorateur syntaxique compatible avec les grammaires TextMate (Shiki, Monaco, VS Code).

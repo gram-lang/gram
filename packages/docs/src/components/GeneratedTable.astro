@@ -1,0 +1,34 @@
+---
+import type { Table } from "../data/api-reference";
+
+interface Props {
+	table: Table;
+}
+
+const { table } = Astro.props;
+
+function renderCell(raw: string): string {
+	const escaped = raw
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
+	return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+---
+
+<table>
+	<thead>
+		<tr>
+			{table.headers.map((h) => <th>{h}</th>)}
+		</tr>
+	</thead>
+	<tbody>
+		{
+			table.rows.map((row) => (
+				<tr>
+					{row.map((cell) => <td set:html={renderCell(cell)} />)}
+				</tr>
+			))
+		}
+	</tbody>
+</table>

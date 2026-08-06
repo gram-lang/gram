@@ -30,6 +30,9 @@ jobs:
           bun run build --filter='!@gram-lang/docs'
           git diff --exit-code packages/parser/src/grammar-content.ts
 
+      - name: Build docs
+        run: bun run build --filter='@gram-lang/docs'
+
       - name: Lint
         run: bun run lint
 
@@ -43,7 +46,7 @@ jobs:
         run: bun test
 
       - name: Audit dependencies
-        run: bun audit || true
+        run: bun audit --audit-level=high
 
       - name: Pack CLI dependencies
         run: |

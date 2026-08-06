@@ -1,0 +1,49 @@
+---
+import Select from "@astrojs/starlight/components/Select.astro";
+
+const { currentLang = "en" } = Astro.props;
+
+// For non-Starlight pages, we manually toggle between / and /fr/ (or /play and /fr/play)
+const currentPath = Astro.url.pathname;
+
+let enUrl = currentPath;
+let frUrl = currentPath;
+
+if (currentLang === "fr") {
+	enUrl = currentPath.replace(/^\/fr/, "") || "/";
+	frUrl = currentPath;
+} else {
+	enUrl = currentPath;
+	frUrl = "/fr" + (currentPath === "/" ? "" : currentPath);
+}
+
+const options = [
+	{ value: enUrl, selected: currentLang === "en", label: "English (en-US)" },
+	{ value: frUrl, selected: currentLang === "fr", label: "Français (fr-FR)" },
+];
+---
+
+<starlight-lang-select>
+	<Select icon="translate" label="Language" options={options} />
+</starlight-lang-select>
+
+<script>
+	class StarlightLanguageSelect extends HTMLElement {
+		constructor() {
+			super();
+			const select = this.querySelector("select");
+			if (select) {
+				select.addEventListener("change", (e) => {
+					if (e.currentTarget instanceof HTMLSelectElement) {
+						window.location.pathname = e.currentTarget.value;
+					}
+				});
+			}
+		}
+	}
+	// Prevent duplicate definition if this runs alongside Starlight
+	if (!customElements.get("starlight-lang-select")) {
+		customElements.define("starlight-lang-select", StarlightLanguageSelect);
+	}
+</script>
+

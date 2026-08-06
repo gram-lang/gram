@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
-import { useData } from "vitepress";
-import { getDictionary } from "@gram-lang/i18n";
-import { setupMonaco } from "./monacoSetup";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
+import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
+
+import { useI18n } from "./useI18n";
+import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
@@ -19,12 +17,10 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "scale-update", factor: number) => void>();
 
-// biome-ignore lint/correctness/noUnusedVariables: isDark is used in the <template> block below, which Biome's Vue support doesn't see
-const { isDark, lang } = useData();
+const isDark = inject<Ref<boolean>>("isDark")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
-const t = computed(() => getDictionary(lang.value));
+const { lang, t } = useI18n();
 
-// biome-ignore lint/correctness/noUnusedVariables: currentLang is used in the <template> block below, which Biome's Vue support doesn't see.
 const currentLang = computed(() => {
 	if (props.viewMode === "ast") return "scheme";
 	if (props.viewMode === "markdown") return "markdown";
@@ -43,25 +39,20 @@ function copyOutput() {
 	});
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: handleMount is used in the <template> block below, which Biome's Vue support doesn't see.
-const handleMount = async (_editor: any, monaco: any) => {
-	await setupMonaco(monaco);
-};
+const highlightedHtml = ref("");
 
-// biome-ignore lint/correctness/noUnusedVariables: MONACO_OPTIONS is used in the <template> block below, which Biome's Vue support doesn't see.
-const MONACO_OPTIONS = {
-	automaticLayout: true,
-	minimap: { enabled: false },
-	wordWrap: "on",
-	fontSize: 14,
-	fontFamily: 'var(--vp-font-family-mono), "Fira Code", monospace',
-	scrollBeyondLastLine: false,
-	lineNumbersMinChars: 3,
-	renderLineHighlight: "none",
-	padding: { top: 16 },
-	readOnly: true,
-	domReadOnly: true,
-};
+watch(
+	[() => props.content, currentLang, isDark],
+	async ([content, shikiLang, dark]) => {
+		if (!["json", "ast", "markdown"].includes(props.viewMode)) return;
+		const highlighter = await getHighlighter();
+		highlightedHtml.value = highlighter.codeToHtml(content, {
+			lang: shikiLang,
+			theme: dark ? SHIKI_THEMES.dark : SHIKI_THEMES.light,
+		});
+	},
+	{ immediate: true },
+);
 
 const previewContainer = ref<HTMLElement | null>(null);
 
@@ -168,28 +159,24 @@ function handlePreviewClick(e: MouseEvent) {
 
 <template>
   <div class="gram-output">
-    <div class="output-header" v-if="['json', 'ast', 'markdown'].includes(viewMode)">
-      <span class="output-title">{{ viewMode.toUpperCase() }}</span>
-      <button class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
+    <div class="output-header">
+      <slot name="view-selector">
+        <span class="output-title">{{ viewMode.replace('-', ' ') }}</span>
+      </slot>
+      <button v-if="['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
         <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--vp-c-green-1)"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
     </div>
     <div class="output-container">
-      <!-- Monaco Editor (JSON, AST, Markdown) -->
-      <ClientOnly v-if="['json', 'ast', 'markdown'].includes(viewMode)">
-        <VueMonacoEditor
-          :value="content"
-          :theme="isDark ? 'github-dark' : 'github-light'"
-          :language="currentLang"
-          :options="MONACO_OPTIONS"
-          @mount="handleMount"
-        />
-        <template #fallback>
-          <div class="loading-editor">{{ t.playground.output.loading }}</div>
-        </template>
-      </ClientOnly>
-      
+      <!-- Shiki-highlighted read-only output (JSON, AST, Markdown) -->
+      <!-- Shiki's codeToHtml() already emits its own <pre><code> wrapper -->
+      <div
+        v-if="['json', 'ast', 'markdown'].includes(viewMode)"
+        class="output-code"
+        v-html="highlightedHtml"
+      ></div>
+
       <!-- Interactive JSON Tree -->
       <div v-else-if="viewMode === 'json-tree'" class="output-tree">
         <JsonNode :data="jsonData" :is-last="true" :initial-expanded="true" />
@@ -218,17 +205,20 @@ function handlePreviewClick(e: MouseEvent) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--vp-c-bg-soft);
+  background-color: var(--sl-color-bg);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .output-header {
+  padding-inline:12px;
+  background-color: var(--sl-color-gray-7);
+  border-bottom: 1px solid var(--sl-color-border);
+  height: 42px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background-color: var(--vp-c-bg-mute);
-  border-bottom: 1px solid var(--vp-c-border);
+  justify-content: space-between;
 }
 
 .output-title {
@@ -236,43 +226,71 @@ function handlePreviewClick(e: MouseEvent) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
 }
 
 .copy-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
-  color: var(--vp-c-text-2);
-  transition: background-color 0.2s, color 0.2s;
+  width: 28px;
+  height: 28px;
+  color: var(--sl-color-gray-3);
   cursor: pointer;
-  border: none;
+  border: 1px solid var(--sl-color-border);
   background: transparent;
 }
 
 .copy-btn:hover {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
+	border-color: var(--sl-color-gray-3);
+  color: var(--sl-color-white);
 }
 
 .output-container {
   flex: 1;
   overflow: auto;
   position: relative;
-  background-color: var(--vp-code-bg);
+  min-width: 0;
+  max-width: 100%;
 }
 
-.output-tree, .output-preview{
-  padding: 16px;
-  background-color: var(--vp-c-bg);
+.output-code {
   min-height: 100%;
+  font-size: 14px;
+}
+
+.output-code :deep(pre) {
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  background: transparent !important;
+  line-height: 1.6;
+  font-family: var(--sl-font-mono), "Fira Code", monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.output-tree {
+  padding: 16px;
+  background-color: var(--sl-color-bg);
+  min-height: 100%;
+  display: inline-block;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.output-preview{
+  padding: 16px;
+  background-color: var(--sl-color-bg);
+  min-height: 100%;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .output-gantt{
-	  background-color: var(--vp-c-bg);
+	  background-color: var(--sl-color-bg);
   min-height: 100%;
 }
 
@@ -281,7 +299,7 @@ function handlePreviewClick(e: MouseEvent) {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--vp-c-text-3);
+  color: var(--sl-color-gray-4);
   font-size: 14px;
 }
 

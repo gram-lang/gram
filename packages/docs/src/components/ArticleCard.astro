@@ -1,0 +1,74 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+	post: CollectionEntry<"blog">;
+	postHref: string;
+	locale: "en" | "fr";
+}
+
+const { post, postHref, locale } = Astro.props;
+
+function formatCardDate(date: Date, locale: "en" | "fr") {
+	const month = date
+		.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", { month: "short" })
+		.replace(/\.$/, "");
+	return `${month.charAt(0).toUpperCase()}${month.slice(1)}. ${date.getDate()}`;
+}
+---
+
+<article class="article-card">
+  <a href={postHref} class="article-link">
+    <time datetime={post.data.date.toISOString()} class="article-date">
+      {formatCardDate(post.data.date, locale)}
+    </time>
+    <h2 class="article-title">{post.data.title}</h2>
+  </a>
+</article>
+
+<style>
+  .article-link {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 3rem;
+    align-items: baseline;
+    padding-block: 1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .article-date {
+    font-size: 1.35rem;
+    color: var(--sl-color-gray-3);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .article-title {
+    font-size: 1.35rem;
+    margin: 0;
+    color: var(--sl-color-white);
+    font-weight: 600;
+  }
+
+  .article-title:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .article-link {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .article-date {
+      font-size: 0.875rem;
+      text-align: left;
+    }
+
+    .article-title {
+      font-size: 1.15rem;
+    }
+  }
+</style>

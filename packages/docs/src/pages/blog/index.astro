@@ -1,0 +1,43 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import BlogListLayout from "../../components/BlogListLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+
+const allPosts = await getCollection("blog");
+const englishPosts = allPosts.filter((post) => post.data.locale === "en");
+
+// Sort by date descending, then by id descending (for releases on the same day)
+englishPosts.sort((a, b) => {
+	const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+	if (dateDiff !== 0) return dateDiff;
+	return b.id.localeCompare(a.id);
+});
+
+const topics = [...new Set(englishPosts.map((post) => post.data.topic))];
+---
+
+<Layout title="Blog" description="Latest updates and articles about the Gram project." currentLang="en">
+  <BlogListLayout
+    title="Blog"
+    description="Latest updates, tutorials, and thoughts about the Gram project."
+    basePath="/blog"
+    topics={topics}
+    topicsLabel="Topics"
+  >
+    {englishPosts.length === 0 ? (
+      <p>No articles yet.</p>
+    ) : (
+      englishPosts.map(post => {
+        const slug = post.id.replace(/^en\//, '').replace(/\.md$/, '');
+        return (
+          <ArticleCard
+            post={post}
+            postHref={`/blog/${slug}`}
+            locale="en"
+          />
+        );
+      })
+    )}
+  </BlogListLayout>
+</Layout>

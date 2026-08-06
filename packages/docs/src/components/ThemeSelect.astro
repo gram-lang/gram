@@ -1,0 +1,98 @@
+---
+import Select from "@astrojs/starlight/components/Select.astro";
+---
+
+<gram-theme-select>
+	<Select
+		icon="laptop"
+		label="Select theme"
+		width="5.5em"
+		options={[
+			{ label: "Light", selected: false, value: "light" },
+			{ label: "Dark", selected: false, value: "dark" },
+			{ label: "Auto", selected: true, value: "auto" },
+		]}
+	/>
+</gram-theme-select>
+
+<script is:inline>
+	// Synchronously set the initial theme to avoid a flash on load
+	(() => {
+		const stored =
+			typeof localStorage !== "undefined"
+				? localStorage.getItem("starlight-theme")
+				: null;
+		const initial =
+			stored === "light" || stored === "dark" ? stored : "auto";
+		document.documentElement.dataset.theme =
+			initial === "auto"
+				? window.matchMedia("(prefers-color-scheme: light)").matches
+					? "light"
+					: "dark"
+				: initial;
+
+		// Update select elements synchronously to avoid FOUC
+		const selects = document.querySelectorAll("gram-theme-select select");
+		selects.forEach((select) => {
+			if (select instanceof HTMLSelectElement) {
+				select.value = initial;
+			}
+		});
+	})();
+</script>
+
+<script>
+	type Theme = "light" | "dark" | "auto";
+
+	const parseTheme = (value: unknown): Theme =>
+		value === "light" || value === "dark" ? value : "auto";
+
+	const getStoredTheme = (): Theme =>
+		parseTheme(
+			typeof localStorage !== "undefined"
+				? localStorage.getItem("starlight-theme")
+				: null,
+		);
+
+	const applyTheme = (theme: Theme) => {
+		document.documentElement.dataset.theme =
+			theme === "auto"
+				? window.matchMedia("(prefers-color-scheme: light)").matches
+					? "light"
+					: "dark"
+				: theme;
+	};
+
+	class GramThemeSelect extends HTMLElement {
+		constructor() {
+			super();
+			const select = this.querySelector("select");
+			if (select) {
+				select.value = getStoredTheme();
+				select.addEventListener("change", () => {
+					const theme = parseTheme(select.value);
+					localStorage.setItem(
+						"starlight-theme",
+						theme === "auto" ? "" : theme,
+					);
+					applyTheme(theme);
+				});
+			}
+		}
+	}
+
+	if (!customElements.get("gram-theme-select")) {
+		customElements.define("gram-theme-select", GramThemeSelect);
+	}
+
+	// Sync with other tabs/Starlight doc pages changing the theme
+	window.addEventListener("storage", (e) => {
+		if (e.key === "starlight-theme") {
+			const theme = getStoredTheme();
+			applyTheme(theme);
+			const select = document.querySelector("gram-theme-select select");
+			if (select instanceof HTMLSelectElement) select.value = theme;
+		}
+	});
+</script>
+

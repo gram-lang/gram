@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatDecimalToFraction } from "@gram-lang/renderer";
-import { useData } from "vitepress";
-import { getDictionary, UNIT_CONVERSIONS } from "@gram-lang/i18n";
+import { UNIT_CONVERSIONS } from "@gram-lang/i18n";
+import { useI18n } from "./useI18n";
 
-const { lang } = useData();
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
-const t = computed(() => getDictionary(lang.value));
+const { t } = useI18n();
 
 // biome-ignore lint/correctness/noUnusedVariables: knownUnits is used in the <template> block below, which Biome's Vue support doesn't see.
 const knownUnits = [
@@ -261,9 +260,7 @@ function submitScale() {
 
 <style scoped>
 .gram-options {
-  background-color: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
+  background-color: var(--sl-color-bg);
   padding: 16px;
   font-size: 14px;
   width: 340px;
@@ -282,12 +279,12 @@ function submitScale() {
 .options-header {
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--sl-color-border);
 }
 
 .options-title {
   font-weight: 600;
-  color: var(--vp-c-text-1);
+  color: var(--sl-color-text);
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.05em;
@@ -312,7 +309,7 @@ function submitScale() {
 .scale-subtitle {
   font-size: 11px;
   font-weight: 600;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -320,16 +317,14 @@ function submitScale() {
 .scale-factor-wrapper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 6px;
-  background-color: var(--vp-c-bg);
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
   padding-right: 8px;
   width: fit-content;
-  transition: border-color 0.2s, background-color 0.2s;
 }
 
 .scale-factor-wrapper:focus-within {
-  border-color: var(--vp-c-brand-1);
+  border-color: var(--sl-color-gray-3);
 }
 
 .scale-factor-input {
@@ -337,7 +332,7 @@ function submitScale() {
   padding: 4px 2px 4px 8px;
   border: none;
   background: transparent;
-  color: var(--vp-c-text-1);
+  color: var(--sl-color-text);
   font-size: 13px;
   outline: none;
   text-align: right;
@@ -353,22 +348,21 @@ function submitScale() {
 .scale-factor-unit {
   font-size: 12px;
   font-weight: 600;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   user-select: none;
 }
 
 .scale-select {
   width: 100%;
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-border);
-  background-color: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
+  color: var(--sl-color-text);
   font-size: 13px;
   outline: none;
 }
 .scale-select:focus {
-  border-color: var(--vp-c-brand-1);
+  border-color: var(--sl-color-gray-3);
 }
 
 .scale-inputs {
@@ -379,24 +373,22 @@ function submitScale() {
 
 .scale-input {
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-border);
-  background-color: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
+  color: var(--sl-color-text);
   font-size: 13px;
   outline: none;
 }
 .scale-input:focus {
-  border-color: var(--vp-c-brand-1);
+  border-color: var(--sl-color-gray-3);
 }
 .scale-input.qty { flex: 2; min-width: 0; }
 .scale-input.unit { flex: 1; min-width: 0; }
 
 .scale-apply-btn {
   padding: 6px 12px;
-  border-radius: 6px;
-  background-color: var(--vp-c-brand-1);
-  color: var(--vp-c-bg);
+  background-color: var(--sl-color-accent);
+  color: var(--sl-color-bg);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -421,20 +413,19 @@ function submitScale() {
 }
 
 .option-name {
-  color: var(--vp-c-text-1);
+  color: var(--sl-color-text);
   font-weight: 500;
   line-height: 1.2;
-  transition: color 0.2s;
 }
 
 .option-desc {
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   font-size: 12px;
   line-height: 1.4;
 }
 
 .option-item:hover .option-name {
-  color: var(--vp-c-brand-1);
+  color: var(--sl-color-accent);
 }
 
 .child-option {
@@ -449,7 +440,7 @@ function submitScale() {
   top: -16px;
   width: 2px;
   height: 24px;
-  background-color: var(--vp-c-divider);
+  background-color: var(--sl-color-border);
   border-bottom-left-radius: 4px;
 }
 
@@ -460,7 +451,7 @@ function submitScale() {
   top: 8px;
   width: 12px;
   height: 2px;
-  background-color: var(--vp-c-divider);
+  background-color: var(--sl-color-border);
 }
 
 .select-wrapper::after {
@@ -470,7 +461,7 @@ function submitScale() {
 .select-label {
   display: block;
   font-size: 12px;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   margin-bottom: 4px;
 }
 

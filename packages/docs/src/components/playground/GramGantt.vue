@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import { useData } from "vitepress";
+import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
+import { useI18n } from "./useI18n";
 import {
 	toGanttHTML,
 	attachGanttInteractivity,
 	type GanttInteractivityHandle,
 } from "@gram-lang/renderer";
 
+const { lang } = useI18n();
+
 const props = defineProps<{
 	jsonData: any;
 }>();
-
-const { lang } = useData();
 
 const container = ref<HTMLElement | null>(null);
 let handle: GanttInteractivityHandle | null = null;

@@ -1,0 +1,67 @@
+---
+import { GRAM_VERSION } from "../lib/gram-version";
+
+const { siteTitleHref, locale } = Astro.locals.starlightRoute;
+const changelogHref =
+	locale === "fr" ? "/fr/docs/changelog" : "/docs/changelog";
+---
+
+<div class="site-title sl-flex">
+	<a href="/" class="main-site-link">Gram</a>
+	<span class="separator">/</span>
+	<a href={siteTitleHref} class="docs-site-link">Documentation</a>
+	<a href={changelogHref} class="version-pill">v{GRAM_VERSION}</a>
+</div>
+
+<style>
+	.site-title {
+		gap: 0.5rem;
+		align-items: center;
+		font-size: var(--sl-text-h4);
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.site-title a {
+		text-decoration: none;
+		transition: opacity 0.2s;
+	}
+	.main-site-link {
+		color: var(--sl-color-white);
+	}
+	:root[data-theme='light'] .main-site-link {
+		color: var(--sl-color-text);
+	}
+	.docs-site-link {
+		color: var(--sl-color-accent-high);
+	}
+	:root[data-theme='light'] .docs-site-link {
+		color: var(--sl-color-accent);
+	}
+	.docs-site-link:hover, .main-site-link:hover {
+		opacity: 0.7;
+	}
+	.separator {
+		color: var(--sl-color-gray-4);
+		font-weight: 400;
+	}
+	.version-pill {
+		font-size: var(--sl-text-xs);
+		font-weight: 500;
+		color: var(--sl-color-gray-2);
+		background-color: var(--sl-color-gray-6);
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 999px;
+		padding: 0.1rem 0.55rem;
+		white-space: nowrap;
+	}
+	:root[data-theme='light'] .version-pill {
+		color: var(--sl-color-gray-3);
+		background-color: var(--sl-color-gray-6);
+		border-color: var(--sl-color-gray-5);
+	}
+	.version-pill:hover {
+		opacity: 0.7;
+		color: var(--sl-color-gray-2);
+	}
+</style>

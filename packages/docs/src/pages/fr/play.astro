@@ -1,0 +1,26 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GramPlayground from "../../components/playground/GramPlayground.vue";
+---
+
+<Layout
+  title="Playground Gram"
+  description="Écrivez des recettes Gram dans votre navigateur et visualisez en direct l'AST, le JSON compilé et le rendu final."
+  currentLang="fr"
+>
+  <div class="playground-wrapper">
+    <GramPlayground client:only="vue" lang="fr" />
+  </div>
+</Layout>
+
+<style>
+  .playground-wrapper {
+    max-width: calc(1400px + 3rem);
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 1.5rem;
+    height: 100%;
+  }
+</style>

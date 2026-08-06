@@ -1,0 +1,79 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../../../layouts/Layout.astro";
+import { getTopicSlug, getTopicInfo } from "../../../../data/blog-topics";
+import { resolveLocalizedPosts } from "../../../../lib/resolveLocalizedPosts";
+import BlogListLayout from "../../../../components/BlogListLayout.astro";
+import ArticleCard from "../../../../components/ArticleCard.astro";
+
+export async function getStaticPaths() {
+	const allPosts = await getCollection("blog");
+	const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
+
+	// Get all unique topics
+	const uniqueTopicsMap = new Map();
+	postsToDisplay.forEach((post) => {
+		const topic = post.data.topic;
+		const slug = getTopicSlug(topic);
+		if (!uniqueTopicsMap.has(slug)) {
+			uniqueTopicsMap.set(slug, topic);
+		}
+	});
+
+	const allTopicsList = Array.from(uniqueTopicsMap.values());
+
+	return Array.from(uniqueTopicsMap.entries()).map(([slug, originalTopic]) => {
+		const topicInfo = getTopicInfo(slug, originalTopic);
+
+		// Filter posts for this topic
+		const topicPosts = postsToDisplay.filter(
+			(post) => getTopicSlug(post.data.topic) === slug,
+		);
+
+		// Sort by date descending, then by id descending (for releases on the same day)
+		topicPosts.sort((a, b) => {
+			const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+			if (dateDiff !== 0) return dateDiff;
+			return b.id.localeCompare(a.id);
+		});
+
+		return {
+			params: { topic: slug },
+			props: {
+				topicInfo,
+				topicPosts,
+				allTopics: allTopicsList,
+			},
+		};
+	});
+}
+
+const { topicInfo, topicPosts, allTopics } = Astro.props;
+---
+
+<Layout title={`Sujet : ${topicInfo.name.fr}`} description={topicInfo.description.fr} currentLang="fr">
+  <BlogListLayout
+    title={topicInfo.name.fr}
+    description={topicInfo.description.fr}
+    backLink={{ href: "/fr/blog", label: "← Retour aux articles" }}
+    basePath="/fr/blog"
+    topics={allTopics}
+    activeTopicSlug={Astro.params.topic}
+    topicsLabel="Sujets"
+  >
+    {topicPosts.length === 0 ? (
+      <p>Aucun article pour le moment.</p>
+    ) : (
+      topicPosts.map(post => {
+        const slug = post.id.replace(/^(en|fr)\//, '').replace(/\.md$/, '');
+        return (
+          <ArticleCard
+            post={post}
+            postHref={`/fr/blog/${slug}`}
+            locale="fr"
+          />
+        );
+      })
+    )}
+  </BlogListLayout>
+</Layout>

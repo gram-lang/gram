@@ -1,68 +1,100 @@
 #!/usr/bin/env bun
-// Generates `src/public/llms-full.txt` — the Gram language spec concatenated into a
+// Generates `public/llms-full.txt` — the Gram language spec concatenated into a
 // single plain-text file for LLMs/agents to fetch without navigating the site, per
-// the llms.txt convention (https://llmstxt.org). Source pages are the single source
-// of truth (same files the docs site renders); VitePress `@include` directives are
-// resolved inline here so the flattened output never contains a dangling comment.
-//
-// Must run after scripts/generate-api-fragments.ts, since some pages `@include`
-// the fragments it produces (e.g. reference/api/warnings.md).
+// the llms.txt convention (https://llmstxt.org). Source pages (under
+// src/content/docs/docs/) are the single source of truth — the same files the docs
+// site renders. GeneratedTable component calls are resolved into real markdown
+// tables here using the same data module the site itself renders from, and
+// Starlight/MDX-only markup (frontmatter, imports, <Tabs>/<TabItem>) is stripped so
+// the output stays plain markdown.
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { join } from "node:path";
+import {
+	warningCodesTable,
+	astNodeTypesTable,
+	unitsTable,
+	timeUnitsTable,
+	unitConversionsTable,
+	categoriesTable,
+	type Table,
+} from "../src/data/api-reference";
 
 const SITE_ORIGIN = "https://gram-lang.org";
-const SRC_DIR = join(import.meta.dirname, "..", "src");
-const OUT_FILE = join(SRC_DIR, "public", "llms-full.txt");
+const CONTENT_DIR = join(import.meta.dirname, "..", "src", "content", "docs", "docs");
+const OUT_FILE = join(import.meta.dirname, "..", "public", "llms-full.txt");
 
-// [source markdown path relative to src/, site URL path] — the language spec only;
-// tutorials, how-to guides, tooling docs, and engine internals stay linked from
-// llms.txt instead of inlined here.
+// [source path relative to src/content/docs/docs/, site URL path] — the language
+// spec only; tutorials, how-to guides, tooling docs, and engine internals stay
+// linked from llms.txt instead of inlined here.
 const PAGES: [string, string][] = [
-	["explanation/philosophy.md", "/explanation/philosophy"],
-	[
-		"reference/syntax/document-structure.md",
-		"/reference/syntax/document-structure",
-	],
-	["reference/syntax/ingredients.md", "/reference/syntax/ingredients"],
-	["reference/syntax/cookware.md", "/reference/syntax/cookware"],
-	["reference/syntax/times.md", "/reference/syntax/times"],
-	["reference/syntax/temperatures.md", "/reference/syntax/temperatures"],
-	[
-		"reference/syntax/intermediate-variables.md",
-		"/reference/syntax/intermediate-variables",
-	],
-	[
-		"reference/syntax/relative-quantities.md",
-		"/reference/syntax/relative-quantities",
-	],
-	[
-		"reference/syntax/composite-ingredients.md",
-		"/reference/syntax/composite-ingredients",
-	],
-	["reference/syntax/cheatsheet.md", "/reference/syntax/cheatsheet"],
-	[
-		"reference/syntax/ai-generation-notes.md",
-		"/reference/syntax/ai-generation-notes",
-	],
-	["reference/api/data-formats.md", "/reference/api/data-formats"],
-	["reference/api/warnings.md", "/reference/api/warnings"],
+	["explanation/philosophy.mdx", "/docs/explanation/philosophy"],
+	["reference/syntax/document-structure.mdx", "/docs/reference/syntax/document-structure"],
+	["reference/syntax/ingredients.mdx", "/docs/reference/syntax/ingredients"],
+	["reference/syntax/cookware.md", "/docs/reference/syntax/cookware"],
+	["reference/syntax/times.mdx", "/docs/reference/syntax/times"],
+	["reference/syntax/temperatures.md", "/docs/reference/syntax/temperatures"],
+	["reference/syntax/intermediate-variables.md", "/docs/reference/syntax/intermediate-variables"],
+	["reference/syntax/relative-quantities.md", "/docs/reference/syntax/relative-quantities"],
+	["reference/syntax/composite-ingredients.md", "/docs/reference/syntax/composite-ingredients"],
+	["reference/syntax/cheatsheet.md", "/docs/reference/syntax/cheatsheet"],
+	["reference/syntax/ai-generation-notes.mdx", "/docs/reference/syntax/ai-generation-notes"],
+	["reference/api/data-formats.md", "/docs/reference/api/data-formats"],
+	["reference/api/warnings.mdx", "/docs/reference/api/warnings"],
 ];
 
-const INCLUDE_RE = /<!--\s*@include:\s*(.+?)\s*-->/g;
+const GENERATED_TABLES: Record<string, (locale: "en") => Table> = {
+	warningCodesTable,
+	astNodeTypesTable,
+	unitsTable,
+	timeUnitsTable,
+	unitConversionsTable,
+	categoriesTable,
+};
 
-function resolveIncludes(content: string, fileDir: string): string {
-	return content.replace(INCLUDE_RE, (_match, relPath: string) => {
-		const includePath = resolve(fileDir, relPath);
-		return readFileSync(includePath, "utf-8").trim();
-	});
+function renderTable(table: Table): string {
+	const head = `| ${table.headers.join(" | ")} |`;
+	const sep = `| ${table.headers.map(() => "---").join(" | ")} |`;
+	const body = table.rows.map((r) => `| ${r.join(" | ")} |`).join("\n");
+	return `${head}\n${sep}\n${body}`;
+}
+
+function stripFrontmatter(content: string): string {
+	return content.replace(/^---\n[\s\S]*?\n---\n/, "");
+}
+
+function stripMdxImports(content: string): string {
+	return content.replace(/^import .+ from ['"].+['"];?\s*$/gm, "");
+}
+
+function resolveGeneratedTables(content: string): string {
+	return content.replace(
+		/<GeneratedTable table=\{(\w+)\("(\w+)"\)\}\s*\/>/g,
+		(_m, fnName: string, locale: string) => {
+			const fn = GENERATED_TABLES[fnName];
+			if (!fn) throw new Error(`Unknown GeneratedTable data function: ${fnName}`);
+			return renderTable(fn(locale as "en"));
+		},
+	);
+}
+
+function stripTabs(content: string): string {
+	return content
+		.replace(/<Tabs>\s*/g, "")
+		.replace(/\s*<\/Tabs>/g, "")
+		.replace(/<TabItem label="([^"]+)">\s*/g, "**$1**\n\n")
+		.replace(/\s*<\/TabItem>/g, "");
 }
 
 const sections = PAGES.map(([relPath, urlPath]) => {
-	const fullPath = join(SRC_DIR, relPath);
-	const raw = readFileSync(fullPath, "utf-8");
-	const resolved = resolveIncludes(raw, dirname(fullPath)).trim();
-	return `<!-- Source: ${SITE_ORIGIN}${urlPath} -->\n\n${resolved}`;
+	const fullPath = join(CONTENT_DIR, relPath);
+	let content = readFileSync(fullPath, "utf-8");
+	content = stripFrontmatter(content);
+	content = stripMdxImports(content);
+	content = resolveGeneratedTables(content);
+	content = stripTabs(content);
+	content = content.trim();
+	return `<!-- Source: ${SITE_ORIGIN}${urlPath} -->\n\n${content}`;
 });
 
 const header =

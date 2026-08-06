@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, shallowRef, onUnmounted, computed } from "vue";
+import {
+	ref,
+	watch,
+	onMounted,
+	shallowRef,
+	onUnmounted,
+	computed,
+	provide,
+} from "vue";
 // biome-ignore lint/style/useImportType: GramEditor is used as a component in the <template> block below, which Biome's Vue support doesn't see — a type-only import breaks the ref.
 import GramEditor from "./GramEditor.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
@@ -19,12 +27,34 @@ import {
 	parseDensityOverrides,
 } from "@gram-lang/analyzer";
 import { toMarkdown, toHTML } from "@gram-lang/renderer";
+import "@gram-lang/renderer/gram.css";
+import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
-import { useData } from "vitepress";
 import { getDictionary } from "@gram-lang/i18n";
+const props = defineProps<{ lang: "en" | "fr" }>();
+const currentLang = computed(() => props.lang);
+provide("lang", currentLang);
 
-const { lang } = useData();
-const t = computed(() => getDictionary(lang.value));
+const isDark = ref(
+	typeof document !== "undefined" &&
+		document.documentElement.dataset.theme === "dark",
+);
+provide("isDark", isDark);
+let themeObserver: MutationObserver | undefined;
+onMounted(() => {
+	themeObserver = new MutationObserver(() => {
+		isDark.value = document.documentElement.dataset.theme === "dark";
+	});
+	themeObserver.observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ["data-theme"],
+	});
+});
+onUnmounted(() => {
+	themeObserver?.disconnect();
+});
+
+const t = computed(() => getDictionary(currentLang.value));
 
 const code = ref("");
 const viewMode = ref<
@@ -67,12 +97,17 @@ const errorMsg = ref("");
 let fullDatabase: any = {};
 
 const manifestData = ref<any[]>([]);
-const examples = computed(() =>
-	manifestData.value.map((ex: any) => ({
+const examples = computed(() => [
+	{
+		label:
+			(t.value.playground.examples as any).newRecipe || "Blank (New Recipe)",
+		value: "",
+	},
+	...manifestData.value.map((ex: any) => ({
 		label: (t.value.playground.examples as any)[ex.id] || ex.title,
 		value: `${import.meta.env.BASE_URL}examples/${ex.id}`,
 	})),
-);
+]);
 const selectedExample = ref("");
 
 onMounted(() => {
@@ -85,7 +120,7 @@ onMounted(() => {
 
 	// Load Examples
 	const manifestName =
-		lang.value === "fr" ? "manifest-fr.json" : "manifest.json";
+		currentLang.value === "fr" ? "manifest-fr.json" : "manifest.json";
 	fetch(`${import.meta.env.BASE_URL}examples/${manifestName}`)
 		.then((res) => res.json())
 		.then((manifest) => {
@@ -104,7 +139,10 @@ onMounted(() => {
 });
 
 function loadExample(path: string) {
-	if (!path) return;
+	if (!path) {
+		code.value = "";
+		return;
+	}
 	fetch(path)
 		.then((res) => res.text())
 		.then((text) => {
@@ -180,7 +218,7 @@ function updateGram() {
 						unit: scaleTargetUnit.value || null,
 					},
 					(value, from, to) =>
-						convertUnit(value, from, to, density, lang.value),
+						convertUnit(value, from, to, density, currentLang.value),
 				);
 				result = applyScale(result, resolution.factor);
 				scaleFactorString.value = (resolution.factor * 100)
@@ -207,7 +245,7 @@ function updateGram() {
 		const analysisOptions = {
 			...options.value,
 			enableBakersMath: options.value.bakersMath,
-			lang: lang.value,
+			lang: currentLang.value,
 		};
 		const analysis = analyze(result, fullDatabase, analysisOptions);
 		result = analysis.result;
@@ -220,12 +258,12 @@ function updateGram() {
 		} else if (viewMode.value === "ast") {
 			content.value = renderSExpr(ast);
 		} else if (viewMode.value === "markdown") {
-			content.value = toMarkdown(result, { lang: lang.value });
+			content.value = toMarkdown(result, { lang: currentLang.value });
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
 				interactiveScaling: true,
 				bakersMathOnly: options.value.bakersMathOnly,
-				lang: lang.value,
+				lang: currentLang.value,
 			});
 		}
 	} catch (e: any) {
@@ -256,7 +294,7 @@ function clearTarget() {
 }
 
 watch(
-	[code, options, viewMode, scaleFactorString, lang],
+	[code, options, viewMode, scaleFactorString, currentLang],
 	() => {
 		if (!scaleTargetId.value) {
 			updateGram();
@@ -304,14 +342,25 @@ function stopDrag() {
 	document.body.style.cursor = "";
 }
 
+const isFullscreen = ref(false);
+function toggleFullscreen() {
+	isFullscreen.value = !isFullscreen.value;
+	if (isFullscreen.value) {
+		document.body.style.overflow = "hidden";
+	} else {
+		document.body.style.overflow = "";
+	}
+}
+
 onUnmounted(() => {
 	document.removeEventListener("mousemove", onDrag);
 	document.removeEventListener("mouseup", stopDrag);
+	document.body.style.overflow = "";
 });
 </script>
 
 <template>
-  <div class="gram-playground">
+  <div class="gram-playground" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="playground-toolbar">
       <div class="toolbar-left">
         <h2>{{ t.playground.title }}</h2>
@@ -330,19 +379,11 @@ onUnmounted(() => {
           />
         </div>
         
-        <div class="toolbar-item">
-          <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-          <PlaygroundDropdown 
-            v-model="viewMode" 
-            :options="viewModeOptions" 
-          />
-        </div>
-
-        <details class="options-dropdown">
-          <summary class="options-summary" :title="t.playground.analysisOptions">
+         <details class="options-dropdown">
+          <summary class="playground-options-summary" :title="t.playground.analysisOptions">
            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 11.9998C2 11.1353 2.1097 10.2964 2.31595 9.49631C3.40622 9.55283 4.48848 9.01015 5.0718 7.99982C5.65467 6.99025 5.58406 5.78271 4.99121 4.86701C6.18354 3.69529 7.66832 2.82022 9.32603 2.36133C9.8222 3.33385 10.8333 3.99982 12 3.99982C13.1667 3.99982 14.1778 3.33385 14.674 2.36133C16.3317 2.82022 17.8165 3.69529 19.0088 4.86701C18.4159 5.78271 18.3453 6.99025 18.9282 7.99982C19.5115 9.01015 20.5938 9.55283 21.6841 9.49631C21.8903 10.2964 22 11.1353 22 11.9998C22 12.8643 21.8903 13.7032 21.6841 14.5033C20.5938 14.4468 19.5115 14.9895 18.9282 15.9998C18.3453 17.0094 18.4159 18.2169 19.0088 19.1326C17.8165 20.3043 16.3317 21.1794 14.674 21.6383C14.1778 20.6658 13.1667 19.9998 12 19.9998C10.8333 19.9998 9.8222 20.6658 9.32603 21.6383C7.66832 21.1794 6.18354 20.3043 4.99121 19.1326C5.58406 18.2169 5.65467 17.0094 5.0718 15.9998C4.48848 14.9895 3.40622 14.4468 2.31595 14.5033C2.1097 13.7032 2 12.8643 2 11.9998ZM6.80385 14.9998C7.43395 16.0912 7.61458 17.3459 7.36818 18.5236C7.77597 18.8138 8.21005 19.0652 8.66489 19.2741C9.56176 18.4712 10.7392 17.9998 12 17.9998C13.2608 17.9998 14.4382 18.4712 15.3351 19.2741C15.7899 19.0652 16.224 18.8138 16.6318 18.5236C16.3854 17.3459 16.566 16.0912 17.1962 14.9998C17.8262 13.9085 18.8225 13.1248 19.9655 12.7493C19.9884 12.5015 20 12.2516 20 11.9998C20 11.7481 19.9884 11.4981 19.9655 11.2504C18.8225 10.8749 17.8262 10.0912 17.1962 8.99982C16.566 7.90845 16.3854 6.65378 16.6318 5.47605C16.224 5.18588 15.7899 4.93447 15.3351 4.72552C14.4382 5.52844 13.2608 5.99982 12 5.99982C10.7392 5.99982 9.56176 5.52844 8.66489 4.72552C8.21005 4.93447 7.77597 5.18588 7.36818 5.47605C7.61458 6.65378 7.43395 7.90845 6.80385 8.99982C6.17376 10.0912 5.17754 10.8749 4.03451 11.2504C4.01157 11.4981 4 11.7481 4 11.9998C4 12.2516 4.01157 12.5015 4.03451 12.7493C5.17754 13.1248 6.17376 13.9085 6.80385 14.9998ZM12 14.9998C10.3431 14.9998 9 13.6567 9 11.9998C9 10.343 10.3431 8.99982 12 8.99982C13.6569 8.99982 15 10.343 15 11.9998C15 13.6567 13.6569 14.9998 12 14.9998ZM12 12.9998C12.5523 12.9998 13 12.5521 13 11.9998C13 11.4475 12.5523 10.9998 12 10.9998C11.4477 10.9998 11 11.4475 11 11.9998C11 12.5521 11.4477 12.9998 12 12.9998Z"></path></svg>
           </summary>
-          <div class="options-dropdown-content">
+          <div class="playground-options-dropdown-content">
             <GramOptions 
               v-model:options="options" 
               :shopping-list="jsonData?.shopping_list || []"
@@ -355,6 +396,11 @@ onUnmounted(() => {
             />
           </div>
         </details>
+        
+        <button class="toolbar-icon-btn" @click="toggleFullscreen" :title="isFullscreen ? (t.playground.exitFullscreen || 'Exit Fullscreen') : (t.playground.fullscreen || 'Fullscreen')">
+          <svg v-if="!isFullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 3H13.5L16.5429 6.04289L13.2929 9.29289L14.7071 10.7071L17.9571 7.45711L21 10.5V3ZM3 21H10.5L7.45711 17.9571L10.7071 14.7071L9.29289 13.2929L6.04289 16.5429L3 13.5V21Z"></path></svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M20.5 11.0001H13V3.50008L16.0429 6.54297L19.2929 3.29297L20.7071 4.70718L17.4571 7.95718L20.5 11.0001ZM3.50008 13H11.0001V20.5L7.95718 17.4571L4.70718 20.7071L3.29297 19.2929L6.54297 16.0429L3.50008 13Z"></path></svg>
+        </button>
       </div>
     </div>
     
@@ -387,7 +433,18 @@ onUnmounted(() => {
             :html-preview="htmlPreview" 
             :json-data="jsonData" 
             @scale-update="handleScaleUpdate"
-          />
+          >
+            <template #view-selector>
+              <div class="header-view-wrapper">
+                <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
+                <PlaygroundDropdown 
+                  v-model="viewMode" 
+                  :options="viewModeOptions" 
+                  class="header-view-selector"
+                />
+              </div>
+            </template>
+          </GramOutput>
         </div>
       </div>
     </div>
@@ -399,8 +456,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 16px;
   margin-bottom: 32px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.gram-playground.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100000;
+  background-color: var(--sl-color-bg);
+  margin: 0;
+  padding: 1.5rem;
+  box-sizing: border-box;
 }
 
 .playground-toolbar {
@@ -428,22 +498,20 @@ onUnmounted(() => {
 }
 
 .status-badge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--sl-color-hairline);
+  margin-top: 1px;
 }
 
 .status-badge.valid {
-  background-color: var(--vp-c-green-soft, rgba(16, 185, 129, 0.15));
-  color: var(--vp-c-green-1, #10b981);
+  color: #008829;
 }
 
 .status-badge.invalid {
-  background-color: var(--vp-c-red-soft, rgba(239, 68, 68, 0.15));
-  color: var(--vp-c-red-1, #ef4444);
+  color: #ef4444;
 }
 
 .toolbar-item {
@@ -456,7 +524,7 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--vp-c-text-2);
+  color: var(--sl-color-gray-3);
   white-space: nowrap;
 }
 
@@ -472,32 +540,49 @@ onUnmounted(() => {
   position: relative;
 }
 
-.options-summary {
+.playground-options-summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-border);
-  background-color: var(--vp-c-bg);
+width: 40px;
+  height: 40px;
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
   cursor: pointer;
-  list-style: none;
-  color: var(--vp-c-text-2);
-  transition: border-color 0.2s, background-color 0.2s;
+  list-style: none; 
+  color: var(--sl-color-gray-3); 
   padding: 8px;
+  box-sizing: border-box;
 }
 
-.options-summary::-webkit-details-marker {
+.playground-options-summary::-webkit-details-marker {
   display: none;
 }
 
-.options-summary:hover {
-  border-color: var(--vp-c-brand);
-  background-color: var(--vp-c-bg-soft);
+.playground-options-summary:hover {
+  border-color: var(--sl-color-gray-3);
+  background-color: var(--sl-color-gray-7);
 }
 
-.options-dropdown-content {
+.toolbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px;
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
+  cursor: pointer;
+  color: var(--sl-color-gray-3);
+  transition: all 0.2s;
+}
+
+.toolbar-icon-btn:hover {
+  border-color: var(--sl-color-gray-3);
+  background-color: var(--sl-color-gray-7);
+  color: var(--sl-color-text);
+}
+
+.playground-options-dropdown-content {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -505,8 +590,7 @@ onUnmounted(() => {
   width: max-content;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
-  box-shadow: var(--vp-shadow-3);
-  border-radius: 8px;
+  border: 1px solid var(--sl-color-border);
 }
 
 /* Workspace & Split Pane */
@@ -552,11 +636,17 @@ onUnmounted(() => {
   flex-direction: column;
   height: auto;
   min-height: 70vh;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
+  border: 1px solid var(--sl-color-border);
   overflow: hidden;
-  background-color: var(--vp-c-bg);
-  box-shadow: var(--vp-shadow-1);
+  background-color: var(--sl-color-bg);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.is-fullscreen .playground-workspace {
+  flex: 1;
+  min-height: 0;
+  height: auto;
 }
 
 .playground-col {
@@ -566,12 +656,16 @@ onUnmounted(() => {
   position: relative;
   min-height: 350px;
   height: 50vh;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .editor-wrapper {
   flex: 1;
   position: relative;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .output-wrapper {
@@ -579,6 +673,8 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .playground-splitter {
@@ -613,34 +709,33 @@ onUnmounted(() => {
   .playground-splitter {
     display: flex;
     width: 6px;
-    background-color: var(--vp-c-bg-mute);
-    border-left: 1px solid var(--vp-c-border);
-    border-right: 1px solid var(--vp-c-border);
+    background-color: var(--sl-color-gray-6);
+    border-left: 1px solid var(--sl-color-border);
+    border-right: 1px solid var(--sl-color-border);
     cursor: col-resize;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s;
     z-index: 10;
   }
   
   .playground-splitter:hover, .playground-workspace.is-dragging .playground-splitter {
-    background-color: var(--vp-c-brand-soft);
+    background-color: var(--sl-color-accent-low);
   }
   
   .splitter-handle {
     width: 2px;
     height: 24px;
-    background-color: var(--vp-c-text-3);
+    background-color: var(--sl-color-gray-4);
     border-radius: 2px;
   }
 }
 
 .error-msg {
   padding: 16px;
-  background-color: var(--vp-c-danger-soft);
-  color: var(--vp-c-danger-1);
-  border-bottom: 1px solid var(--vp-c-danger-3);
-  font-family: var(--vp-font-family-mono);
+  background-color: var(--sl-color-red-low);
+  color: var(--sl-color-red);
+  border-bottom: 1px solid var(--sl-color-red-high);
+  font-family: var(--sl-font-mono);
   font-size: 13px;
   white-space: pre-wrap;
 }
@@ -649,10 +744,26 @@ onUnmounted(() => {
   border-bottom: none;
   border-radius: 8px;
   margin: 16px 16px 0 16px;
-  border: 1px solid var(--vp-c-danger-3);
+  border: 1px solid var(--sl-color-red-high);
 }
 
 .output-wrapper {
   height: 100%;
+}
+
+.header-view-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-view-selector :deep(.dropdown-header) {
+  border-color: transparent;
+  padding-left: 0;
+}
+
+.header-view-selector :deep(.dropdown-header:hover) {
+  border-color: transparent;
+  background-color: transparent;
 }
 </style>

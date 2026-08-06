@@ -59,6 +59,7 @@ export const en = {
 		recipe: "Recipe",
 		scaleFactor: "Scale Factor %",
 		examples: {
+			newRecipe: "Blank (New Recipe)",
 			canneles: "Bordeaux Cannelés",
 			empanadas: "Beef Empanadas",
 		},

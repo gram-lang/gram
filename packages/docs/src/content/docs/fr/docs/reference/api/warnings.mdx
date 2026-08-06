@@ -1,0 +1,78 @@
+---
+title: "Avertissements"
+description: "Référence complète des codes de Warning, de leur sévérité, et de l'option --strict pour gérer les recettes incomplètes ou malformées."
+---
+
+import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import { warningCodesTable } from '../../../../../../data/api-reference';
+
+Une recette malformée ou incomplète finit quand même de compiler : le compilateur et l'Analyseur collectent des objets `Warning` structurés au lieu de *throw* des exceptions. Cela permet aux appelants d'afficher la recette tout en signalant visuellement ce qui coince. L'énumération `WarningCode` et ses utilitaires sont exportés par `@gram-lang/kitchen`.
+
+## L'interface `Warning`
+
+```typescript
+interface Warning {
+  code: WarningCode;
+  message: string;       // lisible par un humain, prêt à être affiché tel quel
+  item?: string;
+  loc?: { start: number; end: number }; // décalages en caractères dans la source, quand disponible
+  section?: string | null;
+}
+```
+
+`compile()` les retourne dans le tableau `CompilationResult.warnings`. De son côté, `analyze()` les propage (et en ajoute potentiellement de nouveaux) dans `AnalyzedCompilationResult.warnings`. Ce ne sont jamais de simples chaînes de caractères : le champ `.message` est toujours garanti.
+
+## Sévérité & `--strict`
+
+```typescript
+type WarningSeverity = "error" | "warning" | "info";
+const warningSeverity: Record<WarningCode, WarningSeverity>;
+```
+
+Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, etc.) sont de sévérité `error`. Tout le reste (lacunes d'estimation nutritionnelle, annotations incomplètes mais valides) est catégorisé en `warning`. Ainsi, une unité de minuteur manquante ne fera pas crasher un *build* au même titre qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
+
+## Codes
+
+<GeneratedTable table={warningCodesTable("fr")} />
+
+### `VARIABLE_NOT_FOUND`
+Une quantité relative référence une variable intermédiaire (`50% of &nom`) qui n'a été déclarée nulle part dans la recette comme sortie intermédiaire (`>> nom`). **Correction** : déclarez la variable avant de la référencer, ou corrigez la faute de frappe.
+
+### `RELATIVE_QUANTITY_UNRESOLVED`
+Une quantité relative cible un ingrédient (`50% of @nom`) qui n'est pas apparu plus tôt **dans la même section**. Attention, contrairement aux variables, les cibles relatives aux ingrédients sont scopées par section. **Correction** : déplacez l'ingrédient cible plus haut dans la même section, ou passez par une variable intermédiaire (`&nom`) si la portée doit être globale.
+
+### `RELATIVE_QUANTITY_UNKNOWN_MASS`
+Émis pendant l'analyse : la cible d'une quantité relative a bien été trouvée, mais sa propre masse est incalculable (unité/densité introuvable). Le pourcentage ne peut donc pas s'appliquer. **Correction** : attribuez à l'ingrédient cible une unité standardisable, ou renseignez sa densité / son `unit_weight` dans la base de données.
+
+### `CIRCULAR_REFERENCE`
+La quantité relative d'un ingrédient se cible elle-même (`@farine{50% of @farine}`). **Correction** : supprimez l'auto-référence (une quantité relative doit pointer vers un ingrédient ou une variable *différente*).
+
+### `UNDEFINED_REFERENCE`
+Une référence pure (`&nom`) ou un ingrédient référençable (`@&nom`) pointe vers un élément qui n'a jamais été enregistré en amont de la recette. **Correction** : introduisez l'ingrédient (sans `&`) avant de le référencer, ou corrigez la faute de frappe.
+
+### `MISSING_UNIT`
+Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite (ex. `~{10}` au lieu de `~{10 min}`). **Correction** : ajoutez l'unité manquante.
+
+### `INVALID_UNIT`
+Soit un `Timer` a reçu une quantité non numérique (du texte), soit une `Temperature` a reçu une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une valeur numérique couplée à une unité temporelle reconnue pour les minuteurs, et limitez-vous à `°C` ou `°F` pour les températures.
+
+### `SCOPE_CONFLICT`
+Deux sections déclarent un même nom de variable (`>> nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
+
+### `MISSING_INGREDIENT`
+Lors de l'estimation nutritionnelle, un ingrédient (dont on connaît la masse) n'a trouvé aucune correspondance (par ID ou alias) dans la base de données. **Correction** : ajoutez l'ingrédient ou son alias dans votre base.
+
+### `MISSING_MACROS`
+L'ingrédient a bien été trouvé en base, mais ne possède aucun bloc `nutrition`. **Correction** : documentez le bloc `nutrition` dans l'entrée YAML correspondante.
+
+### `UNKNOWN_MASS`
+L'Analyseur n'a pu résoudre aucune masse pour cet ingrédient (unité inexploitable, aucune densité/`unit_weight`), il est donc exclu des totaux nutritionnels. **Correction** : comme pour `RELATIVE_QUANTITY_UNKNOWN_MASS`, fournissez une unité standardisable ou des données physiques en base.
+
+### `INVALID_MODIFIER_COMBINATION`
+Modificateurs en conflit ou dupliqués sur un même ingrédient/matériel. Par exemple : `optional (?)` couplé à `important (*)`, ou `hidden (-)` avec `referenceable (&)`. La collision exacte est détaillée dans le `.message`. **Correction** : retirez le modificateur incriminé.
+
+### `INVALID_BAKERS_REFERENCE`
+L'ingrédient marqué comme ancre du % boulanger (via le modificateur `*` ou l'option `bakersReference`) possède lui-même une masse dérivée (quantité relative par rapport à un *autre* ingrédient). Il ne peut donc pas servir de base à 100 % (dépendance circulaire). **Correction** : choisissez un ingrédient doté d'une quantité absolue pour servir de point de référence.
+
+### `NO_BAKERS_REFERENCE`
+Le mode *Baker's Math* a été explicitement requis (via `enableBakersMath` avec un modificateur `*` nu, ou via un identifiant `bakersReference`), mais aucun ingrédient correspondant n'a été trouvé. **Correction** : ajoutez le modificateur `*` sur un ingrédient, ou corrigez l'ID passé à `bakersReference`.

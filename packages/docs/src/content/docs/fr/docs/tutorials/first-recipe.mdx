@@ -1,0 +1,304 @@
+---
+title: "Tutoriel : Votre Première Recette Complexe"
+description: "Un tutoriel pas à pas pour écrire une Tarte au Citron complète avec les fonctionnalités avancées du compilateur Gram."
+---
+
+import { CodeTabs } from 'starlight-theme-nova/components';
+
+À vos fourneaux ! Dans ce tutoriel, nous allons écrire une recette complète de **Tarte au Citron**.
+
+Cette recette va bien au-delà de la classique liste d'ingrédients. On va exploiter le compilateur Gram pour écrire une recette dynamique, ultra-*scalable* et orientée données.
+
+## Étape 1 : Les Bases (La Pâte)
+
+On attaque avec la pâte sucrée. Le symbole `@` cible les ingrédients, et `#` le matériel (*cookware*).
+
+<CodeTabs>
+```gram title="Code"
+## Pâte Sucrée
+
+[Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
+
+[Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}.
+```
+```markdown title="Aperçu"
+### Pâte Sucrée
+
+**Ingrédients** :
+- **farine** (180 g)
+- **sucre glace** (55 g)
+- **sel** (1/4 c.à.c)
+- **beurre** (115 g)
+- **œuf** (1)
+- **extrait de vanille** (1/2 c.à.c)
+
+1. **[Mixer]** Dans un *robot multifonction*, la **farine** (180 g), le **sucre glace** (55 g), et le **sel** (1/4 c.à.c).
+2. **[Sabler]** Ajouter le **beurre** (115 g) (froid, coupé en petits dés) et mélanger pendant ⏲️ 1-2 min jusqu'à obtenir un mélange sableux.
+3. **[Incorporer]** Ajouter l'**œuf** (1), l'**extrait de vanille** (1/2 c.à.c) (optionnel) et mélanger jusqu'à ce que la pâte forme une boule.
+4. **[Repos]** Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ⏲️ 1 h.
+```
+</CodeTabs>
+
+Vous avez repéré les balises `[Action]` (ex: `[Mixer]`, `[Repos]`) ? Ce n'est pas strictement obligatoire, mais c'est une excellente pratique. Ça permet aux interfaces utilisateur (UI) de générer des résumés ultra-clairs de vos étapes.
+
+Surtout, cette syntaxe est redoutable. Le compilateur va automatiquement pomper les ingrédients pour la liste de courses, et estimer le temps actif total (en forfaitisant 2 minutes par étape) en plus des temps de repos.
+
+## Étape 2 : Les Variables Intermédiaires
+
+Pour l'instant, notre pâte n'est qu'une bête suite d'étapes. Pour la réutiliser plus tard (à la cuisson), il faut dire au compilateur que le résultat de cette section forme un tout unifié.
+
+On dégaine pour ça la **Déclaration Intermédiaire** (`->&nom`) en fin de titre de section.
+
+<CodeTabs>
+```gram title="Code"
+## Pâte Sucrée ->&pâte sucrée{}
+
+[Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
+
+[Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}.
+```
+```markdown title="Aperçu"
+### Pâte Sucrée
+
+**Ingrédients** :
+- **farine** (180 g)
+- **sucre glace** (55 g)
+- **sel** (1/4 c.à.c)
+- **beurre** (115 g)
+- **œuf** (1)
+- **extrait de vanille** (1/2 c.à.c)
+
+1. **[Mixer]** Dans un *robot multifonction*, la **farine** (180 g), le **sucre glace** (55 g), et le **sel** (1/4 c.à.c).
+2. **[Sabler]** Ajouter le **beurre** (115 g) (froid, coupé en petits dés) et mélanger pendant ⏲️ 1-2 min jusqu'à obtenir un mélange sableux.
+3. **[Incorporer]** Ajouter l'**œuf** (1), l'**extrait de vanille** (1/2 c.à.c) (optionnel) et mélanger jusqu'à ce que la pâte forme une boule.
+4. **[Repos]** Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ⏲️ 1 h.
+```
+</CodeTabs>
+
+Désormais, vous pourrez invoquer cette pâte via `&nom` dans les étapes suivantes, sans retaper un seul ingrédient. Le compilateur captera direct **qu'il ne faut pas l'ajouter à la liste de courses**, puisqu'elle est déjà produite en interne.
+
+<CodeTabs>
+```gram title="Code"
+## Cuisson du Fond de Tarte
+
+[Préchauffer] Préchauffer le #four{} à ^{180°C}.
+
+[Étaler] Étaler la &pâte sucrée{} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
+
+[Cuire] Pendant ~_{20 min} jusqu'à coloration dorée.
+```
+```markdown title="Aperçu"
+### Cuisson du Fond de Tarte
+
+**Ingrédients** :
+- 👉*pâte sucrée*
+
+1. **[Préchauffer]** Préchauffer le *four* à 🔥180 °C.
+2. **[Étaler]** Étaler la 👉*pâte sucrée* pendant ⏲️ 5 min et la foncer dans un *cercle à tarte*.
+3. **[Cuire]** Pendant ⏳ 20 min (passif) jusqu'à coloration dorée.
+```
+</CodeTabs>
+
+## Étape 3 : Minuteurs en Arrière-plan (Passifs)
+
+À l'Étape 1, on avait lâché un : `[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~{1 h}`. 
+Par défaut, les *timers* sont **actifs**. Le compilateur croit dur comme fer que vous êtes occupé pendant 1h, et l'ajoute au *Temps Actif*.
+
+Sauf que laisser dormir une pâte au frigo, c'est 100% passif. Vous avez largement le temps de préparer le crémeux citron à côté. Pour flagger ça en tâche passive, on glisse un *underscore* `~_` :
+
+<CodeTabs>
+```gram title="Code"
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+```
+```markdown title="Aperçu"
+1. **[Repos]** Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ⏳ 1 h (passif).
+```
+</CodeTabs>
+
+Hop, le compilateur purge cette heure du *Temps Actif* tout en la conservant dans le *Temps Total*.
+
+## Étape 4 : Ingrédients Composites
+
+La tarte réclame des zestes et du jus. Si vous tapez `@zeste de citron{1 c.à.s}` et `@jus de citron{120 g}`, la liste de courses va bêtement compter deux produits. Mais en vrai, on achète des citrons entiers !
+
+C'est là qu'interviennent les **Ingrédients Composites** (`<@parent`).
+
+Voici la section du Crémeux au Citron :
+
+<CodeTabs>
+```gram title="Code"
+## Crémeux au Citron
+
+[Fouetter] Dans une #casserole{}, fouetter le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{150 g}, et les @œufs{3}.
+
+[Cuire] Cuire à ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+```
+```markdown title="Aperçu"
+### Crémeux au Citron
+
+**Ingrédients** :
+- **zeste de citron** (1 c.à.s)
+- **jus de citron** (120 g)
+- **sucre** (150 g)
+- **œufs** (3)
+
+1. **[Fouetter]** Dans une *casserole*, fouetter le **zeste de citron** (1 c.à.s), le **jus de citron** (120 g), le **sucre** (150 g), et les **œufs** (3).
+2. **[Cuire]** Cuire à 🔥feu moyen pendant ⏲️ 8 min jusqu'à épaississement.
+```
+</CodeTabs>
+
+Puisque le zeste et le jus pointent vers `<@citron` (ou `<@citrons`), le compilateur comprend que ce sont les organes d'un même parent. Pas besoin de *database* pour deviner le rendement : il applique sauvagement la **Règle du MAX**. Il regarde la quantité parent requise pour chaque morceau (`<@citron` vaut 1 pour le zeste, `<@citrons{2}` vaut 2 pour le jus) et prend le max. Ici `max(1, 2) = 2` : la liste de courses va brillamment vous faire acheter 2 citrons entiers !
+
+## Étape 5 : Quantités Relatives
+
+En pâtisserie, on ne rigole pas avec la chimie. Et si vos citrons sont des monstres de jus et lâchent 140 g au lieu des 120 g prévus ? Avec un sucre figé, votre crémeux finira horriblement acide. Pour garantir un équilibre atomique, le sucre doit s'adapter dynamiquement pour peser exactement 125% du poids du jus.
+
+Dites bonjour aux **Quantités Relatives** (`% @&cible`) :
+
+<CodeTabs>
+```gram title="Code"
+[Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
+```
+```markdown title="Aperçu"
+1. **[Fouetter]** Dans une *casserole*, le **zeste de citron** (1 c.à.s), le **jus de citron** (120 g), le **sucre** (150 g), et les **œufs** (3).
+```
+</CodeTabs>
+
+Le sucre est désormais asservi au jus. Si vous ajustez la ligne du jus selon votre rendement réel, le compilateur recalculera automatiquement la masse de sucre (ici, 150 g) pour sauver votre ratio.
+
+:::note
+Pour approfondir la manière dont Gram gère les calculs relatifs complexes (comme l'utilisation de volumes ou d'unités comme cibles), consultez la référence sur les [Quantités Relatives](/fr/docs/reference/syntax/relative-quantities).
+:::
+
+## La Recette Finale
+
+Voici la bête complète. Admirez la clarté et la fluidité de lecture, malgré l'avalanche de logique *under the hood* !
+
+<CodeTabs>
+```gram title="Code"
+---
+title: Tarte au Citron Meringuée
+portions: 8
+---
+
+## Pâte Sucrée ->&pâte sucrée{}
+
+[Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
+
+[Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+
+[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+
+[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+
+## Crémeux au Citron ->&crémeux
+
+[Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
+
+[Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+
+## Cuisson du Fond de Tarte ->&fond cuit{}
+
+[Préchauffer] Le #four à ^{180°C}.
+
+[Étaler] La &pâte sucrée{} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
+
+[Cuire] Pendant ~_{20 min} jusqu'à coloration dorée. Laisser refroidir.
+
+## Assemblage
+
+[Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
+```
+```markdown title="Aperçu"
+# Tarte au Citron Meringuée
+
+> **Métadonnées**
+> - **Temps Total** : 3h 44.5m
+> - **Temps Actif** : 24.5m
+> - **Temps de Préparation** : 20m (est.)
+> - portions : 8
+
+## 🛒 Liste de Courses
+
+- **farine** (180 g)
+- **sucre glace** (55 g)
+- **sel** (1/4 c.à.c)
+- **beurre** (115 g)
+- **œuf** (1)
+- **extrait de vanille** (1/2 c.à.c)
+- **sucre** (125% du jus de citron)
+- **œufs** (3)
+- **citron** (2) **(Composite)** :
+  - **zeste de citron** (1 c.à.s)
+  - **jus de citron** (120 g)
+
+## 🍳 Matériel
+
+- *robot multifonction*
+- *casserole*
+- *four*
+- *cercle à tarte*
+
+## 👨‍🍳 Instructions
+
+### Pâte Sucrée
+
+**Ingrédients** :
+- **farine** (180 g)
+- **sucre glace** (55 g)
+- **sel** (1/4 c.à.c)
+- **beurre** (115 g) — froid, coupé en petits dés
+- **œuf** (1)
+- **extrait de vanille** (1/2 c.à.c)
+
+1. **[Mixer]** Dans un *robot multifonction*, la **farine** (180 g), le **sucre glace** (55 g), et le **sel** (1/4 c.à.c).
+2. **[Sabler]** Ajouter le **beurre** (115 g) (froid, coupé en petits dés) et mélanger pendant ⏲️ 1-2 min jusqu'à obtenir un mélange sableux.
+3. **[Incorporer]** Ajouter l'**œuf** (1), l'**extrait de vanille** (1/2 c.à.c) (optionnel) et mélanger jusqu'à ce que la pâte forme une boule. 
+4. **[Repos]** Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ⏳ 1 h (passif).
+
+### Crémeux au Citron
+
+**Ingrédients** :
+- **zeste de citron** (1 c.à.s)
+- **jus de citron** (120 g)
+- **sucre** (125% du jus de citron)
+- **œufs** (3)
+
+1. **[Fouetter]** Dans une *casserole*, le **zeste de citron** (1 c.à.s), le **jus de citron** (120 g), le **sucre** (125% du jus de citron), et les **œufs** (3).
+2. **[Cuire]** À 🔥feu moyen pendant ⏲️ 8 min jusqu'à épaississement.
+
+### Cuisson du Fond de Tarte
+
+**Ingrédients** :
+- 👉*pâte sucrée*
+
+1. **[Préchauffer]** Le *four* à 🔥180 °C.
+2. **[Étaler]** La 👉*pâte sucrée* pendant ⏲️ 5 min et la foncer dans un *cercle à tarte*.
+3. **[Cuire]** Pendant ⏳ 20 min (passif) jusqu'à coloration dorée. Laisser refroidir.
+
+### Assemblage
+
+**Ingrédients** :
+- 👉*crémeux*
+- 👉*fond cuit*
+
+1. **[Verser]** Le 👉*crémeux* dans le 👉*fond cuit*. Réfrigérer pendant ⏳ 2 h (passif).
+```
+</CodeTabs>
+
+### Qu'a fait le compilateur ?
+
+En lançant `gram view tarte-citron.gram`, le compilateur s'est chargé de tous les calculs et du formatage à votre place :
+- **Temps Actif** : ~24.5 mins (il ignore intelligemment les 3 heures de repos au frigo).
+- **Temps Total** : ~3h 44.5 mins.
+- **Liste de Courses** : Il a agrégé l'intégralité des ingrédients. Il a combiné l'`@œuf{1}` et les `@œufs{3}` en `4 œufs`. Il a calculé les citrons entiers nécessaires pour le zeste et le jus. Il a automatiquement converti la proportion relative en exactement `150 g` de sucre.
+
+Félicitations, vous venez de coder une recette *data-driven* et ultra-*scalable* !

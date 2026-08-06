@@ -1,0 +1,149 @@
+---
+import { getTopicSlug } from "../data/blog-topics";
+
+interface Props {
+	title: string;
+	description: string;
+	backLink?: { href: string; label: string };
+	basePath: string;
+	topics: string[];
+	activeTopicSlug?: string;
+	topicsLabel: string;
+}
+
+const {
+	title,
+	description,
+	backLink,
+	basePath,
+	topics,
+	activeTopicSlug,
+	topicsLabel,
+} = Astro.props;
+---
+
+<div class="blog-container">
+  <header class="blog-header">
+    {
+      backLink && (
+        <a href={backLink.href} class="back-link">
+          {backLink.label}
+        </a>
+      )
+    }
+    <h1>{title}</h1>
+    <p class="description">{description}</p>
+  </header>
+
+  <nav class="topics-nav" aria-label={topicsLabel}>
+    <ul class="topic-list">
+      {
+        topics.map((topic) => {
+          const slug = getTopicSlug(topic);
+          return (
+            <li>
+              <a
+                href={`${basePath}/topic/${slug}`}
+                class={`topic-badge ${slug === activeTopicSlug ? "active" : ""}`}
+              >
+                {topic}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+
+  <div class="articles-list">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .blog-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .blog-header {
+    margin-bottom: 3rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover {
+    color: var(--sl-color-white);
+  }
+
+  .blog-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--sl-color-white);
+  }
+
+  .description {
+    font-size: 1.125rem;
+    color: var(--sl-color-gray-3);
+    max-width: 600px;
+  }
+
+  .topics-nav {
+    margin-bottom: 2.5rem;
+  }
+
+  .topic-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .topic-badge {
+    display: inline-block;
+    color: var(--sl-color-gray-3);
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+
+  .topic-badge:hover,
+  .topic-badge.active {
+    color: var(--sl-color-accent);
+  }
+
+  .articles-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 768px) {
+    .blog-container {
+      padding: 2rem 1rem;
+    }
+
+    .blog-header h1 {
+      font-size: 2rem;
+    }
+
+    .description {
+      font-size: 1rem;
+    }
+
+    .topic-badge {
+      font-size: 1rem;
+    }
+  }
+</style>

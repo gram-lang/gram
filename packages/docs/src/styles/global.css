@@ -1,0 +1,215 @@
+:root {
+	/* Gram Orange Theme - matching the new logo #FF7F00 */
+	--sl-color-accent-low: #331900;
+	--sl-color-accent: #ff7f00;
+	--sl-color-accent-high: #ffb366;
+
+	/* Additional branding */
+	--gram-orange: #ff7f00;
+	--gram-orange-light: #ffb347;
+	--gram-orange-dark: #cc6600;
+	--gram-orange-soft: rgba(255, 127, 0, 0.1);
+
+	/* Fonts */
+	--sl-font:
+		"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+		Arial, sans-serif;
+	--sl-font-mono:
+		"JetBrains Mono", "Fira Code", Consolas, Monaco, "Courier New", monospace;
+}
+
+:root[data-theme="light"] {
+	--sl-color-accent-low: #ffcc99;
+	--sl-color-accent: #ff8c1a;
+	--sl-color-accent-high: #cc6600;
+}
+
+/*
+ * Starlight's own base tokens (--sl-color-*, --sl-shadow-*) are only loaded
+ * by its `Page.astro` component (via `@astrojs/starlight/style/props.css`,
+ * which isn't in the package's public `exports` map, so it can't be imported
+ * here) — pages using this custom Layout (home, blog, playground) never
+ * receive them otherwise. Mirror the subset actually referenced across the
+ * site, using the same values Starlight computes, so these pages render
+ * consistently with /docs.
+ */
+:root {
+	--sl-color-white: hsl(0, 0%, 100%);
+	--sl-color-gray-3: hsl(30, 8%, 56%);
+	--sl-color-gray-4: hsl(30, 9%, 36%);
+	--sl-color-gray-5: hsl(30, 12%, 23%);
+	--sl-color-gray-6: hsl(30, 16%, 16%);
+	--sl-color-gray-7: hsl(30, 16%, 7%);
+	--sl-color-bg: hsl(30, 12%, 10%);
+	--sl-color-bg-nav: var(--sl-color-gray-6);
+	--sl-color-bg-sidebar: var(--sl-color-gray-6);
+	--sl-color-bg-inline-code: var(--sl-color-gray-5);
+	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-shade: hsl(30, 12%, 10%);
+	--sl-color-border: var(--sl-color-gray-4);
+	--sl-color-text: hsl(30, 8%, 77%);
+	--sl-color-text-accent: var(--sl-color-accent-high);
+	--sl-color-orange: hsl(41, 82%, 63%);
+	--sl-color-green: hsl(101, 82%, 63%);
+	--sl-color-green-low: hsl(101, 39%, 22%);
+	--sl-color-red: hsl(339, 82%, 63%);
+	--sl-color-red-high: hsl(339, 82%, 87%);
+	--sl-color-red-low: hsl(339, 39%, 22%);
+	--sl-shadow-sm:
+		0px 1px 1px hsla(0, 0%, 0%, 0.12), 0px 2px 1px hsla(0, 0%, 0%, 0.24);
+	--sl-shadow-lg:
+		0px 25px 7px hsla(0, 0%, 0%, 0.03), 0px 16px 6px hsla(0, 0%, 0%, 0.1),
+		0px 9px 5px hsla(223, 13%, 10%, 0.33), 0px 4px 4px hsla(0, 0%, 0%, 0.75),
+		0px 4px 2px hsla(0, 0%, 0%, 0.25);
+	--sl-text-h4: 1.25rem;
+
+	--shadow-color: 30deg 16% 4%;
+
+	--shadow-elevation-low:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.2),
+		0px 0.9px 0.9px -1.5px hsl(var(--shadow-color) / 0.18),
+		0px 2px 2.1px -3px hsl(var(--shadow-color) / 0.16);
+	--shadow-elevation-medium:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.21),
+		0px 1.6px 1.7px -1px hsl(var(--shadow-color) / 0.19),
+		0px 4px 4.2px -2px hsl(var(--shadow-color) / 0.18),
+		0.1px 9.8px 10.3px -3px hsl(var(--shadow-color) / 0.16);
+	--shadow-elevation-high:
+		0px 0.7px 0.7px hsl(var(--shadow-color) / 0.2),
+		0px 1.9px 2px -0.4px hsl(var(--shadow-color) / 0.19),
+		0px 3.4px 3.6px -0.9px hsl(var(--shadow-color) / 0.18),
+		0px 5.5px 5.8px -1.3px hsl(var(--shadow-color) / 0.17),
+		0px 9px 9.5px -1.7px hsl(var(--shadow-color) / 0.16),
+		0.1px 14.3px 15px -2.1px hsl(var(--shadow-color) / 0.15),
+		0.1px 22.1px 23.2px -2.6px hsl(var(--shadow-color) / 0.15),
+		0.2px 32.8px 34.4px -3px hsl(var(--shadow-color) / 0.14);
+}
+
+:root[data-theme="light"] {
+	--shadow-color: 30deg 10% 80%;
+	--sl-color-white: hsl(30, 12%, 10%);
+	--sl-color-gray-3: hsl(30, 9%, 36%);
+	--sl-color-gray-4: hsl(30, 8%, 56%);
+	--sl-color-gray-5: hsl(30, 33%, 88%);
+	--sl-color-gray-6: hsl(30, 20%, 94%);
+	--sl-color-gray-7: hsl(30, 19%, 97%);
+	--sl-color-border: #cecece;
+	--sl-color-bg: hsl(0, 0%, 100%);
+	--sl-color-bg-nav: var(--sl-color-gray-7);
+	--sl-color-bg-sidebar: var(--sl-color-bg);
+	--sl-color-bg-inline-code: var(--sl-color-gray-6);
+	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-shade: var(--sl-color-gray-6);
+	--sl-color-text: hsl(30, 12%, 23%);
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-orange: hsl(32, 100%, 42%);
+	--sl-color-green: hsl(91, 100%, 28%);
+	--sl-color-green-low: hsl(101, 85%, 90%);
+	--sl-color-red: hsl(339, 90%, 60%);
+	--sl-color-red-high: hsl(339, 80%, 30%);
+	--sl-color-red-low: hsl(339, 80%, 90%);
+	--sl-shadow-sm:
+		0px 1px 1px hsla(0, 0%, 0%, 0.06), 0px 2px 1px hsla(0, 0%, 0%, 0.06);
+	--sl-shadow-lg:
+		0px 25px 7px rgba(0, 0, 0, 0.01), 0px 16px 6px hsla(0, 0%, 0%, 0.03),
+		0px 9px 5px hsla(223, 13%, 10%, 0.08), 0px 4px 4px hsla(0, 0%, 0%, 0.16),
+		0px 4px 2px hsla(0, 0%, 0%, 0.04);
+}
+
+/* Reset and base styles for Astro pages */
+body {
+	margin: 0;
+	padding: 0;
+	font-family: var(--sl-font);
+	color: var(--sl-color-white);
+	background-color: var(--sl-color-bg);
+}
+
+.app-main {
+	flex: 1;
+}
+
+/* Screen reader only */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Unified styling for Language and Theme Selectors (Starlight Docs + Astro Site) */
+starlight-lang-select label,
+gram-theme-select label {
+	--sl-label-icon-size: 0px !important;
+	border: 1px solid var(--sl-color-border) !important;
+	padding-left: 0.5rem !important;
+	color: var(--sl-color-gray-3) !important;
+	max-height: 34px;
+}
+
+starlight-lang-select label {
+	--sl-select-width: 7.5em !important;
+	width: 120px !important;
+}
+
+gram-theme-select label {
+	width: 60px !important;
+}
+
+starlight-lang-select .label-icon,
+gram-theme-select .label-icon {
+	display: none !important;
+}
+
+starlight-lang-select label:hover,
+gram-theme-select label:hover {
+	border-color: var(--sl-color-gray-4) !important;
+	color: var(--sl-color-white) !important;
+}
+
+starlight-lang-select select,
+gram-theme-select select {
+	font-size: 0.85rem !important;
+	padding-inline: 0.5rem 0 !important;
+	padding-block: 0.45rem !important;
+}
+
+:root[data-theme="light"] body {
+	color: var(--sl-color-text);
+}
+
+/* Force natural line wrapping for specific languages like Gram */
+pre[data-language="gram"],
+pre[data-language="gram"] code,
+pre[data-language="markdown"],
+pre[data-language="markdown"] code {
+	white-space: pre-wrap !important;
+	word-break: break-word !important;
+}
+
+/*
+ * @gram-lang/renderer's gram.css derives its dark-mode preview palette from
+ * --bg-dark-anchor: var(--vp-c-bg, #1a1a1a) — a generic host-site theming hook,
+ * not VitePress-specific. Feed it Starlight's own background so the recipe
+ * preview/Gantt chart track the site's dark theme instead of its hardcoded
+ * fallback.
+ */
+:root {
+	--vp-c-bg: var(--sl-color-bg);
+}
+
+/*
+ * Override code block backgrounds to match the site's warm theme.
+ * This overrides the default Shiki themes (like github-dark) which have
+ * hardcoded blueish backgrounds.
+ */
+.expressive-code .frame,
+pre.astro-code,
+pre.shiki {
+	background-color: var(--sl-color-bg) !important;
+}
