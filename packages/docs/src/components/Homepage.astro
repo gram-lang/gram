@@ -9,8 +9,8 @@ import { GRAM_VERSION } from "../lib/gram-version";
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
 const codeThemes: Record<string, any> = {
-	light: "github-light",
-	dark: "github-dark",
+  light: "github-light",
+  dark: "github-dark",
 };
 ---
 
@@ -716,7 +716,7 @@ const codeThemes: Record<string, any> = {
 
   /* Mini terminal */
   .terminal-mini {
-    background-color: var(--sl-color-black);
+    background-color: var(--sl-color-bg);
     border: 1px solid var(--sl-color-border);
     margin-top: 1rem;
     padding: 1.5rem 5.5rem 1.5rem 2.5rem;

@@ -4,7 +4,7 @@ description: "Installez le CLI Gram, configurez votre éditeur et compilez votre
 ---
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
-import { CodePackageManagers } from 'starlight-theme-nova/components';
+import { CodeTabs, CodeTabItem } from 'starlight-theme-nova/components';
 
 Ce guide vous prend par la main pour installer l'écosystème Gram et compiler votre première recette.
 
@@ -14,11 +14,10 @@ Ce guide vous prend par la main pour installer l'écosystème Gram et compiler v
 
    Installez le CLI `gram` en global via votre gestionnaire de paquets favori. Il tourne indifféremment sur Node.js (>=20) ou [Bun](https://bun.sh/) :
 
-   <CodePackageManagers
-   packages="@gram-lang/cli"
-   dev={true}
-   packageManagers={['npm', 'bun']}
-   />
+   <CodeTabs syncKey="code-group-installation">
+     <CodeTabItem label="npm" lang="shell" code="npm install -D @gram-lang/cli" themes={{ light: 'github-light', dark: 'github-dark' }} />
+     <CodeTabItem label="bun" lang="shell" code="bun add -D @gram-lang/cli" themes={{ light: 'github-light', dark: 'github-dark' }} />
+   </CodeTabs>
 
    :::note
    Vous préférez compiler le CLI depuis les sources (pour contribuer au projet, par exemple) ? Jetez un œil à [CONTRIBUTING.md](https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md).
