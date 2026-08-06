@@ -15,7 +15,7 @@
 			"!**/grammar-content.ts",
 			"!**/*.svg",
 			"!packages/*/src/public",
-			"!packages/docs/src/styles/starlight/**"
+			"!packages/docs/src/styles/starlight"
 		]
 	},
 	"formatter": {
