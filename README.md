@@ -185,7 +185,7 @@ Gram stands on the shoulders of giants.
 ## Community & Support
 
 - **Bugs & Feature Requests**: Please use our primary [Forgejo issues](https://git.gram-lang.org/gram-lang/gram/issues) (or [GitHub mirror](https://github.com/gram-lang/gram/issues)).
-- **Chat & Discussions**: Join us on [Discord](https://discord.gg/) or visit [r/gram-lang](https://www.reddit.com/r/) for casual community discussions.
+- **Chat & Discussions**: Join us on [Discord](https://discord.gg/nsCBkhjuAR) or visit [r/gramlang](https://www.reddit.com/r/gramlang/) for casual community discussions.
 
 ---
 
