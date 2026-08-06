@@ -4,9 +4,9 @@ import { render } from "astro:content";
 import { getTopicSlug } from "../data/blog-topics";
 
 interface Props {
-  post: CollectionEntry<"blog">;
-  locale: "en" | "fr";
-  basePath: string;
+	post: CollectionEntry<"blog">;
+	locale: "en" | "fr";
+	basePath: string;
 }
 
 const { post, locale, basePath } = Astro.props;

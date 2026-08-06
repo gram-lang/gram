@@ -10,9 +10,9 @@ const postsToDisplay = resolveLocalizedPosts(allPosts, "fr");
 
 // Sort by date descending, then by id descending (for releases on the same day)
 postsToDisplay.sort((a, b) => {
-  const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
-  if (dateDiff !== 0) return dateDiff;
-  return b.id.localeCompare(a.id);
+	const dateDiff = b.data.date.valueOf() - a.data.date.valueOf();
+	if (dateDiff !== 0) return dateDiff;
+	return b.id.localeCompare(a.id);
 });
 
 const topics = [...new Set(postsToDisplay.map((post) => post.data.topic))];

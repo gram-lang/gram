@@ -2,23 +2,23 @@
 import { getTopicSlug } from "../data/blog-topics";
 
 interface Props {
-  title: string;
-  description: string;
-  backLink?: { href: string; label: string };
-  basePath: string;
-  topics: string[];
-  activeTopicSlug?: string;
-  topicsLabel: string;
+	title: string;
+	description: string;
+	backLink?: { href: string; label: string };
+	basePath: string;
+	topics: string[];
+	activeTopicSlug?: string;
+	topicsLabel: string;
 }
 
 const {
-  title,
-  description,
-  backLink,
-  basePath,
-  topics,
-  activeTopicSlug,
-  topicsLabel,
+	title,
+	description,
+	backLink,
+	basePath,
+	topics,
+	activeTopicSlug,
+	topicsLabel,
 } = Astro.props;
 ---
 

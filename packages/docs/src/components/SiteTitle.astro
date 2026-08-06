@@ -2,7 +2,8 @@
 import { GRAM_VERSION } from "../lib/gram-version";
 
 const { siteTitleHref, locale } = Astro.locals.starlightRoute;
-const changelogHref = locale === "fr" ? "/fr/docs/changelog" : "/docs/changelog";
+const changelogHref =
+	locale === "fr" ? "/fr/docs/changelog" : "/docs/changelog";
 ---
 
 <div class="site-title sl-flex">

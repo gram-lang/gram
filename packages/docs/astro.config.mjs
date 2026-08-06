@@ -34,7 +34,7 @@ export default defineConfig({
         starlightLinksValidator({
           errorOnFallbackPages: false,
           errorOnInconsistentLocale: true,
-          exclude: ['/play', '/play/', '/fr/play', '/fr/play/']
+          exclude: ['/play', '/play/', '/fr/play', '/fr/play/', '/docs', '/docs/', '/fr/docs', '/fr/docs/', '/en/docs', '/en/docs/']
         })
       ],
       title: 'Gram',

@@ -2,18 +2,18 @@
 import type { CollectionEntry } from "astro:content";
 
 interface Props {
-  post: CollectionEntry<"blog">;
-  postHref: string;
-  locale: "en" | "fr";
+	post: CollectionEntry<"blog">;
+	postHref: string;
+	locale: "en" | "fr";
 }
 
 const { post, postHref, locale } = Astro.props;
 
 function formatCardDate(date: Date, locale: "en" | "fr") {
-  const month = date
-    .toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", { month: "short" })
-    .replace(/\.$/, "");
-  return `${month.charAt(0).toUpperCase()}${month.slice(1)}. ${date.getDate()}`;
+	const month = date
+		.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", { month: "short" })
+		.replace(/\.$/, "");
+	return `${month.charAt(0).toUpperCase()}${month.slice(1)}. ${date.getDate()}`;
 }
 ---
 
