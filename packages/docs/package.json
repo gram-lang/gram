@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "bun scripts/generate-changelog.ts && bun scripts/generate-llms-full.ts",
+    "prebuild": "bun scripts/vendor-starlight-tokens.ts && bun scripts/generate-changelog.ts && bun scripts/generate-llms-full.ts",
     "build": "astro build && node scripts/check-bundle-size.mjs",
     "preview": "astro preview",
     "astro": "astro",

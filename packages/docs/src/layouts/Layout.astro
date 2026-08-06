@@ -1,4 +1,11 @@
 ---
+// Starlight's full base-token set (layered under @layer starlight.base), vendored by
+// scripts/vendor-starlight-tokens.ts — see that file for why this can't be a bare
+// `@astrojs/starlight/...` import. Must load before global.css so the brand
+// overrides there (unlayered) apply on top of a complete token set instead of a
+// hand-picked subset.
+import "../styles/starlight/layers.css";
+import "../styles/starlight/props.css";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import SiteFooter from "../components/SiteFooter.astro";

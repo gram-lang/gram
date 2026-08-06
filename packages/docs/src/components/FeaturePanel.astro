@@ -1,6 +1,6 @@
 ---
 import { Code } from "astro:components";
-import { Icon } from "@astrojs/starlight/components";
+import Icon from "./Icon.astro";
 
 interface Props {
 	id: string;
@@ -211,6 +211,7 @@ const {
 	.view-content {
 		display: none;
 		flex: 1;
+		background-color: var(--sl-color-bg);
 	}
 
 	.view-content.active {

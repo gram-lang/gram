@@ -19,7 +19,7 @@ git checkout main
 
 # 2. Build & Run tests
 echo "🔨 Building project..."
-bunx turbo run build
+bunx turbo run build --force
 
 echo "🧪 Running tests before deployment…"
 bun test

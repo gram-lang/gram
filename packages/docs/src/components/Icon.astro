@@ -1,0 +1,26 @@
+---
+// Local stand-in for @astrojs/starlight's <Icon>. See src/lib/starlight-icons.ts
+// for why: importing the real one from the `@astrojs/starlight/components` barrel
+// pulls every other Starlight user-component's CSS into this page's bundle.
+// biome-ignore lint/style/useImportType: starlightIcons is used in the template block below (set:html), which Biome's Astro support doesn't see — a type-only import breaks it at runtime.
+import { starlightIcons } from "../lib/starlight-icons";
+
+interface Props {
+	name: keyof typeof starlightIcons;
+	size?: string;
+	class?: string;
+}
+
+const { name, size = "1em", class: className } = Astro.props;
+---
+
+<svg
+	aria-hidden="true"
+	class={className}
+	width="16"
+	height="16"
+	viewBox="0 0 24 24"
+	fill="currentColor"
+	style={`width: ${size}; height: ${size};`}
+	set:html={starlightIcons[name]}
+/>
