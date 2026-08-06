@@ -28,13 +28,13 @@ Pour préciser une unité de mesure (poids, volume, etc.), glissez-la directemen
 [Placer] Les @tranches de bacon{1 kg} sur une plaque de cuisson et glacer avec du @sirop{1/2 c.à.s}.
 ```
 
-## Mise à l'échelle & Quantités Fixes
+## Ajustement des proportions & Quantités Fixes
 
-Par défaut, le compilateur Gram *scale* les quantités d'un `@ingrédient` de manière **strictement linéaire** en fonction du nombre de portions demandées.
+Par défaut, le compilateur Gram ajuste les quantités d'un `@ingrédient` de manière **strictement linéaire** en fonction du nombre de portions demandées.
 Si vous adaptez une recette de 2 à 4 portions, un `@ingrédient` avec `{100 g}` devient `{200 g}`.
 
 ### Quantités Fixes (`=`)
-Cependant, certains `@ingrédients` (sel, épices, piment) ne supportent pas bien la mise à l'échelle linéaire. Vous pouvez verrouiller leur quantité de marbre grâce au modificateur `=`.
+Cependant, certains `@ingrédients` (sel, épices, piment) ne supportent pas bien l'ajustement linéaire des proportions. Vous pouvez verrouiller leur quantité grâce au modificateur `=`.
 
 ```gram
 Assaisonner avec @=sel{1 c.à.c} au goût.
@@ -100,7 +100,7 @@ Gram fournit un modificateur dédié pour marquer l'`@ingrédient` de référenc
 Cela permet aux outils (comme le CLI ou les interfaces web) de calculer et d'afficher automatiquement les pourcentages du boulanger pour tous les autres éléments (ex : Eau : 70 %, Sel : 2 %) sans que vous n'ayez à les définir manuellement comme quantités relatives.
 
 :::note
-Pour un guide complet sur l'utilisation de cette fonctionnalité, consultez le guide sur la [Mise à l'échelle dynamique des Recettes](/fr/docs/how-to/scale-recipes#pourcentage-du-boulanger-bakers-math).
+Pour un guide complet sur l'utilisation de cette fonctionnalité, consultez le guide sur l'[Ajustement dynamique des proportions des recettes](/fr/docs/how-to/scale-recipes#pourcentage-du-boulanger-bakers-math).
 :::
 
 ## Syntaxe Avancée

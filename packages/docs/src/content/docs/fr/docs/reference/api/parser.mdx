@@ -110,7 +110,7 @@ interface QuantityAST {
   type: ASTNodeType.Quantity;
   value?: QuantityValueAST;            // Union discriminée : SingleQuantityAST | FractionQuantityAST | RangeQuantityAST
   unit?: string | null;
-  fixed: boolean;                      // true pour le modificateur "@=" (jamais mis à l'échelle)
+  fixed: boolean;                      // true pour le modificateur "@=" (proportions jamais ajustées)
 }
 
 interface RelativeQuantityAST {

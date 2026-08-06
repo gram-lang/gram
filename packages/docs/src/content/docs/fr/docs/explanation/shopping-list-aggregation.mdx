@@ -60,7 +60,7 @@ import { Steps } from '@astrojs/starlight/components';
 3. ### Masquage (*Ghosting*) des quantités relatives
    Les quantités relatives (comme `@eau{50 % @&farine}`) constituent un véritable casse-tête pour les listes de courses, surtout lorsqu'on traite plusieurs recettes en lot (*batch*). 
 
-   Si vous mettez le lot à l'échelle (*scaling*), la quantité d'eau dépend d'une quantité de farine ancrée dans une recette précise. Pour éviter les paradoxes mathématiques, la Kitchen vient **masquer (*ghost*)** ces quantités relatives dans la liste de courses. Elles sont exclues de l'agrégation principale et isolées en tant que dépendances non résolues, préservant ainsi la pureté mathématique des poids statiques.
+   Si vous ajustez les proportions du lot (*scaling*), la quantité d'eau dépend d'une quantité de farine ancrée dans une recette précise. Pour éviter les paradoxes mathématiques, la Kitchen vient **masquer (*ghost*)** ces quantités relatives dans la liste de courses. Elles sont exclues de l'agrégation principale et isolées en tant que dépendances non résolues, préservant ainsi la pureté mathématique des poids statiques.
 
 4. ### Résolution des Composites (MAX vs SUM)
    La partie la plus complexe du pipeline d'agrégation est la gestion des Ingrédients Composites (`<@`). 

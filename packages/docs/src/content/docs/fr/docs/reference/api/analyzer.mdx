@@ -101,7 +101,7 @@ function calculateNutrition(
 ): NutritionMetrics
 ```
 
-Aplatit les composites et les alternatives (en conservant la première option), ignore les ingrédients marqués `optional` et les quantités nulles, puis fait la somme des champs `nutrition` (déclarés **pour 100g** dans la base de données — voir [Formats de données](/fr/docs/reference/api/data-formats)) mis à l'échelle (*scale*) via la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si au moins une masse contributrice était déjà une estimation, ainsi qu'un taux de `coverage` de 0 à 1 (fraction d'ingrédients possédant des données nutritionnelles).
+Aplatit les composites et les alternatives (en conservant la première option), ignore les ingrédients marqués `optional` et les quantités nulles, puis fait la somme des champs `nutrition` (déclarés **pour 100g** dans la base de données — voir [Formats de données](/fr/docs/reference/api/data-formats)) ajustés (*scale*) via la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si au moins une masse contributrice était déjà une estimation, ainsi qu'un taux de `coverage` de 0 à 1 (fraction d'ingrédients possédant des données nutritionnelles).
 
 ## `diffRecipes`
 

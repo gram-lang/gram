@@ -27,16 +27,16 @@ import { Steps } from '@astrojs/starlight/components';
 4. **Catégorisation** : La liste de courses finale est regroupée par rayons (ex : *Produits laitiers*, *Fruits & légumes*, *Épicerie*) en se basant sur les données de `ingredients.yaml`, ce qui facilite grandement la navigation au supermarché.
 </Steps>
 
-## Mise à l'échelle par lot (*Batch scaling*)
+## Ajustement par lot des proportions (*Batch scaling*)
 
-Vous pouvez *scaler* tout votre plan de repas en une seule commande. Si vos recettes sont calibrées pour 2 portions mais que vous recevez 4 invités cette semaine, passez simplement un multiplicateur global :
+Vous pouvez ajuster les proportions de tout votre plan de repas en une seule commande. Si vos recettes sont calibrées pour 2 portions mais que vous recevez 4 invités cette semaine, passez simplement un multiplicateur global :
 
 ```bash
 gram shop "menus/semaine-1/*.gram" --scale 2
 ```
 
 :::note
-Lorsqu'on *scale* plusieurs fichiers d'un coup, on doit impérativement utiliser un multiplicateur numérique (`--scale 2`). Impossible d'utiliser une mise à l'échelle par référence (`--scale farine=500g`), car le compilateur ne saurait pas sur la farine de *quelle* recette s'aligner.
+Lorsqu'on ajuste plusieurs fichiers d'un coup, on doit impérativement utiliser un multiplicateur numérique (`--scale 2`). Impossible d'utiliser un ajustement par ingrédient repère (`--scale farine=500g`), car le compilateur ne saurait pas sur la farine de *quelle* recette s'aligner.
 :::
 
 ## Formats de Sortie

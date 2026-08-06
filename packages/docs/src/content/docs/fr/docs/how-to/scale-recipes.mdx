@@ -1,9 +1,9 @@
 ---
-title: "Mise à l'échelle dynamique des recettes"
+title: "Ajustement dynamique des proportions des recettes"
 description: "Utilisez les Quantités Relatives et le Pourcentage du Boulanger pour écrire des recettes par ratios qui se recalculent automatiquement."
 ---
 
-Gram est conçu pour que les recettes se mettent à l'échelle (*scale*) avec une précision mathématique parfaite dans tout l'écosystème. Que vous utilisiez le Playground interactif, génériez des documents HTML/Markdown ou lanciez des commandes CLI, Gram intègre nativement deux fonctionnalités taillées pour la cuisine basée sur les ratios (comme la boulangerie ou la pâtisserie) : les **Quantités Relatives** et le **Pourcentage du Boulanger** (*Baker's Math*).
+Gram est conçu pour que les recettes se recalculent (*scale*) avec une précision mathématique parfaite dans tout l'écosystème. Que vous utilisiez le Playground interactif, génériez des documents HTML/Markdown ou lanciez des commandes CLI, Gram intègre nativement deux fonctionnalités taillées pour la cuisine basée sur les ratios (comme la boulangerie ou la pâtisserie) : les **Quantités Relatives** et le **Pourcentage du Boulanger** (*Baker's Math*).
 
 Ce guide vous montre comment exploiter les **Quantités Relatives** pour architecturer des recettes dynamiques et auto-documentées, et comment utiliser le **Pourcentage du Boulanger** pour formater des recettes traditionnelles en pourcentages purs.
 
@@ -14,7 +14,7 @@ Prenons une recette de pain classique :
 [Mélanger] La @farine{500 g}, l'@eau{350 ml}, le @sel{10 g} et la @levure{5 g}.
 ```
 
-Si vous *scalez* cette recette avec un facteur 2 (via `gram build --scale 2`), tout est bêtement doublé. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser la mise à l'échelle par référence : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
+Si vous ajustez les proportions de cette recette avec un facteur 2 (via `gram build --scale 2`), tout est bêtement doublé. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser l'ajustement par ingrédient repère : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
 
 Alors, pourquoi aurions-nous besoin d'autre chose ?
 
@@ -51,7 +51,7 @@ import { Steps } from '@astrojs/starlight/components';
    :::
 </Steps>
 
-## Mettre à l'échelle la recette dynamique
+## Ajuster les proportions d'une recette dynamique
 
 Puisque ces relations sont encodées à la racine de la recette, Gram assure toute la gymnastique mathématique dynamiquement. Tout développeur ou boulanger lisant le `.gram` comprend instantanément qu'il s'agit d'une pâte hydratée à 70 %. 
 
@@ -61,27 +61,27 @@ Si vous voulez ajuster la recette pour une pâte plus humide à 75 % d'hydratati
 ```
 Et Gram s'occupe du reste. Fini le calcul mental fastidieux des poids absolus pour ajuster vos recettes.
 
-### Mise à l'échelle universelle
+### Ajustement universel des proportions
 
-Vous pouvez mettre à l'échelle les recettes visuellement dans le Playground, ou depuis le CLI en utilisant le paramètre `--scale` (disponible sur `view`, `build`, `print`, et `export`) :
+Vous pouvez ajuster les proportions des recettes visuellement dans le Playground, ou depuis le CLI en utilisant le paramètre `--scale` (disponible sur `view`, `build`, `print`, et `export`) :
 
 ```bash
 gram view pain.gram --scale farine=400g
 ```
 
-Gram va résoudre le facteur global (400/500 = 0.8), *scaler* l'ancre `farine` à 400 g, et tous les ingrédients relatifs s'évalueront en cascade sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
+Gram va résoudre le facteur global (400/500 = 0.8), ajuster l'ancre `farine` à 400 g, et tous les ingrédients relatifs s'évalueront en cascade sur cette nouvelle base (Eau : 70 % de 400 g = 280 g).
 
-### Les limites de la mise à l'échelle par référence
+### Les limites de l'ajustement par ingrédient repère
 
-Puisque la mise à l'échelle par référence dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram jettera une erreur (*throw*) plutôt que de calculer silencieusement un facteur aberrant :
+Puisque l'ajustement par ingrédient repère dérive le facteur depuis la quantité d'un ingrédient, tout n'est pas éligible comme cible — seul un ingrédient doté d'une quantité absolue explicite fait l'affaire. Si vous tentez de passer l'un des cas suivants, Gram jettera une erreur (*throw*) plutôt que de calculer silencieusement un facteur aberrant :
 
 | Vous avez tenté d'utiliser... | Pourquoi c'est rejeté | Que faire à la place |
 | :--- | :--- | :--- |
-| Une **quantité relative** (ex : `eau`, définie comme `70% @&farine`) | Sa valeur est *dérivée* d'un autre ingrédient — elle ne peut pas non plus servir de référence | Mettez à l'échelle l'ingrédient ancre (`--scale farine=400g`) |
-| Un **ingrédient fixe** (`@=`) ou une quantité textuelle comme `une pincée` | Il ne se met jamais à l'échelle par définition, il ne peut donc pas non plus décrire un facteur d'échelle | Choisissez un autre ingrédient qui évolue effectivement avec la recette |
-| Un ingrédient utilisé **uniquement à l'intérieur** d'une sous-recette (ex : `zeste-de-citron`, partie d'un composite `<@citron`) | Il n'est pas directement déclaré avec sa propre quantité — seul le parent composite en possède une | Mettez à l'échelle le parent composite (ex : `--scale citron=4`) — son propre total est une cible valide |
-| Une option au sein d'un groupe d'**ingrédients alternatifs** (`@beurre{100 g}\|@margarine{100 g}`) | Choisir une option de manière isolée ne représente pas le choix "soit l'un soit l'autre" qu'exprime la recette | Mettez à l'échelle un ingrédient différent et non ambigu, ailleurs dans la recette |
-| Un ingrédient fragmenté sur **deux unités incompatibles** dans la recette (ex : `300 g` dans une étape, `2 tasses` dans une autre) | Le total de la liste de courses ne peut pas être réduit à un seul chiffre par lequel diviser | Réécrivez la recette en utilisant une seule unité pour cet ingrédient, ou mettez à l'échelle par rapport à un autre ingrédient |
+| Une **quantité relative** (ex : `eau`, définie comme `70% @&farine`) | Sa valeur est *dérivée* d'un autre ingrédient — elle ne peut pas non plus servir de référence | Ajustez les proportions de l'ingrédient ancre (`--scale farine=400g`) |
+| Un **ingrédient fixe** (`@=`) ou une quantité textuelle comme `une pincée` | Il ne s'ajuste jamais par définition, il ne peut donc pas non plus décrire un facteur d'ajustement | Choisissez un autre ingrédient qui évolue effectivement avec la recette |
+| Un ingrédient utilisé **uniquement à l'intérieur** d'une sous-recette (ex : `zeste-de-citron`, partie d'un composite `<@citron`) | Il n'est pas directement déclaré avec sa propre quantité — seul le parent composite en possède une | Ajustez les proportions du parent composite (ex : `--scale citron=4`) — son propre total est une cible valide |
+| Une option au sein d'un groupe d'**ingrédients alternatifs** (`@beurre{100 g}\|@margarine{100 g}`) | Choisir une option de manière isolée ne représente pas le choix "soit l'un soit l'autre" qu'exprime la recette | Ajustez les proportions d'un ingrédient différent et non ambigu, ailleurs dans la recette |
+| Un ingrédient fragmenté sur **deux unités incompatibles** dans la recette (ex : `300 g` dans une étape, `2 tasses` dans une autre) | Le total de la liste de courses ne peut pas être réduit à un seul chiffre par lequel diviser | Réécrivez la recette en utilisant une seule unité pour cet ingrédient, ou ajustez les proportions par rapport à un autre ingrédient |
 | Une unité appartenant à une famille physique différente (ex : `eau=1L` contre une recette écrite en `g`) sans aucune densité disponible | Convertir de la masse au volume requiert une densité spécifique à l'ingrédient | Ajoutez une densité via `gram db enrich`, ou déclarez-en une directement dans le bloc `densities:` du frontmatter de la recette |
 
 Les unités d'une *même* famille se convertissent automatiquement — `--scale farine=1kg` pour une recette écrite en `500 g` fonctionne directement (facteur `2`), sans recourir à la base de données. Croiser les familles (masse ↔ volume) fonctionne également, tant qu'une densité est disponible : soit via votre `ingredients.yaml` (`gram db enrich`), soit via une surcharge ponctuelle au sein de la recette elle-même :
@@ -129,9 +129,9 @@ gram view pain.gram --bakers-reference=farine
 
 ## Ingrédients Fixes
 
-Parfois, une recette contient des ingrédients qui ne doivent **jamais** être *scalés*, peu importe le nombre de portions générées. Pensez à l'huile de friture au fond d'une poêle, ou à une pincée de sel pour l'assaisonnement.
+Parfois, une recette contient des ingrédients dont les proportions ne doivent **jamais** varier, peu importe le nombre de portions générées. Pensez à l'huile de friture au fond d'une poêle, ou à une pincée de sel pour l'assaisonnement.
 
-Vous pouvez utiliser le **Modificateur Fixe** (`=`) pour protéger un ingrédient de la mise à l'échelle :
+Vous pouvez utiliser le **Modificateur Fixe** (`=`) pour protéger un ingrédient de l'ajustement des proportions :
 
 ```gram
 Faire chauffer @=huile de friture{1 L} dans une sauteuse.

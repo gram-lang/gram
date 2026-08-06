@@ -37,7 +37,7 @@ interface CompilationResult {
   title: string | null;
   slug: string | null;
   meta: Meta;                        // frontmatter parsé
-  scaleFactor?: number;               // présent une fois une mise à l'échelle appliquée
+  scaleFactor?: number;               // présent une fois un ajustement des proportions appliqué
   registry: {
     ingredients: Record<string, RegistryEntry>;
     cookware: Record<string, { id: string; name: string }>;
@@ -57,9 +57,9 @@ interface CompilationResult {
 
 Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté de cette structure, et [Avertissements](/fr/docs/reference/api/warnings) pour le catalogue de ce qui peut apparaître dans `.warnings`.
 
-## Mise à l'échelle
+## Ajustement des proportions
 
-Les recettes sont d'abord compilées avec leurs quantités par défaut ; la mise à l'échelle (*scaling*) est une étape séparée et composable. Ainsi, les appelants (ex : un *slider* « portions » temps réel dans une UI) peuvent recalculer les quantités à la volée, sans devoir re-parser ni recompiler.
+Les recettes sont d'abord compilées avec leurs quantités par défaut ; l'ajustement des proportions (*scaling*) est une étape séparée et composable. Ainsi, les appelants (ex : un *slider* « portions » temps réel dans une UI) peuvent recalculer les quantités à la volée, sans devoir re-parser ni recompiler.
 
 ```typescript
 function resolveScaleFactor(

@@ -59,7 +59,7 @@ gram build brioche.gram --scale 2 --output ./dist-double
 ```
 - Par défaut, recrache le JSON pur directement sur la sortie standard (`stdout`) pour faciliter le *piping*.
 - Calcule automatiquement les données nutritionnelles et la standardisation des masses physiques via la base de données.
-- `--scale <facteur>` intègre la mise à l'échelle (*scaling*) en dur dans le JSON de sortie. Le mode par référence (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un *build* reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour trouver votre facteur, puis passez ce multiplicateur numérique à `build`.
+- `--scale <facteur>` intègre l'ajustement des proportions (*scaling*) en dur dans le JSON de sortie. Le mode par référence (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un *build* reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour trouver votre facteur, puis passez ce multiplicateur numérique à `build`.
 - Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`.
 
 #### `gram view <fichier>`
@@ -67,7 +67,7 @@ Affiche une recette directement dans le terminal, proprement formatée dans une 
 ```bash
 gram view brioche.gram                      # Vue par défaut
 gram view brioche.gram --scale 2            # Voir avec des quantités doublées
-gram view brioche.gram --scale farine=300g  # Voir mis à l'échelle pour farine = 300g
+gram view brioche.gram --scale farine=300g  # Voir ajusté pour farine = 300g
 ```
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la nutrition calculée, les minutages, et les listes d'ingrédients à cocher.
@@ -152,18 +152,18 @@ Le diff couvre **six axes** :
 - Options : `--ref <réf-git>`.
 
 #### `gram scale <fichier>`
-Affiche une comparaison avant/après des quantités d'ingrédients à une échelle donnée.
+Affiche une comparaison avant/après des quantités d'ingrédients selon l'ajustement choisi.
 ```bash
 gram scale brioche.gram --scale 2            # Doubler toutes les quantités
 gram scale brioche.gram --scale 0.5          # Diviser par deux toutes les quantités
-gram scale brioche.gram --scale farine=300g  # Mettre à l'échelle pour farine = 300g
-gram scale brioche.gram --scale oeufs=3      # Mettre à l'échelle pour oeufs = 3
+gram scale brioche.gram --scale farine=300g  # Ajuster les proportions pour farine = 300g
+gram scale brioche.gram --scale oeufs=3      # Ajuster les proportions pour oeufs = 3
 ```
-- Affiche un tableau de comparaison : quantités d'origine (estompées) vs mises à l'échelle (en vert).
-- Les quantités qui ne peuvent pas être mises à l'échelle (valeurs textuelles comme "1 pincée") sont listées séparément.
+- Affiche un tableau de comparaison : quantités d'origine (estompées) vs ajustées (en vert).
+- Les quantités qui ne s'ajustent pas (valeurs textuelles comme "1 pincée") sont listées séparément.
 - Lève un *warning* pour les facteurs extrêmes (en-deçà de ×0.1 ou au-delà de ×20) et rappelle que les temps de cuisson, eux, ne sont jamais modifiés.
 - Le mode par référence (`id=valeur`) déduit le facteur à partir de la quantité actuelle de l'ingrédient ciblé (l'ID doit correspondre à sa clé). Les unités de la même famille sont converties à la volée (ex. `farine=1kg` pour une recette écrite en `500g`). La passerelle masse ↔ volume (ex. `eau=150g` pour une recette en `ml`) fonctionne aussi, à condition qu'une densité soit connue (soit via `gram db enrich`, soit via une surcharge `densities: ["eau:1.0"]` dans le frontmatter).
-- Tous les ingrédients ne peuvent pas être une cible de référence : les ingrédients fixes (`@=`), les quantités relatives (`70% @&farine`), les ingrédients utilisés uniquement dans une sous-recette, les ingrédients dans un groupe d'alternatives, et les ingrédients divisés entre des unités incompatibles sont rejetés avec une erreur spécifique expliquant pourquoi. Voir la [Analyse approfondie : Mise à l'échelle](/fr/docs/explanation/scaling) pour la liste complète.
+- Tous les ingrédients ne peuvent pas être une cible de référence : les ingrédients fixes (`@=`), les quantités relatives (`70% @&farine`), les ingrédients utilisés uniquement dans une sous-recette, les ingrédients dans un groupe d'alternatives, et les ingrédients divisés entre des unités incompatibles sont rejetés avec une erreur spécifique expliquant pourquoi. Voir la fiche [Analyse approfondie : Ajustement des proportions](/fr/docs/explanation/scaling) pour la liste complète.
 - Options : `--scale <facteur|réf>`, `--skip-db`, `--db`.
 
 #### `gram watch [dossier]`

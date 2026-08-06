@@ -37,7 +37,7 @@ Ces trois formateurs partagent un seul et même moteur de traversée sous le cap
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut : ex. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et les instructions de mise en place restent intactes). |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
-| `interactiveScaling` | `boolean` | Affiche des contrôles interactifs de mise à l'échelle des portions/ingrédients (HTML uniquement). |
+| `interactiveScaling` | `boolean` | Affiche des contrôles interactifs d'ajustement des portions/ingrédients (HTML uniquement). |
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI, via les dictionnaires de `@gram-lang/i18n`. |
 | `renderId` | `string` | Préfixe pour les ids d'ancre de notes de bas de page — à redéfinir en cas de rendu de plusieurs recettes sur une même page pour éviter les collisions d'id. |
 

@@ -68,5 +68,5 @@ Par exemple, Kitchen sait que vous avez demandé `1 tasse` de farine, mais ne sa
 
 ## Autres Responsabilités
 
-- **Mise à l'échelle (Scaling)** : Si `scaleFactor` est injecté à la compilation, toutes les quantités sont redimensionnées proportionnellement. Sauf exceptions : les constantes préfixées par `=` (ex: `@sel{=5g}`, insensibles au volume de la recette) et les champs libres non quantifiables.
+- **Ajustement des proportions (Scaling)** : Si `scaleFactor` est injecté à la compilation, toutes les quantités sont redimensionnées proportionnellement. Sauf exceptions : les constantes préfixées par `=` (ex: `@sel{=5g}`, insensibles au volume de la recette) et les champs libres non quantifiables.
 - **Validation du Pourcentage du Boulanger** : Le compilateur s'assure qu'un et un seul ingrédient porte la couronne du modificateur de pourcentage du boulanger (`*`). S'il y a des prétendants multiples, il sévira avec une belle erreur.

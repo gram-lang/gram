@@ -26,7 +26,7 @@ import { Steps } from '@astrojs/starlight/components';
      // 2. Compiler en sections structurées
      const compiled = compile(ast);
    
-     // 3. Enrichir avec les calculs culinaires (rendements, % du boulanger, mise à l'échelle)
+     // 3. Enrichir avec les calculs culinaires (rendements, % du boulanger, ajustement des proportions)
      const analyzed = analyze(compiled, myDatabase);
    
      return analyzed.result;
@@ -50,11 +50,11 @@ import { Steps } from '@astrojs/starlight/components';
    }
    ```
    
-   Si vous omettez `db`, l'étape d'analyse est totalement ignorée (`analyzed` vaudra `null`). Jetez un œil à la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-langcli) pour découvrir la liste exhaustive des options (facteur d'échelle, % du boulanger, etc.).
+   Si vous omettez `db`, l'étape d'analyse est totalement ignorée (`analyzed` vaudra `null`). Jetez un œil à la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-langcli) pour découvrir la liste exhaustive des options (ajustement des proportions, % du boulanger, etc.).
    :::
    
    :::note
-   Voir la [Référence API](/fr/docs/reference/api/) pour la signature complète de `getAST`, `compile`, et `analyze`, ainsi que tout ce que le pipeline expose (mise à l'échelle, diff, avertissements, i18n).
+   Voir la [Référence API](/fr/docs/reference/api/) pour la signature complète de `getAST`, `compile`, et `analyze`, ainsi que tout ce que le pipeline expose (ajustement des proportions, diff, avertissements, i18n).
    :::
 
 2. ### Comprendre la Structure du JSON

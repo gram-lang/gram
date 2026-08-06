@@ -15,8 +15,8 @@ import { Steps } from '@astrojs/starlight/components';
 
 1. **Standardisation des masses** : Avant le moindre calcul nutritionnel, l'Analyseur doit convertir chaque ingrédient de la recette en une masse standard exprimée en grammes. (Voir [Standardisation des masses](/fr/docs/explanation/mass-and-yield)).
 2. **Recherche dans la Base de Données** : L'Analyseur interroge votre base de données `ingredients.yaml` pour le bloc `nutrition` de chaque ingrédient. Les valeurs de la base de données doivent toujours représenter les nutriments **pour 100 g** de l'ingrédient cru.
-3. **Mise à l'échelle proportionnelle** : L'Analyseur met à l'échelle (*scale*) les valeurs aux 100 g issues de la base de données pour correspondre à la masse réellement utilisée dans la recette.
-4. **Agrégation** : Les valeurs mises à l'échelle pour tous les ingrédients sont additionnées pour calculer la Nutrition Totale de la Recette.
+3. **Adaptation proportionnelle** : L'Analyseur adapte les valeurs aux 100 g issues de la base de données pour correspondre à la masse réellement utilisée dans la recette.
+4. **Agrégation** : Les valeurs ajustées pour tous les ingrédients sont additionnées pour calculer la Nutrition Totale de la Recette.
 5. **Division par Portions** : Si le frontmatter de la recette définit `portions: 4`, la Nutrition Totale de la Recette est divisée par 4 pour fournir des données Par Portion.
 </Steps>
 

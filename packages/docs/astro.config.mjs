@@ -57,7 +57,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'What is Gram?', translations: { fr: "C'est quoi Gram ?" }, slug: 'docs/explanation/philosophy' },
-            { label: 'Getting Started', translations: { fr: 'Pour commencer' }, slug: 'docs/tutorials/getting-started' },
+            { label: 'Getting Started', translations: { fr: 'Premiers pas' }, slug: 'docs/tutorials/getting-started' },
             { label: 'Your First Recipe', translations: { fr: 'Votre première recette' }, slug: 'docs/tutorials/first-recipe' }
           ]
         },
@@ -67,7 +67,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'Manage Database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
-            { label: 'Scale Recipes Dynamically', translations: { fr: "Mise à l'échelle dynamique" }, slug: 'docs/how-to/scale-recipes' },
+            { label: 'Scale Recipes Dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
             { label: 'Generate Shopping List', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
             { label: 'How to Build a Custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' }
           ]
@@ -136,7 +136,7 @@ export default defineConfig({
             { label: 'Mass & Yield', translations: { fr: 'Masse & Rendement' }, slug: 'docs/explanation/mass-and-yield' },
             { label: 'Nutrition', slug: 'docs/explanation/nutrition' },
             { label: 'Shopping Lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
-            { label: 'Scaling', translations: { fr: "Mise à l'échelle" }, slug: 'docs/explanation/scaling' }
+            { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' }
           ]
         },
         { label: 'Changelog', translations: { fr: 'Changelog' }, slug: 'docs/changelog' }
