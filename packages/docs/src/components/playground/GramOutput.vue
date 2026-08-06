@@ -3,6 +3,7 @@ import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
 
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
+import { trackEvent } from "../../lib/umami";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
@@ -32,6 +33,7 @@ const copied = ref(false);
 function copyOutput() {
 	if (props.viewMode === "preview" || props.viewMode === "json-tree") return;
 	navigator.clipboard.writeText(props.content).then(() => {
+		trackEvent("playground-copy-output", { view: props.viewMode });
 		copied.value = true;
 		setTimeout(() => {
 			copied.value = false;

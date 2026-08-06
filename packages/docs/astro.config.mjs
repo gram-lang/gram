@@ -9,7 +9,7 @@ import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
-import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT } from './src/lib/head-scripts.ts';
+import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT, GLOBAL_TRACKING_SCRIPT } from './src/lib/head-scripts.ts';
 
 const isProd = process.env.NODE_ENV === 'production';
 const SITE_URL = 'https://gram-lang.org';
@@ -183,6 +183,9 @@ export default defineConfig({
             src: UMAMI_SCRIPT_SRC,
             'data-website-id': UMAMI_WEBSITE_ID
           }
+        }, {
+          tag: /** @type {'script'} */ ('script'),
+          content: GLOBAL_TRACKING_SCRIPT
         }] : []),
         {
           tag: 'script',

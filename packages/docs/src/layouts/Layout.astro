@@ -13,6 +13,7 @@ import {
 	UMAMI_WEBSITE_ID,
 	UMAMI_SCRIPT_SRC,
 	FR_REDIRECT_SCRIPT,
+	GLOBAL_TRACKING_SCRIPT,
 } from "../lib/head-scripts";
 
 export interface Props {
@@ -64,6 +65,7 @@ const {
     }
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script is:inline set:html={FR_REDIRECT_SCRIPT} />
+    {import.meta.env.PROD && <script is:inline set:html={GLOBAL_TRACKING_SCRIPT} />}
     <script is:inline>
       /* Initialize theme to avoid FOUC and restore user preference */
       (() => {

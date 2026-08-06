@@ -413,7 +413,11 @@ const codeThemes: Record<string, any> = {
         <code id="cli-init-cmd"
           ><span class="prompt">$</span> npx @gram-lang/cli init</code
         >
-        <button class="copy-cmd-btn" aria-label="Copy command">Copy</button>
+        <button
+          class="copy-cmd-btn"
+          aria-label="Copy command"
+          data-umami-event="copy-cli-init-command">Copy</button
+        >
       </div>
     </div>
   </section>
@@ -421,6 +425,8 @@ const codeThemes: Record<string, any> = {
 
 <script>
   // Preview/JSON toggles and copy-to-clipboard
+  import { trackEvent } from "../lib/umami";
+
   document.addEventListener("DOMContentLoaded", () => {
     // Preview/JSON Toggle Logic
     const featurePanels = document.querySelectorAll(".feature-panel");
@@ -437,6 +443,7 @@ const codeThemes: Record<string, any> = {
           const viewType = btn.getAttribute("data-view");
           const targetView = panel.querySelector(`.${viewType}-view`);
           if (targetView) targetView.classList.add("active");
+          trackEvent("homepage-feature-view", { feature: panel.id, view: viewType });
         });
       });
     });

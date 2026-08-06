@@ -31,7 +31,25 @@ import "@gram-lang/renderer/gram.css";
 import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
 import { getDictionary } from "@gram-lang/i18n";
+import { trackEvent, debounce } from "../../lib/umami";
 const props = defineProps<{ lang: "en" | "fr" }>();
+
+// updateGram() re-runs on every keystroke; debounce so we track one compile
+// event per pause in typing instead of flooding Umami.
+const trackPlaygroundRun = debounce(
+	(success: boolean, codeLength: number, extra?: Record<string, unknown>) => {
+		trackEvent("playground-run", {
+			success,
+			code_length: codeLength,
+			...extra,
+		});
+	},
+	1000,
+);
+const trackPlaygroundWarnings = debounce((codes: string[]) => {
+	if (codes.length === 0) return;
+	trackEvent("playground-warning", { codes: [...new Set(codes)].join(",") });
+}, 1000);
 const currentLang = computed(() => props.lang);
 provide("lang", currentLang);
 
@@ -147,6 +165,7 @@ function loadExample(path: string) {
 		.then((res) => res.text())
 		.then((text) => {
 			code.value = text;
+			trackEvent("playground-load-example", { example: path });
 		});
 }
 
@@ -193,6 +212,9 @@ function updateGram() {
 	errorMsg.value = "";
 	scaleError.value = "";
 	editorRef.value?.setErrorMarker(null, "");
+	// Which pipeline stage is running, so a thrown error can be attributed to
+	// it (parse errors are already distinguished via GramParseError below).
+	let stage: "compile" | "analyze" | "render" = "compile";
 	try {
 		const ast = getAST(code.value);
 		let result = compile(ast, { ...options.value, scaleFactor: 1 });
@@ -242,6 +264,7 @@ function updateGram() {
 			}
 		}
 
+		stage = "analyze";
 		const analysisOptions = {
 			...options.value,
 			enableBakersMath: options.value.bakersMath,
@@ -250,8 +273,10 @@ function updateGram() {
 		const analysis = analyze(result, fullDatabase, analysisOptions);
 		result = analysis.result;
 
+		stage = "render";
 		warnings.value = result.warnings || [];
 		jsonData.value = result;
+		trackPlaygroundWarnings(warnings.value.map((w) => w.code));
 
 		if (viewMode.value === "json") {
 			content.value = JSON.stringify(result, null, 2);
@@ -266,11 +291,20 @@ function updateGram() {
 				lang: currentLang.value,
 			});
 		}
+		trackPlaygroundRun(true, code.value.length);
 	} catch (e: any) {
 		errorMsg.value = e.message;
 		warnings.value = [];
 		if (e instanceof GramParseError) {
 			editorRef.value?.setErrorMarker(e.offset, e.message);
+			// `expected` is ohm's grammar-rule vocabulary (e.g. "step"), not
+			// user recipe content, so it's safe to send as-is.
+			trackPlaygroundRun(false, code.value.length, {
+				error_type: "parse",
+				expected: e.expected,
+			});
+		} else {
+			trackPlaygroundRun(false, code.value.length, { error_type: stage });
 		}
 	}
 }
@@ -284,6 +318,7 @@ function handleScaleUpdate(factor: number) {
 
 // biome-ignore lint/correctness/noUnusedVariables: handleScaleApply is used in the <template> block below, which Biome's Vue support doesn't see.
 function handleScaleApply() {
+	trackEvent("playground-scale", { factor: scaleFactorString.value });
 	updateGram();
 }
 
@@ -298,6 +333,23 @@ watch(
 	() => {
 		if (!scaleTargetId.value) {
 			updateGram();
+		}
+	},
+	{ deep: true },
+);
+
+watch(
+	[viewMode, () => options.value],
+	([newView, newOptions], [oldView, oldOptions]) => {
+		if (newView !== oldView) {
+			trackEvent("playground-change-view", { view: newView });
+		}
+		if (JSON.stringify(newOptions) !== JSON.stringify(oldOptions)) {
+			trackEvent("playground-toggle-option", {
+				bakersMath: newOptions.bakersMath,
+				nutrition: newOptions.enableNutritionalEstimation,
+				yields: newOptions.enableYieldCalculation,
+			});
 		}
 	},
 	{ deep: true },

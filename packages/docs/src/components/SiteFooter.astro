@@ -88,14 +88,20 @@ const prefix = currentLang === "fr" ? "/fr" : "";
         <ul>
           <li>
             <a href={`${prefix}/docs/reference/tooling/vscode-extension`}
+              data-umami-event="click-tooling"
+              data-umami-event-target="vscode"
               >{langText.vscode}</a
             >
           </li>
           <li>
-            <a href={`${prefix}/docs/reference/tooling/cli`}>{langText.cli}</a>
+            <a href={`${prefix}/docs/reference/tooling/cli`}
+              data-umami-event="click-tooling"
+              data-umami-event-target="cli">{langText.cli}</a>
           </li>
           <li>
             <a href={`${prefix}/docs/reference/tooling/language-server`}
+              data-umami-event="click-tooling"
+              data-umami-event-target="lsp"
               >{langText.languageServer}</a
             >
           </li>
@@ -115,28 +121,38 @@ const prefix = currentLang === "fr" ? "/fr" : "";
             <a
               href="https://git.gram-lang.org/gram-lang/gram/issues"
               target="_blank"
-              rel="noopener">{langText.reportIssue}</a
+              rel="noopener"
+              data-umami-event="click-repository"
+              data-umami-event-target="issues"
+              >{langText.reportIssue}</a
             >
           </li>
           <li>
             <a
               href="https://git.gram-lang.org/gram-lang/gram/src/branch/main/CONTRIBUTING.md"
               target="_blank"
-              rel="noopener">{langText.contributing}</a
+              rel="noopener"
+              data-umami-event="click-repository"
+              data-umami-event-target="contributing"
+              >{langText.contributing}</a
             >
           </li>
           <li>
             <a
               href="https://discord.gg/nsCBkhjuAR"
               target="_blank"
-              rel="noopener">{langText.discord}</a
+              rel="noopener"
+              data-umami-event="click-discord"
+              >{langText.discord}</a
             >
           </li>
           <li>
             <a
               href="https://www.reddit.com/r/gramlang/"
               target="_blank"
-              rel="noopener">{langText.reddit}</a
+              rel="noopener"
+              data-umami-event="click-reddit"
+              >{langText.reddit}</a
             >
           </li>
         </ul>
