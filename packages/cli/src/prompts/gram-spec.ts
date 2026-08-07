@@ -611,7 +611,12 @@ SECTION 8 — REFERENCE EXAMPLE
 This example uses most features. Use it as your mental model for SYNTAX AND STRUCTURE only — it
 is written in English for consistency across this document. Every ingredient name, cookware
 name, and action verb (\`[Mix]\`, \`[Bind]\`...) you output MUST be written in the target language
-given at the top of this prompt — never copy English words from this example verbatim.
+given at the top of this prompt — never copy English words from this example verbatim. Also do
+not copy English GRAMMAR: this example omits articles before @/#-tokens ("Mix @flour{250g}
+with...") only because English doesn't require them there — that is a feature of English, not
+of Gram's syntax. Write full, grammatically natural sentences in the target language, with
+articles, prepositions, and agreement exactly as if these tokens were ordinary words (e.g. in
+French: "Assaisonner les @poulet{4}...", never "Assaisonner @poulet{4}...").
 
 ---
 title: 'Lemon Meringue Pie'
