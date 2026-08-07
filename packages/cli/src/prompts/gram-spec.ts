@@ -243,6 +243,17 @@ Attach preparation notes directly to the ingredient. NO space between \`{}\` and
 - ✅ \`@onion{1}(finely diced)\`
 - ❌ \`@onion{1} (finely diced)\` ← space breaks parsing
 
+### Keep ingredient names short — move descriptive qualifiers to the preparation
+
+Don't fuse every descriptive/state qualifier into the ingredient NAME just because the source
+phrase reads as one compound noun in its original language (e.g. English "boneless skinless
+chicken breast"). Keep the core noun short and move qualifiers like boneless/skinless/peeled/
+seedless into the preparation instead — same rule as any other prep, just applied to qualifiers
+that happened to be grammatically fused onto the noun in the source text:
+- ❌ \`@boneless skinless chicken breast{500g}\`
+- ✅ \`@chicken breast{500g}(boneless, skinless)\`
+This keeps names short and natural in any target language.
+
 ### Aliases (display rename)
 
 Shorten a long name for step readability:
