@@ -11,12 +11,12 @@
 // for what that looked like).
 
 import { copyFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
-const starlightStyleDir = join(
-	import.meta.dirname,
-	"../../../node_modules/@astrojs/starlight/style",
+const starlightPkgDir = dirname(
+	require.resolve("@astrojs/starlight/package.json"),
 );
+const starlightStyleDir = join(starlightPkgDir, "style");
 const destDir = join(import.meta.dirname, "../src/styles/starlight");
 
 mkdirSync(destDir, { recursive: true });
