@@ -67,6 +67,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'Manage Database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
+            { label: 'Configure AI Provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
             { label: 'Scale Recipes Dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
             { label: 'Generate Shopping List', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
             { label: 'How to Build a Custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' }

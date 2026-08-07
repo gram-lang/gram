@@ -36,7 +36,7 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
    gram db lint
    ```
    
-   Cette commande s'appuie sur l'IA (si configurée) pour détecter les doublons sémantiques au sein de votre base de données. 
+   Cette commande s'appuie sur l'IA (voir [Configurer l'IA](/fr/docs/how-to/configure-ai)) pour détecter les doublons sémantiques au sein de votre base de données. 
    Si elle trouve `œuf` et `œufs`, elle vous demandera lequel conserver comme clé principale. Elle fusionnera ensuite l'autre dans la liste des `aliases` (alias) de la clé principale.
    
    :::tip
@@ -53,7 +53,7 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
    
    Maintenant que votre base de données contient des entrées propres et dédupliquées, vous devez renseigner leurs données physiques (densité, poids unitaire, rendement) et nutritionnelles (calories, macros). 
    
-   Faire cela manuellement est fastidieux. Gram peut faire appel à l'IA pour le faire à votre place par lots :
+   Faire cela manuellement est fastidieux. Gram peut faire appel à l'IA pour le faire à votre place par lots (voir [Configurer l'IA](/fr/docs/how-to/configure-ai)) :
    
    ```bash
    gram db enrich

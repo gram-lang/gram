@@ -1,0 +1,191 @@
+---
+title: "How to Configure AI for the Gram CLI"
+description: "Learn how to configure AI providers (Google Gemini, OpenAI, Anthropic, Ollama) for recipe importing, ingredient database linting, and automated data enrichment in the Gram CLI."
+---
+
+The Gram CLI (`@gram-lang/cli`) can leverage Large Language Models (LLMs) to automate tedious tasks such as converting web recipes into `.gram` files, detecting ingredient duplicates in your database, and filling missing nutritional and physical metadata.
+
+This guide explains how to set up and configure your preferred AI provider step by step.
+
+import { Steps } from '@astrojs/starlight/components';
+
+## What AI Powers in the Gram CLI
+
+Configuring an AI provider unlocks three powerful CLI features:
+
+1. **Recipe Import (`gram import <source>`)**: Automatically converts web pages (extracting JSON-LD recipe metadata) or local JSON-LD recipe files into valid `.gram` syntax in your target language.
+2. **Database Deduplication & Linting (`gram db lint`)**: Uses AI to detect semantic duplicates, singular/plural mismatches, and multi-language entries in `ingredients.yaml`, interactively merging them into primary keys and aliases.
+3. **Database Enrichment (`gram db enrich`)**: Automatically queries nutritional values (calories, macros, micronutrients) and physical properties (densities, yields, unit weights) to fill in incomplete entries in `ingredients.yaml`.
+
+---
+
+## Why AI? Restructuring vs. Transliteration
+
+Gram is not just a markup format; it is a domain-specific model for recipes. Converting a traditional recipe into `.gram` syntax is **not a mechanical string transformation**. 
+
+Traditional recipes contain many steps that exist only because unstructured text has no other way to express them:
+- *"Cut 1 lemon in half"* → In Gram, this dissolves into an inline preparation annotation on the ingredient: `@lemon{1}(cut in half)`.
+- *"In a small bowl, combine salt and pepper and set aside"* → In Gram, this becomes an intermediate variable reference (`&seasoning`).
+- *"Remove from heat and let cool for 30 minutes"* → In Gram, this is a passive rest timer annotation (`~_{30min}`).
+
+A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@juice<@lemon{1}`).
+
+**AI acts as a domain-aware recipe compiler.** It analyzes unstructured recipe text, extracts the underlying culinary logic, absorbs preparation steps directly into ingredient annotations, restructures the workflow into logical sections, and outputs clean, idiomatic `.gram` code that a human expert recipe author would write.
+
+Similarly, for database management:
+- **`gram db lint`**: AI detects semantic equivalence across phrasings and languages (e.g. knowing that `softened butter`, `butter`, `unsalted butter`, and `beurre` refer to the same canonical ingredient).
+- **`gram db enrich`**: AI fetches standardized physical densities (volume-to-mass conversion) and nutritional facts from culinary domain knowledge without requiring manual lookup.
+
+---
+
+## Configuration Methods
+
+You can configure AI using **interactive setup**, **environment variables** (recommended for security), or **configuration files**.
+
+### Method 1: Interactive Setup with `gram init`
+
+If you are initializing a new project or want a guided setup, run:
+
+```bash
+gram init
+```
+
+During initialization, the CLI will ask:
+<Steps>
+1. **Configure AI provider now?**: Select **Yes**.
+2. **Select an AI provider**: Choose between **Google (Gemini)**, **OpenAI (ChatGPT)**, **Anthropic (Claude)**, or **Ollama (Local)**.
+3. **Select a model**: Choose a recommended model or specify a custom one.
+4. **Save API key in `.env`?**: Confirm to save your key securely. The CLI will automatically create/update your `.env` file and append `.env` to your project's `.gitignore` file to prevent accidental credential leaks.
+</Steps>
+
+---
+
+### Method 2: Environment Variables (Recommended)
+
+The Gram CLI automatically checks environment variables for credentials. On both Node.js (>=20.6.0) and [Bun](https://bun.sh/), `.env` files in your project root are automatically loaded.
+
+#### 1. Provider Environment Variable Names
+
+Export the appropriate environment variable for your provider:
+
+| Provider | Environment Variable |
+|---|---|
+| **Google Gemini** | `GEMINI_API_KEY` |
+| **OpenAI** | `OPENAI_API_KEY` |
+| **Anthropic** | `ANTHROPIC_API_KEY` |
+| **Ollama (Local)** | `OLLAMA_BASE_URL` *(optional)* |
+
+:::note[Which model?]
+If you don't set `ai.model`, each provider falls back to a small, cheap default model (see the auto-detection box below). For a curated, up-to-date list of recommended higher-quality models per provider, run `gram init` — it always reflects what's current in the CLI, unlike a hardcoded list here.
+:::
+
+#### 2. Create a `.env` File
+
+Add your key to a `.env` file at the root of your project:
+
+```bash title=".env"
+# Google Gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# OR OpenAI
+# OPENAI_API_KEY=sk-...
+
+# OR Anthropic
+# ANTHROPIC_API_KEY=sk-ant-...
+```
+
+:::tip[Automatic Provider Detection]
+If no explicit `ai.provider` is defined in your `.gram/config.yaml`, the CLI automatically detects which provider to use by checking for environment variables in this priority order, then falls back to that provider's default model:
+1. `GEMINI_API_KEY` → Google Gemini
+2. `OPENAI_API_KEY` → OpenAI
+3. `ANTHROPIC_API_KEY` → Anthropic
+:::
+
+:::caution[Security Reminder]
+Never commit your `.env` file or API keys to version control. Make sure `.env` is listed in your `.gitignore` file.
+:::
+
+---
+
+### Method 3: Configuration Files (`config.yaml`)
+
+You can explicitly set your AI provider, model, or custom endpoint in your project's `.gram/config.yaml` or globally in `~/.config/gram/config.yaml`.
+
+```yaml title=".gram/config.yaml"
+# Gram Project Configuration
+
+language: en
+database: .gram/ingredients.yaml
+
+ai:
+  provider: google              # Options: google | openai | anthropic | ollama
+  model: gemini-3.5-flash       # Optional: override default model
+```
+
+#### Global vs. Project Configuration
+
+- **Global Config (`~/.config/gram/config.yaml`)**: Applies system-wide for all Gram projects on your machine.
+- **Project Config (`.gram/config.yaml`)**: Overrides global settings for the current project.
+
+---
+
+### Method 4: Running Local AI with Ollama
+
+If you prefer running AI models locally without sending data to external APIs, you can use [Ollama](https://ollama.ai/):
+
+<Steps>
+1. **Install and run Ollama** locally:
+   ```bash
+   ollama pull llama3
+   ollama serve
+   ```
+
+2. **Configure Gram to use Ollama**:
+   Add the following to `.gram/config.yaml`:
+
+   ```yaml title=".gram/config.yaml"
+   ai:
+     provider: ollama
+     model: llama3
+     baseUrl: http://localhost:11434/v1   # Optional, default is http://localhost:11434/v1
+   ```
+</Steps>
+
+:::note
+Ollama requires no API key. You can also specify a custom base URL via the `OLLAMA_BASE_URL` environment variable.
+:::
+
+---
+
+## Verifying Your Setup
+
+To test if your AI setup is working properly:
+
+1. **Test Ingredient Enrichment (Dry Run)**:
+   ```bash
+   gram db enrich --dry-run
+   ```
+   If AI is correctly configured, the command will analyze incomplete ingredients without error.
+
+2. **Import a Web Recipe**:
+   ```bash
+   gram import https://example.com/recipe --output recipe.gram
+   ```
+
+---
+
+## Troubleshooting
+
+### Missing API Key Error
+
+If you see the following error:
+```text
+Error: No AI provider configured.
+Export an environment variable:
+  GEMINI_API_KEY=...    (Google)
+  OPENAI_API_KEY=...    (OpenAI)
+  ANTHROPIC_API_KEY=... (Anthropic)
+```
+- Ensure your `.env` file is in the project root directory where you run `gram`.
+- If using environment variables directly in terminal, export the variable beforehand (`export GEMINI_API_KEY=...`).
+- Verify that your API key matches the provider configured in `.gram/config.yaml`.

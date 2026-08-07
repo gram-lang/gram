@@ -1,0 +1,191 @@
+---
+title: "Configurer l'IA pour le CLI Gram"
+description: "Découvrez comment configurer les fournisseurs d'IA (Google Gemini, OpenAI, Anthropic, Ollama) pour importer des recettes, nettoyer la base d'ingrédients et enrichir automatiquement les données dans le CLI Gram."
+---
+
+Le CLI de Gram (`@gram-lang/cli`) peut s'appuyer sur des modèles de langage (LLM) pour automatiser des tâches fastidieuses comme la conversion de recettes web en fichiers `.gram`, la détection des doublons d'ingrédients dans votre base et le remplissage des métadonnées nutritionnelles et physiques.
+
+Ce guide explique pas à pas comment configurer votre fournisseur d'IA préféré.
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Ce que permet l'IA dans le CLI Gram
+
+Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI :
+
+1. **Importation de recettes (`gram import <source>`)** : Convertit automatiquement des pages web (en extrayant les données structurées JSON-LD) ou des fichiers JSON-LD locaux en syntaxe `.gram` valide dans votre langue cible.
+2. **Nettoyage et déduplication (`gram db lint`)** : Détecte les doublons sémantiques, les variations singulier/pluriel et les termes multilingues dans `ingredients.yaml`, et vous propose de les fusionner sous une clé principale avec des alias.
+3. **Enrichissement automatique (`gram db enrich`)** : Recherche et complète les valeurs nutritionnelles (calories, macros, micronutriments) et les caractéristiques physiques (densité, rendement, poids unitaire) des ingrédients incomplets de votre base.
+
+---
+
+## Pourquoi l'IA ? Restructuration vs Transcription mécanique
+
+Gram n'est pas un simple format de balisage texte ; c'est un modèle sémantique structuré pour le domaine de la cuisine. Convertir une recette traditionnelle (depuis une page web ou un JSON-LD) vers le format `.gram` **ne peut pas se faire par un simple copier-coller ou une conversion mécanique de chaînes de caractères**.
+
+Les recettes traditionnelles contiennent de nombreuses étapes qui n'existent que parce que le texte brut n'a pas d'autre moyen d'exprimer l'information :
+- *"Couper 1 citron en deux"* → Dans Gram, cette étape s'efface au profit d'une annotation de préparation intégrée directement à la déclaration de l'ingrédient : `@citron{1}(coupé en deux)`.
+- *"Dans un ramequin, mélanger le sel et le poivre et réserver"* → Dans Gram, cela devient une référence à une variable intermédiaire (`&assaisonnement`).
+- *"Retirer du feu et laisser reposer 30 minutes"* → Dans Gram, c'est une annotation de minuteur passif de repos (`~_{30min}`).
+
+Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus<@citron{1}`).
+
+**L'IA agit comme un compilateur de recettes intelligent.** Elle lit le texte non structuré, extrait la logique culinaire sous-jacente, absorbe les étapes de préparation dans les déclarations d'ingrédients, réorganise le flux en sections logiques et produit un fichier `.gram` propre et idiomatique, exactement comme le rédigerait un auteur de recettes humain.
+
+De la même manière pour la gestion de votre base d'ingrédients :
+- **`gram db lint`** : L'IA détecte les équivalences sémantiques entre tournures et langues (ex : comprendre que `beurre ramolli`, `beurre doux` et `butter` font référence à la même entité).
+- **`gram db enrich`** : L'IA recherche et complète les densités physiques (conversion volume/masse) et les valeurs nutritionnelles standards sans recherche manuelle fastidieuse.
+
+---
+
+## Méthodes de Configuration
+
+Vous pouvez configurer l'IA via une **installation interactive**, des **variables d'environnement** (recommandé pour la sécurité) ou des **fichiers de configuration**.
+
+### Méthode 1 : Configuration interactive avec `gram init`
+
+Si vous initialisez un nouveau projet ou souhaitez un assistant guidé, lancez :
+
+```bash
+gram init
+```
+
+Pendant l'initialisation, le CLI vous demandera :
+<Steps>
+1. **Configurer un fournisseur d'IA maintenant ?** : Sélectionnez **Oui**.
+2. **Sélectionner un fournisseur d'IA** : Choisissez entre **Google (Gemini)**, **OpenAI (ChatGPT)**, **Anthropic (Claude)** ou **Ollama (Local)**.
+3. **Sélectionner un modèle** : Choisissez un modèle recommandé ou saisissez-en un sur mesure.
+4. **Enregistrer la clé d'API dans un fichier `.env` ?** : Confirmez pour sauvegarder la clé en toute sécurité. Le CLI créera/mettra à jour automatiquement votre fichier `.env` et ajoutera `.env` au fichier `.gitignore` de votre projet pour éviter toute fuite accidentelle.
+</Steps>
+
+---
+
+### Méthode 2 : Variables d'Environnement (Recommandé)
+
+Le CLI Gram vérifie automatiquement les variables d'environnement pour trouver vos identifiants. Sous Node.js (>=20.6.0) et sous [Bun](https://bun.sh/), les fichiers `.env` situés à la racine de votre projet sont automatiquement chargés.
+
+#### 1. Noms des variables d'environnement
+
+Exportez la variable d'environnement correspondant à votre fournisseur :
+
+| Fournisseur | Variable d'environnement |
+|---|---|
+| **Google Gemini** | `GEMINI_API_KEY` |
+| **OpenAI** | `OPENAI_API_KEY` |
+| **Anthropic** | `ANTHROPIC_API_KEY` |
+| **Ollama (Local)** | `OLLAMA_BASE_URL` *(optionnel)* |
+
+:::note[Quel modèle choisir ?]
+Si vous ne définissez pas `ai.model`, chaque fournisseur utilise par défaut un petit modèle économique (voir l'encart de détection automatique ci-dessous). Pour une liste à jour des modèles recommandés de meilleure qualité par fournisseur, lancez `gram init` — elle reflète toujours ce qui est actuel dans le CLI, contrairement à une liste figée ici.
+:::
+
+#### 2. Créer un fichier `.env`
+
+Ajoutez votre clé dans un fichier `.env` à la racine du projet :
+
+```bash title=".env"
+# Google Gemini
+GEMINI_API_KEY=votre_cle_gemini_ici
+
+# OU OpenAI
+# OPENAI_API_KEY=sk-...
+
+# OU Anthropic
+# ANTHROPIC_API_KEY=sk-ant-...
+```
+
+:::tip[Détection automatique du fournisseur]
+Si aucun `ai.provider` n'est défini explicitement dans `.gram/config.yaml`, le CLI détecte automatiquement le fournisseur à utiliser en vérifiant la présence des variables d'environnement dans cet ordre de priorité, puis utilise le modèle par défaut de ce fournisseur :
+1. `GEMINI_API_KEY` → Google Gemini
+2. `OPENAI_API_KEY` → OpenAI
+3. `ANTHROPIC_API_KEY` → Anthropic
+:::
+
+:::caution[Rappel de sécurité]
+Ne versionnez jamais votre fichier `.env` ni vos clés d'API. Assurez-vous que `.env` figure bien dans votre fichier `.gitignore`.
+:::
+
+---
+
+### Méthode 3 : Fichiers de Configuration (`config.yaml`)
+
+Vous pouvez définir explicitement votre fournisseur d'IA, votre modèle ou une URL personnalisée dans le fichier `.gram/config.yaml` de votre projet ou de manière globale dans `~/.config/gram/config.yaml`.
+
+```yaml title=".gram/config.yaml"
+# Configuration du projet Gram
+
+language: fr
+database: .gram/ingredients.yaml
+
+ai:
+  provider: google              # Options : google | openai | anthropic | ollama
+  model: gemini-3.5-flash       # Optionnel : personnaliser le modèle par défaut
+```
+
+#### Configuration Globale vs Projet
+
+- **Configuration globale (`~/.config/gram/config.yaml`)** : S'applique à l'ensemble des projets Gram sur votre machine.
+- **Configuration projet (`.gram/config.yaml`)** : Remplace les paramètres globaux pour le projet courant.
+
+---
+
+### Méthode 4 : Utiliser une IA locale avec Ollama
+
+Si vous préférez exécuter vos modèles en local sans envoyer de données à des API tierces, vous pouvez utiliser [Ollama](https://ollama.ai/) :
+
+<Steps>
+1. **Installez et lancez Ollama** en local :
+   ```bash
+   ollama pull llama3
+   ollama serve
+   ```
+
+2. **Configurez Gram pour utiliser Ollama** :
+   Ajoutez la configuration suivante dans `.gram/config.yaml` :
+
+   ```yaml title=".gram/config.yaml"
+   ai:
+     provider: ollama
+     model: llama3
+     baseUrl: http://localhost:11434/v1   # Optionnel, valeur par défaut : http://localhost:11434/v1
+   ```
+</Steps>
+
+:::note
+Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de base via la variable d'environnement `OLLAMA_BASE_URL`.
+:::
+
+---
+
+## Vérifier la Configuration
+
+Pour vérifier que votre IA est opérationnelle :
+
+1. **Tester l'enrichissement (mode simulation)** :
+   ```bash
+   gram db enrich --dry-run
+   ```
+   Si l'IA est correctement configurée, la commande analysera la base sans retourner d'erreur.
+
+2. **Importer une recette web** :
+   ```bash
+   gram import https://exemple.com/recette --output recette.gram
+   ```
+
+---
+
+## Dépannage
+
+### Erreur : Clé d'API manquante
+
+Si le message suivant s'affiche :
+```text
+Error: No AI provider configured.
+Export an environment variable:
+  GEMINI_API_KEY=...    (Google)
+  OPENAI_API_KEY=...    (OpenAI)
+  ANTHROPIC_API_KEY=... (Anthropic)
+```
+- Vérifiez que le fichier `.env` se trouve bien dans le dossier racine à partir duquel vous lancez `gram`.
+- Si vous définissez la variable d'environnement directement dans le terminal, pensez à l'exporter au préalable (`export GEMINI_API_KEY=...`).
+- Vérifiez que votre clé d'API correspond au fournisseur indiqué dans `.gram/config.yaml`.

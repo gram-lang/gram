@@ -36,7 +36,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    gram db lint
    ```
    
-   This command uses the configured AI to detect semantic duplicates in your database. 
+   This command uses the configured AI (see [Configure AI Provider](/docs/how-to/configure-ai)) to detect semantic duplicates in your database. 
    If it finds `egg` and `eggs`, it will ask you which one to keep as the primary key. It will then merge the other into the primary key's `aliases` list.
    
    :::tip
@@ -53,7 +53,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    
    Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 
    
-   Doing this manually is tedious. Gram can use AI to do it for you in batches:
+   Doing this manually is tedious. Gram can use AI to do it for you in batches (see [Configure AI Provider](/docs/how-to/configure-ai)):
    
    ```bash
    gram db enrich
