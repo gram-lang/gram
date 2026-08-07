@@ -198,10 +198,26 @@ export async function fetchRecipe(source: string): Promise<RecipeFetchResult> {
 
 // ── Prompt payload ────────────────────────────────────────────────────────────
 
+// A malformed/malicious numeric reference (out-of-range code point) must not
+// crash the whole import — fromCodePoint() throws on those, so this drops the
+// entity rather than propagating the exception.
+function decodeNumericEntity(codePoint: number): string {
+	try {
+		return String.fromCodePoint(codePoint);
+	} catch {
+		return "";
+	}
+}
+
 // Strips markup/entities real-world recipe sites embed in JSON-LD text fields
-// (WordPress recipe plugins in particular) so neither tokens nor the model's
-// attention are spent on it.
-function cleanText(text: string): string {
+// (WordPress recipe plugins in particular). Named entities cover the common
+// ASCII ones; numeric references (decimal and hex) are decoded generically
+// instead of one at a time, since those are how sites most often encode
+// accented characters and typographic punctuation — especially relevant for
+// non-English content. Named entities are decoded first so a double-encoded
+// reference like "&amp;#39;" (literal "&" followed by "#39;") still resolves
+// instead of surviving as text.
+export function cleanText(text: string): string {
 	return text
 		.replace(/<[^>]+>/g, " ")
 		.replace(/&nbsp;/gi, " ")
@@ -209,7 +225,13 @@ function cleanText(text: string): string {
 		.replace(/&lt;/gi, "<")
 		.replace(/&gt;/gi, ">")
 		.replace(/&quot;/gi, '"')
-		.replace(/&#0*39;|&apos;/gi, "'")
+		.replace(/&apos;/gi, "'")
+		.replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
+			decodeNumericEntity(Number.parseInt(hex, 16)),
+		)
+		.replace(/&#(\d+);/g, (_, dec) =>
+			decodeNumericEntity(Number.parseInt(dec, 10)),
+		)
 		.replace(/\s+/g, " ")
 		.trim();
 }

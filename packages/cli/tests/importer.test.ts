@@ -9,6 +9,7 @@ import {
 	buildImportPayload,
 	collectAllWarnings,
 	injectLanguage,
+	cleanText,
 } from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
@@ -134,6 +135,24 @@ describe("collectAllWarnings", () => {
 	it("returns no warnings for clean, fully valid content", () => {
 		const warnings = collectAllWarnings("## Section\nMix @flour{200g}.\n");
 		expect(warnings).toEqual([]);
+	});
+});
+
+describe("cleanText", () => {
+	it("decodes decimal and hex numeric character references", () => {
+		// é and a right single quotation mark ('), as WordPress/RSS commonly encode them
+		expect(cleanText("d&#233;sossé")).toBe("désossé");
+		expect(cleanText("chef&#8217;s knife")).toBe("chef’s knife");
+		expect(cleanText("caf&#xe9;")).toBe("café");
+	});
+
+	it("resolves double-encoded entities (e.g. &amp;#39; from a re-escaped feed)", () => {
+		expect(cleanText("chef&amp;#39;s knife")).toBe("chef's knife");
+	});
+
+	it("drops an out-of-range numeric reference instead of throwing", () => {
+		expect(() => cleanText("bad &#99999999; entity")).not.toThrow();
+		expect(cleanText("bad &#99999999; entity")).toBe("bad entity");
 	});
 });
 
