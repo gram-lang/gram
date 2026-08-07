@@ -1,5 +1,12 @@
 # @gram-lang/kitchen
 
+## 1.0.1
+
+### Patch Changes
+
+- @gram-lang/parser@1.0.1
+- @gram-lang/i18n@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

@@ -2,7 +2,7 @@
   "name": "gram-lang",
   "displayName": "Gram - Recipe Language",
   "description": "Syntax highlighting and language intelligence for Gram recipe files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "qna": false,
   "publisher": "gram-lang",

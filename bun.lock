@@ -19,7 +19,7 @@
     },
     "audit": {
       "name": "@gram-lang/audit",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/format": "workspace:*",
@@ -45,7 +45,7 @@
     },
     "packages/analyzer": {
       "name": "@gram-lang/analyzer",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
@@ -58,7 +58,7 @@
     },
     "packages/cli": {
       "name": "@gram-lang/cli",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "bin": {
         "gram": "./dist/index.js",
       },
@@ -93,7 +93,7 @@
     },
     "packages/docs": {
       "name": "@gram-lang/docs",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@astrojs/markdown-remark": "^7.2.2",
         "@astrojs/mdx": "^7.0.5",
@@ -124,15 +124,15 @@
     },
     "packages/format": {
       "name": "@gram-lang/format",
-      "version": "1.0.0",
+      "version": "1.0.1",
     },
     "packages/i18n": {
       "name": "@gram-lang/i18n",
-      "version": "1.0.0",
+      "version": "1.0.1",
     },
     "packages/kitchen": {
       "name": "@gram-lang/kitchen",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/parser": "workspace:*",
@@ -144,7 +144,7 @@
     },
     "packages/language-server": {
       "name": "@gram-lang/language-server",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "devDependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/format": "workspace:*",
@@ -161,7 +161,7 @@
     },
     "packages/parser": {
       "name": "@gram-lang/parser",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "ohm-js": "^17.5.0",
         "zod": "^4.4.3",
@@ -169,7 +169,7 @@
     },
     "packages/renderer": {
       "name": "@gram-lang/renderer",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/i18n": "workspace:*",
@@ -179,7 +179,7 @@
     },
     "packages/vscode-extension": {
       "name": "gram-lang",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@gram-lang/language-server": "workspace:*",
         "@gram-lang/renderer": "workspace:*",

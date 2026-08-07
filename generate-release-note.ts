@@ -70,7 +70,7 @@ async function main() {
     const versionHeading = previousTag
         ? `[${nextVersion}](${REPO_COMPARE_URL}/${previousTag}...${newTag})`
         : `[${nextVersion}]`;
-    let newReleaseMarkdown = `## ${versionHeading} - ${new Date().toLocaleDateString('en-US')}\n\n`;
+    let newReleaseMarkdown = `## ${versionHeading} - ${new Date().toISOString().split('T')[0]}\n\n`;
 
     const majorChanges: string[] = [];
     const minorChanges: string[] = [];
