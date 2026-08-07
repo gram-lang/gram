@@ -8,6 +8,7 @@ import {
 	validateGram,
 	buildImportPayload,
 	collectAllWarnings,
+	injectLanguage,
 } from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
@@ -186,5 +187,33 @@ describe("buildImportPayload", () => {
 	it("omits the url field for a local file source", () => {
 		const payload = buildImportPayload({}, undefined, [], []);
 		expect(payload).not.toHaveProperty("url");
+	});
+});
+
+describe("injectLanguage", () => {
+	it("inserts a language field when the frontmatter doesn't have one", () => {
+		const result = injectLanguage(
+			"---\ntitle: 'Test'\n---\n\n[Mix] @flour{200g}.\n",
+			"fr",
+		);
+		expect(result).toContain("language: 'fr'");
+		expect(result.indexOf("language: 'fr'")).toBeLessThan(
+			result.indexOf("[Mix]"),
+		);
+	});
+
+	it("overrides an existing (possibly wrong) language field rather than duplicating it", () => {
+		const result = injectLanguage(
+			"---\ntitle: 'Test'\nlanguage: 'en'\n---\n\n[Mix] @flour{200g}.\n",
+			"fr",
+		);
+		expect(result).toContain("language: 'fr'");
+		expect(result).not.toContain("language: 'en'");
+		expect(result.match(/language:/g)?.length).toBe(1);
+	});
+
+	it("leaves content unchanged when there is no frontmatter block", () => {
+		const content = "[Mix] @flour{200g}.\n";
+		expect(injectLanguage(content, "fr")).toBe(content);
 	});
 });

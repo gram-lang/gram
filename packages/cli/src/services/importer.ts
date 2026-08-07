@@ -309,6 +309,21 @@ export function collectAllWarnings(text: string): string[] {
 	return result.warnings.map((w) => w.message);
 }
 
+// Sets the frontmatter `language` field to the actual configured target
+// language deterministically, rather than leaving it to the AI to notice and
+// fill in on its own — we already know this value with certainty (it's the
+// same `lang` used to instruct the AI), there's nothing for it to infer.
+export function injectLanguage(text: string, lang: string): string {
+	const match = text.match(/^---\n([\s\S]*?)\n---/);
+	if (!match) return text;
+	const frontmatter = match[1]!;
+	const languageLine = `language: '${lang}'`;
+	const newFrontmatter = /^language\s*:.*$/m.test(frontmatter)
+		? frontmatter.replace(/^language\s*:.*$/m, languageLine)
+		: `${frontmatter}\n${languageLine}`;
+	return text.replace(match[0], `---\n${newFrontmatter}\n---`);
+}
+
 function stripFences(text: string): string {
 	return text
 		.trim()
@@ -376,6 +391,8 @@ export async function importWithAI(
 			});
 			gramContent = stripFences(fixed);
 		}
+
+		gramContent = injectLanguage(gramContent, lang);
 
 		// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
 		// no need to spend another AI call asking the model to fix it when
