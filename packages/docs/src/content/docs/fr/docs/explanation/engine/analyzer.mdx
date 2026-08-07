@@ -3,7 +3,7 @@ title: "Analyse Sémantique (@gram-lang/analyzer)"
 description: "Comment @gram-lang/analyzer standardise les masses, résout les alias et estime la nutrition via une base de données."
 ---
 
-Le *package* `@gram-lang/analyzer` incarne l'étape analytique finale du pipeline de compilation. Il récupère le `CompilationResult` (logiquement valide) craché par `@gram-lang/kitchen` et procède à un **Enrichissement Physique** en croisant la recette avec votre base de données `ingredients.yaml`.
+Le *package* `@gram-lang/analyzer` incarne l'étape analytique finale du pipeline de compilation. Il récupère le `CompilationResult` (logiquement valide) généré par `@gram-lang/kitchen` et procède à un **Enrichissement Physique** en croisant la recette avec votre base de données `ingredients.yaml`.
 
 C'est ici que le monde physique percute le code numérique. L'analyseur exécute un pipeline modulaire en 4 passes (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`), calculant cinq grands blocs de fonctionnalités (chacun étant désactivable à la carte via les options).
 
@@ -17,13 +17,13 @@ import { Steps, LinkCard } from '@astrojs/starlight/components';
 
 <Steps>
 
-1. **Masse Physique** : Si l'unité est déjà un poids (`g`, `kg`, `oz`, `mg`, `lb`), elle est bêtement convertie en grammes.
+1. **Masse Physique** : Si l'unité est déjà un poids (`g`, `kg`, `oz`, `mg`, `lb`), elle est directement convertie en grammes.
 2. **Volume → Densité** : Si l'unité est un volume connu (`tasse`, `c.à.s`, `ml`), l'analyseur guette d'abord une **surcharge explicite** (via le bloc `densities` du frontmatter de la recette). Sans ça, il ira piocher la densité de l'ingrédient (`g/ml`) dans le `ingredients.yaml`.
 3. **Nombre → Poids unitaire** : Si l'unité n'est ni une masse ni un volume (ex : `@ail{3 gousses}`), l'analyseur cherche là aussi une éventuelle surcharge locale, puis se rabat en dernier recours sur le champ `unit_weight` de la base de données.
 </Steps>
 
-:::caution[Pas de devinette silencieuse]
-Sans densité disponible pour un volume, l'analyseur **refuse** de faire la supposition aveugle qu'il s'agit d'eau. Il préfère cracher un *warning* « aucune masse » plutôt que de risquer une agrégation bancale (traiter "1 tasse de farine" comme de l'eau ruinerait une recette). L'ingrédient reste listé dans son unité brute.
+:::caution[Pas d'estimation arbitraire]
+Sans densité disponible pour un volume, l'analyseur **refuse** de faire la supposition aveugle qu'il s'agit d'eau. Il préfère lever un *warning* « aucune masse » plutôt que de risquer une agrégation incorrecte (traiter "1 tasse de farine" comme de l'eau fausserait la recette). L'ingrédient reste listé dans son unité brute.
 :::
 
 Beaucoup d'ingrédients bruts génèrent des déchets (pelures, trognons, coquilles). Grâce au champ `physical.yield` de la base, l'Analyseur fait le distinguo entre la **Masse Nette** (la matière utile pour la recette) et la **Masse d'Achat** (la Masse Brute à glisser dans le caddie).
@@ -44,7 +44,7 @@ Au-delà d'hydrater les masses individuelles, l'Analyseur re-consolide entièrem
 En utilisant la base de données des ingrédients, l'Analyseur :
 - Résout l'**ID canonique** de chaque ingrédient (`resolveCanonicalId`), fusionnant les alias au passage.
 - Fusionne les quantités inter-unités en un seul total en grammes chaque fois que toutes les entrées contributives se résolvent en masse (densité/poids unitaire connu).
-- Garde prudemment des entrées séparées — estampillées de l'ID canonique avec un flag `multiUnit: true` — si la masse est insoluble (ex: manque de densité), refusant là encore de jouer aux devinettes.
+- Garde prudemment des entrées séparées — estampillées de l'ID canonique avec un flag `multiUnit: true` — si la masse est insoluble (ex: manque de densité), refusant ainsi d'effectuer des suppositions arbitraires.
 
 Seul l'`id` est réécrit sous sa forme canonique à des fins de regroupement. Le `name` de l'entrée suit une règle distincte pour garantir que les traductions soient préservées lors de l'utilisation d'une base de données globale :
 

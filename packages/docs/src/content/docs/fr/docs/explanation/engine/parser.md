@@ -9,7 +9,7 @@ Le *package* `@gram-lang/parser` est le socle de l'écosystème Gram. Son unique
 
 Les règles de Gram sont codées en [OhmJS](https://ohmjs.org/), un *toolkit* de *parsing* orienté objet, fondé sur les *Parsing Expression Grammars* (PEG).
 
-Ohm permet de construire des grammaires modulaires avec une facilité déconcertante. Le `@gram-lang/parser` est donc ultra-rapide et intransigeant sur les règles : par exemple, tout espace autour du marqueur composite `<@` est banni (`invalidComposite` dans la grammaire). Ainsi, `pâte < @pâtefeuilletée` crashera le *parser*, tandis que `<@pâtefeuilletée` passera crème.
+Ohm permet de construire des grammaires modulaires de manière efficace. Le `@gram-lang/parser` est donc performant et strict sur l'application des règles : par exemple, tout espace autour du marqueur composite `<@` est interdit (`invalidComposite` dans la grammaire). Ainsi, `pâte < @pâtefeuilletée` provoquera une erreur de *parsing*, alors que `<@pâtefeuilletée` sera correctement analysé.
 
 ## L'Arbre Syntaxique Abstrait (AST)
 
@@ -52,7 +52,7 @@ Le *parser* exporte un type de nœud spécifique pour chaque concept du langage 
 - `Comment` : Un commentaire de ligne `//` ou un commentaire de bloc `/* */`.
 
 :::tip[Les modificateurs sont des symboles bruts]
-Le tableau `modifiers` des nœuds `Ingredient`/`Cookware` stocke bêtement les caractères bruts saisis (`?`, `-`, `*`, `&`), pas de jolis labels sémantiques. Seule exception : `=`, qui est intercepté pour flagger `quantity.fixed` à `true` sans figurer dans le tableau.
+Le tableau `modifiers` des nœuds `Ingredient`/`Cookware` conserve directement les caractères bruts saisis (`?`, `-`, `*`, `&`) plutôt que des libellés sémantiques. Seule exception : `=`, qui est intercepté pour passer `quantity.fixed` à `true` sans figurer dans le tableau.
 :::
 
 ## Purement Syntaxique

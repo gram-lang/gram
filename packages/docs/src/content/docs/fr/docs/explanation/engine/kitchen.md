@@ -5,7 +5,7 @@ description: "Comment @gram-lang/kitchen compile l'AST en une recette planifiée
 
 Si `@gram-lang/parser` dicte le vocabulaire, c'est `@gram-lang/kitchen` qui incarne la logique.
 
-Le *package* Kitchen récupère l'AST (Arbre Syntaxique Abstrait) recraché par le *parser* et le compile. Son job ? Simuler le déroulé de la recette de bout en bout, résoudre les variables, extraire les compteurs de temps et *bootstrapper* la liste de courses.
+Le *package* Kitchen récupère l'AST (Arbre Syntaxique Abstrait) généré par le *parser* et le compile. Son job ? Simuler le déroulé de la recette de bout en bout, résoudre les variables, extraire les compteurs de temps et *bootstrapper* la liste de courses.
 
 ## Responsabilités Principales
 
@@ -16,12 +16,12 @@ Le processus de compilation (orchestré par `core.ts`) délègue à plusieurs so
 Le processeur boucle sur chaque section et chaque étape de l'AST pour bâtir la *timeline* d'exécution.
 
 - **Résolution des variables** : Au moindre `->&pâte`, la déclaration est enregistrée dans le Scope Global. À la moindre référence `&pâte`, il tisse le lien.
-- **Diagnostics** : Le processeur a pour mission d'attraper les erreurs logiques. Plutôt que de crasher sauvagement, il empile des objets `Warning` structurés dans `CompilationResult.warnings`. L'idée ? Permettre à l'éditeur de toujours afficher un rendu, même partiel. Si vous invoquez `&pâte` sans la déclarer, bim : `UNDEFINED_REFERENCE`. Un vilain cycle `&a -> &b -> &a` ? L'algorithme DFS dans `graph.ts` le repèrera et lèvera un `CIRCULAR_REFERENCE`. Si besoin, un `gram check --strict` basculera ces *warnings* en erreurs fatales.
+- **Diagnostics** : Le processeur a pour mission d'intercepter les erreurs logiques. Plutôt que d'échouer brutalement, il empile des objets `Warning` structurés dans `CompilationResult.warnings`. L'objectif est de permettre à l'éditeur de toujours afficher un rendu, même partiel. Si vous invoquez `&pâte` sans la déclarer, une alerte `UNDEFINED_REFERENCE` est émise. En cas de cycle de dépendances (`&a -> &b -> &a`), l'algorithme DFS dans `graph.ts` l'identifie et lève un `CIRCULAR_REFERENCE`. Si besoin, la commande `gram check --strict` basculera ces avertissements en erreurs bloquantes.
 - **Génération de la Chronologie (*ALAP Scheduling*)** : Le moteur s'appuie sur un ordonnancement **ALAP (As Late As Possible)** (éclaté dans `src/schedule/` pour être bétonné de tests unitaires). Quatre passes s'enchaînent pour accoucher d'une timeline chirurgicale :
   - **Phase 1 (*Forward Pass*)** : Le compilateur jauge les temps actifs et les tâches de fond pour chronométrer le temps de production des intermédiaires (`->&nom`) de chaque section.
   - **Phase 2 (*Backward Pass*)** : Il remonte la recette à l'envers (`alap.ts`). À la moindre consommation d'un intermédiaire (`&nom`), le moteur note l'échéance critique à laquelle il *doit* être prêt, tout en digérant les éventuelles ancres de rétro-planning de section (`~{-1j}`). L'étape productrice sera alors calée *juste-à-temps* (JIT).
   - **Phase 3 (*Serialization*)** : L'algorithme des « pistes nommées » (*Named Tracks*, `tracks.ts`) entre en piste pour s'assurer que des *timers* passifs partageant un même nom (ex. `~_four`) ne se chevauchent pas matériellement. En cas de collision, les horaires de départ sont glissés chronologiquement.
-  - **Phase 4 (*Positive Rebasing*)** : C'est la touche finale (`rebase.ts`). Si des préparations ont basculé dans le négatif (ex: la veille du jour J), l'intégralité de la timeline est translatée vers l'avant (du strict opposé du minimum absolu). La structure `timings` finale ne contiendra donc que des temps absolus, toujours positifs, démarrant à un T-Zéro absolu, ce qui est une bénédiction pour le front-end.
+  - **Phase 4 (*Positive Rebasing*)** : C'est l'étape d'ajustement final (`rebase.ts`). Si des préparations ont basculé dans le négatif (ex: la veille du jour J), l'intégralité de la chronologie est translatée vers l'avant (de l'opposé du minimum absolu). La structure `timings` finale ne contiendra donc que des temps absolus, toujours positifs, démarrant à un repère zéro, facilitant ainsi l'intégration front-end.
 
 ```mermaid
 flowchart LR
@@ -53,7 +53,7 @@ La Kitchen construit la liste de base des ingrédients nécessaires pour cuisine
 - **Agrégation Hybride** : Pour ne rien casser, les [Quantités Relatives](/fr/docs/reference/syntax/relative-quantities) (basées sur des formules) sont stockées à part de la masse numérique absolue. La liste de courses est ainsi garantie mathématiquement exacte en toute circonstance.
 
 :::tip[Ceci n'est pas la liste finale]
-La Kitchen tournant à l'aveugle sans accès à `ingredients.yaml`, le regroupement repose bêtement sur l'ID brut. `@butter` et `@beurre` restent donc décorrélés à ce stade, tout comme `100 g` et `1 tasse` de farine ne seront pas fusionnés. L'intelligence métier avancée (ID canonique, conversion masse/volume via la densité) sera injectée plus tard par `@gram-lang/analyzer`. Voir [Agrégation de la Liste de Courses](/fr/docs/explanation/shopping-list-aggregation).
+La Kitchen fonctionnant sans accès à `ingredients.yaml`, le regroupement repose uniquement sur l'ID brut. `@butter` et `@beurre` restent donc décorrélés à ce stade, tout comme `100 g` et `1 tasse` de farine ne seront pas fusionnés. La logique métier avancée (ID canonique, conversion masse/volume via la densité) sera appliquée plus tard par `@gram-lang/analyzer`. Voir [Agrégation de la Liste de Courses](/fr/docs/explanation/shopping-list-aggregation).
 :::
 
 :::tip[Une deuxième agrégation, différente, existe par section]
@@ -62,7 +62,7 @@ La Kitchen tournant à l'aveugle sans accès à `ingredients.yaml`, le regroupem
 
 ## Sortie
 
-La sortie brute de `@gram-lang/kitchen` est l'objet `CompilationResult` (la fameuse « recette compilée » mentionnée partout). Structurellement irréprochable et mathématiquement agrégé, ce JSON n'est néanmoins **pas encore physiquement exact**.
+La sortie brute de `@gram-lang/kitchen` est l'objet `CompilationResult` (la « recette compilée »). Structurellement irréprochable et mathématiquement agrégé, ce JSON n'est néanmoins **pas encore physiquement exact**.
 
 Par exemple, Kitchen sait que vous avez demandé `1 tasse` de farine, mais ne sait toujours pas combien ça pèse. Cet enrichissement physique massif se fera à la prochaine étape : place à l'**Analyseur** (*Analyzer*).
 

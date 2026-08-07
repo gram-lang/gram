@@ -1,5 +1,5 @@
 ---
-title: "Matériel (Cookware)"
+title: "Matériel"
 description: "Comment déclarer le matériel de cuisine avec le symbole #, entre nombre d'unités et dimensions physiques."
 ---
 
@@ -61,7 +61,7 @@ Le `#matériel` prend en charge un grand nombre des fonctionnalités de syntaxe 
 Vous pouvez utiliser les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`), et Référence (`&`) sur le `#matériel`.
 
 ```gram
-Utiliser un #?wok si vous en avez un, sinon une #-grande poêle fera l'affaire.
+Utiliser un #?wok si vous en avez un, sinon une #-grande poêle conviendra.
 
 Retourner au #&wok pour terminer la sauce.
 ```

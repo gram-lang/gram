@@ -50,7 +50,7 @@ En Gram, les noms d'`@ingrédient` sont de vrais mots avec des espaces, pas des 
 ❌  X @jus de citron|@vinaigre et remuer.
 ✅  X @jus de citron{}|@vinaigre{} et remuer.
 ```
-Un `@ingrédient` ou `#matériel` composé de plusieurs mots requiert obligatoirement des `{}` de clôture (ou `{quantité}` pour le matériel). Même sans quantité définie, servez-vous d'accolades vides `{}`. La syntaxe dénudée (sans accolade) est tolérée uniquement pour des noms d'un seul mot (`@sel`, `#poêle`). Sans ces fameuses accolades sur un nom composé, seul le premier mot sera interprété, reléguant silencieusement le reste à du simple texte narratif. (Notez d'ailleurs qu'au sein d'une alternative `|`, cette omission provoquera désormais une erreur de *parsing* franche au lieu de corrompre le groupe dans l'ombre).
+Un `@ingrédient` ou `#matériel` composé de plusieurs mots requiert obligatoirement des `{}` de clôture (ou `{quantité}` pour le matériel). Même sans quantité définie, servez-vous d'accolades vides `{}`. La syntaxe courte (sans accolade) est autorisée uniquement pour les noms d'un seul mot (`@sel`, `#poêle`). Sans ces accolades sur un nom composé, seul le premier mot sera interprété, reléguant le reste à du simple texte narratif. (Notez d'ailleurs qu'au sein d'une alternative `|`, cette omission provoquera désormais une erreur de *parsing* explicite au lieu de corrompre le groupe).
 
 ### Unités dans les accolades de matériel
 

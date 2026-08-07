@@ -35,7 +35,7 @@ Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de p
 2. **Surcharge Utilisateur** : Si vous avez fourni une surcharge de densité spécifique dans le frontmatter YAML de la recette (ex : `densities: { farine: 0.55 }`), il utilise cette valeur explicite pour convertir le volume demandé en masse.
 3. **Densité de la Base de Données** : Si vous avez demandé un volume connu (`ml`, `tasse`, `c.à.s`, `c.à.c`) et que votre `ingredients.yaml` contient un champ `density` pour cet ingrédient, il calcule `Volume * Densité = Masse`.
 4. **Poids Unitaire de la Base de Données** : Si vous avez demandé un nombre (`@oeuf{3}` ou `@ail{2 gousses}`) et que votre base de données contient un champ `unit_weight`, il calcule `Nombre * Poids Unitaire = Masse`.
-5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse de jouer aux devinettes. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
+5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse d'effectuer une estimation arbitraire. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
 </Steps>
 
 ## Calcul du Rendement (Le Facteur de Déchet)

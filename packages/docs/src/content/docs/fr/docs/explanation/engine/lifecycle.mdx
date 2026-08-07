@@ -16,11 +16,11 @@ import { Steps } from '@astrojs/starlight/components';
 <Steps>
 
 1. ### Analyse Syntaxique (`@gram-lang/parser`)
-   Le voyage démarre ici. Le *parser* avale une chaîne de caractères brute (votre fichier `.gram`) et s'appuie sur une grammaire OhmJS pour en éprouver la syntaxe. 
-   Si tout est *safe*, il accouche d'un **Arbre Syntaxique Abstrait (AST)**. Cet AST est dénué de toute logique métier : c'est une simple représentation structurelle du texte.
+   Le voyage démarre ici. Le *parser* reçoit une chaîne de caractères brute (votre fichier `.gram`) et s'appuie sur une grammaire OhmJS pour en valider la syntaxe. 
+   Si la syntaxe est correcte, il produit un **Arbre Syntaxique Abstrait (AST)**. Cet AST est dénué de toute logique métier : c'est une simple représentation structurelle du texte.
 
 2. ### Compilation (`@gram-lang/kitchen`)
-   L'AST est ensuite balancé à la Kitchen (*Cuisine*). Elle porte la responsabilité de la logique structurelle de la recette :
+   L'AST est ensuite transmis à la Kitchen (*Cuisine*). Elle porte la responsabilité de la logique structurelle de la recette :
    - **Scope (*Scoping*)** : Résolution des variables (ex : câbler une référence `&pâte` sur sa déclaration `->&pâte`).
    - **Métriques de Temps** : Extraction et calcul des *timers* (`activeTime`, `cookTime`, `preparationTime` et `totalTime`).
    - **Liste de courses** : Agrégation de base des ingrédients, sommation, et résolution des composites (ex : regrouper un zeste et un jus en un citron entier).
@@ -38,7 +38,7 @@ import { Steps } from '@astrojs/starlight/components';
    Chaque *feature* de cette passe est désactivable à la carte via les options de l'application hôte.
 
 4. ### Présentation (`@gram-lang/renderer` ou personnalisé)
-   Votre recette gorgée de données est prête. Vous pouvez dégainer `@gram-lang/renderer` pour cracher du Markdown, une UI web standard, ou un HTML statique taillé pour l'impression. Ou bien, *by-passez* tout ça et injectez directement le JSON final dans votre front-end React, Vue ou app native.
+   Votre recette enrichie en données est prête. Vous pouvez utiliser `@gram-lang/renderer` pour générer du Markdown, une UI web standard ou un HTML statique taillé pour l'impression. Vous pouvez également ignorer cette étape et injecter directement le JSON final dans votre application front-end (React, Vue, ou application native).
 </Steps>
 
 ### Infrastructure de support (`@gram-lang/i18n` & `@gram-lang/format`)

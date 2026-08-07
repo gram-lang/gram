@@ -5,7 +5,7 @@ description: "Définissez la quantité d'un ingrédient en pourcentage d'un autr
 
 En cuisine (et particulièrement en pâtisserie), la précision est souveraine. S'appuyer sur des quantités absolues mène parfois à des recettes déséquilibrées, surtout face au rendement variable des produits crus (ex : un citron anormalement juteux).
 
-Gram résout cette équation en vous permettant de définir la quantité d'un `@ingrédient` dynamiquement : en pourcentage d'un autre `@ingrédient` ou d'une `&variable` intermédiaire. La garantie d'une recette inébranlable, peu importe les caprices du réel.
+Gram permet de définir la quantité d'un `@ingrédient` de manière dynamique, en pourcentage d'un autre `@ingrédient` ou d'une `&variable` intermédiaire. Cette approche garantit l'équilibre de la recette, même lorsque les proportions de base varient.
 
 ## Syntaxe
 

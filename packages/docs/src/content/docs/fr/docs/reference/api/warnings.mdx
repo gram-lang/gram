@@ -6,7 +6,7 @@ description: "Référence complète des codes de Warning, de leur sévérité, e
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { warningCodesTable } from '../../../../../../data/api-reference';
 
-Une recette malformée ou incomplète finit quand même de compiler : le compilateur et l'Analyseur collectent des objets `Warning` structurés au lieu de *throw* des exceptions. Cela permet aux appelants d'afficher la recette tout en signalant visuellement ce qui coince. L'énumération `WarningCode` et ses utilitaires sont exportés par `@gram-lang/kitchen`.
+Une recette malformée ou incomplète finit quand même de compiler : le compilateur et l'Analyseur collectent des objets `Warning` structurés au lieu de lever des exceptions. Cela permet d'afficher la recette tout en signalant visuellement les avertissements. L'énumération `WarningCode` et ses utilitaires sont exportés par `@gram-lang/kitchen`.
 
 ## L'interface `Warning`
 

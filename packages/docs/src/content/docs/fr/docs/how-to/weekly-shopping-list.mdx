@@ -36,14 +36,14 @@ gram shop "menus/semaine-1/*.gram" --scale 2
 ```
 
 :::note
-Lorsqu'on ajuste plusieurs fichiers d'un coup, on doit impérativement utiliser un multiplicateur numérique (`--scale 2`). Impossible d'utiliser un ajustement par ingrédient repère (`--scale farine=500g`), car le compilateur ne saurait pas sur la farine de *quelle* recette s'aligner.
+Lorsqu'on ajuste plusieurs fichiers d'un coup, on doit impérativement utiliser un multiplicateur numérique (`--scale 2`). Il est impossible d'utiliser un ajustement par ingrédient repère (`--scale farine=500g`), car le compilateur ne saurait pas sur la farine de *quelle* recette s'aligner.
 :::
 
 ## Formats de Sortie
 
-Par défaut, `gram shop` recrache une liste superbement formatée en ASCII, directement dans votre terminal.
+Par défaut, `gram shop` génère une liste formatée en ASCII, directement dans votre terminal.
 
-Cependant, vous pouvez l'exporter dans différents formats pour la partager avec votre famille ou l'intégrer à d'autres outils :
+Vous pouvez cependant l'exporter dans différents formats pour la partager avec votre famille ou l'intégrer à d'autres outils :
 
 ```bash
 # Exporter en Markdown

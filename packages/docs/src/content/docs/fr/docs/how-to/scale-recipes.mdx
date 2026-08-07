@@ -14,7 +14,7 @@ Prenons une recette de pain classique :
 [Mélanger] La @farine{500 g}, l'@eau{350 ml}, le @sel{10 g} et la @levure{5 g}.
 ```
 
-Si vous ajustez les proportions de cette recette avec un facteur 2 (via `gram build --scale 2`), tout est bêtement doublé. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser l'ajustement par ingrédient repère : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
+Si vous ajustez les proportions de cette recette avec un facteur 2 (via `gram build --scale 2`), l'ensemble des quantités est multiplié par deux. Et si vos placards sont vides et qu'il ne vous reste que `400 g` de farine, vous pouvez utiliser l'ajustement par ingrédient repère : `gram build --scale farine=400g`. Gram calculera le multiplicateur (`0.8`) et ajustera tout automatiquement.
 
 Alors, pourquoi aurions-nous besoin d'autre chose ?
 

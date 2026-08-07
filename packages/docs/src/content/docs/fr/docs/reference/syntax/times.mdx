@@ -115,7 +115,7 @@ Voici une antisèche de la façon dont le compilateur convertit automatiquement 
 | **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | **+ 2 min** | **+ 2 min** |
 
 ### Suivi Intelligent des Dépendances (ALAP)
-Inutile de dégainer la calculatrice : Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur repoussera automatiquement son pétrissage le plus tard possible. Le repos de la pâte se terminera *pile-poil* au moment où l'étape suivante débutera (terminé les pâtes qui poireautent 2h sur le plan de travail) !
+Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur planifiera automatiquement son pétrissage au moment optimal. Le repos de la pâte se terminera exactement au moment où l'étape suivante débutera.
 
 Pour une explication plus détaillée de l'optimisation de la ligne du temps, consultez l'[Analyse approfondie de l'Ordonnancement ALAP](/fr/docs/explanation/alap-scheduling).
 
@@ -154,7 +154,7 @@ Voir aussi : [Rétroplanning (Ordonnancement)](/fr/docs/reference/syntax/documen
 
 ## Gestion des Erreurs
 
-Pour assurer un ordonnancement infaillible, le compilateur inspecte rigoureusement vos déclarations de `~minuteurs` et de rétroplanning. Il émettra des avertissements en cas de données bancales :
+Pour assurer un ordonnancement optimal, le compilateur inspecte rigoureusement vos déclarations de `~minuteurs` et de rétroplanning. Il émettra des avertissements en cas de données incohérentes :
 
 - **Unité manquante (*Missing Unit*)** (`~minuteur`) : Si vous écrivez `~{30}` sans préciser son unité (minutes ou heures ?), le compilateur remontera `MISSING_UNIT`.
 - **Unité invalide (*Invalid Unit*)** (`~minuteur`) : Si vous fournissez une unité hors de son dictionnaire (ex : `~{30 années-lumière}`), il remontera `INVALID_UNIT`.

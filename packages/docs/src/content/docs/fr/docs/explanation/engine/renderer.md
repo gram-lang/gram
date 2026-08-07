@@ -5,7 +5,7 @@ description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdow
 
 Une fois la recette ingérée par `@gram-lang/parser`, compilée par `@gram-lang/kitchen`, et (idéalement) boostée par `@gram-lang/analyzer`, il ne reste plus qu'à l'afficher.
 
-Le *package* `@gram-lang/renderer` embarque ce gros JSON final pour le recracher en Markdown ou en HTML sémantique.
+Le *package* `@gram-lang/renderer` embarque cet objet JSON complet pour le restituer en Markdown ou en HTML sémantique.
 
 ## Formats de Rendu
 
@@ -18,14 +18,14 @@ Génère un Markdown propre (GFM), incluant la liste de courses, le matos, des �
 Génère un DOM HTML sémantique. L'export HTML repose sur l'**Inversion de Contrôle** : vous injectez vos propres classes CSS (coucou Tailwind) et vos SVG pour épouser le *Design System* de votre application.
 
 ### 3. HTML pour Impression (`toPrintHTML`)
-Crache un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
+Génère un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
 
 ### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` crache le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`.
+Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`.
 
 ## Traversée Unifiée (`RenderBackend`)
 
-Sous le capot, Markdown, HTML et Print HTML délèguent le sale boulot à un orchestrateur unique (`renderRecipe` dans `traversal.ts`). Ce dernier invoque l'interface `RenderBackend` de chaque formateur. Cette architecture bétonne une parité absolue : titre, méta, caddie, matos, étapes, notes et macros seront toujours parcourus dans cet ordre strict, peu importe le format de sortie cible. Le Gantt fait figure d'exception, produisant un graphe et non un document.
+En interne, Markdown, HTML et Print HTML délèguent le traitement principal à un orchestrateur unique (`renderRecipe` dans `traversal.ts`). Ce dernier invoque l'interface `RenderBackend` de chaque formateur. Cette architecture garantit une parité absolue : titre, méta, liste de courses, matériel, étapes, notes et macros seront toujours parcourus dans cet ordre strict, quel que soit le format de sortie cible. Le Gantt fait figure d'exception, produisant un graphe et non un document.
 
 ## Exemple d'Utilisation
 
@@ -81,4 +81,4 @@ L'objet `RendererOptions` offre aussi `bakersReference`/`bakersMathOnly` (pour l
 
 Si vous *buildez* une app frontend (React, Vue, Svelte), vous **n'êtes absolument pas forcé** d'utiliser `@gram-lang/renderer`.
 
-Le JSON recraché par `@gram-lang/analyzer` est typé, prêt à être itéré. Mapper bêtement sur `recipe.sections` et `recipe.shopping_list` fera l'affaire 90% du temps. N'oubliez pas les *edge cases* sympas des recettes riches (alternatives, composites, pourcentage du boulanger, `purchasingMass`). Si vous codez votre propre affichage, n'hésitez pas à jeter un œil au code source de `@gram-lang/renderer` pour vous inspirer !
+Le JSON généré par `@gram-lang/analyzer` est typé et prêt à être itéré. Interroger directement `recipe.sections` et `recipe.shopping_list` conviendra dans la majorité des cas. N'oubliez pas les cas particuliers des recettes complexes (alternatives, composites, pourcentage du boulanger, `purchasingMass`). Si vous développez votre propre affichage, n'hésitez pas à consulter le code source de `@gram-lang/renderer` pour vous en inspirer.

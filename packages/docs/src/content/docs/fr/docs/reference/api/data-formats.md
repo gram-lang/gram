@@ -76,7 +76,7 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
 
 ## 2. Recettes compilées & analysées (`@gram-lang/kitchen`, `@gram-lang/analyzer`)
 
-`compile()` produit un `CompilationResult` ; `analyze()` recrache cette même structure enrichie des champs de masse/nutrition (`AnalyzedCompilationResult`). Voici le diff (les champs injectés par l'Analyseur sont commentés) :
+`compile()` produit un `CompilationResult` ; `analyze()` renvoie cette même structure enrichie des champs de masse/nutrition (`AnalyzedCompilationResult`). Voici le diff (les champs injectés par l'Analyseur sont commentés) :
 
 ```json
 {

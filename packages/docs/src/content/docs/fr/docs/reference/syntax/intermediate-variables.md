@@ -54,7 +54,7 @@ Prendre de la &pâte feuilletée{200 g} et l'étaler.
 :::note[Liste de Courses vs Ingrédients de Recette]
 Lorsqu'elle est consommée dans une étape ultérieure, une `&variable` intermédiaire **apparaîtra** dans la liste des ingrédients de cette section (au même titre que n'importe quel ingrédient brut). 
 
-Néanmoins, elle **n'apparaîtra jamais** dans la **liste de courses globale**. Le compilateur Gram a parfaitement conscience que la `&pâte feuilletée` se compose déjà de farine et de beurre : il la désossera automatiquement pour agréger les ingrédients bruts à votre liste de courses.
+Néanmoins, elle **n'apparaîtra jamais** dans la **liste de courses globale**. Le compilateur Gram a parfaitement conscience que la `&pâte feuilletée` se compose déjà de farine et de beurre : il la décomposera automatiquement pour agréger les ingrédients bruts à votre liste de courses.
 :::
 
 ## Mécanismes Avancés

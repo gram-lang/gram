@@ -12,7 +12,7 @@ L'extension officielle Gram pour VS Code transforme votre éditeur en un vérita
 - **Résilience aux erreurs** : Si votre recette contient des erreurs de syntaxe bloquant la compilation, l'aperçu affiche gracieusement le message d'erreur pour vous tenir informé, sans jamais faire crasher l'extension.
 
 :::note[📊 CodeLens des Macros]
-Un bouton `CodeLens` magique apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'Aperçu. Il mettra également en surbrillance les ingrédients introuvables dans votre base de données.
+Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'Aperçu. Il met également en surbrillance les ingrédients introuvables dans votre base de données.
 :::
 
 ### 2. Vue Diagramme de Gantt
@@ -30,7 +30,7 @@ L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` à la r
 :::
 
 ### 4. Assistance à l'Édition & Navigation
-- **Jetons Sémantiques (*Semantic Tokens*)** : Oubliez la coloration syntaxique bancale par Regex, place à une coloration sémantique robuste pilotée par l'AST. Les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés avec une précision chirurgicale selon leur rôle.
+- **Jetons Sémantiques (*Semantic Tokens*)** : Plutôt qu'une coloration syntaxique basée sur des expressions régulières, l'extension propose une coloration sémantique robuste pilotée par l'AST. Les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés avec précision selon leur rôle.
 - **Autocomplétion Intelligente** :
   - `@` suggère les ingrédients de la base, en encapsulant automatiquement de `{}` les noms composés.
   - `&` suggère les variables intermédiaires déclarées en amont (ex : `->&pâte`).
