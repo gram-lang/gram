@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel, SystemModelMessage } from "ai";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
+import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
 import { assertPublicUrl } from "../core/ssrf";
@@ -347,6 +348,11 @@ export async function importWithAI(
 			});
 			gramContent = stripFences(fixed);
 		}
+
+		// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
+		// no need to spend another AI call asking the model to fix it when
+		// `@gram-lang/format` already does this exactly and for free.
+		gramContent = formatGram(gramContent).content;
 	} catch (err) {
 		throw new GramCLIError(
 			`AI import failed: ${getErrorMessage(err)}`,
