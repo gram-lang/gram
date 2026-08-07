@@ -50,6 +50,10 @@ CONVERSION PROCESS — work through these steps mentally
 5. REVIEW  Before outputting, verify:
           - No kebab-case ingredient names (use "olive oil", not "olive-oil")
           - No units inside cookware braces (#pan{20cm} is WRONG — use #pan(20cm))
+          - Every multi-word @ingredient/#cookware name is followed by {} (even empty) —
+            without it, only the first word becomes the name and the rest silently leaks
+            into step text (e.g. "@boneless chicken breast" is WRONG — use
+            "@boneless chicken breast{500g}", or "{}" if no quantity is known)
           - Second mentions of ingredients use @& prefix
           - Steps are separated by a blank line
           - Output is raw .gram content only — no markdown fences, no prose
@@ -304,7 +308,7 @@ SECTION 4 — COOKWARE (#)
 #bowl
 #ramekins{4}
 #=pan{2}
-#loaf pan(23x13cm, non-stick)
+#loaf pan{}(23x13cm, non-stick)
 #ramekins{6}(porcelain)
 \`\`\`
 
@@ -624,7 +628,7 @@ makes: '24cm tart tin'
 
 ## Assembly and Meringue
 
-[Line] Roll out the &pastry and press into a #tart tin(24cm). Blind-bake at ^oven{180C} for ~_{15min}.
+[Line] Roll out the &pastry and press into a #tart tin{}(24cm). Blind-bake at ^oven{180C} for ~_{15min}.
 
 [Fill] Pour in the &curd and smooth the surface.
 
@@ -632,5 +636,5 @@ makes: '24cm tart tin'
 
 [Top] Spread the &meringue over the tart using a #spatula.
 
-[Brown] Torch with a #blowtorch|#kitchen torch or flash under a #=grill for ~{3-5min} until golden.
+[Brown] Torch with a #blowtorch|#kitchen torch{} or flash under a #=grill for ~{3-5min} until golden.
 `;
