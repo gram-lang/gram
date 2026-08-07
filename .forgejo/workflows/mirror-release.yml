@@ -1,0 +1,68 @@
+name: Mirror Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  mirror:
+    runs-on: docker
+    container:
+      image: oven/bun:1.3.14
+
+    steps:
+      - name: Mirror to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASES_TOKEN }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          BODY: ${{ github.event.release.body }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          bun -e '
+            fetch("https://api.github.com/repos/gram-lang/gram/releases", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
+                "Content-Type": "application/json",
+                "User-Agent": "Forgejo-Mirror-Action",
+              },
+              body: JSON.stringify({
+                tag_name: process.env.TAG_NAME,
+                name: process.env.RELEASE_NAME,
+                body: process.env.BODY,
+                prerelease: process.env.PRERELEASE === "true"
+              })
+            }).then(r => {
+              if (!r.ok) { console.error("GitHub API error:", r.status); process.exit(1); }
+              console.log("✅ Successfully mirrored release to GitHub");
+            }).catch(e => { console.error(e); process.exit(1); })
+          '
+
+      - name: Mirror to Codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_RELEASES_TOKEN }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          BODY: ${{ github.event.release.body }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          bun -e '
+            fetch("https://codeberg.org/api/v1/repos/gram-lang/gram/releases", {
+              method: "POST",
+              headers: {
+                "Authorization": `token ${process.env.CODEBERG_TOKEN}`,
+                "Content-Type": "application/json",
+                "User-Agent": "Forgejo-Mirror-Action",
+              },
+              body: JSON.stringify({
+                tag_name: process.env.TAG_NAME,
+                name: process.env.RELEASE_NAME,
+                body: process.env.BODY,
+                prerelease: process.env.PRERELEASE === "true"
+              })
+            }).then(r => {
+              if (!r.ok) { console.error("Codeberg API error:", r.status); process.exit(1); }
+              console.log("✅ Successfully mirrored release to Codeberg");
+            }).catch(e => { console.error(e); process.exit(1); })
+          '
