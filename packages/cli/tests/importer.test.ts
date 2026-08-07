@@ -111,6 +111,13 @@ describe("validateGram", () => {
 		const errors = validateGram(null as unknown as string);
 		expect(errors.length).toBe(1);
 	});
+
+	it("does not surface a warning-severity issue (e.g. an unresolved relative-quantity target) — retrying the AI on these just burns tokens without a fixable defect", () => {
+		const errors = validateGram(
+			"## Section\nMix @flour{200g} and @salt{2% &missing_var} together.\n",
+		);
+		expect(errors).toEqual([]);
+	});
 });
 
 describe("buildImportPayload", () => {

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { generateText } from "ai";
 import type { LanguageModel, SystemModelMessage } from "ai";
 import { getAST } from "@gram-lang/parser";
-import { compile } from "@gram-lang/kitchen";
+import { compile, warningSeverity } from "@gram-lang/kitchen";
 import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
@@ -271,11 +271,19 @@ export function buildImportPayload(
 
 const AI_MAX_RETRIES = 2;
 
+// Only `warningSeverity[code] === "error"` (undefined references, scope
+// conflicts...) is worth spending an AI retry on — the same bar `gram check`
+// uses by default. Nutritional/estimation gaps and incomplete-but-valid
+// annotations (e.g. a new ingredient not yet in the user's database) are
+// expected on a fresh import and aren't defects the AI can meaningfully fix;
+// retrying on them just burns tokens without changing the outcome.
 export function validateGram(text: string): string[] {
 	try {
 		const ast = getAST(text);
 		const compiled = compile(ast);
-		return compiled.warnings.map((w) => w.message);
+		return compiled.warnings
+			.filter((w) => warningSeverity[w.code] === "error")
+			.map((w) => w.message);
 	} catch (err) {
 		return [getErrorMessage(err)];
 	}
