@@ -295,7 +295,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		heroTitle: "Gram",
 		heroSubtitle: "Un langage de balisage open-source pour vos recettes.",
 		heroDescription:
-			"Codez vos recettes. Conçu pour dompter la logique culinaire, Gram compile vos instructions texte en données structurées, prévisibles et relationnelles.",
+			"Codez vos recettes. Pensé pour la logique culinaire, Gram compile vos instructions texte en données structurées, prévisibles et relationnelles.",
 		metaDescription:
 			"Codez vos recettes. Gram compile vos instructions texte en données structurées et prévisibles.",
 		heroGetStarted: "Démarrer",
@@ -312,42 +312,42 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 
 		whyGram: "Philosophie",
 		whyGramDesc:
-			"Pensé pour être fluide à écrire, intuitif à versionner et redoutable au parsing.",
+			"Pensé pour être fluide à écrire, intuitif à versionner et rapide à analyser.",
 		learnMore: "En savoir plus",
 		philosophy: [
 			{
 				title: "Texte Brut & Git",
 				icon: "document",
 				details:
-					"Zéro vendor lock-in. Vos recettes sont de simples fichiers texte, prêts à être poussés sur Git, partagés librement et édités où vous le souhaitez.",
+					"Aucun verrouillage propriétaire. Vos recettes sont de simples fichiers texte, faciles à versionner avec Git, à partager et à éditer dans l'éditeur de votre choix.",
 				link: "/fr/docs/explanation/philosophy",
 			},
 			{
-				title: "Calculs Automatiques",
+				title: "Calculs & Proportions",
 				icon: "setting",
 				details:
-					"Fini les calculs mentaux pour l'hydratation ou le scaling de vos plats. Gram gère l'arithmétique, les variables et la conversion d'unités nativement.",
+					"Ajustez les portions sans calculs mentaux. Gram gère nativement l'arithmétique, les variables et la conversion d'unités.",
 				link: "/fr/docs/explanation/scaling",
 			},
 			{
 				title: "Un Outillage Robuste",
 				icon: "laptop",
 				details:
-					"Avec son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et de la détection d'erreurs en live, direct dans votre éditeur favori.",
+					"Grâce à son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et des diagnostics en temps réel, directement dans votre éditeur favori.",
 				link: "/fr/docs/reference/tooling/vscode-extension",
 			},
 			{
 				title: "Exportez Partout",
 				icon: "puzzle",
 				details:
-					"Gram compile vos recettes en un arbre de données (AST) complet. Générez du JSON ou du Markdown, et alimentez le générateur de site statique de votre choix pour builder le carnet de recettes ultime.",
+					"Gram compile vos recettes en un arbre syntaxique (AST) complet. Générez du JSON ou du Markdown pour alimenter le générateur de site statique de votre choix et créer le carnet de recettes ultime.",
 				link: "/fr/docs/reference/api/kitchen",
 			},
 			{
-				title: "Une CLI pour les Devs",
+				title: "Une CLI Puissante",
 				icon: "rocket",
 				details:
-					"Pilotez votre espace de travail direct depuis le terminal. Le CLI officiel permet d'initialiser un projet, de formater et de compiler vos recettes en une seule commande.",
+					"Pilotez votre espace de travail directement depuis le terminal. La CLI officielle permet d'initialiser un projet, de formater et de compiler vos recettes en une seule commande.",
 				link: "/fr/docs/reference/tooling/cli",
 			},
 		],
@@ -361,7 +361,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabNutritionLink: "/fr/docs/how-to/manage-database/",
 		tabScheduleTitle: "Planification Intelligente (ALAP)",
 		tabScheduleDesc:
-			"Visualisez votre rétroplanning. Gram capte vos timers et repousse les tâches passives « Aussi Tard Que Possible » pour optimiser vos temps morts en cuisine.",
+			"Visualisez votre rétroplanning. Gram détecte vos minuteries et planifie les tâches passives « Aussi Tard Que Possible » pour réduire les temps morts en cuisine.",
 		tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
 		tabScaleTitle: "Le Pourcentage du Boulanger",
 		tabScaleDesc:
@@ -370,7 +370,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tryPlaygroundBtn: "Tester dans le Playground",
 
 		tabInput: "Syntaxe Gram",
-		tabOutput: "Résultat Parsé",
+		tabOutput: "Résultat Compilé",
 
 		nutritionInput: `## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
 		nutritionOutput: JSON.stringify(
@@ -512,16 +512,16 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		getInvolved: "Rejoindre le Projet",
 		readBookTitle: "Découvrir le Langage",
 		readBookDesc:
-			"Le guide de référence pour tout comprendre de Gram : sa syntaxe, son outillage et son moteur. Le point d'entrée idéal pour démarrer ou creuser les concepts avancés.",
+			"Le guide de référence pour tout comprendre de Gram : sa syntaxe, son outillage et son moteur. Le point d'entrée idéal pour démarrer ou approfondir les concepts avancés.",
 		readBookLink: "Lire la documentation",
 
 		contributeTitle: "Contribuer",
 		contributeDesc:
-			"Gram est un projet open-source et collaboratif. N'hésitez pas à explorer le code, remonter un bug ou proposer une PR sur le compilateur ou la doc.",
+			"Gram est un projet open-source et collaboratif. N'hésitez pas à explorer le code, signaler des anomalies ou proposer une contribution (PR) sur le compilateur ou la documentation.",
 		contributeLink: "Voir sur le dépôt officiel",
 
 		tryTitle: "Créer un Projet",
 		tryDesc:
-			"Initialisez votre espace de travail en quelques secondes. Le CLI s'occupe de tout générer pour que vous puissiez coder votre première recette.",
+			"Initialisez votre espace de travail en quelques secondes. La CLI génère tout le nécessaire pour que vous puissiez rédiger votre première recette.",
 	},
 };
