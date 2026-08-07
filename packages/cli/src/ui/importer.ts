@@ -33,7 +33,7 @@ export function renderImportResult(
 		);
 		console.log(
 			chalk.dim(
-				`  → Run \`gram check ${relative(process.cwd(), outputPath)}\` to validate, then edit quantities manually.`,
+				`  → Run \`gram db sync\` to register any new ingredients, then \`gram check ${relative(process.cwd(), outputPath)}\` and adjust quantities manually.`,
 			),
 		);
 	} else {
