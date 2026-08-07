@@ -18,6 +18,7 @@ jobs:
           RELEASE_NAME: ${{ github.event.release.name }}
           BODY: ${{ github.event.release.body }}
           PRERELEASE: ${{ github.event.release.prerelease }}
+          TARGET_COMMITISH: ${{ github.event.release.target_commitish }}
         run: |
           bun -e '
             fetch("https://api.github.com/repos/gram-lang/gram/releases", {
@@ -29,12 +30,17 @@ jobs:
               },
               body: JSON.stringify({
                 tag_name: process.env.TAG_NAME,
+                target_commitish: process.env.TARGET_COMMITISH,
                 name: process.env.RELEASE_NAME,
                 body: process.env.BODY,
                 prerelease: process.env.PRERELEASE === "true"
               })
-            }).then(r => {
-              if (!r.ok) { console.error("GitHub API error:", r.status); process.exit(1); }
+            }).then(async r => {
+              if (!r.ok) { 
+                const text = await r.text();
+                console.error("GitHub API error:", r.status, text); 
+                process.exit(1); 
+              }
               console.log("✅ Successfully mirrored release to GitHub");
             }).catch(e => { console.error(e); process.exit(1); })
           '
@@ -46,6 +52,7 @@ jobs:
           RELEASE_NAME: ${{ github.event.release.name }}
           BODY: ${{ github.event.release.body }}
           PRERELEASE: ${{ github.event.release.prerelease }}
+          TARGET_COMMITISH: ${{ github.event.release.target_commitish }}
         run: |
           bun -e '
             fetch("https://codeberg.org/api/v1/repos/gram-lang/gram/releases", {
@@ -57,12 +64,17 @@ jobs:
               },
               body: JSON.stringify({
                 tag_name: process.env.TAG_NAME,
+                target_commitish: process.env.TARGET_COMMITISH,
                 name: process.env.RELEASE_NAME,
                 body: process.env.BODY,
                 prerelease: process.env.PRERELEASE === "true"
               })
-            }).then(r => {
-              if (!r.ok) { console.error("Codeberg API error:", r.status); process.exit(1); }
+            }).then(async r => {
+              if (!r.ok) { 
+                const text = await r.text();
+                console.error("Codeberg API error:", r.status, text); 
+                process.exit(1); 
+              }
               console.log("✅ Successfully mirrored release to Codeberg");
             }).catch(e => { console.error(e); process.exit(1); })
           '
