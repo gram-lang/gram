@@ -95,7 +95,7 @@ export default defineCommand({
 			);
 			process.stderr.write(`  ${"Steps".padEnd(14)} ${result.stepCount}\n`);
 			if (result.parseWarnings.length > 0) {
-				process.stderr.write(`\n  ⚠ Could not parse:\n`);
+				process.stderr.write(`\n  ⚠ Warnings:\n`);
 				for (const w of result.parseWarnings) {
 					process.stderr.write(`    ${w}\n`);
 				}

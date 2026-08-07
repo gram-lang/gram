@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { generateText } from "ai";
 import type { LanguageModel, SystemModelMessage } from "ai";
 import { getAST } from "@gram-lang/parser";
-import { compile, warningSeverity } from "@gram-lang/kitchen";
+import { compile, warningSeverity, type Warning } from "@gram-lang/kitchen";
 import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
@@ -271,6 +271,20 @@ export function buildImportPayload(
 
 const AI_MAX_RETRIES = 2;
 
+type CompileCheck =
+	| { ok: true; warnings: Warning[] }
+	| { ok: false; error: string };
+
+function checkGram(text: string): CompileCheck {
+	try {
+		const ast = getAST(text);
+		const compiled = compile(ast);
+		return { ok: true, warnings: compiled.warnings };
+	} catch (err) {
+		return { ok: false, error: getErrorMessage(err) };
+	}
+}
+
 // Only `warningSeverity[code] === "error"` (undefined references, scope
 // conflicts...) is worth spending an AI retry on — the same bar `gram check`
 // uses by default. Nutritional/estimation gaps and incomplete-but-valid
@@ -278,15 +292,21 @@ const AI_MAX_RETRIES = 2;
 // expected on a fresh import and aren't defects the AI can meaningfully fix;
 // retrying on them just burns tokens without changing the outcome.
 export function validateGram(text: string): string[] {
-	try {
-		const ast = getAST(text);
-		const compiled = compile(ast);
-		return compiled.warnings
-			.filter((w) => warningSeverity[w.code] === "error")
-			.map((w) => w.message);
-	} catch (err) {
-		return [getErrorMessage(err)];
-	}
+	const result = checkGram(text);
+	if (!result.ok) return [result.error];
+	return result.warnings
+		.filter((w) => warningSeverity[w.code] === "error")
+		.map((w) => w.message);
+}
+
+// Every compiler warning left in the final output, not just the error-severity
+// ones validateGram() retries on — this is what gets reported to the user
+// after import (they were never worth an AI retry, but the user should still
+// see them, e.g. "not found in database" for a freshly imported ingredient).
+export function collectAllWarnings(text: string): string[] {
+	const result = checkGram(text);
+	if (!result.ok) return [result.error];
+	return result.warnings.map((w) => w.message);
 }
 
 function stripFences(text: string): string {
@@ -373,6 +393,6 @@ export async function importWithAI(
 		title: recipe.name ?? "Untitled",
 		ingredientCount: rawIngredients.length,
 		stepCount: instructions.length,
-		parseWarnings: [],
+		parseWarnings: collectAllWarnings(gramContent),
 	};
 }

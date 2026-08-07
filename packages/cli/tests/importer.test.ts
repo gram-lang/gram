@@ -7,6 +7,7 @@ import {
 	parseRecipeResponse,
 	validateGram,
 	buildImportPayload,
+	collectAllWarnings,
 } from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
@@ -117,6 +118,21 @@ describe("validateGram", () => {
 			"## Section\nMix @flour{200g} and @salt{2% &missing_var} together.\n",
 		);
 		expect(errors).toEqual([]);
+	});
+});
+
+describe("collectAllWarnings", () => {
+	it("surfaces every compiler warning, unlike validateGram() which only keeps error-severity ones", () => {
+		const warnings = collectAllWarnings(
+			"## Section\nMix @flour{200g} and @salt{2% &missing_var} together.\n",
+		);
+		expect(warnings.length).toBeGreaterThan(0);
+		expect(warnings[0]).toContain("missing_var");
+	});
+
+	it("returns no warnings for clean, fully valid content", () => {
+		const warnings = collectAllWarnings("## Section\nMix @flour{200g}.\n");
+		expect(warnings).toEqual([]);
 	});
 });
 

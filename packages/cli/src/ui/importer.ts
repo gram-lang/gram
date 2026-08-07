@@ -14,14 +14,12 @@ export function renderImportResult(
 
 	console.log();
 	console.log(`  ${"Title".padEnd(14)} ${result.title}`);
-	console.log(
-		`  ${"Ingredients".padEnd(14)} ${result.ingredientCount}${result.parseWarnings.length ? chalk.yellow(` (${result.parseWarnings.length} unparsable)`) : ""}`,
-	);
+	console.log(`  ${"Ingredients".padEnd(14)} ${result.ingredientCount}`);
 	console.log(`  ${"Steps".padEnd(14)} ${result.stepCount}`);
 
 	if (result.parseWarnings.length > 0) {
 		console.log();
-		console.log(chalk.yellow("  ⚠ Could not parse:"));
+		console.log(chalk.yellow("  ⚠ Warnings:"));
 		for (const w of result.parseWarnings) {
 			console.log(`    ${chalk.dim(w)}`);
 		}
