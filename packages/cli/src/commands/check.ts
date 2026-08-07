@@ -13,7 +13,8 @@ import { ExitCode, GramCLIError } from "../errors";
 export default defineCommand({
 	meta: {
 		name: "check",
-		description: "Validate .gram recipe files for syntax and structure errors",
+		description:
+			"Validate .gram recipe files for syntax, structure, and ingredient database completeness",
 	},
 	args: {
 		pattern: {
