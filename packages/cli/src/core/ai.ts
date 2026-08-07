@@ -40,6 +40,18 @@ const DEFAULTS: Record<AiProvider, string> = {
 	ollama: "llama4",
 };
 
+// Suggested options for the `gram init` model picker — quality-first, unlike
+// DEFAULTS above which is a cheap zero-config fallback. Single source of truth
+// so a new model release only needs updating here, not duplicated in init.ts
+// (and ideally not hand-copied into docs either — point readers at `gram init`
+// instead of pinning versions in prose that will drift).
+export const RECOMMENDED_MODELS: Record<AiProvider, readonly string[]> = {
+	google: ["gemini-3.5-flash", "gemini-3.1-pro"],
+	openai: ["gpt-5.4-mini", "gpt-5.5"],
+	anthropic: ["claude-sonnet-4.6", "claude-haiku-4.5", "claude-fable-5"],
+	ollama: ["llama4", "llama3"],
+};
+
 function resolveApiKey(
 	provider: Exclude<AiProvider, "ollama">,
 	ai: NonNullable<GramConfig["ai"]>,

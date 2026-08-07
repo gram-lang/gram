@@ -21,7 +21,7 @@ import { stringify } from "yaml";
 import type { GramConfig } from "../types";
 import { ExitCode } from "../errors";
 import { upsertEnvVar } from "../services/config-manager";
-import { AI_PROVIDER_ENV_VAR } from "../core/ai";
+import { AI_PROVIDER_ENV_VAR, RECOMMENDED_MODELS } from "../core/ai";
 
 const DB_TEMPLATE = `# Gram ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
@@ -130,75 +130,23 @@ export default defineCommand({
 				}),
 			) as "google" | "openai" | "anthropic" | "ollama";
 
-			let model: string;
-
-			if (provider === "google") {
-				const selectedModel = guardCancel(
-					await select({
-						message: "Select a model:",
-						options: [
-							{
-								value: "gemini-3.5-flash",
-								label: "gemini-3.5-flash (Recommended)",
-							},
-							{ value: "gemini-3.1-pro", label: "gemini-3.1-pro" },
-							{ value: "other", label: "Other (Manual entry)" },
-						],
-					}),
-				);
-				model =
-					selectedModel === "other"
-						? guardCancel(await text({ message: "Enter model name:" }))
-						: (selectedModel as string);
-			} else if (provider === "openai") {
-				const selectedModel = guardCancel(
-					await select({
-						message: "Select a model:",
-						options: [
-							{ value: "gpt-5.4-mini", label: "gpt-5.4-mini (Recommended)" },
-							{ value: "gpt-5.5", label: "gpt-5.5" },
-							{ value: "other", label: "Other (Manual entry)" },
-						],
-					}),
-				);
-				model =
-					selectedModel === "other"
-						? guardCancel(await text({ message: "Enter model name:" }))
-						: (selectedModel as string);
-			} else if (provider === "anthropic") {
-				const selectedModel = guardCancel(
-					await select({
-						message: "Select a model:",
-						options: [
-							{
-								value: "claude-sonnet-4.6",
-								label: "claude-sonnet-4.6 (Recommended)",
-							},
-							{ value: "claude-haiku-4.5", label: "claude-haiku-4.5" },
-							{ value: "claude-fable-5", label: "claude-fable-5" },
-							{ value: "other", label: "Other (Manual entry)" },
-						],
-					}),
-				);
-				model =
-					selectedModel === "other"
-						? guardCancel(await text({ message: "Enter model name:" }))
-						: (selectedModel as string);
-			} else {
-				const selectedModel = guardCancel(
-					await select({
-						message: "Select a model:",
-						options: [
-							{ value: "llama3", label: "llama3" },
-							{ value: "other", label: "Other (Manual entry)" },
-						],
-					}),
-				);
-				model =
-					selectedModel === "other"
-						? guardCancel(await text({ message: "Enter model name:" }))
-						: (selectedModel as string);
-			}
+			const modelOptions = RECOMMENDED_MODELS[provider].map((value, i) => ({
+				value,
+				label: i === 0 ? `${value} (Recommended)` : value,
+			}));
+			const selectedModel = guardCancel(
+				await select({
+					message: "Select a model:",
+					options: [
+						...modelOptions,
+						{ value: "other", label: "Other (Manual entry)" },
+					],
+				}),
+			);
+			const model =
+				selectedModel === "other"
+					? guardCancel(await text({ message: "Enter model name:" }))
+					: (selectedModel as string);
 
 			config.ai = { provider, model };
 
