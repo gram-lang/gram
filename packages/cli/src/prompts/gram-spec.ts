@@ -593,7 +593,10 @@ The output must be raw .gram content. Never wrap it in fences:
 SECTION 8 — REFERENCE EXAMPLE
 ════════════════════════════
 
-This example uses most features. Use it as your mental model:
+This example uses most features. Use it as your mental model for SYNTAX AND STRUCTURE only — it
+is written in English for consistency across this document. Every ingredient name, cookware
+name, and action verb (\`[Mix]\`, \`[Bind]\`...) you output MUST be written in the target language
+given at the top of this prompt — never copy English words from this example verbatim.
 
 ---
 title: 'Lemon Meringue Pie'

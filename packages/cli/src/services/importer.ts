@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { generateText } from "ai";
-import type { LanguageModel } from "ai";
+import type { LanguageModel, SystemModelMessage } from "ai";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
@@ -227,14 +227,20 @@ export async function importWithAI(
 
 	const rawIngredients: string[] = recipe.recipeIngredient ?? [];
 	const instructions = flattenInstructions(recipe.recipeInstructions ?? []);
-	const systemPrompt = `${getAiLanguageInstruction(lang)}\n\n${GRAM_SPEC_PROMPT}`;
+	// The language instruction is repeated at both ends of the spec: a single
+	// mention at the top gets drowned out by ~600 lines of English syntax
+	// examples in between, and the model tends to anchor on the examples it
+	// saw most recently rather than an instruction from the start of the prompt.
+	const languageInstruction = getAiLanguageInstruction(lang);
+	const systemText = `${languageInstruction}\n\n${GRAM_SPEC_PROMPT}\n\n${languageInstruction}`;
+	const system: SystemModelMessage = { role: "system", content: systemText };
 
 	let gramContent: string;
 	try {
 		const { text } = await generateText({
 			model,
 			temperature: 0,
-			system: systemPrompt,
+			system,
 			prompt: `Convert this recipe JSON-LD to Gram format:\n\n${JSON.stringify(recipe, null, 2)}`,
 		});
 		gramContent = stripFences(text);
@@ -247,7 +253,7 @@ export async function importWithAI(
 			const { text: fixed } = await generateText({
 				model,
 				temperature: 0,
-				system: systemPrompt,
+				system,
 				prompt: `The following .gram file has validation errors. Fix them and output only the corrected .gram content.\n\nErrors:\n${errorList}\n\nFile:\n${gramContent}`,
 			});
 			gramContent = stripFences(fixed);
