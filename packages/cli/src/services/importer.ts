@@ -233,7 +233,18 @@ export async function importWithAI(
 	// saw most recently rather than an instruction from the start of the prompt.
 	const languageInstruction = getAiLanguageInstruction(lang);
 	const systemText = `${languageInstruction}\n\n${GRAM_SPEC_PROMPT}\n\n${languageInstruction}`;
-	const system: SystemModelMessage = { role: "system", content: systemText };
+	// SystemModelMessage (rather than a plain string) so providerOptions can mark
+	// this large, byte-identical-across-calls prompt as cacheable. Anthropic reads
+	// its own namespace and caches the prefix; other providers ignore the key they
+	// don't recognize, so this is safe to send unconditionally regardless of which
+	// provider `model` actually is.
+	const system: SystemModelMessage = {
+		role: "system",
+		content: systemText,
+		providerOptions: {
+			anthropic: { cacheControl: { type: "ephemeral" } },
+		},
+	};
 
 	let gramContent: string;
 	try {
