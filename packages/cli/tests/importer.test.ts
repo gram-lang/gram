@@ -6,6 +6,7 @@ import {
 	fetchRecipe,
 	parseRecipeResponse,
 	validateGram,
+	buildImportPayload,
 } from "../src/services/importer";
 import { GramCLIError } from "../src/errors";
 
@@ -109,5 +110,58 @@ describe("validateGram", () => {
 		// practice — this exercises the catch-branch itself, not real grammar input.
 		const errors = validateGram(null as unknown as string);
 		expect(errors.length).toBe(1);
+	});
+});
+
+describe("buildImportPayload", () => {
+	it("keeps only the fields the spec prompt uses, cleaned of HTML markup and entities", () => {
+		const payload = buildImportPayload(
+			{
+				name: "Pancakes",
+				description: "Fluffy &amp; simple <b>pancakes</b>",
+				author: { "@type": "Person", name: "Jane  Doe" },
+				recipeCategory: "Breakfast",
+				keywords: "easy, quick",
+				recipeYield: "8 servings",
+				prepTime: "PT10M",
+				cookTime: "PT20M",
+				totalTime: "PT30M",
+				image: ["https://example.com/a.jpg", "https://example.com/b.jpg"],
+				aggregateRating: { ratingValue: 4.8, ratingCount: 312 },
+				review: [{ author: "Someone", reviewBody: "Loved it!" }],
+			},
+			"https://example.com/pancakes",
+			["200g <b>flour</b>", "1 egg"],
+			[{ text: "Mix &nbsp;everything." }],
+		);
+
+		expect(payload.name).toBe("Pancakes");
+		expect(payload.description).toBe("Fluffy & simple pancakes");
+		expect(payload.author).toBe("Jane Doe");
+		expect(payload.url).toBe("https://example.com/pancakes");
+		expect(payload.recipeCategory).toBe("Breakfast");
+		expect(payload.keywords).toBe("easy, quick");
+		expect(payload.recipeYield).toBe("8 servings");
+		expect(payload.prepTime).toBe("PT10M");
+		expect(payload.recipeIngredient).toEqual(["200g flour", "1 egg"]);
+		expect(payload.recipeInstructions).toEqual([{ text: "Mix everything." }]);
+		expect(payload).not.toHaveProperty("image");
+		expect(payload).not.toHaveProperty("aggregateRating");
+		expect(payload).not.toHaveProperty("review");
+	});
+
+	it("normalizes an array of Person/string authors", () => {
+		const payload = buildImportPayload(
+			{ author: [{ name: "Jane" }, "John"] },
+			undefined,
+			[],
+			[],
+		);
+		expect(payload.author).toEqual(["Jane", "John"]);
+	});
+
+	it("omits the url field for a local file source", () => {
+		const payload = buildImportPayload({}, undefined, [], []);
+		expect(payload).not.toHaveProperty("url");
 	});
 });

@@ -195,6 +195,77 @@ export async function fetchRecipe(source: string): Promise<RecipeFetchResult> {
 	return { jsonLd: recipe };
 }
 
+// ── Prompt payload ────────────────────────────────────────────────────────────
+
+// Strips markup/entities real-world recipe sites embed in JSON-LD text fields
+// (WordPress recipe plugins in particular) so neither tokens nor the model's
+// attention are spent on it.
+function cleanText(text: string): string {
+	return text
+		.replace(/<[^>]+>/g, " ")
+		.replace(/&nbsp;/gi, " ")
+		.replace(/&amp;/gi, "&")
+		.replace(/&lt;/gi, "<")
+		.replace(/&gt;/gi, ">")
+		.replace(/&quot;/gi, '"')
+		.replace(/&#0*39;|&apos;/gi, "'")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+// schema.org allows `author` to be a string, a Person/Organization object, or
+// an array of either — normalize all three shapes to what the spec prompt
+// actually asks for (a plain name or array of names).
+function extractAuthor(author: any): string | string[] | undefined {
+	if (!author) return undefined;
+	if (typeof author === "string") return cleanText(author);
+	if (Array.isArray(author)) {
+		const names = author.map(extractAuthor).filter((n): n is string => !!n);
+		return names.length > 0 ? names : undefined;
+	}
+	if (typeof author === "object" && typeof author.name === "string") {
+		return cleanText(author.name);
+	}
+	return undefined;
+}
+
+// Raw JSON-LD from real sites drags along fields the spec prompt never asks
+// for and that can dwarf the recipe itself in size — `image` (often several
+// URLs or objects), `aggregateRating`, `review`/`reviews` (can be dozens of
+// full-text entries), `video`, `nutrition`, `@context`, `potentialAction`...
+// None of it helps write .gram. This keeps only what SECTION 1 (FRONTMATTER)
+// and SECTION 2/3 of the spec actually use, pre-cleaned of markup noise.
+export function buildImportPayload(
+	recipe: any,
+	sourceUrl: string | undefined,
+	rawIngredients: string[],
+	instructions: Array<{ text: string; name?: string }>,
+): Record<string, unknown> {
+	const payload: Record<string, unknown> = {
+		recipeIngredient: rawIngredients.map(cleanText),
+		recipeInstructions: instructions.map((i) => ({
+			text: cleanText(i.text),
+			...(i.name ? { name: cleanText(i.name) } : {}),
+		})),
+	};
+	if (typeof recipe.name === "string") payload.name = cleanText(recipe.name);
+	if (typeof recipe.description === "string")
+		payload.description = cleanText(recipe.description);
+	const author = extractAuthor(recipe.author);
+	if (author) payload.author = author;
+	if (sourceUrl) payload.url = sourceUrl;
+	if (typeof recipe.recipeCategory === "string")
+		payload.recipeCategory = cleanText(recipe.recipeCategory);
+	if (typeof recipe.keywords === "string")
+		payload.keywords = cleanText(recipe.keywords);
+	if (recipe.recipeYield != null) payload.recipeYield = recipe.recipeYield;
+	if (typeof recipe.prepTime === "string") payload.prepTime = recipe.prepTime;
+	if (typeof recipe.cookTime === "string") payload.cookTime = recipe.cookTime;
+	if (typeof recipe.totalTime === "string")
+		payload.totalTime = recipe.totalTime;
+	return payload;
+}
+
 // ── AI import ─────────────────────────────────────────────────────────────────
 
 const AI_MAX_RETRIES = 2;
@@ -227,6 +298,13 @@ export async function importWithAI(
 
 	const rawIngredients: string[] = recipe.recipeIngredient ?? [];
 	const instructions = flattenInstructions(recipe.recipeInstructions ?? []);
+	const sourceUrl = /^https?:\/\//.test(source) ? source : undefined;
+	const payload = buildImportPayload(
+		recipe,
+		sourceUrl,
+		rawIngredients,
+		instructions,
+	);
 	// The language instruction is repeated at both ends of the spec: a single
 	// mention at the top gets drowned out by ~600 lines of English syntax
 	// examples in between, and the model tends to anchor on the examples it
@@ -252,7 +330,7 @@ export async function importWithAI(
 			model,
 			temperature: 0,
 			system,
-			prompt: `Convert this recipe JSON-LD to Gram format:\n\n${JSON.stringify(recipe, null, 2)}`,
+			prompt: `Convert this recipe to Gram format:\n\n${JSON.stringify(payload, null, 2)}`,
 		});
 		gramContent = stripFences(text);
 
