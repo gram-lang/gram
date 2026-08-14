@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["*"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["typescript", "turbo", "@biomejs/biome"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "enabled": true,
+      "automerge": true,
+      "automergeType": "branch"
+    },
+    {
+      "matchDepTypes": ["packageManager"],
+      "matchPackageNames": ["bun"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "enabled": true,
+      "automerge": true,
+      "automergeType": "branch"
+    }
+  ]
+}
