@@ -45,6 +45,13 @@ jobs:
       - name: Test
         run: bun test
 
+      - name: Conformance
+        run: bun run conformance
+
+      - name: Content audit
+        run: bun run audit
+        continue-on-error: true
+
       - name: Audit dependencies
         run: bun audit --audit-level=high
 
