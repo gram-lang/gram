@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "packages/*/{src,tests}/**"
+      run: bunx biome check --write {staged_files}
+      stage_fixed: true
+
+    grammar-sync:
+      glob: "packages/parser/grammar.ohm"
+      run: |
+        node packages/parser/scripts/build-grammar.cjs
+        git diff --exit-code packages/parser/src/grammar-content.ts || {
+          echo "grammar.ohm changed but packages/parser/src/grammar-content.ts wasn't regenerated/staged.";
+          echo "Run 'bun run build' and 'git add packages/parser/src/grammar-content.ts', then commit again.";
+          exit 1;
+        }
+
+    changeset-reminder:
+      glob: "packages/{analyzer,cli,format,i18n,kitchen,language-server,parser,renderer}/src/**"
+      run: |
+        if ! git diff --cached --name-only | grep -q '^\.changeset/.*\.md$'; then
+          echo "Published package(s) modified without a new .changeset/*.md — run 'bun run change' if this affects the public API/behavior.";
+        fi

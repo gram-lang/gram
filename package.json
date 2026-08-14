@@ -7,10 +7,11 @@
     "@changesets/config": "^3.1.4",
     "@changesets/read": "^0.6.7",
     "@manypkg/get-packages": "^3.1.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "lefthook": "^2.1.10",
     "tsup": "^8.5.1",
     "turbo": "^2.10.8",
-    "typescript": "^6.0.3",
-    "@typescript/native": "npm:typescript@^7.0.2"
+    "typescript": "^6.0.3"
   },
   "license": "GPL-3.0",
   "private": true,
@@ -28,7 +29,7 @@
     "mermaid": "^11.16.1"
   },
   "scripts": {
-    "postinstall": "bun run build",
+    "postinstall": "bun run build && lefthook install",
     "build": "turbo run build",
     "dev": "turbo run dev --filter=@gram-lang/docs",
     "lint": "biome check .",
