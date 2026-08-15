@@ -127,11 +127,9 @@
         }
       ],
       "metrics": {
-        "totalMass": 250,
-        "massStatus": "incomplete",
-        "missingMassIngredients": [
-          "water"
-        ]
+        "totalMass": 400,
+        "massStatus": "precise",
+        "missingMassIngredients": []
       }
     }
   ],
@@ -159,17 +157,15 @@
         "duration": 2
       }
     ],
-    "totalMass": 250,
-    "massStatus": "incomplete",
-    "missingMassIngredients": [
-      "water"
-    ],
+    "totalMass": 400,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
     "nutrition": {
       "total": {
         "calories": 0,
-        "protein": 0,
+        "fat": 0,
         "carbs": 0,
-        "fat": 0
+        "protein": 0
       },
       "isEstimate": false,
       "coverage": 0,

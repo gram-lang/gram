@@ -140,12 +140,22 @@
     "nutrition": {
       "total": {
         "calories": 1115,
-        "protein": 20.6,
+        "fat": 2,
         "carbs": 252.6,
-        "fat": 2
+        "protein": 20.6
       },
       "isEstimate": false,
-      "coverage": 1
+      "coverage": 1,
+      "per100g": {
+        "calories": 372,
+        "fat": 0.7,
+        "carbs": 84.2,
+        "protein": 6.9
+      },
+      "basis": {
+        "mass": 300,
+        "massStatus": "precise"
+      }
     }
   }
 }

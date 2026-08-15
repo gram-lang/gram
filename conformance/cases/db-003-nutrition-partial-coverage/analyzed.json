@@ -140,9 +140,9 @@
     "nutrition": {
       "total": {
         "calories": 728,
-        "protein": 20.6,
+        "fat": 2,
         "carbs": 152.6,
-        "fat": 2
+        "protein": 20.6
       },
       "isEstimate": false,
       "coverage": 0.5,
@@ -151,7 +151,17 @@
           "code": "MISSING_INGREDIENT",
           "message": "\"salt\" not found in database."
         }
-      ]
+      ],
+      "per100g": {
+        "calories": 364,
+        "fat": 1,
+        "carbs": 76.3,
+        "protein": 10.3
+      },
+      "basis": {
+        "mass": 200,
+        "massStatus": "precise"
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { log } from "@clack/prompts";
 import chalk from "chalk";
-import type { IngredientData } from "@gram-lang/analyzer";
+import { NUTRIENTS, type IngredientData } from "@gram-lang/analyzer";
 import { slugify } from "@gram-lang/kitchen";
 import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
@@ -30,6 +30,11 @@ function matchesQuery(
 	);
 	return haystack.some((s) => s.includes(q));
 }
+
+// Widest label plus the two-space indent a sub-macro carries, so the value
+// column stays aligned whatever the table holds.
+const NUTRIENT_LABEL_WIDTH =
+	Math.max(...NUTRIENTS.map((n) => n.label.length)) + 2;
 
 function fmt(val: number | undefined, unit: string, decimals = 2): string {
 	if (val === undefined) return chalk.dim("—");
@@ -60,26 +65,21 @@ function renderEntry(id: string, entry: IngredientData): void {
 	if (n) {
 		console.log();
 		console.log(`  ${chalk.underline("Nutrition")} ${chalk.dim("(per 100g)")}`);
-		console.log(
-			`  ${chalk.dim("Calories")}       ${fmt(n.calories, "kcal", 0)}`,
-		);
-		console.log(`  ${chalk.dim("Protein")}        ${fmt(n.protein, "g")}`);
-		console.log(`  ${chalk.dim("Carbs")}          ${fmt(n.carbs, "g")}`);
-		console.log(`  ${chalk.dim("Fat")}            ${fmt(n.fat, "g")}`);
-		if (n.sat_fat !== undefined)
-			console.log(`  ${chalk.dim("  Saturated")}    ${fmt(n.sat_fat, "g")}`);
-		if (n.mono_fat !== undefined)
-			console.log(`  ${chalk.dim("  Monounsat.")}   ${fmt(n.mono_fat, "g")}`);
-		if (n.poly_fat !== undefined)
-			console.log(`  ${chalk.dim("  Polyunsat.")}   ${fmt(n.poly_fat, "g")}`);
-		if (n.sugar !== undefined)
-			console.log(`  ${chalk.dim("Sugar")}          ${fmt(n.sugar, "g")}`);
-		if (n.fiber !== undefined)
-			console.log(`  ${chalk.dim("Fiber")}          ${fmt(n.fiber, "g")}`);
-		if (n.sodium !== undefined)
-			console.log(`  ${chalk.dim("Sodium")}         ${fmt(n.sodium, "mg")}`);
-		if (n.alcohol !== undefined)
-			console.log(`  ${chalk.dim("Alcohol")}        ${fmt(n.alcohol, "g")}`);
+		// Driven by NUTRIENTS so this listing can never show a different set of
+		// nutrients than the database schema accepts — the two had already
+		// drifted apart once.
+		for (const nutrient of NUTRIENTS) {
+			const value = n[nutrient.key];
+			if (value === undefined) continue;
+			const label = nutrient.parent ? `  ${nutrient.label}` : nutrient.label;
+			console.log(
+				`  ${chalk.dim(label.padEnd(NUTRIENT_LABEL_WIDTH))} ${fmt(
+					value,
+					nutrient.unit,
+					nutrient.dp === 0 ? 0 : 2,
+				)}`,
+			);
+		}
 	} else {
 		console.log(`  ${chalk.dim("nutrition:")}  —`);
 	}

@@ -132,9 +132,9 @@
     "nutrition": {
       "total": {
         "calories": 0,
-        "protein": 0,
+        "fat": 0,
         "carbs": 0,
-        "fat": 0
+        "protein": 0
       },
       "isEstimate": false,
       "coverage": 0,
@@ -147,7 +147,14 @@
           "code": "UNKNOWN_MASS",
           "message": "Cannot calculate mass for \"egg\" to estimate nutrition."
         }
-      ]
+      ],
+      "portions": 8,
+      "perPortion": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      }
     }
   },
   "scaleFactor": 2

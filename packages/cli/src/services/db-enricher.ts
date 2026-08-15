@@ -5,7 +5,11 @@ import { parseDocument, isMap, isSeq, type YAMLMap } from "yaml";
 import { z } from "zod";
 import { generateObject } from "ai";
 import type { LanguageModel } from "ai";
-import type { IngredientData } from "@gram-lang/analyzer";
+import {
+	NUTRIENTS,
+	NutritionSchema,
+	type IngredientData,
+} from "@gram-lang/analyzer";
 import {
 	getAiLanguageInstruction,
 	getCategoryLabels,
@@ -70,22 +74,20 @@ ${FEW_SHOT_EXAMPLES}`;
 // per-category density ranges, sub-macro consistency) stay warning-only,
 // since an all-or-nothing schema rejection would throw away an otherwise-good
 // proposal over borderline macro math.
+//
+// The nutrient set comes from NutritionSchema so this can't ask for fewer
+// fields than the database accepts, which is exactly what had happened:
+// `mono_fat` and `poly_fat` were missing here, so `gram db enrich` could never
+// propose them even though `gram db lint` validated them and `gram db search`
+// displayed them. Only the calorie ceiling is layered on top — the table
+// describes shape, not plausibility.
 const EnrichItemSchema = z.object({
 	key: z.string(),
 	density: z.number().min(MIN_DENSITY).max(MAX_DENSITY).optional(),
 	unit_weight: z.number().min(MIN_UNIT_WEIGHT).max(MAX_UNIT_WEIGHT).optional(),
-	nutrition: z
-		.object({
-			calories: z.number().min(0).max(MAX_CALORIES),
-			carbs: z.number().min(0),
-			protein: z.number().min(0),
-			fat: z.number().min(0),
-			sugar: z.number().min(0).optional(),
-			sat_fat: z.number().min(0).optional(),
-			fiber: z.number().min(0).optional(),
-			sodium: z.number().min(0).optional(),
-		})
-		.optional(),
+	nutrition: NutritionSchema.extend({
+		calories: z.number().min(0).max(MAX_CALORIES),
+	}).optional(),
 	category: z.enum(CATEGORY_KEYS).default("other"),
 	tagSuggestions: z.array(z.string()).default([]),
 });
@@ -239,16 +241,11 @@ export async function enrichDb(
 	};
 }
 
-const NUTRITION_KEYS = [
-	"calories",
-	"carbs",
-	"protein",
-	"fat",
-	"sugar",
-	"sat_fat",
-	"fiber",
-	"sodium",
-] as const;
+/**
+ * Written in NUTRIENTS' order, so an enriched `ingredients.yaml` lists
+ * nutrients the same way `gram db search` and the editor hover show them.
+ */
+const NUTRITION_KEYS = NUTRIENTS.map((n) => n.key);
 
 function sourceOf(final: number, ai: number | undefined): EnrichSource {
 	return final === ai ? "llm" : "user";

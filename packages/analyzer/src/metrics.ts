@@ -1,4 +1,5 @@
 import type { MassMetrics, AnalyzedUsage } from "./types";
+import { resolveContributingUsage } from "./usage_selection";
 import { round2 } from "@gram-lang/kitchen";
 
 /**
@@ -14,28 +15,11 @@ export function calculateMassMetrics(
 	let hasPrecise = false;
 
 	ingredients.forEach((item) => {
-		// Optional ingredients (`?`) are excluded from totalMass, matching the
-		// same conservative-baseline treatment calculateNutrition() applies to
-		// calories — otherwise the two totals disagree on what's "in" the
-		// recipe and kcal/100g figures become inconsistent.
-		if (item.modifiers?.includes("optional")) return;
-
-		// Handle alternatives by picking the first option as the representative
-		// mass — an alternative's options are always ingredient/cookware Usage
-		// objects in practice, never a bare string or other StepToken variant.
-		let target: AnalyzedUsage = item;
-		const firstOption = item.options?.[0];
-		if (
-			item.type === "alternative" &&
-			firstOption &&
-			typeof firstOption === "object" &&
-			"id" in firstOption
-		) {
-			target = firstOption as AnalyzedUsage;
-		}
-		// A composite child or alternative option can carry its own `optional`
-		// modifier even when the parent/group wasn't marked optional as a whole.
-		if (target.modifiers?.includes("optional")) return;
+		// Optional items are excluded and alternatives resolve to their first
+		// option — the same rules calculateNutrition() applies, read from the
+		// one place that defines them.
+		const target = resolveContributingUsage(item);
+		if (!target) return;
 
 		if (target.normalizedMass !== undefined) {
 			totalMass += target.normalizedMass;

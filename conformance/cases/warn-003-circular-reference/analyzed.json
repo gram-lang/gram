@@ -117,11 +117,9 @@
         }
       ],
       "metrics": {
-        "totalMass": 200,
-        "massStatus": "incomplete",
-        "missingMassIngredients": [
-          "flour"
-        ]
+        "totalMass": 220,
+        "massStatus": "precise",
+        "missingMassIngredients": []
       }
     }
   ],
@@ -159,17 +157,15 @@
         "duration": 1
       }
     ],
-    "totalMass": 200,
-    "massStatus": "incomplete",
-    "missingMassIngredients": [
-      "flour"
-    ],
+    "totalMass": 220,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
     "nutrition": {
       "total": {
         "calories": 0,
-        "protein": 0,
+        "fat": 0,
         "carbs": 0,
-        "fat": 0
+        "protein": 0
       },
       "isEstimate": false,
       "coverage": 0,

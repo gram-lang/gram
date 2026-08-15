@@ -1,4 +1,8 @@
-import type { IngredientData, NutritionMetrics } from "@gram-lang/analyzer";
+import type {
+	IngredientData,
+	Macros,
+	NutritionMetrics,
+} from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
 import { z } from "zod";
 
@@ -163,16 +167,7 @@ export interface EnrichEntry {
 	name: string;
 	density?: number;
 	unit_weight?: number;
-	nutrition?: {
-		calories: number;
-		carbs: number;
-		protein: number;
-		fat: number;
-		sugar?: number;
-		sat_fat?: number;
-		fiber?: number;
-		sodium?: number;
-	};
+	nutrition?: Macros;
 	// A stable key persisted as data (e.g. "vegetables"), never a translated
 	// display label — see
 	// @gram-lang/i18n's categories.ts for why.

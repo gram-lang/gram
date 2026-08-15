@@ -1,4 +1,10 @@
 export * from "./types";
+// NUTRIENTS and its derived types are the single source of truth every
+// consumer enumerates nutrients from (renderer rows, `gram db enrich`,
+// `gram db lint`, `gram db search`, the LSP hover), so the schema module is
+// public rather than analyzer-internal.
+export * from "./schemas";
+export * from "./usage_selection";
 export * from "./ingredient_db";
 export * from "./mass_standardization";
 export * from "./nutrition";
@@ -20,6 +26,7 @@ import type {
 	AnalysisResult,
 	AnalyzerOptions,
 	NutritionMetrics,
+	MassMetrics,
 } from "./types";
 import { calculateMassMetrics } from "./metrics";
 import { calculateNutrition, type NutritionItem } from "./nutrition";
@@ -202,8 +209,6 @@ function standardizeSectionMasses(
 				allRawIngredients.push(item);
 			}
 		});
-
-		sec.metrics = calculateMassMetrics(sec.ingredients);
 	});
 
 	return allRawIngredients;
@@ -579,12 +584,42 @@ function applyBakersMath(
 }
 
 /**
- * Pass 3: estimates a full nutritional profile (calories, macros) based on
- * portion counts, from the fully-enriched shopping list.
+ * Resolves how many portions the nutrition should be divided by: an explicit
+ * caller override first, otherwise the recipe's own `portions:` frontmatter.
+ *
+ * Reading the frontmatter is the part that was missing — `analyze()` only ever
+ * looked at the option, and the CLI was passing it the `--scale` factor, so the
+ * documented "if the recipe declares portions: 4, divide by 4" never happened
+ * for anyone.
+ *
+ * Frontmatter values are always `string | string[]` (the parser never coerces),
+ * so only the string form can carry a count; `parseFloat` is deliberately
+ * permissive about a trailing label ("4 servings" -> 4), matching how
+ * `applyScale` reads the same field. The finite/positive guard is not
+ * decorative: `portions: 0` would divide by zero.
+ */
+function resolvePortions(
+	meta: CompilationResult["meta"],
+	opts: AnalyzerOptions,
+): number | undefined {
+	if (opts.portions !== undefined) return opts.portions;
+
+	const declared = meta?.portions;
+	if (typeof declared !== "string") return undefined;
+
+	const parsed = parseFloat(declared);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+/**
+ * Pass 3: estimates a full nutritional profile (calories, macros) from the
+ * fully-enriched shopping list, on every basis the recipe supports.
  */
 function estimateNutrition(
 	shoppingList: CompilationResult["shopping_list"],
 	database: Record<string, IngredientData>,
+	meta: CompilationResult["meta"],
+	massStatus: MassMetrics["massStatus"],
 	opts: AnalyzerOptions,
 ): NutritionMetrics | undefined {
 	if (opts.enableNutritionalEstimation === false) return undefined;
@@ -597,7 +632,8 @@ function estimateNutrition(
 	return calculateNutrition(
 		shoppingList as NutritionItem[],
 		database,
-		opts.portions || 1,
+		resolvePortions(meta, opts),
+		massStatus,
 	);
 }
 
@@ -628,9 +664,20 @@ export function analyze(
 		opts,
 		missingIngredientsSet,
 	);
-	const globalMassMetrics = calculateMassMetrics(allRawIngredients);
 
 	resolveRelativeQuantities(sections, result.warnings);
+
+	// Mass metrics are computed only now, after pass 1.5. They used to run
+	// straight after pass 1, on the very same objects — so an ingredient
+	// expressed as `60% of &dough` had no normalizedMass yet, was counted as
+	// missing, and was left out of totalMass while forcing massStatus to
+	// "incomplete". Nutrition, computed further down from the enriched shopping
+	// list, did include it: the two totals described different recipes.
+	const globalMassMetrics = calculateMassMetrics(allRawIngredients);
+	sections.forEach((sec) => {
+		sec.metrics = calculateMassMetrics(sec.ingredients);
+	});
+
 	syncEnrichedFieldsIntoSteps(sections);
 
 	let shopping_list: CompilationResult["shopping_list"] = result.shopping_list
@@ -646,7 +693,13 @@ export function analyze(
 
 	applyBakersMath(shopping_list, sections, opts, result.warnings);
 
-	const nutrition = estimateNutrition(shopping_list, database, opts);
+	const nutrition = estimateNutrition(
+		shopping_list,
+		database,
+		result.meta,
+		globalMassMetrics.massStatus,
+		opts,
+	);
 
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {

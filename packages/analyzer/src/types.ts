@@ -1,5 +1,9 @@
 import type { z } from "zod";
-import type { AnalyzerOptionsSchema, IngredientDataSchema } from "./schemas";
+import type {
+	AnalyzerOptionsSchema,
+	IngredientDataSchema,
+	Macros,
+} from "./schemas";
 
 export type AnalyzerOptions = z.infer<typeof AnalyzerOptionsSchema>;
 
@@ -19,23 +23,30 @@ export interface MassMetrics {
 }
 
 export interface NutritionMetrics {
-	total: {
-		calories: number;
-		protein: number;
-		carbs: number;
-		fat: number;
-		sugar?: number;
-		fiber?: number;
-		sodium?: number;
-	};
-	perPortion?: {
-		calories: number;
-		protein: number;
-		carbs: number;
-		fat: number;
-		sugar?: number;
-		fiber?: number;
-		sodium?: number;
+	/** The whole recipe, at the quantities it was compiled/scaled to. */
+	total: Macros;
+	/** Present whenever the portion count is known — see NutritionMetrics.portions. */
+	perPortion?: Macros;
+	/**
+	 * Per 100 g of the ingredients that contributed macros (see `basis`).
+	 * Independent of `portions`, so an unportioned recipe still gets a
+	 * standardized basis.
+	 *
+	 * Gram models no cooking loss — no evaporation, no bake loss — so this is
+	 * per 100 g of the *raw assembled* mixture, which understates a reduced
+	 * stew or a baked loaf against a finished-product label.
+	 */
+	per100g?: Macros;
+	/** The divisor `perPortion` was derived with, once resolved. */
+	portions?: number;
+	/**
+	 * The denominator behind `per100g`, exposed so a UI can caveat the figure
+	 * without recomputing it: `massStatus: "incomplete"` means the mass is a
+	 * lower bound, and the density therefore an over-estimate.
+	 */
+	basis?: {
+		mass: number;
+		massStatus?: MassMetrics["massStatus"];
 	};
 	isEstimate: boolean;
 	coverage: number;

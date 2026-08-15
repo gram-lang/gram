@@ -13,7 +13,7 @@ import {
 	type IngredientEntry,
 } from "../ingredient-loader";
 import { normalizeUnit } from "@gram-lang/i18n";
-import { standardizeMass } from "@gram-lang/analyzer";
+import { NUTRIENTS, standardizeMass } from "@gram-lang/analyzer";
 import { type QuantityAST, isQuantity } from "@gram-lang/parser";
 import { getNumericQty } from "@gram-lang/kitchen";
 
@@ -48,41 +48,24 @@ function buildConversionSection(
 	return null;
 }
 
-function row(
-	label: string,
-	value: number | undefined | null,
-	unit: string,
-): string | null {
-	if (value == null) return null;
-	return `| ${label} | ${value} ${unit} |`;
-}
-
 function buildNutritionSection(entry: IngredientEntry): string | null {
 	const n = entry.nutrition;
 	if (!n) return null;
 
-	const lines: string[] = [
-		`| Nutrient | per 100 g |`,
-		`|---|---|`,
-		`| Calories | ${n.calories} kcal |`,
-	];
+	// Driven by NUTRIENTS rather than a hand-written list, so this hover can no
+	// longer show a different set of nutrients than the database accepts. It
+	// also drops a `sodium * 1000` conversion that was here: database values
+	// are already in milligrams, as the analyzer and `gram db search` both
+	// assume, so the hover was reporting a thousand times too much.
+	const lines: string[] = [`| Nutrient | per 100 g |`, `|---|---|`];
 
-	const optional: Array<[string, number | undefined | null, string]> = [
-		["Carbohydrates", n.carbs, "g"],
-		["— of which sugars", n.sugar, "g"],
-		["Protein", n.protein, "g"],
-		["Fat", n.fat, "g"],
-		["— of which saturated", n.sat_fat, "g"],
-		["— of which mono-unsat.", n.mono_fat, "g"],
-		["— of which poly-unsat.", n.poly_fat, "g"],
-		["Fiber", n.fiber, "g"],
-		["Sodium", n.sodium != null ? +(n.sodium * 1000).toFixed(2) : null, "mg"],
-		["Alcohol", n.alcohol, "g"],
-	];
-
-	for (const [label, value, unit] of optional) {
-		const r = row(label, value, unit);
-		if (r) lines.push(r);
+	for (const nutrient of NUTRIENTS) {
+		const value = n[nutrient.key];
+		if (value == null) continue;
+		const label = nutrient.parent
+			? `— of which ${nutrient.label.toLowerCase()}`
+			: nutrient.label;
+		lines.push(`| ${label} | ${value} ${nutrient.unit} |`);
 	}
 
 	return lines.join("\n");

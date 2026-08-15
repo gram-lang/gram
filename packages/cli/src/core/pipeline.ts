@@ -35,7 +35,12 @@ export async function runPipeline(
 	const analyzed =
 		!opts.skipAnalyzer && opts.db
 			? analyze(compiled, opts.db, {
-					portions: opts.scaleFactor,
+					// No `portions` override: the analyzer reads the recipe's own
+					// `portions:` frontmatter. This used to pass `opts.scaleFactor`,
+					// which meant per-portion nutrition never appeared without
+					// --scale, and divided by the scale factor when it did.
+					// `applyScale` scales meta.portions too, so a scaled recipe
+					// keeps the right divisor on its own.
 					bakersReference: opts.bakersReference,
 					lang: opts.lang,
 				})

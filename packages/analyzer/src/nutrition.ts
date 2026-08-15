@@ -6,70 +6,101 @@ import {
 } from "@gram-lang/kitchen";
 import { getIngredientData } from "./ingredient_db";
 import { standardizeMass } from "./mass_standardization";
-import type { NutritionMetrics, IngredientData, AnalyzedUsage } from "./types";
+import { NUTRIENTS, type Macros, type NutrientKey } from "./schemas";
+import { resolveContributingUsage } from "./usage_selection";
+import type {
+	NutritionMetrics,
+	IngredientData,
+	AnalyzedUsage,
+	MassMetrics,
+} from "./types";
 
-interface Macros {
-	calories: number;
-	protein: number;
-	carbs: number;
-	fat: number;
-	sugar?: number;
-	fiber?: number;
-	sodium?: number;
-}
+/**
+ * Running sums, before rounding. Every nutrient is optional here — a key stays
+ * absent until some ingredient actually contributes it, so "no ingredient had
+ * this data" stays distinguishable from "this recipe genuinely has none". The
+ * four required nutrients are seeded to 0 up front, which is what makes the
+ * cast to `Macros` in `deriveBase()` honest.
+ */
+type Totals = Partial<Record<NutrientKey, number>>;
 
 export type NutritionItem = AnalyzedUsage & {
 	usage?: NutritionItem[];
 };
 
+function emptyTotals(): Totals {
+	const totals: Totals = {};
+	for (const n of NUTRIENTS) {
+		if (n.required) totals[n.key] = 0;
+	}
+	return totals;
+}
+
+/**
+ * Divides the unrounded running sums by `divisor` and rounds each nutrient to
+ * its own precision.
+ *
+ * Dividing here rather than at the call site is deliberate: the previous
+ * per-portion values were derived from the *already rounded* total, so an
+ * 8-portion recipe compounded the rounding error eight times over. Every basis
+ * (whole recipe, per portion, per 100 g) now comes off the same raw sums.
+ */
+function deriveBase(totals: Totals, divisor: number): Macros {
+	const out: Totals = {};
+	for (const n of NUTRIENTS) {
+		const value = totals[n.key];
+		if (value === undefined) continue;
+		const factor = 10 ** n.dp;
+		out[n.key] = Math.round((value / divisor) * factor) / factor;
+	}
+	return out as Macros;
+}
+
 export function calculateNutrition(
 	ingredients: NutritionItem[],
 	database: Record<string, IngredientData>,
-	portions: number = 1,
+	portions?: number,
+	massStatus?: MassMetrics["massStatus"],
 ): NutritionMetrics {
-	// sugar/fiber/sodium start unset (not 0) so that "no ingredient had this
-	// data" stays distinguishable from "this recipe genuinely has none" —
-	// they're only assigned once at least one ingredient actually contributes
-	// a value, below.
-	const total: Macros = {
-		calories: 0,
-		protein: 0,
-		carbs: 0,
-		fat: 0,
-	};
+	const totals = emptyTotals();
 
 	let metricsCount = 0;
 	let knownCount = 0;
 	let anyEstimate = false;
+	// Mass of the ingredients that actually contributed macros. This, not
+	// `metrics.totalMass`, is the per-100 g denominator: it comes off the same
+	// list, in the same loop, at the same moment as the numerator, so the two
+	// can't disagree about composites, optional items or resolution order.
+	let accountedMass = 0;
 	const warnings: Warning[] = [];
 
 	// Flatten composite ingredients and alternatives
 	const flatList: NutritionItem[] = [];
 
 	ingredients.forEach((item) => {
-		// Optional ingredients (`?`) are excluded from the conservative baseline —
-		// skip the whole item (and its composite children/alternative options) up front.
-		if (item.modifiers?.includes("optional")) return;
-
 		if (item.type === "composite" && item.usage) {
+			// A composite parent marked optional takes its children with it.
+			if (item.modifiers?.includes("optional")) return;
 			flatList.push(...item.usage);
-		} else if (item.type === "alternative") {
-			if (item.options && item.options.length > 0) {
-				// Ingredient/cookware alternative groups only ever contain Usage-shaped
-				// options (never bare strings, timers, or comments) — see processAlternative().
-				flatList.push(item.options[0] as NutritionItem);
-			}
-		} else {
-			flatList.push(item);
+			return;
 		}
+		// Optional ingredients (`?`) are excluded from the conservative
+		// baseline; an alternative group contributes only its first (preferred)
+		// option. Both rules live in resolveContributingUsage() so the mass
+		// metrics apply exactly the same ones — the two totals disagreeing on
+		// what's "in" the recipe is what makes a kcal/100 g figure meaningless.
+		const contributing = resolveContributingUsage(item);
+		if (contributing) flatList.push(contributing as NutritionItem);
 	});
 
-	flatList.forEach((item) => {
+	flatList.forEach((rawItem) => {
+		// A composite child or alternative option can carry its own `optional`
+		// modifier even when the parent/group wasn't marked optional as a whole.
+		const item = resolveContributingUsage(rawItem) as NutritionItem | null;
+		if (!item) return;
+
 		const id = item.id;
 		if (!id) return;
-		// A composite child or alternative option can carry its own `optional` modifier
-		// even when the parent/group wasn't marked optional as a whole.
-		if (item.modifiers?.includes("optional")) return;
 
 		// Ingredients declared without a quantity (@salt{}, @oil) have negligible/trace mass.
 		// They are intentional "to taste" entries — skip silently, no warning, no coverage hit.
@@ -106,20 +137,16 @@ export function calculateNutrition(
 				pushWarning(warnings, WarningCode.MISSING_INGREDIENT, { id });
 			} else if (data.nutrition) {
 				knownCount++;
+				accountedMass += mass;
+				// Database values are per 100 g of the raw ingredient.
 				const factor = mass / 100.0;
 
 				const m = data.nutrition;
-				total.calories += m.calories * factor;
-				total.protein += m.protein * factor;
-				total.carbs += m.carbs * factor;
-				total.fat += m.fat * factor;
-
-				if (m.sugar !== undefined)
-					total.sugar = (total.sugar || 0) + m.sugar * factor;
-				if (m.fiber !== undefined)
-					total.fiber = (total.fiber || 0) + m.fiber * factor;
-				if (m.sodium !== undefined)
-					total.sodium = (total.sodium ?? 0) + m.sodium * factor;
+				for (const n of NUTRIENTS) {
+					const value = m[n.key];
+					if (value === undefined) continue;
+					totals[n.key] = (totals[n.key] ?? 0) + value * factor;
+				}
 			} else {
 				pushWarning(warnings, WarningCode.MISSING_MACROS, { id });
 			}
@@ -130,42 +157,27 @@ export function calculateNutrition(
 
 	const coverage = metricsCount > 0 ? knownCount / metricsCount : 0;
 
-	total.calories = Math.round(total.calories);
-	total.protein = Math.round(total.protein * 10) / 10;
-	total.carbs = Math.round(total.carbs * 10) / 10;
-	total.fat = Math.round(total.fat * 10) / 10;
-	if (total.sugar !== undefined)
-		total.sugar = Math.round(total.sugar * 10) / 10;
-	if (total.fiber !== undefined)
-		total.fiber = Math.round(total.fiber * 10) / 10;
-	if (total.sodium !== undefined) total.sodium = Math.round(total.sodium); // mg → integer
-
 	const res: NutritionMetrics = {
-		total,
+		total: deriveBase(totals, 1),
 		isEstimate: anyEstimate,
 		coverage,
 		warnings: warnings.length > 0 ? warnings : undefined,
 	};
 
-	if (portions > 1) {
-		res.perPortion = {
-			calories: Math.round(total.calories / portions),
-			protein: Math.round((total.protein / portions) * 10) / 10,
-			carbs: Math.round((total.carbs / portions) * 10) / 10,
-			fat: Math.round((total.fat / portions) * 10) / 10,
-			sugar:
-				total.sugar !== undefined
-					? Math.round((total.sugar / portions) * 10) / 10
-					: undefined,
-			fiber:
-				total.fiber !== undefined
-					? Math.round((total.fiber / portions) * 10) / 10
-					: undefined,
-			sodium:
-				total.sodium !== undefined
-					? Math.round(total.sodium / portions)
-					: undefined,
-		};
+	// Emitted whenever `portions` is known, including 1 — the documented
+	// contract is "per portion if portions is set", and forcing every consumer
+	// to fall back to `perPortion || total` is how the three renderer backends
+	// ended up disagreeing about which basis they were showing.
+	if (portions !== undefined && Number.isFinite(portions) && portions > 0) {
+		res.portions = portions;
+		res.perPortion = deriveBase(totals, portions);
+	}
+
+	// Independent of `portions`, so a recipe that never declared one still gets
+	// a standardized basis instead of nothing.
+	if (accountedMass > 0) {
+		res.per100g = deriveBase(totals, accountedMass / 100);
+		res.basis = { mass: Math.round(accountedMass * 100) / 100, massStatus };
 	}
 
 	return res;

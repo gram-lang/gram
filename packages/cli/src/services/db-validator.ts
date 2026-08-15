@@ -1,6 +1,21 @@
-import type { IngredientData } from "@gram-lang/analyzer";
+import {
+	NUTRIENTS,
+	type IngredientData,
+	type NutrientDef,
+	type NutrientKey,
+} from "@gram-lang/analyzer";
+import { round2 } from "@gram-lang/kitchen";
 import { isCategoryKey, type CategoryKey } from "@gram-lang/i18n";
 import type { DbIssue, DbValidateResult } from "../types";
+
+/** Sub-macros grouped by the macro they're a part of, from NUTRIENTS' `parent`. */
+const NUTRIENT_CHILDREN: ReadonlyMap<NutrientKey, NutrientDef[]> =
+	NUTRIENTS.reduce((acc, nutrient) => {
+		if (!nutrient.parent) return acc;
+		const siblings = acc.get(nutrient.parent) ?? [];
+		siblings.push(nutrient);
+		return acc.set(nutrient.parent, siblings);
+	}, new Map<NutrientKey, NutrientDef[]>());
 
 // These bounds used to exist only here, as an a-posteriori report on data
 // already written to disk. `db-enricher.ts` now imports them to constrain
@@ -104,17 +119,7 @@ export function validateDb(
 		const { physical, nutrition, category } = data;
 
 		if (nutrition) {
-			const {
-				calories,
-				protein,
-				carbs,
-				fat,
-				sugar,
-				sat_fat,
-				mono_fat,
-				poly_fat,
-				alcohol,
-			} = nutrition;
+			const { calories, protein, carbs, fat, alcohol } = nutrition;
 
 			for (const field of ["fat", "protein", "carbs"] as const) {
 				const val = nutrition[field];
@@ -157,33 +162,34 @@ export function validateDb(
 				}
 			}
 
-			if (sugar !== undefined && carbs !== undefined) {
-				const tolerance = Math.max(
-					SUBMACRO_ABSOLUTE_FLOOR,
-					SUBMACRO_RELATIVE_TOLERANCE * carbs,
-				);
-				if (sugar > carbs + tolerance) {
-					issues.push({
-						level: "warning",
-						category: "Coherence",
-						ingredient: id,
-						message: `Sugar (${sugar}g) exceeds carbs (${carbs}g) — verify`,
-					});
-				}
-			}
+			// "The parts can't exceed the whole" — one rule, applied to every
+			// parent/child relation NUTRIENTS declares. It used to be written
+			// twice (sugar vs carbs, then sat+mono+poly vs fat), so a new
+			// sub-macro meant remembering to add a third copy here.
+			for (const [parentKey, children] of NUTRIENT_CHILDREN) {
+				const parentValue = nutrition[parentKey];
+				if (parentValue === undefined) continue;
 
-			const fatSubtypes = (sat_fat ?? 0) + (mono_fat ?? 0) + (poly_fat ?? 0);
-			if (fatSubtypes > 0 && fat !== undefined) {
+				const present = children.filter(
+					(child) => nutrition[child.key] !== undefined,
+				);
+				if (present.length === 0) continue;
+
+				const sum = present.reduce(
+					(acc, child) => acc + (nutrition[child.key] ?? 0),
+					0,
+				);
 				const tolerance = Math.max(
 					SUBMACRO_ABSOLUTE_FLOOR,
-					SUBMACRO_RELATIVE_TOLERANCE * fat,
+					SUBMACRO_RELATIVE_TOLERANCE * parentValue,
 				);
-				if (fatSubtypes > fat + tolerance) {
+				if (sum > parentValue + tolerance) {
+					const breakdown = present.map((child) => child.key).join(" + ");
 					issues.push({
 						level: "warning",
 						category: "Coherence",
 						ingredient: id,
-						message: `Fat sub-types (sat+mono+poly = ${fatSubtypes}g) exceed total fat (${fat}g) — verify`,
+						message: `Sub-types of ${parentKey} (${breakdown} = ${round2(sum)}g) exceed total ${parentKey} (${parentValue}g) — verify`,
 					});
 				}
 			}

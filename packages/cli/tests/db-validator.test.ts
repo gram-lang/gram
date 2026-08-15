@@ -188,7 +188,7 @@ describe("validateDb", () => {
 			"db.yaml",
 		);
 		const issue = result.issues.find((i) =>
-			i.message.includes("exceeds carbs"),
+			i.message.includes("exceed total carbs"),
 		);
 		expect(issue?.level).toBe("warning");
 	});
@@ -208,9 +208,9 @@ describe("validateDb", () => {
 			}),
 			"db.yaml",
 		);
-		expect(result.issues.some((i) => i.message.includes("exceeds carbs"))).toBe(
-			false,
-		);
+		expect(
+			result.issues.some((i) => i.message.includes("exceed total carbs")),
+		).toBe(false);
 	});
 
 	it("warns when fat sub-types exceed total fat", () => {
