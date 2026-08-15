@@ -139,7 +139,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabInput: "Gram Syntax",
 		tabOutput: "Parsed Result",
 
-		nutritionInput: `## Chantilly Cream\n\n[Whisk] @heavy cream{1 cup} and @powdered sugar{2 tbsp} until soft peaks form.\n\n[Fold] Gently incorporate @vanilla extract{1 tsp}.`,
+		nutritionInput: `---\nportions: 4\n---\n\n## Chantilly Cream\n\n[Whisk] @heavy cream{1 cup} and @powdered sugar{2 tbsp} until soft peaks form.\n\n[Fold] Gently incorporate @vanilla extract{1 tsp}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [
@@ -372,7 +372,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabInput: "Syntaxe Gram",
 		tabOutput: "Résultat Compilé",
 
-		nutritionInput: `## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
+		nutritionInput: `---\nportions: 4\n---\n\n## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [

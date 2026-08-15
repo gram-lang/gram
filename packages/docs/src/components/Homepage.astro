@@ -5,6 +5,8 @@ import Icon from "./Icon.astro";
 import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
 import { GRAM_VERSION } from "../lib/gram-version";
+import { NUTRIENTS, type NutrientKey } from "@gram-lang/analyzer";
+import { getDictionary } from "@gram-lang/i18n";
 
 const { lang, t } = Astro.props;
 const gramLang = { ...gramGrammar, name: "gram" } as any;
@@ -12,6 +14,49 @@ const codeThemes: Record<string, any> = {
 	light: "github-light",
 	dark: "github-dark",
 };
+
+// The nutrition panel mockup below is a static picture of what the real
+// renderer produces — it is not rendered by it. Driving its labels and their
+// order from NUTRIENTS and the shared locale files is what keeps the two from
+// drifting apart, which is exactly what happened to the six hand-written
+// nutrient lists this table replaced.
+const nutritionDict = getDictionary(lang);
+
+// Per-portion figures for the Chantilly mockup: one quarter of a 269 g batch
+// (240 g cream + 25 g powdered sugar + 4 g vanilla), the recipe shown in
+// `nutritionInput`. Values are formatted with a decimal point in every locale,
+// matching the renderer's own output.
+const MOCK_NUTRITION: Partial<Record<NutrientKey, string>> = {
+	calories: "231 kcal",
+	fat: "22 g",
+	sat_fat: "13.8 g",
+	mono_fat: "5.8 g",
+	poly_fat: "0.8 g",
+	carbs: "6.5 g",
+	sugar: "6.3 g",
+	fiber: "0 g",
+	protein: "1.5 g",
+	sodium: "11 mg",
+};
+
+const mockNutrients = NUTRIENTS.filter((n) => MOCK_NUTRITION[n.key]).map(
+	(n) => ({
+		key: n.key,
+		value: MOCK_NUTRITION[n.key] as string,
+		nested: Boolean(n.parent),
+		label: n.parent
+			? `${nutritionDict.renderer.ofWhich} ${nutritionDict.renderer.nutrients[n.key]}`
+			: nutritionDict.renderer.nutrients[n.key],
+	}),
+);
+
+// The recipe declares `portions: 4`, so the real panel offers all three bases
+// and opens on per-portion.
+const mockBases = [
+	{ label: nutritionDict.renderer.nutritionPerPortion, active: true },
+	{ label: nutritionDict.renderer.nutritionPer100g, active: false },
+	{ label: nutritionDict.renderer.nutritionWholeRecipe, active: false },
+];
 ---
 
 <Layout title="Gram" description={t.metaDescription} currentLang={lang}>
@@ -166,36 +211,32 @@ const codeThemes: Record<string, any> = {
                 </div>
                 <div class="nut-panel-mock">
                   <div class="nut-header-mock">
-                    Nutrition <span>EST.</span>
+                    {nutritionDict.renderer.nutrition}
+                    <span>{nutritionDict.renderer.estimateTooltip}</span>
+                  </div>
+                  <div class="nut-basis-switch-mock">
+                    {
+                      mockBases.map((basis) => (
+                        <span class:list={["pill", { active: basis.active }]}>
+                          {basis.label}
+                        </span>
+                      ))
+                    }
                   </div>
                   <div class="nut-grid-mock">
-                    <div class="nut-item-mock">
-                      <span class="label">Calories</span><strong
-                        >925 kcal</strong
-                      >
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label">Carbs</span><strong>26 g</strong>
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label">Fat</span><strong>88 g</strong>
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label">Protein</span><strong>6 g</strong>
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label"
-                        >{lang === "fr" ? "Sucres" : "Sugar"}</span
-                      ><strong>25 g</strong>
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label"
-                        >{lang === "fr" ? "Fibres" : "Fiber"}</span
-                      ><strong>0 g</strong>
-                    </div>
-                    <div class="nut-item-mock">
-                      <span class="label">Sodium</span><strong>42 mg</strong>
-                    </div>
+                    {
+                      mockNutrients.map((nutrient) => (
+                        <div
+                          class:list={[
+                            "nut-item-mock",
+                            { nested: nutrient.nested },
+                          ]}
+                        >
+                          <span class="label">{nutrient.label}</span>
+                          <strong>{nutrient.value}</strong>
+                        </div>
+                      ))
+                    }
                   </div>
                 </div>
               </div>
@@ -871,6 +912,26 @@ const codeThemes: Record<string, any> = {
     font-weight: 700;
     color: var(--sl-color-bg);
   }
+  /* Mirrors the real panel's basis switch (renderer/gram.css), which is a set
+     of radio inputs there and a static picture here. */
+  .nut-basis-switch-mock {
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: 0.6rem;
+    padding: 2px;
+    background-color: var(--sl-color-gray-6);
+  }
+  .nut-basis-switch-mock .pill {
+    font-size: 0.7em;
+    font-weight: 600;
+    padding: 4px 10px;
+    white-space: nowrap;
+    color: var(--sl-color-gray-2);
+  }
+  .nut-basis-switch-mock .pill.active {
+    background-color: var(--sl-color-bg);
+    color: var(--sl-color-white);
+  }
   .nut-grid-mock {
     display: grid;
     gap: 6px;
@@ -894,6 +955,15 @@ const codeThemes: Record<string, any> = {
     text-transform: uppercase;
     color: var(--sl-color-text-accent);
     font-weight: 600;
+  }
+  /* Sub-macros ("of which saturates") read as a breakdown of the row above,
+     the same way the real panel distinguishes them. */
+  .nut-item-mock.nested {
+    border-style: dashed;
+  }
+  .nut-item-mock.nested .label {
+    text-transform: none;
+    color: var(--sl-color-gray-3);
   }
   .nut-item-mock strong {
     font-size: 1em;
