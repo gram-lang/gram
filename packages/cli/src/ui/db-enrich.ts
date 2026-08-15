@@ -96,8 +96,8 @@ export function renderEnrichResult(
 	}
 }
 
-// `--report`/`--dry-run` mode: lists entries that *need* review without
-// deciding or writing anything, mirroring `renderLintReport`.
+// `--report` mode: lists entries that *need* review without deciding or
+// writing anything, mirroring `renderLintReport`.
 export function renderEnrichPreview(result: EnrichResult): void {
 	const { enriched, failed, totalIncomplete } = result;
 
@@ -121,7 +121,7 @@ export function renderEnrichPreview(result: EnrichResult): void {
 
 	log.warn(
 		`${enriched.length} ingredient${enriched.length !== 1 ? "s" : ""} ready for review. ` +
-			`Run without --report/--dry-run to review and write them.`,
+			`Run without --report to review and write them.`,
 	);
 }
 

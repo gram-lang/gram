@@ -314,7 +314,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - `category`/`tags` are written automatically; `density`/`unit_weight`/`nutrition` are reviewed one entry at a time (accept, edit, or skip) since they're product-specific — only you know what's actually in your kitchen.
    - Values accepted as-is are tagged `# [LLM]` in `ingredients.yaml`, marking them as AI estimates that haven't been human-reviewed.
    - Safely re-runnable: only proposes fields that are still missing.
-   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing; `--dry-run/-n` is a synonym), `--db <path>`.
+   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing), `--db <path>`.
 </Steps>
 
 #### `gram db validate`

@@ -38,12 +38,6 @@ export default defineCommand({
 			description: "Show what needs review without writing anything",
 			default: false,
 		},
-		"dry-run": {
-			type: "boolean",
-			alias: "n",
-			description: "Synonym for --report",
-			default: false,
-		},
 		yes: {
 			type: "boolean",
 			alias: "y",
@@ -129,13 +123,7 @@ export default defineCommand({
 			process.exit(ExitCode.Ok);
 		}
 
-		// `--dry-run` is kept as a working synonym for `--report`, not
-		// deprecated, so existing scripts using it don't break — it used to
-		// mean "generate and show what would be written (as if everything were
-		// accepted), without writing"; without decisions in hand that no
-		// longer applies the same way, so both flags now mean a pure report:
-		// "here is what needs review", nothing decided or written.
-		if (args.report || args["dry-run"]) {
+		if (args.report) {
 			renderEnrichPreview(result);
 			process.exit(ExitCode.Ok);
 		}
