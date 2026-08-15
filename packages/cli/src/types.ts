@@ -184,8 +184,8 @@ export interface EnrichEntry {
 // `!dryRun` — a missing/unreadable file
 // or an unexpected YAML root silently skipped the write while `enriched`
 // stayed populated, so the UI reported "Updated <path> (N enriched)" against
-// an unchanged file. This is now a typed fact `enrichDb` reports directly;
-// `renderEnrichResult` can only claim "Updated" by reading it.
+// an unchanged file. This is now a typed fact `applyEnrichDecisions` reports
+// directly; `renderEnrichResult` can only claim "Updated" by reading it.
 export type EnrichWriteResult =
 	| { written: true; path: string; count: number }
 	| { written: false; reason: string };
@@ -196,13 +196,11 @@ export interface EnrichResult {
 	enriched: EnrichEntry[];
 	skipped: string[];
 	failed: string[];
-	write: EnrichWriteResult;
 }
 
 export interface EnrichOptions {
 	ingredient?: string;
 	field?: "density" | "nutrition" | "tags" | "category" | "all";
-	dryRun?: boolean;
 	dbPathOverride?: string;
 	onBatchDone?: (
 		done: number,
@@ -210,6 +208,33 @@ export interface EnrichOptions {
 		enriched: string[],
 		failed: string[],
 	) => void;
+}
+
+// String ouverte plutôt qu'un booléen llm/user : c'est le point d'extension
+// pour une source externe plus tard (openfoodfacts, …) sans redesign.
+export type EnrichSource = "llm" | "user"; // extensible plus tard: | "openfoodfacts"
+
+// "accept" et "edit" ont été fusionnés : au niveau du type, les deux
+// signifient juste "write" avec des valeurs finales (identiques ou non à
+// celles de l'IA). La provenance ne se déduit plus de l'action choisie dans
+// le prompt mais d'une comparaison valeur par valeur, faite dans
+// applyEnrichDecisions — corrige le bug d'une action "edit" au niveau du
+// bloc qui effaçait la provenance IA d'un sous-champ non modifié.
+export interface EnrichFieldGroupDecision {
+	action: "write" | "skip";
+	density?: number;
+	unit_weight?: number;
+	nutrition?: EnrichEntry["nutrition"];
+}
+
+export interface EnrichDecision {
+	// Index dans EnrichResult.enriched. applyEnrichDecisions itère sur
+	// `decisions` et remonte à l'entrée via cet index — donc une entrée sans
+	// décision n'est jamais visitée, donc jamais écrite.
+	entryIndex: number;
+	physical: EnrichFieldGroupDecision | null;
+	nutrition: EnrichFieldGroupDecision | null;
+	// `null` = l'entrée n'avait rien de ce groupe à revoir (pas "skip")
 }
 
 // Validates `.gram/config.yaml` / `~/.config/gram/config.yaml` at load time (audit

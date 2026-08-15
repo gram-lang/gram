@@ -53,15 +53,19 @@ The recommended workflow consists of three steps, to be run in this exact order:
    
    Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 
    
-   Doing this manually is tedious. Gram can use AI to do it for you in batches (see [Configure AI Provider](/docs/how-to/configure-ai)):
+   Doing this manually is tedious. Gram can use AI to propose values for you in batches (see [Configure AI Provider](/docs/how-to/configure-ai)):
    
    ```bash
    gram db enrich
    ```
    
-   The CLI will fetch standard nutritional data and densities for all incomplete entries in your database. 
+   The CLI will fetch standard nutritional data and densities for all incomplete entries, then walk you through them one by one so you can accept, edit, or skip each proposal — density and nutrition values are product-specific (a French AOP butter isn't the same as a US one), so only you can really validate them. `category`/`tags` are low-stakes and get written automatically.
    
-   It is completely idempotent—it will only fill in missing fields and will never overwrite data you have manually entered.
+   It only ever fills in missing fields, never overwrites data you've manually entered, and is safe to re-run. Values you accept as-is are tagged `# [LLM]` in `ingredients.yaml`, marking them as AI estimates not yet reviewed by a human.
+   
+   :::tip
+   In a hurry, or scripting this in CI? `gram db enrich --yes` skips the review and accepts every AI estimate automatically. Use `gram db enrich --report` to preview what needs review without writing anything.
+   :::
 </Steps>
 
 ## Validating Your Database

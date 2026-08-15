@@ -2,12 +2,13 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { mkdtemp, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { parseDocument } from "yaml";
 import { MockLanguageModelV3 } from "ai/test";
 import type { LanguageModel } from "ai";
-import { enrichDb } from "../src/services/db-enricher";
+import { enrichDb, applyEnrichDecisions } from "../src/services/db-enricher";
 import { makeDb } from "./helpers";
 import { GramCLIError } from "../src/errors";
-import type { GramConfig } from "../src/types";
+import type { GramConfig, EnrichEntry, EnrichDecision } from "../src/types";
 
 const config = {} as GramConfig;
 
@@ -39,17 +40,6 @@ function throwingModel(): LanguageModel {
 }
 
 describe("enrichDb", () => {
-	let dir: string;
-
-	afterEach(async () => {
-		if (dir) await rm(dir, { recursive: true, force: true });
-	});
-
-	async function makeDir(): Promise<string> {
-		dir = await mkdtemp(join(tmpdir(), "gram-enricher-"));
-		return dir;
-	}
-
 	it("returns immediately with no model call when nothing needs enrichment", async () => {
 		const db = makeDb({
 			flour: {
@@ -93,19 +83,15 @@ describe("enrichDb", () => {
 		expect(result.skipped).toContain("flour");
 	});
 
-	it("records a successful enrichment and writes fill-only fields to disk without overwriting existing data", async () => {
-		const d = await makeDir();
-		const dbPath = join(d, "ingredients.yaml");
-		await Bun.write(
-			dbPath,
-			"ingredients:\n  flour:\n    name: Flour\n    physical:\n      density: 0.59\n",
-		);
+	// `enrichDb` is now generation-only (no disk access) — the writing
+	// behavior this used to assert on lives in `applyEnrichDecisions` below.
+	it("records a successful enrichment with the AI's proposed values", async () => {
 		const db = makeDb({ flour: { physical: { density: 0.59 } } });
 		const model = jsonModel({
 			ingredients: [
 				{
 					key: "flour",
-					density: 0.7, // should NOT overwrite the existing 0.59
+					density: 0.7,
 					nutrition: { calories: 364, carbs: 76, protein: 10, fat: 1 },
 					category: "grains",
 					tagSuggestions: ["baking"],
@@ -113,98 +99,16 @@ describe("enrichDb", () => {
 			],
 		});
 		const result = await enrichDb(db, config, model, {
-			dbPathOverride: dbPath,
+			dbPathOverride: "/tmp/unused.yaml",
 		});
 		expect(result.enriched).toHaveLength(1);
-		expect(result.enriched[0]?.id).toBe("flour");
+		expect(result.enriched[0]).toMatchObject({
+			id: "flour",
+			density: 0.7,
+			category: "grains",
+			tagSuggestions: ["baking"],
+		});
 		expect(result.failed).toEqual([]);
-		expect(result.write).toEqual({ written: true, path: dbPath, count: 1 });
-
-		const content = await readFile(dbPath, "utf-8");
-		expect(content).toContain("density: 0.59"); // untouched
-		expect(content).not.toContain("density: 0.7");
-		expect(content).toContain("grains");
-		expect(content).toContain("calories: 364");
-	});
-
-	// Regression tests for the audit (2026-07-22, cli finding B-5): the write
-	// was gated by silent guards (missing/unreadable file, non-map root) that
-	// left `enriched` populated and the caller reporting "Updated <path>"
-	// against a database that was never touched. `write` must now say so
-	// explicitly instead of the caller inferring success from `!dryRun`.
-	describe("write result (B-5)", () => {
-		it("reports write.written=false with a reason when there's nothing to enrich", async () => {
-			const db = makeDb({
-				flour: {
-					physical: { density: 0.59 },
-					nutrition: { calories: 364, protein: 10, carbs: 76, fat: 1 },
-					category: "grains",
-					tags: ["baking"],
-				},
-			});
-			const model = jsonModel({ ingredients: [] });
-			const result = await enrichDb(db, config, model, {
-				dbPathOverride: "/tmp/unused.yaml",
-			});
-			expect(result.write).toEqual({
-				written: false,
-				reason: "nothing to enrich",
-			});
-		});
-
-		it("reports write.written=false with a reason when no ingredient produced a usable AI response", async () => {
-			const db = makeDb({ flour: {} });
-			const model = jsonModel({ ingredients: [] });
-			const result = await enrichDb(db, config, model, {
-				dbPathOverride: "/tmp/unused.yaml",
-			});
-			expect(result.enriched).toEqual([]);
-			expect(result.write).toEqual({
-				written: false,
-				reason: "no ingredient produced a usable AI response",
-			});
-		});
-
-		it("reports write.written=false with reason 'dry run' in dry-run mode, even though ingredients were enriched", async () => {
-			const d = await makeDir();
-			const dbPath = join(d, "ingredients.yaml");
-			await Bun.write(dbPath, "ingredients:\n  flour:\n    name: Flour\n");
-			const db = makeDb({ flour: {} });
-			const model = jsonModel({
-				ingredients: [{ key: "flour", category: "grains", tagSuggestions: [] }],
-			});
-			const result = await enrichDb(db, config, model, {
-				dbPathOverride: dbPath,
-				dryRun: true,
-			});
-			expect(result.enriched).toHaveLength(1);
-			expect(result.write).toEqual({ written: false, reason: "dry run" });
-		});
-
-		it("throws instead of silently skipping the write when the database file doesn't exist", async () => {
-			const db = makeDb({ flour: {} });
-			const model = jsonModel({
-				ingredients: [{ key: "flour", category: "grains", tagSuggestions: [] }],
-			});
-			await expect(
-				enrichDb(db, config, model, {
-					dbPathOverride: "/tmp/gram-enricher-does-not-exist.yaml",
-				}),
-			).rejects.toThrow(GramCLIError);
-		});
-
-		it("throws instead of silently skipping the write when the YAML root isn't a map (a sequence)", async () => {
-			const d = await makeDir();
-			const dbPath = join(d, "ingredients.yaml");
-			await Bun.write(dbPath, "- not\n- a\n- map\n");
-			const db = makeDb({ flour: {} });
-			const model = jsonModel({
-				ingredients: [{ key: "flour", category: "grains", tagSuggestions: [] }],
-			});
-			await expect(
-				enrichDb(db, config, model, { dbPathOverride: dbPath }),
-			).rejects.toThrow(GramCLIError);
-		});
 	});
 
 	// Regression test for the audit (2026-07-22, i18n finding F-03): the AI
@@ -279,9 +183,6 @@ describe("enrichDb", () => {
 	});
 
 	it("matches an AI-returned key case-insensitively", async () => {
-		const d = await makeDir();
-		const dbPath = join(d, "ingredients.yaml");
-		await Bun.write(dbPath, "ingredients:\n  flour:\n    name: Flour\n");
 		const db = makeDb({ flour: {} });
 		const model = jsonModel({
 			ingredients: [
@@ -293,25 +194,19 @@ describe("enrichDb", () => {
 			],
 		});
 		const result = await enrichDb(db, config, model, {
-			dbPathOverride: dbPath,
+			dbPathOverride: "/tmp/unused.yaml",
 		});
 		expect(result.enriched).toHaveLength(1);
 		expect(result.enriched[0]?.id).toBe("flour");
 	});
 
 	it("marks an ingredient as failed when the AI response omits it entirely", async () => {
-		const d = await makeDir();
-		const dbPath = join(d, "ingredients.yaml");
-		await Bun.write(
-			dbPath,
-			"ingredients:\n  flour:\n    name: Flour\n  sugar:\n    name: Sugar\n",
-		);
 		const db = makeDb({ flour: {}, sugar: {} });
 		const model = jsonModel({
 			ingredients: [{ key: "flour", category: "grains", tagSuggestions: [] }],
 		});
 		const result = await enrichDb(db, config, model, {
-			dbPathOverride: dbPath,
+			dbPathOverride: "/tmp/unused.yaml",
 		});
 		expect(result.enriched.map((e) => e.id)).toEqual(["flour"]);
 		expect(result.failed).toContain("sugar");
@@ -335,21 +230,249 @@ describe("enrichDb", () => {
 		expect(result.failed).toContain("not-a-real-ingredient");
 		expect(result.failed).toContain("flour");
 	});
+});
 
-	it("does not write to disk in dry-run mode", async () => {
-		const d = await makeDir();
-		const dbPath = join(d, "ingredients.yaml");
-		await Bun.write(dbPath, "ingredients:\n  flour:\n    name: Flour\n");
-		const db = makeDb({ flour: {} });
-		const model = jsonModel({
-			ingredients: [{ key: "flour", category: "grains", tagSuggestions: [] }],
-		});
-		const result = await enrichDb(db, config, model, {
-			dbPathOverride: dbPath,
-			dryRun: true,
-		});
-		expect(result.enriched).toHaveLength(1);
+describe("applyEnrichDecisions", () => {
+	let dir: string;
+
+	afterEach(async () => {
+		if (dir) await rm(dir, { recursive: true, force: true });
+	});
+
+	async function makeDbFile(yaml: string): Promise<string> {
+		dir = await mkdtemp(join(tmpdir(), "gram-enricher-"));
+		const dbPath = join(dir, "ingredients.yaml");
+		await Bun.write(dbPath, yaml);
+		return dbPath;
+	}
+
+	function entry(overrides: Partial<EnrichEntry> = {}): EnrichEntry {
+		return { id: "flour", name: "Flour", tagSuggestions: [], ...overrides };
+	}
+
+	it("returns written:false without touching disk when there are no decisions", async () => {
+		const result = await applyEnrichDecisions(
+			"/tmp/gram-enricher-does-not-exist.yaml",
+			[],
+			[],
+		);
+		expect(result).toEqual({ written: false, reason: "no changes to apply" });
+	});
+
+	it("throws instead of silently skipping the write when the database file doesn't exist", async () => {
+		const enriched = [entry()];
+		const decisions: EnrichDecision[] = [
+			{ entryIndex: 0, physical: null, nutrition: null },
+		];
+		await expect(
+			applyEnrichDecisions(
+				"/tmp/gram-enricher-does-not-exist.yaml",
+				enriched,
+				decisions,
+			),
+		).rejects.toThrow(GramCLIError);
+	});
+
+	it("throws instead of silently skipping the write when the YAML root isn't a map (a sequence)", async () => {
+		const dbPath = await makeDbFile("- not\n- a\n- map\n");
+		const enriched = [entry()];
+		const decisions: EnrichDecision[] = [
+			{ entryIndex: 0, physical: null, nutrition: null },
+		];
+		await expect(
+			applyEnrichDecisions(dbPath, enriched, decisions),
+		).rejects.toThrow(GramCLIError);
+	});
+
+	it("writes fill-only physical/nutrition fields without overwriting existing data, tagging AI-sourced values [LLM]", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n    physical:\n      density: 0.59\n",
+		);
+		const enriched = [
+			entry({
+				density: 0.7, // should NOT overwrite the existing 0.59
+				nutrition: { calories: 364, carbs: 76, protein: 10, fat: 1 },
+				category: "grains",
+				tagSuggestions: ["baking"],
+			}),
+		];
+		const decisions: EnrichDecision[] = [
+			{
+				entryIndex: 0,
+				physical: { action: "write", density: 0.7 },
+				nutrition: {
+					action: "write",
+					nutrition: { calories: 364, carbs: 76, protein: 10, fat: 1 },
+				},
+			},
+		];
+		const write = await applyEnrichDecisions(dbPath, enriched, decisions);
+		expect(write).toEqual({ written: true, path: dbPath, count: 1 });
+
 		const content = await readFile(dbPath, "utf-8");
-		expect(content).not.toContain("grains");
+		expect(content).toContain("density: 0.59"); // untouched, no [LLM] tag added to it
+		expect(content).not.toContain("density: 0.7");
+		expect(content).toContain("grains");
+		expect(content).toContain("calories: 364 # [LLM]");
+	});
+
+	it("does not tag a user-edited value with [LLM]", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n",
+		);
+		const enriched = [entry({ density: 0.59 })]; // AI's original proposal
+		const decisions: EnrichDecision[] = [
+			{
+				entryIndex: 0,
+				physical: { action: "write", density: 0.65 }, // user edited it
+				nutrition: null,
+			},
+		];
+		await applyEnrichDecisions(dbPath, enriched, decisions);
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).toContain("density: 0.65");
+		expect(content).not.toContain("[LLM]");
+	});
+
+	// Locks in the fix for a bug caught in review: tagging provenance at the
+	// whole-block level made a physical block lose the AI tag on `density`
+	// whenever only `unit_weight` was edited in the same review step.
+	// Provenance is now computed per field by comparing the final value to
+	// the AI's original one, not per action.
+	it("preserves the [LLM] tag on an untouched field within a partially edited block", async () => {
+		const dbPath = await makeDbFile("ingredients:\n  egg:\n    name: Egg\n");
+		const enriched = [
+			entry({ id: "egg", name: "Egg", density: 1.03, unit_weight: 50 }),
+		];
+		const decisions: EnrichDecision[] = [
+			{
+				entryIndex: 0,
+				physical: { action: "write", density: 1.03, unit_weight: 55 }, // only unit_weight edited
+				nutrition: null,
+			},
+		];
+		await applyEnrichDecisions(dbPath, enriched, decisions);
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).toContain("density: 1.03 # [LLM]");
+		expect(content).toContain("unit_weight: 55");
+		expect(content).not.toMatch(/unit_weight: 55 #/);
+	});
+
+	it("writes only nutrition when physical is skipped and nutrition is accepted", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n",
+		);
+		const enriched = [
+			entry({
+				density: 0.59,
+				nutrition: { calories: 364, carbs: 76, protein: 10, fat: 1 },
+			}),
+		];
+		const decisions: EnrichDecision[] = [
+			{
+				entryIndex: 0,
+				physical: { action: "skip" },
+				nutrition: {
+					action: "write",
+					nutrition: { calories: 364, carbs: 76, protein: 10, fat: 1 },
+				},
+			},
+		];
+		const write = await applyEnrichDecisions(dbPath, enriched, decisions);
+		expect(write).toMatchObject({ written: true, count: 1 });
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).not.toContain("physical:");
+		expect(content).toContain("calories: 364");
+	});
+
+	// Regression test for a bug caught in review: an earlier version of this
+	// plan passed `decisions = []` for `--field tags`/`category` runs (which
+	// never have physical/nutrition to review) and then sliced `enriched` to
+	// match — an empty array either way, so `gram db enrich --field tags`
+	// would have silently stopped writing anything at all. Category/tags-only
+	// entries now still get a real decision (both groups `null`), so they're
+	// visited and written exactly like today.
+	it("writes category and tags unconditionally for entries with nothing to review (--field tags/category)", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n  sugar:\n    name: Sugar\n",
+		);
+		const enriched = [
+			entry({ category: "grains", tagSuggestions: ["baking"] }),
+			entry({ id: "sugar", name: "Sugar", tagSuggestions: ["sweetener"] }),
+		];
+		const decisions: EnrichDecision[] = enriched.map((_, entryIndex) => ({
+			entryIndex,
+			physical: null,
+			nutrition: null,
+		}));
+		const write = await applyEnrichDecisions(dbPath, enriched, decisions);
+		expect(write).toEqual({ written: true, path: dbPath, count: 2 });
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).toContain("grains");
+		expect(content).toContain("sweetener");
+		expect(content).not.toContain("[LLM]"); // category/tags never get a provenance tag
+	});
+
+	// Verified in practice against yaml@2.9.0: a flow-style map (`physical:
+	// {}` on one line) silently drops any `.comment` set on its children at
+	// stringify time unless `flow` is forced back to `false` first.
+	it("writes correctly through a flow-style physical map without losing sibling content", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n    physical: {}\n    tags: [pantry]\n",
+		);
+		const enriched = [entry({ density: 0.59 })];
+		const decisions: EnrichDecision[] = [
+			{
+				entryIndex: 0,
+				physical: { action: "write", density: 0.59 },
+				nutrition: null,
+			},
+		];
+		await applyEnrichDecisions(dbPath, enriched, decisions);
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).toContain("density: 0.59 # [LLM]");
+		expect(content).toContain("pantry"); // sibling content untouched
+
+		// Round-trip: the written YAML must still parse cleanly.
+		const doc = parseDocument(content);
+		expect(doc.errors).toEqual([]);
+		const root = doc.toJSON();
+		expect(root.ingredients.flour.physical.density).toBe(0.59);
+	});
+
+	// Ctrl+C during review must leave entries the user was never shown
+	// completely untouched — not even category/tags, which write
+	// unconditionally for entries that *do* have a decision.
+	it("never writes any field for entries with no matching decision (Ctrl+C mid-review)", async () => {
+		const dbPath = await makeDbFile(
+			"ingredients:\n  flour:\n    name: Flour\n  sugar:\n    name: Sugar\n  salt:\n    name: Salt\n",
+		);
+		const enriched = [
+			entry({ category: "grains", tagSuggestions: ["baking"] }),
+			entry({
+				id: "sugar",
+				name: "Sugar",
+				category: "sweeteners",
+				tagSuggestions: ["sweetener"],
+			}),
+			entry({
+				id: "salt",
+				name: "Salt",
+				category: "seasoning",
+				tagSuggestions: ["seasoning"],
+			}),
+		];
+		// Only the first entry got a decision — simulates the user canceling
+		// (Ctrl+C) right after reviewing "flour".
+		const decisions: EnrichDecision[] = [
+			{ entryIndex: 0, physical: null, nutrition: null },
+		];
+		const write = await applyEnrichDecisions(dbPath, enriched, decisions);
+		expect(write).toEqual({ written: true, path: dbPath, count: 1 });
+
+		const content = await readFile(dbPath, "utf-8");
+		expect(content).toContain("grains"); // flour: written
+		expect(content).not.toContain("sweeteners"); // sugar: never visited
+		expect(content).not.toContain("seasoning"); // salt: never visited
 	});
 });

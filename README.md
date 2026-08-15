@@ -91,7 +91,7 @@ Gram comes with tools to help write, inspect, and compile recipes.
 ### Database Tooling (`gram db`)
 Commands to maintain your `ingredients.yaml` file:
 - **`gram db sync`**: Scan recipes and add missing ingredients to your database.
-- **`gram db enrich`**: Fill in missing density and nutrition data using AI suggestions.
+- **`gram db enrich`**: Fill in missing density and nutrition data from AI suggestions, with an interactive review before anything is written.
 - **`gram db lint`**: Find duplicates (e.g., `scallion` vs `green onion`) and fix plural inconsistencies.
 
 ---

@@ -309,11 +309,12 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - Options: `--report/-r` (show issues without applying fixes), `--db <path>`.
 
 3. #### `gram db enrich`
-   Uses AI to automatically complete missing data in your database.
-   - Enriches `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches (`unit_weight` is filled alongside `density`).
-   - `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
-   - Idempotent: safely re-runnable, only fills in fields that are still missing.
-   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--dry-run/-n`, `--db <path>`.
+   Uses AI to propose missing data for your database, then walks you through an interactive review before writing anything.
+   - Proposes `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches (`unit_weight` is filled alongside `density`). `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
+   - `category`/`tags` are written automatically; `density`/`unit_weight`/`nutrition` are reviewed one entry at a time (accept, edit, or skip) since they're product-specific — only you know what's actually in your kitchen.
+   - Values accepted as-is are tagged `# [LLM]` in `ingredients.yaml`, marking them as AI estimates that haven't been human-reviewed.
+   - Safely re-runnable: only proposes fields that are still missing.
+   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing; `--dry-run/-n` is a synonym), `--db <path>`.
 </Steps>
 
 #### `gram db validate`

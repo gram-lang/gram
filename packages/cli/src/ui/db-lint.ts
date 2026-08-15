@@ -4,7 +4,7 @@ import type { IngredientData } from "@gram-lang/analyzer";
 import type { LintResult, LintIssue, LintDecision } from "../types";
 import { fmtNumber } from "../core/format";
 
-type NutritionKey =
+export type NutritionKey =
 	| "calories"
 	| "fat"
 	| "carbs"
@@ -14,7 +14,7 @@ type NutritionKey =
 	| "fiber"
 	| "sodium";
 
-const NUTRITION_FIELDS: NutritionKey[] = [
+export const NUTRITION_FIELDS: NutritionKey[] = [
 	"calories",
 	"fat",
 	"carbs",
@@ -54,7 +54,7 @@ function diffNutritionFields(
 	);
 }
 
-function formatNutritionRow(
+export function formatNutritionRow(
 	id: string,
 	nutr: IngredientData["nutrition"],
 	fields: NutritionKey[],

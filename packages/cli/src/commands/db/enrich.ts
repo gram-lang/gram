@@ -4,8 +4,13 @@ import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
 import { loadDb } from "../../core/db";
 import { loadAiModel } from "../../core/ai";
-import { enrichDb } from "../../services/db-enricher";
-import { renderEnrichResult } from "../../ui/db-enrich";
+import { enrichDb, applyEnrichDecisions } from "../../services/db-enricher";
+import {
+	renderEnrichResult,
+	renderEnrichPreview,
+	promptEnrichDecisions,
+	buildAcceptDecision,
+} from "../../ui/db-enrich";
 import { reportRejectedIngredients } from "../../ui/diagnostics";
 import { ExitCode, GramCLIError } from "../../errors";
 
@@ -14,7 +19,7 @@ export default defineCommand({
 		name: "enrich",
 		version,
 		description:
-			"Fill in missing density, nutrition and tags via AI (step 3/3 — run after lint)",
+			"Fill in missing density, nutrition and tags via AI, with an interactive review before writing (step 3/3 — run after lint)",
 	},
 	args: {
 		ingredient: {
@@ -27,10 +32,23 @@ export default defineCommand({
 				"Field to enrich: density | nutrition | tags | category | all (default: all)",
 			default: "all",
 		},
+		report: {
+			type: "boolean",
+			alias: "r",
+			description: "Show what needs review without writing anything",
+			default: false,
+		},
 		"dry-run": {
 			type: "boolean",
 			alias: "n",
-			description: "Preview what would be written without writing",
+			description: "Synonym for --report",
+			default: false,
+		},
+		yes: {
+			type: "boolean",
+			alias: "y",
+			description:
+				"Skip interactive review and accept all AI estimates automatically (for scripting)",
 			default: false,
 		},
 		db: {
@@ -81,7 +99,6 @@ export default defineCommand({
 			result = await enrichDb(db, config, model, {
 				ingredient: args.ingredient,
 				field,
-				dryRun: args["dry-run"],
 				dbPathOverride: args.db,
 				onBatchDone(done, total, enriched, failed) {
 					const ok = enriched.length > 0 ? `✓ ${enriched.length}` : "";
@@ -100,7 +117,48 @@ export default defineCommand({
 		}
 
 		s.stop("Done.");
-		renderEnrichResult(result, args["dry-run"]);
+
+		if (result.enriched.length === 0) {
+			renderEnrichResult(result, {
+				written: false,
+				reason:
+					result.totalIncomplete === 0
+						? "nothing to enrich"
+						: "no ingredient produced a usable AI response",
+			});
+			process.exit(ExitCode.Ok);
+		}
+
+		// `--dry-run` is kept as a working synonym for `--report`, not
+		// deprecated, so existing scripts using it don't break — it used to
+		// mean "generate and show what would be written (as if everything were
+		// accepted), without writing"; without decisions in hand that no
+		// longer applies the same way, so both flags now mean a pure report:
+		// "here is what needs review", nothing decided or written.
+		if (args.report || args["dry-run"]) {
+			renderEnrichPreview(result);
+			process.exit(ExitCode.Ok);
+		}
+
+		const isTagsOrCategory = field === "tags" || field === "category";
+		const skipReview = isTagsOrCategory || args.yes || !process.stdout.isTTY;
+
+		if (!args.yes && !process.stdout.isTTY && !isTagsOrCategory) {
+			log.warn(
+				"Non-interactive mode detected — accepting all AI estimates automatically. Use --report to preview instead.",
+			);
+		}
+
+		const decisions = skipReview
+			? result.enriched.map(buildAcceptDecision)
+			: await promptEnrichDecisions(result.enriched);
+
+		const write = await applyEnrichDecisions(
+			result.dbPath,
+			result.enriched,
+			decisions,
+		);
+		renderEnrichResult(result, write);
 		process.exit(ExitCode.Ok);
 	},
 });

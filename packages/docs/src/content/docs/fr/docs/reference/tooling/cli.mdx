@@ -309,11 +309,12 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
    - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`.
 
 3. #### `gram db enrich`
-   Lâche l'IA sur votre base de données pour boucher les trous et auto-compléter les données manquantes.
-   - Enrichit les champs `density`, `unit_weight`, `nutrition`, `category`, et `tags` par lots (`unit_weight` est rempli avec `density`).
-   - `category` est une famille culinaire (ex : Légumes, Produits Laitiers, Céréales) — distincte des `tags` libres.
-   - Idempotent : la commande peut être relancée sans crainte, elle n'hydratera que les champs encore vides.
-   - Options : `--ingredient <slug>` (enrichir une seule entrée), `--field density|nutrition|tags|category|all` (défaut `all`), `--dry-run/-n`, `--db <chemin>`.
+   Lâche l'IA sur votre base de données pour proposer les données manquantes, puis vous fait passer en revue chaque proposition avant d'écrire quoi que ce soit.
+   - Propose les champs `density`, `unit_weight`, `nutrition`, `category`, et `tags` par lots (`unit_weight` est rempli avec `density`). `category` est une famille culinaire (ex : Légumes, Produits Laitiers, Céréales) — distincte des `tags` libres.
+   - `category`/`tags` sont écrits automatiquement ; `density`/`unit_weight`/`nutrition` passent par une revue interactive entrée par entrée (accepter, modifier ou passer), car ce sont des données propres à un produit précis — vous seul savez ce que vous avez réellement dans votre cuisine.
+   - Une valeur acceptée telle quelle est taguée `# [LLM]` dans `ingredients.yaml`, pour repérer les estimations IA jamais relues par un humain.
+   - Peut être relancée sans crainte : ne propose que les champs encore vides.
+   - Options : `--ingredient <slug>` (enrichir une seule entrée), `--field density|nutrition|tags|category|all` (défaut `all`), `--yes/-y` (ignorer la revue et tout accepter automatiquement — pour un usage scripté), `--report/-r` (aperçu de ce qui a besoin d'être revu, sans rien écrire ; `--dry-run/-n` est un synonyme), `--db <chemin>`.
 </Steps>
 
 #### `gram db validate`

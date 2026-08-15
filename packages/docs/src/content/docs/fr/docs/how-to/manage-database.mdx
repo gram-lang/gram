@@ -53,15 +53,19 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
    
    Maintenant que votre base de données contient des entrées propres et dédupliquées, vous devez renseigner leurs données physiques (densité, poids unitaire, rendement) et nutritionnelles (calories, macros). 
    
-   Faire cela manuellement est fastidieux. Gram peut faire appel à l'IA pour le faire à votre place par lots (voir [Configurer l'IA](/fr/docs/how-to/configure-ai)) :
+   Faire cela manuellement est fastidieux. Gram peut faire appel à l'IA pour proposer ces valeurs à votre place, par lots (voir [Configurer l'IA](/fr/docs/how-to/configure-ai)) :
    
    ```bash
    gram db enrich
    ```
    
-   Le CLI va récupérer les données nutritionnelles standards et les densités pour toutes les entrées incomplètes de votre base de données. 
+   Le CLI récupère les données nutritionnelles standards et les densités pour toutes les entrées incomplètes, puis vous les fait passer en revue une par une pour que vous puissiez accepter, modifier ou passer chaque proposition — la densité et la nutrition sont des données propres à un produit précis (un beurre AOP français n'a pas la même densité qu'un beurre américain), donc seul vous pouvez réellement les valider. `category`/`tags` sont peu risqués et s'écrivent automatiquement.
    
-   Cette opération est idempotente : elle comble uniquement les champs manquants et n'écrasera jamais les données saisies manuellement.
+   Cette commande ne comble que les champs manquants, n'écrase jamais les données saisies manuellement, et peut être relancée sans crainte. Une valeur acceptée telle quelle est taguée `# [LLM]` dans `ingredients.yaml`, pour repérer les estimations IA jamais relues par un humain.
+   
+   :::tip
+   Pressé, ou dans un script CI ? `gram db enrich --yes` ignore la revue et accepte automatiquement toutes les estimations de l'IA. Utilisez `gram db enrich --report` pour un aperçu de ce qui a besoin d'être revu, sans rien écrire.
+   :::
 </Steps>
 
 ## Valider la base de données

@@ -13,6 +13,7 @@ import {
 } from "@gram-lang/i18n";
 import { withFileLock, atomicWrite } from "../core/lock";
 import { resolveDbPath } from "../core/db";
+import { setProvenancedField } from "../core/db-writer";
 import { MAX_DENSITY, MAX_CALORIES } from "./db-validator";
 import { GramCLIError, ExitCode } from "../errors";
 import type {
@@ -21,6 +22,8 @@ import type {
 	EnrichResult,
 	EnrichWriteResult,
 	EnrichOptions,
+	EnrichSource,
+	EnrichDecision,
 } from "../types";
 
 // The prompt used to present (and ask the AI to return) a translated
@@ -107,7 +110,6 @@ export async function enrichDb(
 			enriched: [],
 			skipped,
 			failed: [],
-			write: { written: false, reason: "nothing to enrich" },
 		};
 	}
 
@@ -197,95 +199,160 @@ export async function enrichDb(
 		),
 	);
 
-	let write: EnrichWriteResult;
-	if (opts.dryRun) {
-		write = { written: false, reason: "dry run" };
-	} else if (enriched.length === 0) {
-		write = {
-			written: false,
-			reason: "no ingredient produced a usable AI response",
-		};
-	} else {
-		write = await withFileLock(dbPath, async (): Promise<EnrichWriteResult> => {
-			// Unlike `db-sync` (which legitimately creates new entries and can
-			// recover from a missing/
-			// empty file), enrich only ever *updates* ingredients that must
-			// already exist on disk — a missing file or an unlocatable
-			// ingredients map means there is nothing to update, full stop. This
-			// used to silently skip the write while still returning `enriched`
-			// populated, so the caller reported "Updated" against an unchanged
-			// file. Now a hard error, same as `db-sync.ts`'s equivalent case
-			// (the audit's own "correct, to generalize" reference).
-			const content = await readFile(dbPath, "utf-8").catch(() => "");
-			if (!content) {
-				throw new GramCLIError(
-					`Cannot enrich ${dbPath}: file not found or empty.`,
-					ExitCode.Error,
-				);
-			}
-			const doc = parseDocument(content);
-			const root = doc.toJSON() as Record<string, unknown> | null;
-			const hasWrapper = !!root && "ingredients" in root;
-			const node = hasWrapper ? doc.get("ingredients") : doc.contents;
-
-			if (!isMap(node)) {
-				throw new GramCLIError(
-					`Cannot enrich ${dbPath}: could not locate an ingredients map at its root (or under "ingredients:").`,
-					ExitCode.Error,
-				);
-			}
-
-			for (const entry of enriched) {
-				const ingNode = node.get(entry.id, true) as any;
-				if (!isMap(ingNode)) continue;
-
-				if (entry.density != null || entry.unit_weight != null) {
-					const physNode = ingNode.get("physical", true);
-					if (!isMap(physNode)) {
-						const data: any = {};
-						if (entry.density != null) data.density = entry.density;
-						if (entry.unit_weight != null) data.unit_weight = entry.unit_weight;
-						ingNode.set("physical", doc.createNode(data));
-					} else {
-						if (entry.density != null && !physNode.get("density"))
-							(physNode as any).set("density", entry.density);
-						if (entry.unit_weight != null && !physNode.get("unit_weight"))
-							(physNode as any).set("unit_weight", entry.unit_weight);
-					}
-				}
-
-				if (entry.category) {
-					const existingCategory = ingNode.get("category");
-					if (!existingCategory) {
-						ingNode.set("category", entry.category);
-					}
-				}
-
-				if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
-					const existingTagsNode = ingNode.get("tags", true);
-					const hasExistingTags =
-						isSeq(existingTagsNode) && existingTagsNode.items.length > 0;
-					if (!hasExistingTags) {
-						ingNode.set("tags", doc.createNode(entry.tagSuggestions));
-					}
-				}
-
-				if (entry.nutrition != null && !ingNode.get("nutrition")) {
-					ingNode.set("nutrition", doc.createNode(entry.nutrition));
-				}
-			}
-			await mkdir(dirname(dbPath), { recursive: true });
-			await atomicWrite(dbPath, String(doc));
-			return { written: true, path: dbPath, count: enriched.length };
-		});
-	}
-
 	return {
 		dbPath,
 		totalIncomplete: toEnrich.length,
 		enriched,
 		skipped,
 		failed,
-		write,
 	};
+}
+
+const NUTRITION_KEYS = [
+	"calories",
+	"carbs",
+	"protein",
+	"fat",
+	"sugar",
+	"sat_fat",
+	"fiber",
+	"sodium",
+] as const;
+
+function sourceOf(final: number, ai: number | undefined): EnrichSource {
+	return final === ai ? "llm" : "user";
+}
+
+// Absent from this table ⇒ no comment written (the "user" case). Adding a
+// future source (e.g. an OpenFoodFacts barcode lookup) only means adding a
+// key here — the write logic below never needs to change.
+const PROVENANCE_TAGS: Partial<Record<EnrichSource, string>> = {
+	llm: " [LLM]",
+};
+
+export async function applyEnrichDecisions(
+	dbPath: string,
+	enriched: EnrichEntry[],
+	decisions: EnrichDecision[],
+): Promise<EnrichWriteResult> {
+	if (decisions.length === 0) {
+		return { written: false, reason: "no changes to apply" };
+	}
+
+	return withFileLock(dbPath, async (): Promise<EnrichWriteResult> => {
+		// Unlike `db-sync` (which legitimately creates new entries and can
+		// recover from a missing/
+		// empty file), enrich only ever *updates* ingredients that must
+		// already exist on disk — a missing file or an unlocatable
+		// ingredients map means there is nothing to update, full stop.
+		const content = await readFile(dbPath, "utf-8").catch(() => "");
+		if (!content) {
+			throw new GramCLIError(
+				`Cannot enrich ${dbPath}: file not found or empty.`,
+				ExitCode.Error,
+			);
+		}
+		const doc = parseDocument(content);
+		const root = doc.toJSON() as Record<string, unknown> | null;
+		const hasWrapper = !!root && "ingredients" in root;
+		const node = hasWrapper ? doc.get("ingredients") : doc.contents;
+
+		if (!isMap(node)) {
+			throw new GramCLIError(
+				`Cannot enrich ${dbPath}: could not locate an ingredients map at its root (or under "ingredients:").`,
+				ExitCode.Error,
+			);
+		}
+
+		let count = 0;
+
+		// Iterating over `decisions` rather than `enriched` is what guarantees
+		// the Ctrl+C behavior: an entry the user was never shown has no
+		// decision, so it's never visited here — not even for category/tags.
+		for (const decision of decisions) {
+			const entry = enriched[decision.entryIndex];
+			if (!entry) continue;
+
+			const ingNode = node.get(entry.id, true) as any;
+			if (!isMap(ingNode)) continue;
+
+			let changed = false;
+
+			if (decision.physical?.action === "write") {
+				const { density, unit_weight } = decision.physical;
+				let physNode: any = ingNode.get("physical", true);
+				if (!isMap(physNode)) {
+					physNode = doc.createNode({}) as any;
+					ingNode.set("physical", physNode);
+				}
+				// Defensive "only write if absent" guard — `enrichDb`'s upstream
+				// filtering already guarantees this, but the write layer
+				// shouldn't rely on that alone.
+				if (density != null && !(physNode as any).get("density")) {
+					const provenance =
+						PROVENANCE_TAGS[sourceOf(density, entry.density)] ?? null;
+					setProvenancedField(doc, physNode, "density", density, provenance);
+					changed = true;
+				}
+				if (unit_weight != null && !(physNode as any).get("unit_weight")) {
+					const provenance =
+						PROVENANCE_TAGS[sourceOf(unit_weight, entry.unit_weight)] ?? null;
+					setProvenancedField(
+						doc,
+						physNode,
+						"unit_weight",
+						unit_weight,
+						provenance,
+					);
+					changed = true;
+				}
+			}
+
+			if (
+				decision.nutrition?.action === "write" &&
+				decision.nutrition.nutrition &&
+				!ingNode.get("nutrition")
+			) {
+				const values = decision.nutrition.nutrition;
+				const nutrNode = doc.createNode({});
+				ingNode.set("nutrition", nutrNode);
+				for (const key of NUTRITION_KEYS) {
+					const val = values[key];
+					if (val == null) continue;
+					const provenance =
+						PROVENANCE_TAGS[sourceOf(val, entry.nutrition?.[key])] ?? null;
+					setProvenancedField(doc, nutrNode as any, key, val, provenance);
+				}
+				changed = true;
+			}
+
+			if (entry.category) {
+				const existingCategory = ingNode.get("category");
+				if (!existingCategory) {
+					ingNode.set("category", entry.category);
+					changed = true;
+				}
+			}
+
+			if (entry.tagSuggestions && entry.tagSuggestions.length > 0) {
+				const existingTagsNode = ingNode.get("tags", true);
+				const hasExistingTags =
+					isSeq(existingTagsNode) && existingTagsNode.items.length > 0;
+				if (!hasExistingTags) {
+					ingNode.set("tags", doc.createNode(entry.tagSuggestions));
+					changed = true;
+				}
+			}
+
+			if (changed) count++;
+		}
+
+		if (count === 0) {
+			return { written: false, reason: "no changes to apply" };
+		}
+
+		await mkdir(dirname(dbPath), { recursive: true });
+		await atomicWrite(dbPath, String(doc));
+		return { written: true, path: dbPath, count };
+	});
 }

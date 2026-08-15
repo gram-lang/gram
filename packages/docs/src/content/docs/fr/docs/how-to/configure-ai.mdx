@@ -1,6 +1,6 @@
 ---
 title: "Configurer l'IA pour le CLI Gram"
-description: "Découvrez comment configurer les fournisseurs d'IA (Google Gemini, OpenAI, Anthropic, Ollama) pour importer des recettes, nettoyer la base d'ingrédients et enrichir automatiquement les données dans le CLI Gram."
+description: "Découvrez comment configurer les fournisseurs d'IA (Google Gemini, OpenAI, Anthropic, Ollama) pour importer des recettes, nettoyer la base d'ingrédients et enrichir les données (avec revue humaine) dans le CLI Gram."
 ---
 
 Le CLI de Gram (`@gram-lang/cli`) peut s'appuyer sur des modèles de langage (LLM) pour automatiser des tâches fastidieuses comme la conversion de recettes web en fichiers `.gram`, la détection des doublons d'ingrédients dans votre base et le remplissage des métadonnées nutritionnelles et physiques.
@@ -15,7 +15,7 @@ Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI 
 
 1. **Importation de recettes (`gram import <source>`)** : Convertit automatiquement des pages web (en extrayant les données structurées JSON-LD) ou des fichiers JSON-LD locaux en syntaxe `.gram` valide dans votre langue cible.
 2. **Nettoyage et déduplication (`gram db lint`)** : Détecte les doublons sémantiques, les variations singulier/pluriel et les termes multilingues dans `ingredients.yaml`, et vous propose de les fusionner sous une clé principale avec des alias.
-3. **Enrichissement automatique (`gram db enrich`)** : Recherche et complète les valeurs nutritionnelles (calories, macros, micronutriments) et les caractéristiques physiques (densité, rendement, poids unitaire) des ingrédients incomplets de votre base.
+3. **Enrichissement (`gram db enrich`)** : Recherche des valeurs nutritionnelles (calories, macros, micronutriments) et des caractéristiques physiques (densité, rendement, poids unitaire) à proposer pour les ingrédients incomplets de votre base — les propositions de densité/nutrition passent par une revue interactive avant d'être écrites, car ce sont des données propres à un produit précis.
 
 ---
 
@@ -34,7 +34,7 @@ Un script d'importation classique ou un convertisseur JSON rigide est incapable 
 
 De la même manière pour la gestion de votre base d'ingrédients :
 - **`gram db lint`** : L'IA détecte les équivalences sémantiques entre tournures et langues (ex : comprendre que `beurre ramolli`, `beurre doux` et `butter` font référence à la même entité).
-- **`gram db enrich`** : L'IA recherche et complète les densités physiques (conversion volume/masse) et les valeurs nutritionnelles standards sans recherche manuelle fastidieuse.
+- **`gram db enrich`** : L'IA propose les densités physiques (conversion volume/masse) et les valeurs nutritionnelles standards sans recherche manuelle fastidieuse — mais vous validez chaque proposition avant qu'elle soit écrite.
 
 ---
 
@@ -161,11 +161,11 @@ Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de ba
 
 Pour vérifier que votre IA est opérationnelle :
 
-1. **Tester l'enrichissement (mode simulation)** :
+1. **Tester l'enrichissement (mode rapport)** :
    ```bash
-   gram db enrich --dry-run
+   gram db enrich --report
    ```
-   Si l'IA est correctement configurée, la commande analysera la base sans retourner d'erreur.
+   Si l'IA est correctement configurée, la commande analysera les ingrédients incomplets et affichera un aperçu de ce qui a besoin d'être revu, sans erreur et sans rien demander ni écrire.
 
 2. **Importer une recette web** :
    ```bash

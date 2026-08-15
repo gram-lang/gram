@@ -36,3 +36,27 @@ export function removeIngredientKey(map: any, key: string): void {
 	const idx = map.items.findIndex((pair: any) => String(pair.key) === key);
 	if (idx !== -1) map.items.splice(idx, 1);
 }
+
+// Writes `value` under `key` on `map`, optionally tagging it with a trailing
+// YAML comment (e.g. " [LLM]" for an unreviewed AI estimate). `YAMLMap.set`
+// with a raw JS value stores a plain scalar that ignores `.comment` at
+// stringify time, so this goes through `doc.createNode` to get a real
+// `Scalar` node first. If `map` was parsed as a flow map (`{}` on one line),
+// comments on its children are silently dropped at stringify — forcing
+// `flow = false` avoids that (and converts that one block to multiline,
+// which is an acceptable, generally more readable, formatting side effect).
+export function setProvenancedField(
+	doc: Doc,
+	map: any,
+	key: string,
+	value: unknown,
+	provenance: string | null,
+): void {
+	if (map.flow) map.flow = false;
+	const node = doc.createNode(value);
+	map.set(key, node);
+	if (provenance) {
+		const pair = map.items.find((p: any) => String(p.key) === key);
+		if (pair) pair.value.comment = provenance;
+	}
+}
