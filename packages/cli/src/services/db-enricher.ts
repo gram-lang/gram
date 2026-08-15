@@ -1,7 +1,7 @@
 import pLimit from "p-limit";
 import { readFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
-import { parseDocument, isMap, isSeq } from "yaml";
+import { parseDocument, isMap, isSeq, type YAMLMap } from "yaml";
 import { z } from "zod";
 import { generateObject } from "ai";
 import type { LanguageModel } from "ai";
@@ -304,28 +304,31 @@ export async function applyEnrichDecisions(
 			const entry = enriched[decision.entryIndex];
 			if (!entry) continue;
 
-			const ingNode = node.get(entry.id, true) as any;
+			const ingNode = node.get(entry.id, true);
 			if (!isMap(ingNode)) continue;
 
 			let changed = false;
 
 			if (decision.physical?.action === "write") {
 				const { density, unit_weight } = decision.physical;
-				let physNode: any = ingNode.get("physical", true);
-				if (!isMap(physNode)) {
-					physNode = doc.createNode({}) as any;
+				const existingPhys = ingNode.get("physical", true);
+				let physNode: YAMLMap;
+				if (isMap(existingPhys)) {
+					physNode = existingPhys;
+				} else {
+					physNode = doc.createNode({}) as YAMLMap;
 					ingNode.set("physical", physNode);
 				}
 				// Defensive "only write if absent" guard — `enrichDb`'s upstream
 				// filtering already guarantees this, but the write layer
 				// shouldn't rely on that alone.
-				if (density != null && !(physNode as any).get("density")) {
+				if (density != null && !physNode.get("density")) {
 					const provenance =
 						PROVENANCE_TAGS[sourceOf(density, entry.density)] ?? null;
 					setProvenancedField(doc, physNode, "density", density, provenance);
 					changed = true;
 				}
-				if (unit_weight != null && !(physNode as any).get("unit_weight")) {
+				if (unit_weight != null && !physNode.get("unit_weight")) {
 					const provenance =
 						PROVENANCE_TAGS[sourceOf(unit_weight, entry.unit_weight)] ?? null;
 					setProvenancedField(
@@ -345,14 +348,14 @@ export async function applyEnrichDecisions(
 				!ingNode.get("nutrition")
 			) {
 				const values = decision.nutrition.nutrition;
-				const nutrNode = doc.createNode({});
+				const nutrNode = doc.createNode({}) as YAMLMap;
 				ingNode.set("nutrition", nutrNode);
 				for (const key of NUTRITION_KEYS) {
 					const val = values[key];
 					if (val == null) continue;
 					const provenance =
 						PROVENANCE_TAGS[sourceOf(val, entry.nutrition?.[key])] ?? null;
-					setProvenancedField(doc, nutrNode as any, key, val, provenance);
+					setProvenancedField(doc, nutrNode, key, val, provenance);
 				}
 				changed = true;
 			}

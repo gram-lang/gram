@@ -1,4 +1,11 @@
-import { isSeq, Scalar, type Document } from "yaml";
+import {
+	isNode,
+	isSeq,
+	Scalar,
+	type Document,
+	type YAMLMap,
+	type YAMLSeq,
+} from "yaml";
 
 // `parseDocument()`'s inferred return type distributes into a large union of
 // `Document<X, boolean>` variants, which is impractical to thread through call
@@ -14,7 +21,7 @@ function quotedScalar(doc: Doc, value: string): Scalar {
 
 export function addAliasesToNode(
 	doc: Doc,
-	ingNode: any,
+	ingNode: YAMLMap,
 	aliases: string[],
 ): void {
 	const aliasesNode = ingNode.get("aliases", true);
@@ -26,14 +33,14 @@ export function addAliasesToNode(
 		aliasesNode.items.length = 0;
 		for (const a of merged) aliasesNode.add(quotedScalar(doc, a));
 	} else {
-		const seq = doc.createNode([] as string[]);
-		for (const a of merged) (seq as any).add(quotedScalar(doc, a));
+		const seq = doc.createNode([] as string[]) as YAMLSeq<Scalar>;
+		for (const a of merged) seq.add(quotedScalar(doc, a));
 		ingNode.set("aliases", seq);
 	}
 }
 
-export function removeIngredientKey(map: any, key: string): void {
-	const idx = map.items.findIndex((pair: any) => String(pair.key) === key);
+export function removeIngredientKey(map: YAMLMap, key: string): void {
+	const idx = map.items.findIndex((pair) => String(pair.key) === key);
 	if (idx !== -1) map.items.splice(idx, 1);
 }
 
@@ -47,7 +54,7 @@ export function removeIngredientKey(map: any, key: string): void {
 // which is an acceptable, generally more readable, formatting side effect).
 export function setProvenancedField(
 	doc: Doc,
-	map: any,
+	map: YAMLMap,
 	key: string,
 	value: unknown,
 	provenance: string | null,
@@ -56,7 +63,7 @@ export function setProvenancedField(
 	const node = doc.createNode(value);
 	map.set(key, node);
 	if (provenance) {
-		const pair = map.items.find((p: any) => String(p.key) === key);
-		if (pair) pair.value.comment = provenance;
+		const pair = map.items.find((p) => String(p.key) === key);
+		if (pair && isNode(pair.value)) pair.value.comment = provenance;
 	}
 }
