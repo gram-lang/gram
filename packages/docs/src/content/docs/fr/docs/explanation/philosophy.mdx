@@ -52,18 +52,6 @@ L'écosystème Gram met à votre disposition tout le nécessaire pour concevoir 
   </Card>
 </CardGrid>
 
-## Philosophie des données : pourquoi aucune base externe ?
-
-Gram ne fournit, n'embarque, ni n'intègre volontairement aucune base de référence nutrition/densité (pas de CIQUAL, pas d'USDA FoodData Central, pas de lookup OpenFoodFacts). Ce n'est pas un oubli — c'est précisément pourquoi `@gram-lang/analyzer` fonctionne « via votre base de données locale » plutôt qu'une base globale.
-
-**La densité et la nutrition sont propres à un produit précis, pas universelles.** Le beurre AOP français (~82% de matière grasse) et le beurre américain (~80%) ne sont pas des variantes régionales d'une même « vraie » valeur — ce sont des produits différents. Même chose pour la farine (T45 vs all-purpose), le sucre, et la plupart des produits de base. Une base de référence doit choisir *un* produit pour représenter toute une catégorie, et ce choix est faux pour une part significative de ses utilisateurs, par construction. Vous seul savez ce que vous avez réellement dans votre cuisine.
-
-**Même une base universelle hypothétique ne pourrait pas se raccrocher de façon fiable à ce que vous avez réellement écrit.** Gram est pensé pour un usage international, et un même ingrédient se nomme différemment selon la langue, la région, ou l'habitude de chacun — « beurre de baratte », « beurre doux », « unsalted butter », « sweet cream butter » peuvent désigner à peu près la même chose pour une personne, et quelque chose de sensiblement différent pour une autre. Une correspondance statique ne peut matcher qu'un nom exact ou un alias déjà déclaré ; elle ne peut pas deviner que votre formulation précise correspond à son entrée « beurre ». C'est pourquoi `gram db enrich` *interprète* le nom que vous avez réellement écrit via l'IA, plutôt que d'exiger qu'il corresponde à une liste figée — c'est la seule approche qui passe à l'échelle à travers les langues et la façon d'écrire propre à chacun.
-
-**Donc `gram db enrich` propose, vous décidez.** Le CLI peut utiliser l'IA pour estimer densité et nutrition à votre place (`gram db enrich`), mais chaque proposition passe par une revue interactive avant d'être écrite — accepter, modifier, ou passer, ingrédient par ingrédient. Les valeurs acceptées sans modification sont taguées `# [LLM]` dans `ingredients.yaml`, pour qu'une estimation IA jamais relue reste toujours visuellement distincte d'une donnée que vous avez vous-même vérifiée.
-
-**C'est différent d'un contrôle de plausibilité physique.** `gram db validate` signale bien les valeurs implausibles pour une *catégorie* au sens des sciences alimentaires — par exemple un liquide avec une densité de 5 g/mL, ou des calories totalement incohérentes avec les macronutriments déclarés. C'est une fourchette de bon sens sur toute une catégorie large (les huiles, environ 0.85–1.0 g/mL), pas une affirmation sur un produit précis. Ça sert à attraper les affabulations de l'IA, jamais à vous dire quelle est la vraie densité de votre beurre.
-
 ## À quoi ça ressemble ?
 
 Gram reste très lisible, mais introduit discrètement des structures de données puissantes. Voici un aperçu avec la recette classique des cannelés bordelais :

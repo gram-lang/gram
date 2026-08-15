@@ -33,6 +33,10 @@ Plutôt que de purement et simplement cacher le total, Gram l'affiche en y adoss
 
 Le *renderer* HTML de référence reflète directement ce parti pris : il affiche systématiquement le panneau nutritionnel (dès lors qu'il y a des données ou un avertissement), flanqué d'un badge `Couverture : X %`. Le cuisinier accède ainsi instantanément à une valeur utile, tout en mesurant d'un coup d'œil la proportion réelle de la recette couverte par l'estimation (plutôt que de cacher totalement une estimation exacte à 90 %).
 
+## D'où viennent les valeurs
+
+Gram ne fournit pas de base de référence nutrition/densité — ces valeurs sont propres à chaque produit, chaque région et chaque pays, donc seul vous pouvez réellement garantir ce que vous avez dans votre cuisine. `gram db enrich` peut proposer des valeurs via l'IA, mais chaque proposition passe par une revue interactive avant d'être écrite, et tout ce qui est accepté sans modification est tagué `# [LLM]` dans `ingredients.yaml` pour rester visiblement non vérifié.
+
 ## Gestion des Modificateurs
 
 Les modificateurs de syntaxe de Gram ont un impact sur les calculs nutritionnels de manières spécifiques :

@@ -15,7 +15,7 @@ Configuring an AI provider unlocks three powerful CLI features:
 
 1. **Recipe Import (`gram import <source>`)**: Automatically converts web pages (extracting JSON-LD recipe metadata) or local JSON-LD recipe files into valid `.gram` syntax in your target language.
 2. **Database Deduplication & Linting (`gram db lint`)**: Uses AI to detect semantic duplicates, singular/plural mismatches, and multi-language entries in `ingredients.yaml`, interactively merging them into primary keys and aliases.
-3. **Database Enrichment (`gram db enrich`)**: Queries nutritional values (calories, macros, micronutrients) and physical properties (densities, yields, unit weights) to propose fills for incomplete entries in `ingredients.yaml` — density/nutrition proposals go through an interactive review before being written, since they're product-specific (see [Data Philosophy](/docs/explanation/philosophy#data-philosophy-why-no-external-nutrition-database) for why Gram doesn't ship a reference database instead).
+3. **Database Enrichment (`gram db enrich`)**: Queries nutritional values (calories, macros, micronutrients) and physical properties (densities, yields, unit weights) to propose fills for incomplete entries in `ingredients.yaml` — density/nutrition proposals go through an interactive review before being written, since they're product-specific (see [Where the Numbers Come From](/docs/explanation/nutrition#where-the-numbers-come-from) for why Gram doesn't ship a reference database instead).
 
 ---
 
