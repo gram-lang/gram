@@ -16,7 +16,7 @@ The Gram parser accepts **any** key-value pair in this block. You can add custom
 ### Functional Keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
-*   `portions`: (Integer) The baseline number of servings. Used as the foundation for the [Nutritional Estimation](/docs/explanation/engine/analyzer).
+*   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
 ### Informational Keys

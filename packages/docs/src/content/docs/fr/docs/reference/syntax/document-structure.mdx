@@ -16,7 +16,7 @@ Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans 
 ### Clés Fonctionnelles
 Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
-*   `portions` : (Entier) Le nombre de portions de base. Utilisé comme référence pour l'[Estimation Nutritionnelle](/fr/docs/explanation/engine/analyzer).
+*   `portions` : (Entier) Le nombre de portions de base. Divise l'[Estimation Nutritionnelle](/fr/docs/explanation/nutrition) en valeurs par portion, et est ajusté en même temps que les quantités lors d'un *scaling* — les valeurs par portion restent donc identiques quel que soit le facteur appliqué. Un libellé accolé (`portions: 4 personnes`) est toléré ; un nombre nul ou négatif est ignoré.
 *   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen).
 
 ### Clés Informatives

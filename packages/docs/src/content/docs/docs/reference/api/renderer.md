@@ -38,6 +38,8 @@ All three formatters share a single traversal architecture (`RenderBackend`), en
 | `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (shopping list and mise-en-place are unaffected). |
 | `bakersMathOnly` | `boolean` | Show only baker's percentages, hiding absolute quantities. |
 | `interactiveScaling` | `boolean` | Render interactive portion/ingredient scaling controls (HTML only). |
+| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Which nutrition basis to display. `'auto'` (the default) shows per-portion when the recipe declares a portion count, otherwise the whole recipe. |
+| `interactiveNutrition` | `boolean` | HTML only: emit every available nutrition basis behind a CSS-only reader toggle instead of a single one. Requires the renderer stylesheet; ignored when `nutritionBasis` pins a basis. |
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for translating UI strings, via `@gram-lang/i18n`'s dictionaries. |
 | `renderId` | `string` | Prefix for footnote anchor ids — override when rendering multiple recipes on one page to avoid id collisions. |
 

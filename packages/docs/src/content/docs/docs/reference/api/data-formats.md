@@ -179,7 +179,7 @@ ingredients:
       density: 0.59       # g/mL — bridges volume units ("1 cup") to mass
       yield: 1.0           # fraction (0, 1] — net/gross ratio after prep waste
       unit_weight: 120     # grams per "unit" (e.g. "1 flour" if ever used bare)
-    nutrition:             # all values per 100 g
+    nutrition:             # all values per 100 g; sodium in mg, everything else in g (calories in kcal)
       calories: 364
       protein: 10.3
       carbs: 76.3
@@ -195,4 +195,4 @@ flour:
     density: 0.59
 ```
 
-`physical` and `nutrition` are both optional — an entry with neither is still valid (it just contributes no mass/nutrition data, surfacing as `missingMassIngredients` / a `MISSING_MACROS` warning). Only `name` is required. `nutrition.calories`/`protein`/`carbs`/`fat` are required whenever `nutrition` is present; `sugar`/`fiber`/`sodium`/`sat_fat`/`mono_fat`/`poly_fat`/`alcohol` are all optional.
+`physical` and `nutrition` are both optional — an entry with neither is still valid (it just contributes no mass/nutrition data, surfacing as `missingMassIngredients` / a `MISSING_MACROS` warning). Only `name` is required. `nutrition.calories`/`protein`/`carbs`/`fat` are required whenever `nutrition` is present; `sugar`/`fiber`/`sodium`/`sat_fat`/`mono_fat`/`poly_fat`/`alcohol` are all optional. **Units matter and are not inferred**: `calories` is kcal, `sodium` is **milligrams**, and every other nutrient is grams — all per 100 g of the raw ingredient. The set, its units and its display order come from `@gram-lang/analyzer`'s exported `NUTRIENTS` table, which every tool that reads or writes nutrition data derives from.

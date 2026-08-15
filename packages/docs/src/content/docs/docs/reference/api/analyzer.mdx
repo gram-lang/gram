@@ -46,7 +46,7 @@ All flags default to enabled (`!== false` checks internally) — pass `false` to
 | `enableNutritionalEstimation` | `boolean` | Compute `metrics.nutrition` (calories, macros, optionally per-portion). |
 | `enableBakersMath` | `boolean` | Compute `bakersPercentage` relative to the `*`-marked (or `bakersReference`) ingredient. |
 | `bakersReference` | `string` | Explicit ingredient id to use as the 100% baker's-percentage base, instead of the `*` modifier. |
-| `portions` | `number` | Portion count used to compute `metrics.nutrition.perPortion`. |
+| `portions` | `number` | Overrides the recipe's own `portions:` frontmatter as the divisor for `metrics.nutrition.perPortion`. Omit to use what the recipe declares. |
 | `lang` | `string` | Optional locale code (e.g. `'en'`, `'fr'`) for locale-scoped unit normalization and category sorting. |
 
 ## `validateIngredientDatabase`
@@ -98,10 +98,30 @@ function calculateNutrition(
   ingredients: AnalyzedUsage[],
   database: Record<string, IngredientData>,
   portions?: number,
+  massStatus?: 'precise' | 'estimated' | 'incomplete',
 ): NutritionMetrics
 ```
 
 Flattens composites and alternatives (taking the first option), skips `optional`-modifier and zero-quantity ingredients, and sums `nutrition` fields (declared **per 100g** in the database — see [Data Formats](/docs/reference/api/data-formats)) scaled by each ingredient's standardized mass. Returns `isEstimate: true` if any contributing mass was itself an estimate, and `coverage` (0–1: fraction of ingredients with known nutrition data).
+
+`NutritionMetrics` carries the same macro profile on up to three bases:
+
+```typescript
+interface NutritionMetrics {
+  total: Macros;          // the whole recipe, at its compiled/scaled quantities
+  perPortion?: Macros;    // present whenever a portion count is known
+  per100g?: Macros;       // per 100 g of the mass that contributed macros
+  portions?: number;      // the divisor perPortion was derived with
+  basis?: { mass: number; massStatus?: 'precise' | 'estimated' | 'incomplete' };
+  isEstimate: boolean;
+  coverage: number;
+  warnings?: Warning[];
+}
+```
+
+Every basis is derived from the same unrounded sums and rounded independently, so a per-portion figure never compounds the rounding of the total. `basis` is the denominator behind `per100g` — see [Nutritional Estimation](/docs/explanation/nutrition) for why it matters and what "per 100 g" means when no cooking loss is modelled.
+
+Which nutrients exist, their units and their rounding all come from a single exported `NUTRIENTS` table, so `gram db enrich`, `gram db lint`, `gram db search`, the editor hover and every renderer enumerate exactly the same set.
 
 ## `diffRecipes`
 

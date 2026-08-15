@@ -38,6 +38,8 @@ Ces trois formateurs partagent un seul et même moteur de traversée sous le cap
 | `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et les instructions de mise en place restent intactes). |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Affiche des contrôles interactifs d'ajustement des portions/ingrédients (HTML uniquement). |
+| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Base nutritionnelle affichée. `'auto'` (défaut) montre le par-portion si la recette déclare des portions, sinon la recette entière. |
+| `interactiveNutrition` | `boolean` | HTML uniquement : émet toutes les bases disponibles derrière un sélecteur en CSS pur, au lieu d'une seule. Nécessite la feuille de style du renderer ; ignoré si `nutritionBasis` fixe une base. |
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI, via les dictionnaires de `@gram-lang/i18n`. |
 | `renderId` | `string` | Préfixe pour les ids d'ancre de notes de bas de page — à redéfinir en cas de rendu de plusieurs recettes sur une même page pour éviter les collisions d'id. |
 

@@ -17,7 +17,7 @@ import { Steps } from '@astrojs/starlight/components';
 2. **Recherche dans la Base de Données** : L'Analyseur interroge votre base de données `ingredients.yaml` pour le bloc `nutrition` de chaque ingrédient. Les valeurs de la base de données doivent toujours représenter les nutriments **pour 100 g** de l'ingrédient cru.
 3. **Adaptation proportionnelle** : L'Analyseur adapte les valeurs aux 100 g issues de la base de données pour correspondre à la masse réellement utilisée dans la recette.
 4. **Agrégation** : Les valeurs ajustées pour tous les ingrédients sont additionnées pour calculer la Nutrition Totale de la Recette.
-5. **Division par Portions** : Si le frontmatter de la recette définit `portions: 4`, la Nutrition Totale de la Recette est divisée par 4 pour fournir des données Par Portion.
+5. **Bases de service** : La Nutrition Totale de la Recette est ensuite exprimée sur les bases qu'un cuisinier lit réellement. Si le frontmatter définit `portions: 4`, elle est divisée par 4 pour donner `perPortion`. Elle est aussi divisée par la masse dont elle est issue pour donner `per100g` — qui ne dépend pas de `portions`, si bien qu'une recette sans portions déclarées obtient malgré tout une base standardisée.
 </Steps>
 
 ## Rapport Transparent des Données Partielles
@@ -27,11 +27,44 @@ La règle d'or du moteur nutritionnel de Gram : **ne jamais masquer l'estimation
 Si vous préparez un repas contenant 10 ingrédients et que votre base de données n'en couvre que 9, afficher silencieusement la somme de ces 9 ingrédients pourrait laisser croire à un total exact, alors qu'il sous-estimerait la réalité calorique.
 
 Plutôt que de purement et simplement cacher le total, Gram l'affiche en y adossant les indicateurs nécessaires pour juger de sa fiabilité :
-- Le `total` (et `perPortion`, si `portions` est défini) est toujours calculé et renvoyé à partir de toutes les données disponibles — il n'est jamais masqué.
+- Le `total` (ainsi que `perPortion`, si `portions` est défini, et `per100g`) est toujours calculé et renvoyé à partir de toutes les données disponibles — il n'est jamais masqué.
 - Un ratio de `coverage` (couverture) est toujours inclus (ex : `0.9` pour "90 % des ingrédients ont des données"), calculé comme la part des ingrédients ayant une masse qui possèdent un bloc `nutrition`.
 - Une liste `warnings` signale exactement quels ingrédients sont absents de la base de données, manquent de bloc `nutrition`, ou ont une masse non résolvable — ainsi la lacune est attribuable, et n'est pas juste une mise en garde floue.
 
 Le *renderer* HTML de référence reflète directement ce parti pris : il affiche systématiquement le panneau nutritionnel (dès lors qu'il y a des données ou un avertissement), flanqué d'un badge `Couverture : X %`. Le cuisinier accède ainsi instantanément à une valeur utile, tout en mesurant d'un coup d'œil la proportion réelle de la recette couverte par l'estimation (plutôt que de cacher totalement une estimation exacte à 90 %).
+
+## Ce que « pour 100 g » signifie ici
+
+Gram ne modélise **aucune perte à la cuisson**. Ni évaporation, ni réduction, ni
+perte au four — le champ `yield` de la base d'ingrédients concerne le parage
+(épluchures, tiges, os), pas ce qui se passe dans la casserole.
+
+`per100g` signifie donc *pour 100 g du mélange cru assemblé* : la somme des
+masses des ingrédients ayant effectivement contribué des macros. Pour un ragoût
+qui réduit d'un tiers ou un pain qui perd 12 % de son eau à la cuisson, cela
+sous-estime le plat fini par rapport à l'étiquette d'un produit du commerce.
+
+Plutôt que de masquer ce point, l'analyzer expose le dénominateur utilisé :
+
+```json
+"basis": { "mass": 830, "massStatus": "estimated" }
+```
+
+`massStatus` est le même signal à trois états que les métriques de masse, et il
+change la façon de lire le chiffre :
+
+- `precise` — toutes les masses étaient connues exactement.
+- `estimated` — certaines proviennent d'une densité ou d'un poids unitaire, donc
+  le dénominateur est approximatif. Les renderers l'affichent `~830 g`.
+- `incomplete` — une partie de la masse n'a pas pu être résolue : le dénominateur
+  est une **borne inférieure**, et la densité est donc **sur**estimée, et non
+  sous-estimée. Les renderers l'affichent `>830 g`.
+
+Le dénominateur est la masse des ingrédients ayant contribué des macros, et non
+le `totalMass` de la recette. Les deux peuvent légitimement différer — un
+ingrédient dont le poids est connu mais sans données nutritionnelles a une masse
+sans calories — et diviser l'un par l'autre sous-estimerait silencieusement la
+densité dans ce cas précis.
 
 ## D'où viennent les valeurs
 
