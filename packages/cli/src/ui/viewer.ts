@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { spawn } from "node:child_process";
+import { nutritionRows, resolveNutritionBasis } from "@gram-lang/renderer";
 import { fmtNumber } from "../core/format";
 import type { RecipeViewModel } from "../types";
 
@@ -203,19 +204,29 @@ function renderSections(
 	return lines.join("\n");
 }
 
-function renderNutrition(nutrition: RecipeViewModel["nutrition"]): string {
-	if (!nutrition?.perPortion) return "";
-	const p = nutrition.perPortion;
+function renderNutrition(
+	nutrition: RecipeViewModel["nutrition"],
+	lang?: string,
+): string {
+	if (!nutrition) return "";
+	// This used to bail out unless `perPortion` was set — which, given the
+	// analyzer never read the recipe's portion count, meant `gram view` showed
+	// no nutrition at all. It now renders whichever basis the shared resolver
+	// picks, and says which one it is.
+	const basis = resolveNutritionBasis(nutrition, "auto", lang);
+	const rows = nutritionRows(basis.values, lang);
+	if (rows.length === 0) return "";
+
+	const width = Math.max(...rows.map((r) => r.label.length)) + 2;
 	const lines: string[] = [
 		"",
-		chalk.bold("NUTRITION (per serving)"),
-		`  ${"Calories".padEnd(12)} ${fmtNumber(p.calories, 0)} kcal`,
-		`  ${"Carbs".padEnd(12)} ${fmtNumber(p.carbs, 1)} g`,
-		`  ${"Protein".padEnd(12)} ${fmtNumber(p.protein, 1)} g`,
-		`  ${"Fat".padEnd(12)} ${fmtNumber(p.fat, 1)} g`,
+		chalk.bold(`NUTRITION (${basis.label.toLowerCase()})`),
+		...rows.map(
+			(row) =>
+				`  ${(row.nested ? `  ${row.label}` : row.label).padEnd(width)} ${fmtNumber(row.value, row.unit === "kcal" ? 0 : 1)} ${row.unit}`,
+		),
 	];
-	if (p.fiber != null)
-		lines.push(`  ${"Fiber".padEnd(12)} ${fmtNumber(p.fiber, 1)} g`);
+	if (basis.note) lines.push(chalk.dim(`  ${basis.note}`));
 	if (nutrition.isEstimate) lines.push(chalk.dim("  * estimated values"));
 	return lines.join("\n");
 }
@@ -235,7 +246,7 @@ function renderRecipe(model: RecipeViewModel): string {
 		renderHeader(model),
 		renderShoppingList(model.shoppingList),
 		renderSections(model.sections, model._registries),
-		renderNutrition(model.nutrition),
+		renderNutrition(model.nutrition, model.lang),
 		renderMissingWarning(model.missingIngredients),
 		"",
 	].join("\n");

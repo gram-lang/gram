@@ -119,7 +119,10 @@ export interface ShopResult {
 
 export interface RecipeViewModel {
 	title: string;
+	/** From the recipe's `portions:` frontmatter — see buildRecipeViewModel. */
 	servings: number | null;
+	/** Recipe language, so the terminal view can localize nutrition labels. */
+	lang?: string;
 	times: {
 		active?: number;
 		prep?: number;

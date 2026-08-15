@@ -8,6 +8,10 @@ import { loadDbSafe } from "../core/db";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
+import {
+	NUTRITION_BASIS_FLAG_DESCRIPTION,
+	parseNutritionBasis,
+} from "../services/nutrition-basis";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
@@ -65,6 +69,10 @@ export default defineCommand({
 			type: "boolean",
 			description: "Only show the percentages and hide absolute weights.",
 		},
+		nutrition: {
+			type: "string",
+			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
+		},
 	},
 	async run({ args }) {
 		const fmt = args.format as string | undefined;
@@ -90,6 +98,7 @@ export default defineCommand({
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
+		const nutritionBasis = parseNutritionBasis(args.nutrition);
 
 		const outputPath = args.output
 			? resolve(args.output as string)
@@ -105,6 +114,7 @@ export default defineCommand({
 				hideStepQty: !args["step-qty"],
 				bakersReference,
 				bakersMathOnly,
+				nutritionBasis,
 				lang: config.language,
 			});
 		} catch (err) {

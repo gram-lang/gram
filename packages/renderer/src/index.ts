@@ -1,4 +1,14 @@
 export * from "./types";
+// Shared by the three backends and by consumers that render nutrition
+// themselves (the CLI's terminal view), so the choice of basis and the set of
+// nutrient rows stay identical across every surface.
+export {
+	availableBases,
+	hasNutritionToShow,
+	nutritionRows,
+	resolveNutritionBasis,
+} from "./nutrition";
+export type { NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement, DEFAULT_ICONS } from "./formatters/element";
 export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";

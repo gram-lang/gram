@@ -701,6 +701,88 @@ body.vscode-dark,
   color: var(--color-text-muted);
 }
 
+/* Nutrition basis switch — pure CSS, no JS: the radios sit before the grids
+   and reveal the matching one as a later sibling. This HTML is also written
+   to a standalone file by `gram export`, where no script would ever run. */
+.gram-preview .nut-basis-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gram-preview .nut-basis-switch {
+  display: inline-flex;
+  gap: 2px;
+  margin-bottom: 14px;
+  padding: 2px;
+  border-radius: 999px;
+  background-color: var(--color-bg-muted);
+}
+
+.gram-preview .nut-basis-switch label {
+  font-size: 0.7em;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.gram-preview .nut-basis-switch label:hover {
+  color: var(--color-text);
+}
+
+.gram-preview .nut-basis-single {
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 14px;
+}
+
+.gram-preview .nut-basis-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.7em;
+  color: var(--color-text-muted);
+}
+
+.gram-preview .nut-item-nested {
+  border-style: dashed;
+}
+
+.gram-preview .nut-item-nested .label {
+  text-transform: none;
+  font-variant: normal;
+  color: var(--color-text-muted);
+}
+
+/* Only the checked basis is shown. Keyed off `data-basis` on both sides so
+   adding a basis needs no new rule beyond one pairing. */
+.gram-preview .nut-basis-radio ~ .nut-grid {
+  display: none;
+}
+
+.gram-preview .nut-basis-radio[data-basis="perPortion"]:checked ~ .nut-grid[data-basis="perPortion"],
+.gram-preview .nut-basis-radio[data-basis="per100g"]:checked ~ .nut-grid[data-basis="per100g"],
+.gram-preview .nut-basis-radio[data-basis="total"]:checked ~ .nut-grid[data-basis="total"] {
+  display: grid;
+}
+
+.gram-preview .nut-basis-radio[data-basis="perPortion"]:checked ~ .nut-basis-switch label[for$="-perPortion"],
+.gram-preview .nut-basis-radio[data-basis="per100g"]:checked ~ .nut-basis-switch label[for$="-per100g"],
+.gram-preview .nut-basis-radio[data-basis="total"]:checked ~ .nut-basis-switch label[for$="-total"] {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.gram-preview .nut-basis-radio:focus-visible ~ .nut-basis-switch {
+  outline: 2px solid var(--color-text-muted);
+  outline-offset: 2px;
+}
+
 /* Tooltips */
 .gram-preview [data-tooltip] {
   position: relative;

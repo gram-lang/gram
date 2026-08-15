@@ -10,7 +10,10 @@ export async function generatePrintHTML(
 	filePath: string,
 	db: Record<string, IngredientData> | null,
 	scaleFactor?: number,
-	rendererOptions?: Pick<RendererOptions, "hideStepQty" | "bakersMathOnly"> & {
+	rendererOptions?: Pick<
+		RendererOptions,
+		"hideStepQty" | "bakersMathOnly" | "nutritionBasis"
+	> & {
 		bakersReference?: string;
 		lang?: string;
 	},

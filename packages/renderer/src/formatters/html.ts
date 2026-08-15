@@ -15,6 +15,13 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 } from "../utils";
+import {
+	availableBases,
+	getMetrics,
+	hasNutritionToShow,
+	nutritionRows,
+	resolveNutritionBasis,
+} from "../nutrition";
 import { formatElement } from "./element";
 import {
 	aggregateSectionIngredients,
@@ -480,47 +487,29 @@ const htmlBackend: RenderBackend = {
 
 	renderNutrition(data, _context, options) {
 		const t = getDictionary(options.lang);
-		const metrics = data.metrics as RenderableMetrics;
-		if (!metrics?.nutrition) return "";
-		const nut = metrics.nutrition;
+		const nut = getMetrics(data)?.nutrition;
+		if (!hasNutritionToShow(nut) || !nut) return "";
 
-		// Show if we have calories OR if we have warnings (meaning ingredients exist but lack data)
-		if (
-			!(
-				(nut.total && nut.total.calories > 0) ||
-				(nut.warnings && nut.warnings.length > 0)
-			)
-		) {
-			return "";
-		}
+		// Interactive output emits every basis the recipe has and lets the reader
+		// switch; static output renders the one `nutritionBasis` selects. The
+		// switch is radio inputs plus sibling selectors — no JavaScript, which
+		// matters because this HTML is also written to a standalone file by
+		// `gram export` where no script would ever run.
+		const bases =
+			options.interactiveNutrition && !options.nutritionBasis
+				? availableBases(nut, options.lang)
+				: [resolveNutritionBasis(nut, options.nutritionBasis, options.lang)];
 
-		const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-
-		let portionText = "";
-		let portionVals = null;
-		if (nut.perPortion) {
-			portionText = ` (Per Portion)`;
-			portionVals = nut.perPortion;
-		}
-
-		const displayVals = portionVals || total;
-
-		const cal = Math.round(displayVals.calories);
-		const p = displayVals.protein;
-		const c = displayVals.carbs;
-		const f = displayVals.fat;
-
-		const sugar = displayVals.sugar !== undefined ? displayVals.sugar : "-";
-		const fiber = displayVals.fiber !== undefined ? displayVals.fiber : "-";
-		// sodium is stored/calculated in mg — round to nearest integer for display
-		const sodium =
-			displayVals.sodium !== undefined ? Math.round(displayVals.sodium) : "-";
+		const group = `nut-basis-${options.renderId ?? "recipe"}`;
+		// The pre-selected basis is the one a static render would have shown, so
+		// the panel opens on the same figures whether or not the toggle is there.
+		const defaultKey = resolveNutritionBasis(nut, "auto", options.lang).key;
 
 		let warningsHtml = "";
 		if (nut.warnings && nut.warnings.length > 0) {
 			warningsHtml = `  <div class="nut-warnings">\n`;
 			nut.warnings.forEach((w) => {
-				warningsHtml += `    <p><strong>Incomplete data:</strong> ${escapeHtml(w.message)}</p>\n`;
+				warningsHtml += `    <p><strong>${escapeHtml(t.renderer.incompleteData)}:</strong> ${escapeHtml(w.message)}</p>\n`;
 			});
 			warningsHtml += `  </div>\n`;
 		}
@@ -528,15 +517,38 @@ const htmlBackend: RenderBackend = {
 		let html = "";
 		html += `<div class="nutrition-panel">\n`;
 		html += warningsHtml;
-		html += `  <div class="nut-header">${t.renderer.nutrition} <span class="est-badge" data-tooltip="${t.renderer.coverageTooltip}: ${Math.round(nut.coverage * 100)}%">${t.renderer.estimateTooltip}</span>${portionText}</div>\n`;
-		html += `  <div class="nut-grid">\n`;
-		html += `    <div class="nut-item"><span class="label">Calories</span> <strong>${cal} kcal</strong></div>\n`;
-		html += `    <div class="nut-item"><span class="label">Carbs</span> <strong>${c}g</strong><small class="nut-item-sugar">(sugar: ${sugar}g)</small></div>\n`;
-		html += `    <div class="nut-item"><span class="label">Protein</span> <strong>${p}g</strong></div>\n`;
-		html += `    <div class="nut-item"><span class="label">Fat</span> <strong>${f}g</strong></div>\n`;
-		html += `    <div class="nut-item"><span class="label">Fiber</span> <strong>${fiber}g</strong></div>\n`;
-		html += `    <div class="nut-item"><span class="label">Sodium</span> <strong>${sodium}mg</strong></div>\n`;
-		html += `  </div>\n`;
+		html += `  <div class="nut-header">${escapeHtml(t.renderer.nutrition)} <span class="est-badge" data-tooltip="${escapeHtml(t.renderer.coverageTooltip)}: ${Math.round(nut.coverage * 100)}%">${escapeHtml(t.renderer.estimateTooltip)}</span></div>\n`;
+
+		// The radios must precede every grid they control: the CSS matches them
+		// as earlier siblings (`:checked ~ .nut-grid[data-basis=…]`).
+		if (bases.length > 1) {
+			bases.forEach((basis) => {
+				const id = `${group}-${basis.key}`;
+				const checked = basis.key === defaultKey ? " checked" : "";
+				html += `  <input type="radio" class="nut-basis-radio" name="${escapeHtml(group)}" id="${escapeHtml(id)}" data-basis="${basis.key}"${checked} />\n`;
+			});
+			html += `  <div class="nut-basis-switch">\n`;
+			bases.forEach((basis) => {
+				const id = `${group}-${basis.key}`;
+				html += `    <label for="${escapeHtml(id)}">${escapeHtml(basis.label)}</label>\n`;
+			});
+			html += `  </div>\n`;
+		} else if (bases[0]) {
+			html += `  <div class="nut-basis-single">${escapeHtml(bases[0].label)}</div>\n`;
+		}
+
+		for (const basis of bases) {
+			html += `  <div class="nut-grid" data-basis="${basis.key}">\n`;
+			for (const row of nutritionRows(basis.values, options.lang)) {
+				const cls = row.nested ? "nut-item nut-item-nested" : "nut-item";
+				html += `    <div class="${cls}"><span class="label">${escapeHtml(row.label)}</span> <strong>${row.value} ${row.unit}</strong></div>\n`;
+			}
+			if (basis.note) {
+				html += `    <p class="nut-basis-note">${escapeHtml(basis.note)}</p>\n`;
+			}
+			html += `  </div>\n`;
+		}
+
 		html += `</div>\n`;
 		return html;
 	},

@@ -24,6 +24,9 @@ export type RenderableCompilationResult =
 export type RenderableMetrics = CompilationResult["metrics"] &
 	Partial<MassMetrics> & { nutrition?: NutritionMetrics };
 
+/** The keys of NutritionMetrics that hold a Macros profile, plus "auto". */
+export type NutritionBasis = "auto" | "total" | "perPortion" | "per100g";
+
 export interface RendererIcons {
 	hourglass?: string;
 	timer?: string;
@@ -91,6 +94,26 @@ export interface RendererOptions {
 	hideStepQty?: boolean;
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
+	/**
+	 * Which nutrition basis to display. The analyzer computes all of them;
+	 * picking one is presentation. "auto" keeps the historical behaviour —
+	 * per portion when the recipe declares a portion count, otherwise the
+	 * whole recipe — so per-100 g is opt-in.
+	 */
+	nutritionBasis?: NutritionBasis;
+	/**
+	 * HTML only: emit every available basis behind a reader-facing toggle
+	 * instead of a single one. The toggle is radio inputs plus sibling
+	 * selectors — no JavaScript — but it does need the renderer's stylesheet,
+	 * so it stays opt-in rather than being the default for every embedder.
+	 *
+	 * Deliberately separate from `interactiveScaling`, which is about editing
+	 * quantities: a surface can want one without the other, and the VS Code
+	 * preview wants exactly this one.
+	 *
+	 * Ignored when `nutritionBasis` pins a specific basis.
+	 */
+	interactiveNutrition?: boolean;
 	/** Locale code (e.g. 'en', 'fr') for translating UI strings */
 	lang?: string;
 	/**

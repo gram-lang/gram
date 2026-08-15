@@ -16,7 +16,10 @@ export async function exportRecipe(
 	// options — the renderer only reads the already-computed per-item
 	// `bakersPercentage` — so they're threaded through separately here and
 	// only forwarded to the pipeline below, not into RendererOptions.
-	rendererOptions?: Pick<RendererOptions, "hideStepQty" | "bakersMathOnly"> & {
+	rendererOptions?: Pick<
+		RendererOptions,
+		"hideStepQty" | "bakersMathOnly" | "nutritionBasis"
+	> & {
 		bakersReference?: string;
 		lang?: string;
 	},

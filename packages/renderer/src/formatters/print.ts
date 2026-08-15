@@ -15,6 +15,12 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 } from "../utils";
+import {
+	getMetrics,
+	hasNutritionToShow,
+	nutritionRows,
+	resolveNutritionBasis,
+} from "../nutrition";
 import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
@@ -293,6 +299,22 @@ const PRINT_CSS = `
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+  }
+  .nut-item-nested strong { font-size: 10pt; }
+  .nut-item-nested small { color: var(--grey); }
+  .nut-basis-note {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 7.5pt;
+    color: var(--grey);
+    margin: -6pt 0 10pt 0;
+  }
+  .nut-warnings {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 8pt;
+    color: var(--dark-grey);
+    border-left: 2pt solid var(--black);
+    padding-left: 8pt;
+    margin-bottom: 10pt;
   }
   .nut-item strong { 
     font-size: 13pt; 
@@ -600,24 +622,35 @@ const printBackend: RenderBackend = {
 
 	renderNutrition(data, _context, options) {
 		const t = getDictionary(options.lang);
-		const metrics = data.metrics as RenderableMetrics;
-		const nut = metrics?.nutrition;
-		if (!nut) return "";
-		const vals = nut.perPortion || nut.total;
-		const portionNote = nut.perPortion ? " (per portion)" : "";
-		if (!(vals && vals.calories > 0)) return "";
+		const nut = getMetrics(data)?.nutrition;
+		// Print used to require calories > 0, so a recipe whose ingredients are
+		// all missing from the database printed no panel at all — not even the
+		// warnings explaining why. It now shares html/markdown's condition.
+		if (!hasNutritionToShow(nut) || !nut) return "";
 
-		let body = `<div class="nutrition">\n<h2>${t.renderer.nutrition}${escapeHtml(portionNote)}</h2>\n<div class="nut-grid">\n`;
-		body += `  <span class="nut-item"><strong>${Math.round(vals.calories)}</strong> <small>kcal</small></span>\n`;
-		body += `  <span class="nut-item"><small>Protein</small> <strong>${vals.protein}g</strong></span>\n`;
-		body += `  <span class="nut-item"><small>Carbs</small> <strong>${vals.carbs}g</strong></span>\n`;
-		body += `  <span class="nut-item"><small>Fat</small> <strong>${vals.fat}g</strong></span>\n`;
-		if (vals.fiber != null)
-			body += `  <span class="nut-item"><small>Fiber</small> <strong>${vals.fiber}g</strong></span>\n`;
-		if (vals.sodium != null) {
-			// Sodium is stored/calculated in milligrams (analyzer/src/nutrition.ts),
-			// not grams — display as mg, not g.
-			body += `  <span class="nut-item"><small>Sodium</small> <strong>${Math.round(vals.sodium)}mg</strong></span>\n`;
+		const basis = resolveNutritionBasis(
+			nut,
+			options.nutritionBasis,
+			options.lang,
+		);
+
+		let body = `<div class="nutrition">\n<h2>${escapeHtml(t.renderer.nutrition)} <small>(${escapeHtml(basis.label)})</small></h2>\n`;
+		// A printed sheet is the one output the cook can't click into for more
+		// context, so the reason a total is partial has to be on the page.
+		if (nut.warnings && nut.warnings.length > 0) {
+			body += `<div class="nut-warnings">\n`;
+			nut.warnings.forEach((w) => {
+				body += `  <p><strong>${escapeHtml(t.renderer.incompleteData)}:</strong> ${escapeHtml(w.message)}</p>\n`;
+			});
+			body += `</div>\n`;
+		}
+		if (basis.note) {
+			body += `<p class="nut-basis-note">${escapeHtml(basis.note)}</p>\n`;
+		}
+		body += `<div class="nut-grid">\n`;
+		for (const row of nutritionRows(basis.values, options.lang)) {
+			const cls = row.nested ? "nut-item nut-item-nested" : "nut-item";
+			body += `  <span class="${cls}"><small>${escapeHtml(row.label)}</small> <strong>${row.value} ${row.unit}</strong></span>\n`;
 		}
 		body += `</div>\n</div>\n`;
 		return body;

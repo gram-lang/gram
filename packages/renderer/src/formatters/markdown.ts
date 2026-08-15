@@ -2,7 +2,6 @@ import type {
 	RendererOptions,
 	RenderContext,
 	RenderableCompilationResult,
-	RenderableMetrics,
 } from "../types";
 import type { RenderBackend, RenderSections } from "../traversal";
 import { renderRecipe } from "../traversal";
@@ -15,6 +14,12 @@ import {
 	groupMultiUnitEntries,
 	escapeMarkdownHtml,
 } from "../utils";
+import {
+	getMetrics,
+	hasNutritionToShow,
+	nutritionRows,
+	resolveNutritionBasis,
+} from "../nutrition";
 import { formatElement } from "./element";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
@@ -208,41 +213,28 @@ const markdownBackend: RenderBackend = {
 	},
 
 	renderNutrition(data, _context, options) {
-		// Mirrors html.ts's fuller display condition (calories OR warnings), not
-		// print.ts's simpler one, since markdown has no other way to surface
-		// "ingredients exist but nutrition data is incomplete".
 		const t = getDictionary(options.lang);
-		const metrics = data.metrics as RenderableMetrics;
-		const nut = metrics?.nutrition;
-		if (!nut) return "";
-		if (
-			!(
-				(nut.total && nut.total.calories > 0) ||
-				(nut.warnings && nut.warnings.length > 0)
-			)
-		) {
-			return "";
-		}
+		const nut = getMetrics(data)?.nutrition;
+		if (!hasNutritionToShow(nut) || !nut) return "";
 
-		const total = nut.total || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-		const portionVals = nut.perPortion;
-		const portionNote = portionVals ? " (Per Portion)" : "";
-		const vals = portionVals || total;
+		const basis = resolveNutritionBasis(
+			nut,
+			options.nutritionBasis,
+			options.lang,
+		);
 
-		let md = `## 🥗 ${t.renderer.nutrition}${portionNote}\n\n`;
+		let md = `## 🥗 ${t.renderer.nutrition} (${basis.label})\n\n`;
+		if (basis.note) md += `_${escapeMarkdownHtml(basis.note)}_\n\n`;
 		if (nut.warnings && nut.warnings.length > 0) {
 			nut.warnings.forEach((w) => {
-				md += `> **Incomplete data:** ${escapeMarkdownHtml(w.message)}\n`;
+				md += `> **${t.renderer.incompleteData}:** ${escapeMarkdownHtml(w.message)}\n`;
 			});
 			md += "\n";
 		}
-		md += `- **Calories**: ${Math.round(vals.calories)} kcal\n`;
-		md += `- **Carbs**: ${vals.carbs}g${vals.sugar !== undefined ? ` (sugar: ${vals.sugar}g)` : ""}\n`;
-		md += `- **Protein**: ${vals.protein}g\n`;
-		md += `- **Fat**: ${vals.fat}g\n`;
-		if (vals.fiber !== undefined) md += `- **Fiber**: ${vals.fiber}g\n`;
-		if (vals.sodium !== undefined)
-			md += `- **Sodium**: ${Math.round(vals.sodium)}mg\n`;
+		for (const row of nutritionRows(basis.values, options.lang)) {
+			const indent = row.nested ? "  " : "";
+			md += `${indent}- **${escapeMarkdownHtml(row.label)}**: ${row.value} ${row.unit}\n`;
+		}
 		md += "\n";
 		return md;
 	},

@@ -47,7 +47,8 @@ describe("print nutrition panel sodium unit (I-2)", () => {
 		const { result } = analyze(compiled, database);
 		const printHtml = toPrintHTML(result);
 
-		expect(printHtml).toContain("1717mg");
-		expect(printHtml).not.toContain("1717g");
+		// Units are now spaced, driven by NUTRIENTS' `unit` field.
+		expect(printHtml).toContain("1717 mg");
+		expect(printHtml).not.toContain("1717 g");
 	});
 });

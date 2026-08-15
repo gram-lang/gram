@@ -48,6 +48,33 @@ export const en = {
 		estimatedSuffix: " (Estimated)",
 		missingMass: " (Missing: ",
 		someIngredients: "some ingredients",
+		// Nutrition bases. Which one is shown is the renderer's
+		// `nutritionBasis` option; the analyzer computes all three.
+		nutritionWholeRecipe: "Whole recipe",
+		nutritionPerPortion: "Per portion",
+		nutritionPer100g: "Per 100 g",
+		// Gram models no cooking loss, so a per-100 g figure is per 100 g of
+		// the raw assembled mixture — said plainly rather than left implied.
+		nutritionRawMassNote: "Based on {mass} of raw ingredients",
+		incompleteData: "Incomplete data",
+		// One entry per key in @gram-lang/analyzer's NUTRIENTS table; the
+		// renderer test asserts the two stay in step. A sub-macro's label is
+		// prefixed with `ofWhich` at display time rather than baked in here,
+		// so the same string works standalone and nested.
+		ofWhich: "of which",
+		nutrients: {
+			calories: "Calories",
+			fat: "Fat",
+			sat_fat: "saturates",
+			mono_fat: "mono-unsaturates",
+			poly_fat: "poly-unsaturates",
+			carbs: "Carbohydrates",
+			sugar: "sugars",
+			fiber: "Fiber",
+			protein: "Protein",
+			sodium: "Sodium",
+			alcohol: "Alcohol",
+		},
 	},
 	playground: {
 		title: "Gram Playground",

@@ -156,7 +156,16 @@ export async function buildViewModel(
 		(compiled.meta?.title as string | undefined) ??
 		compiled.title ??
 		basename(file, ".gram");
-	const servings = (compiled.meta?.servings as number | undefined) ?? null;
+	// `portions` is the canonical frontmatter key — this read `meta.servings`,
+	// a field the language doesn't have, and cast it to a number even though
+	// frontmatter values are always strings. It was therefore always null.
+	const rawPortions = compiled.meta?.portions;
+	const parsedPortions =
+		typeof rawPortions === "string" ? parseFloat(rawPortions) : Number.NaN;
+	const servings =
+		Number.isFinite(parsedPortions) && parsedPortions > 0
+			? parsedPortions
+			: null;
 
 	const m = compiled.metrics;
 	const times =
@@ -314,6 +323,7 @@ export async function buildViewModel(
 	return {
 		title,
 		servings,
+		lang: opts.lang,
 		times,
 		shoppingList,
 		sections,

@@ -146,7 +146,10 @@ function refresh(uri: string, text: string, version?: number) {
 
 	if (state.compilation) {
 		try {
-			const html = toHTML(state.compilation, {});
+			// The VS Code preview ships the renderer's stylesheet (mirrored in
+			// media/preview.css), so the CSS-only nutrition basis toggle works
+			// there — quantities stay read-only.
+			const html = toHTML(state.compilation, { interactiveNutrition: true });
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);

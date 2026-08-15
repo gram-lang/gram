@@ -464,6 +464,22 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
     flex-direction: column;
     align-items: flex-start;
   }
+  .nut-item-nested strong { font-size: 10pt; }
+  .nut-item-nested small { color: var(--grey); }
+  .nut-basis-note {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 7.5pt;
+    color: var(--grey);
+    margin: -6pt 0 10pt 0;
+  }
+  .nut-warnings {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 8pt;
+    color: var(--dark-grey);
+    border-left: 2pt solid var(--black);
+    padding-left: 8pt;
+    margin-bottom: 10pt;
+  }
   .nut-item strong { 
     font-size: 13pt; 
     font-family: 'Inter', system-ui, sans-serif;

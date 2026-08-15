@@ -287,6 +287,7 @@ function updateGram() {
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
 				interactiveScaling: true,
+				interactiveNutrition: true,
 				bakersMathOnly: options.value.bakersMathOnly,
 				lang: currentLang.value,
 			});

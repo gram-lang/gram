@@ -17,13 +17,14 @@ describe("buildViewModel", () => {
 
 	it("extracts title, servings, and section/step/ingredient structure", async () => {
 		const path = await tmp(
-			'---\ntitle: "Crepes"\nservings: 4\n---\n## Batter\n[Mix] Combine the @flour{200g} and @eggs{2}.\n',
+			'---\ntitle: "Crepes"\nportions: 4\n---\n## Batter\n[Mix] Combine the @flour{200g} and @eggs{2}.\n',
 		);
 		const vm = await buildViewModel(path, {});
 		expect(vm.title).toBe("Crepes");
-		// Frontmatter values are parsed as strings (matches kitchen's own
-		// applyScale test for `meta.portions`), despite RecipeViewModel's type.
-		expect(vm.servings).toBe("4" as unknown as number);
+		// `portions` is the canonical key. This used to read `meta.servings` —
+		// a field the language doesn't have — and hand back the raw string, so
+		// the header never showed a serving count.
+		expect(vm.servings).toBe(4);
 		expect(vm.sections).toHaveLength(1);
 		expect(vm.sections[0]?.title).toBe("Batter");
 		expect(vm.sections[0]?.ingredients.map((i) => i.name)).toEqual([
@@ -33,6 +34,12 @@ describe("buildViewModel", () => {
 		expect(vm.sections[0]?.steps).toHaveLength(1);
 		expect(vm.sections[0]?.steps[0]?.action).toBe("Mix");
 		expect(vm.sections[0]?.steps[0]?.text).toContain("flour");
+	});
+
+	it("reports no serving count when the recipe declares none", async () => {
+		const path = await tmp("## Batter\n[Mix] Add @flour{200g}.\n");
+		const vm = await buildViewModel(path, {});
+		expect(vm.servings).toBeNull();
 	});
 
 	it("falls back to the file basename when no title is set", async () => {
