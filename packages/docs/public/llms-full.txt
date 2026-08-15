@@ -49,6 +49,16 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
   </Card>
 </CardGrid>
 
+## Data Philosophy: Why No External Nutrition Database?
+
+Gram deliberately does not ship, bundle, or integrate a reference nutrition/density database (no CIQUAL, no USDA FoodData Central, no OpenFoodFacts lookup). This isn't an oversight — it's why `@gram-lang/analyzer` works "based on your local database" instead of a global one.
+
+**Density and nutrition are product-specific, not universal.** French AOP butter (~82% fat) and American butter (~80% fat) aren't regional variants of one "true" butter value — they're different products. The same goes for flour (T45 vs. all-purpose), sugar, and most pantry staples. A reference database has to pick *one* product to represent an entire category, and that choice is wrong for a meaningful fraction of its users by construction. Only you know what's actually in your kitchen.
+
+**So `gram db enrich` proposes, you decide.** The CLI can use AI to estimate density and nutrition for you (`gram db enrich`), but every proposal goes through an interactive review before it's written — accept, edit, or skip, per ingredient. Values you accept without editing are tagged `# [LLM]` in `ingredients.yaml`, so an unreviewed AI estimate always stays visually distinct from data you've verified yourself.
+
+**This is different from a physical plausibility check.** `gram db validate` does flag values that are implausible for a food-science *category* — e.g. a liquid with a density of 5 g/mL, or calories wildly inconsistent with the stated macros. That's a sanity range across a broad category (all oils, roughly 0.85–1.0 g/mL), not an assertion about one specific product. It exists to catch AI hallucination, never to tell you what your butter's actual density is.
+
 ## How it looks
 
 Gram remains highly readable, but quietly introduces some powerful data structures. Here is a look at a classic French pastry recipe written in Gram:

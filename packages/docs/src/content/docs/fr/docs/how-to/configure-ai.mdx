@@ -15,7 +15,7 @@ Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI 
 
 1. **Importation de recettes (`gram import <source>`)** : Convertit automatiquement des pages web (en extrayant les données structurées JSON-LD) ou des fichiers JSON-LD locaux en syntaxe `.gram` valide dans votre langue cible.
 2. **Nettoyage et déduplication (`gram db lint`)** : Détecte les doublons sémantiques, les variations singulier/pluriel et les termes multilingues dans `ingredients.yaml`, et vous propose de les fusionner sous une clé principale avec des alias.
-3. **Enrichissement (`gram db enrich`)** : Recherche des valeurs nutritionnelles (calories, macros, micronutriments) et des caractéristiques physiques (densité, rendement, poids unitaire) à proposer pour les ingrédients incomplets de votre base — les propositions de densité/nutrition passent par une revue interactive avant d'être écrites, car ce sont des données propres à un produit précis.
+3. **Enrichissement (`gram db enrich`)** : Recherche des valeurs nutritionnelles (calories, macros, micronutriments) et des caractéristiques physiques (densité, rendement, poids unitaire) à proposer pour les ingrédients incomplets de votre base — les propositions de densité/nutrition passent par une revue interactive avant d'être écrites, car ce sont des données propres à un produit précis (voir [Philosophie des données](/fr/docs/explanation/philosophy#philosophie-des-données--pourquoi-aucune-base-externe-) pour comprendre pourquoi Gram ne fournit pas de base de référence à la place).
 
 ---
 

@@ -85,3 +85,7 @@ gram db merge ~/Downloads/community-db.yaml
 ```
 
 If there are conflicts (e.g., the community database says butter has 717 kcal, but yours says 740 kcal), the CLI will ask you interactively how to resolve them.
+
+:::tip[Community starter databases]
+The [`community-db/`](https://git.gram-lang.org/gram-lang/gram/src/branch/main/community-db) directory in the Gram repository collects community-contributed starter files by language/cuisine, ready to `gram db merge`. They're opt-in starting points, not a verified reference — see [Data Philosophy](/docs/explanation/philosophy#data-philosophy-why-no-external-nutrition-database) for why Gram doesn't ship one built in.
+:::

@@ -14,7 +14,13 @@ import {
 import { withFileLock, atomicWrite } from "../core/lock";
 import { resolveDbPath } from "../core/db";
 import { setProvenancedField } from "../core/db-writer";
-import { MAX_DENSITY, MAX_CALORIES } from "./db-validator";
+import {
+	MAX_DENSITY,
+	MIN_DENSITY,
+	MAX_CALORIES,
+	MIN_UNIT_WEIGHT,
+	MAX_UNIT_WEIGHT,
+} from "./db-validator";
 import { GramCLIError, ExitCode } from "../errors";
 import type {
 	GramConfig,
@@ -25,6 +31,14 @@ import type {
 	EnrichSource,
 	EnrichDecision,
 } from "../types";
+
+// Anchors realistic magnitudes on the three axes hallucination hits hardest
+// (density, calorie density, unit_weight) — a liquid, a powder, and a
+// countable item. Not meant to be copied: the prompt itself says so.
+const FEW_SHOT_EXAMPLES = `Examples of well-calibrated responses (for magnitude reference only — always use the specific ingredient's own real-world values, never copy these numbers):
+- olive oil (liquid): density 0.92 g/mL, no unit_weight (not typically countable), nutrition per 100g: calories 884, fat 100, carbs 0, protein 0.
+- all-purpose flour (powder): density 0.55 g/mL, no unit_weight, nutrition per 100g: calories 364, fat 1, carbs 76, protein 10.
+- egg (countable item): unit_weight 50 g, no meaningful density, nutrition per 100g: calories 155, fat 11, carbs 1, protein 13.`;
 
 // The prompt used to present (and ask the AI to return) a translated
 // *display label* ("Légumes"), which
@@ -38,21 +52,28 @@ function buildSystemPrompt(lang: string): string {
 	const categories = CATEGORY_KEYS.map((key) => `${key} (${labels[key]})`).join(
 		", ",
 	);
-	return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Assign exactly one food category **key** (not the translated label) from this list: ${categories}. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.`;
+	return `${getAiLanguageInstruction(lang)} You are a culinary database assistant. For each ingredient provided, return accurate physical and nutritional data based on standard food science references. Use SI units: density in g/mL, nutrition per 100g of edible portion. If an ingredient is typically used in countable units (like a carrot, an egg), provide its average unit_weight in grams. Before finalizing each item's nutrition, verify internally that calories are consistent with the standard Atwater estimate (4 kcal/g protein, 4 kcal/g carbs, 9 kcal/g fat, 7 kcal/g alcohol) and adjust if they diverge significantly. Assign exactly one food category **key** (not the translated label) from this list: ${categories} — some ingredients in the input may already include a known "category", which is ground truth and must not be contradicted. Then provide other useful free-form "tagSuggestions" (e.g., dietary info, allergens, etc.). IMPORTANT: return every ingredient from the input, and preserve each "key" field exactly as given — do not translate, capitalize, or modify it.
+
+${FEW_SHOT_EXAMPLES}`;
 }
 
 // Ingredient names reaching this prompt can come from arbitrary sources
 // (`gram db sync` over synced recipes, `gram
 // db merge` over a third-party YAML file), and `generateObject`'s schema is
 // the only real backstop against a prompt-injected response — it constrains
-// *shape*, so it must also constrain *plausibility*. MAX_DENSITY/MAX_CALORIES
-// are the same bounds `db-validator.ts` reports on after the fact; reusing
-// them here rejects an implausible value (a "density" of `1e9`) up front
-// instead of writing it to a versioned file and flagging it later.
+// *shape*, so it must also constrain *plausibility*. These are the same
+// bounds `db-validator.ts` reports on after the fact; reusing them here
+// rejects an implausible value (a "density" of `1e9`, a `unit_weight` of
+// `50000`) up front instead of writing it to a versioned file and flagging
+// it later. Only bounds that are physical impossibilities live here — the
+// softer, noisier heuristics in `db-validator.ts` (Atwater cross-check,
+// per-category density ranges, sub-macro consistency) stay warning-only,
+// since an all-or-nothing schema rejection would throw away an otherwise-good
+// proposal over borderline macro math.
 const EnrichItemSchema = z.object({
 	key: z.string(),
-	density: z.number().positive().max(MAX_DENSITY).optional(),
-	unit_weight: z.number().optional(),
+	density: z.number().min(MIN_DENSITY).max(MAX_DENSITY).optional(),
+	unit_weight: z.number().min(MIN_UNIT_WEIGHT).max(MAX_UNIT_WEIGHT).optional(),
 	nutrition: z
 		.object({
 			calories: z.number().min(0).max(MAX_CALORIES),
@@ -128,8 +149,18 @@ export async function enrichDb(
 	await Promise.all(
 		batches.map((batch) =>
 			limit(async () => {
+				// Pass along a category we already know (unless it's the very
+				// field being requested) so the AI doesn't have to re-derive it —
+				// and, per the system prompt, treats it as ground truth rather
+				// than a suggestion it might contradict.
 				const prompt = JSON.stringify(
-					batch.map(([id, ing]) => ({ key: id, name: ing.name })),
+					batch.map(([id, ing]) => ({
+						key: id,
+						name: ing.name,
+						...(ing.category && field !== "category"
+							? { category: ing.category }
+							: {}),
+					})),
 				);
 
 				const batchEnriched: string[] = [];
