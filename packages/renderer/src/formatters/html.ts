@@ -538,7 +538,12 @@ const htmlBackend: RenderBackend = {
 		}
 
 		for (const basis of bases) {
-			html += `  <div class="nut-grid" data-basis="${basis.key}">\n`;
+			// `data-default` marks the grid to fall back to when no radio in this
+			// panel is checked — which happens when two panels share a page and
+			// therefore a radio group. Without it the panel would render empty.
+			const isDefault =
+				bases.length > 1 && basis.key === defaultKey ? " data-default" : "";
+			html += `  <div class="nut-grid" data-basis="${basis.key}"${isDefault}>\n`;
 			for (const row of nutritionRows(basis.values, options.lang)) {
 				const cls = row.nested ? "nut-item nut-item-nested" : "nut-item";
 				html += `    <div class="${cls}"><span class="label">${escapeHtml(row.label)}</span> <strong>${row.value} ${row.unit}</strong></div>\n`;

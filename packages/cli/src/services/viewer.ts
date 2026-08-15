@@ -2,6 +2,7 @@ import { basename } from "node:path";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
 import type { IngredientData } from "@gram-lang/analyzer";
+import type { NutritionBasis } from "@gram-lang/renderer";
 import type { RecipeViewModel } from "../types";
 
 function formatMass(grams: number): string {
@@ -142,6 +143,7 @@ export async function buildViewModel(
 		scaleFactor?: number;
 		bakersReference?: string;
 		bakersMathOnly?: boolean;
+		nutritionBasis?: NutritionBasis;
 		lang?: string;
 	},
 ): Promise<RecipeViewModel> {
@@ -324,6 +326,7 @@ export async function buildViewModel(
 		title,
 		servings,
 		lang: opts.lang,
+		nutritionBasis: opts.nutritionBasis,
 		times,
 		shoppingList,
 		sections,

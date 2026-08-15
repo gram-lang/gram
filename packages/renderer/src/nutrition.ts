@@ -1,4 +1,8 @@
-import { NUTRIENTS, type NutritionMetrics } from "@gram-lang/analyzer";
+// `./nutrients` rather than the package root: the root barrel builds zod
+// schemas at module load, which a bundler can't drop, and this module is
+// reached by browser bundles (the docs playground, the VS Code webview).
+import { NUTRIENTS } from "@gram-lang/analyzer/nutrients";
+import type { NutritionMetrics } from "@gram-lang/analyzer";
 import { getDictionary } from "@gram-lang/i18n";
 import type {
 	NutritionBasis,
@@ -29,6 +33,14 @@ export function hasNutritionToShow(nut: NutritionMetrics | undefined): boolean {
 	if (!nut) return false;
 	return (nut.total?.calories ?? 0) > 0 || (nut.warnings?.length ?? 0) > 0;
 }
+
+/**
+ * Stand-in when a payload carries no totals at all — every required nutrient at
+ * zero, built from the table so it can't fall out of step with `Macros`.
+ */
+const EMPTY_MACROS = Object.fromEntries(
+	NUTRIENTS.filter((n) => n.required).map((n) => [n.key, 0]),
+) as NutritionMetrics["total"];
 
 export interface ResolvedBasis {
 	key: Exclude<NutritionBasis, "auto">;
@@ -88,7 +100,12 @@ export function availableBases(
 	}
 	bases.push({
 		key: "total",
-		values: nut.total,
+		// `total` is required by the type, but the renderer's input is the
+		// analyzer's JSON as it arrives — a hand-built or truncated payload can
+		// carry warnings and no totals, and that used to render (as zeroes)
+		// rather than throw. Always ending the list with a usable entry is also
+		// what lets resolveNutritionBasis() treat the last one as its fallback.
+		values: nut.total ?? EMPTY_MACROS,
 		label: t.renderer.nutritionWholeRecipe,
 	});
 
@@ -139,11 +156,12 @@ export interface NutrientRow {
  * alcohol appear everywhere at once now that the aggregation reports them.
  */
 export function nutritionRows(
-	values: NutritionMetrics["total"],
+	values: NutritionMetrics["total"] | undefined,
 	lang?: string,
 ): NutrientRow[] {
 	const t = getDictionary(lang);
 	const rows: NutrientRow[] = [];
+	if (!values) return rows;
 
 	for (const nutrient of NUTRIENTS) {
 		const value = values[nutrient.key];

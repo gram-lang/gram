@@ -1,6 +1,94 @@
 "use strict";
 (() => {
+  // ../analyzer/dist/chunk-5HGFXDSJ.js
+  var NUTRIENTS = [
+    {
+      key: "calories",
+      label: "Calories",
+      unit: "kcal",
+      dp: 0,
+      required: true,
+      parent: null
+    },
+    { key: "fat", label: "Fat", unit: "g", dp: 1, required: true, parent: null },
+    {
+      key: "sat_fat",
+      label: "Saturates",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: "fat"
+    },
+    {
+      key: "mono_fat",
+      label: "Mono-unsaturates",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: "fat"
+    },
+    {
+      key: "poly_fat",
+      label: "Poly-unsaturates",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: "fat"
+    },
+    {
+      key: "carbs",
+      label: "Carbohydrates",
+      unit: "g",
+      dp: 1,
+      required: true,
+      parent: null
+    },
+    {
+      key: "sugar",
+      label: "Sugars",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: "carbs"
+    },
+    {
+      key: "fiber",
+      label: "Fiber",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: null
+    },
+    {
+      key: "protein",
+      label: "Protein",
+      unit: "g",
+      dp: 1,
+      required: true,
+      parent: null
+    },
+    {
+      key: "sodium",
+      label: "Sodium",
+      unit: "mg",
+      dp: 0,
+      required: false,
+      parent: null
+    },
+    {
+      key: "alcohol",
+      label: "Alcohol",
+      unit: "g",
+      dp: 1,
+      required: false,
+      parent: null
+    }
+  ];
+
   // ../renderer/dist/index.js
+  var EMPTY_MACROS = Object.fromEntries(
+    NUTRIENTS.filter((n) => n.required).map((n) => [n.key, 0])
+  );
   var SVG = {
     // Clock (sync timer) — Lucide Clock
     clock: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,

@@ -99,6 +99,14 @@ describe("interactive HTML basis switch", () => {
 		expect(a).toContain('name="nut-basis-a"');
 	});
 
+	it("tags the default grid so a panel without a checked radio still shows data", () => {
+		// Two panels on one page without distinct renderIds share a radio group,
+		// so the browser keeps only the last `checked`. The CSS falls back to
+		// [data-default] — without the tag the other panel renders empty.
+		expect(html).toContain('data-basis="perPortion" data-default');
+		expect((html.match(/data-default/g) ?? []).length).toBe(1);
+	});
+
 	it("renders a single basis when the caller pins one", () => {
 		const pinned = toHTML(portioned, {
 			interactiveNutrition: true,
@@ -159,6 +167,31 @@ describe("display condition parity", () => {
 			{},
 		).result;
 		expect(toPrintHTML(unknown)).toContain("Incomplete data");
+	});
+});
+
+describe("robustness against partial payloads", () => {
+	it("renders a nutrition block that carries warnings but no totals", () => {
+		// The renderer's input is the analyzer's JSON as it arrives, and this
+		// shape used to render as zeroes. Reaching into `total` unguarded made
+		// it throw instead.
+		const partial: any = {
+			title: "T",
+			sections: [],
+			shopping_list: [],
+			meta: {},
+			metrics: {
+				nutrition: {
+					coverage: 0,
+					isEstimate: false,
+					warnings: [{ code: "MISSING_INGREDIENT", message: "salt" }],
+				},
+			},
+		};
+		expect(() => toMarkdown(partial)).not.toThrow();
+		expect(() => toHTML(partial)).not.toThrow();
+		expect(() => toPrintHTML(partial)).not.toThrow();
+		expect(toHTML(partial)).toContain("Incomplete data");
 	});
 });
 

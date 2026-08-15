@@ -9,6 +9,10 @@ import { buildViewModel } from "../services/viewer";
 import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
+import {
+	NUTRITION_BASIS_FLAG_DESCRIPTION,
+	parseNutritionBasis,
+} from "../services/nutrition-basis";
 import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
@@ -55,6 +59,10 @@ export default defineCommand({
 			type: "boolean",
 			description: "Only show the percentages and hide absolute weights.",
 		},
+		nutrition: {
+			type: "string",
+			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
+		},
 	},
 	async run({ args }) {
 		const file = resolve(args.file as string);
@@ -75,6 +83,7 @@ export default defineCommand({
 			(args["bakers-reference"] as string) ||
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
+		const nutritionBasis = parseNutritionBasis(args.nutrition);
 
 		let model;
 		try {
@@ -83,6 +92,7 @@ export default defineCommand({
 				scaleFactor,
 				bakersReference,
 				bakersMathOnly,
+				nutritionBasis,
 				lang: config.language,
 			});
 		} catch (err) {

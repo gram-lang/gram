@@ -771,6 +771,18 @@ body.vscode-dark,
   display: grid;
 }
 
+/* Fallback when no radio in this panel is checked. Two panels rendered on one
+   page without distinct `renderId`s share a radio group, so the browser keeps
+   only the last `checked` one and the other panel would hide every grid and
+   show nothing at all. The default basis is tagged in the markup rather than
+   picked positionally — `:first-of-type` matches the first element of that
+   *tag*, which is the header, not the first grid. */
+.gram-preview
+  .nutrition-panel:not(:has(.nut-basis-radio:checked))
+  .nut-grid[data-default] {
+  display: grid;
+}
+
 .gram-preview .nut-basis-radio[data-basis="perPortion"]:checked ~ .nut-basis-switch label[for$="-perPortion"],
 .gram-preview .nut-basis-radio[data-basis="per100g"]:checked ~ .nut-basis-switch label[for$="-per100g"],
 .gram-preview .nut-basis-radio[data-basis="total"]:checked ~ .nut-basis-switch label[for$="-total"] {

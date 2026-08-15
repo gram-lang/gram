@@ -1,6 +1,10 @@
 import chalk from "chalk";
 import { spawn } from "node:child_process";
-import { nutritionRows, resolveNutritionBasis } from "@gram-lang/renderer";
+import {
+	nutritionRows,
+	resolveNutritionBasis,
+	type NutritionBasis,
+} from "@gram-lang/renderer";
 import { fmtNumber } from "../core/format";
 import type { RecipeViewModel } from "../types";
 
@@ -207,13 +211,14 @@ function renderSections(
 function renderNutrition(
 	nutrition: RecipeViewModel["nutrition"],
 	lang?: string,
+	requestedBasis?: NutritionBasis,
 ): string {
 	if (!nutrition) return "";
 	// This used to bail out unless `perPortion` was set — which, given the
 	// analyzer never read the recipe's portion count, meant `gram view` showed
-	// no nutrition at all. It now renders whichever basis the shared resolver
-	// picks, and says which one it is.
-	const basis = resolveNutritionBasis(nutrition, "auto", lang);
+	// no nutrition at all. It now renders whichever basis `--nutrition` asks
+	// for (defaulting to the shared resolver's choice), and says which one.
+	const basis = resolveNutritionBasis(nutrition, requestedBasis, lang);
 	const rows = nutritionRows(basis.values, lang);
 	if (rows.length === 0) return "";
 
@@ -246,7 +251,7 @@ function renderRecipe(model: RecipeViewModel): string {
 		renderHeader(model),
 		renderShoppingList(model.shoppingList),
 		renderSections(model.sections, model._registries),
-		renderNutrition(model.nutrition, model.lang),
+		renderNutrition(model.nutrition, model.lang, model.nutritionBasis),
 		renderMissingWarning(model.missingIngredients),
 		"",
 	].join("\n");

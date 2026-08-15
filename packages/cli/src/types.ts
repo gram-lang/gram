@@ -4,6 +4,7 @@ import type {
 	NutritionMetrics,
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
+import type { NutritionBasis } from "@gram-lang/renderer";
 import { z } from "zod";
 
 export type DiagnosticLevel = "error" | "warning" | "info";
@@ -123,6 +124,8 @@ export interface RecipeViewModel {
 	servings: number | null;
 	/** Recipe language, so the terminal view can localize nutrition labels. */
 	lang?: string;
+	/** Which nutrition basis the terminal view should print (`--nutrition`). */
+	nutritionBasis?: NutritionBasis;
 	times: {
 		active?: number;
 		prep?: number;

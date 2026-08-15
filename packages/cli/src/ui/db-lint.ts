@@ -1,49 +1,49 @@
 import chalk from "chalk";
 import { log, select, note } from "@clack/prompts";
-import type { IngredientData } from "@gram-lang/analyzer";
+import {
+	NUTRIENTS,
+	type IngredientData,
+	type NutrientKey,
+} from "@gram-lang/analyzer";
 import type { LintResult, LintIssue, LintDecision } from "../types";
 import { fmtNumber } from "../core/format";
 
-export type NutritionKey =
-	| "calories"
-	| "fat"
-	| "carbs"
-	| "protein"
-	| "sugar"
-	| "sat_fat"
-	| "fiber"
-	| "sodium";
+export type NutritionKey = NutrientKey;
 
-export const NUTRITION_FIELDS: NutritionKey[] = [
-	"calories",
-	"fat",
-	"carbs",
-	"protein",
-	"sugar",
-	"sat_fat",
-	"fiber",
-	"sodium",
-];
+/**
+ * Every nutrient the database knows about, in the shared display order.
+ *
+ * This list, its labels and its units were written out by hand and had fallen
+ * behind: `mono_fat`, `poly_fat` and `alcohol` were missing, and sodium was
+ * labelled as grams when it is stored in milligrams. That mattered beyond
+ * cosmetics — `gram db enrich` shows the AI's proposal through
+ * `formatNutritionRow` before asking you to accept it, so a nutrient absent
+ * here would be written to `ingredients.yaml` without ever being shown.
+ */
+export const NUTRITION_FIELDS: NutritionKey[] = NUTRIENTS.map((n) => n.key);
+
+// Terse forms, for a one-line terminal row where the full names wouldn't fit.
+// Typed against NutrientKey so adding a nutrient to the table fails the build
+// here until it gets an abbreviation, rather than silently going unlabelled.
 const NUTRITION_LABELS: Record<NutritionKey, string> = {
 	calories: "kcal",
 	fat: "fat",
-	carbs: "carbs",
-	protein: "prot",
-	sugar: "sugar",
 	sat_fat: "sat",
+	mono_fat: "mono",
+	poly_fat: "poly",
+	carbs: "carbs",
+	sugar: "sugar",
 	fiber: "fiber",
+	protein: "prot",
 	sodium: "sod",
+	alcohol: "alc",
 };
-const NUTRITION_UNITS: Record<NutritionKey, string> = {
-	calories: "",
-	fat: "g",
-	carbs: "g",
-	protein: "g",
-	sugar: "g",
-	sat_fat: "g",
-	fiber: "g",
-	sodium: "g",
-};
+
+// Units come from the table itself. Calories are the one case where the terse
+// label already carries the unit, so appending it would read "kcal 364kcal".
+const NUTRITION_UNITS: Record<NutritionKey, string> = Object.fromEntries(
+	NUTRIENTS.map((n) => [n.key, n.key === "calories" ? "" : n.unit]),
+) as Record<NutritionKey, string>;
 
 function diffNutritionFields(
 	a: IngredientData["nutrition"],

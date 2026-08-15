@@ -4,6 +4,16 @@
   "description": "Gram recipe analyzer for physical properties (mass, yield, nutrition)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./nutrients": {
+      "types": "./dist/nutrients.d.ts",
+      "import": "./dist/nutrients.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist"
@@ -29,7 +39,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "build": "tsup src/index.ts src/nutrients.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "prepublishOnly": "npm run build"
