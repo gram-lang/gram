@@ -55,7 +55,13 @@ export const en = {
 		nutritionPer100g: "Per 100 g",
 		// Gram models no cooking loss, so a per-100 g figure is per 100 g of
 		// the raw assembled mixture — said plainly rather than left implied.
-		nutritionRawMassNote: "Based on {mass} of raw ingredients",
+		// The partial variant is used as soon as some ingredient lacks
+		// nutrition data, because the mass then covers only what was counted
+		// and not the whole recipe; hedging that way when everything *is*
+		// covered would only weaken the message.
+		nutritionRawMassNote: "Based on {mass} of ingredients, before cooking",
+		nutritionRawMassNotePartial:
+			"Based on the {mass} with nutrition data, before cooking",
 		incompleteData: "Incomplete data",
 		// One entry per key in @gram-lang/analyzer's NUTRIENTS table; the
 		// renderer test asserts the two stay in step. A sub-macro's label is

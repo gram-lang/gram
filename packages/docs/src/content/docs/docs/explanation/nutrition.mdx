@@ -65,6 +65,15 @@ recipe's `totalMass`. Those two can legitimately differ — an ingredient with a
 known weight but no nutrition data has mass but no calories — and dividing one
 by the other would silently understate the density in exactly that case.
 
+Renderers say which of the two they mean, because at full coverage the
+denominator *is* the recipe's raw weight and at partial coverage it isn't:
+
+- `coverage` is 1 → "Based on 830 g of ingredients, before cooking"
+- `coverage` is below 1 → "Based on the 830 g with nutrition data, before cooking"
+
+The second wording is what stops a 830 g figure from reading as the weight of a
+recipe that actually weighs more.
+
 ## Where the Numbers Come From
 
 Gram doesn't ship a reference nutrition/density database — these values are specific to each product, region, and country, so only you can really vouch for what's actually in your kitchen. `gram db enrich` can propose values via AI, but every proposal goes through an interactive review before it's written, and anything accepted without editing is tagged `# [LLM]` in `ingredients.yaml` so it stays visibly unverified.

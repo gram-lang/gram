@@ -66,6 +66,16 @@ ingrédient dont le poids est connu mais sans données nutritionnelles a une mas
 sans calories — et diviser l'un par l'autre sous-estimerait silencieusement la
 densité dans ce cas précis.
 
+Les renderers précisent duquel des deux il s'agit, car à couverture complète le
+dénominateur *est* la masse crue de la recette, alors qu'à couverture partielle
+il ne l'est pas :
+
+- `coverage` vaut 1 → « Sur 830 g d'ingrédients, avant cuisson »
+- `coverage` est inférieur à 1 → « Sur les 830 g renseignés, avant cuisson »
+
+La seconde formulation évite qu'un chiffre de 830 g se lise comme le poids d'une
+recette qui en pèse davantage.
+
 ## D'où viennent les valeurs
 
 Gram ne fournit pas de base de référence nutrition/densité — ces valeurs sont propres à chaque produit, chaque région et chaque pays, donc seul vous pouvez réellement garantir ce que vous avez dans votre cuisine. `gram db enrich` peut proposer des valeurs via l'IA, mais chaque proposition passe par une revue interactive avant d'être écrite, et tout ce qui est accepté sans modification est tagué `# [LLM]` dans `ingredients.yaml` pour rester visiblement non vérifié.

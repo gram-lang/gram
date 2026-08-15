@@ -65,10 +65,17 @@ function massNote(nut: NutritionMetrics, lang?: string): string | undefined {
 			: basis.massStatus === "incomplete"
 				? ">"
 				: "";
-	return t.renderer.nutritionRawMassNote.replace(
-		"{mass}",
-		`${prefix}${Math.round(basis.mass)} g`,
-	);
+
+	// `basis.mass` is the mass that actually contributed macros. At full
+	// coverage that is the recipe's whole raw weight and reads naturally; below
+	// it, the same sentence would suggest the recipe weighs less than it does,
+	// so the wording says outright that this is only the part with data.
+	const template =
+		nut.coverage < 1
+			? t.renderer.nutritionRawMassNotePartial
+			: t.renderer.nutritionRawMassNote;
+
+	return template.replace("{mass}", `${prefix}${Math.round(basis.mass)} g`);
 }
 
 /**

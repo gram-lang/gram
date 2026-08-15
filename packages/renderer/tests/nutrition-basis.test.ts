@@ -58,12 +58,26 @@ describe("nutritionBasis", () => {
 		expect(md).toContain("Whole recipe");
 	});
 
-	it("states the raw-mass caveat alongside a per-100 g figure", () => {
+	it("states the before-cooking caveat alongside a per-100 g figure", () => {
 		const md = toMarkdown(portioned, { nutritionBasis: "per100g" });
-		expect(md).toContain("200 g of raw ingredients");
+		expect(md).toContain("Based on 200 g of ingredients, before cooking");
 	});
 
-	it("marks an incomplete mass as a lower bound", () => {
+	it("says the mass is only the part with data when coverage is partial", () => {
+		// `basis.mass` counts only what contributed macros. Saying "based on
+		// 200 g of ingredients" here would suggest the recipe weighs 200 g when
+		// the salt in it is unaccounted for.
+		const partial = analyze(
+			compile(getAST("## S\n\nMix @flour{200g} and @salt{5g}.\n")),
+			database,
+		).result;
+		expect(partial.metrics.nutrition?.coverage).toBeLessThan(1);
+		const md = toMarkdown(partial, { nutritionBasis: "per100g" });
+		expect(md).toContain("with nutrition data, before cooking");
+		expect(md).not.toContain("Based on 200 g of ingredients,");
+	});
+
+	it("marks an unresolvable mass as a lower bound", () => {
 		// `sugar` has no entry at all, so part of the mass can't be resolved and
 		// the density derived from it is an over-estimate, not an under-estimate.
 		const partial = analyze(
@@ -71,7 +85,7 @@ describe("nutritionBasis", () => {
 			database,
 		).result;
 		const md = toMarkdown(partial, { nutritionBasis: "per100g" });
-		expect(md).toMatch(/[>~]\d+ g of raw ingredients/);
+		expect(md).toMatch(/[>~]\d+ g/);
 	});
 });
 

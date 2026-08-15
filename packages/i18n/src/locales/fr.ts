@@ -54,7 +54,8 @@ export const fr: GramLocale = {
 		nutritionWholeRecipe: "Recette entière",
 		nutritionPerPortion: "Par portion",
 		nutritionPer100g: "Pour 100 g",
-		nutritionRawMassNote: "Sur {mass} d'ingrédients crus",
+		nutritionRawMassNote: "Sur {mass} d'ingrédients, avant cuisson",
+		nutritionRawMassNotePartial: "Sur les {mass} renseignés, avant cuisson",
 		incompleteData: "Données incomplètes",
 		ofWhich: "dont",
 		nutrients: {
