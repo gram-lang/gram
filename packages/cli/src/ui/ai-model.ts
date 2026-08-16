@@ -119,6 +119,16 @@ export async function resolveAiForCommand(
 	args: AiArgs,
 	/** Where the status line goes. Pass stderr when the command's real output is stdout. */
 	output?: Writable,
+	/**
+	 * Checked against the resolved selection before the client is built —
+	 * i.e. before a missing API key would otherwise be the first thing to fail.
+	 * For constraints on *which provider* is acceptable, not on credentials:
+	 * `gram import` uses this to reject a video source on a non-Google
+	 * provider, so that error explains itself instead of surfacing as
+	 * "Missing ANTHROPIC_API_KEY" on a run that could never have succeeded
+	 * with any key. Call `process.exit` (or throw) to reject.
+	 */
+	validate?: (selection: AiSelection) => void,
 ): Promise<{ model: LanguageModel; selection: AiSelection }> {
 	let overrides: ReturnType<typeof parseAiOverrides>;
 	try {
@@ -163,6 +173,7 @@ export async function resolveAiForCommand(
 	if (!selection) fail(resolveError?.message ?? "No AI provider configured.");
 
 	renderAiSelection(selection, output);
+	validate?.(selection);
 
 	try {
 		return { model: buildAiModel(selection, config), selection };

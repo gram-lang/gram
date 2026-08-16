@@ -9,7 +9,7 @@ import {
 	parseYoutubeUrl,
 } from "../services/youtube";
 import { renderImportResult, renderImportProblems } from "../ui/importer";
-import { prepareVideoImport } from "../ui/video-import";
+import { assertGoogleProvider, prepareVideoImport } from "../ui/video-import";
 import { loadConfig } from "../core/config";
 import { loadDb } from "../core/db";
 import { AI_ARGS } from "../core/ai-args";
@@ -84,10 +84,20 @@ export default defineCommand({
 		// into the .gram file.
 		const chrome = outputPath ? undefined : process.stderr;
 
+		// A YouTube URL is read as video, not scraped for JSON-LD — a watch
+		// page carries VideoObject markup, never a Recipe.
+		const isVideo = parseYoutubeUrl(source) !== null;
+
 		const { model, selection } = await resolveAiForCommand(
 			config,
 			args,
 			chrome,
+			// Checked before the client is built, so a video on the wrong
+			// provider fails with "needs Google" rather than with a missing-key
+			// error for a provider that could never have worked here anyway.
+			(sel) => {
+				if (isVideo) assertGoogleProvider(sel.provider, chrome);
+			},
 		);
 
 		// Neither depends on the other's result — the database only feeds the
@@ -102,9 +112,7 @@ export default defineCommand({
 			loadDb(config)
 				.catch(() => null)
 				.then((r) => r?.data ?? null),
-			// A YouTube URL is read as video, not scraped for JSON-LD — a watch
-			// page carries VideoObject markup, never a Recipe.
-			parseYoutubeUrl(source)
+			isVideo
 				? prepareVideoImport(source, args, selection.provider, chrome)
 				: Promise.resolve(undefined),
 		]);

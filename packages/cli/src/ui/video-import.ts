@@ -12,6 +12,33 @@ import type { AiProvider } from "../types";
 import { ExitCode, GramCLIError } from "../errors";
 
 /**
+ * Only Google declares YouTube URLs as pass-through (`supportedUrls`). With
+ * any other provider the SDK does not error — it *fetches* the URL and
+ * inlines the bytes, so the model receives the watch page's HTML labelled as
+ * video/mp4 and hallucinates a recipe from nothing. Fail loudly instead.
+ *
+ * Exported separately from `prepareVideoImport` so `commands/import.ts` can
+ * check it as `resolveAiForCommand`'s `validate` hook, run right after the
+ * provider is resolved and *before* a client is built for it. Without that,
+ * `--provider anthropic` on a video URL failed on "Missing ANTHROPIC_API_KEY"
+ * — true, but not the reason the run could never have worked, and confusing
+ * once a key is added and it fails again for the real reason. Still called
+ * from `prepareVideoImport` too, as a backstop for any future caller that
+ * reaches it without going through that gate first.
+ */
+export function assertGoogleProvider(
+	provider: AiProvider,
+	chrome: Writable | undefined,
+): void {
+	if (provider === "google") return;
+	log.error(
+		`Video import needs the Google provider (Gemini reads YouTube directly); this run is using "${provider}". Add --provider google, or pass a written recipe URL instead.`,
+		{ output: chrome },
+	);
+	process.exit(ExitCode.Error);
+}
+
+/**
  * Everything that happens before a single token is spent on a video: fetch
  * the metadata, refuse anything over the cap, and show what it will cost.
  *
@@ -31,17 +58,7 @@ export async function prepareVideoImport(
 	provider: AiProvider,
 	chrome: Writable | undefined,
 ): Promise<YoutubeMetadata> {
-	// Only Google declares YouTube URLs as pass-through (`supportedUrls`). With
-	// any other provider the SDK does not error — it *fetches* the URL and
-	// inlines the bytes, so the model receives the watch page's HTML labelled
-	// as video/mp4 and hallucinates a recipe from nothing. Fail loudly instead.
-	if (provider !== "google") {
-		log.error(
-			`Video import needs the Google provider (Gemini reads YouTube directly); this run is using "${provider}". Add --provider google, or pass a written recipe URL instead.`,
-			{ output: chrome },
-		);
-		process.exit(ExitCode.Error);
-	}
+	assertGoogleProvider(provider, chrome);
 
 	let meta: YoutubeMetadata;
 	try {
