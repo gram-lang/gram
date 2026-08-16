@@ -1,0 +1,126 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "zest": {
+        "id": "zest",
+        "name": "zest",
+        "is_composite": true,
+        "parent": "unwaxed-lemon"
+      },
+      "unwaxed-lemon": {
+        "id": "unwaxed-lemon",
+        "name": "unwaxed lemon",
+        "is_composite": true
+      },
+      "juice": {
+        "id": "juice",
+        "name": "juice",
+        "is_composite": true,
+        "parent": "unwaxed-lemon"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "type": "composite",
+      "id": "unwaxed-lemon",
+      "name": "unwaxed lemon",
+      "qty": 1,
+      "usage": [
+        {
+          "id": "zest",
+          "qty": 1
+        },
+        {
+          "id": "juice",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Prep",
+      "ingredients": [
+        {
+          "id": "zest",
+          "_usageId": "1",
+          "qty": 1,
+          "composite": {
+            "parent": "unwaxed lemon",
+            "quantity": 1
+          }
+        },
+        {
+          "id": "juice",
+          "_usageId": "2",
+          "qty": 1,
+          "composite": {
+            "parent": "unwaxed lemon"
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Grate the ",
+            {
+              "id": "zest",
+              "_usageId": "1",
+              "qty": 1,
+              "composite": {
+                "parent": "unwaxed lemon",
+                "quantity": 1
+              }
+            },
+            ", then squeeze the ",
+            {
+              "id": "juice",
+              "_usageId": "2",
+              "qty": 1,
+              "composite": {
+                "parent": "unwaxed lemon"
+              }
+            },
+            "into the bowl."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 5,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Prep",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ]
+  }
+}

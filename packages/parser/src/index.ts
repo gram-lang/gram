@@ -397,7 +397,12 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	composite_full(_ltat, name, _qty, _prep): CompositeAST {
+	// `_mods` is parsed but deliberately unused: CompositeAST carries no
+	// modifiers, and none of the five are meaningful on a parent. "&" ("already
+	// introduced") is redundant because the shopping list's MAX rule already
+	// collapses repeat draws from one parent into a single purchase. Accepting
+	// them here is what keeps the parent *name* clean -- see the grammar note.
+	composite_full(_ltat, _mods, name, _qty, _prep): CompositeAST {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),
@@ -407,7 +412,7 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	composite_bare(_ltat, name, _prep): CompositeAST {
+	composite_bare(_ltat, _mods, name, _prep): CompositeAST {
 		return {
 			type: ASTNodeType.Composite,
 			parent: clean(name.sourceString),

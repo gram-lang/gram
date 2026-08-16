@@ -104,6 +104,29 @@ describe("basic constructs", () => {
 		);
 	});
 
+	// Regression: `<@&parent` used to fall through to the `bare` branch, whose
+	// `singleWordName` accepts "&" and stops at the first space. A multi-word
+	// parent was therefore truncated into a phantom ingredient literally named
+	// "&citron", which slugified to a *different* id than the real parent — the
+	// shopping list silently listed the same lemon twice, with no warning.
+	it("accepts an already-introduced composite parent (<@&parent) without keeping the sigil", () => {
+		const ast = getAST("## Section\n@juice{1}<@&lemon{}\n");
+		const ing = firstIngredient(ast);
+		expect(ing.composite).toEqual(
+			expect.objectContaining({ type: "Composite", parent: "lemon" }),
+		);
+	});
+
+	it("keeps a MULTI-WORD <@&parent intact instead of truncating at the first space", () => {
+		const ast = getAST("## Section\n@juice{1}<@&unwaxed lemon{}\n");
+		const ing = firstIngredient(ast);
+		// Both halves matter: the sigil must be gone AND the name must not be
+		// cut down to "unwaxed".
+		expect(ing.composite).toEqual(
+			expect.objectContaining({ type: "Composite", parent: "unwaxed lemon" }),
+		);
+	});
+
 	it("parses an alternative ingredient group (a|b)", () => {
 		const ast = getAST("## Section\nUse @butter{50g}|@oil{50ml}.\n");
 		const json = JSON.stringify(ast);

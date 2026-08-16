@@ -1,0 +1,144 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "children": [
+    {
+      "type": "Section",
+      "title": "Prep",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Grate the ",
+              "loc": {
+                "start": 8,
+                "end": 18
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "zest",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 24,
+                  "end": 25
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "unwaxed lemon",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": {
+                    "type": "single",
+                    "value": 1,
+                    "text": "1"
+                  },
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 42,
+                    "end": 43
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 26,
+                  "end": 44
+                }
+              },
+              "loc": {
+                "start": 18,
+                "end": 44
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then squeeze the ",
+              "loc": {
+                "start": 44,
+                "end": 63
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "juice",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 70,
+                  "end": 71
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": {
+                "type": "Composite",
+                "parent": "unwaxed lemon",
+                "quantity": {
+                  "type": "Quantity",
+                  "value": null,
+                  "unit": null,
+                  "fixed": false,
+                  "loc": {
+                    "start": 89,
+                    "end": 89
+                  }
+                },
+                "preparation": null,
+                "loc": {
+                  "start": 72,
+                  "end": 90
+                }
+              },
+              "loc": {
+                "start": 63,
+                "end": 90
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into the bowl.",
+              "loc": {
+                "start": 91,
+                "end": 105
+              }
+            }
+          ],
+          "loc": {
+            "start": 8,
+            "end": 106
+          }
+        }
+      ],
+      "loc": {
+        "start": 0,
+        "end": 106
+      }
+    }
+  ]
+}

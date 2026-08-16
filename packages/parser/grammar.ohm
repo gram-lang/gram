@@ -85,9 +85,18 @@ GRAM {
   unit = unitName
   unitName = (alnum | sp | "°" | "%")+
   preparation = "(" (~")" any)* ")"
+  // `modifier*` mirrors simpleIngredient: a composite parent is an ingredient
+  // reference like any other, and authors (and AI importers) write `<@&parent`
+  // to mark a parent already introduced earlier. Without it, `refName` rejected
+  // the leading "&" (it is a refSigil), the `bare` branch fell through to
+  // `singleWordName` -- which does allow "&" -- and a multi-word parent silently
+  // truncated at the first space, registering a phantom ingredient literally
+  // named "&citron" alongside the real one. The modifiers are parsed and then
+  // ignored (see composite_full/composite_bare): "&" is redundant on a parent
+  // because the MAX rule already collapses repeat draws into one purchase.
   composite =
-    | "<@" refName ingredientQuantity preparation? -- full
-    | "<@" singleWordName preparation?             -- bare
+    | "<@" modifier* refName ingredientQuantity preparation? -- full
+    | "<@" modifier* singleWordName preparation?             -- bare
 
   // Cookware
   Cookware =
