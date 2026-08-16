@@ -1,5 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { loadAiModel } from "../src/core/ai";
+import { loadAiModel, resolveAiSelection } from "../src/core/ai";
+import { parseAiOverrides } from "../src/core/ai-args";
+import { mergeConfigLayers } from "../src/core/config";
 import { GramCLIError } from "../src/errors";
 import type { GramConfig } from "../src/types";
 
@@ -92,5 +94,185 @@ describe("loadAiModel — credential resolution never crosses providers", () => 
 			const config: GramConfig = {};
 			expect(() => loadAiModel(config)).toThrow(/No AI provider configured/);
 		});
+	});
+});
+
+// `--provider` / `--model` let a single run depart from the configured
+// provider, which reopens the finding 0-a question one flag further out: the
+// settings written under `ai:` belong to the provider they were written for,
+// and must not follow the user onto a different one.
+describe("resolveAiSelection — per-run overrides", () => {
+	afterEach(() => {
+		for (const key of PROVIDER_ENV_VARS) delete process.env[key];
+	});
+
+	it("changes the model without changing the provider", () => {
+		withEnv({}, () => {
+			const config: GramConfig = {
+				ai: { provider: "openai", model: "gpt-5.4-mini" },
+			};
+			const sel = resolveAiSelection(config, { model: "gpt-5.5" });
+			expect(sel).toMatchObject({
+				provider: "openai",
+				model: "gpt-5.5",
+				providerSource: "config",
+				modelSource: "flag",
+			});
+		});
+	});
+
+	it("changes the provider and falls back to that provider's default model", () => {
+		withEnv({}, () => {
+			// `model: gemini-3.5-flash` was written for Google. Carrying it over to
+			// Anthropic would send a Gemini model name to api.anthropic.com.
+			const config: GramConfig = {
+				ai: { provider: "google", model: "gemini-3.5-flash" },
+			};
+			const sel = resolveAiSelection(config, { provider: "anthropic" });
+			expect(sel.provider).toBe("anthropic");
+			expect(sel.model).not.toBe("gemini-3.5-flash");
+			expect(sel.modelSource).toBe("default");
+		});
+	});
+
+	it("honours both overrides together", () => {
+		withEnv({}, () => {
+			const config: GramConfig = { ai: { provider: "google" } };
+			const sel = resolveAiSelection(config, {
+				provider: "ollama",
+				model: "mistral",
+			});
+			expect(sel).toMatchObject({
+				provider: "ollama",
+				model: "mistral",
+				providerSource: "flag",
+				modelSource: "flag",
+			});
+		});
+	});
+
+	it("keeps a configured model when no provider override contradicts it", () => {
+		withEnv({}, () => {
+			const config: GramConfig = {
+				ai: { provider: "openai", model: "gpt-5.5" },
+			};
+			expect(resolveAiSelection(config)).toMatchObject({
+				model: "gpt-5.5",
+				modelSource: "config",
+			});
+		});
+	});
+
+	it("still applies a provider-less config model to the auto-detected provider", () => {
+		withEnv({ GEMINI_API_KEY: "sk-google" }, () => {
+			const config: GramConfig = { ai: { model: "gemini-3.1-pro" } };
+			expect(resolveAiSelection(config)).toMatchObject({
+				provider: "google",
+				model: "gemini-3.1-pro",
+				providerSource: "auto-detect",
+				modelSource: "config",
+			});
+		});
+	});
+});
+
+describe("loadAiModel — ai.apiKey does not follow a provider override", () => {
+	afterEach(() => {
+		for (const key of PROVIDER_ENV_VARS) delete process.env[key];
+	});
+
+	it("refuses an ai.apiKey written for another provider", () => {
+		withEnv({}, () => {
+			const config: GramConfig = {
+				ai: { provider: "google", apiKey: "google-key" },
+			};
+			expect(() => loadAiModel(config, { provider: "anthropic" })).toThrow(
+				GramCLIError,
+			);
+			expect(() => loadAiModel(config, { provider: "anthropic" })).toThrow(
+				/ANTHROPIC_API_KEY/,
+			);
+		});
+	});
+
+	it("still uses ai.apiKey when the override names the same provider", () => {
+		withEnv({}, () => {
+			const config: GramConfig = {
+				ai: { provider: "openai", apiKey: "sk-openai-explicit" },
+			};
+			expect(() =>
+				loadAiModel(config, { provider: "openai", model: "gpt-5.5" }),
+			).not.toThrow();
+		});
+	});
+});
+
+// The leak the two suites above cannot see, because it happens before
+// `loadAiModel` is ever called: `defu` merges the global and project `ai:`
+// blocks key by key, so a global apiKey survives a project that switches
+// provider — and by then it *looks* like a key written for that provider.
+describe("mergeConfigLayers — credentials do not cross config layers", () => {
+	it("drops a global apiKey when the project selects a different provider", () => {
+		const merged = mergeConfigLayers(
+			{ ai: { provider: "openai" } },
+			{ ai: { provider: "google", apiKey: "google-key" } },
+		);
+		expect(merged.ai).toEqual({ provider: "openai" });
+	});
+
+	it("drops a global model too — model names are provider-specific", () => {
+		const merged = mergeConfigLayers(
+			{ ai: { provider: "anthropic" } },
+			{ ai: { provider: "google", model: "gemini-3.5-flash" } },
+		);
+		expect(merged.ai?.model).toBeUndefined();
+	});
+
+	it("still inherits global ai settings when both layers agree on the provider", () => {
+		const merged = mergeConfigLayers(
+			{ ai: { provider: "google" } },
+			{ ai: { provider: "google", model: "gemini-3.1-pro" } },
+		);
+		expect(merged.ai).toMatchObject({
+			provider: "google",
+			model: "gemini-3.1-pro",
+		});
+	});
+
+	it("still inherits the global ai block when the project names no provider", () => {
+		const merged = mergeConfigLayers(
+			{ language: "fr" },
+			{ ai: { provider: "google", model: "gemini-3.1-pro" } },
+		);
+		expect(merged.ai).toMatchObject({ provider: "google" });
+		expect(merged.language).toBe("fr");
+	});
+
+	it("leaves non-ai keys merging as before", () => {
+		const merged = mergeConfigLayers(
+			{ ai: { provider: "openai" }, language: "fr" },
+			{ database: "~/global.yaml", language: "en" },
+		);
+		expect(merged.database).toBe("~/global.yaml");
+		expect(merged.language).toBe("fr");
+	});
+});
+
+describe("parseAiOverrides", () => {
+	it("rejects an unknown --provider and names the valid ones", () => {
+		expect(() => parseAiOverrides({ provider: "gemini" })).toThrow(
+			/google, openai, anthropic, ollama/,
+		);
+	});
+
+	it("passes a valid provider and model through", () => {
+		expect(parseAiOverrides({ provider: "ollama", model: "llama3" })).toEqual({
+			provider: "ollama",
+			model: "llama3",
+		});
+	});
+
+	it("returns no overrides when no flags were given", () => {
+		expect(parseAiOverrides({})).toEqual({});
 	});
 });

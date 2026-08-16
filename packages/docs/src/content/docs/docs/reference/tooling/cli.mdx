@@ -80,7 +80,8 @@ Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file us
 - Automatically extracts `application/ld+json` from websites.
 - Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
 - Requires AI to be configured (see [Configure AI Provider](/docs/how-to/configure-ai)).
-- Options: `--output <file>`.
+- Before writing to `--output`, the converted recipe is shown for review and confirmation. In a non-interactive run the review is skipped with a warning — pass `--yes/-y` to skip it deliberately.
+- Options: `--output/-o <file>`, `--yes/-y`, plus the [shared AI options](#choosing-the-ai-model).
 
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.
@@ -309,7 +310,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `egg`).
    - For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
    - Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
-   - Options: `--report/-r` (show issues without applying fixes), `--db <path>`.
+   - Options: `--report/-r` (show issues without applying fixes), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 
 3. #### `gram db enrich`
    Uses AI to propose missing data for your database, then walks you through an interactive review before writing anything.
@@ -318,7 +319,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - `category`/`tags` are written automatically; `density`/`unit_weight`/`nutrition` are reviewed one entry at a time (accept, edit, or skip) since they're product-specific — only you know what's actually in your kitchen.
    - Values accepted as-is are tagged `# [LLM]` in `ingredients.yaml`, marking them as AI estimates that haven't been human-reviewed.
    - Safely re-runnable: only proposes fields that are still missing.
-   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing), `--db <path>`.
+   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 </Steps>
 
 #### `gram db validate`
@@ -355,10 +356,30 @@ The merge is **alias-aware**: if your database has `butter` with alias `beurre`,
 
 The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
 
+### Choosing the AI model
+
+Every AI-backed command — `gram import`, `gram db lint` and `gram db enrich` — accepts the same three options and prints the model it is about to call, so an unexpected choice is visible before it costs you anything:
+
+```bash
+gram import recipe.json --model gemini-3.1-pro   # this run only
+gram db enrich --provider anthropic              # this run only
+gram db lint --pick-model                        # choose interactively
+```
+
+- `--model <name>` — use a different model for this run. The provider is unchanged.
+- `--provider <google|openai|anthropic|ollama>` — use a different provider for this run. The provider is never guessed from the model name.
+- `--pick-model` — pick provider and model from a menu. Requires a terminal; in a script, use `--provider`/`--model` instead.
+
+Neither flag writes anything to your config. To change the default for good, use `gram config set ai.model <name>` or re-run `gram init`.
+
+When `--provider` names a provider other than the one in your config, the `model`, `apiKey` and `baseUrl` written under `ai:` are **not** carried over — they belong to the provider they were written for. You will be asked for that provider's own environment variable instead.
+
 ### Cascading AI Configuration
 Gram uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
-1. **Environment Variables**: Variables like `GEMINI_API_KEY` (from the system or a `.env` file) take absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
-2. **`config.yaml` Fallback**: If the environment variable is missing, Gram falls back to the `ai.apiKey` field in your `config.yaml`. 
+1. **Environment Variables**: The variable belonging to the provider in use — `GEMINI_API_KEY`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (from the system or a `.env` file) — takes absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
+2. **`config.yaml` Fallback**: If that variable is missing, Gram falls back to the `ai.apiKey` field in your `config.yaml` — but only when it was written for the provider being called.
+
+A key is never reused across providers. If you have configured `provider: openai` and only `GEMINI_API_KEY` is exported, Gram stops and asks for `OPENAI_API_KEY` rather than sending your Google key to OpenAI. The same rule applies across config layers: a global `ai:` block is ignored entirely when your project selects a different provider.
 
 :::caution[Protect your Keys!]
 Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
@@ -385,9 +406,10 @@ ai:
   # 'gpt-4.1-nano' for openai, 'claude-haiku-4-5-20251001' for anthropic, 'llama4' for ollama)
   model: "gemini-3.5-flash"
 
-  # API key (Can also use ENV variables: GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY —
-  # for any other/custom provider name, GRAM_API_KEY is used as a generic fallback.
-  # Note: the "ollama" provider does not read an API key at all, from config or env.)
+  # API key. Prefer the ENV variable of the provider above: GEMINI_API_KEY (google),
+  # OPENAI_API_KEY (openai), ANTHROPIC_API_KEY (anthropic). This field is only read
+  # for the provider declared above — it is ignored under --provider or a project
+  # that selects a different one. The "ollama" provider reads no API key at all.
   # WARNING: Prefer using a .env file instead of committing this file with your key.
   apiKey: "YOUR_API_KEY"
 

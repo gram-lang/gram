@@ -79,7 +79,8 @@ Importe une recette depuis un fichier JSON-LD ou une URL et la convertit en un f
 - Extrait automatiquement le contenu `application/ld+json` des sites web.
 - Traduit et formate la recette en une syntaxe Gram valide, en respectant la configuration `language`.
 - Nécessite qu'une IA soit configurée (voir [Configurer l'IA](/fr/docs/how-to/configure-ai)).
-- Options : `--output <fichier>`.
+- Avant d'écrire dans `--output`, la recette convertie est affichée pour relecture et confirmation. En contexte non interactif, la relecture est ignorée avec un avertissement — utilisez `--yes/-y` pour l'ignorer délibérément.
+- Options : `--output/-o <fichier>`, `--yes/-y`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 #### `gram shop [motif]`
 Compile une liste de courses globale en agrégeant plusieurs recettes.
@@ -306,7 +307,7 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
    - Détecte les doublons inter-langues (ex : `sucre` / `sugar`) et les formes plurielles (ex : `oeufs` → `oeuf`).
    - Pour chaque conflit, vous décidez de la clé à conserver. La clé écartée est automatiquement recyclée en alias.
    - Affiche un diff nutritionnel (uniquement les champs qui diffèrent) quand les deux entrées ont des données contradictoires, pour que vous puissiez faire un choix éclairé.
-   - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`.
+   - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 3. #### `gram db enrich`
    Lâche l'IA sur votre base de données pour proposer les données manquantes, puis vous fait passer en revue chaque proposition avant d'écrire quoi que ce soit.
@@ -314,7 +315,7 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
    - `category`/`tags` sont écrits automatiquement ; `density`/`unit_weight`/`nutrition` passent par une revue interactive entrée par entrée (accepter, modifier ou passer), car ce sont des données propres à un produit précis — vous seul savez ce que vous avez réellement dans votre cuisine.
    - Une valeur acceptée telle quelle est taguée `# [LLM]` dans `ingredients.yaml`, pour repérer les estimations IA jamais relues par un humain.
    - Peut être relancée sans crainte : ne propose que les champs encore vides.
-   - Options : `--ingredient <slug>` (enrichir une seule entrée), `--field density|nutrition|tags|category|all` (défaut `all`), `--yes/-y` (ignorer la revue et tout accepter automatiquement — pour un usage scripté), `--report/-r` (aperçu de ce qui a besoin d'être revu, sans rien écrire), `--db <chemin>`.
+   - Options : `--ingredient <slug>` (enrichir une seule entrée), `--field density|nutrition|tags|category|all` (défaut `all`), `--yes/-y` (ignorer la revue et tout accepter automatiquement — pour un usage scripté), `--report/-r` (aperçu de ce qui a besoin d'être revu, sans rien écrire), `--db <chemin>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 </Steps>
 
 #### `gram db validate`
@@ -350,10 +351,30 @@ La fusion prend en compte les **alias** : si votre base a `butter` avec l'alias 
 
 Le CLI fusionne la configuration depuis `~/.config/gram/config.yaml` (globale) et `.gram/config.yaml` (projet).
 
+### Choisir le modèle IA
+
+Toutes les commandes qui appellent l'IA — `gram import`, `gram db lint` et `gram db enrich` — acceptent les mêmes trois options et affichent le modèle qu'elles s'apprêtent à appeler, pour qu'un choix inattendu soit visible avant de vous coûter quoi que ce soit :
+
+```bash
+gram import recette.json --model gemini-3.1-pro   # pour cette exécution seulement
+gram db enrich --provider anthropic               # pour cette exécution seulement
+gram db lint --pick-model                         # choisir de façon interactive
+```
+
+- `--model <nom>` — utiliser un autre modèle pour cette exécution. Le fournisseur ne change pas.
+- `--provider <google|openai|anthropic|ollama>` — utiliser un autre fournisseur pour cette exécution. Le fournisseur n'est jamais deviné à partir du nom du modèle.
+- `--pick-model` — choisir fournisseur et modèle dans un menu. Nécessite un terminal ; dans un script, utilisez plutôt `--provider`/`--model`.
+
+Aucune de ces options n'écrit dans votre configuration. Pour changer la valeur par défaut durablement, utilisez `gram config set ai.model <nom>` ou relancez `gram init`.
+
+Quand `--provider` désigne un fournisseur autre que celui de votre configuration, les champs `model`, `apiKey` et `baseUrl` écrits sous `ai:` ne sont **pas** repris : ils appartiennent au fournisseur pour lequel ils ont été écrits. Gram réclamera la variable d'environnement propre au nouveau fournisseur.
+
 ### Configuration IA en Cascade
 Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
-1. **Variables d'Environnement** : Les variables comme `GEMINI_API_KEY` (du système ou d'un `.env`) ont toujours le dernier mot. C'est l'approche **recommandée** pour sécuriser des secrets en local comme en CI/CD.
-2. **Secours `config.yaml`** : Si la variable d'environnement manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml`. 
+1. **Variables d'Environnement** : La variable du fournisseur utilisé — `GEMINI_API_KEY`, `OPENAI_API_KEY` ou `ANTHROPIC_API_KEY` (du système ou d'un `.env`) — a toujours le dernier mot. C'est l'approche **recommandée** pour sécuriser des secrets en local comme en CI/CD.
+2. **Secours `config.yaml`** : Si cette variable manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml` — mais uniquement s'il a été écrit pour le fournisseur appelé.
+
+Une clé n'est jamais réutilisée d'un fournisseur à l'autre. Si vous avez configuré `provider: openai` et que seule `GEMINI_API_KEY` est exportée, Gram s'arrête et réclame `OPENAI_API_KEY` plutôt que d'envoyer votre clé Google à OpenAI. La même règle vaut entre les couches de configuration : un bloc `ai:` global est intégralement ignoré si votre projet choisit un autre fournisseur.
 
 :::caution[Protégez vos Clés !]
 Ne stockez surtout pas votre `apiKey` en dur dans `config.yaml` si vous versionnez le dossier `.gram` sur Git : votre clé secrète serait exposée au grand jour.
@@ -378,9 +399,10 @@ ai:
   # 'gpt-4.1-nano' pour openai, 'claude-haiku-4-5-20251001' pour anthropic, 'llama4' pour ollama)
   model: "gemini-3.5-flash"
 
-  # Clé API (Peut aussi utiliser des variables ENV : GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY —
-  # pour n'importe quel nom de fournisseur personnalisé/autre, GRAM_API_KEY est utilisé comme repli générique.
-  # Note : le fournisseur "ollama" ne lit aucune clé API, ni de la config ni de l'environnement.)
+  # Clé API. Préférez la variable ENV du fournisseur ci-dessus : GEMINI_API_KEY (google),
+  # OPENAI_API_KEY (openai), ANTHROPIC_API_KEY (anthropic). Ce champ n'est lu que pour le
+  # fournisseur déclaré ci-dessus — il est ignoré sous --provider ou dans un projet qui en
+  # choisit un autre. Le fournisseur "ollama" ne lit aucune clé API.
   # ATTENTION : Préférez utiliser un fichier .env au lieu de versionner ce fichier avec votre clé.
   apiKey: "VOTRE_CLE_API"
 

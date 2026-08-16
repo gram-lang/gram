@@ -21,7 +21,8 @@ import { stringify } from "yaml";
 import type { GramConfig } from "../types";
 import { ExitCode } from "../errors";
 import { upsertEnvVar } from "../services/config-manager";
-import { AI_PROVIDER_ENV_VAR, RECOMMENDED_MODELS } from "../core/ai";
+import { AI_PROVIDER_ENV_VAR } from "../core/ai";
+import { pickAiModel } from "../ui/ai-model";
 
 const DB_TEMPLATE = `# Gram ingredient database
 # Keys are slugs matching @ingredient names used in your .gram recipes.
@@ -118,35 +119,14 @@ export default defineCommand({
 		);
 
 		if (configureAi) {
-			const provider = guardCancel(
-				await select({
-					message: "Select an AI provider:",
-					options: [
-						{ value: "google", label: "Google (Gemini)" },
-						{ value: "openai", label: "OpenAI (ChatGPT)" },
-						{ value: "anthropic", label: "Anthropic (Claude)" },
-						{ value: "ollama", label: "Ollama (Local)" },
-					],
-				}),
-			) as "google" | "openai" | "anthropic" | "ollama";
-
-			const modelOptions = RECOMMENDED_MODELS[provider].map((value, i) => ({
-				value,
-				label: i === 0 ? `${value} (Recommended)` : value,
-			}));
-			const selectedModel = guardCancel(
-				await select({
-					message: "Select a model:",
-					options: [
-						...modelOptions,
-						{ value: "other", label: "Other (Manual entry)" },
-					],
-				}),
-			);
-			const model =
-				selectedModel === "other"
-					? guardCancel(await text({ message: "Enter model name:" }))
-					: (selectedModel as string);
+			// Same picker as `--pick-model` on the AI commands — one list of
+			// providers, one list of recommended models, one place to update.
+			const picked = await pickAiModel();
+			if (!picked) {
+				cancel("Initialization canceled.");
+				process.exit(ExitCode.Ok);
+			}
+			const { provider, model } = picked;
 
 			config.ai = { provider, model };
 

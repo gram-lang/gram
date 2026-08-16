@@ -242,13 +242,24 @@ export interface EnrichDecision {
 // Phase 3/Chantier 5) — these files can be shared/committed in a team repo, so a
 // malformed field should fail with a clear message instead of surfacing as a
 // confusing crash somewhere deep in the pipeline.
+// The provider list lives here rather than in `core/ai.ts` so that validating a
+// `--provider` flag or a config file costs nothing: `core/ai.ts` pulls in all
+// four @ai-sdk packages at import time, and every command loads `types.ts`.
+export const AI_PROVIDERS = [
+	"google",
+	"openai",
+	"anthropic",
+	"ollama",
+] as const;
+export type AiProvider = (typeof AI_PROVIDERS)[number];
+
 export const GramConfigFileSchema = z.object({
 	version: z.number().optional(),
 	database: z.string().optional(),
 	language: z.string().optional(),
 	ai: z
 		.object({
-			provider: z.enum(["google", "openai", "anthropic", "ollama"]).optional(),
+			provider: z.enum(AI_PROVIDERS).optional(),
 			model: z.string().optional(),
 			apiKey: z.string().optional(),
 			baseUrl: z.string().optional(),

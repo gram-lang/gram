@@ -3,7 +3,9 @@ import { log, spinner } from "@clack/prompts";
 import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
 import { loadDb } from "../../core/db";
-import { loadAiModel } from "../../core/ai";
+import { AI_ARGS } from "../../core/ai-args";
+import { canPrompt } from "../../core/interactive";
+import { resolveAiForCommand } from "../../ui/ai-model";
 import { enrichDb, applyEnrichDecisions } from "../../services/db-enricher";
 import {
 	renderEnrichResult,
@@ -22,6 +24,7 @@ export default defineCommand({
 			"Fill in missing density, nutrition and tags via AI, with an interactive review before writing (step 3/3 — run after lint)",
 	},
 	args: {
+		...AI_ARGS,
 		ingredient: {
 			type: "string",
 			description: "Enrich a single ingredient by slug",
@@ -74,16 +77,7 @@ export default defineCommand({
 		reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult.data;
 
-		let model;
-		try {
-			model = loadAiModel(config);
-		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
-		}
+		const { model } = await resolveAiForCommand(config, args);
 
 		const s = spinner();
 		s.start("Calling AI model…");
@@ -129,9 +123,10 @@ export default defineCommand({
 		}
 
 		const isTagsOrCategory = field === "tags" || field === "category";
-		const skipReview = isTagsOrCategory || args.yes || !process.stdout.isTTY;
+		const interactive = canPrompt();
+		const skipReview = isTagsOrCategory || args.yes || !interactive;
 
-		if (!args.yes && !process.stdout.isTTY && !isTagsOrCategory) {
+		if (!args.yes && !interactive && !isTagsOrCategory) {
 			log.warn(
 				"Non-interactive mode detected — accepting all AI estimates automatically. Use --report to preview instead.",
 			);

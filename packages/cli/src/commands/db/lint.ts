@@ -4,7 +4,9 @@ import { relative } from "node:path";
 import { version } from "../../../package.json";
 import { loadConfig } from "../../core/config";
 import { loadDb } from "../../core/db";
-import { loadAiModel } from "../../core/ai";
+import { AI_ARGS } from "../../core/ai-args";
+import { canPrompt } from "../../core/interactive";
+import { resolveAiForCommand } from "../../ui/ai-model";
 import { lintDb, applyLintDecisions } from "../../services/db-linter";
 import {
 	renderLintReport,
@@ -12,7 +14,7 @@ import {
 	renderLintSummary,
 } from "../../ui/db-lint";
 import { reportRejectedIngredients } from "../../ui/diagnostics";
-import { ExitCode, GramCLIError } from "../../errors";
+import { ExitCode } from "../../errors";
 
 export default defineCommand({
 	meta: {
@@ -22,6 +24,7 @@ export default defineCommand({
 			"Detect duplicates and plurals via AI (step 2/3 — run after sync, before enrich)",
 	},
 	args: {
+		...AI_ARGS,
 		report: {
 			type: "boolean",
 			alias: "r",
@@ -44,16 +47,7 @@ export default defineCommand({
 		reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult.data;
 
-		let model;
-		try {
-			model = loadAiModel(config);
-		} catch (err) {
-			if (err instanceof GramCLIError) {
-				log.error(err.message);
-				process.exit(err.exitCode);
-			}
-			throw err;
-		}
+		const { model } = await resolveAiForCommand(config, args);
 
 		const s = spinner();
 		s.start("Analyzing database via AI…");
@@ -77,7 +71,7 @@ export default defineCommand({
 
 		renderLintReport(result);
 
-		if (!process.stdout.isTTY) {
+		if (!canPrompt()) {
 			log.warn(
 				"Non-interactive mode detected — run with --report to view details.",
 			);

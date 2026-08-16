@@ -17,6 +17,32 @@ async function readYaml(path: string): Promise<Partial<GramConfig>> {
 	}
 }
 
+/**
+ * Combine the project config with the global one, project winning.
+ *
+ * Pure and exported so the credential rule below can be tested without a home
+ * directory or a project root.
+ */
+export function mergeConfigLayers(
+	project: Partial<GramConfig>,
+	global: Partial<GramConfig>,
+): Partial<GramConfig> {
+	const merged = defu(project, global);
+
+	// `defu` merges `ai:` key by key, which is wrong for a block whose contents
+	// are provider-specific: a global `ai: {provider: google, apiKey: <google
+	// key>}` survives into a project declaring only `ai: {provider: openai}`,
+	// and the Google key gets sent to api.openai.com. Same class of bug as audit
+	// finding 0-a, one layer up. When the project names a provider that the
+	// global config does not also name, the global `ai:` block — key, model and
+	// baseUrl alike — contributes nothing.
+	if (project.ai?.provider && global.ai?.provider !== project.ai.provider) {
+		merged.ai = { ...project.ai };
+	}
+
+	return merged;
+}
+
 export async function loadConfig(): Promise<GramConfig> {
 	const projectRoot = await findProjectRoot();
 	const global = await readYaml(
@@ -24,10 +50,9 @@ export async function loadConfig(): Promise<GramConfig> {
 	);
 	const project = await readYaml(join(projectRoot, ".gram", "config.yaml"));
 
-	// Project config takes priority over global defaults
-	const merged = defu(project, global);
-
-	const result = GramConfigFileSchema.safeParse(merged);
+	const result = GramConfigFileSchema.safeParse(
+		mergeConfigLayers(project, global),
+	);
 	if (!result.success) {
 		throw new GramConfigError(
 			`Invalid configuration in .gram/config.yaml or ~/.config/gram/config.yaml:\n${z.prettifyError(result.error)}`,
