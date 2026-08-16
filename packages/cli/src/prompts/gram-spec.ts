@@ -1,4 +1,4 @@
-// GRAM_SPEC_VERSION: 7
+// GRAM_SPEC_VERSION: 8
 // Last synced against @gram-lang/parser@1.0.0-beta.3 (grammar.ohm + kitchen processor.ts).
 // Update this version and the prompt body whenever the .gram syntax evolves.
 // Each top-level section maps 1-to-1 to a spec document in packages/docs/src/reference/syntax/.
@@ -150,6 +150,19 @@ If no specific action can be named, use [Step N]:
 
 Use comments for tips and explanations, not for recipe data.
 General notes about the recipe belong in the frontmatter \`notes\` field, not in comments.
+
+\`//\` comments to the END OF THE LINE. Never put one in the middle of a step —
+everything after it on that line disappears, ingredients included:
+
+\`\`\`
+❌  [Mix] Combine @flour{} // quantity not stated, @sugar{} and @salt{}.
+       (sugar and salt are now inside the comment and are silently lost)
+✅  [Mix] Combine @flour{} /* quantity not stated */, @sugar{} and @salt{}.
+✅  [Mix] Combine @flour{}, @sugar{} and @salt{}.  // quantities not stated
+\`\`\`
+
+Inside a step, use a block comment \`/* … */\`. Only put \`//\` at the very end of
+a line, or on a line of its own.
 
 
 ════════════════════════════

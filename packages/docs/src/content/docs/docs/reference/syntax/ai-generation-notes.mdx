@@ -148,3 +148,19 @@ A section-level `->&name` already captures the output of every step inside it �
 ✅  Bake for ~_{45min}.       // the oven does the work, the cook is free
 ✅  Knead for ~{10min}.       // the cook IS actively busy — an active timer is correct here
 ```
+
+### A `//` comment in the middle of a step
+
+`//` comments to the end of the line, so anything after it — including
+ingredients — is silently dropped. The file still compiles, with no warning, and
+is simply missing them.
+
+```gram
+❌  [Mix] Combine @flour{} // quantity not stated, @sugar{} and @salt{}.
+✅  [Mix] Combine @flour{} /* quantity not stated */, @sugar{} and @salt{}.
+✅  [Mix] Combine @flour{}, @sugar{} and @salt{}.  // quantities not stated
+```
+
+Inside a step, use a block comment. Keep `//` at the very end of a line, or on
+a line of its own. `gram import` checks for this specific loss and refuses a
+result where it happened.

@@ -166,6 +166,12 @@ export interface ImportResult {
 	ingredientCount: number;
 	stepCount: number;
 	parseWarnings: string[];
+	/** Error-severity problems still present after the AI repair loop gave up. */
+	unresolvedErrors: string[];
+	/** Ingredients written into the file that the compiler never registered — content was swallowed. */
+	lostIngredients: string[];
+	/** What the analyzer could not resolve against the database. Informational: not the AI's fault, and not worth a retry. */
+	analysisGaps: string[];
 }
 
 export interface EnrichEntry {

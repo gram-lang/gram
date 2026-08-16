@@ -148,3 +148,19 @@ Un `->&nom` au niveau d'une section capture déjà la sortie de toutes les étap
 ✅  Cuire au four pendant ~_{45min}.       // le four fait le travail, le cuisinier est libre
 ✅  Pétrir pendant ~{10min}.               // le cuisinier EST occupé — un minuteur actif est correct ici
 ```
+
+### Un commentaire `//` au milieu d'une étape
+
+`//` commente jusqu'à la fin de la ligne : tout ce qui suit — ingrédients
+compris — disparaît en silence. Le fichier compile quand même, sans le moindre
+avertissement, en étant simplement amputé.
+
+```gram
+❌  [Mélanger] Combiner @farine{} // quantité non indiquée, @sucre{} et @sel{}.
+✅  [Mélanger] Combiner @farine{} /* quantité non indiquée */, @sucre{} et @sel{}.
+✅  [Mélanger] Combiner @farine{}, @sucre{} et @sel{}.  // quantités non indiquées
+```
+
+À l'intérieur d'une étape, utilisez un commentaire bloc. Réservez `//` à la
+toute fin d'une ligne, ou à une ligne entière. `gram import` détecte
+spécifiquement cette perte et refuse un résultat où elle s'est produite.

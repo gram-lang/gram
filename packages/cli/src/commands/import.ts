@@ -4,8 +4,9 @@ import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { version } from "../../package.json";
 import { importWithAI } from "../services/importer";
-import { renderImportResult } from "../ui/importer";
+import { renderImportResult, renderImportProblems } from "../ui/importer";
 import { loadConfig } from "../core/config";
+import { loadDb } from "../core/db";
 import { AI_ARGS } from "../core/ai-args";
 import { canPrompt } from "../core/interactive";
 import { resolveAiForCommand } from "../ui/ai-model";
@@ -37,6 +38,12 @@ export default defineCommand({
 				"Skip the review prompt and write the file directly (for scripting)",
 			default: false,
 		},
+		force: {
+			type: "boolean",
+			description:
+				"Emit the recipe even if the import lost content or left errors unfixed",
+			default: false,
+		},
 	},
 	async run({ args }) {
 		const source = args.source as string;
@@ -44,22 +51,56 @@ export default defineCommand({
 
 		const config = await loadConfig();
 
-		const { model } = await resolveAiForCommand(config, args);
+		// Without --output the recipe *is* stdout, so every piece of chrome — the
+		// status line, the spinner, the diagnostics — has to go to stderr instead.
+		// `gram import x.json > recipe.gram` used to capture the spinner frames
+		// into the .gram file.
+		const chrome = outputPath ? undefined : process.stderr;
 
-		const s = spinner();
+		const { model } = await resolveAiForCommand(config, args, chrome);
+
+		// Optional: with no database there is simply no analyzer report. Import
+		// is often the very first thing a user runs, before `gram db sync`, so a
+		// missing database must not be an error here.
+		const db = (await loadDb(config).catch(() => null))?.data ?? null;
+
+		const s = spinner({ output: chrome });
 		s.start("Importing recipe via AI…");
 
 		let result;
 		try {
-			result = await importWithAI(source, model, config.language);
+			result = await importWithAI(source, model, {
+				lang: config.language,
+				db,
+			});
 			s.stop("Import complete.");
 		} catch (err) {
 			s.stop("Import failed.");
 			if (err instanceof GramCLIError) {
-				log.error(err.message);
+				log.error(err.message, { output: chrome });
 				process.exit(err.exitCode);
 			}
 			throw err;
+		}
+
+		// Two failures the AI cannot be trusted to have noticed: content that
+		// never reached the compiler, and errors its own repair loop gave up on.
+		// Neither used to stop anything — a file missing four ingredients was
+		// written with a clean exit code. Nothing is emitted now unless asked.
+		const broken =
+			result.lostIngredients.length > 0 || result.unresolvedErrors.length > 0;
+		if (broken) {
+			renderImportProblems(result, chrome);
+			if (!args.force) {
+				log.error(
+					"Import refused — the result is incomplete or invalid. Re-run with --force to write it anyway, or with a different --model.",
+					{ output: chrome },
+				);
+				process.exit(ExitCode.Error);
+			}
+			log.warn("--force given — emitting an incomplete or invalid recipe.", {
+				output: chrome,
+			});
 		}
 
 		if (outputPath) {
@@ -94,19 +135,10 @@ export default defineCommand({
 			await writeFile(outputPath, result.gramContent, "utf-8");
 			renderImportResult(result, source, outputPath);
 		} else {
-			process.stderr.write("\n");
-			process.stderr.write(`  ${"Title".padEnd(14)} ${result.title}\n`);
-			process.stderr.write(
-				`  ${"Ingredients".padEnd(14)} ${result.ingredientCount}\n`,
-			);
-			process.stderr.write(`  ${"Steps".padEnd(14)} ${result.stepCount}\n`);
-			if (result.parseWarnings.length > 0) {
-				process.stderr.write(`\n  ⚠ Warnings:\n`);
-				for (const w of result.parseWarnings) {
-					process.stderr.write(`    ${w}\n`);
-				}
-			}
-			process.stderr.write("\n");
+			// Same summary as the --output path, on stderr, so the two can't drift
+			// apart — the hand-rolled copy that used to live here had already
+			// fallen behind on the analyzer report.
+			renderImportResult(result, source, undefined, chrome);
 			process.stdout.write(`${result.gramContent}\n`);
 		}
 

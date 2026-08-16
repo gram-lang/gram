@@ -1,12 +1,18 @@
 import { readFile } from "node:fs/promises";
 import { generateText } from "ai";
 import type { LanguageModel, SystemModelMessage } from "ai";
-import { getAST } from "@gram-lang/parser";
-import { compile, warningSeverity, type Warning } from "@gram-lang/kitchen";
+import {
+	warningSeverity,
+	type CompilationResult,
+	type Warning,
+} from "@gram-lang/kitchen";
+import type { AnalysisResult, IngredientData } from "@gram-lang/analyzer";
 import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
 import { assertPublicUrl } from "../core/ssrf";
+import { findWrittenIngredients } from "../core/gram-tokens";
+import { runPipelineFromSource } from "../core/pipeline";
 import type { ImportResult } from "../types";
 import { GRAM_SPEC_PROMPT } from "../prompts/gram-spec";
 
@@ -294,17 +300,101 @@ export function buildImportPayload(
 const AI_MAX_RETRIES = 2;
 
 type CompileCheck =
-	| { ok: true; warnings: Warning[] }
+	| {
+			ok: true;
+			warnings: Warning[];
+			compiled: CompilationResult;
+			analyzed: AnalysisResult | null;
+	  }
 	| { ok: false; error: string };
 
-function checkGram(text: string): CompileCheck {
+// The single "compile and inspect" path. validateGram, collectAllWarnings,
+// findLostIngredients and the analyzer report all go through here rather than
+// each running their own getAST + compile, so they can never disagree about
+// what the file contains. Delegates to the same runPipelineFromSource every
+// other command uses — an imported recipe gets read exactly as `gram check`
+// would read it once written.
+export function checkGram(
+	text: string,
+	db?: Record<string, IngredientData> | null,
+): CompileCheck {
 	try {
-		const ast = getAST(text);
-		const compiled = compile(ast);
-		return { ok: true, warnings: compiled.warnings };
+		const { compiled, analyzed } = runPipelineFromSource(text, {
+			db,
+			skipAnalyzer: !db,
+		});
+		return { ok: true, warnings: compiled.warnings, compiled, analyzed };
 	} catch (err) {
 		return { ok: false, error: getErrorMessage(err) };
 	}
+}
+
+/**
+ * What the physical layer could not work out, once a database is available:
+ * ingredients it has never heard of, and a total mass it could not complete.
+ *
+ * Reported, never retried. These are gaps in the *data* — an ingredient absent
+ * from the user's `ingredients.yaml`, a volume with no density — not defects
+ * in the AI's writing, so another generation would produce the same result at
+ * full price. Without a database there is nothing to check and this is empty.
+ */
+export function collectAnalysisGaps(
+	text: string,
+	db?: Record<string, IngredientData> | null,
+): string[] {
+	if (!db) return [];
+	return gapsFrom(checkGram(text, db));
+}
+
+function gapsFrom(result: CompileCheck): string[] {
+	if (!result.ok || !result.analyzed) return [];
+
+	const gaps: string[] = [];
+	const missing = result.analyzed.missingIngredients;
+	if (missing.length > 0) {
+		gaps.push(`not in your database: ${missing.join(", ")}`);
+	}
+
+	const { massStatus, missingMassIngredients } = result.analyzed.result.metrics;
+	if (massStatus === "incomplete") {
+		const which =
+			missingMassIngredients.length > 0
+				? ` (${missingMassIngredients.join(", ")})`
+				: "";
+		gaps.push(`no usable mass for some ingredients${which}`);
+	}
+	return gaps;
+}
+
+/**
+ * Ingredients written in the file that the compiler never registered.
+ *
+ * A non-empty result means content was silently swallowed. The case this was
+ * built for: `@flour{} // TODO: quantity unknown, @sugar{}, @salt{}` — `//`
+ * comments to end of line, so sugar and salt vanish. The file compiles, no
+ * warning fires, and the shopping list is quietly short two ingredients. It
+ * happened on two of six spike imports, losing four and three ingredients.
+ *
+ * Validated against ground truth before being trusted: it finds exactly those
+ * seven, and reports nothing on the other four spike outputs, the repo's
+ * example recipes, or any of the 63 conformance cases.
+ */
+export function findLostIngredients(text: string): string[] {
+	return lostFrom(checkGram(text), text);
+}
+
+function lostFrom(result: CompileCheck, text: string): string[] {
+	if (!result.ok) return [];
+
+	const registered = new Set(Object.keys(result.compiled.registry.ingredients));
+	const seen = new Set<string>();
+	const lost: string[] = [];
+	for (const written of findWrittenIngredients(text)) {
+		if (registered.has(written.id) || seen.has(written.id)) continue;
+		seen.add(written.id);
+		lost.push(`${written.name} (line ${written.line})`);
+	}
+	return lost;
 }
 
 // Only `warningSeverity[code] === "error"` (undefined references, scope
@@ -314,7 +404,10 @@ function checkGram(text: string): CompileCheck {
 // expected on a fresh import and aren't defects the AI can meaningfully fix;
 // retrying on them just burns tokens without changing the outcome.
 export function validateGram(text: string): string[] {
-	const result = checkGram(text);
+	return errorsFrom(checkGram(text));
+}
+
+function errorsFrom(result: CompileCheck): string[] {
 	if (!result.ok) return [result.error];
 	return result.warnings
 		.filter((w) => warningSeverity[w.code] === "error")
@@ -326,9 +419,76 @@ export function validateGram(text: string): string[] {
 // after import (they were never worth an AI retry, but the user should still
 // see them, e.g. "not found in database" for a freshly imported ingredient).
 export function collectAllWarnings(text: string): string[] {
-	const result = checkGram(text);
+	return allWarningsFrom(checkGram(text));
+}
+
+function allWarningsFrom(result: CompileCheck): string[] {
 	if (!result.ok) return [result.error];
 	return result.warnings.map((w) => w.message);
+}
+
+/**
+ * Every verdict on the finished file, from one compile.
+ *
+ * The four public helpers above each run their own `checkGram`, which is right
+ * for callers asking a single question (the repair loop only wants the errors).
+ * The end of an import wants all four at once, and compiling the same text four
+ * times to get them would be silly.
+ */
+export function inspectImport(
+	text: string,
+	db?: Record<string, IngredientData> | null,
+): Pick<
+	ImportResult,
+	"parseWarnings" | "unresolvedErrors" | "lostIngredients" | "analysisGaps"
+> {
+	const result = checkGram(text, db);
+	return {
+		parseWarnings: allWarningsFrom(result),
+		unresolvedErrors: errorsFrom(result),
+		lostIngredients: lostFrom(result, text),
+		analysisGaps: db ? gapsFrom(result) : [],
+	};
+}
+
+// Sets a frontmatter field to a value we know for certain, or removes it when
+// we know we have nothing to put there. Assumes single-line values, which is
+// what the spec prompt asks for on every field this is used with.
+//
+// Removal is as important as setting. The spec prompt illustrates frontmatter
+// with `source: ['https://example.com/recipe']`, and a model with no URL to
+// hand copies the placeholder rather than omitting the field — four of the six
+// spike imports came back sourced to example.com, with invented authors to
+// match. A fabricated provenance is worse than none.
+export function setFrontmatterField(
+	text: string,
+	key: string,
+	value: string | null,
+): string {
+	const match = text.match(/^---\n([\s\S]*?)\n---/);
+	if (!match) return text;
+	const frontmatter = match[1] as string;
+	const lineRe = new RegExp(`^${key}\\s*:.*$`, "m");
+
+	let updated: string;
+	if (value === null) {
+		if (!lineRe.test(frontmatter)) return text;
+		updated = frontmatter
+			.replace(lineRe, "")
+			.replace(/\n{2,}/g, "\n")
+			.trim();
+	} else {
+		const line = `${key}: ${value}`;
+		updated = lineRe.test(frontmatter)
+			? frontmatter.replace(lineRe, line)
+			: `${frontmatter}\n${line}`;
+	}
+	return text.replace(match[0], `---\n${updated}\n---`);
+}
+
+/** Single-quoted YAML scalar, with the quote doubled as YAML requires. */
+function yamlString(value: string): string {
+	return `'${value.replace(/'/g, "''")}'`;
 }
 
 // Sets the frontmatter `language` field to the actual configured target
@@ -336,14 +496,36 @@ export function collectAllWarnings(text: string): string[] {
 // fill in on its own — we already know this value with certainty (it's the
 // same `lang` used to instruct the AI), there's nothing for it to infer.
 export function injectLanguage(text: string, lang: string): string {
-	const match = text.match(/^---\n([\s\S]*?)\n---/);
-	if (!match) return text;
-	const frontmatter = match[1]!;
-	const languageLine = `language: '${lang}'`;
-	const newFrontmatter = /^language\s*:.*$/m.test(frontmatter)
-		? frontmatter.replace(/^language\s*:.*$/m, languageLine)
-		: `${frontmatter}\n${languageLine}`;
-	return text.replace(match[0], `---\n${newFrontmatter}\n---`);
+	return setFrontmatterField(text, "language", `'${lang}'`);
+}
+
+/**
+ * Replace the model's `source:` and `author:` with what the source data
+ * actually said — or strip them when it said nothing. Same reasoning as
+ * injectLanguage: these are facts we hold, not inferences to delegate.
+ */
+export function injectProvenance(
+	text: string,
+	provenance: { sourceUrl?: string; author?: string | string[] },
+): string {
+	const { sourceUrl, author } = provenance;
+
+	let out = setFrontmatterField(
+		text,
+		"source",
+		sourceUrl ? `[${yamlString(sourceUrl)}]` : null,
+	);
+
+	const authorValue = Array.isArray(author)
+		? author.length > 0
+			? `[${author.map(yamlString).join(", ")}]`
+			: null
+		: author
+			? yamlString(author)
+			: null;
+
+	out = setFrontmatterField(out, "author", authorValue);
+	return out;
 }
 
 function stripFences(text: string): string {
@@ -357,8 +539,13 @@ function stripFences(text: string): string {
 export async function importWithAI(
 	source: string,
 	model: LanguageModel,
-	lang = "en",
+	opts: {
+		lang?: string;
+		/** Enables the analyzer report — without it there is nothing to check quantities against. */
+		db?: Record<string, IngredientData> | null;
+	} = {},
 ): Promise<ImportResult> {
+	const { lang = "en", db = null } = opts;
 	const { jsonLd } = await fetchRecipe(source);
 	const recipe: any = findRecipe(jsonLd) ?? jsonLd;
 
@@ -415,6 +602,12 @@ export async function importWithAI(
 		}
 
 		gramContent = injectLanguage(gramContent, lang);
+		// Provenance comes from the source data, never from the model — see
+		// injectProvenance. Runs before formatGram so the result is formatted.
+		gramContent = injectProvenance(gramContent, {
+			sourceUrl,
+			author: extractAuthor(recipe.author),
+		});
 
 		// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
 		// no need to spend another AI call asking the model to fix it when
@@ -427,11 +620,15 @@ export async function importWithAI(
 		);
 	}
 
+	// The repair loop used to fall out of its last iteration without looking at
+	// the result, so a file the AI never managed to fix was written with nothing
+	// but ordinary warnings. Revalidate here — after the deterministic passes,
+	// which touch the content too — and let the caller decide what to do.
 	return {
 		gramContent,
 		title: recipe.name ?? "Untitled",
 		ingredientCount: rawIngredients.length,
 		stepCount: instructions.length,
-		parseWarnings: collectAllWarnings(gramContent),
+		...inspectImport(gramContent, db),
 	};
 }

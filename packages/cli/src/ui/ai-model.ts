@@ -13,6 +13,7 @@ import { canPrompt } from "../core/interactive";
 import { AI_PROVIDERS, type GramConfig } from "../types";
 import { ExitCode, GramCLIError } from "../errors";
 import type { LanguageModel } from "ai";
+import type { Writable } from "node:stream";
 
 /**
  * Why this provider and this model, when it isn't simply what the config says.
@@ -37,12 +38,16 @@ function describeProvenance(selection: AiSelection): string | null {
  * by auto-detection — used to be invisible: the run just cost more, or came
  * back worse, with nothing on screen to say why.
  */
-export function renderAiSelection(selection: AiSelection): void {
+export function renderAiSelection(
+	selection: AiSelection,
+	output?: Writable,
+): void {
 	const provenance = describeProvenance(selection);
 	log.step(
 		`${chalk.dim("model")} ${selection.provider} ${chalk.dim("·")} ${chalk.bold(
 			selection.model,
 		)}${provenance ? chalk.dim(` (${provenance})`) : ""}`,
+		{ output },
 	);
 }
 
@@ -112,6 +117,8 @@ function fail(message: string, exitCode: number = ExitCode.Error): never {
 export async function resolveAiForCommand(
 	config: GramConfig,
 	args: AiArgs,
+	/** Where the status line goes. Pass stderr when the command's real output is stdout. */
+	output?: Writable,
 ): Promise<{ model: LanguageModel; selection: AiSelection }> {
 	let overrides: ReturnType<typeof parseAiOverrides>;
 	try {
@@ -155,7 +162,7 @@ export async function resolveAiForCommand(
 
 	if (!selection) fail(resolveError?.message ?? "No AI provider configured.");
 
-	renderAiSelection(selection);
+	renderAiSelection(selection, output);
 
 	try {
 		return { model: buildAiModel(selection, config), selection };

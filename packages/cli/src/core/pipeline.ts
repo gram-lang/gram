@@ -26,6 +26,21 @@ export async function runPipeline(
 		}
 		throw err;
 	}
+	return runPipelineFromSource(content, opts);
+}
+
+/**
+ * The pipeline itself, on text rather than a path.
+ *
+ * Split out for `gram import`, whose .gram content only exists in memory: it
+ * needs the same compile-and-analyze that every other command runs, and
+ * re-implementing the three calls there would be a second definition of what
+ * "run the pipeline" means. Synchronous — nothing here touches the disk.
+ */
+export function runPipelineFromSource(
+	content: string,
+	opts: PipelineOptions = {},
+): PipelineResult {
 	const ast = getAST(content);
 	const compiled = compile(
 		ast,
