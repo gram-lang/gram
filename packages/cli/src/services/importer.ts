@@ -12,8 +12,9 @@ import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
 import { fetchTextWithSsrfGuard } from "../core/http";
 import {
-	findUnquantifiedIngredients,
 	findWrittenIngredients,
+	unquantifiedFrom,
+	type WrittenIngredient,
 } from "../core/gram-tokens";
 import { runPipelineFromSource } from "../core/pipeline";
 import type { ImportResult } from "../types";
@@ -303,19 +304,22 @@ function gapsFrom(result: CompileCheck): string[] {
  * example recipes, or any of the 63 conformance cases.
  */
 export function findLostIngredients(text: string): string[] {
-	return lostFrom(checkGram(text), text);
+	return lostFrom(checkGram(text), findWrittenIngredients(text));
 }
 
-function lostFrom(result: CompileCheck, text: string): string[] {
+function lostFrom(
+	result: CompileCheck,
+	written: WrittenIngredient[],
+): string[] {
 	if (!result.ok) return [];
 
 	const registered = new Set(Object.keys(result.compiled.registry.ingredients));
 	const seen = new Set<string>();
 	const lost: string[] = [];
-	for (const written of findWrittenIngredients(text)) {
-		if (registered.has(written.id) || seen.has(written.id)) continue;
-		seen.add(written.id);
-		lost.push(`${written.name} (line ${written.line})`);
+	for (const w of written) {
+		if (registered.has(w.id) || seen.has(w.id)) continue;
+		seen.add(w.id);
+		lost.push(`${w.name} (line ${w.line})`);
 	}
 	return lost;
 }
@@ -350,33 +354,44 @@ function allWarningsFrom(result: CompileCheck): string[] {
 	return result.warnings.map((w) => w.message);
 }
 
-/**
- * Every verdict on the finished file, from one compile.
- *
- * The four public helpers above each run their own `checkGram`, which is right
- * for callers asking a single question (the repair loop only wants the errors).
- * The end of an import wants all four at once, and compiling the same text four
- * times to get them would be silly.
- */
-export function inspectImport(
-	text: string,
-	db?: Record<string, IngredientData> | null,
-): Pick<
+type ImportInspection = Pick<
 	ImportResult,
 	| "parseWarnings"
 	| "unresolvedErrors"
 	| "lostIngredients"
 	| "analysisGaps"
 	| "unquantified"
-> {
-	const result = checkGram(text, db);
+>;
+
+/**
+ * Every verdict on the finished file, from one compile and one lexical scan.
+ *
+ * The four `*From` helpers above each take an already-computed `CompileCheck`
+ * (or, for `lostFrom`, an already-scanned ingredient list) — right for a
+ * caller asking a single question, like the repair loop only wanting the
+ * errors. The end of an import wants all five at once, and callers that also
+ * need the scan for something else (e.g. `importVideoWithAI`'s ingredient
+ * count) should reuse it via `inspectFrom` rather than pay for a second scan.
+ */
+function inspectFrom(
+	result: CompileCheck,
+	written: WrittenIngredient[],
+	db?: Record<string, IngredientData> | null,
+): ImportInspection {
 	return {
 		parseWarnings: allWarningsFrom(result),
 		unresolvedErrors: errorsFrom(result),
-		lostIngredients: lostFrom(result, text),
+		lostIngredients: lostFrom(result, written),
 		analysisGaps: db ? gapsFrom(result) : [],
-		unquantified: findUnquantifiedIngredients(text),
+		unquantified: unquantifiedFrom(written),
 	};
+}
+
+export function inspectImport(
+	text: string,
+	db?: Record<string, IngredientData> | null,
+): ImportInspection {
+	return inspectFrom(checkGram(text, db), findWrittenIngredients(text), db);
 }
 
 // Sets a frontmatter field to a value we know for certain, or removes it when
@@ -676,16 +691,19 @@ export async function importVideoWithAI(
 		author: meta.author,
 	});
 
+	// One scan, reused for both the count below and inspectFrom — a video
+	// import used to pay for three passes over the identical text (this count,
+	// plus one inside each of inspectImport's lostFrom/unquantifiedFrom).
+	const written = findWrittenIngredients(gramContent);
+
 	return {
 		gramContent,
 		title: meta.title ?? "Untitled",
 		// A video has no ingredient list to count against; these are what the
 		// model produced, not what the source declared. Distinct ingredients,
 		// not mentions — otherwise a repeat `@&flour` would inflate the count.
-		ingredientCount: new Set(
-			findWrittenIngredients(gramContent).map((w) => w.id),
-		).size,
+		ingredientCount: new Set(written.map((w) => w.id)).size,
 		stepCount: (gramContent.match(/^\[/gm) ?? []).length,
-		...inspectImport(gramContent, db),
+		...inspectFrom(checkGram(gramContent, db), written, db),
 	};
 }

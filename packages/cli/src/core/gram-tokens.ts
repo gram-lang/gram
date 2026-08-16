@@ -193,7 +193,18 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 export function findUnquantifiedIngredients(
 	text: string,
 ): { name: string; line: number }[] {
-	const written = findWrittenIngredients(text);
+	return unquantifiedFrom(findWrittenIngredients(text));
+}
+
+/**
+ * Same as findUnquantifiedIngredients, from an already-scanned list. Callers
+ * that also need findWrittenIngredients for something else (e.g. cross-
+ * checking against the compiled registry) should scan once and pass the
+ * result here rather than have this re-scan the same text.
+ */
+export function unquantifiedFrom(
+	written: WrittenIngredient[],
+): { name: string; line: number }[] {
 	const everQuantified = new Set(
 		written.filter((w) => w.quantified).map((w) => w.id),
 	);

@@ -62,19 +62,18 @@ export const RECOMMENDED_MODELS: Record<AiProvider, readonly string[]> = {
 	ollama: ["llama4", "llama3"],
 };
 
-/** Where a resolved provider or model came from — shown to the user so an unexpected choice is traceable. */
-export type AiSelectionSource =
-	| "flag"
-	| "config"
-	| "default"
-	| "auto-detect"
-	| "picker";
+// Split in two rather than one shared union: "auto-detect" only ever makes
+// sense for the provider (there is no such thing as an auto-detected model
+// name), and "default" only for the model. One union let `modelSource:
+// "auto-detect"` type-check despite being a state that can never occur.
+export type ProviderSource = "flag" | "config" | "auto-detect" | "picker";
+export type ModelSource = "flag" | "config" | "default" | "picker";
 
 export interface AiSelection {
 	provider: AiProvider;
 	model: string;
-	providerSource: AiSelectionSource;
-	modelSource: AiSelectionSource;
+	providerSource: ProviderSource;
+	modelSource: ModelSource;
 }
 
 /** Per-run overrides, typically from `--provider` / `--model`. */
@@ -131,7 +130,7 @@ function noProviderError(): GramCLIError {
 function configAppliesTo(
 	ai: NonNullable<GramConfig["ai"]>,
 	provider: AiProvider,
-	providerSource: AiSelectionSource,
+	providerSource: ProviderSource,
 ): boolean {
 	if (ai.provider !== undefined) return ai.provider === provider;
 	return providerSource === "auto-detect";
@@ -140,7 +139,7 @@ function configAppliesTo(
 function resolveApiKey(
 	provider: Exclude<AiProvider, "ollama">,
 	ai: NonNullable<GramConfig["ai"]>,
-	providerSource: AiSelectionSource,
+	providerSource: ProviderSource,
 ): string {
 	const envVar = AI_PROVIDER_ENV_VAR[provider];
 	const configuredKey = configAppliesTo(ai, provider, providerSource)
@@ -171,7 +170,7 @@ export function resolveAiSelection(
 	const ai = config.ai ?? {};
 
 	let provider: AiProvider | undefined;
-	let providerSource: AiSelectionSource;
+	let providerSource: ProviderSource;
 	if (overrides.provider) {
 		provider = overrides.provider;
 		providerSource = "flag";
@@ -196,7 +195,7 @@ export function resolveAiSelection(
 		: undefined;
 
 	const model = overrides.model ?? configuredModel ?? DEFAULTS[provider];
-	const modelSource: AiSelectionSource = overrides.model
+	const modelSource: ModelSource = overrides.model
 		? "flag"
 		: configuredModel
 			? "config"

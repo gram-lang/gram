@@ -1,5 +1,6 @@
 import { GramCLIError, ExitCode } from "../errors";
 import { fetchTextWithSsrfGuard } from "../core/http";
+import { splitDuration } from "../core/format";
 
 /**
  * YouTube is read multimodally: the video URL is handed to Gemini, which
@@ -155,9 +156,7 @@ export function estimateVideoTokens(durationSeconds: number): number {
 }
 
 export function formatDuration(seconds: number): string {
-	const h = Math.floor(seconds / 3600);
-	const m = Math.floor((seconds % 3600) / 60);
-	const s = seconds % 60;
+	const { h, m, s } = splitDuration(seconds);
 	const mm = String(m).padStart(h > 0 ? 2 : 1, "0");
 	return h > 0
 		? `${h}:${mm}:${String(s).padStart(2, "0")}`

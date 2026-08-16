@@ -3,6 +3,7 @@ import {
 	quantityToMinutes,
 	aggregateSectionIngredients,
 } from "@gram-lang/kitchen";
+import { splitDuration } from "../../core/format";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
 
 // Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit
@@ -22,10 +23,7 @@ export function fmtQty(item: { qty?: any; unit?: string | null }): string {
 }
 
 export function fmtCountdown(remainingMs: number): string {
-	const total = Math.max(0, Math.ceil(remainingMs / 1000));
-	const h = Math.floor(total / 3600);
-	const m = Math.floor((total % 3600) / 60);
-	const s = total % 60;
+	const { h, m, s } = splitDuration(Math.ceil(remainingMs / 1000));
 	if (h > 0)
 		return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 	return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
