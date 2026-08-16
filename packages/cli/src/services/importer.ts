@@ -396,7 +396,13 @@ export function setFrontmatterField(
 	const match = text.match(/^---\n([\s\S]*?)\n---/);
 	if (!match) return text;
 	const frontmatter = match[1] as string;
-	const lineRe = new RegExp(`^${key}\\s*:.*$`, "m");
+	// The key's line *plus* any indented continuation. YAML lets a value span
+	// several lines — `source:` followed by `  - 'https://…'` is a block
+	// sequence — and touching only the key line orphaned the rest, leaving
+	// frontmatter that no longer parses. The spec prompt asks for the inline
+	// form, but nothing obliges the model to comply, and this runs after every
+	// token has already been spent.
+	const lineRe = new RegExp(`^${key}\\s*:.*(?:\\n[ \\t]+\\S.*)*$`, "m");
 
 	let updated: string;
 	if (value === null) {

@@ -390,7 +390,7 @@ gram db lint --pick-model                         # choisir de façon interactiv
 
 Aucune de ces options n'écrit dans votre configuration. Pour changer la valeur par défaut durablement, utilisez `gram config set ai.model <nom>` ou relancez `gram init`.
 
-Quand `--provider` désigne un fournisseur autre que celui de votre configuration, les champs `model`, `apiKey` et `baseUrl` écrits sous `ai:` ne sont **pas** repris : ils appartiennent au fournisseur pour lequel ils ont été écrits. Gram réclamera la variable d'environnement propre au nouveau fournisseur.
+Quand `--provider` (ou `--pick-model`) désigne un fournisseur que votre configuration n'a pas nommé, les champs `model`, `apiKey` et `baseUrl` écrits sous `ai:` ne sont **pas** repris : ils appartiennent au fournisseur pour lequel ils ont été écrits. Gram réclamera la variable d'environnement propre au nouveau fournisseur. Cela vaut que votre bloc `ai:` désigne un autre fournisseur ou n'en désigne aucun : un bloc sans `provider:` appartient au fournisseur que Gram aurait auto-détecté, pas à celui que vous avez choisi à la main.
 
 ### Configuration IA en Cascade
 Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :

@@ -112,28 +112,40 @@ function noProviderError(): GramCLIError {
  *
  * `ai.apiKey`, `ai.model` and `ai.baseUrl` are all provider-specific: a key
  * issued by Google is worthless *and dangerous* at api.openai.com, and a model
- * name is meaningless outside its own provider. They may only be used when the
- * effective provider does not contradict the configured one.
+ * name is meaningless outside its own provider.
  *
- * A config with no `ai.provider` does not contradict anything, so its settings
- * still apply — that is today's behaviour for `ai: { model: … }` plus
- * auto-detection, and it is safe for the key too: auto-detection only ever
- * picks a provider whose own env var is already set, so `ai.apiKey` is never
- * reached on that path.
+ * When `ai.provider` is set the test is simply equality. When it is *not*, the
+ * `ai:` block still has an implied owner — whichever provider the config would
+ * have reached on its own, i.e. the auto-detected one — and its settings apply
+ * to that provider only.
+ *
+ * `--provider` and the picker are the cases that make this distinction matter:
+ * both can name a provider the config never spoke for. An earlier version
+ * returned true for any unprovidered config, reasoning that auto-detection
+ * only picks a provider whose own env var is already set, so `ai.apiKey` could
+ * never be reached. True for auto-detection, false the moment a flag can pick
+ * the provider instead — `--provider anthropic` over
+ * `ai: {apiKey: <google key>}` sent that key to api.anthropic.com. Same class
+ * as audit 2026-07-22 finding 0-a.
  */
 function configAppliesTo(
 	ai: NonNullable<GramConfig["ai"]>,
 	provider: AiProvider,
+	providerSource: AiSelectionSource,
 ): boolean {
-	return ai.provider === undefined || ai.provider === provider;
+	if (ai.provider !== undefined) return ai.provider === provider;
+	return providerSource === "auto-detect";
 }
 
 function resolveApiKey(
 	provider: Exclude<AiProvider, "ollama">,
 	ai: NonNullable<GramConfig["ai"]>,
+	providerSource: AiSelectionSource,
 ): string {
 	const envVar = AI_PROVIDER_ENV_VAR[provider];
-	const configuredKey = configAppliesTo(ai, provider) ? ai.apiKey : undefined;
+	const configuredKey = configAppliesTo(ai, provider, providerSource)
+		? ai.apiKey
+		: undefined;
 	const apiKey = process.env[envVar] ?? configuredKey;
 	if (!apiKey) {
 		throw new GramCLIError(
@@ -179,7 +191,9 @@ export function resolveAiSelection(
 	// see configAppliesTo. `--provider anthropic` over `model: gemini-3.5-flash`
 	// must fall back to the Anthropic default, not send a Gemini model name to
 	// Anthropic.
-	const configuredModel = configAppliesTo(ai, provider) ? ai.model : undefined;
+	const configuredModel = configAppliesTo(ai, provider, providerSource)
+		? ai.model
+		: undefined;
 
 	const model = overrides.model ?? configuredModel ?? DEFAULTS[provider];
 	const modelSource: AiSelectionSource = overrides.model
@@ -201,23 +215,29 @@ export function buildAiModel(
 	config: GramConfig,
 ): LanguageModel {
 	const ai = config.ai ?? {};
-	const { provider, model } = selection;
+	const { provider, model, providerSource } = selection;
 
 	switch (provider) {
 		case "google":
-			return createGoogleGenerativeAI({ apiKey: resolveApiKey("google", ai) })(
-				model,
-			);
+			return createGoogleGenerativeAI({
+				apiKey: resolveApiKey("google", ai, providerSource),
+			})(model);
 
 		case "openai":
-			return createOpenAI({ apiKey: resolveApiKey("openai", ai) })(model);
+			return createOpenAI({
+				apiKey: resolveApiKey("openai", ai, providerSource),
+			})(model);
 
 		case "anthropic":
-			return createAnthropic({ apiKey: resolveApiKey("anthropic", ai) })(model);
+			return createAnthropic({
+				apiKey: resolveApiKey("anthropic", ai, providerSource),
+			})(model);
 
 		case "ollama": {
 			const baseURL =
-				(configAppliesTo(ai, "ollama") ? ai.baseUrl : undefined) ??
+				(configAppliesTo(ai, "ollama", providerSource)
+					? ai.baseUrl
+					: undefined) ??
 				process.env.OLLAMA_BASE_URL ??
 				"http://localhost:11434/v1";
 			const ollama = createOpenAICompatible({

@@ -395,7 +395,7 @@ gram db lint --pick-model                        # choose interactively
 
 Neither flag writes anything to your config. To change the default for good, use `gram config set ai.model <name>` or re-run `gram init`.
 
-When `--provider` names a provider other than the one in your config, the `model`, `apiKey` and `baseUrl` written under `ai:` are **not** carried over — they belong to the provider they were written for. You will be asked for that provider's own environment variable instead.
+When `--provider` (or `--pick-model`) selects a provider your config did not name, the `model`, `apiKey` and `baseUrl` written under `ai:` are **not** carried over — they belong to the provider they were written for. You will be asked for the new provider's own environment variable instead. This holds whether your `ai:` block names a different provider or names none at all: a block with no `provider:` belongs to whichever provider Gram would have auto-detected, not to one you picked by hand.
 
 ### Cascading AI Configuration
 Gram uses a cascading fallback hierarchy for sensitive credentials like AI API keys:

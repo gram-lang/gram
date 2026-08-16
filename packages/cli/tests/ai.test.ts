@@ -276,3 +276,60 @@ describe("parseAiOverrides", () => {
 		expect(parseAiOverrides({})).toEqual({});
 	});
 });
+
+// `--provider` and the picker can name a provider the config never mentioned.
+// An unprovidered `ai:` block still has an implied owner — the auto-detected
+// provider — and its key belongs to that one alone. Getting this wrong meant
+// `--provider anthropic` over `ai: {apiKey: <google key>}` shipped the Google
+// key to api.anthropic.com: audit finding 0-a, one flag further out.
+describe("loadAiModel — a provider-less ai: block does not follow a flag", () => {
+	afterEach(() => {
+		for (const key of PROVIDER_ENV_VARS) delete process.env[key];
+	});
+
+	const unowned: GramConfig = {
+		ai: { model: "gemini-3.5-flash", apiKey: "AIza-google-secret" },
+	};
+
+	it("refuses the key when --provider names a provider the config never did", () => {
+		withEnv({}, () => {
+			expect(() => loadAiModel(unowned, { provider: "anthropic" })).toThrow(
+				/ANTHROPIC_API_KEY/,
+			);
+		});
+	});
+
+	it("refuses the model too — a Gemini model name means nothing to Anthropic", () => {
+		withEnv({}, () => {
+			const sel = resolveAiSelection(unowned, { provider: "anthropic" });
+			expect(sel.model).not.toBe("gemini-3.5-flash");
+			expect(sel.modelSource).toBe("default");
+		});
+	});
+
+	// `ai.baseUrl` is gated by the same configAppliesTo call as the key and the
+	// model, both covered above. It gets no test of its own: the constructed
+	// SDK client does not expose its baseURL, so the only assertion available
+	// would pass with or without the fix — a test that protects nothing.
+
+	it("still honours the block for the provider auto-detection picks", () => {
+		withEnv({ GEMINI_API_KEY: "env-google" }, () => {
+			const sel = resolveAiSelection(unowned);
+			expect(sel).toMatchObject({
+				provider: "google",
+				model: "gemini-3.5-flash",
+				providerSource: "auto-detect",
+				modelSource: "config",
+			});
+		});
+	});
+
+	it("still honours it when --provider names the very provider it declares", () => {
+		withEnv({}, () => {
+			const owned: GramConfig = {
+				ai: { provider: "openai", apiKey: "sk-openai" },
+			};
+			expect(() => loadAiModel(owned, { provider: "openai" })).not.toThrow();
+		});
+	});
+});

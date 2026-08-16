@@ -57,11 +57,31 @@ function isSingleWordNameChar(c: string): boolean {
  * left in place — the tokens it swallows must still be counted as written.
  * Replacing with spaces rather than deleting keeps every offset intact.
  */
+const blank = (m: string) => m.replace(/[^\n]/g, " ");
+
 function maskDeliberateComments(text: string): string {
-	const blank = (m: string) => m.replace(/[^\n]/g, " ");
 	return text
 		.replace(/\/\*[\s\S]*?\*\//g, blank)
 		.replace(/^[ \t]*\/\/[^\n]*/gm, blank);
+}
+
+/**
+ * Blank out the leading `---…---` block.
+ *
+ * The compiler reads frontmatter as YAML, never as recipe text, so an `@` in
+ * there introduces nothing. Scanning it anyway turned an ordinary metadata
+ * value into a phantom lost ingredient — and since a lost ingredient now
+ * refuses the whole import, `author: 'contact@example.com'` or a channel
+ * handle like `author: '@ChefJohn'` was enough to reject a perfectly good
+ * recipe. Video imports write `author:` straight from YouTube, so this is not
+ * hypothetical.
+ *
+ * Only the block at the very start counts; `---` further down is body text.
+ */
+function maskFrontmatter(text: string): string {
+	const match = text.match(/^---\n[\s\S]*?\n---/);
+	if (!match) return text;
+	return blank(match[0]) + text.slice(match[0].length);
 }
 
 export interface WrittenIngredient {
@@ -86,7 +106,7 @@ export interface WrittenIngredient {
  * order. Duplicates are kept: the caller decides whether repetition matters.
  */
 export function findWrittenIngredients(text: string): WrittenIngredient[] {
-	const src = maskDeliberateComments(text);
+	const src = maskDeliberateComments(maskFrontmatter(text));
 	const found: WrittenIngredient[] = [];
 	let line = 1;
 	let braceDepth = 0;

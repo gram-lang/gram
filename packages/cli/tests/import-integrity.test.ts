@@ -297,3 +297,71 @@ Add @flour{200g}, then @water{60% @&flour}.
 		);
 	});
 });
+
+// The scanner reads recipe text, and frontmatter is not recipe text — the
+// compiler parses it as YAML and registers nothing from it. Reading it anyway
+// turned an ordinary metadata value into a phantom lost ingredient, and since
+// a lost ingredient refuses the whole import, an email address or a channel
+// handle in `author:` was enough to reject a perfectly good recipe. Video
+// imports write `author:` straight from YouTube, so this is not hypothetical.
+describe("the frontmatter is not scanned for ingredients", () => {
+	const body = "\n## Steps\nMix @flour{200g}.\n";
+
+	it.each([
+		["author: 'contact@example.com'", "an email address"],
+		["author: '@ChefJohn'", "a channel handle"],
+		["source: ['https://x.test/u@v']", "an @ in the source URL"],
+		["title: 'Pasta @ Home'", "an @ in the title"],
+	])("ignores %s (%s)", (field) => {
+		const source = `---\ntitle: 'T'\n${field}\n---\n${body}`;
+		expect(findLostIngredients(source)).toEqual([]);
+		expect(findUnquantifiedIngredients(source)).toEqual([]);
+		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
+			"flour",
+		]);
+	});
+
+	it("still reads a `---` that appears in the body", () => {
+		const source = `---\ntitle: 'T'\n---\n\n## Steps\nMix @flour{200g}.\n\n---\n\nAdd @salt{}.\n`;
+		expect(findWrittenIngredients(source).map((w) => w.name)).toEqual([
+			"flour",
+			"salt",
+		]);
+	});
+});
+
+describe("setFrontmatterField with a multi-line YAML value", () => {
+	// `source:` as a block sequence is valid YAML the model may well emit,
+	// whatever the spec prompt illustrates. Removing only the key line left the
+	// indented item orphaned and the frontmatter unparseable — at the very end
+	// of an import, after every token had been spent.
+	const blockStyle = `---
+title: T
+source:
+  - 'https://example.com/x'
+author: 'A'
+---
+
+body`;
+
+	it("removes the continuation lines along with the key", () => {
+		const out = injectProvenance(blockStyle, {});
+		expect(out).not.toContain("example.com");
+		expect(out).not.toContain("- '");
+		expect(out).toContain("title: T");
+	});
+
+	it("replaces a block value wholesale rather than leaving an orphan", () => {
+		const out = injectProvenance(blockStyle, {
+			sourceUrl: "https://real.test/r",
+		});
+		expect(out).toContain("source: ['https://real.test/r']");
+		expect(out).not.toContain("example.com");
+	});
+
+	it("leaves the following key untouched", () => {
+		expect(setFrontmatterField(blockStyle, "source", null)).toContain(
+			"author: 'A'",
+		);
+	});
+});

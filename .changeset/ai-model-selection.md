@@ -16,6 +16,8 @@ None of these write to your config, so your usual setup stays untouched. To chan
 
 Two other things changed along the way:
 
-**Your API key can no longer end up at the wrong provider.** Settings written under `ai:` — the key, the model name, the base URL — belong to the provider they were written for. If a run ends up on a different provider, whether through `--provider` or through a project config that overrides a global one, those settings are now left behind and Gram asks for the right provider's key instead. Previously a global config saying "use Google with this key" could quietly hand that key to OpenAI when a project asked for OpenAI.
+**Your API key can no longer end up at the wrong provider.** Settings written under `ai:` — the key, the model name, the base URL — belong to the provider they were written for. If a run ends up on a different provider, whether through `--provider`, the interactive picker, or a project config that overrides a global one, those settings are left behind and Gram asks for the right provider's key instead. Previously a global config saying "use Google with this key" could quietly hand that key to OpenAI when a project asked for OpenAI.
+
+This covers the case where your `ai:` block names no provider at all: such a block belongs to whichever provider Gram would have detected from your environment, and its key is not reused for one you select by hand.
 
 **`gram import` no longer hangs in scripts.** Run with `--output` but without `--yes` in a non-interactive context, it used to display the review prompt and then wait forever for an answer nobody could give. It now warns that the review was skipped and writes the file.
