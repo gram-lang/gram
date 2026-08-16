@@ -71,6 +71,14 @@ export interface WrittenIngredient {
 	id: string;
 	/** 1-based line the token starts on, for error messages. */
 	line: number;
+	/**
+	 * Whether this particular mention carried a non-empty quantity.
+	 *
+	 * `@salt{}` and a bare `@salt` are both false. Note that an empty quantity
+	 * is perfectly valid Gram — "salt to taste" — so this is information, not a
+	 * defect. See findUnquantifiedIngredients for the distinction that matters.
+	 */
+	quantified: boolean;
 }
 
 /**
@@ -120,8 +128,13 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 		}
 
 		let name: string;
+		let quantified = false;
 		if (src[afterAlias] === "{" && end > p) {
 			name = src.slice(p, end);
+			const close = src.indexOf("}", afterAlias + 1);
+			quantified =
+				close > afterAlias &&
+				src.slice(afterAlias + 1, close).trim().length > 0;
 		} else {
 			// -- bare: singleWordName
 			let bareEnd = p;
@@ -136,8 +149,41 @@ export function findWrittenIngredients(text: string): WrittenIngredient[] {
 
 		const trimmed = name.trim();
 		if (!trimmed) continue;
-		found.push({ name: trimmed, id: slugify(trimmed), line });
+		found.push({ name: trimmed, id: slugify(trimmed), line, quantified });
 	}
 
 	return found;
+}
+
+/**
+ * Ingredients that carry no quantity anywhere in the recipe.
+ *
+ * "Anywhere" is the whole point. A second mention written `@&flour{}` is a
+ * back-reference and correctly has no amount of its own; what matters is
+ * whether the ingredient was ever given one. Only ingredients that were not
+ * are listed, at the line they first appear on.
+ *
+ * This is deliberately NOT an error. `@salt{}` is idiomatic Gram for "to
+ * taste", and the compiler rightly says nothing about it. But on an import —
+ * a video especially, where amounts are shown rather than spoken and often
+ * neither — the count is the single most useful quality signal there is: it
+ * says how much of the recipe still has to be filled in by hand, and thus how
+ * much the source was actually worth.
+ */
+export function findUnquantifiedIngredients(
+	text: string,
+): { name: string; line: number }[] {
+	const written = findWrittenIngredients(text);
+	const everQuantified = new Set(
+		written.filter((w) => w.quantified).map((w) => w.id),
+	);
+
+	const seen = new Set<string>();
+	const result: { name: string; line: number }[] = [];
+	for (const w of written) {
+		if (everQuantified.has(w.id) || seen.has(w.id)) continue;
+		seen.add(w.id);
+		result.push({ name: w.name, line: w.line });
+	}
+	return result;
 }

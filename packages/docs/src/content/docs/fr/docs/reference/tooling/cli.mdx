@@ -86,6 +86,7 @@ Importe une recette depuis un fichier JSON-LD ou une URL et la convertit en un f
 
   Utilisez `--force` pour écrire le fichier malgré tout, ou réessayez avec un `--model` plus solide.
 - `source:` et `author:` proviennent des données source, ou sont supprimés si elles n'en contiennent pas — jamais laissés à l'invention du modèle.
+- **Les ingrédients revenus sans quantité sont comptés et listés par ligne.** Ce n'est pas une erreur — `@sel{}` est la façon idiomatique d'écrire « au goût » — mais c'est la mesure la plus claire de l'état d'avancement de la recette, et elle vous amène directement aux lignes à corriger. Un ingrédient quantifié une fois puis simplement re-mentionné n'est pas compté.
 - Si une base d'ingrédients est présente, l'analyzer signale en plus ce qu'il n'a pas pu résoudre (ingrédients inconnus, quantités sans masse exploitable). Ce sont des manques dans votre base, pas des échecs d'import : ils ne bloquent jamais.
 - Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 

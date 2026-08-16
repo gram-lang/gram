@@ -38,6 +38,26 @@ export function renderImportResult(
 		for (const w of result.parseWarnings) line(`    ${chalk.dim(w)}`);
 	}
 
+	// Not a warning — `@salt{}` is idiomatic Gram — but the one number that
+	// says how much of this import you still have to finish by hand, and so
+	// how much the source was actually worth. Grouped by line, because the
+	// point is to send you straight to them in an editor.
+	if (result.unquantified.length > 0) {
+		const byLine = new Map<number, string[]>();
+		for (const { name, line } of result.unquantified) {
+			byLine.set(line, [...(byLine.get(line) ?? []), name]);
+		}
+		line();
+		line(
+			chalk.yellow(
+				`  ⚠ ${result.unquantified.length} of ${result.ingredientCount} ingredient(s) have no quantity — fill them in from the source:`,
+			),
+		);
+		for (const [n, names] of [...byLine].sort((a, b) => a[0] - b[0])) {
+			line(`    ${chalk.dim(`line ${n}`.padEnd(9))} ${names.join(", ")}`);
+		}
+	}
+
 	// Gaps in the data, not defects in the recipe: an ingredient your database
 	// has never seen, a volume with no density to convert it. Listed separately
 	// so they don't read as something the import got wrong.

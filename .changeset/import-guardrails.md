@@ -14,6 +14,16 @@ In both cases nothing is written now. You get the list of what went wrong, and c
 
 **Invented sources and authors are gone.** The AI was filling in `source:` and `author:` when the recipe had neither, usually with `https://example.com/…` copied from an example. Those fields now come from the source data, or are left out.
 
+**You're told how much is left to do.** The import now counts the ingredients that came back without a quantity and lists them by line:
+
+```
+  ⚠ 10 of 11 ingredient(s) have no quantity — fill them in from the source:
+    line 11   brown butter, brown sugar, white sugar
+    line 15   all purpose flour, baking soda, baking powder, cinnamon, salt
+```
+
+This isn't an error — `@salt{}` is a perfectly good way to write "to taste" — but it is the clearest measure of how finished a recipe is, and it takes you straight to the lines that need attention. An ingredient that gets an amount somewhere and is merely mentioned again later doesn't count.
+
 Where an ingredient database is available, the import also tells you which ingredients it doesn't know yet and which quantities it couldn't weigh. That's information about your database rather than a problem with the import, so it never blocks.
 
 **And `gram import recipe.json > recipe.gram` now works.** Redirecting the output used to capture the progress spinner into the file along with the recipe. Progress messages go to the error stream now, leaving the recipe alone.

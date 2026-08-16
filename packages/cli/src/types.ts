@@ -172,6 +172,12 @@ export interface ImportResult {
 	lostIngredients: string[];
 	/** What the analyzer could not resolve against the database. Informational: not the AI's fault, and not worth a retry. */
 	analysisGaps: string[];
+	/**
+	 * Ingredients left without a quantity anywhere, at the line they first
+	 * appear on. Never an error — `@salt{}` is idiomatic — but on an import the
+	 * count is the best available measure of how much is still to fill in.
+	 */
+	unquantified: { name: string; line: number }[];
 }
 
 export interface EnrichEntry {

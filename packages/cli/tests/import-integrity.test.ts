@@ -1,7 +1,10 @@
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { findWrittenIngredients } from "../src/core/gram-tokens";
+import {
+	findUnquantifiedIngredients,
+	findWrittenIngredients,
+} from "../src/core/gram-tokens";
 import {
 	findLostIngredients,
 	collectAnalysisGaps,
@@ -217,5 +220,80 @@ body`;
 describe("injectLanguage", () => {
 	it("still behaves as before now that it delegates to setFrontmatterField", () => {
 		expect(injectLanguage(`${FRONT}body`, "fr")).toContain("language: 'fr'");
+	});
+});
+
+// How much of an import is still to fill in by hand. Not a defect: `@salt{}`
+// is idiomatic Gram for "to taste", and the compiler says nothing about it.
+// But on a video import it is the sharpest quality signal available — a Short
+// came back with 11 ingredients and not one amount, where a long narrated
+// video left only 3 of 15 blank.
+describe("findUnquantifiedIngredients", () => {
+	it("lists an ingredient that never gets a quantity, at its first mention", () => {
+		const source = `${FRONT}## Steps
+Mix @flour{200g} with @sugar{}.
+Season with @salt{}.
+`;
+		expect(findUnquantifiedIngredients(source)).toEqual([
+			{ name: "sugar", line: 6 },
+			{ name: "salt", line: 7 },
+		]);
+	});
+
+	it("ignores a back-reference that correctly carries no amount of its own", () => {
+		// `@&butter{}` is a second draw on butter, not a missing quantity. Judging
+		// each mention on its own would report every well-written recipe as
+		// incomplete.
+		const source = `${FRONT}## Steps
+Melt @butter{100g} in the pan.
+Finish the sauce with @&butter{}.
+`;
+		expect(findUnquantifiedIngredients(source)).toEqual([]);
+	});
+
+	it("counts an ingredient once however often it is left blank", () => {
+		const source = `${FRONT}## Steps
+Beat @egg{} and @egg{} together.
+`;
+		expect(findUnquantifiedIngredients(source)).toEqual([
+			{ name: "egg", line: 6 },
+		]);
+	});
+
+	it("treats a bare mention with no braces as unquantified", () => {
+		expect(
+			findUnquantifiedIngredients(`${FRONT}Season with @pepper and serve.\n`),
+		).toEqual([{ name: "pepper", line: 5 }]);
+	});
+
+	it("accepts a relative quantity as a quantity", () => {
+		const source = `${FRONT}## Steps
+Add @flour{200g}, then @water{60% @&flour}.
+`;
+		expect(findUnquantifiedIngredients(source)).toEqual([]);
+	});
+
+	it("finds exactly the two the repo's own empanadas recipe leaves open", () => {
+		// Independently established: the spike's self-test derived the same pair
+		// from the compiled shopping list, by a completely different route.
+		const path = join(
+			import.meta.dir,
+			"../../docs/public/examples/empanadas.gram",
+		);
+		expect(
+			findUnquantifiedIngredients(readFileSync(path, "utf-8")).map(
+				(u) => u.name,
+			),
+		).toEqual(["oil", "green olives"]);
+	});
+
+	it("reports nothing on a fully quantified recipe", () => {
+		const path = join(
+			import.meta.dir,
+			"../../docs/public/examples/canneles.gram",
+		);
+		expect(findUnquantifiedIngredients(readFileSync(path, "utf-8"))).toEqual(
+			[],
+		);
 	});
 });

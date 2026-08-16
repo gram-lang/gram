@@ -11,7 +11,10 @@ import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
 import { fetchTextWithSsrfGuard } from "../core/http";
-import { findWrittenIngredients } from "../core/gram-tokens";
+import {
+	findUnquantifiedIngredients,
+	findWrittenIngredients,
+} from "../core/gram-tokens";
 import { runPipelineFromSource } from "../core/pipeline";
 import type { ImportResult } from "../types";
 import { GRAM_SPEC_PROMPT } from "../prompts/gram-spec";
@@ -360,7 +363,11 @@ export function inspectImport(
 	db?: Record<string, IngredientData> | null,
 ): Pick<
 	ImportResult,
-	"parseWarnings" | "unresolvedErrors" | "lostIngredients" | "analysisGaps"
+	| "parseWarnings"
+	| "unresolvedErrors"
+	| "lostIngredients"
+	| "analysisGaps"
+	| "unquantified"
 > {
 	const result = checkGram(text, db);
 	return {
@@ -368,6 +375,7 @@ export function inspectImport(
 		unresolvedErrors: errorsFrom(result),
 		lostIngredients: lostFrom(result, text),
 		analysisGaps: db ? gapsFrom(result) : [],
+		unquantified: findUnquantifiedIngredients(text),
 	};
 }
 
@@ -666,8 +674,11 @@ export async function importVideoWithAI(
 		gramContent,
 		title: meta.title ?? "Untitled",
 		// A video has no ingredient list to count against; these are what the
-		// model produced, not what the source declared.
-		ingredientCount: findWrittenIngredients(gramContent).length,
+		// model produced, not what the source declared. Distinct ingredients,
+		// not mentions — otherwise a repeat `@&flour` would inflate the count.
+		ingredientCount: new Set(
+			findWrittenIngredients(gramContent).map((w) => w.id),
+		).size,
 		stepCount: (gramContent.match(/^\[/gm) ?? []).length,
 		...inspectImport(gramContent, db),
 	};
