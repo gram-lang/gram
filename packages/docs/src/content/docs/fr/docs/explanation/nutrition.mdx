@@ -35,14 +35,9 @@ Le *renderer* HTML de référence reflète directement ce parti pris : il affich
 
 ## Ce que « pour 100 g » signifie ici
 
-Gram ne modélise **aucune perte à la cuisson**. Ni évaporation, ni réduction, ni
-perte au four — le champ `yield` de la base d'ingrédients concerne le parage
-(épluchures, tiges, os), pas ce qui se passe dans la casserole.
+Gram ne modélise **aucune perte à la cuisson**. Ni évaporation, ni réduction, ni perte au four — le champ `yield` de la base d'ingrédients concerne le parage (épluchures, tiges, os), pas ce qui se passe dans la casserole.
 
-`per100g` signifie donc *pour 100 g du mélange cru assemblé* : la somme des
-masses des ingrédients ayant effectivement contribué des macros. Pour un ragoût
-qui réduit d'un tiers ou un pain qui perd 12 % de son eau à la cuisson, cela
-sous-estime le plat fini par rapport à l'étiquette d'un produit du commerce.
+`per100g` signifie donc *pour 100 g du mélange cru assemblé* : la somme des masses des ingrédients ayant effectivement contribué des macros. Pour un ragoût qui réduit d'un tiers ou un pain qui perd 12 % de son eau à la cuisson, cela sous-estime le plat fini par rapport à l'étiquette d'un produit du commerce.
 
 Plutôt que de masquer ce point, l'analyzer expose le dénominateur utilisé :
 
@@ -50,31 +45,20 @@ Plutôt que de masquer ce point, l'analyzer expose le dénominateur utilisé :
 "basis": { "mass": 830, "massStatus": "estimated" }
 ```
 
-`massStatus` est le même signal à trois états que les métriques de masse, et il
-change la façon de lire le chiffre :
+`massStatus` est le même signal à trois états que les métriques de masse, et il change la façon de lire le chiffre :
 
 - `precise` — toutes les masses étaient connues exactement.
-- `estimated` — certaines proviennent d'une densité ou d'un poids unitaire, donc
-  le dénominateur est approximatif. Les renderers l'affichent `~830 g`.
-- `incomplete` — une partie de la masse n'a pas pu être résolue : le dénominateur
-  est une **borne inférieure**, et la densité est donc **sur**estimée, et non
-  sous-estimée. Les renderers l'affichent `>830 g`.
+- `estimated` — certaines proviennent d'une densité ou d'un poids unitaire, donc le dénominateur est approximatif. Les renderers l'affichent `~830 g`.
+- `incomplete` — une partie de la masse n'a pas pu être résolue : le dénominateur est une **borne inférieure**, et la densité est donc **sur**estimée, et non sous-estimée. Les renderers l'affichent `>830 g`.
 
-Le dénominateur est la masse des ingrédients ayant contribué des macros, et non
-le `totalMass` de la recette. Les deux peuvent légitimement différer — un
-ingrédient dont le poids est connu mais sans données nutritionnelles a une masse
-sans calories — et diviser l'un par l'autre sous-estimerait silencieusement la
-densité dans ce cas précis.
+Le dénominateur est la masse des ingrédients ayant contribué des macros, et non le `totalMass` de la recette. Les deux peuvent légitimement différer — un ingrédient dont le poids est connu mais sans données nutritionnelles a une masse sans calories — et diviser l'un par l'autre sous-estimerait silencieusement la densité dans ce cas précis.
 
-Les renderers précisent duquel des deux il s'agit, car à couverture complète le
-dénominateur *est* la masse crue de la recette, alors qu'à couverture partielle
-il ne l'est pas :
+Les renderers précisent duquel des deux il s'agit, car à couverture complète le dénominateur *est* la masse crue de la recette, alors qu'à couverture partielle il ne l'est pas :
 
 - `coverage` vaut 1 → « Sur 830 g d'ingrédients, avant cuisson »
 - `coverage` est inférieur à 1 → « Sur les 830 g renseignés, avant cuisson »
 
-La seconde formulation évite qu'un chiffre de 830 g se lise comme le poids d'une
-recette qui en pèse davantage.
+La seconde formulation évite qu'un chiffre de 830 g se lise comme le poids d'une recette qui en pèse davantage.
 
 ## D'où viennent les valeurs
 

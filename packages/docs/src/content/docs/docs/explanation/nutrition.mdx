@@ -35,14 +35,9 @@ The reference HTML renderer reflects this directly: it always shows the nutritio
 
 ## What "per 100 g" Means Here
 
-Gram models **no cooking loss**. There is no evaporation, no reduction, no bake
-loss — the `yield` field in the ingredient database is about trimming waste
-(peels, stems, bones), not about what happens in the pan.
+Gram models **no cooking loss**. There is no evaporation, no reduction, no bake loss — the `yield` field in the ingredient database is about trimming waste (peels, stems, bones), not about what happens in the pan.
 
-So `per100g` means *per 100 g of the raw assembled mixture*: the sum of the
-ingredient masses that actually contributed macros. For a stew that reduces by a
-third or a loaf that bakes off 12% of its water, that understates the finished
-dish against the label on a supermarket product.
+So `per100g` means *per 100 g of the raw assembled mixture*: the sum of the ingredient masses that actually contributed macros. For a stew that reduces by a third or a loaf that bakes off 12% of its water, that understates the finished dish against the label on a supermarket product.
 
 Rather than hide that, the analyzer reports the denominator it used:
 
@@ -50,29 +45,20 @@ Rather than hide that, the analyzer reports the denominator it used:
 "basis": { "mass": 830, "massStatus": "estimated" }
 ```
 
-`massStatus` is the same three-way signal the mass metrics use, and it changes
-how the figure should be read:
+`massStatus` is the same three-way signal the mass metrics use, and it changes how the figure should be read:
 
 - `precise` — every ingredient's mass was known exactly.
-- `estimated` — some masses came from a density or a unit weight, so the
-  denominator is approximate. Renderers show it as `~830 g`.
-- `incomplete` — some mass couldn't be resolved at all, so the denominator is a
-  **lower bound** and the density is therefore an **over**-estimate, not an
-  under-estimate. Renderers show it as `>830 g`.
+- `estimated` — some masses came from a density or a unit weight, so the denominator is approximate. Renderers show it as `~830 g`.
+- `incomplete` — some mass couldn't be resolved at all, so the denominator is a **lower bound** and the density is therefore an **over**-estimate, not an under-estimate. Renderers show it as `>830 g`.
 
-The denominator is the mass of the ingredients that contributed macros, not the
-recipe's `totalMass`. Those two can legitimately differ — an ingredient with a
-known weight but no nutrition data has mass but no calories — and dividing one
-by the other would silently understate the density in exactly that case.
+The denominator is the mass of the ingredients that contributed macros, not the recipe's `totalMass`. Those two can legitimately differ — an ingredient with a known weight but no nutrition data has mass but no calories — and dividing one by the other would silently understate the density in exactly that case.
 
-Renderers say which of the two they mean, because at full coverage the
-denominator *is* the recipe's raw weight and at partial coverage it isn't:
+Renderers say which of the two they mean, because at full coverage the denominator *is* the recipe's raw weight and at partial coverage it isn't:
 
 - `coverage` is 1 → "Based on 830 g of ingredients, before cooking"
 - `coverage` is below 1 → "Based on the 830 g with nutrition data, before cooking"
 
-The second wording is what stops a 830 g figure from reading as the weight of a
-recipe that actually weighs more.
+The second wording is what stops a 830 g figure from reading as the weight of a recipe that actually weighs more.
 
 ## Where the Numbers Come From
 
