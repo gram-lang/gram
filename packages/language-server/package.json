@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/language-server",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "LSP server for the Gram recipe language",
   "main": "dist/server.cjs",
   "files": [

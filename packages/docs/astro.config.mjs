@@ -34,7 +34,11 @@ export default defineConfig({
         starlightLinksValidator({
           errorOnFallbackPages: false,
           errorOnInconsistentLocale: true,
-          exclude: ['/play', '/play/', '/fr/play', '/fr/play/', '/docs', '/docs/', '/fr/docs', '/fr/docs/', '/en/docs', '/en/docs/']
+          exclude: [
+            '/play', '/play/', '/fr/play', '/fr/play/',
+            '/docs', '/docs/', '/fr/docs', '/fr/docs/', '/en/docs', '/en/docs/',
+            '/blog', '/blog/', '/blog/**', '/fr/blog', '/fr/blog/', '/fr/blog/**'
+          ]
         })
       ],
       title: 'Gram',

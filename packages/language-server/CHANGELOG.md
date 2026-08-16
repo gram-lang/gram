@@ -1,5 +1,14 @@
 # @gram-lang/language-server
 
+## 1.1.0
+
+### Patch Changes
+
+- fbb7511: **Analyzer & Language Server**: Improved nutrient calculation completeness and editor hover precision:
+  - Saturated, monounsaturated, polyunsaturated fats, and alcohol are now included in recipe nutrition totals instead of being omitted.
+  - `gram db enrich` can now propose monounsaturated and polyunsaturated fat values during ingredient enrichment.
+  - Fixed the editor hover tooltip incorrectly displaying sodium in grams instead of milligrams.
+
 ## 1.0.1
 
 ## 1.0.0

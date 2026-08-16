@@ -1,5 +1,16 @@
 # @gram-lang/i18n
 
+## 1.1.0
+
+### Minor Changes
+
+- fbb7511: **Nutrition & Rendering**: Support flexible nutrition serving bases (per portion and per 100 g) alongside whole-recipe totals:
+  - Declaring `portions:` in recipe frontmatter now calculates per-portion nutrition and keeps values constant when scaling recipes.
+  - Added a standardized `per-100g` nutrition basis calculated from raw assembled recipe mass.
+  - Added the `--nutrition <auto|total|per-portion|per-100g>` option to `gram view`, `gram export`, and `gram print`.
+  - Added nutrition basis toggles in the web playground and VS Code live preview.
+  - Localized all nutrient names and table headers across supported languages (French and English).
+
 ## 1.0.1
 
 ## 1.0.0

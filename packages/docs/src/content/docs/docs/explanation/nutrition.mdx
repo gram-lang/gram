@@ -64,6 +64,8 @@ The second wording is what stops a 830 g figure from reading as the weight of a 
 
 Gram doesn't ship a reference nutrition/density database — these values are specific to each product, region, and country, so only you can really vouch for what's actually in your kitchen. `gram db enrich` can propose values via AI, but every proposal goes through an interactive review before it's written, and anything accepted without editing is tagged `# [LLM]` in `ingredients.yaml` so it stays visibly unverified.
 
+For an in-depth look at the design decisions and reasons behind abandoning bundled reference tables like CIQUAL or the USDA, read the dedicated devlog: [Why Gram generates your ingredient database instead of bundling one](/blog/2026-08-16-why-gram-generates-database).
+
 ## Handling Modifiers
 
 Gram's syntax modifiers impact nutritional calculations in specific ways:

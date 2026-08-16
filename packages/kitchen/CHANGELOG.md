@@ -1,5 +1,15 @@
 # @gram-lang/kitchen
 
+## 1.1.0
+
+### Patch Changes
+
+- b3a509a: **Parser & Kitchen**: Fixed an issue where multi-word composite ingredients marked with `&` (e.g. `@juice{1}<@&unwaxed lemon{}`) were duplicated in the shopping list instead of being combined into a single purchase item.
+- Updated dependencies [b3a509a]
+- Updated dependencies [fbb7511]
+  - @gram-lang/parser@1.1.0
+  - @gram-lang/i18n@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

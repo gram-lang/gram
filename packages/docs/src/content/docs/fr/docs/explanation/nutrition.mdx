@@ -64,6 +64,8 @@ La seconde formulation évite qu'un chiffre de 830 g se lise comme le poids d'un
 
 Gram ne fournit pas de base de référence nutrition/densité — ces valeurs sont propres à chaque produit, chaque région et chaque pays, donc seul vous pouvez réellement garantir ce que vous avez dans votre cuisine. `gram db enrich` peut proposer des valeurs via l'IA, mais chaque proposition passe par une revue interactive avant d'être écrite, et tout ce qui est accepté sans modification est tagué `# [LLM]` dans `ingredients.yaml` pour rester visiblement non vérifié.
 
+Pour un retour d'expérience complet sur ce choix de conception et les raisons de l'abandon d'une base centrale comme le CIQUAL ou l'USDA, découvrez l'article de blog : [Pourquoi Gram génère votre base d'ingrédients au lieu d'en intégrer une](/fr/blog/2026-08-16-why-gram-generates-database).
+
 ## Gestion des Modificateurs
 
 Les modificateurs de syntaxe de Gram ont un impact sur les calculs nutritionnels de manières spécifiques :

@@ -76,8 +76,22 @@ gram view brioche.gram --scale flour=300g   # View scaled to flour = 300g
 - `--nutrition <auto|total|per-portion|per-100g>` picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 
 #### `gram import <source>`
-Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file using AI.
-- Automatically extracts `application/ld+json` from websites.
+Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into a `.gram` file using AI.
+
+```bash
+gram import "https://example.com/recipe"          # Web page with Schema.org / JSON-LD
+gram import recipe.json                            # Local JSON / JSON-LD file
+gram import "https://www.youtube.com/watch?v=…"   # YouTube video
+gram import "https://www.youtube.com/shorts/…"    # YouTube Short (normalised automatically)
+gram import recipe.json -o brioche.gram -y         # Non-interactive export
+```
+
+**Supported Sources:**
+- **Web page URLs**: automatically fetches the page and extracts structured `application/ld+json` recipe metadata (Schema.org `Recipe`).
+- **Local JSON / JSON-LD files**: parses exported JSON-LD schemas directly from disk.
+- **YouTube videos & Shorts**: analyzes cooking videos directly using Gemini multimodal video understanding (without requiring third-party transcript scrapers).
+
+**Import Workflow & Guardrails:**
 - Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
 - Requires AI to be configured (see [Configure AI Provider](/docs/how-to/configure-ai)).
 - Before writing to `--output`, the converted recipe is shown for review and confirmation. In a non-interactive run the review is skipped with a warning — pass `--yes/-y` to skip it deliberately.
@@ -86,25 +100,18 @@ Imports a recipe from a JSON-LD file or URL and converts it to a `.gram` file us
   - *Unfixed errors* — the AI gets two attempts to repair error-severity problems. If any survive, they are reported rather than written out.
 
   Pass `--force` to write the file anyway, or retry with a stronger `--model`.
-- `source:` and `author:` are taken from the source data, or removed when it has none — never left for the model to invent.
+- `source:` and `author:` are taken from the source data (or YouTube metadata), or removed when it has none — never left for the model to invent.
 - **Ingredients that came back without a quantity are counted and listed by line.** Not an error — `@salt{}` is idiomatic for "to taste" — but it is the clearest measure of how finished the recipe is, and it points you at the lines to edit. An ingredient given an amount once and merely mentioned again later is not counted.
 - When an ingredient database is present, the analyzer also reports what it could not resolve (unknown ingredients, quantities with no usable mass). These are gaps in your database, not import failures, so they never block.
+
+**YouTube Video Import Specifics:**
+- **Google / Gemini only**: Gemini is the one provider that natively processes YouTube URLs. With any other provider the import stops rather than sending it something that isn't a video.
+- **Cost scales with length**, at roughly 100 input tokens per second of video: a Short is a few thousand tokens, ten minutes is around 60,000, twenty-six minutes around 158,000. Videos over 20 minutes are refused by default; raise the ceiling with `--max-duration <minutes>`.
+- **Cost estimate needs `YOUTUBE_API_KEY`**: a plain YouTube Data API key, read from the environment only, never from `config.yaml`. Without it the import still runs, but it cannot determine the length upfront or enforce the limit, and says so.
+- **Video quantity expectations**: a video states far fewer explicit quantities than a written recipe. The prompt tells the model to leave `{}` empty rather than guess, and the checks above then refuse anything where content went missing. Expect gaps to fill in by hand — that is the honest outcome, not a failure.
+- `title:`, `author:` (channel name), and `source:` (URL) come directly from YouTube metadata and are used verbatim.
+
 - Options: `--output/-o <file>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, plus the [shared AI options](#choosing-the-ai-model).
-
-##### Importing from a YouTube video
-
-```bash
-gram import "https://www.youtube.com/watch?v=…"
-gram import "https://www.youtube.com/shorts/…"     # normalised automatically
-```
-
-The video is watched directly by Gemini — there is no transcript step, because no official API gives you the captions of a video you don't own. Consequences worth knowing:
-
-- **Google only.** Gemini is the one provider that reads a YouTube URL. With any other provider the import stops rather than sending it something that isn't a video.
-- **Cost scales with length**, at roughly 100 input tokens per second of video: a Short is a few thousand tokens, ten minutes is around 60,000, twenty-six minutes around 158,000. Videos over 20 minutes are refused; raise the ceiling with `--max-duration`.
-- **The cost estimate needs `YOUTUBE_API_KEY`** (a plain YouTube Data API key, read from the environment only, never from `config.yaml`). Without it the import still runs, but it cannot tell you the length or enforce the limit, and says so.
-- **A video states far fewer quantities than a written recipe.** The prompt tells the model to leave `{}` empty rather than guess, and the checks above then refuse anything where content went missing. Expect gaps to fill in by hand — that is the honest outcome, not a failure.
-- Title, channel and URL come from YouTube itself and are used verbatim for `title:`, `author:` and `source:`.
 
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.

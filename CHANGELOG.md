@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.1.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.1...v.1.1.0) - 2026-08-16
+
+### ✨ New Features
+- **CLI / Import**: Support importing recipes directly from **YouTube videos and Shorts** via `gram import`:
+  - Uses Gemini multimodal video understanding to analyze cooking videos and generate structured `.gram` recipes.
+  - Automatically populates `title:`, `author:` (channel name), and `source:` metadata from YouTube.
+  - Automatically normalizes YouTube Shorts URLs to standard video formats.
+  - Added `--max-duration` (default 20 minutes) to prevent accidental token overconsumption on long videos.
+  - Displays upfront video duration and estimated token cost when `YOUTUBE_API_KEY` is configured.
+- **CLI / AI**: Explicit AI model and provider selection for all AI commands (`gram import`, `gram db lint`, `gram db enrich`):
+  - Added `--model`, `--provider`, and `--pick-model` CLI flags to inspect or override the active model per run without altering persistent config.
+  - The CLI now displays the active AI provider, model, and configuration source before execution.
+  - Isolated provider API keys so credentials configured for a specific provider are never leaked or reused when switching providers.
+  - Fixed `gram import` hanging in non-interactive environments when `--output` was used without `--yes`.
+- **CLI / Database**: Added physical coherence and sanity checks across `gram db validate` and `gram db enrich`:
+  - `gram db validate` checks calorie consistency against Atwater estimates (4 kcal/g protein/carbs, 9 kcal/g fat, 7 kcal/g alcohol).
+  - `gram db validate` checks sub-macro coherence (sugars exceeding total carbs, fat sub-types exceeding total fat).
+  - `gram db validate` enforces category-based density sanity ranges and unit weight bounds.
+  - `gram db enrich` constrains AI estimates within physical limits and prompts self-verification of Atwater consistency.
+  - `gram db enrich` passes known ingredient categories to the AI to reduce guesswork.
+- **CLI / Database**: `gram db enrich` now walks you through an interactive review before writing AI estimates to `ingredients.yaml`:
+  - Preview, accept, edit, or skip AI-proposed density, unit weight, and nutrition values per ingredient.
+  - Unedited AI values are tagged with `# [LLM]` in `ingredients.yaml` to track provenance.
+  - Added `--report` (`-r`) to preview needed database enrichments without writing changes, matching `gram db lint --report` (replaces `--dry-run` / `-n`).
+  - Added `--yes` (`-y`) to accept all estimates automatically for non-interactive scripting.
+  - Automatically falls back to accepting values with a warning when executed in non-interactive (non-TTY) environments.
+- **CLI / Import**: Added integrity guardrails and diagnostic reporting to `gram import`:
+  - Validates compiled AST tokens against AI output to detect lost ingredients or truncated steps, aborting instead of writing corrupted files (overridable with `--force`).
+  - Reports uncorrected AI generation errors with actionable diagnostics.
+  - Identifies imported ingredients missing quantities and lists their line numbers for easy manual completion.
+  - Reports unknown database ingredients and unweighed units when an ingredient database is present.
+  - Prevented hallucinated placeholder metadata in `author:` and `source:` fields.
+  - Redirected progress indicators to `stderr` so stdout redirection (`gram import ... > recipe.gram`) produces clean recipe files.
+- **Nutrition & Rendering**: Support flexible nutrition serving bases (per portion and per 100 g) alongside whole-recipe totals:
+  - Declaring `portions:` in recipe frontmatter now calculates per-portion nutrition and keeps values constant when scaling recipes.
+  - Added a standardized `per-100g` nutrition basis calculated from raw assembled recipe mass.
+  - Added the `--nutrition <auto|total|per-portion|per-100g>` option to `gram view`, `gram export`, and `gram print`.
+  - Added nutrition basis toggles in the web playground and VS Code live preview.
+  - Localized all nutrient names and table headers across supported languages (French and English).
+
+### 🐛 Bug Fixes & Improvements
+- **Parser & Kitchen**: Fixed an issue where multi-word composite ingredients marked with `&` (e.g. `@juice{1}<@&unwaxed lemon{}`) were duplicated in the shopping list instead of being combined into a single purchase item.
+- **Analyzer & Language Server**: Improved nutrient calculation completeness and editor hover precision:
+  - Saturated, monounsaturated, polyunsaturated fats, and alcohol are now included in recipe nutrition totals instead of being omitted.
+  - `gram db enrich` can now propose monounsaturated and polyunsaturated fat values during ingredient enrichment.
+  - Fixed the editor hover tooltip incorrectly displaying sodium in grams instead of milligrams.
+- **Analyzer**: Fixed recipe total mass and section weights to include ingredients defined as relative percentages of another ingredient (e.g. `@water{60% @&flour}`).
+
+---
+
 ## [1.0.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.0...v.1.0.1) - 2026-08-07
 
 ### 🐛 Bug Fixes & Improvements

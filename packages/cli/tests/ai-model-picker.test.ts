@@ -33,6 +33,12 @@ mock.module("@clack/prompts", () => ({
 		return Promise.resolve(answers.shift());
 	},
 	confirm: () => Promise.resolve(true),
+	note: () => {},
+	spinner: () => ({
+		start: () => {},
+		stop: () => {},
+		message: () => {},
+	}),
 	isCancel: (v: unknown) => v === CANCEL,
 	cancel: () => {},
 	log: {
@@ -41,6 +47,9 @@ mock.module("@clack/prompts", () => ({
 		error: (msg: string) => {
 			errors.push(msg);
 		},
+		info: () => {},
+		success: () => {},
+		message: () => {},
 	},
 }));
 
