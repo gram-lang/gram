@@ -185,3 +185,45 @@ export function nutritionRows(
 
 	return rows;
 }
+
+export interface NutrientGroup extends NutrientRow {
+	/** Sub-macros of this nutrient, in table order. Empty for most. */
+	children: NutrientRow[];
+}
+
+/**
+ * The same rows, with each sub-macro folded into its parent.
+ *
+ * A card grid reads badly flat: "of which saturates" sitting in its own cell,
+ * the same size as "Protein", loses the fact that it is *part of* the fat
+ * beside it. Backends that lay nutrients out as blocks group them; the
+ * terminal and Markdown, which are already vertical lists, keep the flat rows
+ * and indent instead.
+ *
+ * A sub-macro whose parent is absent from the data is promoted to a group of
+ * its own rather than dropped — the database requires `fat` and `carbs`
+ * whenever a nutrition block exists, so this shouldn't happen, but losing a
+ * value silently would be the wrong way to find out.
+ */
+export function nutritionGroups(
+	values: NutritionMetrics["total"] | undefined,
+	lang?: string,
+): NutrientGroup[] {
+	const parentOf = new Map(NUTRIENTS.map((n) => [n.key as string, n.parent]));
+	const groups: NutrientGroup[] = [];
+	const byKey = new Map<string, NutrientGroup>();
+
+	for (const row of nutritionRows(values, lang)) {
+		const parent = parentOf.get(row.key);
+		const target = parent ? byKey.get(parent) : undefined;
+		if (target) {
+			target.children.push(row);
+			continue;
+		}
+		const group: NutrientGroup = { ...row, children: [] };
+		groups.push(group);
+		byKey.set(row.key, group);
+	}
+
+	return groups;
+}

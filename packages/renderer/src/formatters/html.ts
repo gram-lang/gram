@@ -19,7 +19,7 @@ import {
 	availableBases,
 	getMetrics,
 	hasNutritionToShow,
-	nutritionRows,
+	nutritionGroups,
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
@@ -544,9 +544,19 @@ const htmlBackend: RenderBackend = {
 			const isDefault =
 				bases.length > 1 && basis.key === defaultKey ? " data-default" : "";
 			html += `  <div class="nut-grid" data-basis="${basis.key}"${isDefault}>\n`;
-			for (const row of nutritionRows(basis.values, options.lang)) {
-				const cls = row.nested ? "nut-item nut-item-nested" : "nut-item";
-				html += `    <div class="${cls}"><span class="label">${escapeHtml(row.label)}</span> <strong>${row.value} ${row.unit}</strong></div>\n`;
+			// Sub-macros live inside their parent's card: "of which saturates" in
+			// a cell of its own, the same size as Protein, reads as a nutrient in
+			// its own right rather than a part of the fat next to it.
+			for (const group of nutritionGroups(basis.values, options.lang)) {
+				html += `    <div class="nut-item"><span class="label">${escapeHtml(group.label)}</span> <strong>${group.value} ${group.unit}</strong>`;
+				if (group.children.length > 0) {
+					html += `\n      <ul class="nut-item-children">\n`;
+					for (const child of group.children) {
+						html += `        <li><span class="label">${escapeHtml(child.label)}</span> <span class="value">${child.value} ${child.unit}</span></li>\n`;
+					}
+					html += `      </ul>\n    `;
+				}
+				html += `</div>\n`;
 			}
 			if (basis.note) {
 				html += `    <p class="nut-basis-note">${escapeHtml(basis.note)}</p>\n`;

@@ -638,7 +638,10 @@ body.vscode-dark,
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: 1fr 1fr;
+  /* Rows size to their content. This used to be `1fr 1fr`, which was harmless
+     while every card was one line tall — but once a card can hold sub-macros,
+     it forced every row to the height of the tallest card in the panel. */
+  grid-auto-rows: min-content;
 }
 
 @media (min-width: 480px) {
@@ -749,14 +752,39 @@ body.vscode-dark,
   color: var(--color-text-muted);
 }
 
-.gram-preview .nut-item-nested {
-  border-style: dashed;
+/* Sub-macros sit inside their parent's card rather than in cards of their own:
+   "of which saturates" in a cell the same size as Protein reads as a nutrient
+   in its own right instead of a part of the fat beside it. */
+.gram-preview .nut-item-children {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 6px 0 0 0;
+  border-top: 1px solid var(--color-bg-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.gram-preview .nut-item-nested .label {
+.gram-preview .nut-item-children li {
+  display: flex;
+flex-direction: column;
+  font-size: 0.72em;
+  color: var(--color-text-muted);
+}
+
+.gram-preview .nut-item-children .label {
+  font-size: 1em;
   text-transform: none;
   font-variant: normal;
-  color: var(--color-text-muted);
+  font-weight: 400;
+  color: inherit;
+}
+
+.gram-preview .nut-item-children .value {
+  font-family: var(--gram-font-mono);
+  white-space: nowrap;
+  font-weight:bold;
+  color: var(--color-text);
 }
 
 /* Only the checked basis is shown. Keyed off `data-basis` on both sides so

@@ -148,6 +148,39 @@ describe("nutrient rows", () => {
 		expect(toMarkdown(unportioned)).toContain("of which saturates");
 	});
 
+	it("nests sub-macros inside their parent's card in HTML", () => {
+		// A card grid reads badly flat: "of which saturates" in a cell the size
+		// of Protein looks like a nutrient in its own right.
+		const html = toHTML(portioned);
+		const fatCard = html.slice(
+			html.indexOf(">Fat<"),
+			html.indexOf(">Carbohydrates<"),
+		);
+		expect(fatCard).toContain("nut-item-children");
+		expect(fatCard).toContain("of which saturates");
+		// One card per top-level nutrient, children not counted.
+		const cards = (html.match(/class="nut-item"/g) ?? []).length;
+		// calories, fat, carbs, protein, sodium — sat_fat and sugar are folded in.
+		expect(cards).toBe(5);
+	});
+
+	it("promotes a sub-macro whose parent is absent rather than dropping it", () => {
+		const orphan: any = {
+			title: "T",
+			sections: [],
+			shopping_list: [],
+			meta: {},
+			metrics: {
+				nutrition: {
+					total: { calories: 10, sat_fat: 2 },
+					coverage: 1,
+					isEstimate: false,
+				},
+			},
+		};
+		expect(toHTML(orphan)).toContain("of which saturates");
+	});
+
 	it("agrees on the nutrient set across all three backends", () => {
 		const outputs = [
 			toMarkdown(portioned),

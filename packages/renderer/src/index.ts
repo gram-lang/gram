@@ -5,10 +5,11 @@ export * from "./types";
 export {
 	availableBases,
 	hasNutritionToShow,
+	nutritionGroups,
 	nutritionRows,
 	resolveNutritionBasis,
 } from "./nutrition";
-export type { NutrientRow, ResolvedBasis } from "./nutrition";
+export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement, DEFAULT_ICONS } from "./formatters/element";
 export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
