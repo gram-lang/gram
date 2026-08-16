@@ -55,26 +55,76 @@ jobs:
           TARGET_COMMITISH: ${{ github.event.release.target_commitish }}
         run: |
           bun -e '
-            fetch("https://codeberg.org/api/v1/repos/gram-lang/gram/releases", {
-              method: "POST",
-              headers: {
-                "Authorization": `token ${process.env.CODEBERG_TOKEN}`,
+            async function main() {
+              const tag = process.env.TAG_NAME;
+              const authHeader = `token ${process.env.CODEBERG_TOKEN}`;
+              const headers = {
+                "Authorization": authHeader,
                 "Content-Type": "application/json",
                 "User-Agent": "Forgejo-Mirror-Action",
-              },
-              body: JSON.stringify({
-                tag_name: process.env.TAG_NAME,
-                target_commitish: process.env.TARGET_COMMITISH,
-                name: process.env.RELEASE_NAME,
-                body: process.env.BODY,
-                prerelease: process.env.PRERELEASE === "true"
-              })
-            }).then(async r => {
-              if (!r.ok) { 
-                const text = await r.text();
-                console.error("Codeberg API error:", r.status, text); 
-                process.exit(1); 
+              };
+
+              for (let i = 1; i <= 3; i++) {
+                try {
+                  const existingRel = await fetch(
+                    `https://codeberg.org/api/v1/repos/gram-lang/gram/releases/tags/${encodeURIComponent(tag)}`,
+                    { headers }
+                  );
+                  if (existingRel.ok) {
+                    const data = await existingRel.json();
+                    const patchRes = await fetch(
+                      `https://codeberg.org/api/v1/repos/gram-lang/gram/releases/${data.id}`,
+                      {
+                        method: "PATCH",
+                        headers,
+                        body: JSON.stringify({
+                          name: process.env.RELEASE_NAME || tag,
+                          body: process.env.BODY || "",
+                          prerelease: process.env.PRERELEASE === "true",
+                        }),
+                      }
+                    );
+                    if (patchRes.ok) {
+                      console.log("✅ Successfully updated existing release on Codeberg");
+                      return;
+                    }
+                  }
+
+                  const tagRes = await fetch(
+                    `https://codeberg.org/api/v1/repos/gram-lang/gram/tags/${encodeURIComponent(tag)}`,
+                    { headers }
+                  );
+
+                  const payload = {
+                    tag_name: tag,
+                    name: process.env.RELEASE_NAME || tag,
+                    body: process.env.BODY || "",
+                    prerelease: process.env.PRERELEASE === "true",
+                  };
+                  if (!tagRes.ok && process.env.TARGET_COMMITISH) {
+                    payload.target_commitish = process.env.TARGET_COMMITISH;
+                  }
+
+                  const createRes = await fetch("https://codeberg.org/api/v1/repos/gram-lang/gram/releases", {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify(payload),
+                  });
+
+                  if (createRes.ok || createRes.status === 409) {
+                    console.log("✅ Successfully mirrored release to Codeberg");
+                    return;
+                  }
+
+                  const text = await createRes.text();
+                  console.error(`Codeberg API attempt ${i} error:`, createRes.status, text);
+                } catch (e) {
+                  console.error(`Codeberg API attempt ${i} failed:`, e);
+                }
+                await new Promise(r => setTimeout(r, 2000));
               }
-              console.log("✅ Successfully mirrored release to Codeberg");
-            }).catch(e => { console.error(e); process.exit(1); })
+              process.exit(1);
+            }
+            main();
           '
+
