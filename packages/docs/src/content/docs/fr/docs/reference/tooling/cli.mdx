@@ -87,7 +87,22 @@ Importe une recette depuis un fichier JSON-LD ou une URL et la convertit en un f
   Utilisez `--force` pour écrire le fichier malgré tout, ou réessayez avec un `--model` plus solide.
 - `source:` et `author:` proviennent des données source, ou sont supprimés si elles n'en contiennent pas — jamais laissés à l'invention du modèle.
 - Si une base d'ingrédients est présente, l'analyzer signale en plus ce qu'il n'a pas pu résoudre (ingrédients inconnus, quantités sans masse exploitable). Ce sont des manques dans votre base, pas des échecs d'import : ils ne bloquent jamais.
-- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
+- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
+
+##### Importer depuis une vidéo YouTube
+
+```bash
+gram import "https://www.youtube.com/watch?v=…"
+gram import "https://www.youtube.com/shorts/…"     # normalisé automatiquement
+```
+
+La vidéo est regardée directement par Gemini — il n'y a pas d'étape de sous-titres, car aucune API officielle ne donne accès aux sous-titres d'une vidéo dont vous n'êtes pas propriétaire. Ce qu'il faut en retenir :
+
+- **Google uniquement.** Gemini est le seul fournisseur capable de lire une URL YouTube. Avec un autre, l'import s'arrête plutôt que de lui envoyer autre chose qu'une vidéo.
+- **Le coût est proportionnel à la durée**, à environ 100 tokens d'entrée par seconde de vidéo : un Short représente quelques milliers de tokens, dix minutes environ 60 000, vingt-six minutes environ 158 000. Au-delà de 20 minutes, la vidéo est refusée ; relevez le plafond avec `--max-duration`.
+- **L'estimation de coût nécessite `YOUTUBE_API_KEY`** (une simple clé YouTube Data API, lue uniquement dans l'environnement, jamais dans `config.yaml`). Sans elle l'import fonctionne quand même, mais il ne peut ni annoncer la durée ni appliquer le plafond — et il le dit.
+- **Une vidéo énonce beaucoup moins de quantités qu'une recette écrite.** Le prompt demande au modèle de laisser `{}` vide plutôt que de deviner, et les contrôles ci-dessus refusent ensuite tout résultat où du contenu a disparu. Attendez-vous à compléter des trous à la main : c'est le résultat honnête, pas un échec.
+- Le titre, la chaîne et l'URL proviennent de YouTube et alimentent directement `title:`, `author:` et `source:`.
 
 #### `gram shop [motif]`
 Compile une liste de courses globale en agrégeant plusieurs recettes.

@@ -10,11 +10,17 @@ import type { AnalysisResult, IngredientData } from "@gram-lang/analyzer";
 import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
 import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
-import { assertPublicUrl } from "../core/ssrf";
+import { fetchTextWithSsrfGuard } from "../core/http";
 import { findWrittenIngredients } from "../core/gram-tokens";
 import { runPipelineFromSource } from "../core/pipeline";
 import type { ImportResult } from "../types";
 import { GRAM_SPEC_PROMPT } from "../prompts/gram-spec";
+import {
+	VIDEO_IMPORT_PREAMBLE,
+	VIDEO_IMPORT_REMINDER,
+	buildVideoContext,
+} from "../prompts/video-import";
+import type { YoutubeMetadata } from "./youtube";
 
 // ── JSON-LD extraction ────────────────────────────────────────────────────────
 
@@ -82,69 +88,6 @@ function flattenInstructions(
 
 // ── Source fetching ───────────────────────────────────────────────────────────
 
-const FETCH_TIMEOUT_MS = 15_000;
-const MAX_RESPONSE_BYTES = 10 * 1024 * 1024; // 10 MB — a recipe page is never legitimately bigger than this
-const MAX_REDIRECTS = 5;
-
-// `redirect: "manual"` + a manual loop, re-running `assertPublicUrl` on
-// every hop, instead of leaving
-// redirects to `fetch`'s default behavior — a URL that's public on the first
-// request can still redirect (or DNS-rebind) to an internal address, and a
-// check done only once up front would never see that.
-async function fetchWithSsrfGuard(url: string): Promise<Response> {
-	let currentUrl = url;
-	for (let i = 0; i <= MAX_REDIRECTS; i++) {
-		await assertPublicUrl(currentUrl);
-		const res = await fetch(currentUrl, {
-			signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-			redirect: "manual",
-		});
-		if (res.status >= 300 && res.status < 400) {
-			const location = res.headers.get("location");
-			if (!location) {
-				throw new GramCLIError(
-					`Redirect from ${currentUrl} had no Location header.`,
-					ExitCode.Error,
-				);
-			}
-			currentUrl = new URL(location, currentUrl).toString();
-			continue;
-		}
-		return res;
-	}
-	throw new GramCLIError(
-		`Too many redirects (> ${MAX_REDIRECTS}) fetching ${url}.`,
-		ExitCode.Error,
-	);
-}
-
-// Reads a response body with a hard size cap, regardless of what Content-Length
-// claims (it can be absent or wrong) — protects against a slow/huge/malicious
-// response tying up `gram import` indefinitely or exhausting memory.
-async function readBodyWithLimit(res: Response): Promise<string> {
-	const reader = res.body?.getReader();
-	if (!reader) return res.text();
-
-	const decoder = new TextDecoder();
-	let result = "";
-	let received = 0;
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) break;
-		received += value.byteLength;
-		if (received > MAX_RESPONSE_BYTES) {
-			await reader.cancel();
-			throw new GramCLIError(
-				`Response exceeds the ${MAX_RESPONSE_BYTES / (1024 * 1024)}MB limit.`,
-				ExitCode.Error,
-			);
-		}
-		result += decoder.decode(value, { stream: true });
-	}
-	result += decoder.decode();
-	return result;
-}
-
 type RecipeFetchResult = { jsonLd: any };
 
 // Split out from fetchRecipe so the response-parsing logic (content-type
@@ -164,30 +107,7 @@ export function parseRecipeResponse(
 
 export async function fetchRecipe(source: string): Promise<RecipeFetchResult> {
 	if (source.startsWith("http://") || source.startsWith("https://")) {
-		let body: string;
-		let contentType: string;
-		try {
-			// The same AbortSignal covers both the connection and the body read below
-			// (per the fetch spec, an in-flight body read aborts too), so both must
-			// share this try/catch — otherwise a timeout that fires mid-body-read
-			// leaks the raw "TimeoutError" instead of this friendly message.
-			const res = await fetchWithSsrfGuard(source);
-			if (!res.ok)
-				throw new GramCLIError(
-					`HTTP ${res.status} fetching ${source}`,
-					ExitCode.Error,
-				);
-			contentType = res.headers.get("content-type") ?? "";
-			body = await readBodyWithLimit(res);
-		} catch (err) {
-			if (err instanceof Error && err.name === "TimeoutError") {
-				throw new GramCLIError(
-					`Timed out fetching ${source} after ${FETCH_TIMEOUT_MS / 1000}s.`,
-					ExitCode.Error,
-				);
-			}
-			throw err;
-		}
+		const { body, contentType } = await fetchTextWithSsrfGuard(source);
 		return parseRecipeResponse(body, contentType);
 	}
 
@@ -558,34 +478,87 @@ export async function importWithAI(
 		rawIngredients,
 		instructions,
 	);
-	// The language instruction is repeated at both ends of the spec: a single
-	// mention at the top gets drowned out by ~600 lines of English syntax
-	// examples in between, and the model tends to anchor on the examples it
-	// saw most recently rather than an instruction from the start of the prompt.
-	const languageInstruction = getAiLanguageInstruction(lang);
-	const systemText = `${languageInstruction}\n\n${GRAM_SPEC_PROMPT}\n\n${languageInstruction}`;
-	// SystemModelMessage (rather than a plain string) so providerOptions can mark
-	// this large, byte-identical-across-calls prompt as cacheable. Anthropic reads
-	// its own namespace and caches the prefix; other providers ignore the key they
-	// don't recognize, so this is safe to send unconditionally regardless of which
-	// provider `model` actually is.
-	const system: SystemModelMessage = {
-		role: "system",
-		content: systemText,
-		providerOptions: {
-			anthropic: { cacheControl: { type: "ephemeral" } },
-		},
-	};
+	const system = buildSystemPrompt(lang);
 
-	let gramContent: string;
+	const gramContent = await generateAndFinalize({
+		model,
+		system,
+		firstCall: () =>
+			generateText({
+				model,
+				temperature: 0,
+				system,
+				prompt: `Convert this recipe to Gram format:\n\n${JSON.stringify(payload, null, 2)}`,
+			}),
+		lang,
+		sourceUrl,
+		author: extractAuthor(recipe.author),
+	});
+
+	return {
+		gramContent,
+		title: recipe.name ?? "Untitled",
+		ingredientCount: rawIngredients.length,
+		stepCount: instructions.length,
+		...inspectImport(gramContent, db),
+	};
+}
+
+/**
+ * The system prompt: the shared .gram spec, wrapped in whatever framing the
+ * source needs.
+ *
+ * The language instruction is repeated at both ends. A single mention at the
+ * top gets drowned out by ~600 lines of English syntax examples in between,
+ * and the model anchors on what it saw most recently. `framing` is composed
+ * the same way and for the same reason — see prompts/video-import.ts, where
+ * putting the source framing *after* the spec measurably degraded the writing.
+ *
+ * SystemModelMessage (rather than a plain string) so providerOptions can mark
+ * this large, byte-identical-across-calls prompt as cacheable. Anthropic reads
+ * its own namespace and caches the prefix; other providers ignore the key they
+ * don't recognize, so this is safe to send unconditionally regardless of which
+ * provider `model` actually is.
+ */
+function buildSystemPrompt(
+	lang: string,
+	framing?: { preamble: string; reminder: string },
+): SystemModelMessage {
+	const languageInstruction = getAiLanguageInstruction(lang);
+	const content = [
+		languageInstruction,
+		framing?.preamble,
+		GRAM_SPEC_PROMPT,
+		framing?.reminder,
+		languageInstruction,
+	]
+		.filter(Boolean)
+		.join("\n\n");
+
+	return {
+		role: "system",
+		content,
+		providerOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
+	};
+}
+
+/**
+ * Generate, repair, then apply the deterministic passes. Shared by the JSON-LD
+ * and video paths: only the first call differs between them, and duplicating
+ * the loop would mean the video path silently missing a fix made to this one.
+ */
+async function generateAndFinalize(opts: {
+	model: LanguageModel;
+	system: SystemModelMessage;
+	firstCall: () => Promise<{ text: string }>;
+	lang: string;
+	sourceUrl?: string;
+	author?: string | string[];
+}): Promise<string> {
+	const { model, system, firstCall, lang, sourceUrl, author } = opts;
+
 	try {
-		const { text } = await generateText({
-			model,
-			temperature: 0,
-			system,
-			prompt: `Convert this recipe to Gram format:\n\n${JSON.stringify(payload, null, 2)}`,
-		});
-		gramContent = stripFences(text);
+		let gramContent = stripFences((await firstCall()).text);
 
 		for (let attempt = 0; attempt < AI_MAX_RETRIES; attempt++) {
 			const errors = validateGram(gramContent);
@@ -604,31 +577,98 @@ export async function importWithAI(
 		gramContent = injectLanguage(gramContent, lang);
 		// Provenance comes from the source data, never from the model — see
 		// injectProvenance. Runs before formatGram so the result is formatted.
-		gramContent = injectProvenance(gramContent, {
-			sourceUrl,
-			author: extractAuthor(recipe.author),
-		});
+		gramContent = injectProvenance(gramContent, { sourceUrl, author });
 
 		// Formatting (spacing, trailing zeros, blank lines...) is deterministic —
 		// no need to spend another AI call asking the model to fix it when
 		// `@gram-lang/format` already does this exactly and for free.
-		gramContent = formatGram(gramContent).content;
+		return formatGram(gramContent).content;
 	} catch (err) {
 		throw new GramCLIError(
 			`AI import failed: ${getErrorMessage(err)}`,
 			ExitCode.Error,
 		);
 	}
+}
 
-	// The repair loop used to fall out of its last iteration without looking at
-	// the result, so a file the AI never managed to fix was written with nothing
-	// but ordinary warnings. Revalidate here — after the deterministic passes,
-	// which touch the content too — and let the caller decide what to do.
+// ── Video import ──────────────────────────────────────────────────────────────
+
+/**
+ * Import from a YouTube video, read by Gemini directly.
+ *
+ * Everything after generation is the JSON-LD path's: the same repair loop, the
+ * same deterministic passes, and the same integrity checks — which matter more
+ * here, not less, since a video states far fewer quantities than a written
+ * recipe and gives a model more room to fill gaps by invention.
+ *
+ * The URL is handed over as `fileData.fileUri`; @ai-sdk/google only does that
+ * for the canonical `watch?v=` form, which is why parseYoutubeUrl exists.
+ */
+export async function importVideoWithAI(
+	meta: YoutubeMetadata,
+	model: LanguageModel,
+	opts: {
+		lang?: string;
+		db?: Record<string, IngredientData> | null;
+	} = {},
+): Promise<ImportResult> {
+	const { lang = "en", db = null } = opts;
+
+	const system = buildSystemPrompt(lang, {
+		preamble: VIDEO_IMPORT_PREAMBLE,
+		reminder: VIDEO_IMPORT_REMINDER,
+	});
+	const context = buildVideoContext(meta);
+
+	const gramContent = await generateAndFinalize({
+		model,
+		system,
+		firstCall: () =>
+			generateText({
+				model,
+				temperature: 0,
+				system,
+				messages: [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: [
+									"Watch this cooking video and convert it to Gram format.",
+									context,
+								]
+									.filter(Boolean)
+									.join("\n\n"),
+							},
+							{
+								type: "file",
+								data: new URL(meta.canonicalUrl),
+								mediaType: "video/mp4",
+							},
+						],
+					},
+				],
+				providerOptions: {
+					// Roughly 100 tokens/second instead of ~300. A recipe video is
+					// read for its captions, packages and measuring jugs, not for
+					// fine detail — the spike found low resolution read on-screen
+					// gram values correctly, including on a wordless channel.
+					google: { mediaResolution: "MEDIA_RESOLUTION_LOW" },
+				},
+			}),
+		lang,
+		sourceUrl: meta.canonicalUrl,
+		author: meta.author,
+	});
+
 	return {
 		gramContent,
-		title: recipe.name ?? "Untitled",
-		ingredientCount: rawIngredients.length,
-		stepCount: instructions.length,
+		title: meta.title ?? "Untitled",
+		// A video has no ingredient list to count against; these are what the
+		// model produced, not what the source declared.
+		ingredientCount: findWrittenIngredients(gramContent).length,
+		stepCount: (gramContent.match(/^\[/gm) ?? []).length,
 		...inspectImport(gramContent, db),
 	};
 }
