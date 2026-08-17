@@ -8,6 +8,10 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { findProjectRoot } from "../core/workspace";
+import {
+	buildWatchReverseIndex,
+	transitiveDependents,
+} from "../core/watch-graph";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { checkFiles } from "../services/checker";
 import { buildFiles } from "../services/builder";
@@ -67,11 +71,8 @@ export default defineCommand({
 
 		const pending = new Map<string, ReturnType<typeof setTimeout>>();
 
-		const handle = async (filename: string) => {
-			if (extname(filename) !== ".gram") return;
-
-			const abs = resolve(watchDir, filename);
-			const rel = relative(process.cwd(), abs) || filename;
+		const runCheck = async (abs: string) => {
+			const rel = relative(process.cwd(), abs) || abs;
 			const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
 
 			const result = await checkFiles([abs], {
@@ -130,15 +131,35 @@ export default defineCommand({
 			}
 		};
 
+		const handleChange = async (abs: string) => {
+			await runCheck(abs);
+
+			// Re-check every file that (transitively) `@use`s the one that just
+			// changed — module-imports RFC §F.0.3. Rebuilt fresh each time
+			// rather than kept incrementally in sync, since a rename or an
+			// added/removed `@use` line would otherwise leave it stale.
+			const index = await buildWatchReverseIndex(watchDir, root, config.paths);
+			const dependents = [...transitiveDependents(index, abs)];
+			if (dependents.length === 0) return;
+
+			process.stdout.write(
+				`         ${chalk.dim(`→ rechecking ${dependents.length} dependent file${dependents.length !== 1 ? "s" : ""}`)}\n`,
+			);
+			for (const dep of dependents) {
+				await runCheck(dep);
+			}
+		};
+
 		watch(watchDir, { recursive: true }, (_, filename) => {
-			if (!filename) return;
-			const existing = pending.get(filename);
+			if (!filename || extname(filename) !== ".gram") return;
+			const abs = resolve(watchDir, filename);
+			const existing = pending.get(abs);
 			if (existing) clearTimeout(existing);
 			pending.set(
-				filename,
+				abs,
 				setTimeout(() => {
-					pending.delete(filename);
-					handle(filename).catch(() => {});
+					pending.delete(abs);
+					handleChange(abs).catch(() => {});
 				}, 150),
 			);
 		});

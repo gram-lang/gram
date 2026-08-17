@@ -47,4 +47,6 @@ The HTML, Markdown, and print output all credit a spliced-in section back to the
 
 `gram diff` now knows about imports too, instead of a single added `@use` line making the whole recipe look changed. A base's own sections no longer count as the host's sections shifting around; the import itself shows up as its own line when it's added, removed, re-bound to a different name, or rescaled to a different factor.
 
+`gram watch` now follows imports too: saving a base recipe re-checks every file in the watched directory that uses it, directly or through a chain of other imports, not just the file that changed on disk.
+
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

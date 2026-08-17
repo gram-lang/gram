@@ -209,6 +209,7 @@ gram watch --build --output ./dist      # Compile aussi les fichiers modifiés e
 - Affiche une ligne de résultat horodatée par changement : `[12:34:01] ✓ brioche.gram` ou `✗ brioche.gram — 1 error`.
 - Les erreurs s'affichent *inline* sous le nom du fichier. Le *watcher* ne crashe jamais suite à une erreur.
 - Un délai antirebond (debounce) de 150ms évite les exécutions redondantes.
+- Sauvegarder une base relance aussi le contrôle de chaque fichier du dossier observé qui l'importe via `@use`, directement ou transitivement — pas seulement le fichier modifié sur le disque. Une ligne `→ rechecking N dependent file(s)` indique combien.
 - Options : `--build`, `--output/-o <dossier>`, `--skip-db`, `--db`.
 
 #### `gram suggest`
