@@ -3,6 +3,7 @@
   "meta": {
     "title": "Basic Ingredients"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

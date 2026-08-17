@@ -3,6 +3,7 @@
   "meta": {
     "title": "Shopping List Multiunit Across Sections"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

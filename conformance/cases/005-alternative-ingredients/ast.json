@@ -3,6 +3,7 @@
   "meta": {
     "title": "Alternative Ingredients"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

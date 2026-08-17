@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Undefined Reference"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

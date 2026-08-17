@@ -3,6 +3,7 @@
   "meta": {
     "title": "Comments"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

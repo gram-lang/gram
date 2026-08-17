@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Scope Conflict"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

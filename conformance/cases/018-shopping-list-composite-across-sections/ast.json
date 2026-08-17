@@ -3,6 +3,7 @@
   "meta": {
     "title": "Shopping List Composite Across Sections"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

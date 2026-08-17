@@ -45,7 +45,7 @@
           "qty": 4,
           "composite": {
             "parent": "eggs",
-            "quantity": 2
+            "quantity": 4
           }
         }
       ],
@@ -61,7 +61,7 @@
               "qty": 4,
               "composite": {
                 "parent": "eggs",
-                "quantity": 2
+                "quantity": 4
               }
             },
             "from the whites."

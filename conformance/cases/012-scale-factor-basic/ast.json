@@ -3,6 +3,7 @@
   "meta": {
     "title": "Scale Factor Basic"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

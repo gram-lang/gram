@@ -3,6 +3,7 @@
   "meta": {
     "title": "Shopping List Cross Section Aggregation"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

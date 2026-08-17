@@ -2,5 +2,6 @@
   "message": "\"egg-yolks\" is only used inside the \"eggs\" sub-recipe and cannot be scaled directly. Scale \"eggs\" instead.",
   "offset": null,
   "expected": null,
-  "code": "NESTED_ONLY_TARGET"
+  "code": "NESTED_ONLY_TARGET",
+  "file": null
 }

@@ -3,6 +3,7 @@
   "meta": {
     "title": "Scale Target Basic"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

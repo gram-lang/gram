@@ -10,6 +10,7 @@
   "dependencies": {
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/modules": "workspace:*",
     "@gram-lang/parser": "workspace:*"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@
   "meta": {
     "title": "Db Shopping Aggregation With Real Data"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

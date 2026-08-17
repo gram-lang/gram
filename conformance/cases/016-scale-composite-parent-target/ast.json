@@ -3,6 +3,7 @@
   "meta": {
     "title": "Scale Composite Parent Target"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

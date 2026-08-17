@@ -6,6 +6,12 @@
  * case directory. Any implementation of the Gram pipeline — this one or a
  * future Rust port — must produce byte-identical goldens to be conformant.
  *
+ * A case may import other `.gram` files (`@use`) — `input.gram` stays the
+ * one entry point golden-tested, but its siblings within the case directory
+ * are resolvable, through a host confined to (and URI'd relative to) the
+ * case directory itself, never an absolute filesystem path — so goldens
+ * stay portable across machines (module-imports RFC, Phase F.1).
+ *
  * Usage:
  *   bun run run.ts             # verify all cases against their goldens
  *   bun run run.ts --update    # (re)write goldens from the current pipeline
@@ -13,6 +19,7 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import * as posix from "node:path/posix";
 import { fileURLToPath } from "node:url";
 import {
 	analyze,
@@ -27,8 +34,15 @@ import {
 	type CompilerOptions,
 } from "@gram-lang/kitchen";
 import { GramParseError, getAST } from "@gram-lang/parser";
+import {
+	loadModuleGraph,
+	composeRecipe,
+	finalizeComposed,
+	type ModuleHost,
+} from "@gram-lang/modules";
 
 const CASES_DIR = join(dirname(fileURLToPath(import.meta.url)), "cases");
+const ENTRY_URI = "input.gram";
 
 const args = process.argv.slice(2);
 const update = args.includes("--update");
@@ -64,6 +78,30 @@ function loadCaseDatabase(caseDir: string): Record<string, IngredientData> {
 	return data;
 }
 
+/**
+ * Resolves `@use` specifiers relative to the *case directory*, never an
+ * absolute filesystem path — a golden JSON embedding this machine's repo
+ * path would break the moment another machine (or CI) ran the same case.
+ * URIs are POSIX-style relative paths like "bases/pate.gram", confined to
+ * the case directory the same way the CLI host confines to the project
+ * root.
+ */
+function createCaseHost(caseDir: string): ModuleHost {
+	return {
+		resolve(specifier: string, fromUri: string): string {
+			const fromDir = posix.dirname(fromUri);
+			const resolved = posix.normalize(posix.join(fromDir, specifier));
+			if (resolved.startsWith("..")) {
+				throw new Error(`"${specifier}" resolves outside the case directory.`);
+			}
+			return resolved;
+		},
+		read(uri: string): string {
+			return readFileSync(join(caseDir, uri), "utf-8");
+		},
+	};
+}
+
 function writeOrCompare(
 	path: string,
 	actual: string,
@@ -80,9 +118,11 @@ function writeOrCompare(
 	}
 }
 
-function runCase(name: string): { ok: boolean; diffs: string[] } {
+async function runCase(
+	name: string,
+): Promise<{ ok: boolean; diffs: string[] }> {
 	const caseDir = join(CASES_DIR, name);
-	const source = readFileSync(join(caseDir, "input.gram"), "utf-8");
+	const source = readFileSync(join(caseDir, ENTRY_URI), "utf-8");
 	const errorGoldenPath = join(caseDir, "error.json");
 	const diffs: string[] = [];
 
@@ -93,18 +133,28 @@ function runCase(name: string): { ok: boolean; diffs: string[] } {
 	const database = loadCaseDatabase(caseDir);
 
 	try {
+		// ast.json stays getAST(input.gram) alone — a pure, single-file
+		// operation, and the one golden every case has regardless of whether
+		// it imports anything. Composition happens only for compiled/analyzed.
 		const ast = getAST(source);
-		let compiled = compile(ast, caseOptions.compilerOptions);
+
+		const host = createCaseHost(caseDir);
+		const graph = await loadModuleGraph(ENTRY_URI, host);
+		const composed = composeRecipe(graph, { db: database });
+
+		let compiled = compile(composed.ast, caseOptions.compilerOptions);
 
 		if (caseOptions.scaleTarget) {
-			const resolution = resolveScaleFactor(compile(ast), {
+			const resolution = resolveScaleFactor(compile(composed.ast), {
 				type: "target",
 				id: caseOptions.scaleTarget.id,
 				qty: caseOptions.scaleTarget.qty,
 				unit: caseOptions.scaleTarget.unit ?? null,
 			});
-			compiled = compile(ast, { scaleFactor: resolution.factor });
+			compiled = compile(composed.ast, { scaleFactor: resolution.factor });
 		}
+
+		compiled = finalizeComposed(compiled, composed);
 
 		const { result: analyzed } = analyze(
 			compiled,
@@ -143,6 +193,10 @@ function runCase(name: string): { ok: boolean; diffs: string[] } {
 			offset: e instanceof GramParseError ? e.offset : null,
 			expected: e instanceof GramParseError ? e.expected : null,
 			code: e instanceof ScaleError ? e.code : null,
+			// Always present (never omitted) so error.json keeps one shape
+			// across every case — null except when a thrown error can be
+			// attributed to a specific module file rather than the entry.
+			file: null as string | null,
 		};
 		writeOrCompare(errorGoldenPath, toJSON(info), diffs, "error.json");
 	}
@@ -166,7 +220,7 @@ if (cases.length === 0) {
 
 let failed = 0;
 for (const name of cases) {
-	const { ok, diffs } = runCase(name);
+	const { ok, diffs } = await runCase(name);
 	if (ok) {
 		console.log(`  ok    ${name}`);
 	} else {
