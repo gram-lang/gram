@@ -5,6 +5,7 @@
 "@gram-lang/cli": minor
 "@gram-lang/renderer": minor
 "@gram-lang/i18n": minor
+"@gram-lang/analyzer": minor
 ---
 
 Recipes can now import other recipes.
@@ -43,5 +44,7 @@ Sometimes you don't want a base's own steps cluttering the timeline — a stock 
 ```
 
 The HTML, Markdown, and print output all credit a spliced-in section back to the base it came from — a small badge next to the section title naming the module (and noting when it was prepared separately).
+
+`gram diff` now knows about imports too, instead of a single added `@use` line making the whole recipe look changed. A base's own sections no longer count as the host's sections shifting around; the import itself shows up as its own line when it's added, removed, re-bound to a different name, or rescaled to a different factor.
 
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

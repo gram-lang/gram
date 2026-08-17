@@ -7,6 +7,7 @@ import type {
 	Usage,
 	ShoppingListItem,
 	CompositeItem,
+	ModuleInfo,
 } from "@gram-lang/kitchen";
 import { getNumericQty } from "@gram-lang/kitchen";
 
@@ -66,6 +67,15 @@ export interface TimerDelta {
 	to?: string;
 }
 
+export interface ModuleDelta {
+	uri: string;
+	change: "added" | "removed" | "changed";
+	fromBinding?: string;
+	toBinding?: string;
+	fromFactor?: number;
+	toFactor?: number;
+}
+
 export interface DiffResult {
 	hasChanges: boolean;
 	titleChanged: boolean;
@@ -78,6 +88,7 @@ export interface DiffResult {
 	sections: SectionDelta[];
 	temperatures: TemperatureDelta[];
 	timers: TimerDelta[];
+	modules: ModuleDelta[];
 }
 
 type ShoppingItem = ShoppingListItem | CompositeItem | Usage;
@@ -659,25 +670,89 @@ function diffPreparations(
 	return deltas;
 }
 
+// Sections spliced in from an `@use` import (module-imports RFC §F.0.2)
+// always land at the head of `sections[]`, in `@use` declaration order —
+// so adding, removing, or reordering imports shifts every position/title
+// key the *other* diff functions rely on, making a one-line `@use` addition
+// look like the whole recipe changed. Filtered out here, once, for every
+// diff that keys by section title/position; `diffModules` below compares
+// the imports themselves instead, by (uri, binding, scale factor) — a far
+// more useful signal than a section-position shift.
+function ownSections(sections: ProcessedSection[]): ProcessedSection[] {
+	return sections.filter((s) => !s.module);
+}
+
+function diffModules(a: ModuleInfo[], b: ModuleInfo[]): ModuleDelta[] {
+	const aMap = new Map(a.map((m) => [m.uri, m]));
+	const bMap = new Map(b.map((m) => [m.uri, m]));
+	const allUris = new Set([...aMap.keys(), ...bMap.keys()]);
+	const deltas: ModuleDelta[] = [];
+
+	for (const uri of allUris) {
+		const aModule = aMap.get(uri);
+		const bModule = bMap.get(uri);
+
+		if (aModule && !bModule) {
+			deltas.push({
+				uri,
+				change: "removed",
+				fromBinding: aModule.binding,
+				fromFactor: aModule.scaleFactor,
+			});
+			continue;
+		}
+		if (!aModule && bModule) {
+			deltas.push({
+				uri,
+				change: "added",
+				toBinding: bModule.binding,
+				toFactor: bModule.scaleFactor,
+			});
+			continue;
+		}
+		if (!aModule || !bModule) continue;
+
+		if (
+			aModule.binding !== bModule.binding ||
+			aModule.scaleFactor !== bModule.scaleFactor
+		) {
+			deltas.push({
+				uri,
+				change: "changed",
+				fromBinding: aModule.binding,
+				toBinding: bModule.binding,
+				fromFactor: aModule.scaleFactor,
+				toFactor: bModule.scaleFactor,
+			});
+		}
+	}
+
+	return deltas;
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function diffRecipes(
 	a: CompilationResult,
 	b: CompilationResult,
 ): DiffResult {
+	const aSections = ownSections(a.sections ?? []);
+	const bSections = ownSections(b.sections ?? []);
+
 	const ingredients = diffIngredients(
 		a.shopping_list ?? [],
 		b.shopping_list ?? [],
 	);
-	const preparations = diffPreparations(a.sections ?? [], b.sections ?? []);
+	const preparations = diffPreparations(aSections, bSections);
 	const timings = diffTimings(a.metrics, b.metrics);
-	const sections = diffSections(a.sections ?? [], b.sections ?? []);
+	const sections = diffSections(aSections, bSections);
 	const meta = diffMeta(
 		(a.meta ?? {}) as Record<string, unknown>,
 		(b.meta ?? {}) as Record<string, unknown>,
 	);
-	const temperatures = diffTemperatures(a.sections ?? [], b.sections ?? []);
-	const timers = diffTimers(a.sections ?? [], b.sections ?? []);
+	const temperatures = diffTemperatures(aSections, bSections);
+	const timers = diffTimers(aSections, bSections);
+	const modules = diffModules(a.modules ?? [], b.modules ?? []);
 	const titleChanged = a.title !== b.title;
 
 	return {
@@ -689,7 +764,8 @@ export function diffRecipes(
 			sections.length > 0 ||
 			meta.length > 0 ||
 			temperatures.length > 0 ||
-			timers.length > 0,
+			timers.length > 0 ||
+			modules.length > 0,
 		titleChanged,
 		fromTitle: a.title,
 		toTitle: b.title,
@@ -700,5 +776,6 @@ export function diffRecipes(
 		sections,
 		temperatures,
 		timers,
+		modules,
 	};
 }

@@ -166,3 +166,105 @@ Add @egg{2}|@tofu{200g}.
 		});
 	}
 });
+
+// module-imports RFC §F.0.2: a spliced-in module section always lands at the
+// head of `sections[]`, so title/position-keyed diffing must ignore it —
+// otherwise adding a single `@use` line would look like the whole recipe's
+// sections shifted. `CompilationResult.modules` isn't produced by compile()
+// itself (only by @gram-lang/modules' finalizeComposed after composing) —
+// stamped by hand here, the same way the renderer's module-badge tests do,
+// to exercise diffRecipes in isolation from the whole compose pipeline.
+describe("diffRecipes — module-imports RFC §F.0.2", () => {
+	const moduleInfo = (overrides: Partial<Record<string, unknown>> = {}) => ({
+		binding: "pate",
+		uri: "./bases/pate.gram",
+		title: "Pate",
+		mode: "inline" as const,
+		...overrides,
+	});
+
+	it("does not treat a newly-added module section as the host's own sections shifting", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe(
+			"## Pate\n\nMix @flour{200g}.\n\n## Montage\n\nUse the base.\n",
+		);
+		b.sections[0]!.module = moduleInfo();
+
+		const { sections } = diffRecipes(a, b);
+		expect(sections).toEqual([]);
+	});
+
+	it("ignores a module section's own preparations/temperatures/timers", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe(
+			"## Pate\n\nBake @flour{200g} at ^{180C} for ~{10min}.\n\n## Montage\n\nUse the base.\n",
+		);
+		b.sections[0]!.module = moduleInfo();
+
+		const result = diffRecipes(a, b);
+		expect(result.preparations).toEqual([]);
+		expect(result.temperatures).toEqual([]);
+		expect(result.timers).toEqual([]);
+	});
+
+	it("reports a newly-added import in the modules delta", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe("## Montage\nUse the base.\n");
+		b.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+
+		const { modules } = diffRecipes(a, b);
+		expect(modules).toEqual([
+			{
+				uri: "./bases/pate.gram",
+				change: "added",
+				toBinding: "pate",
+				toFactor: 1,
+			},
+		]);
+	});
+
+	it("reports a removed import in the modules delta", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe("## Montage\nUse the base.\n");
+		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+
+		const { modules } = diffRecipes(a, b);
+		expect(modules).toEqual([
+			{
+				uri: "./bases/pate.gram",
+				change: "removed",
+				fromBinding: "pate",
+				fromFactor: 1,
+			},
+		]);
+	});
+
+	it("reports a changed scale factor for the same import", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe("## Montage\nUse the base.\n");
+		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+		b.modules = [moduleInfo({ scaleFactor: 2 }) as never];
+
+		const { modules, hasChanges } = diffRecipes(a, b);
+		expect(hasChanges).toBe(true);
+		expect(modules).toEqual([
+			{
+				uri: "./bases/pate.gram",
+				change: "changed",
+				fromBinding: "pate",
+				toBinding: "pate",
+				fromFactor: 1,
+				toFactor: 2,
+			},
+		]);
+	});
+
+	it("reports no module delta when nothing about the import changed", () => {
+		const a = compileRecipe("## Montage\nUse the base.\n");
+		const b = compileRecipe("## Montage\nUse the base.\n");
+		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+		b.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+
+		expect(diffRecipes(a, b).modules).toEqual([]);
+	});
+});

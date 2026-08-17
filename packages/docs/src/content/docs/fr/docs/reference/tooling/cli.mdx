@@ -170,16 +170,18 @@ gram diff brioche.gram --ref HEAD~2           # vs un commit git spécifique
 gram diff brioche.gram --ref v1.2             # vs un tag git
 gram diff brioche-v1.gram brioche-v2.gram     # Deux fichiers explicites (pas besoin de git)
 ```
-Le diff couvre **six axes** :
+Le diff couvre **sept axes** :
 - **Ingrédients** — quantités ajoutées/retirées/modifiées, avec le `percentChange` quand les unités correspondent.
 - **Minutages** — `totalTime`, `cookTime`, `activeTime`, `preparationTime` en minutes.
 - **Sections** — sections ajoutées/retirées et changements du nombre d'étapes.
 - **Frontmatter** — modifications sur `portions`, `description`, et d'autres champs de métadonnées. Un changement de `title` est suivi séparément et affiché sur sa propre ligne au-dessus du bloc frontmatter.
 - **Préparations** — modes de préparation modifiés par ingrédient (ex : "en dés" → "émincé").
 - **Températures & Minuteurs** — cibles de température et durées de minuteur ajoutées/retirées/modifiées par section.
+- **Modules** — un import `@use` ajouté, retiré, relié à un nouveau nom, ou re-scalé avec un facteur différent.
 
 - Calcule le *diff* sur les objets compilés par le moteur Kitchen. Ainsi, un simple reformatage syntaxique (espaces, sauts de ligne) ne remontera aucun *diff*.
 - Le mode Git exige que le fichier soit suivi (*tracked*). Renvoie une erreur gracieuse si `git` est introuvable sur la machine.
+- Une section importée via `@use` ne compte jamais dans les axes Sections/Préparations/Températures/Minuteurs — sinon l'ajout d'un seul import ferait croire que toutes les autres sections ont bougé. C'est l'axe Modules qui rend compte de son propre import. `gram diff` ne résout pas `@use` de lui-même pour autant : chaque côté est compilé isolément, donc un changement *à l'intérieur* d'une base importée n'apparaît pas ici — pour ça, diffez directement le fichier de la base.
 - Options : `--ref <réf-git>`.
 
 #### `gram scale <fichier>`

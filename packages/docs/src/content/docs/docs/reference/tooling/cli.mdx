@@ -173,16 +173,18 @@ gram diff brioche.gram --ref HEAD~2           # vs a specific git commit
 gram diff brioche.gram --ref v1.2             # vs a git tag
 gram diff brioche-v1.gram brioche-v2.gram     # Two explicit files (no git needed)
 ```
-The diff covers **six axes**:
+The diff covers **seven axes**:
 - **Ingredients** — added/removed/changed quantities, with `percentChange` when units match.
 - **Timings** — `totalTime`, `cookTime`, `activeTime`, `preparationTime` in minutes.
 - **Sections** — added/removed sections and step-count changes.
 - **Frontmatter** — changes to `portions`, `description`, and other metadata fields. A `title` change is tracked separately and shown as its own line above the frontmatter block.
 - **Preparations** — changed preparation modes per ingredient (e.g. "diced" → "sliced").
 - **Temperatures & Timers** — added/removed/changed temperature targets and timer durations per section.
+- **Modules** — an `@use` import added, removed, re-bound to a different name, or rescaled to a different factor.
 
 - Operates on compiled objects (Kitchen output), not raw text — syntactic reformatting produces no diff.
 - Git mode requires the file to be tracked. Gracefully errors if `git` is unavailable.
+- A section spliced in from an `@use` import never counts toward the Sections/Preparations/Temperatures/Timers axes — otherwise adding one import would look like every other section moved. Its own import is what the Modules axis reports instead. `gram diff` doesn't resolve `@use` on its own, though: it compiles each side standalone, so a change *inside* an imported base isn't visible here — diff the base file directly for that.
 - Options: `--ref <git-ref>`.
 
 #### `gram scale <file>`

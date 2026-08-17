@@ -110,3 +110,5 @@ function diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult
 ```
 
 Calcule le diff structurel entre deux recettes compilées (ex : deux versions d'un même fichier, ou la version de base contre la version *scalée*). Il gère les changements de quantité/unité des ingrédients (incluant un `percentChange` pertinent), de préparation, d'écarts de durée, les ajouts/modifications/suppressions de sections, les variations de température et de minuteur, ainsi que les altérations du *frontmatter* (`meta`). `hasChanges` vaut `true` dès qu'une catégorie n'est pas vide.
+
+Une section importée via `@use` (`ProcessedSection.module` renseigné) est exclue des comparaisons de sections/préparations/températures/minuteurs — sans quoi l'ajout d'un simple import décalerait la position de toutes les autres sections et ferait croire que toute la recette a changé. Son propre import est comparé séparément, par `(uri, binding, facteur d'échelle)`, dans `modules: ModuleDelta[]` — un import re-scalé ou re-lié est signalé comme `"changed"`.
