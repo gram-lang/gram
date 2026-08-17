@@ -8,5 +8,11 @@
     "id": "empanadas.gram",
     "title": "Brian's Empanadas",
     "path": "/examples/empanadas.gram"
+  },
+  {
+    "id": "tarte-citron",
+    "title": "Lemon Tart (multi-file, @use)",
+    "entry": "main.gram",
+    "files": ["main.gram", "bases/pate-sablee.gram"]
   }
 ]

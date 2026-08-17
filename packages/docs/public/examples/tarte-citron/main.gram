@@ -1,0 +1,22 @@
+---
+title: 'Lemon Tart'
+description: 'A shortcrust base, split into its own file and pulled in with @use.'
+category: 'Dessert'
+portions: 8
+---
+
+@use "./bases/pate-sablee.gram" as &pate
+
+## Curd ->&curd
+
+[Whisk] @egg{3}, @sugar{150 g}, and @lemon juice{120 ml} in a #saucepan over low heat until thickened, about ~{8min}.
+
+[Remove] from heat and whisk in the @butter{80 g} until glossy.
+
+## Montage
+
+[Line] a #tart tin(24cm) with &pate{250 g}, rolled out thin.
+
+[Blind bake] at ^{180C} for ~_{15min}.
+
+[Fill] the baked shell with the &curd and chill for ~_{2h} before serving.
