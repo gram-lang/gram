@@ -172,11 +172,31 @@ export interface ProcessedSection {
 	steps: ProcessedStepItem[];
 	intermediate_preparation?: string;
 	retro_planning?: RetroPlanning | null;
+	// Set by the module composer (@gram-lang/modules) on every section it
+	// splices in from an import, for traceability at render time — never set
+	// by compile() itself. `binding` is the host's local name for the
+	// import, `uri` and `title` identify the module the section came from.
+	module?: { binding: string; uri: string; title: string | null };
 }
 
 export interface TimeBreakdownItem {
 	label: string;
 	duration: number; // in minutes
+}
+
+// One imported module's contribution to a composed document (module-imports
+// RFC §D.7): frontmatter of an imported module is never merged into the
+// host's own (an author's tags/title/source are not the host recipe's) --
+// this is where that information actually goes instead, so a consumer can
+// still credit a base's author or display "contains: shortcrust pastry"
+// without Gram having to decide the semantics on its behalf.
+export interface ModuleInfo {
+	binding: string;
+	uri: string;
+	title: string | null;
+	meta: Meta;
+	scaleFactor: number;
+	mode: "inline" | "prepared";
 }
 
 export interface CompilationResult {
@@ -192,6 +212,9 @@ export interface CompilationResult {
 	cookware: Usage[];
 	sections: ProcessedSection[];
 	warnings: Warning[];
+	// Present only when this result came from composing one or more `@use`
+	// imports (@gram-lang/modules) -- absent for a plain single-file compile.
+	modules?: ModuleInfo[];
 	metrics: {
 		preparationTime: number; // Estimated mise-en-place time
 		activeTime: number; // Sum of blocking work time (default step durations + active timers)
