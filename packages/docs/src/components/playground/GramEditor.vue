@@ -134,6 +134,25 @@ watch(
 	},
 );
 
+// `files` is only ever reassigned wholesale (a new Map object) when the
+// parent loads a different recipe entirely (an example, or the blank-slate
+// reset) — a same-file edit goes through `.set()` on the existing Map, which
+// doesn't change its identity and so doesn't trigger this. A wholesale
+// replacement can land on the *same* `activeFile` the editor was already
+// showing (every example loads into `/main.gram`), in which case the
+// `activeFile` watcher above never fires and the stale cached state would
+// otherwise linger — so every cached state is dropped here and the active
+// file's state is rebuilt fresh from the new `files`.
+watch(
+	() => props.files,
+	() => {
+		stateCache.clear();
+		diagnosticsCache.clear();
+		if (!view) return;
+		view.setState(stateFor(props.activeFile));
+	},
+);
+
 watch(isDark, (dark) => {
 	if (!view || !highlighter) return;
 	view.dispatch({
