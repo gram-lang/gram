@@ -4,6 +4,7 @@ import { log } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { filterModuleRoots } from "../core/module-roots";
 import { buildShoppingList } from "../services/shopper";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { parseScaleArg } from "../services/scaler";
@@ -49,6 +50,12 @@ export default defineCommand({
 				"Skip database — no name resolution, aggregation by unit only",
 			default: false,
 		},
+		"include-modules": {
+			type: "boolean",
+			description:
+				"Also list files imported by another matched recipe (by default they're excluded so their ingredients aren't counted twice)",
+			default: false,
+		},
 	},
 	async run({ args }) {
 		const isRawOutput =
@@ -86,6 +93,9 @@ export default defineCommand({
 				process.exit(err.exitCode);
 			}
 			throw err;
+		}
+		if (!args["include-modules"]) {
+			files = await filterModuleRoots(files);
 		}
 
 		const config = await loadConfig();

@@ -60,7 +60,8 @@ gram build brioche.gram --scale 2 --output ./dist-doubled
 - By default, outputs pure JSON directly to `stdout` for easy piping.
 - Computes nutritional data and physical mass standardization automatically via the database.
 - `--scale <factor>` bakes the scaling into the JSON output. Reference mode (e.g. `flour=300g`) isn't available here by design: `build` can batch multiple files at once, and a reproducible batch output shouldn't depend on reading one specific file's shopping list first. Use `gram view`/`gram scale` to find the factor you want, then pass that numeric factor to `build`.
-- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`.
+- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to build it anyway.
+- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`.
 
 #### `gram view <file>`
 Displays a recipe directly in the terminal in a beautifully styled ASCII box.
@@ -126,7 +127,8 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - Ingredients without a quantity (e.g. `@salt{}`) are listed alongside their main entry rather than in a separate section.
 - Supports small units: `pinch`, `dash`, `drop` (and French variants) are handled without aggregation errors.
 - `--scale <factor>` applies a numeric multiplier to all recipes (factor only — ref mode not available for multi-file).
-- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`.
+- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to list it anyway.
+- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`.
 
 #### `gram cook <file>`
 Launches an interactive step-by-step cooking guide directly in the terminal.

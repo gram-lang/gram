@@ -7,6 +7,7 @@ import pLimit from "p-limit";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { filterModuleRoots } from "../core/module-roots";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
 import { parseScaleArg } from "../services/scaler";
@@ -44,6 +45,12 @@ export default defineCommand({
 		"skip-db": {
 			type: "boolean",
 			description: "Skip ingredient database enrichment",
+			default: false,
+		},
+		"include-modules": {
+			type: "boolean",
+			description:
+				"Also build files imported by another matched recipe (by default they're excluded from a glob/multi-file batch)",
 			default: false,
 		},
 	},
@@ -92,6 +99,7 @@ type Args = {
 	pretty: boolean;
 	db?: string;
 	"skip-db": boolean;
+	"include-modules": boolean;
 };
 
 async function resolveInputs(args: Args) {
@@ -105,6 +113,9 @@ async function resolveInputs(args: Args) {
 			process.exit(err.exitCode);
 		}
 		throw err;
+	}
+	if (!args["include-modules"]) {
+		files = await filterModuleRoots(files);
 	}
 	const config = await loadConfig();
 	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
