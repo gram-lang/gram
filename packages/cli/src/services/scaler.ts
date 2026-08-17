@@ -94,6 +94,7 @@ export async function resolveScaleFactor(
 	scale: string,
 	db: Record<string, IngredientData> | null | undefined,
 	lang?: string,
+	paths?: Record<string, string>,
 ): Promise<number> {
 	const parsed = parseScaleArg(scale);
 
@@ -109,6 +110,7 @@ export async function resolveScaleFactor(
 		db,
 		skipAnalyzer: !db,
 		lang,
+		paths,
 	});
 
 	const overrides = parseDensityOverrides(compiled.meta);
@@ -161,10 +163,11 @@ export async function resolveScaleArg(
 	filePath: string,
 	db: Record<string, IngredientData> | null | undefined,
 	lang?: string,
+	paths?: Record<string, string>,
 ): Promise<number | undefined> {
 	if (!scale) return undefined;
 	try {
-		return await resolveScaleFactor(filePath, scale, db, lang);
+		return await resolveScaleFactor(filePath, scale, db, lang, paths);
 	} catch (err) {
 		reportError(err);
 		return process.exit(ExitCode.Error);

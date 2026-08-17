@@ -429,6 +429,11 @@ language: "en"                 # Language for all AI-generated content (categori
                                # (the `gram init` interactive prompt currently only offers en/fr;
                                # other codes must be set manually with `gram config set language <code>`)
 
+# Named `@use` specifier aliases — `@use "@bases/pate.gram"` resolves to
+# "<project root>/shared/bases/pate.gram". See the Module Imports reference.
+paths:
+  bases: "./shared/bases"
+
 # AI settings for `gram import`, `gram db enrich` and `gram db lint`
 ai:
   # Supported providers: "google", "openai", "anthropic", "ollama"

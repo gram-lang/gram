@@ -1,0 +1,9 @@
+---
+title: Mid
+---
+
+@use "@/bases/pate.gram" as &pate
+
+## Mid ->&mid
+
+[Reserver] le &pate{250g} tel quel.

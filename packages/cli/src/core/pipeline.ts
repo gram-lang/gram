@@ -51,7 +51,7 @@ export async function runPipeline(
 	}
 
 	const projectRoot = await findProjectRoot(dirname(entryUri));
-	const host = createCliModuleHost(projectRoot);
+	const host = createCliModuleHost(projectRoot, opts.paths);
 	const graph = await loadModuleGraph(entryUri, host);
 	const composed = composeRecipe(graph, {
 		db: opts.db ?? {},

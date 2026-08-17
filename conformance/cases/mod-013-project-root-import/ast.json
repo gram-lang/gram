@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Project Root Import"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./layer/mid.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "mid",
+          "loc": {
+            "start": 67,
+            "end": 71
+          }
+        }
+      ],
+      "mode": "inline",
+      "loc": {
+        "start": 40,
+        "end": 72
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 94,
+                "end": 99
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "mid",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 104,
+                  "end": 108
+                }
+              },
+              "loc": {
+                "start": 99,
+                "end": 109
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 109,
+                "end": 110
+              }
+            }
+          ],
+          "loc": {
+            "start": 85,
+            "end": 111
+          }
+        }
+      ],
+      "loc": {
+        "start": 73,
+        "end": 111
+      }
+    }
+  ]
+}

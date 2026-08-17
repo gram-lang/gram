@@ -19,6 +19,7 @@ export interface ShopOptions {
 	db?: Record<string, IngredientData> | null;
 	scaleFactor?: number;
 	lang?: string;
+	paths?: Record<string, string>;
 }
 
 interface CollectedItem {
@@ -105,6 +106,7 @@ export async function buildShoppingList(
 						db: opts.db,
 						scaleFactor: opts.scaleFactor,
 						lang: opts.lang,
+						paths: opts.paths,
 						moduleCache,
 					});
 					if (analyzed) {
@@ -116,6 +118,7 @@ export async function buildShoppingList(
 						skipAnalyzer: true,
 						scaleFactor: opts.scaleFactor,
 						lang: opts.lang,
+						paths: opts.paths,
 						moduleCache,
 					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);

@@ -16,6 +16,7 @@ export async function generatePrintHTML(
 	> & {
 		bakersReference?: string;
 		lang?: string;
+		paths?: Record<string, string>;
 	},
 ): Promise<string> {
 	const html = await exportRecipe(

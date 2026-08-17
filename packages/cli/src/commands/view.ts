@@ -77,6 +77,7 @@ export default defineCommand({
 				file,
 				db,
 				config.language,
+				config.paths,
 			)) ?? 1;
 
 		const bakersReference =
@@ -94,6 +95,7 @@ export default defineCommand({
 				bakersMathOnly,
 				nutritionBasis,
 				lang: config.language,
+				paths: config.paths,
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {

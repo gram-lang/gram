@@ -28,7 +28,10 @@ export async function analyzeIngredients(
 	const itemBatches = await Promise.all(
 		files.map((file) =>
 			limit(async () => {
-				const { compiled } = await runPipeline(file, { skipAnalyzer: true });
+				const { compiled } = await runPipeline(file, {
+					skipAnalyzer: true,
+					paths: config.paths,
+				});
 				// Use registry (not shopping_list) so composite children like `egg-yolks`
 				// from `@egg yolks{}<@eggs` are included — they only appear in usage[] sub-arrays
 				// in the shopping list and are never exposed as top-level items there.

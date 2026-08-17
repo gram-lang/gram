@@ -74,7 +74,10 @@ export default defineCommand({
 			const rel = relative(process.cwd(), abs) || filename;
 			const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
 
-			const result = await checkFiles([abs], { db: db ?? undefined });
+			const result = await checkFiles([abs], {
+				db: db ?? undefined,
+				paths: config.paths,
+			});
 			const errCount = result.diagnostics.filter(
 				(d) => d.level === "error",
 			).length;
@@ -108,6 +111,7 @@ export default defineCommand({
 					const results = await buildFiles([abs], {
 						db: db ?? undefined,
 						lang: config.language,
+						paths: config.paths,
 					});
 					const outDir = resolve(args.output);
 					await mkdir(outDir, { recursive: true });

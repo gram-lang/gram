@@ -62,6 +62,7 @@ export default defineCommand({
 		const result = await checkFiles(files, {
 			db: db ?? undefined,
 			strict: args.strict,
+			paths: config.paths,
 		});
 
 		s.stop(`Checked ${n} file${n !== 1 ? "s" : ""}.`);

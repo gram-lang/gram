@@ -20,6 +20,7 @@ export async function buildFiles(
 					db: opts.db,
 					scaleFactor: opts.scaleFactor,
 					lang: opts.lang,
+					paths: opts.paths,
 					moduleCache,
 				});
 				return {

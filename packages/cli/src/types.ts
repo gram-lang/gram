@@ -270,6 +270,8 @@ export const GramConfigFileSchema = z.object({
 	version: z.number().optional(),
 	database: z.string().optional(),
 	language: z.string().optional(),
+	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */
+	paths: z.record(z.string(), z.string()).optional(),
 	ai: z
 		.object({
 			provider: z.enum(AI_PROVIDERS).optional(),
@@ -293,6 +295,8 @@ export interface PipelineOptions {
 	bakersMathOnly?: boolean;
 	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
 	lang?: string;
+	/** Named `@use` specifier aliases (from `.gram/config.yaml`'s `paths:`), threaded to the `ModuleHost` that resolves `@alias/...` specifiers. */
+	paths?: Record<string, string>;
 	/**
 	 * Shared module-yield measurement cache (module-imports RFC §F.1), keyed
 	 * by module URI. Pass the *same* Map across a batch of `runPipeline`
@@ -306,6 +310,7 @@ export interface PipelineOptions {
 export interface CheckOptions {
 	db?: Record<string, IngredientData> | null;
 	strict?: boolean;
+	paths?: Record<string, string>;
 }
 
 export interface BuildOptions {
@@ -313,4 +318,5 @@ export interface BuildOptions {
 	pretty?: boolean;
 	scaleFactor?: number;
 	lang?: string;
+	paths?: Record<string, string>;
 }

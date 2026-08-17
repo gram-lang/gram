@@ -105,6 +105,29 @@ describe("loadModuleGraph", () => {
 		]);
 	});
 
+	it("accepts an '@/' project-root specifier (resolution is host-specific)", async () => {
+		const host = createFakeHost({
+			"/a.gram":
+				'@use "@/bases/pate.gram" as &pate\n\n## S\n\n[Use] &pate{1}.\n',
+			"/@/bases/pate.gram": "## Base\n\n[Mix] the @flour{200g}.\n",
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		expect(graph.diagnostics).toEqual([]);
+		expect([...graph.modules.keys()]).toContain("/@/bases/pate.gram");
+	});
+
+	it("accepts an '@alias/' specifier the same way", async () => {
+		const host = createFakeHost({
+			"/a.gram":
+				'@use "@bases/pate.gram" as &pate\n\n## S\n\n[Use] &pate{1}.\n',
+			"/@bases/pate.gram": "## Base\n\n[Mix] the @flour{200g}.\n",
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		expect(graph.diagnostics).toEqual([]);
+	});
+
 	it("rejects an http(s):// specifier as an unsupported scheme", async () => {
 		const host = createFakeHost({
 			"/a.gram":

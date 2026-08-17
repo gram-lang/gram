@@ -106,6 +106,7 @@ export default defineCommand({
 			db,
 			scaleFactor,
 			lang: config.language,
+			paths: config.paths,
 		});
 
 		if (args.format === "json") {

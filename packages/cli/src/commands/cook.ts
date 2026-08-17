@@ -55,6 +55,7 @@ export default defineCommand({
 				filePath,
 				db,
 				config.language,
+				config.paths,
 			)) ?? 1;
 
 		const s = spinner();
@@ -68,6 +69,7 @@ export default defineCommand({
 				skipAnalyzer: !db,
 				scaleFactor,
 				lang: config.language,
+				paths: config.paths,
 			});
 			totalTime = compiled.metrics?.totalTime ?? 0;
 			const massMap: Record<string, number> = {};

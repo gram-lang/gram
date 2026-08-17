@@ -1,6 +1,7 @@
 ---
 "@gram-lang/parser": minor
 "@gram-lang/kitchen": minor
+"@gram-lang/modules": minor
 "@gram-lang/cli": minor
 ---
 
@@ -22,4 +23,15 @@ A base with more than one usable piece can be destructured — `@use "./bases/oe
 
 `gram shop` and `gram build` now skip a file when it's only there because another file in the same run imports it (e.g. `gram shop "**/*.gram"` no longer double-counts a base's flour once on its own and once folded into the recipe that uses it). Pass `--include-modules` to list or build it anyway.
 
-This is a first pass: imports are relative file paths only (`./`, `../`) for now — no shared library of standard bases yet, and no opt-out from inlining a base's steps into the timeline when you'd rather treat it as a black box. Both are coming in a later release.
+Beyond a relative path (`./`, `../`), a base can now be imported as `@/bases/pate-sablee.gram` — always relative to the project root, regardless of where the importing file lives — or through a short alias declared once in `.gram/config.yaml`:
+
+```yaml
+paths:
+  bases: ./shared/bases
+```
+
+```gram
+@use "@bases/pate-sablee.gram" as &pate
+```
+
+This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built. There's also no opt-out yet from inlining a base's steps into the timeline when you'd rather treat it as a black box. That's coming in a later release.

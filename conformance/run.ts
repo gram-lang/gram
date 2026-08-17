@@ -89,8 +89,15 @@ function loadCaseDatabase(caseDir: string): Record<string, IngredientData> {
 function createCaseHost(caseDir: string): ModuleHost {
 	return {
 		resolve(specifier: string, fromUri: string): string {
-			const fromDir = posix.dirname(fromUri);
-			const resolved = posix.normalize(posix.join(fromDir, specifier));
+			// "@/rest.gram" resolves against the case directory itself — the
+			// same role `projectRoot` plays for the CLI host (module-imports
+			// RFC §B.1). Named "@alias/" paths aren't exercised here: that
+			// aliasing is CLI config (`.gram/config.yaml`'s `paths:`), not a
+			// pipeline-level concept a conformance case needs to pin down.
+			const base = specifier.startsWith("@/")
+				? specifier.slice(2)
+				: posix.join(posix.dirname(fromUri), specifier);
+			const resolved = posix.normalize(base);
 			if (resolved.startsWith("..")) {
 				throw new Error(`"${specifier}" resolves outside the case directory.`);
 			}

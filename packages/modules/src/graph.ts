@@ -34,25 +34,27 @@ function validateSpecifier(specifier: string): SpecifierValidation {
 			reason: "absolute filesystem paths are not portable",
 		};
 	}
-	if (specifier.startsWith("@/")) {
+	if (specifier.startsWith("hub:")) {
 		return {
 			ok: false,
 			code: WarningCode.MODULE_SPECIFIER_INVALID,
-			reason: 'project-root imports ("@/...") are not supported yet',
+			reason: 'the community hub ("hub:...") is not supported yet',
 		};
 	}
-	if (specifier.startsWith("std:")) {
+	// "@/rest.gram" (project root) and "@alias/rest.gram" (a `paths:` alias,
+	// module-imports RFC §B.1) — actual resolution is host-specific (only the
+	// CLI host implements it today), this only accepts the syntactic shape.
+	const isAtSpecifier = /^@[^/]*\/.+/.test(specifier);
+	if (
+		!isAtSpecifier &&
+		!specifier.startsWith("./") &&
+		!specifier.startsWith("../")
+	) {
 		return {
 			ok: false,
 			code: WarningCode.MODULE_SPECIFIER_INVALID,
-			reason: 'the standard library ("std:...") is not supported yet',
-		};
-	}
-	if (!specifier.startsWith("./") && !specifier.startsWith("../")) {
-		return {
-			ok: false,
-			code: WarningCode.MODULE_SPECIFIER_INVALID,
-			reason: 'expected a relative path starting with "./" or "../"',
+			reason:
+				'expected a relative path starting with "./" or "../", or an "@/"/"@alias/" project path',
 		};
 	}
 	if (!specifier.endsWith(".gram")) {

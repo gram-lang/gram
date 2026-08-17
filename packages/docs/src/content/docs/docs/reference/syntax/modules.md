@@ -33,7 +33,28 @@ The imported recipe's steps are inlined into the timeline, exactly as if you'd p
 
 *   **Default binding** — `as &name` binds the module's default export to `&name`.
 *   **Destructured bindings** — `as { &a, &b }` binds several of the module's exports at once. Add `as &newName` after any one of them to bind it under a different local name (`as { &a as &renamed, &b }`).
-*   The specifier must be a relative path (`./` or `../`) ending in `.gram`. Only files inside your project are resolvable — an absolute path or a URL is rejected.
+*   The specifier must end in `.gram`, and be one of: a relative path (`./`, `../`), the project root (`@/`), or a named `paths:` alias (`@alias/`) — see below. Only files inside your project are resolvable — an absolute path or a URL is rejected.
+
+## Project-root and aliased paths
+
+`./`/`../` specifiers resolve against the *importing file's own directory* — fine for a base sitting next to its recipe, awkward for one shared from three directories deep. `@/` always means the project root instead (the nearest ancestor containing `.gram/`), regardless of where the importing file lives:
+
+```gram
+@use "@/bases/pate-sablee.gram" as &pate
+```
+
+For a name shorter than a long relative path, or a base that lives outside the project root entirely (e.g. a shared directory of family recipes), declare a `paths:` alias in `.gram/config.yaml`:
+
+```yaml
+paths:
+  bases: ./shared/bases
+```
+
+```gram
+@use "@bases/pate-sablee.gram" as &pate
+```
+
+Each alias resolves to a directory relative to the project root, and every path it produces is still confined to the project root — an alias can't be used to reach outside your project.
 
 ## What a module exports
 
@@ -110,5 +131,5 @@ A module's own baker's-percentage reference (`*`) is dropped on import — baker
 
 ## Limits (for now)
 
-*   Only relative paths (`./`, `../`) are supported — a shared standard-library scheme (`std:...`) and project-root-relative paths (`@/...`) are recognized syntax but not yet implemented.
+*   There is no official, Gram-maintained library of standard base recipes, and none is planned — a community package hub (`hub:author/package` specifiers) is a long-term idea, not yet implemented.
 *   Every import is inlined into the timeline. An opt-out for treating a base as an opaque black box (so its own steps don't clutter the schedule) is planned but not yet implemented — a `prepared` modifier is recognized but currently behaves the same as a normal import.
