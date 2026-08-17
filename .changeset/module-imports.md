@@ -54,4 +54,6 @@ The editor (VS Code and any other client of the language server) now actually re
 
 That now propagates through the whole import chain, too: editing a base recipe refreshes every open file that uses it, even indirectly through another import, and even if the base was edited outside the editor entirely (a `git pull`, another tool, a save from a different window). A problem inside a deeply-imported base points you straight to the exact file and line — not just "something's wrong somewhere in your imports."
 
+Go to Definition on `&pate` now jumps into the base file itself, landing on the exact section that binding was exported from — including a destructured `&blancs`/`&jaunes` each going to their own section, not just to the top of the file.
+
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

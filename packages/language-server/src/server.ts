@@ -355,9 +355,10 @@ connection.onDocumentSymbol(({ textDocument: { uri } }) => {
 connection.onDefinition(({ textDocument: { uri }, position }) => {
 	const s = states.get(uri);
 	if (!s) return null;
-	const loc = provideDefinition(s, position);
-	if (!loc) return null;
-	return { ...loc, uri };
+	// The returned Location's own uri now comes from provideDefinition
+	// itself (module-imports RFC §F.1) — a cross-file jump into an `@use`d
+	// base names *that* file's uri, not this one.
+	return provideDefinition(s, uri, position);
 });
 
 connection.onHover(({ textDocument: { uri }, position }) => {
