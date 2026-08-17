@@ -372,6 +372,55 @@ Heat @=oil{50ml} in a pan.
 
 			expect(viaApplyScale).toEqual(viaCompile);
 		});
+
+		// Same class of bug as F-001 above, found while building `scaleAst`
+		// for the module-imports RFC (.notes/plan-ajout-imports-recettes.md,
+		// Phase D.3) and its own compile(scaleAst(ast,f)) vs
+		// applyScale(compile(ast),f) equivalence test: an alternative group
+		// (`@a|@b`) has no `.qty` of its own, only its `.options[]` do, and a
+		// composite child's own `composite.quantity` (how much of the parent
+		// it draws) is a field `mutateUsage` never looked at — both silently
+		// stayed unscaled by `applyScale(compile(ast), f)` once cleanObject()
+		// had already broken the shared references the section/shopping-list
+		// walks were relying on.
+		const altCompositeSource = `## Section
+
+@butter{100g}|@margarine{80g}.
+
+@egg-yolks{2}<@eggs{3}.
+`;
+
+		it("scales an alternative group's options the same way through both entry points", () => {
+			const ast = getAST(altCompositeSource);
+			const viaCompile: any = compile(ast, { scaleFactor: 3 });
+			const viaApplyScale: any = applyScale(
+				compile(getAST(altCompositeSource)),
+				3,
+			);
+
+			expect(viaApplyScale.sections[0].ingredients).toEqual(
+				viaCompile.sections[0].ingredients,
+			);
+			const altOptions = viaApplyScale.sections[0].ingredients[0].options;
+			expect(altOptions[0].qty).toBe(300);
+			expect(altOptions[1].qty).toBe(240);
+		});
+
+		it("scales a composite child's own parent-quantity the same way through both entry points", () => {
+			const ast = getAST(altCompositeSource);
+			const viaCompile: any = compile(ast, { scaleFactor: 3 });
+			const viaApplyScale: any = applyScale(
+				compile(getAST(altCompositeSource)),
+				3,
+			);
+
+			expect(viaApplyScale.sections[0].ingredients).toEqual(
+				viaCompile.sections[0].ingredients,
+			);
+			const yolks = viaApplyScale.sections[0].ingredients[1];
+			expect(yolks.qty).toBe(6);
+			expect(yolks.composite.quantity).toBe(9);
+		});
 	});
 
 	// Regression test found while typing scaleQty (utils.ts) instead of `any`
