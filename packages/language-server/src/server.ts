@@ -8,7 +8,14 @@ import {
 	DidChangeWatchedFilesNotification,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import { loadModuleGraph, type ModuleGraph } from "@gram-lang/modules";
+import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
 import { parseDocument, type DocumentState } from "./document-state";
+import { createLspModuleHost } from "./module-host";
+import { findProjectRootSync } from "./utils/project-root";
+import { readPathsConfigSync } from "./utils/module-paths-config";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
 import { provideDefinition } from "./features/go-to-definition";
@@ -55,6 +62,43 @@ process.on("unhandledRejection", (reason) => {
 let ingredientDB: IngredientDB = {};
 let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
+
+// The module-imports RFC (§F.1) module resolution state — a `ModuleGraph`
+// per open document, and one yield-measurement cache shared across all of
+// them (mirrors the CLI's `opts.moduleCache`, `core/pipeline.ts:59`, so a
+// base imported by several open files isn't re-measured on every keystroke
+// of every importer). `graphs` is only refreshed by the async `refresh()`
+// pipeline below; the synchronous `getFreshState` path (formatting, rename,
+// code actions) intentionally does not reload it — see the module-imports
+// RFC's note on why `loadModuleGraph`/`composeRecipe` are split into an
+// async load stage and a synchronous consume stage.
+const graphs = new Map<string, ModuleGraph>();
+const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
+
+/**
+ * Loads (or reloads) `uri`'s `@use` graph — never throws, and returns
+ * `undefined` for anything that isn't a `file:` document (an untitled or
+ * virtual-workspace buffer, same guard as `resolveWorkspaceFolders`) or
+ * whose graph fails to load for a reason unrelated to the module system
+ * itself. A file with no `@use` at all still goes through this — cheap,
+ * since `loadModuleGraph` then does the one read `parseDocument` needed
+ * anyway — so there is exactly one code path rather than a
+ * has-imports branch to keep in sync (same rationale as the CLI's
+ * `runPipeline`, `core/pipeline.ts:24`).
+ */
+async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
+	if (!uri.startsWith("file:")) return undefined;
+	try {
+		const filePath = fileURLToPath(uri);
+		const projectRoot = findProjectRootSync(dirname(filePath));
+		const paths = readPathsConfigSync(projectRoot);
+		const host = createLspModuleHost(projectRoot, documents, paths);
+		return await loadModuleGraph(uri, host);
+	} catch (e) {
+		connection.console.error(`Module graph load failed for ${uri}: ${e}`);
+		return undefined;
+	}
+}
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
@@ -136,8 +180,21 @@ connection.onInitialized(async () => {
 	});
 });
 
-function refresh(uri: string, text: string, version?: number) {
-	const state = parseDocument(text, ingredientDB, version);
+async function refresh(
+	uri: string,
+	text: string,
+	version?: number,
+): Promise<void> {
+	const graph = await loadGraphFor(uri);
+	if (graph) graphs.set(uri, graph);
+	else graphs.delete(uri);
+
+	const state = parseDocument(
+		text,
+		ingredientDB,
+		version,
+		graph ? { graph, cache: moduleMeasureCache } : undefined,
+	);
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
@@ -192,7 +249,9 @@ function scheduleRefresh(uri: string, text: string, version: number): void {
 		uri,
 		setTimeout(() => {
 			pendingRefresh.delete(uri);
-			refresh(uri, text, version);
+			refresh(uri, text, version).catch((e) =>
+				connection.console.error(`refresh failed for ${uri}: ${e}`),
+			);
 		}, 150),
 	);
 }
@@ -213,14 +272,18 @@ function getFreshState(uri: string): DocumentState | undefined {
 	return fresh;
 }
 
-documents.onDidOpen((e) =>
-	refresh(e.document.uri, e.document.getText(), e.document.version),
-);
+documents.onDidOpen((e) => {
+	refresh(e.document.uri, e.document.getText(), e.document.version).catch(
+		(err) =>
+			connection.console.error(`refresh failed for ${e.document.uri}: ${err}`),
+	);
+});
 documents.onDidChangeContent((e) =>
 	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version),
 );
 documents.onDidClose((e) => {
 	states.delete(e.document.uri);
+	graphs.delete(e.document.uri);
 	const pending = pendingRefresh.get(e.document.uri);
 	if (pending) {
 		clearTimeout(pending);

@@ -5,7 +5,29 @@ import {
 	type AnalyzedCompilationResult,
 	type IngredientData,
 } from "@gram-lang/analyzer";
+import {
+	composeRecipe,
+	finalizeComposed,
+	type ModuleGraph,
+} from "@gram-lang/modules";
 import { buildLineIndex } from "./utils/position";
+
+/**
+ * The document's already-loaded `@use` graph, handed in by the caller —
+ * `parseDocument` itself stays synchronous (module-imports RFC §F.1:
+ * `loadModuleGraph` is async and lives in `server.ts`/`getFreshState`'s
+ * graph cache; everything downstream of a materialized graph, including
+ * this function, is synchronous). `cache` is the session-wide
+ * yield-measurement cache (same role as the CLI's `opts.moduleCache`,
+ * `packages/cli/src/core/pipeline.ts:59`) — reused across documents so a
+ * base imported by several open files isn't re-measured on every keystroke
+ * of each importer.
+ */
+export interface ModuleContext {
+	graph: ModuleGraph;
+	cache?: Map<string, AnalyzedCompilationResult>;
+	lang?: string;
+}
 
 export interface DocumentState {
 	text: string;
@@ -31,6 +53,7 @@ export function parseDocument(
 	text: string,
 	db?: Record<string, IngredientData>,
 	version?: number,
+	moduleCtx?: ModuleContext,
 ): DocumentState {
 	const lineStarts = buildLineIndex(text);
 	try {
@@ -38,7 +61,23 @@ export function parseDocument(
 		let compilation: AnalyzedCompilationResult | CompilationResult | null =
 			null;
 		try {
-			const rawCompilation = compile(ast);
+			// `state.ast` (above) always stays this document's own single-file
+			// parse — document symbols, folding, semantic tokens, and
+			// within-file go-to-definition must never see an imported
+			// module's sections as if they were written in this file. Only
+			// `compilation` is derived from the composed (spliced) AST, same
+			// split as the CLI pipeline (`runPipeline`, `core/pipeline.ts:38`).
+			let rawCompilation: CompilationResult;
+			if (moduleCtx) {
+				const composed = composeRecipe(moduleCtx.graph, {
+					db: db ?? {},
+					lang: moduleCtx.lang,
+					cache: moduleCtx.cache,
+				});
+				rawCompilation = finalizeComposed(compile(composed.ast), composed);
+			} else {
+				rawCompilation = compile(ast);
+			}
 			if (db) {
 				const analyzed = analyze(rawCompilation, db);
 				compilation = analyzed.result;

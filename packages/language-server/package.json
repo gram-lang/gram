@@ -37,6 +37,7 @@
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/format": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/modules": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",

@@ -6,6 +6,7 @@
 "@gram-lang/renderer": minor
 "@gram-lang/i18n": minor
 "@gram-lang/analyzer": minor
+"@gram-lang/language-server": minor
 ---
 
 Recipes can now import other recipes.
@@ -48,5 +49,7 @@ The HTML, Markdown, and print output all credit a spliced-in section back to the
 `gram diff` now knows about imports too, instead of a single added `@use` line making the whole recipe look changed. A base's own sections no longer count as the host's sections shifting around; the import itself shows up as its own line when it's added, removed, re-bound to a different name, or rescaled to a different factor.
 
 `gram watch` now follows imports too: saving a base recipe re-checks every file in the watched directory that uses it, directly or through a chain of other imports, not just the file that changed on disk.
+
+The editor (VS Code and any other client of the language server) now actually resolves `@use` while you type, instead of silently ignoring it: the live preview, the Gantt view, and diagnostics all reflect the composed recipe — including an imported base's own yield-scaling — and an unsaved edit in a dependency is picked up too, not just what's saved on disk. A bad import (missing file, unknown export, a cycle) now shows up as a real diagnostic in the editor rather than nothing at all.
 
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.
