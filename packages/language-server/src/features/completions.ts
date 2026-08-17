@@ -7,6 +7,10 @@ import {
 	isAfterAt,
 	provideIngredientCompletions,
 } from "./completions-ingredients";
+import {
+	matchUseSpecifierPrefix,
+	provideImportPathCompletions,
+} from "./completions-imports";
 
 // True when cursor follows a & used as a reference (&name), NOT a declaration (->&name).
 function isAfterReference(prefix: string): boolean {
@@ -30,8 +34,14 @@ export function provideCompletions(
 	state: DocumentState,
 	db: IngredientDB,
 	prefix: string,
+	uri = "",
 ): CompletionItem[] {
 	if (!state.ast) return [];
+
+	const useSpecifier = matchUseSpecifierPrefix(prefix);
+	if (useSpecifier !== null) {
+		return provideImportPathCompletions(useSpecifier, uri);
+	}
 
 	if (isInsideBraces(prefix)) {
 		return provideUnitCompletions(prefix);

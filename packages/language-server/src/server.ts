@@ -110,7 +110,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			definitionProvider: true,
 			hoverProvider: true,
 			foldingRangeProvider: true,
-			completionProvider: { triggerCharacters: ["&", "@"] },
+			completionProvider: { triggerCharacters: ["&", "@", '"'] },
 			semanticTokensProvider: {
 				full: true,
 				legend: {
@@ -386,7 +386,7 @@ connection.onCompletion(({ textDocument: { uri }, position }) => {
 				s.lineStarts[position.line] ?? 0,
 				positionToOffset(s.lineStarts, position),
 			);
-	return provideCompletions(s, ingredientDB, prefix);
+	return provideCompletions(s, ingredientDB, prefix, uri);
 });
 
 connection.onReferences(({ textDocument: { uri }, position }) => {

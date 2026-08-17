@@ -1,4 +1,5 @@
 import { describe, it, expect } from "bun:test";
+import { pathToFileURL } from "node:url";
 import { parseDocument } from "../src/document-state";
 import { provideCompletions } from "../src/features/completions";
 import type { IngredientDB } from "../src/ingredient-loader";
@@ -33,5 +34,20 @@ describe("provideCompletions — Phase 1.2 debounce fix", () => {
 		expect(state.ast).toBeNull();
 		const completions = provideCompletions(state, db, "@");
 		expect(completions).toEqual([]);
+	});
+
+	it('offers path completions (not ingredient completions) inside @use "..." (module-imports RFC §F.1)', () => {
+		// The "@" in "@use" would also satisfy isAfterAt's own check — the
+		// @use branch must be checked first, or this would wrongly offer
+		// ingredient names instead of files.
+		const state = parseDocument('@use "./b\n');
+		const uri = pathToFileURL("/does/not/exist/tarte.gram").toString();
+		const completions = provideCompletions(state, db, '@use "./b', uri);
+		// No real project here, so listGramEntries finds nothing — the point
+		// is that it didn't fall through to ingredient completions instead.
+		expect(completions).toEqual([]);
+		expect(completions).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ label: "Flour" })]),
+		);
 	});
 });
