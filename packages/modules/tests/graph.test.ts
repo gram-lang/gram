@@ -105,16 +105,16 @@ describe("loadModuleGraph", () => {
 		]);
 	});
 
-	it("accepts an '@/' project-root specifier (resolution is host-specific)", async () => {
+	it("accepts an '@/' project-root specifier, resolved against the VFS root", async () => {
 		const host = createFakeHost({
 			"/a.gram":
 				'@use "@/bases/pate.gram" as &pate\n\n## S\n\n[Use] &pate{1}.\n',
-			"/@/bases/pate.gram": "## Base\n\n[Mix] the @flour{200g}.\n",
+			"/bases/pate.gram": "## Base\n\n[Mix] the @flour{200g}.\n",
 		});
 		const graph = await loadModuleGraph("/a.gram", host);
 
 		expect(graph.diagnostics).toEqual([]);
-		expect([...graph.modules.keys()]).toContain("/@/bases/pate.gram");
+		expect([...graph.modules.keys()]).toContain("/bases/pate.gram");
 	});
 
 	it("accepts an '@alias/' specifier the same way", async () => {
