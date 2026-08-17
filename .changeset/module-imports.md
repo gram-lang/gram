@@ -3,6 +3,8 @@
 "@gram-lang/kitchen": minor
 "@gram-lang/modules": minor
 "@gram-lang/cli": minor
+"@gram-lang/renderer": minor
+"@gram-lang/i18n": minor
 ---
 
 Recipes can now import other recipes.
@@ -39,5 +41,7 @@ Sometimes you don't want a base's own steps cluttering the timeline — a stock 
 ```gram
 @use "./bases/bouillon.gram" as &bouillon prepared
 ```
+
+The HTML, Markdown, and print output all credit a spliced-in section back to the base it came from — a small badge next to the section title naming the module (and noting when it was prepared separately).
 
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

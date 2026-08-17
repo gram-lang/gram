@@ -48,6 +48,8 @@ export const fr: GramLocale = {
 		purchasingWeight: "Poids d'achat (incluant déchets/épluchures)",
 		gross: "brut",
 		intermediateResult: "Résultat intermédiaire pour cette section",
+		moduleFrom: "Depuis ce module",
+		preparedSeparately: "Préparé séparément",
 		estimatedSuffix: " (Estimé)",
 		missingMass: " (Manquant : ",
 		someIngredients: "certains ingrédients",

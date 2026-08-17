@@ -383,6 +383,24 @@ const htmlBackend: RenderBackend = {
 					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
 				}
 
+				// Traceability for a section spliced in from an `@use` import
+				// (module-imports RFC §D.7) — credits the source module rather
+				// than merging its own frontmatter (title/author/tags) into the
+				// host's, which stays exclusively authoritative.
+				if (sec.module) {
+					const packageIcon =
+						options.icons?.package ?? '<i class="ph ph-package"></i>';
+					const moduleLabel = sec.module.title ?? sec.module.binding;
+					const isPrepared = sec.module.mode === "prepared";
+					const moduleTooltip = isPrepared
+						? `${t.renderer.moduleFrom} — ${t.renderer.preparedSeparately}`
+						: t.renderer.moduleFrom;
+					const preparedClass = isPrepared
+						? " section-meta-module-prepared"
+						: "";
+					titleHtml += ` <small class="section-meta-badge section-meta-module${preparedClass}" data-tooltip="${escapeHtml(moduleTooltip)}">${packageIcon} ${escapeHtml(moduleLabel)}</small>`;
+				}
+
 				const sHeaderClass = options.classes?.sectionHeader
 					? ` ${options.classes.sectionHeader}`
 					: "";

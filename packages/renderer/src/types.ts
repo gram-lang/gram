@@ -45,6 +45,7 @@ export interface RendererIcons {
 	info?: string;
 	minus?: string;
 	plus?: string;
+	package?: string;
 }
 
 export interface RendererClasses {

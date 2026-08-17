@@ -545,6 +545,7 @@ const printBackend: RenderBackend = {
 
 	renderInstructions(data, context, options) {
 		if (!(data.sections?.length > 0)) return "";
+		const t = getDictionary(options.lang);
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
 		const stepContext: RenderContext = options.hideStepQty
 			? { ...context, hideIngredientQty: true }
@@ -557,6 +558,14 @@ const printBackend: RenderBackend = {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning)
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning.raw)})</small>`;
+				if (sec.module) {
+					const moduleLabel = sec.module.title ?? sec.module.binding;
+					const note =
+						sec.module.mode === "prepared"
+							? `${moduleLabel} — ${t.renderer.preparedSeparately}`
+							: moduleLabel;
+					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(note)})</small>`;
+				}
 				body += `  <h3>${titleHtml}</h3>\n`;
 			}
 
