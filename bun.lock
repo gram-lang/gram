@@ -20,7 +20,7 @@
     },
     "audit": {
       "name": "@gram-lang/audit",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "dependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/format": "workspace:*",
@@ -95,7 +95,7 @@
     },
     "packages/docs": {
       "name": "@gram-lang/docs",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "dependencies": {
         "@astrojs/markdown-remark": "^7.2.2",
         "@astrojs/mdx": "^7.0.5",
@@ -161,6 +161,16 @@
         "yaml": "^2.9.0",
       },
     },
+    "packages/modules": {
+      "name": "@gram-lang/modules",
+      "version": "0.1.0",
+      "dependencies": {
+        "@gram-lang/analyzer": "workspace:*",
+        "@gram-lang/i18n": "workspace:*",
+        "@gram-lang/kitchen": "workspace:*",
+        "@gram-lang/parser": "workspace:*",
+      },
+    },
     "packages/parser": {
       "name": "@gram-lang/parser",
       "version": "1.1.0",
@@ -181,7 +191,7 @@
     },
     "packages/vscode-extension": {
       "name": "gram-lang",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "dependencies": {
         "@gram-lang/language-server": "workspace:*",
         "@gram-lang/renderer": "workspace:*",
@@ -564,6 +574,8 @@
     "@gram-lang/kitchen": ["@gram-lang/kitchen@workspace:packages/kitchen"],
 
     "@gram-lang/language-server": ["@gram-lang/language-server@workspace:packages/language-server"],
+
+    "@gram-lang/modules": ["@gram-lang/modules@workspace:packages/modules"],
 
     "@gram-lang/parser": ["@gram-lang/parser@workspace:packages/parser"],
 
