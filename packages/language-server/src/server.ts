@@ -16,6 +16,7 @@ import { parseDocument, type DocumentState } from "./document-state";
 import { createLspModuleHost } from "./module-host";
 import { findProjectRootSync } from "./utils/project-root";
 import { readPathsConfigSync } from "./utils/module-paths-config";
+import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
 import { provideDefinition } from "./features/go-to-definition";
@@ -159,18 +160,38 @@ connection.onInitialized(async () => {
 	// Watch ingredients.yaml so edits made outside the editor (gram db sync/enrich,
 	// a hand-edit in another tool) refresh diagnostics without needing a restart —
 	// previously the DB was only (re)loaded at init and on config changes (Phase 1.x).
+	// Also watch every `.gram` file (module-imports RFC §F.1) so an on-disk
+	// change to a dependency that isn't itself open — an external `git pull`,
+	// another tool, a save from a *different* editor window — still reaches
+	// any open importer, not just edits made through this document's own
+	// buffer.
 	try {
 		await connection.client.register(DidChangeWatchedFilesNotification.type, {
-			watchers: [{ globPattern: "**/.gram/ingredients.yaml" }],
+			watchers: [
+				{ globPattern: "**/.gram/ingredients.yaml" },
+				{ globPattern: "**/*.gram" },
+			],
 		});
 	} catch {
 		// Client doesn't support dynamic file watching — degrade silently,
-		// the DB still (re)loads on init/config-change as before.
+		// the DB still (re)loads on init/config-change as before, and an open
+		// document still resyncs to an on-disk dependency change the next
+		// time it's itself edited.
 	}
-	connection.onDidChangeWatchedFiles(() => {
-		reloadDbAndRefreshDiagnostics().catch((e) =>
-			connection.console.error(`DB reload failed: ${e}`),
-		);
+	connection.onDidChangeWatchedFiles((params) => {
+		let dbChanged = false;
+		for (const change of params.changes) {
+			if (change.uri.endsWith(".gram")) {
+				invalidateDependents(change.uri);
+			} else {
+				dbChanged = true;
+			}
+		}
+		if (dbChanged) {
+			reloadDbAndRefreshDiagnostics().catch((e) =>
+				connection.console.error(`DB reload failed: ${e}`),
+			);
+		}
 	});
 
 	connection.onDidChangeConfiguration(() => {
@@ -198,7 +219,12 @@ async function refresh(
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
-		diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB),
+		diagnostics: provideDiagnostics(
+			state,
+			uri,
+			ingredientLookupSet,
+			ingredientDB,
+		),
 	});
 
 	if (state.compilation) {
@@ -256,6 +282,30 @@ function scheduleRefresh(uri: string, text: string, version: number): void {
 	);
 }
 
+/**
+ * Propagates a change in `changedUri` to every currently open document that
+ * transitively `@use`s it (module-imports RFC §F.1) — the A -> B -> C case:
+ * editing C, even unsaved, must refresh A's diagnostics through B. Also
+ * invalidates `changedUri`'s own entry in the shared yield-measurement
+ * cache, since that cached `AnalyzedCompilationResult` is now stale — left
+ * unfixed, an importer would keep reusing C's *old* measured yield/scale
+ * factor forever, having no other reason to ever recompute it.
+ *
+ * Called from three places: an open document's own content changing, the
+ * `**\/*.gram` file-watcher (an on-disk change to a file that may not even
+ * be open itself), and a document closing (its host's `read()` source
+ * switches from the live buffer back to disk, which open importers must
+ * pick up).
+ */
+function invalidateDependents(changedUri: string): void {
+	moduleMeasureCache.delete(changedUri);
+	const openUris = documents.all().map((d) => d.uri);
+	for (const uri of affectedOpenImporters(graphs, openUris, changedUri)) {
+		const doc = documents.get(uri);
+		if (doc) scheduleRefresh(uri, doc.getText(), doc.version);
+	}
+}
+
 // See utils/fresh-state.ts (audit 2026-07-22, finding B5) — formatting,
 // rename, and code actions call this instead of reading `states` directly,
 // so they always operate on the live text.
@@ -278,9 +328,10 @@ documents.onDidOpen((e) => {
 			connection.console.error(`refresh failed for ${e.document.uri}: ${err}`),
 	);
 });
-documents.onDidChangeContent((e) =>
-	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version),
-);
+documents.onDidChangeContent((e) => {
+	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version);
+	invalidateDependents(e.document.uri);
+});
 documents.onDidClose((e) => {
 	states.delete(e.document.uri);
 	graphs.delete(e.document.uri);
@@ -289,6 +340,10 @@ documents.onDidClose((e) => {
 		clearTimeout(pending);
 		pendingRefresh.delete(e.document.uri);
 	}
+	// The closing document's `read()` source switches from its live buffer
+	// back to disk (module-host.ts) — any open importer must resync to that,
+	// not keep reflecting whatever was last in the (now-gone) buffer.
+	invalidateDependents(e.document.uri);
 	connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
 });
 

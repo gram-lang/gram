@@ -52,4 +52,6 @@ The HTML, Markdown, and print output all credit a spliced-in section back to the
 
 The editor (VS Code and any other client of the language server) now actually resolves `@use` while you type, instead of silently ignoring it: the live preview, the Gantt view, and diagnostics all reflect the composed recipe — including an imported base's own yield-scaling — and an unsaved edit in a dependency is picked up too, not just what's saved on disk. A bad import (missing file, unknown export, a cycle) now shows up as a real diagnostic in the editor rather than nothing at all.
 
+That now propagates through the whole import chain, too: editing a base recipe refreshes every open file that uses it, even indirectly through another import, and even if the base was edited outside the editor entirely (a `git pull`, another tool, a save from a different window). A problem inside a deeply-imported base points you straight to the exact file and line — not just "something's wrong somewhere in your imports."
+
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

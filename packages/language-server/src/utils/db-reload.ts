@@ -55,6 +55,7 @@ export interface DbReloadDeps {
 	states: ReadonlyMap<string, DocumentState>;
 	computeDiagnostics: (
 		state: DocumentState,
+		uri: string,
 		ingredientLookupSet: Set<string>,
 		ingredientDB: IngredientDB,
 	) => Diagnostic[];
@@ -106,7 +107,7 @@ export async function reloadDbAndRefreshDiagnostics(
 		try {
 			diagnosticsByUri.set(
 				uri,
-				deps.computeDiagnostics(state, resolved.lookupSet, resolved.db),
+				deps.computeDiagnostics(state, uri, resolved.lookupSet, resolved.db),
 			);
 		} catch (e) {
 			deps.onError(`Failed to refresh diagnostics for ${uri}: ${e}`);

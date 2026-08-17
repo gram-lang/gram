@@ -47,6 +47,14 @@ export interface DocumentState {
 	/** Character offset of `parseError` into `text`, when known. */
 	parseErrorOffset: number | null;
 	compilation: AnalyzedCompilationResult | CompilationResult | null;
+	/**
+	 * The graph `compilation` was composed against, when this document has
+	 * (or transitively depends on) `@use` imports — carries every dependency's
+	 * own source, so `provideDiagnostics` can resolve a cross-file warning's
+	 * `loc.uri` into a real position in *that* file for `relatedInformation`,
+	 * without this document needing to re-read/re-parse it itself.
+	 */
+	moduleGraph?: ModuleGraph;
 }
 
 export function parseDocument(
@@ -95,6 +103,7 @@ export function parseDocument(
 			parseError: null,
 			parseErrorOffset: null,
 			compilation,
+			moduleGraph: moduleCtx?.graph,
 		};
 	} catch (e) {
 		return {
