@@ -82,7 +82,6 @@ describe("buildWatchReverseIndex", () => {
 			"base.gram": "## Base\n[Mix] the @flour{200g}.\n",
 			"broken.gram": '@use "./base.gram" as &base\n\n[[[',
 		});
-		const base = join(dir, "base.gram");
 
 		const index = await buildWatchReverseIndex(dir, dir);
 		expect(index).toBeInstanceOf(Map);
