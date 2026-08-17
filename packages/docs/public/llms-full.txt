@@ -1506,6 +1506,22 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `NO_BAKERS_REFERENCE` | warning | `No Baker's Percentage reference found.` |
 | `TIME_PARADOX` | warning | `TIME_PARADOX: {cause} is pulled backwards to satisfy {conflict}.` |
 | `TRACK_CONTENTION` | warning | `TRACK_CONTENTION: Named track '{trackName}' experienced a serialization delay of {delay} minutes on '{item}'. It will finish later than its scheduled deadline.` |
+| `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or read.` |
+| `MODULE_PARSE_ERROR` | error | `Module "{specifier}" has a syntax error: {parseMessage}` |
+| `MODULE_CYCLE` | error | `Import cycle detected: {chain}.` |
+| `MODULE_DEPTH_EXCEEDED` | error | `Import chain to "{specifier}" exceeds the maximum depth of {depth}.` |
+| `MODULE_EXPORT_NOT_FOUND` | error | `"{specifier}" does not export '&{exported}'. Did you mean '&{suggestion}'?` |
+| `UNUSED_IMPORT` | warning | `Import '&{local}' from "{specifier}" is never used.` |
+| `UNRESOLVED_MODULE_YIELD` | error | `Cannot determine the yield of '&{binding}' from "{specifier}" — declare a "yields:" key in that module. Imported at 1x.` |
+| `ESTIMATED_MODULE_YIELD` | warning | `The yield of '&{binding}' from "{specifier}" is estimated (derived from a density or default unit weight), not declared. Declare "yields:" in that module for a precise scale factor.` |
+| `MODULE_UNIT_MISMATCH` | error | `'&{binding}' from "{specifier}" was requested in {requestedUnit}, but that module yields in {yieldUnit}, and no density lets one convert to the other. Declare "yields:" in the requested unit, or "densities:" to bridge them.` |
+| `MODULE_BATCH_INTERPRETATION` | info | `'&{binding}' from "{specifier}" was requested as a bare count against a mass/volume yield — interpreted as {batches} batch(es) of the module. Note: quantities are multiplied by {batches}, not cook/rest times.` |
+| `IMPORTED_BAKERS_REFERENCE_DROPPED` | info | `The baker's percentage reference (*) from "{specifier}" was dropped on import — baker's math doesn't carry across module boundaries.` |
+| `DENSITY_OVERRIDE_SHADOWED` | info | `Density for "{ingredient}" declared in "{specifier}" ({moduleValue}) differs from the host's ({hostValue}) — the host's value wins.` |
+| `MODULE_SURPLUS` | info | `Scaling "{specifier}" to satisfy '&{binding}' produces more than requested: {surplus}.` |
+| `MODULE_SPECIFIER_INVALID` | error | `Invalid module specifier "{specifier}": {reason}` |
+| `MODULE_SCHEME_UNSUPPORTED` | error | `Unsupported module specifier scheme: "{specifier}".` |
+| `PREPARED_MULTI_EXPORT` | error | `"{specifier}" is imported with "prepared" but destructures more than one binding — a prepared module can only bind a single intermediate. Remove "prepared" or split into separate imports.` |
 
 ### `VARIABLE_NOT_FOUND`
 A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.

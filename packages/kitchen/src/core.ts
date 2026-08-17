@@ -22,7 +22,12 @@ export function compile(
 
 	const registry = new RecipeRegistry();
 
-	const resultPayload = processSections(ast.children, registry, options);
+	const resultPayload = processSections(
+		ast.children,
+		registry,
+		options,
+		ast.imports,
+	);
 	const sections = resultPayload.sections;
 
 	const shopping_list = generateShoppingList(sections, registry, options);

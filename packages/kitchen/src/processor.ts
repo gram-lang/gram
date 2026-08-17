@@ -17,6 +17,7 @@ import {
 	type TimerAST,
 	type TemperatureAST,
 	type TextAST,
+	type ImportDecl,
 	ASTNodeType,
 	type Location,
 } from "@gram-lang/parser";
@@ -620,6 +621,7 @@ export function processSections(
 	astChildren: ASTNode[],
 	registry: RecipeRegistry,
 	options?: CompilerOptions,
+	imports: ImportDecl[] = [],
 ): {
 	sections: ProcessedSection[];
 	metrics: {
@@ -640,6 +642,27 @@ export function processSections(
 		usageCounter: { value: 0 },
 		options,
 	};
+
+	// Register every `@use` binding as an intermediate up front, whether or
+	// not module resolution actually happened. `compile()` never sees a
+	// resolved module — that's `@gram-lang/modules`' job, running before
+	// compile() and splicing the resolved sections in, at which point the
+	// composed AST carries no `imports` at all. So non-empty `imports` here
+	// unambiguously means "not resolved" (playground, `gram check` on a
+	// standalone file, LSP mid-edit, or the module composer's own
+	// per-module pre-pass) — one MODULE_NOT_FOUND per import instead of a
+	// cascade of UNDEFINED_REFERENCE for every `&binding` used in the body.
+	imports.forEach((decl) => {
+		decl.bindings.forEach((binding) => {
+			registry.registerIngredient(binding.local, { is_intermediate: true });
+			ctx.globalScopes.set(binding.local, decl.specifier);
+			ctx.definedIntermediates.add(binding.local);
+		});
+		pushWarning(ctx, WarningCode.MODULE_NOT_FOUND, {
+			specifier: decl.specifier,
+			loc: decl.loc,
+		});
+	});
 
 	const sections: ProcessedSection[] = [];
 	const blocksToProcess: ASTNode[] = groupIntoSections(astChildren);

@@ -1,6 +1,13 @@
 export interface Location {
 	start: number;
 	end: number;
+	// Absent for a plain single-file parse/compile. Set by the module
+	// composer (`@gram-lang/modules`) on every node it splices from an
+	// imported module, so a diagnostic raised on that node can say which file
+	// it actually came from — the composed AST's own offsets are the host
+	// document's, not the module's, so without this a diagnostic on spliced
+	// content would highlight an unrelated range of the host file.
+	uri?: string;
 }
 
 import type { z } from "zod";
