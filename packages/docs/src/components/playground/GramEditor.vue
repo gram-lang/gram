@@ -27,11 +27,12 @@ import { shikiHighlightExtension } from "./codemirror/shikiHighlightExtension";
 const isDark = inject<Ref<boolean>>("isDark")!;
 
 const props = defineProps<{
-	modelValue: string;
+	files: Map<string, string>;
+	activeFile: string;
 }>();
 
 const emit = defineEmits<{
-	"update:modelValue": [val: string];
+	"update:files": [path: string, content: string];
 }>();
 
 const editorContainer = ref<HTMLDivElement | null>(null);
@@ -39,7 +40,21 @@ let view: EditorView | undefined;
 let highlighter: HighlighterCore | undefined;
 
 const highlightCompartment = new Compartment();
-let currentDiagnostics: Diagnostic[] = [];
+
+// One `EditorState` per open file, so switching tabs preserves each file's
+// undo history and cursor/scroll position instead of recreating the buffer
+// from scratch. `EditorState` is immutable — every transaction produces a
+// *new* state object — so the cache entry for the active file is refreshed
+// on every update, not just written once at creation.
+const stateCache = new Map<string, EditorState>();
+// Diagnostics are per-file for the same reason: a squiggly computed for one
+// file's offsets would be meaningless (or land on the wrong text) if shown
+// while a different file's state is active.
+const diagnosticsCache = new Map<string, Diagnostic[]>();
+
+function currentTheme(): string {
+	return isDark.value ? SHIKI_THEMES.dark : SHIKI_THEMES.light;
+}
 
 const editorTheme = EditorView.theme({
 	"&": {
@@ -73,31 +88,36 @@ function makeExtensions(theme: string) {
 		keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
 		editorTheme,
 		lintGutter(),
-		linter(() => currentDiagnostics, { delay: 0 }),
+		linter(() => diagnosticsCache.get(props.activeFile) ?? [], { delay: 0 }),
 		highlightCompartment.of(
 			highlighter ? shikiHighlightExtension(highlighter, "gram", theme) : [],
 		),
 		EditorView.updateListener.of((update) => {
+			stateCache.set(props.activeFile, update.state);
 			if (update.docChanged) {
-				emit("update:modelValue", update.state.doc.toString());
+				emit("update:files", props.activeFile, update.state.doc.toString());
 			}
 		}),
 	];
+}
+
+function stateFor(path: string): EditorState {
+	const cached = stateCache.get(path);
+	if (cached) return cached;
+	const state = EditorState.create({
+		doc: props.files.get(path) ?? "",
+		extensions: makeExtensions(currentTheme()),
+	});
+	stateCache.set(path, state);
+	return state;
 }
 
 onMounted(async () => {
 	highlighter = await getHighlighter();
 	if (!editorContainer.value) return;
 
-	const state = EditorState.create({
-		doc: props.modelValue,
-		extensions: makeExtensions(
-			isDark.value ? SHIKI_THEMES.dark : SHIKI_THEMES.light,
-		),
-	});
-
 	view = new EditorView({
-		state,
+		state: stateFor(props.activeFile),
 		parent: editorContainer.value,
 	});
 });
@@ -107,15 +127,10 @@ onUnmounted(() => {
 });
 
 watch(
-	() => props.modelValue,
-	(newValue) => {
+	() => props.activeFile,
+	(newFile) => {
 		if (!view) return;
-		const current = view.state.doc.toString();
-		if (newValue !== current) {
-			view.dispatch({
-				changes: { from: 0, to: current.length, insert: newValue },
-			});
-		}
+		view.setState(stateFor(newFile));
 	},
 );
 
@@ -149,7 +164,7 @@ defineExpose({
 		if (!view) return;
 
 		if (offset === null) {
-			currentDiagnostics = [];
+			diagnosticsCache.set(props.activeFile, []);
 			forceLinting(view);
 			return;
 		}
@@ -166,17 +181,38 @@ defineExpose({
 			to = clamped;
 		}
 
-		currentDiagnostics = [{ from, to, severity: "error", message }];
+		diagnosticsCache.set(props.activeFile, [
+			{ from, to, severity: "error", message },
+		]);
 		forceLinting(view);
+	},
+
+	// Drops a closed file's cached state/diagnostics so they don't linger in
+	// memory once the tab is gone.
+	forgetFile(path: string) {
+		stateCache.delete(path);
+		diagnosticsCache.delete(path);
+	},
+
+	// Moves a renamed file's cached state/diagnostics to its new key,
+	// preserving undo history and cursor position across the rename.
+	renamePath(oldPath: string, newPath: string) {
+		const state = stateCache.get(oldPath);
+		if (state) {
+			stateCache.delete(oldPath);
+			stateCache.set(newPath, state);
+		}
+		const diagnostics = diagnosticsCache.get(oldPath);
+		if (diagnostics) {
+			diagnosticsCache.delete(oldPath);
+			diagnosticsCache.set(newPath, diagnostics);
+		}
 	},
 });
 </script>
 
 <template>
   <div class="gram-editor">
-    <div class="editor-header">
-      <span class="editor-title">Input (.gram)</span>
-    </div>
     <div class="editor-container" ref="editorContainer"></div>
   </div>
 </template>
@@ -188,23 +224,6 @@ defineExpose({
   height: 100%;
   background-color: var(--sl-color-bg);
   overflow: hidden;
-}
-
-.editor-header {
-  padding-inline:12px;
-  background-color: var(--sl-color-gray-7);
-  border-bottom: 1px solid var(--sl-color-border);
-  height: 42px;
-  display: flex;
-  align-items: center;
-}
-
-.editor-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--sl-color-gray-3);
 }
 
 .editor-container {

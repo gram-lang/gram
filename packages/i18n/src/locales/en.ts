@@ -153,6 +153,13 @@ export const en = {
 			item: "Item",
 			show: "Show",
 		},
+		tabs: {
+			addFile: "Add file",
+			removeFile: "Remove file",
+			renameFile: "Rename file",
+			entryFile: "Entry",
+			newFileName: "New file name",
+		},
 		analysisOptions: "Analysis Options",
 		analysis: "Analysis",
 		massNorm: "Mass Normalization",

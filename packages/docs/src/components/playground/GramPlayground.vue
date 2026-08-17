@@ -7,9 +7,12 @@ import {
 	onUnmounted,
 	computed,
 	provide,
+	nextTick,
 } from "vue";
 // biome-ignore lint/style/useImportType: GramEditor is used as a component in the <template> block below, which Biome's Vue support doesn't see — a type-only import breaks the ref.
 import GramEditor from "./GramEditor.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramOptions from "./GramOptions.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
@@ -18,7 +21,6 @@ import GramWarnings from "./GramWarnings.vue";
 import GramOutput from "./GramOutput.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import PlaygroundDropdown from "./PlaygroundDropdown.vue";
-import { getAST, GramParseError } from "@gram-lang/parser";
 import { compile, resolveScaleFactor, applyScale } from "@gram-lang/kitchen";
 import {
 	analyze,
@@ -26,10 +28,16 @@ import {
 	resolveIngredientDensity,
 	parseDensityOverrides,
 } from "@gram-lang/analyzer";
+import {
+	loadModuleGraph,
+	composeRecipe,
+	finalizeComposed,
+} from "@gram-lang/modules";
 import { toMarkdown, toHTML } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
+import { ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
 const props = defineProps<{ lang: "en" | "fr" }>();
@@ -74,7 +82,21 @@ onUnmounted(() => {
 
 const t = computed(() => getDictionary(currentLang.value));
 
-const code = ref("");
+const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
+const activeFile = ref<string>(ENTRY_URI);
+// Set only for the specific "the entry file itself won't parse" case (a
+// module's own parse error degrades gracefully instead, see `updateGram`) —
+// tracked separately from `warnings` because that blocking case clears
+// `warnings.value` entirely, so the entry tab's error dot needs its own flag.
+const hasEntryParseError = ref(false);
+// biome-ignore lint/correctness/noUnusedVariables: errorFiles is used in the <template> block below, which Biome's Vue support doesn't see.
+const errorFiles = computed(() => {
+	const set = new Set(
+		warnings.value.map((w) => w.uri).filter((u): u is string => !!u),
+	);
+	if (hasEntryParseError.value) set.add(ENTRY_URI);
+	return set;
+});
 const viewMode = ref<
 	"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
@@ -123,7 +145,7 @@ const examples = computed(() => [
 	},
 	...manifestData.value.map((ex: any) => ({
 		label: (t.value.playground.examples as any)[ex.id] || ex.title,
-		value: `${import.meta.env.BASE_URL}examples/${ex.id}`,
+		value: ex.id,
 	})),
 ]);
 const selectedExample = ref("");
@@ -143,7 +165,7 @@ onMounted(() => {
 		.then((res) => res.json())
 		.then((manifest) => {
 			manifestData.value = manifest;
-			if (manifestData.value.length > 0 && !code.value) {
+			if (manifestData.value.length > 0 && !files.value.get(ENTRY_URI)) {
 				const defaultEx =
 					examples.value.find((ex: any) => ex.value.includes("empanadas")) ||
 					examples.value[0];
@@ -156,17 +178,36 @@ onMounted(() => {
 	updateGram();
 });
 
-function loadExample(path: string) {
-	if (!path) {
-		code.value = "";
+function loadExample(id: string) {
+	if (!id) {
+		files.value = new Map([[ENTRY_URI, ""]]);
+		activeFile.value = ENTRY_URI;
 		return;
 	}
-	fetch(path)
-		.then((res) => res.text())
-		.then((text) => {
-			code.value = text;
-			trackEvent("playground-load-example", { example: path });
+	const manifestEntry = manifestData.value.find((ex: any) => ex.id === id);
+	if (manifestEntry?.files?.length) {
+		// Multi-file example: fetch every file under `examples/<id>/<relPath>`
+		// and lay them out in the VFS at `/<relPath>`.
+		Promise.all(
+			manifestEntry.files.map((relPath: string) =>
+				fetch(`${import.meta.env.BASE_URL}examples/${id}/${relPath}`)
+					.then((res) => res.text())
+					.then((text) => [`/${relPath}`, text] as const),
+			),
+		).then((entries) => {
+			files.value = new Map(entries);
+			activeFile.value = `/${manifestEntry.entry ?? manifestEntry.files[0]}`;
+			trackEvent("playground-load-example", { example: id });
 		});
+	} else {
+		fetch(`${import.meta.env.BASE_URL}examples/${id}`)
+			.then((res) => res.text())
+			.then((text) => {
+				files.value = new Map([[ENTRY_URI, text]]);
+				activeFile.value = ENTRY_URI;
+				trackEvent("playground-load-example", { example: id });
+			});
+	}
 }
 
 function renderSExpr(node: any, level = 0): string {
@@ -208,16 +249,55 @@ function renderSExpr(node: any, level = 0): string {
 	return `${indent}(${type}${attrs}\n${childrenStr})`;
 }
 
-function updateGram() {
+// Incremented on every call, so a run that's still `await`ing when a newer
+// one starts (e.g. the user kept typing) can tell it's been superseded and
+// bail out without clobbering fresher state.
+let runToken = 0;
+
+async function updateGram() {
+	const token = ++runToken;
+	const codeLength = files.value.get(ENTRY_URI)?.length ?? 0;
 	errorMsg.value = "";
 	scaleError.value = "";
+	hasEntryParseError.value = false;
 	editorRef.value?.setErrorMarker(null, "");
 	// Which pipeline stage is running, so a thrown error can be attributed to
-	// it (parse errors are already distinguished via GramParseError below).
-	let stage: "compile" | "analyze" | "render" = "compile";
+	// it.
+	let stage: "compose" | "compile" | "analyze" | "render" = "compose";
 	try {
-		const ast = getAST(code.value);
-		let result = compile(ast, { ...options.value, scaleFactor: 1 });
+		const host = createPlaygroundHost(new Map(files.value));
+		const graph = await loadModuleGraph(ENTRY_URI, host);
+		if (token !== runToken) return;
+
+		// The entry document's own syntax error is the one case that still
+		// needs to block the whole render the way a thrown `GramParseError`
+		// used to — `loadModuleGraph` never throws (a *module's* own parse
+		// error degrades gracefully instead, per the module-imports RFC's
+		// §C.4), so this is the one diagnostic that gets special handling
+		// rather than flowing into the regular warnings list.
+		const entryParseError = graph.diagnostics.find(
+			(w) => w.code === "MODULE_PARSE_ERROR" && w.uri === ENTRY_URI,
+		);
+		if (entryParseError) {
+			errorMsg.value = entryParseError.message;
+			warnings.value = [];
+			hasEntryParseError.value = true;
+			if (activeFile.value === ENTRY_URI) {
+				editorRef.value?.setErrorMarker(
+					entryParseError.loc?.start ?? 0,
+					entryParseError.message,
+				);
+			}
+			trackPlaygroundRun(false, codeLength, { error_type: "parse" });
+			return;
+		}
+
+		stage = "compile";
+		const composed = composeRecipe(graph, {
+			db: fullDatabase,
+			lang: currentLang.value,
+		});
+		let result = compile(composed.ast, { ...options.value, scaleFactor: 1 });
 
 		if (scaleTargetId.value && scaleTargetQty.value !== null) {
 			try {
@@ -271,7 +351,9 @@ function updateGram() {
 			lang: currentLang.value,
 		};
 		const analysis = analyze(result, fullDatabase, analysisOptions);
-		result = analysis.result;
+		result = finalizeComposed(analysis.result, composed);
+
+		if (token !== runToken) return;
 
 		stage = "render";
 		warnings.value = result.warnings || [];
@@ -281,7 +363,7 @@ function updateGram() {
 		if (viewMode.value === "json") {
 			content.value = JSON.stringify(result, null, 2);
 		} else if (viewMode.value === "ast") {
-			content.value = renderSExpr(ast);
+			content.value = renderSExpr(composed.ast);
 		} else if (viewMode.value === "markdown") {
 			content.value = toMarkdown(result, { lang: currentLang.value });
 		} else if (viewMode.value === "preview") {
@@ -292,21 +374,12 @@ function updateGram() {
 				lang: currentLang.value,
 			});
 		}
-		trackPlaygroundRun(true, code.value.length);
+		trackPlaygroundRun(true, codeLength);
 	} catch (e: any) {
+		if (token !== runToken) return;
 		errorMsg.value = e.message;
 		warnings.value = [];
-		if (e instanceof GramParseError) {
-			editorRef.value?.setErrorMarker(e.offset, e.message);
-			// `expected` is ohm's grammar-rule vocabulary (e.g. "step"), not
-			// user recipe content, so it's safe to send as-is.
-			trackPlaygroundRun(false, code.value.length, {
-				error_type: "parse",
-				expected: e.expected,
-			});
-		} else {
-			trackPlaygroundRun(false, code.value.length, { error_type: stage });
-		}
+		trackPlaygroundRun(false, codeLength, { error_type: stage });
 	}
 }
 
@@ -330,7 +403,7 @@ function clearTarget() {
 }
 
 watch(
-	[code, options, viewMode, scaleFactorString, currentLang],
+	[files, options, viewMode, scaleFactorString, currentLang, activeFile],
 	() => {
 		if (!scaleTargetId.value) {
 			updateGram();
@@ -357,10 +430,51 @@ watch(
 );
 
 // biome-ignore lint/correctness/noUnusedVariables: handleJump is used in the <template> block below, which Biome's Vue support doesn't see.
-function handleJump(start: number, end: number) {
-	if (editorRef.value) {
-		editorRef.value.jump(start, end);
+async function handleJump(start: number, end: number, uri?: string) {
+	if (uri && uri !== activeFile.value) {
+		activeFile.value = uri;
+		await nextTick();
 	}
+	editorRef.value?.jump(start, end);
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: selectFile is used in the <template> block below, which Biome's Vue support doesn't see.
+function selectFile(path: string) {
+	activeFile.value = path;
+}
+
+let nextFileIndex = 1;
+
+// biome-ignore lint/correctness/noUnusedVariables: addFile is used in the <template> block below, which Biome's Vue support doesn't see.
+function addFile() {
+	let uri = `/file-${nextFileIndex}.gram`;
+	while (files.value.has(uri)) {
+		nextFileIndex++;
+		uri = `/file-${nextFileIndex}.gram`;
+	}
+	nextFileIndex++;
+	files.value.set(uri, "");
+	activeFile.value = uri;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: renameFile is used in the <template> block below, which Biome's Vue support doesn't see.
+function renameFile(oldPath: string, newPath: string) {
+	if (oldPath === ENTRY_URI) return; // entry's virtual path is fixed
+	if (newPath === oldPath || files.value.has(newPath)) return;
+	const content = files.value.get(oldPath) ?? "";
+	files.value.delete(oldPath);
+	files.value.set(newPath, content);
+	editorRef.value?.renamePath(oldPath, newPath);
+	if (activeFile.value === oldPath) activeFile.value = newPath;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: removeFile is used in the <template> block below, which Biome's Vue support doesn't see.
+function removeFile(path: string) {
+	if (path === ENTRY_URI) return; // entry is undeletable
+	files.value.delete(path);
+	editorRef.value?.forgetFile(path);
+	// Never leave the UI pointed at a tab that no longer exists.
+	if (activeFile.value === path) activeFile.value = ENTRY_URI;
 }
 
 // Split Pane Logic
@@ -460,8 +574,23 @@ onUnmounted(() => {
     <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
       <!-- Left Column: Editor & Options -->
       <div class="playground-col left-col">
+        <GramFileTabs
+          :files="[...files.keys()]"
+          :active-file="activeFile"
+          :entry-file="ENTRY_URI"
+          :error-files="errorFiles"
+          @select="selectFile"
+          @add="addFile"
+          @rename="renameFile"
+          @remove="removeFile"
+        />
         <div class="editor-wrapper">
-          <GramEditor ref="editorRef" v-model="code" />
+          <GramEditor
+            ref="editorRef"
+            :files="files"
+            :active-file="activeFile"
+            @update:files="(path, val) => files.set(path, val)"
+          />
         </div>
         <GramWarnings v-if="warnings.length > 0" :warnings="warnings" @jump="handleJump" />
       </div>

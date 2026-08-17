@@ -143,6 +143,13 @@ export const fr: GramLocale = {
 			item: "Élément",
 			show: "Afficher",
 		},
+		tabs: {
+			addFile: "Ajouter un fichier",
+			removeFile: "Supprimer le fichier",
+			renameFile: "Renommer le fichier",
+			entryFile: "Entrée",
+			newFileName: "Nom du nouveau fichier",
+		},
 		analysisOptions: "Options d'Analyse",
 		analysis: "Analyse",
 		massNorm: "Standardisation des Masses",
