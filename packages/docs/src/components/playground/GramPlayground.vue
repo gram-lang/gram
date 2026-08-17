@@ -84,17 +84,24 @@ const t = computed(() => getDictionary(currentLang.value));
 
 const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
 const activeFile = ref<string>(ENTRY_URI);
-// Set only for the specific "the entry file itself won't parse" case (a
-// module's own parse error degrades gracefully instead, see `updateGram`) —
-// tracked separately from `warnings` because that blocking case clears
-// `warnings.value` entirely, so the entry tab's error dot needs its own flag.
-const hasEntryParseError = ref(false);
+// The output panel always previews whichever file is active — clicking an
+// imported file's tab compiles *that file* as its own entry point into the
+// same VFS (its own imports, if it has any, still resolve), exactly what
+// `gram build` on it directly would do. `ENTRY_URI` stays a separate,
+// unrelated concept: the one fixed, undeletable "project" file.
+//
+// Set only for the specific "the file being previewed won't parse" case (a
+// *different* file's own parse error degrades gracefully instead, see
+// `updateGram`) — tracked separately from `warnings` because that blocking
+// case clears `warnings.value` entirely, so the tab's error dot needs its
+// own flag. Holds the uri of the broken file, or null.
+const previewParseErrorUri = ref<string | null>(null);
 // biome-ignore lint/correctness/noUnusedVariables: errorFiles is used in the <template> block below, which Biome's Vue support doesn't see.
 const errorFiles = computed(() => {
 	const set = new Set(
 		warnings.value.map((w) => w.uri).filter((u): u is string => !!u),
 	);
-	if (hasEntryParseError.value) set.add(ENTRY_URI);
+	if (previewParseErrorUri.value) set.add(previewParseErrorUri.value);
 	return set;
 });
 const viewMode = ref<
@@ -256,33 +263,38 @@ let runToken = 0;
 
 async function updateGram() {
 	const token = ++runToken;
-	const codeLength = files.value.get(ENTRY_URI)?.length ?? 0;
+	// The active tab is the compile entry point for the preview — clicking
+	// an imported file shows what *that file alone* compiles to, not the
+	// whole project. See the comment on `previewParseErrorUri` above.
+	const previewEntry = activeFile.value;
+	const codeLength = files.value.get(previewEntry)?.length ?? 0;
 	errorMsg.value = "";
 	scaleError.value = "";
-	hasEntryParseError.value = false;
+	previewParseErrorUri.value = null;
 	editorRef.value?.setErrorMarker(null, "");
 	// Which pipeline stage is running, so a thrown error can be attributed to
 	// it.
 	let stage: "compose" | "compile" | "analyze" | "render" = "compose";
 	try {
 		const host = createPlaygroundHost(new Map(files.value));
-		const graph = await loadModuleGraph(ENTRY_URI, host);
+		const graph = await loadModuleGraph(previewEntry, host);
 		if (token !== runToken) return;
 
-		// The entry document's own syntax error is the one case that still
-		// needs to block the whole render the way a thrown `GramParseError`
-		// used to — `loadModuleGraph` never throws (a *module's* own parse
-		// error degrades gracefully instead, per the module-imports RFC's
-		// §C.4), so this is the one diagnostic that gets special handling
-		// rather than flowing into the regular warnings list.
+		// The previewed document's own syntax error is the one case that
+		// still needs to block the whole render the way a thrown
+		// `GramParseError` used to — `loadModuleGraph` never throws (a
+		// *different* module's own parse error degrades gracefully instead,
+		// per the module-imports RFC's §C.4), so this is the one diagnostic
+		// that gets special handling rather than flowing into the regular
+		// warnings list.
 		const entryParseError = graph.diagnostics.find(
-			(w) => w.code === "MODULE_PARSE_ERROR" && w.uri === ENTRY_URI,
+			(w) => w.code === "MODULE_PARSE_ERROR" && w.uri === previewEntry,
 		);
 		if (entryParseError) {
 			errorMsg.value = entryParseError.message;
 			warnings.value = [];
-			hasEntryParseError.value = true;
-			if (activeFile.value === ENTRY_URI) {
+			previewParseErrorUri.value = previewEntry;
+			if (activeFile.value === previewEntry) {
 				editorRef.value?.setErrorMarker(
 					entryParseError.loc?.start ?? 0,
 					entryParseError.message,
@@ -602,6 +614,9 @@ onUnmounted(() => {
 
       <!-- Right Column: Output -->
       <div class="playground-col right-col">
+        <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
+          {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
+        </div>
         <div v-if="errorMsg" class="error-msg">
           <strong>Error:</strong> {{ errorMsg }}
         </div>
@@ -910,6 +925,21 @@ width: 40px;
     background-color: var(--sl-color-gray-4);
     border-radius: 2px;
   }
+}
+
+.preview-scope-banner {
+  padding: 8px 16px;
+  background-color: var(--sl-color-accent-low);
+  color: var(--sl-color-text);
+  border-bottom: 1px solid var(--sl-color-border);
+  font-size: 12px;
+}
+
+.preview-scope-banner code {
+  font-family: var(--sl-font-mono);
+  background-color: var(--sl-color-bg-inline-code);
+  padding: 1px 5px;
+  border-radius: 4px;
 }
 
 .error-msg {

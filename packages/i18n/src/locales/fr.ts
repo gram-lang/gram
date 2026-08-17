@@ -149,6 +149,7 @@ export const fr: GramLocale = {
 			renameFile: "Renommer le fichier",
 			entryFile: "Entrée",
 			newFileName: "Nom du nouveau fichier",
+			previewingStandalone: "Aperçu isolé de",
 		},
 		analysisOptions: "Options d'Analyse",
 		analysis: "Analyse",

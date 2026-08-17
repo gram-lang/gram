@@ -159,6 +159,7 @@ export const en = {
 			renameFile: "Rename file",
 			entryFile: "Entry",
 			newFileName: "New file name",
+			previewingStandalone: "Standalone preview of",
 		},
 		analysisOptions: "Analysis Options",
 		analysis: "Analysis",
