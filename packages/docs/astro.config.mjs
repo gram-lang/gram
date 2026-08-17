@@ -62,7 +62,8 @@ export default defineConfig({
           items: [
             { label: 'What is Gram?', translations: { fr: "C'est quoi Gram ?" }, slug: 'docs/explanation/philosophy' },
             { label: 'Getting Started', translations: { fr: 'Premiers pas' }, slug: 'docs/tutorials/getting-started' },
-            { label: 'Your First Recipe', translations: { fr: 'Votre première recette' }, slug: 'docs/tutorials/first-recipe' }
+            { label: 'Your First Recipe', translations: { fr: 'Votre première recette' }, slug: 'docs/tutorials/first-recipe' },
+            { label: 'Splitting Recipes with Modules', translations: { fr: 'Découper ses recettes en modules' }, slug: 'docs/tutorials/module-imports' }
           ]
         },
         {

@@ -51,7 +51,21 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Étapes
+## 2. Imports de Modules
+
+Juste après le frontmatter, avant toute étape, une recette peut `@use` d'autres fichiers `.gram` comme sous-composants réutilisables.
+
+```gram
+@use "./bases/pate-sablee.gram" as &pate
+
+## Montage
+
+[Foncer] le moule avec &pate{250g}.
+```
+
+*Voir [Imports de Modules](/fr/docs/reference/syntax/modules) pour la syntaxe complète, les règles de mise à l'échelle et les garanties d'encapsulation.*
+
+## 3. Étapes
 
 Dans un fichier Gram, chaque paragraphe représente une seule et unique étape de préparation. Les étapes sont séparées par une ou plusieurs lignes vides.
 
@@ -71,7 +85,7 @@ Les étapes peuvent optionnellement démarrer par une **Action** entre crochets 
 [Cuire] Dans le #four pendant ~{30 min}.
 ```
 
-## 3. Sections
+## 4. Sections
 
 Les recettes un peu touffues comportent souvent plusieurs sous-préparations (ex : pâte, garniture, glaçage). Vous pouvez regrouper ces étapes au sein de blocs `## Section` en utilisant de simples titres Markdown (ex : `## Pâte`).
 
@@ -104,7 +118,7 @@ Si une `## Section` génère une sous-préparation destinée à être réutilis�
 ```
 *Voir les [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour plus de détails.*
 
-## 4. Commentaires
+## 5. Commentaires
 
 Les commentaires vous permettent d'expliciter vos instructions sans pour autant impacter le rendu compilé.
 
