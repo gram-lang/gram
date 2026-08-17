@@ -1,0 +1,119 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 22,
+            "end": 27
+          }
+        }
+      ],
+      "mode": "inline",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Step",
+      "action": null,
+      "children": [
+        {
+          "type": "Ingredient",
+          "name": "farine",
+          "modifiers": [],
+          "quantity": {
+            "type": "Quantity",
+            "value": {
+              "type": "single",
+              "value": 500,
+              "text": "500"
+            },
+            "unit": "g",
+            "fixed": false,
+            "loc": {
+              "start": 37,
+              "end": 41
+            }
+          },
+          "alias": null,
+          "preparation": null,
+          "composite": null,
+          "loc": {
+            "start": 29,
+            "end": 42
+          }
+        },
+        {
+          "type": "Text",
+          "value": "for something else.",
+          "loc": {
+            "start": 43,
+            "end": 62
+          }
+        }
+      ],
+      "loc": {
+        "start": 29,
+        "end": 64
+      }
+    },
+    {
+      "type": "Step",
+      "action": null,
+      "children": [
+        {
+          "type": "Text",
+          "value": "Use ",
+          "loc": {
+            "start": 64,
+            "end": 68
+          }
+        },
+        {
+          "type": "Reference",
+          "name": "pate",
+          "quantity": {
+            "type": "Quantity",
+            "value": {
+              "type": "single",
+              "value": 1,
+              "text": "1"
+            },
+            "unit": null,
+            "fixed": false,
+            "loc": {
+              "start": 74,
+              "end": 75
+            }
+          },
+          "loc": {
+            "start": 68,
+            "end": 76
+          }
+        },
+        {
+          "type": "Text",
+          "value": ".",
+          "loc": {
+            "start": 76,
+            "end": 77
+          }
+        }
+      ],
+      "loc": {
+        "start": 64,
+        "end": 78
+      }
+    }
+  ]
+}

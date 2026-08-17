@@ -1,0 +1,5 @@
+@use "./pate.gram" as &pate
+
+@farine{500g} for something else.
+
+Use &pate{1}.

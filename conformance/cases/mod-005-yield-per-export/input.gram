@@ -1,0 +1,5 @@
+@use "./oeufs.gram" as { &blancs, &jaunes }
+
+## Meringue
+
+Whisk &blancs{100g} into stiff peaks.

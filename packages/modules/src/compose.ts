@@ -255,7 +255,6 @@ export function composeRecipe(
 	const analyzedCache =
 		options.cache ?? new Map<string, AnalyzedCompilationResult>();
 	const resolved = new Map<string, Resolved>();
-	const claimedIds = new Set<string>();
 
 	function getAnalyzed(uri: string): AnalyzedCompilationResult {
 		const cached = analyzedCache.get(uri);
@@ -283,6 +282,14 @@ export function composeRecipe(
 		const unresolvedImports: ImportDecl[] = [];
 		const prepended: SectionAST[] = [];
 		const prependedOrigins: (ModuleInfo | undefined)[] = [];
+		// Scoped to *this* record's own imports, not shared across the whole
+		// compose() call: two unrelated modules can each independently import
+		// the same dependency under the same local name (e.g. both `b.gram`
+		// and `c.gram` doing `@use "./d.gram" as &d`) without colliding —
+		// each is renamed again, relative to *its own* local name, the next
+		// time it's spliced further up. A collision only actually matters
+		// among the bindings *this* record itself is splicing side by side.
+		const claimedIds = new Set<string>();
 
 		for (const { decl, uri: depUri } of record.imports) {
 			const dep = resolved.get(depUri);
@@ -498,7 +505,11 @@ export function finalizeComposed(
 	return {
 		...compiled,
 		sections,
-		modules: compose.modules,
+		// Omitted (not an empty array) when nothing was actually composed —
+		// compile() itself never sets this field, so a no-import document
+		// must come out byte-identical to the pre-modules pipeline output
+		// (the conformance corpus's whole premise).
+		...(compose.modules.length > 0 ? { modules: compose.modules } : {}),
 		warnings,
 	};
 }

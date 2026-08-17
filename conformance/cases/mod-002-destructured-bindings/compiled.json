@@ -1,0 +1,249 @@
+{
+  "title": "Mod Destructured Bindings",
+  "slug": "mod-destructured-bindings",
+  "meta": {
+    "title": "Mod Destructured Bindings"
+  },
+  "registry": {
+    "ingredients": {
+      "blancs": {
+        "id": "blancs",
+        "name": "blancs",
+        "is_intermediate": true
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg",
+        "default_unit": "g"
+      },
+      "jaunes": {
+        "id": "jaunes",
+        "name": "jaunes",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "1",
+        "2"
+      ],
+      "qty": 300,
+      "unit": "g"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Blancs",
+      "ingredients": [
+        {
+          "id": "egg",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "blancs",
+      "module": {
+        "binding": "blancs",
+        "uri": "oeufs.gram",
+        "title": null
+      }
+    },
+    {
+      "title": "Jaunes",
+      "ingredients": [
+        {
+          "id": "egg",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "jaunes",
+      "module": {
+        "binding": "blancs",
+        "uri": "oeufs.gram",
+        "title": null
+      }
+    },
+    {
+      "title": "Dessert",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "blancs",
+          "name": "blancs",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "jaunes",
+          "name": "jaunes",
+          "_usageId": "4",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "flour",
+          "_usageId": "5",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "type": "reference",
+              "id": "blancs",
+              "name": "blancs",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "jaunes",
+              "name": "jaunes",
+              "_usageId": "4",
+              "qty": 100,
+              "unit": "g"
+            },
+            ". Also add ",
+            {
+              "id": "flour",
+              "_usageId": "5",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Jaunes",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Jaunes",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "blancs",
+      "uri": "oeufs.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 2,
+      "mode": "inline"
+    }
+  ]
+}

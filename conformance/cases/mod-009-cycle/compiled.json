@@ -1,0 +1,255 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "a-b": {
+        "id": "a-b",
+        "name": "a$b",
+        "is_intermediate": true
+      },
+      "a": {
+        "id": "a",
+        "name": "a",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "B",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a",
+          "name": "a",
+          "_usageId": "1",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a",
+              "name": "a",
+              "_usageId": "1",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "a$b",
+      "module": {
+        "binding": "b",
+        "uri": "b.gram",
+        "title": null
+      }
+    },
+    {
+      "title": "A",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a-b",
+          "name": "a$b",
+          "_usageId": "2",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a-b",
+              "name": "a$b",
+              "_usageId": "2",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "a",
+      "module": {
+        "binding": "a",
+        "uri": "a.gram",
+        "title": null
+      }
+    },
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a",
+          "name": "a",
+          "_usageId": "3",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a",
+              "name": "a",
+              "_usageId": "3",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "message": "Reference to undefined ingredient '&a'.",
+      "item": "a",
+      "loc": {
+        "start": 38,
+        "end": 43,
+        "uri": "a.gram"
+      },
+      "uri": "a.gram"
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: a depends on itself.",
+      "item": "a",
+      "loc": {
+        "start": 28,
+        "end": 32,
+        "uri": "a.gram"
+      },
+      "uri": "a.gram"
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: a$b depends on itself.",
+      "item": "a$b",
+      "loc": {
+        "start": 28,
+        "end": 32,
+        "uri": "a.gram"
+      },
+      "uri": "a.gram"
+    },
+    {
+      "code": "MODULE_CYCLE",
+      "message": "Import cycle detected: a.gram → b.gram → a.gram.",
+      "loc": {
+        "start": 0,
+        "end": 22,
+        "uri": "b.gram"
+      },
+      "uri": "b.gram"
+    },
+    {
+      "code": "UNRESOLVED_MODULE_YIELD",
+      "message": "Cannot determine the yield of '&b' from \"./b.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    },
+    {
+      "code": "UNRESOLVED_MODULE_YIELD",
+      "message": "Cannot determine the yield of '&a' from \"./a.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 8,
+    "totalBreakdown": [
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:A",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:A",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "b",
+      "uri": "b.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "a",
+      "uri": "a.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

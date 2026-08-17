@@ -182,10 +182,21 @@ Use &base{1}.
 
 Use &b{1} and &c{1}.
 `,
+			// b.gram and c.gram both bind their own import of d.gram to the
+			// same local name "d" -- independently and legitimately, since
+			// each is its own document with no idea the other exists. Their
+			// two "d"s must not collide with each other: each gets renamed
+			// again (b$d / c$d) the moment it's spliced further up, into the
+			// host. Regression guard for a real bug: a collision-detection
+			// set shared across the *whole* compose() call once flagged this
+			// as a false SCOPE_CONFLICT before either had a chance to be
+			// renamed into its final, non-colliding form.
 			"/b.gram": '@use "./d.gram" as &d\n\n## B ->&b\n\nUse &d{1}.\n',
 			"/c.gram": '@use "./d.gram" as &d\n\n## C ->&c\n\nUse &d{1}.\n',
 			"/d.gram": "## D ->&d\n\nMix @flour{100g}.\n",
 		});
+
+		expect(result.warnings.map((w) => w.code)).not.toContain("SCOPE_CONFLICT");
 
 		const flourLines = result.shopping_list.filter(
 			(i) => "id" in i && i.id === "flour",

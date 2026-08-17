@@ -1,0 +1,9 @@
+@use "./base.gram" as &base
+
+## Host
+
+@eau{200g}.
+
+@farine{50% @&eau}.
+
+Use &base{1}.

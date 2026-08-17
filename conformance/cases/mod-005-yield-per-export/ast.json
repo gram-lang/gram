@@ -1,0 +1,95 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./oeufs.gram",
+      "bindings": [
+        {
+          "exported": "blancs",
+          "local": "blancs",
+          "loc": {
+            "start": 25,
+            "end": 32
+          }
+        },
+        {
+          "exported": "jaunes",
+          "local": "jaunes",
+          "loc": {
+            "start": 34,
+            "end": 41
+          }
+        }
+      ],
+      "mode": "inline",
+      "loc": {
+        "start": 0,
+        "end": 44
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Meringue",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 58,
+                "end": 64
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "blancs",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 72,
+                  "end": 76
+                }
+              },
+              "loc": {
+                "start": 64,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": "into stiff peaks.",
+              "loc": {
+                "start": 78,
+                "end": 95
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 96
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 96
+      }
+    }
+  ]
+}

@@ -1,0 +1,347 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "base": {
+        "id": "base",
+        "name": "base",
+        "is_intermediate": true
+      },
+      "farine": {
+        "id": "farine",
+        "name": "farine",
+        "default_unit": "g"
+      },
+      "eau": {
+        "id": "eau",
+        "name": "eau",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "farine",
+      "name": "farine",
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "relative": true,
+      "_usageIds": [
+        "1",
+        "4"
+      ]
+    },
+    {
+      "id": "eau",
+      "name": "eau",
+      "qty": 270,
+      "unit": "g",
+      "normalizedMass": 270,
+      "isEstimate": false,
+      "relative": true,
+      "_usageIds": [
+        "2",
+        "3"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Base",
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "eau",
+          "_usageId": "2",
+          "qty": {
+            "type": "single",
+            "value": 70
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "70% of farine",
+            "target": "farine",
+            "percent": 70,
+            "isGhost": false
+          },
+          "normalizedMass": 70,
+          "unit": "g",
+          "conversionMethod": "relative"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "2",
+              "qty": {
+                "type": "single",
+                "value": 70
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "70% of farine",
+                "target": "farine",
+                "percent": 70,
+                "isGhost": false
+              },
+              "normalizedMass": 70,
+              "unit": "g",
+              "conversionMethod": "relative"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "base",
+      "module": {
+        "binding": "base",
+        "uri": "base.gram",
+        "title": null
+      },
+      "metrics": {
+        "totalMass": 170,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Host",
+      "ingredients": [
+        {
+          "id": "eau",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "farine",
+          "_usageId": "4",
+          "qty": {
+            "type": "single",
+            "value": 100
+          },
+          "dependencies": [
+            "eau"
+          ],
+          "formula": {
+            "raw": "50% of eau",
+            "target": "eau",
+            "percent": 50,
+            "isGhost": false
+          },
+          "normalizedMass": 100,
+          "unit": "g",
+          "conversionMethod": "relative"
+        },
+        {
+          "type": "reference",
+          "id": "base",
+          "name": "base",
+          "_usageId": "5",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "4",
+              "qty": {
+                "type": "single",
+                "value": 100
+              },
+              "dependencies": [
+                "eau"
+              ],
+              "formula": {
+                "raw": "50% of eau",
+                "target": "eau",
+                "percent": 50,
+                "isGhost": false
+              },
+              "normalizedMass": 100,
+              "unit": "g",
+              "conversionMethod": "relative"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "base",
+              "name": "base",
+              "_usageId": "5",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&base' from \"./base.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 13,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Base",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Host",
+        "duration": 6
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Base",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Host",
+        "duration": 6
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 470,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"farine\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"eau\" not found in database."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "base",
+      "uri": "base.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

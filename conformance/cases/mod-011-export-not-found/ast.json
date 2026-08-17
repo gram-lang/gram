@@ -1,0 +1,87 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./oeufs.gram",
+      "bindings": [
+        {
+          "exported": "blanc",
+          "local": "blanc",
+          "loc": {
+            "start": 25,
+            "end": 31
+          }
+        }
+      ],
+      "mode": "inline",
+      "loc": {
+        "start": 0,
+        "end": 34
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dessert",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 47,
+                "end": 53
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "blanc",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 60,
+                  "end": 61
+                }
+              },
+              "loc": {
+                "start": 53,
+                "end": 62
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 62,
+                "end": 63
+              }
+            }
+          ],
+          "loc": {
+            "start": 47,
+            "end": 64
+          }
+        }
+      ],
+      "loc": {
+        "start": 35,
+        "end": 64
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Basic Default Import"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 69,
+            "end": 74
+          }
+        }
+      ],
+      "mode": "inline",
+      "loc": {
+        "start": 41,
+        "end": 75
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 97,
+                "end": 102
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 108,
+                  "end": 112
+                }
+              },
+              "loc": {
+                "start": 102,
+                "end": 113
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 113,
+                "end": 114
+              }
+            }
+          ],
+          "loc": {
+            "start": 88,
+            "end": 115
+          }
+        }
+      ],
+      "loc": {
+        "start": 76,
+        "end": 115
+      }
+    }
+  ]
+}

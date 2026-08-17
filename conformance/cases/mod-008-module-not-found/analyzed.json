@@ -1,0 +1,111 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "m": {
+        "id": "m",
+        "name": "m",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "m",
+          "name": "m",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "m",
+              "name": "m",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_NOT_FOUND",
+      "message": "Module \"./missing.gram\" could not be found or read.",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  }
+}

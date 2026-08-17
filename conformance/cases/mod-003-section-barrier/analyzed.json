@@ -1,0 +1,287 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "farine": {
+        "id": "farine",
+        "name": "farine",
+        "default_unit": "g"
+      },
+      "eau": {
+        "id": "eau",
+        "name": "eau"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "farine",
+      "name": "farine",
+      "_usageIds": [
+        "1",
+        "3"
+      ],
+      "qty": 750,
+      "unit": "g",
+      "normalizedMass": 750,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "eau",
+      "name": "eau",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [],
+      "normalizedMass": 175,
+      "isEstimate": false,
+      "conversionMethod": "relative",
+      "qty": 175,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 250
+        },
+        {
+          "id": "eau",
+          "_usageId": "2",
+          "qty": {
+            "type": "single",
+            "value": 175
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "70% of farine",
+            "target": "farine",
+            "percent": 70,
+            "isGhost": false
+          },
+          "normalizedMass": 175,
+          "unit": "g",
+          "conversionMethod": "relative"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "farine",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g",
+              "normalizedMass": 250,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "2",
+              "qty": {
+                "type": "single",
+                "value": 175
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "70% of farine",
+                "target": "farine",
+                "percent": 70,
+                "isGhost": false
+              },
+              "normalizedMass": 175,
+              "unit": "g",
+              "conversionMethod": "relative"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "pate.gram",
+        "title": null
+      },
+      "metrics": {
+        "totalMass": 425,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        },
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "4",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "g",
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "for something else."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "4",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&pate' from \"./pate.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 11,
+    "totalBreakdown": [
+      {
+        "label": "section_active:unnamed",
+        "duration": 8
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 8,
+    "activeBreakdown": [
+      {
+        "label": "section_active:unnamed",
+        "duration": 8
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 925,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"farine\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"eau\" not found in database."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "pate.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

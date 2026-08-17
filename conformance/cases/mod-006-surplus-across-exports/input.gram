@@ -1,0 +1,5 @@
+@use "./oeufs.gram" as { &blancs, &jaunes }
+
+## Dessert
+
+Whisk &blancs{200g} and &jaunes{50g}.
