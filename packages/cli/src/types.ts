@@ -2,6 +2,7 @@ import type {
 	IngredientData,
 	Macros,
 	NutritionMetrics,
+	AnalyzedCompilationResult,
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
 import type { NutritionBasis } from "@gram-lang/renderer";
@@ -292,6 +293,14 @@ export interface PipelineOptions {
 	bakersMathOnly?: boolean;
 	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
 	lang?: string;
+	/**
+	 * Shared module-yield measurement cache (module-imports RFC §F.1), keyed
+	 * by module URI. Pass the *same* Map across a batch of `runPipeline`
+	 * calls (see `services/builder.ts`) so a base imported by many recipes
+	 * is compiled+analyzed once, not once per importer. Omitted for a
+	 * single-file call — `composeRecipe` creates its own throwaway Map.
+	 */
+	moduleCache?: Map<string, AnalyzedCompilationResult>;
 }
 
 export interface CheckOptions {

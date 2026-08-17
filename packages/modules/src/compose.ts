@@ -131,6 +131,27 @@ function dropBakersReference(sections: SectionAST[]): {
 	return { sections: cloned, dropped };
 }
 
+/**
+ * A module with no `->&` at all (the common "just a sequence of steps"
+ * case) has nothing for the rename table to rename *from* — its default
+ * export's `ExportInfo.name` is the literal placeholder `"default"`, which
+ * doesn't actually appear anywhere in the section. Synthesizes a real
+ * `->&` declaration on that section first, so `buildRenameTable`/
+ * `applyRename` have something to find. A no-op when the section already
+ * declares one (every named export, and a default that happens to reuse a
+ * real one) — `computeExports` (§A.4) only ever leaves this placeholder for
+ * the "no `->&` anywhere" case.
+ */
+function ensureExportDecl(sections: SectionAST[], info: ExportInfo): void {
+	const section = sections[info.sectionIndex];
+	if (section && !section.intermediateDecl) {
+		section.intermediateDecl = {
+			type: ASTNodeType.IntermediateDecl,
+			name: info.name,
+		};
+	}
+}
+
 function isBindingReferenced(
 	children: RecipeAST["children"],
 	name: string,
@@ -332,6 +353,11 @@ export function composeRecipe(
 			const scaledAst = scaleAst(dep.ast, factor);
 			const scaledSections = scaledAst.children as SectionAST[];
 
+			validBindings.forEach((binding) => {
+				const info = dep.exports.get(binding.exported);
+				if (info) ensureExportDecl(scaledSections, info);
+			});
+
 			const table = buildRenameTable(
 				scaledSections,
 				dep.exports,
@@ -453,13 +479,26 @@ export function finalizeComposed(
 				}
 			: section;
 	});
+	// A module that fails to resolve is deliberately still kept on the
+	// composed AST's own `imports` (so kitchen's §C.4 degraded path
+	// registers the binding and the document keeps compiling) -- which
+	// means the *same* MODULE_NOT_FOUND can legitimately be raised twice,
+	// once here (graph loading) and once by compile() itself. Deduped by
+	// (code, message): a warning's message is a deterministic function of
+	// its payload (see warningTemplates), so two entries with the same code
+	// and message are the same underlying problem, not two different ones.
+	const seen = new Set<string>();
+	const warnings = [...compiled.warnings, ...compose.warnings].filter((w) => {
+		const key = `${w.code} ${w.message}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+
 	return {
 		...compiled,
 		sections,
 		modules: compose.modules,
-		// compose.warnings (MODULE_EXPORT_NOT_FOUND, MODULE_CYCLE, MODULE_SURPLUS,
-		// etc.) are raised during graph loading and composition, before
-		// compile() ever runs, so compiled.warnings alone never contains them.
-		warnings: [...compiled.warnings, ...compose.warnings],
+		warnings,
 	};
 }

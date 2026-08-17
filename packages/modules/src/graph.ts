@@ -113,9 +113,14 @@ export async function loadModuleGraph(
 			return;
 		}
 
+		// The specifier as the importer actually wrote it (e.g. "./base.gram")
+		// — falls back to the resolved uri only for the entry file itself,
+		// which has no importing decl to read it from.
+		const displaySpecifier = fromDecl?.specifier ?? uri;
+
 		if (depth > maxDepth) {
 			pushWarning(diagnostics, WarningCode.MODULE_DEPTH_EXCEEDED, {
-				specifier: uri,
+				specifier: displaySpecifier,
 				depth: maxDepth,
 				loc:
 					fromDecl?.loc && fromUri
@@ -130,7 +135,7 @@ export async function loadModuleGraph(
 			source = await host.read(uri);
 		} catch {
 			pushWarning(diagnostics, WarningCode.MODULE_NOT_FOUND, {
-				specifier: uri,
+				specifier: displaySpecifier,
 				loc:
 					fromDecl?.loc && fromUri
 						? { ...fromDecl.loc, uri: fromUri }
@@ -145,7 +150,7 @@ export async function loadModuleGraph(
 		} catch (err) {
 			if (err instanceof GramParseError) {
 				pushWarning(diagnostics, WarningCode.MODULE_PARSE_ERROR, {
-					specifier: uri,
+					specifier: displaySpecifier,
 					parseMessage: err.message,
 					loc: { start: err.offset, end: err.offset, uri },
 				});

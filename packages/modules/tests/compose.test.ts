@@ -129,7 +129,15 @@ Use &pate{1}.
 			"/pate.gram": "Mix @flour{250g}.\n\n@water{70% @&flour}.\n",
 		});
 
+		// Regression guard: a module with no `->&` of its own has nothing for
+		// the rename table to rename *from* (its default export's name is a
+		// placeholder) — without synthesizing a real declaration first, the
+		// host's own `&pate` reference silently never resolves.
+		expect(result.warnings.map((w) => w.code)).not.toContain(
+			"UNDEFINED_REFERENCE",
+		);
 		expect(result.sections).toHaveLength(2);
+		expect(result.sections[0]?.intermediate_preparation).toBe("pate");
 		const moduleSection = result.sections.find((s) =>
 			s.ingredients.some((i) => i.formula),
 		);
@@ -221,7 +229,14 @@ Use &m{100g}.
 `,
 		});
 
-		expect(result.warnings.map((w) => w.code)).toContain("MODULE_NOT_FOUND");
+		// Both graph loading (loadModuleGraph) and kitchen's own §C.4 degraded
+		// path independently notice the same missing file — deduped down to
+		// one, not surfaced as two errors for one root cause.
+		const notFound = result.warnings.filter(
+			(w) => w.code === "MODULE_NOT_FOUND",
+		);
+		expect(notFound).toHaveLength(1);
+		expect(notFound[0]?.message).toContain("./missing.gram");
 		expect(result.warnings.map((w) => w.code)).not.toContain(
 			"UNDEFINED_REFERENCE",
 		);

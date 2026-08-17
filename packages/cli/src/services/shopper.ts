@@ -8,7 +8,10 @@ import {
 } from "@gram-lang/i18n";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
-import type { IngredientData } from "@gram-lang/analyzer";
+import type {
+	IngredientData,
+	AnalyzedCompilationResult,
+} from "@gram-lang/analyzer";
 import { resolveCanonicalId } from "@gram-lang/analyzer";
 import type { ShopResult, ShoppingEntry } from "../types";
 
@@ -51,6 +54,9 @@ export async function buildShoppingList(
 	const categoryLabels = getCategoryLabels(lang);
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
+	// Shared across every file in this batch (module-imports RFC §F.1) — a
+	// base imported by several of these recipes is measured once.
+	const moduleCache = new Map<string, AnalyzedCompilationResult>();
 
 	// `IngredientData.category` stores a stable key (e.g. "vegetables") going
 	// forward, but a database
@@ -99,6 +105,7 @@ export async function buildShoppingList(
 						db: opts.db,
 						scaleFactor: opts.scaleFactor,
 						lang: opts.lang,
+						moduleCache,
 					});
 					if (analyzed) {
 						for (const item of analyzed.result.shopping_list as any[])
@@ -109,6 +116,7 @@ export async function buildShoppingList(
 						skipAnalyzer: true,
 						scaleFactor: opts.scaleFactor,
 						lang: opts.lang,
+						moduleCache,
 					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);
 				}

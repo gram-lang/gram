@@ -1,11 +1,19 @@
 import { readFile } from "node:fs/promises";
+import { dirname, resolve as resolvePath } from "node:path";
 import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
 import { analyze } from "@gram-lang/analyzer";
+import {
+	loadModuleGraph,
+	composeRecipe,
+	finalizeComposed,
+} from "@gram-lang/modules";
 import type { CompilationResult } from "@gram-lang/kitchen";
 import type { AnalysisResult } from "@gram-lang/analyzer";
 import type { PipelineOptions } from "../types";
 import { GramCLIError, ExitCode } from "../errors";
+import { createCliModuleHost } from "./module-host";
+import { findProjectRoot } from "./workspace";
 
 export interface PipelineResult {
 	content: string;
@@ -13,20 +21,59 @@ export interface PipelineResult {
 	analyzed: AnalysisResult | null;
 }
 
+/**
+ * Every entry point (build/check/shop/scale/view/cook) runs through here,
+ * so this is where `@use` imports are resolved -- unconditionally, even for
+ * a file with none, so there's exactly one code path rather than a
+ * has-imports branch to keep in sync. For a file with no `@use` at all,
+ * `loadModuleGraph` does the one file read this function needed anyway and
+ * `composeRecipe` is a pass-through (nothing to splice), so this costs
+ * nothing extra over the old direct getAST+compile path.
+ *
+ * `gram import`'s in-memory content (`runPipelineFromSource`, no file path
+ * to resolve against) deliberately does NOT go through module resolution --
+ * see `prompts/gram-spec.ts`'s own note on why `@use` is never taught to
+ * the AI importer.
+ */
 export async function runPipeline(
 	filePath: string,
 	opts: PipelineOptions = {},
 ): Promise<PipelineResult> {
+	const entryUri = resolvePath(filePath);
 	let content: string;
 	try {
-		content = await readFile(filePath, "utf-8");
+		content = await readFile(entryUri, "utf-8");
 	} catch (err) {
 		if ((err as { code?: string }).code === "ENOENT") {
 			throw new GramCLIError(`File not found: ${filePath}`, ExitCode.Error);
 		}
 		throw err;
 	}
-	return runPipelineFromSource(content, opts);
+
+	const projectRoot = await findProjectRoot(dirname(entryUri));
+	const host = createCliModuleHost(projectRoot);
+	const graph = await loadModuleGraph(entryUri, host);
+	const composed = composeRecipe(graph, {
+		db: opts.db ?? {},
+		lang: opts.lang,
+		cache: opts.moduleCache,
+	});
+
+	const compiled = compile(
+		composed.ast,
+		opts.scaleFactor ? { scaleFactor: opts.scaleFactor } : undefined,
+	);
+	const tagged = finalizeComposed(compiled, composed);
+
+	const analyzed =
+		!opts.skipAnalyzer && opts.db
+			? analyze(tagged, opts.db, {
+					bakersReference: opts.bakersReference,
+					lang: opts.lang,
+				})
+			: null;
+
+	return { content, compiled: tagged, analyzed };
 }
 
 /**
