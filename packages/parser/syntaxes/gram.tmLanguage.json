@@ -5,11 +5,25 @@
   "patterns": [
     { "include": "#frontmatter" },
     { "include": "#comments" },
+    { "include": "#use-directive" },
     { "include": "#sections" },
     { "include": "#actions" },
     { "include": "#elements" }
   ],
   "repository": {
+    "use-directive": {
+      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&[^\\s]+)(?:\\s+(prepared))?",
+      "captures": {
+        "1": { "name": "keyword.control.import.gram" },
+        "2": { "name": "string.quoted.double.gram" },
+        "3": { "name": "keyword.control.import.gram" },
+        "4": {
+          "name": "meta.import.bindings.gram",
+          "patterns": [{ "include": "#references" }]
+        },
+        "5": { "name": "keyword.other.prepared.gram" }
+      }
+    },
     "frontmatter": {
       "begin": "^---$",
       "end": "^---$",

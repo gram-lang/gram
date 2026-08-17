@@ -21,6 +21,8 @@ import {
 	type AlternativeAST,
 	type IntermediateDecl,
 	type Modifier,
+	type ImportDecl,
+	type ImportBinding,
 	ASTNodeType,
 } from "./types";
 
@@ -141,7 +143,7 @@ const semantics = grammar.createSemantics();
 semantics.addOperation("toAST", {
 	// --- Structure ---
 
-	Recipe(frontmatter, content): RecipeAST {
+	Recipe(frontmatter, useBlock, content): RecipeAST {
 		const rawMeta = getOpt(frontmatter) || {};
 		const metaResult = MetaSchema.safeParse(rawMeta);
 		let meta: Meta;
@@ -155,8 +157,9 @@ semantics.addOperation("toAST", {
 			meta = metaResult.data;
 		}
 
+		const imports = (getOpt(useBlock) || []) as ImportDecl[];
 		const children = (getOpt(content) || []) as RecipeAST["children"];
-		return { type: ASTNodeType.Recipe, meta, children };
+		return { type: ASTNodeType.Recipe, meta, imports, children };
 	},
 
 	Frontmatter(_1, _2, kv, _3, _4) {
@@ -223,6 +226,94 @@ semantics.addOperation("toAST", {
 
 	retroPlanning(_1, content, _2): RetroPlanningAST {
 		return parseRetroPlanning(clean(content.sourceString));
+	},
+
+	// --- Module imports ---
+
+	UseBlock(_nls0, first, _nlsRest, rest): ImportDecl[] {
+		const firstDecl = first.toAST() as ImportDecl;
+		const restDecls = rest.children
+			.map((c) => c.toAST())
+			.filter((d): d is ImportDecl => d !== null);
+		return [firstDecl, ...restDecls];
+	},
+
+	// Discarded on purpose: a comment between two `@use` directives must not
+	// break the block (see grammar.ohm), but the AST has nowhere principled to
+	// put it -- `imports` only ever holds resolved `ImportDecl`s.
+	useComment(_comment, _nl): null {
+		return null;
+	},
+
+	useDirective(
+		_at,
+		_sp1,
+		spec,
+		_sp2,
+		_as,
+		_sp3,
+		binds,
+		_sp4,
+		modeOpt,
+		_sp5,
+		_term,
+	): ImportDecl {
+		const mode =
+			modeOpt.children.length > 0
+				? (modeOpt.children[0]!.toAST() as "prepared")
+				: "inline";
+		return {
+			type: ASTNodeType.ImportDecl,
+			specifier: spec.toAST() as string,
+			bindings: binds.toAST() as ImportBinding[],
+			mode,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	moduleSpecifier(_lq, chars, _rq): string {
+		return chars.sourceString;
+	},
+
+	bindings_named(_lb, _s1, first, more, _s2, _rb): ImportBinding[] {
+		return [
+			first.toAST() as ImportBinding,
+			...(more.children.map((c) => c.toAST()) as ImportBinding[]),
+		];
+	},
+
+	bindings_default(b): ImportBinding[] {
+		const binding = b.toAST() as ImportBinding;
+		return [{ ...binding, exported: "default" }];
+	},
+
+	moreBindings(_s1, _comma, _s2, b): ImportBinding {
+		return b.toAST();
+	},
+
+	binding(_amp, name, _sp1, _as, _sp2, _amp2, aliasIter): ImportBinding {
+		const exported = clean(name.sourceString);
+		const local =
+			aliasIter.children.length > 0
+				? clean(aliasIter.children[0]!.sourceString)
+				: exported;
+		return {
+			exported,
+			local,
+			loc: { start: this.source.startIdx, end: this.source.endIdx },
+		};
+	},
+
+	importMode(_lit): "prepared" {
+		return "prepared";
+	},
+
+	invalidUseDirective(_at, _sp, _q) {
+		throw new GramParseError(
+			"Gram Syntax Error: '@use' directives must appear right after the frontmatter (or at the top of the document), before the first step.",
+			this.source.startIdx,
+			"'@use \"...\" as &name' at the top of the document, before any step",
+		);
 	},
 
 	// --- Blocks & Steps ---

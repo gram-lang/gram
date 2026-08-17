@@ -1,7 +1,7 @@
 GRAM {
-  Recipe = Frontmatter? Content?
-  
-  Content = 
+  Recipe = Frontmatter? UseBlock? Content?
+
+  Content =
     | (nl* Block)* (nl* Section)+      -- explicit
     | (nl* Block)+        -- implicit
 
@@ -10,6 +10,25 @@ GRAM {
   KeyValue = emptyLine* key ":" sp* value nl
   key = (alnum | "_" | "-")+
   value = (~nl any)*
+
+  // Import directives, constrained between the frontmatter and the content --
+  // this is what makes "@use" unambiguous with an ingredient literally named
+  // "use" that happens to appear in a step (unchanged, still parses as such).
+  // The block must open with a real `UseDirective`: a leading `UseComment` on
+  // its own (no `@use` anywhere in the block) is deliberately NOT swallowed
+  // here, so a document with no imports at all keeps treating its opening
+  // comment as ordinary content, exactly as before this feature existed. Once
+  // the block has started, a comment between two directives doesn't break it.
+  UseBlock = nl* useDirective (nl* (useDirective | useComment))*
+  useComment = applySyntactic<Comment> nl
+  useDirective = "@use" sp+ moduleSpecifier sp+ "as" sp+ bindings sp* importMode? sp* (nl | end)
+  moduleSpecifier = "\"" (~("\"" | nl) any)+ "\""
+  bindings =
+    | "{" sp* binding moreBindings* sp* "}"  -- named
+    | binding                                 -- default
+  moreBindings = sp* "," sp* binding
+  binding = "&" singleWordName (sp+ "as" sp+ "&" singleWordName)?
+  importMode = "prepared"
 
   Section = header Block*
   header = "##" sp+ title headerExtension? sp* nl+
@@ -29,6 +48,7 @@ GRAM {
   startAction = "[" (~"]" any)+ "]" sp*
   line = stepContent+
   stepContent =
+    | invalidUseDirective
     | invalidComposite
     | invalidAlternativeBar
     | text
@@ -36,6 +56,13 @@ GRAM {
     | intermediateDecl
     | applySyntactic<Element>
     | fallback
+
+  // A `@use "..."` past the import block (after the first step, misspelled,
+  // or otherwise misplaced) would otherwise silently parse as an ingredient
+  // literally named "use" followed by prose -- this turns it into a readable
+  // error instead. Only triggers on the exact `@use "` prefix, so an actual
+  // ingredient named "use" followed by unrelated quoted text is unaffected.
+  invalidUseDirective = "@use" sp+ "\""
 
   invalidComposite = space+ "<" space* "@" name
 
