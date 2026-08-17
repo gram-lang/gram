@@ -578,6 +578,40 @@ export function processBlockItem(
 }
 
 /**
+ * Groups a flat list of top-level AST children into a list of sections,
+ * wrapping any run of non-`Section` nodes (bare steps/comments with no
+ * heading) into a single synthetic untitled section placed first. Shared by
+ * `processSections` and, in the module composer, by the rule that a module
+ * without its own section must not spill bare steps into the host's own
+ * untitled section — each side must group independently before splicing, or
+ * an imported module's steps and the host's own bare steps would land in the
+ * same section and cross-contaminate relative-quantity resolution.
+ */
+export function groupIntoSections(astChildren: ASTNode[]): ASTNode[] {
+	const topLevelBlocks: ASTNode[] = [];
+	const actualSections: ASTNode[] = [];
+
+	for (const child of astChildren) {
+		if (child.type === ASTNodeType.Section) {
+			actualSections.push(child);
+		} else {
+			topLevelBlocks.push(child);
+		}
+	}
+
+	const blocksToProcess = [...actualSections];
+	if (topLevelBlocks.length > 0) {
+		blocksToProcess.unshift({
+			type: ASTNodeType.Section,
+			title: null,
+			children: topLevelBlocks,
+		} as SectionAST);
+	}
+
+	return blocksToProcess;
+}
+
+/**
  * Main structural step/section processor.
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
  * handles passive background tasks, and calculates active and total duration metrics.
@@ -608,28 +642,7 @@ export function processSections(
 	};
 
 	const sections: ProcessedSection[] = [];
-	let blocksToProcess: ASTNode[] = astChildren;
-
-	// Group all top-level steps and comments into an implicit default section
-	const topLevelBlocks: ASTNode[] = [];
-	const actualSections: ASTNode[] = [];
-
-	for (const child of astChildren) {
-		if (child.type === ASTNodeType.Section) {
-			actualSections.push(child);
-		} else {
-			topLevelBlocks.push(child);
-		}
-	}
-
-	blocksToProcess = [...actualSections];
-	if (topLevelBlocks.length > 0) {
-		blocksToProcess.unshift({
-			type: ASTNodeType.Section,
-			title: null,
-			children: topLevelBlocks,
-		} as SectionAST);
-	}
+	const blocksToProcess: ASTNode[] = groupIntoSections(astChildren);
 
 	const globalSchedules: StepSchedule[] = [];
 	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised
