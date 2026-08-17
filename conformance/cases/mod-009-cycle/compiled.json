@@ -55,7 +55,8 @@
       "module": {
         "binding": "b",
         "uri": "b.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -95,7 +96,8 @@
       "module": {
         "binding": "a",
         "uri": "a.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {

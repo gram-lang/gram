@@ -94,7 +94,8 @@
       "module": {
         "binding": "pate",
         "uri": "bases/pate.gram",
-        "title": "Pate"
+        "title": "Pate",
+        "mode": "inline"
       }
     },
     {

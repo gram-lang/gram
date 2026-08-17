@@ -79,7 +79,8 @@
       "module": {
         "binding": "d",
         "uri": "d.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -119,7 +120,8 @@
       "module": {
         "binding": "b",
         "uri": "b.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -157,7 +159,8 @@
       "module": {
         "binding": "d",
         "uri": "d.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -197,7 +200,8 @@
       "module": {
         "binding": "c",
         "uri": "c.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {

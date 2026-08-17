@@ -69,7 +69,8 @@
       "module": {
         "binding": "blancs",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -107,7 +108,8 @@
       "module": {
         "binding": "blancs",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {

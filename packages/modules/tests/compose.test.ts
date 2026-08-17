@@ -226,6 +226,7 @@ Use &pate{1}.
 			binding: "pate",
 			uri: "/pate.gram",
 			title: "Pate Sablee",
+			mode: "inline",
 		});
 		expect(result.sections[1]?.module).toBeUndefined();
 	});
@@ -251,5 +252,99 @@ Use &m{100g}.
 		expect(result.warnings.map((w) => w.code)).not.toContain(
 			"UNDEFINED_REFERENCE",
 		);
+	});
+});
+
+describe("composeRecipe: prepared mode (module-imports RFC §D.4)", () => {
+	it("synthesizes one opaque step instead of splicing the module's own steps", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate prepared
+
+## Montage
+
+Use &pate{200g}.
+`,
+			"/pate.gram":
+				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g} for ~{10min}, then leave to rest ~_{45min}.\n",
+		});
+
+		expect(result.warnings.filter((w) => w.code.startsWith("MODULE"))).toEqual(
+			[],
+		);
+		expect(result.sections[0]?.title).toBe("Pate");
+		expect(result.sections[0]?.intermediate_preparation).toBe("pate");
+		expect(result.sections[0]?.module?.mode).toBe("prepared");
+
+		// One synthesized step, not the module's own two steps.
+		expect(result.sections[0]?.steps).toHaveLength(1);
+		const step = result.sections[0]?.steps[0];
+		expect(step?.type).toBe("step");
+		expect(step?.timings.activeDuration).toBe(10);
+		expect(step?.backgroundTasks).toEqual([
+			expect.objectContaining({ duration: 45 }),
+		]);
+
+		// The module's own ingredients don't leak into the rendered content...
+		const contentIds = (step?.content ?? [])
+			.filter((c): c is { id?: string } => typeof c === "object" && c !== null)
+			.map((c) => c.id);
+		expect(contentIds).not.toContain("flour");
+		expect(contentIds).not.toContain("butter");
+
+		// ...but they're still registered and counted toward the shopping list.
+		const flour = result.sections[0]?.ingredients.find((i) => i.id === "flour");
+		const butter = result.sections[0]?.ingredients.find(
+			(i) => i.id === "butter",
+		);
+		expect(flour?.qty).toBe(150);
+		expect(butter?.qty).toBe(50);
+		const flourLine = result.shopping_list.find(
+			(i) => "id" in i && i.id === "flour",
+		);
+		expect(flourLine).toBeDefined();
+	});
+
+	it("scales the black box's silent ingredients like any other import", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate prepared
+
+## Montage
+
+Use &pate{400g}.
+`,
+			"/pate.gram":
+				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g}.\n",
+		});
+
+		const flour = result.sections[0]?.ingredients.find((i) => i.id === "flour");
+		expect(flour?.qty).toBe(300);
+	});
+
+	it("falls back to a normal inline splice on prepared + destructuring (PREPARED_MULTI_EXPORT)", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./oeufs.gram" as { &blancs, &jaunes } prepared
+
+## Dessert
+
+Whisk &blancs{100g} and &jaunes{50g}.
+`,
+			"/oeufs.gram": `## Blancs ->&blancs
+
+Separate @egg{100g}.
+
+## Jaunes ->&jaunes
+
+Separate @egg{50g}.
+`,
+		});
+
+		expect(result.warnings.map((w) => w.code)).toContain(
+			"PREPARED_MULTI_EXPORT",
+		);
+		// Degrades to the normal splice — the module's own two sections show up
+		// verbatim rather than a single synthesized step.
+		expect(result.sections[0]?.title).toBe("Blancs");
+		expect(result.sections[1]?.title).toBe("Jaunes");
+		expect(result.sections[0]?.module?.mode).toBe("prepared");
 	});
 });

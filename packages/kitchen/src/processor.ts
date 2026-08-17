@@ -535,23 +535,24 @@ export function processBlockItem(
 	if (!item) return null;
 
 	switch (item.type) {
-		case ASTNodeType.Ingredient:
-			return processIngredient(
-				item as IngredientAST,
-				ctx,
-				registry,
-				secIngredients,
-			);
+		case ASTNodeType.Ingredient: {
+			const ing = item as IngredientAST;
+			const usage = processIngredient(ing, ctx, registry, secIngredients);
+			return ing.silent ? null : usage;
+		}
 		case ASTNodeType.Cookware:
 			return processCookware(item as CookwareAST, ctx, registry, secCookware);
-		case ASTNodeType.Alternative:
-			return processAlternative(
-				item as AlternativeAST,
+		case ASTNodeType.Alternative: {
+			const alt = item as AlternativeAST;
+			const usage = processAlternative(
+				alt,
 				ctx,
 				registry,
 				secIngredients,
 				secCookware,
 			);
+			return alt.silent ? null : usage;
+		}
 		case ASTNodeType.Reference:
 			return processReference(
 				item as ReferenceAST,

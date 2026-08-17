@@ -33,6 +33,7 @@ The imported recipe's steps are inlined into the timeline, exactly as if you'd p
 
 *   **Default binding** — `as &name` binds the module's default export to `&name`.
 *   **Destructured bindings** — `as { &a, &b }` binds several of the module's exports at once. Add `as &newName` after any one of them to bind it under a different local name (`as { &a as &renamed, &b }`).
+*   **`prepared`** — an optional modifier after the bindings (`as &pate prepared`) that imports the module as an opaque black box instead of inlining its steps — see [Prepared mode](#prepared-mode-black-box) below.
 *   The specifier must end in `.gram`, and be one of: a relative path (`./`, `../`), the project root (`@/`), or a named `paths:` alias (`@alias/`) — see below. Only files inside your project are resolvable — an absolute path or a URL is rejected.
 
 ## Project-root and aliased paths
@@ -129,7 +130,22 @@ Two exceptions:
 
 A module's own baker's-percentage reference (`*`) is dropped on import — baker's math for "tart plus imported pastry" has no coherent meaning, and Gram already only allows one `*` per document.
 
+## Prepared mode (black box)
+
+By default, an imported module's steps are inlined into the timeline — the point of the whole feature, for a base whose own resting time or oven pass needs to interleave with everything else. Sometimes you don't want that: a stock bought ready-made, or a sub-recipe whose own step-by-step detail would just clutter the schedule. Add `prepared` after the bindings to import it as a single opaque step instead:
+
+```gram
+@use "./bases/bouillon.gram" as &bouillon prepared
+
+## Soup
+
+Simmer with &bouillon{1L}.
+```
+
+The module still counts for scheduling and shopping exactly as it would otherwise — its own measured active/rest time becomes this one step's timing, so it's still scheduled and interleaved like any other step, and its ingredients are still added to the shopping list. What changes is that its own internal steps never show up in the timeline: from the outside, "make the stock" is one block of time, not a dozen individual steps competing for space in the Gantt.
+
+`prepared` can't be combined with destructuring (`as { &a, &b } prepared`) — a single synthesized step can only produce one binding. Doing so is an error (`PREPARED_MULTI_EXPORT`); either drop `prepared` or split the import into two.
+
 ## Limits (for now)
 
 *   There is no official, Gram-maintained library of standard base recipes, and none is planned — a community package hub (`hub:author/package` specifiers) is a long-term idea, not yet implemented.
-*   Every import is inlined into the timeline. An opt-out for treating a base as an opaque black box (so its own steps don't clutter the schedule) is planned but not yet implemented — a `prepared` modifier is recognized but currently behaves the same as a normal import.

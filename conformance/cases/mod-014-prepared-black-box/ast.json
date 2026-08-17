@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Prepared Black Box"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/bouillon.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "bouillon",
+          "loc": {
+            "start": 71,
+            "end": 80
+          }
+        }
+      ],
+      "mode": "prepared",
+      "loc": {
+        "start": 39,
+        "end": 90
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Soup",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer with ",
+              "loc": {
+                "start": 100,
+                "end": 112
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "bouillon",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1000,
+                  "text": "1000"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 122,
+                  "end": 127
+                }
+              },
+              "loc": {
+                "start": 112,
+                "end": 128
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 128,
+                "end": 129
+              }
+            }
+          ],
+          "loc": {
+            "start": 100,
+            "end": 130
+          }
+        }
+      ],
+      "loc": {
+        "start": 91,
+        "end": 130
+      }
+    }
+  ]
+}

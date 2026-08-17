@@ -78,7 +78,8 @@
       "module": {
         "binding": "blancs",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 200,
@@ -127,7 +128,8 @@
       "module": {
         "binding": "blancs",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 100,

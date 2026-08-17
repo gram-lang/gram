@@ -188,6 +188,12 @@ export interface IngredientAST extends NodeAST {
 	alias?: string | null;
 	preparation?: string | null;
 	composite?: CompositeAST | null;
+	// Never produced by the parser — set by `@gram-lang/modules`'s composer
+	// on a `prepared` import (module-imports RFC §D.4) so this ingredient
+	// still registers with the registry and counts toward the shopping list
+	// without being spelled out in the synthesized black-box step's own
+	// rendered content.
+	silent?: boolean;
 }
 
 // This used to not extend NodeAST (no `loc`) and was absent from the
@@ -244,6 +250,10 @@ export interface TemperatureAST extends NodeAST {
 export interface AlternativeAST extends NodeAST {
 	type: ASTNodeType.Alternative;
 	options: (IngredientAST | CookwareAST)[];
+	// Same synthetic-only meaning as `IngredientAST.silent` — the whole
+	// alternative group is registered (as one grouped shopping-list line,
+	// same as usual) but excluded from the black-box step's rendered content.
+	silent?: boolean;
 }
 
 export type ASTNode =

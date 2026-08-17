@@ -88,7 +88,8 @@
       "module": {
         "binding": "d",
         "uri": "d.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 100,
@@ -133,7 +134,8 @@
       "module": {
         "binding": "b",
         "uri": "b.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 0,
@@ -182,7 +184,8 @@
       "module": {
         "binding": "d",
         "uri": "d.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 100,
@@ -227,7 +230,8 @@
       "module": {
         "binding": "c",
         "uri": "c.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 0,

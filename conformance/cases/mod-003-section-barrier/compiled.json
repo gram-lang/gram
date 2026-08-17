@@ -135,7 +135,8 @@
       "module": {
         "binding": "pate",
         "uri": "pate.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {

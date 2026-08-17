@@ -1,0 +1,254 @@
+{
+  "title": "Mod Prepared Black Box",
+  "slug": "mod-prepared-black-box",
+  "meta": {
+    "title": "Mod Prepared Black Box"
+  },
+  "registry": {
+    "ingredients": {
+      "bouillon": {
+        "id": "bouillon",
+        "name": "bouillon",
+        "is_intermediate": true
+      },
+      "carrot": {
+        "id": "carrot",
+        "name": "carrot",
+        "default_unit": "g"
+      },
+      "onion": {
+        "id": "onion",
+        "name": "onion",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "carrot",
+      "name": "carrot",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "onion",
+      "name": "onion",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Vegetable Stock",
+      "ingredients": [
+        {
+          "id": "carrot",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "onion",
+          "_usageId": "3",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "type": "reference",
+              "id": "bouillon",
+              "name": "bouillon",
+              "_usageId": "1"
+            },
+            " (1000g)",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 20
+              },
+              "unit": "min"
+            },
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 45
+              },
+              "unit": "min"
+            }
+          ],
+          "timings": {
+            "start": 0,
+            "end": 20,
+            "activeDuration": 20
+          },
+          "backgroundTasks": [
+            {
+              "duration": 45,
+              "startOffset": 20
+            }
+          ]
+        }
+      ],
+      "intermediate_preparation": "bouillon",
+      "module": {
+        "binding": "bouillon",
+        "uri": "bases/bouillon.gram",
+        "title": "Vegetable Stock",
+        "mode": "prepared"
+      },
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Soup",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "bouillon",
+          "name": "bouillon",
+          "_usageId": "4",
+          "qty": 1000,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 1000
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Simmer with ",
+            {
+              "type": "reference",
+              "id": "bouillon",
+              "name": "bouillon",
+              "_usageId": "4",
+              "qty": 1000,
+              "unit": "g",
+              "normalizedMass": 1000,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 65,
+            "end": 67,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 1000,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 70,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Vegetable Stock",
+        "duration": 20
+      },
+      {
+        "label": "timer_passive",
+        "duration": 45
+      },
+      {
+        "label": "section_active:Soup",
+        "duration": 2
+      }
+    ],
+    "idleTime": 45,
+    "activeTime": 22,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Vegetable Stock",
+        "duration": 20
+      },
+      {
+        "label": "section_active:Soup",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 300,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"carrot\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"onion\" not found in database."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "bouillon",
+      "uri": "bases/bouillon.gram",
+      "title": "Vegetable Stock",
+      "meta": {
+        "title": "Vegetable Stock",
+        "yields": "1000g"
+      },
+      "scaleFactor": 1,
+      "mode": "prepared"
+    }
+  ]
+}

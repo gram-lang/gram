@@ -34,4 +34,10 @@ paths:
 @use "@bases/pate-sablee.gram" as &pate
 ```
 
-This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built. There's also no opt-out yet from inlining a base's steps into the timeline when you'd rather treat it as a black box. That's coming in a later release.
+Sometimes you don't want a base's own steps cluttering the timeline — a stock bought ready-made, or a sub-recipe you'd rather treat as a black box. Add `prepared` after the bindings and Gram imports it as a single opaque step instead: its own measured time still counts toward scheduling and its ingredients still land on the shopping list, but its internal steps never show up in the Gantt.
+
+```gram
+@use "./bases/bouillon.gram" as &bouillon prepared
+```
+
+This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.

@@ -4,6 +4,10 @@ import {
 	type SectionAST,
 	type StepAST,
 	type IngredientAST,
+	type AlternativeAST,
+	type ReferenceAST,
+	type TimerAST,
+	type TextAST,
 	type ImportDecl,
 	type ImportBinding,
 	type Location,
@@ -26,7 +30,11 @@ import {
 import type { ModuleGraph } from "./host";
 import { computeExports, type ExportInfo } from "./exports";
 import { buildRenameTable, applyRename, checkRenameCollisions } from "./rename";
-import { parseDeclaredYields, computeScaleFactor } from "./yield";
+import {
+	parseDeclaredYields,
+	computeScaleFactor,
+	type ParsedYieldSpec,
+} from "./yield";
 
 export interface ComposeOptions {
 	db: Record<string, IngredientData>;
@@ -129,6 +137,103 @@ function dropBakersReference(sections: SectionAST[]): {
 		});
 	});
 	return { sections: cloned, dropped };
+}
+
+/**
+ * Every top-level `IngredientAST`/`AlternativeAST` across a module's steps,
+ * in document order — order matters because a `RelativeQuantityAST` target
+ * (`@water{70% @&flour}`) must still appear *earlier* in the flattened list
+ * for `processIngredient`'s resolution check to find it once every step
+ * collapses into the one synthetic step built by `buildPreparedSection`.
+ */
+function collectSilenceableItems(
+	sections: SectionAST[],
+): (IngredientAST | AlternativeAST)[] {
+	const found: (IngredientAST | AlternativeAST)[] = [];
+	sections.forEach((section) => {
+		section.children.forEach((child) => {
+			if (child.type !== ASTNodeType.Step) return;
+			(child as StepAST).children.forEach((c) => {
+				if (
+					c.type === ASTNodeType.Ingredient ||
+					c.type === ASTNodeType.Alternative
+				) {
+					found.push(c);
+				}
+			});
+		});
+	});
+	return found;
+}
+
+/**
+ * Builds the "black box" section for a `prepared` import (§D.4): a single
+ * section with a single step, instead of splicing the module's own sections
+ * in. The module's ingredients are still attached to that one step — marked
+ * `silent` (see `IngredientAST.silent`/processor.ts's `processBlockItem`) so
+ * they register with the recipe registry and count toward the shopping list
+ * without being spelled out in the rendered step — and its own measured
+ * `metrics.activeTime`/`idleTime` become this one step's timing, so ALAP
+ * schedules it like any other single step instead of interleaving the
+ * module's internal steps with the host's own.
+ */
+function buildPreparedSection(
+	binding: ImportBinding,
+	depModuleTitle: string | null,
+	depAnalyzed: AnalyzedCompilationResult,
+	depDeclaredYields: Map<string, ParsedYieldSpec>,
+	debakeredSections: SectionAST[],
+	loc: Location | undefined,
+): SectionAST {
+	const silenced = collectSilenceableItems(debakeredSections);
+	silenced.forEach((item) => {
+		item.silent = true;
+	});
+
+	const children: StepAST["children"] = [
+		{ type: ASTNodeType.Reference, name: binding.local, loc } as ReferenceAST,
+	];
+
+	const declaredDefault = depDeclaredYields.get("default");
+	if (declaredDefault) {
+		children.push({
+			type: ASTNodeType.Text,
+			value: ` (${declaredDefault.value}${declaredDefault.unit ?? ""})`,
+			loc,
+		} as TextAST);
+	}
+
+	const buildTimer = (minutes: number, isPassive: boolean): TimerAST => ({
+		type: ASTNodeType.Timer,
+		isPassive,
+		quantity: {
+			type: ASTNodeType.Quantity,
+			value: { type: "single", value: minutes },
+			unit: "min",
+			fixed: false,
+		},
+		loc,
+	});
+
+	if (depAnalyzed.metrics.activeTime > 0) {
+		children.push(buildTimer(depAnalyzed.metrics.activeTime, false));
+	}
+	if (depAnalyzed.metrics.idleTime > 0) {
+		children.push(buildTimer(depAnalyzed.metrics.idleTime, true));
+	}
+
+	children.push(...silenced);
+
+	return {
+		type: ASTNodeType.Section,
+		title: depModuleTitle,
+		intermediateDecl: {
+			type: ASTNodeType.IntermediateDecl,
+			name: binding.local,
+		},
+		children: [{ type: ASTNodeType.Step, children }],
+		loc,
+	};
 }
 
 /**
@@ -240,12 +345,13 @@ interface Resolved {
  * than once (a diamond dependency) with different bindings and different
  * requested quantities each time.
  *
- * `prepared` mode (Phase D.4, the "black box" opt-out) isn't implemented
- * yet — out of scope for this pass alongside `@/`/`std:` specifiers, per
- * the RFC's own v0.1/v0.2 split. A `prepared` import is spliced inline
- * instead, which stays *correct* (the schedule and shopping list are still
- * right) even though it doesn't yet hide the module's own step-by-step
- * detail the way the opt-out promises.
+ * `prepared` mode (Phase D.4, the "black box" opt-out) synthesizes one
+ * section with one step instead of splicing the module's own sections in —
+ * see `buildPreparedSection`. A `prepared` import combined with
+ * destructuring (`validBindings.length > 1`) falls back to a normal inline
+ * splice, flagged with `PREPARED_MULTI_EXPORT` (§D.4's documented v0.2
+ * limit): `ProcessedStep.intermediate_preparation` is singular, so a
+ * synthetic step can't bind more than one export at once.
  */
 export function composeRecipe(
 	graph: ModuleGraph,
@@ -360,35 +466,6 @@ export function composeRecipe(
 			const scaledAst = scaleAst(dep.ast, factor);
 			const scaledSections = scaledAst.children as SectionAST[];
 
-			validBindings.forEach((binding) => {
-				const info = dep.exports.get(binding.exported);
-				if (info) ensureExportDecl(scaledSections, info);
-			});
-
-			const table = buildRenameTable(
-				scaledSections,
-				dep.exports,
-				validBindings,
-			);
-			const renamed = applyRename(scaledSections, table);
-			const { sections: debakered, dropped } = dropBakersReference(renamed);
-			if (dropped) {
-				pushWarning(warnings, WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED, {
-					specifier: decl.specifier,
-					loc: decl.loc,
-				});
-			}
-			stampUri(debakered, depUri);
-
-			const collisions = checkRenameCollisions(table.values(), claimedIds);
-			collisions.forEach((name) => {
-				pushWarning(warnings, WarningCode.SCOPE_CONFLICT, {
-					varName: name,
-					section: depModuleTitle,
-					loc: decl.loc,
-				});
-			});
-
 			const info: ModuleInfo = {
 				binding: validBindings[0]!.local,
 				uri: depUri,
@@ -398,10 +475,61 @@ export function composeRecipe(
 				mode: decl.mode,
 			};
 
-			prepended.push(...debakered);
-			dep.sectionOrigins.forEach((existing) => {
-				prependedOrigins.push(existing ?? info);
-			});
+			if (decl.mode === "prepared" && validBindings.length === 1) {
+				const { sections: debakered, dropped } =
+					dropBakersReference(scaledSections);
+				if (dropped) {
+					pushWarning(warnings, WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED, {
+						specifier: decl.specifier,
+						loc: decl.loc,
+					});
+				}
+				const preparedSection = buildPreparedSection(
+					validBindings[0]!,
+					depModuleTitle,
+					depAnalyzed,
+					depDeclaredYields,
+					debakered,
+					decl.loc,
+				);
+				stampUri([preparedSection], depUri);
+				prepended.push(preparedSection);
+				prependedOrigins.push(info);
+			} else {
+				validBindings.forEach((binding) => {
+					const exportInfo = dep.exports.get(binding.exported);
+					if (exportInfo) ensureExportDecl(scaledSections, exportInfo);
+				});
+
+				const table = buildRenameTable(
+					scaledSections,
+					dep.exports,
+					validBindings,
+				);
+				const renamed = applyRename(scaledSections, table);
+				const { sections: debakered, dropped } = dropBakersReference(renamed);
+				if (dropped) {
+					pushWarning(warnings, WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED, {
+						specifier: decl.specifier,
+						loc: decl.loc,
+					});
+				}
+				stampUri(debakered, depUri);
+
+				const collisions = checkRenameCollisions(table.values(), claimedIds);
+				collisions.forEach((name) => {
+					pushWarning(warnings, WarningCode.SCOPE_CONFLICT, {
+						varName: name,
+						section: depModuleTitle,
+						loc: decl.loc,
+					});
+				});
+
+				prepended.push(...debakered);
+				dep.sectionOrigins.forEach((existing) => {
+					prependedOrigins.push(existing ?? info);
+				});
+			}
 
 			meta = mergeDensities(
 				meta,
@@ -482,6 +610,7 @@ export function finalizeComposed(
 						binding: origin.binding,
 						uri: origin.uri,
 						title: origin.title,
+						mode: origin.mode,
 					},
 				}
 			: section;

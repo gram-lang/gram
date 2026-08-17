@@ -94,7 +94,8 @@
       "module": {
         "binding": "meringue",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 100,
@@ -156,7 +157,8 @@
       "module": {
         "binding": "meringue",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 50,

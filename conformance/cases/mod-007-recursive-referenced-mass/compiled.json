@@ -82,7 +82,8 @@
       "module": {
         "binding": "meringue",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {
@@ -133,7 +134,8 @@
       "module": {
         "binding": "meringue",
         "uri": "oeufs.gram",
-        "title": null
+        "title": null,
+        "mode": "inline"
       }
     },
     {

@@ -117,7 +117,8 @@
       "module": {
         "binding": "pate",
         "uri": "bases/pate.gram",
-        "title": "Pate"
+        "title": "Pate",
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 125,
@@ -171,7 +172,8 @@
       "module": {
         "binding": "mid",
         "uri": "layer/mid.gram",
-        "title": "Mid"
+        "title": "Mid",
+        "mode": "inline"
       },
       "metrics": {
         "totalMass": 250,

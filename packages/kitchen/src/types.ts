@@ -176,7 +176,12 @@ export interface ProcessedSection {
 	// splices in from an import, for traceability at render time — never set
 	// by compile() itself. `binding` is the host's local name for the
 	// import, `uri` and `title` identify the module the section came from.
-	module?: { binding: string; uri: string; title: string | null };
+	module?: {
+		binding: string;
+		uri: string;
+		title: string | null;
+		mode: "inline" | "prepared";
+	};
 }
 
 export interface TimeBreakdownItem {
