@@ -157,6 +157,7 @@ These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
+*   `yields`: (String) How much this recipe produces, read only when another recipe [imports](/docs/reference/syntax/modules) it — e.g. `yields: 500g`, `yields: 24 cookies`. Determines the scale factor an importer's `&binding{qty}` request is measured against. Without it, Gram measures the recipe's own mass instead.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
@@ -190,7 +191,21 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Steps
+## 2. Module Imports
+
+Right after the frontmatter, before any step, a recipe can `@use` other `.gram` files as reusable sub-components.
+
+```gram
+@use "./bases/pate-sablee.gram" as &pate
+
+## Montage
+
+[Foncer] le moule avec &pate{250g}.
+```
+
+*See [Module Imports](/docs/reference/syntax/modules) for the full syntax, scaling rules, and encapsulation guarantees.*
+
+## 3. Steps
 
 Each paragraph in a Gram file represents a single cooking step. Steps are separated by one or more empty lines.
 
@@ -210,7 +225,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 [Bake] In the #oven for ~{30min}.
 ```
 
-## 3. Sections
+## 4. Sections
 
 Complex recipes often have multiple components (e.g., dough, filling, frosting) that are prepared separately. You can group steps into `## Section` blocks using Markdown-style headings (e.g., `## Dough`).
 
@@ -243,7 +258,7 @@ If a `## Section` produces a sub-component that will be used later in the recipe
 ```
 *See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for more details.*
 
-## 4. Comments
+## 5. Comments
 
 You can add comments to explain instructions without affecting the compiled output.
 

@@ -61,8 +61,27 @@ Every node has a `type: ASTNodeType` discriminant and an optional `loc: { start,
 interface RecipeAST {
   type: ASTNodeType.Recipe;
   meta: Meta;              // Parsed frontmatter (title, date, tags, densities, ...)
+  imports: ImportDecl[];   // @use directives, always present (empty array with none) — never mixed into children
   children: (SectionAST | StepAST | CommentAST)[]; // Sections, or top-level steps/comments
 }
+
+interface ImportDecl {
+  type: ASTNodeType.ImportDecl;
+  specifier: string;              // e.g. "./bases/pate.gram"
+  bindings: ImportBinding[];
+  mode: "inline" | "prepared";
+}
+
+interface ImportBinding {
+  exported: string;    // name as exported by the module ("default" for the unbraced `as &name` form)
+  local: string;        // name bound in the host recipe
+  loc?: Location;
+}
+```
+
+See [Module Imports](/docs/reference/syntax/modules) for the `@use` syntax itself, and `@gram-lang/modules` for resolving and composing an import graph into a single AST.
+
+```typescript
 
 interface SectionAST {
   type: ASTNodeType.Section;

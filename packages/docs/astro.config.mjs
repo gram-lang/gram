@@ -83,6 +83,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'Document Structure', translations: { fr: 'Structure du Document' }, slug: 'docs/reference/syntax/document-structure' },
+            { label: 'Module Imports', translations: { fr: 'Imports de Modules' }, slug: 'docs/reference/syntax/modules' },
             { label: 'Ingredients', translations: { fr: 'Ingrédients' }, slug: 'docs/reference/syntax/ingredients' },
             { label: 'Cookware', translations: { fr: 'Matériel' }, slug: 'docs/reference/syntax/cookware' },
             { label: 'Times', translations: { fr: 'Temps' }, slug: 'docs/reference/syntax/times' },
