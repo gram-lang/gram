@@ -146,6 +146,15 @@ The module still counts for scheduling and shopping exactly as it would otherwis
 
 `prepared` can't be combined with destructuring (`as { &a, &b } prepared`) — a single synthesized step can only produce one binding. Doing so is an error (`PREPARED_MULTI_EXPORT`); either drop `prepared` or split the import into two.
 
+## Editor support
+
+The language server (VS Code, or any other editor that speaks LSP) resolves `@use` while you type, not just when you run the CLI:
+
+*   Diagnostics, the live preview, and the Gantt view all reflect the composed recipe — including an imported base's own yield-scaling. An unsaved edit in a dependency counts too, even one open in a different tab, and even a change made outside the editor entirely (a `git pull`, another tool, a save from a different window).
+*   That resync propagates through the whole import chain: editing a deeply-nested base refreshes every open file that (transitively) uses it, and a problem inside it points straight at the exact file and line rather than just "something's wrong somewhere in your imports."
+*   Go to Definition on `&pate` jumps into the base file itself, landing on the section that binding was actually exported from.
+*   Typing `@use "` completes: `./`, `../`, `@/`, and any declared `paths:` alias as starting points, then the `.gram` files and subdirectories actually there once the path commits to one of them.
+
 ## Limits (for now)
 
 *   There is no official, Gram-maintained library of standard base recipes, and none is planned — a community package hub (`hub:author/package` specifiers) is a long-term idea, not yet implemented.
