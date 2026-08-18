@@ -23,6 +23,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
+import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
 	round2,
@@ -383,20 +384,10 @@ const htmlBackend: RenderBackend = {
 					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
 				}
 
-				// Traceability for a section spliced in from an `@use` import
-				// (module-imports RFC §D.7) — credits the source module rather
-				// than merging its own frontmatter (title/author/tags) into the
-				// host's, which stays exclusively authoritative.
 				if (sec.module) {
-					// A `--stock`ed import splices no section at all, so `sec.module`
-					// never carries `mode: "stocked"` here — only ever "inline".
-					// `CompilationResult.modules.filter(m => m.mode === "stocked")`
-					// is the future hook for a "view source" link on a stocked
-					// import, deliberately not implemented in this pass.
 					const packageIcon =
 						options.icons?.package ?? '<i class="ph ph-package"></i>';
-					const moduleLabel = sec.module.title ?? sec.module.binding;
-					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel)}</small>`;
+					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</small>`;
 				}
 
 				const sHeaderClass = options.classes?.sectionHeader

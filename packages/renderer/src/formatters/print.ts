@@ -22,6 +22,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
+import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
@@ -558,13 +559,7 @@ const printBackend: RenderBackend = {
 				if (sec.retro_planning)
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning.raw)})</small>`;
 				if (sec.module) {
-					// A `--stock`ed import splices no section at all, so `sec.module`
-					// never carries `mode: "stocked"` here — only ever "inline".
-					// `CompilationResult.modules.filter(m => m.mode === "stocked")`
-					// is the future hook for a "view source" link on a stocked
-					// import, deliberately not implemented in this pass.
-					const moduleLabel = sec.module.title ?? sec.module.binding;
-					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel)})</small>`;
+					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel(sec.module))})</small>`;
 				}
 				body += `  <h3>${titleHtml}</h3>\n`;
 			}
