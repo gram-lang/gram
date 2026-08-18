@@ -5,9 +5,9 @@ description: "Pourquoi Gram traite les recettes comme du code, avec une logique 
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Gram est un langage de balisage orienté données, pensé par et pour les développeurs.
+Gram est un DSL (*Domain-Specific Language*) déclaratif open-source pour les recettes de cuisine, pensé par et pour les développeurs et les passionnés.
 
-La plupart des formats de recettes ne sont que des blocs de texte statiques. Gram propose une approche différente : il traite les recettes comme du **code**. Il prend vos instructions culinaires (écrites en langage naturel) et les compile en un JSON structuré et déterministe.
+La plupart des formats de recettes ne sont que des blocs de texte statiques. Gram propose une approche différente : il prend vos instructions rédigées en texte brut et les compile en données structurées, calculées et relationnelles.
 
 ## La Philosophie
 
@@ -17,11 +17,12 @@ J'ai toujours aimé l'idée d'écrire des recettes en texte brut (*plain text*),
 
 Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, cela ouvre la voie au développement de rendus visuels avancés (diagrammes de Gantt, flux tabulaires, etc.).
 
-J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle** et une **intégrité stricte des données** dans la rédaction de vos recettes :
+J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle**, une **précision physique** et une **composition modulaire** dans la rédaction de vos recettes :
 
 - **Variables relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez l'utiliser comme ingrédient à l'étape 5. Fini les duplications.
-- **Précision physique** : Gram comprend la différence entre « le zeste d'un citron » et « le jus de 2 citrons », s'assurant que votre liste de courses agrège précisément « Acheter 2 citrons » au lieu de 3.
-- **Contrats de données stricts** : Grâce à des tags explicites, Gram garantit que l'analyseur syntaxique ne confondra jamais les températures, les temps, les ingrédients et le matériel.
+- **Précision physique & Calculs** : Gram comprend la différence entre « le zeste d'un citron » et « le jus de 2 citrons », s'assurant que votre liste de courses agrège précisément « Acheter 2 citrons » au lieu de 3. Il calcule aussi les masses réelles et les ratios relatifs (`70% @&farine`).
+- **Contrats de données stricts** : Grâce à des tags explicites (`@`, `~`, `^`, `#`), Gram garantit que l'analyseur syntaxique ne confondra jamais les températures, les temps, les ingrédients et le matériel.
+- **Modularité et Réutilisation (`@use`)** : Découpez vos composants réutilisables (pâtes, bouillons, sauces) dans leurs propres fichiers `.gram`. Gram intègre leurs étapes, adapte automatiquement leurs proportions aux quantités requises (`yields:`) et fusionne leurs ingrédients sur la liste de courses globale.
 
 :::tip[L'approche par écosystème]
 Gram n'est pas juste une syntaxe ; c'est un écosystème complet pour construire des applications culinaires.

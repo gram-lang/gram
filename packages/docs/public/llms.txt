@@ -1,6 +1,6 @@
 # Gram
 
-> Gram is a data-driven recipe markup language built for developers. It treats recipes as code: plain-text `.gram` files compile into structured, predictable JSON — with relational variables, physical-accuracy shopping lists, and strict data contracts for temperatures, times, ingredients, and cookware.
+> Gram is an open-source declarative and computational recipe DSL built for developers. Code your recipes in plain text: `.gram` files compile into structured, calculated JSON — with relational variables, physical-accuracy shopping lists, modular imports (@use), and strict data contracts for temperatures, times, ingredients, and cookware.
 
 Gram is a pipeline of composable `@gram-lang/*` npm packages (`parser`, `kitchen`, `analyzer`, `renderer`, `format`, `i18n`), plus a `gram` CLI, a Language Server, and a VS Code extension. Full documentation is at https://gram-lang.org/ (with a French translation under `/fr/`). For the complete language spec in a single file, see https://gram-lang.org/llms-full.txt.
 

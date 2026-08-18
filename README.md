@@ -1,7 +1,7 @@
 <div align="center">
   <img src="gram-logo.png" width="130" alt="Gram Logo" />
   <h1>Gram</h1>
-  <p><strong>An open-source markup language for recipes.</strong></p>
+  <p><strong>Code your recipes.</strong></p>
   <p>
     <a href="https://git.gram-lang.org/gram-lang/gram/actions"><img src="https://git.gram-lang.org/gram-lang/gram/actions/workflows/ci.yml/badge.svg" alt="Build Status" /></a>
     <a href="https://www.npmjs.com/package/@gram-lang/cli"><img src="https://img.shields.io/npm/v/@gram-lang/cli?color=cb3837&logo=npm" alt="NPM Version" /></a>
@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/Made%20in-Europe-003399?labelColor=003399&logo=europeanunion&logoColor=FFFFFF" alt="Made in Europe" />
   </p>
   <p>
-    Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.
+    An open-source declarative and computational recipe DSL. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, calculated, and relational data.
   </p>
   <p>
     <a href="https://gram-lang.org">Website</a> • <a href="https://play.gram-lang.org">Playground</a> • <a href="https://docs.gram-lang.org/">Documentation</a>
@@ -176,7 +176,7 @@ console.log(result.shopping_list);
 ## Acknowledgments
 
 Gram stands on the shoulders of giants.
-* **[Cooklang](https://cooklang.org)**: For pioneering the concept of a recipe markup language. Gram was heavily inspired by their concise syntax.
+* **[Cooklang](https://cooklang.org)**: For pioneering the concept of plain-text recipe markup and authoring. Gram was heavily inspired by their concise syntax.
 * **[Ohm.js](https://ohmjs.org)**: For making parsing accessible and incredibly robust.
 * **LLM Assistance**: This project was developed with the assistance of AI for rapid prototyping, refactoring, and generating test cases. All logic and architecture were strictly verified by humans.
 

@@ -59,11 +59,11 @@ export interface HomepageCopy {
 export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 	en: {
 		heroTitle: "Gram",
-		heroSubtitle: "An open-source markup language for recipes.",
+		heroSubtitle: "Code your recipes.",
 		heroDescription:
-			"Treat your recipes like code. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, predictable, and relational data.",
+			"An open-source declarative and computational recipe DSL. Built to handle complex culinary logic, Gram compiles your plain-text instructions into structured, calculated, and relational data.",
 		metaDescription:
-			"Treat your recipes like code. Gram compiles plain-text instructions into structured, predictable data.",
+			"Code your recipes. Gram compiles plain-text instructions into structured, calculated data.",
 		heroGetStarted: "Get Started",
 		heroPlayground: "Playground",
 
@@ -293,11 +293,11 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 	},
 	fr: {
 		heroTitle: "Gram",
-		heroSubtitle: "Un langage de balisage open-source pour vos recettes.",
+		heroSubtitle: "Codez vos recettes.",
 		heroDescription:
-			"Codez vos recettes. Pensé pour la logique culinaire, Gram compile vos instructions texte en données structurées, prévisibles et relationnelles.",
+			"Un DSL déclaratif open-source pour la cuisine. Conçu pour la logique culinaire, Gram compile vos instructions en texte brut en données structurées, calculées et relationnelles.",
 		metaDescription:
-			"Codez vos recettes. Gram compile vos instructions texte en données structurées et prévisibles.",
+			"Codez vos recettes. Gram compile vos instructions texte en données structurées et relationnelles.",
 		heroGetStarted: "Démarrer",
 		heroPlayground: "Playground",
 
