@@ -388,17 +388,15 @@ const htmlBackend: RenderBackend = {
 				// than merging its own frontmatter (title/author/tags) into the
 				// host's, which stays exclusively authoritative.
 				if (sec.module) {
+					// A `--stock`ed import splices no section at all, so `sec.module`
+					// never carries `mode: "stocked"` here — only ever "inline".
+					// `CompilationResult.modules.filter(m => m.mode === "stocked")`
+					// is the future hook for a "view source" link on a stocked
+					// import, deliberately not implemented in this pass.
 					const packageIcon =
 						options.icons?.package ?? '<i class="ph ph-package"></i>';
 					const moduleLabel = sec.module.title ?? sec.module.binding;
-					const isPrepared = sec.module.mode === "prepared";
-					const moduleTooltip = isPrepared
-						? `${t.renderer.moduleFrom} — ${t.renderer.preparedSeparately}`
-						: t.renderer.moduleFrom;
-					const preparedClass = isPrepared
-						? " section-meta-module-prepared"
-						: "";
-					titleHtml += ` <small class="section-meta-badge section-meta-module${preparedClass}" data-tooltip="${escapeHtml(moduleTooltip)}">${packageIcon} ${escapeHtml(moduleLabel)}</small>`;
+					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel)}</small>`;
 				}
 
 				const sHeaderClass = options.classes?.sectionHeader

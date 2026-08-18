@@ -545,7 +545,6 @@ const printBackend: RenderBackend = {
 
 	renderInstructions(data, context, options) {
 		if (!(data.sections?.length > 0)) return "";
-		const t = getDictionary(options.lang);
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
 		const stepContext: RenderContext = options.hideStepQty
 			? { ...context, hideIngredientQty: true }
@@ -559,12 +558,13 @@ const printBackend: RenderBackend = {
 				if (sec.retro_planning)
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning.raw)})</small>`;
 				if (sec.module) {
+					// A `--stock`ed import splices no section at all, so `sec.module`
+					// never carries `mode: "stocked"` here — only ever "inline".
+					// `CompilationResult.modules.filter(m => m.mode === "stocked")`
+					// is the future hook for a "view source" link on a stocked
+					// import, deliberately not implemented in this pass.
 					const moduleLabel = sec.module.title ?? sec.module.binding;
-					const note =
-						sec.module.mode === "prepared"
-							? `${moduleLabel} — ${t.renderer.preparedSeparately}`
-							: moduleLabel;
-					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(note)})</small>`;
+					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel)})</small>`;
 				}
 				body += `  <h3>${titleHtml}</h3>\n`;
 			}

@@ -49,7 +49,6 @@ export const fr: GramLocale = {
 		gross: "brut",
 		intermediateResult: "Résultat intermédiaire pour cette section",
 		moduleFrom: "Depuis ce module",
-		preparedSeparately: "Préparé séparément",
 		estimatedSuffix: " (Estimé)",
 		missingMass: " (Manquant : ",
 		someIngredients: "certains ingrédients",

@@ -46,7 +46,6 @@ export const en = {
 		gross: "gross",
 		intermediateResult: "Intermediate result for this section",
 		moduleFrom: "From this module",
-		preparedSeparately: "Prepared separately",
 		estimatedSuffix: " (Estimated)",
 		missingMass: " (Missing: ",
 		someIngredients: "some ingredients",

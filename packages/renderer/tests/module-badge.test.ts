@@ -8,45 +8,35 @@ import { toHTML, toMarkdown, toPrintHTML } from "../src/index";
 // field is present, not how it got there, so a plain compile() + manual
 // stamp is enough to exercise the renderer's own badge logic in isolation
 // from the whole module-composition pipeline (already covered by
-// packages/modules/tests/compose.test.ts).
-function compileWithModule(mode: "inline" | "prepared") {
+// packages/modules/tests/compose.test.ts). A `--stock`ed import never
+// splices a section (module-imports RFC, stock/retro-planning redesign), so
+// `sec.module` here is always `mode: "inline"` in practice — badge rendering
+// no longer branches on mode at all.
+function compileWithModule() {
 	const result = compile(getAST("## Montage\nUse the base.\n"));
 	result.sections[0]!.module = {
 		binding: "pate",
 		uri: "./bases/pate.gram",
 		title: "Pate Sablee",
-		mode,
+		mode: "inline",
 	};
 	return result;
 }
 
 describe("module provenance badge rendering", () => {
 	it("credits the source module in the HTML badge", () => {
-		const html = toHTML(compileWithModule("inline"));
+		const html = toHTML(compileWithModule());
 		expect(html).toContain("section-meta-module");
-		expect(html).toContain("Pate Sablee");
-		expect(html).not.toContain("section-meta-module-prepared");
-	});
-
-	it("flags a prepared import distinctly in the HTML badge", () => {
-		const html = toHTML(compileWithModule("prepared"));
-		expect(html).toContain("section-meta-module-prepared");
 		expect(html).toContain("Pate Sablee");
 	});
 
 	it("credits the source module parenthetically in markdown", () => {
-		const md = toMarkdown(compileWithModule("inline"));
+		const md = toMarkdown(compileWithModule());
 		expect(md).toContain("### Montage _(Pate Sablee)_");
 	});
 
-	it("notes prepared mode separately in markdown", () => {
-		const md = toMarkdown(compileWithModule("prepared"));
-		expect(md).toContain("_(Pate Sablee)_");
-		expect(md).toContain("_(Prepared separately)_");
-	});
-
 	it("shows the module credit parenthetically in print HTML", () => {
-		const html = toPrintHTML(compileWithModule("inline"));
+		const html = toPrintHTML(compileWithModule());
 		expect(html).toContain("Pate Sablee");
 	});
 

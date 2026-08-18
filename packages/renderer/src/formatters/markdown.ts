@@ -142,7 +142,6 @@ const markdownBackend: RenderBackend = {
 
 	renderInstructions(data, context, options) {
 		if (!data.sections || data.sections.length === 0) return "";
-		const t = getDictionary(options.lang);
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
 		// (not from shopping list or section mise en place, matches print.ts's stepContext).
 		const stepContext: RenderContext = options.hideStepQty
@@ -156,11 +155,13 @@ const markdownBackend: RenderBackend = {
 				if (sec.retro_planning)
 					md += ` ~{${escapeMarkdownHtml(sec.retro_planning.raw)}}`;
 				if (sec.module) {
+					// A `--stock`ed import splices no section at all, so `sec.module`
+					// never carries `mode: "stocked"` here — only ever "inline".
+					// `CompilationResult.modules.filter(m => m.mode === "stocked")`
+					// is the future hook for a "view source" link on a stocked
+					// import, deliberately not implemented in this pass.
 					const moduleLabel = sec.module.title ?? sec.module.binding;
 					md += ` _(${escapeMarkdownHtml(moduleLabel)})_`;
-					if (sec.module.mode === "prepared") {
-						md += ` _(${escapeMarkdownHtml(t.renderer.preparedSeparately)})_`;
-					}
 				}
 				md += `\n\n`;
 			}
