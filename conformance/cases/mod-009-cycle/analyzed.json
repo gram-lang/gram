@@ -2,14 +2,14 @@
   "meta": {},
   "registry": {
     "ingredients": {
-      "a-b": {
-        "id": "a-b",
-        "name": "a$b",
-        "is_intermediate": true
-      },
       "a": {
         "id": "a",
         "name": "a",
+        "is_intermediate": true
+      },
+      "a-b": {
+        "id": "a-b",
+        "name": "a$b",
         "is_intermediate": true
       }
     },
@@ -152,14 +152,24 @@
   ],
   "warnings": [
     {
-      "code": "UNDEFINED_REFERENCE",
-      "message": "Reference to undefined ingredient '&a'.",
-      "item": "a",
+      "code": "MODULE_NOT_FOUND",
+      "message": "Module \"./a.gram\" could not be found or read.",
       "loc": {
-        "start": 38,
-        "end": 43,
+        "start": 0,
+        "end": 22,
+        "uri": "b.gram"
+      },
+      "uri": "b.gram"
+    },
+    {
+      "code": "SCOPE_CONFLICT",
+      "message": "Global variable '&a' is redefined.",
+      "loc": {
+        "start": 28,
+        "end": 32,
         "uri": "a.gram"
       },
+      "section": "A",
       "uri": "a.gram"
     },
     {

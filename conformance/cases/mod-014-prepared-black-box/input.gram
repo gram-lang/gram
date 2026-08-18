@@ -1,9 +1,0 @@
----
-title: Mod Prepared Black Box
----
-
-@use "./bases/bouillon.gram" as &bouillon prepared
-
-## Soup
-
-Simmer with &bouillon{1000g}.

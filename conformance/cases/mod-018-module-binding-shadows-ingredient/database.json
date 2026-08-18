@@ -1,0 +1,6 @@
+{
+  "pate": {
+    "name": "Pate",
+    "nutrition": { "calories": 300, "protein": 5, "carbs": 40, "fat": 10 }
+  }
+}

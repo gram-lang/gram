@@ -1,0 +1,309 @@
+{
+  "title": "Mod Use Level Retro Planning Multi Section",
+  "slug": "mod-use-level-retro-planning-multi-section",
+  "meta": {
+    "title": "Mod Use Level Retro Planning Multi Section"
+  },
+  "registry": {
+    "ingredients": {
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 300,
+      "unit": "g",
+      "normalizedMass": 300,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Petrissage",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 300,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 300
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 300,
+              "unit": "g",
+              "normalizedMass": 300,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 15,
+                "text": "15"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 15,
+            "activeDuration": 15
+          }
+        }
+      ],
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate Feuilletee",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Repos et Abaisse",
+      "ingredients": [],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Rest for ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 60,
+                "text": "60"
+              },
+              "unit": "min"
+            },
+            ", then roll out."
+          ],
+          "timings": {
+            "start": 15,
+            "end": 15,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 60,
+              "startOffset": 0
+            }
+          ]
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "retro_planning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d",
+        "minutes": -1440
+      },
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate Feuilletee",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "avec ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "g",
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1453,
+            "end": 1455,
+            "activeDuration": 2
+          },
+          "action": "Foncer"
+        }
+      ],
+      "metrics": {
+        "totalMass": 500,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 1458,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Petrissage",
+        "duration": 15
+      },
+      {
+        "label": "timer_passive",
+        "duration": 60
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 1438,
+    "activeTime": 17,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Petrissage",
+        "duration": 15
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 500,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"flour\" not found in database."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "\"butter\" not found in database."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate Feuilletee",
+      "meta": {
+        "title": "Pate Feuilletee",
+        "yields": "500g"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

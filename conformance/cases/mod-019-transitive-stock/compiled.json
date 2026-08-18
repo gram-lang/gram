@@ -1,0 +1,198 @@
+{
+  "title": "Mod Transitive Stock",
+  "slug": "mod-transitive-stock",
+  "meta": {
+    "title": "Mod Transitive Stock"
+  },
+  "registry": {
+    "ingredients": {
+      "c": {
+        "id": "c",
+        "name": "C Module",
+        "is_module_synthetic": true
+      },
+      "b": {
+        "id": "b",
+        "name": "b",
+        "is_intermediate": true
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "c",
+      "name": "C Module",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 50,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 50,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "B Section",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "c",
+          "name": "c",
+          "_usageId": "1",
+          "qty": 50,
+          "unit": "g"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 50,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Combine ",
+            {
+              "type": "reference",
+              "id": "c",
+              "name": "c",
+              "_usageId": "1",
+              "qty": 50,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 50,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "b",
+      "module": {
+        "binding": "b",
+        "uri": "bases/b.gram",
+        "title": "B Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b",
+          "name": "b",
+          "_usageId": "3",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b",
+              "name": "b",
+              "_usageId": "3",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 7,
+    "totalBreakdown": [
+      {
+        "label": "section_active:B Section",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:B Section",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "b",
+      "uri": "bases/b.gram",
+      "title": "B Module",
+      "meta": {
+        "title": "B Module"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "c",
+      "uri": "bases/c.gram",
+      "title": "C Module",
+      "meta": {
+        "title": "C Module",
+        "yields": "100g"
+      },
+      "scaleFactor": 0.5,
+      "mode": "stocked"
+    }
+  ]
+}

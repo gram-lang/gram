@@ -1,0 +1,144 @@
+{
+  "title": "Mod Stocked Destructured Nutrition Blended",
+  "slug": "mod-stocked-destructured-nutrition-blended",
+  "meta": {
+    "title": "Mod Stocked Destructured Nutrition Blended"
+  },
+  "registry": {
+    "ingredients": {
+      "blancs": {
+        "id": "blancs",
+        "name": "Oeufs",
+        "is_module_synthetic": true
+      },
+      "jaunes": {
+        "id": "jaunes",
+        "name": "Oeufs",
+        "is_module_synthetic": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "blancs",
+      "name": "Oeufs",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "jaunes",
+      "name": "Oeufs",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 50,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "blancs",
+          "name": "blancs",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "jaunes",
+          "name": "jaunes",
+          "_usageId": "2",
+          "qty": 50,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "blancs",
+              "name": "blancs",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "jaunes",
+              "name": "jaunes",
+              "_usageId": "2",
+              "qty": 50,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
+      "message": "\"./bases/oeufs.gram\" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.",
+      "loc": {
+        "start": 59,
+        "end": 109
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 4,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "blancs",
+      "uri": "bases/oeufs.gram",
+      "title": "Oeufs",
+      "meta": {
+        "title": "Oeufs"
+      },
+      "scaleFactor": 1,
+      "mode": "stocked"
+    }
+  ]
+}

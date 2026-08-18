@@ -1,33 +1,38 @@
 {
   "type": "Recipe",
   "meta": {
-    "title": "Mod Prepared Black Box"
+    "title": "Mod Retro Planning Override Shadowed"
   },
   "imports": [
     {
       "type": "ImportDecl",
-      "specifier": "./bases/bouillon.gram",
+      "specifier": "./bases/levain.gram",
       "bindings": [
         {
           "exported": "default",
-          "local": "bouillon",
+          "local": "levain",
           "loc": {
-            "start": 71,
-            "end": 80
+            "start": 83,
+            "end": 90
           }
         }
       ],
-      "mode": "prepared",
+      "retroPlanning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d"
+      },
       "loc": {
-        "start": 39,
-        "end": 90
+        "start": 53,
+        "end": 98
       }
     }
   ],
   "children": [
     {
       "type": "Section",
-      "title": "Soup",
+      "title": "Pain",
       "retroPlanning": null,
       "intermediateDecl": null,
       "children": [
@@ -37,52 +42,52 @@
           "children": [
             {
               "type": "Text",
-              "value": "Simmer with ",
+              "value": "Mix in the ",
               "loc": {
-                "start": 100,
-                "end": 112
+                "start": 108,
+                "end": 119
               }
             },
             {
               "type": "Reference",
-              "name": "bouillon",
+              "name": "levain",
               "quantity": {
                 "type": "Quantity",
                 "value": {
                   "type": "single",
-                  "value": 1000,
-                  "text": "1000"
+                  "value": 200,
+                  "text": "200"
                 },
                 "unit": "g",
                 "fixed": false,
                 "loc": {
-                  "start": 122,
-                  "end": 127
+                  "start": 127,
+                  "end": 131
                 }
               },
               "loc": {
-                "start": 112,
-                "end": 128
+                "start": 119,
+                "end": 132
               }
             },
             {
               "type": "Text",
               "value": ".",
               "loc": {
-                "start": 128,
-                "end": 129
+                "start": 132,
+                "end": 133
               }
             }
           ],
           "loc": {
-            "start": 100,
-            "end": 130
+            "start": 108,
+            "end": 134
           }
         }
       ],
       "loc": {
-        "start": 91,
-        "end": 130
+        "start": 99,
+        "end": 134
       }
     }
   ]

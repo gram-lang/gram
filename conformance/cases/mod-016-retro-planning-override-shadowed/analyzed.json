@@ -1,24 +1,24 @@
 {
-  "title": "Mod Prepared Black Box",
-  "slug": "mod-prepared-black-box",
+  "title": "Mod Retro Planning Override Shadowed",
+  "slug": "mod-retro-planning-override-shadowed",
   "meta": {
-    "title": "Mod Prepared Black Box"
+    "title": "Mod Retro Planning Override Shadowed"
   },
   "registry": {
     "ingredients": {
-      "bouillon": {
-        "id": "bouillon",
-        "name": "bouillon",
+      "levain": {
+        "id": "levain",
+        "name": "levain",
         "is_intermediate": true
       },
-      "carrot": {
-        "id": "carrot",
-        "name": "carrot",
+      "flour": {
+        "id": "flour",
+        "name": "flour",
         "default_unit": "g"
       },
-      "onion": {
-        "id": "onion",
-        "name": "onion",
+      "water": {
+        "id": "water",
+        "name": "water",
         "default_unit": "g"
       }
     },
@@ -26,22 +26,22 @@
   },
   "shopping_list": [
     {
-      "id": "carrot",
-      "name": "carrot",
+      "id": "flour",
+      "name": "flour",
       "_usageIds": [
-        "2"
+        "1"
       ],
-      "qty": 200,
+      "qty": 100,
       "unit": "g",
-      "normalizedMass": 200,
+      "normalizedMass": 100,
       "isEstimate": false,
       "conversionMethod": "physical"
     },
     {
-      "id": "onion",
-      "name": "onion",
+      "id": "water",
+      "name": "water",
       "_usageIds": [
-        "3"
+        "2"
       ],
       "qty": 100,
       "unit": "g",
@@ -53,20 +53,20 @@
   "cookware": [],
   "sections": [
     {
-      "title": "Vegetable Stock",
+      "title": "Levain",
       "ingredients": [
         {
-          "id": "carrot",
-          "_usageId": "2",
-          "qty": 200,
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
           "unit": "g",
           "conversionMethod": "physical",
           "isEstimate": false,
-          "normalizedMass": 200
+          "normalizedMass": 100
         },
         {
-          "id": "onion",
-          "_usageId": "3",
+          "id": "water",
+          "_usageId": "2",
           "qty": 100,
           "unit": "g",
           "conversionMethod": "physical",
@@ -79,70 +79,85 @@
         {
           "type": "step",
           "content": [
+            "Mix ",
             {
-              "type": "reference",
-              "id": "bouillon",
-              "name": "bouillon",
-              "_usageId": "1"
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
             },
-            " (1000g)",
+            "with ",
             {
-              "type": "timer",
-              "quantity": {
-                "type": "single",
-                "value": 20
-              },
-              "unit": "min"
+              "id": "water",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
             },
+            ", then leave to ferment ",
             {
               "type": "timer",
               "isPassive": true,
               "quantity": {
                 "type": "single",
-                "value": 45
+                "value": 24,
+                "text": "24"
               },
-              "unit": "min"
-            }
+              "unit": "h"
+            },
+            "."
           ],
           "timings": {
             "start": 0,
-            "end": 20,
-            "activeDuration": 20
+            "end": 0,
+            "activeDuration": 0
           },
           "backgroundTasks": [
             {
-              "duration": 45,
-              "startOffset": 20
+              "duration": 1440,
+              "startOffset": 0
             }
           ]
         }
       ],
-      "intermediate_preparation": "bouillon",
+      "intermediate_preparation": "levain",
+      "retro_planning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d",
+        "minutes": -2880
+      },
       "module": {
-        "binding": "bouillon",
-        "uri": "bases/bouillon.gram",
-        "title": "Vegetable Stock",
-        "mode": "prepared"
+        "binding": "levain",
+        "uri": "bases/levain.gram",
+        "title": "Levain",
+        "mode": "inline"
       },
       "metrics": {
-        "totalMass": 300,
+        "totalMass": 200,
         "massStatus": "precise",
         "missingMassIngredients": []
       }
     },
     {
-      "title": "Soup",
+      "title": "Pain",
       "ingredients": [
         {
           "type": "reference",
-          "id": "bouillon",
-          "name": "bouillon",
-          "_usageId": "4",
-          "qty": 1000,
+          "id": "levain",
+          "name": "levain",
+          "_usageId": "3",
+          "qty": 200,
           "unit": "g",
           "conversionMethod": "physical",
           "isEstimate": false,
-          "normalizedMass": 1000
+          "normalizedMass": 200
         }
       ],
       "cookware": [],
@@ -150,60 +165,61 @@
         {
           "type": "step",
           "content": [
-            "Simmer with ",
+            "Mix in the ",
             {
               "type": "reference",
-              "id": "bouillon",
-              "name": "bouillon",
-              "_usageId": "4",
-              "qty": 1000,
+              "id": "levain",
+              "name": "levain",
+              "_usageId": "3",
+              "qty": 200,
               "unit": "g",
-              "normalizedMass": 1000,
+              "normalizedMass": 200,
               "conversionMethod": "physical",
               "isEstimate": false
             },
             "."
           ],
           "timings": {
-            "start": 65,
-            "end": 67,
+            "start": 2878,
+            "end": 2880,
             "activeDuration": 2
           }
         }
       ],
       "metrics": {
-        "totalMass": 1000,
+        "totalMass": 200,
         "massStatus": "precise",
         "missingMassIngredients": []
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "RETRO_PLANNING_OVERRIDE_SHADOWED",
+      "message": "The \"~{...}\" retro-planning on this \"@use\" of \"./bases/levain.gram\" overrides the module's own — the host's value wins.",
+      "loc": {
+        "start": 53,
+        "end": 98
+      }
+    }
+  ],
   "metrics": {
-    "totalTime": 70,
+    "totalTime": 2883,
     "totalBreakdown": [
       {
-        "label": "section_active:Vegetable Stock",
-        "duration": 20
-      },
-      {
         "label": "timer_passive",
-        "duration": 45
+        "duration": 1440
       },
       {
-        "label": "section_active:Soup",
+        "label": "section_active:Pain",
         "duration": 2
       }
     ],
-    "idleTime": 45,
-    "activeTime": 22,
+    "idleTime": 2878,
+    "activeTime": 2,
     "activeBreakdown": [
       {
-        "label": "section_active:Vegetable Stock",
-        "duration": 20
-      },
-      {
-        "label": "section_active:Soup",
+        "label": "section_active:Pain",
         "duration": 2
       }
     ],
@@ -214,7 +230,7 @@
         "duration": 3
       }
     ],
-    "totalMass": 300,
+    "totalMass": 200,
     "massStatus": "precise",
     "missingMassIngredients": [],
     "nutrition": {
@@ -229,26 +245,26 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"carrot\" not found in database."
+          "message": "\"flour\" not found in database."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"onion\" not found in database."
+          "message": "\"water\" not found in database."
         }
       ]
     }
   },
   "modules": [
     {
-      "binding": "bouillon",
-      "uri": "bases/bouillon.gram",
-      "title": "Vegetable Stock",
+      "binding": "levain",
+      "uri": "bases/levain.gram",
+      "title": "Levain",
       "meta": {
-        "title": "Vegetable Stock",
-        "yields": "1000g"
+        "title": "Levain",
+        "yields": "200g"
       },
       "scaleFactor": 1,
-      "mode": "prepared"
+      "mode": "inline"
     }
   ]
 }

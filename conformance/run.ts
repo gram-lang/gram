@@ -56,6 +56,19 @@ interface CaseOptions {
 	compilerOptions?: CompilerOptions;
 	scaleTarget?: { id: string; qty: number; unit?: string | null };
 	analyzerOptions?: AnalyzerOptions;
+	// "stock" mechanism (module-imports RFC, stock/retro-planning redesign):
+	// specifiers resolved the same way CLI/LSP resolve `--stock`, against the
+	// case host — see resolveCaseStock below.
+	composeOptions?: { stock?: string[] };
+}
+
+/** Resolves `composeOptions.stock` specifiers the same way `@gram-lang/cli`'s `resolveStockSet` does, but against the case host instead of a real filesystem. */
+function resolveCaseStock(
+	host: ModuleHost,
+	specifiers: string[] | undefined,
+): Set<string> | undefined {
+	if (!specifiers) return undefined;
+	return new Set(specifiers.map((s) => host.resolve(s, ENTRY_URI)));
 }
 
 // Optional per-case input, read *before* the pipeline's try/catch: a
@@ -147,7 +160,8 @@ async function runCase(
 
 		const host = createCaseHost(caseDir);
 		const graph = await loadModuleGraph(ENTRY_URI, host);
-		const composed = composeRecipe(graph, { db: database });
+		const stock = resolveCaseStock(host, caseOptions.composeOptions?.stock);
+		const composed = composeRecipe(graph, { db: database, stock });
 
 		let compiled = compile(composed.ast, caseOptions.compilerOptions);
 
@@ -163,9 +177,12 @@ async function runCase(
 
 		compiled = finalizeComposed(compiled, composed);
 
+		// Mirrors `@gram-lang/cli`'s `runPipeline` — a stocked import's
+		// synthetic per-recipe nutrition profile is merged in fresh each call,
+		// never mutating the case's own `database`.
 		const { result: analyzed } = analyze(
 			compiled,
-			database,
+			{ ...database, ...composed.syntheticIngredients },
 			caseOptions.analyzerOptions,
 		);
 

@@ -1,0 +1,9 @@
+---
+title: Mod Use Level Retro Planning Multi Section
+---
+
+@use "./bases/pate.gram" as &pate ~{-1d}
+
+## Montage
+
+[Foncer] avec &pate{500g}.

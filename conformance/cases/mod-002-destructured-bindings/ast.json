@@ -25,7 +25,7 @@
           }
         }
       ],
-      "mode": "inline",
+      "retroPlanning": null,
       "loc": {
         "start": 42,
         "end": 86

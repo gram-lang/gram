@@ -1,0 +1,9 @@
+---
+title: Mod Stocked Retro Planning Ignored
+---
+
+@use "./bases/pate.gram" as &pate ~{-2d}
+
+## Montage
+
+[Foncer] avec &pate{250g}.

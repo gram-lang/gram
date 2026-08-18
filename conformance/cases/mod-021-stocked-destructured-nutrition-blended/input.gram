@@ -1,0 +1,9 @@
+---
+title: Mod Stocked Destructured Nutrition Blended
+---
+
+@use "./bases/oeufs.gram" as { &blancs, &jaunes }
+
+## Montage
+
+Use &blancs{100g} and &jaunes{50g}.

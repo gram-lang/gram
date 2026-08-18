@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Stocked Bare Quantity"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 70,
+            "end": 75
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 42,
+        "end": 76
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 98,
+                "end": 103
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 109,
+                  "end": 110
+                }
+              },
+              "loc": {
+                "start": 103,
+                "end": 111
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 111,
+                "end": 112
+              }
+            }
+          ],
+          "loc": {
+            "start": 89,
+            "end": 113
+          }
+        }
+      ],
+      "loc": {
+        "start": 77,
+        "end": 113
+      }
+    }
+  ]
+}
