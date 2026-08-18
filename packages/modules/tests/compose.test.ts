@@ -7,12 +7,19 @@ import { createFakeHost } from "./fake-host";
 
 const db = {};
 
-async function build(files: Record<string, string>, entry = "/recipe.gram") {
+async function build(
+	files: Record<string, string>,
+	entry = "/recipe.gram",
+	stock?: Set<string>,
+) {
 	const host = createFakeHost(files);
 	const graph = await loadModuleGraph(entry, host);
-	const composed = composeRecipe(graph, { db });
+	const composed = composeRecipe(graph, { db, stock });
 	const compiled = compile(composed.ast);
-	const analyzed = analyze(compiled, db).result;
+	const analyzed = analyze(compiled, {
+		...db,
+		...composed.syntheticIngredients,
+	}).result;
 	const result = finalizeComposed(analyzed, composed);
 	return { result, composed, graph };
 }
@@ -255,80 +262,91 @@ Use &m{100g}.
 	});
 });
 
-describe("composeRecipe: prepared mode (module-imports RFC §D.4)", () => {
-	it("synthesizes one opaque step instead of splicing the module's own steps", async () => {
-		const { result } = await build({
-			"/recipe.gram": `@use "./pate.gram" as &pate prepared
+describe("composeRecipe: stock mode (module-imports RFC, stock/retro-planning redesign)", () => {
+	it("splices no section at all for a stocked import — zero timeline cost, one shopping-list leaf", async () => {
+		const { result } = await build(
+			{
+				"/recipe.gram": `@use "./pate.gram" as &pate
+
+## Montage
+
+Use &pate{200g}.
+`,
+				"/pate.gram":
+					"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g} for ~{10min}, then leave to rest ~_{45min}.\n",
+			},
+			"/recipe.gram",
+			new Set(["/pate.gram"]),
+		);
+
+		expect(result.warnings.filter((w) => w.code.startsWith("MODULE"))).toEqual(
+			[],
+		);
+		// Only the host's own section — no synthesized or spliced section for
+		// the base at all.
+		expect(result.sections).toHaveLength(1);
+		expect(result.sections[0]?.title).toBe("Montage");
+
+		// The module's own ingredients don't leak into the section's own
+		// registered ingredients (nothing was spliced)...
+		const flour = result.sections[0]?.ingredients.find((i) => i.id === "flour");
+		expect(flour).toBeUndefined();
+
+		// ...but the binding collapses to one purchasable shopping-list leaf.
+		const pateLine = result.shopping_list.find(
+			(i) => "id" in i && i.id === "pate",
+		);
+		expect(pateLine).toBeDefined();
+		expect(
+			result.shopping_list.find((i) => "id" in i && i.id === "flour"),
+		).toBeUndefined();
+	});
+
+	it("still counts the stocked base's own real mass/nutrition toward the host's totals", async () => {
+		// A real database is needed here (unlike the shared empty `db` other
+		// tests in this file use) — the synthetic ingredient is only built once
+		// `depAnalyzed.metrics.nutrition?.per100g` is available, which requires
+		// the module's own ingredients to actually resolve against something.
+		const richDb = {
+			flour: {
+				name: "Flour",
+				nutrition: { calories: 364, protein: 10.3, carbs: 76.3, fat: 1.0 },
+			},
+			butter: {
+				name: "Butter",
+				nutrition: { calories: 717, protein: 0.9, carbs: 0.1, fat: 81.1 },
+			},
+		};
+		const host = createFakeHost({
+			"/recipe.gram": `@use "./pate.gram" as &pate
 
 ## Montage
 
 Use &pate{200g}.
 `,
 			"/pate.gram":
-				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g} for ~{10min}, then leave to rest ~_{45min}.\n",
-		});
-
-		expect(result.warnings.filter((w) => w.code.startsWith("MODULE"))).toEqual(
-			[],
-		);
-		expect(result.sections[0]?.title).toBe("Pate");
-		expect(result.sections[0]?.intermediate_preparation).toBe("pate");
-		expect(result.sections[0]?.module?.mode).toBe("prepared");
-
-		// One synthesized step, not the module's own two steps.
-		expect(result.sections[0]?.steps).toHaveLength(1);
-		const step = result.sections[0]?.steps[0];
-		expect(step?.type).toBe("step");
-		expect(step?.timings.activeDuration).toBe(10);
-		expect(step?.backgroundTasks).toEqual([
-			expect.objectContaining({ duration: 45 }),
-		]);
-
-		// The module's own ingredients don't leak into the rendered content...
-		const contentIds = (step?.content ?? [])
-			.filter((c): c is { id?: string } => typeof c === "object" && c !== null)
-			.map((c) => c.id);
-		expect(contentIds).not.toContain("flour");
-		expect(contentIds).not.toContain("butter");
-
-		// ...but they're still registered and counted toward the shopping list.
-		const flour = result.sections[0]?.ingredients.find((i) => i.id === "flour");
-		const butter = result.sections[0]?.ingredients.find(
-			(i) => i.id === "butter",
-		);
-		expect(flour?.qty).toBe(150);
-		expect(butter?.qty).toBe(50);
-		const flourLine = result.shopping_list.find(
-			(i) => "id" in i && i.id === "flour",
-		);
-		expect(flourLine).toBeDefined();
-	});
-
-	it("scales the black box's silent ingredients like any other import", async () => {
-		const { result } = await build({
-			"/recipe.gram": `@use "./pate.gram" as &pate prepared
-
-## Montage
-
-Use &pate{400g}.
-`,
-			"/pate.gram":
 				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g}.\n",
 		});
+		const graph = await loadModuleGraph("/recipe.gram", host);
+		const composed = composeRecipe(graph, {
+			db: richDb,
+			stock: new Set(["/pate.gram"]),
+		});
 
-		const flour = result.sections[0]?.ingredients.find((i) => i.id === "flour");
-		expect(flour?.qty).toBe(300);
+		// Sourced from the module's own real composition, not a black-box guess.
+		expect(composed.syntheticIngredients.pate?.physical?.unit_weight).toBe(200);
 	});
 
-	it("falls back to a normal inline splice on prepared + destructuring (PREPARED_MULTI_EXPORT)", async () => {
-		const { result } = await build({
-			"/recipe.gram": `@use "./oeufs.gram" as { &blancs, &jaunes } prepared
+	it("warns and shares the blended module nutrition profile on a stocked destructured import", async () => {
+		const { result, composed } = await build(
+			{
+				"/recipe.gram": `@use "./oeufs.gram" as { &blancs, &jaunes }
 
 ## Dessert
 
 Whisk &blancs{100g} and &jaunes{50g}.
 `,
-			"/oeufs.gram": `## Blancs ->&blancs
+				"/oeufs.gram": `## Blancs ->&blancs
 
 Separate @egg{100g}.
 
@@ -336,15 +354,84 @@ Separate @egg{100g}.
 
 Separate @egg{50g}.
 `,
+			},
+			"/recipe.gram",
+			new Set(["/oeufs.gram"]),
+		);
+
+		expect(result.warnings.map((w) => w.code)).toContain(
+			"STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
+		);
+		// No splice at all, for either binding.
+		expect(result.sections).toHaveLength(1);
+		expect(composed.syntheticIngredients.blancs).toEqual(
+			composed.syntheticIngredients.jaunes,
+		);
+	});
+
+	it("warns and ignores retro-planning combined with stock — nothing left to schedule", async () => {
+		const { result } = await build(
+			{
+				"/recipe.gram": `@use "./pate.gram" as &pate ~{-2d}
+
+## Montage
+
+Use &pate{200g}.
+`,
+				"/pate.gram":
+					"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g}.\n",
+			},
+			"/recipe.gram",
+			new Set(["/pate.gram"]),
+		);
+
+		expect(result.warnings.map((w) => w.code)).toContain(
+			"STOCKED_RETRO_PLANNING_IGNORED",
+		);
+		expect(result.sections).toHaveLength(1);
+	});
+});
+
+describe("composeRecipe: @use-level retro-planning (module-imports RFC, stock/retro-planning redesign)", () => {
+	it("anchors the section that produces the bound export, not the module's first section", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate ~{-1d}
+
+## Montage
+
+Use &pate{200g}.
+`,
+			"/pate.gram": `## Petrissage
+
+Mix @flour{200g} for ~{10min}.
+
+## Repos ->&pate
+
+Rest for ~_{60min}.
+`,
+		});
+
+		expect(result.sections[0]?.title).toBe("Petrissage");
+		expect(result.sections[0]?.retro_planning).toBeFalsy();
+		expect(result.sections[1]?.title).toBe("Repos");
+		expect(result.sections[1]?.retro_planning?.raw).toBe("-1d");
+	});
+
+	it("the host's @use-level clause wins over the module's own, with a warning", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./levain.gram" as &levain ~{-2d}
+
+## Pain
+
+Mix in the &levain{200g}.
+`,
+			"/levain.gram":
+				"---\ntitle: Levain\nyields: 200g\n---\n\n## Levain ~{-1d} ->&levain\n\nMix @flour{200g}.\n",
 		});
 
 		expect(result.warnings.map((w) => w.code)).toContain(
-			"PREPARED_MULTI_EXPORT",
+			"RETRO_PLANNING_OVERRIDE_SHADOWED",
 		);
-		// Degrades to the normal splice — the module's own two sections show up
-		// verbatim rather than a single synthesized step.
-		expect(result.sections[0]?.title).toBe("Blancs");
-		expect(result.sections[1]?.title).toBe("Jaunes");
-		expect(result.sections[0]?.module?.mode).toBe("prepared");
+		expect(result.sections[0]?.retro_planning?.raw).toBe("-2d");
 	});
 });

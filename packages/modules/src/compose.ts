@@ -4,11 +4,6 @@ import {
 	type SectionAST,
 	type StepAST,
 	type IngredientAST,
-	type AlternativeAST,
-	type ReferenceAST,
-	type TimerAST,
-	type TextAST,
-	type ImportDecl,
 	type ImportBinding,
 	type Location,
 	type Meta,
@@ -16,11 +11,14 @@ import {
 import {
 	compile,
 	scaleAst,
+	slugify,
+	cleanRegistryName,
 	WarningCode,
 	pushWarning,
 	type Warning,
 	type ModuleInfo,
 	type CompilationResult,
+	type DeferredImport,
 } from "@gram-lang/kitchen";
 import {
 	analyze,
@@ -30,11 +28,7 @@ import {
 import type { ModuleGraph } from "./host";
 import { computeExports, type ExportInfo } from "./exports";
 import { buildRenameTable, applyRename, checkRenameCollisions } from "./rename";
-import {
-	parseDeclaredYields,
-	computeScaleFactor,
-	type ParsedYieldSpec,
-} from "./yield";
+import { parseDeclaredYields, computeScaleFactor } from "./yield";
 
 export interface ComposeOptions {
 	db: Record<string, IngredientData>;
@@ -44,6 +38,12 @@ export interface ComposeOptions {
 	// recipes is compiled+analyzed once, not 50 times. Callers own the
 	// Map's lifetime; this package never keeps a module-level singleton.
 	cache?: Map<string, AnalyzedCompilationResult>;
+	// URIs (already resolved, matching what `ModuleHost.resolve()` produces —
+	// never a raw specifier string) the reader already has on hand for this
+	// particular build/shop invocation. Resolution and CLI-arg parsing are
+	// the caller's job (`packages/cli`) — this package stays free of
+	// argv/config-file concerns.
+	stock?: Set<string>;
 }
 
 export interface ComposeResult {
@@ -57,6 +57,17 @@ export interface ComposeResult {
 	// output carries no location info to correlate a section back to its
 	// origin any other way.
 	sectionOrigins: (ModuleInfo | undefined)[];
+	// Per-slug synthetic `ingredients.yaml`-shaped entries for every stocked
+	// leaf, derived from the imported module's own real composition — merged
+	// into the analyzer's `database` argument by the caller (never mutated
+	// here) so a stocked import's mass/nutrition keeps counting toward the
+	// host's totals despite never being spliced into the timeline.
+	syntheticIngredients: Record<string, IngredientData>;
+	// The subset of `options.stock` that actually matched a `@use` somewhere
+	// in this composition — lets the caller warn once, at the end of a whole
+	// glob-driven invocation, about a `--stock` entry that never matched
+	// anything (UNUSED_STOCK_SPECIFIER, a CLI-level diagnostic).
+	usedStock: Set<string>;
 }
 
 // --- small local helpers (kept here rather than as their own module: each
@@ -137,103 +148,6 @@ function dropBakersReference(sections: SectionAST[]): {
 		});
 	});
 	return { sections: cloned, dropped };
-}
-
-/**
- * Every top-level `IngredientAST`/`AlternativeAST` across a module's steps,
- * in document order — order matters because a `RelativeQuantityAST` target
- * (`@water{70% @&flour}`) must still appear *earlier* in the flattened list
- * for `processIngredient`'s resolution check to find it once every step
- * collapses into the one synthetic step built by `buildPreparedSection`.
- */
-function collectSilenceableItems(
-	sections: SectionAST[],
-): (IngredientAST | AlternativeAST)[] {
-	const found: (IngredientAST | AlternativeAST)[] = [];
-	sections.forEach((section) => {
-		section.children.forEach((child) => {
-			if (child.type !== ASTNodeType.Step) return;
-			(child as StepAST).children.forEach((c) => {
-				if (
-					c.type === ASTNodeType.Ingredient ||
-					c.type === ASTNodeType.Alternative
-				) {
-					found.push(c);
-				}
-			});
-		});
-	});
-	return found;
-}
-
-/**
- * Builds the "black box" section for a `prepared` import (§D.4): a single
- * section with a single step, instead of splicing the module's own sections
- * in. The module's ingredients are still attached to that one step — marked
- * `silent` (see `IngredientAST.silent`/processor.ts's `processBlockItem`) so
- * they register with the recipe registry and count toward the shopping list
- * without being spelled out in the rendered step — and its own measured
- * `metrics.activeTime`/`idleTime` become this one step's timing, so ALAP
- * schedules it like any other single step instead of interleaving the
- * module's internal steps with the host's own.
- */
-function buildPreparedSection(
-	binding: ImportBinding,
-	depModuleTitle: string | null,
-	depAnalyzed: AnalyzedCompilationResult,
-	depDeclaredYields: Map<string, ParsedYieldSpec>,
-	debakeredSections: SectionAST[],
-	loc: Location | undefined,
-): SectionAST {
-	const silenced = collectSilenceableItems(debakeredSections);
-	silenced.forEach((item) => {
-		item.silent = true;
-	});
-
-	const children: StepAST["children"] = [
-		{ type: ASTNodeType.Reference, name: binding.local, loc } as ReferenceAST,
-	];
-
-	const declaredDefault = depDeclaredYields.get("default");
-	if (declaredDefault) {
-		children.push({
-			type: ASTNodeType.Text,
-			value: ` (${declaredDefault.value}${declaredDefault.unit ?? ""})`,
-			loc,
-		} as TextAST);
-	}
-
-	const buildTimer = (minutes: number, isPassive: boolean): TimerAST => ({
-		type: ASTNodeType.Timer,
-		isPassive,
-		quantity: {
-			type: ASTNodeType.Quantity,
-			value: { type: "single", value: minutes },
-			unit: "min",
-			fixed: false,
-		},
-		loc,
-	});
-
-	if (depAnalyzed.metrics.activeTime > 0) {
-		children.push(buildTimer(depAnalyzed.metrics.activeTime, false));
-	}
-	if (depAnalyzed.metrics.idleTime > 0) {
-		children.push(buildTimer(depAnalyzed.metrics.idleTime, true));
-	}
-
-	children.push(...silenced);
-
-	return {
-		type: ASTNodeType.Section,
-		title: depModuleTitle,
-		intermediateDecl: {
-			type: ASTNodeType.IntermediateDecl,
-			name: binding.local,
-		},
-		children: [{ type: ASTNodeType.Step, children }],
-		loc,
-	};
 }
 
 /**
@@ -345,13 +259,12 @@ interface Resolved {
  * than once (a diamond dependency) with different bindings and different
  * requested quantities each time.
  *
- * `prepared` mode (Phase D.4, the "black box" opt-out) synthesizes one
- * section with one step instead of splicing the module's own sections in —
- * see `buildPreparedSection`. A `prepared` import combined with
- * destructuring (`validBindings.length > 1`) falls back to a normal inline
- * splice, flagged with `PREPARED_MULTI_EXPORT` (§D.4's documented v0.2
- * limit): `ProcessedStep.intermediate_preparation` is singular, so a
- * synthetic step can't bind more than one export at once.
+ * A `--stock`ed import ("stock" mechanism, module-imports RFC redesign)
+ * splices nothing at all: zero timeline cost, one synthetic shopping-list
+ * leaf sourced from the module's own real composition. A non-stocked import
+ * carrying `@use`-level `~{...}` retro-planning gets that clause attached to
+ * the section(s) that actually produce its bound export(s), letting ALAP's
+ * normal backward chaining pull the whole sub-timeline along with it.
  */
 export function composeRecipe(
 	graph: ModuleGraph,
@@ -361,6 +274,15 @@ export function composeRecipe(
 	const analyzedCache =
 		options.cache ?? new Map<string, AnalyzedCompilationResult>();
 	const resolved = new Map<string, Resolved>();
+	// Accumulated across *every* uri in `graph.order`, not per-record — a
+	// `--stock`ed import declared deep inside a transitively-imported module
+	// (A imports B normally, B imports stocked C) has no spliced section to
+	// carry its `ModuleInfo`/synthetic ingredient forward through
+	// `sectionOrigins` the way an inline splice does, so these three are
+	// threaded straight into the final `ComposeResult` instead.
+	const syntheticIngredients: Record<string, IngredientData> = {};
+	const stockedInfos: ModuleInfo[] = [];
+	const usedStock = new Set<string>();
 
 	function getAnalyzed(uri: string): AnalyzedCompilationResult {
 		const cached = analyzedCache.get(uri);
@@ -385,7 +307,7 @@ export function composeRecipe(
 		);
 
 		let meta = record.ast.meta;
-		const unresolvedImports: ImportDecl[] = [];
+		const deferredImports: DeferredImport[] = [];
 		const prepended: SectionAST[] = [];
 		const prependedOrigins: (ModuleInfo | undefined)[] = [];
 		// Scoped to *this* record's own imports, not shared across the whole
@@ -404,7 +326,7 @@ export function composeRecipe(
 				// keep the decl so kitchen's own §C.4 degraded path registers the
 				// binding as a plain intermediate instead of cascading
 				// UNDEFINED_REFERENCE for every use of it in this document.
-				unresolvedImports.push(decl);
+				deferredImports.push(decl);
 				continue;
 			}
 
@@ -431,13 +353,6 @@ export function composeRecipe(
 			}
 			if (validBindings.length === 0) continue;
 
-			if (decl.mode === "prepared" && validBindings.length > 1) {
-				pushWarning(warnings, WarningCode.PREPARED_MULTI_EXPORT, {
-					specifier: decl.specifier,
-					loc: decl.loc,
-				});
-			}
-
 			const depAnalyzed = getAnalyzed(depUri);
 			// yields: belongs to the module being imported, not the importer —
 			// `densities:` is the only key `mergeDensities` touches on `dep.ast.meta`,
@@ -463,8 +378,7 @@ export function composeRecipe(
 				}
 			});
 
-			const scaledAst = scaleAst(dep.ast, factor);
-			const scaledSections = scaledAst.children as SectionAST[];
+			const isStocked = options.stock?.has(depUri) ?? false;
 
 			const info: ModuleInfo = {
 				binding: validBindings[0]!.local,
@@ -472,30 +386,75 @@ export function composeRecipe(
 				title: depModuleTitle,
 				meta: depMeta,
 				scaleFactor: factor,
-				mode: decl.mode,
+				mode: isStocked ? "stocked" : "inline",
 			};
 
-			if (decl.mode === "prepared" && validBindings.length === 1) {
-				const { sections: debakered, dropped } =
-					dropBakersReference(scaledSections);
-				if (dropped) {
-					pushWarning(warnings, WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED, {
+			if (isStocked) {
+				usedStock.add(depUri);
+
+				if (decl.retroPlanning) {
+					pushWarning(warnings, WarningCode.STOCKED_RETRO_PLANNING_IGNORED, {
 						specifier: decl.specifier,
 						loc: decl.loc,
 					});
 				}
-				const preparedSection = buildPreparedSection(
-					validBindings[0]!,
-					depModuleTitle,
-					depAnalyzed,
-					depDeclaredYields,
-					debakered,
-					decl.loc,
-				);
-				stampUri([preparedSection], depUri);
-				prepended.push(preparedSection);
-				prependedOrigins.push(info);
+
+				validBindings.forEach((binding) => {
+					if (slugify(cleanRegistryName(binding.local)) in options.db) {
+						pushWarning(
+							warnings,
+							WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT,
+							{
+								binding: binding.local,
+								specifier: decl.specifier,
+								loc: decl.loc,
+							},
+						);
+					}
+				});
+
+				// No AST splice at all — zero timeline cost. The binding still
+				// registers (as `is_module_synthetic`, via kitchen's degraded
+				// registration path) once this record's own `deferredImports`
+				// land on `composedAst.imports` below.
+				deferredImports.push({
+					type: ASTNodeType.ImportDecl,
+					specifier: decl.specifier,
+					bindings: validBindings,
+					stocked: true,
+					title: depModuleTitle,
+					loc: decl.loc,
+				});
+
+				if (validBindings.length > 1) {
+					pushWarning(
+						warnings,
+						WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED,
+						{ specifier: decl.specifier, loc: decl.loc },
+					);
+				}
+
+				if (depAnalyzed.metrics.nutrition?.per100g) {
+					validBindings.forEach((binding) => {
+						syntheticIngredients[slugify(cleanRegistryName(binding.local))] = {
+							name: binding.local,
+							nutrition: depAnalyzed.metrics.nutrition!.per100g,
+							// Discrete/bare references (`&pate{1}`, `&pate` with no
+							// unit) resolve via mass_standardization.ts's `unit_weight`
+							// path, not a mass unit — without this, standardizeMass
+							// returns null for anything but an explicit mass-unit
+							// quantity (`{300g}`), silently dropping the leaf from
+							// mass/nutrition totals.
+							physical: { unit_weight: depAnalyzed.metrics.totalMass },
+						};
+					});
+				}
+
+				stockedInfos.push(info);
 			} else {
+				const scaledAst = scaleAst(dep.ast, factor);
+				const scaledSections = scaledAst.children as SectionAST[];
+
 				validBindings.forEach((binding) => {
 					const exportInfo = dep.exports.get(binding.exported);
 					if (exportInfo) ensureExportDecl(scaledSections, exportInfo);
@@ -525,10 +484,58 @@ export function composeRecipe(
 					});
 				});
 
+				// `@use`-level retro-planning (Mechanism B) anchors the section(s)
+				// that actually *produce* the bound export(s), not `debakered[0]` —
+				// so ALAP's normal backward chaining pulls every earlier section of
+				// a multi-section module along with it instead of leaving the
+				// producing section stranded near the host's own T-zero.
+				if (decl.retroPlanning) {
+					const targetIndices = new Set(
+						validBindings
+							.map((b) => dep.exports.get(b.exported)?.sectionIndex)
+							.filter((i): i is number => i !== undefined),
+					);
+					targetIndices.forEach((i) => {
+						const target = debakered[i];
+						if (!target) return;
+						if (target.retroPlanning) {
+							pushWarning(
+								warnings,
+								WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED,
+								{ specifier: decl.specifier, loc: decl.loc },
+							);
+						}
+						target.retroPlanning = decl.retroPlanning;
+					});
+				}
+
 				prepended.push(...debakered);
 				dep.sectionOrigins.forEach((existing) => {
 					prependedOrigins.push(existing ?? info);
 				});
+
+				// Prerequisite fix: without this, module B's own deferred/
+				// unresolved imports (it importing C itself) are silently
+				// dropped when B is spliced into A — any `&c` reference inside
+				// B's spliced sections then has nothing registering it once
+				// merged into A. No renaming needed: these names are internal to
+				// B and untouched by buildRenameTable/applyRename, which only
+				// rewrites B's *exported* names.
+				//
+				// Stamp `.uri` onto a propagated decl's own `.loc` (with `depUri`
+				// — the module it's propagated *from*) when it doesn't already
+				// carry one: a decl straight out of the parser never has one, so
+				// without this, the MODULE_NOT_FOUND (or similar) warning kitchen
+				// raises once this propagated decl reaches the degraded
+				// registration path loses its cross-file location — colliding
+				// (same code + message) with, and silently discarding via
+				// `finalizeComposed`'s dedup, the properly-`uri`'d diagnostic
+				// `loadModuleGraph` already raised for the exact same failure.
+				deferredImports.push(
+					...(dep.ast.imports ?? []).map((d) =>
+						d.loc && !d.loc.uri ? { ...d, loc: { ...d.loc, uri: depUri } } : d,
+					),
+				);
 			}
 
 			meta = mergeDensities(
@@ -551,7 +558,7 @@ export function composeRecipe(
 		const composedAst: RecipeAST = {
 			...record.ast,
 			meta,
-			imports: unresolvedImports,
+			imports: deferredImports,
 			children: [...prepended, ...ownSections],
 		};
 		const sectionOrigins = [
@@ -573,6 +580,8 @@ export function composeRecipe(
 			warnings,
 			modules: [],
 			sectionOrigins: [],
+			syntheticIngredients: {},
+			usedStock: new Set(),
 		};
 	}
 
@@ -580,12 +589,21 @@ export function composeRecipe(
 	entry.sectionOrigins.forEach((origin) => {
 		if (origin) modulesByUri.set(origin.uri, origin);
 	});
+	// Stocked imports never touch `sectionOrigins` (no spliced section to tag)
+	// — seeded separately so they still surface in `ComposeResult.modules`
+	// (and any renderer badge that reads it), including ones nested deep
+	// inside a transitively-imported module.
+	stockedInfos.forEach((info) => {
+		modulesByUri.set(info.uri, info);
+	});
 
 	return {
 		ast: entry.ast,
 		warnings,
 		modules: [...modulesByUri.values()],
 		sectionOrigins: entry.sectionOrigins,
+		syntheticIngredients,
+		usedStock,
 	};
 }
 
