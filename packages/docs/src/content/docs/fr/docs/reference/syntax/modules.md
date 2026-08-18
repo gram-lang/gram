@@ -33,7 +33,7 @@ Les directives `@use` se placent juste après le frontmatter, avant toute étape
 
 *   **Binding par défaut** — `as &nom` lie l'export par défaut du module à `&nom`.
 *   **Bindings déstructurés** — `as { &a, &b }` lie plusieurs exports du module à la fois. Ajoutez `as &nouveauNom` après l'un d'eux pour le lier sous un nom local différent (`as { &a as &renomme, &b }`).
-*   **`prepared`** — un modificateur optionnel après les bindings (`as &pate prepared`) qui importe le module comme une boîte noire opaque plutôt que d'intégrer ses étapes — voir [Mode prepared (boîte noire)](#mode-prepared-boîte-noire) ci-dessous.
+*   **Planification rétroactive** — une clause `~{...}` optionnelle après les bindings (`as &levain ~{-2d}`) qui ancre la base importée ailleurs qu'au début de la timeline — voir [Ancrer un import dans le temps](#ancrer-un-import-dans-le-temps--2d) ci-dessous.
 *   **Noms à plusieurs mots** — comme pour une [variable intermédiaire](/fr/docs/reference/syntax/intermediate-variables), entourez un nom contenant des espaces avec `{}` : `as &pate feuilletée{}`, ou des deux côtés d'un renommage déstructuré `{ &pate feuilletée{} as &pâte }`.
 *   Le specifier doit se terminer par `.gram`, et être soit un chemin relatif (`./`, `../`), soit la racine du projet (`@/`), soit un alias `paths:` nommé (`@alias/`) — voir ci-dessous. Seuls les fichiers à l'intérieur de votre projet sont résolvables — un chemin absolu ou une URL est rejeté.
 
@@ -131,21 +131,39 @@ Deux exceptions :
 
 La référence de pourcentage boulanger (`*`) propre à un module est retirée à l'import — le pourcentage boulanger pour « tarte plus pâte importée » n'a pas de sens cohérent, et Gram n'autorise déjà qu'un seul `*` par document.
 
-## Mode prepared (boîte noire)
+## Mettre en stock un import (sauter les étapes)
 
-Par défaut, les étapes d'un module importé sont intégrées à la timeline — c'est tout l'intérêt de la fonctionnalité, pour une base dont le propre temps de repos ou passage au four doit s'entrelacer avec le reste. Parfois, ce n'est pas ce que vous voulez : un bouillon acheté tout prêt, ou une sous-recette dont le détail étape par étape encombrerait simplement le planning. Ajoutez `prepared` après les bindings pour l'importer comme une seule étape opaque à la place :
+Par défaut, les étapes d'un module importé sont intégrées à la timeline — c'est tout l'intérêt de la fonctionnalité, pour une base dont le propre temps de repos ou passage au four doit s'entrelacer avec le reste. Parfois, ce n'est pas ce que vous voulez : la base est déjà dans le placard, achetée toute prête ou préparée la veille. Ce n'est pas quelque chose que le fichier de recette peut savoir lui-même — c'est vrai pour *cette session de cuisine précise*, pas pour la recette en général — c'est donc une option qu'on passe à la commande, pas une syntaxe `.gram` :
 
 ```gram
-@use "./bases/bouillon.gram" as &bouillon prepared
+@use "./bases/bouillon.gram" as &bouillon
 
 ## Soupe
 
 Mijoter avec &bouillon{1L}.
 ```
 
-Le module compte toujours pour l'ordonnancement et la liste de courses exactement comme il le ferait autrement — son propre temps actif/de repos mesuré devient la durée de cette unique étape, qui est donc toujours planifiée et entrelacée comme n'importe quelle autre étape, et ses ingrédients sont toujours ajoutés à la liste de courses. Ce qui change, c'est que ses propres étapes internes n'apparaissent jamais dans la timeline : de l'extérieur, « préparer le bouillon » est un seul bloc de temps, pas une douzaine d'étapes individuelles se disputant de la place dans le diagramme de Gantt.
+```sh
+gram shop soupe.gram --stock @bases/bouillon.gram
+```
 
-`prepared` ne peut pas se combiner avec le destructuring (`as { &a, &b } prepared`) — une seule étape synthétisée ne peut produire qu'un seul binding. Le faire est une erreur (`PREPARED_MULTI_EXPORT`) ; retirez `prepared` ou scindez l'import en deux.
+`--stock` prend une liste de specifiers séparés par des virgules, dans le même format que `@use` (`@bases/bouillon.gram`, `./bases/bouillon.gram`, …), résolus de la même façon. Un import mis en stock ne coûte aucun temps sur la timeline — ses étapes n'apparaissent jamais dans le Gantt — et se réduit à une seule ligne achetable dans la liste de courses au lieu de ses ingrédients détaillés. Sa masse et sa valeur nutritionnelle comptent toujours dans les totaux de la recette, calculées à partir de la composition réelle de la base, donc activer ou désactiver `--stock` ne change jamais ce qu'*est* la recette — seulement ce qu'il reste à faire vous-même.
+
+`--stock` est accepté par toutes les commandes qui résolvent `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`). Ce n'est délibérément pas quelque chose que le language server ou l'aperçu en direct de l'éditeur lit — décider « je l'ai déjà » est une décision qui se prend au moment de faire les courses ou de cuisiner, pas en éditant la recette, donc l'éditeur affiche toujours chaque import entièrement planifié et intégré.
+
+## Ancrer un import dans le temps (`~{-2d}`)
+
+Une base préparée fraîchement doit parfois quand même démarrer avant le reste de la timeline de la recette — un levain qui a besoin de deux jours pour se développer, une marinade qui a besoin d'une nuit de repos. Ajoutez la même clause de planification rétroactive `~{...}` [déjà prise en charge par les titres de section](/fr/docs/reference/syntax/times#rétroplanning-de-section) directement sur la ligne `@use` :
+
+```gram
+@use "./bases/levain.gram" as &levain ~{-2d}
+
+## Pain
+
+Incorporer le &levain{200g}.
+```
+
+C'est une décision qui appartient à l'*importateur*, pas quelque chose codé en dur dans le fichier de la base — le même `levain.gram` peut être ancré à `-2d` dans une recette et utilisé le jour même dans une autre. Si la base elle-même déclare sa propre planification rétroactive sur la section qui produit l'export lié, la clause au niveau `@use` l'emporte (`RETRO_PLANNING_OVERRIDE_SHADOWED`). Combiner `--stock` avec `~{...}` sur le même import est une contradiction — il n'y a plus rien à planifier — et c'est signalé (`STOCKED_RETRO_PLANNING_IGNORED`) plutôt qu'accepté silencieusement.
 
 ## Prise en charge par l'éditeur
 

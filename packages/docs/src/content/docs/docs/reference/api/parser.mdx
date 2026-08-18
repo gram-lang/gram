@@ -69,7 +69,7 @@ interface ImportDecl {
   type: ASTNodeType.ImportDecl;
   specifier: string;              // e.g. "./bases/pate.gram"
   bindings: ImportBinding[];
-  mode: "inline" | "prepared";
+  retroPlanning?: RetroPlanningAST | null; // e.g. from `@use "..." as &levain ~{-2d}`
 }
 
 interface ImportBinding {

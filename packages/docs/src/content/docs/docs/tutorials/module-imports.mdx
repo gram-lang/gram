@@ -116,7 +116,7 @@ Fix a step in `bases/sweet-pastry-dough.gram` — the oven temperature, an ingre
 A module's own relative quantities and ingredient math (`@sugar{125% @&lemon juice}` in the curd, for instance) resolve only against *that module's own sections* — a host recipe that happens to use the same ingredient name for something else entirely never leaks into a base's math, and vice versa. This is the same section-scoping rule Gram already applies within a single file; splitting a recipe across files doesn't change it. See [Encapsulation](/docs/reference/syntax/modules#encapsulation) for the details.
 
 :::note
-This tutorial covers the everyday path: a relative import, a default binding, automatic scaling. For destructured bindings (`as { &a, &b }`), project-root and aliased paths (`@/`, `@alias/`), and the opaque `prepared` mode, see the full [Module Imports](/docs/reference/syntax/modules) reference.
+This tutorial covers the everyday path: a relative import, a default binding, automatic scaling. For destructured bindings (`as { &a, &b }`), project-root and aliased paths (`@/`, `@alias/`), the `--stock` flag, and `@use`-level retro-planning (`~{-2d}`), see the full [Module Imports](/docs/reference/syntax/modules) reference.
 :::
 
 ## Try it in the Playground

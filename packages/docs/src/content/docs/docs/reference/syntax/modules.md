@@ -33,7 +33,7 @@ The imported recipe's steps are inlined into the timeline, exactly as if you'd p
 
 *   **Default binding** — `as &name` binds the module's default export to `&name`.
 *   **Destructured bindings** — `as { &a, &b }` binds several of the module's exports at once. Add `as &newName` after any one of them to bind it under a different local name (`as { &a as &renamed, &b }`).
-*   **`prepared`** — an optional modifier after the bindings (`as &pate prepared`) that imports the module as an opaque black box instead of inlining its steps — see [Prepared mode](#prepared-mode-black-box) below.
+*   **Retro-planning** — an optional `~{...}` clause after the bindings (`as &levain ~{-2d}`) that anchors the imported base somewhere other than the timeline's start — see [Anchoring an import in time](#anchoring-an-import-in-time--2d) below.
 *   **Multi-word names** — same as an [intermediate variable](/docs/reference/syntax/intermediate-variables), wrap a name with spaces in `{}`: `as &pate feuilletée{}`, or `{ &pate feuilletée{} as &pâte }` on either side of a destructured rename.
 *   The specifier must end in `.gram`, and be one of: a relative path (`./`, `../`), the project root (`@/`), or a named `paths:` alias (`@alias/`) — see below. Only files inside your project are resolvable — an absolute path or a URL is rejected.
 
@@ -131,21 +131,39 @@ Two exceptions:
 
 A module's own baker's-percentage reference (`*`) is dropped on import — baker's math for "tart plus imported pastry" has no coherent meaning, and Gram already only allows one `*` per document.
 
-## Prepared mode (black box)
+## Stocking an import (skip the steps)
 
-By default, an imported module's steps are inlined into the timeline — the point of the whole feature, for a base whose own resting time or oven pass needs to interleave with everything else. Sometimes you don't want that: a stock bought ready-made, or a sub-recipe whose own step-by-step detail would just clutter the schedule. Add `prepared` after the bindings to import it as a single opaque step instead:
+By default, an imported module's steps are inlined into the timeline — the point of the whole feature, for a base whose own resting time or oven pass needs to interleave with everything else. Sometimes you don't want that: the base is already sitting in the pantry, bought ready-made or prepped yesterday. That's not something the recipe file itself can know — it's true of *this particular cooking session*, not of the recipe in general — so it's a flag you pass to the command, not `.gram` syntax:
 
 ```gram
-@use "./bases/bouillon.gram" as &bouillon prepared
+@use "./bases/bouillon.gram" as &bouillon
 
 ## Soup
 
 Simmer with &bouillon{1L}.
 ```
 
-The module still counts for scheduling and shopping exactly as it would otherwise — its own measured active/rest time becomes this one step's timing, so it's still scheduled and interleaved like any other step, and its ingredients are still added to the shopping list. What changes is that its own internal steps never show up in the timeline: from the outside, "make the stock" is one block of time, not a dozen individual steps competing for space in the Gantt.
+```sh
+gram shop soup.gram --stock @bases/bouillon.gram
+```
 
-`prepared` can't be combined with destructuring (`as { &a, &b } prepared`) — a single synthesized step can only produce one binding. Doing so is an error (`PREPARED_MULTI_EXPORT`); either drop `prepared` or split the import into two.
+`--stock` takes a comma-separated list of the same specifiers `@use` accepts (`@bases/bouillon.gram`, `./bases/bouillon.gram`, …), resolved the same way. A stocked import costs zero timeline — its steps never appear in the Gantt at all — and collapses to a single purchasable line on the shopping list instead of its exploded ingredients. Its mass and nutrition still count toward the recipe's totals, sourced from the base's own real composition, so switching `--stock` on or off never changes what the recipe *is* — only how much of it you still need to make.
+
+`--stock` is accepted by every command that resolves `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`). It's deliberately not something the language server or the live editor preview reads — deciding "I have this on hand" is a decision you make at the moment of shopping or cooking, not while editing the recipe, so the editor always shows every import fully scheduled and inlined.
+
+## Anchoring an import in time (`~{-2d}`)
+
+A base that IS being made fresh sometimes still needs to start ahead of the rest of the recipe's timeline — a levain that needs two days to develop, a marinade that needs an overnight rest. Add the same `~{...}` retro-planning clause [section headers already support](/docs/reference/syntax/times#section-retro-planning) directly to the `@use` line:
+
+```gram
+@use "./bases/levain.gram" as &levain ~{-2d}
+
+## Pain
+
+Mix in the &levain{200g}.
+```
+
+This is the *importer's* call, not something hardcoded inside the base file — the same `levain.gram` might be anchored at `-2d` in one recipe and used same-day in another. If the base itself declares its own retro-planning on the section that produces the bound export, the `@use`-level clause wins (`RETRO_PLANNING_OVERRIDE_SHADOWED`). Combining `--stock` with `~{...}` on the same import is a contradiction — there's nothing left to schedule — and is flagged (`STOCKED_RETRO_PLANNING_IGNORED`) rather than silently accepted.
 
 ## Editor support
 

@@ -40,13 +40,21 @@ paths:
 @use "@bases/pate-sablee.gram" as &pate
 ```
 
-Sometimes you don't want a base's own steps cluttering the timeline — a stock bought ready-made, or a sub-recipe you'd rather treat as a black box. Add `prepared` after the bindings and Gram imports it as a single opaque step instead: its own measured time still counts toward scheduling and its ingredients still land on the shopping list, but its internal steps never show up in the Gantt.
+Sometimes an ingredient a base recipe produces is already sitting in the pantry — bought ready-made, or prepped yesterday — and you don't want its steps cluttering the timeline. Pass `--stock` to `gram build`/`gram check`/`gram cook`/`gram shop` (and friends) with the specifiers you already have on hand, and Gram skips that import's steps entirely for this run: zero timeline cost, one purchasable line on the shopping list instead of the base's exploded ingredients — but its mass and nutrition still count toward the recipe's totals, sourced from the base's own real composition.
 
-```gram
-@use "./bases/bouillon.gram" as &bouillon prepared
+```
+gram shop recipe.gram --stock @bases/pate-sablee.gram
 ```
 
-The HTML, Markdown, and print output all credit a spliced-in section back to the base it came from — a small badge next to the section title naming the module (and noting when it was prepared separately).
+This is a per-invocation flag, not something written into the recipe file or a project config file — the same base might be stocked one week and made from scratch the next, and nothing here needs to be kept in sync.
+
+A base that IS being made fresh, but needs to start ahead of the rest of the timeline — a levain, a marinade that needs a day to rest — can be anchored with the same `~{...}` retro-planning syntax section headers already support, now also usable directly on the `@use` line:
+
+```gram
+@use "./bases/levain.gram" as &levain ~{-2d}
+```
+
+The HTML, Markdown, and print output all credit a spliced-in section back to the base it came from — a small badge next to the section title naming the module.
 
 `gram diff` now knows about imports too, instead of a single added `@use` line making the whole recipe look changed. A base's own sections no longer count as the host's sections shifting around; the import itself shows up as its own line when it's added, removed, re-bound to a different name, or rescaled to a different factor.
 
@@ -63,3 +71,5 @@ Typing `@use "` now completes: `./`, `../`, `@/`, and any `paths:` alias as star
 This is still a first pass: there's no shared library of standard bases, and none is planned — a community package hub is a long-term idea, not yet built.
 
 `@gram-lang/modules` now exports `createMemoryHost`, an in-memory `ModuleHost` for embedding Gram's module resolution somewhere with no real filesystem — a browser editor, a test harness, anywhere a `Map<string, string>` of file contents is all you've got. It's what the docs site's own Playground uses to let you edit a base and the recipe that imports it side by side, each in its own tab, without a project on disk.
+
+**Fixed:** the recipe's whole-recipe mass/nutrition totals used to silently exclude any `->&` intermediate's mass, even outside of module imports — a step producing an intermediate that was then used later in the recipe undercounted the total. Per-section totals were never affected, only the top-level one.

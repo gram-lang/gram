@@ -116,7 +116,7 @@ Corrigeons une étape dans `bases/pate-sucree.gram` — la température du four,
 Les quantités relatives et les calculs d'ingrédients propres à un module (`@sucre{125% @&jus de citron}` dans le crémeux, par exemple) ne se résolvent que par rapport *aux sections de ce module lui-même* — une recette hôte qui utilise le même nom d'ingrédient pour tout autre chose ne fuite jamais dans les calculs d'une base, et réciproquement. C'est exactement la même règle de portée par section que Gram applique déjà au sein d'un seul fichier ; découper une recette en plusieurs fichiers ne change rien à cela. Voir [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation) pour les détails.
 
 :::note
-Ce tutoriel couvre le cas courant : un import relatif, un binding par défaut, une mise à l'échelle automatique. Pour les bindings déstructurés (`as { &a, &b }`), les chemins racine de projet et alias (`@/`, `@alias/`), et le mode opaque `prepared`, consultez la référence complète [Imports de Modules](/fr/docs/reference/syntax/modules).
+Ce tutoriel couvre le cas courant : un import relatif, un binding par défaut, une mise à l'échelle automatique. Pour les bindings déstructurés (`as { &a, &b }`), les chemins racine de projet et alias (`@/`, `@alias/`), l'option `--stock`, et la planification rétroactive au niveau `@use` (`~{-2d}`), consultez la référence complète [Imports de Modules](/fr/docs/reference/syntax/modules).
 :::
 
 ## Essayer dans le Playground

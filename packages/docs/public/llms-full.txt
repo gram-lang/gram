@@ -1536,7 +1536,10 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `MODULE_SURPLUS` | info | `Scaling "{specifier}" to satisfy '&{binding}' produces more than requested: {surplus}.` |
 | `MODULE_SPECIFIER_INVALID` | error | `Invalid module specifier "{specifier}": {reason}` |
 | `MODULE_SCHEME_UNSUPPORTED` | error | `Unsupported module specifier scheme: "{specifier}".` |
-| `PREPARED_MULTI_EXPORT` | error | `"{specifier}" is imported with "prepared" but destructures more than one binding — a prepared module can only bind a single intermediate. Remove "prepared" or split into separate imports.` |
+| `STOCKED_RETRO_PLANNING_IGNORED` | warning | `"{specifier}" is imported as stock and also carries a "~{...}" retro-planning clause — a stocked import costs zero timeline, so the retro-planning is ignored.` |
+| `RETRO_PLANNING_OVERRIDE_SHADOWED` | info | `The "~{...}" retro-planning on this "@use" of "{specifier}" overrides the module's own — the host's value wins.` |
+| `MODULE_BINDING_SHADOWS_INGREDIENT` | warning | `'&{binding}' from "{specifier}" shares its slug with an existing ingredient in the database.` |
+| `STOCKED_DESTRUCTURED_NUTRITION_BLENDED` | info | `"{specifier}" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.` |
 
 ### `VARIABLE_NOT_FOUND`
 A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
