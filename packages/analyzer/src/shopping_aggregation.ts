@@ -62,7 +62,17 @@ export function aggregateShoppingList(
 	const order: string[] = [];
 	const groups = new Map<string, ShoppingListItem[]>();
 	standard.forEach((item) => {
-		const canonicalId = resolveCanonicalId(item.name ?? item.id, database);
+		// Trust the compiler-assigned id first when it's already a real
+		// database key — needed for a stocked import's synthetic leaf, whose
+		// shopping-list `name` is a display override (the module's own title,
+		// e.g. "Pâte sablée amande") that doesn't slugify back to `id`
+		// ("pate", the local binding name the registry/synthetic-ingredient
+		// entry is actually keyed by). Equivalent to the name-based lookup for
+		// every ordinary ingredient, where `slugify(name) === id` always holds
+		// by construction.
+		const canonicalId = database[item.id]
+			? item.id
+			: resolveCanonicalId(item.name ?? item.id, database);
 		if (!groups.has(canonicalId)) {
 			groups.set(canonicalId, []);
 			order.push(canonicalId);

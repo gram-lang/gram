@@ -16,6 +16,7 @@ import type {
 	CompilationResult,
 	Usage,
 	ShoppingListItem,
+	RegistryEntry,
 } from "@gram-lang/kitchen";
 import { getNumericQty, WarningCode, round2 } from "@gram-lang/kitchen";
 import type {
@@ -138,8 +139,19 @@ function trackMissingIngredient(
 	usage: { type?: string; id?: string },
 	database: Record<string, IngredientData>,
 	missingIngredientsSet: Set<string>,
+	registry: Record<string, RegistryEntry>,
 ): void {
-	if (usage.type === "reference" || !usage.id) return;
+	if (!usage.id) return;
+	// A reference to a true in-file intermediate never had a database entry
+	// to begin with, and an undefined reference (no registry entry at all)
+	// already gets its own UNDEFINED_REFERENCE — neither belongs here too.
+	// A reference to a stocked import's synthetic leaf is neither: it has a
+	// real registry entry and isn't an intermediate, so it falls through to
+	// the normal check below.
+	if (usage.type === "reference") {
+		const entry = registry[usage.id];
+		if (!entry || entry.is_intermediate) return;
+	}
 	if (!getIngredientData(usage.id, database)) {
 		missingIngredientsSet.add(usage.id);
 	}
@@ -157,6 +169,7 @@ function standardizeSectionMasses(
 	overrides: Record<string, number>,
 	opts: AnalyzerOptions,
 	missingIngredientsSet: Set<string>,
+	registry: Record<string, RegistryEntry>,
 ): AnalyzedUsage[] {
 	const allRawIngredients: AnalyzedUsage[] = [];
 	sections.forEach((sec) => {
@@ -171,7 +184,12 @@ function standardizeSectionMasses(
 				// (never present for an alternative) and would silently no-op.
 				item.options.forEach((opt) => {
 					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
-					trackMissingIngredient(opt, database, missingIngredientsSet);
+					trackMissingIngredient(
+						opt,
+						database,
+						missingIngredientsSet,
+						registry,
+					);
 					if (opts.enableMassStandardization !== false) {
 						standardizeUsageMass(
 							opt as Partial<Usage> & Pick<Usage, "id">,
@@ -186,7 +204,7 @@ function standardizeSectionMasses(
 				return;
 			}
 
-			trackMissingIngredient(item, database, missingIngredientsSet);
+			trackMissingIngredient(item, database, missingIngredientsSet, registry);
 
 			// Perform physical mass normalization if enabled. Audit
 			// 2026-07-22, analyzer finding B6/I10: this used to duplicate
@@ -205,7 +223,12 @@ function standardizeSectionMasses(
 					opts.lang,
 				);
 			}
-			if (item.type !== "reference") {
+			// Only a true in-file intermediate is excluded from the flat list
+			// that feeds the global mass total — a reference to a stocked
+			// import's synthetic leaf is not an intermediate and must count
+			// toward it, same as it already does per-section (sec.metrics is
+			// computed straight from sec.ingredients, never through this list).
+			if (item.type !== "reference" || !registry[item.id]?.is_intermediate) {
 				allRawIngredients.push(item);
 			}
 		});
@@ -663,6 +686,7 @@ export function analyze(
 		overrides,
 		opts,
 		missingIngredientsSet,
+		result.registry.ingredients,
 	);
 
 	resolveRelativeQuantities(sections, result.warnings);
