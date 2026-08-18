@@ -272,11 +272,11 @@ export const warningTemplates: {
 	[WarningCode.UNUSED_IMPORT]: (p) =>
 		`Import '&${p.local}' from "${p.specifier}" is never used.`,
 	[WarningCode.UNRESOLVED_MODULE_YIELD]: (p) =>
-		`Cannot determine the yield of '&${p.binding}' from "${p.specifier}" — declare a "yields:" key in that module. Imported at 1x.`,
+		`Cannot determine the yield of '&${p.binding}' from "${p.specifier}" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.`,
 	[WarningCode.ESTIMATED_MODULE_YIELD]: (p) =>
-		`The yield of '&${p.binding}' from "${p.specifier}" is estimated (derived from a density or default unit weight), not declared. Declare "yields:" in that module for a precise scale factor.`,
+		`The yield of '&${p.binding}' from "${p.specifier}" is estimated — its measured mass relies on a density or default unit weight rather than an explicit mass. Add a precise "densities:" entry (in that module) for an exact scale factor.`,
 	[WarningCode.MODULE_UNIT_MISMATCH]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" was requested in ${p.requestedUnit}, but that module yields in ${p.yieldUnit}, and no density lets one convert to the other. Declare "yields:" in the requested unit, or "densities:" to bridge them.`,
+		`'&${p.binding}' from "${p.specifier}" was requested in ${p.requestedUnit}, but that module yields in ${p.yieldUnit}, and no density lets one convert to the other. Declare "densities:" to bridge them.`,
 	[WarningCode.MODULE_BATCH_INTERPRETATION]: (p) =>
 		`'&${p.binding}' from "${p.specifier}" was requested as a bare count against a mass/volume yield — interpreted as ${p.batches} batch(es) of the module. Note: quantities are multiplied by ${p.batches}, not cook/rest times.`,
 	[WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED]: (p) =>

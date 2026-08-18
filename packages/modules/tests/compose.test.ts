@@ -273,7 +273,7 @@ describe("composeRecipe: stock mode (module-imports RFC, stock/retro-planning re
 Use &pate{200g}.
 `,
 				"/pate.gram":
-					"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g} for ~{10min}, then leave to rest ~_{45min}.\n",
+					"---\ntitle: Pate\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g} for ~{10min}, then leave to rest ~_{45min}.\n",
 			},
 			"/recipe.gram",
 			new Set(["/pate.gram"]),
@@ -326,7 +326,7 @@ Use &pate{200g}.
 Use &pate{200g}.
 `,
 			"/pate.gram":
-				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g}.\n",
+				"---\ntitle: Pate\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g}.\n",
 		};
 		const host = createFakeHost(files);
 		const graph = await loadModuleGraph("/recipe.gram", host);
@@ -423,7 +423,7 @@ Separate @egg{50g}.
 Use &pate{200g}.
 `,
 				"/pate.gram":
-					"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g}.\n",
+					"---\ntitle: Pate\n---\n\n## Pastry\n\nMix @flour{150g}.\n",
 			},
 			"/recipe.gram",
 			new Set(["/pate.gram"]),
@@ -470,7 +470,7 @@ Rest for ~_{60min}.
 Mix in the &levain{200g}.
 `,
 			"/levain.gram":
-				"---\ntitle: Levain\nyields: 200g\n---\n\n## Levain ~{-1d} ->&levain\n\nMix @flour{200g}.\n",
+				"---\ntitle: Levain\n---\n\n## Levain ~{-1d} ->&levain\n\nMix @flour{200g}.\n",
 		});
 
 		expect(result.warnings.map((w) => w.code)).toContain(

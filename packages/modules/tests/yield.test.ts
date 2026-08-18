@@ -3,11 +3,7 @@ import { getAST } from "@gram-lang/parser";
 import { compile, type Warning } from "@gram-lang/kitchen";
 import { analyze } from "@gram-lang/analyzer";
 import { computeExports } from "../src/exports";
-import {
-	parseDeclaredYields,
-	resolveYield,
-	computeScaleFactor,
-} from "../src/yield";
+import { resolveYield, computeScaleFactor } from "../src/yield";
 
 const db = {};
 
@@ -17,65 +13,15 @@ function analyzeSource(source: string) {
 
 // Phase D.1/D.2 of the module-imports RFC: yield resolution per export and
 // the scale-factor derivation. These are the three non-regression scenarios
-// the RFC's own §F.3 calls out by name, plus the declared-yields fast path.
-
-describe("parseDeclaredYields", () => {
-	it("parses a scalar yield as the default export", () => {
-		const parsed = parseDeclaredYields({ yields: "500g" });
-		expect(parsed.get("default")).toEqual({ value: 500, unit: "g" });
-	});
-
-	it("parses a bare-count scalar yield with no unit", () => {
-		const parsed = parseDeclaredYields({ yields: "1 tarte" });
-		expect(parsed.get("default")).toEqual({ value: 1, unit: "tarte" });
-	});
-
-	it("parses the array form, keyed by export name", () => {
-		const parsed = parseDeclaredYields({
-			yields: ["blancs:100g", "jaunes:50g"],
-		});
-		expect(parsed.get("blancs")).toEqual({ value: 100, unit: "g" });
-		expect(parsed.get("jaunes")).toEqual({ value: 50, unit: "g" });
-	});
-
-	it("returns an empty map when yields: is absent", () => {
-		expect(parseDeclaredYields({}).size).toBe(0);
-	});
-});
+// the RFC's own §F.3 calls out by name.
 
 describe("resolveYield", () => {
-	it("uses a declared yield without measuring anything", () => {
-		const analyzed = analyzeSource("## Pastry ->&paton\n\nMix @flour{1g}.\n");
-		const { exports } = computeExports(
-			getAST("## Pastry ->&paton\n\nMix @flour{1g}.\n"),
-		);
-		const declared = parseDeclaredYields({ yields: "500g" });
-
-		const resolved = resolveYield(
-			analyzed,
-			exports.get("default")!,
-			"default",
-			declared,
-		);
-		expect(resolved).toEqual({
-			value: 500,
-			unit: "g",
-			family: "mass",
-			status: "precise",
-		});
-	});
-
-	it("measures the default export's mass when nothing is declared", () => {
+	it("measures the default export's mass", () => {
 		const source = "## Pastry ->&paton\n\nMix @flour{200g} and @water{50g}.\n";
 		const analyzed = analyzeSource(source);
 		const { exports } = computeExports(getAST(source));
 
-		const resolved = resolveYield(
-			analyzed,
-			exports.get("default")!,
-			"default",
-			new Map(),
-		);
+		const resolved = resolveYield(analyzed, exports.get("default")!);
 		expect(resolved.value).toBe(250);
 		expect(resolved.status).toBe("precise");
 	});
@@ -95,12 +41,7 @@ Whisk &blancs with @sugar{50g}.
 		const analyzed = analyzeSource(source);
 		const { exports } = computeExports(getAST(source));
 
-		const resolved = resolveYield(
-			analyzed,
-			exports.get("meringue")!,
-			"meringue",
-			new Map(),
-		);
+		const resolved = resolveYield(analyzed, exports.get("meringue")!);
 		expect(resolved.value).toBe(150);
 	});
 });
@@ -125,7 +66,6 @@ describe("computeScaleFactor", () => {
 			hostAst.imports[0]!,
 			exports,
 			analyzed,
-			new Map(),
 			{},
 			warnings,
 		);
@@ -148,7 +88,6 @@ describe("computeScaleFactor", () => {
 			hostAst.imports[0]!,
 			exports,
 			analyzed,
-			new Map(),
 			{},
 			warnings,
 		);
@@ -178,7 +117,6 @@ Separate @egg{50g}.
 			hostAst.imports[0]!,
 			exports,
 			analyzed,
-			new Map(),
 			{},
 			warnings,
 		);
@@ -200,7 +138,6 @@ Separate @egg{50g}.
 			hostAst.imports[0]!,
 			exports,
 			analyzed,
-			new Map(),
 			{},
 			warnings,
 		);
@@ -224,7 +161,6 @@ Separate @egg{50g}.
 			hostAst.imports[0]!,
 			exports,
 			analyzed,
-			new Map(),
 			{},
 			warnings,
 		);

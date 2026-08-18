@@ -22,19 +22,13 @@ import {
 } from "@gram-lang/kitchen";
 import {
 	analyze,
-	convertUnit,
 	type AnalyzedCompilationResult,
 	type IngredientData,
 } from "@gram-lang/analyzer";
 import type { ModuleGraph } from "./host";
 import { computeExports, type ExportInfo } from "./exports";
 import { buildRenameTable, applyRename, checkRenameCollisions } from "./rename";
-import {
-	parseDeclaredYields,
-	computeScaleFactor,
-	resolveYield,
-	type ParsedYieldSpec,
-} from "./yield";
+import { computeScaleFactor, resolveYield } from "./yield";
 
 export interface ComposeOptions {
 	db: Record<string, IngredientData>;
@@ -111,37 +105,16 @@ function fuzzySuggest(name: string, candidates: string[]): string | undefined {
 
 /**
  * The mass (in grams) `computeScaleFactor` actually scaled the module
- * against for one binding: the declared `yields:` entry when present
- * (converted to grams for a mass-family yield), else the same recursive
- * section-mass measurement `resolveYield` itself falls back to. `null` for
- * a discrete/volume yield (`yields: 24 cookies`) — a stocked import's
- * nutrition then falls back to the module's flat `totalMass`, same as
- * before this existed.
- *
- * This matters because a declared `yields:` doesn't have to exactly match
- * the sum of the module's own ingredient masses (a recipe author's rounded
- * "about 500g" against ingredients that actually sum to 553g, say) —
- * `factor` is computed against the *declared* value, not the measured one,
- * so a stocked import's nutrition has to extrapolate against that same
- * value too, or it drifts from what inlining-then-scaling the same module
- * would have produced.
+ * against for one binding: `resolveYield`'s own recursive section-mass
+ * measurement, which can differ from a flat `totalMass` read whenever the
+ * export's own section doesn't cover the whole module (a multi-section
+ * module where that section only *references* an earlier one).
  */
 function resolveYieldMassGrams(
 	analyzed: AnalyzedCompilationResult,
 	exportInfo: ExportInfo,
-	requestedKey: string,
-	declaredYields: Map<string, ParsedYieldSpec>,
-	lang: string | undefined,
-): number | null {
-	const yieldVal = resolveYield(
-		analyzed,
-		exportInfo,
-		requestedKey,
-		declaredYields,
-	);
-	if (yieldVal.family !== "mass") return null;
-	if (yieldVal.unit === "g") return yieldVal.value;
-	return convertUnit(yieldVal.value, yieldVal.unit, "g", undefined, lang);
+): number {
+	return resolveYield(analyzed, exportInfo).value;
 }
 
 function stampUri(sections: SectionAST[], uri: string): void {
@@ -395,16 +368,11 @@ export function composeRecipe(
 			if (validBindings.length === 0) continue;
 
 			const depAnalyzed = getAnalyzed(depUri);
-			// yields: belongs to the module being imported, not the importer —
-			// `densities:` is the only key `mergeDensities` touches on `dep.ast.meta`,
-			// so its own `yields:` is still exactly what that module declared.
-			const depDeclaredYields = parseDeclaredYields(dep.ast.meta);
 			const factor = computeScaleFactor(
 				record.ast.children,
 				decl,
 				dep.exports,
 				depAnalyzed,
-				depDeclaredYields,
 				{ lang: options.lang },
 				warnings,
 			);
@@ -497,36 +465,23 @@ export function composeRecipe(
 						: undefined;
 				const yieldBasisMass =
 					(primaryExportInfo &&
-						resolveYieldMassGrams(
-							depAnalyzed,
-							primaryExportInfo,
-							validBindings[0]!.exported,
-							depDeclaredYields,
-							options.lang,
-						)) ??
+						resolveYieldMassGrams(depAnalyzed, primaryExportInfo)) ??
 					depTotalMass;
 				if (
 					depNutrition?.per100g &&
 					depAccountedMass !== undefined &&
 					yieldBasisMass > 0
 				) {
-					// Deliberately not `depNutrition.per100g` as-is, on two counts:
-					// 1. It's per 100 g of `accountedMass`, not of `yieldBasisMass` —
-					//    rescale by `accountedMass / yieldBasisMass` first so a
-					//    missing-nutrition-data ingredient's share of the mass isn't
-					//    silently assumed to carry the same density as the rest.
-					// 2. `yieldBasisMass` itself — not `depTotalMass` — is what
-					//    `factor` (and thus the *inlined* splice) actually scales
-					//    against; a declared `yields:` doesn't have to exactly equal
-					//    the sum of the module's own ingredient masses (a rounded
-					//    "about 500g" against ingredients that measure 553g, say),
-					//    and extrapolating against the wrong one of the two drifts
-					//    from what inlining the same base and scaling it to the same
-					//    amount would produce.
-					// Together these keep a stocked import's contribution within one
-					// rounding step of its inlined-and-scaled equivalent — the
-					// invariant the module-imports docs promise ("switching --stock
-					// on or off never changes what the recipe is").
+					// Deliberately not `depNutrition.per100g` as-is — it's per 100 g
+					// of `accountedMass`, not of `yieldBasisMass` (the mass `factor`,
+					// and thus the *inlined* splice, actually scales against — see
+					// `resolveYieldMassGrams`). Rescale by `accountedMass /
+					// yieldBasisMass` first, so a missing-nutrition-data ingredient's
+					// share of the mass isn't silently assumed to carry the same
+					// density as the rest. This keeps a stocked import's contribution
+					// within one rounding step of its inlined-and-scaled equivalent —
+					// the invariant the module-imports docs promise ("switching
+					// --stock on or off never changes what the recipe is").
 					const nutritionPerYieldBasis = Object.fromEntries(
 						Object.entries(depNutrition.per100g).map(([key, value]) => [
 							key,
@@ -545,8 +500,8 @@ export function composeRecipe(
 							// quantity (`{300g}`), silently dropping the leaf from
 							// mass/nutrition totals. Uses the module's real measured
 							// mass, not `yieldBasisMass` — a bare/discrete reference is
-							// about how much the thing physically weighs, not the
-							// (possibly rounded) figure its author declared.
+							// about how much the thing physically weighs, not about
+							// whichever export section drove the scale factor.
 							physical: { unit_weight: depTotalMass },
 						};
 					});

@@ -4,7 +4,6 @@ import {
 	type StepAST,
 	type ReferenceAST,
 	type ImportDecl,
-	type Meta,
 } from "@gram-lang/parser";
 import {
 	WarningCode,
@@ -13,7 +12,6 @@ import {
 	round2,
 	type Warning,
 } from "@gram-lang/kitchen";
-import { normalizeUnit, UNIT_CONVERSIONS } from "@gram-lang/i18n";
 import { convertUnit } from "@gram-lang/analyzer";
 import type {
 	AnalyzedCompilationResult,
@@ -22,66 +20,7 @@ import type {
 } from "@gram-lang/analyzer";
 import type { ExportInfo } from "./exports";
 
-// --- §D.1: parsing a declared `yields:` frontmatter key ---
-
-export interface ParsedYieldSpec {
-	value: number;
-	// null for a bare count ("yields: 4") — no unit at all, a pure multiple
-	// of the whole module.
-	unit: string | null;
-}
-
-const YIELD_VALUE_RE = /^(\d+(?:\.\d+)?)\s*(.*)$/;
-
-function parseYieldString(raw: string): ParsedYieldSpec | null {
-	const m = raw.trim().match(YIELD_VALUE_RE);
-	if (!m) return null;
-	const value = parseFloat(m[1]!);
-	const unit = m[2]?.trim() || null;
-	if (!Number.isFinite(value) || value <= 0) return null;
-	return { value, unit };
-}
-
-/**
- * Parses the `yields:` frontmatter key (§D.1): a scalar ("500g", "24
- * cookies") applies to the module's default export, keyed here as
- * "default"; the array form (`[blancs:100g, jaunes:50g]` — the same
- * bracketed-list syntax already used by `densities:`, the only form the
- * (non-YAML) frontmatter grammar can represent) keys each entry by the
- * module's own export name.
- */
-export function parseDeclaredYields(meta: Meta): Map<string, ParsedYieldSpec> {
-	const result = new Map<string, ParsedYieldSpec>();
-	const raw = meta.yields;
-	if (raw === undefined) return result;
-
-	if (typeof raw === "string") {
-		const parsed = parseYieldString(raw);
-		if (parsed) result.set("default", parsed);
-		return result;
-	}
-
-	raw.forEach((entry) => {
-		const idx = entry.indexOf(":");
-		if (idx === -1) return;
-		const name = entry.slice(0, idx).trim();
-		const parsed = parseYieldString(entry.slice(idx + 1));
-		if (parsed && name) result.set(name, parsed);
-	});
-	return result;
-}
-
-// --- §D.1: measuring an export's yield when it isn't declared ---
-
-export type UnitFamily = "mass" | "volume" | "discrete";
-
-function classifyUnit(unit: string | null): UnitFamily {
-	if (!unit) return "discrete";
-	const normalized = normalizeUnit(unit);
-	if (normalized in UNIT_CONVERSIONS.mass.map) return "mass";
-	if (normalized in UNIT_CONVERSIONS.volume.map) return "volume";
-	return "discrete";
-}
+// --- §D.1: measuring an export's yield ---
 
 const STATUS_RANK: Record<MassMetrics["massStatus"], number> = {
 	precise: 0,
@@ -117,8 +56,21 @@ function massOfSection(
 	}
 
 	visiting.add(index);
+	// A section with nothing of its own to measure gets `massStatus:
+	// "incomplete"` from analyzer/metrics.ts's own "safe fallback for empty
+	// lists" — correct for a section that's genuinely empty, but wrong once a
+	// referenced intermediate below actually supplies the mass (a pure
+	// "->&pate" delegation section with no ingredients of its own, common
+	// now that measuring is the only way to resolve a yield): that local
+	// fallback shouldn't poison an otherwise fully-known total. Treat
+	// "measured nothing locally" as neutral and let the recursion establish
+	// the real status instead, falling back to "incomplete" only if nothing
+	// below resolves either.
+	const measuredNothingLocally =
+		sec.metrics.totalMass === 0 && sec.metrics.massStatus === "incomplete";
 	let mass = sec.metrics.totalMass;
 	let status = sec.metrics.massStatus;
+	let resolvedSomething = false;
 
 	sec.ingredients.forEach((ing) => {
 		if (ing.type !== "reference" || !ing.name) return;
@@ -128,7 +80,11 @@ function massOfSection(
 		if (targetIndex === -1 || targetIndex === index) return;
 		const sub = massOfSection(sections, targetIndex, visiting);
 		mass += sub.mass;
-		status = worseStatus(status, sub.status);
+		status =
+			measuredNothingLocally && !resolvedSomething
+				? sub.status
+				: worseStatus(status, sub.status);
+		resolvedSomething = true;
 	});
 
 	visiting.delete(index);
@@ -137,50 +93,31 @@ function massOfSection(
 
 export interface ResolvedYield {
 	value: number;
-	// "" for a declared bare count; "g" for every measured (undeclared) yield
-	// — totalMass is always in grams.
+	// Always "g" — totalMass is always in grams.
 	unit: string;
-	family: UnitFamily;
 	status: MassMetrics["massStatus"];
 }
 
 /**
- * Resolves the yield of one export (§D.1): a declared `yields:` entry is
- * authoritative and skips measurement entirely (the stated perf benefit of
- * declaring it); otherwise falls back to the recursive mass computation.
- *
- * Deliberately uses the *same* recursive formula for every export, including
- * "default" — the RFC's own text calls out `metrics.totalMass` (a flat,
- * whole-module sum) as sufficient for the default case specifically, but
- * that's only true when the default's section already covers the whole
- * module's mass with no reference chain leading outside it. The recursive
- * form is a strict superset: it reduces to the same flat sum whenever that
- * assumption holds, and stays correct when it doesn't (a multi-section
- * module where the default section only *references* an earlier one).
+ * Measures the yield of one export (§D.1): `masse(&x)`, recursively summing
+ * that export's own section plus every section it references by name (see
+ * `massOfSection`) — a flat `metrics.totalMass` read is only correct when
+ * the export's section already covers the whole module's mass with no
+ * reference chain leading outside it; the recursive form is a strict
+ * superset, reducing to the same flat sum whenever that assumption holds,
+ * and staying correct when it doesn't (a multi-section module where the
+ * export's own section only *references* an earlier one).
  */
 export function resolveYield(
 	analyzed: AnalyzedCompilationResult,
 	exportInfo: ExportInfo,
-	requestedKey: string,
-	declaredYields: Map<string, ParsedYieldSpec>,
 ): ResolvedYield {
-	const declared =
-		declaredYields.get(requestedKey) ?? declaredYields.get(exportInfo.name);
-	if (declared) {
-		return {
-			value: declared.value,
-			unit: declared.unit ?? "",
-			family: classifyUnit(declared.unit),
-			status: "precise",
-		};
-	}
-
 	const { mass, status } = massOfSection(
 		analyzed.sections,
 		exportInfo.sectionIndex,
 		new Set(),
 	);
-	return { value: mass, unit: "g", family: "mass", status };
+	return { value: mass, unit: "g", status };
 }
 
 // --- §D.2: the scale factor ---
@@ -225,25 +162,19 @@ function collectReferenceQuantities(
 }
 
 /**
- * Reconciles one request against the yield's unit family (§D.2's table):
- * same-family converts directly; a bare number against a discrete
- * (named-count) yield is taken as-is; a bare number against a mass/volume
- * yield is a batch multiplier (`request * yieldValue`, so the caller's
+ * Reconciles one request against the yield's unit (§D.2's table): a bare
+ * number is a batch multiplier (`request * yieldValue`, so the caller's
  * `sum / yieldValue` division below comes back out to exactly the batch
- * count); anything else needing a cross-family bridge goes through
- * `convertUnit` and its density. Returns `null` on a genuine mismatch —
- * the caller turns that into MODULE_UNIT_MISMATCH.
+ * count); an explicit unit goes through `convertUnit` and its density.
+ * Returns `null` on a genuine mismatch — the caller turns that into
+ * MODULE_UNIT_MISMATCH.
  */
 function convertRequestToYieldUnit(
 	req: QtyRequest,
 	yieldVal: ResolvedYield,
 	options: { density?: number; lang?: string },
 ): number | null {
-	if (req.unit === null) {
-		if (yieldVal.family === "discrete") return req.value;
-		return req.value * yieldVal.value;
-	}
-	if (yieldVal.family === "discrete") return req.value;
+	if (req.unit === null) return req.value * yieldVal.value;
 	return convertUnit(
 		req.value,
 		req.unit,
@@ -274,7 +205,6 @@ export function computeScaleFactor(
 	decl: ImportDecl,
 	moduleExports: Map<string, ExportInfo>,
 	analyzed: AnalyzedCompilationResult,
-	declaredYields: Map<string, ParsedYieldSpec>,
 	options: ScaleFactorOptions,
 	warnings: Warning[],
 ): number {
@@ -290,12 +220,7 @@ export function computeScaleFactor(
 		const requests = collectReferenceQuantities(hostChildren, binding.local);
 		if (requests.length === 0) continue;
 
-		const yieldVal = resolveYield(
-			analyzed,
-			info,
-			binding.exported,
-			declaredYields,
-		);
+		const yieldVal = resolveYield(analyzed, info);
 		if (yieldVal.status === "incomplete") {
 			pushWarning(warnings, WarningCode.UNRESOLVED_MODULE_YIELD, {
 				specifier: decl.specifier,
@@ -326,7 +251,7 @@ export function computeScaleFactor(
 				});
 				continue;
 			}
-			if (req.unit === null && yieldVal.family !== "discrete") sawBatch = true;
+			if (req.unit === null) sawBatch = true;
 			sum += converted;
 		}
 		if (sawBatch && yieldVal.value > 0) {
