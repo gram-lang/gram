@@ -27,7 +27,10 @@ GRAM {
     | "{" sp* binding moreBindings* sp* "}"  -- named
     | binding                                 -- default
   moreBindings = sp* "," sp* binding
-  binding = "&" singleWordName (sp+ "as" sp+ "&" singleWordName)?
+  binding = "&" bindingName (sp+ "as" sp+ "&" bindingName)?
+  bindingName =
+    | name "{}"      -- full
+    | singleWordName -- bare
   importMode = "prepared"
 
   Section = header Block*

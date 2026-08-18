@@ -12,7 +12,7 @@
   ],
   "repository": {
     "use-directive": {
-      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&[^\\s]+)(?:\\s+(prepared))?",
+      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&\\w+(?:\\s+\\w+)*\\{\\}|&[^\\s]+)(?:\\s+(prepared))?",
       "captures": {
         "1": { "name": "keyword.control.import.gram" },
         "2": { "name": "string.quoted.double.gram" },

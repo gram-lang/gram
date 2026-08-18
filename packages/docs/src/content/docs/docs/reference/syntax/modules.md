@@ -34,6 +34,7 @@ The imported recipe's steps are inlined into the timeline, exactly as if you'd p
 *   **Default binding** — `as &name` binds the module's default export to `&name`.
 *   **Destructured bindings** — `as { &a, &b }` binds several of the module's exports at once. Add `as &newName` after any one of them to bind it under a different local name (`as { &a as &renamed, &b }`).
 *   **`prepared`** — an optional modifier after the bindings (`as &pate prepared`) that imports the module as an opaque black box instead of inlining its steps — see [Prepared mode](#prepared-mode-black-box) below.
+*   **Multi-word names** — same as an [intermediate variable](/docs/reference/syntax/intermediate-variables), wrap a name with spaces in `{}`: `as &pate feuilletée{}`, or `{ &pate feuilletée{} as &pâte }` on either side of a destructured rename.
 *   The specifier must end in `.gram`, and be one of: a relative path (`./`, `../`), the project root (`@/`), or a named `paths:` alias (`@alias/`) — see below. Only files inside your project are resolvable — an absolute path or a URL is rejected.
 
 ## Project-root and aliased paths

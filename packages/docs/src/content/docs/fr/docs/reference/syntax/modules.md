@@ -34,6 +34,7 @@ Les directives `@use` se placent juste après le frontmatter, avant toute étape
 *   **Binding par défaut** — `as &nom` lie l'export par défaut du module à `&nom`.
 *   **Bindings déstructurés** — `as { &a, &b }` lie plusieurs exports du module à la fois. Ajoutez `as &nouveauNom` après l'un d'eux pour le lier sous un nom local différent (`as { &a as &renomme, &b }`).
 *   **`prepared`** — un modificateur optionnel après les bindings (`as &pate prepared`) qui importe le module comme une boîte noire opaque plutôt que d'intégrer ses étapes — voir [Mode prepared (boîte noire)](#mode-prepared-boîte-noire) ci-dessous.
+*   **Noms à plusieurs mots** — comme pour une [variable intermédiaire](/fr/docs/reference/syntax/intermediate-variables), entourez un nom contenant des espaces avec `{}` : `as &pate feuilletée{}`, ou des deux côtés d'un renommage déstructuré `{ &pate feuilletée{} as &pâte }`.
 *   Le specifier doit se terminer par `.gram`, et être soit un chemin relatif (`./`, `../`), soit la racine du projet (`@/`), soit un alias `paths:` nommé (`@alias/`) — voir ci-dessous. Seuls les fichiers à l'intérieur de votre projet sont résolvables — un chemin absolu ou une URL est rejeté.
 
 ## Chemins racine de projet et alias

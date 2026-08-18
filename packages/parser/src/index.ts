@@ -292,16 +292,24 @@ semantics.addOperation("toAST", {
 	},
 
 	binding(_amp, name, _sp1, _as, _sp2, _amp2, aliasIter): ImportBinding {
-		const exported = clean(name.sourceString);
+		const exported = name.toAST() as string;
 		const local =
 			aliasIter.children.length > 0
-				? clean(aliasIter.children[0]!.sourceString)
+				? (aliasIter.children[0]!.toAST() as string)
 				: exported;
 		return {
 			exported,
 			local,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
+	},
+
+	bindingName_bare(name): string {
+		return clean(name.sourceString);
+	},
+
+	bindingName_full(name, _braces): string {
+		return clean(name.sourceString);
 	},
 
 	importMode(_lit): "prepared" {

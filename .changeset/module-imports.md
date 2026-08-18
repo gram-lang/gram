@@ -25,6 +25,8 @@ Declare a `yields:` key in the base recipe (`yields: 500g`, `yields: 24 cookies`
 
 A base with more than one usable piece can be destructured — `@use "./bases/oeufs.gram" as { &blancs, &jaunes }` — and each piece scales against its own yield, not the whole module's.
 
+A binding name with a space in it needs the same `{}` wrapping a multi-word intermediate already uses — `@use "./bases/pate-sablee.gram" as &pate feuilletée{}` — and that applies on either side of a destructured rename too, e.g. `{ &pate feuilletée{} as &pâte }`.
+
 `gram shop` and `gram build` now skip a file when it's only there because another file in the same run imports it (e.g. `gram shop "**/*.gram"` no longer double-counts a base's flour once on its own and once folded into the recipe that uses it). Pass `--include-modules` to list or build it anyway.
 
 Beyond a relative path (`./`, `../`), a base can now be imported as `@/bases/pate-sablee.gram` — always relative to the project root, regardless of where the importing file lives — or through a short alias declared once in `.gram/config.yaml`:
