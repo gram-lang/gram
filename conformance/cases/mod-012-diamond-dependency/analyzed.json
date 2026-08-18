@@ -304,16 +304,16 @@
       }
     },
     {
-      "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&b' from \"./b.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&b' from \"./b.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
       "loc": {
         "start": 0,
         "end": 22
       }
     },
     {
-      "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&c' from \"./c.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&c' from \"./c.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
       "loc": {
         "start": 22,
         "end": 44

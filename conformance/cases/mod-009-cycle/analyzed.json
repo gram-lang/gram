@@ -206,7 +206,7 @@
     },
     {
       "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&b' from \"./b.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "message": "Cannot determine the yield of '&b' from \"./b.gram\" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.",
       "loc": {
         "start": 0,
         "end": 22
@@ -214,7 +214,7 @@
     },
     {
       "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&a' from \"./a.gram\" — declare a \"yields:\" key in that module. Imported at 1x.",
+      "message": "Cannot determine the yield of '&a' from \"./a.gram\" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.",
       "loc": {
         "start": 0,
         "end": 22

@@ -203,8 +203,7 @@
       "uri": "bases/levain.gram",
       "title": "Levain",
       "meta": {
-        "title": "Levain",
-        "yields": "200g"
+        "title": "Levain"
       },
       "scaleFactor": 1,
       "mode": "inline"

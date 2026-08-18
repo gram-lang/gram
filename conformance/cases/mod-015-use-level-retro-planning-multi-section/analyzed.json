@@ -6,6 +6,11 @@
   },
   "registry": {
     "ingredients": {
+      "pate-petrissage": {
+        "id": "pate-petrissage",
+        "name": "pate$petrissage",
+        "is_intermediate": true
+      },
       "flour": {
         "id": "flour",
         "name": "flour",
@@ -118,6 +123,7 @@
           }
         }
       ],
+      "intermediate_preparation": "pate$petrissage",
       "module": {
         "binding": "pate",
         "uri": "bases/pate.gram",
@@ -132,13 +138,27 @@
     },
     {
       "title": "Repos et Abaisse",
-      "ingredients": [],
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate-petrissage",
+          "name": "pate$petrissage",
+          "_usageId": "3"
+        }
+      ],
       "cookware": [],
       "steps": [
         {
           "type": "step",
           "content": [
-            "Rest for ",
+            "Rest ",
+            {
+              "type": "reference",
+              "id": "pate-petrissage",
+              "name": "pate$petrissage",
+              "_usageId": "3"
+            },
+            "for ",
             {
               "type": "timer",
               "isPassive": true,
@@ -191,7 +211,7 @@
           "type": "reference",
           "id": "pate",
           "name": "pate",
-          "_usageId": "3",
+          "_usageId": "4",
           "qty": 500,
           "unit": "g",
           "conversionMethod": "physical",
@@ -209,7 +229,7 @@
               "type": "reference",
               "id": "pate",
               "name": "pate",
-              "_usageId": "3",
+              "_usageId": "4",
               "qty": 500,
               "unit": "g",
               "normalizedMass": 500,
@@ -235,7 +255,7 @@
   ],
   "warnings": [],
   "metrics": {
-    "totalTime": 1458,
+    "totalTime": 1459,
     "totalBreakdown": [
       {
         "label": "section_active:Petrissage",
@@ -262,11 +282,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 3,
+    "preparationTime": 4,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 3
+        "duration": 4
       }
     ],
     "totalMass": 500,
@@ -299,8 +319,7 @@
       "uri": "bases/pate.gram",
       "title": "Pate Feuilletee",
       "meta": {
-        "title": "Pate Feuilletee",
-        "yields": "500g"
+        "title": "Pate Feuilletee"
       },
       "scaleFactor": 1,
       "mode": "inline"

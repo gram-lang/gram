@@ -102,8 +102,7 @@
       "uri": "bases/pate.gram",
       "title": "Pate Sablee",
       "meta": {
-        "title": "Pate Sablee",
-        "yields": "500g"
+        "title": "Pate Sablee"
       },
       "scaleFactor": 1,
       "mode": "stocked"

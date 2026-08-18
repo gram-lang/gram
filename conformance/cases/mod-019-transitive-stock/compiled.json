@@ -188,8 +188,7 @@
       "uri": "bases/c.gram",
       "title": "C Module",
       "meta": {
-        "title": "C Module",
-        "yields": "100g"
+        "title": "C Module"
       },
       "scaleFactor": 0.5,
       "mode": "stocked"

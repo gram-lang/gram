@@ -300,8 +300,7 @@
       "uri": "bases/pate.gram",
       "title": "Pate",
       "meta": {
-        "title": "Pate",
-        "yields": "250g"
+        "title": "Pate"
       },
       "scaleFactor": 1,
       "mode": "inline"
