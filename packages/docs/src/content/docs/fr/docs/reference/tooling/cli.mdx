@@ -25,6 +25,7 @@ Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichie
 ## Options Globales
 
 - `--verbose` / `--debug` : fonctionne avec n'importe quelle commande, affiche la pile d'appels complète en cas d'erreur au lieu du message court.
+- `--stock <specifiers>` : traite les sous-recettes indiquées comme déjà prêtes ou en stock (ignore leurs étapes de cuisine sur la timeline et les regroupe en un produit unique sur la liste de courses). Accepte une liste de chemins séparés par des virgules (`@bases/pate-sablee.gram,./sauces/bechamel.gram`).
 
 ---
 
@@ -60,7 +61,8 @@ gram build brioche.gram --scale 2 --output ./dist-double
 - Par défaut, affiche le JSON pur directement sur la sortie standard (`stdout`) pour faciliter le *piping*.
 - Calcule automatiquement les données nutritionnelles et la standardisation des masses physiques via la base de données.
 - `--scale <facteur>` intègre l'ajustement des proportions (*scaling*) en dur dans le JSON de sortie. Le mode par référence (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un *build* reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour trouver votre facteur, puis passez ce multiplicateur numérique à `build`.
-- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`.
+- Lorsqu'un glob ou plusieurs fichiers sont passés en argument, les fichiers importés (via `@use`) par d'autres fichiers du même lot sont exclus par défaut, afin que leurs ingrédients ne soient pas comptés deux fois (isolément puis intégrés dans la recette hôte). Passez `--include-modules` pour les compiler malgré tout.
+- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`.
 
 #### `gram view <fichier>`
 Affiche une recette directement dans le terminal, proprement formatée dans une boîte ASCII.
@@ -125,7 +127,8 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - Les ingrédients sans quantité (ex : `@sel{}`) sont listés à côté de leur entrée principale plutôt que dans une section séparée.
 - Support complet des micro-unités : `pincée`, `trait` ou `goutte` s'agrègent sans broncher.
 - `--scale <facteur>` applique un multiplicateur numérique à toutes les recettes (uniquement facteur — le mode référence n'est pas disponible pour plusieurs fichiers).
-- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`.
+- Lorsqu'un glob ou plusieurs fichiers sont passés en argument, les fichiers importés (via `@use`) par d'autres fichiers du même lot sont exclus par défaut, afin d'éviter les doublons d'ingrédients sur la liste de courses globale. Passez `--include-modules` pour les inclure malgré tout.
+- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`.
 
 #### `gram cook <fichier>`
 Lance un assistant de cuisine interactif étape par étape, directement dans le terminal.
@@ -422,6 +425,11 @@ version: 1                     # Réservé aux futures migrations de configurati
 database: ".gram/ingredients.yaml" # Chemin relatif ou absolu vers la base de données
 language: "fr"                 # Langue pour tout le contenu généré par l'IA (catégories, tags, recettes importées)
                                # Supporté : en, fr, de, es, it, pt, nl, ja, zh — défaut : en
+
+# Alias nommés pour les imports `@use` — `@use "@bases/pate.gram"` résout vers
+# "<racine du projet>/partage/bases/pate.gram". Voir la référence des imports de modules.
+paths:
+  bases: "./partage/bases"
 
 # Paramètres IA pour `gram import`, `gram db enrich` et `gram db lint`
 ai:

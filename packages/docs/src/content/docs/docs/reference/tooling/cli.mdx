@@ -25,6 +25,7 @@ The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `
 ## Global Options
 
 - `--verbose` / `--debug`: works with any command, prints a full stack trace on error instead of just the terse message.
+- `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable item on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
 
 ---
 

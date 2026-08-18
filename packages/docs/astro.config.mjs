@@ -71,6 +71,7 @@ export default defineConfig({
           translations: { fr: 'Guides pratiques' },
           collapsed: false,
           items: [
+            { label: 'Organize Modular Recipes', translations: { fr: 'Organiser des recettes modulaires' }, slug: 'docs/how-to/organize-modular-recipes' },
             { label: 'Manage Database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
             { label: 'Configure AI Provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
             { label: 'Scale Recipes Dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },

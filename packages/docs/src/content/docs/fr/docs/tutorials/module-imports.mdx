@@ -3,122 +3,152 @@ title: "Tutoriel : Découper ses recettes en modules"
 description: "Un tutoriel pas à pas pour extraire une pâte sucrée d'une recette vers son propre fichier .gram réutilisable avec @use."
 ---
 
-import { CodeTabs } from 'starlight-theme-nova/components';
+import { Steps, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Dans [Votre Première Recette](/fr/docs/tutorials/first-recipe), une **Tarte au Citron Meringuée** complète a été rédigée dans un seul fichier `.gram`, pâte sucrée comprise. Or cette pâte n'a rien de spécifique à la tarte au citron — la même base fonctionne sous une ganache au chocolat, un clafoutis aux fruits, ou une dizaine d'autres garnitures. La copier-coller dans chaque recette qui en a besoin, c'est corriger le même bug (ou améliorer la même recette) à une dizaine d'endroits différents.
+Dans [Votre Première Recette](/fr/docs/tutorials/first-recipe), nous avons rédigé la **Tarte au citron meringuée** d'un seul bloc, de la pâte sucrée jusqu'au crémeux. Mais en cuisine comme dans le code, une pâte à tarte, un bouillon ou une ganache sont de véritables briques élémentaires que l'on réutilise dans des dizaines de plats.
 
-Ce tutoriel extrait cette pâte dans son propre fichier, puis la réimporte avec `@use` — le système de modules de Gram.
+Extraire ces préparations fondamentales dans leurs propres fichiers vous évite de copier-coller les mêmes instructions partout : dès que vous perfectionnez votre pâte (un temps de repos affiné, un dosage ajusté), l'ensemble de vos recettes de tartes en profite instantanément.
 
-## Étape 1 : Extraire la base dans son propre fichier
+Ce tutoriel vous guide pour extraire cette pâte dans son propre composant réutilisable, puis la réimporter avec `@use` — le système de modules de Gram.
 
-Reprenons la section de pâte écrite dans le premier tutoriel :
+<Steps>
 
-```gram title="Code"
-## Pâte Sucrée ->&pâte sucrée{}
+1.  **Extraire la base dans son propre fichier**
 
-[Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
+    Reprenons la section de pâte écrite dans le premier tutoriel :
 
-[Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+    ```gram title="Section d'origine"
+    ## Pâte Sucrée ->&pâte sucrée{}
 
-[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+    [Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
 
-[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
-```
+    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
 
-Déplaçons-la dans son propre fichier, `bases/pate-sucree.gram`. Ce déplacement entraîne deux changements :
+    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
-*   Le `->&pâte sucrée{}` sur le titre de section peut disparaître — il servait à ce que la recette *hôte* puisse référencer la pâte par son nom, au sein du même fichier. Les exports d'un module sont déterminés par ses sections à la place (voir [Ce qu'un module exporte](/fr/docs/reference/syntax/modules#ce-quun-module-exporte)) : un simple titre `## Pâte Sucrée` suffit désormais pour qu'un importateur puisse l'atteindre.
-*   Une clé `yields:` indique la quantité de pâte réellement produite par ce fichier, pour que toute recette qui l'importe puisse en demander une quantité précise et laisser Gram mettre à l'échelle tout le fichier en conséquence.
+    [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+    ```
 
-```gram title="bases/pate-sucree.gram"
----
-title: 'Pâte Sucrée'
-yields: 450g
----
+    Déplaçons cette préparation dans son propre fichier à l'emplacement `bases/pate-sucree.gram`. Deux ajustements accompagnent cette extraction :
 
-## Pâte Sucrée
+    *   **Le nom de la variable est désormais défini à l'import** : la déclaration `->&pâte sucrée{}` sur le titre de section n'est plus indispensable pour un module à composant unique. Lorsque vous importerez le fichier, vous choisirez librement le nom de liaison locale avec `as &pâte` (`@use "..." as &pâte`). Dans le cas de modules plus élaborés produisant plusieurs préparations distinctes, déclarer `->&` sur chaque section reste le moyen privilégié d'exporter chaque composant par son nom (voir [Ce qu'un module exporte](/fr/docs/reference/syntax/modules#ce-quun-module-exporte)).
+    *   **La clé `yields:` déclare le rendement de référence** : ajouter `yields: 450g` dans le frontmatter indique la quantité produite par ce fichier de base. Lorsqu'une recette hôte demandera une quantité précise (comme `&pâte{250g}`), Gram calculera automatiquement le ratio pour mettre à l'échelle tous les ingrédients du module.
 
-[Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
+    ```gram title="bases/pate-sucree.gram"
+    ---
+    title: 'Pâte Sucrée'
+    yields: 450g
+    ---
 
-[Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
+    ## Pâte Sucrée
 
-[Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
+    [Mixer] Dans un #robot multifonction{}, la @farine{180 g}, le @sucre glace{55 g}, et le @sel{1/4 c.à.c}.
 
-[Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
-```
+    [Sabler] Ajouter le @beurre{115 g}(froid, coupé en petits dés) et mélanger pendant ~{1-2 min} jusqu'à obtenir un mélange sableux.
 
-:::tip
-`450 g` est une masse approximative des ingrédients de la pâte — inutile de la peser au gramme près. Sans `yields:` déclaré, Gram mesure automatiquement la masse propre du module à la place ; le déclarer explicitement est simplement plus précis, et légèrement moins coûteux à compiler (voir [Mise à l'échelle](/fr/docs/reference/syntax/modules#mise-à-léchelle)).
-:::
+    [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
-## Étape 2 : L'importer depuis la tarte
+    [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+    ```
 
-Dans la recette de tarte, remplaçons la section de pâte par une directive `@use`. Les directives se placent juste après le frontmatter, avant la première étape :
+    :::tip[Estimation Automatique de la Masse]
+    `450 g` représente la masse cumulée des ingrédients de la pâte. Si vous omettez `yields:`, Gram calcule automatiquement la masse totale du module. Déclarer explicitement `yields:` apporte une précision accrue et accélère la compilation (voir [Mise à l'échelle](/fr/docs/reference/syntax/modules#mise-à-léchelle)).
+    :::
 
-```gram title="tarte-au-citron.gram"
----
-title: Tarte au Citron Meringuée
-portions: 8
----
+2.  **Importer la base dans votre recette**
 
-@use "./bases/pate-sucree.gram" as &pâte
+    Dans votre recette de tarte, remplacez la section de pâte par une directive `@use` placée juste après le frontmatter, avant la première étape :
 
-## Crémeux au Citron ->&crémeux
+    ```gram title="tarte-au-citron.gram"
+    ---
+    title: Tarte au Citron Meringuée
+    portions: 8
+    ---
 
-[Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
+    @use "./bases/pate-sucree.gram" as &pâte
 
-[Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
+    ## Crémeux au Citron ->&crémeux
 
-## Cuisson du Fond de Tarte ->&fond cuit{}
+    [Fouetter] Dans une #casserole{}, le @zeste de citron{1 c.à.s}<@citron, le @jus de citron{120 g}<@citrons{2}, le @sucre{125% @&jus de citron}, et les @œufs{3}.
 
-[Préchauffer] Le #four à ^{180°C}.
+    [Cuire] À ^{feu moyen} pendant ~{8 min} jusqu'à épaississement.
 
-[Étaler] La &pâte{450g} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
+    ## Cuisson du Fond de Tarte ->&fond cuit{}
 
-[Cuire] Pendant ~_{20 min} jusqu'à coloration dorée. Laisser refroidir.
+    [Préchauffer] Le #four à ^{180°C}.
 
-## Assemblage
+    [Étaler] La &pâte{450g} pendant ~{5 min} et la foncer dans un #cercle à tarte{}.
 
-[Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
-```
+    [Cuire] Pendant ~_{20 min} jusqu'à coloration dorée. Laisser refroidir.
 
-Deux choses ont changé dans le corps de la recette, et rien d'autre :
+    ## Assemblage
 
-*   `&pâte sucrée{}` (une référence à un intermédiaire local) est devenu `&pâte{450g}` (un binding importé, demandé pour une quantité explicite).
-*   Tout le reste — la timeline du diagramme de Gantt, la liste de courses — est inchangé. Le temps de repos `~_{1 h}` de la pâte s'entrelace toujours avec la préparation du crémeux exactement comme avant, car `@use` intègre les étapes importées dans le même ordonnancement plutôt que de les traiter comme une boîte noire.
+    [Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
+    ```
 
-Demander `&pâte{450g}` contre un module qui produit exactement `450g` donne un facteur d'échelle de 1 — cette tarte utilise toute la fournée. Demander moins (`&pâte{250g}` pour une tarte plus petite) fait automatiquement redescendre chaque quantité de `bases/pate-sucree.gram` en proportion.
+    Observez les changements dans le corps de la recette :
 
-## Étape 3 : La réutiliser ailleurs
+    *   `&pâte sucrée{}` (référence locale) est devenu `&pâte{450g}` (liaison importée, demandée pour une quantité explicite).
+    *   Tout le reste — le diagramme de Gantt, la liste de courses et les valeurs nutritionnelles — fonctionne de manière transparente. Le temps de repos `~_{1 h}` de la pâte s'entrelace toujours avec la préparation du crémeux, car `@use` intègre les étapes importées dans l'ordonnancement global.
 
-C'est là tout l'intérêt. Une seconde recette — une fournée de tartelettes à la confiture, disons — peut réutiliser exactement le même fichier :
+    Demander `&pâte{450g}` contre un module produisant `450g` applique un facteur d'échelle de 1 (fournée complète). Demander moins (`&pâte{250g}` pour une tarte plus petite) adapte automatiquement chaque ingrédient de `bases/pate-sucree.gram` en proportion.
 
-```gram title="tartelettes-confiture.gram"
----
-title: Tartelettes à la Confiture
----
+3.  **Réutiliser la base dans d'autres recettes**
 
-@use "./bases/pate-sucree.gram" as &pâte
+    Voici le véritable gain de productivité. Une seconde recette — par exemple des tartelettes à la confiture — peut réutiliser exactement le même fichier de base :
 
-## Tartelettes
+    ```gram title="tartelettes-confiture.gram"
+    ---
+    title: Tartelettes à la Confiture
+    ---
 
-[Répartir] La &pâte{450g} dans 12 petits moules à tartelette.
+    @use "./bases/pate-sucree.gram" as &pâte
 
-[Cuire] À ^{180°C} pendant ~_{15 min} jusqu'à coloration dorée.
+    ## Tartelettes
 
-[Garnir] Chaque fond d'une cuillère de @confiture{15 g}.
-```
+    [Répartir] La &pâte{450g} dans des #moules à tartelettes{12}.
 
-Corrigeons une étape dans `bases/pate-sucree.gram` — la température du four, une quantité d'ingrédient, une note de préparation manquante — et les deux recettes récupèrent le changement dès leur prochaine compilation. Rien à synchroniser à la main.
+    [Cuire] À ^{180°C} pendant ~_{15 min} jusqu'à coloration dorée.
 
-## Encapsulation, en bref
+    [Garnir] Chaque fond d'une cuillère de @confiture{15 g}.
+    ```
 
-Les quantités relatives et les calculs d'ingrédients propres à un module (`@sucre{125% @&jus de citron}` dans le crémeux, par exemple) ne se résolvent que par rapport *aux sections de ce module lui-même* — une recette hôte qui utilise le même nom d'ingrédient pour tout autre chose ne fuite jamais dans les calculs d'une base, et réciproquement. C'est exactement la même règle de portée par section que Gram applique déjà au sein d'un seul fichier ; découper une recette en plusieurs fichiers ne change rien à cela. Voir [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation) pour les détails.
+    Votre arborescence de projet se présente désormais ainsi :
 
-:::note
-Ce tutoriel couvre le cas courant : un import relatif, un binding par défaut, une mise à l'échelle automatique. Pour les bindings déstructurés (`as { &a, &b }`), les chemins racine de projet et alias (`@/`, `@alias/`), l'option `--stock`, et la planification rétroactive au niveau `@use` (`~{-2d}`), consultez la référence complète [Imports de Modules](/fr/docs/reference/syntax/modules).
-:::
+    <FileTree>
+    - bases/
+      - pate-sucree.gram
+    - tarte-au-citron.gram
+    - tartelettes-confiture.gram
+    </FileTree>
+
+    Dès que vous peaufinez `bases/pate-sucree.gram` (ajustement de la température du four, précision d'un temps de repos ou dosage de farine), les deux recettes en bénéficient immédiatement à la prochaine compilation, sans aucune recopie manuelle.
+
+</Steps>
+
+## Encapsulation & Isolation des Calculs
+
+Les quantités relatives et les relations de dépendance entre ingrédients (`@sucre{125% @&jus de citron}` dans le crémeux) se résolvent exclusivement au sein *des sections du module concerné*. Une recette hôte qui utilise le même ingrédient ailleurs n'interfère jamais avec les calculs internes d'une base, et réciproquement.
+
+Cette règle stricte de portée par section garantit que découper vos recettes en modules ne crée aucun effet de bord indésirable. Consultez [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation) pour tous les détails.
 
 ## Essayer dans le Playground
 
-Le [Playground](/fr/play) permet d'éditer plusieurs fichiers liés à la fois — ouvrez l'exemple **Tarte au Citron (multi-fichiers, @use)** depuis le menu déroulant des recettes pour voir un fichier hôte et sa base importée côte à côte, chacun dans son propre onglet.
+Le [Playground](/fr/play) en ligne gère l'édition de recettes multi-fichiers : ouvrez l'exemple **Tarte au Citron (multi-fichiers, @use)** dans le menu déroulant pour observer le fichier hôte et sa base côte à côte dans deux onglets séparés.
+
+## Étapes Suivantes
+
+Maintenant que vous maîtrisez la création et l'import de modules réutilisables, explorez l'organisation de projets complets et les spécifications détaillées :
+
+<CardGrid>
+  <LinkCard 
+    title="Organiser des recettes modulaires" 
+    description="Apprenez à configurer des alias de chemins, chaîner vos dépendances et utiliser l'option --stock." 
+    href="/fr/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Référence : Imports de Modules" 
+    description="Spécification exhaustive de la syntaxe d'import, destructuring multi-exports et ordonnancement ALAP." 
+    href="/fr/docs/reference/syntax/modules" 
+  />
+</CardGrid>
