@@ -12,7 +12,7 @@
   ],
   "repository": {
     "use-directive": {
-      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&\\w+(?:\\s+\\w+)*\\{\\}|&[^\\s]+)(?:\\s+(prepared))?",
+      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&\\w+(?:\\s+\\w+)*\\{\\}|&[^\\s]+)(?:\\s*(~\\{[^\\}]+\\}))?",
       "captures": {
         "1": { "name": "keyword.control.import.gram" },
         "2": { "name": "string.quoted.double.gram" },
@@ -21,7 +21,7 @@
           "name": "meta.import.bindings.gram",
           "patterns": [{ "include": "#references" }]
         },
-        "5": { "name": "keyword.other.prepared.gram" }
+        "5": { "name": "entity.name.tag.retro.gram" }
       }
     },
     "frontmatter": {

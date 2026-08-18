@@ -254,19 +254,18 @@ semantics.addOperation("toAST", {
 		_sp3,
 		binds,
 		_sp4,
-		modeOpt,
+		retroOpt,
 		_sp5,
 		_term,
 	): ImportDecl {
-		const mode =
-			modeOpt.children.length > 0
-				? (modeOpt.children[0]!.toAST() as "prepared")
-				: "inline";
 		return {
 			type: ASTNodeType.ImportDecl,
 			specifier: spec.toAST() as string,
 			bindings: binds.toAST() as ImportBinding[],
-			mode,
+			retroPlanning:
+				retroOpt.children.length > 0
+					? (retroOpt.children[0]!.toAST() as RetroPlanningAST)
+					: null,
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
 	},
@@ -310,10 +309,6 @@ semantics.addOperation("toAST", {
 
 	bindingName_full(name, _braces): string {
 		return clean(name.sourceString);
-	},
-
-	importMode(_lit): "prepared" {
-		return "prepared";
 	},
 
 	invalidUseDirective(_at, _sp, _q) {

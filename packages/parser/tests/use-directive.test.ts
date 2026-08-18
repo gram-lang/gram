@@ -13,7 +13,7 @@ describe("@use directive parsing", () => {
 		expect(ast.imports).toHaveLength(1);
 		const decl = ast.imports[0];
 		expect(decl?.specifier).toBe("./bases/pate.gram");
-		expect(decl?.mode).toBe("inline");
+		expect(decl?.retroPlanning).toBeNull();
 		expect(decl?.bindings).toEqual([
 			{ exported: "default", local: "pate", loc: expect.anything() },
 		]);
@@ -40,11 +40,25 @@ describe("@use directive parsing", () => {
 		]);
 	});
 
-	it("parses the prepared opt-out modifier", () => {
+	it("parses @use-level retro-planning", () => {
 		const ast = getAST(
-			'@use "std:fonds/bouillon-legumes" as &bouillon prepared\n\nstep\n',
+			'@use "./bases/levain.gram" as &levain ~{-2d}\n\nstep\n',
 		);
-		expect(ast.imports[0]?.mode).toBe("prepared");
+		expect(ast.imports[0]?.retroPlanning).toEqual({
+			raw: "-2d",
+			sign: -1,
+			value: 2,
+			unit: "d",
+		});
+	});
+
+	it("parses retro-planning glued directly to a bare binding name, no space", () => {
+		const ast = getAST('@use "./bases/levain.gram" as &levain~{-2d}\n\nstep\n');
+		const decl = ast.imports[0];
+		expect(decl?.bindings).toEqual([
+			{ exported: "default", local: "levain", loc: expect.anything() },
+		]);
+		expect(decl?.retroPlanning?.raw).toBe("-2d");
 	});
 
 	it("parses multiple imports in a row", () => {

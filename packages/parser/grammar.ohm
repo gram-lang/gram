@@ -21,7 +21,7 @@ GRAM {
   // the block has started, a comment between two directives doesn't break it.
   UseBlock = nl* useDirective (nl* (useDirective | useComment))*
   useComment = applySyntactic<Comment> nl
-  useDirective = "@use" sp+ moduleSpecifier sp+ "as" sp+ bindings sp* importMode? sp* (nl | end)
+  useDirective = "@use" sp+ moduleSpecifier sp+ "as" sp+ bindings sp* retroPlanning? sp* (nl | end)
   moduleSpecifier = "\"" (~("\"" | nl) any)+ "\""
   bindings =
     | "{" sp* binding moreBindings* sp* "}"  -- named
@@ -29,9 +29,10 @@ GRAM {
   moreBindings = sp* "," sp* binding
   binding = "&" bindingName (sp+ "as" sp+ "&" bindingName)?
   bindingName =
-    | name "{}"      -- full
-    | singleWordName -- bare
-  importMode = "prepared"
+    | name "{}"           -- full
+    | bindingBareName     -- bare
+  bindingBareName = (~bindingStop any)+
+  bindingStop = space | nl | syntaxChar | sentencePunct | "~{"
 
   Section = header Block*
   header = "##" sp+ title headerExtension? sp* nl+
