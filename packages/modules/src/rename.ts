@@ -3,6 +3,7 @@ import {
 	type SectionAST,
 	type StepAST,
 	type ImportBinding,
+	type IngredientAST,
 } from "@gram-lang/parser";
 import { slugify } from "@gram-lang/kitchen";
 import type { ExportInfo } from "./exports";
@@ -69,6 +70,20 @@ export function buildRenameTable(
  * (`@name`) or cookware (`#name`) names — those stay global on purpose
  * (Phase C.1).
  */
+/** If `ing`'s quantity is a `50% of &name`-style variable relative quantity, renames its target in place per `rename`. */
+function renameRelativeTarget(
+	ing: IngredientAST,
+	rename: (name: string) => string,
+): void {
+	if (
+		ing.quantity &&
+		ing.quantity.type === ASTNodeType.RelativeQuantity &&
+		ing.quantity.referenceType === "variable"
+	) {
+		ing.quantity.target = rename(ing.quantity.target);
+	}
+}
+
 export function applyRename(
 	sections: SectionAST[],
 	table: Map<string, string>,
@@ -88,22 +103,11 @@ export function applyRename(
 				} else if (c.type === ASTNodeType.Reference) {
 					c.name = rename(c.name);
 				} else if (c.type === ASTNodeType.Ingredient) {
-					if (
-						c.quantity &&
-						c.quantity.type === ASTNodeType.RelativeQuantity &&
-						c.quantity.referenceType === "variable"
-					) {
-						c.quantity.target = rename(c.quantity.target);
-					}
+					renameRelativeTarget(c, rename);
 				} else if (c.type === ASTNodeType.Alternative) {
 					c.options.forEach((opt) => {
-						if (
-							opt.type === ASTNodeType.Ingredient &&
-							opt.quantity &&
-							opt.quantity.type === ASTNodeType.RelativeQuantity &&
-							opt.quantity.referenceType === "variable"
-						) {
-							opt.quantity.target = rename(opt.quantity.target);
+						if (opt.type === ASTNodeType.Ingredient) {
+							renameRelativeTarget(opt, rename);
 						}
 					});
 				}

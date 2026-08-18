@@ -15,6 +15,7 @@ import {
 	cleanRegistryName,
 	WarningCode,
 	pushWarning,
+	forEachStep,
 	type Warning,
 	type ModuleInfo,
 	type CompilationResult,
@@ -74,8 +75,8 @@ export interface ComposeResult {
 // is a handful of lines, single call site) ---
 
 function levenshtein(a: string, b: string): number {
-	const dp: number[][] = Array.from({ length: a.length + 1 }, (_, i) =>
-		new Array(b.length + 1).fill(i === 0 ? 0 : 0),
+	const dp: number[][] = Array.from({ length: a.length + 1 }, () =>
+		new Array(b.length + 1).fill(0),
 	);
 	for (let i = 0; i <= a.length; i++) dp[i]![0] = i;
 	for (let j = 0; j <= b.length; j++) dp[0]![j] = j;
@@ -103,20 +104,6 @@ function fuzzySuggest(name: string, candidates: string[]): string | undefined {
 	return bestDist <= Math.max(2, Math.ceil(name.length / 3)) ? best : undefined;
 }
 
-/**
- * The mass (in grams) `computeScaleFactor` actually scaled the module
- * against for one binding: `resolveYield`'s own recursive section-mass
- * measurement, which can differ from a flat `totalMass` read whenever the
- * export's own section doesn't cover the whole module (a multi-section
- * module where that section only *references* an earlier one).
- */
-function resolveYieldMassGrams(
-	analyzed: AnalyzedCompilationResult,
-	exportInfo: ExportInfo,
-): number {
-	return resolveYield(analyzed, exportInfo).value;
-}
-
 function stampUri(sections: SectionAST[], uri: string): void {
 	const stamp = (node: { loc?: Location }) => {
 		if (node.loc) node.loc.uri = uri;
@@ -135,33 +122,56 @@ function stampUri(sections: SectionAST[], uri: string): void {
 	});
 }
 
-/** Baker's `*` doesn't survive a module boundary (§D.6) — compile() itself throws on two `*`s in one document, and baker's math for "tart plus imported pastry" has no coherent meaning anyway. */
+function hasBaker(ing: IngredientAST): boolean {
+	return ing.modifiers.includes("*");
+}
+
+/**
+ * Baker's `*` doesn't survive a module boundary (§D.6) — compile() itself
+ * throws on two `*`s in one document, and baker's math for "tart plus
+ * imported pastry" has no coherent meaning anyway. Mutates `sections` in
+ * place: its only caller passes the fresh, exclusively-owned array
+ * `applyRename` just cloned for this one splice, never a cached/shared one.
+ */
 function dropBakersReference(sections: SectionAST[]): {
 	sections: SectionAST[];
 	dropped: boolean;
 } {
-	let dropped = false;
-	const cloned = structuredClone(sections);
+	const hasAny = sections.some((section) =>
+		section.children.some(
+			(child) =>
+				child.type === ASTNodeType.Step &&
+				(child as StepAST).children.some((c) => {
+					if (c.type === ASTNodeType.Ingredient) return hasBaker(c);
+					if (c.type === ASTNodeType.Alternative) {
+						return c.options.some(
+							(opt) => opt.type === ASTNodeType.Ingredient && hasBaker(opt),
+						);
+					}
+					return false;
+				}),
+		),
+	);
+	if (!hasAny) return { sections, dropped: false };
+
 	const strip = (ing: IngredientAST) => {
-		if (ing.modifiers.includes("*")) {
-			ing.modifiers = ing.modifiers.filter((m) => m !== "*");
-			dropped = true;
-		}
+		ing.modifiers = ing.modifiers.filter((m) => m !== "*");
 	};
-	cloned.forEach((section) => {
+	sections.forEach((section) => {
 		section.children.forEach((child) => {
 			if (child.type !== ASTNodeType.Step) return;
 			(child as StepAST).children.forEach((c) => {
-				if (c.type === ASTNodeType.Ingredient) strip(c);
+				if (c.type === ASTNodeType.Ingredient && hasBaker(c)) strip(c);
 				else if (c.type === ASTNodeType.Alternative) {
 					c.options.forEach((opt) => {
-						if (opt.type === ASTNodeType.Ingredient) strip(opt);
+						if (opt.type === ASTNodeType.Ingredient && hasBaker(opt))
+							strip(opt);
 					});
 				}
 			});
 		});
 	});
-	return { sections: cloned, dropped };
+	return { sections, dropped: true };
 }
 
 /**
@@ -185,25 +195,15 @@ function ensureExportDecl(sections: SectionAST[], info: ExportInfo): void {
 	}
 }
 
-function isBindingReferenced(
-	children: RecipeAST["children"],
-	name: string,
-): boolean {
-	let found = false;
-	const visitStep = (step: StepAST) => {
+/** Every `&name` referenced anywhere in `children` — walked once per record so each of its imports' bindings can check membership in O(1) instead of re-walking the tree per binding. */
+function collectReferencedNames(children: RecipeAST["children"]): Set<string> {
+	const names = new Set<string>();
+	forEachStep(children, (step) => {
 		step.children.forEach((c) => {
-			if (c.type === ASTNodeType.Reference && c.name === name) found = true;
+			if (c.type === ASTNodeType.Reference) names.add(c.name);
 		});
-	};
-	children.forEach((child) => {
-		if (child.type === ASTNodeType.Step) visitStep(child);
-		else if (child.type === ASTNodeType.Section) {
-			child.children.forEach((c) => {
-				if (c.type === ASTNodeType.Step) visitStep(c);
-			});
-		}
 	});
-	return found;
+	return names;
 }
 
 function parseDensityEntries(meta: Meta): Map<string, string> {
@@ -319,6 +319,10 @@ export function composeRecipe(
 		const { sections: ownSections, exports: ownExports } = computeExports(
 			record.ast,
 		);
+		// Walked once per record — every import below checks its own bindings'
+		// usage against this same set instead of re-walking `record.ast.children`
+		// per binding.
+		const referencedNames = collectReferencedNames(record.ast.children);
 
 		let meta = record.ast.meta;
 		const deferredImports: DeferredImport[] = [];
@@ -378,7 +382,7 @@ export function composeRecipe(
 			);
 
 			validBindings.forEach((binding) => {
-				if (!isBindingReferenced(record.ast.children, binding.local)) {
+				if (!referencedNames.has(binding.local)) {
 					pushWarning(warnings, WarningCode.UNUSED_IMPORT, {
 						local: binding.local,
 						specifier: decl.specifier,
@@ -465,7 +469,7 @@ export function composeRecipe(
 						: undefined;
 				const yieldBasisMass =
 					(primaryExportInfo &&
-						resolveYieldMassGrams(depAnalyzed, primaryExportInfo)) ??
+						resolveYield(depAnalyzed, primaryExportInfo).value) ??
 					depTotalMass;
 				if (
 					depNutrition?.per100g &&
@@ -475,7 +479,7 @@ export function composeRecipe(
 					// Deliberately not `depNutrition.per100g` as-is — it's per 100 g
 					// of `accountedMass`, not of `yieldBasisMass` (the mass `factor`,
 					// and thus the *inlined* splice, actually scales against — see
-					// `resolveYieldMassGrams`). Rescale by `accountedMass /
+					// `resolveYield` above). Rescale by `accountedMass /
 					// yieldBasisMass` first, so a missing-nutrition-data ingredient's
 					// share of the mass isn't silently assumed to carry the same
 					// density as the rest. This keeps a stocked import's contribution

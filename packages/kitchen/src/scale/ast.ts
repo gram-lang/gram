@@ -43,18 +43,32 @@ function scaleStep(step: StepAST, factor: number): void {
 	});
 }
 
-function scaleChildren(children: RecipeAST["children"], factor: number): void {
+/**
+ * Visits every `StepAST` in `children` — at the top level, or nested one
+ * level inside a `Section` — the two places a step can appear in a (grouped)
+ * recipe/section child list. Shared by every pass that only cares about step
+ * content (scaling here, reference collection in `@gram-lang/modules`), so
+ * each stays a one-line callback instead of re-deriving this walk.
+ */
+export function forEachStep(
+	children: RecipeAST["children"],
+	visit: (step: StepAST) => void,
+): void {
 	children.forEach((child) => {
-		if (child.type === ASTNodeType.Section) {
+		if (child.type === ASTNodeType.Step) {
+			visit(child);
+		} else if (child.type === ASTNodeType.Section) {
 			child.children.forEach((sectionChild) => {
 				if (sectionChild.type === ASTNodeType.Step) {
-					scaleStep(sectionChild, factor);
+					visit(sectionChild);
 				}
 			});
-		} else if (child.type === ASTNodeType.Step) {
-			scaleStep(child, factor);
 		}
 	});
+}
+
+function scaleChildren(children: RecipeAST["children"], factor: number): void {
+	forEachStep(children, (step) => scaleStep(step, factor));
 }
 
 /**

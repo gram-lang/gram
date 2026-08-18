@@ -1,7 +1,6 @@
 import {
 	ASTNodeType,
 	type RecipeAST,
-	type StepAST,
 	type ReferenceAST,
 	type ImportDecl,
 } from "@gram-lang/parser";
@@ -10,6 +9,7 @@ import {
 	pushWarning,
 	getNumericQty,
 	round2,
+	forEachStep,
 	type Warning,
 } from "@gram-lang/kitchen";
 import { convertUnit } from "@gram-lang/analyzer";
@@ -143,19 +143,10 @@ function collectReferenceQuantities(
 		requests.push({ value, unit: q.unit ?? null });
 	}
 
-	function visitStep(step: StepAST) {
+	forEachStep(children, (step) => {
 		step.children.forEach((c) => {
 			if (c.type === ASTNodeType.Reference) visitRef(c);
 		});
-	}
-
-	children.forEach((child) => {
-		if (child.type === ASTNodeType.Step) visitStep(child);
-		else if (child.type === ASTNodeType.Section) {
-			child.children.forEach((c) => {
-				if (c.type === ASTNodeType.Step) visitStep(c);
-			});
-		}
 	});
 
 	return requests;

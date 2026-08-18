@@ -1,4 +1,9 @@
-import { getAST, GramParseError, type ImportDecl } from "@gram-lang/parser";
+import {
+	getAST,
+	GramParseError,
+	type ImportDecl,
+	type Location,
+} from "@gram-lang/parser";
 import { WarningCode, pushWarning, type Warning } from "@gram-lang/kitchen";
 import type { ModuleHost, ModuleGraph, ModuleRecord } from "./host";
 
@@ -94,6 +99,15 @@ export async function loadModuleGraph(
 	const order: string[] = [];
 	const pathStack: string[] = [];
 
+	function locFor(
+		fromDecl: ImportDecl | undefined,
+		fromUri: string | undefined,
+	): Location | undefined {
+		return fromDecl?.loc && fromUri
+			? { ...fromDecl.loc, uri: fromUri }
+			: undefined;
+	}
+
 	async function visit(
 		uri: string,
 		depth: number,
@@ -107,10 +121,7 @@ export async function loadModuleGraph(
 			const chain = [...pathStack.slice(chainStart), uri].join(" → ");
 			pushWarning(diagnostics, WarningCode.MODULE_CYCLE, {
 				chain,
-				loc:
-					fromDecl?.loc && fromUri
-						? { ...fromDecl.loc, uri: fromUri }
-						: undefined,
+				loc: locFor(fromDecl, fromUri),
 			});
 			return;
 		}
@@ -124,10 +135,7 @@ export async function loadModuleGraph(
 			pushWarning(diagnostics, WarningCode.MODULE_DEPTH_EXCEEDED, {
 				specifier: displaySpecifier,
 				depth: maxDepth,
-				loc:
-					fromDecl?.loc && fromUri
-						? { ...fromDecl.loc, uri: fromUri }
-						: undefined,
+				loc: locFor(fromDecl, fromUri),
 			});
 			return;
 		}
@@ -138,10 +146,7 @@ export async function loadModuleGraph(
 		} catch {
 			pushWarning(diagnostics, WarningCode.MODULE_NOT_FOUND, {
 				specifier: displaySpecifier,
-				loc:
-					fromDecl?.loc && fromUri
-						? { ...fromDecl.loc, uri: fromUri }
-						: undefined,
+				loc: locFor(fromDecl, fromUri),
 			});
 			return;
 		}
