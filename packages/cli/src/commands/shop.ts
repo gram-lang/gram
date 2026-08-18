@@ -5,7 +5,7 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { filterModuleRoots } from "../core/module-roots";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { buildShoppingList } from "../services/shopper";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { parseScaleArg } from "../services/scaler";
@@ -108,11 +108,7 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 		const result = await buildShoppingList(files, {
 			db,
 			scaleFactor,
@@ -121,18 +117,7 @@ export default defineCommand({
 			stock,
 		});
 
-		// Written directly to stderr, never through `log.warn` (which writes to
-		// stdout) — the json/md-to-stdout path below relies on stdout carrying
-		// nothing but the rendered output, for piping.
-		if (stock) {
-			for (const uri of stock) {
-				if (!result.usedStock.has(uri)) {
-					process.stderr.write(
-						`gram shop: --stock entry never matched a @use in the files shopped for: ${uri}\n`,
-					);
-				}
-			}
-		}
+		reportUnusedStock("gram shop", "shopped for", stock, [result]);
 
 		if (args.format === "json") {
 			const json = renderShopJson(result);

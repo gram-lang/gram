@@ -5,7 +5,7 @@ import { log } from "@clack/prompts";
 import chalk from "chalk";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -106,11 +106,7 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		const outputPath = args.output
 			? resolve(args.output as string)

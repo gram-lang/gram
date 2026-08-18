@@ -2,10 +2,8 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-	buildWatchReverseIndex,
-	transitiveDependents,
-} from "../src/core/watch-graph";
+import { transitiveDependents } from "@gram-lang/modules";
+import { buildWatchReverseIndex } from "../src/core/watch-graph";
 
 describe("buildWatchReverseIndex", () => {
 	const dirs: string[] = [];

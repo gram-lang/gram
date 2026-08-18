@@ -9,7 +9,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
@@ -63,11 +63,7 @@ export default defineCommand({
 				config.language,
 				config.paths,
 			)) ?? 1;
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		const s = spinner();
 		s.start("Loading recipe…");

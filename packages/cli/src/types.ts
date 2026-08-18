@@ -289,24 +289,16 @@ export type GramConfig = z.infer<typeof GramConfigFileSchema> & {
 	projectRoot?: string;
 };
 
-export interface PipelineOptions {
-	db?: Record<string, IngredientData> | null;
-	skipAnalyzer?: boolean;
-	scaleFactor?: number;
-	bakersReference?: string;
-	bakersMathOnly?: boolean;
-	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
-	lang?: string;
+/**
+ * Options shared by every pipeline entry point that resolves `@use`
+ * specifiers: named aliases from `.gram/config.yaml`'s `paths:`, and the
+ * per-run "stock" set of already-resolved module URIs (see
+ * `core/stock.ts`'s `resolveStockSet`) — a CLI flag, deliberately never
+ * persisted to `.gram/config.yaml`.
+ */
+export interface ModuleResolutionOptions {
 	/** Named `@use` specifier aliases (from `.gram/config.yaml`'s `paths:`), threaded to the `ModuleHost` that resolves `@alias/...` specifiers. */
 	paths?: Record<string, string>;
-	/**
-	 * Shared module-yield measurement cache (module-imports RFC §F.1), keyed
-	 * by module URI. Pass the *same* Map across a batch of `runPipeline`
-	 * calls (see `services/builder.ts`) so a base imported by many recipes
-	 * is compiled+analyzed once, not once per importer. Omitted for a
-	 * single-file call — `composeRecipe` creates its own throwaway Map.
-	 */
-	moduleCache?: Map<string, AnalyzedCompilationResult>;
 	/**
 	 * `@`-prefixed/relative specifiers, already resolved to module URIs (see
 	 * `core/stock.ts`'s `resolveStockSet`), the reader already has on hand
@@ -316,18 +308,32 @@ export interface PipelineOptions {
 	stock?: Set<string>;
 }
 
-export interface CheckOptions {
+export interface PipelineOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
-	strict?: boolean;
-	paths?: Record<string, string>;
-	stock?: Set<string>;
+	skipAnalyzer?: boolean;
+	scaleFactor?: number;
+	bakersReference?: string;
+	bakersMathOnly?: boolean;
+	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
+	lang?: string;
+	/**
+	 * Shared module-yield measurement cache (module-imports RFC §F.1), keyed
+	 * by module URI. Pass the *same* Map across a batch of `runPipeline`
+	 * calls (see `services/builder.ts`) so a base imported by many recipes
+	 * is compiled+analyzed once, not once per importer. Omitted for a
+	 * single-file call — `composeRecipe` creates its own throwaway Map.
+	 */
+	moduleCache?: Map<string, AnalyzedCompilationResult>;
 }
 
-export interface BuildOptions {
+export interface CheckOptions extends ModuleResolutionOptions {
+	db?: Record<string, IngredientData> | null;
+	strict?: boolean;
+}
+
+export interface BuildOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	pretty?: boolean;
 	scaleFactor?: number;
 	lang?: string;
-	paths?: Record<string, string>;
-	stock?: Set<string>;
 }

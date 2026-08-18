@@ -3,7 +3,6 @@ import { globSync } from "tinyglobby";
 import { getAST, GramParseError } from "@gram-lang/parser";
 import {
 	buildReverseDependencyIndex,
-	transitiveDependents,
 	type ReverseDependencyIndex,
 	type DependencyEdge,
 } from "@gram-lang/modules";
@@ -67,5 +66,3 @@ export async function buildWatchReverseIndex(
 
 	return buildReverseDependencyIndex(edges);
 }
-
-export { transitiveDependents };

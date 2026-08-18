@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig } from "../core/stock";
 import { buildViewModel } from "../services/viewer";
 import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -91,11 +91,7 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		let model;
 		try {

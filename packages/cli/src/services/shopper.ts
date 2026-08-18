@@ -13,14 +13,16 @@ import type {
 	AnalyzedCompilationResult,
 } from "@gram-lang/analyzer";
 import { resolveCanonicalId } from "@gram-lang/analyzer";
-import type { ShopResult, ShoppingEntry } from "../types";
+import type {
+	ShopResult,
+	ShoppingEntry,
+	ModuleResolutionOptions,
+} from "../types";
 
-export interface ShopOptions {
+export interface ShopOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	scaleFactor?: number;
 	lang?: string;
-	paths?: Record<string, string>;
-	stock?: Set<string>;
 }
 
 interface CollectedItem {
@@ -103,40 +105,25 @@ export async function buildShoppingList(
 					});
 				};
 
-				if (opts.db) {
-					const { analyzed, usedStock: fileUsedStock } = await runPipeline(
-						file,
-						{
-							db: opts.db,
-							scaleFactor: opts.scaleFactor,
-							lang: opts.lang,
-							paths: opts.paths,
-							stock: opts.stock,
-							moduleCache,
-						},
-					);
-					fileUsedStock.forEach((u) => {
-						usedStock.add(u);
-					});
-					if (analyzed) {
-						for (const item of analyzed.result.shopping_list as any[])
-							pushItem(item);
-					}
+				const {
+					compiled,
+					analyzed,
+					usedStock: fileUsedStock,
+				} = await runPipeline(file, {
+					db: opts.db,
+					scaleFactor: opts.scaleFactor,
+					lang: opts.lang,
+					paths: opts.paths,
+					stock: opts.stock,
+					moduleCache,
+				});
+				fileUsedStock.forEach((u) => {
+					usedStock.add(u);
+				});
+				if (analyzed) {
+					for (const item of analyzed.result.shopping_list as any[])
+						pushItem(item);
 				} else {
-					const { compiled, usedStock: fileUsedStock } = await runPipeline(
-						file,
-						{
-							skipAnalyzer: true,
-							scaleFactor: opts.scaleFactor,
-							lang: opts.lang,
-							paths: opts.paths,
-							stock: opts.stock,
-							moduleCache,
-						},
-					);
-					fileUsedStock.forEach((u) => {
-						usedStock.add(u);
-					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);
 				}
 			}),

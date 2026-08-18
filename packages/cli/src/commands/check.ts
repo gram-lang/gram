@@ -3,7 +3,7 @@ import { spinner, log } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig } from "../core/stock";
 import { checkFiles } from "../services/checker";
 import {
 	renderCheckResult,
@@ -60,11 +60,7 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		const n = files.length;
 		const s = spinner();

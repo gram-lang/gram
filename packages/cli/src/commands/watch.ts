@@ -8,11 +8,9 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { findProjectRoot } from "../core/workspace";
-import { resolveStockArg } from "../core/stock";
-import {
-	buildWatchReverseIndex,
-	transitiveDependents,
-} from "../core/watch-graph";
+import { resolveStockFromConfig } from "../core/stock";
+import { transitiveDependents } from "@gram-lang/modules";
+import { buildWatchReverseIndex } from "../core/watch-graph";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { checkFiles } from "../services/checker";
 import { buildFiles } from "../services/builder";
@@ -62,11 +60,7 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
-		const stock = resolveStockArg(
-			args.stock,
-			config.projectRoot ?? process.cwd(),
-			config.paths,
-		);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		if (args.build && !args.output) {
 			log.warn(
@@ -158,9 +152,7 @@ export default defineCommand({
 			process.stdout.write(
 				`         ${chalk.dim(`→ rechecking ${dependents.length} dependent file${dependents.length !== 1 ? "s" : ""}`)}\n`,
 			);
-			for (const dep of dependents) {
-				await runCheck(dep);
-			}
+			await Promise.all(dependents.map(runCheck));
 		};
 
 		watch(watchDir, { recursive: true }, (_, filename) => {

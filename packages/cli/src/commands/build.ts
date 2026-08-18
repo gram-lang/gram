@@ -8,7 +8,7 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { filterModuleRoots } from "../core/module-roots";
-import { resolveStockArg } from "../core/stock";
+import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
 import { parseScaleArg } from "../services/scaler";
@@ -127,11 +127,7 @@ async function resolveInputs(args: Args) {
 	const config = await loadConfig();
 	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
-	const stock = resolveStockArg(
-		args.stock,
-		config.projectRoot ?? process.cwd(),
-		config.paths,
-	);
+	const stock = resolveStockFromConfig(args.stock, config);
 	return {
 		files,
 		db: dbResult?.data ?? null,
@@ -139,20 +135,6 @@ async function resolveInputs(args: Args) {
 		paths: config.paths,
 		stock,
 	};
-}
-
-// Writes directly to stderr, never through `log.warn` (which writes to
-// stdout) — `runToStdout` below relies on stdout carrying nothing but JSON,
-// one record per line, for piping.
-function warnUnusedStock(stock: Set<string> | undefined, used: Set<string>) {
-	if (!stock) return;
-	for (const uri of stock) {
-		if (!used.has(uri)) {
-			process.stderr.write(
-				`gram build: --stock entry never matched a @use in the files built: ${uri}\n`,
-			);
-		}
-	}
 }
 
 async function runToStdout(args: Args) {
@@ -168,13 +150,7 @@ async function runToStdout(args: Args) {
 	for (const { data } of results) {
 		process.stdout.write(`${JSON.stringify(data, null, indent)}\n`);
 	}
-	const used = new Set<string>();
-	results.forEach((r) => {
-		r.usedStock.forEach((u) => {
-			used.add(u);
-		});
-	});
-	warnUnusedStock(stock, used);
+	reportUnusedStock("gram build", "built", stock, results);
 }
 
 async function runToFiles(args: Args) {
@@ -195,13 +171,7 @@ async function runToFiles(args: Args) {
 
 	s.stop(`Built ${n} file${n !== 1 ? "s" : ""}.`);
 
-	const used = new Set<string>();
-	results.forEach((r) => {
-		r.usedStock.forEach((u) => {
-			used.add(u);
-		});
-	});
-	warnUnusedStock(stock, used);
+	reportUnusedStock("gram build", "built", stock, results);
 
 	await mkdir(outDir, { recursive: true });
 

@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import type { ModuleHost } from "@gram-lang/modules";
+import type { GramConfig } from "../types";
 import { createCliModuleHost } from "./module-host";
 
 // `fromUri`'s dirname is what a bare relative specifier resolves against
@@ -51,4 +52,47 @@ export function resolveStockArg(
 			.map((s) => s.trim())
 			.filter(Boolean),
 	);
+}
+
+/**
+ * Same as `resolveStockArg`, but pulls `projectRoot`/`paths` from a loaded
+ * `GramConfig` — the shape every command's `--stock` handling shares.
+ */
+export function resolveStockFromConfig(
+	raw: string | undefined,
+	config: Pick<GramConfig, "projectRoot" | "paths">,
+): Set<string> | undefined {
+	return resolveStockArg(
+		raw,
+		config.projectRoot ?? process.cwd(),
+		config.paths,
+	);
+}
+
+/**
+ * Warns on stderr about `--stock` entries that never matched a `@use` across
+ * a batch of results. Never through `log.warn` (which writes to stdout) —
+ * commands piping JSON/markdown to stdout rely on stdout carrying nothing
+ * else.
+ */
+export function reportUnusedStock(
+	commandLabel: string,
+	filesDescription: string,
+	stock: Set<string> | undefined,
+	results: { usedStock: Set<string> }[],
+): void {
+	if (!stock) return;
+	const used = new Set<string>();
+	results.forEach((r) => {
+		r.usedStock.forEach((u) => {
+			used.add(u);
+		});
+	});
+	for (const uri of stock) {
+		if (!used.has(uri)) {
+			process.stderr.write(
+				`${commandLabel}: --stock entry never matched a @use in the files ${filesDescription}: ${uri}\n`,
+			);
+		}
+	}
 }
