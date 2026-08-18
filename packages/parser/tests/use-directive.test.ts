@@ -40,6 +40,60 @@ describe("@use directive parsing", () => {
 		]);
 	});
 
+	it("parses a bare binding followed by a braced multi-word binding", () => {
+		const ast = getAST(
+			'@use "./base.gram" as { &detrempe, &beurre manie{} }\n\nstep\n',
+		);
+		const decl = ast.imports[0];
+		expect(decl?.bindings.map((b) => [b.exported, b.local])).toEqual([
+			["detrempe", "detrempe"],
+			["beurre manie", "beurre manie"],
+		]);
+	});
+
+	it("parses two braced multi-word bindings", () => {
+		const ast = getAST(
+			'@use "./base.gram" as { &detrempe{}, &beurre manie{} }\n\nstep\n',
+		);
+		const decl = ast.imports[0];
+		expect(decl?.bindings.map((b) => [b.exported, b.local])).toEqual([
+			["detrempe", "detrempe"],
+			["beurre manie", "beurre manie"],
+		]);
+	});
+
+	it("parses a braced multi-word binding followed by a bare binding", () => {
+		const ast = getAST(
+			'@use "./base.gram" as { &beurre manie{}, &detrempe }\n\nstep\n',
+		);
+		const decl = ast.imports[0];
+		expect(decl?.bindings.map((b) => [b.exported, b.local])).toEqual([
+			["beurre manie", "beurre manie"],
+			["detrempe", "detrempe"],
+		]);
+	});
+
+	it("parses a bare-to-braced rename mixed with a bare binding", () => {
+		const ast = getAST(
+			'@use "./base.gram" as { &a as &mon a{}, &b }\n\nstep\n',
+		);
+		const decl = ast.imports[0];
+		expect(decl?.bindings.map((b) => [b.exported, b.local])).toEqual([
+			["a", "mon a"],
+			["b", "b"],
+		]);
+	});
+
+	it("parses a braced-to-bare rename inside a destructured import", () => {
+		const ast = getAST(
+			'@use "./base.gram" as { &water dough{} as &detrempe }\n\nstep\n',
+		);
+		const decl = ast.imports[0];
+		expect(decl?.bindings.map((b) => [b.exported, b.local])).toEqual([
+			["water dough", "detrempe"],
+		]);
+	});
+
 	it("parses @use-level retro-planning", () => {
 		const ast = getAST(
 			'@use "./bases/levain.gram" as &levain ~{-2d}\n\nstep\n',

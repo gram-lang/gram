@@ -29,8 +29,14 @@ GRAM {
   moreBindings = sp* "," sp* binding
   binding = "&" bindingName (sp+ "as" sp+ "&" bindingName)?
   bindingName =
-    | name "{}"           -- full
-    | bindingBareName     -- bare
+    | bindingFullName "{}" -- full
+    | bindingBareName      -- bare
+  // Unlike `name`, this must stop at "," and "&" -- a `{}`-delimited multi-word
+  // binding sits inside a comma-separated list (`{ &a, &b multi{} }`) and can be
+  // followed by a rename (`&a as &b multi{}`), so it must not swallow past the
+  // next binding's separator or sigil while scanning ahead for its own "{}".
+  bindingFullName = (~bindingFullNameStop any)+
+  bindingFullNameStop = syntaxChar | nl | "," | refSigil
   bindingBareName = (~bindingStop any)+
   bindingStop = space | nl | syntaxChar | sentencePunct | "~{"
 
