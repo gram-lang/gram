@@ -18,7 +18,7 @@ title: Tarte au citron
 @use "./bases/creme-citron.gram" as &creme
 @use "./bases/oeufs.gram" as { &blancs, &jaunes }
 @use "./bases/oeufs.gram" as { &paton as &paton-brisee }
-@use "std:fonds/bouillon-legumes" as &bouillon prepared
+@use "std:fonds/bouillon-legumes" as &bouillon ~{-2d}
 
 ## Montage
 
@@ -44,7 +44,9 @@ describe("formatGram and @use directives", () => {
 		expect(after.map((d) => d.specifier)).toEqual(
 			before.map((d) => d.specifier),
 		);
-		expect(after.map((d) => d.mode)).toEqual(before.map((d) => d.mode));
+		expect(after.map((d) => d.retroPlanning)).toEqual(
+			before.map((d) => d.retroPlanning),
+		);
 		expect(after.map((d) => stripLoc(d.bindings))).toEqual(
 			before.map((d) => stripLoc(d.bindings)),
 		);
@@ -70,10 +72,10 @@ describe("formatGram and @use directives", () => {
 		expect(content).toContain('"./Bases/Pate-Sablee.gram"');
 	});
 
-	it("leaves a prepared import's modifier intact", () => {
+	it("leaves an @use-level retro-planning clause intact", () => {
 		const source =
-			'@use "std:fonds/bouillon-legumes" as &bouillon prepared\n\nstep\n';
+			'@use "std:fonds/bouillon-legumes" as &bouillon ~{-2d}\n\nstep\n';
 		const { content } = formatGram(source);
-		expect(getAST(content).imports[0]?.mode).toBe("prepared");
+		expect(getAST(content).imports[0]?.retroPlanning?.raw).toBe("-2d");
 	});
 });
