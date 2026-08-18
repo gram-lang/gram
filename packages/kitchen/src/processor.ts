@@ -17,7 +17,6 @@ import {
 	type TimerAST,
 	type TemperatureAST,
 	type TextAST,
-	type ImportDecl,
 	ASTNodeType,
 	type Location,
 } from "@gram-lang/parser";
@@ -33,6 +32,7 @@ import type {
 	ProcessedComment,
 	RetroPlanning,
 	TimeBreakdownItem,
+	DeferredImport,
 } from "./types";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
@@ -537,21 +537,19 @@ export function processBlockItem(
 	switch (item.type) {
 		case ASTNodeType.Ingredient: {
 			const ing = item as IngredientAST;
-			const usage = processIngredient(ing, ctx, registry, secIngredients);
-			return ing.silent ? null : usage;
+			return processIngredient(ing, ctx, registry, secIngredients);
 		}
 		case ASTNodeType.Cookware:
 			return processCookware(item as CookwareAST, ctx, registry, secCookware);
 		case ASTNodeType.Alternative: {
 			const alt = item as AlternativeAST;
-			const usage = processAlternative(
+			return processAlternative(
 				alt,
 				ctx,
 				registry,
 				secIngredients,
 				secCookware,
 			);
-			return alt.silent ? null : usage;
 		}
 		case ASTNodeType.Reference:
 			return processReference(
@@ -622,7 +620,7 @@ export function processSections(
 	astChildren: ASTNode[],
 	registry: RecipeRegistry,
 	options?: CompilerOptions,
-	imports: ImportDecl[] = [],
+	imports: DeferredImport[] = [],
 ): {
 	sections: ProcessedSection[];
 	metrics: {
@@ -655,14 +653,24 @@ export function processSections(
 	// cascade of UNDEFINED_REFERENCE for every `&binding` used in the body.
 	imports.forEach((decl) => {
 		decl.bindings.forEach((binding) => {
-			registry.registerIngredient(binding.local, { is_intermediate: true });
+			registry.registerIngredient(
+				binding.local,
+				decl.stocked
+					? {
+							is_module_synthetic: true,
+							displayName: decl.title ?? binding.local,
+						}
+					: { is_intermediate: true },
+			);
 			ctx.globalScopes.set(binding.local, decl.specifier);
 			ctx.definedIntermediates.add(binding.local);
 		});
-		pushWarning(ctx, WarningCode.MODULE_NOT_FOUND, {
-			specifier: decl.specifier,
-			loc: decl.loc,
-		});
+		if (!decl.stocked) {
+			pushWarning(ctx, WarningCode.MODULE_NOT_FOUND, {
+				specifier: decl.specifier,
+				loc: decl.loc,
+			});
+		}
 	});
 
 	const sections: ProcessedSection[] = [];

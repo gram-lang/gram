@@ -3,6 +3,7 @@ import type {
 	RelativeQuantityAST,
 	TextQuantityAST,
 	Meta,
+	ImportDecl,
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
@@ -29,6 +30,22 @@ export interface RegistryEntry {
 	is_composite?: boolean;
 	parent?: string;
 	is_intermediate?: boolean;
+	// Set only on a leaf synthesized by the module composer for a `--stock`ed
+	// `@use` import (module-imports RFC, "stock" mechanism) — consulted only
+	// by `db-sync.ts`'s DB-export exclusion, so this per-recipe synthetic
+	// nutrition profile never leaks into the shared `ingredients.yaml`.
+	is_module_synthetic?: boolean;
+}
+
+// `ast.imports` entries that never resolved into a splice — either genuinely
+// unresolved (`MODULE_NOT_FOUND`, degraded registration in processor.ts) or,
+// since the "stock" mechanism, a successfully-resolved-but-deliberately-
+// unspliced `--stock`ed import. `stocked`/`title` are set only by
+// `@gram-lang/modules`'s composer, post-resolution — the parser itself never
+// produces either field.
+export interface DeferredImport extends ImportDecl {
+	stocked?: boolean;
+	title?: string | null;
 }
 
 export interface Registry {
@@ -180,7 +197,7 @@ export interface ProcessedSection {
 		binding: string;
 		uri: string;
 		title: string | null;
-		mode: "inline" | "prepared";
+		mode: "inline" | "stocked";
 	};
 }
 
@@ -201,7 +218,7 @@ export interface ModuleInfo {
 	title: string | null;
 	meta: Meta;
 	scaleFactor: number;
-	mode: "inline" | "prepared";
+	mode: "inline" | "stocked";
 }
 
 export interface CompilationResult {

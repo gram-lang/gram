@@ -131,8 +131,16 @@ export function generateShoppingList(
 				item.isCircular = true;
 			}
 
-			// Skip pure variable references (they don't go onto a grocery list)
-			if (item.type === "reference") return;
+			// Skip a reference to a true in-file intermediate, and an undefined
+			// reference with no registry entry at all (nothing purchasable to
+			// list) — a reference to a stocked import's synthetic leaf is
+			// neither: it has a real registry entry and is NOT an intermediate
+			// (is_intermediate stays unset), so it falls through to the normal
+			// aggregation path below instead.
+			if (item.type === "reference") {
+				const entry = registry.ingredients.get(item.id);
+				if (!entry || entry.is_intermediate) return;
+			}
 
 			if (item.composite) {
 				const parentId = slugify(item.composite.parent);

@@ -3,7 +3,7 @@ import type { Warning } from "./warnings";
 import { slugify } from "./utils";
 
 // Strip punctuation that bleeds into bare element names (e.g. #saucepan, or @salt.)
-const cleanRegistryName = (name: string) =>
+export const cleanRegistryName = (name: string) =>
 	name.trim().replace(/[,;!?.]+$/, "");
 
 export class RecipeRegistry implements Registry {
@@ -17,16 +17,19 @@ export class RecipeRegistry implements Registry {
 
 	registerIngredient(
 		name: string,
-		data?: Partial<Omit<RegistryEntry, "id" | "name">>,
+		data?: Partial<Omit<RegistryEntry, "id" | "name">> & {
+			displayName?: string;
+		},
 	): string {
 		const cleanedName = cleanRegistryName(name);
 		const id = slugify(cleanedName);
 		const existing = this.ingredients.get(id);
 		if (!existing) {
+			const { displayName, ...rest } = data ?? {};
 			this.ingredients.set(id, {
 				id,
-				name: cleanedName,
-				...data,
+				name: displayName ?? cleanedName,
+				...rest,
 			} as RegistryEntry);
 		} else if (data) {
 			if (data.default_unit && !existing.default_unit) {
@@ -35,6 +38,7 @@ export class RecipeRegistry implements Registry {
 			if (data.is_composite) existing.is_composite = true;
 			if (data.parent) existing.parent = data.parent;
 			if (data.is_intermediate) existing.is_intermediate = true;
+			if (data.is_module_synthetic) existing.is_module_synthetic = true;
 		}
 		return id;
 	}

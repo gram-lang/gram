@@ -39,7 +39,11 @@ export enum WarningCode {
 	MODULE_SURPLUS = "MODULE_SURPLUS",
 	MODULE_SPECIFIER_INVALID = "MODULE_SPECIFIER_INVALID",
 	MODULE_SCHEME_UNSUPPORTED = "MODULE_SCHEME_UNSUPPORTED",
-	PREPARED_MULTI_EXPORT = "PREPARED_MULTI_EXPORT",
+	// "stock" mechanism (module-imports RFC, stock/retro-planning redesign).
+	STOCKED_RETRO_PLANNING_IGNORED = "STOCKED_RETRO_PLANNING_IGNORED",
+	RETRO_PLANNING_OVERRIDE_SHADOWED = "RETRO_PLANNING_OVERRIDE_SHADOWED",
+	MODULE_BINDING_SHADOWS_INGREDIENT = "MODULE_BINDING_SHADOWS_INGREDIENT",
+	STOCKED_DESTRUCTURED_NUTRITION_BLENDED = "STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
 }
 
 export interface WarningPayloads {
@@ -184,7 +188,20 @@ export interface WarningPayloads {
 		specifier: string;
 		loc?: Location;
 	};
-	[WarningCode.PREPARED_MULTI_EXPORT]: {
+	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: {
+		specifier: string;
+		loc?: Location;
+	};
+	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: {
+		specifier: string;
+		loc?: Location;
+	};
+	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: {
+		binding: string;
+		specifier: string;
+		loc?: Location;
+	};
+	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: {
 		specifier: string;
 		loc?: Location;
 	};
@@ -272,8 +289,14 @@ export const warningTemplates: {
 		`Invalid module specifier "${p.specifier}": ${p.reason}`,
 	[WarningCode.MODULE_SCHEME_UNSUPPORTED]: (p) =>
 		`Unsupported module specifier scheme: "${p.specifier}".`,
-	[WarningCode.PREPARED_MULTI_EXPORT]: (p) =>
-		`"${p.specifier}" is imported with "prepared" but destructures more than one binding — a prepared module can only bind a single intermediate. Remove "prepared" or split into separate imports.`,
+	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: (p) =>
+		`"${p.specifier}" is imported as stock and also carries a "~{...}" retro-planning clause — a stocked import costs zero timeline, so the retro-planning is ignored.`,
+	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: (p) =>
+		`The "~{...}" retro-planning on this "@use" of "${p.specifier}" overrides the module's own — the host's value wins.`,
+	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: (p) =>
+		`'&${p.binding}' from "${p.specifier}" shares its slug with an existing ingredient in the database.`,
+	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: (p) =>
+		`"${p.specifier}" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.`,
 };
 
 /**
@@ -337,7 +360,10 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.MODULE_SURPLUS]: "info",
 	[WarningCode.MODULE_SPECIFIER_INVALID]: "error",
 	[WarningCode.MODULE_SCHEME_UNSUPPORTED]: "error",
-	[WarningCode.PREPARED_MULTI_EXPORT]: "error",
+	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: "warning",
+	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: "info",
+	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: "warning",
+	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: "info",
 };
 
 export function pushWarning<K extends WarningCode>(
