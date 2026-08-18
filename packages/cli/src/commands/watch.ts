@@ -8,6 +8,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { findProjectRoot } from "../core/workspace";
+import { resolveStockArg } from "../core/stock";
 import {
 	buildWatchReverseIndex,
 	transitiveDependents,
@@ -48,6 +49,11 @@ export default defineCommand({
 			description: "Skip ingredient database enrichment",
 			default: false,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this watch session (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const root = await findProjectRoot();
@@ -56,6 +62,11 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
+		const stock = resolveStockArg(
+			args.stock,
+			config.projectRoot ?? process.cwd(),
+			config.paths,
+		);
 
 		if (args.build && !args.output) {
 			log.warn(
@@ -78,6 +89,7 @@ export default defineCommand({
 			const result = await checkFiles([abs], {
 				db: db ?? undefined,
 				paths: config.paths,
+				stock,
 			});
 			const errCount = result.diagnostics.filter(
 				(d) => d.level === "error",
@@ -113,6 +125,7 @@ export default defineCommand({
 						db: db ?? undefined,
 						lang: config.language,
 						paths: config.paths,
+						stock,
 					});
 					const outDir = resolve(args.output);
 					await mkdir(outDir, { recursive: true });

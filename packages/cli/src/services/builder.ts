@@ -16,17 +16,19 @@ export async function buildFiles(
 	return Promise.all(
 		files.map((file) =>
 			limit(async () => {
-				const { compiled, analyzed } = await runPipeline(file, {
+				const { compiled, analyzed, usedStock } = await runPipeline(file, {
 					db: opts.db,
 					scaleFactor: opts.scaleFactor,
 					lang: opts.lang,
 					paths: opts.paths,
+					stock: opts.stock,
 					moduleCache,
 				});
 				return {
 					slug: basename(file, ".gram"),
 					file,
 					data: (analyzed ?? compiled) as object,
+					usedStock,
 				};
 			}),
 		),

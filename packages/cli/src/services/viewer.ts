@@ -146,6 +146,7 @@ export async function buildViewModel(
 		nutritionBasis?: NutritionBasis;
 		lang?: string;
 		paths?: Record<string, string>;
+		stock?: Set<string>;
 	},
 ): Promise<RecipeViewModel> {
 	const { compiled, analyzed } = await runPipeline(file, {
@@ -154,6 +155,7 @@ export async function buildViewModel(
 		bakersReference: opts.bakersReference,
 		lang: opts.lang,
 		paths: opts.paths,
+		stock: opts.stock,
 	});
 
 	const title =

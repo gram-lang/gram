@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
+import { resolveStockArg } from "../core/stock";
 import { buildViewModel } from "../services/viewer";
 import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -63,6 +64,11 @@ export default defineCommand({
 			type: "string",
 			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this view (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const file = resolve(args.file as string);
@@ -85,6 +91,11 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
+		const stock = resolveStockArg(
+			args.stock,
+			config.projectRoot ?? process.cwd(),
+			config.paths,
+		);
 
 		let model;
 		try {
@@ -96,6 +107,7 @@ export default defineCommand({
 				nutritionBasis,
 				lang: config.language,
 				paths: config.paths,
+				stock,
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {

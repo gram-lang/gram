@@ -5,6 +5,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
+import { resolveStockArg } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import {
 	resolveScaleFactor,
@@ -41,6 +42,11 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this scale (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		if (!args.scale) {
@@ -55,6 +61,11 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
+		const stock = resolveStockArg(
+			args.stock,
+			config.projectRoot ?? process.cwd(),
+			config.paths,
+		);
 
 		const s = spinner();
 		s.start("Computing scaled quantities…");
@@ -74,6 +85,7 @@ export default defineCommand({
 					skipAnalyzer: !db,
 					lang: config.language,
 					paths: config.paths,
+					stock,
 				}),
 				runPipeline(filePath, {
 					db,
@@ -81,6 +93,7 @@ export default defineCommand({
 					scaleFactor: factor,
 					lang: config.language,
 					paths: config.paths,
+					stock,
 				}),
 			]);
 

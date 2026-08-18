@@ -37,10 +37,21 @@ export async function analyzeIngredients(
 				// in the shopping list and are never exposed as top-level items there.
 				const reg = compiled.registry.ingredients as Record<
 					string,
-					{ id: string; name: string; is_intermediate?: boolean }
+					{
+						id: string;
+						name: string;
+						is_intermediate?: boolean;
+						is_module_synthetic?: boolean;
+					}
 				>;
+				// `is_module_synthetic` (a `--stock`ed import's per-recipe nutrition
+				// profile, derived from that one module) is excluded the same as a
+				// true intermediate — it must never leak into the shared
+				// `ingredients.yaml` this command exports/enriches.
 				return Object.values(reg)
-					.filter((entry) => !entry.is_intermediate)
+					.filter(
+						(entry) => !entry.is_intermediate && !entry.is_module_synthetic,
+					)
 					.map((entry) => ({ id: entry.id, name: entry.name }));
 			}),
 		),

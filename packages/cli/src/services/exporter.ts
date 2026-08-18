@@ -23,6 +23,7 @@ export async function exportRecipe(
 		bakersReference?: string;
 		lang?: string;
 		paths?: Record<string, string>;
+		stock?: Set<string>;
 	},
 ): Promise<string> {
 	const { compiled, analyzed } = await runPipeline(filePath, {
@@ -31,6 +32,7 @@ export async function exportRecipe(
 		bakersReference: rendererOptions?.bakersReference,
 		lang: rendererOptions?.lang,
 		paths: rendererOptions?.paths,
+		stock: rendererOptions?.stock,
 	});
 
 	const ast = analyzed ? analyzed.result : compiled;

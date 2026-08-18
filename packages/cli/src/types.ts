@@ -29,6 +29,7 @@ export interface BuildResult {
 	slug: string;
 	file: string;
 	data: object;
+	usedStock: Set<string>;
 }
 
 // --- Phase 2 types ---
@@ -115,6 +116,7 @@ export interface ShopResult {
 	byCategory: Map<string, ShoppingEntry[]>;
 	warnings: string[];
 	recipeCount: number;
+	usedStock: Set<string>;
 }
 
 // --- Phase 3 types ---
@@ -305,12 +307,20 @@ export interface PipelineOptions {
 	 * single-file call — `composeRecipe` creates its own throwaway Map.
 	 */
 	moduleCache?: Map<string, AnalyzedCompilationResult>;
+	/**
+	 * `@`-prefixed/relative specifiers, already resolved to module URIs (see
+	 * `core/stock.ts`'s `resolveStockSet`), the reader already has on hand
+	 * for this particular build/shop invocation ("stock" mechanism) — a
+	 * per-run CLI flag, deliberately never persisted to `.gram/config.yaml`.
+	 */
+	stock?: Set<string>;
 }
 
 export interface CheckOptions {
 	db?: Record<string, IngredientData> | null;
 	strict?: boolean;
 	paths?: Record<string, string>;
+	stock?: Set<string>;
 }
 
 export interface BuildOptions {
@@ -319,4 +329,5 @@ export interface BuildOptions {
 	scaleFactor?: number;
 	lang?: string;
 	paths?: Record<string, string>;
+	stock?: Set<string>;
 }

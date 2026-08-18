@@ -9,6 +9,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
+import { resolveStockArg } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
@@ -41,6 +42,11 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this cook (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const filePath = resolve(args.file as string);
@@ -57,6 +63,11 @@ export default defineCommand({
 				config.language,
 				config.paths,
 			)) ?? 1;
+		const stock = resolveStockArg(
+			args.stock,
+			config.projectRoot ?? process.cwd(),
+			config.paths,
+		);
 
 		const s = spinner();
 		s.start("Loading recipe…");
@@ -70,6 +81,7 @@ export default defineCommand({
 				scaleFactor,
 				lang: config.language,
 				paths: config.paths,
+				stock,
 			});
 			totalTime = compiled.metrics?.totalTime ?? 0;
 			const massMap: Record<string, number> = {};

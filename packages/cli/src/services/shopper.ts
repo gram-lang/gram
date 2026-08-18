@@ -20,6 +20,7 @@ export interface ShopOptions {
 	scaleFactor?: number;
 	lang?: string;
 	paths?: Record<string, string>;
+	stock?: Set<string>;
 }
 
 interface CollectedItem {
@@ -55,6 +56,7 @@ export async function buildShoppingList(
 	const categoryLabels = getCategoryLabels(lang);
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
+	const usedStock = new Set<string>();
 	// Shared across every file in this batch (module-imports RFC §F.1) — a
 	// base imported by several of these recipes is measured once.
 	const moduleCache = new Map<string, AnalyzedCompilationResult>();
@@ -102,24 +104,38 @@ export async function buildShoppingList(
 				};
 
 				if (opts.db) {
-					const { analyzed } = await runPipeline(file, {
-						db: opts.db,
-						scaleFactor: opts.scaleFactor,
-						lang: opts.lang,
-						paths: opts.paths,
-						moduleCache,
+					const { analyzed, usedStock: fileUsedStock } = await runPipeline(
+						file,
+						{
+							db: opts.db,
+							scaleFactor: opts.scaleFactor,
+							lang: opts.lang,
+							paths: opts.paths,
+							stock: opts.stock,
+							moduleCache,
+						},
+					);
+					fileUsedStock.forEach((u) => {
+						usedStock.add(u);
 					});
 					if (analyzed) {
 						for (const item of analyzed.result.shopping_list as any[])
 							pushItem(item);
 					}
 				} else {
-					const { compiled } = await runPipeline(file, {
-						skipAnalyzer: true,
-						scaleFactor: opts.scaleFactor,
-						lang: opts.lang,
-						paths: opts.paths,
-						moduleCache,
+					const { compiled, usedStock: fileUsedStock } = await runPipeline(
+						file,
+						{
+							skipAnalyzer: true,
+							scaleFactor: opts.scaleFactor,
+							lang: opts.lang,
+							paths: opts.paths,
+							stock: opts.stock,
+							moduleCache,
+						},
+					);
+					fileUsedStock.forEach((u) => {
+						usedStock.add(u);
 					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);
 				}
@@ -251,5 +267,6 @@ export async function buildShoppingList(
 		byCategory: sortedByCategory,
 		warnings,
 		recipeCount: uniqueRecipes.size,
+		usedStock,
 	};
 }

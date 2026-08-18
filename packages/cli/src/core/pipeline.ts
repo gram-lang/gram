@@ -19,6 +19,12 @@ export interface PipelineResult {
 	content: string;
 	compiled: CompilationResult;
 	analyzed: AnalysisResult | null;
+	// The subset of `opts.stock` that actually matched a `@use` in this file
+	// — empty when `opts.stock` is unset. Glob-driven commands (`build`/`shop`
+	// over `**/*.gram`) union this across every file processed, then diff
+	// against the full requested `--stock` set once at the end of the whole
+	// invocation to warn about a leftover entry that never matched anything.
+	usedStock: Set<string>;
 }
 
 /**
@@ -57,6 +63,7 @@ export async function runPipeline(
 		db: opts.db ?? {},
 		lang: opts.lang,
 		cache: opts.moduleCache,
+		stock: opts.stock,
 	});
 
 	const compiled = compile(
@@ -67,13 +74,17 @@ export async function runPipeline(
 
 	const analyzed =
 		!opts.skipAnalyzer && opts.db
-			? analyze(tagged, opts.db, {
-					bakersReference: opts.bakersReference,
-					lang: opts.lang,
-				})
+			? analyze(
+					tagged,
+					{ ...opts.db, ...composed.syntheticIngredients },
+					{
+						bakersReference: opts.bakersReference,
+						lang: opts.lang,
+					},
+				)
 			: null;
 
-	return { content, compiled: tagged, analyzed };
+	return { content, compiled: tagged, analyzed, usedStock: composed.usedStock };
 }
 
 /**
@@ -108,5 +119,5 @@ export function runPipelineFromSource(
 				})
 			: null;
 
-	return { content, compiled, analyzed };
+	return { content, compiled, analyzed, usedStock: new Set() };
 }

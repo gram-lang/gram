@@ -69,6 +69,7 @@ export async function checkFiles(
 					const { content, compiled, analyzed } = await runPipeline(file, {
 						db: opts.db,
 						paths: opts.paths,
+						stock: opts.stock,
 					});
 
 					// Compiler warnings, leveled by warningSeverity — a nutritional/

@@ -8,6 +8,7 @@ import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
 import { filterModuleRoots } from "../core/module-roots";
+import { resolveStockArg } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
 import { parseScaleArg } from "../services/scaler";
@@ -52,6 +53,11 @@ export default defineCommand({
 			description:
 				"Also build files imported by another matched recipe (by default they're excluded from a glob/multi-file batch)",
 			default: false,
+		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this build (e.g. @bases/pate.gram,./levain.gram)",
 		},
 	},
 	async run({ args }) {
@@ -100,6 +106,7 @@ type Args = {
 	db?: string;
 	"skip-db": boolean;
 	"include-modules": boolean;
+	stock?: string;
 };
 
 async function resolveInputs(args: Args) {
@@ -120,30 +127,58 @@ async function resolveInputs(args: Args) {
 	const config = await loadConfig();
 	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
+	const stock = resolveStockArg(
+		args.stock,
+		config.projectRoot ?? process.cwd(),
+		config.paths,
+	);
 	return {
 		files,
 		db: dbResult?.data ?? null,
 		lang: config.language,
 		paths: config.paths,
+		stock,
 	};
 }
 
+// Writes directly to stderr, never through `log.warn` (which writes to
+// stdout) — `runToStdout` below relies on stdout carrying nothing but JSON,
+// one record per line, for piping.
+function warnUnusedStock(stock: Set<string> | undefined, used: Set<string>) {
+	if (!stock) return;
+	for (const uri of stock) {
+		if (!used.has(uri)) {
+			process.stderr.write(
+				`gram build: --stock entry never matched a @use in the files built: ${uri}\n`,
+			);
+		}
+	}
+}
+
 async function runToStdout(args: Args) {
-	const { files, db, lang, paths } = await resolveInputs(args);
+	const { files, db, lang, paths, stock } = await resolveInputs(args);
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
 		scaleFactor: args._scaleFactor,
 		lang,
 		paths,
+		stock,
 	});
 	const indent = args.pretty ? 2 : undefined;
 	for (const { data } of results) {
 		process.stdout.write(`${JSON.stringify(data, null, indent)}\n`);
 	}
+	const used = new Set<string>();
+	results.forEach((r) => {
+		r.usedStock.forEach((u) => {
+			used.add(u);
+		});
+	});
+	warnUnusedStock(stock, used);
 }
 
 async function runToFiles(args: Args) {
-	const { files, db, lang, paths } = await resolveInputs(args);
+	const { files, db, lang, paths, stock } = await resolveInputs(args);
 	const outDir = args.output!;
 	const n = files.length;
 
@@ -155,9 +190,18 @@ async function runToFiles(args: Args) {
 		scaleFactor: args._scaleFactor,
 		lang,
 		paths,
+		stock,
 	});
 
 	s.stop(`Built ${n} file${n !== 1 ? "s" : ""}.`);
+
+	const used = new Set<string>();
+	results.forEach((r) => {
+		r.usedStock.forEach((u) => {
+			used.add(u);
+		});
+	});
+	warnUnusedStock(stock, used);
 
 	await mkdir(outDir, { recursive: true });
 
