@@ -22,13 +22,19 @@ import {
 } from "@gram-lang/kitchen";
 import {
 	analyze,
+	convertUnit,
 	type AnalyzedCompilationResult,
 	type IngredientData,
 } from "@gram-lang/analyzer";
 import type { ModuleGraph } from "./host";
 import { computeExports, type ExportInfo } from "./exports";
 import { buildRenameTable, applyRename, checkRenameCollisions } from "./rename";
-import { parseDeclaredYields, computeScaleFactor } from "./yield";
+import {
+	parseDeclaredYields,
+	computeScaleFactor,
+	resolveYield,
+	type ParsedYieldSpec,
+} from "./yield";
 
 export interface ComposeOptions {
 	db: Record<string, IngredientData>;
@@ -101,6 +107,41 @@ function fuzzySuggest(name: string, candidates: string[]): string | undefined {
 		}
 	});
 	return bestDist <= Math.max(2, Math.ceil(name.length / 3)) ? best : undefined;
+}
+
+/**
+ * The mass (in grams) `computeScaleFactor` actually scaled the module
+ * against for one binding: the declared `yields:` entry when present
+ * (converted to grams for a mass-family yield), else the same recursive
+ * section-mass measurement `resolveYield` itself falls back to. `null` for
+ * a discrete/volume yield (`yields: 24 cookies`) — a stocked import's
+ * nutrition then falls back to the module's flat `totalMass`, same as
+ * before this existed.
+ *
+ * This matters because a declared `yields:` doesn't have to exactly match
+ * the sum of the module's own ingredient masses (a recipe author's rounded
+ * "about 500g" against ingredients that actually sum to 553g, say) —
+ * `factor` is computed against the *declared* value, not the measured one,
+ * so a stocked import's nutrition has to extrapolate against that same
+ * value too, or it drifts from what inlining-then-scaling the same module
+ * would have produced.
+ */
+function resolveYieldMassGrams(
+	analyzed: AnalyzedCompilationResult,
+	exportInfo: ExportInfo,
+	requestedKey: string,
+	declaredYields: Map<string, ParsedYieldSpec>,
+	lang: string | undefined,
+): number | null {
+	const yieldVal = resolveYield(
+		analyzed,
+		exportInfo,
+		requestedKey,
+		declaredYields,
+	);
+	if (yieldVal.family !== "mass") return null;
+	if (yieldVal.unit === "g") return yieldVal.value;
+	return convertUnit(yieldVal.value, yieldVal.unit, "g", undefined, lang);
 }
 
 function stampUri(sections: SectionAST[], uri: string): void {
@@ -434,18 +475,79 @@ export function composeRecipe(
 					);
 				}
 
-				if (depAnalyzed.metrics.nutrition?.per100g) {
+				const depTotalMass = depAnalyzed.metrics.totalMass;
+				const depNutrition = depAnalyzed.metrics.nutrition;
+				// `basis.mass` is `accountedMass` (analyzer/nutrition.ts): the mass
+				// of only the base's own ingredients that actually carry nutrition
+				// data, which can be less than the base's full `totalMass`
+				// whenever one of its ingredients has no database entry.
+				const depAccountedMass = depNutrition?.basis?.mass;
+				// The *same* basis `factor` (this import's own scale factor, a few
+				// lines above) was computed against — only sound for a single
+				// binding, though: each export has its *own* yield basis (an
+				// undeclared one is measured per-section, not module-wide), and a
+				// destructured import already blends every bound export's mass
+				// into one shared profile (STOCKED_DESTRUCTURED_NUTRITION_BLENDED).
+				// Picking one export's own basis there would apply *its* yield to
+				// every other export's own usage too — worse than the flat
+				// `depTotalMass` the blended case already accepts as approximate.
+				const primaryExportInfo =
+					validBindings.length === 1
+						? dep.exports.get(validBindings[0]!.exported)
+						: undefined;
+				const yieldBasisMass =
+					(primaryExportInfo &&
+						resolveYieldMassGrams(
+							depAnalyzed,
+							primaryExportInfo,
+							validBindings[0]!.exported,
+							depDeclaredYields,
+							options.lang,
+						)) ??
+					depTotalMass;
+				if (
+					depNutrition?.per100g &&
+					depAccountedMass !== undefined &&
+					yieldBasisMass > 0
+				) {
+					// Deliberately not `depNutrition.per100g` as-is, on two counts:
+					// 1. It's per 100 g of `accountedMass`, not of `yieldBasisMass` —
+					//    rescale by `accountedMass / yieldBasisMass` first so a
+					//    missing-nutrition-data ingredient's share of the mass isn't
+					//    silently assumed to carry the same density as the rest.
+					// 2. `yieldBasisMass` itself — not `depTotalMass` — is what
+					//    `factor` (and thus the *inlined* splice) actually scales
+					//    against; a declared `yields:` doesn't have to exactly equal
+					//    the sum of the module's own ingredient masses (a rounded
+					//    "about 500g" against ingredients that measure 553g, say),
+					//    and extrapolating against the wrong one of the two drifts
+					//    from what inlining the same base and scaling it to the same
+					//    amount would produce.
+					// Together these keep a stocked import's contribution within one
+					// rounding step of its inlined-and-scaled equivalent — the
+					// invariant the module-imports docs promise ("switching --stock
+					// on or off never changes what the recipe is").
+					const nutritionPerYieldBasis = Object.fromEntries(
+						Object.entries(depNutrition.per100g).map(([key, value]) => [
+							key,
+							value * (depAccountedMass / yieldBasisMass),
+						]),
+					) as typeof depNutrition.per100g;
+
 					validBindings.forEach((binding) => {
 						syntheticIngredients[slugify(cleanRegistryName(binding.local))] = {
 							name: binding.local,
-							nutrition: depAnalyzed.metrics.nutrition!.per100g,
+							nutrition: nutritionPerYieldBasis,
 							// Discrete/bare references (`&pate{1}`, `&pate` with no
 							// unit) resolve via mass_standardization.ts's `unit_weight`
 							// path, not a mass unit — without this, standardizeMass
 							// returns null for anything but an explicit mass-unit
 							// quantity (`{300g}`), silently dropping the leaf from
-							// mass/nutrition totals.
-							physical: { unit_weight: depAnalyzed.metrics.totalMass },
+							// mass/nutrition totals. Uses the module's real measured
+							// mass, not `yieldBasisMass` — a bare/discrete reference is
+							// about how much the thing physically weighs, not the
+							// (possibly rounded) figure its author declared.
+							physical: { unit_weight: depTotalMass },
 						};
 					});
 				}

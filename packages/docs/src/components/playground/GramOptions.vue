@@ -23,6 +23,8 @@ const props = defineProps<{
 		bakersReference: string | undefined;
 	};
 	shoppingList?: any[];
+	availableImports?: { uri: string; specifier: string; binding: string }[];
+	stockedUris?: Set<string>;
 	scaleFactorString?: string;
 	scaleTargetId: string | null;
 	scaleTargetQty: number | null;
@@ -37,6 +39,7 @@ const emit = defineEmits<{
 	"update:scaleTargetUnit": [val: string];
 	"clear-target": [];
 	"scale-apply": [];
+	"toggle-stock": [uri: string];
 }>();
 
 // biome-ignore lint/correctness/noUnusedVariables: globalScaleFactor is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -251,6 +254,25 @@ function submitScale() {
           <input type="checkbox" v-model="nutritionEnabled" />
           <div class="option-text">
             <span class="option-name">{{ t.playground.options.nutrition }}</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="options-section" v-if="(props.availableImports?.length ?? 0) > 0">
+      <div class="options-header">
+        <span class="options-title">{{ t.playground.options.stockTitle }}</span>
+      </div>
+      <div class="options-body">
+        <label class="option-item" v-for="imp in props.availableImports" :key="imp.uri">
+          <input
+            type="checkbox"
+            :checked="props.stockedUris?.has(imp.uri) ?? false"
+            @change="emit('toggle-stock', imp.uri)"
+          />
+          <div class="option-text">
+            <span class="option-name">{{ imp.specifier }}</span>
+            <span class="option-desc">{{ t.playground.options.stockDesc }}</span>
           </div>
         </label>
       </div>

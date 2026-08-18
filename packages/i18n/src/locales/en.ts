@@ -141,6 +141,9 @@ export const en = {
 			massDesc: "Converts all ingredient quantities into grams.",
 			yieldManagement: "Yield Management",
 			nutrition: "Nutrition Estimation",
+			stockTitle: "Stock (skip steps)",
+			stockDesc:
+				"Treat as already on hand — collapses to one shopping-list line, no timeline steps.",
 		},
 		output: {
 			copy: "Copy to clipboard",

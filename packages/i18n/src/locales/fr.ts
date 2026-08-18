@@ -131,6 +131,9 @@ export const fr: GramLocale = {
 			massDesc: "Convertit toutes les quantités d'ingrédients en grammes.",
 			yieldManagement: "Gestion du rendement",
 			nutrition: "Estimation nutritionnelle",
+			stockTitle: "En stock (masquer les étapes)",
+			stockDesc:
+				"Considéré comme déjà disponible — se réduit à une ligne d'achat, sans étapes sur la frise.",
 		},
 		output: {
 			copy: "Copier dans le presse-papier",

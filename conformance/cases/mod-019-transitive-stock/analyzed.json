@@ -210,18 +210,18 @@
     "missingMassIngredients": [],
     "nutrition": {
       "total": {
-        "calories": 376,
-        "fat": 0.5,
-        "carbs": 88.2,
-        "protein": 5.2
+        "calories": 303,
+        "fat": 0.3,
+        "carbs": 72.9,
+        "protein": 3.1
       },
       "isEstimate": false,
       "coverage": 1,
       "per100g": {
-        "calories": 376,
-        "fat": 0.5,
-        "carbs": 88.2,
-        "protein": 5.2
+        "calories": 303,
+        "fat": 0.3,
+        "carbs": 72.9,
+        "protein": 3.1
       },
       "basis": {
         "mass": 100,

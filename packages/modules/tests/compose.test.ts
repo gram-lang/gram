@@ -305,8 +305,9 @@ Use &pate{200g}.
 	it("still counts the stocked base's own real mass/nutrition toward the host's totals", async () => {
 		// A real database is needed here (unlike the shared empty `db` other
 		// tests in this file use) — the synthetic ingredient is only built once
-		// `depAnalyzed.metrics.nutrition?.per100g` is available, which requires
-		// the module's own ingredients to actually resolve against something.
+		// `depAnalyzed.metrics.nutrition?.total` is non-empty and the base has
+		// some measurable mass, which requires the module's own ingredients to
+		// actually resolve against something.
 		const richDb = {
 			flour: {
 				name: "Flour",
@@ -317,7 +318,7 @@ Use &pate{200g}.
 				nutrition: { calories: 717, protein: 0.9, carbs: 0.1, fat: 81.1 },
 			},
 		};
-		const host = createFakeHost({
+		const files = {
 			"/recipe.gram": `@use "./pate.gram" as &pate
 
 ## Montage
@@ -326,7 +327,8 @@ Use &pate{200g}.
 `,
 			"/pate.gram":
 				"---\ntitle: Pate\nyields: 200g\n---\n\n## Pastry\n\nMix @flour{150g} with @butter{50g}.\n",
-		});
+		};
+		const host = createFakeHost(files);
 		const graph = await loadModuleGraph("/recipe.gram", host);
 		const composed = composeRecipe(graph, {
 			db: richDb,
@@ -335,6 +337,44 @@ Use &pate{200g}.
 
 		// Sourced from the module's own real composition, not a black-box guess.
 		expect(composed.syntheticIngredients.pate?.physical?.unit_weight).toBe(200);
+
+		// Stocking an import must not change what the recipe *is* — its total
+		// nutrition has to match what inlining the same base (unstocked) and
+		// scaling it to the same 200g would have produced, up to the one
+		// rounding step a stocked import's own `per100g` round-trip adds
+		// (representing a whole sub-module as one ingredient forces its
+		// nutrition through an intermediate per-100g rounding the inline path
+		// never takes). Regression guard for a much larger version of that
+		// same drift, where the synthetic profile was normalized against
+		// `accountedMass` (the base's own known-ingredient mass) rather than
+		// its full `totalMass` — multiple percentage points off as soon as a
+		// base ingredient had no database entry, not just a rounding unit.
+		const compiled = compile(composed.ast);
+		const analyzed = analyze(compiled, {
+			...richDb,
+			...composed.syntheticIngredients,
+		}).result;
+		const stockedTotal = finalizeComposed(analyzed, composed).metrics.nutrition
+			?.total;
+
+		const inlineGraph = await loadModuleGraph(
+			"/recipe.gram",
+			createFakeHost(files),
+		);
+		const inlineComposed = composeRecipe(inlineGraph, { db: richDb });
+		const inlineCompiled = compile(inlineComposed.ast);
+		const inlineAnalyzed = analyze(inlineCompiled, richDb).result;
+		const inlineTotal = finalizeComposed(inlineAnalyzed, inlineComposed).metrics
+			.nutrition?.total;
+
+		expect(stockedTotal).toBeDefined();
+		expect(inlineTotal).toBeDefined();
+		for (const [key, expected] of Object.entries(inlineTotal ?? {})) {
+			const actual = (stockedTotal as Record<string, number>)[key];
+			expect(Math.abs(actual - expected)).toBeLessThanOrEqual(
+				Math.max(1, expected * 0.01),
+			);
+		}
 	});
 
 	it("warns and shares the blended module nutrition profile on a stocked destructured import", async () => {
@@ -364,8 +404,12 @@ Separate @egg{50g}.
 		);
 		// No splice at all, for either binding.
 		expect(result.sections).toHaveLength(1);
-		expect(composed.syntheticIngredients.blancs).toEqual(
-			composed.syntheticIngredients.jaunes,
+		// "Blended" means the two bindings share the same whole-module
+		// nutrition profile — `name` legitimately differs (each keeps its own
+		// local binding name for display), so compare `.nutrition` alone
+		// rather than the whole synthetic entry.
+		expect(composed.syntheticIngredients.blancs?.nutrition).toEqual(
+			composed.syntheticIngredients.jaunes?.nutrition,
 		);
 	});
 
