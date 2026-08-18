@@ -32,12 +32,11 @@ This tutorial guides you through extracting that dough into a reusable component
     Move this preparation into its own file at `bases/sweet-pastry-dough.gram`. Two adjustments accompany this move:
 
     *   **Variable naming is now defined by the import**: the `->&pastry dough{}` declaration on the section header is no longer mandatory for a single-purpose module. When importing the file, you choose its local binding name directly with `as &dough` (`@use "..." as &dough`). For complex modules that produce multiple distinct components, declaring `->&` on each section remains the standard way to export each part by name (see [What a module exports](/docs/reference/syntax/modules#what-a-module-exports)).
-    *   **The `yields:` key specifies the baseline yield**: adding `yields: 450g` to the frontmatter declares the total output of this base file. Whenever an importing recipe asks for a specific amount (such as `&dough{250g}`), Gram automatically computes the ratio to scale all ingredients in the module.
+    *   **Gram measures the module's yield automatically**: whenever an importing recipe asks for a specific amount (such as `&dough{250g}`), Gram sums this file's own ingredient masses to work out how much it actually produces, then scales every quantity in it by that ratio — nothing to declare or keep in sync as the recipe evolves.
 
     ```gram title="bases/sweet-pastry-dough.gram"
     ---
     title: 'Sweet Pastry Dough'
-    yields: 450g
     ---
 
     ## Sweet Pastry Dough
@@ -51,8 +50,8 @@ This tutorial guides you through extracting that dough into a reusable component
     [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
     ```
 
-    :::tip[Automatic Mass Estimation]
-    `450g` represents the total mass of the dough's ingredients. If you omit `yields:`, Gram calculates the module's total mass automatically. Explicitly declaring `yields:` is simply more precise and faster to compile (see [Scaling](/docs/reference/syntax/modules#scaling)).
+    :::tip[How the yield is measured]
+    Gram adds up every ingredient's mass in the file — 180g flour, 55g sugar, 115g butter, and so on — to work out this module's own total yield, then scales every quantity in it by whatever ratio the importer's request implies. If any of that sum leans on an estimated density or default unit weight rather than an explicit mass, Gram flags the resulting scale factor as an estimate rather than treating it as exact (see [Scaling](/docs/reference/syntax/modules#scaling)).
     :::
 
 2.  **Import the base into your recipe**

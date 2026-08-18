@@ -20,7 +20,7 @@ I created Gram as an alternative for these more demanding scenarios. It introduc
 - **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
 - **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
 - **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
-- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (`yields:`), and merges their raw ingredients onto your unified shopping list.
+- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
 
 :::tip[The Ecosystem Approach]
 Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.
@@ -158,7 +158,6 @@ These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
-*   `yields`: (String) How much this recipe produces, read only when another recipe [imports](/docs/reference/syntax/modules) it — e.g. `yields: 500g`, `yields: 24 cookies`. Determines the scale factor an importer's `&binding{qty}` request is measured against. Without it, Gram measures the recipe's own mass instead.
 
 ### Informational Keys
 These keys are recommended for proper display and metadata management:
@@ -1528,9 +1527,9 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `MODULE_DEPTH_EXCEEDED` | error | `Import chain to "{specifier}" exceeds the maximum depth of {depth}.` |
 | `MODULE_EXPORT_NOT_FOUND` | error | `"{specifier}" does not export '&{exported}'. Did you mean '&{suggestion}'?` |
 | `UNUSED_IMPORT` | warning | `Import '&{local}' from "{specifier}" is never used.` |
-| `UNRESOLVED_MODULE_YIELD` | error | `Cannot determine the yield of '&{binding}' from "{specifier}" — declare a "yields:" key in that module. Imported at 1x.` |
-| `ESTIMATED_MODULE_YIELD` | warning | `The yield of '&{binding}' from "{specifier}" is estimated (derived from a density or default unit weight), not declared. Declare "yields:" in that module for a precise scale factor.` |
-| `MODULE_UNIT_MISMATCH` | error | `'&{binding}' from "{specifier}" was requested in {requestedUnit}, but that module yields in {yieldUnit}, and no density lets one convert to the other. Declare "yields:" in the requested unit, or "densities:" to bridge them.` |
+| `UNRESOLVED_MODULE_YIELD` | error | `Cannot determine the yield of '&{binding}' from "{specifier}" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.` |
+| `ESTIMATED_MODULE_YIELD` | warning | `The yield of '&{binding}' from "{specifier}" is estimated — its measured mass relies on a density or default unit weight rather than an explicit mass. Add a precise "densities:" entry (in that module) for an exact scale factor.` |
+| `MODULE_UNIT_MISMATCH` | error | `'&{binding}' from "{specifier}" was requested in {requestedUnit}, but that module yields in {yieldUnit}, and no density lets one convert to the other. Declare "densities:" to bridge them.` |
 | `MODULE_BATCH_INTERPRETATION` | info | `'&{binding}' from "{specifier}" was requested as a bare count against a mass/volume yield — interpreted as {batches} batch(es) of the module. Note: quantities are multiplied by {batches}, not cook/rest times.` |
 | `IMPORTED_BAKERS_REFERENCE_DROPPED` | info | `The baker's percentage reference (*) from "{specifier}" was dropped on import — baker's math doesn't carry across module boundaries.` |
 | `DENSITY_OVERRIDE_SHADOWED` | info | `Density for "{ingredient}" declared in "{specifier}" ({moduleValue}) differs from the host's ({hostValue}) — the host's value wins.` |

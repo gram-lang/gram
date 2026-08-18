@@ -22,7 +22,7 @@ I created Gram as an alternative for these more demanding scenarios. It introduc
 - **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
 - **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
 - **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
-- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (`yields:`), and merges their raw ingredients onto your unified shopping list.
+- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
 
 :::tip[The Ecosystem Approach]
 Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.

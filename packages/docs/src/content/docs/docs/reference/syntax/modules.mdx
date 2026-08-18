@@ -120,7 +120,6 @@ Only **section-level** intermediate variables (`->&` on a `## Section` header) a
 ```gram title="bases/inverted-puff-pastry.gram"
 ---
 title: 'Inverted Puff Pastry Elements'
-yields: [detrempe:350g, beurre-manie:400g]
 ---
 
 ## Water Dough ->&detrempe
@@ -138,44 +137,50 @@ yields: [detrempe:350g, beurre-manie:400g]
 
 ## Scaling
 
-Declare the module's baseline output using the `yields:` frontmatter key:
+Gram measures a module's own output from its ingredients — nothing to declare:
 
 ```gram title="bases/shortcrust.gram"
 ---
 title: 'Shortcrust Pastry'
-yields: 500g
 ---
 
 ## Pastry
 Mix @flour{300g} with @butter{200g}.
 ```
 
-When an importing recipe requests `&pate{250g}`, Gram scales every ingredient in `shortcrust.gram` by `0.5` automatically.
+`shortcrust.gram` sums its own ingredients to 500g. When an importing recipe requests `&pate{250g}`, Gram scales every ingredient in it by `0.5` automatically — the ratio between what was asked for and what the module actually measures out to.
 
-### Yield Formats
-* **Mass or Volume**: `yields: 500g`, `yields: 1L`
-* **Discrete Count**: `yields: 24 cookies`, `yields: 1 tart`
-* **Multi-component map**: `yields: [detrempe:350g, beurre-manie:400g]`
-
-:::note[Fallback Mass Standardization]
-If `yields:` is omitted, Gram computes the module's net mass from its ingredients. If that calculation depends on estimated densities, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic.
+:::note[When the measurement is only an estimate]
+If working out a module's mass depends on an estimated density or a default unit weight rather than an explicit mass, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic rather than treating the scale factor as exact.
 :::
 
 ### Scaling Destructured Exports
-When importing multiple components from the same module, each component is measured against its declared yield. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
+When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
 
-```gram
-@use "./bases/elements-feuilletage.gram" as { &detrempe, &beurre-manie }
+```gram title="bases/oeufs.gram"
+---
+title: 'Eggs, Separated'
+---
 
-[Roll] &detrempe{700g} and &beurre-manie{400g}.
+## Blancs ->&blancs
+[Separate] @egg{100g} into whites only.
+
+## Jaunes ->&jaunes
+[Separate] @egg{50g} into yolks only.
 ```
 
-If `elements-feuilletage.gram` yields 350g of détrempe and 400g of beurre manié, requesting `&detrempe{700g}` scales the module ×2 (producing 800g of beurre manié). Gram emits `MODULE_SURPLUS` to inform you of the surplus.
+```gram
+@use "./bases/oeufs.gram" as { &blancs, &jaunes }
+
+[Whisk] &blancs{200g} and &jaunes{50g}.
+```
+
+`&blancs{200g}` against a measured 100g of blancs is a ×2 ratio; `&jaunes{50g}` against a measured 50g of jaunes is ×1. The larger ratio (×2) applies to the whole module, so jaunes comes out to 100g produced against the 50g actually used — Gram reports that surplus via `MODULE_SURPLUS` rather than silently discarding it.
 
 ### Timers & Batches
-**Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration. 
+**Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration.
 
-When a discrete count is requested against a mass yield (`&cookies{2}` against `yields: 500g`), Gram interprets the request as *2 full batches* and emits `MODULE_BATCH_INTERPRETATION`.
+When a discrete count is requested against a module's measured mass (`&cookies{2}` against a module that measures out to 500g), Gram interprets the request as *2 full batches* and emits `MODULE_BATCH_INTERPRETATION`.
 
 ---
 
@@ -218,7 +223,6 @@ Informational metadata (`title`, `description`, `author`, `tags`, `category`) be
 
 **Exceptions:**
 * `densities:` merges into the host (host values take precedence on conflict).
-* `yields:` is consumed to calculate scaling factors, then discarded.
 * Baker's percentage references (`*`) inside imported modules are stripped on import.
 
 ---
