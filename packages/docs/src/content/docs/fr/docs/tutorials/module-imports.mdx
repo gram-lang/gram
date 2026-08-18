@@ -32,12 +32,11 @@ Ce tutoriel vous guide pour extraire cette pâte dans son propre composant réut
     Déplaçons cette préparation dans son propre fichier à l'emplacement `bases/pate-sucree.gram`. Deux ajustements accompagnent cette extraction :
 
     *   **Le nom de la variable est désormais défini à l'import** : la déclaration `->&pâte sucrée{}` sur le titre de section n'est plus indispensable pour un module à composant unique. Lorsque vous importerez le fichier, vous choisirez librement le nom de liaison locale avec `as &pâte` (`@use "..." as &pâte`). Dans le cas de modules plus élaborés produisant plusieurs préparations distinctes, déclarer `->&` sur chaque section reste le moyen privilégié d'exporter chaque composant par son nom (voir [Ce qu'un module exporte](/fr/docs/reference/syntax/modules#ce-quun-module-exporte)).
-    *   **La clé `yields:` déclare le rendement de référence** : ajouter `yields: 450g` dans le frontmatter indique la quantité produite par ce fichier de base. Lorsqu'une recette hôte demandera une quantité précise (comme `&pâte{250g}`), Gram calculera automatiquement le ratio pour mettre à l'échelle tous les ingrédients du module.
+    *   **Gram mesure automatiquement le rendement du module** : lorsqu'une recette hôte demande une quantité précise (comme `&pâte{250g}`), Gram additionne la masse des ingrédients du fichier pour déterminer sa production réelle, puis adapte toutes les quantités du module selon ce ratio — rien à déclarer ni à synchroniser lorsque la recette évolue.
 
     ```gram title="bases/pate-sucree.gram"
     ---
     title: 'Pâte Sucrée'
-    yields: 450g
     ---
 
     ## Pâte Sucrée
@@ -51,8 +50,8 @@ Ce tutoriel vous guide pour extraire cette pâte dans son propre composant réut
     [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
     ```
 
-    :::tip[Estimation Automatique de la Masse]
-    `450 g` représente la masse cumulée des ingrédients de la pâte. Si vous omettez `yields:`, Gram calcule automatiquement la masse totale du module. Déclarer explicitement `yields:` apporte une précision accrue et accélère la compilation (voir [Mise à l'échelle](/fr/docs/reference/syntax/modules#mise-à-léchelle)).
+    :::tip[Comment le rendement est mesuré]
+    Gram additionne la masse de chaque ingrédient du fichier — 180 g de farine, 55 g de sucre, 115 g de beurre, etc. — pour calculer le rendement total de ce module, puis met à l'échelle chaque quantité selon le ratio impliqué par la demande de l'importateur. Si cette somme s'appuie sur une densité estimée ou un poids unitaire par défaut plutôt que sur une masse explicite, Gram signale le facteur d'échelle résultant comme une estimation (voir [Mise à l'échelle](/fr/docs/reference/syntax/modules#mise-à-léchelle)).
     :::
 
 2.  **Importer la base dans votre recette**

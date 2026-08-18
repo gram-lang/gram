@@ -120,7 +120,6 @@ Seules les variables intermédiaires **de niveau section** (`->&` sur un titre `
 ```gram title="bases/elements-feuilletage-inverse.gram"
 ---
 title: 'Éléments pour feuilletage inversé'
-yields: [detrempe:350g, beurre-manie:400g]
 ---
 
 ## Détrempe ->&detrempe
@@ -138,44 +137,50 @@ yields: [detrempe:350g, beurre-manie:400g]
 
 ## Mise à l'échelle
 
-Indiquez le rendement de référence du module avec la clé de frontmatter `yields:` :
+Gram calcule automatiquement le rendement d'un module d'après ses ingrédients — rien n'est à déclarer :
 
 ```gram title="bases/pate-sablee.gram"
 ---
 title: 'Pâte Sablée'
-yields: 500g
 ---
 
 ## Pâte
 Mélanger @farine{300g} avec @beurre{200g}.
 ```
 
-Lorsqu'une recette hôte réclame `&pate{250g}`, Gram applique automatiquement un facteur de `0.5` à chaque ingrédient de `pate-sablee.gram`.
+`pate-sablee.gram` totalise ses propres ingrédients à 500g. Lorsqu'une recette hôte réclame `&pate{250g}`, Gram applique automatiquement un facteur de `0.5` à chaque ingrédient — le ratio exact entre la quantité demandée et la masse calculée du module.
 
-### Formats de rendements
-* **Masse ou Volume** : `yields: 500g`, `yields: 1L`
-* **Nombre discret d'unités** : `yields: 24 cookies`, `yields: 1 tarte`
-* **Rendement multi-composants** : `yields: [detrempe:350g, beurre-manie:400g]`
-
-:::note[Secours par standardisation des masses]
-Si `yields:` est omis, Gram calcule automatiquement la masse nette du module d'après ses ingrédients. Si ce calcul repose sur des densités estimées, Gram émet un diagnostic `ESTIMATED_MODULE_YIELD`.
+:::note[Quand la mesure n'est qu'une estimation]
+Si le calcul de la masse du module dépend d'une densité estimée ou d'un poids unitaire par défaut plutôt que d'une masse explicite, Gram émet un diagnostic `ESTIMATED_MODULE_YIELD` plutôt que de traiter le facteur d'échelle comme exact.
 :::
 
 ### Mise à l'échelle des liaisons déstructurées
-Lorsque plusieurs composants d'un même module sont importés, chaque composant est évalué face à son rendement propre. Si des ratios différents sont demandés, c'est le **ratio le plus élevé** qui s'applique à l'ensemble du module, et Gram signale l'excédent de production :
+Lorsque plusieurs composants d'un même module sont importés, chaque composant est mesuré individuellement — d'après les ingrédients de sa propre section, plus tout ce que cette section référence elle-même. Si des ratios différents sont demandés, c'est le **ratio le plus élevé** qui s'applique à l'ensemble du module, et Gram signale l'excédent de production :
 
-```gram
-@use "./bases/elements-feuilletage.gram" as { &detrempe, &beurre-manie }
+```gram title="bases/oeufs.gram"
+---
+title: 'Œufs séparés'
+---
 
-Abaisser &detrempe{700g} et &beurre-manie{400g}.
+## Blancs ->&blancs
+[Séparer] les @œufs{100g} pour ne garder que les blancs.
+
+## Jaunes ->&jaunes
+[Séparer] les @œufs{50g} pour ne garder que les jaunes.
 ```
 
-Si `elements-feuilletage.gram` produit 350g de détrempe et 400g de beurre manié, demander `&detrempe{700g}` passe le module à l'échelle ×2 (produisant 800g de beurre manié). Gram émet l'alerte `MODULE_SURPLUS` pour consigner ce surplus.
+```gram
+@use "./bases/oeufs.gram" as { &blancs, &jaunes }
+
+[Fouetter] &blancs{200g} et &jaunes{50g}.
+```
+
+`&blancs{200g}` face à 100g mesurés de blancs donne un ratio de ×2 ; `&jaunes{50g}` face à 50g mesurés de jaunes donne ×1. Le ratio le plus élevé (×2) s'applique à tout le module, de sorte que les jaunes sont produits à hauteur de 100g pour 50g réellement utilisés — Gram signale ce surplus via `MODULE_SURPLUS` au lieu de l'ignorer silencieusement.
 
 ### Minuteurs & Fournées
 **Les temps de cuisson et de repos ne sont jamais mis à l'échelle.** Doubler une pâte à cookies ne divise ni ne multiplie sa durée au four.
 
-Lorsqu'un nombre entier est demandé face à un rendement massique (`&cookies{2}` face à `yields: 500g`), Gram l'interprète comme *2 fournées complètes* et émet le diagnostic `MODULE_BATCH_INTERPRETATION`.
+Lorsqu'un nombre entier d'unités est demandé face à une masse mesurée du module (`&cookies{2}` face à un module qui totalise 500g), Gram l'interprète comme *2 fournées complètes* et émet le diagnostic `MODULE_BATCH_INTERPRETATION`.
 
 ---
 
@@ -218,7 +223,6 @@ Les métadonnées informatives (`title`, `description`, `author`, `tags`, `categ
 
 **Exceptions :**
 * `densities:` fusionne avec l'hôte (les valeurs de l'hôte prévalent en cas de conflit).
-* `yields:` est lu pour le calcul d'échelle puis éliminé.
 * Les pourcentages boulangers (`*`) déclarés dans les modules importés sont retirés à l'import.
 
 ---
