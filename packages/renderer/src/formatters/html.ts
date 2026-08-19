@@ -512,18 +512,8 @@ const htmlBackend: RenderBackend = {
 		// the panel opens on the same figures whether or not the toggle is there.
 		const defaultKey = resolveNutritionBasis(nut, "auto", options.lang).key;
 
-		let warningsHtml = "";
-		if (nut.warnings && nut.warnings.length > 0) {
-			warningsHtml = `  <div class="nut-warnings">\n`;
-			nut.warnings.forEach((w) => {
-				warningsHtml += `    <p><strong>${escapeHtml(t.renderer.incompleteData)}:</strong> ${escapeHtml(w.message)}</p>\n`;
-			});
-			warningsHtml += `  </div>\n`;
-		}
-
 		let html = "";
 		html += `<div class="nutrition-panel">\n`;
-		html += warningsHtml;
 		html += `  <div class="nut-header">${escapeHtml(t.renderer.nutrition)} <span class="est-badge" data-tooltip="${escapeHtml(t.renderer.coverageTooltip)}: ${Math.round(nut.coverage * 100)}%">${escapeHtml(t.renderer.estimateTooltip)}</span></div>\n`;
 
 		// The radios must precede every grid they control: the CSS matches them

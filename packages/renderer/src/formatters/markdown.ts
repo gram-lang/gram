@@ -229,12 +229,6 @@ const markdownBackend: RenderBackend = {
 
 		let md = `## 🥗 ${t.renderer.nutrition} (${basis.label})\n\n`;
 		if (basis.note) md += `_${escapeMarkdownHtml(basis.note)}_\n\n`;
-		if (nut.warnings && nut.warnings.length > 0) {
-			nut.warnings.forEach((w) => {
-				md += `> **${t.renderer.incompleteData}:** ${escapeMarkdownHtml(w.message)}\n`;
-			});
-			md += "\n";
-		}
 		for (const row of nutritionRows(basis.values, options.lang)) {
 			const indent = row.nested ? "  " : "";
 			md += `${indent}- **${escapeMarkdownHtml(row.label)}**: ${row.value} ${row.unit}\n`;

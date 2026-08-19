@@ -722,9 +722,13 @@ export function analyze(
 		opts,
 	);
 
+	const nutritionWarnings = nutrition?.warnings || [];
+	const allWarnings = [...result.warnings, ...nutritionWarnings];
+
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {
 		...result,
+		warnings: allWarnings,
 		sections,
 		// shopping_list's working type is kitchen's general
 		// (CompositeItem | ShoppingListItem | Usage)[] throughout this

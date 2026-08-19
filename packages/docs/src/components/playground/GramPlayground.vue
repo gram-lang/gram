@@ -94,6 +94,7 @@ const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
 const activeFile = ref<string>(ENTRY_URI);
 
 const diagnostics = ref<PlaygroundDiagnostic[]>([]);
+const isConsoleCollapsed = ref(false);
 const blockingDiagnostics = computed(() =>
 	diagnostics.value.filter((d) => d.blocking),
 );
@@ -631,12 +632,18 @@ onUnmounted(() => {
     <div class="playground-toolbar">
       <div class="toolbar-left">
         <h2>{{ t.playground.title }}</h2>
-        <span
+        <button
+          type="button"
           class="status-badge"
-          :class="hasBlocking ? 'invalid' : (diagnostics.length > 0 ? 'warning' : 'valid')"
+          :class="[
+            hasBlocking ? 'invalid' : (diagnostics.length > 0 ? 'warning' : 'valid'),
+            { 'is-clickable': diagnostics.length > 0 }
+          ]"
+          @click="diagnostics.length > 0 && (isConsoleCollapsed = false)"
+          :title="diagnostics.length > 0 ? (t.playground.warnings.consoleTitle || 'Diagnostics & Débogage') : ''"
         >
           {{ hasBlocking ? (t.playground.warnings.errors || 'Errors') : (diagnostics.length > 0 ? (t.playground.statusWarnings || 'Warnings') : t.playground.statusValid) }}
-        </span>
+        </button>
       </div>
       <div class="toolbar-right">
         <div class="toolbar-item" v-if="examples.length > 0">
@@ -677,63 +684,72 @@ onUnmounted(() => {
       </div>
     </div>
     
-    <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
-      <!-- Left Column: Editor & Options -->
-      <div class="playground-col left-col">
-        <GramFileTabs
-          :files="[...files.keys()]"
-          :active-file="activeFile"
-          :entry-file="ENTRY_URI"
-          :error-files="errorFiles"
-          @select="selectFile"
-          @add="addFile"
-          @rename="renameFile"
-          @remove="removeFile"
-        />
-        <div class="editor-wrapper">
-          <GramEditor
-            ref="editorRef"
-            :files="files"
+    <div class="playground-main-frame">
+      <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
+        <!-- Left Column: Editor & Options -->
+        <div class="playground-col left-col">
+          <GramFileTabs
+            :files="[...files.keys()]"
             :active-file="activeFile"
-            @update:files="(path, val) => files.set(path, val)"
+            :entry-file="ENTRY_URI"
+            :error-files="errorFiles"
+            @select="selectFile"
+            @add="addFile"
+            @rename="renameFile"
+            @remove="removeFile"
           />
+          <div class="editor-wrapper">
+            <GramEditor
+              ref="editorRef"
+              :files="files"
+              :active-file="activeFile"
+              @update:files="(path, val) => files.set(path, val)"
+            />
+          </div>
         </div>
-        <GramWarnings v-if="diagnostics.length > 0" :warnings="diagnostics" @jump="handleJump" />
-      </div>
-      
-      <!-- Splitter -->
-      <div class="playground-splitter" @mousedown.prevent="startDrag">
-        <div class="splitter-handle"></div>
+        
+        <!-- Splitter -->
+        <div class="playground-splitter" @mousedown.prevent="startDrag">
+          <div class="splitter-handle"></div>
+        </div>
+
+        <!-- Right Column: Output -->
+        <div class="playground-col right-col">
+          <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
+            {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
+          </div>
+          <div class="output-wrapper">
+            <GramOutput 
+              :view-mode="viewMode as any" 
+              :content="content" 
+              :html-preview="htmlPreview" 
+              :json-data="jsonData" 
+              :blocking-diagnostics="blockingDiagnostics"
+              @scale-update="handleScaleUpdate"
+              @jump="handleJump"
+            >
+              <template #view-selector>
+                <div class="header-view-wrapper">
+                  <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
+                  <PlaygroundDropdown 
+                    v-model="viewMode" 
+                    :options="viewModeOptions" 
+                    class="header-view-selector"
+                  />
+                </div>
+              </template>
+            </GramOutput>
+          </div>
+        </div>
       </div>
 
-      <!-- Right Column: Output -->
-      <div class="playground-col right-col">
-        <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
-          {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
-        </div>
-        <div class="output-wrapper">
-          <GramOutput 
-            :view-mode="viewMode as any" 
-            :content="content" 
-            :html-preview="htmlPreview" 
-            :json-data="jsonData" 
-            :blocking-diagnostics="blockingDiagnostics"
-            @scale-update="handleScaleUpdate"
-            @jump="handleJump"
-          >
-            <template #view-selector>
-              <div class="header-view-wrapper">
-                <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                <PlaygroundDropdown 
-                  v-model="viewMode" 
-                  :options="viewModeOptions" 
-                  class="header-view-selector"
-                />
-              </div>
-            </template>
-          </GramOutput>
-        </div>
-      </div>
+      <!-- Full-Width Bottom Diagnostics Console -->
+      <GramWarnings
+        v-if="diagnostics.length > 0"
+        :warnings="diagnostics"
+        v-model:collapsed="isConsoleCollapsed"
+        @jump="handleJump"
+      />
     </div>
   </div>
 </template>
@@ -743,9 +759,10 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   min-width: 0;
   max-width: 100%;
+  flex: 1;
 }
 
 .gram-playground.is-fullscreen {
@@ -791,6 +808,17 @@ onUnmounted(() => {
   padding: 0.25rem 0.75rem;
   border: 1px solid var(--sl-color-hairline);
   margin-top: 1px;
+  background: transparent;
+  cursor: default;
+}
+
+.status-badge.is-clickable {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.status-badge.is-clickable:hover {
+  background-color: var(--sl-color-gray-7);
 }
 
 .status-badge.valid {
@@ -884,15 +912,29 @@ onUnmounted(() => {
   border: 1px solid var(--sl-color-border);
 }
 
+.playground-main-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 /* Workspace & Split Pane */
 .playground-workspace {
   display: flex;
-  height: 650px;
+  height: calc(100vh - 360px);
+  min-height: 520px;
   border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
   position: relative;
   min-width: 0;
   max-width: 100%;
+}
+
+.gram-playground.is-fullscreen .playground-workspace {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
 }
 
 .playground-workspace.is-dragging {

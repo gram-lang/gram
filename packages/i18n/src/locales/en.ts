@@ -150,6 +150,7 @@ export const en = {
 			loading: "Loading viewer...",
 		},
 		warnings: {
+			consoleTitle: "Diagnostics & Debug",
 			errors: "Errors",
 			error: "Error",
 			warnings: "Warnings",
