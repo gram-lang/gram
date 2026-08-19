@@ -1007,8 +1007,7 @@ onUnmounted(() => {
 /* Workspace & Split Pane */
 .playground-workspace {
   display: flex;
-  flex: 1;
-  height: calc(100vh - 360px);
+  height: calc(100vh - 200px);
   min-height: 520px;
   border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
@@ -1164,7 +1163,7 @@ onUnmounted(() => {
   }
 
   .playground-workspace {
-    height: calc(100dvh - 220px);
+    height: calc(100dvh - 180px);
     min-height: 440px;
     flex-direction: column;
   }
