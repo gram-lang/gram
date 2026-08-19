@@ -37,10 +37,16 @@ function confine(
  * `paths: { bases: "./shared/bases" }` resolves to
  * `<projectRoot>/shared/bases/pate.gram`. The bare `@/...` form (no alias
  * name) always means `projectRoot` itself and needs no entry in `paths`.
+ *
+ * `read` defaults to reading `uri` straight off the working-tree filesystem
+ * — pass an override (e.g. `gram diff`'s git-ref reader, `services/differ.ts`)
+ * to resolve the same path arithmetic against a different source of truth
+ * without duplicating it.
  */
 export function createCliModuleHost(
 	projectRoot: string,
 	paths?: Record<string, string>,
+	read: (uri: string) => Promise<string> = (uri) => readFile(uri, "utf-8"),
 ): ModuleHost {
 	return {
 		resolve(specifier: string, fromUri: string): string {
@@ -65,8 +71,6 @@ export function createCliModuleHost(
 			const resolved = resolve(dirname(fromUri), specifier);
 			return confine(resolved, projectRoot, specifier);
 		},
-		read(uri: string): Promise<string> {
-			return readFile(uri, "utf-8");
-		},
+		read,
 	};
 }

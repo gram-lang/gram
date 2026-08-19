@@ -1,12 +1,19 @@
-import { readFile } from "node:fs/promises";
-import { resolve, relative } from "node:path";
+import { dirname, resolve, relative } from "node:path";
 import { spawn } from "node:child_process";
-import { getAST } from "@gram-lang/parser";
 import { compile } from "@gram-lang/kitchen";
 import type { CompilationResult } from "@gram-lang/kitchen";
+import {
+	loadModuleGraph,
+	composeRecipe,
+	finalizeComposed,
+} from "@gram-lang/modules";
+import type { ModuleHost } from "@gram-lang/modules";
 import { diffRecipes } from "@gram-lang/analyzer";
 import type { DiffResult } from "@gram-lang/analyzer";
-import { GramCLIError, ExitCode, getErrorMessage } from "../errors";
+import { GramCLIError, ExitCode } from "../errors";
+import { createCliModuleHost } from "../core/module-host";
+import { findProjectRoot } from "../core/workspace";
+import { loadConfig } from "../core/config";
 
 export type { DiffResult };
 
@@ -42,34 +49,55 @@ async function gitRoot(fromPath: string): Promise<string> {
 	}
 }
 
-function compileContent(content: string): CompilationResult {
-	return compile(getAST(content));
+// `gram diff` resolves `@use` imports the same way every other command does
+// (`runPipeline`, `core/pipeline.ts`) so a change purely inside an imported
+// base recipe is visible as a MODULES delta rather than silently invisible —
+// no `db`, since diff never runs the analyzer (nutrition/mass data plays no
+// part in a structural/semantic diff).
+async function composeAndCompile(
+	entryUri: string,
+	host: ModuleHost,
+	notFound: () => Error,
+): Promise<CompilationResult> {
+	const graph = await loadModuleGraph(entryUri, host);
+	if (!graph.modules.has(entryUri)) throw notFound();
+	const composed = composeRecipe(graph, { db: {} });
+	return finalizeComposed(compile(composed.ast), composed);
 }
 
 async function compileFile(filePath: string): Promise<CompilationResult> {
-	const content = await readFile(filePath, "utf-8");
-	return compileContent(content);
+	const projectRoot = await findProjectRoot(dirname(filePath));
+	const config = await loadConfig();
+	const host = createCliModuleHost(projectRoot, config.paths);
+	return composeAndCompile(
+		filePath,
+		host,
+		() => new GramCLIError(`File not found: ${filePath}`, ExitCode.Error),
+	);
 }
 
 async function compileAtRef(
 	ref: string,
 	absPath: string,
 ): Promise<CompilationResult> {
-	const dir = resolve(absPath, "..");
-	const root = await gitRoot(dir);
-	const relToRoot = relative(root, absPath);
-
-	let content: string;
-	try {
-		content = await run("git", ["show", `${ref}:${relToRoot}`], root);
-	} catch (err) {
-		throw new GramCLIError(
-			`Cannot read "${relToRoot}" at "${ref}".\n${getErrorMessage(err)}\n\nMake sure the file is tracked by git and the ref exists.`,
+	const root = await gitRoot(resolve(absPath, ".."));
+	const projectRoot = await findProjectRoot(dirname(absPath));
+	const config = await loadConfig();
+	// `read` failures (a missing import, same as any other host) are swallowed
+	// into a MODULE_NOT_FOUND diagnostic by `loadModuleGraph` regardless of
+	// what this throws, so there's no point catching/rewrapping `run()`'s
+	// rejection here — only the entry file itself gets a dedicated,
+	// git-specific error, via `composeAndCompile`'s `notFound` below.
+	const host = createCliModuleHost(projectRoot, config.paths, (uri) =>
+		run("git", ["show", `${ref}:${relative(root, uri)}`], root),
+	);
+	return composeAndCompile(absPath, host, () => {
+		const relToRoot = relative(root, absPath);
+		return new GramCLIError(
+			`Cannot read "${relToRoot}" at "${ref}".\n\nMake sure the file is tracked by git and the ref exists.`,
 			ExitCode.Error,
 		);
-	}
-
-	return compileContent(content);
+	});
 }
 
 export interface DiffOptions {
