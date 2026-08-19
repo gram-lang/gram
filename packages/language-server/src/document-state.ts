@@ -46,6 +46,8 @@ export interface DocumentState {
 	parseError: string | null;
 	/** Character offset of `parseError` into `text`, when known. */
 	parseErrorOffset: number | null;
+	/** Error message from compile() or analyze() when AST parsing succeeded but compilation failed. */
+	compileError?: string | null;
 	compilation: AnalyzedCompilationResult | CompilationResult | null;
 	/**
 	 * The graph `compilation` was composed against, when this document has
@@ -68,6 +70,7 @@ export function parseDocument(
 		const ast = getAST(text);
 		let compilation: AnalyzedCompilationResult | CompilationResult | null =
 			null;
+		let compileError: string | null = null;
 		try {
 			// `state.ast` (above) always stays this document's own single-file
 			// parse — document symbols, folding, semantic tokens, and
@@ -101,8 +104,9 @@ export function parseDocument(
 			} else {
 				compilation = rawCompilation;
 			}
-		} catch {
-			// compilation failures don't invalidate the AST
+		} catch (e) {
+			// compilation failures don't invalidate the AST, but are captured for webview notifications
+			compileError = String(e instanceof Error ? e.message : e);
 		}
 		return {
 			text,
@@ -111,6 +115,7 @@ export function parseDocument(
 			ast,
 			parseError: null,
 			parseErrorOffset: null,
+			compileError,
 			compilation,
 			moduleGraph: moduleCtx?.graph,
 		};
@@ -122,6 +127,7 @@ export function parseDocument(
 			ast: null,
 			parseError: String(e instanceof Error ? e.message : e),
 			parseErrorOffset: e instanceof GramParseError ? e.offset : null,
+			compileError: null,
 			compilation: null,
 		};
 	}

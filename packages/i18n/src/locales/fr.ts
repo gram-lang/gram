@@ -149,6 +149,13 @@ export const fr: GramLocale = {
 			item: "Élément",
 			show: "Afficher",
 		},
+		errorState: {
+			title: "Génération interrompue",
+			blockingDescription:
+				"La recette contient des erreurs bloquantes empêchant la génération de l'aperçu.",
+			jumpToError: "Aller à l'erreur",
+			line: "Ligne",
+		},
 		tabs: {
 			addFile: "Ajouter un fichier",
 			removeFile: "Supprimer le fichier",

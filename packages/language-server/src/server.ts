@@ -276,14 +276,25 @@ async function refresh(
 		} catch (e) {
 			console.error("Gantt render error", e);
 		}
-	} else if (state.parseError) {
-		// Fallback for syntax errors. ohm-js error messages often embed a snippet of
-		// the offending source line for context, so this must be escaped like any
-		// other user-controlled content reaching the preview webview (audit Chantier 6).
+	} else if (state.parseError || state.compileError) {
+		const isParse = !!state.parseError;
+		const title = isParse ? "Syntax Error" : "Compilation Error";
+		const errorMessage = state.parseError || state.compileError || "";
+		const offsetAttr =
+			state.parseErrorOffset !== null
+				? ` data-offset="${state.parseErrorOffset}"`
+				: "";
 		const html = `
-            <div style="padding: 20px; color: var(--vscode-errorForeground);">
-                <h2>Syntax Error</h2>
-                <pre style="background: var(--vscode-editorWidget-background); padding: 10px; border-radius: 6px;">${escapeHtml(state.parseError)}</pre>
+            <div class="gram-preview-error-state" style="padding: 24px 20px; font-family: var(--gram-font-sans, inherit); max-width: 600px; margin: 0 auto; text-align: center;">
+                <div style="color: var(--vscode-errorForeground, #ef4444); margin-bottom: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256" style="display: inline-block;">
+                        <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"></path>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: var(--vscode-editor-foreground, inherit);">${title}</h3>
+                <p style="margin: 0 0 16px 0; font-size: 13px; color: var(--vscode-descriptionForeground, #888); line-height: 1.4;">Generation paused due to an error in the recipe.</p>
+                <div style="text-align: left; background: var(--vscode-editorWidget-background, #1e1e1e); border: 1px solid var(--vscode-widget-border, #333); border-radius: 6px; padding: 12px; font-family: var(--gram-font-mono, monospace); font-size: 12px; color: var(--vscode-editor-foreground, #ccc); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow-y: auto;">${escapeHtml(errorMessage)}</div>
+                ${state.parseErrorOffset !== null ? `<button class="gram-goto-btn"${offsetAttr} style="margin-top: 14px; padding: 6px 14px; background: var(--vscode-button-background, #007acc); color: var(--vscode-button-foreground, #fff); border: none; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer;">Jump to error</button>` : ""}
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });

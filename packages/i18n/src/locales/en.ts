@@ -159,6 +159,13 @@ export const en = {
 			item: "Item",
 			show: "Show",
 		},
+		errorState: {
+			title: "Generation paused",
+			blockingDescription:
+				"The recipe contains blocking errors preventing preview generation.",
+			jumpToError: "Jump to error",
+			line: "Line",
+		},
 		tabs: {
 			addFile: "Add file",
 			removeFile: "Remove file",

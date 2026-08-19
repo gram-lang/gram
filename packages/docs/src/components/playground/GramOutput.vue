@@ -4,23 +4,36 @@ import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 import { trackEvent } from "../../lib/umami";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import type { PlaygroundDiagnostic } from "./diagnostics";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import GramGantt from "./GramGantt.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
+import GramErrorState from "./GramErrorState.vue";
 
 const props = defineProps<{
 	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview" | "gantt";
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
+	blockingDiagnostics?: PlaygroundDiagnostic[];
 }>();
 
-const emit = defineEmits<(e: "scale-update", factor: number) => void>();
+const emit = defineEmits<{
+	(e: "scale-update", factor: number): void;
+	(e: "jump", start: number, end: number, uri?: string): void;
+}>();
 
 const isDark = inject<Ref<boolean>>("isDark")!;
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
 const { lang, t } = useI18n();
+
+const hasBlocking = computed(() => {
+	return (
+		(props.blockingDiagnostics && props.blockingDiagnostics.length > 0) ?? false
+	);
+});
 
 const currentLang = computed(() => {
 	if (props.viewMode === "ast") return "scheme";
@@ -31,7 +44,12 @@ const currentLang = computed(() => {
 const copied = ref(false);
 // biome-ignore lint/correctness/noUnusedVariables: copyOutput is used in the <template> block below, which Biome's Vue support doesn't see.
 function copyOutput() {
-	if (props.viewMode === "preview" || props.viewMode === "json-tree") return;
+	if (
+		props.viewMode === "preview" ||
+		props.viewMode === "json-tree" ||
+		hasBlocking.value
+	)
+		return;
 	navigator.clipboard.writeText(props.content).then(() => {
 		trackEvent("playground-copy-output", { view: props.viewMode });
 		copied.value = true;
@@ -165,39 +183,47 @@ function handlePreviewClick(e: MouseEvent) {
       <slot name="view-selector">
         <span class="output-title">{{ viewMode.replace('-', ' ') }}</span>
       </slot>
-      <button v-if="['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
+      <button v-if="!hasBlocking && ['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
         <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
     </div>
     <div class="output-container">
-      <!-- Shiki-highlighted read-only output (JSON, AST, Markdown) -->
-      <!-- Shiki's codeToHtml() already emits its own <pre><code> wrapper -->
-      <div
-        v-if="['json', 'ast', 'markdown'].includes(viewMode)"
-        class="output-code"
-        v-html="highlightedHtml"
-      ></div>
+      <!-- Unified Error State (Blocking Errors) -->
+      <GramErrorState
+        v-if="hasBlocking"
+        :diagnostics="blockingDiagnostics || []"
+        @jump="(start, end, uri) => emit('jump', start, end, uri)"
+      />
 
-      <!-- Interactive JSON Tree -->
-      <div v-else-if="viewMode === 'json-tree'" class="output-tree">
-        <JsonNode :data="jsonData" :is-last="true" :initial-expanded="true" />
-      </div>
+      <template v-else>
+        <!-- Shiki-highlighted read-only output (JSON, AST, Markdown) -->
+        <div
+          v-if="['json', 'ast', 'markdown'].includes(viewMode)"
+          class="output-code"
+          v-html="highlightedHtml"
+        ></div>
 
-      <!-- Gantt Chart -->
-      <div v-else-if="viewMode === 'gantt'" class="output-gantt">
-        <GramGantt :json-data="jsonData" />
-      </div>
-      
-      <!-- HTML Preview -->
-      <div 
-        ref="previewContainer" 
-        @click="handlePreviewClick" 
-        @change="handlePreviewChange" 
-        v-else-if="viewMode === 'preview'" 
-        class="output-preview gram-preview vp-doc show-macros" 
-        v-html="htmlPreview"
-      ></div>
+        <!-- Interactive JSON Tree -->
+        <div v-else-if="viewMode === 'json-tree'" class="output-tree">
+          <JsonNode :data="jsonData" :is-last="true" :initial-expanded="true" />
+        </div>
+
+        <!-- Gantt Chart -->
+        <div v-else-if="viewMode === 'gantt'" class="output-gantt">
+          <GramGantt :json-data="jsonData" />
+        </div>
+        
+        <!-- HTML Preview -->
+        <div 
+          ref="previewContainer" 
+          @click="handlePreviewClick" 
+          @change="handlePreviewChange" 
+          v-else-if="viewMode === 'preview'" 
+          class="output-preview gram-preview vp-doc show-macros" 
+          v-html="htmlPreview"
+        ></div>
+      </template>
     </div>
   </div>
 </template>

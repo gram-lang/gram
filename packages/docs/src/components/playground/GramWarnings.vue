@@ -2,15 +2,21 @@
 import { ref, computed } from "vue";
 import { useI18n } from "./useI18n";
 import { warningSeverityOf, type WarningSeverity } from "@gram-lang/modules";
+import type { PlaygroundDiagnostic } from "./diagnostics";
 
 const props = defineProps<{
-	warnings: Array<{
-		code: string;
-		message: string;
-		item?: string;
-		loc?: { start: number; end: number };
-		uri?: string;
-	}>;
+	warnings: Array<
+		| PlaygroundDiagnostic
+		| {
+				code: string;
+				message: string;
+				item?: string;
+				loc?: { start: number; end: number };
+				uri?: string;
+				severity?: WarningSeverity;
+				blocking?: boolean;
+		  }
+	>;
 }>();
 
 // biome-ignore lint/correctness/noUnusedVariables: emit is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -18,7 +24,6 @@ const emit = defineEmits<{
 	jump: [start: number, end: number, uri?: string];
 }>();
 
-// biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
 const { t } = useI18n();
 
 const isCollapsed = ref(false);
@@ -28,11 +33,23 @@ function toggle() {
 	isCollapsed.value = !isCollapsed.value;
 }
 
+const SEVERITY_ORDER: Record<WarningSeverity, number> = {
+	error: 0,
+	warning: 1,
+	info: 2,
+};
+
 const itemsWithSeverity = computed(() => {
-	return props.warnings.map((w) => ({
+	const mapped = props.warnings.map((w) => ({
 		...w,
-		severity: warningSeverityOf(w.code) as WarningSeverity,
+		severity: (w.severity || warningSeverityOf(w.code)) as WarningSeverity,
 	}));
+
+	return mapped.sort((a, b) => {
+		const orderA = SEVERITY_ORDER[a.severity] ?? 99;
+		const orderB = SEVERITY_ORDER[b.severity] ?? 99;
+		return orderA - orderB;
+	});
 });
 
 const counts = computed(() => {
@@ -47,12 +64,14 @@ const counts = computed(() => {
 	return { error, warning, info };
 });
 
+// biome-ignore lint/correctness/noUnusedVariables: overallSeverity is used in the <template> block below, which Biome's Vue support doesn't see.
 const overallSeverity = computed<WarningSeverity>(() => {
 	if (counts.value.error > 0) return "error";
 	if (counts.value.warning > 0) return "warning";
 	return "info";
 });
 
+// biome-ignore lint/correctness/noUnusedVariables: headerSummary is used in the <template> block below, which Biome's Vue support doesn't see.
 const headerSummary = computed(() => {
 	const parts: string[] = [];
 	const c = counts.value;
@@ -125,6 +144,7 @@ const headerSummary = computed(() => {
               {{ w.severity === 'error' ? t.playground.warnings.error : w.severity === 'warning' ? t.playground.warnings.warning : t.playground.warnings.info }}
             </span>
             <span class="warning-code">[{{ w.code }}]</span>
+            <span v-if="w.uri" class="warning-uri">{{ w.uri.startsWith('/') ? w.uri.slice(1) : w.uri }}</span>
           </div>
           <span class="warning-message">{{ w.message }}</span>
           <span v-if="w.item" class="warning-item-name">{{ t.playground.warnings.item }}: {{ w.item }}</span>
@@ -270,7 +290,8 @@ const headerSummary = computed(() => {
 .warning-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .severity-badge {
@@ -304,10 +325,21 @@ const headerSummary = computed(() => {
   border-radius: 4px;
 }
 
+.warning-uri {
+  font-size: 11px;
+  font-family: var(--sl-font-mono);
+  color: var(--sl-color-gray-3);
+  background-color: var(--sl-color-bg-inline-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
 .warning-message {
   font-size: 14px;
   color: var(--sl-color-text);
   line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .warning-item-name {
@@ -326,6 +358,7 @@ const headerSummary = computed(() => {
   border: 1px solid var(--sl-color-border);
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .warning-jump:hover {

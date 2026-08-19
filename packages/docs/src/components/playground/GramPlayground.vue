@@ -32,8 +32,15 @@ import {
 	loadModuleGraph,
 	composeRecipe,
 	finalizeComposed,
-	warningSeverityOf,
 } from "@gram-lang/modules";
+import {
+	type PlaygroundDiagnostic,
+	parseErrorToDiagnostic,
+	scaleErrorToDiagnostic,
+	pipelineErrorToDiagnostic,
+	enrichWarning,
+	sortDiagnostics,
+} from "./diagnostics";
 import { toMarkdown, toHTML } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import "@gram-lang/renderer/gantt.css";
@@ -85,26 +92,22 @@ const t = computed(() => getDictionary(currentLang.value));
 
 const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
 const activeFile = ref<string>(ENTRY_URI);
-// The output panel always previews whichever file is active — clicking an
-// imported file's tab compiles *that file* as its own entry point into the
-// same VFS (its own imports, if it has any, still resolve), exactly what
-// `gram build` on it directly would do. `ENTRY_URI` stays a separate,
-// unrelated concept: the one fixed, undeletable "project" file.
-//
-// Set only for the specific "the file being previewed won't parse" case (a
-// *different* file's own parse error degrades gracefully instead, see
-// `updateGram`) — tracked separately from `warnings` because that blocking
-// case clears `warnings.value` entirely, so the tab's error dot needs its
-// own flag. Holds the uri of the broken file, or null.
-const previewParseErrorUri = ref<string | null>(null);
+
+const diagnostics = ref<PlaygroundDiagnostic[]>([]);
+const blockingDiagnostics = computed(() =>
+	diagnostics.value.filter((d) => d.blocking),
+);
+const hasBlocking = computed(() => blockingDiagnostics.value.length > 0);
+
 // biome-ignore lint/correctness/noUnusedVariables: errorFiles is used in the <template> block below, which Biome's Vue support doesn't see.
 const errorFiles = computed(() => {
-	const set = new Set(
-		warnings.value.map((w) => w.uri).filter((u): u is string => !!u),
+	return new Set(
+		diagnostics.value
+			.filter((d) => d.severity === "error" && d.uri)
+			.map((d) => d.uri!),
 	);
-	if (previewParseErrorUri.value) set.add(previewParseErrorUri.value);
-	return set;
 });
+
 const viewMode = ref<
 	"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
@@ -144,7 +147,6 @@ const scaleFactorString = ref("100");
 const scaleTargetId = ref<string | null>(null);
 const scaleTargetQty = ref<number | null>(null);
 const scaleTargetUnit = ref("");
-const scaleError = ref("");
 
 // biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 const viewModeOptions = computed(() => [
@@ -162,8 +164,6 @@ const editorRef = ref<InstanceType<typeof GramEditor> | null>(null);
 const htmlPreview = ref("");
 const content = ref("");
 const jsonData = shallowRef<any>({});
-const warnings = ref<any[]>([]);
-const errorMsg = ref("");
 
 let fullDatabase: any = {};
 
@@ -289,15 +289,12 @@ async function updateGram() {
 	const token = ++runToken;
 	// The active tab is the compile entry point for the preview — clicking
 	// an imported file shows what *that file alone* compiles to, not the
-	// whole project. See the comment on `previewParseErrorUri` above.
+	// whole project.
 	const previewEntry = activeFile.value;
 	const codeLength = files.value.get(previewEntry)?.length ?? 0;
-	errorMsg.value = "";
-	scaleError.value = "";
-	previewParseErrorUri.value = null;
+	diagnostics.value = [];
 	editorRef.value?.setErrorMarker(null, "");
-	// Which pipeline stage is running, so a thrown error can be attributed to
-	// it.
+	// Which pipeline stage is running, so a thrown error can be attributed to it.
 	let stage: "compose" | "compile" | "analyze" | "render" = "compose";
 	try {
 		const host = createPlaygroundHost(new Map(files.value));
@@ -325,20 +322,19 @@ async function updateGram() {
 		}
 		availableImports.value = nextAvailableImports;
 
-		// The previewed document's own syntax error is the one case that
-		// still needs to block the whole render the way a thrown
-		// `GramParseError` used to — `loadModuleGraph` never throws (a
-		// *different* module's own parse error degrades gracefully instead,
-		// per the module-imports RFC's §C.4), so this is the one diagnostic
-		// that gets special handling rather than flowing into the regular
-		// warnings list.
+		// The previewed document's own syntax error blocks the whole render —
+		// `loadModuleGraph` never throws (a *different* module's own parse error
+		// degrades gracefully instead, per the module-imports RFC's §C.4).
 		const entryParseError = graph.diagnostics.find(
 			(w) => w.code === "MODULE_PARSE_ERROR" && w.uri === previewEntry,
 		);
 		if (entryParseError) {
-			errorMsg.value = entryParseError.message;
-			warnings.value = [];
-			previewParseErrorUri.value = previewEntry;
+			const diag = parseErrorToDiagnostic(entryParseError, previewEntry);
+			const otherDiags = graph.diagnostics
+				.filter((w) => w !== entryParseError)
+				.map((w) => enrichWarning(w, previewEntry));
+			diagnostics.value = sortDiagnostics([diag, ...otherDiags]);
+
 			if (activeFile.value === previewEntry) {
 				editorRef.value?.setErrorMarker(
 					entryParseError.loc?.start ?? 0,
@@ -365,6 +361,7 @@ async function updateGram() {
 		// `fullDatabase` spread last: real DB entries always win on id
 		// collision (MODULE_BINDING_SHADOWS_INGREDIENT), same as pipeline.ts.
 		const database = { ...composed.syntheticIngredients, ...fullDatabase };
+		const collectedScaleDiagnostics: PlaygroundDiagnostic[] = [];
 
 		if (scaleTargetId.value && scaleTargetQty.value !== null) {
 			try {
@@ -394,7 +391,9 @@ async function updateGram() {
 					.toFixed(2)
 					.replace(/\.00$/, "");
 			} catch (e: any) {
-				scaleError.value = e.message;
+				collectedScaleDiagnostics.push(
+					scaleErrorToDiagnostic(e.message, previewEntry),
+				);
 			}
 		} else {
 			const factor = parseFloat(scaleFactorString.value) / 100;
@@ -406,7 +405,9 @@ async function updateGram() {
 					});
 					result = applyScale(result, resolution.factor);
 				} catch (e: any) {
-					scaleError.value = e.message;
+					collectedScaleDiagnostics.push(
+						scaleErrorToDiagnostic(e.message, previewEntry),
+					);
 				}
 			}
 		}
@@ -423,20 +424,23 @@ async function updateGram() {
 		if (token !== runToken) return;
 
 		stage = "render";
-		warnings.value = result.warnings || [];
+		const enrichedWarnings = (result.warnings || []).map((w: any) =>
+			enrichWarning(w, previewEntry),
+		);
+		diagnostics.value = sortDiagnostics([
+			...collectedScaleDiagnostics,
+			...enrichedWarnings,
+		]);
 		jsonData.value = result;
-		trackPlaygroundWarnings(warnings.value.map((w) => w.code));
+		trackPlaygroundWarnings(diagnostics.value.map((w) => w.code));
 
-		const fileWarnings = (result.warnings || []).filter(
+		const fileWarnings = diagnostics.value.filter(
 			(w: any) => !w.uri || w.uri === activeFile.value,
 		);
 		const editorDiags = fileWarnings
 			.filter((w: any) => w.loc && w.loc.start != null)
 			.map((w: any) => {
-				const severity = warningSeverityOf(w.code) as
-					| "error"
-					| "warning"
-					| "info";
+				const severity = w.severity;
 				const start = w.loc.start;
 				const end = w.loc.end ?? start + 1;
 				return {
@@ -465,8 +469,8 @@ async function updateGram() {
 		trackPlaygroundRun(true, codeLength);
 	} catch (e: any) {
 		if (token !== runToken) return;
-		errorMsg.value = e.message;
-		warnings.value = [];
+		const diag = pipelineErrorToDiagnostic(e, stage, previewEntry);
+		diagnostics.value = [diag];
 		trackPlaygroundRun(false, codeLength, { error_type: stage });
 	}
 }
@@ -627,8 +631,11 @@ onUnmounted(() => {
     <div class="playground-toolbar">
       <div class="toolbar-left">
         <h2>{{ t.playground.title }}</h2>
-        <span class="status-badge" :class="(errorMsg || scaleError) ? 'invalid' : 'valid'">
-          {{ (errorMsg || scaleError) ? 'Invalid' : t.playground.statusValid }}
+        <span
+          class="status-badge"
+          :class="hasBlocking ? 'invalid' : (diagnostics.length > 0 ? 'warning' : 'valid')"
+        >
+          {{ hasBlocking ? (t.playground.warnings.errors || 'Errors') : (diagnostics.length > 0 ? (t.playground.statusWarnings || 'Warnings') : t.playground.statusValid) }}
         </span>
       </div>
       <div class="toolbar-right">
@@ -691,7 +698,7 @@ onUnmounted(() => {
             @update:files="(path, val) => files.set(path, val)"
           />
         </div>
-        <GramWarnings v-if="warnings.length > 0" :warnings="warnings" @jump="handleJump" />
+        <GramWarnings v-if="diagnostics.length > 0" :warnings="diagnostics" @jump="handleJump" />
       </div>
       
       <!-- Splitter -->
@@ -704,19 +711,15 @@ onUnmounted(() => {
         <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
           {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
         </div>
-        <div v-if="errorMsg" class="error-msg">
-          <strong>Error:</strong> {{ errorMsg }}
-        </div>
-        <div v-if="scaleError" class="error-msg scale-error-banner">
-          <strong>Scale Error:</strong> {{ scaleError }}
-        </div>
-        <div v-if="!errorMsg" class="output-wrapper">
+        <div class="output-wrapper">
           <GramOutput 
             :view-mode="viewMode as any" 
             :content="content" 
             :html-preview="htmlPreview" 
             :json-data="jsonData" 
+            :blocking-diagnostics="blockingDiagnostics"
             @scale-update="handleScaleUpdate"
+            @jump="handleJump"
           >
             <template #view-selector>
               <div class="header-view-wrapper">
@@ -794,6 +797,10 @@ onUnmounted(() => {
   color: #008829;
 }
 
+.status-badge.warning {
+  color: #d97706;
+}
+
 .status-badge.invalid {
   color: #ef4444;
 }
@@ -828,7 +835,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-width: 40px;
+  width: 40px;
   height: 40px;
   border: 1px solid var(--sl-color-border);
   background-color: var(--sl-color-bg);
@@ -878,172 +885,92 @@ width: 40px;
 }
 
 /* Workspace & Split Pane */
-@media (max-width: 840px) {
-  .playground-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .toolbar-left {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .toolbar-right {
-    width: 100%;
-    justify-content: flex-start;
-    gap: 8px 12px;
-  }
-}
-
-@media (max-width: 640px) {
-  .toolbar-item {
-    gap: 6px;
-    flex: 1 1 auto;
-    min-width: max-content;
-  }
-
-  .toolbar-label {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 480px) {
-  .toolbar-label {
-    display: none;
-  }
-}
-
 .playground-workspace {
   display: flex;
-  flex-direction: column;
-  height: auto;
-  min-height: 70vh;
+  height: 650px;
   border: 1px solid var(--sl-color-border);
-  overflow: hidden;
   background-color: var(--sl-color-bg);
+  position: relative;
   min-width: 0;
   max-width: 100%;
 }
 
-.is-fullscreen .playground-workspace {
-  flex: 1;
-  min-height: 0;
-  height: auto;
+.playground-workspace.is-dragging {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .playground-col {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  position: relative;
-  min-height: 350px;
-  height: 50vh;
+  overflow: hidden;
   min-width: 0;
-  max-width: 100%;
+}
+
+.left-col {
+  width: var(--left-width, 50%);
+  border-right: 1px solid var(--sl-color-border);
 }
 
 .editor-wrapper {
   flex: 1;
   position: relative;
   min-height: 0;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.output-wrapper {
-  flex: 1;
-  height: 100%;
-  position: relative;
-  min-height: 0;
-  min-width: 0;
-  max-width: 100%;
 }
 
 .playground-splitter {
-  display: none;
+  width: 8px;
+  margin-left: -4px;
+  margin-right: -4px;
+  cursor: col-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background-color 0.2s;
 }
 
-  .right-col {
-    border-block-start: 4px solid var(--color-border);
-  }
+.playground-splitter:hover,
+.playground-workspace.is-dragging .playground-splitter {
+  background-color: rgba(59, 130, 246, 0.2);
+}
 
-@media (min-width: 960px) {
-  .playground-workspace {
-    flex-direction: row;
-    height: 75vh;
-  }
-  
-  .playground-col {
-    /* No min-height required */
-    min-height: 0;
-    height: auto;
-  }
-  
-  .left-col {
-    width: var(--left-width);
-  }
-  
-  .right-col {
-    width: calc(100% - var(--left-width));
-    border-block-start: none;
-  }
-  
-  .playground-splitter {
-    display: flex;
-    width: 6px;
-    background-color: var(--sl-color-gray-6);
-    border-left: 1px solid var(--sl-color-border);
-    border-right: 1px solid var(--sl-color-border);
-    cursor: col-resize;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-  }
-  
-  .playground-splitter:hover, .playground-workspace.is-dragging .playground-splitter {
-    background-color: var(--sl-color-accent-low);
-  }
-  
-  .splitter-handle {
-    width: 2px;
-    height: 24px;
-    background-color: var(--sl-color-gray-4);
-    border-radius: 2px;
-  }
+.splitter-handle {
+  width: 2px;
+  height: 24px;
+  background-color: var(--sl-color-border);
+  border-radius: 1px;
+}
+
+.playground-splitter:hover .splitter-handle,
+.playground-workspace.is-dragging .splitter-handle {
+  background-color: #3b82f6;
+}
+
+.right-col {
+  flex: 1;
+  background-color: var(--sl-color-bg);
+  min-width: 0;
+  position: relative;
 }
 
 .preview-scope-banner {
-  padding: 8px 16px;
-  background-color: var(--sl-color-accent-low);
-  color: var(--sl-color-text);
+  padding: 6px 12px;
+  background-color: var(--sl-color-bg-sidebar);
   border-bottom: 1px solid var(--sl-color-border);
-  font-size: 12px;
+  font-size: 11px;
+  color: var(--sl-color-gray-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .preview-scope-banner code {
   font-family: var(--sl-font-mono);
-  background-color: var(--sl-color-bg-inline-code);
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-.error-msg {
-  padding: 16px;
-  background-color: var(--sl-color-red-low);
-  color: var(--sl-color-red);
-  border-bottom: 1px solid var(--sl-color-red-high);
-  font-family: var(--sl-font-mono);
-  font-size: 13px;
-  white-space: pre-wrap;
-}
-
-.scale-error-banner {
-  border-bottom: none;
-  border-radius: 8px;
-  margin: 16px 16px 0 16px;
-  border: 1px solid var(--sl-color-red-high);
+  color: var(--sl-color-text);
+  font-weight: 600;
 }
 
 .output-wrapper {
