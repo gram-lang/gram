@@ -5,13 +5,12 @@ import {
 	type ImportDecl,
 } from "@gram-lang/parser";
 import {
-	WarningCode,
-	pushWarning,
 	getNumericQty,
 	round2,
 	forEachStep,
 	type Warning,
 } from "@gram-lang/kitchen";
+import { ModuleWarningCode, pushModuleWarning } from "./warnings";
 import { convertUnit } from "@gram-lang/analyzer";
 import type {
 	AnalyzedCompilationResult,
@@ -213,7 +212,7 @@ export function computeScaleFactor(
 
 		const yieldVal = resolveYield(analyzed, info);
 		if (yieldVal.status === "incomplete") {
-			pushWarning(warnings, WarningCode.UNRESOLVED_MODULE_YIELD, {
+			pushModuleWarning(warnings, ModuleWarningCode.UNRESOLVED_MODULE_YIELD, {
 				specifier: decl.specifier,
 				binding: binding.local,
 				loc,
@@ -221,7 +220,7 @@ export function computeScaleFactor(
 			continue;
 		}
 		if (yieldVal.status === "estimated") {
-			pushWarning(warnings, WarningCode.ESTIMATED_MODULE_YIELD, {
+			pushModuleWarning(warnings, ModuleWarningCode.ESTIMATED_MODULE_YIELD, {
 				specifier: decl.specifier,
 				binding: binding.local,
 				loc,
@@ -233,7 +232,7 @@ export function computeScaleFactor(
 		for (const req of requests) {
 			const converted = convertRequestToYieldUnit(req, yieldVal, options);
 			if (converted === null) {
-				pushWarning(warnings, WarningCode.MODULE_UNIT_MISMATCH, {
+				pushModuleWarning(warnings, ModuleWarningCode.MODULE_UNIT_MISMATCH, {
 					specifier: decl.specifier,
 					binding: binding.local,
 					requestedUnit: req.unit ?? "",
@@ -246,12 +245,16 @@ export function computeScaleFactor(
 			sum += converted;
 		}
 		if (sawBatch && yieldVal.value > 0) {
-			pushWarning(warnings, WarningCode.MODULE_BATCH_INTERPRETATION, {
-				specifier: decl.specifier,
-				binding: binding.local,
-				batches: Math.round(sum / yieldVal.value),
-				loc,
-			});
+			pushModuleWarning(
+				warnings,
+				ModuleWarningCode.MODULE_BATCH_INTERPRETATION,
+				{
+					specifier: decl.specifier,
+					binding: binding.local,
+					batches: Math.round(sum / yieldVal.value),
+					loc,
+				},
+			);
 		}
 
 		anyQuantified = true;
@@ -267,7 +270,7 @@ export function computeScaleFactor(
 		const requested = round2(sum);
 		if (delivered > requested) {
 			const unitSuffix = yieldVal.unit ? ` ${yieldVal.unit}` : "";
-			pushWarning(warnings, WarningCode.MODULE_SURPLUS, {
+			pushModuleWarning(warnings, ModuleWarningCode.MODULE_SURPLUS, {
 				specifier: decl.specifier,
 				binding: local,
 				surplus: `${delivered}${unitSuffix} produced, ${requested}${unitSuffix} used`,

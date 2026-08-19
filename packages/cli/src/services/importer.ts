@@ -1,11 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { generateText } from "ai";
 import type { LanguageModel, SystemModelMessage } from "ai";
-import {
-	warningSeverity,
-	type CompilationResult,
-	type Warning,
-} from "@gram-lang/kitchen";
+import type { CompilationResult, Warning } from "@gram-lang/kitchen";
+import { warningSeverityOf } from "@gram-lang/modules";
 import type { AnalysisResult, IngredientData } from "@gram-lang/analyzer";
 import { formatGram } from "@gram-lang/format";
 import { getAiLanguageInstruction } from "@gram-lang/i18n";
@@ -324,7 +321,7 @@ function lostFrom(
 	return lost;
 }
 
-// Only `warningSeverity[code] === "error"` (undefined references, scope
+// Only `warningSeverityOf(code) === "error"` (undefined references, scope
 // conflicts...) is worth spending an AI retry on — the same bar `gram check`
 // uses by default. Nutritional/estimation gaps and incomplete-but-valid
 // annotations (e.g. a new ingredient not yet in the user's database) are
@@ -337,7 +334,7 @@ export function validateGram(text: string): string[] {
 function errorsFrom(result: CompileCheck): string[] {
 	if (!result.ok) return [result.error];
 	return result.warnings
-		.filter((w) => warningSeverity[w.code] === "error")
+		.filter((w) => warningSeverityOf(w.code) === "error")
 		.map((w) => w.message);
 }
 

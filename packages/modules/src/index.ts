@@ -6,3 +6,4 @@ export * from "./rename";
 export * from "./yield";
 export * from "./compose";
 export * from "./reverse-deps";
+export * from "./warnings";

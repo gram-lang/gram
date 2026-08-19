@@ -1,11 +1,7 @@
 // Single source of truth for the API Reference tables, computed directly from
 // the packages' own exports (no intermediate generated markdown files — see
 // migration plan Phase 6.5).
-import {
-	WarningCode,
-	warningTemplates,
-	warningSeverity,
-} from "@gram-lang/kitchen";
+import { allWarningInfo } from "@gram-lang/modules";
 import { ASTNodeType } from "@gram-lang/parser";
 import {
 	UNIT_DICTIONARIES,
@@ -37,10 +33,10 @@ const WARNING_LABELS: Record<Locale, string[]> = {
 export function warningCodesTable(locale: Locale): Table {
 	return {
 		headers: WARNING_LABELS[locale],
-		rows: Object.values(WarningCode).map((code) => [
+		rows: allWarningInfo.map(({ code, severity, template }) => [
 			`\`${code}\``,
-			warningSeverity[code],
-			`\`${warningTemplates[code](payloadProxy)}\``,
+			severity,
+			`\`${template(payloadProxy)}\``,
 		]),
 	};
 }

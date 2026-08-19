@@ -5,6 +5,7 @@ import {
 	type Location,
 } from "@gram-lang/parser";
 import { WarningCode, pushWarning, type Warning } from "@gram-lang/kitchen";
+import { ModuleWarningCode, pushModuleWarning } from "./warnings";
 import type { ModuleHost, ModuleGraph, ModuleRecord } from "./host";
 
 const DEFAULT_MAX_DEPTH = 32;
@@ -13,11 +14,11 @@ type SpecifierValidation =
 	| { ok: true }
 	| {
 			ok: false;
-			code: WarningCode.MODULE_SCHEME_UNSUPPORTED;
+			code: ModuleWarningCode.MODULE_SCHEME_UNSUPPORTED;
 	  }
 	| {
 			ok: false;
-			code: WarningCode.MODULE_SPECIFIER_INVALID;
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID;
 			reason: string;
 	  };
 
@@ -30,19 +31,19 @@ type SpecifierValidation =
  */
 function validateSpecifier(specifier: string): SpecifierValidation {
 	if (/^[a-z][a-z0-9+.-]*:\/\//i.test(specifier)) {
-		return { ok: false, code: WarningCode.MODULE_SCHEME_UNSUPPORTED };
+		return { ok: false, code: ModuleWarningCode.MODULE_SCHEME_UNSUPPORTED };
 	}
 	if (specifier.startsWith("/")) {
 		return {
 			ok: false,
-			code: WarningCode.MODULE_SPECIFIER_INVALID,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
 			reason: "absolute filesystem paths are not portable",
 		};
 	}
 	if (specifier.startsWith("hub:")) {
 		return {
 			ok: false,
-			code: WarningCode.MODULE_SPECIFIER_INVALID,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
 			reason: 'the community hub ("hub:...") is not supported yet',
 		};
 	}
@@ -57,7 +58,7 @@ function validateSpecifier(specifier: string): SpecifierValidation {
 	) {
 		return {
 			ok: false,
-			code: WarningCode.MODULE_SPECIFIER_INVALID,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
 			reason:
 				'expected a relative path starting with "./" or "../", or an "@/"/"@alias/" project path',
 		};
@@ -65,7 +66,7 @@ function validateSpecifier(specifier: string): SpecifierValidation {
 	if (!specifier.endsWith(".gram")) {
 		return {
 			ok: false,
-			code: WarningCode.MODULE_SPECIFIER_INVALID,
+			code: ModuleWarningCode.MODULE_SPECIFIER_INVALID,
 			reason: 'path imports must end in ".gram"',
 		};
 	}
@@ -119,7 +120,7 @@ export async function loadModuleGraph(
 		if (pathStack.includes(uri)) {
 			const chainStart = pathStack.indexOf(uri);
 			const chain = [...pathStack.slice(chainStart), uri].join(" → ");
-			pushWarning(diagnostics, WarningCode.MODULE_CYCLE, {
+			pushModuleWarning(diagnostics, ModuleWarningCode.MODULE_CYCLE, {
 				chain,
 				loc: locFor(fromDecl, fromUri),
 			});
@@ -132,7 +133,7 @@ export async function loadModuleGraph(
 		const displaySpecifier = fromDecl?.specifier ?? uri;
 
 		if (depth > maxDepth) {
-			pushWarning(diagnostics, WarningCode.MODULE_DEPTH_EXCEEDED, {
+			pushModuleWarning(diagnostics, ModuleWarningCode.MODULE_DEPTH_EXCEEDED, {
 				specifier: displaySpecifier,
 				depth: maxDepth,
 				loc: locFor(fromDecl, fromUri),
@@ -156,7 +157,7 @@ export async function loadModuleGraph(
 			ast = getAST(source);
 		} catch (err) {
 			if (err instanceof GramParseError) {
-				pushWarning(diagnostics, WarningCode.MODULE_PARSE_ERROR, {
+				pushModuleWarning(diagnostics, ModuleWarningCode.MODULE_PARSE_ERROR, {
 					specifier: displaySpecifier,
 					parseMessage: err.message,
 					loc: { start: err.offset, end: err.offset, uri },
@@ -171,9 +172,9 @@ export async function loadModuleGraph(
 		for (const decl of ast.imports) {
 			const validation = validateSpecifier(decl.specifier);
 			if (!validation.ok) {
-				pushWarning(diagnostics, validation.code, {
+				pushModuleWarning(diagnostics, validation.code, {
 					specifier: decl.specifier,
-					...(validation.code === WarningCode.MODULE_SPECIFIER_INVALID
+					...(validation.code === ModuleWarningCode.MODULE_SPECIFIER_INVALID
 						? { reason: validation.reason }
 						: {}),
 					loc: decl.loc ? { ...decl.loc, uri } : undefined,
@@ -185,11 +186,15 @@ export async function loadModuleGraph(
 			try {
 				depUri = host.resolve(decl.specifier, uri);
 			} catch (err) {
-				pushWarning(diagnostics, WarningCode.MODULE_SPECIFIER_INVALID, {
-					specifier: decl.specifier,
-					reason: err instanceof Error ? err.message : String(err),
-					loc: decl.loc ? { ...decl.loc, uri } : undefined,
-				});
+				pushModuleWarning(
+					diagnostics,
+					ModuleWarningCode.MODULE_SPECIFIER_INVALID,
+					{
+						specifier: decl.specifier,
+						reason: err instanceof Error ? err.message : String(err),
+						loc: decl.loc ? { ...decl.loc, uri } : undefined,
+					},
+				);
 				continue;
 			}
 

@@ -14,11 +14,8 @@ import {
 	collectReferences,
 	collectIngredients,
 } from "../utils/ast-walker";
-import {
-	warningSeverity,
-	type WarningSeverity,
-	type Warning,
-} from "@gram-lang/kitchen";
+import type { WarningSeverity, Warning } from "@gram-lang/kitchen";
+import { warningSeverityOf } from "@gram-lang/modules";
 import {
 	isKnownIngredient,
 	findClosestIngredient,
@@ -55,7 +52,7 @@ function warningToDiagnostic(
 	uri: string,
 	w: Warning,
 ): Diagnostic {
-	const severity = SEVERITY_MAP[warningSeverity[w.code]];
+	const severity = SEVERITY_MAP[warningSeverityOf(w.code)];
 	const warnUri = w.loc?.uri ?? uri;
 
 	if (warnUri === uri) {

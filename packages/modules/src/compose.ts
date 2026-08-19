@@ -21,6 +21,7 @@ import {
 	type CompilationResult,
 	type DeferredImport,
 } from "@gram-lang/kitchen";
+import { ModuleWarningCode, pushModuleWarning } from "./warnings";
 import {
 	analyze,
 	type AnalyzedCompilationResult,
@@ -240,7 +241,7 @@ function mergeDensities(
 		if (hostValue === undefined) {
 			merged.set(ingredient, depValue);
 		} else if (hostValue !== depValue) {
-			pushWarning(warnings, WarningCode.DENSITY_OVERRIDE_SHADOWED, {
+			pushModuleWarning(warnings, ModuleWarningCode.DENSITY_OVERRIDE_SHADOWED, {
 				ingredient,
 				specifier,
 				hostValue: parseFloat(hostValue),
@@ -360,13 +361,17 @@ export function composeRecipe(
 					const available = [...dep.exports.keys()].filter(
 						(k) => k !== "default",
 					);
-					pushWarning(warnings, WarningCode.MODULE_EXPORT_NOT_FOUND, {
-						specifier: decl.specifier,
-						exported: binding.exported,
-						available,
-						suggestion: fuzzySuggest(binding.exported, available),
-						loc: decl.loc,
-					});
+					pushModuleWarning(
+						warnings,
+						ModuleWarningCode.MODULE_EXPORT_NOT_FOUND,
+						{
+							specifier: decl.specifier,
+							exported: binding.exported,
+							available,
+							suggestion: fuzzySuggest(binding.exported, available),
+							loc: decl.loc,
+						},
+					);
 				}
 			}
 			if (validBindings.length === 0) continue;
@@ -383,7 +388,7 @@ export function composeRecipe(
 
 			validBindings.forEach((binding) => {
 				if (!referencedNames.has(binding.local)) {
-					pushWarning(warnings, WarningCode.UNUSED_IMPORT, {
+					pushModuleWarning(warnings, ModuleWarningCode.UNUSED_IMPORT, {
 						local: binding.local,
 						specifier: decl.specifier,
 						loc: decl.loc,
@@ -406,17 +411,21 @@ export function composeRecipe(
 				usedStock.add(depUri);
 
 				if (decl.retroPlanning) {
-					pushWarning(warnings, WarningCode.STOCKED_RETRO_PLANNING_IGNORED, {
-						specifier: decl.specifier,
-						loc: decl.loc,
-					});
+					pushModuleWarning(
+						warnings,
+						ModuleWarningCode.STOCKED_RETRO_PLANNING_IGNORED,
+						{
+							specifier: decl.specifier,
+							loc: decl.loc,
+						},
+					);
 				}
 
 				validBindings.forEach((binding) => {
 					if (slugify(cleanRegistryName(binding.local)) in options.db) {
-						pushWarning(
+						pushModuleWarning(
 							warnings,
-							WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT,
+							ModuleWarningCode.MODULE_BINDING_SHADOWS_INGREDIENT,
 							{
 								binding: binding.local,
 								specifier: decl.specifier,
@@ -440,9 +449,9 @@ export function composeRecipe(
 				});
 
 				if (validBindings.length > 1) {
-					pushWarning(
+					pushModuleWarning(
 						warnings,
-						WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED,
+						ModuleWarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED,
 						{ specifier: decl.specifier, loc: decl.loc },
 					);
 				}
@@ -529,10 +538,14 @@ export function composeRecipe(
 				const renamed = applyRename(scaledSections, table);
 				const { sections: debakered, dropped } = dropBakersReference(renamed);
 				if (dropped) {
-					pushWarning(warnings, WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED, {
-						specifier: decl.specifier,
-						loc: decl.loc,
-					});
+					pushModuleWarning(
+						warnings,
+						ModuleWarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED,
+						{
+							specifier: decl.specifier,
+							loc: decl.loc,
+						},
+					);
 				}
 				stampUri(debakered, depUri);
 
@@ -560,9 +573,9 @@ export function composeRecipe(
 						const target = debakered[i];
 						if (!target) return;
 						if (target.retroPlanning) {
-							pushWarning(
+							pushModuleWarning(
 								warnings,
-								WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED,
+								ModuleWarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED,
 								{ specifier: decl.specifier, loc: decl.loc },
 							);
 						}

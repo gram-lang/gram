@@ -20,30 +20,12 @@ export enum WarningCode {
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
-	// Phase E). Produced either by kitchen itself (MODULE_NOT_FOUND, in the
-	// no-resolution-happened degraded path, §C.4) or by `@gram-lang/modules`
-	// pushing onto the same shared `Warning` vocabulary during graph loading
-	// and composition.
+	// Phase E). The only module-related code kitchen raises itself, in the
+	// no-resolution-happened degraded path (§C.4) — every other module-only
+	// warning code lives in `@gram-lang/modules`' own `ModuleWarningCode`
+	// (`packages/modules/src/warnings.ts`), pushed via `pushRawWarning` below
+	// onto this same shared `Warning` vocabulary.
 	MODULE_NOT_FOUND = "MODULE_NOT_FOUND",
-	MODULE_PARSE_ERROR = "MODULE_PARSE_ERROR",
-	MODULE_CYCLE = "MODULE_CYCLE",
-	MODULE_DEPTH_EXCEEDED = "MODULE_DEPTH_EXCEEDED",
-	MODULE_EXPORT_NOT_FOUND = "MODULE_EXPORT_NOT_FOUND",
-	UNUSED_IMPORT = "UNUSED_IMPORT",
-	UNRESOLVED_MODULE_YIELD = "UNRESOLVED_MODULE_YIELD",
-	ESTIMATED_MODULE_YIELD = "ESTIMATED_MODULE_YIELD",
-	MODULE_UNIT_MISMATCH = "MODULE_UNIT_MISMATCH",
-	MODULE_BATCH_INTERPRETATION = "MODULE_BATCH_INTERPRETATION",
-	IMPORTED_BAKERS_REFERENCE_DROPPED = "IMPORTED_BAKERS_REFERENCE_DROPPED",
-	DENSITY_OVERRIDE_SHADOWED = "DENSITY_OVERRIDE_SHADOWED",
-	MODULE_SURPLUS = "MODULE_SURPLUS",
-	MODULE_SPECIFIER_INVALID = "MODULE_SPECIFIER_INVALID",
-	MODULE_SCHEME_UNSUPPORTED = "MODULE_SCHEME_UNSUPPORTED",
-	// "stock" mechanism (module-imports RFC, stock/retro-planning redesign).
-	STOCKED_RETRO_PLANNING_IGNORED = "STOCKED_RETRO_PLANNING_IGNORED",
-	RETRO_PLANNING_OVERRIDE_SHADOWED = "RETRO_PLANNING_OVERRIDE_SHADOWED",
-	MODULE_BINDING_SHADOWS_INGREDIENT = "MODULE_BINDING_SHADOWS_INGREDIENT",
-	STOCKED_DESTRUCTURED_NUTRITION_BLENDED = "STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
 }
 
 export interface WarningPayloads {
@@ -113,98 +95,6 @@ export interface WarningPayloads {
 		specifier: string;
 		loc?: Location;
 	};
-	[WarningCode.MODULE_PARSE_ERROR]: {
-		specifier: string;
-		parseMessage: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_CYCLE]: {
-		chain: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_DEPTH_EXCEEDED]: {
-		specifier: string;
-		depth: number;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_EXPORT_NOT_FOUND]: {
-		specifier: string;
-		exported: string;
-		available: string[];
-		suggestion?: string;
-		loc?: Location;
-	};
-	[WarningCode.UNUSED_IMPORT]: {
-		local: string;
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.UNRESOLVED_MODULE_YIELD]: {
-		specifier: string;
-		binding: string;
-		loc?: Location;
-	};
-	[WarningCode.ESTIMATED_MODULE_YIELD]: {
-		specifier: string;
-		binding: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_UNIT_MISMATCH]: {
-		specifier: string;
-		binding: string;
-		requestedUnit: string;
-		yieldUnit: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_BATCH_INTERPRETATION]: {
-		specifier: string;
-		binding: string;
-		batches: number;
-		loc?: Location;
-	};
-	[WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED]: {
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.DENSITY_OVERRIDE_SHADOWED]: {
-		ingredient: string;
-		specifier: string;
-		hostValue: number;
-		moduleValue: number;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_SURPLUS]: {
-		specifier: string;
-		binding: string;
-		surplus: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_SPECIFIER_INVALID]: {
-		specifier: string;
-		reason: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_SCHEME_UNSUPPORTED]: {
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: {
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: {
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: {
-		binding: string;
-		specifier: string;
-		loc?: Location;
-	};
-	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: {
-		specifier: string;
-		loc?: Location;
-	};
 }
 
 export const warningTemplates: {
@@ -250,53 +140,6 @@ export const warningTemplates: {
 		`TRACK_CONTENTION: Named track '${p.trackName}' experienced a serialization delay of ${p.delay} minutes on '${p.item}'. It will finish later than its scheduled deadline.`,
 	[WarningCode.MODULE_NOT_FOUND]: (p) =>
 		`Module "${p.specifier}" could not be found or read.`,
-	[WarningCode.MODULE_PARSE_ERROR]: (p) =>
-		`Module "${p.specifier}" has a syntax error: ${p.parseMessage}`,
-	[WarningCode.MODULE_CYCLE]: (p) => `Import cycle detected: ${p.chain}.`,
-	[WarningCode.MODULE_DEPTH_EXCEEDED]: (p) =>
-		`Import chain to "${p.specifier}" exceeds the maximum depth of ${p.depth}.`,
-	[WarningCode.MODULE_EXPORT_NOT_FOUND]: (p) => {
-		const suggestion = p.suggestion ? ` Did you mean '&${p.suggestion}'?` : "";
-		// `Array.isArray` guard (rather than `p.available.length`/`.map` used
-		// directly): the docs site renders every template's message shape
-		// through a placeholder proxy that stands in for the whole payload
-		// (packages/docs/src/data/api-reference.ts), so `p.available` there is
-		// a string, not an array.
-		const available = Array.isArray(p.available)
-			? p.available.length
-				? ` Available exports: ${p.available.map((n) => `&${n}`).join(", ")}.`
-				: " This module has no section-level exports."
-			: "";
-		return `"${p.specifier}" does not export '&${p.exported}'.${suggestion}${available}`;
-	},
-	[WarningCode.UNUSED_IMPORT]: (p) =>
-		`Import '&${p.local}' from "${p.specifier}" is never used.`,
-	[WarningCode.UNRESOLVED_MODULE_YIELD]: (p) =>
-		`Cannot determine the yield of '&${p.binding}' from "${p.specifier}" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.`,
-	[WarningCode.ESTIMATED_MODULE_YIELD]: (p) =>
-		`The yield of '&${p.binding}' from "${p.specifier}" is estimated — its measured mass relies on a density or default unit weight rather than an explicit mass. Add a precise "densities:" entry (in that module) for an exact scale factor.`,
-	[WarningCode.MODULE_UNIT_MISMATCH]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" was requested in ${p.requestedUnit}, but that module yields in ${p.yieldUnit}, and no density lets one convert to the other. Declare "densities:" to bridge them.`,
-	[WarningCode.MODULE_BATCH_INTERPRETATION]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" was requested as a bare count against a mass/volume yield — interpreted as ${p.batches} batch(es) of the module. Note: quantities are multiplied by ${p.batches}, not cook/rest times.`,
-	[WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED]: (p) =>
-		`The baker's percentage reference (*) from "${p.specifier}" was dropped on import — baker's math doesn't carry across module boundaries.`,
-	[WarningCode.DENSITY_OVERRIDE_SHADOWED]: (p) =>
-		`Density for "${p.ingredient}" declared in "${p.specifier}" (${p.moduleValue}) differs from the host's (${p.hostValue}) — the host's value wins.`,
-	[WarningCode.MODULE_SURPLUS]: (p) =>
-		`Scaling "${p.specifier}" to satisfy '&${p.binding}' produces more than requested: ${p.surplus}.`,
-	[WarningCode.MODULE_SPECIFIER_INVALID]: (p) =>
-		`Invalid module specifier "${p.specifier}": ${p.reason}`,
-	[WarningCode.MODULE_SCHEME_UNSUPPORTED]: (p) =>
-		`Unsupported module specifier scheme: "${p.specifier}".`,
-	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: (p) =>
-		`"${p.specifier}" is imported as stock and also carries a "~{...}" retro-planning clause — a stocked import costs zero timeline, so the retro-planning is ignored.`,
-	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: (p) =>
-		`The "~{...}" retro-planning on this "@use" of "${p.specifier}" overrides the module's own — the host's value wins.`,
-	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" shares its slug with an existing ingredient in the database.`,
-	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: (p) =>
-		`"${p.specifier}" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.`,
 };
 
 /**
@@ -306,7 +149,12 @@ export const warningTemplates: {
  * server, renderer) can rely on `.message` always being present.
  */
 export interface Warning {
-	code: WarningCode;
+	// Not narrowed to `WarningCode`: `@gram-lang/modules` pushes its own
+	// `ModuleWarningCode` values (`packages/modules/src/warnings.ts`) onto
+	// this same array via `pushRawWarning`, so any consumer reading `.code`
+	// off a `Warning` that may have flowed through a module-composed
+	// compile needs to handle codes outside kitchen's own enum.
+	code: string;
 	message: string;
 	item?: string;
 	loc?: Location;
@@ -346,38 +194,49 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.TIME_PARADOX]: "warning",
 	[WarningCode.TRACK_CONTENTION]: "warning",
 	[WarningCode.MODULE_NOT_FOUND]: "error",
-	[WarningCode.MODULE_PARSE_ERROR]: "error",
-	[WarningCode.MODULE_CYCLE]: "error",
-	[WarningCode.MODULE_DEPTH_EXCEEDED]: "error",
-	[WarningCode.MODULE_EXPORT_NOT_FOUND]: "error",
-	[WarningCode.UNUSED_IMPORT]: "warning",
-	[WarningCode.UNRESOLVED_MODULE_YIELD]: "error",
-	[WarningCode.ESTIMATED_MODULE_YIELD]: "warning",
-	[WarningCode.MODULE_UNIT_MISMATCH]: "error",
-	[WarningCode.MODULE_BATCH_INTERPRETATION]: "info",
-	[WarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED]: "info",
-	[WarningCode.DENSITY_OVERRIDE_SHADOWED]: "info",
-	[WarningCode.MODULE_SURPLUS]: "info",
-	[WarningCode.MODULE_SPECIFIER_INVALID]: "error",
-	[WarningCode.MODULE_SCHEME_UNSUPPORTED]: "error",
-	[WarningCode.STOCKED_RETRO_PLANNING_IGNORED]: "warning",
-	[WarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: "info",
-	[WarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: "warning",
-	[WarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: "info",
 };
+
+// The common shape `pushRawWarning` needs from a payload, independent of
+// which code-space (kitchen's own `WarningCode` or e.g. `@gram-lang/modules`'
+// `ModuleWarningCode`) it belongs to.
+export type WarningPayloadShape = {
+	item?: string;
+	loc?: Location;
+	section?: string | null;
+};
+
+/**
+ * Code-space-agnostic primitive: builds a `Warning` from an already-rendered
+ * `message` and pushes it. `pushWarning` below is the strongly-typed
+ * kitchen-own-`WarningCode` wrapper around this; other packages that define
+ * their own warning codes (e.g. `@gram-lang/modules`' `ModuleWarningCode`)
+ * render their own template and call this directly instead of going through
+ * `pushWarning`, which is constrained to `WarningCode`.
+ */
+export function pushRawWarning<TPayload extends object>(
+	target: Warning[] | { warnings: Warning[] },
+	code: string,
+	message: string,
+	payload: TPayload,
+): void {
+	const warnings = Array.isArray(target) ? target : target.warnings;
+	// Cast rather than constraining the generic to `WarningPayloadShape`
+	// directly: most payloads (e.g. `{ id: string }`) share none of its
+	// (all-optional) properties, which TS's weak-type check would reject.
+	const shape = payload as WarningPayloadShape;
+
+	const warning: Warning = { code, message };
+	if ("item" in shape) warning.item = shape.item;
+	if ("loc" in shape) warning.loc = shape.loc;
+	if ("section" in shape) warning.section = shape.section;
+	if ("loc" in shape && shape.loc?.uri) warning.uri = shape.loc.uri;
+	warnings.push(warning);
+}
 
 export function pushWarning<K extends WarningCode>(
 	target: Warning[] | { warnings: Warning[] },
 	code: K,
 	payload: WarningPayloads[K],
 ): void {
-	const message = warningTemplates[code](payload);
-	const warnings = Array.isArray(target) ? target : target.warnings;
-
-	const warning: Warning = { code, message };
-	if ("item" in payload) warning.item = payload.item;
-	if ("loc" in payload) warning.loc = payload.loc;
-	if ("section" in payload) warning.section = payload.section;
-	if ("loc" in payload && payload.loc?.uri) warning.uri = payload.loc.uri;
-	warnings.push(warning);
+	pushRawWarning(target, code, warningTemplates[code](payload), payload);
 }
