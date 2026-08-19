@@ -39,6 +39,7 @@ export class RecipeRegistry implements Registry {
 			if (data.parent) existing.parent = data.parent;
 			if (data.is_intermediate) existing.is_intermediate = true;
 			if (data.is_module_synthetic) existing.is_module_synthetic = true;
+			if (data.displayName) existing.name = data.displayName;
 		}
 		return id;
 	}
