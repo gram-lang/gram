@@ -76,6 +76,21 @@ let workspaceFolders: string[] = [];
 const graphs = new Map<string, ModuleGraph>();
 const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
 
+// `findProjectRootSync`/`readPathsConfigSync` are both blocking (`existsSync`
+// walks up the directory tree, `readPathsConfigSync` does a sync file read +
+// YAML parse) — cheap once, but `loadGraphFor` used to redo them on every
+// 150ms-debounced edit of every open document, stalling the event loop on
+// every keystroke even for documents with no `@use` at all. Keyed by
+// directory (not by document) so every open file under the same project
+// shares one lookup. Cleared wholesale on a `.gram/config.yaml` change
+// (`onDidChangeWatchedFiles` below) — the one thing that can make a cached
+// entry wrong — so a `paths:` edit still takes effect on that document's
+// next refresh, same as before this cache existed.
+const projectContextCache = new Map<
+	string,
+	{ projectRoot: string; paths?: Record<string, string> }
+>();
+
 /**
  * Loads (or reloads) `uri`'s `@use` graph — never throws, and returns
  * `undefined` for anything that isn't a `file:` document (an untitled or
@@ -91,9 +106,14 @@ async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
 	if (!uri.startsWith("file:")) return undefined;
 	try {
 		const filePath = fileURLToPath(uri);
-		const projectRoot = findProjectRootSync(dirname(filePath));
-		const paths = readPathsConfigSync(projectRoot);
-		const host = createLspModuleHost(projectRoot, documents, paths);
+		const dir = dirname(filePath);
+		let ctx = projectContextCache.get(dir);
+		if (!ctx) {
+			const projectRoot = findProjectRootSync(dir);
+			ctx = { projectRoot, paths: readPathsConfigSync(projectRoot) };
+			projectContextCache.set(dir, ctx);
+		}
+		const host = createLspModuleHost(ctx.projectRoot, documents, ctx.paths);
 		return await loadModuleGraph(uri, host);
 	} catch (e) {
 		connection.console.error(`Module graph load failed for ${uri}: ${e}`);
@@ -169,6 +189,7 @@ connection.onInitialized(async () => {
 		await connection.client.register(DidChangeWatchedFilesNotification.type, {
 			watchers: [
 				{ globPattern: "**/.gram/ingredients.yaml" },
+				{ globPattern: "**/.gram/config.yaml" },
 				{ globPattern: "**/*.gram" },
 			],
 		});
@@ -183,6 +204,12 @@ connection.onInitialized(async () => {
 		for (const change of params.changes) {
 			if (change.uri.endsWith(".gram")) {
 				invalidateDependents(change.uri);
+			} else if (change.uri.endsWith(".gram/config.yaml")) {
+				// A `paths:` alias edit invalidates every cached project
+				// root/paths lookup (`loadGraphFor`'s `projectContextCache`) — the
+				// next debounced refresh of each open document recomputes it fresh,
+				// same as every refresh did before that cache existed.
+				projectContextCache.clear();
 			} else {
 				dbChanged = true;
 			}
