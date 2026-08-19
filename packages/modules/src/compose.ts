@@ -121,6 +121,11 @@ function stampUri(sections: SectionAST[], uri: string): void {
 			if (child.type === ASTNodeType.Step) {
 				(child as StepAST).children.forEach((c) => {
 					stamp(c);
+					if (c.type === ASTNodeType.Alternative) {
+						c.options.forEach((opt) => {
+							stamp(opt);
+						});
+					}
 				});
 			}
 		});
@@ -721,7 +726,7 @@ export function finalizeComposed(
 	// and message are the same underlying problem, not two different ones.
 	const seen = new Set<string>();
 	const warnings = [...compiled.warnings, ...compose.warnings].filter((w) => {
-		const key = `${w.code} ${w.message}`;
+		const key = `${w.code} ${w.message}`;
 		if (seen.has(key)) return false;
 		seen.add(key);
 		return true;
