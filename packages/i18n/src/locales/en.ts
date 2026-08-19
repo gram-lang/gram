@@ -150,8 +150,12 @@ export const en = {
 			loading: "Loading viewer...",
 		},
 		warnings: {
+			errors: "Errors",
+			error: "Error",
 			warnings: "Warnings",
 			warning: "Warning",
+			infos: "Notices",
+			info: "Notice",
 			item: "Item",
 			show: "Show",
 		},

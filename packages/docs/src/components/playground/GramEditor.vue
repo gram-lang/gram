@@ -179,6 +179,19 @@ defineExpose({
 		view.focus();
 	},
 
+	setDiagnostics(
+		diags: Array<{
+			from: number;
+			to: number;
+			severity: "error" | "warning" | "info";
+			message: string;
+		}>,
+	) {
+		if (!view) return;
+		diagnosticsCache.set(props.activeFile, diags);
+		forceLinting(view);
+	},
+
 	setErrorMarker(offset: number | null, message: string) {
 		if (!view) return;
 

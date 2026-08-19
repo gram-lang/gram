@@ -136,10 +136,11 @@ export const moduleWarningTemplates: {
 	[K in ModuleWarningCode]: (payload: ModuleWarningPayloads[K]) => string;
 } = {
 	[ModuleWarningCode.MODULE_PARSE_ERROR]: (p) =>
-		`Module "${p.specifier}" has a syntax error: ${p.parseMessage}`,
-	[ModuleWarningCode.MODULE_CYCLE]: (p) => `Import cycle detected: ${p.chain}.`,
+		`Syntax error in imported module "${p.specifier}": ${p.parseMessage}`,
+	[ModuleWarningCode.MODULE_CYCLE]: (p) =>
+		`Circular module import detected: ${p.chain}.`,
 	[ModuleWarningCode.MODULE_DEPTH_EXCEEDED]: (p) =>
-		`Import chain to "${p.specifier}" exceeds the maximum depth of ${p.depth}.`,
+		`Import depth limit exceeded (${p.depth}) while importing "${p.specifier}".`,
 	[ModuleWarningCode.MODULE_EXPORT_NOT_FOUND]: (p) => {
 		const suggestion = p.suggestion ? ` Did you mean '&${p.suggestion}'?` : "";
 		// `Array.isArray` guard (rather than `p.available.length`/`.map` used
@@ -152,36 +153,36 @@ export const moduleWarningTemplates: {
 				? ` Available exports: ${p.available.map((n) => `&${n}`).join(", ")}.`
 				: " This module has no section-level exports."
 			: "";
-		return `"${p.specifier}" does not export '&${p.exported}'.${suggestion}${available}`;
+		return `Module "${p.specifier}" does not export '&${p.exported}'.${suggestion}${available}`;
 	},
 	[ModuleWarningCode.UNUSED_IMPORT]: (p) =>
-		`Import '&${p.local}' from "${p.specifier}" is never used.`,
+		`Unused import '&${p.local}' from "${p.specifier}".`,
 	[ModuleWarningCode.UNRESOLVED_MODULE_YIELD]: (p) =>
-		`Cannot determine the yield of '&${p.binding}' from "${p.specifier}" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.`,
+		`Cannot compute yield for '&${p.binding}' from "${p.specifier}": missing physical mass data for one or more ingredients.`,
 	[ModuleWarningCode.ESTIMATED_MODULE_YIELD]: (p) =>
-		`The yield of '&${p.binding}' from "${p.specifier}" is estimated — its measured mass relies on a density or default unit weight rather than an explicit mass. Add a precise "densities:" entry (in that module) for an exact scale factor.`,
+		`Yield of '&${p.binding}' from "${p.specifier}" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.`,
 	[ModuleWarningCode.MODULE_UNIT_MISMATCH]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" was requested in ${p.requestedUnit}, but that module yields in ${p.yieldUnit}, and no density lets one convert to the other. Declare "densities:" to bridge them.`,
+		`Unit mismatch for '&${p.binding}' from "${p.specifier}": requested in '${p.requestedUnit}' but yields in '${p.yieldUnit}' without a conversion density.`,
 	[ModuleWarningCode.MODULE_BATCH_INTERPRETATION]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" was requested as a bare count against a mass/volume yield — interpreted as ${p.batches} batch(es) of the module. Note: quantities are multiplied by ${p.batches}, not cook/rest times.`,
+		`'&${p.binding}' from "${p.specifier}" requested without unit — scaled as ${p.batches} batch(es) of the module.`,
 	[ModuleWarningCode.IMPORTED_BAKERS_REFERENCE_DROPPED]: (p) =>
-		`The baker's percentage reference (*) from "${p.specifier}" was dropped on import — baker's math doesn't carry across module boundaries.`,
+		`Baker's percentage base (*) from "${p.specifier}" is scoped to its own module and was not imported.`,
 	[ModuleWarningCode.DENSITY_OVERRIDE_SHADOWED]: (p) =>
-		`Density for "${p.ingredient}" declared in "${p.specifier}" (${p.moduleValue}) differs from the host's (${p.hostValue}) — the host's value wins.`,
+		`Density for "${p.ingredient}" in host recipe (${p.hostValue}) overrides module "${p.specifier}" (${p.moduleValue}).`,
 	[ModuleWarningCode.MODULE_SURPLUS]: (p) =>
-		`Scaling "${p.specifier}" to satisfy '&${p.binding}' produces more than requested: ${p.surplus}.`,
+		`Scaling "${p.specifier}" for '&${p.binding}' yields a surplus: ${p.surplus}.`,
 	[ModuleWarningCode.MODULE_SPECIFIER_INVALID]: (p) =>
-		`Invalid module specifier "${p.specifier}": ${p.reason}`,
+		`Invalid module path "${p.specifier}": ${p.reason}`,
 	[ModuleWarningCode.MODULE_SCHEME_UNSUPPORTED]: (p) =>
-		`Unsupported module specifier scheme: "${p.specifier}".`,
+		`Unsupported URL scheme in module specifier: "${p.specifier}".`,
 	[ModuleWarningCode.STOCKED_RETRO_PLANNING_IGNORED]: (p) =>
-		`"${p.specifier}" is imported as stock and also carries a "~{...}" retro-planning clause — a stocked import costs zero timeline, so the retro-planning is ignored.`,
+		`Stocked module "${p.specifier}" has a retro-planning offset "~{...}", which is ignored because stocked items require no prep time.`,
 	[ModuleWarningCode.RETRO_PLANNING_OVERRIDE_SHADOWED]: (p) =>
-		`The "~{...}" retro-planning on this "@use" of "${p.specifier}" overrides the module's own — the host's value wins.`,
+		`Host retro-planning offset on "@use ${p.specifier}" overrides the module's internal offset.`,
 	[ModuleWarningCode.MODULE_BINDING_SHADOWS_INGREDIENT]: (p) =>
-		`'&${p.binding}' from "${p.specifier}" shares its slug with an existing ingredient in the database.`,
+		`Imported binding '&${p.binding}' from "${p.specifier}" shares name with a database ingredient.`,
 	[ModuleWarningCode.STOCKED_DESTRUCTURED_NUTRITION_BLENDED]: (p) =>
-		`"${p.specifier}" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.`,
+		`Stocked module "${p.specifier}" uses destructured imports — nutrition profile is averaged across the entire module.`,
 };
 
 /**

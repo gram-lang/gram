@@ -63,6 +63,7 @@ export interface WarningPayloads {
 	[WarningCode.INVALID_UNIT]: {
 		type: "Timer" | "Temperature" | "RetroPlanning";
 		value: string;
+		item?: string;
 		loc?: Location;
 	};
 	[WarningCode.SCOPE_CONFLICT]: {
@@ -101,45 +102,46 @@ export const warningTemplates: {
 	[K in WarningCode]: (payload: WarningPayloads[K]) => string;
 } = {
 	[WarningCode.VARIABLE_NOT_FOUND]: (p) =>
-		`Variable '&${p.targetName}' not found.`,
+		`Cannot resolve relative quantity: target intermediate '&${p.targetName}' is not defined.`,
 	[WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: (p) =>
-		`Could not resolve relative quantity for '@${p.targetName}'. Source not found in current section.`,
+		`Cannot resolve relative quantity: target ingredient '@${p.targetName}' was not found in the current section.`,
 	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: (p) =>
-		`Cannot compute relative quantity for '${p.item}' because the mass of target '${p.targetName}' is unknown.`,
+		`Cannot compute relative quantity for '${p.item}': mass of target '${p.targetName}' is unknown.`,
 	[WarningCode.CIRCULAR_REFERENCE]: (p) =>
-		`Circular reference detected: ${p.name} depends on itself.`,
+		`Circular reference detected: '${p.name}' depends on itself.`,
 	[WarningCode.UNDEFINED_REFERENCE]: (p) =>
-		`Reference to undefined ingredient '${p.prefix}${p.name}'.`,
+		`Undefined reference '${p.prefix}${p.name}' — no prior step or section produces this item.`,
 	[WarningCode.MISSING_UNIT]: (p) =>
 		p.type === "RetroPlanning"
-			? `Retro-planning for section "${p.item}" must be a strictly negative duration with an explicit unit (e.g. -2h, -1d, -30min).`
-			: `${p.type} must have an explicit unit.`,
+			? `Retro-planning offset for "${p.item}" requires a strictly negative duration (e.g. -2h, -30min).`
+			: `${p.type} requires an explicit unit (e.g. min, s, °C).`,
 	[WarningCode.INVALID_UNIT]: (p) =>
 		p.type === "RetroPlanning"
-			? `Invalid retro-planning unit "${p.value}" — expected d, h, or min.`
+			? `Invalid retro-planning unit "${p.value}"${p.item ? ` on "${p.item}"` : ""} — expected d, h, or min.`
 			: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
-		`Global variable '&${p.varName}' is redefined.`,
-	[WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,
+		`Intermediate variable '&${p.varName}' is redefined; variable names must be unique across the recipe.`,
+	[WarningCode.MISSING_INGREDIENT]: (p) =>
+		`Ingredient "${p.id}" not found in database — nutritional metrics and density conversions unavailable.`,
 	[WarningCode.MISSING_MACROS]: (p) =>
-		`Ingredient "${p.id}" has no default macro data.`,
+		`Ingredient "${p.id}" has no macronutrient data in database — nutritional totals are partial.`,
 	[WarningCode.UNKNOWN_MASS]: (p) =>
-		`Cannot calculate mass for "${p.id}" to estimate nutrition.`,
+		`Cannot calculate mass for "${p.id}" — omitted from nutritional totals.`,
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: (p) =>
-		`Invalid modifier combination on "${p.item}": ${p.combination}`,
+		`Incompatible modifiers on "${p.item}": ${p.combination}.`,
 	// These two are pushed directly (by @gram-lang/analyzer) as ready-made
 	// Warning objects rather than through pushWarning(), so their templates are
 	// never actually invoked — they exist only to keep WarningPayloads exhaustive.
 	[WarningCode.INVALID_BAKERS_REFERENCE]: (p) =>
-		`Cannot use '${p.item}' as the Baker's Percentage reference.`,
+		`'${p.item}' cannot be used as the Baker's percentage reference (*).`,
 	[WarningCode.NO_BAKERS_REFERENCE]: () =>
-		`No Baker's Percentage reference found.`,
+		`Baker's percentages (%) are used but no base flour (*) was designated.`,
 	[WarningCode.TIME_PARADOX]: (p) =>
-		`TIME_PARADOX: ${p.cause} is pulled backwards to satisfy ${p.conflict}.`,
+		`Timeline conflict: ${p.cause} is pulled earlier than recipe start to satisfy ${p.conflict}.`,
 	[WarningCode.TRACK_CONTENTION]: (p) =>
-		`TRACK_CONTENTION: Named track '${p.trackName}' experienced a serialization delay of ${p.delay} minutes on '${p.item}'. It will finish later than its scheduled deadline.`,
+		`Resource contention on track '${p.trackName}': delayed by ${p.delay} min for '${p.item}'.`,
 	[WarningCode.MODULE_NOT_FOUND]: (p) =>
-		`Module "${p.specifier}" could not be found or read.`,
+		`Module "${p.specifier}" could not be found or resolved.`,
 };
 
 /**
@@ -174,7 +176,8 @@ export type WarningSeverity = "error" | "warning" | "info";
  * collision) are `error`; everything else — nutritional/estimation gaps,
  * incomplete-but-recoverable annotations — is `warning`, so a missing timer
  * unit doesn't fail a build the same way an undefined reference does.
- * `--strict` promotes every `warning` to `error`.
+ * Pure contextual notifications/non-fault notices are `info`.
+ * `--strict` promotes every `warning` and `info` to `error`.
  */
 export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.VARIABLE_NOT_FOUND]: "warning",
@@ -186,13 +189,13 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_UNIT]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
-	[WarningCode.MISSING_MACROS]: "warning",
-	[WarningCode.UNKNOWN_MASS]: "warning",
+	[WarningCode.MISSING_MACROS]: "info",
+	[WarningCode.UNKNOWN_MASS]: "info",
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: "warning",
 	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",
-	[WarningCode.TRACK_CONTENTION]: "warning",
+	[WarningCode.TRACK_CONTENTION]: "info",
 	[WarningCode.MODULE_NOT_FOUND]: "error",
 };
 

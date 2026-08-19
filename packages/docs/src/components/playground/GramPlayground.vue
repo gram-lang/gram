@@ -32,6 +32,7 @@ import {
 	loadModuleGraph,
 	composeRecipe,
 	finalizeComposed,
+	warningSeverityOf,
 } from "@gram-lang/modules";
 import { toMarkdown, toHTML } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
@@ -423,6 +424,27 @@ async function updateGram() {
 		warnings.value = result.warnings || [];
 		jsonData.value = result;
 		trackPlaygroundWarnings(warnings.value.map((w) => w.code));
+
+		const fileWarnings = (result.warnings || []).filter(
+			(w: any) => !w.uri || w.uri === activeFile.value,
+		);
+		const editorDiags = fileWarnings
+			.filter((w: any) => w.loc && w.loc.start != null)
+			.map((w: any) => {
+				const severity = warningSeverityOf(w.code) as
+					| "error"
+					| "warning"
+					| "info";
+				const start = w.loc.start;
+				const end = w.loc.end ?? start + 1;
+				return {
+					from: start,
+					to: Math.max(start + 1, end),
+					severity,
+					message: w.message,
+				};
+			});
+		editorRef.value?.setDiagnostics(editorDiags);
 
 		if (viewMode.value === "json") {
 			content.value = JSON.stringify(result, null, 2);

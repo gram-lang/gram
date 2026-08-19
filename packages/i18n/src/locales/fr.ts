@@ -140,8 +140,12 @@ export const fr: GramLocale = {
 			loading: "Chargement du lecteur...",
 		},
 		warnings: {
+			errors: "Erreurs",
+			error: "Erreur",
 			warnings: "Avertissements",
 			warning: "Avertissement",
+			infos: "Informations",
+			info: "Information",
 			item: "Élément",
 			show: "Afficher",
 		},
