@@ -312,11 +312,13 @@ function invalidateDependents(changedUri: string): void {
 function getFreshState(uri: string): DocumentState | undefined {
 	const doc = documents.get(uri);
 	if (!doc) return states.get(uri);
+	const graph = graphs.get(uri);
 	const fresh = resolveFreshState(
 		states.get(uri),
 		doc.getText(),
 		doc.version,
 		ingredientDB,
+		graph ? { graph, cache: moduleMeasureCache } : undefined,
 	);
 	states.set(uri, fresh);
 	return fresh;
