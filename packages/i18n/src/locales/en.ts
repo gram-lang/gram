@@ -175,6 +175,10 @@ export const en = {
 			newFileName: "New file name",
 			previewingStandalone: "Standalone preview of",
 		},
+		mobileTabs: {
+			editor: "Editor",
+			preview: "Preview",
+		},
 		analysisOptions: "Analysis Options",
 		analysis: "Analysis",
 		massNorm: "Mass Normalization",

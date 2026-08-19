@@ -93,6 +93,8 @@ const t = computed(() => getDictionary(currentLang.value));
 const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
 const activeFile = ref<string>(ENTRY_URI);
 
+const mobileTab = ref<"editor" | "preview">("editor");
+
 const diagnostics = ref<PlaygroundDiagnostic[]>([]);
 const isConsoleCollapsed = ref(false);
 const blockingDiagnostics = computed(() =>
@@ -532,6 +534,7 @@ watch(
 
 // biome-ignore lint/correctness/noUnusedVariables: handleJump is used in the <template> block below, which Biome's Vue support doesn't see.
 async function handleJump(start: number, end: number, uri?: string) {
+	mobileTab.value = "editor";
 	if (uri && uri !== activeFile.value) {
 		activeFile.value = uri;
 		await nextTick();
@@ -685,9 +688,39 @@ onUnmounted(() => {
     </div>
     
     <div class="playground-main-frame">
+      <!-- Mobile View Switcher (Editor / Preview Tabs) -->
+      <div class="mobile-pane-switcher">
+        <button
+          type="button"
+          class="mobile-pane-btn"
+          :class="{ active: mobileTab === 'editor' }"
+          @click="mobileTab = 'editor'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path>
+          </svg>
+          {{ t.playground.mobileTabs?.editor || (currentLang === 'fr' ? 'Éditeur' : 'Editor') }}
+          <span v-if="errorFiles.size > 0" class="mobile-tab-dot dot-error"></span>
+        </button>
+
+        <button
+          type="button"
+          class="mobile-pane-btn"
+          :class="{ active: mobileTab === 'preview' }"
+          @click="mobileTab = 'preview'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+            <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.47,133.47,0,0,1,231,128,133.33,133.33,0,0,1,207.93,158.75C185.67,180.81,158.78,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path>
+          </svg>
+          {{ t.playground.mobileTabs?.preview || (currentLang === 'fr' ? 'Aperçu' : 'Preview') }}
+          <span v-if="hasBlocking" class="mobile-tab-dot dot-error"></span>
+          <span v-else-if="diagnostics.length > 0" class="mobile-tab-dot dot-warning"></span>
+        </button>
+      </div>
+
       <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
         <!-- Left Column: Editor & Options -->
-        <div class="playground-col left-col">
+        <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
           <GramFileTabs
             :files="[...files.keys()]"
             :active-file="activeFile"
@@ -714,7 +747,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Right Column: Output -->
-        <div class="playground-col right-col">
+        <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
           <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
             {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
           </div>
@@ -919,9 +952,62 @@ onUnmounted(() => {
   min-height: 0;
 }
 
+/* Mobile Pane Switcher */
+.mobile-pane-switcher {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-pane-switcher {
+    display: flex;
+    background-color: var(--sl-color-bg-sidebar);
+    border: 1px solid var(--sl-color-border);
+    margin-bottom: 8px;
+  }
+
+  .mobile-pane-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--sl-color-gray-3);
+    background: var(--sl-color-gray-7);
+    border: none;
+    cursor: pointer;
+  }
+
+  .mobile-pane-btn:first-child{
+		border-right: 1px solid var(--sl-color-border);
+  }
+
+  .mobile-pane-btn.active {
+    background-color: var(--sl-color-bg);
+    color: var(--sl-color-text);
+	font-weight: 600;
+  }
+
+  .mobile-tab-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .mobile-tab-dot.dot-error {
+    background-color: #ef4444;
+  }
+
+  .mobile-tab-dot.dot-warning {
+    background-color: #f59e0b;
+  }
+}
+
 /* Workspace & Split Pane */
 .playground-workspace {
   display: flex;
+  flex: 1;
   height: calc(100vh - 360px);
   min-height: 520px;
   border: 1px solid var(--sl-color-border);
@@ -1033,5 +1119,74 @@ onUnmounted(() => {
 .header-view-selector :deep(.dropdown-header:hover) {
   border-color: transparent;
   background-color: transparent;
+}
+
+/* Mobile Responsive Overrides */
+@media (max-width: 767px) {
+  .playground-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .toolbar-right {
+    display: flex;
+    width: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toolbar-right .toolbar-item {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toolbar-right .toolbar-item :deep(.custom-dropdown) {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .toolbar-right .options-dropdown,
+  .toolbar-right .toolbar-icon-btn {
+    flex-shrink: 0;
+  }
+
+  .playground-workspace {
+    height: calc(100dvh - 220px);
+    min-height: 440px;
+    flex-direction: column;
+  }
+
+  .playground-splitter {
+    display: none;
+  }
+
+  .playground-col.left-col {
+    width: 100% !important;
+    border-right: none;
+    display: none;
+  }
+
+  .playground-col.right-col {
+    width: 100% !important;
+    display: none;
+  }
+
+  .playground-col.left-col.is-mobile-active,
+  .playground-col.right-col.is-mobile-active {
+    display: flex;
+  }
 }
 </style>
