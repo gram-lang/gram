@@ -76,7 +76,13 @@ export async function runPipeline(
 		!opts.skipAnalyzer && opts.db
 			? analyze(
 					tagged,
-					{ ...opts.db, ...composed.syntheticIngredients },
+					// Real DB entries always win on id collision (§D.6's
+					// host-always-wins policy) — a stocked import whose binding
+					// name happens to slugify to an existing ingredient id
+					// (MODULE_BINDING_SHADOWS_INGREDIENT) must not silently
+					// override that ingredient's real nutrition/mass data for
+					// every other reference to it in the document.
+					{ ...composed.syntheticIngredients, ...opts.db },
 					{
 						bakersReference: opts.bakersReference,
 						lang: opts.lang,

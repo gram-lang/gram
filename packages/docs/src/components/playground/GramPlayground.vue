@@ -362,7 +362,9 @@ async function updateGram() {
 		// merge it in here, same as the CLI's `pipeline.ts`, so both the
 		// scale-by-ingredient density lookup below and `analyze()` further
 		// down can actually find it instead of reporting MISSING_INGREDIENT.
-		const database = { ...fullDatabase, ...composed.syntheticIngredients };
+		// `fullDatabase` spread last: real DB entries always win on id
+		// collision (MODULE_BINDING_SHADOWS_INGREDIENT), same as pipeline.ts.
+		const database = { ...composed.syntheticIngredients, ...fullDatabase };
 
 		if (scaleTargetId.value && scaleTargetQty.value !== null) {
 			try {
