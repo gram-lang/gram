@@ -18,7 +18,12 @@ import type {
 	ShoppingListItem,
 	RegistryEntry,
 } from "@gram-lang/kitchen";
-import { getNumericQty, WarningCode, round2 } from "@gram-lang/kitchen";
+import {
+	getNumericQty,
+	WarningCode,
+	round2,
+	isPurchasableReference,
+} from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	AnalyzedUsage,
@@ -142,16 +147,7 @@ function trackMissingIngredient(
 	registry: Record<string, RegistryEntry>,
 ): void {
 	if (!usage.id) return;
-	// A reference to a true in-file intermediate never had a database entry
-	// to begin with, and an undefined reference (no registry entry at all)
-	// already gets its own UNDEFINED_REFERENCE — neither belongs here too.
-	// A reference to a stocked import's synthetic leaf is neither: it has a
-	// real registry entry and isn't an intermediate, so it falls through to
-	// the normal check below.
-	if (usage.type === "reference") {
-		const entry = registry[usage.id];
-		if (!entry || entry.is_intermediate) return;
-	}
+	if (!isPurchasableReference(usage.type, registry[usage.id])) return;
 	if (!getIngredientData(usage.id, database)) {
 		missingIngredientsSet.add(usage.id);
 	}
@@ -223,12 +219,13 @@ function standardizeSectionMasses(
 					opts.lang,
 				);
 			}
-			// Only a true in-file intermediate is excluded from the flat list
-			// that feeds the global mass total — a reference to a stocked
-			// import's synthetic leaf is not an intermediate and must count
-			// toward it, same as it already does per-section (sec.metrics is
-			// computed straight from sec.ingredients, never through this list).
-			if (item.type !== "reference" || !registry[item.id]?.is_intermediate) {
+			// Same three-way reference classification as `trackMissingIngredient`
+			// above — a stocked import's synthetic leaf counts toward the flat
+			// list that feeds the global mass total, same as it already does
+			// per-section (sec.metrics is computed straight from
+			// sec.ingredients, never through this list); a true intermediate or
+			// an undefined reference does not.
+			if (isPurchasableReference(item.type, registry[item.id])) {
 				allRawIngredients.push(item);
 			}
 		});

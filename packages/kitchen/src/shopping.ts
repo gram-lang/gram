@@ -3,6 +3,7 @@ import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
+import { isPurchasableReference } from "./registry";
 
 export interface ShoppingListItem {
 	// Never actually set at construction — a plain aggregated ingredient has
@@ -131,16 +132,8 @@ export function generateShoppingList(
 				item.isCircular = true;
 			}
 
-			// Skip a reference to a true in-file intermediate, and an undefined
-			// reference with no registry entry at all (nothing purchasable to
-			// list) — a reference to a stocked import's synthetic leaf is
-			// neither: it has a real registry entry and is NOT an intermediate
-			// (is_intermediate stays unset), so it falls through to the normal
-			// aggregation path below instead.
-			if (item.type === "reference") {
-				const entry = registry.ingredients.get(item.id);
-				if (!entry || entry.is_intermediate) return;
-			}
+			if (!isPurchasableReference(item.type, registry.ingredients.get(item.id)))
+				return;
 
 			if (item.composite) {
 				const parentId = slugify(item.composite.parent);

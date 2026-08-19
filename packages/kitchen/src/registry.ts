@@ -6,6 +6,28 @@ import { slugify } from "./utils";
 export const cleanRegistryName = (name: string) =>
 	name.trim().replace(/[,;!?.]+$/, "");
 
+/**
+ * Three-way classification for a `&reference` usage, shared by shopping-list
+ * generation and mass/nutrition aggregation: a true in-file intermediate
+ * (`is_intermediate`) and an undefined reference (no registry entry at
+ * all — already gets its own UNDEFINED_REFERENCE diagnostic elsewhere) both
+ * have nothing purchasable to report and are excluded; a stocked import's
+ * synthetic leaf has a real registry entry and is never `is_intermediate`,
+ * so it falls through as counted. A non-reference item (a plain
+ * `@ingredient`) is always counted — this check only ever excludes `&name`
+ * usages. Takes the already-looked-up `entry` rather than the registry
+ * itself so it works the same whether the caller holds a `RecipeRegistry`'s
+ * live `Map` (kitchen) or a compiled `CompilationResult`'s plain-object
+ * `registry.ingredients` (analyzer).
+ */
+export function isPurchasableReference(
+	itemType: string | undefined,
+	entry: RegistryEntry | undefined,
+): boolean {
+	if (itemType !== "reference") return true;
+	return !!entry && !entry.is_intermediate;
+}
+
 export class RecipeRegistry implements Registry {
 	ingredients = new Map<string, RegistryEntry>();
 	cookware = new Map<string, { id: string; name: string }>();
