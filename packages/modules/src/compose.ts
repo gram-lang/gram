@@ -447,7 +447,7 @@ export function composeRecipe(
 					type: ASTNodeType.ImportDecl,
 					specifier: decl.specifier,
 					bindings: validBindings,
-					stocked: true,
+					registryKind: "module_synthetic",
 					title: depModuleTitle,
 					loc: decl.loc,
 				});

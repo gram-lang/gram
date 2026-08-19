@@ -652,10 +652,11 @@ export function processSections(
 	// per-module pre-pass) — one MODULE_NOT_FOUND per import instead of a
 	// cascade of UNDEFINED_REFERENCE for every `&binding` used in the body.
 	imports.forEach((decl) => {
+		const isModuleSynthetic = decl.registryKind === "module_synthetic";
 		decl.bindings.forEach((binding) => {
 			registry.registerIngredient(
 				binding.local,
-				decl.stocked
+				isModuleSynthetic
 					? {
 							is_module_synthetic: true,
 							displayName: decl.title ?? binding.local,
@@ -665,7 +666,7 @@ export function processSections(
 			ctx.globalScopes.set(binding.local, decl.specifier);
 			ctx.definedIntermediates.add(binding.local);
 		});
-		if (!decl.stocked) {
+		if (!isModuleSynthetic) {
 			pushWarning(ctx, WarningCode.MODULE_NOT_FOUND, {
 				specifier: decl.specifier,
 				loc: decl.loc,

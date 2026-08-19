@@ -40,11 +40,18 @@ export interface RegistryEntry {
 // `ast.imports` entries that never resolved into a splice — either genuinely
 // unresolved (`MODULE_NOT_FOUND`, degraded registration in processor.ts) or,
 // since the "stock" mechanism, a successfully-resolved-but-deliberately-
-// unspliced `--stock`ed import. `stocked`/`title` are set only by
+// unspliced `--stock`ed import. `registryKind`/`title` are set only by
 // `@gram-lang/modules`'s composer, post-resolution — the parser itself never
 // produces either field.
 export interface DeferredImport extends ImportDecl {
-	stocked?: boolean;
+	// Which `RegistryEntry` shape processSections' §C.4 degraded-registration
+	// path should synthesize for each of this import's bindings, and whether
+	// it should raise `MODULE_NOT_FOUND` — kitchen's own vocabulary for a hint
+	// the composer already knows, rather than kitchen re-deriving it from a
+	// module-specific "stocked" flag. Absent means "nothing more is known
+	// about this import" (raw parser output — no composition ran, or this one
+	// specifically never resolved): treated the same as `"intermediate"`.
+	registryKind?: "intermediate" | "module_synthetic";
 	title?: string | null;
 }
 
