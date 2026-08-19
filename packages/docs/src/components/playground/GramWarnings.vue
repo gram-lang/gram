@@ -143,28 +143,26 @@ const headerSummary = computed(() => {
 <style scoped>
 .gram-warnings {
   background-color: var(--sl-color-bg-sidebar);
-  border-radius: 8px;
   overflow: hidden;
-  margin: 10px;
   transition: border-color 0.2s;
 }
 
 /* Overall severity container borders */
 .gram-warnings.severity-error {
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-top: 1px solid rgba(239, 68, 68, 0.3);
 }
 .gram-warnings.severity-warning {
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-top: 1px solid rgba(245, 158, 11, 0.3);
 }
 .gram-warnings.severity-info {
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-top: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .warnings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
   cursor: pointer;
   user-select: none;
   transition: background-color 0.2s;
@@ -202,6 +200,7 @@ const headerSummary = computed(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
+  font-size:0.9rem;
 }
 
 .toggle-icon {
@@ -218,11 +217,10 @@ const headerSummary = computed(() => {
 
 .warnings-list {
   list-style: none;
-  padding: 10px;
+  padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .gram-warnings.severity-error .warnings-list {
@@ -239,21 +237,13 @@ const headerSummary = computed(() => {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px 12px;
   transition: background-color 0.2s;
   background-color: var(--sl-color-bg);
-  border-radius: 7px;
-  border-left: 3px solid transparent;
 }
 
-.warning-item.item-error {
-  border-left-color: #ef4444;
-}
-.warning-item.item-warning {
-  border-left-color: #f59e0b;
-}
-.warning-item.item-info {
-  border-left-color: #3b82f6;
+.warning-item:not(:last-child){
+    border-bottom: 1px solid #e6e6e6;
 }
 
 .warning-item.item-error .warning-icon {
@@ -267,7 +257,6 @@ const headerSummary = computed(() => {
 }
 
 .warning-icon {
-  margin-top: 2px;
   flex-shrink: 0;
 }
 
@@ -281,7 +270,7 @@ const headerSummary = computed(() => {
 .warning-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .severity-badge {
@@ -289,8 +278,7 @@ const headerSummary = computed(() => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 3px 5px;
 }
 
 .severity-badge.badge-error {
@@ -332,11 +320,10 @@ const headerSummary = computed(() => {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 4px;
   background-color: transparent;
   color: var(--sl-color-gray-3);
   font-size: 12px;
-  border: 1px solid var(--sl-color-hairline);
+  border: 1px solid var(--sl-color-border);
   cursor: pointer;
   transition: all 0.2s;
 }
