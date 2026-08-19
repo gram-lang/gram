@@ -188,7 +188,7 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 		const b = compileRecipe(
 			"## Pate\n\nMix @flour{200g}.\n\n## Montage\n\nUse the base.\n",
 		);
-		b.sections[0]!.module = moduleInfo();
+		Object.assign(b.sections[0]!, { module: moduleInfo() });
 
 		const { sections } = diffRecipes(a, b);
 		expect(sections).toEqual([]);
@@ -199,7 +199,7 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 		const b = compileRecipe(
 			"## Pate\n\nBake @flour{200g} at ^{180C} for ~{10min}.\n\n## Montage\n\nUse the base.\n",
 		);
-		b.sections[0]!.module = moduleInfo();
+		Object.assign(b.sections[0]!, { module: moduleInfo() });
 
 		const result = diffRecipes(a, b);
 		expect(result.preparations).toEqual([]);
@@ -210,7 +210,7 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 	it("reports a newly-added import in the modules delta", () => {
 		const a = compileRecipe("## Montage\nUse the base.\n");
 		const b = compileRecipe("## Montage\nUse the base.\n");
-		b.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+		Object.assign(b, { modules: [moduleInfo({ scaleFactor: 1 })] });
 
 		const { modules } = diffRecipes(a, b);
 		expect(modules).toEqual([
@@ -226,7 +226,7 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 	it("reports a removed import in the modules delta", () => {
 		const a = compileRecipe("## Montage\nUse the base.\n");
 		const b = compileRecipe("## Montage\nUse the base.\n");
-		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+		Object.assign(a, { modules: [moduleInfo({ scaleFactor: 1 })] });
 
 		const { modules } = diffRecipes(a, b);
 		expect(modules).toEqual([
@@ -242,8 +242,8 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 	it("reports a changed scale factor for the same import", () => {
 		const a = compileRecipe("## Montage\nUse the base.\n");
 		const b = compileRecipe("## Montage\nUse the base.\n");
-		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
-		b.modules = [moduleInfo({ scaleFactor: 2 }) as never];
+		Object.assign(a, { modules: [moduleInfo({ scaleFactor: 1 })] });
+		Object.assign(b, { modules: [moduleInfo({ scaleFactor: 2 })] });
 
 		const { modules, hasChanges } = diffRecipes(a, b);
 		expect(hasChanges).toBe(true);
@@ -262,8 +262,8 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 	it("reports no module delta when nothing about the import changed", () => {
 		const a = compileRecipe("## Montage\nUse the base.\n");
 		const b = compileRecipe("## Montage\nUse the base.\n");
-		a.modules = [moduleInfo({ scaleFactor: 1 }) as never];
-		b.modules = [moduleInfo({ scaleFactor: 1 }) as never];
+		Object.assign(a, { modules: [moduleInfo({ scaleFactor: 1 })] });
+		Object.assign(b, { modules: [moduleInfo({ scaleFactor: 1 })] });
 
 		expect(diffRecipes(a, b).modules).toEqual([]);
 	});

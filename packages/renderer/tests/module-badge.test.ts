@@ -14,12 +14,14 @@ import { toHTML, toMarkdown, toPrintHTML } from "../src/index";
 // no longer branches on mode at all.
 function compileWithModule() {
 	const result = compile(getAST("## Montage\nUse the base.\n"));
-	result.sections[0]!.module = {
-		binding: "pate",
-		uri: "./bases/pate.gram",
-		title: "Pate Sablee",
-		mode: "inline",
-	};
+	Object.assign(result.sections[0]!, {
+		module: {
+			binding: "pate",
+			uri: "./bases/pate.gram",
+			title: "Pate Sablee",
+			mode: "inline",
+		},
+	});
 	return result;
 }
 
@@ -42,24 +44,28 @@ describe("module provenance badge rendering", () => {
 
 	it("falls back to the binding name when the module has no title", () => {
 		const result = compile(getAST("## Montage\nUse the base.\n"));
-		result.sections[0]!.module = {
-			binding: "pate",
-			uri: "./bases/pate.gram",
-			title: null,
-			mode: "inline",
-		};
+		Object.assign(result.sections[0]!, {
+			module: {
+				binding: "pate",
+				uri: "./bases/pate.gram",
+				title: null,
+				mode: "inline",
+			},
+		});
 		const html = toHTML(result);
 		expect(html).toContain("></i> pate</small>");
 	});
 
 	it("escapes a module title that could inject markup", () => {
 		const result = compile(getAST("## Montage\nUse the base.\n"));
-		result.sections[0]!.module = {
-			binding: "pate",
-			uri: "./bases/pate.gram",
-			title: "<img src=x onerror=alert(1)>",
-			mode: "inline",
-		};
+		Object.assign(result.sections[0]!, {
+			module: {
+				binding: "pate",
+				uri: "./bases/pate.gram",
+				title: "<img src=x onerror=alert(1)>",
+				mode: "inline",
+			},
+		});
 		const html = toHTML(result);
 		expect(html).not.toContain("<img");
 		expect(html).toContain("&lt;img");

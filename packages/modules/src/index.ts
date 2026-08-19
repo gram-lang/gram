@@ -7,3 +7,4 @@ export * from "./yield";
 export * from "./compose";
 export * from "./reverse-deps";
 export * from "./warnings";
+export * from "./types";

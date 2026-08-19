@@ -17,11 +17,15 @@ import {
 	pushWarning,
 	forEachStep,
 	type Warning,
-	type ModuleInfo,
 	type CompilationResult,
 	type DeferredImport,
 } from "@gram-lang/kitchen";
 import { ModuleWarningCode, pushModuleWarning } from "./warnings";
+import type {
+	ModuleInfo,
+	ComposedSection,
+	ComposedCompilationResult,
+} from "./types";
 import {
 	analyze,
 	type AnalyzedCompilationResult,
@@ -692,8 +696,8 @@ export function composeRecipe(
 export function finalizeComposed(
 	compiled: CompilationResult,
 	compose: Pick<ComposeResult, "modules" | "sectionOrigins" | "warnings">,
-): CompilationResult {
-	const sections = compiled.sections.map((section, i) => {
+): ComposedCompilationResult {
+	const sections: ComposedSection[] = compiled.sections.map((section, i) => {
 		const origin = compose.sectionOrigins[i];
 		return origin
 			? {

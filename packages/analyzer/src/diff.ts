@@ -7,9 +7,29 @@ import type {
 	Usage,
 	ShoppingListItem,
 	CompositeItem,
-	ModuleInfo,
 } from "@gram-lang/kitchen";
 import { getNumericQty } from "@gram-lang/kitchen";
+
+// Structural, analyzer-local shapes for the module-composition metadata a
+// `CompilationResult` may carry when it actually came from
+// `@gram-lang/modules`' `composeRecipe`/`finalizeComposed` (module-imports
+// RFC §F.0.2). Deliberately NOT imported from `@gram-lang/modules` itself:
+// that package already depends on this one (for `analyze()`), so a type
+// import the other way would be a package cycle. These mirror modules'
+// `ComposedSection`/`ModuleInfo` shapes by structure, not by reference —
+// anything `finalizeComposed` actually produces satisfies them.
+interface DiffableModuleInfo {
+	uri: string;
+	binding: string;
+	scaleFactor: number;
+}
+interface DiffableSection extends ProcessedSection {
+	module?: unknown;
+}
+interface DiffableCompilationResult extends CompilationResult {
+	sections: DiffableSection[];
+	modules?: DiffableModuleInfo[];
+}
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -678,11 +698,14 @@ function diffPreparations(
 // diff that keys by section title/position; `diffModules` below compares
 // the imports themselves instead, by (uri, binding, scale factor) — a far
 // more useful signal than a section-position shift.
-function ownSections(sections: ProcessedSection[]): ProcessedSection[] {
+function ownSections(sections: DiffableSection[]): DiffableSection[] {
 	return sections.filter((s) => !s.module);
 }
 
-function diffModules(a: ModuleInfo[], b: ModuleInfo[]): ModuleDelta[] {
+function diffModules(
+	a: DiffableModuleInfo[],
+	b: DiffableModuleInfo[],
+): ModuleDelta[] {
 	const aMap = new Map(a.map((m) => [m.uri, m]));
 	const bMap = new Map(b.map((m) => [m.uri, m]));
 	const allUris = new Set([...aMap.keys(), ...bMap.keys()]);
@@ -733,8 +756,8 @@ function diffModules(a: ModuleInfo[], b: ModuleInfo[]): ModuleDelta[] {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function diffRecipes(
-	a: CompilationResult,
-	b: CompilationResult,
+	a: DiffableCompilationResult,
+	b: DiffableCompilationResult,
 ): DiffResult {
 	const aSections = ownSections(a.sections ?? []);
 	const bSections = ownSections(b.sections ?? []);
