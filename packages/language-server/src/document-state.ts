@@ -76,6 +76,7 @@ export function parseDocument(
 			// `compilation` is derived from the composed (spliced) AST, same
 			// split as the CLI pipeline (`runPipeline`, `core/pipeline.ts:38`).
 			let rawCompilation: CompilationResult;
+			let syntheticIngredients: Record<string, IngredientData> = {};
 			if (moduleCtx) {
 				const composed = composeRecipe(moduleCtx.graph, {
 					db: db ?? {},
@@ -83,11 +84,19 @@ export function parseDocument(
 					cache: moduleCtx.cache,
 				});
 				rawCompilation = finalizeComposed(compile(composed.ast), composed);
+				syntheticIngredients = composed.syntheticIngredients;
 			} else {
 				rawCompilation = compile(ast);
 			}
 			if (db) {
-				const analyzed = analyze(rawCompilation, db);
+				// Real DB entries always win on id collision, same as the CLI's
+				// `pipeline.ts` and the playground — a stocked import's binding
+				// must not shadow an existing ingredient's real nutrition/mass
+				// data (MODULE_BINDING_SHADOWS_INGREDIENT).
+				const analyzed = analyze(rawCompilation, {
+					...syntheticIngredients,
+					...db,
+				});
 				compilation = analyzed.result;
 			} else {
 				compilation = rawCompilation;
