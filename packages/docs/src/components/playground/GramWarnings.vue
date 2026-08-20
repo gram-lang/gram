@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useI18n } from "./useI18n";
 import { warningSeverityOf, type WarningSeverity } from "@gram-lang/modules";
 import type { PlaygroundDiagnostic } from "./diagnostics";
@@ -73,6 +73,17 @@ const counts = computed(() => {
 		else if (item.severity === "info") info++;
 	}
 	return { error, warning, info, total: itemsWithSeverity.value.length };
+});
+
+// The active filter otherwise survives a recompile that clears the category
+// it was narrowed to (fix the warning it was showing → 0 warnings left) — the
+// pastille for that category disappears, but filteredItems keeps returning
+// [] against the old filter instead of falling back to "all", so the console
+// looks empty even though a real diagnostic (in another category) exists.
+watch(counts, (newCounts) => {
+	if (activeFilter.value !== "all" && newCounts[activeFilter.value] === 0) {
+		activeFilter.value = "all";
+	}
 });
 
 const filteredItems = computed(() => {

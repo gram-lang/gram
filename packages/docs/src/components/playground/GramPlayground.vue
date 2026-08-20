@@ -97,8 +97,12 @@ const mobileTab = ref<"editor" | "preview">("editor");
 
 const diagnostics = ref<PlaygroundDiagnostic[]>([]);
 const isConsoleCollapsed = ref(false);
+// Includes non-blocking `severity: "error"` diagnostics (e.g. a scale-target
+// resolution failure) alongside truly blocking ones: the recipe still fails
+// to produce what the user asked for, so the status badge and error panel
+// should read as an error, not be undersold as a "Warnings" state.
 const blockingDiagnostics = computed(() =>
-	diagnostics.value.filter((d) => d.blocking),
+	diagnostics.value.filter((d) => d.blocking || d.severity === "error"),
 );
 const hasBlocking = computed(() => blockingDiagnostics.value.length > 0);
 
@@ -106,7 +110,10 @@ const hasBlocking = computed(() => blockingDiagnostics.value.length > 0);
 const errorFiles = computed(() => {
 	return new Set(
 		diagnostics.value
-			.filter((d) => d.severity === "error" && d.uri)
+			// A scale-target error taints the current file's `uri` even though the
+			// `.gram` source itself is valid — it's a scale-configuration problem,
+			// not a parse/compile error, so it shouldn't paint the tab's red dot.
+			.filter((d) => d.severity === "error" && d.source !== "scale" && d.uri)
 			.map((d) => d.uri!),
 	);
 });
@@ -473,7 +480,11 @@ async function updateGram() {
 	} catch (e: any) {
 		if (token !== runToken) return;
 		const diag = pipelineErrorToDiagnostic(e, stage, previewEntry);
-		diagnostics.value = [diag];
+		// Merge rather than replace: a scale-target resolution failure collected
+		// earlier in this same run (collectedScaleDiagnostics) must survive an
+		// unrelated exception later in the pipeline — otherwise it silently
+		// vanishes even though it's still true of this compile.
+		diagnostics.value = sortDiagnostics([...collectedScaleDiagnostics, diag]);
 		trackPlaygroundRun(false, codeLength, { error_type: stage });
 	}
 }
