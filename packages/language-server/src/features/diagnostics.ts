@@ -142,6 +142,23 @@ export function provideDiagnostics(
 
 	if (!state.ast) return diagnostics;
 
+	// A recipe that parses but fails compile()/analyze() (e.g. a bad `@use`
+	// resolution, a scale error) still gets a webview notification
+	// (server.ts), but until now nothing surfaced here — closing the preview
+	// panel left the editor with no squiggle, no Problems entry, no sign
+	// anything failed. No precise location is available (the failure isn't
+	// tied to one AST node), so this anchors at the top of the document like
+	// the missing-title notice below.
+	if (state.compileError != null) {
+		diagnostics.push({
+			severity: DiagnosticSeverity.Error,
+			range: ZERO_RANGE,
+			message: state.compileError,
+			code: "COMPILE_ERROR",
+			source: "gram",
+		});
+	}
+
 	if (state.compilation?.warnings) {
 		for (const w of state.compilation.warnings) {
 			if (!w.loc && LOC_LESS_WARNING_CODES.has(w.code)) continue;

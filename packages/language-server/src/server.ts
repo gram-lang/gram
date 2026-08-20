@@ -276,10 +276,15 @@ async function refresh(
 		} catch (e) {
 			console.error("Gantt render error", e);
 		}
-	} else if (state.parseError || state.compileError) {
-		const isParse = !!state.parseError;
+	} else if (state.parseError != null || state.compileError != null) {
+		// Truthiness (`||`) would treat a thrown `Error()` with an empty
+		// message the same as "no error" — silently skipping the webview
+		// notification below and leaving preview/Gantt on stale content,
+		// exactly the "silent compilation failure" this refresh path exists
+		// to prevent.
+		const isParse = state.parseError != null;
 		const title = isParse ? "Syntax Error" : "Compilation Error";
-		const errorMessage = state.parseError || state.compileError || "";
+		const errorMessage = state.parseError ?? state.compileError ?? "";
 		const offsetAttr =
 			state.parseErrorOffset !== null
 				? ` data-offset="${state.parseErrorOffset}"`
