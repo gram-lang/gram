@@ -10,9 +10,9 @@
     "path": "/examples/empanadas-fr.gram"
   },
   {
-    "id": "tarte-citron-fr",
+    "id": "lemon-tart-fr",
     "title": "Tarte au Citron (multi-fichiers, @use)",
-    "entry": "main.gram",
-    "files": ["main.gram", "bases/pate-sablee.gram"]
+    "entry": "lemon-tart.gram",
+    "files": ["lemon-tart.gram", "bases/pate-sucree.gram"]
   }
 ]

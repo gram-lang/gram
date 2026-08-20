@@ -1,12 +1,9 @@
 import { createMemoryHost } from "@gram-lang/modules";
 import type { ModuleHost } from "@gram-lang/modules";
 
-// The playground's entry document always lives at this fixed virtual path —
-// there's no real filesystem or project root to derive one from, and a
-// fixed convention keeps every other piece (the tab bar, the example
-// loader, the module-graph entry point) agreeing on where "the recipe
-// itself" is without threading a variable through all of them.
-export const ENTRY_URI = "/main.gram";
+// Default virtual path used when creating a blank recipe scratchpad.
+export const DEFAULT_ENTRY_URI = "/blank.gram";
+export const ENTRY_URI = DEFAULT_ENTRY_URI;
 
 /**
  * The playground's `ModuleHost` (module-imports RFC §B.2): a thin wrapper

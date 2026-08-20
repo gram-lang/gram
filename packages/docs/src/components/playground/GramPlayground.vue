@@ -11,7 +11,7 @@ import {
 } from "vue";
 // biome-ignore lint/style/useImportType: GramEditor is used as a component in the <template> block below, which Biome's Vue support doesn't see — a type-only import breaks the ref.
 import GramEditor from "./GramEditor.vue";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+// biome-ignore lint/style/useImportType: GramFileTabs is used as a component in the <template> block below.
 import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramOptions from "./GramOptions.vue";
@@ -45,7 +45,7 @@ import { toMarkdown, toHTML } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
-import { ENTRY_URI, createPlaygroundHost } from "./vfsHost";
+import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
 import { trackEvent, debounce } from "../../lib/umami";
 const props = defineProps<{ lang: "en" | "fr" }>();
@@ -90,8 +90,9 @@ onUnmounted(() => {
 
 const t = computed(() => getDictionary(currentLang.value));
 
-const files = ref<Map<string, string>>(new Map([[ENTRY_URI, ""]]));
-const activeFile = ref<string>(ENTRY_URI);
+const entryFile = ref<string>(DEFAULT_ENTRY_URI);
+const files = ref<Map<string, string>>(new Map([[DEFAULT_ENTRY_URI, ""]]));
+const activeFile = ref<string>(DEFAULT_ENTRY_URI);
 
 const mobileTab = ref<"editor" | "preview">("editor");
 
@@ -169,6 +170,7 @@ const viewModeOptions = computed(() => [
 ]);
 
 const editorRef = ref<InstanceType<typeof GramEditor> | null>(null);
+const fileTabsRef = ref<InstanceType<typeof GramFileTabs> | null>(null);
 
 // Output State
 const htmlPreview = ref("");
@@ -206,7 +208,7 @@ onMounted(() => {
 		.then((res) => res.json())
 		.then((manifest) => {
 			manifestData.value = manifest;
-			if (manifestData.value.length > 0 && !files.value.get(ENTRY_URI)) {
+			if (manifestData.value.length > 0 && !files.value.get(entryFile.value)) {
 				const defaultEx =
 					examples.value.find((ex: any) => ex.value.includes("empanadas")) ||
 					examples.value[0];
@@ -219,35 +221,41 @@ onMounted(() => {
 	updateGram();
 });
 
-function loadExample(id: string) {
+async function loadExample(id: string) {
 	if (!id) {
-		files.value = new Map([[ENTRY_URI, ""]]);
-		activeFile.value = ENTRY_URI;
+		const blankUri = DEFAULT_ENTRY_URI;
+		entryFile.value = blankUri;
+		activeFile.value = blankUri;
+		files.value = new Map([[blankUri, ""]]);
+		await nextTick();
+		fileTabsRef.value?.startRename(blankUri);
 		return;
 	}
 	const manifestEntry = manifestData.value.find((ex: any) => ex.id === id);
 	if (manifestEntry?.files?.length) {
 		// Multi-file example: fetch every file under `examples/<id>/<relPath>`
 		// and lay them out in the VFS at `/<relPath>`.
-		Promise.all(
+		const entries = await Promise.all(
 			manifestEntry.files.map((relPath: string) =>
 				fetch(`${import.meta.env.BASE_URL}examples/${id}/${relPath}`)
 					.then((res) => res.text())
 					.then((text) => [`/${relPath}`, text] as const),
 			),
-		).then((entries) => {
-			files.value = new Map(entries);
-			activeFile.value = `/${manifestEntry.entry ?? manifestEntry.files[0]}`;
-			trackEvent("playground-load-example", { example: id });
-		});
+		);
+		const entryPath = `/${manifestEntry.entry ?? manifestEntry.files[0]}`;
+		entryFile.value = entryPath;
+		activeFile.value = entryPath;
+		files.value = new Map(entries);
+		trackEvent("playground-load-example", { example: id });
 	} else {
-		fetch(`${import.meta.env.BASE_URL}examples/${id}`)
-			.then((res) => res.text())
-			.then((text) => {
-				files.value = new Map([[ENTRY_URI, text]]);
-				activeFile.value = ENTRY_URI;
-				trackEvent("playground-load-example", { example: id });
-			});
+		const text = await fetch(`${import.meta.env.BASE_URL}examples/${id}`).then(
+			(res) => res.text(),
+		);
+		const singleUri = `/${id}`;
+		entryFile.value = singleUri;
+		activeFile.value = singleUri;
+		files.value = new Map([[singleUri, text]]);
+		trackEvent("playground-load-example", { example: id });
 	}
 }
 
@@ -568,28 +576,39 @@ function addFile() {
 		uri = `/file-${nextFileIndex}.gram`;
 	}
 	nextFileIndex++;
-	files.value.set(uri, "");
+	const nextFiles = new Map(files.value);
+	nextFiles.set(uri, "");
+	files.value = nextFiles;
 	activeFile.value = uri;
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: renameFile is used in the <template> block below, which Biome's Vue support doesn't see.
 function renameFile(oldPath: string, newPath: string) {
-	if (oldPath === ENTRY_URI) return; // entry's virtual path is fixed
 	if (newPath === oldPath || files.value.has(newPath)) return;
-	const content = files.value.get(oldPath) ?? "";
-	files.value.delete(oldPath);
-	files.value.set(newPath, content);
+	const nextFiles = new Map<string, string>();
+	for (const [key, val] of files.value.entries()) {
+		nextFiles.set(key === oldPath ? newPath : key, val);
+	}
+	files.value = nextFiles;
 	editorRef.value?.renamePath(oldPath, newPath);
+	if (entryFile.value === oldPath) entryFile.value = newPath;
 	if (activeFile.value === oldPath) activeFile.value = newPath;
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: removeFile is used in the <template> block below, which Biome's Vue support doesn't see.
 function removeFile(path: string) {
-	if (path === ENTRY_URI) return; // entry is undeletable
-	files.value.delete(path);
+	if (path === entryFile.value) return; // entry is undeletable
+	const nextFiles = new Map(files.value);
+	nextFiles.delete(path);
+	files.value = nextFiles;
 	editorRef.value?.forgetFile(path);
 	// Never leave the UI pointed at a tab that no longer exists.
-	if (activeFile.value === path) activeFile.value = ENTRY_URI;
+	if (activeFile.value === path) activeFile.value = entryFile.value;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: handleDoneRename is used in the <template> block below, which Biome's Vue support doesn't see.
+function handleDoneRename() {
+	editorRef.value?.focus();
 }
 
 // Split Pane Logic
@@ -733,14 +752,16 @@ onUnmounted(() => {
         <!-- Left Column: Editor & Options -->
         <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
           <GramFileTabs
+            ref="fileTabsRef"
             :files="[...files.keys()]"
             :active-file="activeFile"
-            :entry-file="ENTRY_URI"
+            :entry-file="entryFile"
             :error-files="errorFiles"
             @select="selectFile"
             @add="addFile"
             @rename="renameFile"
             @remove="removeFile"
+            @done-rename="handleDoneRename"
           />
           <div class="editor-wrapper">
             <GramEditor
@@ -759,7 +780,7 @@ onUnmounted(() => {
 
         <!-- Right Column: Output -->
         <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
-          <div v-if="activeFile !== ENTRY_URI" class="preview-scope-banner">
+          <div v-if="activeFile !== entryFile" class="preview-scope-banner">
             {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
           </div>
           <div class="output-wrapper">

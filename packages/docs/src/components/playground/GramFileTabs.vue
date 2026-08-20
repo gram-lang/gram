@@ -14,6 +14,7 @@ const emit = defineEmits<{
 	add: [];
 	rename: [oldPath: string, newPath: string];
 	remove: [path: string];
+	doneRename: [];
 }>();
 
 // biome-ignore lint/correctness/noUnusedVariables: t is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -27,32 +28,60 @@ const renamingPath = ref<string | null>(null);
 const renameValue = ref("");
 const renameInput = ref<HTMLInputElement | null>(null);
 
+function setRenameInputRef(el: any) {
+	if (el) {
+		renameInput.value = el as HTMLInputElement;
+	}
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: startRename is used in the <template> block below, which Biome's Vue support doesn't see.
 async function startRename(path: string) {
-	if (path === props.entryFile) return;
 	renamingPath.value = path;
 	renameValue.value = label(path);
 	await nextTick();
-	renameInput.value?.focus();
-	renameInput.value?.select();
+	const focusAndSelect = () => {
+		if (renameInput.value && renamingPath.value === path) {
+			renameInput.value.focus();
+			renameInput.value.select();
+		}
+	};
+	focusAndSelect();
+	setTimeout(focusAndSelect, 50);
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: commitRename is used in the <template> block below, which Biome's Vue support doesn't see.
-function commitRename() {
+function commitRename(focusEditor = false) {
 	const oldPath = renamingPath.value;
 	if (!oldPath) return;
-	const trimmed = renameValue.value.trim();
+	let trimmed = renameValue.value.trim().replace(/^\/+/, "");
 	renamingPath.value = null;
-	if (!trimmed) return;
-	const newPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-	if (newPath === oldPath) return;
-	emit("rename", oldPath, newPath);
+	if (!trimmed) {
+		if (focusEditor) emit("doneRename");
+		return;
+	}
+	if (!trimmed.endsWith(".gram") && !trimmed.includes(".")) {
+		trimmed += ".gram";
+	}
+	const newPath = `/${trimmed}`;
+	if (newPath !== oldPath) {
+		emit("rename", oldPath, newPath);
+	}
+	if (focusEditor) {
+		emit("doneRename");
+	}
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: cancelRename is used in the <template> block below, which Biome's Vue support doesn't see.
-function cancelRename() {
+function cancelRename(focusEditor = false) {
 	renamingPath.value = null;
+	if (focusEditor) {
+		emit("doneRename");
+	}
 }
+
+defineExpose({
+	startRename,
+});
 </script>
 
 <template>
@@ -67,14 +96,15 @@ function cancelRename() {
     >
       <input
         v-if="renamingPath === path"
-        ref="renameInput"
+        :ref="setRenameInputRef"
         v-model="renameValue"
         class="rename-input"
         :aria-label="t.playground.tabs.newFileName"
         @click.stop
-        @keydown.enter="commitRename"
-        @keydown.escape="cancelRename"
-        @blur="commitRename"
+        @dblclick.stop
+        @keydown.enter="commitRename(true)"
+        @keydown.escape="cancelRename(true)"
+        @blur="commitRename(false)"
       />
       <span v-else class="file-tab-label">{{ label(path) }}</span>
 
@@ -151,7 +181,8 @@ function cancelRename() {
   border: 1px solid var(--sl-color-accent);
   border-radius: 3px;
   padding: 1px 4px;
-  width: 10ch;
+  width: 16ch;
+  max-width: 24ch;
 }
 
 .file-tab-close {

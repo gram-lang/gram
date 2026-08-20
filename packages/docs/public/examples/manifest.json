@@ -10,9 +10,9 @@
     "path": "/examples/empanadas.gram"
   },
   {
-    "id": "tarte-citron",
+    "id": "lemon-tart",
     "title": "Lemon Tart (multi-file, @use)",
-    "entry": "main.gram",
-    "files": ["main.gram", "bases/pate-sablee.gram"]
+    "entry": "lemon-tart.gram",
+    "files": ["lemon-tart.gram", "bases/shortcrust-base.gram"]
   }
 ]

@@ -134,20 +134,20 @@ watch(
 	},
 );
 
-// `files` is only ever reassigned wholesale (a new Map object) when the
-// parent loads a different recipe entirely (an example, or the blank-slate
-// reset) — a same-file edit goes through `.set()` on the existing Map, which
-// doesn't change its identity and so doesn't trigger this. A wholesale
-// replacement can land on the *same* `activeFile` the editor was already
-// showing (every example loads into `/main.gram`), in which case the
-// `activeFile` watcher above never fires and the stale cached state would
-// otherwise linger — so every cached state is dropped here and the active
-// file's state is rebuilt fresh from the new `files`.
+// Rebuilding or clearing state when files map changes. For keys whose content
+// changed or which were removed from the files Map, stale cached state is dropped.
 watch(
 	() => props.files,
 	() => {
-		stateCache.clear();
-		diagnosticsCache.clear();
+		for (const [key, state] of stateCache.entries()) {
+			if (
+				!props.files.has(key) ||
+				props.files.get(key) !== state.doc.toString()
+			) {
+				stateCache.delete(key);
+				diagnosticsCache.delete(key);
+			}
+		}
 		if (!view) return;
 		view.setState(stateFor(props.activeFile));
 	},
@@ -167,6 +167,10 @@ watch(isDark, (dark) => {
 });
 
 defineExpose({
+	focus() {
+		view?.focus();
+	},
+
 	jump(start: number, end: number) {
 		if (!view) return;
 		const length = view.state.doc.length;
