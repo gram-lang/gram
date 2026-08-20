@@ -159,6 +159,8 @@ export const en = {
 			info: "Notice",
 			item: "Item",
 			show: "Show",
+			expandConsole: "Expand console",
+			collapseConsole: "Collapse console",
 		},
 		errorState: {
 			title: "Generation paused",

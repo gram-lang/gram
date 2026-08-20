@@ -149,6 +149,8 @@ export const fr: GramLocale = {
 			info: "Information",
 			item: "Élément",
 			show: "Afficher",
+			expandConsole: "Développer la console",
+			collapseConsole: "Réduire la console",
 		},
 		errorState: {
 			title: "Génération interrompue",
