@@ -303,11 +303,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"egg\" not found in database."
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

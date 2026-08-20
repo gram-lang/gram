@@ -138,7 +138,7 @@
   "warnings": [
     {
       "code": "MODULE_NOT_FOUND",
-      "message": "Module \"./a.gram\" could not be found or read.",
+      "message": "Module \"./a.gram\" could not be found or resolved.",
       "loc": {
         "start": 0,
         "end": 22,
@@ -148,7 +148,7 @@
     },
     {
       "code": "SCOPE_CONFLICT",
-      "message": "Global variable '&a' is redefined.",
+      "message": "Intermediate variable '&a' is redefined; variable names must be unique across the recipe.",
       "loc": {
         "start": 28,
         "end": 32,
@@ -159,7 +159,7 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: a depends on itself.",
+      "message": "Circular reference detected: 'a' depends on itself.",
       "item": "a",
       "loc": {
         "start": 28,
@@ -170,7 +170,7 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: a$b depends on itself.",
+      "message": "Circular reference detected: 'a$b' depends on itself.",
       "item": "a$b",
       "loc": {
         "start": 28,
@@ -181,7 +181,7 @@
     },
     {
       "code": "MODULE_CYCLE",
-      "message": "Import cycle detected: a.gram → b.gram → a.gram.",
+      "message": "Circular module import detected: a.gram → b.gram → a.gram.",
       "loc": {
         "start": 0,
         "end": 22,
@@ -191,7 +191,7 @@
     },
     {
       "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&b' from \"./b.gram\" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.",
+      "message": "Cannot compute yield for '&b' from \"./b.gram\": missing physical mass data for one or more ingredients.",
       "loc": {
         "start": 0,
         "end": 22
@@ -199,7 +199,7 @@
     },
     {
       "code": "UNRESOLVED_MODULE_YIELD",
-      "message": "Cannot determine the yield of '&a' from \"./a.gram\" — its mass couldn't be measured (an ingredient or referenced intermediate is missing physical data). Imported at 1x.",
+      "message": "Cannot compute yield for '&a' from \"./a.gram\": missing physical mass data for one or more ingredients.",
       "loc": {
         "start": 0,
         "end": 22

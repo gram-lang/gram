@@ -306,15 +306,15 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"secret-spice\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"secret-spice\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"egg\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"egg\" — omitted from nutritional totals."
         }
       ]
     }

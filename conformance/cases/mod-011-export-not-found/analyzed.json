@@ -50,7 +50,7 @@
   "warnings": [
     {
       "code": "UNDEFINED_REFERENCE",
-      "message": "Reference to undefined ingredient '&blanc'.",
+      "message": "Undefined reference '&blanc' — no prior step or section produces this item.",
       "item": "blanc",
       "loc": {
         "start": 53,
@@ -59,7 +59,7 @@
     },
     {
       "code": "MODULE_EXPORT_NOT_FOUND",
-      "message": "\"./oeufs.gram\" does not export '&blanc'. Did you mean '&blancs'? Available exports: &blancs.",
+      "message": "Module \"./oeufs.gram\" does not export '&blanc'. Did you mean '&blancs'? Available exports: &blancs.",
       "loc": {
         "start": 0,
         "end": 34

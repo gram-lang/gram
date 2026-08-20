@@ -238,15 +238,15 @@
       "warnings": [
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"egg-whites\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"egg-whites\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"egg-yolks\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"egg-yolks\" — omitted from nutritional totals."
         },
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"eggs\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"eggs\" — omitted from nutritional totals."
         }
       ]
     }

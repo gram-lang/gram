@@ -98,7 +98,7 @@
   "warnings": [
     {
       "code": "STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
-      "message": "\"./bases/oeufs.gram\" is stocked with multiple destructured bindings — they all share the whole module's blended nutrition profile rather than each export's own.",
+      "message": "Stocked module \"./bases/oeufs.gram\" uses destructured imports — nutrition profile is averaged across the entire module.",
       "loc": {
         "start": 59,
         "end": 109

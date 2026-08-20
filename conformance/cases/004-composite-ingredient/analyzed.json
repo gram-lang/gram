@@ -123,7 +123,7 @@
       "warnings": [
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"egg-yolks\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"egg-yolks\" — omitted from nutritional totals."
         }
       ]
     }

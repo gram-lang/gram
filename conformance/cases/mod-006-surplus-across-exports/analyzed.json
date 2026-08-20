@@ -211,7 +211,7 @@
   "warnings": [
     {
       "code": "MODULE_SURPLUS",
-      "message": "Scaling \"./oeufs.gram\" to satisfy '&jaunes' produces more than requested: 100 g produced, 50 g used.",
+      "message": "Scaling \"./oeufs.gram\" for '&jaunes' yields a surplus: 100 g produced, 50 g used.",
       "loc": {
         "start": 0,
         "end": 44
@@ -272,7 +272,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"egg\" not found in database."
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

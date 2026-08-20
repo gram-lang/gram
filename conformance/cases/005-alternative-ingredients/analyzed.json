@@ -138,7 +138,7 @@
       "warnings": [
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"egg\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"egg\" — omitted from nutritional totals."
         }
       ]
     }

@@ -112,7 +112,7 @@
       "warnings": [
         {
           "code": "MISSING_MACROS",
-          "message": "Ingredient \"avocado\" has no default macro data."
+          "message": "Ingredient \"avocado\" has no macronutrient data in database — nutritional totals are partial."
         }
       ]
     }

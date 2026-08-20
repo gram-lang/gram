@@ -257,7 +257,7 @@
   "warnings": [
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&d' from \"./d.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&d' from \"./d.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 0,
         "end": 22
@@ -265,7 +265,7 @@
     },
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&b' from \"./b.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&b' from \"./b.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 0,
         "end": 22
@@ -273,7 +273,7 @@
     },
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&c' from \"./c.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&c' from \"./c.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 22,
         "end": 44

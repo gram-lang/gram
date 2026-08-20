@@ -188,7 +188,7 @@
   "warnings": [
     {
       "code": "UNUSED_IMPORT",
-      "message": "Import '&jaunes' from \"./oeufs.gram\" is never used.",
+      "message": "Unused import '&jaunes' from \"./oeufs.gram\".",
       "loc": {
         "start": 0,
         "end": 44
@@ -249,7 +249,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"egg\" not found in database."
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

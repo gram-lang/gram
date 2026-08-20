@@ -92,7 +92,7 @@
   "warnings": [
     {
       "code": "INVALID_MODIFIER_COMBINATION",
-      "message": "Invalid modifier combination on \"flour\": Optional (?) and Important (*)",
+      "message": "Incompatible modifiers on \"flour\": Optional (?) and Important (*).",
       "item": "flour",
       "loc": {
         "start": 66,

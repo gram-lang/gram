@@ -82,7 +82,7 @@
   "warnings": [
     {
       "code": "STOCKED_RETRO_PLANNING_IGNORED",
-      "message": "\"./bases/pate.gram\" is imported as stock and also carries a \"~{...}\" retro-planning clause — a stocked import costs zero timeline, so the retro-planning is ignored.",
+      "message": "Stocked module \"./bases/pate.gram\" has a retro-planning offset \"~{...}\", which is ignored because stocked items require no prep time.",
       "loc": {
         "start": 51,
         "end": 92
@@ -127,7 +127,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"pate-sablee\" not found in database."
+          "message": "Ingredient \"pate-sablee\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

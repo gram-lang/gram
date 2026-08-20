@@ -152,7 +152,7 @@
   "warnings": [
     {
       "code": "UNUSED_IMPORT",
-      "message": "Import '&jaunes' from \"./oeufs.gram\" is never used.",
+      "message": "Unused import '&jaunes' from \"./oeufs.gram\".",
       "loc": {
         "start": 0,
         "end": 44

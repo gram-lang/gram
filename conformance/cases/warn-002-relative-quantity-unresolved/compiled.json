@@ -98,7 +98,7 @@
   "warnings": [
     {
       "code": "RELATIVE_QUANTITY_UNRESOLVED",
-      "message": "Could not resolve relative quantity for '@flour'. Source not found in current section.",
+      "message": "Cannot resolve relative quantity: target ingredient '@flour' was not found in the current section.",
       "item": "sugar",
       "loc": {
         "start": 66,

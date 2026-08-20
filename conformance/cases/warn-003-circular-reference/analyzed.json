@@ -126,7 +126,7 @@
   "warnings": [
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: flour depends on itself.",
+      "message": "Circular reference detected: 'flour' depends on itself.",
       "item": "flour",
       "loc": {
         "start": 83,
@@ -172,7 +172,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

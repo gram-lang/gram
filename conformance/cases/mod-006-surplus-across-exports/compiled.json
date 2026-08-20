@@ -169,7 +169,7 @@
   "warnings": [
     {
       "code": "MODULE_SURPLUS",
-      "message": "Scaling \"./oeufs.gram\" to satisfy '&jaunes' produces more than requested: 100 g produced, 50 g used.",
+      "message": "Scaling \"./oeufs.gram\" for '&jaunes' yields a surplus: 100 g produced, 50 g used.",
       "loc": {
         "start": 0,
         "end": 44

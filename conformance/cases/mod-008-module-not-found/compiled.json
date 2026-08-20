@@ -53,7 +53,7 @@
   "warnings": [
     {
       "code": "MODULE_NOT_FOUND",
-      "message": "Module \"./missing.gram\" could not be found or read.",
+      "message": "Module \"./missing.gram\" could not be found or resolved.",
       "loc": {
         "start": 0,
         "end": 28

@@ -196,7 +196,7 @@
   "warnings": [
     {
       "code": "RETRO_PLANNING_OVERRIDE_SHADOWED",
-      "message": "The \"~{...}\" retro-planning on this \"@use\" of \"./bases/levain.gram\" overrides the module's own — the host's value wins.",
+      "message": "Host retro-planning offset on \"@use ./bases/levain.gram\" overrides the module's internal offset.",
       "loc": {
         "start": 53,
         "end": 98
@@ -245,11 +245,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"water\" not found in database."
+          "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

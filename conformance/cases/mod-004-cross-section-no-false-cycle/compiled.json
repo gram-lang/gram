@@ -281,7 +281,7 @@
   "warnings": [
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&base' from \"./base.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&base' from \"./base.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 0,
         "end": 28

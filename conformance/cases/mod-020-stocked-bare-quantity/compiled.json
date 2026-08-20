@@ -65,7 +65,7 @@
   "warnings": [
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&pate' from \"./bases/pate.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&pate' from \"./bases/pate.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 42,
         "end": 76

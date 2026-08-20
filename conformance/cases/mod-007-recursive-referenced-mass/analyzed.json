@@ -209,7 +209,7 @@
   "warnings": [
     {
       "code": "MODULE_BATCH_INTERPRETATION",
-      "message": "'&meringue' from \"./oeufs.gram\" was requested as a bare count against a mass/volume yield — interpreted as 1 batch(es) of the module. Note: quantities are multiplied by 1, not cook/rest times.",
+      "message": "'&meringue' from \"./oeufs.gram\" requested without unit — scaled as 1 batch(es) of the module.",
       "loc": {
         "start": 0,
         "end": 33
@@ -270,11 +270,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"egg\" not found in database."
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"sugar\" not found in database."
+          "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

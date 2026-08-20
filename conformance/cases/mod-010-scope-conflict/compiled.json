@@ -118,7 +118,7 @@
   "warnings": [
     {
       "code": "SCOPE_CONFLICT",
-      "message": "Global variable '&pate' is redefined.",
+      "message": "Intermediate variable '&pate' is redefined; variable names must be unique across the recipe.",
       "loc": {
         "start": 37,
         "end": 44
@@ -127,7 +127,7 @@
     },
     {
       "code": "UNUSED_IMPORT",
-      "message": "Import '&pate' from \"./pate.gram\" is never used.",
+      "message": "Unused import '&pate' from \"./pate.gram\".",
       "loc": {
         "start": 0,
         "end": 28

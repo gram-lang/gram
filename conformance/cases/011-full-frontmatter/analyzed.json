@@ -167,11 +167,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"milk\" not found in database."
+          "message": "Ingredient \"milk\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

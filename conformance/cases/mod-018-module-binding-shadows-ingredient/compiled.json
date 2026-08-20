@@ -68,7 +68,7 @@
   "warnings": [
     {
       "code": "MODULE_BINDING_SHADOWS_INGREDIENT",
-      "message": "'&pate' from \"./bases/pate.gram\" shares its slug with an existing ingredient in the database.",
+      "message": "Imported binding '&pate' from \"./bases/pate.gram\" shares name with a database ingredient.",
       "loc": {
         "start": 54,
         "end": 88
