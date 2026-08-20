@@ -14,7 +14,11 @@ import {
 	collectReferences,
 	collectIngredients,
 } from "../utils/ast-walker";
-import type { WarningSeverity, Warning } from "@gram-lang/kitchen";
+import {
+	WarningCode,
+	type WarningSeverity,
+	type Warning,
+} from "@gram-lang/kitchen";
 import { warningSeverityOf } from "@gram-lang/modules";
 import {
 	isKnownIngredient,
@@ -26,6 +30,20 @@ const ZERO_RANGE: Range = {
 	start: { line: 0, character: 0 },
 	end: { line: 0, character: 1 },
 };
+
+// Nutrition warnings never carry a `loc`: they're computed from the analyzer's
+// flattened ingredient list (AnalyzedUsage), whose `Usage` base type has no
+// position field — createCleanUsage() strips it when compiling from the AST
+// (packages/kitchen/src/types.ts). Since analyze() merged these into the
+// top-level `warnings` array consumed here, rendering them as diagnostics
+// would squiggle line 0 of the document instead of being silently skipped as
+// before. Excluded here only — they still reach webview/playground consumers
+// through `state.compilation.warnings` unfiltered.
+const LOC_LESS_WARNING_CODES: ReadonlySet<string> = new Set([
+	WarningCode.MISSING_INGREDIENT,
+	WarningCode.MISSING_MACROS,
+	WarningCode.UNKNOWN_MASS,
+]);
 
 const SEVERITY_MAP: Record<WarningSeverity, DiagnosticSeverity> = {
 	error: DiagnosticSeverity.Error,
@@ -126,6 +144,7 @@ export function provideDiagnostics(
 
 	if (state.compilation?.warnings) {
 		for (const w of state.compilation.warnings) {
+			if (!w.loc && LOC_LESS_WARNING_CODES.has(w.code)) continue;
 			diagnostics.push(warningToDiagnostic(state, uri, w));
 		}
 	}
