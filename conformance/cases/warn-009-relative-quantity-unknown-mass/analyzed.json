@@ -135,6 +135,10 @@
       "code": "RELATIVE_QUANTITY_UNKNOWN_MASS",
       "message": "Cannot compute relative quantity for 'water' because the mass of target 'flour' is unknown.",
       "item": "water"
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
     }
   ],
   "metrics": {

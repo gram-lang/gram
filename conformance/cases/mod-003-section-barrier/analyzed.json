@@ -226,6 +226,14 @@
         "start": 0,
         "end": 28
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"farine\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"eau\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

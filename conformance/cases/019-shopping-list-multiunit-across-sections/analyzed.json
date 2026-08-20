@@ -124,7 +124,16 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"butter\" — omitted from nutritional totals."
+    }
+  ],
   "metrics": {
     "totalTime": 5,
     "totalBreakdown": [

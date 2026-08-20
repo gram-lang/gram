@@ -78,6 +78,10 @@
     {
       "code": "NO_BAKERS_REFERENCE",
       "message": "No Baker's Percentage reference found. Mark an ingredient with the `*` modifier, or pass --bakers-reference=<id>."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

@@ -147,6 +147,14 @@
       "code": "INVALID_BAKERS_REFERENCE",
       "message": "Cannot use 'sugar' as the Baker's Percentage reference: its quantity is itself computed from another ingredient's percentage, not an absolute mass.",
       "item": "sugar"
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

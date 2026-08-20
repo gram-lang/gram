@@ -201,6 +201,14 @@
         "start": 53,
         "end": 98
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

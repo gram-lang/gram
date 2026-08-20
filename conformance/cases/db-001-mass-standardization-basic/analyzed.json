@@ -74,7 +74,12 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_MACROS",
+      "message": "Ingredient \"flour\" has no macronutrient data in database — nutritional totals are partial."
+    }
+  ],
   "metrics": {
     "totalTime": 3,
     "totalBreakdown": [

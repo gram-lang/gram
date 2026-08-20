@@ -127,7 +127,20 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"egg\" — omitted from nutritional totals."
+    }
+  ],
   "metrics": {
     "totalTime": 5,
     "totalBreakdown": [

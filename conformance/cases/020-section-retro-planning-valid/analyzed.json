@@ -177,7 +177,20 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"filling\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
   "metrics": {
     "totalTime": 2885,
     "totalBreakdown": [

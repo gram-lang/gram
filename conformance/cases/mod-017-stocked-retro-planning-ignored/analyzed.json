@@ -87,6 +87,10 @@
         "start": 51,
         "end": 92
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"pate-sablee\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

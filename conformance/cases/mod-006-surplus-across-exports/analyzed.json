@@ -216,6 +216,10 @@
         "start": 0,
         "end": 44
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {

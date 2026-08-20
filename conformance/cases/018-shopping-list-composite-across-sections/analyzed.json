@@ -179,7 +179,20 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"egg-whites\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"egg-yolks\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"eggs\" — omitted from nutritional totals."
+    }
+  ],
   "metrics": {
     "totalTime": 9,
     "totalBreakdown": [

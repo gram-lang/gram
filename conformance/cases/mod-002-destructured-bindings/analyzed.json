@@ -248,7 +248,16 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
   "metrics": {
     "totalTime": 10,
     "totalBreakdown": [

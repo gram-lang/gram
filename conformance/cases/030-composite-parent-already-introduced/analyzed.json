@@ -106,7 +106,16 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"zest\" — omitted from nutritional totals."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"juice\" — omitted from nutritional totals."
+    }
+  ],
   "metrics": {
     "totalTime": 5,
     "totalBreakdown": [

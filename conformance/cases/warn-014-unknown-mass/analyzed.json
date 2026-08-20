@@ -67,7 +67,12 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"flour\" — omitted from nutritional totals."
+    }
+  ],
   "metrics": {
     "totalTime": 3,
     "totalBreakdown": [
