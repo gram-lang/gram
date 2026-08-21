@@ -1,13 +1,115 @@
 ---
 title: "How to Organize and Compose Modular Recipes"
-description: "A practical guide to organizing shared recipe components, configuring path aliases, chaining imports, scheduling multi-day bases, and managing ready-made stock."
+description: "A practical guide to splitting recipes into reusable modules, organizing folders, configuring path aliases, chaining imports, scheduling multi-day bases, and managing ready-made stock."
 ---
 
-import { Tabs, TabItem, FileTree, CardGrid, Card, LinkCard } from '@astrojs/starlight/components';
+import { Steps, Tabs, TabItem, FileTree, CardGrid, Card, LinkCard } from '@astrojs/starlight/components';
 
-As your collection of `.gram` recipes grows, decomposing complex dishes into reusable components — pastries, sauces, stocks, infusions — saves time and ensures consistency across your culinary repertoire.
+As your collection of `.gram` recipes grows, decomposing complex dishes into reusable components — pastries, sauces, stocks, infusions — saves time and ensures consistency across your culinary repertoire. Extracting these core components into their own dedicated files eliminates repetitive copy-pasting: whenever you refine your dough (a dialed-in resting time, a tweaked flour ratio), every recipe in your collection immediately benefits from the improvement.
 
-This guide walks you through practical patterns for structuring, organizing, and executing modular Gram projects.
+This guide walks you through practical patterns for structuring, organizing, and executing modular Gram projects with `@use`.
+
+---
+
+## Step-by-step: Extracting and importing your first module
+
+If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon Meringue Tart** was written from start to finish in a single `.gram` file. Here is how to extract the sweet pastry dough into a reusable component and import it with `@use`.
+
+<Steps>
+
+1.  **Extract the base into its own file**
+
+    Start from the dough section in your recipe:
+
+    ```gram title="Original section"
+    ## Sweet Pastry Dough ->&pastry dough{}
+
+    [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+
+    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
+
+    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
+
+    [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+    ```
+
+    Move this preparation into its own file at `bases/sweet-pastry-dough.gram`:
+
+    ```gram title="bases/sweet-pastry-dough.gram"
+    ---
+    title: 'Sweet Pastry Dough'
+    ---
+
+    ## Sweet Pastry Dough
+
+    [Process] In a #food processor{}, the @flour{180g}, @icing sugar{55g}, and @salt{1/4 tsp}.
+
+    [Crumble] Add the @butter{115g}(cold, cut into small cubes) and mix for ~{1-2min} until sandy.
+
+    [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
+
+    [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+    ```
+
+    *   **Binding name is chosen on import**: For a single-purpose module, the `->&pastry dough{}` declaration on the section header is optional. The importing file chooses its local variable name with `as &dough` (`@use "..." as &dough`). For complex modules that produce multiple distinct components, declaring `->&` on each section remains the standard way to export each part by name (see [What a module exports](/docs/reference/syntax/modules#what-a-module-exports)).
+    *   **Automatic yield calculation**: When an importing recipe asks for a specific amount (such as `&dough{250g}`), Gram sums this file's own ingredient masses to work out its yield, then scales every quantity automatically.
+
+2.  **Import the base into your host recipe**
+
+    Back in your tart recipe, replace the dough section with an `@use` directive placed right after the frontmatter, before the first step:
+
+    ```gram title="lemon-tart.gram"
+    ---
+    title: Lemon Meringue Tart
+    portions: 8
+    ---
+
+    @use "./bases/sweet-pastry-dough.gram" as &dough
+
+    ## Lemon Curd ->&curd
+
+    [Whisk] In a #saucepan{}, the @lemon zest{1 tbsp}<@lemon, @lemon juice{120g}<@lemon{2}, @sugar{125% @&lemon juice}, and @eggs{3}.
+
+    [Cook] Over ^{medium heat} for ~{8min} until thickened.
+
+    ## Baking the Tart Shell ->&baked shell{}
+
+    [Preheat] The #oven to ^{350F}.
+
+    [Roll out] The &dough{450g} for ~{5min} and place it in a #tart ring{}.
+
+    [Bake] For ~_{20min} until golden. Let cool.
+
+    ## Assembly
+
+    [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
+    ```
+
+    Downstream tools — the Gantt timeline, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule.
+
+3.  **Reuse the base across multiple recipes**
+
+    A second recipe (for example, a batch of jam tartlets) can import the exact same base file:
+
+    ```gram title="jam-tartlets.gram"
+    ---
+    title: Jam Tartlets
+    ---
+
+    @use "./bases/sweet-pastry-dough.gram" as &dough
+
+    ## Tartlets
+
+    [Divide] The &dough{450g} into 12 small tart tins.
+
+    [Bake] At ^{180C} for ~_{15min} until golden.
+
+    [Fill] Each shell with a spoonful of @jam{15g}.
+    ```
+
+    Whenever you refine `bases/sweet-pastry-dough.gram` (adjusting resting time or tuning flour ratios), both recipes instantly benefit from the update during compilation.
+
+</Steps>
 
 ---
 
@@ -192,17 +294,31 @@ gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 
 ---
 
+## 6. Encapsulation & Math Scoping
+
+A module's relative quantities and ingredient dependencies (`@sugar{125% @&lemon juice}` in the curd) resolve only against *the sections within that specific module*. A host recipe that uses the same ingredient names elsewhere never collides with a base's internal math, and vice versa. 
+
+This strict section-scoping guarantees that splitting a recipe into files never introduces unexpected side effects. See [Encapsulation](/docs/reference/syntax/modules#encapsulation) for complete details.
+
+---
+
+## Try it in the Playground
+
+The web-based [Playground](/play) supports editing multi-file recipes: open the **Lemon Tart (multi-file, @use)** example from the recipe dropdown to explore a host recipe and its imported base side by side in separate tabs.
+
+---
+
 ## Related Resources
 
 <CardGrid>
   <LinkCard 
-    title="Tutorial: Splitting Recipes with Modules" 
-    description="Hands-on walk-through extracting a sweet pastry dough into a reusable module." 
-    href="/docs/tutorials/module-imports" 
-  />
-  <LinkCard 
     title="Module Imports Reference" 
     description="Detailed specifications for syntax, scaling equations, and encapsulation rules." 
     href="/docs/reference/syntax/modules" 
+  />
+  <LinkCard 
+    title="CLI Reference" 
+    description="Complete documentation for gram build, gram shop, --stock and global CLI options." 
+    href="/docs/reference/tooling/cli" 
   />
 </CardGrid>

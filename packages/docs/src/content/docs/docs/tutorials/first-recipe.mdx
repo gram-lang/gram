@@ -4,6 +4,7 @@ description: "A step-by-step tutorial writing a complete Lemon Tart recipe using
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Time to bake! In this tutorial, a complete recipe for a **Lemon Tart** is written.
 
@@ -302,3 +303,20 @@ By running `gram view lemon-tart.gram`, the compiler handled all the math and ou
 - **Shopping List**: It aggregates all ingredients globally. It grouped the `@egg{1}` and `@eggs{3}` into `4 eggs`. It calculated the whole lemons needed for the zest and juice. It automatically converted the relative sugar proportion into exactly `150g` of sugar.
 
 You've just written a highly scalable, data-driven recipe!
+
+## Next Steps
+
+Now that you've written a complete single-file recipe, explore how to organize multi-file collections and master Gram's syntax:
+
+<CardGrid>
+  <LinkCard 
+    title="How-To: Organize Modular Recipes" 
+    description="Learn how to extract reusable bases with @use, manage project folders, and configure aliases." 
+    href="/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Language Reference" 
+    description="Explore the complete grammar specification for ingredients, cookware, timers, and variables." 
+    href="/docs/reference/syntax/document-structure" 
+  />
+</CardGrid>

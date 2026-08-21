@@ -6,8 +6,9 @@ dist/
 .smoke/
 *.tgz
 *.vsix
-CLAUDE.local.md
+.vscode/
 **/.agents/
+**/.claude/
 
 # Vitepress
 **/.vitepress/cache

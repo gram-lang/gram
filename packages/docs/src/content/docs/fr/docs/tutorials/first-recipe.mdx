@@ -4,6 +4,7 @@ description: "Un tutoriel pas à pas pour écrire une Tarte au Citron complète 
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 À vos fourneaux ! Dans ce tutoriel, nous allons rédiger une recette complète de **Tarte au Citron**.
 
@@ -302,3 +303,20 @@ En lançant `gram view tarte-citron.gram`, le compilateur s'est chargé de tous 
 - **Liste de Courses** : Il a agrégé l'intégralité des ingrédients. Il a combiné l'`@œuf{1}` et les `@œufs{3}` en `4 œufs`. Il a calculé les citrons entiers nécessaires pour le zeste et le jus. Il a automatiquement converti la proportion relative en exactement `150 g` de sucre.
 
 Félicitations ! Vous venez de concevoir une recette structurée, dynamique et facilement adaptable.
+
+## Étapes Suivantes
+
+Maintenant que vous avez conçu une recette complète mono-fichier, découvrez comment organiser une collection de recettes modulaires et explorer la référence du langage :
+
+<CardGrid>
+  <LinkCard 
+    title="Guide : Organiser des recettes modulaires" 
+    description="Apprenez à extraire des bases réutilisables avec @use, structurer vos dossiers et configurer des alias." 
+    href="/fr/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Référence du langage" 
+    description="Explorez la spécification complète de la syntaxe pour les ingrédients, temps, variables et modules." 
+    href="/fr/docs/reference/syntax/document-structure" 
+  />
+</CardGrid>
