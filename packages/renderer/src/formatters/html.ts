@@ -379,13 +379,17 @@ const htmlBackend: RenderBackend = {
 					titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
 				}
 
-				if (sec.intermediate_preparation) {
+				if (sec.intermediate_preparation && sec.module) {
+					const arrowIcon =
+						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
+					const packageIcon =
+						options.icons?.package ?? '<i class="ph ph-package"></i>';
+					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span></span>`;
+				} else if (sec.intermediate_preparation) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
 					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
-				}
-
-				if (sec.module) {
+				} else if (sec.module) {
 					const packageIcon =
 						options.icons?.package ?? '<i class="ph ph-package"></i>';
 					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</small>`;

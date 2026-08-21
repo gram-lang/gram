@@ -70,4 +70,22 @@ describe("module provenance badge rendering", () => {
 		expect(html).not.toContain("<img");
 		expect(html).toContain("&lt;img");
 	});
+
+	it("renders a unified segmented declaration badge when module and intermediate declaration are both present", () => {
+		const result = compile(getAST("## Montage ->&pate\nUse the base.\n"));
+		Object.assign(result.sections[0]!, {
+			module: {
+				binding: "pate",
+				uri: "./bases/pate.gram",
+				title: "Pate Sablee",
+				mode: "inline",
+			},
+		});
+		const html = toHTML(result);
+		expect(html).toContain("section-declaration-badge has-module");
+		expect(html).toContain("section-module-source");
+		expect(html).toContain("Pate Sablee");
+		expect(html).toContain("section-decl-target");
+		expect(html).toContain("pate");
+	});
 });
