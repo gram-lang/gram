@@ -40,13 +40,17 @@
     "test": "bun test --only-failures",
     "change": "changeset",
     "check-changesets": "bun run check-changesets.ts",
-    "version-packages": "bun run generate-release-note.ts && changeset version && bun update",
+    "version-packages": "bun dedupe && bun prune && bun run generate-release-note.ts && changeset version && bun update",
     "conformance": "bun run --cwd conformance conformance",
     "conformance:update": "bun run --cwd conformance conformance:update",
     "any-ratchet": "node scripts/any-ratchet.cjs",
     "any-ratchet:update": "node scripts/any-ratchet.cjs --update",
     "audit": "bun run --cwd audit audit",
-    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run lint && bun run typecheck && bun run any-ratchet && bun test --only-failures"
+    "audit:fix": "bun audit fix",
+    "audit:check": "bun audit",
+    "dedupe:check": "bun dedupe --check",
+    "tidy": "bun dedupe && bun prune",
+    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run --parallel --no-exit-on-error lint typecheck any-ratchet test"
   },
   "workspaces": [
     "packages/*",
