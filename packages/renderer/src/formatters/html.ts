@@ -14,6 +14,7 @@ import {
 	isCompositeItem,
 	joinStepTokens,
 	groupMultiUnitEntries,
+	round1,
 } from "../utils";
 import {
 	availableBases,
@@ -298,7 +299,7 @@ const htmlBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = Math.round(item.purchasingMass * 10) / 10;
+					const gross = round1(item.purchasingMass);
 					extraHtml = ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
 				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}${extraHtml}</li>\n`;

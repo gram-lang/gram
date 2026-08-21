@@ -1,6 +1,7 @@
 import { ASTNodeType } from "@gram-lang/parser";
 import { round2 } from "@gram-lang/kitchen";
 import type { AggregatedIngredient, StepToken } from "@gram-lang/kitchen";
+import { isCoarseUnit } from "@gram-lang/i18n";
 
 // Converts an AggregatedIngredient to a plain object that formatElement can render.
 // The first quantity becomes qty/unit; additional ones become variable_entries strings.
@@ -42,7 +43,14 @@ export function aggToRendererItem(
 	return base;
 }
 
-export function formatDecimalToFraction(value: unknown): string {
+// Shared "round to 1 decimal" display precision for mass/volume quantities —
+// used for normalizedMass/purchasingMass (already always grams) and, via
+// formatDecimalToFraction below, for raw qty+unit display.
+export function round1(value: number): number {
+	return Math.round(value * 10) / 10;
+}
+
+export function formatDecimalToFraction(value: unknown, unit?: string): string {
 	if (typeof value !== "number") return String(value);
 
 	// Exact integers
@@ -67,6 +75,10 @@ export function formatDecimalToFraction(value: unknown): string {
 		if (match) return match.str;
 	}
 
+	if (unit && isCoarseUnit(unit)) {
+		return String(round1(value));
+	}
+
 	return String(round2(value));
 }
 
@@ -81,7 +93,13 @@ export function getQty(
 ): ExtractedQuantity | undefined {
 	if (item.qty !== undefined) {
 		if (typeof item.qty === "number") {
-			return { value: item.qty, text: formatDecimalToFraction(item.qty) };
+			return {
+				value: item.qty,
+				text: formatDecimalToFraction(
+					item.qty,
+					item.unit as string | undefined,
+				),
+			};
 		}
 		if (
 			typeof item.qty === "object" &&

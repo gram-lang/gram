@@ -1,14 +1,18 @@
 import chalk from "chalk";
 import { log } from "@clack/prompts";
 import { fmtNumber } from "../core/format";
+import { isCoarseUnit } from "@gram-lang/i18n";
 import type { ScaledItem } from "../services/scaler";
 
 function fmtQty(qty: number, unit: string | null): string {
+	const decimals = isCoarseUnit(unit) ? 1 : 2;
 	const rounded =
 		Math.abs(qty - Math.round(qty)) < 0.005
 			? Math.round(qty)
-			: parseFloat(qty.toFixed(2));
-	return unit ? `${fmtNumber(rounded)}${unit}` : fmtNumber(rounded, 1);
+			: parseFloat(qty.toFixed(decimals));
+	return unit
+		? `${fmtNumber(rounded, decimals)}${unit}`
+		: fmtNumber(rounded, 1);
 }
 
 export function renderScaleResult(

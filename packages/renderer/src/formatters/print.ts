@@ -14,6 +14,7 @@ import {
 	isCompositeItem,
 	joinStepTokens,
 	groupMultiUnitEntries,
+	round1,
 } from "../utils";
 import {
 	getMetrics,
@@ -516,7 +517,7 @@ const printBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = Math.round(item.purchasingMass * 10) / 10;
+					const gross = round1(item.purchasingMass);
 					extra = ` <span class="gross-mass">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
 				body += `  <li>${formatElement(item, "html", context)}${extra}</li>\n`;

@@ -2,6 +2,7 @@ import pLimit from "p-limit";
 import { basename } from "node:path";
 import {
 	normalizeUnit,
+	isCoarseUnit,
 	getDefaultCategories,
 	getCategoryLabels,
 	isCategoryKey,
@@ -186,8 +187,11 @@ export async function buildShoppingList(
 				const total = qtyItems.reduce((sum, i) => sum + i.qty, 0);
 				const unit = normalizeUnit(qtyItems[0]?.unit);
 				fullyAggregated = true;
+				const decimals = unit && isCoarseUnit(unit) ? 1 : 2;
 				finalEntry = {
-					displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total),
+					displayQty: unit
+						? `${fmtNumber(total, decimals)} ${unit}`
+						: fmtNumber(total, decimals),
 					isEstimate: false,
 				};
 			}

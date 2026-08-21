@@ -5,6 +5,7 @@ import {
 	getQty,
 	formatQuantityValue,
 	formatDecimalToFraction,
+	round1,
 } from "../utils";
 import { getDictionary } from "@gram-lang/i18n";
 
@@ -86,7 +87,7 @@ const strategies: Record<
 		let isEstimate = false;
 		let conversionMethod = "";
 		if (item.normalizedMass) {
-			normalizedMass = Math.round(item.normalizedMass * 10) / 10;
+			normalizedMass = round1(item.normalizedMass);
 			isEstimate = !!item.isEstimate;
 			conversionMethod = item.conversionMethod || "";
 		}
@@ -95,7 +96,7 @@ const strategies: Record<
 		let originalQtyStr = "";
 		if (qty) {
 			originalQtyStr =
-				(qty.text || formatDecimalToFraction(qty.value)) +
+				(qty.text || formatDecimalToFraction(qty.value, item.unit)) +
 				(item.unit ? ` ${item.unit}` : "");
 		}
 
@@ -336,7 +337,8 @@ const strategies: Record<
 				let tooltipText = t.renderer.intermediateIngredient;
 				if (qty) {
 					const parts = [];
-					const baseQty = qty.text || formatDecimalToFraction(qty.value);
+					const baseQty =
+						qty.text || formatDecimalToFraction(qty.value, item.unit);
 					parts.push(baseQty + (item.unit ? ` ${item.unit}` : ""));
 					if (item.variable_entries && item.variable_entries.length > 0) {
 						parts.push(...item.variable_entries);
@@ -348,7 +350,8 @@ const strategies: Record<
 				let html = `<span class="${className}">${caretIcon} ${escapeHtml(name)}`;
 				if (qty) {
 					const parts = [];
-					const baseQty = qty.text || formatDecimalToFraction(qty.value);
+					const baseQty =
+						qty.text || formatDecimalToFraction(qty.value, item.unit);
 					let first = escapeHtml(baseQty);
 					if (item.unit)
 						first += ` <span class="unit">${escapeHtml(item.unit)}</span>`;
@@ -365,7 +368,8 @@ const strategies: Record<
 			let md = `👉*${escapeMarkdownHtml(name)}*`;
 			if (qty) {
 				const parts = [];
-				const qtyVal = qty.text || formatDecimalToFraction(qty.value);
+				const qtyVal =
+					qty.text || formatDecimalToFraction(qty.value, item.unit);
 				let first = String(qtyVal);
 				if (item.unit) first += ` ${item.unit}`;
 				parts.push(first);
