@@ -6,6 +6,7 @@ import gramGrammar from "@gram-lang/parser/textmate";
 import FeaturePanel from "./FeaturePanel.astro";
 import { GRAM_VERSION } from "../lib/gram-version";
 import { NUTRIENTS, type NutrientKey } from "@gram-lang/analyzer";
+import { nutritionGroups } from "@gram-lang/renderer";
 import { getDictionary } from "@gram-lang/i18n";
 
 const { lang, t } = Astro.props;
@@ -17,38 +18,23 @@ const codeThemes: Record<string, any> = {
 
 // The nutrition panel mockup below is a static picture of what the real
 // renderer produces — it is not rendered by it. Driving its labels and their
-// order from NUTRIENTS and the shared locale files is what keeps the two from
-// drifting apart, which is exactly what happened to the six hand-written
-// nutrient lists this table replaced.
+// grouping from `nutritionGroups()` keeps the two from drifting apart.
 const nutritionDict = getDictionary(lang);
 
 // Per-portion figures for the Chantilly mockup: one quarter of a 269 g batch
 // (240 g cream + 25 g powdered sugar + 4 g vanilla), the recipe shown in
-// `nutritionInput`. Values are formatted with a decimal point in every locale,
-// matching the renderer's own output.
-const MOCK_NUTRITION: Partial<Record<NutrientKey, string>> = {
-	calories: "231 kcal",
-	fat: "22 g",
-	sat_fat: "13.8 g",
-	mono_fat: "5.8 g",
-	poly_fat: "0.8 g",
-	carbs: "6.5 g",
-	sugar: "6.3 g",
-	fiber: "0 g",
-	protein: "1.5 g",
-	sodium: "11 mg",
+// `nutritionInput`. Values match the renderer's own output.
+const MOCK_NUTRITION_VALUES: Partial<Record<NutrientKey, number>> = {
+	calories: 231,
+	fat: 22,
+	carbs: 6.5,
+	sugar: 6.3,
+	fiber: 0,
+	protein: 1.5,
+	sodium: 11,
 };
 
-const mockNutrients = NUTRIENTS.filter((n) => MOCK_NUTRITION[n.key]).map(
-	(n) => ({
-		key: n.key,
-		value: MOCK_NUTRITION[n.key] as string,
-		nested: Boolean(n.parent),
-		label: n.parent
-			? `${nutritionDict.renderer.ofWhich} ${nutritionDict.renderer.nutrients[n.key]}`
-			: nutritionDict.renderer.nutrients[n.key],
-	}),
-);
+const mockNutrientGroups = nutritionGroups(MOCK_NUTRITION_VALUES as any, lang);
 
 // The recipe declares `portions: 4`, so the real panel offers all three bases
 // and opens on per-portion.
@@ -174,9 +160,9 @@ const mockBases = [
                       <span class="action"
                         >{lang === "fr" ? "Fouetter" : "Whisk"}</span
                       >
-                      {lang === "fr" ? "la " : ""}<strong
+                      {lang === "fr" ? "La " : ""}<strong
                         >{
-                          lang === "fr" ? "crème liquide" : "heavy cream"
+                          lang === "fr" ? "crème liquide" : "Heavy cream"
                         }</strong
                       > (240g)
                       {lang === "fr" ? " et le " : " and "}
@@ -225,15 +211,25 @@ const mockBases = [
                   </div>
                   <div class="nut-grid-mock">
                     {
-                      mockNutrients.map((nutrient) => (
-                        <div
-                          class:list={[
-                            "nut-item-mock",
-                            { nested: nutrient.nested },
-                          ]}
-                        >
-                          <span class="label">{nutrient.label}</span>
-                          <strong>{nutrient.value}</strong>
+                      mockNutrientGroups.map((group) => (
+                        <div class="nut-item-mock">
+                          <span class="label">{group.label}</span>
+                          <strong>
+                            {group.value}{" "}
+                            <span class="unit">{group.unit}</span>
+                          </strong>
+                          {group.children.length > 0 && (
+                            <ul class="nut-item-children">
+                              {group.children.map((child) => (
+                                <li>
+                                  <span class="label">{child.label}</span>
+                                  <span class="value">
+                                    {child.value} {child.unit}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       ))
                     }
@@ -266,7 +262,7 @@ const mockBases = [
                     ></span
                   >
                   <span
-                    >{lang === "fr" ? "Actif" : " · Active"}: <strong>7m</strong
+                    >{lang === "fr" ? " · Actif" : " · Active"}: <strong>7m</strong
                     ></span
                   >
                 </div>
@@ -332,6 +328,74 @@ const mockBases = [
                       <div class="gantt-tick" style="left: 88%;">17m</div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </FeaturePanel>
+          </details>
+
+          <!-- Feature: Modules -->
+          <details class="feature-accordion">
+            <summary class="feature-summary">
+              <h3 class="feature-title">{t.tabModulesTitle}</h3>
+            </summary>
+            <FeaturePanel
+              id="feature-modules"
+              desc={t.tabModulesDesc}
+              link={t.tabModulesLink}
+              learnMoreText={t.learnMore}
+              inputCode={t.modulesInput}
+              outputCode={t.modulesOutput}
+              gramLang={gramLang}
+              codeThemes={codeThemes}
+            >
+              <div class="modern-mockup-card rendered-recipe-mock">
+                <!-- Section 1 : Base importée (inlinée et mise à l'échelle) -->
+                <div class="rendered-section">
+                  <div class="rendered-section-header">
+                    <h4>{lang === "fr" ? "Pâte Sablée" : "Crust"}</h4>
+                    <span class="rendered-module-badge">
+                      📦 {lang === "fr" ? "bases/pate-sablee.gram" : "bases/shortcrust.gram"} &rarr; {lang === "fr" ? "pâte" : "crust"} (×0.5)
+                    </span>
+                  </div>
+                  <ol class="gram-steps">
+                    <li>
+                      <span class="action">{lang === "fr" ? "Sabler" : "Mix"}</span>
+                      {lang === "fr" ? "La " : ""}<strong
+                        >{lang === "fr" ? "farine" : "flour"}</strong
+                      > (125g), {lang === "fr" ? "le " : ""}<strong
+                        >{lang === "fr" ? "beurre" : "butter"}</strong
+                      > (62.5g), {lang === "fr" ? "le " : ""}<strong
+                        >{lang === "fr" ? "sucre glace" : "powdered sugar"}</strong
+                      > (45g){lang === "fr" ? " et l'" : ", and "}<strong
+                        >{lang === "fr" ? "eau" : "water"}</strong
+                      > (17.5g).
+                    </li>
+                  </ol>
+                </div>
+
+                <!-- Section 2 : Recette hôte -->
+                <div class="rendered-section">
+                  <div class="rendered-section-header">
+                    <h4>{lang === "fr" ? "Tarte Citron" : "Lemon Tart"}</h4>
+                  </div>
+                  <ol class="gram-steps" start="2">
+                    <li>
+                      <span class="action">{lang === "fr" ? "Foncer" : "Line"}</span>
+                      {lang === "fr" ? "Le cercle à tarte avec la " : "the tart ring with "}<strong
+                        >{lang === "fr" ? "pâte" : "&crust"}</strong
+                      > (250g).
+                    </li>
+                    <li>
+                      <span class="action">{lang === "fr" ? "Cuire" : "Bake"}</span>
+                      {lang === "fr" ? "Au four pendant " : "blind bake for "}<strong>18min</strong> {lang === "fr" ? "à " : "at "}<strong>175°C</strong>.
+                    </li>
+                    <li>
+                      <span class="action">{lang === "fr" ? "Garnir" : "Fill"}</span>
+                      {lang === "fr" ? "Verser le " : "pour in the "}<strong
+                        >{lang === "fr" ? "crémeux citron" : "lemon curd"}</strong
+                      > (300g).
+                    </li>
+                  </ol>
                 </div>
               </div>
             </FeaturePanel>
@@ -871,7 +935,6 @@ const mockBases = [
   .gram-steps {
     list-style-type: decimal;
     padding-inline: 3rem 2rem;
-    margin-bottom: 1.5rem;
     color: var(--sl-color-white);
     line-height: 1.6;
   }
@@ -889,11 +952,10 @@ const mockBases = [
 
   /* Nutrition Panel Mockup */
   .nut-panel-mock {
-    margin-top: 1rem;
     background-color: var(--sl-color-bg-nav);
     padding: 0.75rem;
     border: 1px solid var(--sl-color-border);
-    margin: 1rem;
+    margin: 0rem 1rem 1rem 1rem;
   }
   .nut-header-mock {
     font-size: 1.1rem;
@@ -936,10 +998,11 @@ const mockBases = [
     display: grid;
     gap: 6px;
     grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: min-content;
   }
   @media (min-width: 480px) {
     .nut-grid-mock {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
   }
   .nut-item-mock {
@@ -947,7 +1010,7 @@ const mockBases = [
     flex-direction: column;
     gap: 2px;
     background-color: var(--sl-color-bg);
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid var(--sl-color-hairline);
   }
   .nut-item-mock .label {
@@ -956,19 +1019,43 @@ const mockBases = [
     color: var(--sl-color-text-accent);
     font-weight: 600;
   }
-  /* Sub-macros ("of which saturates") read as a breakdown of the row above,
-     the same way the real panel distinguishes them. */
-  .nut-item-mock.nested {
-    border-style: dashed;
-  }
-  .nut-item-mock.nested .label {
-    text-transform: none;
-    color: var(--sl-color-gray-3);
-  }
   .nut-item-mock strong {
-    font-size: 1em;
+    font-size: 1.05em;
     font-family: var(--sl-font-mono);
     color: var(--sl-color-white);
+  }
+  .nut-item-mock strong .unit {
+    font-size: 0.85em;
+    font-weight: 400;
+    color: var(--sl-color-gray-3);
+  }
+  .nut-item-children {
+    list-style: none;
+    margin: 0;
+    padding: 0px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .nut-item-children li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 0.7em;
+    color: var(--sl-color-gray-3);
+  }
+  .nut-item-children .label {
+    font-size: 0.95em;
+    text-transform: none;
+    color: var(--sl-color-gray-3);
+    font-weight: 400;
+  }
+  .nut-item-children .value {
+    font-family: var(--sl-font-mono);
+    font-weight: 600;
+    color: var(--sl-color-gray-2);
+    white-space: nowrap;
   }
 
   /* Gantt Timeline Mockup */
@@ -1089,6 +1176,53 @@ const mockBases = [
 
   .tab-val-ref {
     color: var(--sl-color-text);
+  }
+
+  /* Rendered Modular Recipe Mockup */
+  .rendered-recipe-mock {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .rendered-section {
+    border-left: 3px solid var(--sl-color-border);
+    padding-left: 1rem;
+  }
+
+  .rendered-section:first-child {
+    border-left-color: var(--sl-color-text-accent);
+  }
+
+  .rendered-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .rendered-section-header h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    margin: 0;
+  }
+
+  .rendered-module-badge {
+    font-size: 0.75rem;
+    font-family: var(--sl-font-mono);
+    color: var(--sl-color-gray-2);
+    background-color: var(--sl-color-bg-nav);
+    padding: 3px 8px;
+    border: 1px solid var(--sl-color-border);
+  }
+
+  .rendered-recipe-mock .gram-steps {
+    padding-inline: 1.25rem 0.5rem;
+    margin-bottom: 0;
   }
 
   #cli-init-cmd {

@@ -31,6 +31,9 @@ export interface HomepageCopy {
 	tabScaleTitle: string;
 	tabScaleDesc: string;
 	tabScaleLink: string;
+	tabModulesTitle: string;
+	tabModulesDesc: string;
+	tabModulesLink: string;
 	tryPlaygroundBtn: string;
 
 	tabInput: string;
@@ -42,6 +45,8 @@ export interface HomepageCopy {
 	scheduleOutput: string;
 	scaleInput: string;
 	scaleOutput: string;
+	modulesInput: string;
+	modulesOutput: string;
 
 	getInvolved: string;
 	readBookTitle: string;
@@ -82,28 +87,35 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		learnMore: "Learn more",
 		philosophy: [
 			{
-				title: "Plain Text & Git Friendly",
+				title: "Plain Text & Git",
 				icon: "document",
 				details:
 					"No proprietary database or vendor lock-in. Your recipes are simple text files that can be versioned with Git, shared easily, and edited in any text editor.",
 				link: "/docs/explanation/philosophy",
 			},
 			{
-				title: "Dynamic Evaluation",
+				title: "Automatic Calculations",
 				icon: "setting",
 				details:
 					"Stop calculating hydration or portion sizes manually. The language natively handles arithmetic expressions, variable declarations, and unit conversions.",
 				link: "/docs/explanation/scaling",
 			},
 			{
-				title: "Type-Safe Tooling",
+				title: "Modular Recipes (@use)",
+				icon: "code-branch",
+				details:
+					"Stop duplicating doughs, stocks, and sauces across files. Break shared sub-recipes into standalone files and import them anywhere with a single line.",
+				link: "/docs/how-to/organize-modular-recipes",
+			},
+			{
+				title: "Dedicated IDE Support",
 				icon: "laptop",
 				details:
 					"Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
 				link: "/docs/reference/tooling/vscode-extension",
 			},
 			{
-				title: "Compile Everywhere",
+				title: "Universal Export",
 				icon: "puzzle",
 				details:
 					"Gram parses your recipes into a rich AST. Easily export them to JSON, Markdown, render them as HTML, or feed them into your favorite static site generator to build your own custom cookbook.",
@@ -134,12 +146,16 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabScaleDesc:
 			"Supports baker's percentages. Declare ingredients relative to a base ingredient to easily scale your recipes.",
 		tabScaleLink: "/docs/how-to/scale-recipes/",
+		tabModulesTitle: "Modular Recipes (@use)",
+		tabModulesDesc:
+			"Import shared base preparations with @use. Gram resolves dependencies, inlines preparation steps into the recipe, and scales quantities automatically.",
+		tabModulesLink: "/docs/how-to/organize-modular-recipes",
 		tryPlaygroundBtn: "Try it in the Playground",
 
 		tabInput: "Gram Syntax",
 		tabOutput: "Parsed Result",
 
-		nutritionInput: `---\nportions: 4\n---\n\n## Chantilly Cream\n\n[Whisk] @heavy cream{1 cup} and @powdered sugar{2 tbsp} until soft peaks form.\n\n[Fold] Gently incorporate @vanilla extract{1 tsp}.`,
+		nutritionInput: `---\nportions: 4\n---\n\n## Chantilly Cream\n\n[Whisk] @Heavy cream{1 cup} and @powdered sugar{2 tbsp} until soft peaks form.\n\n[Fold] Gently incorporate @vanilla extract{1 tsp}.`,
 		nutritionOutput: JSON.stringify(
 			{
 				shopping_list: [
@@ -276,6 +292,45 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
+		modulesInput: `@use "./bases/shortcrust.gram" as &crust\n\n## Lemon Tart\n\n[Line] The tart ring with &crust{250g}.\n\n[Bake] Blind bake for ~_oven{18min} at ^{175C}.\n\n[Fill] Pour in the @lemon curd{300g}.`,
+		modulesOutput: JSON.stringify(
+			{
+				modules: [
+					{
+						binding: "crust",
+						uri: "./bases/shortcrust.gram",
+						scaleFactor: 0.5,
+						mode: "inline",
+					},
+				],
+				sections: [
+					{
+						title: "Crust",
+						intermediate_preparation: "crust",
+						module: {
+							binding: "crust",
+							uri: "./bases/shortcrust.gram",
+						},
+						ingredients: [
+							{ id: "flour", qty: 125, unit: "g" },
+							{ id: "butter", qty: 62.5, unit: "g" },
+							{ id: "powdered-sugar", qty: 45, unit: "g" },
+							{ id: "water", qty: 17.5, unit: "g" },
+						],
+					},
+					{
+						title: "Lemon Tart",
+						ingredients: [
+							{ type: "reference", id: "crust", qty: 250, unit: "g" },
+							{ id: "lemon-curd", qty: 300, unit: "g" },
+						],
+					},
+				],
+			},
+			null,
+			2,
+		),
+
 		getInvolved: "Get Involved",
 		readBookTitle: "Explore the Language",
 		readBookDesc:
@@ -316,35 +371,42 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		learnMore: "En savoir plus",
 		philosophy: [
 			{
-				title: "Texte Brut & Git",
+				title: "Fichiers Texte & Git",
 				icon: "document",
 				details:
 					"Aucun verrouillage propriétaire. Vos recettes sont de simples fichiers texte, faciles à versionner avec Git, à partager et à éditer dans l'éditeur de votre choix.",
 				link: "/fr/docs/explanation/philosophy",
 			},
 			{
-				title: "Calculs & Proportions",
+				title: "Calculs Automatiques",
 				icon: "setting",
 				details:
 					"Ajustez les portions sans calculs mentaux. Gram gère nativement l'arithmétique, les variables et la conversion d'unités.",
 				link: "/fr/docs/explanation/scaling",
 			},
 			{
-				title: "Un Outillage Robuste",
+				title: "Recettes Modulaires (@use)",
+				icon: "code-branch",
+				details:
+					"Ne dupliquez plus vos pâtes, bouillons ou sauces. Découpez vos préparations de base dans des fichiers dédiés et importez-les dans n'importe quelle recette en une seule ligne.",
+				link: "/fr/docs/how-to/organize-modular-recipes",
+			},
+			{
+				title: "Support IDE Dédié",
 				icon: "laptop",
 				details:
 					"Grâce à son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et des diagnostics en temps réel, directement dans votre éditeur favori.",
 				link: "/fr/docs/reference/tooling/vscode-extension",
 			},
 			{
-				title: "Exportez Partout",
+				title: "Export Universel",
 				icon: "puzzle",
 				details:
 					"Gram compile vos recettes en un arbre syntaxique (AST) complet. Générez du JSON ou du Markdown pour alimenter le générateur de site statique de votre choix et créer le carnet de recettes ultime.",
 				link: "/fr/docs/reference/api/kitchen",
 			},
 			{
-				title: "Une CLI Puissante",
+				title: "CLI Puissante",
 				icon: "rocket",
 				details:
 					"Pilotez votre espace de travail directement depuis le terminal. La CLI officielle permet d'initialiser un projet, de formater et de compiler vos recettes en une seule commande.",
@@ -367,6 +429,10 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabScaleDesc:
 			"Gérez nativement le pourcentage du boulanger. Liez vos ingrédients à une masse de référence pour recalculer n'importe quelle recette en un instant.",
 		tabScaleLink: "/fr/docs/how-to/scale-recipes/",
+		tabModulesTitle: "Recettes Modulaires (@use)",
+		tabModulesDesc:
+			"Importez vos préparations de base avec @use. Gram résout les dépendances, imbrique les étapes dans la recette et adapte automatiquement les quantités au besoin.",
+		tabModulesLink: "/fr/docs/how-to/organize-modular-recipes",
 		tryPlaygroundBtn: "Tester dans le Playground",
 
 		tabInput: "Syntaxe Gram",
@@ -502,6 +568,45 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 						qty: 80,
 						unit: "g",
 						bakersPercentage: 20,
+					},
+				],
+			},
+			null,
+			2,
+		),
+
+		modulesInput: `@use "./bases/pate-sablee.gram" as &pâte\n\n## Tarte Citron\n\n[Foncer] Le cercle à tarte avec la &pâte{250g}.\n\n[Cuire à blanc] Cuire au four pendant ~_four{18min} à ^{175°C}.\n\n[Garnir] Verser le @crémeux citron{300g}.`,
+		modulesOutput: JSON.stringify(
+			{
+				modules: [
+					{
+						binding: "pate",
+						uri: "./bases/pate-sablee.gram",
+						scaleFactor: 0.5,
+						mode: "inline",
+					},
+				],
+				sections: [
+					{
+						title: "Pâte Sablée",
+						intermediate_preparation: "pate",
+						module: {
+							binding: "pate",
+							uri: "./bases/pate-sablee.gram",
+						},
+						ingredients: [
+							{ id: "farine", qty: 125, unit: "g" },
+							{ id: "beurre", qty: 62.5, unit: "g" },
+							{ id: "sucre-glace", qty: 45, unit: "g" },
+							{ id: "eau", qty: 17.5, unit: "g" },
+						],
+					},
+					{
+						title: "Tarte Citron",
+						ingredients: [
+							{ type: "reference", id: "pate", qty: 250, unit: "g" },
+							{ id: "cremeux-citron", qty: 300, unit: "g" },
+						],
 					},
 				],
 			},
