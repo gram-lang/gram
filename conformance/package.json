@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "conformance": "bun run run.ts",
+    "conformance": "bun run run.ts --only-failures",
+    "conformance:verbose": "bun run run.ts",
     "conformance:update": "bun run run.ts --update"
   },
   "dependencies": {

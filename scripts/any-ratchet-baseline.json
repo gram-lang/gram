@@ -1,11 +1,11 @@
 {
 	"analyzer": 0,
 	"cli": 109,
-	"docs": 25,
 	"format": 0,
 	"i18n": 0,
 	"kitchen": 0,
 	"language-server": 1,
+	"modules": 0,
 	"parser": 0,
 	"renderer": 31,
 	"vscode-extension": 0

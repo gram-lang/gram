@@ -44,7 +44,7 @@
     "build:bin": "bun build --compile --target=bun-linux-x64 src/index.ts --outfile dist/bin/gram-linux-x64",
     "typecheck": "tsc --noEmit",
     "dev": "bun run src/index.ts",
-    "test": "bun test",
+    "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

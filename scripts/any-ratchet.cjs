@@ -23,9 +23,12 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const baselinePath = path.join(__dirname, "any-ratchet-baseline.json");
 
+// Exclude non-library / site documentation packages (docs website & playground UI)
+const EXCLUDED_PACKAGES = new Set(["docs"]);
+
 const packages = fs
 	.readdirSync(path.join(root, "packages"), { withFileTypes: true })
-	.filter((entry) => entry.isDirectory())
+	.filter((entry) => entry.isDirectory() && !EXCLUDED_PACKAGES.has(entry.name))
 	.map((entry) => entry.name)
 	.filter((name) => fs.existsSync(path.join(root, "packages", name, "src")))
 	.sort();

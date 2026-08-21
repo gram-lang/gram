@@ -4,25 +4,30 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "prebuild"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "outputLogs": "errors-only"
     },
     "prebuild": {
-      "outputs": ["src/grammar-content.ts"]
+      "outputs": ["src/grammar-content.ts"],
+      "outputLogs": "errors-only"
     },
     "@gram-lang/docs#prebuild": {
       "dependsOn": ["^build"],
-      "outputs": ["public/llms-full.txt"]
+      "outputs": ["public/llms-full.txt"],
+      "outputLogs": "errors-only"
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "outputLogs": "errors-only"
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "outputLogs": "errors-only"
     }
   }
 }

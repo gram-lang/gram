@@ -46,7 +46,13 @@ const ENTRY_URI = "input.gram";
 
 const args = process.argv.slice(2);
 const update = args.includes("--update");
-const filters = args.filter((a) => a !== "--update");
+const onlyFailures =
+	args.includes("--only-failures") ||
+	args.includes("-q") ||
+	args.includes("--quiet");
+const filters = args.filter(
+	(a) => !["--update", "--only-failures", "-q", "--quiet"].includes(a),
+);
 
 function toJSON(value: unknown): string {
 	return `${JSON.stringify(value, null, 2)}\n`;
@@ -246,7 +252,7 @@ let failed = 0;
 for (const name of cases) {
 	const { ok, diffs } = await runCase(name);
 	if (ok) {
-		console.log(`  ok    ${name}`);
+		if (!onlyFailures) console.log(`  ok    ${name}`);
 	} else {
 		failed++;
 		console.log(`  FAIL  ${name}`);

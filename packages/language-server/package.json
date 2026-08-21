@@ -30,7 +30,7 @@
     "build": "node build.cjs",
     "typecheck": "tsc --noEmit",
     "dev": "node build.cjs --watch",
-    "test": "bun test",
+    "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

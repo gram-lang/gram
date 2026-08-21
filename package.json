@@ -10,7 +10,7 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "lefthook": "^2.1.10",
     "tsup": "^8.5.1",
-    "turbo": "^2.10.10",
+    "turbo": "^2.10.11",
     "typescript": "^6.0.3"
   },
   "license": "GPL-3.0",
@@ -34,10 +34,10 @@
     "build": "turbo run build",
     "dev": "turbo run dev --filter=@gram-lang/docs",
     "dev:watch": "turbo watch build",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
+    "lint": "biome check --diagnostic-level=error .",
+    "lint:fix": "biome check --write --diagnostic-level=error .",
     "typecheck": "turbo run typecheck",
-    "test": "bun test",
+    "test": "bun test --only-failures",
     "change": "changeset",
     "check-changesets": "bun run check-changesets.ts",
     "version-packages": "bun run generate-release-note.ts && changeset version && bun update",
@@ -46,7 +46,7 @@
     "any-ratchet": "node scripts/any-ratchet.cjs",
     "any-ratchet:update": "node scripts/any-ratchet.cjs --update",
     "audit": "bun run --cwd audit audit",
-    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run lint && bun run typecheck && bun run any-ratchet && bun test"
+    "ci": "bun run build && git diff --exit-code packages/parser/src/grammar-content.ts && bun run lint && bun run typecheck && bun run any-ratchet && bun test --only-failures"
   },
   "workspaces": [
     "packages/*",
