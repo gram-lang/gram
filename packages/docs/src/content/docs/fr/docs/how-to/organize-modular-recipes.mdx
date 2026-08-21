@@ -3,23 +3,21 @@ title: "Organiser et composer des recettes modulaires"
 description: "Un guide pratique pour découper des recettes en composants réutilisables, organiser vos dossiers, configurer des alias, chaîner des sous-recettes et gérer vos stocks."
 ---
 
-import { Steps, Tabs, TabItem, FileTree, CardGrid, Card, LinkCard } from '@astrojs/starlight/components';
+import { Steps, Tabs, TabItem, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-À mesure que votre collection de recettes `.gram` grandit, décomposer vos préparations complexes en composants réutilisables — pâtes, sauces, bouillons, marinades — vous fait gagner un temps précieux et garantit une parfaite régularité culinaire. Extraire ces préparations fondamentales dans leurs propres fichiers vous évite de copier-coller les mêmes instructions partout : dès que vous perfectionnez votre pâte (un temps de repos affiné, un dosage ajusté), l'ensemble de vos recettes en profite instantanément.
+À mesure que votre collection de recettes `.gram` s'enrichit, découper vos préparations complexes en éléments réutilisables (pâtes, sauces, bouillons ou marinades) vous fait gagner un temps précieux tout en garantissant une parfaite régularité en cuisine. En isolant ces préparations de base dans leurs propres fichiers, vous évitez les copier-coller répétitifs : dès que vous peaufinez une recette (un temps de repos mieux ajusté, un dosage de farine affiné), l'ensemble de vos recettes en profite automatiquement.
 
-Ce guide présente les bonnes pratiques pour structurer, découper et orchestrer vos projets Gram modulaires avec `@use`.
-
----
+Ce guide vous présente les meilleures pratiques pour structurer, découper et orchestrer vos recettes modulaires avec la directive `@use`.
 
 ## Atelier pas à pas : Extraire et importer son premier module
 
-Si vous avez suivi [Votre Première Recette](/fr/docs/tutorials/first-recipe), la **Tarte au citron meringuée** a été rédigée d'un seul bloc. Voici comment extraire la pâte sucrée vers un module réutilisable et l'importer avec `@use`.
+Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-recipe), la **Tarte au citron meringuée** y était rédigée d'un seul tenant. Voyons comment extraire sa pâte sucrée dans un module réutilisable et l'importer avec `@use`.
 
 <Steps>
 
-1.  **Extraire la base dans son propre fichier**
+1.  **Isoler la base dans son propre fichier**
 
-    Reprenons la section de pâte de votre recette :
+    Reprenons la section consacrée à la pâte dans la recette d'origine :
 
     ```gram title="Section d'origine"
     ## Pâte Sucrée ->&pâte sucrée{}
@@ -30,10 +28,10 @@ Si vous avez suivi [Votre Première Recette](/fr/docs/tutorials/first-recipe), l
 
     [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
-    [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+    [Repos] Envelopper de #film alimentaire{} et laisser reposer au réfrigérateur pendant ~_{1 h}.
     ```
 
-    Déplaçons cette préparation dans son propre fichier à l'emplacement `bases/pate-sucree.gram` :
+    Déplaçons cette préparation dans un fichier dédié, par exemple `bases/pate-sucree.gram` :
 
     ```gram title="bases/pate-sucree.gram"
     ---
@@ -48,15 +46,15 @@ Si vous avez suivi [Votre Première Recette](/fr/docs/tutorials/first-recipe), l
 
     [Incorporer] Ajouter l'@œuf{1}, l'@?extrait de vanille{1/2 c.à.c} et mélanger jusqu'à ce que la pâte forme une boule.
 
-    [Repos] Envelopper de film alimentaire et laisser reposer au réfrigérateur pendant ~_{1 h}.
+    [Repos] Envelopper de #film alimentaire{} et laisser reposer au réfrigérateur pendant ~_{1 h}.
     ```
 
-    *   **Le nom de liaison est choisi à l'import** : Pour un module à composant unique, la déclaration `->&pâte sucrée{}` sur le titre de section n'est plus indispensable. La recette hôte choisit librement le nom de la variable avec `as &pâte` (`@use "..." as &pâte`). Dans le cas de modules produisant plusieurs préparations distinctes, déclarer `->&` sur chaque section reste le moyen privilégié d'exporter chaque composant par son nom (voir [Ce qu'un module exporte](/fr/docs/reference/syntax/modules#ce-quun-module-exporte)).
-    *   **Calcul automatique du rendement** : Lorsqu'une recette hôte demande une quantité précise (comme `&pâte{250g}`), Gram additionne la masse des ingrédients du fichier pour calculer son rendement, puis adapte toutes les quantités automatiquement.
+    *   **Nom de variable libre à l'import** : lorsqu'un module ne produit qu'une seule préparation, l'annotation `->&pâte sucrée{}` dans le titre de section devient facultative. C'est la recette qui importe le module qui choisit librement le nom de sa variable locale via `as &pâte` (`@use "..." as &pâte`). En revanche, pour un fichier qui génère plusieurs préparations distinctes, déclarer `->&` sur chaque section reste le moyen privilégié d'exporter chaque composant sous un nom précis (voir [Ce qu'un module exporte](/fr/docs/reference/syntax/modules#ce-quun-module-exporte)).
+    *   **Calcul automatique du rendement** : lorsque la recette hôte demande une quantité précise (comme `&pâte{450g}` ou `&pâte{250g}`), Gram additionne automatiquement le poids des ingrédients du fichier pour calculer le rendement total de la base, puis applique la règle de trois sur chaque proportion.
 
-2.  **Importer la base dans votre recette hôte**
+2.  **Importer la base dans la recette principale**
 
-    Dans votre recette de tarte, remplacez la section de pâte par une directive `@use` placée juste après le frontmatter, avant la première étape :
+    Dans votre recette de tarte, remplacez la section de la pâte par une directive `@use` placée juste après le frontmatter, avant la première section :
 
     ```gram title="tarte-au-citron.gram"
     ---
@@ -85,11 +83,11 @@ Si vous avez suivi [Votre Première Recette](/fr/docs/tutorials/first-recipe), l
     [Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
     ```
 
-    Tous les outils avals — diagramme de Gantt, liste de courses et valeurs nutritionnelles — fonctionnent de manière fluide. Le temps de repos `~_{1 h}` de la pâte s'entrelace avec la cuisson du crémeux car `@use` intègre les étapes importées dans l'ordonnancement global.
+    Tous les outils de l'écosystème Gram (chronologie Gantt, liste de courses, analyse nutritionnelle) continuent de fonctionner harmonieusement. Le temps de repos passif `~_{1 h}` de la pâte s'imbrique naturellement avec la cuisson du crémeux : `@use` intègre les étapes importées directement dans la planification globale.
 
-3.  **Réutiliser la base dans d'autres recettes**
+3.  **Partager la base entre plusieurs recettes**
 
-    Une seconde recette (par exemple des tartelettes à la confiture) peut importer exactement la même base :
+    Une autre recette (par exemple des tartelettes à la confiture) peut désormais importer exactement le même fichier de base :
 
     ```gram title="tartelettes-confiture.gram"
     ---
@@ -107,15 +105,13 @@ Si vous avez suivi [Votre Première Recette](/fr/docs/tutorials/first-recipe), l
     [Garnir] Chaque fond d'une cuillère de @confiture{15 g}.
     ```
 
-    Dès que vous peaufinez `bases/pate-sucree.gram`, toutes vos recettes en bénéficient immédiatement à la prochaine compilation.
+    Dès que vous modifiez `bases/pate-sucree.gram`, toutes vos recettes en bénéficient immédiatement lors de la prochaine compilation.
 
 </Steps>
 
----
+## Organiser ses dossiers et configurer ses alias
 
-## 1. Organiser ses dossiers et configurer ses alias
-
-Vous êtes totalement libre d'organiser vos dossiers selon vos préférences. Une structure modulaire classique regroupe les sous-recettes dans des répertoires dédiés :
+Vous êtes totalement libre d'organiser vos dossiers selon vos préférences. Dans un projet modulaire, la structure classique consiste à regrouper les sous-recettes dans des répertoires dédiés :
 
 <FileTree>
 - .gram/
@@ -130,14 +126,14 @@ Vous êtes totalement libre d'organiser vos dossiers selon vos préférences. Un
     - veloute.gram
 - desserts/
   - tarte-au-citron.gram
-- diner.gram
+- gratin.gram
 </FileTree>
 
 Gram propose trois manières complémentaires de cibler vos sous-recettes :
 
 <Tabs>
   <TabItem label="Racine du projet (@/)">
-    Utilisez `@/` pour cibler des fichiers depuis la racine du projet (l'emplacement de votre dossier `.gram/`), quel que soit le niveau d'imbrication de la recette appelante :
+    Le préfixe `@/` cible directement la racine du projet (l'emplacement de votre dossier `.gram/`), peu importe où se situe la recette qui effectue l'import :
 
     ```gram
     @use "@/composants/bases/pate-sablee.gram" as &pate
@@ -146,7 +142,7 @@ Gram propose trois manières complémentaires de cibler vos sous-recettes :
   </TabItem>
 
   <TabItem label="Alias configurés (paths:)">
-    Déclarez des raccourcis personnalisés dans `.gram/config.yaml` :
+    Définissez des raccourcis pratiques dans votre fichier `.gram/config.yaml` :
 
     ```yaml
     # .gram/config.yaml
@@ -156,31 +152,29 @@ Gram propose trois manières complémentaires de cibler vos sous-recettes :
       infusions: ./partage/infusions
     ```
 
-    Puis importez directement avec `@alias/` :
+    Puis importez directement vos fichiers avec le préfixe `@alias/` :
 
     ```gram
-    @use "@bases/pate-sablee.gram" as &pate
+    @use "@bases/pate-sablee.gram" as &pâte
     @use "@sauces/bechamel.gram" as &sauce
     ```
   </TabItem>
 
   <TabItem label="Chemins relatifs">
-    Pointez vers des fichiers situés à côté ou dans des sous-dossiers relatifs :
+    Pointez vers des fichiers situés dans le même dossier ou dans une arborescence voisine :
 
     ```gram
-    @use "./bases/pate-sablee.gram" as &pate
+    @use "./bases/pate-sablee.gram" as &pâte
     @use "../sauces/bechamel.gram" as &sauce
     ```
   </TabItem>
 </Tabs>
 
----
-
-## 2. Gérer les préparations multi-composants (Destructuring)
+## Gérer les préparations multi-composants (déstructuration)
 
 Certaines sous-recettes produisent **plusieurs préparations distinctes** au cours d'un même processus culinaire.
 
-Par exemple, la pâte feuilletée inversée nécessite de préparer une détrempe et un beurre de tourage manié :
+Par exemple, la pâte feuilletée inversée nécessite de réaliser d'un côté une détrempe et de l'autre un beurre de tourage manié :
 
 ```gram title="composants/bases/elements-feuilletage-inverse.gram"
 ---
@@ -188,38 +182,44 @@ title: 'Éléments pour feuilletage inversé'
 ---
 
 ## Détrempe ->&detrempe
-[Mélanger] la @farine{250g}, l'@eau{120ml}, le @sel{5g} et le @beurre{50g}(fondu) pendant ~{5min}. [Former] un carré et [réserver] au #frigo pour ~_{2h}.
 
-## Beurre de tourage manié ->&beurre-manie
-[Malaxer] le @beurre{300g}(froid) avec la @farine{100g} pour obtenir un bloc homogène et souple. [Étaler] en rectangle et [bloquer] au #frigo pour ~_{1h}.
+[Mélanger] La @farine{250g}, l'@eau{120ml}, le @sel{5g} et le @beurre{50g}(fondu) pendant ~{5min}. [Former] un carré.
+
+[Réserver] Au ^{frais} pour ~_{2h}.
+
+## Beurre de tourage manié ->&beurre manié{}
+
+[Malaxer] Le @beurre{300g}(froid) avec la @farine{100g} pour obtenir un bloc homogène et souple.
+
+[Étaler] En rectangle et bloquer au ^{froid} pour ~_{1h}.
 ```
 
-Dans votre recette principale, l'import déstructuré vous permet de lier simultanément chaque préparation :
+Dans votre recette principale, la syntaxe de déstructuration vous permet de récupérer et de nommer simultanément chaque préparation en une seule ligne :
 
 ```gram title="galette-des-rois.gram"
-@use "@/composants/bases/elements-feuilletage-inverse.gram" as { &detrempe, &beurre-manie }
+@use "@/composants/bases/elements-feuilletage-inverse.gram" as { &détrempe, &beurre manié{} }
 
 ## Tourage
-[Enchâsser] la &detrempe au centre du &beurre-manie.
-[Donner] 2 tours doubles espacés de ~_{1h} au #frigo.
+
+[Enchâsser] la &détrempe au centre du &beurre manié{}.
+
+[Plier] Donner 2 tours doubles espacés de ~_{1h} au #frigo.
 ```
 
 :::tip[Renommage local]
-Si les noms exportés entrent en conflit avec vos variables locales, renommez-les avec `as` :
+Si un nom exporté entre en conflit avec une variable de votre recette, renommez-le à la volée avec le mot-clé `as` :
 ```gram
 @use "@/composants/bases/elements-feuilletage-inverse.gram" as {
-  &detrempe as &base-pate,
-  &beurre-manie as &beurre-tourage
+  &détrempe as &pâte de base{},
+  &beurre manié{} as &beurre de tourage{}
 }
 ```
 :::
 
----
+## Chaînage d'imports et dépendances en diamant
 
-## 3. Chaînage d'imports et dépendances en diamant
-
-### Chaînage d'imports (Transitivité)
-Une recette peut importer une sous-recette qui elle-même importe une autre base :
+### Chaînage d'imports (transitivité)
+Rien ne vous empêche d'importer une sous-recette qui s'appuie elle-même sur une autre préparation de base :
 
 ```mermaid
 graph LR
@@ -227,11 +227,11 @@ graph LR
   B --> C["bouillon-volaille.gram"]
 ```
 
-* **Encapsulation :** `plat-fete.gram` interagit uniquement avec `&veloute`. Les variables internes du bouillon restent rigoureusement privées.
-* **Liste de courses et planning unifiés :** Tous les ingrédients bruts (volaille, carottes, poireaux) et le temps de mijotage du bouillon remontent automatiquement dans la liste de courses et le diagramme de Gantt global.
+* **Encapsulation stricte :** `plat-fete.gram` manipule uniquement la variable `&velouté`. Les détails et variables internes du bouillon restent totalement isolés dans leur fichier.
+* **Liste de courses et chronologie unifiées :** Tous les ingrédients bruts (volaille, carottes, poireaux) et le temps de mijotage du bouillon sont automatiquement consolidés dans votre liste de courses et sur le diagramme de Gantt global.
 
-### Dépendances en diamant
-Lorsqu'un menu importe plusieurs plats qui partagent une même base (par exemple une entrée et un dessert qui importent tous deux `pate-sablee.gram`) :
+### Dépendances partagées (en diamant)
+Lorsqu'un menu complet importe plusieurs plats qui partagent une même base (par exemple une entrée et un dessert qui utilisent tous deux `pate-sablee.gram`) :
 
 ```mermaid
 graph TD
@@ -242,77 +242,60 @@ graph TD
 ```
 
 * Le fichier de base partagé n'est lu et analysé **qu'une seule fois**.
-* Le compilateur génère des instances indépendantes mises à l'échelle pour chaque sous-recette.
-* Les ingrédients de base (farine, beurre) sont automatiquement consolidés sur votre liste de courses.
+* Le compilateur génère des instances indépendantes, mises à l'échelle pour chaque plat selon ses besoins.
+* Les ingrédients de base (farine, beurre) sont automatiquement regroupés et sommés sur votre liste de courses.
 
-### Détection des cycles
-Si la recette A importe B qui importe A, Gram détecte immédiatement la boucle et s'arrête avec une erreur explicite `MODULE_CYCLE` affichant la chaîne complète (`A -> B -> A`).
+### Détection des dépendances circulaires
+Si la recette A importe B et que B tente d'importer A, Gram détecte immédiatement la boucle et interrompt la compilation avec une erreur explicite `MODULE_CYCLE` affichant la chaîne en cause (`A -> B -> A`).
 
----
+## Planifier des préparations sur plusieurs jours (`~{-2d}`)
 
-## 4. Planifier des préparations sur plusieurs jours (`~{-2d}`)
-
-Lorsqu'une préparation doit être démarrée plusieurs jours à l'avance (comme un levain, une marinade longue ou une infusion), ancrez-la directement sur la directive `@use` :
+Lorsqu'une préparation demande à être démarrée plusieurs jours à l'avance (comme un levain-chef, une marinade longue ou une infusion), indiquez ce décalage temporel directement sur la directive `@use` :
 
 ```gram title="pain-au-levain.gram"
 @use "@/composants/bases/levain-chef.gram" as &levain ~{-2d}
 
 ## Pétrissage du pain
-[Pétrir] la @farine{500g}, l'@eau{350g} et le @sel{10g} avec le &levain{150g}.
+
+[Pétrir] La @farine{500g}, l'@eau{350g} et le @sel{10g} avec le &levain{150g}.
 ```
 
-* La fin de préparation du levain est ancrée **2 jours avant** le pétrissage de la pâte principale.
-* L'ordonnanceur ALAP (As Late As Possible) positionne automatiquement les éventuelles étapes préalables du levain (ex : rafraîchi) encore plus en amont.
+* La fin de préparation du levain est ainsi programmée **2 jours avant** le pétrissage de la pâte principale.
+* Le moteur de rétro-planning (ALAP, *As Late As Possible*) positionne automatiquement les étapes préalables du levain (comme les rafraîchis successifs) encore plus en amont.
 
----
+## Cuisiner avec des ingrédients prêts ou en stock (`--stock`)
 
-## 5. Cuisiner avec des ingrédients prêts ou en stock (`--stock`)
+Si vous disposez déjà d'un composant prêt à l'emploi (acheté dans le commerce ou préparé la veille), inutile de réafficher toutes les étapes de sa fabrication dans votre planning.
 
-Si vous disposez déjà d'un composant prêt à l'emploi (acheté dans le commerce ou préparé la veille), vous n'avez pas besoin de le cuisiner à nouveau.
-
-Indiquez-le via l'option CLI `--stock` :
+Indiquez-le simplement à la CLI via l'option `--stock` :
 
 ```bash
-# Cibler le composant en stock
+# Indiquer qu'une base est déjà en stock
 gram shop diner.gram --stock @bases/pate-sablee.gram
 
-# Passer plusieurs préparations prêtes séparées par des virgules
+# Indiquer plusieurs préparations prêtes (séparées par des virgules)
 gram cook diner.gram --stock @bases/pate-sablee.gram,@sauces/bechamel.gram
 ```
 
-<CardGrid>
-  <Card title="Zéro Étape sur la Timeline" icon="seti:clock">
-    Toutes les étapes de fabrication des composants en stock sont omises de l'assistant de cuisine interactif et du diagramme de Gantt.
-  </Card>
-  <Card title="Liste de Courses Consolidée" icon="list-format">
-    L'élément apparaît sous forme d'une ligne d'achat directe (ex : `1 pâte sablée`) au lieu d'éclater ses ingrédients bruts (farine, beurre).
-  </Card>
-  <Card title="Exactitude Nutritionnelle" icon="heart">
-    L'apport calorique et les macronutriments restent fidèles et complets, calculés à partir du profil nutritionnel réel de la sous-recette.
-  </Card>
-</CardGrid>
+* **Chronologie épurée :** les étapes de préparation des éléments en stock sont automatiquement masquées du guide pas à pas et de la frise chronologique (Gantt).
+* **Liste de courses simplifiée :** le composant apparaît sous forme d'un produit fini à acheter (ex. `1 pâte sablée`) au lieu de détailler ses ingrédients bruts (farine, beurre).
+* **Valeurs nutritionnelles exactes :** le calcul des calories et des macronutriments reste complet et fidèle, basé sur la composition réelle de la sous-recette.
 
----
+## Encapsulation et isolation des calculs
 
-## 6. Encapsulation et isolation des calculs
+Les quantités relatives et les liaisons entre ingrédients (`@sucre{125% @&jus de citron}` dans le crémeux) sont calculés exclusivement à l'intérieur *des sections du module concerné*. Si la recette principale manipule du sucre ou du jus de citron par ailleurs, ces ingrédients n'interfèrent jamais avec les calculs internes de la base, et réciproquement.
 
-Les quantités relatives et les relations de dépendance entre ingrédients (`@sucre{125% @&jus de citron}` dans le crémeux) se résolvent exclusivement au sein *des sections du module concerné*. Une recette hôte qui utilise le même ingrédient ailleurs n'interfère jamais avec les calculs internes d'une base, et réciproquement.
+Cette isolation stricte par section garantit que découper vos recettes en modules ne crée aucun effet de bord indésirable. Pour découvrir tous les détails de ce mécanisme, consultez la section [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation).
 
-Cette règle stricte de portée par section garantit que découper vos recettes en modules ne crée aucun effet de bord indésirable. Consultez [Encapsulation](/fr/docs/reference/syntax/modules#encapsulation) pour tous les détails.
+## Tester dans le Playground
 
----
+Le [Playground](/fr/play) en ligne prend en charge l'édition de recettes multi-fichiers : ouvrez l'exemple **Tarte au Citron (multi-fichiers, @use)** dans le sélecteur pour visualiser et modifier la recette principale et sa base côte à côte dans deux onglets distincts.
 
-## Essayer dans le Playground
-
-Le [Playground](/fr/play) en ligne gère l'édition de recettes multi-fichiers : ouvrez l'exemple **Tarte au Citron (multi-fichiers, @use)** dans le menu déroulant pour observer le fichier hôte et sa base côte à côte dans deux onglets séparés.
-
----
-
-## Ressources Associées
+## Ressources associées
 
 <CardGrid>
   <LinkCard 
-    title="Référence : Imports de Modules" 
+    title="Référence : Imports de modules" 
     description="Spécification détaillée de la syntaxe, des règles de mise à l'échelle et de l'encapsulation." 
     href="/fr/docs/reference/syntax/modules" 
   />

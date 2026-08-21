@@ -3,13 +3,11 @@ title: "How to Organize and Compose Modular Recipes"
 description: "A practical guide to splitting recipes into reusable modules, organizing folders, configuring path aliases, chaining imports, scheduling multi-day bases, and managing ready-made stock."
 ---
 
-import { Steps, Tabs, TabItem, FileTree, CardGrid, Card, LinkCard } from '@astrojs/starlight/components';
+import { Steps, Tabs, TabItem, FileTree, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 As your collection of `.gram` recipes grows, decomposing complex dishes into reusable components — pastries, sauces, stocks, infusions — saves time and ensures consistency across your culinary repertoire. Extracting these core components into their own dedicated files eliminates repetitive copy-pasting: whenever you refine your dough (a dialed-in resting time, a tweaked flour ratio), every recipe in your collection immediately benefits from the improvement.
 
 This guide walks you through practical patterns for structuring, organizing, and executing modular Gram projects with `@use`.
-
----
 
 ## Step-by-step: Extracting and importing your first module
 
@@ -30,7 +28,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
-    [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+    [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
     ```
 
     Move this preparation into its own file at `bases/sweet-pastry-dough.gram`:
@@ -48,7 +46,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
     [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
-    [Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+    [Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
     ```
 
     *   **Binding name is chosen on import**: For a single-purpose module, the `->&pastry dough{}` declaration on the section header is optional. The importing file chooses its local variable name with `as &dough` (`@use "..." as &dough`). For complex modules that produce multiple distinct components, declaring `->&` on each section remains the standard way to export each part by name (see [What a module exports](/docs/reference/syntax/modules#what-a-module-exports)).
@@ -111,9 +109,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
 
 </Steps>
 
----
-
-## 1. Organizing folders and configuring path aliases
+## Organizing folders and configuring path aliases
 
 You are free to organize your project files however you like. A standard modular structure separates reusable sub-recipes into dedicated directories:
 
@@ -130,7 +126,7 @@ You are free to organize your project files however you like. A standard modular
     - veloute.gram
 - desserts/
   - lemon-tart.gram
-- dinner.gram
+- potato-gratin.gram
 </FileTree>
 
 Gram provides three intuitive ways to reference component files across your project:
@@ -174,49 +170,51 @@ Gram provides three intuitive ways to reference component files across your proj
   </TabItem>
 </Tabs>
 
----
-
-## 2. Managing multi-component preparations (Destructuring)
+## Managing multi-component preparations (Destructuring)
 
 Some sub-recipes produce **multiple distinct components** through a single culinary process. 
 
-For example, an inverted puff pastry (*feuilletage inversé*) requires preparing both a water dough (*détrempe*) and a block of tourage butter (*beurre manié*):
+For example, poaching a whole chicken with aromatics yields both tender shredded meat and a rich golden broth:
 
-```gram title="components/bases/inverted-puff-pastry.gram"
+```gram title="components/bases/poached-chicken.gram"
 ---
-title: 'Inverted Puff Pastry Elements'
+title: 'Poached Chicken & Broth'
 ---
 
-## Water Dough ->&detrempe
-[Mix] the @flour{250g}, @water{120ml}, @salt{5g}, and @butter{50g}(melted) for ~{5min}. Wrap and chill in the #fridge for ~_{2h}.
+## Shredded Chicken ->&meat
 
-## Tourage Butter Block ->&beurre-manie
-[Knead] the @butter{300g}(cold) with @flour{100g} into a pliable block. Chill in the #fridge for ~_{1h}.
+[Poach] The @whole chicken{1.5kg} with @onion{1}, @carrots{2}, and @celery stalks{2} in water for ~{45min}.
+
+[Shred] Once cooled.
+
+## Golden Broth ->&broth
+
+[Simmer] The cooking liquid for ~{15min} to concentrate flavor.
 ```
 
 In your main recipe, destructured imports let you bind both components cleanly:
 
-```gram title="kings-cake.gram"
-@use "@/components/bases/inverted-puff-pastry.gram" as { &detrempe, &beurre-manie }
+```gram title="chicken-pot-pie.gram"
+@use "@/components/bases/poached-chicken.gram" as { &meat, &broth }
 
-## Turn and Assembly
-[Encase] the &detrempe into the center of the &beurre-manie.
-[Perform] 2 double turns, resting for ~_{1h} in the #fridge between turns.
+## Pot Pie Filling
+
+[Make] A creamy velouté sauce using the &broth{400ml}, @butter{40g}, and @flour{40g}.
+
+[Fold] In the shredded &meat and @frozen peas{100g}, then bake under #puff pastry{}.
 ```
 
 :::tip[Local renaming]
 If a module's export names clash with variables in your own recipe, rename them with `as`:
 ```gram
-@use "@/components/bases/inverted-puff-pastry.gram" as {
-  &detrempe as &dough-base,
-  &beurre-manie as &tourage-block
+@use "@/components/bases/poached-chicken.gram" as {
+  &meat as &chicken filling{},
+  &broth as &pie gravy{}
 }
 ```
 :::
 
----
-
-## 3. Chaining imports and diamond dependencies
+## Chaining imports and diamond dependencies
 
 ### Chained imports (Transitivity)
 Recipes can import sub-recipes that themselves import other bases:
@@ -248,9 +246,7 @@ graph TD
 ### Circular imports
 If Recipe A imports B which imports A, Gram immediately detects the loop and halts with a `MODULE_CYCLE` diagnostic showing the full dependency chain (`A -> B -> A`).
 
----
-
-## 4. Scheduling multi-day preparations (`~{-2d}`)
+## Scheduling multi-day preparations (`~{-2d}`)
 
 When a preparation must begin days before cooking (such as a sourdough starter, an aged marinade, or a slow infusion), anchor it directly on the `@use` line:
 
@@ -264,9 +260,7 @@ When a preparation must begin days before cooking (such as a sourdough starter, 
 * The sourdough starter's completion is anchored to **2 days before** the main dough is mixed.
 * ALAP (As Late As Possible) scheduling automatically aligns any earlier feeding or rest steps accordingly.
 
----
-
-## 5. Working with ready-made stock (`--stock`)
+## Working with ready-made stock (`--stock`)
 
 When you already have a component prepared (bought ready-made from a store or prepped the day before), you don't need to make it from scratch. 
 
@@ -280,33 +274,19 @@ gram shop dinner.gram --stock @bases/shortcrust.gram
 gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 ```
 
-<CardGrid>
-  <Card title="Zero Timeline Overhead" icon="seti:clock">
-    All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and Gantt schedule.
-  </Card>
-  <Card title="Simplified Shopping List" icon="list-format">
-    Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
-  </Card>
-  <Card title="Accurate Nutritional Totals" icon="heart">
-    Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
-  </Card>
-</CardGrid>
+* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and Gantt schedule.
+* **Simplified shopping list:** Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
+* **Accurate nutritional totals:** Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
 
----
-
-## 6. Encapsulation & Math Scoping
+## Encapsulation & Math Scoping
 
 A module's relative quantities and ingredient dependencies (`@sugar{125% @&lemon juice}` in the curd) resolve only against *the sections within that specific module*. A host recipe that uses the same ingredient names elsewhere never collides with a base's internal math, and vice versa. 
 
 This strict section-scoping guarantees that splitting a recipe into files never introduces unexpected side effects. See [Encapsulation](/docs/reference/syntax/modules#encapsulation) for complete details.
 
----
-
 ## Try it in the Playground
 
 The web-based [Playground](/play) supports editing multi-file recipes: open the **Lemon Tart (multi-file, @use)** example from the recipe dropdown to explore a host recipe and its imported base side by side in separate tabs.
-
----
 
 ## Related Resources
 
