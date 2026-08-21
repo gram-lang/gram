@@ -12,7 +12,33 @@
   ],
   "repository": {
     "use-directive": {
-      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{[^}]*\\}|&\\w+(?:\\s+\\w+)*\\{\\}|&[^\\s]+)(?:\\s*(~\\{[^\\}]+\\}))?",
+      "patterns": [
+        { "include": "#use-directive-block" },
+        { "include": "#use-directive-single" }
+      ]
+    },
+    "use-directive-block": {
+      "begin": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.import.gram" },
+        "2": { "name": "string.quoted.double.gram" },
+        "3": { "name": "keyword.control.import.gram" },
+        "4": { "name": "punctuation.section.embedded.begin.gram" }
+      },
+      "end": "(\\})(?:\\s*(~\\{[^\\}]+\\}))?",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.embedded.end.gram" },
+        "2": { "name": "entity.name.tag.retro.gram" }
+      },
+      "name": "meta.import.bindings.gram",
+      "patterns": [
+        { "match": ",", "name": "punctuation.separator.comma.gram" },
+        { "match": "\\bas\\b", "name": "keyword.control.import.gram" },
+        { "include": "#references" }
+      ]
+    },
+    "use-directive-single": {
+      "match": "^(@use)\\s+(\"[^\"\\n]*\")\\s+(as)\\s+(&\\w+(?:\\s+\\w+)*\\{\\}|&[^\\s]+)(?:\\s*(~\\{[^\\}]+\\}))?",
       "captures": {
         "1": { "name": "keyword.control.import.gram" },
         "2": { "name": "string.quoted.double.gram" },
@@ -192,7 +218,7 @@
         },
         {
           "name": "meta.reference.usage.bare.gram",
-          "match": "(&)([^\\s\\{\\[@#~^&:<]+)",
+          "match": "(&)([^\\s\\{\\[@#~^&:<,\\}]+)",
           "captures": {
             "1": { "name": "keyword.control.reference.gram" },
             "2": { "name": "entity.name.tag.reference.gram" }
