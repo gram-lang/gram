@@ -7,6 +7,7 @@ import {
 } from "vscode-languageserver";
 import type { DocumentState } from "../document-state";
 import {
+	buildLineIndex,
 	locToRange,
 	offsetToPosition,
 	positionToOffset,
@@ -128,6 +129,63 @@ export function provideCodeActions(
 						},
 					},
 				});
+			}
+		}
+
+		// MODULE_EXPORT_NOT_FOUND with the "internal but not re-exported" hint
+		// (@gram-lang/modules' warnings.ts) — points at a name that already
+		// exists in the imported module but is a private, step-level `->&`.
+		// The fix lives in the *dependency* file, not this one: append the
+		// missing section-level `->&name` to the header of the section that
+		// declares it, when that section doesn't already export a different
+		// name (only one `->&` per section — see `SectionAST.intermediateDecl`).
+		if (diag.code === "MODULE_EXPORT_NOT_FOUND") {
+			const msg =
+				typeof diag.message === "string" ? diag.message : diag.message.value;
+			const match = msg.match(
+				/^Module "([^"]+)" does not export '&([^']+)' — it exists in the module but isn't re-exported\./,
+			);
+			if (match && state.moduleGraph) {
+				const [, specifier, name] = match as [string, string, string];
+				const depUri = state.moduleGraph.modules
+					.get(uri)
+					?.imports.find((imp) => imp.decl.specifier === specifier)?.uri;
+				const depRecord = depUri
+					? state.moduleGraph.modules.get(depUri)
+					: undefined;
+
+				if (depUri && depRecord) {
+					const found = collectIntermediates(depRecord.ast).find(
+						(d) => d.decl.name === name && d.step !== null,
+					);
+					if (found && !found.section.intermediateDecl && found.section.loc) {
+						const depLines = buildLineIndex(depRecord.source);
+						const headerEndOffset = depRecord.source.indexOf(
+							"\n",
+							found.section.loc.start,
+						);
+						const insertOffset =
+							headerEndOffset === -1
+								? depRecord.source.length
+								: headerEndOffset;
+						const insertPos = offsetToPosition(depLines, insertOffset);
+						actions.push({
+							title: `Re-export '&${name}' from "${specifier}"`,
+							kind: CodeActionKind.QuickFix,
+							diagnostics: [diag],
+							edit: {
+								changes: {
+									[depUri]: [
+										{
+											range: { start: insertPos, end: insertPos },
+											newText: ` ->&${name}`,
+										},
+									],
+								},
+							},
+						});
+					}
+				}
 			}
 		}
 
