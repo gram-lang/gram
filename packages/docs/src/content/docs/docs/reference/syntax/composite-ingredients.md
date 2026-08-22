@@ -21,17 +21,19 @@ You define a composite ingredient using the `<` operator (which can be read as *
 
 ### Naming the child
 
-Gram accepts a bare single-word child (`@juice<@lemon{1}`). But write its full name instead (`@lemon juice{}<@lemon{1}`): that name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
+While Gram accepts a bare single-word child (`@juice<@lemon{1}`), you should write its full name instead (`@lemon juice{}<@lemon{1}`). That name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
 
-That database only knows the child's id, not its parent. A bare `juice` from `@juice<@lemon` and a bare `juice` from `@juice<@orange` in another recipe would collide into the same entry, even though lemon juice and orange juice have nothing in common. The full name (`lemon juice`, `orange juice`) avoids that collision — and, as a bonus, merges with a plain, non-composite usage of the same ingredient elsewhere (e.g. `@orange juice{1l}` bought as a carton).
+Because the database only indexes the child's identifier, generic names collide: `@juice<@lemon` and `@juice<@orange` in another recipe would map to the same entry despite having nothing in common. Using the full name (`lemon juice`, `orange juice`) prevents collisions and automatically links with standalone, non-composite uses of the ingredient (e.g. `@orange juice{1l}` bought in a carton).
 
-Reserve the short form for a child that's a one-off you'll never track nutritionally on its own. The compiler warns (`COMPOSITE_PARENT_CONFLICT`) if the same short child resolves to two different parents within one recipe, and `gram db sync` flags the same collision across your whole recipe collection.
+Reserve short names for one-off parts you don't track nutritionally. The compiler warns (`COMPOSITE_PARENT_CONFLICT`) if the same short name resolves to different parents within a recipe, and `gram db sync` detects collisions across your whole recipe collection.
 
-Both the child and the parent can carry their own independent `()` preparation notes:
-- **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@lemon juice{}(strained)<@lemon{1}`.
-- **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@lemon juice{}<@lemon{1}(cut in half)`.
+### Preparation notes
 
-Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one:
+Both the child and the parent can carry independent `()` preparation notes:
+- **Child preparation** goes before the `<`: `@lemon juice{}(strained)<@lemon{1}`.
+- **Parent preparation** goes after the cost or parent name: `@lemon juice{}<@lemon{1}(cut in half)`.
+
+Attach the note to the part it actually describes (what is done to the extracted part vs. the whole item). You can also combine both:
 
 ```gram
 Add the @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.

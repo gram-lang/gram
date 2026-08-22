@@ -21,17 +21,19 @@ Un ingrédient composite se déclare via l'opérateur `<` (qui se lit *« provie
 
 ### Nommer l'enfant
 
-Gram accepte un enfant en un seul mot (`@jus<@citron{1}`). Mais écrivez plutôt son nom complet (`@jus de citron{}<@citron{1}`) : c'est ce nom qui devient l'identité de l'ingrédient dans la base de données partagée (`ingredients.yaml`), utilisée pour la masse, la nutrition et `gram db enrich`.
+Bien que Gram accepte un enfant en un seul mot (`@jus<@citron{1}`), privilégiez son nom complet (`@jus de citron{}<@citron{1}`). C'est ce nom qui définit l'identité de l'ingrédient dans la base partagée (`ingredients.yaml`), utilisée pour la conversion de masse, la nutrition et `gram db enrich`.
 
-Cette base ne connaît que l'id de l'enfant, pas son parent. Un `jus` isolé provenant de `@jus<@citron` et un `jus` isolé provenant de `@jus<@orange` dans une autre recette entreraient donc en collision dans la même entrée, alors que le jus de citron et le jus d'orange n'ont rien en commun. Le nom complet (`jus de citron`, `jus d'orange`) évite cette collision — et fusionne en prime avec un usage non composite du même ingrédient ailleurs (ex : un `@jus d'orange{1l}` acheté en brique).
+La base de données n'indexant que l'identifiant de l'enfant, un nom générique crée des collisions : un `@jus<@citron` et un `@jus<@orange` dans une autre recette partageraient la même entrée. Utiliser le nom complet (`jus de citron`, `jus d'orange`) évite ce conflit et permet la fusion avec les usages non composites du même ingrédient (ex : une brique de `@jus d'orange{1l}`).
 
-Réservez la forme courte aux cas où l'enfant est un usage ponctuel, jamais suivi nutritionnellement pour lui-même. Le compilateur avertit (`COMPOSITE_PARENT_CONFLICT`) si un même enfant court résout vers deux parents dans une recette, et `gram db sync` fait de même à l'échelle de toute la collection.
+Réservez la forme courte aux ingrédients ponctuels dont vous ne suivez pas les données nutritionnelles. Le compilateur émet un avertissement (`COMPOSITE_PARENT_CONFLICT`) si un même nom court est rattaché à deux parents distincts dans une recette, et `gram db sync` signale ces collisions à l'échelle de toute votre collection.
 
-L'enfant comme le parent peuvent chacun porter leur propre note de préparation `()`, et ce de manière totalement indépendante :
-- **La préparation de l'enfant** se place juste après son nom (et sa quantité, le cas échéant), avant le `<` : `@jus de citron{}(filtré)<@citron{1}`.
-- **La préparation du parent** se place juste après son coût (ou son nom, si le coût est omis) : `@jus de citron{}<@citron{1}(coupé en deux)`.
+### Notes de préparation
 
-Accrochez toujours la préparation à l'élément qu'elle qualifie réellement (l'action subie par la partie extraite *vs* l'action subie par l'ingrédient entier). Les deux peuvent bien sûr se combiner :
+L'enfant et le parent peuvent chacun porter leur propre note de préparation `()`, de façon indépendante :
+- **Préparation de l'enfant** : placée avant le `<` (`@jus de citron{}(filtré)<@citron{1}`).
+- **Préparation du parent** : placée après le coût ou le nom du parent (`@jus de citron{}<@citron{1}(coupé en deux)`).
+
+Associez la note à l'élément qu'elle décrit réellement (l'action sur la partie extraite *vs* l'action sur l'ingrédient entier). Les deux peuvent se combiner :
 
 ```gram
 Ajouter le @jus de citron{150 ml}(filtré)<@citron{1}(coupé en deux) dans le saladier.
