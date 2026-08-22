@@ -1,5 +1,5 @@
 ---
-title: "Analyse Sémantique (@gram-lang/analyzer)"
+title: "Analyse sémantique (@gram-lang/analyzer)"
 description: "Comment @gram-lang/analyzer standardise les masses, résout les alias et estime la nutrition via une base de données."
 ---
 
@@ -7,7 +7,7 @@ Le *package* `@gram-lang/analyzer` incarne l'étape analytique finale du pipelin
 
 C'est ici que le monde physique percute le code numérique. L'analyseur exécute un pipeline modulaire en 4 passes (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`), calculant cinq grands blocs de fonctionnalités (chacun étant désactivable à la carte via les options).
 
-## Passe 1 : Standardisation des Masses de Section & Calcul du Rendement
+## Passe 1 : standardisation des masses de section & calcul du rendement
 
 Gram est conçu pour unifier et normaliser les masses, afin de calculer le poids total réel d'un plat, et ce même si les ingrédients ont été saisis en volumes (tasses) ou en unités (œufs).
 
@@ -37,7 +37,7 @@ Le sens de ce calcul dépend de la saisie. Une masse/volume explicite (ex: la ba
 
 Cet ajustement est calculé par utilisation de l'ingrédient (y compris ses mentions *inline* dans le texte). En aval, `@gram-lang/renderer` injectera la Masse Brute dans la liste de courses de vos exports HTML et Markdown.
 
-## Passe 2 : Enrichissement de la Liste de Courses & Résolution d'Alias
+## Passe 2 : enrichissement de la liste de courses & résolution d'alias
 
 Au-delà d'hydrater les masses individuelles, l'Analyseur re-consolide entièrement la liste de courses. En effet, `@gram-lang/kitchen` se contentait d'un groupement basique sur l'ID textuel : sans accès à `ingredients.yaml`, elle ignorait totalement que `@butter` et `@beurre` étaient la même chose, ou comment additionner `100 g` et `1 tasse` de farine.
 
@@ -58,11 +58,11 @@ Seul l'`id` est réécrit sous sa forme canonique à des fins de regroupement. L
     href="/fr/docs/explanation/shopping-list-aggregation"
 />
 
-## Passe 2.5 : Pourcentages du Boulanger
+## Passe 2.5 : pourcentages du boulanger
 
 Si la recette (ou l'appelant, via une option `bakersReference`) désigne un ingrédient de référence — typiquement la farine, marquée avec le modificateur `*` — l'analyseur calcule la masse de chaque autre ingrédient comme un pourcentage de cette référence, à la fois pour les articles de la liste de courses et les ingrédients en ligne de la recette.
 
-## Passe 3 : Estimation Nutritionnelle
+## Passe 3 : estimation nutritionnelle
 
 L'Analyseur dresse une estimation redoutable des Calories et Macros (Protéines, Glucides, Lipides, Sucre, Fibres, Sodium). Si la base supporte des données très fines (`sat_fat`, `mono_fat`, etc.), celles-ci ne sont pas (encore) agrégées à l'échelle de la recette.
 
@@ -78,7 +78,7 @@ L'Analyseur dresse une estimation redoutable des Calories et Macros (Protéines,
 Loin d'une approche « tout ou rien », l'analyseur retourne toujours ce qu'il a pu calculer, flanqué d'un score de couverture (`coverage`) et de *warnings* ciblés pour les ingrédients manquant de données ou de densité. C'est grâce à ça que le CLI ou les exports HTML peuvent fièrement afficher des totaux assortis d'un badge « données partielles », plutôt que de cacher le panneau entier.
 :::
 
-## Architecture Ouverte
+## Architecture ouverte
 
 `@gram-lang/analyzer` a été taillé pour des écosystèmes ouverts. Il **ne touche pas** au système de fichiers local. C'est l'application appelante (le CLI ou votre serveur Node) qui charge la base et l'injecte dans la fonction `analyze(compilationResult, database, options?)`. L'argument `options` permet d'activer chaque feature à la carte, ou de *set* un nombre de portions.
 

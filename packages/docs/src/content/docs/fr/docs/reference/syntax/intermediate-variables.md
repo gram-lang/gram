@@ -1,5 +1,5 @@
 ---
-title: "Variables Intermédiaires"
+title: "Variables intermédiaires"
 description: "Déclarez des sous-composants réutilisables comme une pâte ou une sauce en tant que &variables intermédiaires."
 ---
 
@@ -7,11 +7,11 @@ Dans les recettes un peu denses, on produit souvent des sous-composants (une pâ
 
 Une fois déclarée, une `&variable` intermédiaire se comporte exactement comme un `@ingrédient` : vous pouvez y faire référence, la mesurer ou l'utiliser comme base de calcul pour des pourcentages.
 
-## Déclarer une Variable
+## Déclarer une variable
 
 Pour déclarer une `&variable`, utilisez la syntaxe `->&`. Deux emplacements sont valides : à la toute fin d'une **Étape**, ou à la fin d'un **Titre de Section**.
 
-### Déclaration au niveau de l'Étape
+### Déclaration au niveau de l'étape
 
 Lorsqu'elle clôture une étape (un paragraphe), la `&variable` capture purement et simplement le résultat de cette étape précise.
 
@@ -21,7 +21,7 @@ Lorsqu'elle clôture une étape (un paragraphe), la `&variable` capture purement
 [Repos] Laisser la &pâte reposer pendant ~_{1 h}.
 ```
 
-### Déclaration au niveau de la Section
+### Déclaration au niveau de la section
 
 Lorsqu'elle est placée à la fin d'un titre de `## Section`, la `&variable` capture le produit de *l'ensemble* des étapes de cette section. C'est la mécanique idéale pour les sous-composants nécessitant une préparation longue.
 
@@ -37,7 +37,7 @@ Lorsqu'elle est placée à la fin d'un titre de `## Section`, la `&variable` cap
 // La `&variable` pâte feuilletée contient maintenant le résultat final de toutes les étapes ci-dessus !
 ```
 
-## Utiliser une Variable
+## Utiliser une variable
 
 Pour utiliser une `&variable` préalablement déclarée, préfixez simplement son nom avec `&`. 
 
@@ -57,12 +57,12 @@ Lorsqu'elle est consommée dans une étape ultérieure, une `&variable` intermé
 Néanmoins, elle **n'apparaîtra jamais** dans la **liste de courses globale**. Le compilateur Gram a parfaitement conscience que la `&pâte feuilletée` se compose déjà de farine et de beurre : il la décomposera automatiquement pour agréger les ingrédients bruts à votre liste de courses.
 :::
 
-## Mécanismes Avancés
+## Mécanismes avancés
 
-### Portée Globale (Global Scoping)
+### Portée globale (Global Scoping)
 Lorsqu'une `&variable` est déclarée au niveau d'une section, elle intègre la **portée globale** (*global scope*). Cela signifie que vous pouvez déclarer une `&variable` dans la toute première section de votre recette et la référencer sans risque dans la dernière.
 
-### Quantités Relatives
+### Quantités relatives
 Comme détaillé dans la documentation sur les [Quantités Relatives](/fr/docs/reference/syntax/relative-quantities), vous pouvez calculer la masse d'un ingrédient en fonction de la masse totale d'une variable intermédiaire.
 
 ```gram
@@ -71,7 +71,7 @@ Comme détaillé dans la documentation sur les [Quantités Relatives](/fr/docs/r
 [Ajouter] Le @sel{2 % &pâte}.
 ```
 
-## Gestion des Erreurs
+## Gestion des erreurs
 
 Le compilateur vous aide à maintenir un code propre et sans conflits en émettant des avertissements spécifiques :
 

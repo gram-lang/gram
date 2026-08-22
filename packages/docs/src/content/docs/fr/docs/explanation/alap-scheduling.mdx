@@ -7,7 +7,7 @@ Gram ne se contente pas de lire les recettes de haut en bas ; il les réordonnan
 
 Pour ce faire, il s'appuie sur un algorithme d'ordonnancement nommé **ALAP (As Late As Possible - *Le plus tard possible*)**. Cela garantit que chaque ingrédient est préparé pile au moment où il est requis, évitant que des préparations ne patientent inutilement sur le plan de travail.
 
-## Le Problème : L'Ordonnancement Naïf (Forward Scheduling)
+## Le problème : l'ordonnancement naïf (Forward Scheduling)
 
 Imaginez une recette où vous devez préparer une pâte et la laisser reposer 1 heure, puis réaliser une sauce express en 10 minutes, avant de cuire le tout.
 
@@ -41,7 +41,7 @@ gantt
 
 Le problème saute aux yeux : vous terminez la sauce à la minute 12, mais le repos de la pâte ne s'achève qu'à la minute 62. Résultat, la sauce reste 50 minutes sur le comptoir à refroidir (ou pire, à tourner) !
 
-## La Solution : L'Ordonnancement ALAP
+## La solution : l'ordonnancement ALAP
 
 Au lieu d'ordonnancer les étapes dès que possible, le compilateur de Gram les ordonnance **le plus tard possible**.
 
@@ -70,7 +70,7 @@ gantt
 
 En repoussant la création de la `&pâte` vers la fin, Gram vient automatiquement intercaler l'étape `Mélanger` *pendant* le repos de la pâte. Votre temps actif est optimisé, et aucune préparation n'attend dans le vide.
 
-## Les "Named Tracks" (Minuteurs séquentiels)
+## Les "Named Tracks" (minuteurs séquentiels)
 
 Cette logique de recul (*backtracking*) alimente nativement les `Named Tracks` (pistes nommées) de Gram. Si vous attribuez le même nom à plusieurs minuteurs passifs (par exemple, `~_four{20min}` et `~_four{30min}`), Gram va forcer leur exécution séquentielle en arrière-plan puisqu'ils se partagent une ressource limitée (le four).
 
@@ -93,7 +93,7 @@ gantt
 
 Remarquez comment l'étape `Préparer le Pain` est automatiquement planifiée pendant la cuisson de la tarte (entre la 15e et la 20e minute), garantissant que le pain est prêt à entrer dans le `~_four` à la minute exacte 25 où la tarte en sort.
 
-## Ancrage Modulaire (`@use ... ~{-1d}`)
+## Ancrage modulaire (`@use ... ~{-1d}`)
 
 Lors de la composition de recettes modulaires avec `@gram-lang/modules`, vous pouvez déclarer un décalage rétro-planning directement sur une directive d'importation :
 
@@ -106,7 +106,7 @@ L'algorithme ALAP propage cet ancrage vers l'arrière à travers tout le sous-ar
 - Toutes les étapes amont du module de levain (rafraîchis, fermentation) sont planifiées *encore plus tôt*, entraînant l'ensemble du sous-planning.
 - En Phase 4 de compilation (Recalage positif), la chronologie globale est décalée vers l'avant pour que tous les temps absolus débutent à 0.
 
-## Bonnes Pratiques pour une Chronologie Cohérente
+## Bonnes pratiques pour une chronologie cohérente
 
 Pour tirer le meilleur parti de l'ordonnancement ALAP de Gram et vous assurer que votre chronologie générée est à la fois réaliste et utile, suivez ces bonnes pratiques :
 
@@ -127,7 +127,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 </Steps>
 
-## Cas d'usage : Visualisation des données
+## Cas d'usage : visualisation des données
 
 Puisque l'ordonnancement ALAP calcule automatiquement les repères absolus `start` et `end` pour chaque étape (à la minute près) et les expose dans le JSON compilé, les interfaces *front-end* n'ont plus la moindre gymnastique mathématique à réaliser. Elles se contentent d'afficher la donnée.
 

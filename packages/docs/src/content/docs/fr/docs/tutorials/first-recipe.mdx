@@ -1,5 +1,5 @@
 ---
-title: "Tutoriel : Votre Première Recette Complexe"
+title: "Tutoriel : votre première recette complexe"
 description: "Un tutoriel pas à pas pour écrire une Tarte au Citron complète avec les fonctionnalités avancées du compilateur Gram."
 ---
 
@@ -10,7 +10,7 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Cette recette va bien au-delà d'une simple liste d'ingrédients. Nous y exploiterons le compilateur Gram pour concevoir une recette dynamique, modulable et orientée données.
 
-## Étape 1 : Les bases (la pâte)
+## Étape 1 : les bases (la pâte)
 
 Commençons par la pâte sucrée. Le symbole `@` identifie les ingrédients, et `#` le matériel (*cookware*).
 
@@ -48,7 +48,7 @@ Remarquez les balises `[Action]` (ex. `[Mixer]`, `[Repos]`). Bien qu'elles soien
 
 Grâce à cette syntaxe, le compilateur extrait automatiquement les ingrédients pour constituer la liste de courses, tout en estimant le temps actif total (sur la base de 2 minutes par étape) en complément des temps de repos.
 
-## Étape 2 : Les variables intermédiaires
+## Étape 2 : les variables intermédiaires
 
 Pour l'instant, notre pâte est décrite sous la forme d'une suite d'étapes indépendantes. Pour la réutiliser ultérieurement (lors de la cuisson), il convient d'indiquer au compilateur que le résultat de cette section constitue un ensemble unifié.
 
@@ -108,7 +108,7 @@ Désormais, vous pouvez faire référence à cette pâte avec la syntaxe `&nom` 
 ```
 </CodeTabs>
 
-## Étape 3 : Minuteurs en arrière-plan (passifs)
+## Étape 3 : minuteurs en arrière-plan (passifs)
 
 À l'Étape 1, nous avions écrit : `[Repos] Envelopper de #film alimentaire{} et laisser reposer au réfrigérateur pendant ~{1 h}`. 
 Par défaut, les minuteurs sont **actifs**. Le compilateur considère alors que vous êtes mobilisé pendant cette heure et l'ajoute au temps actif.
@@ -126,7 +126,7 @@ Cependant, le repos d'une pâte au réfrigérateur est une étape passive pendan
 
 Le compilateur déduit alors cette heure du temps actif tout en la conservant dans le temps total.
 
-## Étape 4 : Ingrédients composites
+## Étape 4 : ingrédients composites
 
 La recette nécessite à la fois du zeste et du jus. Si vous inscriviez `@zeste de citron{1 c.à.s}` et `@jus de citron{120 g}`, une liste de courses classique compterait deux produits distincts. Or, en pratique, les citrons s'achètent entiers.
 
@@ -158,7 +158,7 @@ Voici la section du Crémeux au Citron :
 
 Comme le zeste et le jus font référence à `<@citron` (ou `<@citrons`), le compilateur identifie qu'ils proviennent d'un même ingrédient parent. Sans nécessiter de base de données complexe pour estimer les rendements, il applique la **règle du MAX** : il compare la quantité d'ingrédient parent requise par chaque sous-élément (`<@citron` équivaut à 1 citron pour le zeste, `<@citrons{2}` équivaut à 2 citrons pour le jus) et retient la valeur maximale. Dans cet exemple, `max(1, 2) = 2` : la liste de courses indiquera ainsi qu'il faut prévoir 2 citrons entiers.
 
-## Étape 5 : Quantités relatives
+## Étape 5 : quantités relatives
 
 En pâtisserie, la précision des proportions est essentielle. Que se passe-t-il si vos citrons fournissent 140 g de jus au lieu des 120 g prévus ? Si la quantité de sucre reste fixe, la préparation risque d'être trop acide. Pour maintenir un équilibre parfait, la quantité de sucre doit s'ajuster dynamiquement afin de représenter exactement 125 % du poids du jus.
 
@@ -227,7 +227,7 @@ portions: 8
 > - **Temps de Préparation** : 20m (est.)
 > - portions : 8
 
-## 🛒 Liste de Courses
+## 🛒 Liste de courses
 
 - **farine** (180 g)
 - **sucre glace** (55 g)
@@ -304,7 +304,7 @@ En lançant `gram view tarte-citron.gram`, le compilateur s'est chargé de tous 
 
 Félicitations ! Vous venez de concevoir une recette structurée, dynamique et facilement adaptable.
 
-## Étapes Suivantes
+## Étapes suivantes
 
 Maintenant que vous avez conçu une recette complète mono-fichier, découvrez comment organiser une collection de recettes modulaires et explorer la référence du langage :
 

@@ -138,9 +138,9 @@ const enrichedDb = { ...database, ...composed.syntheticIngredients };
 const { result: analyzed } = analyze(result, enrichedDb);
 ```
 
-## Utilitaires & Fonctions Avancées
+## Utilitaires & fonctions avancées
 
-### Extraction d'Exports & Calcul de Proportions
+### Extraction d'exports & calcul de proportions
 
 ```typescript
 function computeExports(ast: RecipeAST): ModuleExports;
@@ -159,7 +159,7 @@ function computeScaleFactor(
 - **`resolveYield`** : Calcule récursivement la masse physique totale (en grammes) produite par une section exportée et ses éventuelles dépendances amont.
 - **`computeScaleFactor`** : Détermine le ratio entre la quantité réclamée par la recette hôte et le rendement calculé du sous-module.
 
-### Indexation des Dépendances Inverses
+### Indexation des dépendances inverses
 
 Fonctionnalité clé utilisée par `gram watch` et le serveur de langage (`@gram-lang/language-server`) pour mettre à jour les diagnostics de manière ciblée dès qu'un sous-fichier partagé est modifié.
 
@@ -168,7 +168,7 @@ function buildReverseDependencyIndex(edges: Iterable<DependencyEdge>): ReverseDe
 function transitiveDependents(index: ReverseDependencyIndex, uri: string): Set<string>;
 ```
 
-### Vocabulaire des Diagnostics
+### Vocabulaire des diagnostics
 
 ```typescript
 enum ModuleWarningCode {

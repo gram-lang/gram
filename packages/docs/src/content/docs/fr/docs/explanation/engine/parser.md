@@ -1,5 +1,5 @@
 ---
-title: "Analyse Syntaxique & AST"
+title: "Analyse syntaxique & AST"
 description: "Comment @gram-lang/parser utilise une grammaire OhmJS pour transformer le texte .gram en Arbre Syntaxique Abstrait."
 ---
 
@@ -11,7 +11,7 @@ Les règles de Gram sont codées en [OhmJS](https://ohmjs.org/), un *toolkit* de
 
 Ohm permet de construire des grammaires modulaires de manière efficace. Le `@gram-lang/parser` est donc performant et strict sur l'application des règles : par exemple, tout espace autour du marqueur composite `<@` est interdit (`invalidComposite` dans la grammaire). Ainsi, `pâte < @pâtefeuilletée` provoquera une erreur de *parsing*, alors que `<@pâtefeuilletée` sera correctement analysé.
 
-## L'Arbre Syntaxique Abstrait (AST)
+## L'arbre syntaxique abstrait (AST)
 
 En cas de succès, le *parser* retourne un AST. Il s'agit d'un arbre d'objets JavaScript matérialisant chaque *token* sémantique de votre recette.
 
@@ -40,7 +40,7 @@ Sera décomposée en un nœud `Step` abritant un nœud `Text` ("Ajouter la "), u
 
 Notez bien : `quantity.value` est systématiquement un objet `QuantityValueAST`, jamais un *Number* primitif. C'est l'astuce qui permet de supporter les fractions (`1/2`) et les fourchettes (`2-3`), tout en préservant le texte saisi par l'utilisateur.
 
-### Nœuds AST Supportés
+### Nœuds AST supportés
 
 Le *parser* exporte un type de nœud spécifique pour chaque concept du langage (`ASTNodeType` dans `src/types.ts`) :
 - `Recipe` : Le nœud racine, porteur du frontmatter (`meta`) et des `Section`.
@@ -55,7 +55,7 @@ Le *parser* exporte un type de nœud spécifique pour chaque concept du langage 
 Le tableau `modifiers` des nœuds `Ingredient`/`Cookware` conserve directement les caractères bruts saisis (`?`, `-`, `*`, `&`) plutôt que des libellés sémantiques. Seule exception : `=`, qui est intercepté pour passer `quantity.fixed` à `true` sans figurer dans le tableau.
 :::
 
-## Purement Syntaxique
+## Purement syntaxique
 
 `@gram-lang/parser` est bête et discipliné : aucune sémantique, aucune *business logic*. Il ignore totalement :
 - Si la variable `&pâte` a bien été déclarée en amont.

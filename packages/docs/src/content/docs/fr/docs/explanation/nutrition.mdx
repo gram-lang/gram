@@ -1,5 +1,5 @@
 ---
-title: "Analyse approfondie : Estimation Nutritionnelle"
+title: "Analyse approfondie : estimation nutritionnelle"
 description: "Comment Gram estime la nutrition d'une recette à partir des ingrédients, avec un taux de couverture transparent."
 ---
 
@@ -7,7 +7,7 @@ Le *package* `@gram-lang/analyzer` est capable de calculer automatiquement le pr
 
 Néanmoins, les données nutritionnelles étant particulièrement sensibles (avec un impact direct sur les choix diététiques), Gram adopte une **approche stricte et mathématiquement conservatrice** pour ses estimations. Cette page détaille cette logique.
 
-## Le Flux de Calcul
+## Le flux de calcul
 
 import { Steps } from '@astrojs/starlight/components';
 
@@ -20,7 +20,7 @@ import { Steps } from '@astrojs/starlight/components';
 5. **Bases de service** : La Nutrition Totale de la Recette est ensuite exprimée sur les bases qu'un cuisinier lit réellement. Si le frontmatter définit `portions: 4`, elle est divisée par 4 pour donner `perPortion`. Elle est aussi divisée par la masse dont elle est issue pour donner `per100g` — qui ne dépend pas de `portions`, si bien qu'une recette sans portions déclarées obtient malgré tout une base standardisée.
 </Steps>
 
-## Rapport Transparent des Données Partielles
+## Rapport transparent des données partielles
 
 La règle d'or du moteur nutritionnel de Gram : **ne jamais masquer l'estimation, mais ne jamais laisser l'utilisateur la prendre pour parole d'évangile.**
 
@@ -66,7 +66,7 @@ Gram ne fournit pas de base de référence nutrition/densité — ces valeurs so
 
 Pour un retour d'expérience complet sur ce choix de conception et les raisons de l'abandon d'une base centrale comme le CIQUAL ou l'USDA, découvrez l'article de blog : [Pourquoi Gram génère votre base d'ingrédients au lieu d'en intégrer une](/fr/blog/2026-08-16-why-gram-generates-database).
 
-## Gestion des Modificateurs
+## Gestion des modificateurs
 
 Les modificateurs de syntaxe de Gram ont un impact sur les calculs nutritionnels de manières spécifiques :
 

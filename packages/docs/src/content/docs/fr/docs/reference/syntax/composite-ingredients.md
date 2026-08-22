@@ -1,5 +1,5 @@
 ---
-title: "Ingrédients Composites"
+title: "Ingrédients composites"
 description: "Regroupez les parties d'un même ingrédient, comme le zeste et le jus, pour que Gram calcule une liste de courses juste."
 ---
 
@@ -46,11 +46,11 @@ Les espaces sont **strictement interdits** autour de l'opérateur `<`.
 - ✅ `@zeste de citron{1}<@citron`
 :::
 
-## Règles de Calcul
+## Règles de calcul
 
 Comment le compilateur déduit-il le nombre total de citrons à acheter ? Il s'appuie sur trois règles très simples pour optimiser automatiquement la liste de courses.
 
-### 1. La Règle de Chevauchement (Parties Différentes)
+### 1. La règle de chevauchement (parties différentes)
 Si vous utilisez différentes parties d'un même parent (comme le zeste et le jus), Gram sait qu'elles peuvent provenir du même citron physique. Il prend la quantité **maximale** requise parmi ces parties.
 
 ```gram
@@ -60,7 +60,7 @@ Ajouter le @jus de citron{1}<@citron.    // Nécessite 1 citron
 ```
 > 🛒 **Liste de Courses** : 1 Citron (Le même citron fournit les deux parties).
 
-### 2. La Règle d'Addition (Même Partie)
+### 2. La règle d'addition (même partie)
 Si vous utilisez la *même* partie plusieurs fois à travers différentes étapes de votre recette, Gram les additionne. Vous ne pouvez pas magiquement obtenir deux zestes à partir d'un seul citron !
 
 ```gram
@@ -70,7 +70,7 @@ Ajouter le @zeste de citron{1}<@citron.  // Nécessite un autre citron
 ```
 > 🛒 **Liste de Courses** : 2 Citrons.
 
-### 3. Agrégation de l'Utilisation Directe
+### 3. Agrégation de l'utilisation directe
 Si vous utilisez également l'ingrédient parent entier directement (ex : couper un citron entier en quartiers pour décorer), Gram l'ajoute simplement au total optimisé.
 
 ```gram
@@ -82,7 +82,7 @@ Couper le @citron{2} en quartiers.       // Nécessite 2 citrons entiers
 ```
 > 🛒 **Liste de Courses** : 3 Citrons.
 
-## Sortie de la Liste de Courses
+## Sortie de la liste de courses
 
 La structure de la liste de courses générée prend nativement en charge ces ingrédients composites, ce qui permet aux applications *front-end* de les afficher sous forme de hiérarchie.
 
@@ -102,7 +102,7 @@ Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
 }
 ```
 
-## Listes d'Ingrédients de Section
+## Listes d'ingrédients de section
 
 À l'inverse de la liste de courses globale, la liste d'ingrédients spécifique à une section reste plate. Néanmoins, elle mentionne clairement de quel parent provient un enfant composite (l'info est ajoutée entre parenthèses juste après le nom de l'enfant) :
 

@@ -371,42 +371,42 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		learnMore: "En savoir plus",
 		philosophy: [
 			{
-				title: "Fichiers Texte & Git",
+				title: "Fichiers texte & Git",
 				icon: "document",
 				details:
 					"Aucun verrouillage propriétaire. Vos recettes sont de simples fichiers texte, faciles à versionner avec Git, à partager et à éditer dans l'éditeur de votre choix.",
 				link: "/fr/docs/explanation/philosophy",
 			},
 			{
-				title: "Calculs Automatiques",
+				title: "Calculs automatiques",
 				icon: "setting",
 				details:
 					"Ajustez les portions sans calculs mentaux. Gram gère nativement l'arithmétique, les variables et la conversion d'unités.",
 				link: "/fr/docs/explanation/scaling",
 			},
 			{
-				title: "Recettes Modulaires (@use)",
+				title: "Recettes modulaires (@use)",
 				icon: "code-branch",
 				details:
 					"Ne dupliquez plus vos pâtes, bouillons ou sauces. Découpez vos préparations de base dans des fichiers dédiés et importez-les dans n'importe quelle recette en une seule ligne.",
 				link: "/fr/docs/how-to/organize-modular-recipes",
 			},
 			{
-				title: "Support IDE Dédié",
+				title: "Support IDE dédié",
 				icon: "laptop",
 				details:
 					"Grâce à son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et des diagnostics en temps réel, directement dans votre éditeur favori.",
 				link: "/fr/docs/reference/tooling/vscode-extension",
 			},
 			{
-				title: "Export Universel",
+				title: "Export universel",
 				icon: "puzzle",
 				details:
 					"Gram compile vos recettes en un arbre syntaxique (AST) complet. Générez du JSON ou du Markdown pour alimenter le générateur de site statique de votre choix et créer le carnet de recettes ultime.",
 				link: "/fr/docs/reference/api/kitchen",
 			},
 			{
-				title: "CLI Puissante",
+				title: "CLI puissante",
 				icon: "rocket",
 				details:
 					"Pilotez votre espace de travail directement depuis le terminal. La CLI officielle permet d'initialiser un projet, de formater et de compiler vos recettes en une seule commande.",
@@ -414,29 +414,29 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			},
 		],
 
-		discoverGram: "Gram en Pratique",
+		discoverGram: "Gram en pratique",
 		discoverDesc:
 			"Découvrez comment le compilateur transforme vos instructions texte en données typées et exploitables.",
-		tabNutritionTitle: "Base de Données & Nutrition",
+		tabNutritionTitle: "Base de données & nutrition",
 		tabNutritionDesc:
 			"Standardisez vos mesures et calculez vos macros grâce à une base de données locale auto-générée à partir de vos fichiers.",
 		tabNutritionLink: "/fr/docs/how-to/manage-database/",
-		tabScheduleTitle: "Planification Intelligente (ALAP)",
+		tabScheduleTitle: "Planification intelligente (ALAP)",
 		tabScheduleDesc:
 			"Visualisez votre rétroplanning. Gram détecte vos minuteries et planifie les tâches passives « Aussi Tard Que Possible » pour réduire les temps morts en cuisine.",
 		tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
-		tabScaleTitle: "Le Pourcentage du Boulanger",
+		tabScaleTitle: "Le pourcentage du boulanger",
 		tabScaleDesc:
 			"Gérez nativement le pourcentage du boulanger. Liez vos ingrédients à une masse de référence pour recalculer n'importe quelle recette en un instant.",
 		tabScaleLink: "/fr/docs/how-to/scale-recipes/",
-		tabModulesTitle: "Recettes Modulaires (@use)",
+		tabModulesTitle: "Recettes modulaires (@use)",
 		tabModulesDesc:
 			"Importez vos préparations de base avec @use. Gram résout les dépendances, imbrique les étapes dans la recette et adapte automatiquement les quantités au besoin.",
 		tabModulesLink: "/fr/docs/how-to/organize-modular-recipes",
 		tryPlaygroundBtn: "Tester dans le Playground",
 
 		tabInput: "Syntaxe Gram",
-		tabOutput: "Résultat Compilé",
+		tabOutput: "Résultat compilé",
 
 		nutritionInput: `---\nportions: 4\n---\n\n## Crème Chantilly\n\n[Fouetter] La @crème liquide{1 tasse} et le @sucre glace{2 c.à.s} jusqu'à obtenir des pics souples.\n\n[Incorporer] Ajouter délicatement l'@extrait de vanille{1 c.à.c}.`,
 		nutritionOutput: JSON.stringify(
@@ -614,8 +614,8 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		getInvolved: "Rejoindre le Projet",
-		readBookTitle: "Découvrir le Langage",
+		getInvolved: "Rejoindre le projet",
+		readBookTitle: "Découvrir le langage",
 		readBookDesc:
 			"Le guide de référence pour tout comprendre de Gram : sa syntaxe, son outillage et son moteur. Le point d'entrée idéal pour démarrer ou approfondir les concepts avancés.",
 		readBookLink: "Lire la documentation",
@@ -625,7 +625,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			"Gram est un projet open-source et collaboratif. N'hésitez pas à explorer le code, signaler des anomalies ou proposer une contribution (PR) sur le compilateur ou la documentation.",
 		contributeLink: "Voir sur le dépôt officiel",
 
-		tryTitle: "Créer un Projet",
+		tryTitle: "Créer un projet",
 		tryDesc:
 			"Initialisez votre espace de travail en quelques secondes. La CLI génère tout le nécessaire pour que vous puissiez rédiger votre première recette.",
 	},

@@ -19,7 +19,7 @@ Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI 
 
 ---
 
-## Pourquoi l'IA ? Restructuration vs Transcription mécanique
+## Pourquoi l'IA ? Restructuration vs transcription mécanique
 
 Gram n'est pas un simple format de balisage texte ; c'est un modèle sémantique structuré pour le domaine de la cuisine. Convertir une recette traditionnelle (depuis une page web ou un JSON-LD) vers le format `.gram` **ne peut pas se faire par un simple copier-coller ou une conversion mécanique de chaînes de caractères**.
 
@@ -38,7 +38,7 @@ De la même manière pour la gestion de votre base d'ingrédients :
 
 ---
 
-## Méthodes de Configuration
+## Méthodes de configuration
 
 Vous pouvez configurer l'IA via une **installation interactive**, des **variables d'environnement** (recommandé pour la sécurité) ou des **fichiers de configuration**.
 
@@ -60,7 +60,7 @@ Pendant l'initialisation, le CLI vous demandera :
 
 ---
 
-### Méthode 2 : Variables d'Environnement (Recommandé)
+### Méthode 2 : variables d'environnement (recommandé)
 
 Le CLI Gram vérifie automatiquement les variables d'environnement pour trouver vos identifiants. Sous Node.js (>=20.6.0) et sous [Bun](https://bun.sh/), les fichiers `.env` situés à la racine de votre projet sont automatiquement chargés.
 
@@ -107,7 +107,7 @@ Ne versionnez jamais votre fichier `.env` ni vos clés d'API. Assurez-vous que `
 
 ---
 
-### Méthode 3 : Fichiers de Configuration (`config.yaml`)
+### Méthode 3 : fichiers de configuration (`config.yaml`)
 
 Vous pouvez définir explicitement votre fournisseur d'IA, votre modèle ou une URL personnalisée dans le fichier `.gram/config.yaml` de votre projet ou de manière globale dans `~/.config/gram/config.yaml`.
 
@@ -122,14 +122,14 @@ ai:
   model: gemini-3.5-flash       # Optionnel : personnaliser le modèle par défaut
 ```
 
-#### Configuration Globale vs Projet
+#### Configuration globale vs projet
 
 - **Configuration globale (`~/.config/gram/config.yaml`)** : S'applique à l'ensemble des projets Gram sur votre machine.
 - **Configuration projet (`.gram/config.yaml`)** : Remplace les paramètres globaux pour le projet courant.
 
 ---
 
-### Méthode 4 : Utiliser une IA locale avec Ollama
+### Méthode 4 : utiliser une IA locale avec Ollama
 
 Si vous préférez exécuter vos modèles en local sans envoyer de données à des API tierces, vous pouvez utiliser [Ollama](https://ollama.ai/) :
 
@@ -157,7 +157,7 @@ Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de ba
 
 ---
 
-## Vérifier la Configuration
+## Vérifier la configuration
 
 Pour vérifier que votre IA est opérationnelle :
 
@@ -176,7 +176,7 @@ Pour vérifier que votre IA est opérationnelle :
 
 ## Dépannage
 
-### Erreur : Clé d'API manquante
+### Erreur : clé d'API manquante
 
 Si le message suivant s'affiche :
 ```text

@@ -7,11 +7,11 @@ Si `@gram-lang/parser` dicte le vocabulaire, c'est `@gram-lang/kitchen` qui inca
 
 Le *package* Kitchen récupère l'AST (Arbre Syntaxique Abstrait) généré par le *parser* et le compile. Son job ? Simuler le déroulé de la recette de bout en bout, résoudre les variables, extraire les compteurs de temps et *bootstrapper* la liste de courses.
 
-## Responsabilités Principales
+## Responsabilités principales
 
 Le processus de compilation (orchestré par `core.ts`) délègue à plusieurs sous-modules :
 
-### 1. Scope Structurel & Traitement (`processor.ts`)
+### 1. Scope structurel & traitement (`processor.ts`)
 
 Le processeur boucle sur chaque section et chaque étape de l'AST pour bâtir la *timeline* d'exécution.
 
@@ -36,7 +36,7 @@ flowchart LR
   La flèche `👉` que vous voyez dans les recettes rendues (ex : `👉*pâte*`) est une icône d'affichage ajoutée par `@gram-lang/renderer`, pas de la syntaxe Gram. Dans le code source `.gram`, un intermédiaire est consommé avec un simple `&nom`.
   :::
 
-### 2. Métriques de Temps (`metrics.ts` / `processor.ts`)
+### 2. Métriques de temps (`metrics.ts` / `processor.ts`)
 
 La Kitchen calcule quatre métriques de temps, combinées dans `core.ts` :
 - **Temps Actif (`activeTime`)** : La somme de toutes les durées des minuteurs actifs, plus un défaut de 2 minutes pour toute étape qui ne déclare aucun minuteur.
@@ -44,7 +44,7 @@ La Kitchen calcule quatre métriques de temps, combinées dans `core.ts` :
 - **Temps de Préparation (`preparationTime`)** : Complètement indépendant des *timers*. C'est le temps forfaitaire de *mise-en-place* : 1 minute par ingrédient/matériel unique, plus 2 minutes additionnelles si une étape de préparation est exigée (ex : `@oignon(épluché)`).
 - **Temps Total (`totalTime`)** : `preparationTime + cookTime` — le véritable investissement en temps pour ce plat (du fouinage dans les placards jusqu'au service).
 
-### 3. Agrégation de la Liste de Courses (`shopping.ts`)
+### 3. Agrégation de la liste de courses (`shopping.ts`)
 
 La Kitchen construit la liste de base des ingrédients nécessaires pour cuisiner la recette.
 
@@ -66,7 +66,7 @@ La sortie brute de `@gram-lang/kitchen` est l'objet `CompilationResult` (la « r
 
 Par exemple, Kitchen sait que vous avez demandé `1 tasse` de farine, mais ne sait toujours pas combien ça pèse. Cet enrichissement physique massif se fera à la prochaine étape : place à l'**Analyseur** (*Analyzer*).
 
-## Autres Responsabilités
+## Autres responsabilités
 
 - **Ajustement des proportions (Scaling)** : Si `scaleFactor` est injecté à la compilation, toutes les quantités sont redimensionnées proportionnellement. Sauf exceptions : les constantes préfixées par `=` (ex: `@sel{=5g}`, insensibles au volume de la recette) et les champs libres non quantifiables.
 - **Validation du Pourcentage du Boulanger** : Le compilateur s'assure qu'un et un seul ingrédient porte la couronne du modificateur de pourcentage du boulanger (`*`). S'il y a des prétendants multiples, il sévira avec une belle erreur.

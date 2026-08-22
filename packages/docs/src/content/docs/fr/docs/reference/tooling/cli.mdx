@@ -1,5 +1,5 @@
 ---
-title: "Interface en Ligne de Commande (CLI)"
+title: "Interface en ligne de commande (CLI)"
 description: "Référence du CLI Gram : installation, options globales et commandes principales pour compiler et gérer vos recettes."
 ---
 
@@ -22,16 +22,16 @@ import { Steps } from '@astrojs/starlight/components';
 
 Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un *runtime* n'est requise, les deux options sont strictement équivalentes.
 
-## Options Globales
+## Options globales
 
 - `--verbose` / `--debug` : fonctionne avec n'importe quelle commande, affiche la pile d'appels complète en cas d'erreur au lieu du message court.
 - `--stock <specifiers>` : traite les sous-recettes indiquées comme déjà prêtes ou en stock (ignore leurs étapes de cuisine sur la timeline et les regroupe en un produit unique sur la liste de courses). Accepte une liste de chemins séparés par des virgules (`@bases/pate-sablee.gram,./sauces/bechamel.gram`).
 
 ---
 
-## Commandes Principales
+## Commandes principales
 
-### Gestion de Projet & Flux de Travail Développeur
+### Gestion de projet & flux de travail développeur
 
 #### `gram init`
 Initialise un nouvel environnement Gram dans le dossier courant.
@@ -319,7 +319,7 @@ gram config unset ai.apiKey         # Supprime la var d'environnement de la clé
 
 ---
 
-### Gestion de Base de Données
+### Gestion de base de données
 
 Commandes imbriquées sous `gram db` pour gérer votre `ingredients.yaml`.
 
@@ -383,7 +383,7 @@ La fusion prend en compte les **alias** : si votre base a `butter` avec l'alias 
 
 ---
 
-## Détails du Fichier de Configuration
+## Détails du fichier de configuration
 
 Le CLI fusionne la configuration depuis `~/.config/gram/config.yaml` (globale) et `.gram/config.yaml` (projet).
 
@@ -405,7 +405,7 @@ Aucune de ces options n'écrit dans votre configuration. Pour changer la valeur 
 
 Quand `--provider` (ou `--pick-model`) désigne un fournisseur que votre configuration n'a pas nommé, les champs `model`, `apiKey` et `baseUrl` écrits sous `ai:` ne sont **pas** repris : ils appartiennent au fournisseur pour lequel ils ont été écrits. Gram réclamera la variable d'environnement propre au nouveau fournisseur. Cela vaut que votre bloc `ai:` désigne un autre fournisseur ou n'en désigne aucun : un bloc sans `provider:` appartient au fournisseur que Gram aurait auto-détecté, pas à celui que vous avez choisi à la main.
 
-### Configuration IA en Cascade
+### Configuration IA en cascade
 Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
 1. **Variables d'Environnement** : La variable du fournisseur utilisé — `GEMINI_API_KEY`, `OPENAI_API_KEY` ou `ANTHROPIC_API_KEY` (du système ou d'un `.env`) — a toujours le dernier mot. C'est l'approche **recommandée** pour sécuriser des secrets en local comme en CI/CD.
 2. **Secours `config.yaml`** : Si cette variable manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml` — mais uniquement s'il a été écrit pour le fournisseur appelé.

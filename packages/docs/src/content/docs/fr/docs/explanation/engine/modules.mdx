@@ -1,5 +1,5 @@
 ---
-title: "Résolution & Composition (@gram-lang/modules)"
+title: "Résolution & composition (@gram-lang/modules)"
 description: "Comment @gram-lang/modules résout les graphes de dépendances, isole la portée des variables intermédiaires, calcule l'ajustement par le rendement et compose les ASTs multi-fichiers."
 ---
 
@@ -24,7 +24,7 @@ Dans un compilateur logiciel classique, chaque fichier source peut être transfo
 
 En réalisant la composition au niveau AST **en amont** de `@gram-lang/kitchen`, Gram compile, planifie et optimise l'ensemble du repas comme s'il s'agissait d'une seule et même recette écrite d'un seul trait.
 
-## L'Abstraction de l'Hôte (`ModuleHost`)
+## L'abstraction de l'hôte (`ModuleHost`)
 
 Fidèle aux principes d'architecture de Gram, `@gram-lang/modules` ne fait aucun appel direct au système de fichiers (`node:fs`) et ne dépend d'aucune API propriétaire :
 
@@ -32,7 +32,7 @@ Fidèle aux principes d'architecture de Gram, `@gram-lang/modules` ne fait aucun
 - **Dans le Serveur de Langage (`@gram-lang/language-server`)** : L'hôte lit en priorité le contenu des tampons ouverts en mémoire dans l'éditeur avant d'aller chercher sur le disque, garantissant un retour instantané à la frappe.
 - **Dans le Playground Web (`packages/docs`)** : La fonction `createMemoryHost` monte un système de fichiers virtuel en mémoire, rendant possible l'édition multi-onglets en direct dans le navigateur sans aucun serveur.
 
-## 1. Exploration DFS & Détection des Cycles (`graph.ts`)
+## 1. Exploration DFS & détection des cycles (`graph.ts`)
 
 La fonction `loadModuleGraph(entryUri, host)` explore récursivement l'arbre de dépendances en une seule passe en profondeur (DFS) :
 
@@ -40,7 +40,7 @@ La fonction `loadModuleGraph(entryUri, host)` explore récursivement l'arbre de 
 2. **Gestion des diamants** : Chaque fichier `.gram` est chargé et analysé une seule fois. Si deux préparations distinctes importent la même sous-base, celle-ci n'est lue qu'une fois.
 3. **Ordre topologique (*Leaves First*)** : Les modules sont enregistrés dans `order` au fur et à mesure que leurs dépendances se résolvent (les feuilles d'abord). Ainsi, une base est toujours complètement analysée avant la recette qui la consomme.
 
-## 2. Exports Publics & Hygiène Lexicale (`exports.ts`, `rename.ts`)
+## 2. Exports publics & hygiène lexicale (`exports.ts`, `rename.ts`)
 
 ### Que diffuse un sous-module ?
 Seules les déclarations intermédiaires portées au niveau des en-têtes de section (`## Pâte Sablée ->&pate`) constituent des exports publics exploitables par l'importateur :
@@ -53,7 +53,7 @@ Pour éviter qu'une recette hôte et son sous-module ne se marchent sur les pied
 2. **Variables privées** : Toutes les autres variables internes du module sont préfixées par le nom de la liaison (ex : `&pate` devient `&maPate$pate`).
 3. **Contrôle anti-collision post-slug** : Même si deux séparateurs diffèrent, `checkRenameCollisions()` vérifie le slug final de chaque identifiant pour garantir qu'aucune variable distincte ne fusionne par inadvertance.
 
-## 3. Pesée des Rendements & Facteur d'Échelle (`yield.ts`)
+## 3. Pesée des rendements & facteur d'échelle (`yield.ts`)
 
 Lorsqu'une recette hôte ne consomme qu'une fraction d'une préparation de base (par exemple `&pate{300g}`) :
 
@@ -72,7 +72,7 @@ flowchart TD
    ```
 3. **Ajustement en amont** : `scaleAst()` multiplie les ingrédients et durées du sous-arbre **avant** son injection dans l'hôte, garantissant des proportions parfaites.
 
-## 4. Mode Direct vs Mode Stock (`--stock`)
+## 4. Mode direct vs mode stock (`--stock`)
 
 Gram propose deux approches complémentaires pour cuisiner avec des sous-recettes :
 

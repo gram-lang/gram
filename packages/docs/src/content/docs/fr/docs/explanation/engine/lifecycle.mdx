@@ -1,5 +1,5 @@
 ---
-title: "Le Cycle de Vie de Gram"
+title: "Le cycle de vie de Gram"
 description: "Vue d'ensemble du pipeline de Gram, du parseur au moteur de rendu, et de l'articulation de ses paquets."
 ---
 
@@ -7,7 +7,7 @@ Sous le capot, Gram n'a rien d'un monolithe. C'est un assemblage de *packages* u
 
 Saisir ce cycle de vie est indispensable si vous comptez embarquer Gram au cœur de vos applications ou *builder* des outils par-dessus.
 
-## Le Pipeline
+## Le pipeline
 
 La compilation d'une recette Gram s'écoule via un pipeline strictement unidirectionnel :
 
@@ -15,11 +15,11 @@ import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
 
-1. ### Analyse Syntaxique (`@gram-lang/parser`)
+1. ### Analyse syntaxique (`@gram-lang/parser`)
    Le voyage démarre ici. Le *parser* reçoit une chaîne de caractères brute (votre fichier `.gram`) et s'appuie sur une grammaire OhmJS pour en valider la syntaxe. 
    Si la syntaxe est correcte, il produit un **Arbre Syntaxique Abstrait (AST)**. Cet AST est dénué de toute logique métier : c'est une simple représentation structurelle du texte.
 
-2. ### Résolution & Composition de modules (`@gram-lang/modules`)
+2. ### Résolution & composition de modules (`@gram-lang/modules`)
    Si la recette fait appel à des directives `@use`, `@gram-lang/modules` entre en scène : il explore le graphe de dépendances, désamorce les cycles, pèse les rendements des sous-recettes et isole les variables pour fusionner l'ensemble en un **AST composé** unique et autonome. Une recette mono-fichier sans import franchit cette étape sans la moindre altération.
 
 3. ### Compilation (`@gram-lang/kitchen`)
@@ -48,7 +48,7 @@ import { Steps } from '@astrojs/starlight/components';
 - **`@gram-lang/i18n`** : La source de vérité absolue (SSOT) des dictionnaires de normalisation, des tables de conversion (`UNIT_CONVERSIONS`), des durées (`TIME_TO_MINUTES`) et des clés de catégories (`CATEGORY_KEYS`).
 - **`@gram-lang/format`** : Le moteur de formatage canonique (13 règles strictes), partagé entre le CLI et le Language Server.
 
-## Architecture des Paquets
+## Architecture des paquets
 
 Cette séparation des préoccupations (*separation of concerns*) garantit des *packages* ultra-ciblés et réutilisables. Vous codez un plugin d'éditeur qui ne fait que de la coloration syntaxique ? Vous n'embarquerez que `@gram-lang/parser`.
 

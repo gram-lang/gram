@@ -1,5 +1,5 @@
 ---
-title: "Analyse approfondie : Ajustement des Proportions (Scaling)"
+title: "Analyse approfondie : ajustement des proportions (Scaling)"
 description: "Comment le ScaleEngine de Gram gère l'ajustement global, l'ajustement par ingrédient repère et le pourcentage du boulanger."
 ---
 
@@ -64,7 +64,7 @@ La fonction qui applique réellement la multiplication sur chaque quantité, `ap
 
 Le `CompilationResult` final porte un champ explicite `scaleFactor` (défini à `1` par défaut) qui consigne son ratio par rapport à l'original. C'est cette valeur que lisent les interfaces interactives (comme le widget des portions HTML du *renderer*) pour calculer leur base, évitant ainsi de s'appuyer sur des champs masqués.
 
-## Validation du Pourcentage du Boulanger
+## Validation du pourcentage du boulanger
 
 Le pourcentage du boulanger n'est pas un ajustement de proportions, mais il partage la même philosophie "ne pas calculer un nombre faux silencieusement". `@gram-lang/analyzer` le calcule sous la forme d'un champ `bakersPercentage` par article de la liste de courses et par mention d'ingrédient en ligne dans les étapes — `@gram-lang/renderer` se contente d'afficher cette valeur précalculée, il ne la recalcule pas.
 
@@ -74,7 +74,7 @@ Si les calculs du boulanger ont été demandés (`--bakers-math` ou `--bakers-re
 
 **L'agrégation reste cohérente avec la masse.** Si un même ingrédient est utilisé plusieurs fois dans une section (ex : du sucre ajouté à deux étapes distinctes), la méthode `aggregateSectionIngredients` de `@gram-lang/kitchen` additionne à la fois sa `normalizedMass` et son `bakersPercentage`. Puisque le pourcentage est linéaire par rapport à la masse de référence, les deux valeurs concordent systématiquement (ex: 100 g/10 % + 100 g/10 % donne bien 200 g/20 %, et non un aberrant 200 g/10 %). Tous les moteurs de rendu lisent cette valeur précalculée et agrégée sans jamais la recalculer de leur côté.
 
-## Ajustement des Imports Modulaires (`@gram-lang/modules`)
+## Ajustement des imports modulaires (`@gram-lang/modules`)
 
 Lorsqu'une recette importe une sous-base via `@use` (ex : `@use "./bases/pate.gram" as &pate`), le scaling suit une évaluation basée sur le rendement :
 
