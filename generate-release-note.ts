@@ -116,13 +116,13 @@ async function main() {
 
     // 5. Structure the release content hierarchically
     if (majorChanges.length > 0) {
-        newReleaseMarkdown += `### 🚨 Major Changes\n${majorChanges.join("\n")}\n\n`;
+        newReleaseMarkdown += `### Breaking changes\n${majorChanges.join("\n")}\n\n`;
     }
     if (minorChanges.length > 0) {
-        newReleaseMarkdown += `### ✨ New Features\n${minorChanges.join("\n")}\n\n`;
+        newReleaseMarkdown += `### New features\n${minorChanges.join("\n")}\n\n`;
     }
     if (patchChanges.length > 0) {
-        newReleaseMarkdown += `### 🐛 Bug Fixes & Improvements\n${patchChanges.join("\n")}\n\n`;
+        newReleaseMarkdown += `### Bug fixes and improvements\n${patchChanges.join("\n")}\n\n`;
     }
 
     // Append unified sections
@@ -141,8 +141,7 @@ async function main() {
 
     for (const sec of allSections) {
         if (extractedSections[sec].length > 0) {
-            const emoji = sec === "Breaking" ? "💥" : sec === "Fixed" ? "🛠️" : "📌";
-            newReleaseMarkdown += `#### ${emoji} ${sec}\n${extractedSections[sec].join("\n")}\n\n`;
+            newReleaseMarkdown += `#### ${sec}\n${extractedSections[sec].join("\n")}\n\n`;
         }
     }
 

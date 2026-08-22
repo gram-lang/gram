@@ -8,7 +8,7 @@ tableOfContents:
 
 ## [1.2.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.1.0...v.1.2.0) - 2026-08-22
 
-### ✨ New Features
+### New features
 - **Parser & Kitchen**: Introduced modular recipes and multi-file imports via the `@use` directive:
   - Import external base recipes directly into a recipe using `@use "./bases/shortcrust-pastry.gram" as &shortcrust`.
   - Imported steps seamlessly interleave into the global ALAP scheduling timeline, preserving resting times and dependencies.
@@ -33,7 +33,7 @@ tableOfContents:
   - `gram db sync` reports the same conflict across your whole recipe collection, so two unrelated recipes that happen to use the same generic composite name don't overwrite each other's nutrition and density data.
   - The AI recipe importer (`gram import`) now writes composite ingredients with their full name (e.g. "lemon juice") instead of a short generic one, so newly imported recipes don't create this conflict in the first place.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - **Parser & Kitchen**: Fixed `gram scale` (and any other caller that re-scales an already-compiled recipe) silently leaving alternative ingredient groups (`@butter|@margarine`) and composite parent-draw quantities (`@egg-yolks{2}<@eggs{3}`) unscaled.
 - **Parser & Kitchen**: Improved clarity and tone for diagnostic messages and revised severity tiers:
   - Reworded compiler and module diagnostic messages to provide actionable guidance and avoid alarmist phrasing for standard culinary approximations.
@@ -56,7 +56,7 @@ tableOfContents:
 
 ## [1.1.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.1...v.1.1.0) - 2026-08-16
 
-### ✨ New Features
+### New features
 - **CLI / Import**: Support importing recipes directly from **YouTube videos and Shorts** via `gram import`:
   - Uses Gemini multimodal video understanding to analyze cooking videos and generate structured `.gram` recipes.
   - Automatically populates `title:`, `author:` (channel name), and `source:` metadata from YouTube.
@@ -94,7 +94,7 @@ tableOfContents:
   - Added nutrition basis toggles in the web playground and VS Code live preview.
   - Localized all nutrient names and table headers across supported languages (French and English).
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - **Parser & Kitchen**: Fixed an issue where multi-word composite ingredients marked with `&` (e.g. `@juice{1}<@&unwaxed lemon{}`) were duplicated in the shopping list instead of being combined into a single purchase item.
 - **Analyzer & Language Server**: Improved nutrient calculation completeness and editor hover precision:
   - Saturated, monounsaturated, polyunsaturated fats, and alcohol are now included in recipe nutrition totals instead of being omitted.
@@ -106,7 +106,7 @@ tableOfContents:
 
 ## [1.0.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.0...v.1.0.1) - 2026-08-07
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Fixed the `--help` description of `gram check` to clarify that it also checks database completeness by default, unless `--skip-db` is used.
 - Reduced the AI provider costs of running `gram import`:
   - Prompt caching is now enabled, so retries reuse the cached prompt instead of paying full price.
@@ -127,9 +127,9 @@ tableOfContents:
 
 ---
 
-## [1.0.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.0-beta.5...v.1.0.0) - 8/6/2026
+## [1.0.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.0.0-beta.5...v.1.0.0) - 2026-08-06
 
-### 🚨 Major Changes
+### Breaking changes
 - Gram v1.0.0 Official Launch! 🎉 This milestone release marks the official 1.0.0 launch of Gram:
   - **Brand-New Website & Documentation**: Rebuilt using Astro and Starlight with refined guides and an integrated blog.
   - **Refreshed Visual Identity**: Brand-new logo.
@@ -139,7 +139,7 @@ tableOfContents:
 
 ## [1.0.0-beta.5] - 7/26/2026
 
-### ✨ New Features
+### New features
 - Introduce `@gram-lang/format`, a standalone canonical code formatting engine for `.gram` files with 13 deterministic rules, used by the CLI and Language Server.
 - `convertUnit`, `standardizeMass`, and `analyze()` now accept an optional `lang` parameter/option, so unit names are resolved against the recipe's own language when there's an ambiguity between languages, instead of always falling back to a single global guess. `UNIT_CONVERSIONS` (the mass/volume conversion table) has moved to `@gram-lang/i18n` — if you imported it from `@gram-lang/analyzer`, import it from `@gram-lang/i18n` instead.
 - The `language:` setting in `.gram/config.yaml` now also affects unit conversion and the shopping list's category order (e.g. a database with French category names like "Légumes" now sorts correctly when `language: "fr"` is set) — previously it only affected AI-generated content.
@@ -156,7 +156,7 @@ tableOfContents:
 - `gram format` and the editor's "format on save" now share the exact same formatting rules, so a recipe formatted by one always looks identical when opened in the other. This adds a few new automatic cleanups to both: normalizing spacing around composite ingredients (`@a{} < @b{}` → `@a{}<@b{}`), tidying up intermediate-result declarations (`->&name {}` → `->&name{}`), making sure section headers have exactly one space after the `#`s, and converting tabs to spaces.
 - Add an interactive Gantt Chart view to the VS Code extension and export reusable Gantt chart rendering helpers (`toGanttHTML`, `attachGanttInteractivity`) from `@gram-lang/renderer`. Provides a real-time timeline visualization of recipe steps, background timers, and target serving times directly in your editor and the web playground.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Fixed a bug where the wrong API key could be sent to the wrong AI provider. If you had, say, `GEMINI_API_KEY` set in your environment but configured `provider: openai` in `.gram/config.yaml`, your Gemini key could be sent to OpenAI instead. Each provider now only ever uses its own key.
 - Baker's Percentage is now shown on an ingredient's inline mention within step text, not just in the recipe's ingredient list and shopping list — a dead type check meant this data was computed but never actually reached the inline token.
 - The ingredient database schema no longer requires `density` on every entry that has a `physical` block — an ingredient described only by `unit_weight` (e.g. "1 avocado") is valid, matching the analyzer's own documented example. Previously, `gram db enrich` could write entries that `gram build`/`gram db validate` would then reject.
@@ -199,16 +199,16 @@ tableOfContents:
 
 ## [1.0.0-beta.4] - 7/23/2026
 
-### 🚨 Major Changes
+### Breaking changes
 - Section retro-planning (e.g. `## Section ~{-2h}`) now enforces a strict signed-duration syntax instead of accepting arbitrary free text, preventing invalid timeline calculations. Added support for the `d` (day) time unit.
 
-### ✨ New Features
+### New features
 - Added support for ALAP (As Late As Possible) scheduling. Passive timers and their dependencies are now natively pushed backwards from the end of the recipe, ensuring ingredients are prepared just-in-time rather than sitting idle on the counter. Also introduces two new compiler warnings for timeline conflicts: `TIME_PARADOX` and `TRACK_CONTENTION`.
 - Exported the `runPipeline` function alongside its associated types from `@gram-lang/cli` to facilitate library and programmatic usage of the core compiler orchestration.
 - Renamed the `cookTime` metric to `idleTime` across the ecosystem to better reflect hands-off wait time. Additionally, passive timers sharing the same name are now automatically sequenced one after another on the same background track.
 - Added `llms.txt` and `llms-full.txt` to the documentation site, providing a curated index and full concatenated specification tailored for AI assistants and agents.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Fixed the display of alternative ingredient and cookware groups (`@egg|@tofu`). They now correctly render inline as a single joined line in shopping and section lists, rather than being dropped or rendered as oddly-wrapped sub-lists.
 - Fixed mass standardization silently failing for alternative ingredient groups. Mass and estimate metrics are now properly computed for each option independently, fixing missing totals in the shopping list.
 - Added support for bare single-word children in composite ingredients (e.g., `@juice<@lemon`), and allowed independent preparation instructions on the parent side. Fixed section ingredient lists silently dropping the parent reference.
@@ -225,7 +225,7 @@ tableOfContents:
 
 ## [1.0.0-beta.3] - 7/14/2026
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - `gram check` now resolves syntax error line numbers from the parser's structured `GramParseError.offset` instead of regexing "line N" out of ohm's prose message — line numbers are now always correct, not just when they happened to match that pattern.
 - Downgrade minimum VS Code version requirement to 1.75.0
 - Updated deployment configuration to automate npmjs packages publication
@@ -235,13 +235,13 @@ tableOfContents:
 
 ## [1.0.0-beta.2] - 7/13/2026
 
-### 🚨 Major Changes
+### Breaking changes
 - fix!: load valid ingredients even when the database has a bad entry, and fix five correctness bugs
 - fix!: `gram check` only fails on structural errors by default (use `--strict` for the old behavior), fix LSP completion race, and add ingredients.yaml live reload
 - feat!: validate and normalize temperature units, add a shared warning severity map, and fix accented/non-Latin ingredient slugs
 - feat!: replace the `°` temperature sigil with `^`, the `~&` passive timer marker with `~_`, and add mixed/Unicode fraction support
 
-### ✨ New Features
+### New features
 - Added a bilingual (EN/FR) "API Reference" section covering the programmatic API of `@gram-lang/parser`, `@gram-lang/kitchen`, `@gram-lang/analyzer`, `@gram-lang/renderer`, and `@gram-lang/i18n` — function signatures, options, JSON data formats, and the full warning-code catalogue. Reference tables (warning codes, AST node types, unit conversions, categories) are generated at build time directly from each package's source, so they can't drift out of sync with the code. Also fixed an incorrect `analyze()` call example in `how-to/build-custom-ui.md`.
 - Export `fetchRecipe` and `validateGram` from the recipe-import service, enabling direct testing and reuse of the import validation pipeline.
 - Add `round2(value: number): number`, exported from `@gram-lang/kitchen`. It centralizes the 2-decimal rounding rule (`parseFloat(x.toFixed(2))`) previously duplicated across kitchen, analyzer, and renderer, giving quantity/mass rounding a single documented implementation. No observable output changes — same rounding rule as before, just in one place.
@@ -250,7 +250,7 @@ tableOfContents:
 - `toHTML` no longer stamps footnote anchor ids with `Math.random()`. Output is now deterministic by default (ids like `note-1`), which is required for byte-stable golden/conformance testing. If you render multiple recipes on the same page and relied on random ids to avoid anchor collisions, pass a new `renderId` option (e.g. a recipe slug) to disambiguate.
 - Upgraded all monorepo dependencies to their latest versions and implemented a TypeScript 7 dual setup for faster typechecking while preserving compilation toolchain compatibility. Fixed type errors arising from Node 26 and VS Code LSP v10 updates.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Added a global `--verbose`/`--debug` flag (works with any subcommand) that prints the full stack trace alongside the usual terse error message — useful when filing a bug report or diagnosing an unexpected failure.
 - Fix `_usageId` leaking a global counter across separate `compile()` calls in the same process (affected the language server and `gram scale`'s parallel compiles, making ids non-deterministic for an unchanged recipe). Fix nutrition analysis always reporting `isEstimate: true` regardless of actual data precision. Fix the section mass badge in HTML output missing its scale icon.
 - Fixed a regression introduced alongside the new `--verbose` flag where `gram -v` stopped printing the version and showed the help text instead (`-v` is citty's own `--version` shorthand — it's no longer swallowed as part of the verbose flag). Also fixed `gram import`'s fetch timeout message not showing up when the timeout fires while reading a slow response body instead of during the initial connection.
@@ -261,7 +261,7 @@ tableOfContents:
 - fix: sync TextMate grammar with the `^`/`~_` sigil changes and stop mis-highlighting invalid temperature units - Updated TextMate grammar to use `^` (Temperature) and `~_` (Passive Timer) sigils. - Temperature unit highlighting now mirrors the compiler's whitelist (e.g., `180C`/`180°F`). Invalid units now receive a distinct `invalid.illegal.unit.gram` scope. - Name matching now correctly stops at the new `^` sigil.
 - Compiler warnings (`CompilationResult.warnings`, `NutritionMetrics.warnings`) are now always structured `Warning` objects (`{ code, message, item?, loc?, section? }`) instead of sometimes being plain strings depending on call order — a latent inconsistency that could previously produce `"[object Object]"` in some rendered output. `Usage.composite`, `Usage.options`, and `ProcessedStep.content` are now properly typed instead of `any`. Also fixes range-based timer quantities (e.g. `~{5-10min}`) never displaying correctly in `gram diff` output, due to a pre-existing typo checking non-existent fields.
 
-#### 💥 Breaking
+#### Breaking
 - `validateIngredientDatabase` no longer throws an error on a single malformed entry. It now validates entry-by-entry, returning both valid data and rejected keys. This prevents `gram check` or `gram cook` from hard-failing due to one unrelated bad line.
 - `physical.yield` must now be `> 0` (previously `>= 0`) to prevent producing `Infinity` mass downstream.
 - `gram check` now only fails on structural issues (like undefined references) and uses a shared `warningSeverity` map. Nutritional gaps and incomplete annotations are reported as warnings instead of failing the build. Use `--strict` for the old all-warnings-fail behavior.
@@ -270,7 +270,7 @@ tableOfContents:
 - The Timer passive marker is now `~_` (e.g. `~_{45min}`) instead of `~&`.
 - Temperature units now accept bare `C`/`F` in addition to `°C`/`°F`.
 
-#### 🛠️ Fixed
+#### Fixed
 - Added a guard in `applyYield` against non-positive yield factors.
 - Shopping list aggregation: The `optional` modifier is now treated as an intersection rather than a union.
 - `diffRecipes`: Temperature ranges that change bounds but keep the same average are now correctly detected in the diff. Fixed an issue where identical section titles would drop timer/temperature tokens.
@@ -280,22 +280,22 @@ tableOfContents:
 - Language Server: Diagnostics now correctly use the shared `warningSeverity` map.
 - Language Server: `ingredients.yaml` is now actively watched via LSP. External edits instantly refresh diagnostics without restarting the editor.
 
-#### 📌 New syntax
+#### New syntax
 - Added support for mixed-number fractions (`1 1/2`) and Unicode vulgar fraction glyphs (`½`).
 
-#### 📌 Kitchen
+#### Kitchen
 - `warningSeverity`: a new exported map to separate structural errors from recoverable warnings.
 - Temperature units are now validated and normalized to canonical `°C`/`°F`.
 - `slugify` now preserves non-Latin letters via `\p{L}`/`\p{N}`.
 
-#### 📌 Analyzer
+#### Analyzer
 - Fixed `parseDensityOverrides` name normalization for accented ingredient names.
 
 ---
 
 ## [1.0.0-beta.1] - 7/5/2026
 
-### 🚨 Major Changes (Breaking Changes)
+### Breaking changes
 - refactor: rename `isAsync` to `isPassive` to align with domain terminology
 
 To better align the codebase with the actual domain model of a kitchen, the "asynchronous" timer concept has been completely renamed to "passive". This introduces the following breaking changes for tool builders:
@@ -333,7 +333,7 @@ This update ensures total parity with the updated official documentation.
 - **Smart Database Sync & Enrichment**: `gram db sync` automatically tracks new ingredients across your project. `gram db enrich` uses AI to automatically fill in missing densities, unit weights, categories, and nutrition facts.
 - **Semantic Linting & Conflict Resolution**: `gram db lint` uses AI to detect plural mistakes and semantic duplicates (e.g., `scallion` vs `green onion`). `gram db merge` handles conflicts when integrating external community databases.
 
-### ✨ New Features
+### New features
 - docs: update timer terminology from synchronous/asynchronous to active/passive
 
 To better align with real-world culinary concepts and eliminate confusion, the terminology for timers has been updated throughout the documentation. 
@@ -448,7 +448,7 @@ This resolves architectural issues where consumers like the playground had to pe
 - Major architecture refactoring, ESM Migration, performance optimizations and code cleanup
 - Complete overhaul of the documentation to reflect the new syntax changes.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - **Fix: Allow preparations on bare ingredients and cookware**
 Previously, the parser and the TextMate syntax highlighter required quantity braces `{}` to attach a preparation to an element (e.g. `@butter{}(melted)` or `#pan{}(20cm)`). 
 The grammar has been updated to support attaching preparations directly to bare elements without braces. You can now write `@butter(melted)` or `#pan(20cm)` naturally. The AST will correctly extract the `preparation` property, and your editor will highlight it properly.
@@ -467,7 +467,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ## [1.0.0-beta.0] - 6/29/2026
 
-### 🚨 Major Changes (Breaking Changes)
+### Breaking changes
 - Introduction of the official GRAM CLI (`@gram-lang/cli`), a comprehensive command-line tool to manage, compile, and interact with your recipes.
 
 **Project & Recipe Management:**
@@ -488,7 +488,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 - **Smart Database Sync & Enrichment**: `gram db sync` automatically tracks new ingredients across your project. `gram db enrich` uses AI to automatically fill in missing densities, unit weights, categories, and nutrition facts.
 - **Semantic Linting & Conflict Resolution**: `gram db lint` uses AI to detect plural mistakes and semantic duplicates (e.g., `scallion` vs `green onion`). `gram db merge` handles conflicts when integrating external community databases.
 
-### ✨ New Features
+### New features
 - The `@gram-lang/compiler` package has been renamed to `@gram-lang/kitchen` to fully embrace the Gram language's domain identity.
 - Complete **overhaul of the VS Code Extension** with Language Server, Live Preview, and advanced assistance
 
@@ -562,26 +562,26 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 - Major architecture refactoring, ESM Migration, performance optimizations and code cleanup
 - Complete overhaul of the documentation to reflect the new syntax changes.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - NutritionMetrics output field renamed from `salt` to `sodium` to match the ingredient database schema
 
 ---
 
 ## [0.10.1] - 6/14/2026
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 
 - Cleaned up and updated dependencies.
 - Implemented Turborepo to optimize and simplify project building.
 
 ## [0.10.0] - 6/14/2026
 
-### ✨ New Features
+### New features
 - Added Bun snapshot testing to the development environment for compiler validation.
 - Created a new shared @gram-lang/renderer package to handle HTML and Markdown generation.
 - Refactored unit translation and normalization into a new centralized @gram-lang/i18n package to remove redundancy between the compiler and analyzer.
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Refactored the analyzer to reuse the compiler's getNumericQty utility, improving code DRYness and type safety.
 - Migrated to full Bun environment using 'workspace:\*' dependencies
 - Added Zod to automatically catch invalid data and prevent crashes.
@@ -598,7 +598,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 
 ## [0.9.0] - 6/7/2026
 
-### ✨ New Features
+### New features
 - Ingredients states (`@ingredient:state{}`) are removed. While the idea was to better organize the ingredient's database, it just happened to be too confusing to use.
 - Updated unit resolution to allow for french aliases (e.g: tsp = càc)
 - Ingredient references without quantities (`@&ingredient{}`) are now excluded from section ingredients summaries. This keeps section-level mise en place lists clean by filtering out pure flow instructions (like removing or re-inserting) while preserving separate measured portions.
@@ -606,7 +606,7 @@ Previously, the compiler did not wait for passive tasks (like resting dough in t
 - Extracted analyzer logic (mass normalization, yield management, nutritional estimation) into its own package. Ingredients database must now be provided by the user.
 - GRAM syntax now also accepts semantic temperatures (e.g: Cook on !{low heat})
 
-### 🐛 Bug Fixes & Improvements
+### Bug fixes and improvements
 - Cleaned repo with removal of /dist folders
 - Using changesets to simplify changelog management
 - Clarification of global comments for a recipe, to be declared in the front matter as "notes"
