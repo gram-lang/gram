@@ -29,48 +29,22 @@ Le compilateur se charge d'harmoniser l'ensemble : les temps de repos d'une base
 
 Les directives `@use` se placent en tête de fichier, immédiatement après le frontmatter et avant la première section ou étape de préparation — voir [Structure du document](/fr/docs/reference/syntax/document-structure#2-imports-de-modules).
 
-<Tabs>
-  <TabItem label="Import par défaut">
-    Associe la préparation principale du module à une variable locale `&nom` :
+```gram title="Variantes de la directive @use"
+# 1. Import simple (lie la préparation par défaut)
+@use "./bases/pate-sablee.gram" as &pâte
 
-    ```gram
-    @use "./bases/pate-sablee.gram" as &pâte
-    ```
-  </TabItem>
+# 2. Déstructuration (récupère plusieurs préparations)
+@use "./bases/elements-feuilletage-inverse.gram" as { &détrempe, &beurre manié{} }
 
-  <TabItem label="Déstructuration">
-    Importe plusieurs préparations distinctes produites par un même module :
+# 3. Renommage local (évite les conflits de noms)
+@use "./bases/creme.gram" as { &crème as &crémeux }
 
-    ```gram
-    @use "./bases/oeufs.gram" as { &blancs, &jaunes }
-    ```
-  </TabItem>
+# 4. Noms composés (entourés d'accolades pour les espaces ou accents)
+@use "./bases/feuilletage.gram" as &pâte feuilletée{}
 
-  <TabItem label="Renommage">
-    Renomme une variable importée afin d'éviter tout conflit de nom dans votre recette :
-
-    ```gram
-    @use "./bases/creme.gram" as { &crème as &crémeux }
-    ```
-  </TabItem>
-
-  <TabItem label="Noms composés">
-    Entourez d'accolades `{}` les identifiants qui comportent des espaces ou des caractères accentués :
-
-    ```gram
-    @use "./bases/feuilletage.gram" as &pâte feuilletée{}
-    @use "./bases/feuilletage.gram" as { &détrempe as &base de pâte{} }
-    ```
-  </TabItem>
-
-  <TabItem label="Décalage temporel (~{...})">
-    Programme le démarrage de la préparation quelques jours ou heures à l'avance :
-
-    ```gram
-    @use "./bases/levain-chef.gram" as &levain ~{-2d}
-    ```
-  </TabItem>
-</Tabs>
+# 5. Décalage temporel (programme le démarrage 2 jours plus tôt)
+@use "./bases/levain-chef.gram" as &levain ~{-2d}
+```
 
 ### Règles sur les chemins d'import (*specifiers*)
 * Le chemin d'accès doit obligatoirement inclure l'extension `.gram`.
