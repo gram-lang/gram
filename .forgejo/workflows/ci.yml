@@ -58,7 +58,7 @@ jobs:
       - name: Pack CLI dependencies
         run: |
           mkdir -p .smoke
-          for p in i18n format parser kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
+          for p in i18n format parser modules kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
 
       - name: Node smoke tests
         run: |
