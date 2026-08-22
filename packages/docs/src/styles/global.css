@@ -215,6 +215,35 @@ pre.shiki {
 }
 
 /*
+ * Shiki Multi-Theme Syntax Highlighting
+ * Supports both Astro's <Code> component (inline colors + --shiki-dark)
+ * and markdown-rendered code blocks (--shiki-light + --shiki-dark).
+ */
+html[data-theme="dark"] .astro-code {
+	color: var(--shiki-dark, var(--sl-color-text)) !important;
+	background-color: var(--shiki-dark-bg, var(--sl-color-bg)) !important;
+}
+
+html[data-theme="dark"] .astro-code span {
+	color: var(--shiki-dark) !important;
+	font-style: var(--shiki-dark-font-style, inherit) !important;
+	font-weight: var(--shiki-dark-font-weight, inherit) !important;
+	text-decoration: var(--shiki-dark-text-decoration, inherit) !important;
+}
+
+html[data-theme="light"] .astro-code {
+	color: var(--shiki-light, var(--sl-color-text)) !important;
+	background-color: var(--shiki-light-bg, #ffffff) !important;
+}
+
+html[data-theme="light"] .astro-code span {
+	color: var(--shiki-light, inherit);
+	font-style: var(--shiki-light-font-style, inherit);
+	font-weight: var(--shiki-light-font-weight, inherit);
+	text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+
+/*
  * Version & Sidebar Badges Harmonization
  * Replaces Starlight's default blocky monospace badges with refined, compact sans-serif pills.
  */

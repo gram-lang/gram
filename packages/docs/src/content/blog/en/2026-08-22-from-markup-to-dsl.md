@@ -12,8 +12,6 @@ For everyday home recipes, this approach works really well. But as I started wri
 
 That is what led me to build **Gram**: not to replace Cooklang, but to explore a different direction, closer to a compiler and a dedicated domain-specific language (DSL).
 
----
-
 ## Where Text Markup Hits Its Limits
 
 The moment a recipe involves multiple stages or sub-preparations, instructions behave much more like a dependency graph than a simple linear list.
@@ -48,8 +46,6 @@ When cooking, you don't stand idle in front of the oven: you take advantage of a
 
 Gram analyzes these constraints to generate an optimized timeline: it automatically interleaves active tasks during passive waiting periods and calculates the ideal start time for each step (retro-planning) so the meal is perfectly synchronized for service.
 
----
-
 ## Two Approaches for Two Needs
 
 By introducing these concepts, Gram naturally moved away from Cooklang's initial simplicity. It is an intentional trade-off between two different visions:
@@ -59,8 +55,6 @@ By introducing these concepts, Gram naturally moved away from Cooklang's initial
 
 * **Gram focuses on graph modeling and computational integrity:**  
   Gram is built like a compiler: it relies on a formal grammar, an Abstract Syntax Tree (AST), a Language Server (LSP) with semantic diagnostics, a physical analysis engine (mass standardization, nutrition), and a scheduling solver. It requires slightly more discipline when writing, but guarantees full relational consistency for complex formulas and culinary software.
-
----
 
 ## A Journey That Is Just Beginning
 

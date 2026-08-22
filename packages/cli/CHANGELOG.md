@@ -1,5 +1,49 @@
 # @gram-lang/cli
 
+## 1.2.0
+
+### Minor Changes
+
+- 2bab3cd: **Parser & Kitchen**: Introduced modular recipes and multi-file imports via the `@use` directive:
+  - Import external base recipes directly into a recipe using `@use "./bases/shortcrust-pastry.gram" as &shortcrust`.
+  - Imported steps seamlessly interleave into the global ALAP scheduling timeline, preserving resting times and dependencies.
+  - Automatically scales imported base quantities when referenced with specific yields (e.g. `&shortcrust{250g}` halves a 500 g base recipe).
+  - Supports destructured multi-yield imports (e.g. `@use "./bases/tart-elements.gram" as { &crust, &frangipane }`) scaling each component independently.
+  - Supports multi-word bindings using bracket notation (e.g. `@use "..." as &pastry dough{}`).
+  - Resolves project-root paths (`@/bases/...`) and custom path aliases defined under `paths:` in `.gram/config.yaml`.
+  - Added `--stock` CLI flag to treat pre-made base imports as stock items (zero timeline overhead, single shopping list line, retaining full nutritional totals).
+  - Supports retro-planning timeline offsets directly on `@use` import lines (e.g. `@use "./bases/levain-starter.gram" as &starter ~{-2d}`).
+  - Spliced sections in HTML, Markdown, and print outputs display origin badges crediting their source module.
+  - `gram diff` and `gram watch` now track import additions, removals, rebinding, rescaling, and dependency file changes.
+  - Language Server and VS Code extension support live dependency composition, Go to Definition into base files, path auto-completion, and quick-fix diagnostics for missing exports.
+  - Exported `createMemoryHost` from `@gram-lang/modules` for browser and in-memory module graph resolution.
+  - Corrected whole-recipe mass and nutrition totals to accurately include spliced intermediate (`-> &`) masses.
+  - Normalized rescaled ingredient quantities to one decimal place for display consistency across all outputs.
+- 2561210: **CLI**: Added automatic update checking and a new `gram upgrade` command:
+  - gram now checks npm in the background and prints a short "update available" notice after a command finishes (skipped in CI and non-interactive runs).
+  - Added `gram upgrade` to check for and install the latest version on demand — it always performs a fresh check and asks for confirmation before running the install.
+  - Added an `updateCheck: false` setting in `config.yaml` (or the `GRAM_NO_UPDATE_CHECK` environment variable for a single run) to opt out of the passive notice.
+- c31a583: **Parser & Kitchen**: Composite ingredients written with a short, generic child name (like `@juice<@lemon`) are now protected against a silent ingredient-database mix-up:
+  - The compiler now warns when the same short composite name (e.g. "juice") is drawn from two different parents within one recipe (lemon in one step, orange in another) — until now this went unnoticed and the two usages silently shared one entry in the ingredient database.
+  - `gram db sync` reports the same conflict across your whole recipe collection, so two unrelated recipes that happen to use the same generic composite name don't overwrite each other's nutrition and density data.
+  - The AI recipe importer (`gram import`) now writes composite ingredients with their full name (e.g. "lemon juice") instead of a short generic one, so newly imported recipes don't create this conflict in the first place.
+
+### Patch Changes
+
+- Updated dependencies [9331a4b]
+- Updated dependencies [c31a583]
+- Updated dependencies [f617b4c]
+- Updated dependencies [2bab3cd]
+- Updated dependencies [8a4056b]
+- Updated dependencies [aaf8cee]
+  - @gram-lang/kitchen@1.2.0
+  - @gram-lang/modules@1.2.0
+  - @gram-lang/i18n@1.2.0
+  - @gram-lang/parser@1.2.0
+  - @gram-lang/renderer@1.2.0
+  - @gram-lang/analyzer@1.2.0
+  - @gram-lang/format@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

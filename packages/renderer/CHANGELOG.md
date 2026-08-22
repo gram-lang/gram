@@ -1,5 +1,49 @@
 # @gram-lang/renderer
 
+## 1.2.0
+
+### Minor Changes
+
+- 2bab3cd: **Parser & Kitchen**: Introduced modular recipes and multi-file imports via the `@use` directive:
+  - Import external base recipes directly into a recipe using `@use "./bases/shortcrust-pastry.gram" as &shortcrust`.
+  - Imported steps seamlessly interleave into the global ALAP scheduling timeline, preserving resting times and dependencies.
+  - Automatically scales imported base quantities when referenced with specific yields (e.g. `&shortcrust{250g}` halves a 500 g base recipe).
+  - Supports destructured multi-yield imports (e.g. `@use "./bases/tart-elements.gram" as { &crust, &frangipane }`) scaling each component independently.
+  - Supports multi-word bindings using bracket notation (e.g. `@use "..." as &pastry dough{}`).
+  - Resolves project-root paths (`@/bases/...`) and custom path aliases defined under `paths:` in `.gram/config.yaml`.
+  - Added `--stock` CLI flag to treat pre-made base imports as stock items (zero timeline overhead, single shopping list line, retaining full nutritional totals).
+  - Supports retro-planning timeline offsets directly on `@use` import lines (e.g. `@use "./bases/levain-starter.gram" as &starter ~{-2d}`).
+  - Spliced sections in HTML, Markdown, and print outputs display origin badges crediting their source module.
+  - `gram diff` and `gram watch` now track import additions, removals, rebinding, rescaling, and dependency file changes.
+  - Language Server and VS Code extension support live dependency composition, Go to Definition into base files, path auto-completion, and quick-fix diagnostics for missing exports.
+  - Exported `createMemoryHost` from `@gram-lang/modules` for browser and in-memory module graph resolution.
+  - Corrected whole-recipe mass and nutrition totals to accurately include spliced intermediate (`-> &`) masses.
+  - Normalized rescaled ingredient quantities to one decimal place for display consistency across all outputs.
+
+### Patch Changes
+
+- 8a4056b: **Language Server**: Normalized error states and unified diagnostic handling across Playground and VSCode extensions:
+  - Unified Playground diagnostics into a centralized full-width debug console with filter pills and interactive jump-to-location navigation.
+  - Added mobile segmented tab navigation (`[Editor]` / `[Preview]`) and responsive single-row toolbar layout for mobile viewports.
+  - Resolved nutrition diagnostics disconnection in the analyzer by merging physical and nutritional warnings into primary compiler warnings — the editor only turns these into squiggles when they carry a real position, so an incomplete-nutrition notice no longer misplaces itself at the top of the file.
+  - Markdown and print HTML exports keep their explicit "incomplete data" note next to the affected nutrition figures; the interactive HTML preview conveys the same gap through its coverage badge instead.
+  - A scale-target that fails to resolve (e.g. an unconvertible unit) now correctly turns the Playground's status badge and error panel red instead of being undersold as a warning, without marking the file tab as if the recipe itself had a syntax error.
+  - The Playground diagnostics console no longer gets stuck filtered on a category that just emptied out (e.g. after fixing the warning it was showing).
+  - Resolved silent compilation failures in the Language Server by capturing pipeline exceptions and pushing actionable error notifications to webviews — including when the thrown error carries no message, which previously slipped past the check silently.
+  - A compile-time failure (parses fine, but `compile()`/`analyze()` throws) now also surfaces as an editor diagnostic, not only as a webview notification, so it's still visible with the preview panel closed.
+  - Added bidirectional webview messaging in the VSCode extension to jump directly to error offsets in the active editor.
+  - Localized the Playground diagnostics console's collapse/expand tooltip, previously hardcoded in French regardless of site locale.
+- Updated dependencies [9331a4b]
+- Updated dependencies [c31a583]
+- Updated dependencies [f617b4c]
+- Updated dependencies [2bab3cd]
+- Updated dependencies [8a4056b]
+- Updated dependencies [aaf8cee]
+  - @gram-lang/kitchen@1.2.0
+  - @gram-lang/i18n@1.2.0
+  - @gram-lang/parser@1.2.0
+  - @gram-lang/analyzer@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

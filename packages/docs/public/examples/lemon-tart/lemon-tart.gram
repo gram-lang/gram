@@ -15,7 +15,7 @@ portions: 8
 
 ## Baking and assembling
 
-[Line] A #tart tin(24cm) with the &shortcrust{250 g}(rolled out thin).
+[Line] A #tart tin{}(24cm) with the &shortcrust{250 g}(rolled out thin).
 
 [Bake] At ^{180C} for ~_{15min}. ->&baked shell{}
 

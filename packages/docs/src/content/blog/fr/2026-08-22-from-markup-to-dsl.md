@@ -1,5 +1,5 @@
 ---
-title: "Du balisage texte au compilateur : de Cooklang à la naissance de Gram"
+title: "Du balisage texte au compilateur : de Cooklang à la naissance de Gram"
 date: 2026-08-22
 locale: "fr"
 topic: "Devlog"

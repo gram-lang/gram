@@ -292,7 +292,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		modulesInput: `@use "./bases/shortcrust.gram" as &crust\n\n## Lemon Tart\n\n[Line] The tart ring with &crust{250g}.\n\n[Bake] Blind bake for ~_oven{18min} at ^{175C}.\n\n[Fill] Pour in the @lemon curd{300g}.`,
+		modulesInput: `@use "./bases/shortcrust.gram" as &crust\n\n## Lemon Tart\n\n[Line] The #tart ring{} with &crust{250g}.\n\n[Bake] Blind bake for ~_oven{18min} at ^{175C}.\n\n[Fill] Pour in the @lemon curd{300g}.`,
 		modulesOutput: JSON.stringify(
 			{
 				modules: [
@@ -575,7 +575,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 			2,
 		),
 
-		modulesInput: `@use "./bases/pate-sablee.gram" as &pâte\n\n## Tarte Citron\n\n[Foncer] Le cercle à tarte avec la &pâte{250g}.\n\n[Cuire à blanc] Cuire au four pendant ~_four{18min} à ^{175°C}.\n\n[Garnir] Verser le @crémeux citron{300g}.`,
+		modulesInput: `@use "./bases/pate-sablee.gram" as &pâte\n\n## Tarte Citron\n\n[Foncer] Le #cercle à tarte{} avec la &pâte{250g}.\n\n[Cuire à blanc] Cuire au four pendant ~_four{18min} à ^{175°C}.\n\n[Garnir] Verser le @crémeux citron{300g}.`,
 		modulesOutput: JSON.stringify(
 			{
 				modules: [
