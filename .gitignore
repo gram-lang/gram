@@ -8,6 +8,7 @@ dist/
 *.vsix
 CLAUDE.local.md
 **/.agents/
+**/.claude/
 
 # Vitepress
 **/.vitepress/cache
