@@ -1,25 +1,26 @@
 ---
-title: "Structure du Document"
+title: "Structure du document"
 description: "Référence de la structure d'un fichier .gram : frontmatter YAML, clés de métadonnées fonctionnelles et informatives, sections, étapes et commentaires."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Since from '../../../../../../components/Since.astro';
 
 Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
 
-## 1. Métadonnées (Frontmatter)
+## 1. Métadonnées (frontmatter)
 
 Le *frontmatter* est un bloc de configuration **YAML** situé tout en haut du fichier et délimité par `---`.
 
 Le *parser* Gram accepte **absolument n'importe quelle** paire clé-valeur dans ce bloc. Vous êtes libre d'y injecter des champs sur-mesure pour les besoins spécifiques de votre application. Cela dit, le compilateur Gram reconnaît nativement deux catégories de clés : les **Fonctionnelles** et les **Informatives**.
 
-### Clés Fonctionnelles
+### Clés fonctionnelles
 Ces clés modifient concrètement la façon dont le compilateur va interpréter la recette :
 
 *   `portions` : (Entier) Le nombre de portions de base. Divise l'[Estimation Nutritionnelle](/fr/docs/explanation/nutrition) en valeurs par portion, et est ajusté en même temps que les quantités lors d'un *scaling* — les valeurs par portion restent donc identiques quel que soit le facteur appliqué. Un libellé accolé (`portions: 4 personnes`) est toléré ; un nombre nul ou négatif est ignoré.
 *   `densities` : (Objet) Surcharges personnalisées de la densité pour des `@ingrédients` spécifiques, utilisées par l'algorithme de [Standardisation des Masses](/fr/docs/explanation/engine/kitchen).
 
-### Clés Informatives
+### Clés informatives
 Ces clés sont recommandées pour assurer un affichage propre et une gestion saine des métadonnées :
 
 *   `title` : Le nom de la recette.
@@ -43,7 +44,7 @@ category: 'Dessert'
 source: ['https://example.com/matcha-brownie']
 makes: 'moule de 20x20 cm'
 
-# Champs Fonctionnels
+# Champs fonctionnels
 portions: 4
 densities:
   - farine: 0.55
@@ -51,7 +52,23 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Étapes
+## 2. Imports de modules
+
+<Since v="1.2.0" />
+
+Juste après le frontmatter, avant toute étape, une recette peut `@use` d'autres fichiers `.gram` comme sous-composants réutilisables.
+
+```gram
+@use "./bases/pate-sablee.gram" as &pate
+
+## Montage
+
+[Foncer] le moule avec &pate{250g}.
+```
+
+*Voir [Imports de modules](/fr/docs/reference/syntax/modules) pour la syntaxe complète, l'adaptation des quantités et les garanties d'encapsulation.*
+
+## 3. Étapes
 
 Dans un fichier Gram, chaque paragraphe représente une seule et unique étape de préparation. Les étapes sont séparées par une ou plusieurs lignes vides.
 
@@ -62,7 +79,7 @@ la même étape.
 Une étape différente.
 ```
 
-### Verbes d'Action
+### Verbes d'action
 Les étapes peuvent optionnellement démarrer par une **Action** entre crochets `[]`. Ce marqueur met en exergue la technique principale employée dans l'étape, facilitant ainsi son repérage visuel (ou son *parsing* programmatique).
 
 ```gram
@@ -71,7 +88,7 @@ Les étapes peuvent optionnellement démarrer par une **Action** entre crochets 
 [Cuire] Dans le #four pendant ~{30 min}.
 ```
 
-## 3. Sections
+## 4. Sections
 
 Les recettes un peu touffues comportent souvent plusieurs sous-préparations (ex : pâte, garniture, glaçage). Vous pouvez regrouper ces étapes au sein de blocs `## Section` en utilisant de simples titres Markdown (ex : `## Pâte`).
 
@@ -85,7 +102,7 @@ Mélanger la @farine{200 g} et l'@eau{100 ml} jusqu'à obtenir un mélange lisse
 Combiner le @fromage{100 g} et les @épinards{50 g}, puis assaisonner selon le goût.
 ```
 
-### Rétroplanning (Ordonnancement)
+### Rétroplanning (ordonnancement)
 Il est possible d'assigner un délai de rétroplanning à une `## Section` en glissant un `~minuteur` n'importe où dans son titre.
 
 ```gram
@@ -96,7 +113,7 @@ Les suffixes supportés sont `d` (jours), `h` (heures), `min` ou `m` (minutes) �
 
 *Voir [Temps & Planification](/fr/docs/reference/syntax/times#rétroplanning-de-section) pour la syntaxe complète et la gestion des erreurs.*
 
-### Sorties de Section (Déclarations)
+### Sorties de section (déclarations)
 Si une `## Section` génère une sous-préparation destinée à être réutilisée plus tard, vous pouvez la déclarer en ajoutant `->&` à la toute fin du titre.
 
 ```gram
@@ -104,7 +121,7 @@ Si une `## Section` génère une sous-préparation destinée à être réutilis�
 ```
 *Voir les [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variables) pour plus de détails.*
 
-## 4. Commentaires
+## 5. Commentaires
 
 Les commentaires vous permettent d'expliciter vos instructions sans pour autant impacter le rendu compilé.
 

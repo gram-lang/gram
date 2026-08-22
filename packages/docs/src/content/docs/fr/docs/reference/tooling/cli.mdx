@@ -1,5 +1,5 @@
 ---
-title: "Interface en Ligne de Commande (CLI)"
+title: "Interface en ligne de commande (CLI)"
 description: "Référence du CLI Gram : installation, options globales et commandes principales pour compiler et gérer vos recettes."
 ---
 
@@ -25,15 +25,16 @@ Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichie
 
 <Since v="1.2.0" /> Quand une nouvelle version est publiée sur npm, gram affiche une courte notice une fois la commande terminée (ignorée en CI et hors terminal interactif). Lancez `gram upgrade` pour vérifier et l'installer à la demande, ou désactivez cette notice avec `gram config set updateCheck false` — ou, pour une seule exécution, la variable d'environnement `GRAM_NO_UPDATE_CHECK`.
 
-## Options Globales
+## Options globales
 
 - `--verbose` / `--debug` : fonctionne avec n'importe quelle commande, affiche la pile d'appels complète en cas d'erreur au lieu du message court.
+- `--stock <specifiers>` : traite les sous-recettes indiquées comme déjà prêtes ou en stock (ignore leurs étapes de cuisine sur la timeline et les regroupe en un produit unique sur la liste de courses). Accepte une liste de chemins séparés par des virgules (`@bases/pate-sablee.gram,./sauces/bechamel.gram`).
 
 ---
 
-## Commandes Principales
+## Commandes principales
 
-### Gestion de Projet & Flux de Travail Développeur
+### Gestion de projet & flux de travail développeur
 
 #### `gram init`
 Initialise un nouvel environnement Gram dans le dossier courant.
@@ -72,7 +73,8 @@ gram build brioche.gram --scale 2 --output ./dist-double
 - Par défaut, affiche le JSON pur directement sur la sortie standard (`stdout`) pour faciliter le *piping*.
 - Calcule automatiquement les données nutritionnelles et la standardisation des masses physiques via la base de données.
 - `--scale <facteur>` intègre l'ajustement des proportions (*scaling*) en dur dans le JSON de sortie. Le mode par référence (ex. `farine=300g`) n'est volontairement pas disponible ici : `build` traitant les fichiers par lots, un *build* reproductible ne doit pas dépendre de la lecture préalable d'une liste de courses spécifique. Utilisez `gram view` ou `gram scale` pour trouver votre facteur, puis passez ce multiplicateur numérique à `build`.
-- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`.
+- Lorsqu'un glob ou plusieurs fichiers sont passés en argument, les fichiers importés (via `@use`) par d'autres fichiers du même lot sont exclus par défaut, afin que leurs ingrédients ne soient pas comptés deux fois (isolément puis intégrés dans la recette hôte). Passez `--include-modules` pour les compiler malgré tout.
+- Options : `--output/-o <dossier>`, `--pretty`, `--scale <facteur>`, `--db <chemin>`, `--skip-db`, `--include-modules`.
 
 #### `gram view <fichier>`
 Affiche une recette directement dans le terminal, proprement formatée dans une boîte ASCII.
@@ -84,7 +86,8 @@ gram view brioche.gram --scale farine=300g  # Voir ajusté pour farine = 300g
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la nutrition calculée, les minutages, et les listes d'ingrédients à cocher.
 - Le flag `--scale` ajuste toutes les quantités d'ingrédients (liste de courses *et* références *inline* dans les étapes).
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 
 #### `gram import <source>`
 Importe une recette depuis une page web, un fichier JSON-LD local ou une vidéo / Short YouTube, et la convertit en un fichier `.gram` à l'aide de l'IA.
@@ -100,7 +103,7 @@ gram import recette.json -o brioche.gram -y        # Écriture directe sans conf
 **Sources prises en charge :**
 - **URL de pages web** : extrait automatiquement les métadonnées de recette structurées `application/ld+json` (Schema.org `Recipe`) présentes sur la page.
 - **Fichiers JSON / JSON-LD locaux** : lit directement les schémas JSON-LD enregistrés sur votre machine.
-- **Vidéos et Shorts YouTube** : analyse directement la vidéo grâce aux capacités multimodales de Gemini (sans passer par des scrapers de sous-titres tiers).
+- **Vidéos et Shorts YouTube** <Since v="1.1.0" /> : analyse directement la vidéo grâce aux capacités multimodales de Gemini (sans passer par des scrapers de sous-titres tiers).
 
 **Fonctionnement & Garde-fous :**
 - Traduit et formate la recette en une syntaxe Gram valide, en respectant la configuration `language`.
@@ -108,21 +111,21 @@ gram import recette.json -o brioche.gram -y        # Écriture directe sans conf
 - Avant d'écrire dans `--output`, la recette convertie est affichée pour relecture et confirmation. En contexte non interactif, la relecture est ignorée avec un avertissement — utilisez `--yes/-y` pour l'ignorer délibérément.
 - **Rien n'est produit si l'import revient cassé.** Deux contrôles portent sur le résultat et le refusent :
   - *Contenu perdu* — chaque `@ingrédient` écrit dans le fichier est confronté à ce que le compilateur a réellement enregistré. Un écart signifie que du texte a été avalé, le plus souvent par un commentaire `//` placé en milieu de phrase, qui masque la fin de sa ligne. Un tel fichier compile sans le moindre avertissement, en étant simplement amputé d'ingrédients.
-  - *Erreurs non corrigées* — l'IA dispose de deux tentatives pour réparer les problèmes de sévérité « error ». S'il en reste, ils sont signalés au lieu d'être écrits.
+  - *Erreurs non résolues* — l'IA bénéficie de deux tentatives de réparation pour les problèmes critiques. Si certaines subsistent, elles sont signalées plutôt qu'écrites.
 
-  Utilisez `--force` pour écrire le fichier malgré tout, ou réessayez avec un `--model` plus solide.
-- `source:` et `author:` proviennent des données source (ou de YouTube), ou sont supprimés si elles n'en contiennent pas — jamais laissés à l'invention du modèle.
-- **Les ingrédients revenus sans quantité sont comptés et listés par ligne.** Ce n'est pas une erreur — `@sel{}` est la façon idiomatique d'écrire « au goût » — mais c'est la mesure la plus claire de l'état d'avancement de la recette, et elle vous amène directement aux lignes à corriger. Un ingrédient quantifié une fois puis simplement re-mentionné n'est pas compté.
-- Si une base d'ingrédients est présente, l'analyzer signale en plus ce qu'il n'a pas pu résoudre (ingrédients inconnus, quantités sans masse exploitable). Ce sont des manques dans votre base, pas des échecs d'import : ils ne bloquent jamais.
+  Passez `--force` pour forcer l'écriture du fichier malgré tout, ou réessayez avec un `--model` plus puissant.
+- `source:` et `author:` proviennent directement des données sources (ou des métadonnées YouTube), et sont supprimés s'ils manquent — jamais inventés par le modèle.
+- **Les ingrédients retournés sans quantité sont comptés et listés par ligne.** Ce n'est pas une erreur — `@sel{}` est idiomatique pour "au goût" — mais c'est le signal le plus direct du niveau de finition de la recette, pointant exactement les lignes à compléter. Un ingrédient quantifié une première fois puis simplement rappelé n'est pas recompté.
+- Lorsqu'une base de données d'ingrédients est active, l'analyseur signale aussi ce qu'il n'a pas pu résoudre (ingrédients inconnus, quantités sans masse exploitable). Ce sont des lacunes de votre base, non des échecs d'import, ils ne sont donc jamais bloquants.
 
-**Spécificités de l'import vidéo YouTube :**
-- **Google / Gemini uniquement** : Gemini est le seul fournisseur capable de lire nativement une URL YouTube. Avec un autre fournisseur, l'import s'interrompt pour éviter d'envoyer une URL au lieu d'une vidéo.
-- **Le coût est proportionnel à la durée**, à environ 100 tokens d'entrée par seconde de vidéo : un Short représente quelques milliers de tokens, dix minutes environ 60 000, vingt-six minutes environ 158 000. Au-delà de 20 minutes, la vidéo est refusée par défaut ; relevez le plafond avec `--max-duration <minutes>`.
-- **L'estimation de coût nécessite `YOUTUBE_API_KEY`** : une simple clé YouTube Data API, lue uniquement dans les variables d'environnement (jamais dans `config.yaml`). Sans elle l'import fonctionne quand même, mais il ne peut ni déterminer la durée préalable ni appliquer le plafond — et il le signale.
-- **Estimation des quantités en vidéo** : une vidéo énonce beaucoup moins de quantités qu'une recette écrite. Le prompt demande au modèle de laisser `{}` vide plutôt que de deviner, et les contrôles ci-dessus refusent ensuite tout résultat où du contenu a disparu. Attendez-vous à compléter des trous à la main : c'est le résultat honnête, pas un échec.
-- Le titre, la chaîne et l'URL proviennent directement de YouTube et alimentent `title:`, `author:` et `source:`.
+**Spécificités de l'import vidéo YouTube :** <Since v="1.1.0" />
+- **Google / Gemini uniquement** : Gemini est le seul fournisseur traitant nativement les vidéos YouTube. Avec tout autre fournisseur, l'import s'arrête net.
+- **Le coût augmente avec la durée**, à raison d'environ 100 jetons d'entrée par seconde de vidéo : un Short compte quelques milliers de jetons, 10 minutes environ 60 000, 26 minutes environ 158 000. Les vidéos de plus de 20 minutes sont rejetées par défaut ; relevez le plafond via `--max-duration <minutes>`.
+- **L'estimation des coûts requiert `YOUTUBE_API_KEY`** : une clé standard de la YouTube Data API, lue uniquement dans l'environnement, jamais dans `config.yaml`. Sans elle, l'import tourne quand même, mais ne peut ni estimer la durée en amont ni appliquer la limite.
+- **Attentes sur les quantités en vidéo** : une vidéo énonce bien moins de quantités explicites qu'une recette rédigée. Le prompt ordonne au modèle de laisser `{}` vide plutôt que de deviner, et les contrôles ci-dessus refusent toute perte de contenu. Attendez-vous à compléter des manques à la main — c'est le résultat honnête, pas un échec.
+- `title:`, `author:` (nom de chaîne), et `source:` (URL) proviennent directement des métadonnées YouTube et sont repris tels quels.
 
-- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
+- Options : `--output/-o <fichier>`, `--yes/-y`, `--force`, `--max-duration <minutes>` <Since v="1.1.0" />, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 #### `gram shop [motif]`
 Compile une liste de courses globale en agrégeant plusieurs recettes.
@@ -137,7 +140,8 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - Les ingrédients sans quantité (ex : `@sel{}`) sont listés à côté de leur entrée principale plutôt que dans une section séparée.
 - Support complet des micro-unités : `pincée`, `trait` ou `goutte` s'agrègent sans broncher.
 - `--scale <facteur>` applique un multiplicateur numérique à toutes les recettes (uniquement facteur — le mode référence n'est pas disponible pour plusieurs fichiers).
-- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`.
+- Lorsqu'un glob ou plusieurs fichiers sont passés en argument, les fichiers importés (via `@use`) par d'autres fichiers du même lot sont exclus par défaut, afin d'éviter les doublons d'ingrédients sur la liste de courses globale. Passez `--include-modules` pour les inclure malgré tout.
+- Options : `--format terminal|md|json`, `--output/-o <fichier>`, `--scale <facteur>`, `--db`, `--skip-db`, `--include-modules`.
 
 #### `gram cook <fichier>`
 Lance un assistant de cuisine interactif étape par étape, directement dans le terminal.
@@ -182,16 +186,18 @@ gram diff brioche.gram --ref HEAD~2           # vs un commit git spécifique
 gram diff brioche.gram --ref v1.2             # vs un tag git
 gram diff brioche-v1.gram brioche-v2.gram     # Deux fichiers explicites (pas besoin de git)
 ```
-Le diff couvre **six axes** :
+Le diff couvre **sept axes** :
 - **Ingrédients** — quantités ajoutées/retirées/modifiées, avec le `percentChange` quand les unités correspondent.
 - **Minutages** — `totalTime`, `cookTime`, `activeTime`, `preparationTime` en minutes.
 - **Sections** — sections ajoutées/retirées et changements du nombre d'étapes.
 - **Frontmatter** — modifications sur `portions`, `description`, et d'autres champs de métadonnées. Un changement de `title` est suivi séparément et affiché sur sa propre ligne au-dessus du bloc frontmatter.
 - **Préparations** — modes de préparation modifiés par ingrédient (ex : "en dés" → "émincé").
 - **Températures & Minuteurs** — cibles de température et durées de minuteur ajoutées/retirées/modifiées par section.
+- **Modules** — un import `@use` ajouté, retiré, relié à un nouveau nom, ou re-scalé avec un facteur différent.
 
 - Calcule le *diff* sur les objets compilés par le moteur Kitchen. Ainsi, un simple reformatage syntaxique (espaces, sauts de ligne) ne remontera aucun *diff*.
 - Le mode Git exige que le fichier soit suivi (*tracked*). Renvoie une erreur gracieuse si `git` est introuvable sur la machine.
+- Une section importée via `@use` ne compte jamais dans les axes Sections/Préparations/Températures/Minuteurs — sinon l'ajout d'un seul import ferait croire que toutes les autres sections ont bougé. C'est l'axe Modules qui rend compte de son propre import. `gram diff` ne résout pas `@use` de lui-même pour autant : chaque côté est compilé isolément, donc un changement *à l'intérieur* d'une base importée n'apparaît pas ici — pour ça, diffez directement le fichier de la base.
 - Options : `--ref <réf-git>`.
 
 #### `gram scale <fichier>`
@@ -219,6 +225,7 @@ gram watch --build --output ./dist      # Compile aussi les fichiers modifiés e
 - Affiche une ligne de résultat horodatée par changement : `[12:34:01] ✓ brioche.gram` ou `✗ brioche.gram — 1 error`.
 - Les erreurs s'affichent *inline* sous le nom du fichier. Le *watcher* ne crashe jamais suite à une erreur.
 - Un délai antirebond (debounce) de 150ms évite les exécutions redondantes.
+- Sauvegarder une base relance aussi le contrôle de chaque fichier du dossier observé qui l'importe via `@use`, directement ou transitivement — pas seulement le fichier modifié sur le disque. Une ligne `→ rechecking N dependent file(s)` indique combien.
 - Options : `--build`, `--output/-o <dossier>`, `--skip-db`, `--db`.
 
 #### `gram suggest`
@@ -245,7 +252,8 @@ gram print brioche.gram --no-open         # Ne pas ouvrir, imprimer le chemin su
 - Le HTML est écrit dans un fichier temporaire (`gram_print_<horodatage>.html` dans le dossier temporaire du système) et ouvert avec le navigateur par défaut (`open` sur macOS, `xdg-open` sur Linux, `cmd /c start` sur Windows).
 - Sortie identique à `gram export --format html` — idéal pour la boîte de dialogue d'impression du navigateur (`Ctrl+P` / `Cmd+P`) pour produire un PDF A4.
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes.
-- Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
+- Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 
 #### `gram export <fichier>`
 Exporte une recette vers Markdown ou HTML prêt à l'impression.
@@ -258,7 +266,8 @@ gram export brioche.gram --format html --scale 2       # exporter aux quantités
 - `--format html` — Document HTML A4 autonome avec CSS intégré pour l'impression, avec icônes SVG Lucide (pas de dépendances externes). Il charge Courier Prime et Inter depuis Google Fonts, donc une connexion réseau est requise lors de la première ouverture.
 - Chemin de sortie par défaut : le même dossier que le fichier source, avec l'extension remplacée (`.gram` → `.md` ou `.html`).
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes. **Format HTML uniquement** — sans effet avec `--format md`.
-- Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`.
+- Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 
 #### `gram format [motif]`
 Formate automatiquement les fichiers `.gram` (*in-place*) en appliquant 13 règles canoniques via le package `@gram-lang/format`.
@@ -325,7 +334,7 @@ gram config unset ai.apiKey         # Supprime la var d'environnement de la clé
 
 ---
 
-### Gestion de Base de Données
+### Gestion de base de données
 
 Commandes imbriquées sous `gram db` pour gérer votre `ingredients.yaml`.
 
@@ -352,6 +361,7 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
    - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 3. #### `gram db enrich`
+   <Since v="1.1.0" type="changed" />
    Lâche l'IA sur votre base de données pour proposer les données manquantes, puis vous fait passer en revue chaque proposition avant d'écrire quoi que ce soit.
    - Propose les champs `density`, `unit_weight`, `nutrition`, `category`, et `tags` par lots (`unit_weight` est rempli avec `density`). `category` est une famille culinaire (ex : Légumes, Produits Laitiers, Céréales) — distincte des `tags` libres.
    - `category`/`tags` sont écrits automatiquement ; `density`/`unit_weight`/`nutrition` passent par une revue interactive entrée par entrée (accepter, modifier ou passer), car ce sont des données propres à un produit précis — vous seul savez ce que vous avez réellement dans votre cuisine.
@@ -361,6 +371,8 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
 </Steps>
 
 #### `gram db validate`
+<Since v="1.1.0" />
+
 Valide l'intégrité de votre `ingredients.yaml`.
 - Vérifie les erreurs de schéma, les alias dupliqués, et les valeurs incohérentes (ex : densité > 2.5).
 - Une entrée viciée ne fait pas crasher l'outil : chaque ligne est validée indépendamment. Le rapport final renverra la liste exhaustive des problèmes en une seule passe.
@@ -389,11 +401,13 @@ La fusion prend en compte les **alias** : si votre base a `butter` avec l'alias 
 
 ---
 
-## Détails du Fichier de Configuration
+## Détails du fichier de configuration
 
 Le CLI fusionne la configuration depuis `~/.config/gram/config.yaml` (globale) et `.gram/config.yaml` (projet).
 
 ### Choisir le modèle IA
+
+<Since v="1.1.0" />
 
 Toutes les commandes qui appellent l'IA — `gram import`, `gram db lint` et `gram db enrich` — acceptent les mêmes trois options et affichent le modèle qu'elles s'apprêtent à appeler, pour qu'un choix inattendu soit visible avant de vous coûter quoi que ce soit :
 
@@ -411,7 +425,7 @@ Aucune de ces options n'écrit dans votre configuration. Pour changer la valeur 
 
 Quand `--provider` (ou `--pick-model`) désigne un fournisseur que votre configuration n'a pas nommé, les champs `model`, `apiKey` et `baseUrl` écrits sous `ai:` ne sont **pas** repris : ils appartiennent au fournisseur pour lequel ils ont été écrits. Gram réclamera la variable d'environnement propre au nouveau fournisseur. Cela vaut que votre bloc `ai:` désigne un autre fournisseur ou n'en désigne aucun : un bloc sans `provider:` appartient au fournisseur que Gram aurait auto-détecté, pas à celui que vous avez choisi à la main.
 
-### Configuration IA en Cascade
+### Configuration IA en cascade
 Gram utilise une hiérarchie de secours (fallback) en cascade pour les identifiants sensibles comme les clés API de l'IA :
 1. **Variables d'Environnement** : La variable du fournisseur utilisé — `GEMINI_API_KEY`, `OPENAI_API_KEY` ou `ANTHROPIC_API_KEY` (du système ou d'un `.env`) — a toujours le dernier mot. C'est l'approche **recommandée** pour sécuriser des secrets en local comme en CI/CD.
 2. **Secours `config.yaml`** : Si cette variable manque, Gram se rabat sur le champ `ai.apiKey` de votre `config.yaml` — mais uniquement s'il a été écrit pour le fournisseur appelé.
@@ -432,6 +446,11 @@ database: ".gram/ingredients.yaml" # Chemin relatif ou absolu vers la base de do
 language: "fr"                 # Langue pour tout le contenu généré par l'IA (catégories, tags, recettes importées)
                                # Supporté : en, fr, de, es, it, pt, nl, ja, zh — défaut : en
 updateCheck: true             # Passez à false pour désactiver la notice de mise à jour affichée après chaque commande
+
+# Alias nommés pour les imports `@use` — `@use "@bases/pate.gram"` résout vers
+# "<racine du projet>/partage/bases/pate.gram". Voir la référence des imports de modules.
+paths:                         # Ajouté en v1.2.0 pour les alias de modules
+  bases: "./partage/bases"
 
 # Paramètres IA pour `gram import`, `gram db enrich` et `gram db lint`
 ai:

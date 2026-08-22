@@ -3,6 +3,7 @@
   "meta": {
     "title": "Empty Section Scheduling"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

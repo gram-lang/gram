@@ -1,0 +1,208 @@
+---
+title: "@gram-lang/modules"
+description: "Référence de l'API de @gram-lang/modules : loadModuleGraph, composeRecipe, ModuleHost et utilitaires de composition multi-recettes."
+---
+
+import Since from '../../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
+Le package `@gram-lang/modules` est le chef d'orchestre de la modularité dans Gram. Il prend en charge la résolution et la composition des directives d'import `@use` réparties sur plusieurs fichiers pour produire un AST unifié unique avant compilation. 
+
+C'est lui qui gère la traversée du graphe de dépendances, la détection des imports circulaires, l'isolation des variables intermédiaires (hygiène lexicale), le redimensionnement automatique des sous-bases en fonction de leur rendement réel, ainsi que le mode stock (`--stock`).
+
+Comme tous les packages du cœur de Gram, `@gram-lang/modules` est 100 % pur et agnostique vis-à-vis de l'environnement : il s'appuie sur l'interface `ModuleHost` pour déléguer la lecture des fichiers et la résolution des chemins, sans jamais manipuler directement le disque.
+
+## `loadModuleGraph`
+
+```typescript
+function loadModuleGraph(
+  entryUri: string,
+  host: ModuleHost,
+  options?: { maxDepth?: number }
+): Promise<ModuleGraph>
+```
+
+Explore et charge l'intégralité du graphe d'importation transitif en partant du document racine `entryUri`. L'analyse s'effectue en une seule passe en profondeur (DFS) :
+- **Déduplication** : Chaque fichier `.gram` n'est lu et parsé qu'une seule fois, même en cas de dépendances en diamant (ex : deux sauces partageant le même bouillon).
+- **Tolérance aux pannes** : Les cycles d'importation (`A → B → A`) sont interceptés et consignés dans les diagnostics sous le code non fatal `MODULE_CYCLE` au lieu de faire planter le processus.
+- **Contrôle de profondeur** : Dépasser `maxDepth` (fixé par défaut à `32`) émet une alerte `MODULE_DEPTH_EXCEEDED`.
+- **Ordre topologique** : Le tableau `order` classe les modules feuilles en premier, garantissant que chaque sous-recette est mesurée et composée avant d'être injectée dans son importateur.
+
+```typescript
+import { loadModuleGraph, createMemoryHost } from '@gram-lang/modules';
+
+const host = createMemoryHost({
+  '/recettes/tarte.gram': `
+    @use "./bases/pate-sablee.gram" as &pate
+    ## Assemblage
+    Foncez le moule avec la &pate{300g}.
+  `,
+  '/recettes/bases/pate-sablee.gram': `
+    ## Pâte Sablée ->&pate
+    Mélanger la @farine{200g} et le @beurre{100g}.
+  `
+});
+
+const graph = await loadModuleGraph('/recettes/tarte.gram', host);
+// graph.entry, graph.modules, graph.order, graph.diagnostics
+```
+
+## `ModuleHost`
+
+Le contrat d'abstraction qui isole `@gram-lang/modules` de son environnement d'exécution (système de fichiers local, mémoire vive, tampons d'éditeur LSP ou bac à sable du Playground web).
+
+```typescript
+interface ModuleHost {
+  /** Résout le chemin `specifier` par rapport à l'URI du document appelant. Arithmétique de chemin pure. */
+  resolve(specifier: string, fromUri: string): string;
+  /** Lit et renvoie le code source à l'`uri` demandée. Lève une exception en cas d'impossibilité de lecture. */
+  read(uri: string): string | Promise<string>;
+}
+```
+
+### `createMemoryHost`
+
+```typescript
+function createMemoryHost(
+  files: Map<string, string> | Record<string, string>
+): ModuleHost
+```
+
+Instancie un `ModuleHost` virtuel en mémoire à partir d'un simple objet ou d'une `Map` associant des chemins de fichiers à leur contenu `.gram`. Gère nativement les chemins relatifs POSIX standards (`./`, `../`) et la racine projet `@/...`. Indispensable pour exécuter Gram dans le navigateur ou dans vos suites de tests.
+
+## `composeRecipe`
+
+```typescript
+function composeRecipe(
+  graph: ModuleGraph,
+  options: ComposeOptions
+): ComposeResult
+```
+
+Fusionne un `ModuleGraph` résolu en un unique `RecipeAST` prêt pour la cuisine :
+1. **Parcours ordonné** : Traite les modules dans l'ordre topologique `graph.order`.
+2. **Identification des exports** : Détecte les préparations intermédiaires exportées au niveau des sections (`computeExports`).
+3. **Mesure du rendement** : Évalue au préalable la masse physique produite par chaque sous-recette (`resolveYield`) à l'aide de la base `options.db`.
+4. **Mise à l'échelle (Scaling)** : Calcule le coefficient multiplicateur (`computeScaleFactor`) à appliquer à la sous-recette selon la quantité demandée par la recette hôte.
+5. **Hygiène de renommage** : Préfixe les variables intermédiaires internes (`&pate` → `&crust$pate`) pour éliminer tout risque de collision de noms entre fichiers distincts.
+6. **Gestion du Stock (`--stock`)** : Pour les modules signalés dans `options.stock`, retire les étapes de préparation de la chronologie tout en générant des ingrédients virtuels (`syntheticIngredients`) qui préservent la masse et les apports nutritionnels exacts de la base.
+
+### `ComposeOptions`
+
+```typescript
+interface ComposeOptions {
+  db: Record<string, IngredientData>;
+  lang?: string;
+  cache?: Map<string, AnalyzedCompilationResult>;
+  stock?: Set<string>;
+}
+```
+
+### `ComposeResult`
+
+```typescript
+interface ComposeResult {
+  ast: RecipeAST;
+  warnings: Warning[];
+  modules: ModuleInfo[];
+  sectionOrigins: (ModuleInfo | undefined)[];
+  syntheticIngredients: Record<string, IngredientData>;
+  usedStock: Set<string>;
+}
+```
+
+## `finalizeComposed`
+
+```typescript
+function finalizeComposed(
+  compiled: CompilationResult,
+  compose: Pick<ComposeResult, "modules" | "sectionOrigins" | "warnings">
+): ComposedCompilationResult
+```
+
+Assure la liaison entre la sortie de composition et le résultat de compilation produit par `@gram-lang/kitchen` :
+- Injecte la liste descriptive `modules: ModuleInfo[]` à la racine de l'objet compilé.
+- Associe à chaque section injectée l'empreinte de son module d'origine (`section.module: { binding, uri, title, mode }`).
+- Consolide et déduplique les avertissements et diagnostics issus des différentes phases.
+
+```typescript
+import { getAST } from '@gram-lang/parser';
+import { loadModuleGraph, composeRecipe, finalizeComposed, createMemoryHost } from '@gram-lang/modules';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
+
+const graph = await loadModuleGraph('/tarte.gram', host);
+const composed = composeRecipe(graph, { db: database });
+const compiled = compile(composed.ast);
+const result = finalizeComposed(compiled, composed);
+
+// Injecter les ingrédients virtuels du stock avec la base de données standard
+const enrichedDb = { ...database, ...composed.syntheticIngredients };
+const { result: analyzed } = analyze(result, enrichedDb);
+```
+
+## Utilitaires & fonctions avancées
+
+### Extraction d'exports & calcul de proportions
+
+```typescript
+function computeExports(ast: RecipeAST): ModuleExports;
+function resolveYield(analyzed: AnalyzedCompilationResult, exportInfo: ExportInfo): ResolvedYield;
+function computeScaleFactor(
+  hostChildren: RecipeAST["children"],
+  decl: ImportDecl,
+  moduleExports: Map<string, ExportInfo>,
+  analyzed: AnalyzedCompilationResult,
+  options: ScaleFactorOptions,
+  warnings: Warning[]
+): number;
+```
+
+- **`computeExports`** : Analyse un AST pour en extraire les variables exportées via `->&` sur les en-têtes de section et désigne l'export par défaut.
+- **`resolveYield`** : Calcule récursivement la masse physique totale (en grammes) produite par une section exportée et ses éventuelles dépendances amont.
+- **`computeScaleFactor`** : Détermine le ratio entre la quantité réclamée par la recette hôte et le rendement calculé du sous-module.
+
+### Indexation des dépendances inverses
+
+Fonctionnalité clé utilisée par `gram watch` et le serveur de langage (`@gram-lang/language-server`) pour mettre à jour les diagnostics de manière ciblée dès qu'un sous-fichier partagé est modifié.
+
+```typescript
+function buildReverseDependencyIndex(edges: Iterable<DependencyEdge>): ReverseDependencyIndex;
+function transitiveDependents(index: ReverseDependencyIndex, uri: string): Set<string>;
+```
+
+### Vocabulaire des diagnostics
+
+```typescript
+enum ModuleWarningCode {
+  MODULE_PARSE_ERROR = "MODULE_PARSE_ERROR",
+  MODULE_CYCLE = "MODULE_CYCLE",
+  MODULE_DEPTH_EXCEEDED = "MODULE_DEPTH_EXCEEDED",
+  MODULE_EXPORT_NOT_FOUND = "MODULE_EXPORT_NOT_FOUND",
+  UNUSED_IMPORT = "UNUSED_IMPORT",
+  UNRESOLVED_MODULE_YIELD = "UNRESOLVED_MODULE_YIELD",
+  ESTIMATED_MODULE_YIELD = "ESTIMATED_MODULE_YIELD",
+  MODULE_UNIT_MISMATCH = "MODULE_UNIT_MISMATCH",
+  MODULE_BATCH_INTERPRETATION = "MODULE_BATCH_INTERPRETATION",
+  IMPORTED_BAKERS_REFERENCE_DROPPED = "IMPORTED_BAKERS_REFERENCE_DROPPED",
+  DENSITY_OVERRIDE_SHADOWED = "DENSITY_OVERRIDE_SHADOWED",
+  MODULE_SURPLUS = "MODULE_SURPLUS",
+  MODULE_SPECIFIER_INVALID = "MODULE_SPECIFIER_INVALID",
+  MODULE_SCHEME_UNSUPPORTED = "MODULE_SCHEME_UNSUPPORTED",
+  STOCKED_RETRO_PLANNING_IGNORED = "STOCKED_RETRO_PLANNING_IGNORED",
+  RETRO_PLANNING_OVERRIDE_SHADOWED = "RETRO_PLANNING_OVERRIDE_SHADOWED",
+  MODULE_BINDING_SHADOWS_INGREDIENT = "MODULE_BINDING_SHADOWS_INGREDIENT",
+  STOCKED_DESTRUCTURED_NUTRITION_BLENDED = "STOCKED_DESTRUCTURED_NUTRITION_BLENDED"
+}
+
+function warningSeverityOf(code: string): WarningSeverity;
+function pushModuleWarning<K extends ModuleWarningCode>(
+  target: Warning[] | { warnings: Warning[] },
+  code: K,
+  payload: ModuleWarningPayloads[K]
+): void;
+```
+
+- **`warningSeverityOf(code)`** : Résout la sévérité d'un code (`"error" | "warning" | "info"`) de manière unifiée sur l'ensemble des codes de `@gram-lang/kitchen` et `@gram-lang/modules`.
+- **`allWarningInfo`** : Liste exhaustive des codes de diagnostic, sévérités et modèles de messages prêts pour l'affichage.

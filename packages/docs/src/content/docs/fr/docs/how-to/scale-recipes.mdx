@@ -21,7 +21,7 @@ Alors, pourquoi aurions-nous besoin d'autre chose ?
 Le hic survient **lorsque vous voulez modifier la logique de la recette elle-même**. 
 Et si vous vouliez passer l'hydratation de 70 % à 75 % ? Vous devriez calculer de tête ce que représentent 75 % de 500 g, puis remplacer `350 ml` par `375 ml`. La logique métier de la recette (ses ratios) est masquée par des valeurs statiques (hardcodées), la rendant laborieuse à lire et à maintenir.
 
-## La solution pour les recettes par ratios : Les Quantités Relatives
+## La solution pour les recettes par ratios : les quantités relatives
 
 Certaines préparations reposent fondamentalement sur des relations mathématiques entre leurs composants, plutôt que sur des quantités absolues (ex: une pâte à pain entièrement définie par son hydratation à 70 %).
 
@@ -30,14 +30,14 @@ Gram permet d'exprimer ces relations directement dans le code source via des **Q
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. ### Définir l'Ancre (La Cible)
+1. ### Définir l'ancre (la cible)
    Commencez par définir la farine comme un ingrédient standard dans votre recette.
    
    ```gram
    [Ajouter] La @farine{500 g}.
    ```
 
-2. ### Définir les Relatifs
+2. ### Définir les relatifs
    Maintenant, remplacez les quantités statiques de l'eau, du sel et de la levure par des pourcentages pointant vers la farine. Puisque la farine a déjà été définie dans une étape précédente, vous la référencez en utilisant `@&farine`.
    
    ```gram
@@ -94,7 +94,7 @@ densities: ["eau:1.0"]
 
 Avec cela, `--scale eau=150g` sur une recette écrite en `ml` se résout correctement — pas besoin de base de données pour cet ingrédient précis.
 
-## Pourcentage du Boulanger (Baker's Math)
+## Pourcentage du boulanger (Baker's Math)
 
 Si les Quantités Relatives sont idéales pour *concevoir* des recettes dynamiques, les professionnels se reposent souvent sur un concept appelé **Pourcentage du Boulanger** (*Baker's Math*) pour déchiffrer et analyser des recettes *statiques*. Dans ce paradigme, l'ingrédient phare (généralement la farine) fait office de base de référence (100 %), et tous les autres ingrédients s'expriment en pourcentage de ce poids.
 
@@ -127,7 +127,7 @@ gram view pain.gram --bakers-reference=farine
 
 *(Vous pouvez également utiliser l'argument `--bakers-math-only` si vous souhaitez masquer complètement les poids absolus.)*
 
-## Ingrédients Fixes
+## Ingrédients fixes
 
 Parfois, une recette contient des ingrédients dont les proportions ne doivent **jamais** varier, peu importe le nombre de portions générées. Pensez à l'huile de friture au fond d'une poêle, ou à une pincée de sel pour l'assaisonnement.
 

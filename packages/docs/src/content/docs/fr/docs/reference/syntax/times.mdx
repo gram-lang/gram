@@ -1,5 +1,5 @@
 ---
-title: "Temps & Planification"
+title: "Temps & planification"
 description: "Définissez des durées de ~minuteur et leurs unités, et découvrez comment Gram planifie le temps actif et passif."
 ---
 
@@ -8,7 +8,7 @@ import { timeUnitsTable } from '../../../../../../data/api-reference';
 
 Les minuteurs (`~minuteur`) et les durées se déclarent à l'aide du symbole `~`.
 
-## Déclaration de Base
+## Déclaration de base
 
 Un `~minuteur` **doit** impérativement spécifier son unité au sein des accolades. Oubliez le texte approximatif du genre `~{environ 10 minutes}` : il sera rejeté.
 
@@ -30,14 +30,14 @@ La résolution des unités passe par un dictionnaire multilingue intégré. Les 
 
 <GeneratedTable table={timeUnitsTable("fr")} />
 
-### Noms de Minuteur
+### Noms de minuteur
 Vous pouvez surcharger le nom d'un `~minuteur`. Une option redoutable pour les tâches de fond : lorsque plusieurs `~minuteurs` tournent en parallèle (une pâte qui repose pendant qu'une sauce mijote), leur donner un nom permet au front-end de les identifier pour suivre simultanément leur progression sans les confondre.
 
 ```gram
 Faire bouillir les @œufs{2} pendant ~œufs{3 min}.
 ```
 
-### Plages (Intervalles)
+### Plages (intervalles)
 Si la durée est une fourchette estimée, vous pouvez indiquer une plage de temps via un tiret.
 
 ```gram
@@ -47,7 +47,7 @@ Cuire au four pendant ~{30-40 min}.
 Pour ses calculs globaux de la ligne de temps (*timeline* totale de la recette), le compilateur utilise automatiquement la moyenne de cette plage (ici, 35 minutes).
 :::
 
-## Actif vs Passif
+## Actif vs passif
 
 Le compilateur Gram échafaude une ligne de temps complète (proche d'un diagramme de Gantt) de l'exécution de la recette. Pour que ce planning soit précis, il doit savoir si un `~minuteur` monopolise votre attention, ou s'il tourne silencieusement en tâche de fond.
 
@@ -60,7 +60,7 @@ Le compilateur Gram échafaude une ligne de temps complète (proche d'un diagram
 
 :::
 
-### Actif (Par défaut)
+### Actif (par défaut)
 Par défaut, un `~minuteur` est actif. Cela implique que vous avez les mains dans la préparation : l'étape est **bloquante**. Vous devez en voir le bout avant de pouvoir faire autre chose.
 
 ```gram
@@ -78,7 +78,7 @@ Pendant ce temps, préparer le glaçage...
 ```
 > ⏱️ **Résultat :** N'ajoute aucune (0) minute au Temps Actif, mais prolonge en toute logique le **Temps de Cuisson** global pour s'assurer que ces 45 minutes s'écoulent.
 
-### Timers Passifs Séquentiels (Les "Named Tracks")
+### Timers passifs séquentiels (les "Named Tracks")
 Par défaut, tous les *timers* passifs s'exécutent en parallèle du reste de la recette. Or, certaines tâches de fond ne peuvent pas matériellement se chevaucher (ex: cuire un gâteau 10 minutes, puis baisser le feu et poursuivre 30 minutes de plus).
 
 Si vous souhaitez forcer l'exécution **séquentielle** de *timers* passifs (l'un à la suite de l'autre), astuce : donnez-leur tout simplement le **même nom** :
@@ -91,7 +91,7 @@ Baisser la température à 180°C et cuire pendant ~_cuisson{30 min}.
 
 > ⏱️ **Résultat :** En partageant le nom `cuisson`, Gram place ces deux *timers* sur la même « piste » de fond (*named track*). Le timer de 30 minutes ne démarrera qu'une fois les 10 premières minutes écoulées. Votre temps d'attente total augmentera donc de 40 minutes, le tout sans jamais impacter votre Temps Actif (qui reste à zéro) !
 
-## Comment le Temps est Calculé
+## Comment le temps est calculé
 
 En coulisses, Gram maintient quatre compteurs de temps distincts pour dresser un planning réaliste :
 
@@ -102,7 +102,7 @@ En coulisses, Gram maintient quatre compteurs de temps distincts pour dresser un
 4. **Temps Total** : La somme du Temps de Préparation + Temps de Cuisson. C'est le "temps passé en cuisine" réaliste.
 :::
 
-### Antisèche : Qu'est-ce qui ajoute du temps ?
+### Antisèche : qu'est-ce qui ajoute du temps ?
 
 Voici une antisèche de la façon dont le compilateur convertit automatiquement votre syntaxe en minutes de cuisine :
 
@@ -114,12 +114,12 @@ Voici une antisèche de la façon dont le compilateur convertit automatiquement 
 | **Minuteur Passif** (`~_{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) | **+ 1 heure** |
 | **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | **+ 2 min** | **+ 2 min** |
 
-### Suivi Intelligent des Dépendances (ALAP)
+### Suivi intelligent des dépendances (ALAP)
 Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur planifiera automatiquement son pétrissage au moment optimal. Le repos de la pâte se terminera exactement au moment où l'étape suivante débutera.
 
 Pour une explication plus détaillée de l'optimisation de la ligne du temps, consultez l'[Analyse approfondie de l'Ordonnancement ALAP](/fr/docs/explanation/alap-scheduling).
 
-## Rétroplanning de Section
+## Rétroplanning de section
 
 En glissant une annotation `~{...}` dans le titre d'une `## Section`, vous forcez un délai de préparation. Cela indique explicitement au compilateur quand la section doit se terminer par rapport à son utilisation finale (la section où elle sera consommée). 
 
@@ -146,13 +146,13 @@ Contrairement au texte libre, l'ancre `~{...}` d'un titre de section exige oblig
 ## Ganache ~{-30min}        <!-- 30 minutes avant -->
 ```
 
-Un texte libre (`~{la veille}`), une valeur non signée/positive (`~{2h}`), ou une valeur nulle (`~{0h}`) ne sont **plus tolérés** par cette annotation — préférez un bon vieux `~{-1j}`. Pour ne rien casser, les recettes historiques utilisant ces formes continuent de compiler, mais le compilateur lèvera un drapeau jaune.
+Un texte libre (`~{la veille}`), une valeur non signée/positive (`~{2h}`), ou une valeur nulle (`~{0h}`, `~{-0h}`) ne sont **plus tolérés** par cette annotation — préférez un bon vieux `~{-1j}`. Pour ne rien casser, les recettes historiques utilisant ces formes continuent de compiler, mais le compilateur lèvera un drapeau jaune.
 
 L'unité est résolue via le même dictionnaire de temps multilingue que celui utilisé par `~minuteur` (voir [Déclaration de Base](#déclaration-de-base)) : `j`, `jour` et `jours` sont tous reconnus comme alias de l'unité canonique `d` (jour), quelle que soit la langue de rédaction de la recette.
 
 Voir aussi : [Rétroplanning (Ordonnancement)](/fr/docs/reference/syntax/document-structure#rétroplanning-ordonnancement) dans la référence de structure de document.
 
-## Gestion des Erreurs
+## Gestion des erreurs
 
 Pour assurer un ordonnancement optimal, le compilateur inspecte rigoureusement vos déclarations de `~minuteurs` et de rétroplanning. Il émettra des avertissements en cas de données incohérentes :
 

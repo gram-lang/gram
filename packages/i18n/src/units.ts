@@ -161,3 +161,21 @@ export function normalizeUnit(
 
 	return UNIT_GLOBAL[clean] || clean;
 }
+
+/**
+ * True for a mass/volume unit at or above its category's base unit (g, kg,
+ * oz, lb, ml, cl, dl, l, tsp, tbsp, cup, ...) — the kind of unit a cook
+ * measures with a scale or a spoon, not a lab balance. Callers use this to
+ * decide when a quantity should be rounded coarser for display than the
+ * precision it's stored at. Sub-base units (mg, drop, smidgen, pinch, dash)
+ * return false since their values are already small.
+ */
+export function isCoarseUnit(rawUnit: string | undefined | null): boolean {
+	const normalized = normalizeUnit(rawUnit);
+	if (!normalized) return false;
+	for (const category of [UNIT_CONVERSIONS.mass, UNIT_CONVERSIONS.volume]) {
+		const factor = category.map[normalized];
+		if (factor !== undefined) return factor >= 1;
+	}
+	return false;
+}

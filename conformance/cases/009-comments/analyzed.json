@@ -94,7 +94,12 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
   "metrics": {
     "totalTime": 5,
     "totalBreakdown": [
@@ -133,7 +138,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

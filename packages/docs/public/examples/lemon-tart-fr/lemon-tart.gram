@@ -1,0 +1,22 @@
+---
+title: 'Tarte au Citron'
+description: "Une délicieuse tarte au citron, utilisant une pâte sucrée écrite dans un autre fichier et appelée avec @use."
+category: 'Dessert'
+portions: 8
+---
+
+@use "./bases/pate-sucree.gram" as &pate sucrée{}
+
+## Appareil au citron ->&appareil
+
+[Fouetter] Les @oeufs{3}, le @sucre{150 g}, et le @jus de citron{120 ml}<@citrons{2} dans une #casserole à ^{feu doux} jusqu'à épaississement, environ ~{8min}.
+
+[Incorporer] Hors du feu, le @beurre{80 g} en fouettant jusqu'à épaississement.
+
+## Montage
+
+[Foncer] Un #moule à tarte(24cm) avec la &pate sucrée{250 g}(abaissée sur 3mm).
+
+[Cuire] À blanc à ^{180°C} pendant ~_{15min}. ->&fond cuit{}
+
+[Garnir] Le &fond cuit{} avec l'&appareil et laisser au ^{froid} pendant ~_{2h} avant de servir.

@@ -61,6 +61,30 @@ describe("analyzeIngredients", () => {
 		expect(result.allIds.size).toBe(1);
 	});
 
+	it("flags a composite child id attached to different parents across files", async () => {
+		const a = await tmp("## Prep\n[Zest] Add the @juice{1}<@lemon{1}.\n");
+		const b = await tmp("## Prep\n[Zest] Add the @juice{1}<@orange{1}.\n");
+		const result = await analyzeIngredients([a, b], {}, config, {
+			dbPathOverride: "/tmp/unused-db.yaml",
+		});
+		expect(result.compositeConflicts).toHaveLength(1);
+		expect(result.compositeConflicts[0]).toMatchObject({
+			id: "juice",
+			parents: ["lemon", "orange"],
+		});
+	});
+
+	it("does not flag a composite child consistently attached to the same parent", async () => {
+		const a = await tmp("## Prep\n[Zest] Add the @juice{1}<@lemon{1}.\n");
+		const b = await tmp(
+			"## Prep\n[Zest] Add the @zest{1}<@lemon{1} and the @juice{1}<@lemon{1}.\n",
+		);
+		const result = await analyzeIngredients([a, b], {}, config, {
+			dbPathOverride: "/tmp/unused-db.yaml",
+		});
+		expect(result.compositeConflicts).toEqual([]);
+	});
+
 	it("excludes intermediate (section-level ->&name) ingredients from the analysis", async () => {
 		const a = await tmp(
 			"## Pastry Dough ->&pastry dough{}\n[Mix] Add @flour{200g}.\n\n## Baking\n[Roll] Roll out the &pastry dough{}.\n",
@@ -94,6 +118,7 @@ describe("applySync", () => {
 			exactMatches: [],
 			fuzzyMatches: [],
 			genuinelyNew: ["saffron"],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["saffron", "new"]]);
 		const result = await applySync(analysis, decisions, { dryRun: true });
@@ -110,6 +135,7 @@ describe("applySync", () => {
 			exactMatches: [],
 			fuzzyMatches: [],
 			genuinelyNew: ["saffron"],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["saffron", "new"]]);
 		await applySync(analysis, decisions, {});
@@ -131,6 +157,7 @@ describe("applySync", () => {
 			exactMatches: [],
 			fuzzyMatches: [{ newId: "tomatoe", existingId: "tomato", score: 0.9 }],
 			genuinelyNew: [],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["tomatoe", "alias-of:tomato"]]);
 		const result = await applySync(analysis, decisions, {});
@@ -149,6 +176,7 @@ describe("applySync", () => {
 			exactMatches: [],
 			fuzzyMatches: [],
 			genuinelyNew: ["saffron"],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["saffron", "ignore"]]);
 		const result = await applySync(analysis, decisions, {});
@@ -169,6 +197,7 @@ describe("applySync", () => {
 			exactMatches: ["flour"],
 			fuzzyMatches: [],
 			genuinelyNew: ["saffron"],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["saffron", "new"]]);
 		await applySync(analysis, decisions, {});
@@ -186,6 +215,7 @@ describe("applySync", () => {
 			exactMatches: ["zucchini"],
 			fuzzyMatches: [],
 			genuinelyNew: ["apple"],
+			compositeConflicts: [],
 		};
 		const decisions = new Map([["apple", "new"]]);
 		await applySync(analysis, decisions, {});

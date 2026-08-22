@@ -1068,6 +1068,21 @@ flex-direction: column;
   font-weight: 500;
 }
 
+.gram-preview .section-meta-module {
+  font-size: 0.6em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  line-height: 1.5;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
 .gram-preview .section-declaration-badge {
   font-size: 0.65em;
   font-weight: 700;
@@ -1077,26 +1092,58 @@ flex-direction: column;
   border-radius: 4px;
   margin-left: auto;
   line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gram-preview .section-declaration-badge.has-module {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+.gram-preview .section-declaration-badge .section-module-source {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-right: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gram-preview .section-declaration-badge .section-decl-target {
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--item-decl-text);
 }
 
 /* Anchor tooltip to the right so it doesn't overflow */
-.gram-preview .section-declaration-badge[data-tooltip]::after {
+.gram-preview .section-declaration-badge[data-tooltip]::after,
+.gram-preview .section-meta-module[data-tooltip]::after {
   left: auto;
   right: 0;
   transform: translateY(-2px);
 }
 
-.gram-preview .section-declaration-badge[data-tooltip]:hover::after {
+.gram-preview .section-declaration-badge[data-tooltip]:hover::after,
+.gram-preview .section-meta-module[data-tooltip]:hover::after {
   transform: translateY(-8px);
 }
 
-.gram-preview .section-declaration-badge[data-tooltip]::before {
+.gram-preview .section-declaration-badge[data-tooltip]::before,
+.gram-preview .section-meta-module[data-tooltip]::before {
   left: auto;
   right: 16px;
   transform: translateY(2px);
 }
 
-.gram-preview .section-declaration-badge[data-tooltip]:hover::before {
+.gram-preview .section-declaration-badge[data-tooltip]:hover::before,
+.gram-preview .section-meta-module[data-tooltip]:hover::before {
   transform: translateY(-3px);
 }
 

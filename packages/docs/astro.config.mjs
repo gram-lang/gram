@@ -70,6 +70,7 @@ export default defineConfig({
           translations: { fr: 'Guides pratiques' },
           collapsed: false,
           items: [
+            { label: 'Organize Modular Recipes', translations: { fr: 'Organiser des recettes modulaires' }, slug: 'docs/how-to/organize-modular-recipes', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Manage Database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
             { label: 'Configure AI Provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
             { label: 'Scale Recipes Dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
@@ -82,16 +83,17 @@ export default defineConfig({
           translations: { fr: 'Référence du langage' },
           collapsed: false,
           items: [
-            { label: 'Document Structure', translations: { fr: 'Structure du Document' }, slug: 'docs/reference/syntax/document-structure' },
+            { label: 'Document Structure', translations: { fr: 'Structure du document' }, slug: 'docs/reference/syntax/document-structure' },
+            { label: 'Module Imports', translations: { fr: 'Imports de modules' }, slug: 'docs/reference/syntax/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Ingredients', translations: { fr: 'Ingrédients' }, slug: 'docs/reference/syntax/ingredients' },
             { label: 'Cookware', translations: { fr: 'Matériel' }, slug: 'docs/reference/syntax/cookware' },
             { label: 'Times', translations: { fr: 'Temps' }, slug: 'docs/reference/syntax/times' },
             { label: 'Temperatures', translations: { fr: 'Températures' }, slug: 'docs/reference/syntax/temperatures' },
-            { label: 'Intermediate Variables', translations: { fr: 'Variables Intermédiaires' }, slug: 'docs/reference/syntax/intermediate-variables' },
-            { label: 'Relative Quantities', translations: { fr: 'Quantités Relatives' }, slug: 'docs/reference/syntax/relative-quantities' },
-            { label: 'Composite Ingredients', translations: { fr: 'Ingrédients Composites' }, slug: 'docs/reference/syntax/composite-ingredients' },
+            { label: 'Intermediate Variables', translations: { fr: 'Variables intermédiaires' }, slug: 'docs/reference/syntax/intermediate-variables' },
+            { label: 'Relative Quantities', translations: { fr: 'Quantités relatives' }, slug: 'docs/reference/syntax/relative-quantities' },
+            { label: 'Composite Ingredients', translations: { fr: 'Ingrédients composites' }, slug: 'docs/reference/syntax/composite-ingredients' },
             { label: 'Cheatsheet', translations: { fr: 'Antisèche' }, slug: 'docs/reference/syntax/cheatsheet' },
-            { label: 'Writing Gram Programmatically', translations: { fr: 'Génération Automatisée de Gram' }, slug: 'docs/reference/syntax/ai-generation-notes' }
+            { label: 'Writing Gram Programmatically', translations: { fr: 'Génération automatisée de Gram' }, slug: 'docs/reference/syntax/ai-generation-notes' }
           ]
         },
         {
@@ -111,12 +113,13 @@ export default defineConfig({
           items: [
             { label: 'Overview', translations: { fr: "Vue d'ensemble" }, slug: 'docs/reference/api' },
             { label: '@gram-lang/parser', slug: 'docs/reference/api/parser' },
+            { label: '@gram-lang/modules', slug: 'docs/reference/api/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: '@gram-lang/kitchen', slug: 'docs/reference/api/kitchen' },
             { label: '@gram-lang/analyzer', slug: 'docs/reference/api/analyzer' },
             { label: '@gram-lang/renderer', slug: 'docs/reference/api/renderer' },
             { label: '@gram-lang/format', slug: 'docs/reference/api/format' },
             { label: '@gram-lang/i18n', slug: 'docs/reference/api/i18n' },
-            { label: 'Data Formats', translations: { fr: 'Formats de Données' }, slug: 'docs/reference/api/data-formats' },
+            { label: 'Data Formats', translations: { fr: 'Formats de données' }, slug: 'docs/reference/api/data-formats' },
             { label: 'Warnings', translations: { fr: 'Avertissements' }, slug: 'docs/reference/api/warnings' }
           ]
         },
@@ -127,9 +130,10 @@ export default defineConfig({
           items: [
             { label: 'The Gram Lifecycle', translations: { fr: 'Cycle de vie' }, slug: 'docs/explanation/engine/lifecycle' },
             { label: 'Parsing & AST', slug: 'docs/explanation/engine/parser' },
-            { label: 'Compilation & Structure', translations: { fr: 'Compilation & Structure' }, slug: 'docs/explanation/engine/kitchen' },
-            { label: 'Semantic Analysis', translations: { fr: 'Analyse Sémantique' }, slug: 'docs/explanation/engine/analyzer' },
-            { label: 'Rendering & Output', translations: { fr: 'Rendu & Sortie' }, slug: 'docs/explanation/engine/renderer' }
+            { label: 'Module Resolution & Composition', translations: { fr: 'Résolution & composition' }, slug: 'docs/explanation/engine/modules', badge: { text: 'v1.2.0', variant: 'default' } },
+            { label: 'Compilation & Structure', translations: { fr: 'Compilation & structure' }, slug: 'docs/explanation/engine/kitchen' },
+            { label: 'Semantic Analysis', translations: { fr: 'Analyse sémantique' }, slug: 'docs/explanation/engine/analyzer' },
+            { label: 'Rendering & Output', translations: { fr: 'Rendu & sortie' }, slug: 'docs/explanation/engine/renderer' }
           ]
         },
         {
@@ -138,7 +142,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: 'ALAP Scheduling', translations: { fr: 'Ordonnancement ALAP' }, slug: 'docs/explanation/alap-scheduling' },
-            { label: 'Mass & Yield', translations: { fr: 'Masse & Rendement' }, slug: 'docs/explanation/mass-and-yield' },
+            { label: 'Mass & Yield', translations: { fr: 'Masse & rendement' }, slug: 'docs/explanation/mass-and-yield' },
             { label: 'Nutrition', slug: 'docs/explanation/nutrition' },
             { label: 'Shopping Lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
             { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' }

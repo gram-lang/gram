@@ -7,6 +7,8 @@ import pLimit from "p-limit";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { filterModuleRoots } from "../core/module-roots";
+import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { buildFiles } from "../services/builder";
 import { parseScaleArg } from "../services/scaler";
@@ -45,6 +47,17 @@ export default defineCommand({
 			type: "boolean",
 			description: "Skip ingredient database enrichment",
 			default: false,
+		},
+		"include-modules": {
+			type: "boolean",
+			description:
+				"Also build files imported by another matched recipe (by default they're excluded from a glob/multi-file batch)",
+			default: false,
+		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this build (e.g. @bases/pate.gram,./levain.gram)",
 		},
 	},
 	async run({ args }) {
@@ -92,6 +105,8 @@ type Args = {
 	pretty: boolean;
 	db?: string;
 	"skip-db": boolean;
+	"include-modules": boolean;
+	stock?: string;
 };
 
 async function resolveInputs(args: Args) {
@@ -106,27 +121,40 @@ async function resolveInputs(args: Args) {
 		}
 		throw err;
 	}
+	if (!args["include-modules"]) {
+		files = await filterModuleRoots(files);
+	}
 	const config = await loadConfig();
 	const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 	if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
-	return { files, db: dbResult?.data ?? null, lang: config.language };
+	const stock = resolveStockFromConfig(args.stock, config);
+	return {
+		files,
+		db: dbResult?.data ?? null,
+		lang: config.language,
+		paths: config.paths,
+		stock,
+	};
 }
 
 async function runToStdout(args: Args) {
-	const { files, db, lang } = await resolveInputs(args);
+	const { files, db, lang, paths, stock } = await resolveInputs(args);
 	const results = await buildFiles(files, {
 		db: db ?? undefined,
 		scaleFactor: args._scaleFactor,
 		lang,
+		paths,
+		stock,
 	});
 	const indent = args.pretty ? 2 : undefined;
 	for (const { data } of results) {
 		process.stdout.write(`${JSON.stringify(data, null, indent)}\n`);
 	}
+	reportUnusedStock("gram build", "built", stock, results);
 }
 
 async function runToFiles(args: Args) {
-	const { files, db, lang } = await resolveInputs(args);
+	const { files, db, lang, paths, stock } = await resolveInputs(args);
 	const outDir = args.output!;
 	const n = files.length;
 
@@ -137,9 +165,13 @@ async function runToFiles(args: Args) {
 		db: db ?? undefined,
 		scaleFactor: args._scaleFactor,
 		lang,
+		paths,
+		stock,
 	});
 
 	s.stop(`Built ${n} file${n !== 1 ? "s" : ""}.`);
+
+	reportUnusedStock("gram build", "built", stock, results);
 
 	await mkdir(outDir, { recursive: true });
 

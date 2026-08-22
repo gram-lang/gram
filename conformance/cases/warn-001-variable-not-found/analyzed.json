@@ -105,7 +105,7 @@
   "warnings": [
     {
       "code": "VARIABLE_NOT_FOUND",
-      "message": "Variable '&dough' not found.",
+      "message": "Cannot resolve relative quantity: target intermediate '&dough' is not defined.",
       "item": "salt",
       "loc": {
         "start": 56,

@@ -8,13 +8,14 @@ Gram utilise un fichier local `ingredients.yaml` pour stocker les données physi
 Ce guide détaille le *workflow* standard pour entretenir votre base de données à l'aide du CLI Gram.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Le *workflow* recommandé
 
 Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ordre précis :
 
 <Steps>
-1. ### Synchroniser les Nouveaux Ingrédients
+1. ### Synchroniser les nouveaux ingrédients
    
    En rédigeant de nouvelles recettes, vous utiliserez inévitablement des ingrédients qui manquent à l'appel dans votre base. Au lieu de les ajouter à la main, laissez le CLI s'en charger.
    
@@ -49,7 +50,8 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
    La liste `aliases` sert exclusivement à l'agrégation de la liste de courses pour regrouper les ingrédients entre différentes recettes. Elle n'a aucun rapport avec le renommage ponctuel `@Vrai Nom:Nom d'Affichage` (voir [Syntaxe des ingrédients](/fr/docs/reference/syntax/ingredients)), qui modifie uniquement l'affichage d'un ingrédient dans le texte des étapes, sans jamais affecter le regroupement ou la liste de courses.
    :::
 
-3. ### Enrichir les Données
+3. ### Enrichir les données
+   <Since v="1.1.0" type="changed" />
    
    Maintenant que votre base de données contient des entrées propres et dédupliquées, vous devez renseigner leurs données physiques (densité, poids unitaire, rendement) et nutritionnelles (calories, macros). 
    
@@ -70,13 +72,15 @@ Le *workflow* recommandé se compose de trois étapes, à exécuter dans cet ord
 
 ## Valider la base de données
 
+<Since v="1.1.0" />
+
 Avant de *commit* votre fichier `ingredients.yaml` dans votre gestionnaire de versions, il est recommandé de le valider (*validate*) par rapport au schéma Gram pour s'assurer de l'absence d'erreurs de formatage (comme des alias qui se chevauchent).
 
 ```bash
 gram db validate --strict
 ```
 
-## Partager et Fusionner des Bases de Données
+## Partager et fusionner des bases de données
 
 Si vous travaillez en équipe, ou si vous souhaitez importer une base de données communautaire, vous pouvez fusionner un fichier YAML externe dans votre fichier local :
 

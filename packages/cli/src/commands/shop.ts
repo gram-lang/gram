@@ -4,6 +4,8 @@ import { log } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { filterModuleRoots } from "../core/module-roots";
+import { resolveStockFromConfig, reportUnusedStock } from "../core/stock";
 import { buildShoppingList } from "../services/shopper";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { parseScaleArg } from "../services/scaler";
@@ -49,6 +51,17 @@ export default defineCommand({
 				"Skip database — no name resolution, aggregation by unit only",
 			default: false,
 		},
+		"include-modules": {
+			type: "boolean",
+			description:
+				"Also list files imported by another matched recipe (by default they're excluded so their ingredients aren't counted twice)",
+			default: false,
+		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this shop (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const isRawOutput =
@@ -87,16 +100,24 @@ export default defineCommand({
 			}
 			throw err;
 		}
+		if (!args["include-modules"]) {
+			files = await filterModuleRoots(files);
+		}
 
 		const config = await loadConfig();
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
+		const stock = resolveStockFromConfig(args.stock, config);
 		const result = await buildShoppingList(files, {
 			db,
 			scaleFactor,
 			lang: config.language,
+			paths: config.paths,
+			stock,
 		});
+
+		reportUnusedStock("gram shop", "shopped for", stock, [result]);
 
 		if (args.format === "json") {
 			const json = renderShopJson(result);

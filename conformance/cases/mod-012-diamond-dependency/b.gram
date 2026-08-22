@@ -1,0 +1,5 @@
+@use "./d.gram" as &d
+
+## B ->&b
+
+Use &d{1}.

@@ -1,5 +1,5 @@
 ---
-title: "Quantités Relatives"
+title: "Quantités relatives"
 description: "Définissez la quantité d'un ingrédient en pourcentage d'un autre ingrédient ou d'une variable pour équilibrer la recette."
 ---
 
@@ -29,7 +29,7 @@ Ajouter le @sel{2 % &pâte}. // 2 % de la masse totale de la variable &pâte
 - `@nom{ valeur % @&IngredientCible }`
 - `@nom{ valeur % &VariableCible }`
 
-## Règles de Résolution
+## Règles de résolution
 
 Lorsque le compilateur Gram calcule une quantité relative, il suit ces règles strictes :
 
@@ -39,7 +39,7 @@ Lorsque le compilateur Gram calcule une quantité relative, il suit ces règles 
 | **Accumulation** | Si vous déclarez plusieurs fois le même `@ingrédient` dans une `## Section`, le pourcentage s'appliquera sur la **somme cumulée** de ses quantités. |
 | **Basé sur la Masse** | Le calcul repose invariablement sur la **masse en grammes**. Par exemple, 50 % de « 2 œufs » (estimés à 50 g l'unité) donnera **50 g**, et non 1 œuf. |
 
-## Règles de Calcul des Masses
+## Règles de calcul des masses
 
 Puisque les quantités relatives reposent sur le calcul de pourcentages de masses existantes, l'analyseur (`@gram-lang/analyzer`) standardise les masses avant de calculer :
 
@@ -50,11 +50,11 @@ Puisque les quantités relatives reposent sur le calcul de pourcentages de masse
 | **Nombre** (`@œuf{2}`) | Recherche le champ `physical.unit_weight` moyen dans la base de données YAML. | 2 œufs (50 g l'unité) ➡️ 100 g.<br/>`50 %` = **50 g** |
 | **Inconnu** (`1 flasque`) | Ne peut pas deviner. Émet un avertissement `UNKNOWN_MASS`. | Laisse la quantité non résolue. |
 
-## Comportement de la Liste de Courses
+## Comportement de la liste de courses
 
 Étant donné que les quantités relatives sont de pures formules mathématiques (ex : `125 % du jus de citron`), le compilateur Gram doit arbitrer leur affichage dans la **liste de courses** finale. Sa décision dépend de sa capacité à résoudre la formule pour obtenir une masse physique.
 
-### 1. Entièrement Résolue (Comportement Standard)
+### 1. Entièrement résolue (comportement standard)
 
 Si le compilateur parvient à déterminer la masse physique de la cible (via les règles ci-dessus), il évalue la formule. Le résultat est traité exactement comme une masse fixe et s'agrège de façon transparente à la liste de courses. Vous ne verrez pas les rouages mathématiques : seul le poids d'achat final subsiste.
 
@@ -63,7 +63,7 @@ Si le compilateur parvient à déterminer la masse physique de la cible (via les
 - Sucre : 156g
 ```
 
-### 2. Non Résolue & Sortie Hybride
+### 2. Non résolue & sortie hybride
 
 Il arrive que le compilateur bute sur la formule. C'est le cas si vous avez désactivé la standardisation des masses, ou si la masse de la cible est une impasse (ex : la cible emploie une unité non standardisée comme `1 louche`, ou nécessite une conversion volume-masse mais l'`@ingrédient` manque à l'appel dans `ingredients.yaml`).
 
@@ -75,7 +75,7 @@ Dans ce cas, Gram est incapable de sortir un poids final en grammes. Il bascule 
 ```
 Une parade robuste pour ne jamais perdre une exigence d'achat en route, même quand les calculs échouent !
 
-## Gestion des Erreurs
+## Gestion des erreurs
 
 Le compilateur est conçu pour attraper les erreurs de logique dans les quantités relatives et produira des avertissements spécifiques :
 

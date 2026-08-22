@@ -4,6 +4,7 @@ description: "A step-by-step tutorial writing a complete Lemon Tart recipe using
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 Time to bake! In this tutorial, a complete recipe for a **Lemon Tart** is written.
 
@@ -23,7 +24,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
-[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
+[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~{1h}.
 ```
 ```markdown title="Preview"
 ### Sweet Pastry Dough
@@ -39,7 +40,7 @@ Start by defining the sweet pastry dough. The `@` symbol is used for ingredients
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
 2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
-4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
+4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏲️ 1 h.
 ```
 </CodeTabs>
 
@@ -63,7 +64,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
-[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}.
+[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~{1h}.
 ```
 ```markdown title="Preview"
 ### Sweet Pastry Dough
@@ -79,7 +80,7 @@ This is done using an **Intermediate Declaration** (`->&name`) at the end of the
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
 2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together.
-4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏲️ 1 h.
+4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏲️ 1 h.
 ```
 </CodeTabs>
 
@@ -109,17 +110,17 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 
 ## Step 3: Background Timers
 
-In Step 1, the following was written: `[Rest] Wrap in plastic and let it rest in the fridge for ~{1h}`. 
+In Step 1, the following was written: `[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~{1h}`. 
 By default, timers are **active**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
 
 But resting dough in the fridge is a passive task. You can do other things while it rests (like making the lemon curd). To tell the compiler this is a passive task, add an underscore `~_`:
 
 <CodeTabs>
 ```gram title="Code"
-[Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
 ```
 ```markdown title="Preview"
-1. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (passive).
+1. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏳ 1 h (passive).
 ```
 </CodeTabs>
 
@@ -197,7 +198,7 @@ portions: 8
 
 [Combine] Add the @egg{1}, @?vanilla extract{1/2 tsp} and mix until the dough comes together.
 
-[Rest] Wrap in plastic and let it rest in the fridge for ~_{1h}.
+[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~_{1h}.
 
 ## Lemon Curd ->&curd
 
@@ -262,7 +263,7 @@ portions: 8
 1. **[Process]** In a *food processor*, the **flour** (180 g), **icing sugar** (55 g), and **salt** (1/4 tsp).
 2. **[Crumble]** Add the **butter** (115 g) (cold, cut into small cubes) and mix for ⏲️ 1-2 min until sandy.
 3. **[Combine]** Add the **egg** (1), **vanilla extract** (1/2 tsp) (optional) and mix until the dough comes together. 
-4. **[Rest]** Wrap in plastic and let it rest in the fridge for ⏳ 1 h (passive).
+4. **[Rest]** Wrap in plastic wrap and let it rest in the fridge for ⏳ 1 h (passive).
 
 ### Lemon Curd
 
@@ -302,3 +303,20 @@ By running `gram view lemon-tart.gram`, the compiler handled all the math and ou
 - **Shopping List**: It aggregates all ingredients globally. It grouped the `@egg{1}` and `@eggs{3}` into `4 eggs`. It calculated the whole lemons needed for the zest and juice. It automatically converted the relative sugar proportion into exactly `150g` of sugar.
 
 You've just written a highly scalable, data-driven recipe!
+
+## Next Steps
+
+Now that you've written a complete single-file recipe, explore how to organize multi-file collections and master Gram's syntax:
+
+<CardGrid>
+  <LinkCard 
+    title="How-To: Organize Modular Recipes" 
+    description="Learn how to extract reusable bases with @use, manage project folders, and configure aliases." 
+    href="/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Language Reference" 
+    description="Explore the complete grammar specification for ingredients, cookware, timers, and variables." 
+    href="/docs/reference/syntax/document-structure" 
+  />
+</CardGrid>

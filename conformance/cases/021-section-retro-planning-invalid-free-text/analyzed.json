@@ -116,12 +116,20 @@
   "warnings": [
     {
       "code": "MISSING_UNIT",
-      "message": "Retro-planning for section \"Puff Pastry\" must be a strictly negative duration with an explicit unit (e.g. -2h, -1d, -30min).",
+      "message": "Retro-planning offset for \"Puff Pastry\" requires a strictly negative duration (e.g. -2h, -30min).",
       "item": "Puff Pastry",
       "loc": {
         "start": 57,
         "end": 127
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {
@@ -162,11 +170,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"butter\" not found in database."
+          "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

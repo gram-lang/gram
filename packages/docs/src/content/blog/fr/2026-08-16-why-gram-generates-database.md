@@ -22,7 +22,7 @@ Ensuite, et c'est le point le plus fondamental : un ingrédient « universel »,
 
 ## Les langues sont vivantes et personnelles
 
-Contrairement aux langages de programmation où les mots-clés comme `function` ou `import` sont des termes stricts et figés en anglais, Gram est pensé pour être rédigé naturellement dans la langue de l'utilisateur. Après tout, c'est un langage de balisage.
+Contrairement aux langages de programmation généralistes où les mots-clés comme `function` ou `import` sont des termes stricts et figés en anglais, Gram est pensé pour être rédigé naturellement dans la langue de l'utilisateur. Après tout, c'est un langage de recettes conçu pour la prose naturelle.
 
 Même au sein d'une même langue, chacun a sa propre façon de nommer les choses. Dans mes propres recettes, j'écris souvent « vanille liquide » même si « extrait de vanille » est plus académique. Si vous écrivez vos recettes dans un éditeur avec le serveur de langage (LSP) de Gram, taper `@van...` doit vous proposer une autocomplétion qui colle à vos habitudes de rédaction, sans vous forcer à retenir le nom officiel tiré d'une nomenclature administrative. Le matching statique par nom échoue dès lors que de vraies personnes commencent à écrire de vraies recettes.
 

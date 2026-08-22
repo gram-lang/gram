@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Missing Ingredient"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

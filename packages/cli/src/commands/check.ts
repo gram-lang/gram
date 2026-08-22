@@ -3,6 +3,7 @@ import { spinner, log } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
+import { resolveStockFromConfig } from "../core/stock";
 import { checkFiles } from "../services/checker";
 import {
 	renderCheckResult,
@@ -36,6 +37,11 @@ export default defineCommand({
 			description: "Treat every warning as an error (e.g. for CI)",
 			default: false,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this check (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const patterns = args._.length > 0 ? args._ : ["**/*.gram"];
@@ -54,6 +60,7 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		const n = files.length;
 		const s = spinner();
@@ -62,6 +69,8 @@ export default defineCommand({
 		const result = await checkFiles(files, {
 			db: db ?? undefined,
 			strict: args.strict,
+			paths: config.paths,
+			stock,
 		});
 
 		s.stop(`Checked ${n} file${n !== 1 ? "s" : ""}.`);

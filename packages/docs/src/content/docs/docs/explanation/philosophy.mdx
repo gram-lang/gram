@@ -5,9 +5,9 @@ description: "Why Gram treats recipes as code, bringing relational logic and dat
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Gram is a data-driven recipe markup language built for developers. 
+Gram is an open-source declarative, computational recipe DSL (Domain-Specific Language) built for developers.
 
-Most recipe formats out there are just static blocks of text. Gram takes a different approach: it treats recipes as **code**. It takes your human-readable cooking instructions and compiles them into structured, predictable JSON data. 
+Most recipe formats out there are just static blocks of text. Gram takes a different approach: it takes your natural cooking instructions written in plain text and compiles them into structured, calculated, and relational data.
 
 ## The Philosophy
 
@@ -17,11 +17,12 @@ I've always loved the idea of writing recipes in plain text, heavily inspired by
 
 Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a predictable JSON tree, the door is wide open for developers to build advanced visual renderers in the future, like Gantt schedules or tabular flowcharts.
 
-I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic** and **data integrity** into your recipe writing:
+I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, and **modular composition** into your recipe writing:
 
 - **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
-- **Physical Accuracy**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3.
-- **Strict Data Contracts**: By using explicit tags, Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+- **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
+- **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
 
 :::tip[The Ecosystem Approach]
 Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.

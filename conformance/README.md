@@ -125,10 +125,16 @@ suitable for CI.
    | `err-NNN-<description>` | anything expected to throw (parse error or `ScaleError`) | `err-002-scale-nested-only-target` |
    | `warn-NNN-<warning-code-kebab>` | one `WarningCode` per case, made deliberately reachable | `warn-003-circular-reference` |
    | `db-NNN-<description>` | a case whose point is its `database.json` (mass standardization, nutrition, aliases) | `db-001-mass-standardization-basic` |
+   | `mod-NNN-<description>` | a case whose point is `@use` module resolution/composition (module-imports RFC) | `mod-001-basic-default-import` |
 
-   A case may combine an `err-`/`warn-`/`db-` prefix with either optional
-   file — e.g. `warn-011-no-bakers-reference` needs `options.json`,
-   `warn-013-missing-macros` needs `database.json`.
+   A case may combine an `err-`/`warn-`/`db-`/`mod-` prefix with either
+   optional file — e.g. `warn-011-no-bakers-reference` needs
+   `options.json`, `warn-013-missing-macros` needs `database.json`.
+   A `mod-*` case's `input.gram` may `@use` sibling `.gram` files placed
+   anywhere inside that same case directory (e.g.
+   `mod-001-basic-default-import/bases/pate.gram`) — resolved and URI'd
+   relative to the case directory itself, never an absolute filesystem
+   path, so goldens stay identical across machines.
 2. Run `bun run conformance:update`.
 3. **Read the generated JSON before committing it.** The runner will happily
    commit a bug's output as the new "golden" — nothing here checks that the
@@ -160,3 +166,8 @@ suitable for CI.
   sharing one fixture across cases, so a case directory stays the fully
   portable, self-contained artifact this corpus is built around — editing one
   case's database can never silently reflow another case's golden.
+- **`mod-NNN-*`** — cases whose point is `@use` module resolution/composition
+  (`.notes/plan-ajout-imports-recettes.md`): `input.gram` imports one or more
+  sibling `.gram` files inside the same case directory. `ast.json` still
+  documents `getAST(input.gram)` alone (unresolved `imports`); `compiled.json`
+  / `analyzed.json` reflect the fully composed, spliced document.

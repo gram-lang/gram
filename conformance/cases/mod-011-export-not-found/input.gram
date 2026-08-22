@@ -1,0 +1,5 @@
+@use "./oeufs.gram" as { &blanc }
+
+## Dessert
+
+Whisk &blanc{1}.

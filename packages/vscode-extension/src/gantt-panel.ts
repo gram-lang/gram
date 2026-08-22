@@ -22,7 +22,36 @@ export class GanttPanel {
 		this.uri = uri;
 		this._updateTitle(uri);
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+		this._panel.webview.onDidReceiveMessage(
+			async (message) => {
+				if (message.command === "goToOffset") {
+					await this._revealOffset(message.offset);
+				}
+			},
+			null,
+			this._disposables,
+		);
 		this._panel.webview.html = this._getHtmlForWebview(initialHtml);
+	}
+
+	private async _revealOffset(offset: number): Promise<void> {
+		if (!this.uri) return;
+		try {
+			const docUri = vscode.Uri.parse(this.uri);
+			const doc = await vscode.workspace.openTextDocument(docUri);
+			const editor = await vscode.window.showTextDocument(
+				doc,
+				vscode.ViewColumn.One,
+			);
+			const pos = doc.positionAt(offset);
+			editor.selection = new vscode.Selection(pos, pos);
+			editor.revealRange(
+				new vscode.Range(pos, pos),
+				vscode.TextEditorRevealType.InCenter,
+			);
+		} catch (e) {
+			console.error("Failed to reveal offset in editor:", e);
+		}
 	}
 
 	public static createOrShow(
@@ -137,6 +166,16 @@ export class GanttPanel {
 </head>
 <body>
     <div id="content">${initialHtml}</div>
+    <script nonce="${nonce}">
+        const vscode = acquireVsCodeApi();
+        document.addEventListener('click', event => {
+            const btn = event.target.closest('.gram-goto-btn');
+            if (btn) {
+                const offset = btn.getAttribute('data-offset');
+                vscode.postMessage({ command: 'goToOffset', offset: offset ? parseInt(offset, 10) : 0 });
+            }
+        });
+    </script>
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

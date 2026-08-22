@@ -1,5 +1,5 @@
 ---
-title: "Rendu & Sortie (@gram-lang/renderer)"
+title: "Rendu & sortie (@gram-lang/renderer)"
 description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, impression et diagramme de Gantt."
 ---
 
@@ -7,27 +7,27 @@ Une fois la recette ingérée par `@gram-lang/parser`, compilée par `@gram-lang
 
 Le *package* `@gram-lang/renderer` embarque cet objet JSON complet pour le restituer en Markdown ou en HTML sémantique.
 
-## Formats de Rendu
+## Formats de rendu
 
 Le *renderer* supporte quatre exports :
 
 ### 1. Markdown (`toMarkdown`)
 Génère un Markdown propre (GFM), incluant la liste de courses, le matos, des étapes numérotées, des notes de bas de page (`[^1]`), les badges de masse brute, et les macros nutritionnels (`## 🥗 Nutrition`). C'est l'export roi pour les générateurs de sites statiques (VitePress, Hugo, Astro) ou les apps de prise de notes (Obsidian).
 
-### 2. HTML Sémantique (`toHTML`)
+### 2. HTML sémantique (`toHTML`)
 Génère un DOM HTML sémantique. L'export HTML repose sur l'**Inversion de Contrôle** : vous injectez vos propres classes CSS (coucou Tailwind) et vos SVG pour épouser le *Design System* de votre application.
 
-### 3. HTML pour Impression (`toPrintHTML`)
+### 3. HTML pour impression (`toPrintHTML`)
 Génère un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
 
 ### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
 Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`.
 
-## Traversée Unifiée (`RenderBackend`)
+## Traversée unifiée (`RenderBackend`)
 
 En interne, Markdown, HTML et Print HTML délèguent le traitement principal à un orchestrateur unique (`renderRecipe` dans `traversal.ts`). Ce dernier invoque l'interface `RenderBackend` de chaque formateur. Cette architecture garantit une parité absolue : titre, méta, liste de courses, matériel, étapes, notes et macros seront toujours parcourus dans cet ordre strict, quel que soit le format de sortie cible. Le Gantt fait figure d'exception, produisant un graphe et non un document.
 
-## Exemple d'Utilisation
+## Exemple d'utilisation
 
 ```typescript
 import { toMarkdown, toHTML } from '@gram-lang/renderer';
@@ -77,7 +77,7 @@ L'objet `RendererOptions` offre aussi `bakersReference`/`bakersMathOnly` (pour l
 - **Formatage des Durées** : Transforme d'infâmes minutes brutes en temps humain (`90` → `1 h 30 min`).
 - **Pré-stylisation CSS** : Le *package* *ship* un fichier `gram.css` embarquant le thème officiel (tokens clair/sombre par composant) ainsi qu'un `gantt.css` (dépendant du premier). Le Print HTML, lui, a sa propre CSS directement injectée dans son *header* : c'est *plug and play*.
 
-## Consommation Directe du JSON
+## Consommation directe du JSON
 
 Si vous *buildez* une app frontend (React, Vue, Svelte), vous **n'êtes absolument pas forcé** d'utiliser `@gram-lang/renderer`.
 

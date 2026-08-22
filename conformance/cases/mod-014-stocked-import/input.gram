@@ -1,0 +1,9 @@
+---
+title: Mod Stocked Import
+---
+
+@use "./bases/pate.gram" as &pate
+
+## Montage
+
+[Foncer] avec &pate{250g}.

@@ -147,7 +147,7 @@
   "warnings": [
     {
       "code": "UNDEFINED_REFERENCE",
-      "message": "Reference to undefined ingredient '&glaze'.",
+      "message": "Undefined reference '&glaze' — no prior step or section produces this item.",
       "item": "glaze",
       "loc": {
         "start": 94,
@@ -156,7 +156,7 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: glaze depends on itself.",
+      "message": "Circular reference detected: 'glaze' depends on itself.",
       "item": "glaze",
       "loc": {
         "start": 127,
@@ -165,7 +165,7 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: batter depends on itself.",
+      "message": "Circular reference detected: 'batter' depends on itself.",
       "item": "batter",
       "loc": {
         "start": 59,

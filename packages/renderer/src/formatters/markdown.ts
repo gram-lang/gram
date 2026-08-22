@@ -13,6 +13,7 @@ import {
 	joinStepTokens,
 	groupMultiUnitEntries,
 	escapeMarkdownHtml,
+	round1,
 } from "../utils";
 import {
 	getMetrics,
@@ -21,6 +22,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
+import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
@@ -116,7 +118,7 @@ const markdownBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = Math.round(item.purchasingMass * 10) / 10;
+					const gross = round1(item.purchasingMass);
 					suffix = ` _(${gross}g ${t.renderer.gross})_`;
 				}
 				md += `- ${formatElement(item, "md", { ...context, formatMode: "shopping-list" })}${suffix}\n`;
@@ -154,6 +156,9 @@ const markdownBackend: RenderBackend = {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
 				if (sec.retro_planning)
 					md += ` ~{${escapeMarkdownHtml(sec.retro_planning.raw)}}`;
+				if (sec.module) {
+					md += ` _(${escapeMarkdownHtml(moduleLabel(sec.module))})_`;
+				}
 				md += `\n\n`;
 			}
 

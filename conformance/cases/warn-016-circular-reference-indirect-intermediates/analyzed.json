@@ -175,7 +175,7 @@
   "warnings": [
     {
       "code": "UNDEFINED_REFERENCE",
-      "message": "Reference to undefined ingredient '&glaze'.",
+      "message": "Undefined reference '&glaze' — no prior step or section produces this item.",
       "item": "glaze",
       "loc": {
         "start": 94,
@@ -184,7 +184,7 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: glaze depends on itself.",
+      "message": "Circular reference detected: 'glaze' depends on itself.",
       "item": "glaze",
       "loc": {
         "start": 127,
@@ -193,12 +193,20 @@
     },
     {
       "code": "CIRCULAR_REFERENCE",
-      "message": "Circular reference detected: batter depends on itself.",
+      "message": "Circular reference detected: 'batter' depends on itself.",
       "item": "batter",
       "loc": {
         "start": 59,
         "end": 68
       }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
     }
   ],
   "metrics": {
@@ -247,11 +255,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"sugar\" not found in database."
+          "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

@@ -22,7 +22,7 @@ Second, and more fundamentally, there is no such thing as a universal ingredient
 
 ## Language is messy and personal
 
-Unlike programming languages where keywords like `function` or `import` are strict English tokens, Gram is meant to be written naturally in whatever language you speak. It's a markup language after all.
+Unlike general-purpose programming languages where keywords like `function` or `import` are strict English tokens, Gram is meant to be written naturally in whatever language you speak. It's a natural recipe language after all.
 
 Even within the same language, everyone names things differently. In my own recipes, I often write "liquid vanilla" (makes more sense in French, believe it or not :D) even if "vanilla extract" is technically more formal. If you write your recipes in an editor with Gram's Language Server, typing `@van...` should offer auto-completion for how you naturally write, not force you to remember an arbitrary official name from a government table. Static name matching fails as soon as real people start writing real recipes.
 

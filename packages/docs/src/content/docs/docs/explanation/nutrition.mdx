@@ -10,6 +10,7 @@ However, because nutritional data is highly sensitive and impacts dietary choice
 ## The Calculation Flow
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 <Steps>
 
@@ -17,7 +18,7 @@ import { Steps } from '@astrojs/starlight/components';
 2. **Database Lookup**: The Analyzer queries your `ingredients.yaml` database for the `nutrition` block of each ingredient. The database values must always represent the nutrients **per 100g** of the raw ingredient.
 3. **Proportional Scaling**: The Analyzer scales the per-100g database values to match the actual mass used in the recipe.
 4. **Aggregation**: The scaled values for all ingredients are summed to calculate the Total Recipe Nutrition.
-5. **Serving Bases**: The Total Recipe Nutrition is then expressed on the bases a cook actually reads. If the recipe's frontmatter defines `portions: 4`, it is divided by 4 to give `perPortion`. It is also divided by the mass it was computed from to give `per100g` — which needs no `portions` at all, so an unportioned recipe still gets a standardized figure.
+5. **Serving Bases** <Since v="1.1.0" />: The Total Recipe Nutrition is then expressed on the bases a cook actually reads. If the recipe's frontmatter defines `portions: 4`, it is divided by 4 to give `perPortion`. It is also divided by the mass it was computed from to give `per100g` — which needs no `portions` at all, so an unportioned recipe still gets a standardized figure.
 </Steps>
 
 ## Transparent Partial Data Reporting
@@ -33,7 +34,7 @@ Rather than withholding the total outright, Gram surfaces it alongside the infor
 
 The reference HTML renderer reflects this directly: it always shows the nutrition panel whenever there is any data (or any warning) to show, with a `Coverage: X%` badge next to it. This gives the cook a genuinely useful number immediately, while making it clear at a glance how much of the recipe that number actually accounts for — rather than replacing a "90% accurate estimate" with nothing at all.
 
-## What "per 100 g" Means Here
+## What "per 100 g" Means Here <Since v="1.1.0" />
 
 Gram models **no cooking loss**. There is no evaporation, no reduction, no bake loss — the `yield` field in the ingredient database is about trimming waste (peels, stems, bones), not about what happens in the pan.
 

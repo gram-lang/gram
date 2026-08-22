@@ -74,6 +74,14 @@ If Baker's Math was requested (`--bakers-math` or `--bakers-reference`) but no `
 
 **Aggregation stays consistent with mass.** When the same ingredient is used more than once within a section (e.g. sugar added at two different steps), `@gram-lang/kitchen`'s `aggregateSectionIngredients` sums both `normalizedMass` and `bakersPercentage` across the repeated occurrences — since percentage is linear in mass for a fixed reference, the two always agree (e.g. two 100g/10% occurrences aggregate to 200g/20%, never a mismatched 200g/10%). Every renderer (`@gram-lang/renderer`'s HTML, Markdown, and print formatters, plus the CLI's `gram cook` TUI) reads this same precomputed, already-aggregated value — none of them recompute it themselves.
 
+## Scaling Modular Imports (`@gram-lang/modules`)
+
+When a recipe imports an external base via `@use` (such as `@use "./bases/crust.gram" as &crust`), scaling follows a yield-based evaluation:
+
+1. **Yield Measurement**: `@gram-lang/modules` pre-analyzes the sub-recipe to compute its total mass (`resolveYield`), recursively summing all contributing sections.
+2. **Ratio Computation**: When the host recipe specifies a reference amount (e.g. `&crust{300g}` against a base that yields `400g`), `computeScaleFactor()` computes a factor of `300 / 400 = 0.75`.
+3. **AST Pre-Scaling**: The sub-recipe's AST is scaled (`scaleAst`) *before* being spliced into the host recipe. If multiple steps request different amounts of the same bound export, the requests are summed; if multiple exports are bound, the maximum ratio wins.
+
 ## Consuming this from a new frontend
 
 import { Steps } from '@astrojs/starlight/components';

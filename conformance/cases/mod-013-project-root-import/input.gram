@@ -1,0 +1,9 @@
+---
+title: Mod Project Root Import
+---
+
+@use "./layer/mid.gram" as &mid
+
+## Montage
+
+[Foncer] avec &mid{250g}.

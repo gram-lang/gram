@@ -1,0 +1,98 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 22,
+            "end": 27
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Pate",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "pate",
+        "loc": {
+          "start": 37,
+          "end": 44
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 46,
+                "end": 50
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 57,
+                  "end": 60
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 50,
+                "end": 61
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 61,
+                "end": 62
+              }
+            }
+          ],
+          "loc": {
+            "start": 46,
+            "end": 63
+          }
+        }
+      ],
+      "loc": {
+        "start": 29,
+        "end": 63
+      }
+    }
+  ]
+}

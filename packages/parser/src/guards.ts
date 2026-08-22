@@ -14,6 +14,7 @@ import {
 	type QuantityAST,
 	type TextQuantityAST,
 	type RelativeQuantityAST,
+	type ImportDecl,
 } from "./types";
 
 export function isIngredient(
@@ -70,6 +71,12 @@ export function isSection(
 	node: ASTNode | null | undefined,
 ): node is SectionAST {
 	return node != null && node.type === ASTNodeType.Section;
+}
+
+export function isImportDecl(
+	node: ASTNode | null | undefined,
+): node is ImportDecl {
+	return node != null && node.type === ASTNodeType.ImportDecl;
 }
 
 type QuantityValueNode =

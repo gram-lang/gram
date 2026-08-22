@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import pLimit from "p-limit";
-import { warningSeverity, type WarningSeverity } from "@gram-lang/kitchen";
+import type { WarningSeverity } from "@gram-lang/kitchen";
+import { warningSeverityOf } from "@gram-lang/modules";
 import { GramParseError } from "@gram-lang/parser";
 import { runPipeline } from "../core/pipeline";
 import type {
@@ -68,15 +69,17 @@ export async function checkFiles(
 				try {
 					const { content, compiled, analyzed } = await runPipeline(file, {
 						db: opts.db,
+						paths: opts.paths,
+						stock: opts.stock,
 					});
 
-					// Compiler warnings, leveled by warningSeverity — a nutritional/
+					// Compiler warnings, leveled by warningSeverityOf — a nutritional/
 					// estimation gap (e.g. RELATIVE_QUANTITY_UNKNOWN_MASS) no longer
 					// fails the build the same way an undefined reference does.
 					// --strict promotes every warning/info to error.
 					for (const w of compiled.warnings) {
 						diagnostics.push({
-							level: diagnosticLevel(warningSeverity[w.code], opts.strict),
+							level: diagnosticLevel(warningSeverityOf(w.code), opts.strict),
 							category: "Structure",
 							file,
 							message: w.message,

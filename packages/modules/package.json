@@ -1,0 +1,44 @@
+{
+  "name": "@gram-lang/modules",
+  "version": "0.1.0",
+  "description": "Module resolution and composition for Gram's @use import directive",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gram",
+    "recipe",
+    "modules",
+    "imports"
+  ],
+  "author": "abiwab",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://git.gram-lang.org/gram-lang/gram.git",
+    "directory": "packages/modules"
+  },
+  "bugs": {
+    "url": "https://git.gram-lang.org/gram-lang/gram/issues"
+  },
+  "homepage": "https://git.gram-lang.org/gram-lang/gram/src/branch/main/packages/modules#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test --only-failures",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@gram-lang/parser": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/analyzer": "workspace:*",
+    "@gram-lang/i18n": "workspace:*"
+  },
+  "type": "module"
+}

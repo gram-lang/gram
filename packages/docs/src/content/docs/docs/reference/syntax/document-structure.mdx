@@ -4,6 +4,7 @@ description: "Reference for the .gram file structure: YAML frontmatter, function
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Since from '../../../../../components/Since.astro';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
 
@@ -51,7 +52,23 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Steps
+## 2. Module Imports
+
+<Since v="1.2.0" />
+
+Right after the frontmatter, before any step, a recipe can `@use` other `.gram` files as reusable sub-components.
+
+```gram
+@use "./bases/pate-sablee.gram" as &pate
+
+## Montage
+
+[Foncer] le moule avec &pate{250g}.
+```
+
+*See [Module Imports](/docs/reference/syntax/modules) for the full syntax, scaling rules, and encapsulation guarantees.*
+
+## 3. Steps
 
 Each paragraph in a Gram file represents a single cooking step. Steps are separated by one or more empty lines.
 
@@ -71,7 +88,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 [Bake] In the #oven for ~{30min}.
 ```
 
-## 3. Sections
+## 4. Sections
 
 Complex recipes often have multiple components (e.g., dough, filling, frosting) that are prepared separately. You can group steps into `## Section` blocks using Markdown-style headings (e.g., `## Dough`).
 
@@ -104,7 +121,7 @@ If a `## Section` produces a sub-component that will be used later in the recipe
 ```
 *See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for more details.*
 
-## 4. Comments
+## 5. Comments
 
 You can add comments to explain instructions without affecting the compiled output.
 

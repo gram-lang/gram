@@ -3,6 +3,7 @@
   "meta": {
     "title": "Ingredient Modifiers"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

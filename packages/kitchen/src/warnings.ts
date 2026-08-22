@@ -13,12 +13,20 @@ export enum WarningCode {
 	MISSING_MACROS = "MISSING_MACROS",
 	UNKNOWN_MASS = "UNKNOWN_MASS",
 	INVALID_MODIFIER_COMBINATION = "INVALID_MODIFIER_COMBINATION",
+	COMPOSITE_PARENT_CONFLICT = "COMPOSITE_PARENT_CONFLICT",
 	// Produced by @gram-lang/analyzer (not kitchen itself), but part of the same
 	// shared warning vocabulary that flows through CompilationResult.warnings.
 	INVALID_BAKERS_REFERENCE = "INVALID_BAKERS_REFERENCE",
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
+	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
+	// Phase E). The only module-related code kitchen raises itself, in the
+	// no-resolution-happened degraded path (§C.4) — every other module-only
+	// warning code lives in `@gram-lang/modules`' own `ModuleWarningCode`
+	// (`packages/modules/src/warnings.ts`), pushed via `pushRawWarning` below
+	// onto this same shared `Warning` vocabulary.
+	MODULE_NOT_FOUND = "MODULE_NOT_FOUND",
 }
 
 export interface WarningPayloads {
@@ -56,6 +64,7 @@ export interface WarningPayloads {
 	[WarningCode.INVALID_UNIT]: {
 		type: "Timer" | "Temperature" | "RetroPlanning";
 		value: string;
+		item?: string;
 		loc?: Location;
 	};
 	[WarningCode.SCOPE_CONFLICT]: {
@@ -71,6 +80,12 @@ export interface WarningPayloads {
 		combination: string;
 		loc?: Location;
 	};
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: {
+		childName: string;
+		previousParent: string;
+		newParent: string;
+		loc?: Location;
+	};
 	[WarningCode.INVALID_BAKERS_REFERENCE]: { item: string };
 	[WarningCode.NO_BAKERS_REFERENCE]: Record<string, never>;
 	[WarningCode.TIME_PARADOX]: {
@@ -84,49 +99,58 @@ export interface WarningPayloads {
 		item: string;
 		loc?: Location;
 	};
+	[WarningCode.MODULE_NOT_FOUND]: {
+		specifier: string;
+		loc?: Location;
+	};
 }
 
 export const warningTemplates: {
 	[K in WarningCode]: (payload: WarningPayloads[K]) => string;
 } = {
 	[WarningCode.VARIABLE_NOT_FOUND]: (p) =>
-		`Variable '&${p.targetName}' not found.`,
+		`Cannot resolve relative quantity: target intermediate '&${p.targetName}' is not defined.`,
 	[WarningCode.RELATIVE_QUANTITY_UNRESOLVED]: (p) =>
-		`Could not resolve relative quantity for '@${p.targetName}'. Source not found in current section.`,
+		`Cannot resolve relative quantity: target ingredient '@${p.targetName}' was not found in the current section.`,
 	[WarningCode.RELATIVE_QUANTITY_UNKNOWN_MASS]: (p) =>
-		`Cannot compute relative quantity for '${p.item}' because the mass of target '${p.targetName}' is unknown.`,
+		`Cannot compute relative quantity for '${p.item}': mass of target '${p.targetName}' is unknown.`,
 	[WarningCode.CIRCULAR_REFERENCE]: (p) =>
-		`Circular reference detected: ${p.name} depends on itself.`,
+		`Circular reference detected: '${p.name}' depends on itself.`,
 	[WarningCode.UNDEFINED_REFERENCE]: (p) =>
-		`Reference to undefined ingredient '${p.prefix}${p.name}'.`,
+		`Undefined reference '${p.prefix}${p.name}' — no prior step or section produces this item.`,
 	[WarningCode.MISSING_UNIT]: (p) =>
 		p.type === "RetroPlanning"
-			? `Retro-planning for section "${p.item}" must be a strictly negative duration with an explicit unit (e.g. -2h, -1d, -30min).`
-			: `${p.type} must have an explicit unit.`,
+			? `Retro-planning offset for "${p.item}" requires a strictly negative duration (e.g. -2h, -30min).`
+			: `${p.type} requires an explicit unit (e.g. min, s, °C).`,
 	[WarningCode.INVALID_UNIT]: (p) =>
 		p.type === "RetroPlanning"
-			? `Invalid retro-planning unit "${p.value}" — expected d, h, or min.`
+			? `Invalid retro-planning unit "${p.value}"${p.item ? ` on "${p.item}"` : ""} — expected d, h, or min.`
 			: `Invalid unit "${p.value}" for ${p.type}.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
-		`Global variable '&${p.varName}' is redefined.`,
-	[WarningCode.MISSING_INGREDIENT]: (p) => `"${p.id}" not found in database.`,
+		`Intermediate variable '&${p.varName}' is redefined; variable names must be unique across the recipe.`,
+	[WarningCode.MISSING_INGREDIENT]: (p) =>
+		`Ingredient "${p.id}" not found in database — nutritional metrics and density conversions unavailable.`,
 	[WarningCode.MISSING_MACROS]: (p) =>
-		`Ingredient "${p.id}" has no default macro data.`,
+		`Ingredient "${p.id}" has no macronutrient data in database — nutritional totals are partial.`,
 	[WarningCode.UNKNOWN_MASS]: (p) =>
-		`Cannot calculate mass for "${p.id}" to estimate nutrition.`,
+		`Cannot calculate mass for "${p.id}" — omitted from nutritional totals.`,
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: (p) =>
-		`Invalid modifier combination on "${p.item}": ${p.combination}`,
+		`Incompatible modifiers on "${p.item}": ${p.combination}.`,
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: (p) =>
+		`Composite child "${p.childName}" was already linked to parent "${p.previousParent}" — using it with a different parent "${p.newParent}" here means both will share the same database entry, which is very likely wrong.`,
 	// These two are pushed directly (by @gram-lang/analyzer) as ready-made
 	// Warning objects rather than through pushWarning(), so their templates are
 	// never actually invoked — they exist only to keep WarningPayloads exhaustive.
 	[WarningCode.INVALID_BAKERS_REFERENCE]: (p) =>
-		`Cannot use '${p.item}' as the Baker's Percentage reference.`,
+		`'${p.item}' cannot be used as the Baker's percentage reference (*).`,
 	[WarningCode.NO_BAKERS_REFERENCE]: () =>
-		`No Baker's Percentage reference found.`,
+		`Baker's percentages (%) are used but no base flour (*) was designated.`,
 	[WarningCode.TIME_PARADOX]: (p) =>
-		`TIME_PARADOX: ${p.cause} is pulled backwards to satisfy ${p.conflict}.`,
+		`Timeline conflict: ${p.cause} is pulled earlier than recipe start to satisfy ${p.conflict}.`,
 	[WarningCode.TRACK_CONTENTION]: (p) =>
-		`TRACK_CONTENTION: Named track '${p.trackName}' experienced a serialization delay of ${p.delay} minutes on '${p.item}'. It will finish later than its scheduled deadline.`,
+		`Resource contention on track '${p.trackName}': delayed by ${p.delay} min for '${p.item}'.`,
+	[WarningCode.MODULE_NOT_FOUND]: (p) =>
+		`Module "${p.specifier}" could not be found or resolved.`,
 };
 
 /**
@@ -136,11 +160,20 @@ export const warningTemplates: {
  * server, renderer) can rely on `.message` always being present.
  */
 export interface Warning {
-	code: WarningCode;
+	// Not narrowed to `WarningCode`: `@gram-lang/modules` pushes its own
+	// `ModuleWarningCode` values (`packages/modules/src/warnings.ts`) onto
+	// this same array via `pushRawWarning`, so any consumer reading `.code`
+	// off a `Warning` that may have flowed through a module-composed
+	// compile needs to handle codes outside kitchen's own enum.
+	code: string;
 	message: string;
 	item?: string;
 	loc?: Location;
 	section?: string | null;
+	// Which module the warning originates from, when the compiled document is
+	// a composition of several `.gram` files. Absent for a plain single-file
+	// compile — mirrors `Location.uri`, from which `pushWarning` copies it.
+	uri?: string;
 }
 
 export type WarningSeverity = "error" | "warning" | "info";
@@ -152,7 +185,8 @@ export type WarningSeverity = "error" | "warning" | "info";
  * collision) are `error`; everything else — nutritional/estimation gaps,
  * incomplete-but-recoverable annotations — is `warning`, so a missing timer
  * unit doesn't fail a build the same way an undefined reference does.
- * `--strict` promotes every `warning` to `error`.
+ * Pure contextual notifications/non-fault notices are `info`.
+ * `--strict` promotes every `warning` and `info` to `error`.
  */
 export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.VARIABLE_NOT_FOUND]: "warning",
@@ -164,26 +198,58 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.INVALID_UNIT]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
-	[WarningCode.MISSING_MACROS]: "warning",
-	[WarningCode.UNKNOWN_MASS]: "warning",
+	[WarningCode.MISSING_MACROS]: "info",
+	[WarningCode.UNKNOWN_MASS]: "info",
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: "warning",
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: "error",
 	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",
-	[WarningCode.TRACK_CONTENTION]: "warning",
+	[WarningCode.TRACK_CONTENTION]: "info",
+	[WarningCode.MODULE_NOT_FOUND]: "error",
 };
+
+// The common shape `pushRawWarning` needs from a payload, independent of
+// which code-space (kitchen's own `WarningCode` or e.g. `@gram-lang/modules`'
+// `ModuleWarningCode`) it belongs to.
+export type WarningPayloadShape = {
+	item?: string;
+	loc?: Location;
+	section?: string | null;
+};
+
+/**
+ * Code-space-agnostic primitive: builds a `Warning` from an already-rendered
+ * `message` and pushes it. `pushWarning` below is the strongly-typed
+ * kitchen-own-`WarningCode` wrapper around this; other packages that define
+ * their own warning codes (e.g. `@gram-lang/modules`' `ModuleWarningCode`)
+ * render their own template and call this directly instead of going through
+ * `pushWarning`, which is constrained to `WarningCode`.
+ */
+export function pushRawWarning<TPayload extends object>(
+	target: Warning[] | { warnings: Warning[] },
+	code: string,
+	message: string,
+	payload: TPayload,
+): void {
+	const warnings = Array.isArray(target) ? target : target.warnings;
+	// Cast rather than constraining the generic to `WarningPayloadShape`
+	// directly: most payloads (e.g. `{ id: string }`) share none of its
+	// (all-optional) properties, which TS's weak-type check would reject.
+	const shape = payload as WarningPayloadShape;
+
+	const warning: Warning = { code, message };
+	if ("item" in shape) warning.item = shape.item;
+	if ("loc" in shape) warning.loc = shape.loc;
+	if ("section" in shape) warning.section = shape.section;
+	if ("loc" in shape && shape.loc?.uri) warning.uri = shape.loc.uri;
+	warnings.push(warning);
+}
 
 export function pushWarning<K extends WarningCode>(
 	target: Warning[] | { warnings: Warning[] },
 	code: K,
 	payload: WarningPayloads[K],
 ): void {
-	const message = warningTemplates[code](payload);
-	const warnings = Array.isArray(target) ? target : target.warnings;
-
-	const warning: Warning = { code, message };
-	if ("item" in payload) warning.item = payload.item;
-	if ("loc" in payload) warning.loc = payload.loc;
-	if ("section" in payload) warning.section = payload.section;
-	warnings.push(warning);
+	pushRawWarning(target, code, warningTemplates[code](payload), payload);
 }

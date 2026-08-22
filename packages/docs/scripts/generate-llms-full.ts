@@ -36,7 +36,7 @@ const PAGES: [string, string][] = [
 	["reference/syntax/temperatures.md", "/docs/reference/syntax/temperatures"],
 	["reference/syntax/intermediate-variables.md", "/docs/reference/syntax/intermediate-variables"],
 	["reference/syntax/relative-quantities.md", "/docs/reference/syntax/relative-quantities"],
-	["reference/syntax/composite-ingredients.md", "/docs/reference/syntax/composite-ingredients"],
+	["reference/syntax/composite-ingredients.mdx", "/docs/reference/syntax/composite-ingredients"],
 	["reference/syntax/cheatsheet.md", "/docs/reference/syntax/cheatsheet"],
 	["reference/syntax/ai-generation-notes.mdx", "/docs/reference/syntax/ai-generation-notes"],
 	["reference/api/data-formats.md", "/docs/reference/api/data-formats"],
@@ -86,6 +86,13 @@ function stripTabs(content: string): string {
 		.replace(/\s*<\/TabItem>/g, "");
 }
 
+function stripSinceBadges(content: string): string {
+	return content.replace(
+		/<Since\s+v="([^"]+)"(?:\s+[^>]+)?\s*\/>/g,
+		"*(since v$1)*",
+	);
+}
+
 const sections = PAGES.map(([relPath, urlPath]) => {
 	const fullPath = join(CONTENT_DIR, relPath);
 	let content = readFileSync(fullPath, "utf-8");
@@ -93,6 +100,7 @@ const sections = PAGES.map(([relPath, urlPath]) => {
 	content = stripMdxImports(content);
 	content = resolveGeneratedTables(content);
 	content = stripTabs(content);
+	content = stripSinceBadges(content);
 	content = content.trim();
 	return `<!-- Source: ${SITE_ORIGIN}${urlPath} -->\n\n${content}`;
 });

@@ -8,6 +8,9 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { findProjectRoot } from "../core/workspace";
+import { resolveStockFromConfig } from "../core/stock";
+import { transitiveDependents } from "@gram-lang/modules";
+import { buildWatchReverseIndex } from "../core/watch-graph";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { checkFiles } from "../services/checker";
 import { buildFiles } from "../services/builder";
@@ -44,6 +47,11 @@ export default defineCommand({
 			description: "Skip ingredient database enrichment",
 			default: false,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this watch session (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const root = await findProjectRoot();
@@ -52,6 +60,7 @@ export default defineCommand({
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
 		if (dbResult) reportRejectedIngredients(dbResult.rejected, dbResult.dbPath);
 		const db = dbResult?.data ?? null;
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		if (args.build && !args.output) {
 			log.warn(
@@ -67,14 +76,15 @@ export default defineCommand({
 
 		const pending = new Map<string, ReturnType<typeof setTimeout>>();
 
-		const handle = async (filename: string) => {
-			if (extname(filename) !== ".gram") return;
-
-			const abs = resolve(watchDir, filename);
-			const rel = relative(process.cwd(), abs) || filename;
+		const runCheck = async (abs: string) => {
+			const rel = relative(process.cwd(), abs) || abs;
 			const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
 
-			const result = await checkFiles([abs], { db: db ?? undefined });
+			const result = await checkFiles([abs], {
+				db: db ?? undefined,
+				paths: config.paths,
+				stock,
+			});
 			const errCount = result.diagnostics.filter(
 				(d) => d.level === "error",
 			).length;
@@ -108,6 +118,8 @@ export default defineCommand({
 					const results = await buildFiles([abs], {
 						db: db ?? undefined,
 						lang: config.language,
+						paths: config.paths,
+						stock,
 					});
 					const outDir = resolve(args.output);
 					await mkdir(outDir, { recursive: true });
@@ -126,15 +138,33 @@ export default defineCommand({
 			}
 		};
 
+		const handleChange = async (abs: string) => {
+			await runCheck(abs);
+
+			// Re-check every file that (transitively) `@use`s the one that just
+			// changed — module-imports RFC §F.0.3. Rebuilt fresh each time
+			// rather than kept incrementally in sync, since a rename or an
+			// added/removed `@use` line would otherwise leave it stale.
+			const index = await buildWatchReverseIndex(watchDir, root, config.paths);
+			const dependents = [...transitiveDependents(index, abs)];
+			if (dependents.length === 0) return;
+
+			process.stdout.write(
+				`         ${chalk.dim(`→ rechecking ${dependents.length} dependent file${dependents.length !== 1 ? "s" : ""}`)}\n`,
+			);
+			await Promise.all(dependents.map(runCheck));
+		};
+
 		watch(watchDir, { recursive: true }, (_, filename) => {
-			if (!filename) return;
-			const existing = pending.get(filename);
+			if (!filename || extname(filename) !== ".gram") return;
+			const abs = resolve(watchDir, filename);
+			const existing = pending.get(abs);
 			if (existing) clearTimeout(existing);
 			pending.set(
-				filename,
+				abs,
 				setTimeout(() => {
-					pending.delete(filename);
-					handle(filename).catch(() => {});
+					pending.delete(abs);
+					handleChange(abs).catch(() => {});
 				}, 150),
 			);
 		});

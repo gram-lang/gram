@@ -1,0 +1,94 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Stocked Retro Planning Ignored"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 79,
+            "end": 84
+          }
+        }
+      ],
+      "retroPlanning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d"
+      },
+      "loc": {
+        "start": 51,
+        "end": 92
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 114,
+                "end": 119
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 125,
+                  "end": 129
+                }
+              },
+              "loc": {
+                "start": 119,
+                "end": 130
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 130,
+                "end": 131
+              }
+            }
+          ],
+          "loc": {
+            "start": 105,
+            "end": 132
+          }
+        }
+      ],
+      "loc": {
+        "start": 93,
+        "end": 132
+      }
+    }
+  ]
+}

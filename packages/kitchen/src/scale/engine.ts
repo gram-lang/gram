@@ -189,7 +189,42 @@ function mutateUsage(
 	if ("qty" in usage && usage.qty !== undefined) {
 		usage.qty = scaleQty(usage.qty, factor);
 	}
+	// A composite child's own record of how much of the parent it draws
+	// (`@egg-yolks{2}<@eggs{3}` -> composite.quantity 3) is a separate field
+	// from `.qty` — the shopping list's own aggregated composite total is
+	// scaled independently, further down, but this per-section copy wasn't.
+	const composite = usage.composite;
+	if (composite && composite.quantity !== undefined) {
+		composite.quantity = scaleQty(
+			composite.quantity,
+			factor,
+		) as typeof composite.quantity;
+	}
 	scaled.add(item);
+}
+
+// An alternative-ingredient group (`type: "alternative"`) has no `.qty` of
+// its own — only its `.options[]` do — so `mutateUsage` alone is a silent
+// no-op on it. Every call site that walks a mix of plain Usages and
+// alternative groups (shopping_list, section.ingredients, step content) needs
+// this instead of a bare `mutateUsage`, or the group's options only get
+// scaled when they happen to still be the very same object reference the
+// shopping_list loop already reached (true only pre-cleanObject, inside
+// compile() — never true for `applyScale(compile(ast), f)` called on an
+// already-finished, already-cleaned CompilationResult, which is the
+// documented "live scale slider" use case this function exists for).
+function mutateUsageOrAlternative(
+	item: unknown,
+	factor: number,
+	scaled: WeakSet<object>,
+): void {
+	if (!item || typeof item !== "object") return;
+	const usage = item as Partial<Usage>;
+	if (usage.type === "alternative" && Array.isArray(usage.options)) {
+		for (const opt of usage.options) mutateUsage(opt, factor, scaled);
+		return;
+	}
+	mutateUsage(item, factor, scaled);
 }
 
 /**
@@ -254,15 +289,21 @@ export function applyScale(
 
 	for (const section of cloned.sections ?? []) {
 		for (const ing of section.ingredients ?? [])
-			mutateUsage(ing, factor, scaled);
+			mutateUsageOrAlternative(ing, factor, scaled);
 		for (const cw of section.cookware ?? []) mutateUsage(cw, factor, scaled);
 		for (const stepItem of section.steps ?? []) {
 			if (!stepItem || stepItem.type === "comment") continue;
 			for (const token of stepItem.content ?? []) {
 				if (!token || typeof token !== "object") continue;
-				// Ingredient usage tokens have an 'id' and no token-type discriminator
-				if ("id" in token && !("type" in token))
-					mutateUsage(token, factor, scaled);
+				// Ingredient usage tokens have an 'id' and no token-type discriminator,
+				// except an alternative group, which has both an 'id' ("alternative")
+				// and a 'type' — handled by mutateUsageOrAlternative below.
+				if (
+					"id" in token &&
+					(!("type" in token) ||
+						(token as Partial<Usage>).type === "alternative")
+				)
+					mutateUsageOrAlternative(token, factor, scaled);
 			}
 		}
 	}

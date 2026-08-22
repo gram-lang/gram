@@ -3,6 +3,7 @@
   "meta": {
     "title": "Indirect Intermediate Cycle"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

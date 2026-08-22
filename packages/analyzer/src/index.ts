@@ -16,8 +16,14 @@ import type {
 	CompilationResult,
 	Usage,
 	ShoppingListItem,
+	RegistryEntry,
 } from "@gram-lang/kitchen";
-import { getNumericQty, WarningCode, round2 } from "@gram-lang/kitchen";
+import {
+	getNumericQty,
+	WarningCode,
+	round2,
+	isPurchasableReference,
+} from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	AnalyzedUsage,
@@ -138,8 +144,10 @@ function trackMissingIngredient(
 	usage: { type?: string; id?: string },
 	database: Record<string, IngredientData>,
 	missingIngredientsSet: Set<string>,
+	registry: Record<string, RegistryEntry>,
 ): void {
-	if (usage.type === "reference" || !usage.id) return;
+	if (!usage.id) return;
+	if (!isPurchasableReference(usage.type, registry[usage.id])) return;
 	if (!getIngredientData(usage.id, database)) {
 		missingIngredientsSet.add(usage.id);
 	}
@@ -157,6 +165,7 @@ function standardizeSectionMasses(
 	overrides: Record<string, number>,
 	opts: AnalyzerOptions,
 	missingIngredientsSet: Set<string>,
+	registry: Record<string, RegistryEntry>,
 ): AnalyzedUsage[] {
 	const allRawIngredients: AnalyzedUsage[] = [];
 	sections.forEach((sec) => {
@@ -171,7 +180,12 @@ function standardizeSectionMasses(
 				// (never present for an alternative) and would silently no-op.
 				item.options.forEach((opt) => {
 					if (typeof opt === "string" || !("id" in opt) || !opt.id) return;
-					trackMissingIngredient(opt, database, missingIngredientsSet);
+					trackMissingIngredient(
+						opt,
+						database,
+						missingIngredientsSet,
+						registry,
+					);
 					if (opts.enableMassStandardization !== false) {
 						standardizeUsageMass(
 							opt as Partial<Usage> & Pick<Usage, "id">,
@@ -186,7 +200,7 @@ function standardizeSectionMasses(
 				return;
 			}
 
-			trackMissingIngredient(item, database, missingIngredientsSet);
+			trackMissingIngredient(item, database, missingIngredientsSet, registry);
 
 			// Perform physical mass normalization if enabled. Audit
 			// 2026-07-22, analyzer finding B6/I10: this used to duplicate
@@ -205,7 +219,13 @@ function standardizeSectionMasses(
 					opts.lang,
 				);
 			}
-			if (item.type !== "reference") {
+			// Same three-way reference classification as `trackMissingIngredient`
+			// above — a stocked import's synthetic leaf counts toward the flat
+			// list that feeds the global mass total, same as it already does
+			// per-section (sec.metrics is computed straight from
+			// sec.ingredients, never through this list); a true intermediate or
+			// an undefined reference does not.
+			if (isPurchasableReference(item.type, registry[item.id])) {
 				allRawIngredients.push(item);
 			}
 		});
@@ -663,6 +683,7 @@ export function analyze(
 		overrides,
 		opts,
 		missingIngredientsSet,
+		result.registry.ingredients,
 	);
 
 	resolveRelativeQuantities(sections, result.warnings);
@@ -701,9 +722,13 @@ export function analyze(
 		opts,
 	);
 
+	const nutritionWarnings = nutrition?.warnings || [];
+	const allWarnings = [...result.warnings, ...nutritionWarnings];
+
 	// 4. Assemble and return the final structurally and physically enriched recipe package
 	const analyzedResult: AnalyzedCompilationResult = {
 		...result,
+		warnings: allWarnings,
 		sections,
 		// shopping_list's working type is kitchen's general
 		// (CompositeItem | ShoppingListItem | Usage)[] throughout this

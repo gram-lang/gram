@@ -1,0 +1,82 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {},
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Dessert",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "blanc",
+          "name": "blanc",
+          "_usageId": "1",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "type": "reference",
+              "id": "blanc",
+              "name": "blanc",
+              "_usageId": "1",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "UNDEFINED_REFERENCE",
+      "message": "Undefined reference '&blanc' — no prior step or section produces this item.",
+      "item": "blanc",
+      "loc": {
+        "start": 53,
+        "end": 62
+      }
+    },
+    {
+      "code": "MODULE_EXPORT_NOT_FOUND",
+      "message": "Module \"./oeufs.gram\" does not export '&blanc'. Did you mean '&blancs'? Available exports: &blancs.",
+      "loc": {
+        "start": 0,
+        "end": 34
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 2,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 0
+  }
+}

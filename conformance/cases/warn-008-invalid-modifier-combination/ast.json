@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Invalid Modifier Combination"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

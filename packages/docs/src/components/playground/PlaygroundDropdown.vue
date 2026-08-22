@@ -71,7 +71,8 @@ onUnmounted(() => {
 .custom-dropdown {
   position: relative;
   font-size: 14px;
-  min-width: 130px;
+  min-width: 0;
+  width: 100%;
 }
 
 .dropdown-header {
@@ -86,10 +87,11 @@ onUnmounted(() => {
   user-select: none;
   border: 1px solid var(--sl-color-border);
   min-width: 0;
-  border:1px solid var(--sl-color-border);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.dropdown-header:hover{
+.dropdown-header:hover {
   border: 1px solid var(--sl-color-gray-3);
 }
 
@@ -97,6 +99,8 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
 .dropdown-header:hover, .dropdown-header.is-open {
@@ -152,7 +156,7 @@ onUnmounted(() => {
 
 @media (max-width: 640px) {
   .custom-dropdown {
-    min-width: 90px;
+    min-width: 0;
     flex: 1 1 auto;
   }
 }

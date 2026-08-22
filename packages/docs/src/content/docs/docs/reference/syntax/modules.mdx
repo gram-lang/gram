@@ -1,0 +1,293 @@
+---
+title: "Module Imports"
+description: "Import another .gram file as a reusable sub-component with @use, and how scaling, encapsulation, and the shopping list work across files."
+---
+
+import { Tabs, TabItem, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
+A recipe can `@use` another `.gram` file as a reusable sub-component — a shortcrust pastry, a stock, a batch of egg whites — instead of copy-pasting its steps into every recipe that needs it.
+
+```gram
+---
+title: 'Lemon Meringue Tart'
+---
+
+@use "./bases/shortcrust-pastry.gram" as &shortcrust
+
+## Assembly
+
+[Line] The #tart ring{} with &shortcrust{250g}.
+
+[Fill] With @lemon curd{300g}.
+```
+
+The imported recipe's steps are seamlessly inlined into the timeline: a base's resting time interleaves with the host's steps, and its raw ingredients merge directly onto the unified shopping list.
+
+---
+
+## Syntax
+
+`@use` directives must be declared immediately after the frontmatter, before any cooking step — see [Document Structure](/docs/reference/syntax/document-structure#2-module-imports).
+
+```gram title="@use directive variants"
+# 1. Default import (binds the default exported component)
+@use "./bases/shortcrust.gram" as &crust
+
+# 2. Destructuring (imports multiple distinct components)
+@use "./bases/tart-elements.gram" as { &crust, &frangipane }
+
+# 3. Renaming (resolves naming conflicts in the host recipe)
+@use "./bases/cream.gram" as { &cream as &pastry-cream }
+
+# 4. Multi-word identifiers (wrapped in braces)
+@use "./bases/tart-elements.gram" as &sweet pastry{}
+
+# 5. Time-anchoring (schedules preparation 2 days ahead)
+@use "./bases/starter.gram" as &starter ~{-2d}
+```
+
+### Specifier Rules
+* The specifier must end in `.gram`.
+* Supported formats: relative path (`./`, `../`), project root (`@/`), or custom alias (`@alias/`).
+* Paths are strictly confined to the project root containing `.gram/` — absolute paths or URLs are rejected.
+
+---
+
+## Project-Root & Aliased Paths
+
+`./` and `../` resolve relative to the *importing file's directory*. For deeply nested recipes, Gram provides two clean alternatives:
+
+<Tabs>
+  <TabItem label="Project Root (@/)">
+    `@/` always points to the project root (the directory containing `.gram/`), regardless of file depth:
+
+    ```gram
+    @use "@/bases/shortcrust-pastry.gram" as &pate
+    ```
+  </TabItem>
+
+  <TabItem label="Path Aliases (@alias/)">
+    Configure path aliases in `.gram/config.yaml`:
+
+    ```yaml
+    # .gram/config.yaml
+    paths:
+      bases: ./shared/bases
+      sauces: ./shared/sauces
+    ```
+
+    Then import directly using `@alias/`:
+
+    ```gram
+    @use "@bases/pate-sablee.gram" as &pate
+    @use "@sauces/bechamel.gram" as &sauce
+    ```
+  </TabItem>
+</Tabs>
+
+---
+
+## What a Module Exports
+
+Only **section-level** intermediate variables (`->&` on a `## Section` header) are exported. Step-level intermediates (`->&` inside a step) remain private to the module. See [Intermediate Variables](/docs/reference/syntax/intermediate-variables).
+
+```gram title="bases/tart-elements.gram"
+---
+title: 'Tart Elements'
+---
+
+## Sweet Pastry ->&crust
+
+[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+
+## Frangipane Cream ->&frangipane
+
+[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+```
+
+:::note[Default Exports & Re-exporting]
+* **Default Export**: A module with a single section export binds that target when using `as &name`. A module with multiple exports defaults to the output of its **last** section.
+* **Destructured Exports**: Use `as { &a, &b }` to target specific components by name.
+* **No Implicit Re-exports**: If `sauce.gram` imports `&stock` from `stock.gram`, importing `sauce.gram` only provides `&sauce`, not `&stock`. Re-exporting must be explicit via a dedicated section.
+:::
+
+---
+
+## Scaling
+
+Gram measures a module's own output from its ingredients — nothing to declare:
+
+```gram title="bases/shortcrust.gram"
+---
+title: 'Shortcrust Pastry'
+---
+
+## Pastry
+
+[Mix] @flour{300g} with @butter{200g}.
+```
+
+`shortcrust.gram` sums its own ingredients to 500g. When an importing recipe requests `&pate{250g}`, Gram scales every ingredient in it by `0.5` automatically — the ratio between what was asked for and what the module actually measures out to.
+
+:::note[When the measurement is only an estimate]
+If working out a module's mass depends on an estimated density or a default unit weight rather than an explicit mass, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic rather than treating the scale factor as exact.
+:::
+
+### Scaling Destructured Exports
+
+When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
+
+```gram title="bases/tart-elements.gram"
+---
+title: 'Tart Elements'
+---
+
+## Sweet Pastry ->&crust
+
+[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
+
+## Frangipane Cream ->&frangipane
+
+[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
+```
+
+```gram
+@use "./bases/tart-elements.gram" as { &crust, &frangipane }
+
+## Pear Tart
+
+[Line] The #tart ring{} with the &crust{800g}.
+
+[Spread] The &frangipane{400g} over the base and top with sliced @pears{3}.
+```
+
+`&crust{800g}` against a measured 400g of sweet pastry requires a ×2 ratio; `&frangipane{400g}` against 400g of frangipane cream requires ×1. The larger ratio (×2) applies to the whole module, so frangipane comes out to 800g produced against the 400g actually used.
+
+:::caution[Production Surplus (`MODULE_SURPLUS`)]
+When asymmetrical ingredient demands force Gram to apply the higher multiplier across the entire module, the compiler flags the resulting excess production (here 400g of frangipane cream) with a `MODULE_SURPLUS` diagnostic rather than silently ignoring it.
+:::
+
+### Timers & Batches
+
+**Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration.
+
+When a discrete count is requested against a module's measured mass (`&cookies{2}` against a module that measures out to 500g), Gram interprets the request as *2 full batches* and emits `MODULE_BATCH_INTERPRETATION`.
+
+---
+
+## Chained Imports & Transitivity
+
+Modules can import other modules, creating a dependency chain:
+
+```gram
+recipe.gram ──▶ @use "./sauce.gram" ──▶ @use "./stock.gram"
+```
+
+* **Encapsulation**: `recipe.gram` interacts only with `&sauce`. Private steps and local variables of `stock.gram` remain isolated.
+* **Unified Schedule & Shopping List**: Raw ingredients (carrots, aromatics, bones) and simmering steps from `stock.gram` automatically bubble up into the main recipe.
+
+---
+
+## Diamond Dependencies & Cycle Prevention
+
+### Diamond Dependencies
+
+When a menu imports multiple dishes sharing a common base (e.g. an entrée and a dessert both importing `pate-sablee.gram`):
+* The shared base file is parsed **only once**.
+* The compiler creates independent instances scaled to each dish's requirements.
+* Raw ingredients (flour, butter) merge cleanly on the shopping list.
+
+### Cycle Prevention
+
+:::danger[Circular Dependencies (`MODULE_CYCLE`)]
+If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency, cuts off that one import branch, and reports a `MODULE_CYCLE` error diagnostic displaying the full dependency loop (`A -> B -> A`). The rest of the recipe still compiles — the cyclic binding is left unresolved rather than crashing the whole build — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
+:::
+
+---
+
+## Encapsulation
+
+* **Section Scoping**: Relative quantities (`@water{70% @&flour}`) and ingredient checks resolve only within the module's own sections. Host recipes using identical ingredient names never cause conflicts.
+* **Headless Modules**: A module without section headers (`##`) is isolated into its own dedicated section upon import — it never merges into the host's untitled section.
+
+---
+
+## Frontmatter Inheritance
+
+Informational metadata (`title`, `description`, `author`, `tags`, `category`) belongs strictly to the host recipe — importing a `vegan` base does not make an egg-based host tart vegan.
+
+**Exceptions:**
+* `densities:` merges into the host (host values take precedence on conflict).
+* Baker's percentage references (`*`) inside imported modules are stripped on import.
+
+---
+
+## Stocking an Import (`--stock`)
+
+When a component is already on hand (bought ready-made or prepared ahead of time), pass `--stock` to the CLI:
+
+```bash
+gram shop dinner.gram --stock @bases/bouillon.gram
+gram cook dinner.gram --stock @bases/bouillon.gram
+```
+
+* **Timeline**: Cooking and prep steps for stocked modules are omitted.
+* **Shopping List**: Appears as a single purchasable item (e.g. `1 bouillon`) instead of raw ingredients.
+* **Nutrition**: Exact caloric and macronutrient values are preserved.
+
+Supported by all CLI commands resolving `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`).
+
+---
+
+## Anchoring an Import in Time (`~{-2d}`)
+
+When a fresh preparation must be started in advance (e.g. a sourdough starter or marinade), anchor it directly on the `@use` line:
+
+```gram
+@use "./bases/starter.gram" as &starter ~{-2d}
+
+## Bread
+
+[Knead] With &starter{150g}.
+```
+
+:::tip[Time-Anchor Precedence]
+* An importer-level `~{...}` clause overrides any retro-planning header declared inside the base (`RETRO_PLANNING_OVERRIDE_SHADOWED`).
+* Combining `--stock` with `~{...}` on the same import causes the time anchor to be ignored, triggering a `STOCKED_RETRO_PLANNING_IGNORED` diagnostic.
+:::
+
+---
+
+## Editor & Language Server Support
+
+The Gram Language Server resolves `@use` directives in real time:
+
+* **Instant Diagnostics**: Cross-file validation updates live as you type.
+* **Gantt & Live Preview**: Composed schedule reflects scaled times and dependencies.
+* **Go to Definition**: Jumping to `&pate` opens the source module at the exact exported section.
+* **Auto-completion**: Typing `@use "` completes `./`, `../`, `@/`, and configured `paths:` aliases.
+
+---
+
+## Related Documentation
+
+<CardGrid>
+  <LinkCard 
+    title="How-To: Organize Modular Recipes" 
+    description="Hands-on guide to splitting recipes, configuring aliases, multi-day scheduling, and --stock workflows." 
+    href="/docs/how-to/organize-modular-recipes" 
+  />
+  <LinkCard 
+    title="Document Structure" 
+    description="Overview of frontmatter metadata, directives, sections, and overall file layout." 
+    href="/docs/reference/syntax/document-structure" 
+  />
+  <LinkCard 
+    title="CLI Reference" 
+    description="Complete documentation for gram build, gram shop, and global CLI options." 
+    href="/docs/reference/tooling/cli" 
+  />
+</CardGrid>

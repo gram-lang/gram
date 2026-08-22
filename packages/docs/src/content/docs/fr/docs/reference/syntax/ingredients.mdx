@@ -7,7 +7,7 @@ import { CodeTabs } from 'starlight-theme-nova/components';
 
 Les ingrédients constituent la matière première de toute recette Gram.
 
-## Déclaration de Base
+## Déclaration de base
 
 Pour déclarer un `@ingrédient`, utilisez le préfixe `@`. Si le nom de l'`@ingrédient` comporte des espaces ou exige une quantité précise, vous **devez** l'encapsuler avec des accolades `{}`. S'il s'agit d'un mot simple (sans espace) et sans quantité spécifique, les accolades deviennent facultatives (la quantité vaudra implicitement 1).
 
@@ -28,12 +28,12 @@ Pour préciser une unité de mesure (poids, volume, etc.), glissez-la directemen
 [Placer] Les @tranches de bacon{1 kg} sur une plaque de cuisson et glacer avec du @sirop{1/2 c.à.s}.
 ```
 
-## Ajustement des proportions & Quantités Fixes
+## Ajustement des proportions & quantités fixes
 
 Par défaut, le compilateur Gram ajuste les quantités d'un `@ingrédient` de manière **strictement linéaire** en fonction du nombre de portions demandées.
 Si vous adaptez une recette de 2 à 4 portions, un `@ingrédient` avec `{100 g}` devient `{200 g}`.
 
-### Quantités Fixes (`=`)
+### Quantités fixes (`=`)
 Cependant, certains `@ingrédients` (sel, épices, piment) ne supportent pas bien l'ajustement linéaire des proportions. Vous pouvez verrouiller leur quantité grâce au modificateur `=`.
 
 ```gram
@@ -41,14 +41,14 @@ Assaisonner avec @=sel{1 c.à.c} au goût.
 ```
 Cela maintient le sel à 1 c.à.c, peu importe le nombre de portions calculé par l'utilisateur.
 
-## Modificateurs d'Ingrédient
+## Modificateurs d'ingrédient
 
 Gram propose toute une batterie de modificateurs pour altérer le comportement d'un `@ingrédient` lors du *parsing* et dans la liste de courses. Ces modificateurs se collent immédiatement après le symbole `@`.
 
 | Modificateur | Nom | Effet |
 |---|---|---|
 | `&` | **Référence** | Fait référence à un `@ingrédient` précédemment déclaré. Ne l'ajoute PAS une seconde fois à la liste de courses. |
-| `=` | **Fixe** | Marque la quantité comme fixe (elle ne sera pas mise à l'échelle avec les portions). |
+| `=` | **Fixe** | Marque la quantité comme fixe (elle ne variera pas avec le nombre de portions). |
 | `?` | **Optionnel** | Marque l'`@ingrédient` comme facultatif. |
 | `-` | **Masqué** | Masque l'`@ingrédient` dans la liste de courses générée. |
 | `*` | **% du Boulanger** | Marque l'`@ingrédient` comme référence (100 %) pour calculer les pourcentages du boulanger. |
@@ -57,7 +57,7 @@ Gram propose toute une batterie de modificateurs pour altérer le comportement d
 Vous pouvez combiner des modificateurs (ex : `@?-thym`). Cependant, les combinaisons absurdes (ex : `?*`, `-*`, `-&`) ou les doublons (`**`) généreront un avertissement du compilateur (`INVALID_MODIFIER_COMBINATION`).
 :::
 
-### Les Modificateurs Optionnel et Masqué (`?`, `-`)
+### Les modificateurs optionnel et masqué (`?`, `-`)
 
 Utilisez `?` pour estampiller un `@ingrédient` comme facultatif (idéal pour une garniture que le cuisinier peut choisir d'ignorer). Utilisez `-` pour masquer délibérément un `@ingrédient` de la liste de courses (pratique pour les denrées que l'on a toujours dans ses placards, comme l'eau ou le poivre).
 
@@ -65,7 +65,7 @@ Utilisez `?` pour estampiller un `@ingrédient` comme facultatif (idéal pour un
 [Garnir] Parsemer de @?thym{} et d'une pincée de @-sel{} selon le goût.
 ```
 
-### Le Modificateur de Référence (`&`)
+### Le modificateur de référence (`&`)
 
 Le modificateur de référence est essentiel pour les recettes multi-étapes. **Règle clé : à chaque fois que vous citez un `@ingrédient` après sa déclaration initiale, vous devez utiliser le modificateur `&`.**
 
@@ -87,7 +87,7 @@ Parfois, il arrive de piocher plusieurs fois dans le *même* `@ingrédient` tout
 [Graisser] Utiliser le @&beurre{50 g} pour graisser le moule. // La liste de courses agrégera correctement 150 g de beurre.
 ```
 
-### Pourcentage du Boulanger (`*`)
+### Pourcentage du boulanger (`*`)
 
 En boulangerie, les recettes sont souvent construites autour du **Pourcentage du Boulanger**, où l'`@ingrédient` principal (généralement la farine) représente 100 %, et tous les autres éléments sont exprimés en pourcentage de ce poids.
 
@@ -103,9 +103,9 @@ Cela permet aux outils (comme le CLI ou les interfaces web) de calculer et d'aff
 Pour un guide complet sur l'utilisation de cette fonctionnalité, consultez le guide sur l'[Ajustement dynamique des proportions des recettes](/fr/docs/how-to/scale-recipes#pourcentage-du-boulanger-bakers-math).
 :::
 
-## Syntaxe Avancée
+## Syntaxe avancée
 
-### Préparations Courtes
+### Préparations courtes
 Souvent, un `@ingrédient` nécessite une préparation avant utilisation. Vous pouvez définir cela directement dans la déclaration à l'aide de parenthèses `()`.
 
 ```gram
@@ -120,7 +120,7 @@ Gram prône des recettes denses et très orientées données. Au lieu de multipl
 La parenthèse de préparation `(...)` DOIT être immédiatement collée aux accolades de quantité `{...}` (ou au nom s'il n'y a pas d'accolades). N'ajoutez pas d'espace entre les deux, sinon cela sera analysé comme du texte brut.
 :::
 
-### Alias de Composant (Renommage)
+### Alias de composant (renommage)
 Vous pouvez surcharger le nom d'affichage d'un `@ingrédient` en utilisant les deux-points `:` juste après son nom d'origine. C'est une excellente pratique pour conserver une liste de courses rigoureuse tout en employant un libellé plus naturel dans les instructions.
 
 **Format** : `@Vrai Nom:Nom d'Affichage{Quantité}`
@@ -147,7 +147,7 @@ Les alias sont appliqués localement. Pour mentionner à nouveau ce même `@ingr
 Attention, la syntaxe `:` ne fait que maquiller l'*affichage* de l'ingrédient dans les étapes lues par l'utilisateur : elle n'a strictement aucune incidence sur la consolidation de la liste de courses. Cette dernière (tout comme l'ID canonique de l'ingrédient) se base exclusivement sur le **vrai nom** (celui avant les deux-points), lequel est ensuite confronté aux `aliases` de la base `ingredients.yaml` (un mécanisme distinct servant à fusionner les synonymes inter-recettes, cf. [Gérer une Base de Données d'Ingrédients](/fr/docs/how-to/manage-database)). Par conséquent, déclarer `@jaunes d'œufs:œufs{2}` et `@blancs d'œufs:œufs{4}` ne les fusionnera **jamais** dans votre liste de courses, malgré leur alias d'affichage commun `œufs` — leurs vrais noms diffèrent.
 :::
 
-### Alternatives (Substitutions)
+### Alternatives (substitutions)
 Vous pouvez définir des alternatives acceptables pour un `@ingrédient` en utilisant l'opérateur pipe `|`.
 
 ```gram
@@ -158,7 +158,7 @@ Cela fonctionne également avec les préparations courtes :
 @oignon{1}(épluché et émincé)|@échalotes{2}(hachées)
 ```
 
-### Plages (Intervalles)
+### Plages (intervalles)
 La cuisine n'est pas toujours une science exacte. Vous pouvez spécifier une fourchette (plage de valeurs) grâce au trait d'union `-`.
 
 ```gram
@@ -178,7 +178,7 @@ Ajouter la @farine{1 1/2 tasse}.
 Ajouter le @beurre{1½ plaquette}.
 ```
 
-## Gestion des Erreurs
+## Gestion des erreurs
 
 Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingrédient` et produira des avertissements spécifiques :
 

@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Circular Reference"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

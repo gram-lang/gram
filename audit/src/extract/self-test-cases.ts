@@ -54,22 +54,22 @@ export const SELF_TEST_CASES: SelfTestCase[] = [
 	{
 		label: "standalone-prep-only-step",
 		bad: "## Prep\n\nCut @lemon{1} in half. Thinly slice one half for garnish.\n\n## Cook\n\nSqueeze juice from @lemon{1/2} into the pan.\n",
-		good: "## Cook\n\nSqueeze @juice<@lemon{1}(cut in half, one half sliced for garnish) into the pan.\n",
+		good: "## Cook\n\nSqueeze @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish) into the pan.\n",
 	},
 	{
 		label: "prose-instead-of-composite-syntax",
 		bad: "## Prep\n\nAdd the juice from @lemon{1/2}.\n",
-		good: "## Prep\n\nAdd @juice<@lemon{1/2}.\n",
+		good: "## Prep\n\nAdd @lemon juice{}<@lemon{1/2}.\n",
 	},
 	{
 		label: "spaces-around-composite-operator",
-		bad: "## Prep\n\nAdd @zest{1} < @lemon{2}.\n",
-		good: "## Prep\n\nAdd @zest{1}<@lemon{2}.\n",
+		bad: "## Prep\n\nAdd @lemon zest{1} < @lemon{2}.\n",
+		good: "## Prep\n\nAdd @lemon zest{1}<@lemon{2}.\n",
 	},
 	{
 		label: "composite-preparation-wrong-side",
-		bad: "## Prep\n\nAdd @juice(cut in half, one half sliced for garnish)<@lemon{1}.\n",
-		good: "## Prep\n\nAdd @juice<@lemon{1}(cut in half, one half sliced for garnish).\n",
+		bad: "## Prep\n\nAdd @lemon juice(cut in half, one half sliced for garnish)<@lemon{1}.\n",
+		good: "## Prep\n\nAdd @lemon juice<@lemon{1}(cut in half, one half sliced for garnish).\n",
 	},
 	{
 		label: "redundant-section-level-declaration",

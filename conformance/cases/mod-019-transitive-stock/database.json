@@ -1,0 +1,10 @@
+{
+  "flour": {
+    "name": "Flour",
+    "nutrition": { "calories": 364, "protein": 10.3, "carbs": 76.3, "fat": 1.0 }
+  },
+  "sugar": {
+    "name": "Sugar",
+    "nutrition": { "calories": 387, "protein": 0, "carbs": 100, "fat": 0 }
+  }
+}

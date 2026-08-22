@@ -16,7 +16,8 @@
       "@gram-lang/renderer",
       "@gram-lang/format",
       "@gram-lang/cli",
-      "@gram-lang/language-server"
+      "@gram-lang/language-server",
+      "@gram-lang/modules"
     ]
   ],
   "linked": [],

@@ -130,3 +130,5 @@ function diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult
 ```
 
 Structural diff between two compiled recipes (e.g. two versions of the same file, or a scaled vs. unscaled result) — ingredient quantity/unit changes (with `percentChange` when comparable), preparation changes, timing deltas, added/removed/changed sections, temperature and timer changes, and frontmatter (`meta`) changes. `hasChanges` is `true` if any category is non-empty.
+
+A section spliced in from an `@use` import (`ProcessedSection.module` set) is excluded from the section/preparation/temperature/timer comparisons — otherwise adding a single import would shift every other section's position and look like the whole recipe changed. Its own import is compared separately instead, by `(uri, binding, scale factor)`, in `modules: ModuleDelta[]` — a rescaled or re-bound import is reported as `"changed"`.

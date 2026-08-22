@@ -64,6 +64,18 @@ export default defineCommand({
 			`Scan complete — ${newCount} new ingredient${newCount !== 1 ? "s" : ""} found.`,
 		);
 
+		if (analysis.compositeConflicts.length > 0) {
+			note(
+				analysis.compositeConflicts
+					.map(
+						(c) =>
+							`"${c.id}" is used as a composite child of both ${c.parents.map((p) => `"${p}"`).join(" and ")} — they will share one "${c.id}" database entry despite being different ingredients. Consider writing the full name (e.g. "${c.parents[0]} ${c.id}") in the recipe instead.`,
+					)
+					.join("\n\n"),
+				"Composite ingredient name collisions",
+			);
+		}
+
 		const decisions = new Map<string, string>();
 
 		for (const id of analysis.genuinelyNew) {

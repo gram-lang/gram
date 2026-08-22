@@ -3,9 +3,9 @@
 
 <!-- Source: https://gram-lang.org/docs/explanation/philosophy -->
 
-Gram is a data-driven recipe markup language built for developers. 
+Gram is an open-source declarative, computational recipe DSL (Domain-Specific Language) built for developers.
 
-Most recipe formats out there are just static blocks of text. Gram takes a different approach: it treats recipes as **code**. It takes your human-readable cooking instructions and compiles them into structured, predictable JSON data. 
+Most recipe formats out there are just static blocks of text. Gram takes a different approach: it takes your natural cooking instructions written in plain text and compiles them into structured, calculated, and relational data.
 
 ## The Philosophy
 
@@ -15,11 +15,12 @@ I've always loved the idea of writing recipes in plain text, heavily inspired by
 
 Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a predictable JSON tree, the door is wide open for developers to build advanced visual renderers in the future, like Gantt schedules or tabular flowcharts.
 
-I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic** and **data integrity** into your recipe writing:
+I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, and **modular composition** into your recipe writing:
 
 - **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
-- **Physical Accuracy**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3.
-- **Strict Data Contracts**: By using explicit tags, Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+- **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
+- **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+- **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
 
 :::tip[The Ecosystem Approach]
 Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.
@@ -190,7 +191,23 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Steps
+## 2. Module Imports
+
+*(since v1.2.0)*
+
+Right after the frontmatter, before any step, a recipe can `@use` other `.gram` files as reusable sub-components.
+
+```gram
+@use "./bases/pate-sablee.gram" as &pate
+
+## Montage
+
+[Foncer] le moule avec &pate{250g}.
+```
+
+*See [Module Imports](/docs/reference/syntax/modules) for the full syntax, scaling rules, and encapsulation guarantees.*
+
+## 3. Steps
 
 Each paragraph in a Gram file represents a single cooking step. Steps are separated by one or more empty lines.
 
@@ -210,7 +227,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 [Bake] In the #oven for ~{30min}.
 ```
 
-## 3. Sections
+## 4. Sections
 
 Complex recipes often have multiple components (e.g., dough, filling, frosting) that are prepared separately. You can group steps into `## Section` blocks using Markdown-style headings (e.g., `## Dough`).
 
@@ -243,7 +260,7 @@ If a `## Section` produces a sub-component that will be used later in the recipe
 ```
 *See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for more details.*
 
-## 4. Comments
+## 5. Comments
 
 You can add comments to explain instructions without affecting the compiled output.
 
@@ -926,18 +943,30 @@ You define a composite ingredient using the `<` operator (which can be read as *
 
 **Format**: `@childName{childQty}<@parentName{parentCost}`
 
-- **`childName{childQty}`**: The specific part you are using in this step (e.g., `@lemon juice{100ml}`). Like any other `@ingredient`, `{childQty}` is only required for a multi-word name — a single-word child (e.g. `@juice`) can drop it entirely: `@juice<@lemon{1}`.
+- **`childName{childQty}`**: The specific part you are using in this step. Write its **full name**, parent word included (e.g., `@lemon juice{100ml}`), not a bare generic word — see [Naming the child](#naming-the-child) below for why. Like any other `@ingredient`, `{childQty}` is only required for a multi-word name.
 - **`<@parentName`**: The physical item you actually buy at the store (e.g., `<@lemon`).
 - **`{parentCost}`**: *(Optional)* How much of the parent is consumed to yield this child part (e.g., `{2}`). If you don't write it, it defaults to `1`.
 
-Both the child and the parent can carry their own independent `()` preparation notes:
-- **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@juice(strained)<@lemon{1}`.
-- **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@juice<@lemon{1}(cut in half)`.
+### Naming the child
 
-Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one:
+*(since v1.2.0)*
+
+While Gram accepts a bare single-word child (`@juice<@lemon{1}`), you should write its full name instead (`@lemon juice{}<@lemon{1}`). That name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
+
+Because the database only indexes the child's identifier, generic names collide: `@juice<@lemon` and `@juice<@orange` in another recipe would map to the same entry despite having nothing in common. Using the full name (`lemon juice`, `orange juice`) prevents collisions and automatically links with standalone, non-composite uses of the ingredient (e.g. `@orange juice{1l}` bought in a carton).
+
+Reserve short names for one-off parts you don't track nutritionally. The compiler warns (`COMPOSITE_PARENT_CONFLICT`) if the same short name resolves to different parents within a recipe, and `gram db sync` detects collisions across your whole recipe collection.
+
+### Preparation notes
+
+Both the child and the parent can carry independent `()` preparation notes:
+- **Child preparation** goes before the `<`: `@lemon juice{}(strained)<@lemon{1}`.
+- **Parent preparation** goes after the cost or parent name: `@lemon juice{}<@lemon{1}(cut in half)`.
+
+Attach the note to the part it actually describes (what is done to the extracted part vs. the whole item). You can also combine both:
 
 ```gram
-Add the @juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
+Add the @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
 ```
 
 ### Example
@@ -985,9 +1014,9 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
-Add @zest{1}<@lemon.  // Covered by the 1st lemon
+Add @lemon zest{1}<@lemon.  // Covered by the 1st lemon
 
-Add @juice{1}<@lemon. // Covered by the 1st lemon
+Add @lemon juice{1}<@lemon. // Covered by the 1st lemon
 
 Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
@@ -1006,8 +1035,8 @@ For the example above, the JSON output would look like this:
   "name": "lemon",
   "qty": 3,
   "usage": [
-    { "id": "zest", "qty": 1 },
-    { "id": "juice", "qty": 1 },
+    { "id": "lemon-zest", "qty": 1 },
+    { "id": "lemon-juice", "qty": 1 },
     { "id": "lemon", "qty": 2, "alias": "Direct Use" }
   ]
 }
@@ -1019,17 +1048,17 @@ Unlike the shopping list, a section's own ingredient list is flat, not nested �
 
 ```md
 **Ingredients**:
-- **zest** (lemon)
-- **juice** (lemon)
+- **lemon zest** (lemon)
+- **lemon juice** (lemon)
 ```
 
-This lets you write short composite child names (`@zest`, `@juice`) without losing traceability to the parent.
+This parenthetical works the same regardless of how you named the child — it's what keeps a bare short name (`@zest`, `@juice`) traceable to its parent if you do use one. But it's a *display* aid only; it doesn't change the child's underlying database identity, which is why the full name is still the safer default (see [Naming the child](#naming-the-child) above).
 
-If the parent itself also has a `()` preparation (e.g. `@juice{150ml}<@lemon{1}(cut in half)`), it's folded into the same parenthetical, after the parent's name:
+If the parent itself also has a `()` preparation (e.g. `@lemon juice{150ml}<@lemon{1}(cut in half)`), it's folded into the same parenthetical, after the parent's name:
 
 ```md
 **Ingredients**:
-- **juice** (lemon, cut in half)
+- **lemon juice** (lemon, cut in half)
 ```
 
 The parent's preparation never appears in the shopping list — like any other preparation note, it's instructional context for the recipe, not a shopping-list attribute.
@@ -1070,7 +1099,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Short-hand Prep** | `(...)` | `@butter{10g}(room temp)` |
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
-| **Composite** | `<@parent` | `@zest{1}<@lemon` |
+| **Composite** | `<@parent` | `@lemon zest{1}<@lemon` |
 | **Passive Timer** | `~_` | `~_{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
 | **Semantic Temp**| `^{text}` | `^{medium heat}` |
@@ -1190,37 +1219,37 @@ See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for 
 ❌  [Prep] Cut @lemon{1} in half. Thinly slice one half for garnish.
     [Cook] Squeeze juice from @lemon{1/2} into the pan.
 
-✅  [Cook] Squeeze @juice<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
+✅  [Cook] Squeeze @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
 ```
 Any step whose entire purpose is "take X and do Y to it before the real step" should collapse into the ingredient reference of the step that actually uses it, using the `()` preparation shorthand — here it attaches to the composite's parent (`<@lemon{1}(...)`), since "cut in half" describes the lemon, not the juice.
 
 ### "The juice/zest/part of" phrasing instead of composite syntax
 
 ```gram
-❌  the juice from @lemon{1/2}    →   ✅  @juice<@lemon{1/2}
-❌  the zest of @lemon{2}         →   ✅  @zest{1}<@lemon{2}
+❌  the juice from @lemon{1/2}    →   ✅  @lemon juice{}<@lemon{1/2}
+❌  the zest of @lemon{2}         →   ✅  @lemon zest{1}<@lemon{2}
 ```
-[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
+[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step. Always give the child its **full name** (parent word included), not a bare generic word like `@juice` — a bare child name becomes its own entry in the shared ingredient database with no memory of which parent it came from, so "juice" from a lemon and "juice" from an orange elsewhere would wrongly collide into one database entry. See [Naming the child](/docs/reference/syntax/composite-ingredients#naming-the-child) for the full reasoning.
 
 ### Spaces around the composite operator
 
 ```gram
-❌  @zest{1} < @lemon{2}
-❌  @zest{1} <@lemon{2}
-✅  @zest{1}<@lemon{2}
+❌  @lemon zest{1} < @lemon{2}
+❌  @lemon zest{1} <@lemon{2}
+✅  @lemon zest{1}<@lemon{2}
 ```
 
 ### Attaching a composite's preparation to the wrong side
 
 ```gram
-❌  @juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
-✅  @juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
+❌  @lemon juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
+✅  @lemon juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
 ```
 Both the child and the parent of a composite can carry their own independent `()` preparation:
 - **Child's preparation** goes right after its own name (and quantity, if any).
 - **Parent's preparation** goes right after `<@parentName{parentCost}`.
 
-Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@juice{150ml}(strained)<@lemon{1}(cut in half)`.
+Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@lemon juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
 ### A redundant `->&name` when the section title already declares one
 
@@ -1424,7 +1453,46 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 
-## 3. Ingredient database (YAML)
+## 3. Composed recipes (`@gram-lang/modules`)
+
+When a recipe imports sub-modules via `@use`, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:
+
+```json
+{
+  "title": "Lemon Tart",
+  "modules": [
+    {
+      "binding": "dough",
+      "uri": "/bases/sweet-pastry-dough.gram",
+      "title": "Sweet Pastry Dough",
+      "meta": { "title": "Sweet Pastry Dough" },
+      "scaleFactor": 1.5,
+      "mode": "inline"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Sweet Pastry Dough",
+      "module": {
+        "binding": "dough",
+        "uri": "/bases/sweet-pastry-dough.gram",
+        "title": "Sweet Pastry Dough",
+        "mode": "inline"
+      },
+      "steps": [ "/* spliced steps from the imported module */" ]
+    },
+    {
+      "title": "Assembly",
+      "steps": [ "/* host steps */" ]
+    }
+  ]
+}
+```
+
+- **`modules`**: Array of all imported module contributors (`ModuleInfo`), detailing local binding name, source URI, resolved scale factor, and execution mode (`"inline"` or `"stocked"`).
+- **`section.module`**: Present on any section spliced in from an import (`ComposedSection`), preserving traceability for UIs and custom renderers.
+
+## 4. Ingredient database (YAML)
 
 The database passed to `validateIngredientDatabase()` / `analyze()` is a flat `Record<string, IngredientData>` keyed by ingredient slug. The `gram` CLI additionally accepts (and unwraps) an optional top-level `ingredients:` key, so both of these are valid `.gram/ingredients.yaml` files:
 
@@ -1484,28 +1552,48 @@ type WarningSeverity = "error" | "warning" | "info";
 const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
-Structural integrity issues — a reference to something that doesn't exist, a naming collision — are `error`. Everything else (nutritional/estimation gaps, incomplete-but-recoverable annotations) is `warning`, so e.g. a missing timer unit doesn't fail a build the same way an undefined reference does. This is exactly the distinction the CLI's `gram check --strict` flag uses: without `--strict`, only `error`-severity codes fail the command; with it, every `warning` is promoted to `error` too. Build your own strict-mode logic on `warningSeverity[code]` the same way.
+Structural integrity issues — a reference to something that doesn't exist, a naming collision, or an unresolvable module — are `error`. Recoverable gaps (estimation gaps, incomplete annotations) are `warning`, and contextual notifications (surplus quantities, batch scaling, resource contention) are `info`. This is exactly the distinction the CLI's `gram check --strict` flag uses: without `--strict`, only `error`-severity codes fail the command; with it, every `warning` and `info` is promoted to `error` too. Build your own strict-mode logic on `warningSeverity[code]` the same way.
 
 ## Codes
 
 | Code | Severity | Message template |
 | --- | --- | --- |
-| `VARIABLE_NOT_FOUND` | warning | `Variable '&{targetName}' not found.` |
-| `RELATIVE_QUANTITY_UNRESOLVED` | warning | `Could not resolve relative quantity for '@{targetName}'. Source not found in current section.` |
-| `RELATIVE_QUANTITY_UNKNOWN_MASS` | warning | `Cannot compute relative quantity for '{item}' because the mass of target '{targetName}' is unknown.` |
-| `CIRCULAR_REFERENCE` | error | `Circular reference detected: {name} depends on itself.` |
-| `UNDEFINED_REFERENCE` | error | `Reference to undefined ingredient '{prefix}{name}'.` |
-| `MISSING_UNIT` | warning | `{type} must have an explicit unit.` |
+| `VARIABLE_NOT_FOUND` | warning | `Cannot resolve relative quantity: target intermediate '&{targetName}' is not defined.` |
+| `RELATIVE_QUANTITY_UNRESOLVED` | warning | `Cannot resolve relative quantity: target ingredient '@{targetName}' was not found in the current section.` |
+| `RELATIVE_QUANTITY_UNKNOWN_MASS` | warning | `Cannot compute relative quantity for '{item}': mass of target '{targetName}' is unknown.` |
+| `CIRCULAR_REFERENCE` | error | `Circular reference detected: '{name}' depends on itself.` |
+| `UNDEFINED_REFERENCE` | error | `Undefined reference '{prefix}{name}' — no prior step or section produces this item.` |
+| `MISSING_UNIT` | warning | `{type} requires an explicit unit (e.g. min, s, °C).` |
 | `INVALID_UNIT` | warning | `Invalid unit "{value}" for {type}.` |
-| `SCOPE_CONFLICT` | error | `Global variable '&{varName}' is redefined.` |
-| `MISSING_INGREDIENT` | warning | `"{id}" not found in database.` |
-| `MISSING_MACROS` | warning | `Ingredient "{id}" has no default macro data.` |
-| `UNKNOWN_MASS` | warning | `Cannot calculate mass for "{id}" to estimate nutrition.` |
-| `INVALID_MODIFIER_COMBINATION` | warning | `Invalid modifier combination on "{item}": {combination}` |
-| `INVALID_BAKERS_REFERENCE` | warning | `Cannot use '{item}' as the Baker's Percentage reference.` |
-| `NO_BAKERS_REFERENCE` | warning | `No Baker's Percentage reference found.` |
-| `TIME_PARADOX` | warning | `TIME_PARADOX: {cause} is pulled backwards to satisfy {conflict}.` |
-| `TRACK_CONTENTION` | warning | `TRACK_CONTENTION: Named track '{trackName}' experienced a serialization delay of {delay} minutes on '{item}'. It will finish later than its scheduled deadline.` |
+| `SCOPE_CONFLICT` | error | `Intermediate variable '&{varName}' is redefined; variable names must be unique across the recipe.` |
+| `MISSING_INGREDIENT` | warning | `Ingredient "{id}" not found in database — nutritional metrics and density conversions unavailable.` |
+| `MISSING_MACROS` | info | `Ingredient "{id}" has no macronutrient data in database — nutritional totals are partial.` |
+| `UNKNOWN_MASS` | info | `Cannot calculate mass for "{id}" — omitted from nutritional totals.` |
+| `INVALID_MODIFIER_COMBINATION` | warning | `Incompatible modifiers on "{item}": {combination}.` |
+| `COMPOSITE_PARENT_CONFLICT` | error | `Composite child "{childName}" was already linked to parent "{previousParent}" — using it with a different parent "{newParent}" here means both will share the same database entry, which is very likely wrong.` |
+| `INVALID_BAKERS_REFERENCE` | warning | `'{item}' cannot be used as the Baker's percentage reference (*).` |
+| `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
+| `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
+| `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
+| `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
+| `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
+| `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
+| `MODULE_DEPTH_EXCEEDED` | error | `Import depth limit exceeded ({depth}) while importing "{specifier}".` |
+| `MODULE_EXPORT_NOT_FOUND` | error | `Module "{specifier}" does not export '&{exported}' — it exists in the module but isn't re-exported. Add '-> &{exported}' to the section that produces it.` |
+| `UNUSED_IMPORT` | warning | `Unused import '&{local}' from "{specifier}".` |
+| `UNRESOLVED_MODULE_YIELD` | error | `Cannot compute yield for '&{binding}' from "{specifier}": missing physical mass data for one or more ingredients.` |
+| `ESTIMATED_MODULE_YIELD` | warning | `Yield of '&{binding}' from "{specifier}" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.` |
+| `MODULE_UNIT_MISMATCH` | error | `Unit mismatch for '&{binding}' from "{specifier}": requested in '{requestedUnit}' but yields in '{yieldUnit}' without a conversion density.` |
+| `MODULE_BATCH_INTERPRETATION` | info | `'&{binding}' from "{specifier}" requested without unit — scaled as {batches} batch(es) of the module.` |
+| `IMPORTED_BAKERS_REFERENCE_DROPPED` | info | `Baker's percentage base (*) from "{specifier}" is scoped to its own module and was not imported.` |
+| `DENSITY_OVERRIDE_SHADOWED` | info | `Density for "{ingredient}" in host recipe ({hostValue}) overrides module "{specifier}" ({moduleValue}).` |
+| `MODULE_SURPLUS` | info | `Scaling "{specifier}" for '&{binding}' yields a surplus: {surplus}.` |
+| `MODULE_SPECIFIER_INVALID` | error | `Invalid module path "{specifier}": {reason}` |
+| `MODULE_SCHEME_UNSUPPORTED` | error | `Unsupported URL scheme in module specifier: "{specifier}".` |
+| `STOCKED_RETRO_PLANNING_IGNORED` | warning | `Stocked module "{specifier}" has a retro-planning offset "~{...}", which is ignored because stocked items require no prep time.` |
+| `RETRO_PLANNING_OVERRIDE_SHADOWED` | info | `Host retro-planning offset on "@use {specifier}" overrides the module's internal offset.` |
+| `MODULE_BINDING_SHADOWS_INGREDIENT` | warning | `Imported binding '&{binding}' from "{specifier}" shares name with a database ingredient.` |
+| `STOCKED_DESTRUCTURED_NUTRITION_BLENDED` | info | `Stocked module "{specifier}" uses destructured imports — nutrition profile is averaged across the entire module.` |
 
 ### `VARIABLE_NOT_FOUND`
 A relative quantity references an intermediate variable (`50% of &name`) that hasn't been declared as an intermediate output (`>> name`) anywhere in the recipe. **Fix**: declare the variable before referencing it, or check for a typo in the name.
@@ -1548,3 +1636,15 @@ The ingredient marked as the baker's-percentage base (via the `*` modifier or th
 
 ### `NO_BAKERS_REFERENCE`
 Baker's math was explicitly requested (`enableBakersMath` with a bare `*` search, or an explicit `bakersReference` id) but no ingredient matched. **Fix**: mark an ingredient with the `*` modifier, or correct the `bakersReference` id to match an existing ingredient.
+
+### `COMPOSITE_PARENT_CONFLICT`
+
+*(since v1.2.0)*
+
+A short composite child name (e.g. `@juice`) is drawn from two different parent ingredients within the same recipe (e.g. `<@lemon` in one step and `<@orange` in another). **Fix**: use the full name for the child (e.g. `@lemon juice` and `@orange juice`) to prevent database identity collisions.
+
+### `MODULE_NOT_FOUND`
+
+*(since v1.2.0)*
+
+An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.

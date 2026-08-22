@@ -1,0 +1,87 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./oeufs.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "meringue",
+          "loc": {
+            "start": 23,
+            "end": 32
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 0,
+        "end": 33
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dessert",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 46,
+                "end": 50
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "meringue",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 60,
+                  "end": 61
+                }
+              },
+              "loc": {
+                "start": 50,
+                "end": 62
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 62,
+                "end": 63
+              }
+            }
+          ],
+          "loc": {
+            "start": 46,
+            "end": 64
+          }
+        }
+      ],
+      "loc": {
+        "start": 34,
+        "end": 64
+      }
+    }
+  ]
+}

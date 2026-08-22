@@ -2,5 +2,6 @@
   "message": "\"butter\" is used with multiple incompatible units across the recipe, so a single scale factor can't be derived from it.",
   "offset": null,
   "expected": null,
-  "code": "AMBIGUOUS_MULTI_UNIT"
+  "code": "AMBIGUOUS_MULTI_UNIT",
+  "file": null
 }

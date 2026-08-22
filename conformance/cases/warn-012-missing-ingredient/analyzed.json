@@ -74,7 +74,12 @@
       }
     }
   ],
-  "warnings": [],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
   "metrics": {
     "totalTime": 3,
     "totalBreakdown": [
@@ -113,7 +118,7 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"salt\" not found in database."
+          "message": "Ingredient \"salt\" not found in database — nutritional metrics and density conversions unavailable."
         }
       ]
     }

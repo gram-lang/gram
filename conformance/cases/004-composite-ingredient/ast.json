@@ -3,6 +3,7 @@
   "meta": {
     "title": "Composite Ingredient"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

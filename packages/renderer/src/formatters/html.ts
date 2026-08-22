@@ -14,6 +14,7 @@ import {
 	isCompositeItem,
 	joinStepTokens,
 	groupMultiUnitEntries,
+	round1,
 } from "../utils";
 import {
 	availableBases,
@@ -23,6 +24,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
+import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
 	round2,
@@ -297,7 +299,7 @@ const htmlBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = Math.round(item.purchasingMass * 10) / 10;
+					const gross = round1(item.purchasingMass);
 					extraHtml = ` <span class="gross-mass" data-tooltip="${escapeHtml(t.renderer.purchasingWeight)}">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
 				html += `    <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}${extraHtml}</li>\n`;
@@ -377,10 +379,20 @@ const htmlBackend: RenderBackend = {
 					titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
 				}
 
-				if (sec.intermediate_preparation) {
+				if (sec.intermediate_preparation && sec.module) {
+					const arrowIcon =
+						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
+					const packageIcon =
+						options.icons?.package ?? '<i class="ph ph-package"></i>';
+					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span></span>`;
+				} else if (sec.intermediate_preparation) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
 					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
+				} else if (sec.module) {
+					const packageIcon =
+						options.icons?.package ?? '<i class="ph ph-package"></i>';
+					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</small>`;
 				}
 
 				const sHeaderClass = options.classes?.sectionHeader
@@ -505,18 +517,8 @@ const htmlBackend: RenderBackend = {
 		// the panel opens on the same figures whether or not the toggle is there.
 		const defaultKey = resolveNutritionBasis(nut, "auto", options.lang).key;
 
-		let warningsHtml = "";
-		if (nut.warnings && nut.warnings.length > 0) {
-			warningsHtml = `  <div class="nut-warnings">\n`;
-			nut.warnings.forEach((w) => {
-				warningsHtml += `    <p><strong>${escapeHtml(t.renderer.incompleteData)}:</strong> ${escapeHtml(w.message)}</p>\n`;
-			});
-			warningsHtml += `  </div>\n`;
-		}
-
 		let html = "";
 		html += `<div class="nutrition-panel">\n`;
-		html += warningsHtml;
 		html += `  <div class="nut-header">${escapeHtml(t.renderer.nutrition)} <span class="est-badge" data-tooltip="${escapeHtml(t.renderer.coverageTooltip)}: ${Math.round(nut.coverage * 100)}%">${escapeHtml(t.renderer.estimateTooltip)}</span></div>\n`;
 
 		// The radios must precede every grid they control: the CSS matches them

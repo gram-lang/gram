@@ -238,7 +238,8 @@ describe("robustness against partial payloads", () => {
 		expect(() => toMarkdown(partial)).not.toThrow();
 		expect(() => toHTML(partial)).not.toThrow();
 		expect(() => toPrintHTML(partial)).not.toThrow();
-		expect(toHTML(partial)).toContain("Incomplete data");
+		expect(toHTML(partial)).toContain("nutrition-panel");
+		expect(toPrintHTML(partial)).toContain("Incomplete data");
 	});
 });
 

@@ -5,7 +5,7 @@ description: "Référence rapide de la syntaxe Gram : ingrédients, matériel, m
 
 Un guide de référence rapide de la syntaxe Gram.
 
-## Éléments de Base
+## Éléments de base
 
 | Élément | Syntaxe | Exemple | Description |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Les modificateurs sont placés immédiatement après le symbole `@` ou `#`.
 | `-` (Masqué) | `@-sucre` | Masque l'`@ingrédient` de la liste de courses générée. |
 | `*` (% Boulanger)| `@*farine{500 g}` | Marque l'`@ingrédient` comme référence (100 %) pour les pourcentages du boulanger. |
 
-## Syntaxe Avancée
+## Syntaxe avancée
 
 | Fonctionnalité | Syntaxe | Exemple |
 |---|---|---|
@@ -35,14 +35,14 @@ Les modificateurs sont placés immédiatement après le symbole `@` ou `#`.
 | **Préparation courte** | `(...)` | `@beurre{10 g}(à temp. ambiante)` |
 | **Alias (Renommer)** | `:affichage` | `@vin blanc sec:vin{10 ml}` |
 | **Qté Relative** | `% @&cible` | `@eau{70% @&farine}` |
-| **Composite** | `<@parent` | `@zeste{1}<@citron` |
+| **Composite** | `<@parent` | `@zeste de citron{1}<@citron` |
 | **Minuteur Passif** | `~_` | `~_{1 h}` |
 | **Minuteur Nommé** | `~nom{...}`| `~œufs{3 min}` |
 | **Temp. Sémantique**| `^{texte}` | `^{feu moyen}` |
 | **Fraction mixte** | `n n/d` | `@farine{1 1/2 tasse}` |
 | **Fraction Unicode** | `½` `¾` … | `@sucre{½ tasse}` |
 
-## Variables Intermédiaires
+## Variables intermédiaires
 
 Utilisées pour déclarer des sous-composants (comme une pâte ou une sauce) qui sont référencés plus tard.
 
@@ -51,7 +51,7 @@ Utilisées pour déclarer des sous-composants (comme une pâte ou une sauce) qui
 | **Fin d'une Étape** | `->&nom` | `Mélanger bien. ->&pâte` | Capture uniquement cette étape. |
 | **Fin d'une Section**| `->&nom` | `## Pâte Feuilletée ->&pâte`| Capture l'ensemble de la `## Section`. |
 
-## Ordonnancement de Section (Rétroplanning)
+## Ordonnancement de section (rétroplanning)
 
 Placé n'importe où dans un titre de section pour indiquer un délai de préparation.
 

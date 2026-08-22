@@ -2,17 +2,25 @@ import pLimit from "p-limit";
 import { basename } from "node:path";
 import {
 	normalizeUnit,
+	isCoarseUnit,
 	getDefaultCategories,
 	getCategoryLabels,
 	isCategoryKey,
 } from "@gram-lang/i18n";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
-import type { IngredientData } from "@gram-lang/analyzer";
+import type {
+	IngredientData,
+	AnalyzedCompilationResult,
+} from "@gram-lang/analyzer";
 import { resolveCanonicalId } from "@gram-lang/analyzer";
-import type { ShopResult, ShoppingEntry } from "../types";
+import type {
+	ShopResult,
+	ShoppingEntry,
+	ModuleResolutionOptions,
+} from "../types";
 
-export interface ShopOptions {
+export interface ShopOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	scaleFactor?: number;
 	lang?: string;
@@ -51,6 +59,10 @@ export async function buildShoppingList(
 	const categoryLabels = getCategoryLabels(lang);
 	const limit = pLimit(20);
 	const allItems: CollectedItem[] = [];
+	const usedStock = new Set<string>();
+	// Shared across every file in this batch (module-imports RFC §F.1) — a
+	// base imported by several of these recipes is measured once.
+	const moduleCache = new Map<string, AnalyzedCompilationResult>();
 
 	// `IngredientData.category` stores a stable key (e.g. "vegetables") going
 	// forward, but a database
@@ -94,22 +106,25 @@ export async function buildShoppingList(
 					});
 				};
 
-				if (opts.db) {
-					const { analyzed } = await runPipeline(file, {
-						db: opts.db,
-						scaleFactor: opts.scaleFactor,
-						lang: opts.lang,
-					});
-					if (analyzed) {
-						for (const item of analyzed.result.shopping_list as any[])
-							pushItem(item);
-					}
+				const {
+					compiled,
+					analyzed,
+					usedStock: fileUsedStock,
+				} = await runPipeline(file, {
+					db: opts.db,
+					scaleFactor: opts.scaleFactor,
+					lang: opts.lang,
+					paths: opts.paths,
+					stock: opts.stock,
+					moduleCache,
+				});
+				fileUsedStock.forEach((u) => {
+					usedStock.add(u);
+				});
+				if (analyzed) {
+					for (const item of analyzed.result.shopping_list as any[])
+						pushItem(item);
 				} else {
-					const { compiled } = await runPipeline(file, {
-						skipAnalyzer: true,
-						scaleFactor: opts.scaleFactor,
-						lang: opts.lang,
-					});
 					for (const item of compiled.shopping_list as any[]) pushItem(item);
 				}
 			}),
@@ -172,8 +187,11 @@ export async function buildShoppingList(
 				const total = qtyItems.reduce((sum, i) => sum + i.qty, 0);
 				const unit = normalizeUnit(qtyItems[0]?.unit);
 				fullyAggregated = true;
+				const decimals = unit && isCoarseUnit(unit) ? 1 : 2;
 				finalEntry = {
-					displayQty: unit ? `${fmtNumber(total)} ${unit}` : fmtNumber(total),
+					displayQty: unit
+						? `${fmtNumber(total, decimals)} ${unit}`
+						: fmtNumber(total, decimals),
 					isEstimate: false,
 				};
 			}
@@ -240,5 +258,6 @@ export async function buildShoppingList(
 		byCategory: sortedByCategory,
 		warnings,
 		recipeCount: uniqueRecipes.size,
+		usedStock,
 	};
 }

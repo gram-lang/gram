@@ -1,0 +1,420 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "b-d": {
+        "id": "b-d",
+        "name": "b$d",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "b": {
+        "id": "b",
+        "name": "b",
+        "is_intermediate": true
+      },
+      "c-d": {
+        "id": "c-d",
+        "name": "c$d",
+        "is_intermediate": true
+      },
+      "c": {
+        "id": "c",
+        "name": "c",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1",
+        "3"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "D",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "b$d",
+      "module": {
+        "binding": "d",
+        "uri": "d.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "B",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b-d",
+          "name": "b$d",
+          "_usageId": "2",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b-d",
+              "name": "b$d",
+              "_usageId": "2",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "b",
+      "module": {
+        "binding": "b",
+        "uri": "b.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "D",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "3",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "3",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "c$d",
+      "module": {
+        "binding": "d",
+        "uri": "d.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "C",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "c-d",
+          "name": "c$d",
+          "_usageId": "4",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "c-d",
+              "name": "c$d",
+              "_usageId": "4",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "c",
+      "module": {
+        "binding": "c",
+        "uri": "c.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b",
+          "name": "b",
+          "_usageId": "5",
+          "qty": 1
+        },
+        {
+          "type": "reference",
+          "id": "c",
+          "name": "c",
+          "_usageId": "6",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b",
+              "name": "b",
+              "_usageId": "5",
+              "qty": 1
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "c",
+              "name": "c",
+              "_usageId": "6",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&d' from \"./d.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    },
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&b' from \"./b.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    },
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&c' from \"./c.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 22,
+        "end": 44
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 15,
+    "totalBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 4
+      },
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:C",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 4
+      },
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:C",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 5,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      }
+    ],
+    "totalMass": 200,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "d",
+      "uri": "d.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "b",
+      "uri": "b.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "c",
+      "uri": "c.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

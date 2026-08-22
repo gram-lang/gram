@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Variable Not Found"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

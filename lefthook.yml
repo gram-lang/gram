@@ -22,3 +22,7 @@ pre-commit:
         if ! git diff --cached --name-only | grep -q '^\.changeset/.*\.md$'; then
           echo "Published package(s) modified without a new .changeset/*.md — run 'bun run change' if this affects the public API/behavior.";
         fi
+
+    lockfile-dedupe:
+      glob: "{bun.lock,package.json}"
+      run: bun dedupe --check

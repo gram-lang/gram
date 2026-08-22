@@ -8,5 +8,11 @@
     "id": "empanadas-fr.gram",
     "title": "Les Empanadas de Brian",
     "path": "/examples/empanadas-fr.gram"
+  },
+  {
+    "id": "lemon-tart-fr",
+    "title": "Tarte au Citron (multi-fichiers, @use)",
+    "entry": "lemon-tart.gram",
+    "files": ["lemon-tart.gram", "bases/pate-sucree.gram"]
   }
 ]

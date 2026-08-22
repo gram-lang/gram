@@ -1,6 +1,7 @@
 import { basename } from "node:path";
 import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
+import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
 import type { NutritionBasis } from "@gram-lang/renderer";
 import type { RecipeViewModel } from "../types";
@@ -13,8 +14,11 @@ function formatMass(grams: number): string {
 function formatQty(item: any): string {
 	const qty = item.qty;
 	if (qty == null) return "";
+	const decimals = isCoarseUnit(item.unit) ? 1 : 2;
 	if (typeof qty === "number") {
-		return item.unit ? `${fmtNumber(qty)} ${item.unit}` : fmtNumber(qty);
+		return item.unit
+			? `${fmtNumber(qty, decimals)} ${item.unit}`
+			: fmtNumber(qty, decimals);
 	}
 	if (typeof qty === "string") return item.unit ? `${qty} ${item.unit}` : qty;
 	if (typeof qty === "object") {
@@ -24,18 +28,18 @@ function formatQty(item: any): string {
 		if (qty.value != null) {
 			const v =
 				typeof qty.value === "number"
-					? fmtNumber(qty.value)
+					? fmtNumber(qty.value, decimals)
 					: String(qty.value);
 			return item.unit ? `${v} ${item.unit}` : v;
 		}
 		if (qty.range) {
 			const min =
 				typeof qty.range.min === "number"
-					? fmtNumber(qty.range.min)
+					? fmtNumber(qty.range.min, decimals)
 					: qty.range.min;
 			const max =
 				typeof qty.range.max === "number"
-					? fmtNumber(qty.range.max)
+					? fmtNumber(qty.range.max, decimals)
 					: qty.range.max;
 			const r = `${min}–${max}`;
 			return item.unit ? `${r} ${item.unit}` : r;
@@ -145,6 +149,8 @@ export async function buildViewModel(
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
 		lang?: string;
+		paths?: Record<string, string>;
+		stock?: Set<string>;
 	},
 ): Promise<RecipeViewModel> {
 	const { compiled, analyzed } = await runPipeline(file, {
@@ -152,6 +158,8 @@ export async function buildViewModel(
 		scaleFactor: opts.scaleFactor,
 		bakersReference: opts.bakersReference,
 		lang: opts.lang,
+		paths: opts.paths,
+		stock: opts.stock,
 	});
 
 	const title =

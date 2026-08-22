@@ -19,15 +19,18 @@ import { Steps } from '@astrojs/starlight/components';
    The journey begins here. The Parser takes a raw string of text (your `.gram` file) and uses an OhmJS grammar to validate the syntax. 
    If the syntax is valid, it generates an **Abstract Syntax Tree (AST)**. This AST contains zero logic—it is merely a structured representation of the text.
 
-2. ### Compilation (`@gram-lang/kitchen`)
-   The AST is handed off to the Kitchen. The Kitchen is responsible for the structural logic of the recipe:
-   - **Scoping**: Resolving intermediate variables (e.g., matching a `&dough` reference to a `->&dough` declaration).
+2. ### Module Resolution & Composition (`@gram-lang/modules`)
+   If the recipe contains `@use` import directives, `@gram-lang/modules` traverses the dependency graph (detecting cycles, measuring sub-recipe yields, and scoping intermediate variables) and splices the modules into a single, self-contained **composed AST**. A single-file recipe with no imports passes straight through.
+
+3. ### Compilation (`@gram-lang/kitchen`)
+   The composed AST is handed off to the Kitchen. The Kitchen is responsible for the structural logic of the recipe:
+   - **Scoping & Scheduling**: Resolving intermediate variables and computing optimized execution timelines with **ALAP (As Late As Possible)** scheduling.
    - **Time Metrics**: Computing `activeTime`, `cookTime`, `preparationTime`, and `totalTime` (`preparationTime + cookTime`) by mapping all timers.
    - **Shopping List Generation**: Aggregating ingredients, summing quantities, and resolving composite ingredients (e.g., combining zest and juice into whole lemons).
 
-   The output is a logically sound, compiled recipe — a `CompilationResult` object.
+   The output is a logically sound, compiled recipe — a `CompilationResult` (or `ComposedCompilationResult`) object.
 
-3. ### Enrichment (`@gram-lang/analyzer`)
+4. ### Enrichment (`@gram-lang/analyzer`)
    The Analyzer takes the compiled recipe and cross-references it with your project's `ingredients.yaml` database. This is where the physical world meets the digital code:
    - **Mass Standardization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
    - **Yield Calculation**: Calculates purchasing weight versus edible weight.
@@ -37,7 +40,7 @@ import { Steps } from '@astrojs/starlight/components';
 
    Each of these feature sets can be individually enabled or disabled by the host application.
 
-4. ### Presentation (`@gram-lang/renderer` or custom)
+5. ### Presentation (`@gram-lang/renderer` or custom)
    Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram-lang/renderer` to generate Markdown, a standard web view, or a self-contained print-ready HTML document — or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
 </Steps>
 
@@ -58,10 +61,11 @@ flowchart LR
     subgraph Pipeline ["Core Pipeline"]
         direction LR
         Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammar"]
+        Modules["📦 <b>@gram-lang/modules</b><br/>Graph & Composition"]
         Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>DAG & Scheduling"]
         Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physics & DB"]
 
-        Parser --> Kitchen --> Analyzer
+        Parser --> Modules --> Kitchen --> Analyzer
     end
 
     subgraph Output ["Presentation"]

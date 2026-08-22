@@ -116,7 +116,7 @@
   "warnings": [
     {
       "code": "SCOPE_CONFLICT",
-      "message": "Global variable '&dup' is redefined.",
+      "message": "Intermediate variable '&dup' is redefined; variable names must be unique across the recipe.",
       "loc": {
         "start": 82,
         "end": 88

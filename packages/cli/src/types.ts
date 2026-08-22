@@ -2,6 +2,7 @@ import type {
 	IngredientData,
 	Macros,
 	NutritionMetrics,
+	AnalyzedCompilationResult,
 } from "@gram-lang/analyzer";
 import type { CategoryKey } from "@gram-lang/i18n";
 import type { NutritionBasis } from "@gram-lang/renderer";
@@ -28,6 +29,7 @@ export interface BuildResult {
 	slug: string;
 	file: string;
 	data: object;
+	usedStock: Set<string>;
 }
 
 // --- Phase 2 types ---
@@ -36,6 +38,16 @@ export interface FuzzyMatch {
 	newId: string;
 	existingId: string;
 	score: number;
+}
+
+// A composite child (e.g. `juice` from `@juice<@lemon`) whose id was seen
+// attached to more than one distinct parent across the synced files (e.g.
+// `@juice<@orange` elsewhere). Both usages would collapse onto the same
+// `ingredients.yaml` entry despite being physically different substances.
+export interface CompositeConflict {
+	id: string;
+	name: string;
+	parents: string[];
 }
 
 export interface DbSyncOptions {
@@ -49,6 +61,7 @@ export interface DbSyncAnalysis {
 	exactMatches: string[];
 	fuzzyMatches: FuzzyMatch[];
 	genuinelyNew: string[];
+	compositeConflicts: CompositeConflict[];
 }
 
 export interface DbSyncResult {
@@ -114,6 +127,7 @@ export interface ShopResult {
 	byCategory: Map<string, ShoppingEntry[]>;
 	warnings: string[];
 	recipeCount: number;
+	usedStock: Set<string>;
 }
 
 // --- Phase 3 types ---
@@ -271,6 +285,8 @@ export const GramConfigFileSchema = z.object({
 	language: z.string().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
+	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */
+	paths: z.record(z.string(), z.string()).optional(),
 	ai: z
 		.object({
 			provider: z.enum(AI_PROVIDERS).optional(),
@@ -286,7 +302,26 @@ export type GramConfig = z.infer<typeof GramConfigFileSchema> & {
 	projectRoot?: string;
 };
 
-export interface PipelineOptions {
+/**
+ * Options shared by every pipeline entry point that resolves `@use`
+ * specifiers: named aliases from `.gram/config.yaml`'s `paths:`, and the
+ * per-run "stock" set of already-resolved module URIs (see
+ * `core/stock.ts`'s `resolveStockSet`) — a CLI flag, deliberately never
+ * persisted to `.gram/config.yaml`.
+ */
+export interface ModuleResolutionOptions {
+	/** Named `@use` specifier aliases (from `.gram/config.yaml`'s `paths:`), threaded to the `ModuleHost` that resolves `@alias/...` specifiers. */
+	paths?: Record<string, string>;
+	/**
+	 * `@`-prefixed/relative specifiers, already resolved to module URIs (see
+	 * `core/stock.ts`'s `resolveStockSet`), the reader already has on hand
+	 * for this particular build/shop invocation ("stock" mechanism) — a
+	 * per-run CLI flag, deliberately never persisted to `.gram/config.yaml`.
+	 */
+	stock?: Set<string>;
+}
+
+export interface PipelineOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	skipAnalyzer?: boolean;
 	scaleFactor?: number;
@@ -294,14 +329,22 @@ export interface PipelineOptions {
 	bakersMathOnly?: boolean;
 	/** Recipe language (from `.gram/config.yaml`'s `language:`), threaded to `analyze()` — see i18n findings F-04/F-07/F-08/F-09. */
 	lang?: string;
+	/**
+	 * Shared module-yield measurement cache (module-imports RFC §F.1), keyed
+	 * by module URI. Pass the *same* Map across a batch of `runPipeline`
+	 * calls (see `services/builder.ts`) so a base imported by many recipes
+	 * is compiled+analyzed once, not once per importer. Omitted for a
+	 * single-file call — `composeRecipe` creates its own throwaway Map.
+	 */
+	moduleCache?: Map<string, AnalyzedCompilationResult>;
 }
 
-export interface CheckOptions {
+export interface CheckOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	strict?: boolean;
 }
 
-export interface BuildOptions {
+export interface BuildOptions extends ModuleResolutionOptions {
 	db?: Record<string, IngredientData> | null;
 	pretty?: boolean;
 	scaleFactor?: number;

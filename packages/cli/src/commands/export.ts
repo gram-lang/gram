@@ -5,6 +5,7 @@ import { log } from "@clack/prompts";
 import chalk from "chalk";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
+import { resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -73,6 +74,11 @@ export default defineCommand({
 			type: "string",
 			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
 		},
+		stock: {
+			type: "string",
+			description:
+				"Comma-separated @use specifiers already on hand for this export (e.g. @bases/pate.gram,./levain.gram)",
+		},
 	},
 	async run({ args }) {
 		const fmt = args.format as string | undefined;
@@ -92,6 +98,7 @@ export default defineCommand({
 			filePath,
 			db,
 			config.language,
+			config.paths,
 		);
 
 		const bakersReference =
@@ -99,6 +106,7 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
+		const stock = resolveStockFromConfig(args.stock, config);
 
 		const outputPath = args.output
 			? resolve(args.output as string)
@@ -116,6 +124,8 @@ export default defineCommand({
 				bakersMathOnly,
 				nutritionBasis,
 				lang: config.language,
+				paths: config.paths,
+				stock,
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {

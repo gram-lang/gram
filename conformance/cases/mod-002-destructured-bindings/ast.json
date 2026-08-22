@@ -1,0 +1,161 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Destructured Bindings"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./oeufs.gram",
+      "bindings": [
+        {
+          "exported": "blancs",
+          "local": "blancs",
+          "loc": {
+            "start": 67,
+            "end": 74
+          }
+        },
+        {
+          "exported": "jaunes",
+          "local": "jaunes",
+          "loc": {
+            "start": 76,
+            "end": 83
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 42,
+        "end": 86
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dessert",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 99,
+                "end": 105
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "blancs",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 113,
+                  "end": 117
+                }
+              },
+              "loc": {
+                "start": 105,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 119,
+                "end": 123
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "jaunes",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 131,
+                  "end": 135
+                }
+              },
+              "loc": {
+                "start": 123,
+                "end": 136
+              }
+            },
+            {
+              "type": "Text",
+              "value": ". Also add ",
+              "loc": {
+                "start": 136,
+                "end": 147
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 154,
+                  "end": 158
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 147,
+                "end": 159
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 159,
+                "end": 160
+              }
+            }
+          ],
+          "loc": {
+            "start": 99,
+            "end": 161
+          }
+        }
+      ],
+      "loc": {
+        "start": 87,
+        "end": 161
+      }
+    }
+  ]
+}

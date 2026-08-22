@@ -1,0 +1,5 @@
+## Base ->&base
+
+@farine{100g}.
+
+@eau{70% @&farine}.

@@ -137,4 +137,29 @@ describe("computeDiff — git mode", () => {
 			computeDiff({ fileA: filePath, ref: "nonexistent-ref" }),
 		).rejects.toThrow(/Cannot read/);
 	});
+
+	it("resolves @use imports, surfacing a change made only in the imported base", async () => {
+		repoDir = await mkdtemp(join(tmpdir(), "gram-differ-git-"));
+		await run("git", ["init", "-q"], repoDir);
+		await run("git", ["config", "user.email", "test@test.com"], repoDir);
+		await run("git", ["config", "user.name", "Test"], repoDir);
+		const basePath = join(repoDir, "base.gram");
+		const mainPath = join(repoDir, "main.gram");
+		await writeFile(basePath, "## Base\n\n[Mix] Add @flour{200g}.\n", "utf-8");
+		await writeFile(
+			mainPath,
+			'@use "./base.gram" as &base\n\n## Assemble\n\n[Serve] &base{1}.\n',
+			"utf-8",
+		);
+		await run("git", ["add", "base.gram", "main.gram"], repoDir);
+		await run("git", ["commit", "-q", "-m", "init"], repoDir);
+
+		// Only the imported base changes — main.gram itself is untouched.
+		await writeFile(basePath, "## Base\n\n[Mix] Add @flour{400g}.\n", "utf-8");
+		const { result } = await computeDiff({ fileA: mainPath });
+		const flour = result.ingredients.find((i) => i.id === "flour");
+		expect(flour?.change).toBe("changed");
+		expect(flour?.fromQty).toBe(200);
+		expect(flour?.toQty).toBe(400);
+	});
 });

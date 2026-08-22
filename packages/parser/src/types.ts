@@ -1,6 +1,13 @@
 export interface Location {
 	start: number;
 	end: number;
+	// Absent for a plain single-file parse/compile. Set by the module
+	// composer (`@gram-lang/modules`) on every node it splices from an
+	// imported module, so a diagnostic raised on that node can say which file
+	// it actually came from — the composed AST's own offsets are the host
+	// document's, not the module's, so without this a diagnostic on spliced
+	// content would highlight an unrelated range of the host file.
+	uri?: string;
 }
 
 import type { z } from "zod";
@@ -25,6 +32,7 @@ export enum ASTNodeType {
 	Timer = "Timer",
 	Temperature = "Temperature",
 	Alternative = "Alternative",
+	ImportDecl = "ImportDecl",
 }
 
 // --- AST Nodes ---
@@ -37,12 +45,36 @@ export interface NodeAST {
 export interface RecipeAST extends NodeAST {
 	type: ASTNodeType.Recipe;
 	meta: Meta;
+	// Always present (empty array when the document declares no `@use`
+	// directive), populated from the `UseBlock` that sits between the
+	// frontmatter and the content — never mixed into `children`.
+	imports: ImportDecl[];
 	// The implicit-content grammar path (`Content_implicit`, no `## Section`
 	// header anywhere in the
 	// source) places `Step`/`Comment` nodes directly under `Recipe`, with no
 	// wrapping `Section` — `getAST("Mix @flour{200g}.\n").children[0].type`
 	// is `"Step"`, not `"Section"`.
 	children: (SectionAST | StepAST | CommentAST)[];
+}
+
+// --- Module imports ---
+
+export interface ImportBinding {
+	// Name as exported by the module ("default" for the unbraced `as &name`
+	// form — the module has no identifier actually named "default", this is
+	// a synthetic marker the module composer resolves against the module's
+	// own default export).
+	exported: string;
+	// Name bound in the host recipe.
+	local: string;
+	loc?: Location;
+}
+
+export interface ImportDecl extends NodeAST {
+	type: ASTNodeType.ImportDecl;
+	specifier: string;
+	bindings: ImportBinding[];
+	retroPlanning?: RetroPlanningAST | null;
 }
 
 export interface RetroPlanningAST {
@@ -230,4 +262,5 @@ export type ASTNode =
 	| IntermediateDecl
 	| QuantityAST
 	| TextQuantityAST
-	| RelativeQuantityAST;
+	| RelativeQuantityAST
+	| ImportDecl;

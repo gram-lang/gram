@@ -1,0 +1,6 @@
+{
+  "egg": {
+    "name": "Egg",
+    "nutrition": { "calories": 143, "protein": 12.6, "carbs": 0.7, "fat": 9.5 }
+  }
+}

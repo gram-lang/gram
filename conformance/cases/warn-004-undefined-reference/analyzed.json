@@ -52,7 +52,7 @@
   "warnings": [
     {
       "code": "UNDEFINED_REFERENCE",
-      "message": "Reference to undefined ingredient '&ghost'.",
+      "message": "Undefined reference '&ghost' — no prior step or section produces this item.",
       "item": "ghost",
       "loc": {
         "start": 57,

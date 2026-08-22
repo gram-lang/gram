@@ -1,0 +1,9 @@
+---
+title: B Module
+---
+
+@use "./c.gram" as &c
+
+## B Section
+
+Combine &c{50g} with @sugar{50g}.

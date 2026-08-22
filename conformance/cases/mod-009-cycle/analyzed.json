@@ -1,0 +1,295 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "a": {
+        "id": "a",
+        "name": "a",
+        "is_intermediate": true
+      },
+      "a-b": {
+        "id": "a-b",
+        "name": "a$b",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "B",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a",
+          "name": "a",
+          "_usageId": "1",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a",
+              "name": "a",
+              "_usageId": "1",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "a$b",
+      "module": {
+        "binding": "b",
+        "uri": "b.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "A",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a-b",
+          "name": "a$b",
+          "_usageId": "2",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a-b",
+              "name": "a$b",
+              "_usageId": "2",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "a",
+      "module": {
+        "binding": "a",
+        "uri": "a.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "a",
+          "name": "a",
+          "_usageId": "3",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "a",
+              "name": "a",
+              "_usageId": "3",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_NOT_FOUND",
+      "message": "Module \"./a.gram\" could not be found or resolved.",
+      "loc": {
+        "start": 0,
+        "end": 22,
+        "uri": "b.gram"
+      },
+      "uri": "b.gram"
+    },
+    {
+      "code": "SCOPE_CONFLICT",
+      "message": "Intermediate variable '&a' is redefined; variable names must be unique across the recipe.",
+      "loc": {
+        "start": 28,
+        "end": 32,
+        "uri": "a.gram"
+      },
+      "section": "A",
+      "uri": "a.gram"
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: 'a' depends on itself.",
+      "item": "a",
+      "loc": {
+        "start": 28,
+        "end": 32,
+        "uri": "a.gram"
+      },
+      "uri": "a.gram"
+    },
+    {
+      "code": "CIRCULAR_REFERENCE",
+      "message": "Circular reference detected: 'a$b' depends on itself.",
+      "item": "a$b",
+      "loc": {
+        "start": 28,
+        "end": 32,
+        "uri": "a.gram"
+      },
+      "uri": "a.gram"
+    },
+    {
+      "code": "MODULE_CYCLE",
+      "message": "Circular module import detected: a.gram → b.gram → a.gram.",
+      "loc": {
+        "start": 0,
+        "end": 22,
+        "uri": "b.gram"
+      },
+      "uri": "b.gram"
+    },
+    {
+      "code": "UNRESOLVED_MODULE_YIELD",
+      "message": "Cannot compute yield for '&b' from \"./b.gram\": missing physical mass data for one or more ingredients.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    },
+    {
+      "code": "UNRESOLVED_MODULE_YIELD",
+      "message": "Cannot compute yield for '&a' from \"./a.gram\": missing physical mass data for one or more ingredients.",
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 8,
+    "totalBreakdown": [
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:A",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:A",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
+    "totalMass": 0,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0
+    }
+  },
+  "modules": [
+    {
+      "binding": "b",
+      "uri": "b.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "a",
+      "uri": "a.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

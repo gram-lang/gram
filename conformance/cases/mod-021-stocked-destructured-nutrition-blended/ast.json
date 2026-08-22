@@ -1,0 +1,127 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Stocked Destructured Nutrition Blended"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/oeufs.gram",
+      "bindings": [
+        {
+          "exported": "blancs",
+          "local": "blancs",
+          "loc": {
+            "start": 90,
+            "end": 97
+          }
+        },
+        {
+          "exported": "jaunes",
+          "local": "jaunes",
+          "loc": {
+            "start": 99,
+            "end": 106
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 59,
+        "end": 109
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 122,
+                "end": 126
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "blancs",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 134,
+                  "end": 138
+                }
+              },
+              "loc": {
+                "start": 126,
+                "end": 139
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 140,
+                "end": 144
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "jaunes",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 152,
+                  "end": 155
+                }
+              },
+              "loc": {
+                "start": 144,
+                "end": 156
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 156,
+                "end": 157
+              }
+            }
+          ],
+          "loc": {
+            "start": 122,
+            "end": 158
+          }
+        }
+      ],
+      "loc": {
+        "start": 110,
+        "end": 158
+      }
+    }
+  ]
+}

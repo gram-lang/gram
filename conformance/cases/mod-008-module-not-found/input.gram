@@ -1,0 +1,5 @@
+@use "./missing.gram" as &m
+
+## Section
+
+Use &m{100g}.

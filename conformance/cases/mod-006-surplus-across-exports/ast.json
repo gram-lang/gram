@@ -1,0 +1,125 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./oeufs.gram",
+      "bindings": [
+        {
+          "exported": "blancs",
+          "local": "blancs",
+          "loc": {
+            "start": 25,
+            "end": 32
+          }
+        },
+        {
+          "exported": "jaunes",
+          "local": "jaunes",
+          "loc": {
+            "start": 34,
+            "end": 41
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 0,
+        "end": 44
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dessert",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 57,
+                "end": 63
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "blancs",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 71,
+                  "end": 75
+                }
+              },
+              "loc": {
+                "start": 63,
+                "end": 76
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 77,
+                "end": 81
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "jaunes",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 89,
+                  "end": 92
+                }
+              },
+              "loc": {
+                "start": 81,
+                "end": 93
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 93,
+                "end": 94
+              }
+            }
+          ],
+          "loc": {
+            "start": 57,
+            "end": 95
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 95
+      }
+    }
+  ]
+}

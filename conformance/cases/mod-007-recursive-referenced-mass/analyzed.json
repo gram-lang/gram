@@ -1,0 +1,300 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "meringue-blancs": {
+        "id": "meringue-blancs",
+        "name": "meringue$blancs",
+        "is_intermediate": true
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg",
+        "default_unit": "g"
+      },
+      "meringue": {
+        "id": "meringue",
+        "name": "meringue",
+        "is_intermediate": true
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 50,
+      "unit": "g",
+      "normalizedMass": 50,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Blancs",
+      "ingredients": [
+        {
+          "id": "egg",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "meringue$blancs",
+      "module": {
+        "binding": "meringue",
+        "uri": "oeufs.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Meringue",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "meringue-blancs",
+          "name": "meringue$blancs",
+          "_usageId": "2"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "3",
+          "qty": 50,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 50
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "type": "reference",
+              "id": "meringue-blancs",
+              "name": "meringue$blancs",
+              "_usageId": "2"
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "3",
+              "qty": 50,
+              "unit": "g",
+              "normalizedMass": 50,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "meringue",
+      "module": {
+        "binding": "meringue",
+        "uri": "oeufs.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 50,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Dessert",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "meringue",
+          "name": "meringue",
+          "_usageId": "4",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "meringue",
+              "name": "meringue",
+              "_usageId": "4",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&meringue' from \"./oeufs.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 0,
+        "end": 33
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Meringue",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Meringue",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ],
+    "totalMass": 150,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "meringue",
+      "uri": "oeufs.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

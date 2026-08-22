@@ -3,6 +3,7 @@ import { detectCycles } from "./graph";
 import { ASTNodeType } from "@gram-lang/parser";
 import type { ProcessedSection, Registry, Usage } from "./types";
 import type { CompilerOptions } from "./core";
+import { isPurchasableReference } from "./registry";
 
 export interface ShoppingListItem {
 	// Never actually set at construction — a plain aggregated ingredient has
@@ -131,8 +132,8 @@ export function generateShoppingList(
 				item.isCircular = true;
 			}
 
-			// Skip pure variable references (they don't go onto a grocery list)
-			if (item.type === "reference") return;
+			if (!isPurchasableReference(item.type, registry.ingredients.get(item.id)))
+				return;
 
 			if (item.composite) {
 				const parentId = slugify(item.composite.parent);

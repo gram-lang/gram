@@ -8,3 +8,4 @@ export * from "./warnings";
 export * from "./types";
 export * from "./section";
 export * from "./scale";
+export * from "./graph";

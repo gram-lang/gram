@@ -1,0 +1,136 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./b.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "b",
+          "loc": {
+            "start": 19,
+            "end": 21
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 0,
+        "end": 22
+      }
+    },
+    {
+      "type": "ImportDecl",
+      "specifier": "./c.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "c",
+          "loc": {
+            "start": 41,
+            "end": 43
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 22,
+        "end": 44
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 58,
+                "end": 62
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "b",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 65,
+                  "end": 66
+                }
+              },
+              "loc": {
+                "start": 62,
+                "end": 67
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 68,
+                "end": 72
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "c",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 75,
+                  "end": 76
+                }
+              },
+              "loc": {
+                "start": 72,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 77,
+                "end": 78
+              }
+            }
+          ],
+          "loc": {
+            "start": 58,
+            "end": 79
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 79
+      }
+    }
+  ]
+}

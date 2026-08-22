@@ -3,6 +3,7 @@
   "meta": {
     "title": "Minimal Recipe"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

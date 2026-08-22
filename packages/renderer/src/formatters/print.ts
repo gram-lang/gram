@@ -14,6 +14,7 @@ import {
 	isCompositeItem,
 	joinStepTokens,
 	groupMultiUnitEntries,
+	round1,
 } from "../utils";
 import {
 	getMetrics,
@@ -22,6 +23,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import { formatElement } from "./element";
+import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 
@@ -515,7 +517,7 @@ const printBackend: RenderBackend = {
 					item.purchasingMass &&
 					item.purchasingMass !== item.normalizedMass
 				) {
-					const gross = Math.round(item.purchasingMass * 10) / 10;
+					const gross = round1(item.purchasingMass);
 					extra = ` <span class="gross-mass">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
 				body += `  <li>${formatElement(item, "html", context)}${extra}</li>\n`;
@@ -557,6 +559,9 @@ const printBackend: RenderBackend = {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning)
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(sec.retro_planning.raw)})</small>`;
+				if (sec.module) {
+					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel(sec.module))})</small>`;
+				}
 				body += `  <h3>${titleHtml}</h3>\n`;
 			}
 

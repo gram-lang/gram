@@ -4,6 +4,7 @@ description: "Référence complète des codes de Warning, de leur sévérité, e
 ---
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../../components/Since.astro';
 import { warningCodesTable } from '../../../../../../data/api-reference';
 
 Une recette malformée ou incomplète finit quand même de compiler : le compilateur et l'Analyseur collectent des objets `Warning` structurés au lieu de lever des exceptions. Cela permet d'afficher la recette tout en signalant visuellement les avertissements. L'énumération `WarningCode` et ses utilitaires sont exportés par `@gram-lang/kitchen`.
@@ -29,7 +30,7 @@ type WarningSeverity = "error" | "warning" | "info";
 const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
-Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, etc.) sont de sévérité `error`. Tout le reste (lacunes d'estimation nutritionnelle, annotations incomplètes mais valides) est catégorisé en `warning`. Ainsi, une unité de minuteur manquante ne fera pas crasher un *build* au même titre qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
+Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, un module introuvable, etc.) sont de sévérité `error`. Les lacunes récupérables (estimations, annotations incomplètes) sont catégorisées en `warning`, et les simples notifications contextuelles (surplus, calcul par fournées, contention de ressources) sont en `info`. Ainsi, une unité de minuteur manquante ne fera pas crasher un *build* au même titre qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` et `info` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
 
 ## Codes
 
@@ -76,3 +77,15 @@ L'ingrédient marqué comme ancre du % boulanger (via le modificateur `*` ou l'o
 
 ### `NO_BAKERS_REFERENCE`
 Le mode *Baker's Math* a été explicitement requis (via `enableBakersMath` avec un modificateur `*` nu, ou via un identifiant `bakersReference`), mais aucun ingrédient correspondant n'a été trouvé. **Correction** : ajoutez le modificateur `*` sur un ingrédient, ou corrigez l'ID passé à `bakersReference`.
+
+### `COMPOSITE_PARENT_CONFLICT`
+
+<Since v="1.2.0" />
+
+Un nom court d'ingrédient composite (ex : `@jus`) est extrait de deux parents différents dans la même recette (ex : `<@citron` dans une étape et `<@orange` dans une autre). **Correction** : utilisez le nom complet de l'enfant (ex : `@jus de citron` et `@jus d'orange`) pour éviter les collisions d'identité dans la base de données.
+
+### `MODULE_NOT_FOUND`
+
+<Since v="1.2.0" />
+
+Un module importé via une directive `@use` n'a pas pu être résolu ou trouvé sur le système de fichiers. **Correction** : vérifiez le chemin du fichier, l'extension (`.gram`) ou les alias configurés dans `config.yaml`.

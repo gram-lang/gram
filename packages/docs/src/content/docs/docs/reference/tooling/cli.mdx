@@ -28,6 +28,7 @@ The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `
 ## Global Options
 
 - `--verbose` / `--debug`: works with any command, prints a full stack trace on error instead of just the terse message.
+- `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable item on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
 
 ---
 
@@ -72,7 +73,8 @@ gram build brioche.gram --scale 2 --output ./dist-doubled
 - By default, outputs pure JSON directly to `stdout` for easy piping.
 - Computes nutritional data and physical mass standardization automatically via the database.
 - `--scale <factor>` bakes the scaling into the JSON output. Reference mode (e.g. `flour=300g`) isn't available here by design: `build` can batch multiple files at once, and a reproducible batch output shouldn't depend on reading one specific file's shopping list first. Use `gram view`/`gram scale` to find the factor you want, then pass that numeric factor to `build`.
-- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`.
+- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to build it anyway.
+- Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`.
 
 #### `gram view <file>`
 Displays a recipe directly in the terminal in a beautifully styled ASCII box.
@@ -85,7 +87,7 @@ gram view brioche.gram --scale flour=300g   # View scaled to flour = 300g
 - Displays calculated nutrition, timings, and ingredient checklists.
 - With `--scale`, all ingredient quantities (shopping list and in-step references) are adjusted.
 - Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`.
-- `--nutrition <auto|total|per-portion|per-100g>` picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 
 #### `gram import <source>`
 Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into a `.gram` file using AI.
@@ -101,7 +103,7 @@ gram import recipe.json -o brioche.gram -y         # Non-interactive export
 **Supported Sources:**
 - **Web page URLs**: automatically fetches the page and extracts structured `application/ld+json` recipe metadata (Schema.org `Recipe`).
 - **Local JSON / JSON-LD files**: parses exported JSON-LD schemas directly from disk.
-- **YouTube videos & Shorts**: analyzes cooking videos directly using Gemini multimodal video understanding (without requiring third-party transcript scrapers).
+- **YouTube videos & Shorts** <Since v="1.1.0" />: analyzes cooking videos directly using Gemini multimodal video understanding (without requiring third-party transcript scrapers).
 
 **Import Workflow & Guardrails:**
 - Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
@@ -116,14 +118,14 @@ gram import recipe.json -o brioche.gram -y         # Non-interactive export
 - **Ingredients that came back without a quantity are counted and listed by line.** Not an error — `@salt{}` is idiomatic for "to taste" — but it is the clearest measure of how finished the recipe is, and it points you at the lines to edit. An ingredient given an amount once and merely mentioned again later is not counted.
 - When an ingredient database is present, the analyzer also reports what it could not resolve (unknown ingredients, quantities with no usable mass). These are gaps in your database, not import failures, so they never block.
 
-**YouTube Video Import Specifics:**
+**YouTube Video Import Specifics:** <Since v="1.1.0" />
 - **Google / Gemini only**: Gemini is the one provider that natively processes YouTube URLs. With any other provider the import stops rather than sending it something that isn't a video.
 - **Cost scales with length**, at roughly 100 input tokens per second of video: a Short is a few thousand tokens, ten minutes is around 60,000, twenty-six minutes around 158,000. Videos over 20 minutes are refused by default; raise the ceiling with `--max-duration <minutes>`.
 - **Cost estimate needs `YOUTUBE_API_KEY`**: a plain YouTube Data API key, read from the environment only, never from `config.yaml`. Without it the import still runs, but it cannot determine the length upfront or enforce the limit, and says so.
 - **Video quantity expectations**: a video states far fewer explicit quantities than a written recipe. The prompt tells the model to leave `{}` empty rather than guess, and the checks above then refuse anything where content went missing. Expect gaps to fill in by hand — that is the honest outcome, not a failure.
 - `title:`, `author:` (channel name), and `source:` (URL) come directly from YouTube metadata and are used verbatim.
 
-- Options: `--output/-o <file>`, `--yes/-y`, `--force`, `--max-duration <minutes>`, plus the [shared AI options](#choosing-the-ai-model).
+- Options: `--output/-o <file>`, `--yes/-y`, `--force`, `--max-duration <minutes>` <Since v="1.1.0" />, plus the [shared AI options](#choosing-the-ai-model).
 
 #### `gram shop [pattern]`
 Generates an aggregated shopping list across multiple recipes.
@@ -138,7 +140,8 @@ gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 - Ingredients without a quantity (e.g. `@salt{}`) are listed alongside their main entry rather than in a separate section.
 - Supports small units: `pinch`, `dash`, `drop` (and French variants) are handled without aggregation errors.
 - `--scale <factor>` applies a numeric multiplier to all recipes (factor only — ref mode not available for multi-file).
-- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`.
+- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to list it anyway.
+- Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`.
 
 #### `gram cook <file>`
 Launches an interactive step-by-step cooking guide directly in the terminal.
@@ -183,16 +186,18 @@ gram diff brioche.gram --ref HEAD~2           # vs a specific git commit
 gram diff brioche.gram --ref v1.2             # vs a git tag
 gram diff brioche-v1.gram brioche-v2.gram     # Two explicit files (no git needed)
 ```
-The diff covers **six axes**:
+The diff covers **seven axes**:
 - **Ingredients** — added/removed/changed quantities, with `percentChange` when units match.
 - **Timings** — `totalTime`, `cookTime`, `activeTime`, `preparationTime` in minutes.
 - **Sections** — added/removed sections and step-count changes.
 - **Frontmatter** — changes to `portions`, `description`, and other metadata fields. A `title` change is tracked separately and shown as its own line above the frontmatter block.
 - **Preparations** — changed preparation modes per ingredient (e.g. "diced" → "sliced").
 - **Temperatures & Timers** — added/removed/changed temperature targets and timer durations per section.
+- **Modules** — an `@use` import added, removed, re-bound to a different name, or rescaled to a different factor.
 
 - Operates on compiled objects (Kitchen output), not raw text — syntactic reformatting produces no diff.
 - Git mode requires the file to be tracked. Gracefully errors if `git` is unavailable.
+- A section spliced in from an `@use` import never counts toward the Sections/Preparations/Temperatures/Timers axes — otherwise adding one import would look like every other section moved. Its own import is what the Modules axis reports instead. `gram diff` doesn't resolve `@use` on its own, though: it compiles each side standalone, so a change *inside* an imported base isn't visible here — diff the base file directly for that.
 - Options: `--ref <git-ref>`.
 
 #### `gram scale <file>`
@@ -220,6 +225,7 @@ gram watch --build --output ./dist      # Also build changed files to JSON
 - Displays a timestamped result line per change: `[12:34:01] ✓ brioche.gram` or `✗ brioche.gram — 1 error`.
 - Errors are shown inline below the filename — the watcher never stops on error.
 - 150ms debounce prevents redundant runs when editors write files in multiple chunks.
+- Saving a base recipe also re-checks every file under the watched directory that `@use`s it, directly or transitively — not just the file that changed on disk. A `→ rechecking N dependent file(s)` line names how many.
 - Options: `--build`, `--output/-o <dir>`, `--skip-db`, `--db`.
 
 #### `gram suggest`
@@ -247,7 +253,7 @@ gram print brioche.gram --no-open         # Generate only, print the path to std
 - Identical output to `gram export --format html` — suitable for browser print dialog (`Ctrl+P` / `Cmd+P`) to produce an A4 PDF.
 - `--no-step-qty` — hides ingredient quantities in step text (useful when cooking from the ingredient list in the margin).
 - Options: `--no-open`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`.
-- `--nutrition <auto|total|per-portion|per-100g>` picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
@@ -261,7 +267,7 @@ gram export brioche.gram --format html --scale 2       # export at double quanti
 - Default output path: same directory as the input file, extension replaced (`.gram` → `.md` or `.html`).
 - `--no-step-qty` — hides ingredient quantities in step text. **HTML format only** — has no effect with `--format md`. The section mise en place (ingredient list before each section) always shows full quantities.
 - Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`.
-- `--nutrition <auto|total|per-portion|per-100g>` picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 
 #### `gram format [pattern]`
 Auto-formats `.gram` files applying 13 canonical rules in-place via `@gram-lang/format`.
@@ -355,6 +361,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - Options: `--report/-r` (show issues without applying fixes), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 
 3. #### `gram db enrich`
+   <Since v="1.1.0" type="changed" />
    Uses AI to propose missing data for your database, then walks you through an interactive review before writing anything.
    - Proposes `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches (`unit_weight` is filled alongside `density`). `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
    - `nutrition` covers every nutrient the database accepts, including the fat subtypes (`sat_fat`, `mono_fat`, `poly_fat`) and `alcohol`.
@@ -365,6 +372,8 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
 </Steps>
 
 #### `gram db validate`
+<Since v="1.1.0" />
+
 Validates the integrity of your `ingredients.yaml`.
 - Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
 - A malformed entry doesn't stop the rest from being checked: every entry is validated independently, and the report lists every issue found across the whole file in one pass.
@@ -399,6 +408,8 @@ The merge is **alias-aware**: if your database has `butter` with alias `beurre`,
 The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
 
 ### Choosing the AI model
+
+<Since v="1.1.0" />
 
 Every AI-backed command — `gram import`, `gram db lint` and `gram db enrich` — accepts the same three options and prints the model it is about to call, so an unexpected choice is visible before it costs you anything:
 
@@ -439,6 +450,11 @@ language: "en"                 # Language for all AI-generated content (categori
                                # (the `gram init` interactive prompt currently only offers en/fr;
                                # other codes must be set manually with `gram config set language <code>`)
 updateCheck: true             # Set to false to silence the "update available" notice printed after each command
+
+# Named `@use` specifier aliases — `@use "@bases/pate.gram"` resolves to
+# "<project root>/shared/bases/pate.gram". See the Module Imports reference.
+paths:                         # Added in v1.2.0 for module aliases
+  bases: "./shared/bases"
 
 # AI settings for `gram import`, `gram db enrich` and `gram db lint`
 ai:

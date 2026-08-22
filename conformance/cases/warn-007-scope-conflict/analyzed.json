@@ -137,12 +137,20 @@
   "warnings": [
     {
       "code": "SCOPE_CONFLICT",
-      "message": "Global variable '&dup' is redefined.",
+      "message": "Intermediate variable '&dup' is redefined; variable names must be unique across the recipe.",
       "loc": {
         "start": 82,
         "end": 88
       },
       "section": "Second"
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
     }
   ],
   "metrics": {
@@ -193,11 +201,11 @@
       "warnings": [
         {
           "code": "MISSING_INGREDIENT",
-          "message": "\"flour\" not found in database."
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
         },
         {
           "code": "UNKNOWN_MASS",
-          "message": "Cannot calculate mass for \"milk\" to estimate nutrition."
+          "message": "Cannot calculate mass for \"milk\" — omitted from nutritional totals."
         }
       ]
     }

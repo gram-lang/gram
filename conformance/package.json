@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "conformance": "bun run run.ts",
+    "conformance": "bun run run.ts --only-failures",
+    "conformance:verbose": "bun run run.ts",
     "conformance:update": "bun run run.ts --update"
   },
   "dependencies": {
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/modules": "workspace:*",
     "@gram-lang/parser": "workspace:*"
   },
   "devDependencies": {

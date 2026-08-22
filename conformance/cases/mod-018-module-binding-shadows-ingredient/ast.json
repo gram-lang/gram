@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Module Binding Shadows Ingredient"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 82,
+            "end": 87
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 54,
+        "end": 88
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Montage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Foncer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "avec ",
+              "loc": {
+                "start": 110,
+                "end": 115
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 250,
+                  "text": "250"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 121,
+                  "end": 125
+                }
+              },
+              "loc": {
+                "start": 115,
+                "end": 126
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 126,
+                "end": 127
+              }
+            }
+          ],
+          "loc": {
+            "start": 101,
+            "end": 128
+          }
+        }
+      ],
+      "loc": {
+        "start": 89,
+        "end": 128
+      }
+    }
+  ]
+}

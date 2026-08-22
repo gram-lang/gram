@@ -30,13 +30,14 @@
     "build": "node build.cjs",
     "typecheck": "tsc --noEmit",
     "dev": "node build.cjs --watch",
-    "test": "bun test",
+    "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@gram-lang/analyzer": "workspace:*",
     "@gram-lang/format": "workspace:*",
     "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/modules": "workspace:*",
     "@gram-lang/i18n": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",

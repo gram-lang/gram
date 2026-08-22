@@ -1,0 +1,142 @@
+{
+  "title": "Mod Stocked Import",
+  "slug": "mod-stocked-import",
+  "meta": {
+    "title": "Mod Stocked Import"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "Pate Sablee",
+        "is_module_synthetic": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "pate",
+      "name": "Pate Sablee",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 250,
+      "unit": "g",
+      "normalizedMass": 250,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 250
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "avec ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g",
+              "normalizedMass": 250,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          },
+          "action": "Foncer"
+        }
+      ],
+      "metrics": {
+        "totalMass": 250,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 250,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 1263,
+        "fat": 82.5,
+        "carbs": 114.5,
+        "protein": 16.3
+      },
+      "isEstimate": false,
+      "coverage": 1,
+      "per100g": {
+        "calories": 505,
+        "fat": 33,
+        "carbs": 45.8,
+        "protein": 6.5
+      },
+      "basis": {
+        "mass": 250,
+        "massStatus": "precise"
+      }
+    }
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate Sablee",
+      "meta": {
+        "title": "Pate Sablee"
+      },
+      "scaleFactor": 0.5,
+      "mode": "stocked"
+    }
+  ]
+}

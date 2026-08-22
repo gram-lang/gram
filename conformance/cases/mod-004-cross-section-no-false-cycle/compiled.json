@@ -1,0 +1,333 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "base": {
+        "id": "base",
+        "name": "base",
+        "is_intermediate": true
+      },
+      "farine": {
+        "id": "farine",
+        "name": "farine",
+        "default_unit": "g"
+      },
+      "eau": {
+        "id": "eau",
+        "name": "eau",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "farine",
+      "name": "farine",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "multiUnit": true
+    },
+    {
+      "id": "eau",
+      "name": "eau",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "70% of farine"
+      ],
+      "multiUnit": true
+    },
+    {
+      "id": "eau",
+      "name": "eau",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "multiUnit": true
+    },
+    {
+      "id": "farine",
+      "name": "farine",
+      "_usageIds": [
+        "4"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "50% of eau"
+      ],
+      "multiUnit": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Base",
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "eau",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 70,
+            "target": "farine",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 38,
+              "end": 50
+            }
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "70% of farine",
+            "target": "farine",
+            "percent": 70,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 70,
+                "target": "farine",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 38,
+                  "end": 50
+                }
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "70% of farine",
+                "target": "farine",
+                "percent": 70,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "base",
+      "module": {
+        "binding": "base",
+        "uri": "base.gram",
+        "title": null,
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Host",
+      "ingredients": [
+        {
+          "id": "eau",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "farine",
+          "_usageId": "4",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 50,
+            "target": "eau",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 59,
+              "end": 68
+            }
+          },
+          "dependencies": [
+            "eau"
+          ],
+          "formula": {
+            "raw": "50% of eau",
+            "target": "eau",
+            "percent": 50,
+            "isGhost": false
+          }
+        },
+        {
+          "type": "reference",
+          "id": "base",
+          "name": "base",
+          "_usageId": "5",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "4",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "eau",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 59,
+                  "end": 68
+                }
+              },
+              "dependencies": [
+                "eau"
+              ],
+              "formula": {
+                "raw": "50% of eau",
+                "target": "eau",
+                "percent": 50,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "base",
+              "name": "base",
+              "_usageId": "5",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 8,
+            "end": 10,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&base' from \"./base.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 13,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Base",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Host",
+        "duration": 6
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 10,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Base",
+        "duration": 4
+      },
+      {
+        "label": "section_active:Host",
+        "duration": 6
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "base",
+      "uri": "base.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

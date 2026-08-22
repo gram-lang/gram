@@ -1,0 +1,22 @@
+---
+title: 'Lemon Tart'
+description: 'A delicious lemon tart, using a shortcrust base written in another file and pulled in with @use.'
+category: 'Dessert'
+portions: 8
+---
+
+@use "./bases/shortcrust-base.gram" as &shortcrust
+
+## Lemon Curd ->&curd
+
+[Whisk] The @eggs{3}, @sugar{150 g}, and @lemon juice{120 ml}<@lemons{2} in a #saucepan over ^{low heat} until thickened, about ~{8min}. 
+
+[Incorporate] Remove from heat, blend in the @butter{80 g}, and whisk in until glossy. 
+
+## Baking and assembling
+
+[Line] A #tart tin(24cm) with the &shortcrust{250 g}(rolled out thin).
+
+[Bake] At ^{180C} for ~_{15min}. ->&baked shell{}
+
+[Fill] The &baked shell{} with the &curd and ^{chill} for ~_{2h} before serving.

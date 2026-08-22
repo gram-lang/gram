@@ -38,7 +38,7 @@
   "warnings": [
     {
       "code": "MISSING_UNIT",
-      "message": "Timer must have an explicit unit.",
+      "message": "Timer requires an explicit unit (e.g. min, s, °C).",
       "item": "timer",
       "loc": {
         "start": 55,

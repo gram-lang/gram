@@ -1,0 +1,277 @@
+{
+  "title": "Mod Retro Planning Override Shadowed",
+  "slug": "mod-retro-planning-override-shadowed",
+  "meta": {
+    "title": "Mod Retro Planning Override Shadowed"
+  },
+  "registry": {
+    "ingredients": {
+      "levain": {
+        "id": "levain",
+        "name": "levain",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "water": {
+        "id": "water",
+        "name": "water",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Levain",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "water",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "water",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", then leave to ferment ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 24,
+                "text": "24"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 0,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 1440,
+              "startOffset": 0
+            }
+          ]
+        }
+      ],
+      "intermediate_preparation": "levain",
+      "retro_planning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d",
+        "minutes": -2880
+      },
+      "module": {
+        "binding": "levain",
+        "uri": "bases/levain.gram",
+        "title": "Levain",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Pain",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "levain",
+          "name": "levain",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix in the ",
+            {
+              "type": "reference",
+              "id": "levain",
+              "name": "levain",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2878,
+            "end": 2880,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "RETRO_PLANNING_OVERRIDE_SHADOWED",
+      "message": "Host retro-planning offset on \"@use ./bases/levain.gram\" overrides the module's internal offset.",
+      "loc": {
+        "start": 53,
+        "end": 98
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 2883,
+    "totalBreakdown": [
+      {
+        "label": "timer_passive",
+        "duration": 1440
+      },
+      {
+        "label": "section_active:Pain",
+        "duration": 2
+      }
+    ],
+    "idleTime": 2878,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pain",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 200,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"water\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "levain",
+      "uri": "bases/levain.gram",
+      "title": "Levain",
+      "meta": {
+        "title": "Levain"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

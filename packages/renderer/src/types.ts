@@ -5,14 +5,38 @@ import type {
 	NutritionMetrics,
 } from "@gram-lang/analyzer";
 
+// Traceability badge `@gram-lang/modules`' `finalizeComposed` stamps onto a
+// spliced-in section — never set by kitchen's compile() or analyzer's
+// analyze() themselves. Kept as a small structural shape here rather than
+// importing `@gram-lang/modules`' own `ModuleInfo` type: the renderer
+// depends on neither that package nor its types, and this is all three
+// formatters' `moduleLabel()` (formatters/shared.ts) actually needs.
+export interface SectionModuleBadge {
+	binding: string;
+	uri: string;
+	title: string | null;
+	mode: "inline" | "stocked";
+}
+
+type WithModuleBadge<TSection> = TSection & { module?: SectionModuleBadge };
+
 // A recipe reaches the renderer either straight out of `compile()` (no
 // ingredient database — mass/nutrition fields absent) or out of `analyze()`
 // (enriched with mass standardization and nutrition) — both are valid, tested
 // inputs (see e.g. xss-escaping.test.ts using the former), so the renderer's
-// real contract is the union of both, not either alone.
+// real contract is the union of both, not either alone. Either member's
+// `sections` may additionally carry the module badge above, when the result
+// came from `@gram-lang/modules`' compose pipeline rather than a plain
+// single-file compile.
 export type RenderableCompilationResult =
-	| CompilationResult
-	| AnalyzedCompilationResult;
+	| (Omit<CompilationResult, "sections"> & {
+			sections: WithModuleBadge<CompilationResult["sections"][number]>[];
+	  })
+	| (Omit<AnalyzedCompilationResult, "sections"> & {
+			sections: WithModuleBadge<
+				AnalyzedCompilationResult["sections"][number]
+			>[];
+	  });
 
 // `data.metrics` for a plain (un-analyzed) CompilationResult never carries
 // mass/nutrition fields at all — narrowing the union member-by-member at
@@ -45,6 +69,7 @@ export interface RendererIcons {
 	info?: string;
 	minus?: string;
 	plus?: string;
+	package?: string;
 }
 
 export interface RendererClasses {

@@ -1,0 +1,111 @@
+{
+  "title": "Mod Stocked Bare Quantity",
+  "slug": "mod-stocked-bare-quantity",
+  "meta": {
+    "title": "Mod Stocked Bare Quantity"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "Pate Sablee",
+        "is_module_synthetic": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "pate",
+      "name": "Pate Sablee",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 1
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "1",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "avec ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "1",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          },
+          "action": "Foncer"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&pate' from \"./bases/pate.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 42,
+        "end": 76
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate Sablee",
+      "meta": {
+        "title": "Pate Sablee"
+      },
+      "scaleFactor": 1,
+      "mode": "stocked"
+    }
+  ]
+}

@@ -8,5 +8,11 @@
     "id": "empanadas.gram",
     "title": "Brian's Empanadas",
     "path": "/examples/empanadas.gram"
+  },
+  {
+    "id": "lemon-tart",
+    "title": "Lemon Tart (multi-file, @use)",
+    "entry": "lemon-tart.gram",
+    "files": ["lemon-tart.gram", "bases/shortcrust-base.gram"]
   }
 ]

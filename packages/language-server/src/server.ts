@@ -8,7 +8,15 @@ import {
 	DidChangeWatchedFilesNotification,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import { loadModuleGraph, type ModuleGraph } from "@gram-lang/modules";
+import type { AnalyzedCompilationResult } from "@gram-lang/analyzer";
 import { parseDocument, type DocumentState } from "./document-state";
+import { createLspModuleHost } from "./module-host";
+import { findProjectRootSync } from "./utils/project-root";
+import { readPathsConfigSync } from "./utils/module-paths-config";
+import { affectedOpenImporters } from "./utils/module-invalidation";
 import { provideDocumentSymbols } from "./features/document-symbols";
 import { provideDiagnostics } from "./features/diagnostics";
 import { provideDefinition } from "./features/go-to-definition";
@@ -56,6 +64,63 @@ let ingredientDB: IngredientDB = {};
 let ingredientLookupSet: Set<string> = new Set();
 let workspaceFolders: string[] = [];
 
+// The module-imports RFC (§F.1) module resolution state — a `ModuleGraph`
+// per open document, and one yield-measurement cache shared across all of
+// them (mirrors the CLI's `opts.moduleCache`, `core/pipeline.ts:59`, so a
+// base imported by several open files isn't re-measured on every keystroke
+// of every importer). `graphs` is only refreshed by the async `refresh()`
+// pipeline below; the synchronous `getFreshState` path (formatting, rename,
+// code actions) intentionally does not reload it — see the module-imports
+// RFC's note on why `loadModuleGraph`/`composeRecipe` are split into an
+// async load stage and a synchronous consume stage.
+const graphs = new Map<string, ModuleGraph>();
+const moduleMeasureCache = new Map<string, AnalyzedCompilationResult>();
+
+// `findProjectRootSync`/`readPathsConfigSync` are both blocking (`existsSync`
+// walks up the directory tree, `readPathsConfigSync` does a sync file read +
+// YAML parse) — cheap once, but `loadGraphFor` used to redo them on every
+// 150ms-debounced edit of every open document, stalling the event loop on
+// every keystroke even for documents with no `@use` at all. Keyed by
+// directory (not by document) so every open file under the same project
+// shares one lookup. Cleared wholesale on a `.gram/config.yaml` change
+// (`onDidChangeWatchedFiles` below) — the one thing that can make a cached
+// entry wrong — so a `paths:` edit still takes effect on that document's
+// next refresh, same as before this cache existed.
+const projectContextCache = new Map<
+	string,
+	{ projectRoot: string; paths?: Record<string, string> }
+>();
+
+/**
+ * Loads (or reloads) `uri`'s `@use` graph — never throws, and returns
+ * `undefined` for anything that isn't a `file:` document (an untitled or
+ * virtual-workspace buffer, same guard as `resolveWorkspaceFolders`) or
+ * whose graph fails to load for a reason unrelated to the module system
+ * itself. A file with no `@use` at all still goes through this — cheap,
+ * since `loadModuleGraph` then does the one read `parseDocument` needed
+ * anyway — so there is exactly one code path rather than a
+ * has-imports branch to keep in sync (same rationale as the CLI's
+ * `runPipeline`, `core/pipeline.ts:24`).
+ */
+async function loadGraphFor(uri: string): Promise<ModuleGraph | undefined> {
+	if (!uri.startsWith("file:")) return undefined;
+	try {
+		const filePath = fileURLToPath(uri);
+		const dir = dirname(filePath);
+		let ctx = projectContextCache.get(dir);
+		if (!ctx) {
+			const projectRoot = findProjectRootSync(dir);
+			ctx = { projectRoot, paths: readPathsConfigSync(projectRoot) };
+			projectContextCache.set(dir, ctx);
+		}
+		const host = createLspModuleHost(ctx.projectRoot, documents, ctx.paths);
+		return await loadModuleGraph(uri, host);
+	} catch (e) {
+		connection.console.error(`Module graph load failed for ${uri}: ${e}`);
+		return undefined;
+	}
+}
+
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	workspaceFolders = resolveWorkspaceFolders(params.workspaceFolders);
 	return {
@@ -65,7 +130,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			definitionProvider: true,
 			hoverProvider: true,
 			foldingRangeProvider: true,
-			completionProvider: { triggerCharacters: ["&", "@"] },
+			completionProvider: { triggerCharacters: ["&", "@", '"'] },
 			semanticTokensProvider: {
 				full: true,
 				legend: {
@@ -115,18 +180,45 @@ connection.onInitialized(async () => {
 	// Watch ingredients.yaml so edits made outside the editor (gram db sync/enrich,
 	// a hand-edit in another tool) refresh diagnostics without needing a restart —
 	// previously the DB was only (re)loaded at init and on config changes (Phase 1.x).
+	// Also watch every `.gram` file (module-imports RFC §F.1) so an on-disk
+	// change to a dependency that isn't itself open — an external `git pull`,
+	// another tool, a save from a *different* editor window — still reaches
+	// any open importer, not just edits made through this document's own
+	// buffer.
 	try {
 		await connection.client.register(DidChangeWatchedFilesNotification.type, {
-			watchers: [{ globPattern: "**/.gram/ingredients.yaml" }],
+			watchers: [
+				{ globPattern: "**/.gram/ingredients.yaml" },
+				{ globPattern: "**/.gram/config.yaml" },
+				{ globPattern: "**/*.gram" },
+			],
 		});
 	} catch {
 		// Client doesn't support dynamic file watching — degrade silently,
-		// the DB still (re)loads on init/config-change as before.
+		// the DB still (re)loads on init/config-change as before, and an open
+		// document still resyncs to an on-disk dependency change the next
+		// time it's itself edited.
 	}
-	connection.onDidChangeWatchedFiles(() => {
-		reloadDbAndRefreshDiagnostics().catch((e) =>
-			connection.console.error(`DB reload failed: ${e}`),
-		);
+	connection.onDidChangeWatchedFiles((params) => {
+		let dbChanged = false;
+		for (const change of params.changes) {
+			if (change.uri.endsWith(".gram")) {
+				invalidateDependents(change.uri);
+			} else if (change.uri.endsWith(".gram/config.yaml")) {
+				// A `paths:` alias edit invalidates every cached project
+				// root/paths lookup (`loadGraphFor`'s `projectContextCache`) — the
+				// next debounced refresh of each open document recomputes it fresh,
+				// same as every refresh did before that cache existed.
+				projectContextCache.clear();
+			} else {
+				dbChanged = true;
+			}
+		}
+		if (dbChanged) {
+			reloadDbAndRefreshDiagnostics().catch((e) =>
+				connection.console.error(`DB reload failed: ${e}`),
+			);
+		}
 	});
 
 	connection.onDidChangeConfiguration(() => {
@@ -136,12 +228,30 @@ connection.onInitialized(async () => {
 	});
 });
 
-function refresh(uri: string, text: string, version?: number) {
-	const state = parseDocument(text, ingredientDB, version);
+async function refresh(
+	uri: string,
+	text: string,
+	version?: number,
+): Promise<void> {
+	const graph = await loadGraphFor(uri);
+	if (graph) graphs.set(uri, graph);
+	else graphs.delete(uri);
+
+	const state = parseDocument(
+		text,
+		ingredientDB,
+		version,
+		graph ? { graph, cache: moduleMeasureCache } : undefined,
+	);
 	states.set(uri, state);
 	connection.sendDiagnostics({
 		uri,
-		diagnostics: provideDiagnostics(state, ingredientLookupSet, ingredientDB),
+		diagnostics: provideDiagnostics(
+			state,
+			uri,
+			ingredientLookupSet,
+			ingredientDB,
+		),
 	});
 
 	if (state.compilation) {
@@ -166,14 +276,30 @@ function refresh(uri: string, text: string, version?: number) {
 		} catch (e) {
 			console.error("Gantt render error", e);
 		}
-	} else if (state.parseError) {
-		// Fallback for syntax errors. ohm-js error messages often embed a snippet of
-		// the offending source line for context, so this must be escaped like any
-		// other user-controlled content reaching the preview webview (audit Chantier 6).
+	} else if (state.parseError != null || state.compileError != null) {
+		// Truthiness (`||`) would treat a thrown `Error()` with an empty
+		// message the same as "no error" — silently skipping the webview
+		// notification below and leaving preview/Gantt on stale content,
+		// exactly the "silent compilation failure" this refresh path exists
+		// to prevent.
+		const isParse = state.parseError != null;
+		const title = isParse ? "Syntax Error" : "Compilation Error";
+		const errorMessage = state.parseError ?? state.compileError ?? "";
+		const offsetAttr =
+			state.parseErrorOffset !== null
+				? ` data-offset="${state.parseErrorOffset}"`
+				: "";
 		const html = `
-            <div style="padding: 20px; color: var(--vscode-errorForeground);">
-                <h2>Syntax Error</h2>
-                <pre style="background: var(--vscode-editorWidget-background); padding: 10px; border-radius: 6px;">${escapeHtml(state.parseError)}</pre>
+            <div class="gram-preview-error-state" style="padding: 24px 20px; font-family: var(--gram-font-sans, inherit); max-width: 600px; margin: 0 auto; text-align: center;">
+                <div style="color: var(--vscode-errorForeground, #ef4444); margin-bottom: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256" style="display: inline-block;">
+                        <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"></path>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: var(--vscode-editor-foreground, inherit);">${title}</h3>
+                <p style="margin: 0 0 16px 0; font-size: 13px; color: var(--vscode-descriptionForeground, #888); line-height: 1.4;">Generation paused due to an error in the recipe.</p>
+                <div style="text-align: left; background: var(--vscode-editorWidget-background, #1e1e1e); border: 1px solid var(--vscode-widget-border, #333); border-radius: 6px; padding: 12px; font-family: var(--gram-font-mono, monospace); font-size: 12px; color: var(--vscode-editor-foreground, #ccc); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow-y: auto;">${escapeHtml(errorMessage)}</div>
+                ${state.parseErrorOffset !== null ? `<button class="gram-goto-btn"${offsetAttr} style="margin-top: 14px; padding: 6px 14px; background: var(--vscode-button-background, #007acc); color: var(--vscode-button-foreground, #fff); border: none; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer;">Jump to error</button>` : ""}
             </div>
         `;
 		connection.sendNotification("gram/previewUpdated", { uri, html });
@@ -192,9 +318,35 @@ function scheduleRefresh(uri: string, text: string, version: number): void {
 		uri,
 		setTimeout(() => {
 			pendingRefresh.delete(uri);
-			refresh(uri, text, version);
+			refresh(uri, text, version).catch((e) =>
+				connection.console.error(`refresh failed for ${uri}: ${e}`),
+			);
 		}, 150),
 	);
+}
+
+/**
+ * Propagates a change in `changedUri` to every currently open document that
+ * transitively `@use`s it (module-imports RFC §F.1) — the A -> B -> C case:
+ * editing C, even unsaved, must refresh A's diagnostics through B. Also
+ * invalidates `changedUri`'s own entry in the shared yield-measurement
+ * cache, since that cached `AnalyzedCompilationResult` is now stale — left
+ * unfixed, an importer would keep reusing C's *old* measured yield/scale
+ * factor forever, having no other reason to ever recompute it.
+ *
+ * Called from three places: an open document's own content changing, the
+ * `**\/*.gram` file-watcher (an on-disk change to a file that may not even
+ * be open itself), and a document closing (its host's `read()` source
+ * switches from the live buffer back to disk, which open importers must
+ * pick up).
+ */
+function invalidateDependents(changedUri: string): void {
+	moduleMeasureCache.delete(changedUri);
+	const openUris = documents.all().map((d) => d.uri);
+	for (const uri of affectedOpenImporters(graphs, openUris, changedUri)) {
+		const doc = documents.get(uri);
+		if (doc) scheduleRefresh(uri, doc.getText(), doc.version);
+	}
 }
 
 // See utils/fresh-state.ts (audit 2026-07-22, finding B5) — formatting,
@@ -203,29 +355,40 @@ function scheduleRefresh(uri: string, text: string, version: number): void {
 function getFreshState(uri: string): DocumentState | undefined {
 	const doc = documents.get(uri);
 	if (!doc) return states.get(uri);
+	const graph = graphs.get(uri);
 	const fresh = resolveFreshState(
 		states.get(uri),
 		doc.getText(),
 		doc.version,
 		ingredientDB,
+		graph ? { graph, cache: moduleMeasureCache } : undefined,
 	);
 	states.set(uri, fresh);
 	return fresh;
 }
 
-documents.onDidOpen((e) =>
-	refresh(e.document.uri, e.document.getText(), e.document.version),
-);
-documents.onDidChangeContent((e) =>
-	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version),
-);
+documents.onDidOpen((e) => {
+	refresh(e.document.uri, e.document.getText(), e.document.version).catch(
+		(err) =>
+			connection.console.error(`refresh failed for ${e.document.uri}: ${err}`),
+	);
+});
+documents.onDidChangeContent((e) => {
+	scheduleRefresh(e.document.uri, e.document.getText(), e.document.version);
+	invalidateDependents(e.document.uri);
+});
 documents.onDidClose((e) => {
 	states.delete(e.document.uri);
+	graphs.delete(e.document.uri);
 	const pending = pendingRefresh.get(e.document.uri);
 	if (pending) {
 		clearTimeout(pending);
 		pendingRefresh.delete(e.document.uri);
 	}
+	// The closing document's `read()` source switches from its live buffer
+	// back to disk (module-host.ts) — any open importer must resync to that,
+	// not keep reflecting whatever was last in the (now-gone) buffer.
+	invalidateDependents(e.document.uri);
 	connection.sendDiagnostics({ uri: e.document.uri, diagnostics: [] });
 });
 
@@ -237,9 +400,10 @@ connection.onDocumentSymbol(({ textDocument: { uri } }) => {
 connection.onDefinition(({ textDocument: { uri }, position }) => {
 	const s = states.get(uri);
 	if (!s) return null;
-	const loc = provideDefinition(s, position);
-	if (!loc) return null;
-	return { ...loc, uri };
+	// The returned Location's own uri now comes from provideDefinition
+	// itself (module-imports RFC §F.1) — a cross-file jump into an `@use`d
+	// base names *that* file's uri, not this one.
+	return provideDefinition(s, uri, position);
 });
 
 connection.onHover(({ textDocument: { uri }, position }) => {
@@ -267,7 +431,7 @@ connection.onCompletion(({ textDocument: { uri }, position }) => {
 				s.lineStarts[position.line] ?? 0,
 				positionToOffset(s.lineStarts, position),
 			);
-	return provideCompletions(s, ingredientDB, prefix);
+	return provideCompletions(s, ingredientDB, prefix, uri);
 });
 
 connection.onReferences(({ textDocument: { uri }, position }) => {

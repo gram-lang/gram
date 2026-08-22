@@ -1,5 +1,5 @@
 ---
-title: "Analyse approfondie : Standardisation des Masses & Rendement"
+title: "Analyse approfondie : standardisation des masses & rendement"
 description: "Comment Gram convertit volumes et nombres en grammes, et calcule le poids d'achat à partir du rendement."
 ---
 
@@ -9,7 +9,7 @@ Cette page explique le moteur physique derrière les calculs de masse et de rend
 
 import { Steps } from '@astrojs/starlight/components';
 
-## Les Trois Piliers de la Physique
+## Les trois piliers de la physique
 
 Gram modélise les propriétés physiques des ingrédients selon trois concepts distincts au sein de votre base de données. Cette séparation stricte garantit l'exactitude des calculs, que vous exprimiez vos quantités en volumes, en unités ou en poids.
 
@@ -20,13 +20,13 @@ Gram modélise les propriétés physiques des ingrédients selon trois concepts 
 3. **Rendement (`yield`)** : Le **Facteur de Déchet**. Il sert strictement à calculer le ratio entre la **Masse Nette** comestible et la **Masse Brute** à l'achat (en déduisant épluchures, noyaux, os, etc.).
     * *Exemple* : Un avocat a un rendement de 0.70 (30 % correspond au noyau et à la peau).
 
-## Le But de la Standardisation des Masses
+## Le but de la standardisation des masses
 
 Le but principal de l'Analyseur est de calculer la **Masse Totale** d'une recette. C'est essentiel pour l'estimation nutritionnelle, le calcul du coût, et les ratios de pâtisserie.
 
 Pour ce faire, l'Analyseur doit convertir chaque quantité d'ingrédient en une base de référence unifiée : les **grammes (g)**.
 
-### L'Algorithme de Conversion
+### L'algorithme de conversion
 
 Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de priorité stricte pour trouver sa masse :
 
@@ -38,7 +38,7 @@ Lorsque l'Analyseur rencontre un ingrédient, il le passe par un algorithme de p
 5. **Incomplet** : Lorsqu'un volume n'a aucune densité disponible (ni surcharge, ni entrée en BDD) ou qu'un nombre n'a pas de `unit_weight`, l'Analyseur refuse d'effectuer une estimation arbitraire. Il ne supposera **pas** une densité par défaut (comme traiter tout liquide comme de l'eau), ce qui fausserait silencieusement la liste de courses. Le calcul échoue, l'ingrédient est marqué comme *incomplet*, et il reste listé dans son unité brute non convertie.
 </Steps>
 
-## Calcul du Rendement (Le Facteur de Déchet)
+## Calcul du rendement (le facteur de déchet)
 
 Dans les cuisines professionnelles, il y a une différence fondamentale entre ce qui va *dans la casserole* et ce que vous *achetez au magasin*.
 
@@ -47,7 +47,7 @@ Dans les cuisines professionnelles, il y a une différence fondamentale entre ce
 
 Le rapport entre ces deux éléments est le **Facteur de Rendement**. 
 
-### Comment Gram gère le Rendement
+### Comment Gram gère le rendement
 
 Par défaut, Gram part du principe que tout ingrédient mentionné dans une recette correspond à sa **Masse Nette**. Le générateur de liste de courses remonte ensuite la chaîne à l'envers : il utilise le rendement (`yield`) et le poids unitaire (`unit_weight`) pour déterminer la quantité exacte à acheter.
 

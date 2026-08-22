@@ -1,0 +1,9 @@
+---
+title: Mod Destructured Bindings
+---
+
+@use "./oeufs.gram" as { &blancs, &jaunes }
+
+## Dessert
+
+Whisk &blancs{200g} and &jaunes{100g}. Also add @flour{100g}.

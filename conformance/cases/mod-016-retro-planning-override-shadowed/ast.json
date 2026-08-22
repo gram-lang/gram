@@ -1,0 +1,94 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Retro Planning Override Shadowed"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/levain.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "levain",
+          "loc": {
+            "start": 83,
+            "end": 90
+          }
+        }
+      ],
+      "retroPlanning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d"
+      },
+      "loc": {
+        "start": 53,
+        "end": 98
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Pain",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix in the ",
+              "loc": {
+                "start": 108,
+                "end": 119
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "levain",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 127,
+                  "end": 131
+                }
+              },
+              "loc": {
+                "start": 119,
+                "end": 132
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 132,
+                "end": 133
+              }
+            }
+          ],
+          "loc": {
+            "start": 108,
+            "end": 134
+          }
+        }
+      ],
+      "loc": {
+        "start": 99,
+        "end": 134
+      }
+    }
+  ]
+}

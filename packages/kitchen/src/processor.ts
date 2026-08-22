@@ -32,6 +32,7 @@ import type {
 	ProcessedComment,
 	RetroPlanning,
 	TimeBreakdownItem,
+	DeferredImport,
 } from "./types";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
@@ -134,6 +135,31 @@ function processIngredient(
 		const parentId = registry.registerIngredient(item.composite.parent, {
 			is_composite: true,
 		});
+
+		// A bare/generic child name (e.g. `@juice`) slugifies to the same
+		// registry id regardless of which parent it's attached to — so the
+		// same id resolving to two different parents means two physically
+		// different substances are about to share one database entry (and
+		// one nutrition/mass profile). Check before registerIngredient's
+		// unconditional `existing.parent = data.parent` overwrite erases the
+		// evidence.
+		const childId = registry.getIngredientId(item.name);
+		const existingChild = registry.ingredients.get(childId);
+		if (
+			existingChild?.is_composite &&
+			existingChild.parent &&
+			existingChild.parent !== parentId
+		) {
+			pushWarning(ctx, WarningCode.COMPOSITE_PARENT_CONFLICT, {
+				childName: item.name,
+				previousParent:
+					registry.ingredients.get(existingChild.parent)?.name ??
+					existingChild.parent,
+				newParent: item.composite.parent,
+				loc: item.loc,
+			});
+		}
+
 		registry.registerIngredient(item.name, {
 			is_composite: true,
 			parent: parentId,
@@ -534,23 +560,22 @@ export function processBlockItem(
 	if (!item) return null;
 
 	switch (item.type) {
-		case ASTNodeType.Ingredient:
-			return processIngredient(
-				item as IngredientAST,
-				ctx,
-				registry,
-				secIngredients,
-			);
+		case ASTNodeType.Ingredient: {
+			const ing = item as IngredientAST;
+			return processIngredient(ing, ctx, registry, secIngredients);
+		}
 		case ASTNodeType.Cookware:
 			return processCookware(item as CookwareAST, ctx, registry, secCookware);
-		case ASTNodeType.Alternative:
+		case ASTNodeType.Alternative: {
+			const alt = item as AlternativeAST;
 			return processAlternative(
-				item as AlternativeAST,
+				alt,
 				ctx,
 				registry,
 				secIngredients,
 				secCookware,
 			);
+		}
 		case ASTNodeType.Reference:
 			return processReference(
 				item as ReferenceAST,
@@ -578,6 +603,40 @@ export function processBlockItem(
 }
 
 /**
+ * Groups a flat list of top-level AST children into a list of sections,
+ * wrapping any run of non-`Section` nodes (bare steps/comments with no
+ * heading) into a single synthetic untitled section placed first. Shared by
+ * `processSections` and, in the module composer, by the rule that a module
+ * without its own section must not spill bare steps into the host's own
+ * untitled section — each side must group independently before splicing, or
+ * an imported module's steps and the host's own bare steps would land in the
+ * same section and cross-contaminate relative-quantity resolution.
+ */
+export function groupIntoSections(astChildren: ASTNode[]): ASTNode[] {
+	const topLevelBlocks: ASTNode[] = [];
+	const actualSections: ASTNode[] = [];
+
+	for (const child of astChildren) {
+		if (child.type === ASTNodeType.Section) {
+			actualSections.push(child);
+		} else {
+			topLevelBlocks.push(child);
+		}
+	}
+
+	const blocksToProcess = [...actualSections];
+	if (topLevelBlocks.length > 0) {
+		blocksToProcess.unshift({
+			type: ASTNodeType.Section,
+			title: null,
+			children: topLevelBlocks,
+		} as SectionAST);
+	}
+
+	return blocksToProcess;
+}
+
+/**
  * Main structural step/section processor.
  * Builds global scopes, registers intermediate recipe variables, schedules steps,
  * handles passive background tasks, and calculates active and total duration metrics.
@@ -586,6 +645,7 @@ export function processSections(
 	astChildren: ASTNode[],
 	registry: RecipeRegistry,
 	options?: CompilerOptions,
+	imports: DeferredImport[] = [],
 ): {
 	sections: ProcessedSection[];
 	metrics: {
@@ -607,29 +667,40 @@ export function processSections(
 		options,
 	};
 
-	const sections: ProcessedSection[] = [];
-	let blocksToProcess: ASTNode[] = astChildren;
-
-	// Group all top-level steps and comments into an implicit default section
-	const topLevelBlocks: ASTNode[] = [];
-	const actualSections: ASTNode[] = [];
-
-	for (const child of astChildren) {
-		if (child.type === ASTNodeType.Section) {
-			actualSections.push(child);
-		} else {
-			topLevelBlocks.push(child);
+	// Register every `@use` binding as an intermediate up front, whether or
+	// not module resolution actually happened. `compile()` never sees a
+	// resolved module — that's `@gram-lang/modules`' job, running before
+	// compile() and splicing the resolved sections in, at which point the
+	// composed AST carries no `imports` at all. So non-empty `imports` here
+	// unambiguously means "not resolved" (playground, `gram check` on a
+	// standalone file, LSP mid-edit, or the module composer's own
+	// per-module pre-pass) — one MODULE_NOT_FOUND per import instead of a
+	// cascade of UNDEFINED_REFERENCE for every `&binding` used in the body.
+	imports.forEach((decl) => {
+		const isModuleSynthetic = decl.registryKind === "module_synthetic";
+		decl.bindings.forEach((binding) => {
+			registry.registerIngredient(
+				binding.local,
+				isModuleSynthetic
+					? {
+							is_module_synthetic: true,
+							displayName: decl.title ?? binding.local,
+						}
+					: { is_intermediate: true },
+			);
+			ctx.globalScopes.set(binding.local, decl.specifier);
+			ctx.definedIntermediates.add(binding.local);
+		});
+		if (!isModuleSynthetic) {
+			pushWarning(ctx, WarningCode.MODULE_NOT_FOUND, {
+				specifier: decl.specifier,
+				loc: decl.loc,
+			});
 		}
-	}
+	});
 
-	blocksToProcess = [...actualSections];
-	if (topLevelBlocks.length > 0) {
-		blocksToProcess.unshift({
-			type: ASTNodeType.Section,
-			title: null,
-			children: topLevelBlocks,
-		} as SectionAST);
-	}
+	const sections: ProcessedSection[] = [];
+	const blocksToProcess: ASTNode[] = groupIntoSections(astChildren);
 
 	const globalSchedules: StepSchedule[] = [];
 	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised

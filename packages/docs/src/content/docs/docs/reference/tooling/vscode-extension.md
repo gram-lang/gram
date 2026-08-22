@@ -57,9 +57,9 @@ Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to inst
 
 ```diff
 - ##    Dough   ->&dough
-- Add @zest{1} < @lemon and @salt{ 15 g }.
+- Add @lemon zest{1} < @lemon and @salt{ 15 g }.
 + ## Dough ->&dough
-+ Add @zest{1}<@lemon and @salt{15g}.
++ Add @lemon zest{1}<@lemon and @salt{15g}.
 ```
 
 ## Editor UI Enhancements

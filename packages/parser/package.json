@@ -40,7 +40,7 @@
     "prebuild": "node scripts/build-grammar.cjs",
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
+    "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

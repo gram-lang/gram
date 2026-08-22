@@ -8,6 +8,7 @@ Le CLI de Gram (`@gram-lang/cli`) peut s'appuyer sur des modèles de langage (LL
 Ce guide explique pas à pas comment configurer votre fournisseur d'IA préféré.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Ce que permet l'IA dans le CLI Gram
 
@@ -19,7 +20,7 @@ Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI 
 
 ---
 
-## Pourquoi l'IA ? Restructuration vs Transcription mécanique
+## Pourquoi l'IA ? Restructuration vs transcription mécanique
 
 Gram n'est pas un simple format de balisage texte ; c'est un modèle sémantique structuré pour le domaine de la cuisine. Convertir une recette traditionnelle (depuis une page web ou un JSON-LD) vers le format `.gram` **ne peut pas se faire par un simple copier-coller ou une conversion mécanique de chaînes de caractères**.
 
@@ -28,7 +29,7 @@ Les recettes traditionnelles contiennent de nombreuses étapes qui n'existent qu
 - *"Dans un ramequin, mélanger le sel et le poivre et réserver"* → Dans Gram, cela devient une référence à une variable intermédiaire (`&assaisonnement`).
 - *"Retirer du feu et laisser reposer 30 minutes"* → Dans Gram, c'est une annotation de minuteur passif de repos (`~_{30min}`).
 
-Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus<@citron{1}`).
+Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus de citron{}<@citron{1}`).
 
 **L'IA agit comme un compilateur de recettes intelligent.** Elle lit le texte non structuré, extrait la logique culinaire sous-jacente, absorbe les étapes de préparation dans les déclarations d'ingrédients, réorganise le flux en sections logiques et produit un fichier `.gram` propre et idiomatique, exactement comme le rédigerait un auteur de recettes humain.
 
@@ -38,7 +39,7 @@ De la même manière pour la gestion de votre base d'ingrédients :
 
 ---
 
-## Méthodes de Configuration
+## Méthodes de configuration
 
 Vous pouvez configurer l'IA via une **installation interactive**, des **variables d'environnement** (recommandé pour la sécurité) ou des **fichiers de configuration**.
 
@@ -60,7 +61,7 @@ Pendant l'initialisation, le CLI vous demandera :
 
 ---
 
-### Méthode 2 : Variables d'Environnement (Recommandé)
+### Méthode 2 : variables d'environnement (recommandé)
 
 Le CLI Gram vérifie automatiquement les variables d'environnement pour trouver vos identifiants. Sous Node.js (>=20.6.0) et sous [Bun](https://bun.sh/), les fichiers `.env` situés à la racine de votre projet sont automatiquement chargés.
 
@@ -107,7 +108,7 @@ Ne versionnez jamais votre fichier `.env` ni vos clés d'API. Assurez-vous que `
 
 ---
 
-### Méthode 3 : Fichiers de Configuration (`config.yaml`)
+### Méthode 3 : fichiers de configuration (`config.yaml`)
 
 Vous pouvez définir explicitement votre fournisseur d'IA, votre modèle ou une URL personnalisée dans le fichier `.gram/config.yaml` de votre projet ou de manière globale dans `~/.config/gram/config.yaml`.
 
@@ -122,14 +123,14 @@ ai:
   model: gemini-3.5-flash       # Optionnel : personnaliser le modèle par défaut
 ```
 
-#### Configuration Globale vs Projet
+#### Configuration globale vs projet
 
 - **Configuration globale (`~/.config/gram/config.yaml`)** : S'applique à l'ensemble des projets Gram sur votre machine.
 - **Configuration projet (`.gram/config.yaml`)** : Remplace les paramètres globaux pour le projet courant.
 
 ---
 
-### Méthode 4 : Utiliser une IA locale avec Ollama
+### Méthode 4 : utiliser une IA locale avec Ollama
 
 Si vous préférez exécuter vos modèles en local sans envoyer de données à des API tierces, vous pouvez utiliser [Ollama](https://ollama.ai/) :
 
@@ -157,7 +158,23 @@ Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de ba
 
 ---
 
-## Vérifier la Configuration
+### Surcharges dynamiques en ligne de commande
+
+<Since v="1.1.0" />
+
+Vous pouvez surcharger à la volée votre fournisseur ou votre modèle par défaut pour une commande unique sans toucher à vos fichiers de configuration :
+
+```bash
+gram import recette.json --model gemini-3.1-pro   # Surcharge temporaire du modèle
+gram db enrich --provider anthropic               # Surcharge temporaire du fournisseur
+gram db lint --pick-model                         # Sélecteur interactif de modèle
+```
+
+Consultez [Choisir le modèle IA](/fr/docs/reference/tooling/cli#choisir-le-modèle-ia) pour tous les détails.
+
+---
+
+## Vérifier la configuration
 
 Pour vérifier que votre IA est opérationnelle :
 
@@ -176,7 +193,7 @@ Pour vérifier que votre IA est opérationnelle :
 
 ## Dépannage
 
-### Erreur : Clé d'API manquante
+### Erreur : clé d'API manquante
 
 Si le message suivant s'affiche :
 ```text

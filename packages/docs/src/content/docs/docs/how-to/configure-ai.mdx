@@ -8,6 +8,7 @@ The Gram CLI (`@gram-lang/cli`) can leverage Large Language Models (LLMs) to aut
 This guide explains how to set up and configure your preferred AI provider step by step.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 ## What AI Powers in the Gram CLI
 
@@ -28,7 +29,7 @@ Traditional recipes contain many steps that exist only because unstructured text
 - *"In a small bowl, combine salt and pepper and set aside"* → In Gram, this becomes an intermediate variable reference (`&seasoning`).
 - *"Remove from heat and let cool for 30 minutes"* → In Gram, this is a passive rest timer annotation (`~_{30min}`).
 
-A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@juice<@lemon{1}`).
+A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@lemon juice{}<@lemon{1}`).
 
 **AI acts as a domain-aware recipe compiler.** It analyzes unstructured recipe text, extracts the underlying culinary logic, absorbs preparation steps directly into ingredient annotations, restructures the workflow into logical sections, and outputs clean, idiomatic `.gram` code that a human expert recipe author would write.
 
@@ -154,6 +155,22 @@ If you prefer running AI models locally without sending data to external APIs, y
 :::note
 Ollama requires no API key. You can also specify a custom base URL via the `OLLAMA_BASE_URL` environment variable.
 :::
+
+---
+
+### Dynamic Overrides via Flags
+
+<Since v="1.1.0" />
+
+You can override your default provider or model on the fly for any single command without editing your configuration:
+
+```bash
+gram import recipe.json --model gemini-3.1-pro   # Temporary model override
+gram db enrich --provider anthropic              # Temporary provider override
+gram db lint --pick-model                        # Interactive model picker
+```
+
+See [Choosing the AI model](/docs/reference/tooling/cli#choosing-the-ai-model) for full details.
 
 ---
 

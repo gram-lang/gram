@@ -2,5 +2,6 @@
   "message": "\"salt\" is marked fixed (@=) and never scales, so it cannot be used as a scale reference.",
   "offset": null,
   "expected": null,
-  "code": "FIXED_INGREDIENT"
+  "code": "FIXED_INGREDIENT",
+  "file": null
 }

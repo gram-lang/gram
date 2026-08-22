@@ -1,0 +1,87 @@
+{
+  "type": "Recipe",
+  "meta": {},
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./missing.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "m",
+          "loc": {
+            "start": 25,
+            "end": 27
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 41,
+                "end": 45
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "m",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 48,
+                  "end": 52
+                }
+              },
+              "loc": {
+                "start": 45,
+                "end": 53
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 53,
+                "end": 54
+              }
+            }
+          ],
+          "loc": {
+            "start": 41,
+            "end": 55
+          }
+        }
+      ],
+      "loc": {
+        "start": 29,
+        "end": 55
+      }
+    }
+  ]
+}

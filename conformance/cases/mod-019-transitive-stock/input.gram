@@ -1,0 +1,9 @@
+---
+title: Mod Transitive Stock
+---
+
+@use "./bases/b.gram" as &b
+
+## Montage
+
+Use &b{100g}.

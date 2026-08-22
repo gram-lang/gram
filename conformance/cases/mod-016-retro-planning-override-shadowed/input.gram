@@ -1,0 +1,9 @@
+---
+title: Mod Retro Planning Override Shadowed
+---
+
+@use "./bases/levain.gram" as &levain ~{-2d}
+
+## Pain
+
+Mix in the &levain{200g}.

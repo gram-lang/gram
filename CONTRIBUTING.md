@@ -1,6 +1,6 @@
 # Contributing to Gram
 
-Thank you for your interest in contributing to Gram. Gram is an open-source markup language and toolset designed to treat recipes like code. Contributions of all kinds — bug reports, documentation fixes, syntax proposals, example `.gram` recipes, and code improvements — are welcome.
+Thank you for your interest in contributing to Gram. Gram is an open-source declarative recipe DSL and toolset designed to code recipes. Contributions of all kinds — bug reports, documentation fixes, syntax proposals, example `.gram` recipes, and code improvements — are welcome.
 
 ## Development Platforms
 

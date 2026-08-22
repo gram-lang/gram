@@ -3,6 +3,7 @@
   "meta": {
     "title": "Warn Missing Macros"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

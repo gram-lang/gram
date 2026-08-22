@@ -9,6 +9,7 @@ import type {
 	TemperatureDelta,
 	TimerDelta,
 	PrepDelta,
+	ModuleDelta,
 } from "@gram-lang/analyzer";
 
 function fmtQty(qty?: number, unit?: string | null): string {
@@ -122,6 +123,28 @@ function renderTemperature(d: TemperatureDelta): string {
 	return `  ${chalk.yellow("~")} ${section}${label}${chalk.dim(fmtTempValue(d.from))} → ${chalk.yellow(fmtTempValue(d.to))}`;
 }
 
+function fmtFactor(f?: number): string {
+	return f === undefined ? "?" : `×${f}`;
+}
+
+function renderModule(d: ModuleDelta): string {
+	if (d.change === "added") {
+		return `  ${chalk.green("+")} ${d.uri} as &${d.toBinding} ${chalk.green(fmtFactor(d.toFactor))}`;
+	}
+	if (d.change === "removed") {
+		return `  ${chalk.red("-")} ${d.uri} as &${d.fromBinding} ${chalk.red(fmtFactor(d.fromFactor))}`;
+	}
+	const binding =
+		d.fromBinding !== d.toBinding
+			? `${chalk.dim(`&${d.fromBinding}`)} → ${chalk.yellow(`&${d.toBinding}`)}`
+			: `&${d.toBinding}`;
+	const factor =
+		d.fromFactor !== d.toFactor
+			? `${chalk.dim(fmtFactor(d.fromFactor))} → ${chalk.yellow(fmtFactor(d.toFactor))}`
+			: chalk.dim(fmtFactor(d.toFactor));
+	return `  ${chalk.yellow("~")} ${d.uri} as ${binding} ${factor}`;
+}
+
 function renderTimer(d: TimerDelta): string {
 	const section = d.section ? chalk.dim(`[${d.section}] `) : "";
 	const label = d.name ? `${d.name}: ` : "";
@@ -190,6 +213,12 @@ export function renderDiffResult(result: DiffResult, label: string): void {
 		console.log();
 		console.log(`  ${chalk.bold("SECTIONS")}`);
 		for (const d of result.sections) console.log(renderSection(d));
+	}
+
+	if (result.modules.length > 0) {
+		console.log();
+		console.log(`  ${chalk.bold("MODULES")}`);
+		for (const d of result.modules) console.log(renderModule(d));
 	}
 
 	console.log();

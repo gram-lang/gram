@@ -1,0 +1,5 @@
+@use "./pate.gram" as &pate
+
+## Pate ->&pate
+
+Mix @sugar{10g}.

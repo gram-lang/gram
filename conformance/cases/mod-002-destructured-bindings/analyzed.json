@@ -1,0 +1,334 @@
+{
+  "title": "Mod Destructured Bindings",
+  "slug": "mod-destructured-bindings",
+  "meta": {
+    "title": "Mod Destructured Bindings"
+  },
+  "registry": {
+    "ingredients": {
+      "blancs": {
+        "id": "blancs",
+        "name": "blancs",
+        "is_intermediate": true
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg",
+        "default_unit": "g"
+      },
+      "jaunes": {
+        "id": "jaunes",
+        "name": "jaunes",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "1",
+        "2"
+      ],
+      "qty": 300,
+      "unit": "g",
+      "normalizedMass": 300,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Blancs",
+      "ingredients": [
+        {
+          "id": "egg",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "blancs",
+      "module": {
+        "binding": "blancs",
+        "uri": "oeufs.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Jaunes",
+      "ingredients": [
+        {
+          "id": "egg",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Separate ",
+            {
+              "id": "egg",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "jaunes",
+      "module": {
+        "binding": "blancs",
+        "uri": "oeufs.gram",
+        "title": null,
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Dessert",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "blancs",
+          "name": "blancs",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "type": "reference",
+          "id": "jaunes",
+          "name": "jaunes",
+          "_usageId": "4",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "id": "flour",
+          "_usageId": "5",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "type": "reference",
+              "id": "blancs",
+              "name": "blancs",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "jaunes",
+              "name": "jaunes",
+              "_usageId": "4",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ". Also add ",
+            {
+              "id": "flour",
+              "_usageId": "5",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 400,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Jaunes",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Blancs",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Jaunes",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Dessert",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ],
+    "totalMass": 400,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"egg\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "blancs",
+      "uri": "oeufs.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 2,
+      "mode": "inline"
+    }
+  ]
+}

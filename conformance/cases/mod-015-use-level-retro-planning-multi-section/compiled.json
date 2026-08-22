@@ -1,0 +1,266 @@
+{
+  "title": "Mod Use Level Retro Planning Multi Section",
+  "slug": "mod-use-level-retro-planning-multi-section",
+  "meta": {
+    "title": "Mod Use Level Retro Planning Multi Section"
+  },
+  "registry": {
+    "ingredients": {
+      "pate-petrissage": {
+        "id": "pate-petrissage",
+        "name": "pate$petrissage",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 300,
+      "unit": "g"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 200,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Petrissage",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 300,
+          "unit": "g"
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 300,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 15,
+                "text": "15"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 15,
+            "activeDuration": 15
+          }
+        }
+      ],
+      "intermediate_preparation": "pate$petrissage",
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate Feuilletee",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Repos et Abaisse",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate-petrissage",
+          "name": "pate$petrissage",
+          "_usageId": "3"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Rest ",
+            {
+              "type": "reference",
+              "id": "pate-petrissage",
+              "name": "pate$petrissage",
+              "_usageId": "3"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 60,
+                "text": "60"
+              },
+              "unit": "min"
+            },
+            ", then roll out."
+          ],
+          "timings": {
+            "start": 15,
+            "end": 15,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 60,
+              "startOffset": 0
+            }
+          ]
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "retro_planning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d",
+        "minutes": -1440
+      },
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate Feuilletee",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "4",
+          "qty": 500,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "avec ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "4",
+              "qty": 500,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1453,
+            "end": 1455,
+            "activeDuration": 2
+          },
+          "action": "Foncer"
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 1459,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Petrissage",
+        "duration": 15
+      },
+      {
+        "label": "timer_passive",
+        "duration": 60
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 1438,
+    "activeTime": 17,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Petrissage",
+        "duration": 15
+      },
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate Feuilletee",
+      "meta": {
+        "title": "Pate Feuilletee"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

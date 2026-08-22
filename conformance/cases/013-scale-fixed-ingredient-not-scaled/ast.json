@@ -3,6 +3,7 @@
   "meta": {
     "title": "Scale Fixed Ingredient Not Scaled"
   },
+  "imports": [],
   "children": [
     {
       "type": "Section",

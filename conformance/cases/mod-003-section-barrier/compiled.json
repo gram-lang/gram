@@ -1,0 +1,243 @@
+{
+  "meta": {},
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "farine": {
+        "id": "farine",
+        "name": "farine",
+        "default_unit": "g"
+      },
+      "eau": {
+        "id": "eau",
+        "name": "eau"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "farine",
+      "name": "farine",
+      "_usageIds": [
+        "1",
+        "3"
+      ],
+      "qty": 750,
+      "unit": "g"
+    },
+    {
+      "id": "eau",
+      "name": "eau",
+      "_usageIds": [
+        "2"
+      ],
+      "relative": true,
+      "variable_entries": [
+        "70% of farine"
+      ]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "1",
+          "qty": 250,
+          "unit": "g"
+        },
+        {
+          "id": "eau",
+          "_usageId": "2",
+          "qty": {
+            "type": "RelativeQuantity",
+            "percent": 70,
+            "target": "farine",
+            "referenceType": "ingredient",
+            "loc": {
+              "start": 25,
+              "end": 37
+            }
+          },
+          "dependencies": [
+            "farine"
+          ],
+          "formula": {
+            "raw": "70% of farine",
+            "target": "farine",
+            "percent": 70,
+            "isGhost": false
+          }
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "farine",
+              "_usageId": "1",
+              "qty": 250,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "eau",
+              "_usageId": "2",
+              "qty": {
+                "type": "RelativeQuantity",
+                "percent": 70,
+                "target": "farine",
+                "referenceType": "ingredient",
+                "loc": {
+                  "start": 25,
+                  "end": 37
+                }
+              },
+              "dependencies": [
+                "farine"
+              ],
+              "formula": {
+                "raw": "70% of farine",
+                "target": "farine",
+                "percent": 70,
+                "isGhost": false
+              }
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "pate.gram",
+        "title": null,
+        "mode": "inline"
+      }
+    },
+    {
+      "ingredients": [
+        {
+          "id": "farine",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "4",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "farine",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "g"
+            },
+            "for something else."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "4",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 6,
+            "end": 8,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&pate' from \"./pate.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 0,
+        "end": 28
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 11,
+    "totalBreakdown": [
+      {
+        "label": "section_active:unnamed",
+        "duration": 8
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 8,
+    "activeBreakdown": [
+      {
+        "label": "section_active:unnamed",
+        "duration": 8
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "pate.gram",
+      "title": null,
+      "meta": {},
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

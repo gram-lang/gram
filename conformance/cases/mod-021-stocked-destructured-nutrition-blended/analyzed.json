@@ -1,0 +1,190 @@
+{
+  "title": "Mod Stocked Destructured Nutrition Blended",
+  "slug": "mod-stocked-destructured-nutrition-blended",
+  "meta": {
+    "title": "Mod Stocked Destructured Nutrition Blended"
+  },
+  "registry": {
+    "ingredients": {
+      "blancs": {
+        "id": "blancs",
+        "name": "Oeufs",
+        "is_module_synthetic": true
+      },
+      "jaunes": {
+        "id": "jaunes",
+        "name": "Oeufs",
+        "is_module_synthetic": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "blancs",
+      "name": "Oeufs",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "jaunes",
+      "name": "Oeufs",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 50,
+      "unit": "g",
+      "normalizedMass": 50,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Montage",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "blancs",
+          "name": "blancs",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        },
+        {
+          "type": "reference",
+          "id": "jaunes",
+          "name": "jaunes",
+          "_usageId": "2",
+          "qty": 50,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 50
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "blancs",
+              "name": "blancs",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "jaunes",
+              "name": "jaunes",
+              "_usageId": "2",
+              "qty": 50,
+              "unit": "g",
+              "normalizedMass": 50,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 150,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "STOCKED_DESTRUCTURED_NUTRITION_BLENDED",
+      "message": "Stocked module \"./bases/oeufs.gram\" uses destructured imports — nutrition profile is averaged across the entire module.",
+      "loc": {
+        "start": 59,
+        "end": 109
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 4,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Montage",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
+    "totalMass": 150,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 215,
+        "fat": 14.3,
+        "carbs": 1,
+        "protein": 18.9
+      },
+      "isEstimate": false,
+      "coverage": 1,
+      "per100g": {
+        "calories": 143,
+        "fat": 9.5,
+        "carbs": 0.7,
+        "protein": 12.6
+      },
+      "basis": {
+        "mass": 150,
+        "massStatus": "precise"
+      }
+    }
+  },
+  "modules": [
+    {
+      "binding": "blancs",
+      "uri": "bases/oeufs.gram",
+      "title": "Oeufs",
+      "meta": {
+        "title": "Oeufs"
+      },
+      "scaleFactor": 1,
+      "mode": "stocked"
+    }
+  ]
+}

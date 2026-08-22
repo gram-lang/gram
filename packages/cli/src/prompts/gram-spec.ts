@@ -38,7 +38,10 @@ CONVERSION PROCESS — work through these steps mentally
               - Use the FULL name with spaces as it will appear inline (e.g. "olive oil", NOT "olive-oil").
               - Note which ingredients appear more than once across steps → second use = @& reference.
               - Decide the best unit (prefer SI for precision, keep tbsp/tsp/cup for small amounts).
-              - For ingredient parts (juice, zest, yolk…) plan composite syntax: @juice<@lemon{1}.
+              - For ingredient parts (juice, zest, yolk…) plan composite syntax with the FULL
+                child name, not a bare generic word: @lemon juice{}<@lemon{1}, not @juice<@lemon{1}
+                (a bare "juice" collides in the ingredient database with juice drawn from any
+                other parent, e.g. an orange).
               - Note any ingredient preparations (diced, sliced, cold…) to inline as (prep).
 
 4. STEPS  Write each step as a paragraph with a [Verb] action prefix.
@@ -59,7 +62,8 @@ CONVERSION PROCESS — work through these steps mentally
           - Output is raw .gram content only — no markdown fences, no prose
           - No redundant ->&name on a step when the section title already declares one
           - No standalone prep steps — collapse preparations into @ingredient{qty}(prep) inline
-          - "Juice/zest/part of ingredient" uses composite syntax: @juice<@lemon{1/2}
+          - "Juice/zest/part of ingredient" uses composite syntax with the full child name:
+            @lemon juice{}<@lemon{1/2}
 
 
 ════════════════════════
@@ -291,14 +295,24 @@ IMPORTANT: a multi-word option ALWAYS needs \`{}\`, even with no known quantity 
 ### Composite ingredients (drawn from a parent)
 
 When you buy one thing but use specific parts of it:
-\`@zest{1}<@lemon{2}\`  — "1 zest drawn from 2 lemons"
-\`@yolk{1}<@egg{1}\`    — "1 yolk drawn from 1 egg"
+\`@lemon zest{1}<@lemon{2}\`  — "1 zest drawn from 2 lemons"
+\`@egg yolk{1}<@egg{1}\`      — "1 yolk drawn from 1 egg"
+
+ALWAYS write the child's FULL name (parent word included), never a bare generic word:
+- ✅ \`@lemon zest{1}<@lemon{2}\` / \`@egg yolk{1}<@egg{1}\`
+- ❌ \`@zest{1}<@lemon{2}\` / \`@yolk{1}<@egg{1}\`
+A bare child name like "zest" or "juice" is valid syntax, but it becomes its own entry in the
+shared ingredient database with no memory of which parent it came from — "zest" from a lemon and
+"zest" from a lime would wrongly share one database entry (and one nutrition profile). The full
+name ("lemon zest", "lime zest") keeps each one distinct, and — just as importantly — merges
+correctly with any other recipe that uses that same ingredient outside a composite (e.g. a plain
+\`@lemon juice{1l}\` bought as a carton elsewhere resolves to the exact same database entry).
 
 CRITICAL: NO spaces are allowed around \`<\`:
-- ✅ \`@zest{1}<@lemon\`
-- ❌ \`@zest{1} < @lemon\`
+- ✅ \`@lemon zest{1}<@lemon\`
+- ❌ \`@lemon zest{1} < @lemon\`
 
-If parent quantity is omitted, it defaults to 1: \`@zest{1}<@lemon\` = 1 lemon.
+If parent quantity is omitted, it defaults to 1: \`@lemon zest{1}<@lemon\` = 1 lemon.
 
 Shopping list rules:
 - MAX rule: using DIFFERENT parts of the same parent (zest AND juice from lemon) = max(1, 1) = still 1 lemon.
@@ -554,7 +568,7 @@ Inline the preparation into the ingredient reference using \`()\` notation.
 ❌  [Prep] Cut @lemon{1} in half. Thinly slice one half for garnish.
     [Cook] Squeeze juice from @lemon{1/2} into the pan.
 
-✅  [Cook] Squeeze @juice<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
+✅  [Cook] Squeeze @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
 \`\`\`
 
 More generally: any step whose entire purpose is "take X and do Y to it before the real step"
@@ -562,18 +576,19 @@ should be collapsed into the ingredient reference of the step that actually uses
 
 ### ❌ "The juice/zest/part of" phrasing — use composite ingredients instead
 
-When a step uses only part of an ingredient, use the composite syntax \`@part<@parent\`.
+When a step uses only part of an ingredient, use the composite syntax \`@full child name<@parent\`
+— always the full name, never a bare generic word (see "Composite ingredients" above for why).
 
 \`\`\`
 ❌  the juice from @lemon{1/2}
-✅  @juice<@lemon{1/2}
+✅  @lemon juice{}<@lemon{1/2}
 
 ❌  the zest of @lemon{2}
-✅  @zest{1}<@lemon{2}
+✅  @lemon zest{1}<@lemon{2}
 
 ❌  [Prep] Squeeze @lemon{1}. Reserve juice.
     [Simmer] Add the reserved juice to the pan.
-✅  [Simmer] Add @juice<@lemon{1} to the pan.
+✅  [Simmer] Add @lemon juice{}<@lemon{1} to the pan.
 \`\`\`
 
 The composite syntax keeps the shopping list accurate (MAX rule: one lemon for zest + juice = 1 lemon)
@@ -582,9 +597,9 @@ and eliminates the need for standalone prep steps.
 ### ❌ Spaces around the composite operator
 
 \`\`\`
-❌  @zest{1} < @lemon{2}
-❌  @zest{1} <@lemon{2}
-✅  @zest{1}<@lemon{2}
+❌  @lemon zest{1} < @lemon{2}
+❌  @lemon zest{1} <@lemon{2}
+✅  @lemon zest{1}<@lemon{2}
 \`\`\`
 
 ### ❌ Space between braces and preparations
@@ -645,13 +660,13 @@ makes: '24cm tart tin'
 
 [Mix] @flour{250g} with @butter{125g}(cold, cubed) in a #bowl until the mixture resembles coarse sand.
 
-[Bind] Add @powdered sugar{70g} and @yolk{1}<@egg{1}. Mix until the dough just comes together.
+[Bind] Add @powdered sugar{70g} and @egg yolk{1}<@egg{1}. Mix until the dough just comes together.
 
 [Rest] Shape into a disc, wrap, and chill for ~_{2h}.
 
 ## Lemon Curd ->&curd
 
-[Cook] In a #saucepan over ^{medium heat}, whisk @juice{1}<@lemon{3}, @zest{1}<@lemon{3}, @sugar{150g}, and @white{3}<@egg{3} continuously.
+[Cook] In a #saucepan over ^{medium heat}, whisk @lemon juice{1}<@lemon{3}, @lemon zest{1}<@lemon{3}, @sugar{150g}, and @egg white{3}<@egg{3} continuously.
 
 [Thicken] Remove from heat and whisk in @butter{50g} until the curd is glossy and coats a spoon.
 
@@ -661,7 +676,7 @@ makes: '24cm tart tin'
 
 [Fill] Pour in the &curd and smooth the surface.
 
-[Whip] Beat @white{3}<@egg{3} with @=sugar{100g} until stiff glossy peaks form. ->&meringue
+[Whip] Beat @egg white{3}<@egg{3} with @=sugar{100g} until stiff glossy peaks form. ->&meringue
 
 [Top] Spread the &meringue over the tart using a #spatula.
 

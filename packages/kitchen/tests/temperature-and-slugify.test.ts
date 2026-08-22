@@ -18,6 +18,12 @@ describe("warningSeverity", () => {
 		expect(warningSeverity[WarningCode.MISSING_INGREDIENT]).toBe("warning");
 	});
 
+	it("treats macro gaps, unknown mass, and track contention as info", () => {
+		expect(warningSeverity[WarningCode.MISSING_MACROS]).toBe("info");
+		expect(warningSeverity[WarningCode.UNKNOWN_MASS]).toBe("info");
+		expect(warningSeverity[WarningCode.TRACK_CONTENTION]).toBe("info");
+	});
+
 	it("has an entry for every WarningCode", () => {
 		for (const code of Object.values(WarningCode)) {
 			expect(warningSeverity[code]).toBeDefined();

@@ -2,5 +2,6 @@
   "message": "Gram Syntax Error: '|' is only valid between alternative ingredients/cookware (e.g. @salt|@pepper). If you meant to separate two options, make sure each uses a single-word name or wraps a multi-word name in {} (e.g. @egg substitute{}|@tofu{}).",
   "offset": 35,
   "expected": "'|' between two complete @ingredient or #cookware alternatives",
-  "code": null
+  "code": null,
+  "file": null
 }
