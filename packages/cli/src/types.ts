@@ -269,6 +269,8 @@ export const GramConfigFileSchema = z.object({
 	version: z.number().optional(),
 	database: z.string().optional(),
 	language: z.string().optional(),
+	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
+	updateCheck: z.boolean().optional(),
 	ai: z
 		.object({
 			provider: z.enum(AI_PROVIDERS).optional(),

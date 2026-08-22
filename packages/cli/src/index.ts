@@ -1,8 +1,13 @@
 import { defineCommand, runMain } from "citty";
-import { log } from "@clack/prompts";
+import { log, note } from "@clack/prompts";
 import { GramCLIError, ExitCode, setVerbose, isVerbose } from "./errors";
 import { version } from "../package.json";
 import { findProjectRoot } from "./core/workspace";
+import { loadConfig } from "./core/config";
+import {
+	checkForUpdateInBackground,
+	getPendingNotification,
+} from "./services/update-checker";
 import { join } from "node:path";
 
 // Bun auto-loads `.env`, Node doesn't — `gram init`/`gram config set` both
@@ -31,6 +36,26 @@ const verboseFlags = new Set(["--verbose", "--debug"]);
 const filteredArgs = rawArgs.filter((a) => !verboseFlags.has(a));
 if (filteredArgs.length !== rawArgs.length) setVerbose(true);
 
+// The passive "update available" notice: `upgrade` already does its own
+// explicit check, CI/non-TTY runs shouldn't get interactive-looking noise,
+// and `GRAM_NO_UPDATE_CHECK`/`updateCheck: false` are the escape hatches.
+// A broken/invalid config here shouldn't block the CLI from starting — the
+// command itself will report that more usefully — so default to enabled.
+async function isUpdateCheckEnabled(): Promise<boolean> {
+	if (process.env.CI || process.env.GRAM_NO_UPDATE_CHECK) return false;
+	if (!process.stdout.isTTY) return false;
+	try {
+		const config = await loadConfig();
+		return config.updateCheck !== false;
+	} catch {
+		return true;
+	}
+}
+
+const updateCheckEnabled =
+	filteredArgs[0] !== "upgrade" && (await isUpdateCheckEnabled());
+if (updateCheckEnabled) void checkForUpdateInBackground();
+
 const main = defineCommand({
 	meta: {
 		name: "gram",
@@ -55,11 +80,21 @@ const main = defineCommand({
 		export: () => import("./commands/export").then((m) => m.default),
 		print: () => import("./commands/print").then((m) => m.default),
 		suggest: () => import("./commands/suggest").then((m) => m.default),
+		upgrade: () => import("./commands/upgrade").then((m) => m.default),
 	},
 });
 
 try {
 	await runMain(main, { rawArgs: filteredArgs });
+	if (updateCheckEnabled) {
+		const pending = await getPendingNotification(version);
+		if (pending) {
+			note(
+				`Update available: ${version} → ${pending.latest}\nRun: npm install -g @gram-lang/cli@latest`,
+				"gram update available",
+			);
+		}
+	}
 } catch (err) {
 	// citty's own runMain() catches and process.exit()s internally on any error
 	// thrown from a command's run(), so in practice this only runs for errors
