@@ -57,6 +57,13 @@ export interface ModuleWarningPayloads {
 		exported: string;
 		available: string[];
 		suggestion?: string;
+		// True when `exported` is declared *somewhere* in the module (a
+		// step-level `->&`, or a section-level one that exists but isn't the
+		// binding asked for) but was never re-exported — the "no implicit
+		// re-export" rule (module-imports RFC, `exports.ts`'s own doc comment)
+		// rather than a plain typo. Drives a more actionable message and the
+		// language server's cross-file quick-fix.
+		internal?: boolean;
 		loc?: Location;
 	};
 	[ModuleWarningCode.UNUSED_IMPORT]: {
@@ -142,6 +149,9 @@ export const moduleWarningTemplates: {
 	[ModuleWarningCode.MODULE_DEPTH_EXCEEDED]: (p) =>
 		`Import depth limit exceeded (${p.depth}) while importing "${p.specifier}".`,
 	[ModuleWarningCode.MODULE_EXPORT_NOT_FOUND]: (p) => {
+		if (p.internal) {
+			return `Module "${p.specifier}" does not export '&${p.exported}' — it exists in the module but isn't re-exported. Add '-> &${p.exported}' to the section that produces it.`;
+		}
 		const suggestion = p.suggestion ? ` Did you mean '&${p.suggestion}'?` : "";
 		// `Array.isArray` guard (rather than `p.available.length`/`.map` used
 		// directly): the docs site renders every template's message shape

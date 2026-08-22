@@ -33,7 +33,12 @@ import {
 } from "@gram-lang/analyzer";
 import type { ModuleGraph } from "./host";
 import { computeExports, type ExportInfo } from "./exports";
-import { buildRenameTable, applyRename, checkRenameCollisions } from "./rename";
+import {
+	buildRenameTable,
+	applyRename,
+	checkRenameCollisions,
+	collectIntermediateNames,
+} from "./rename";
 import { computeScaleFactor, resolveYield } from "./yield";
 
 export interface ComposeOptions {
@@ -370,6 +375,17 @@ export function composeRecipe(
 					const available = [...dep.exports.keys()].filter(
 						(k) => k !== "default",
 					);
+					// `dep.ast.children` is always the already-grouped `SectionAST[]`
+					// `computeExports`/`ownSections` produced for this record (never
+					// a raw, ungrouped `RecipeAST.children`) — see `computeExports`'s
+					// own doc comment. A name that shows up here but not in
+					// `dep.exports` is a step-level (private) `->&`, or a
+					// section-level one that exists but wasn't singled out as
+					// `default` — either way, it's a re-export the module never
+					// opted into, not a typo, so skip the fuzzy-suggestion noise.
+					const internal = collectIntermediateNames(
+						dep.ast.children as SectionAST[],
+					).has(binding.exported);
 					pushModuleWarning(
 						warnings,
 						ModuleWarningCode.MODULE_EXPORT_NOT_FOUND,
@@ -377,7 +393,10 @@ export function composeRecipe(
 							specifier: decl.specifier,
 							exported: binding.exported,
 							available,
-							suggestion: fuzzySuggest(binding.exported, available),
+							suggestion: internal
+								? undefined
+								: fuzzySuggest(binding.exported, available),
+							internal,
 							loc: decl.loc,
 						},
 					);

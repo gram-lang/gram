@@ -172,44 +172,44 @@ Gram provides three intuitive ways to reference component files across your proj
 
 ## Managing multi-component preparations (Destructuring)
 
-Some sub-recipes produce **multiple distinct components** through a single culinary process. 
+Some sub-recipes produce **multiple distinct components** intended to be used together.
 
-For example, poaching a whole chicken with aromatics yields both tender shredded meat and a rich golden broth:
+For example, a classic tart base module can provide both a sweet pastry dough and an almond frangipane cream:
 
-```gram title="components/bases/poached-chicken.gram"
+```gram title="components/bases/tart-elements.gram"
 ---
-title: 'Poached Chicken & Broth'
+title: 'Tart Elements'
 ---
 
-## Shredded Chicken ->&meat
+## Sweet Pastry ->&crust
 
-[Poach] The @whole chicken{1.5kg} with @onion{1}, @carrots{2}, and @celery stalks{2} in water for ~{45min}.
+[Mix] The @flour{200g}, @butter{100g}, @sugar{50g}, and @water{50ml}. Chill for ~_{1h}.
 
-[Shred] Once cooled.
+## Frangipane Cream ->&frangipane
 
-## Golden Broth ->&broth
-
-[Simmer] The cooking liquid for ~{15min} to concentrate flavor.
+[Cream] The @almond flour{100g}, @butter{100g}, @sugar{100g}, and @eggs{100g}.
 ```
 
-In your main recipe, destructured imports let you bind both components cleanly:
+In your main recipe, destructured imports let you bind both components cleanly in a single line:
 
-```gram title="chicken-pot-pie.gram"
-@use "@/components/bases/poached-chicken.gram" as { &meat, &broth }
+```gram title="pear-bourdaloue-tart.gram"
+@use "@/components/bases/tart-elements.gram" as { &crust, &frangipane }
 
-## Pot Pie Filling
+## Assembly
 
-[Make] A creamy velouté sauce using the &broth{400ml}, @butter{40g}, and @flour{40g}.
+[Line] The #tart ring{} with the &crust{400g}.
 
-[Fold] In the shredded &meat and @frozen peas{100g}, then bake under #puff pastry{}.
+[Spread] The &frangipane{400g} evenly over the base.
+
+[Top] With sliced @pears{3} and bake at ^{180C} for ~_{35min}.
 ```
 
 :::tip[Local renaming]
 If a module's export names clash with variables in your own recipe, rename them with `as`:
 ```gram
-@use "@/components/bases/poached-chicken.gram" as {
-  &meat as &chicken filling{},
-  &broth as &pie gravy{}
+@use "@/components/bases/tart-elements.gram" as {
+  &crust as &sweet dough{},
+  &frangipane as &almond cream{}
 }
 ```
 :::

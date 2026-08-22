@@ -13,9 +13,11 @@ import type { ExportInfo } from "./exports";
  * tree — both the section's own `->&` and any step-level one nested in its
  * steps. Used to find the "private and unbound-public" set that Phase C.2
  * needs to prefix: everything that isn't one of this import's own bound
- * names.
+ * names. Also reused by `compose.ts` to tell an unresolved `@use` binding
+ * apart from a plain typo: a name declared here but absent from
+ * `computeExports` exists in the module but was never re-exported.
  */
-function collectIntermediateNames(sections: SectionAST[]): Set<string> {
+export function collectIntermediateNames(sections: SectionAST[]): Set<string> {
 	const names = new Set<string>();
 	sections.forEach((section) => {
 		if (section.intermediateDecl) names.add(section.intermediateDecl.name);

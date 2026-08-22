@@ -121,6 +121,28 @@ Whisk &blanc{1}.
 		expect(w?.message).toContain("blancs");
 	});
 
+	it("reports MODULE_EXPORT_NOT_FOUND with a re-export hint for a name declared but not exported by the module", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./sauce.gram" as { &bouillon }
+
+## Dessert
+
+Whisk &bouillon{1}.
+`,
+			"/sauce.gram": `## Sauce ->&sauce
+
+Reduce @stock{200g}.
+
+Mix @cream{100g}. ->&bouillon
+`,
+		});
+
+		const w = result.warnings.find((x) => x.code === "MODULE_EXPORT_NOT_FOUND");
+		expect(w).toBeDefined();
+		expect(w?.message).toContain("isn't re-exported");
+		expect(w?.message).toContain("-> &bouillon");
+	});
+
 	// RFC §F.3, non-regression #1 (§C.5 section barrier): a module with no
 	// section headers at all must not spill its bare steps into the host's
 	// own untitled section — the water's relative quantity must resolve
