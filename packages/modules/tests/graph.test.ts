@@ -152,4 +152,34 @@ describe("loadModuleGraph", () => {
 			"MODULE_DEPTH_EXCEEDED",
 		]);
 	});
+
+	// Test hardening plan §1: at depth 2+, a diagnostic's loc.uri must point
+	// at the file that actually wrote the failing @use, not the entry file
+	// that merely pulled it in transitively.
+	it("stamps loc.uri with the failing @use's own file at depth 2, not the entry file", async () => {
+		const host = createFakeHost({
+			"/a.gram": '@use "./b.gram" as &b\n\n## S\n\n[Use] &b{1}.\n',
+			"/b.gram": '@use "./missing.gram" as &m\n\n## S ->&b\n\n[Use] &m{1}.\n',
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		const notFound = graph.diagnostics.find(
+			(d) => d.code === "MODULE_NOT_FOUND",
+		);
+		expect(notFound).toBeDefined();
+		expect(notFound?.loc?.uri).toBe("/b.gram");
+	});
+
+	it("resolves a 4-level transitive chain (A -> B -> C -> D) leaves-first", async () => {
+		const host = createFakeHost({
+			"/a.gram": '@use "./b.gram" as &b\n\n## S\n\n[Use] &b{1}.\n',
+			"/b.gram": '@use "./c.gram" as &c\n\n## S ->&b\n\n[Use] &c{1}.\n',
+			"/c.gram": '@use "./d.gram" as &d\n\n## S ->&c\n\n[Use] &d{1}.\n',
+			"/d.gram": "## S ->&d\n\nMix @flour{50g}.\n",
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		expect(graph.diagnostics).toEqual([]);
+		expect(graph.order).toEqual(["/d.gram", "/c.gram", "/b.gram", "/a.gram"]);
+	});
 });

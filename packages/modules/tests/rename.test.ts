@@ -110,6 +110,47 @@ describe("buildRenameTable + applyRename", () => {
 
 		expect(sections[0]?.intermediateDecl?.name).toBe("paton");
 	});
+
+	// Test hardening plan §1: accented identifiers must survive the raw
+	// rename table untouched (only `checkRenameCollisions`'s slugify step
+	// folds them), and the Alternative-recursion path renaming must reach
+	// both branches, not just the first.
+	it("keeps diacritics intact through a renamed export", () => {
+		const ast = getAST("## Pâte Brisée ->&pâte_brisée\n\nMix @flour{200g}.\n");
+		const { sections, exports } = computeExports(ast);
+		const table = buildRenameTable(sections, exports, [
+			{ exported: "default", local: "pâte" },
+		]);
+
+		expect(table.get("pâte_brisée")).toBe("pâte");
+		const renamed = applyRename(sections, table);
+		expect(renamed[0]?.intermediateDecl?.name).toBe("pâte");
+	});
+
+	it("renames a relative-quantity target inside both branches of an Alternative", () => {
+		const ast = getAST(
+			"## Dough ->&dough\n\nMix @flour{200g}.\n\n@water{70% &dough}|@milk{70% &dough}.\n",
+		);
+		const { sections, exports } = computeExports(ast);
+		const table = buildRenameTable(sections, exports, [
+			{ exported: "default", local: "pate" },
+		]);
+		const renamed = applyRename(sections, table);
+
+		const step = renamed[0]?.children[1];
+		const alt = (
+			step as SectionAST["children"][number] & {
+				children: {
+					type: string;
+					options?: { quantity?: { target?: string } }[];
+				}[];
+			}
+		)?.children.find((c) => c.type === "Alternative");
+		expect(alt?.options?.map((o) => o.quantity?.target)).toEqual([
+			"pate",
+			"pate",
+		]);
+	});
 });
 
 describe("checkRenameCollisions", () => {
@@ -125,5 +166,13 @@ describe("checkRenameCollisions", () => {
 		expect(collisions).toEqual([]);
 		expect(claimed.has("pate-paton")).toBe(true);
 		expect(claimed.has("pate")).toBe(true);
+	});
+
+	it("detects a collision between two accented names that fold to the same slug", () => {
+		// slugify("pâte$brisée") -> NFD-fold the accents, then collapse "$" ->
+		// "pate-brisee", same as slugify("pâte brisée").
+		const claimed = new Set(["pate-brisee"]);
+		const collisions = checkRenameCollisions(["pâte$brisée"], claimed);
+		expect(collisions).toEqual(["pâte$brisée"]);
 	});
 });

@@ -458,6 +458,198 @@ Use &pate{200g}.
 	});
 });
 
+describe("composeRecipe: warning coverage (test hardening plan, §1)", () => {
+	it("keeps the host's own density on conflict, with DENSITY_OVERRIDE_SHADOWED", async () => {
+		const { result, composed } = await build({
+			"/recipe.gram": `---
+densities: ["honey: 1.4"]
+---
+@use "./glaze.gram" as &glaze
+
+## Assemble
+
+Use &glaze{100g}.
+`,
+			"/glaze.gram": `---
+densities: ["honey: 1.3"]
+---
+## Glaze ->&glaze
+
+Mix @honey{100g}.
+`,
+		});
+
+		const w = result.warnings.find(
+			(x) => x.code === "DENSITY_OVERRIDE_SHADOWED",
+		);
+		expect(w).toBeDefined();
+		expect(w?.message).toBe(
+			'Density for "honey" in host recipe (1.4) overrides module "./glaze.gram" (1.3).',
+		);
+		// The host's value survives the merge into the composed AST's own meta.
+		expect(composed.ast.meta?.densities).toContain("honey:1.4");
+		expect(composed.ast.meta?.densities).not.toContain("honey:1.3");
+	});
+
+	it("drops a module's own baker's-percentage base, with IMPORTED_BAKERS_REFERENCE_DROPPED", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate
+
+## Assemble
+
+Mix @*sugar{100g}.
+
+Use &pate{200g}.
+`,
+			// Without dropping the module's own "*" at the module boundary, this
+			// composed document would carry two baker's-percentage bases (host's
+			// sugar and the module's flour) and compile() would throw
+			// MULTIPLE_BAKERS_PERCENTAGE -- the warning below is what's supposed
+			// to prevent that.
+			"/pate.gram": "## Pastry ->&paton\n\nMix @*flour{200g}.\n",
+		});
+
+		const w = result.warnings.find(
+			(x) => x.code === "IMPORTED_BAKERS_REFERENCE_DROPPED",
+		);
+		expect(w).toBeDefined();
+		expect(w?.message).toContain("./pate.gram");
+	});
+
+	it("drops baker's percentage from inside an Alternative option, not just a bare Ingredient", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate
+
+## Assemble
+
+Mix @*sugar{100g}.
+
+Use &pate{200g}.
+`,
+			"/pate.gram":
+				"## Pastry ->&paton\n\nMix @*flour{200g}|@corn_starch{200g}.\n",
+		});
+
+		const w = result.warnings.find(
+			(x) => x.code === "IMPORTED_BAKERS_REFERENCE_DROPPED",
+		);
+		expect(w).toBeDefined();
+	});
+
+	it("flags a destructured binding never referenced in the host with UNUSED_IMPORT", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./oeufs.gram" as { &blancs, &jaunes }
+
+## Dessert
+
+Whisk &blancs{100g}.
+`,
+			"/oeufs.gram": `## Blancs ->&blancs
+
+Separate @egg{100g}.
+
+## Jaunes ->&jaunes
+
+Separate @egg{50g}.
+`,
+		});
+
+		const w = result.warnings.find((x) => x.code === "UNUSED_IMPORT");
+		expect(w).toBeDefined();
+		expect(w?.message).toContain("jaunes");
+		// The referenced binding must not also be flagged.
+		expect(w?.message).not.toContain("blancs");
+	});
+
+	it("flags an imported binding that shares its slug with a database ingredient, MODULE_BINDING_SHADOWS_INGREDIENT", async () => {
+		// Only checked for stocked imports (compose.ts): a spliced/inline
+		// import's binding is an intermediate, not a purchasable ingredient, so
+		// there's no shopping-list ambiguity to warn about there.
+		const host = createFakeHost({
+			"/recipe.gram": `@use "./base.gram" as &beurre
+
+## Assemble
+
+Use &beurre{200g}.
+`,
+			"/base.gram": "## Base ->&paton\n\nMix @flour{200g}.\n",
+		});
+		const graph = await loadModuleGraph("/recipe.gram", host);
+		const composed = composeRecipe(graph, {
+			db: { beurre: { name: "Beurre" } },
+			stock: new Set(["/base.gram"]),
+		});
+		const compiled = compile(composed.ast);
+		const analyzed = analyze(compiled, {
+			beurre: { name: "Beurre" },
+			...composed.syntheticIngredients,
+		}).result;
+		const result = finalizeComposed(analyzed, composed);
+
+		const w = result.warnings.find(
+			(x) => x.code === "MODULE_BINDING_SHADOWS_INGREDIENT",
+		);
+		expect(w).toBeDefined();
+		expect(w?.message).toContain("beurre");
+	});
+
+	it("resolves a host relative quantity targeting an imported intermediate without error", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./pate.gram" as &pate
+
+## Glaçage
+
+Use &pate{200g}.
+
+@sugar{50% &pate}.
+`,
+			"/pate.gram": "## Pastry ->&paton\n\nMix @flour{200g}.\n",
+		});
+
+		expect(result.warnings.map((w) => w.code)).not.toContain(
+			"UNDEFINED_REFERENCE",
+		);
+		const sugar = result.sections
+			.flatMap((s) => s.ingredients)
+			.find((i) => i.id === "sugar");
+		// 50% of the 200g the host requested of &pate.
+		const qty = sugar?.qty;
+		const value =
+			typeof qty === "number" ? qty : (qty as { value?: number })?.value;
+		expect(value).toBe(100);
+	});
+
+	it("dedups a diamond dependency shared between a stocked and an inline import", async () => {
+		const { result } = await build(
+			{
+				"/recipe.gram": `@use "./b.gram" as &b
+@use "./c.gram" as &c
+
+## Assemble
+
+Use &b{1} and &c{1}.
+`,
+				// b is spliced inline; c is kept stocked. Both import the same d.
+				"/b.gram": '@use "./d.gram" as &d\n\n## B ->&b\n\nUse &d{1}.\n',
+				"/c.gram": '@use "./d.gram" as &d\n\n## C ->&c\n\nUse &d{1}.\n',
+				"/d.gram": "## D ->&d\n\nMix @flour{100g}.\n",
+			},
+			"/recipe.gram",
+			new Set(["/c.gram"]),
+		);
+
+		expect(result.warnings.map((w) => w.code)).not.toContain("SCOPE_CONFLICT");
+		// b's own flour (via d, inline) shows up as a shopping-list leaf...
+		const flourLines = result.shopping_list.filter(
+			(i) => "id" in i && i.id === "flour",
+		);
+		expect(flourLines).toHaveLength(1);
+		// ...while c collapses to one purchasable leaf, its own d never spliced.
+		const cLine = result.shopping_list.find((i) => "id" in i && i.id === "c");
+		expect(cLine).toBeDefined();
+	});
+});
+
 describe("composeRecipe: @use-level retro-planning (module-imports RFC, stock/retro-planning redesign)", () => {
 	it("anchors the section that produces the bound export, not the module's first section", async () => {
 		const { result } = await build({

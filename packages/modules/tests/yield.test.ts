@@ -166,4 +166,63 @@ Separate @egg{50g}.
 		);
 		expect(warnings.map((w) => w.code)).toContain("MODULE_UNIT_MISMATCH");
 	});
+
+	// Test hardening plan §1: yield precision, not just conversion success —
+	// a database-known density makes the yield ESTIMATED, no density at all
+	// makes it UNRESOLVED.
+	function setupWithDb(
+		moduleSource: string,
+		database: Record<string, unknown>,
+	) {
+		const ast = getAST(moduleSource);
+		const { exports } = computeExports(ast);
+		const analyzed = analyze(compile(ast), database).result;
+		return { exports, analyzed };
+	}
+
+	it("emits ESTIMATED_MODULE_YIELD when the export's mass is derived via a known density", () => {
+		const { exports, analyzed } = setupWithDb(
+			"## Batter ->&batter\n\nMix @milk{200ml}.\n",
+			{ milk: { name: "Milk", physical: { density: 1.03 } } },
+		);
+		const hostAst = getAST(
+			'@use "./b.gram" as &batter\n\nUse &batter{206g}.\n',
+		);
+		const warnings: Warning[] = [];
+
+		const factor = computeScaleFactor(
+			hostAst.children,
+			hostAst.imports[0]!,
+			exports,
+			analyzed,
+			{},
+			warnings,
+		);
+		expect(warnings.map((w) => w.code)).toContain("ESTIMATED_MODULE_YIELD");
+		expect(factor).toBe(1);
+	});
+
+	it("emits UNRESOLVED_MODULE_YIELD and ignores the binding's ratio when the export's mass can't be measured", () => {
+		const { exports, analyzed } = setupWithDb(
+			"## Batter ->&batter\n\nMix @milk{200ml}.\n",
+			{}, // no density known for milk -- can't convert ml to grams at all
+		);
+		const hostAst = getAST(
+			'@use "./b.gram" as &batter\n\nUse &batter{200g}.\n',
+		);
+		const warnings: Warning[] = [];
+
+		const factor = computeScaleFactor(
+			hostAst.children,
+			hostAst.imports[0]!,
+			exports,
+			analyzed,
+			{},
+			warnings,
+		);
+		expect(warnings.map((w) => w.code)).toContain("UNRESOLVED_MODULE_YIELD");
+		expect(warnings.map((w) => w.code)).not.toContain("MODULE_SURPLUS");
+		// The unresolved binding contributes nothing to the ratio -- default factor.
+		expect(factor).toBe(1);
+	});
 });
