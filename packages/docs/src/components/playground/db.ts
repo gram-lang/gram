@@ -199,6 +199,42 @@ export const DEFAULT_SOURCES = [
 				},
 			},
 
+			// --- Lemon Tart ---
+			"lemon-juice": {
+				name: "Lemon Juice",
+				aliases: ["lemon juice", "jus de citron"],
+				tags: ["citrus", "juice", "vegan"],
+				category: "Beverages",
+				physical: { density: 1.03 },
+				nutrition: {
+					calories: 22,
+					carbs: 6.9,
+					protein: 0.4,
+					fat: 0.2,
+					sugar: 2.5,
+					sat_fat: 0,
+					fiber: 0.3,
+					sodium: 1,
+				},
+			},
+			lemons: {
+				name: "Lemons",
+				aliases: ["lemon", "citron", "citrons"],
+				tags: ["citrus", "fruit", "produce", "vegan"],
+				category: "Produce",
+				physical: { density: 0.95, unit_weight: 120 },
+				nutrition: {
+					calories: 29,
+					carbs: 9.3,
+					protein: 1.1,
+					fat: 0.3,
+					sugar: 2.5,
+					sat_fat: 0,
+					fiber: 2.8,
+					sodium: 2,
+				},
+			},
+
 			// --- Empanadas ---
 			onions: {
 				name: "Onions",
