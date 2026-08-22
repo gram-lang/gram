@@ -246,7 +246,7 @@ graph TD
 * Les ingrédients de base (farine, beurre) sont automatiquement regroupés et sommés sur votre liste de courses.
 
 ### Détection des dépendances circulaires
-Si la recette A importe B et que B tente d'importer A, Gram détecte immédiatement la boucle et interrompt la compilation avec une erreur explicite `MODULE_CYCLE` affichant la chaîne en cause (`A -> B -> A`).
+Si la recette A importe B et que B tente d'importer A, Gram détecte la boucle et signale une erreur `MODULE_CYCLE` affichant la chaîne en cause (`A -> B -> A`). Seule cette branche d'import est interrompue — le reste de la recette continue de se compiler — mais `gram check` (et tout run `--strict`) échoue dessus, `MODULE_CYCLE` étant de sévérité "erreur".
 
 ## Planifier des préparations sur plusieurs jours (`~{-2d}`)
 

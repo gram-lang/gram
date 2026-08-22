@@ -198,7 +198,7 @@ Si plusieurs plats d'un même menu font appel à la même préparation de base (
 ### Détection des dépendances circulaires
 
 :::danger[Cycles interdits (`MODULE_CYCLE`)]
-Si une recette A importe B et que B tente d'importer A (directement ou indirectement), Gram bloque immédiatement la dépendance circulaire et interrompt la compilation avec une erreur explicite `MODULE_CYCLE` affichant la boucle (`A -> B -> A`).
+Si une recette A importe B et que B tente d'importer A (directement ou indirectement), Gram détecte la dépendance circulaire, interrompt uniquement cette branche d'import et signale une erreur `MODULE_CYCLE` affichant la boucle complète (`A -> B -> A`). Le reste de la recette continue de se compiler — la liaison cyclique reste simplement non résolue plutôt que de faire échouer toute la compilation — mais `gram check` (et tout run `--strict`) échoue dessus, `MODULE_CYCLE` étant de sévérité "erreur".
 :::
 
 ---

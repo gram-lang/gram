@@ -200,7 +200,7 @@ When a menu imports multiple dishes sharing a common base (e.g. an entrée and a
 ### Cycle Prevention
 
 :::danger[Circular Dependencies (`MODULE_CYCLE`)]
-If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency and halts compilation immediately with a `MODULE_CYCLE` diagnostic displaying the full dependency loop (`A -> B -> A`).
+If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency, cuts off that one import branch, and reports a `MODULE_CYCLE` error diagnostic displaying the full dependency loop (`A -> B -> A`). The rest of the recipe still compiles — the cyclic binding is left unresolved rather than crashing the whole build — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
 :::
 
 ---

@@ -244,7 +244,7 @@ graph TD
 * Base ingredients (flour, butter) are consolidated automatically on your shopping list.
 
 ### Circular imports
-If Recipe A imports B which imports A, Gram immediately detects the loop and halts with a `MODULE_CYCLE` diagnostic showing the full dependency chain (`A -> B -> A`).
+If Recipe A imports B which imports A, Gram detects the loop and reports a `MODULE_CYCLE` error diagnostic showing the full dependency chain (`A -> B -> A`). Only that import branch is cut off — the rest of the recipe still compiles — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
 
 ## Scheduling multi-day preparations (`~{-2d}`)
 
