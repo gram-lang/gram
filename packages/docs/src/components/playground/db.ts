@@ -202,7 +202,13 @@ export const DEFAULT_SOURCES = [
 			// --- Lemon Tart ---
 			"lemon-juice": {
 				name: "Lemon Juice",
-				aliases: ["lemon juice", "jus de citron"],
+				aliases: [
+					"lemon juice",
+					"jus de citron",
+					"jus de citrons",
+					"lemon-juice",
+					"jus-de-citron",
+				],
 				tags: ["citrus", "juice", "vegan"],
 				category: "Beverages",
 				physical: { density: 1.03 },
@@ -219,7 +225,7 @@ export const DEFAULT_SOURCES = [
 			},
 			lemons: {
 				name: "Lemons",
-				aliases: ["lemon", "citron", "citrons"],
+				aliases: ["lemon", "lemons", "citron", "citrons"],
 				tags: ["citrus", "fruit", "produce", "vegan"],
 				category: "Produce",
 				physical: { density: 0.95, unit_weight: 120 },
