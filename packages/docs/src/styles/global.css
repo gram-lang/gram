@@ -25,36 +25,54 @@
 }
 
 /*
- * Starlight's own base tokens (--sl-color-*, --sl-shadow-*) are only loaded
- * by its `Page.astro` component (via `@astrojs/starlight/style/props.css`,
- * which isn't in the package's public `exports` map, so it can't be imported
- * here) — pages using this custom Layout (home, blog, playground) never
- * receive them otherwise. Mirror the subset actually referenced across the
- * site, using the same values Starlight computes, so these pages render
- * consistently with /docs.
+ * Starlight Base & Warm Theme Tokens
+ * Dark mode tokens (default) and light mode tokens.
+ * Provides a cohesive warm dark brown / amber palette across the entire site and docs.
  */
 :root {
 	--sl-color-white: hsl(0, 0%, 100%);
+	--sl-color-gray-1: hsl(30, 8%, 88%);
+	--sl-color-gray-2: hsl(30, 8%, 77%);
 	--sl-color-gray-3: hsl(30, 8%, 56%);
 	--sl-color-gray-4: hsl(30, 9%, 36%);
-	--sl-color-gray-5: hsl(30, 12%, 23%);
-	--sl-color-gray-6: hsl(30, 16%, 16%);
+	--sl-color-gray-5: hsl(30, 12%, 22%);
+	--sl-color-gray-6: hsl(30, 16%, 15%);
 	--sl-color-gray-7: hsl(30, 16%, 7%);
+	--sl-color-black: hsl(30, 16%, 7%);
 	--sl-color-bg: hsl(30, 12%, 10%);
 	--sl-color-bg-nav: var(--sl-color-gray-6);
 	--sl-color-bg-sidebar: var(--sl-color-gray-6);
 	--sl-color-bg-inline-code: var(--sl-color-gray-5);
+	--sl-color-border-inline-code: var(--sl-color-gray-4);
 	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-light: var(--sl-color-gray-5);
 	--sl-color-hairline-shade: hsl(30, 12%, 10%);
-	--sl-color-border: var(--sl-color-gray-4);
+	--sl-color-border: var(--sl-color-gray-5);
 	--sl-color-text: hsl(30, 8%, 77%);
 	--sl-color-text-accent: var(--sl-color-accent-high);
-	--sl-color-orange: hsl(41, 82%, 63%);
+	--sl-color-text-invert: var(--sl-color-accent-low);
+
+	--sl-hue-orange: 30;
+	--sl-color-orange: hsl(30, 90%, 60%);
+	--sl-color-orange-high: hsl(30, 90%, 85%);
+	--sl-color-orange-low: hsl(30, 45%, 15%);
+	--sl-hue-green: 101;
 	--sl-color-green: hsl(101, 82%, 63%);
-	--sl-color-green-low: hsl(101, 39%, 22%);
+	--sl-color-green-high: hsl(101, 82%, 80%);
+	--sl-color-green-low: hsl(101, 39%, 15%);
+	--sl-hue-red: 339;
 	--sl-color-red: hsl(339, 82%, 63%);
 	--sl-color-red-high: hsl(339, 82%, 87%);
-	--sl-color-red-low: hsl(339, 39%, 22%);
+	--sl-color-red-low: hsl(339, 39%, 15%);
+	--sl-hue-blue: 215;
+	--sl-color-blue: hsl(215, 75%, 65%);
+	--sl-color-blue-high: hsl(215, 80%, 85%);
+	--sl-color-blue-low: hsl(215, 30%, 15%);
+	--sl-hue-purple: 275;
+	--sl-color-purple: hsl(275, 70%, 68%);
+	--sl-color-purple-high: hsl(275, 75%, 88%);
+	--sl-color-purple-low: hsl(275, 30%, 15%);
+
 	--sl-shadow-sm:
 		0px 1px 1px hsla(0, 0%, 0%, 0.12), 0px 2px 1px hsla(0, 0%, 0%, 0.24);
 	--sl-shadow-lg:
@@ -88,26 +106,41 @@
 :root[data-theme="light"] {
 	--shadow-color: 30deg 10% 80%;
 	--sl-color-white: hsl(30, 12%, 10%);
+	--sl-color-gray-1: hsl(30, 14%, 16%);
+	--sl-color-gray-2: hsl(30, 10%, 23%);
 	--sl-color-gray-3: hsl(30, 9%, 36%);
 	--sl-color-gray-4: hsl(30, 8%, 56%);
 	--sl-color-gray-5: hsl(30, 33%, 88%);
 	--sl-color-gray-6: hsl(30, 20%, 94%);
 	--sl-color-gray-7: hsl(30, 19%, 97%);
+	--sl-color-black: hsl(0, 0%, 100%);
 	--sl-color-border: #cecece;
 	--sl-color-bg: hsl(0, 0%, 100%);
 	--sl-color-bg-nav: var(--sl-color-gray-7);
 	--sl-color-bg-sidebar: var(--sl-color-bg);
 	--sl-color-bg-inline-code: var(--sl-color-gray-6);
+	--sl-color-border-inline-code: var(--sl-color-gray-5);
 	--sl-color-hairline: var(--sl-color-gray-6);
+	--sl-color-hairline-light: var(--sl-color-gray-6);
 	--sl-color-hairline-shade: var(--sl-color-gray-6);
 	--sl-color-text: hsl(30, 12%, 23%);
 	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-text-invert: hsl(0, 0%, 100%);
 	--sl-color-orange: hsl(32, 100%, 42%);
+	--sl-color-orange-high: hsl(32, 80%, 25%);
+	--sl-color-orange-low: hsl(32, 90%, 88%);
 	--sl-color-green: hsl(91, 100%, 28%);
-	--sl-color-green-low: hsl(101, 85%, 90%);
+	--sl-color-green-high: hsl(91, 80%, 22%);
+	--sl-color-green-low: hsl(91, 85%, 90%);
 	--sl-color-red: hsl(339, 90%, 60%);
 	--sl-color-red-high: hsl(339, 80%, 30%);
 	--sl-color-red-low: hsl(339, 80%, 90%);
+	--sl-color-blue: hsl(215, 90%, 55%);
+	--sl-color-blue-high: hsl(215, 80%, 30%);
+	--sl-color-blue-low: hsl(215, 88%, 90%);
+	--sl-color-purple: hsl(275, 90%, 55%);
+	--sl-color-purple-high: hsl(275, 90%, 30%);
+	--sl-color-purple-low: hsl(275, 80%, 90%);
 	--sl-shadow-sm:
 		0px 1px 1px hsla(0, 0%, 0%, 0.06), 0px 2px 1px hsla(0, 0%, 0%, 0.06);
 	--sl-shadow-lg:
@@ -204,43 +237,178 @@ pre[data-language="markdown"] code {
 }
 
 /*
- * Override code block backgrounds to match the site's warm theme.
- * This overrides the default Shiki themes (like github-dark) which have
- * hardcoded blueish backgrounds.
+ * Documentation Sidebar Warm Surface Harmonization
+ * Replaces pure pitch-black with the warm sidebar background token.
  */
-.expressive-code .frame,
-pre.astro-code,
-pre.shiki {
-	background-color: var(--sl-color-bg) !important;
+#starlight__sidebar,
+.sidebar,
+#nova-sidebar-nav,
+nav.sidebar {
+	background-color: var(--sl-color-bg-sidebar) !important;
+	border-color: var(--sl-color-hairline) !important;
+}
+
+#starlight__sidebar .sidebar-content {
+	background-color: transparent !important;
+}
+
+#starlight__sidebar a {
+	color: var(--sl-color-gray-2);
+	transition:
+		color 0.15s ease,
+		background-color 0.15s ease;
+}
+
+#starlight__sidebar a:hover {
+	color: var(--sl-color-white);
+}
+
+#starlight__sidebar a[aria-current="page"] {
+	color: var(--sl-color-text-invert) !important;
+	background-color: var(--sl-color-text-accent) !important;
 }
 
 /*
- * Shiki Multi-Theme Syntax Highlighting
- * Supports both Astro's <Code> component (inline colors + --shiki-dark)
- * and markdown-rendered code blocks (--shiki-light + --shiki-dark).
+ * Code Blocks Warm Theme Harmonization
+ * Overrides hardcoded Shiki themes (like github-dark/github-dark-dimmed blueish backgrounds)
+ * so that code blocks blend seamlessly into the warm dark brown theme of the site and docs.
  */
-html[data-theme="dark"] .astro-code {
-	color: var(--shiki-dark, var(--sl-color-text)) !important;
-	background-color: var(--shiki-dark-bg, var(--sl-color-bg)) !important;
+.expressive-code .frame,
+pre.astro-code,
+.astro-code,
+pre.shiki,
+div[data-nova-code-container],
+div[data-nova-code-container] pre,
+.sl-markdown-content .astro-code,
+.sl-markdown-content pre:not(:where(.not-content *)),
+.post-content pre {
+	background-color: var(--sl-color-bg) !important;
+	border-color: var(--sl-color-gray-5) !important;
 }
 
-html[data-theme="dark"] .astro-code span {
+html[data-theme="dark"] .astro-code,
+html[data-theme="dark"] pre.astro-code,
+html[data-theme="dark"] div[data-nova-code-container],
+html[data-theme="dark"] div[data-nova-code-container] pre,
+html[data-theme="dark"] .sl-markdown-content .astro-code {
+	color: var(--shiki-dark, var(--sl-color-text)) !important;
+	background-color: var(--sl-color-bg) !important;
+	--shiki-dark-bg: var(--sl-color-bg) !important;
+}
+
+html[data-theme="dark"] .astro-code span,
+html[data-theme="dark"] pre.astro-code span {
 	color: var(--shiki-dark) !important;
 	font-style: var(--shiki-dark-font-style, inherit) !important;
 	font-weight: var(--shiki-dark-font-weight, inherit) !important;
 	text-decoration: var(--shiki-dark-text-decoration, inherit) !important;
 }
 
-html[data-theme="light"] .astro-code {
+html[data-theme="light"] .astro-code,
+html[data-theme="light"] pre.astro-code,
+html[data-theme="light"] div[data-nova-code-container],
+html[data-theme="light"] div[data-nova-code-container] pre,
+html[data-theme="light"] .sl-markdown-content .astro-code {
 	color: var(--shiki-light, var(--sl-color-text)) !important;
 	background-color: var(--shiki-light-bg, #ffffff) !important;
+	--shiki-light-bg: #ffffff !important;
 }
 
-html[data-theme="light"] .astro-code span {
+html[data-theme="light"] .astro-code span,
+html[data-theme="light"] pre.astro-code span {
 	color: var(--shiki-light, inherit);
 	font-style: var(--shiki-light-font-style, inherit);
 	font-weight: var(--shiki-light-font-weight, inherit);
 	text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+
+/* Nova code container title bar */
+div[data-nova-code-container] [data-nova-code-title],
+div[data-nova-code-container] > div:first-child:not(pre) {
+	background-color: var(--sl-color-gray-6) !important;
+	border-bottom: 1px solid var(--sl-color-gray-5) !important;
+	color: var(--sl-color-gray-3) !important;
+}
+
+/* Code tabs harmonization */
+.sl-markdown-content .code-tabs.code-tabs-border {
+	border-color: var(--sl-color-gray-5) !important;
+	background-color: var(--sl-color-bg) !important;
+}
+
+.sl-markdown-content .code-tabs [role="tablist"] {
+	border-bottom: 1px solid var(--sl-color-gray-5) !important;
+	background-color: var(--sl-color-gray-6) !important;
+}
+
+.sl-markdown-content .code-tabs [role="tab"] {
+	color: var(--sl-color-gray-3) !important;
+}
+
+.sl-markdown-content .code-tabs [role="tab"][aria-selected="true"] {
+	color: var(--sl-color-white) !important;
+	border-bottom-color: var(--sl-color-accent) !important;
+}
+
+/*
+ * Link Cards & Content Cards Harmonization
+ * Replaces stark black or unstyled cards with warm elevated surfaces.
+ */
+.sl-link-card,
+.sl-markdown-content .sl-link-card {
+	background-color: var(--sl-color-gray-6) !important;
+	border: 1px solid var(--sl-color-gray-5) !important;
+	border-radius: 0.5rem !important;
+	box-shadow: none !important;
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease,
+		transform 0.15s ease !important;
+}
+
+.sl-link-card:hover,
+.sl-markdown-content .sl-link-card:hover {
+	background-color: var(--sl-color-gray-5) !important;
+	border-color: var(--sl-color-accent) !important;
+	transform: translateY(-1px);
+}
+
+.sl-link-card .title,
+.sl-markdown-content .sl-link-card .title {
+	color: var(--sl-color-white) !important;
+	font-weight: 600 !important;
+}
+
+.sl-link-card .description,
+.sl-markdown-content .sl-link-card .description {
+	color: var(--sl-color-gray-3) !important;
+	line-height: 1.5 !important;
+}
+
+.sl-link-card:hover .description,
+.sl-markdown-content .sl-link-card:hover .description {
+	color: var(--sl-color-gray-2) !important;
+}
+
+.sl-link-card .icon,
+.sl-markdown-content .sl-link-card .icon {
+	color: var(--sl-color-gray-3) !important;
+	transition:
+		transform 0.2s ease,
+		color 0.2s ease !important;
+}
+
+.sl-link-card:hover .icon,
+.sl-markdown-content .sl-link-card:hover .icon {
+	color: var(--sl-color-accent-high) !important;
+	transform: translateX(3px);
+}
+
+.sl-markdown-content .card,
+.card:where(.astro-e6yapmfz) {
+	background-color: var(--sl-color-gray-6) !important;
+	border: 1px solid var(--sl-color-gray-5) !important;
+	border-radius: 0.5rem !important;
 }
 
 /*
