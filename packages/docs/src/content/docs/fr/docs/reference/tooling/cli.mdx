@@ -4,6 +4,7 @@ description: "Référence du CLI Gram : installation, options globales et comman
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Since from '../../../../../../components/Since.astro';
 
 Le CLI officiel de Gram (`@gram-lang/cli`) est l'outil de référence pour valider, compiler et gérer vos collections de recettes en local. Il fait office de passerelle entre vos fichiers `.gram` et le reste de votre stack technique (SSG, Next.js, apps mobiles, etc.).
 
@@ -21,6 +22,8 @@ import { Steps } from '@astrojs/starlight/components';
 </CodeTabs>
 
 Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un *runtime* n'est requise, les deux options sont strictement équivalentes.
+
+<Since v="1.2.0" /> Quand une nouvelle version est publiée sur npm, gram affiche une courte notice une fois la commande terminée (ignorée en CI et hors terminal interactif). Lancez `gram upgrade` pour vérifier et l'installer à la demande, ou désactivez cette notice avec `gram config set updateCheck false` — ou, pour une seule exécution, la variable d'environnement `GRAM_NO_UPDATE_CHECK`.
 
 ## Options Globales
 
@@ -41,6 +44,15 @@ Initialise un nouvel environnement Gram dans le dossier courant.
 - Génère/met à jour un fichier `.env` pour vos clés d'API IA.
 - Génère une base de données d'ingrédients de départ très commentée à `.gram/ingredients.yaml`.
 - Génère un `.gitignore` pour éviter de versionner des clés sensibles.
+
+#### `gram upgrade` <Since v="1.2.0" />
+Vérifie sur npm si une nouvelle version de `@gram-lang/cli` est disponible et propose de l'installer.
+```bash
+gram upgrade
+```
+- Effectue toujours une vérification fraîche auprès du registre npm — indépendamment de la notice passive décrite ci-dessus.
+- Affiche une comparaison entre la version installée et la dernière disponible, puis demande confirmation avant de lancer `npm install -g @gram-lang/cli@latest`.
+- Ne fait rien (à part le rapport) si déjà à jour.
 
 #### `gram check [motif]`
 Valide vos fichiers `.gram` pour détecter les erreurs de syntaxe, l'intégrité structurelle, et les ingrédients non définis.
@@ -419,6 +431,7 @@ version: 1                     # Réservé aux futures migrations de configurati
 database: ".gram/ingredients.yaml" # Chemin relatif ou absolu vers la base de données
 language: "fr"                 # Langue pour tout le contenu généré par l'IA (catégories, tags, recettes importées)
                                # Supporté : en, fr, de, es, it, pt, nl, ja, zh — défaut : en
+updateCheck: true             # Passez à false pour désactiver la notice de mise à jour affichée après chaque commande
 
 # Paramètres IA pour `gram import`, `gram db enrich` et `gram db lint`
 ai:

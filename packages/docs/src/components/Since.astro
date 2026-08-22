@@ -1,0 +1,108 @@
+---
+export interface Props {
+	v: "1.1.0" | "1.2.0" | string;
+	type?: "added" | "changed" | "deprecated";
+	href?: string;
+	class?: string;
+}
+
+const { v, type = "added", href, class: className = "" } = Astro.props;
+
+// Clean version string (e.g. "v1.1.0" -> "1.1.0")
+const cleanVersion = v.replace(/^v/, "");
+const formattedVersion = `v${cleanVersion}`;
+
+// Detect locale (Astro / Starlight)
+const pathname = Astro.url.pathname;
+const isFrench =
+	pathname.startsWith("/fr/") ||
+	pathname === "/fr" ||
+	Astro.currentLocale === "fr";
+
+// Tooltip title descriptions
+const tooltips = {
+	fr: {
+		added: `Ajouté en ${formattedVersion}`,
+		changed: `Modifié en ${formattedVersion}`,
+		deprecated: `Déprécié en ${formattedVersion}`,
+	},
+	en: {
+		added: `Added in ${formattedVersion}`,
+		changed: `Changed in ${formattedVersion}`,
+		deprecated: `Deprecated in ${formattedVersion}`,
+	},
+};
+
+const tooltipText =
+	(isFrench ? tooltips.fr : tooltips.en)[type] || tooltips.en.added;
+const releaseNoteHint = isFrench
+	? "Voir les notes de version"
+	: "View release notes";
+const title = `${tooltipText} — ${releaseNoteHint}`;
+
+// Automatic release note / changelog URL resolution
+function getDefaultReleaseUrl(ver: string, fr: boolean): string {
+	const prefix = fr ? "/fr" : "";
+	if (ver === "1.1.0") {
+		return `${prefix}/blog/2026-08-16-release-1.1.0`;
+	}
+	// Fallback to changelog anchor
+	return `${prefix}/docs/changelog#${ver.replace(/\./g, "")}`;
+}
+
+const targetUrl = href || getDefaultReleaseUrl(cleanVersion, isFrench);
+---
+
+<a
+	href={targetUrl}
+	class:list={[
+		"since-badge",
+		`since-${type}`,
+		className,
+	]}
+	title={title}
+	aria-label={title}
+>{formattedVersion}</a>
+
+<style>
+	.since-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.1rem 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1.2;
+		text-decoration: none !important;
+		border-radius: 9999px;
+		vertical-align: middle;
+		font-family: var(--sl-font), system-ui, -apple-system, sans-serif;
+		letter-spacing: 0.02em;
+		cursor: pointer;
+		margin-bottom: 0.5rem;
+		border: 1px solid var(--sl-badge-default-border, var(--sl-color-accent));
+		background: var(--sl-badge-default-bg, var(--sl-color-accent-low));
+		color: var(--sl-color-text-accent);
+	}
+
+	.since-badge:hover {
+
+	}
+
+	.since-added {
+		border-color: var(--sl-badge-default-border, var(--sl-color-accent));
+		background: var(--sl-color-bg);
+		color: var(--sl-color-text-accent);
+	}
+
+	.since-changed {
+		border-color: var(--sl-badge-caution-border, var(--sl-color-orange, #f97316));
+		background: var(--sl-badge-caution-bg, var(--sl-color-orange-low, rgba(249, 115, 22, 0.15)));
+		color: var(--sl-color-orange-high, #fb923c);
+	}
+
+	.since-deprecated {
+		border-color: var(--sl-badge-danger-border, var(--sl-color-red, #ef4444));
+		background: var(--sl-badge-danger-bg, var(--sl-color-red-low, rgba(239, 68, 68, 0.15)));
+		color: var(--sl-color-red-high, #f87171);
+	}
+</style>

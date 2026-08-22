@@ -4,6 +4,7 @@ description: "Reference for the Gram CLI: installation, global options, and the 
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Since from '../../../../../components/Since.astro';
 
 The official Gram CLI (`@gram-lang/cli`) is the primary tool for validating, compiling, and managing your recipe collections locally. It acts as the bridge between your `.gram` files and the rest of your technical stack (SSG, Next.js, mobile apps, etc.).
 
@@ -21,6 +22,8 @@ import { Steps } from '@astrojs/starlight/components';
 </CodeTabs>
 
 The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
+
+<Since v="1.2.0" /> When a newer version is published on npm, gram prints a short notice after any command finishes (skipped in CI and non-interactive runs). Run `gram upgrade` to check and install it on demand, or silence the passive notice with `gram config set updateCheck false` — or, for a single run, the `GRAM_NO_UPDATE_CHECK` environment variable.
 
 ## Global Options
 
@@ -41,6 +44,15 @@ Scaffolds a new Gram environment in the current directory.
 - Generates/updates a `.env` file for your AI API keys.
 - Generates a heavily commented starter `ingredients.yaml` ingredient database at `.gram/ingredients.yaml`.
 - Generates a `.gitignore` to prevent committing sensitive keys.
+
+#### `gram upgrade` <Since v="1.2.0" />
+Checks npm for a newer `@gram-lang/cli` release and offers to install it.
+```bash
+gram upgrade
+```
+- Always performs a fresh lookup against the npm registry — independent of the passive background check described above.
+- Prints a comparison of the installed and latest versions, then asks for confirmation before running `npm install -g @gram-lang/cli@latest`.
+- Does nothing (beyond reporting) when already up to date.
 
 #### `gram check [pattern]`
 Validates your `.gram` files for syntax errors, structural integrity, and undefined ingredients.
@@ -426,6 +438,7 @@ language: "en"                 # Language for all AI-generated content (categori
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
                                # (the `gram init` interactive prompt currently only offers en/fr;
                                # other codes must be set manually with `gram config set language <code>`)
+updateCheck: true             # Set to false to silence the "update available" notice printed after each command
 
 # AI settings for `gram import`, `gram db enrich` and `gram db lint`
 ai:
