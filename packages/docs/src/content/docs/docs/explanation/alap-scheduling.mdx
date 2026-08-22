@@ -93,6 +93,19 @@ gantt
 
 Notice how `Prep Bread` is automatically scheduled during Pie's baking time (15m–20m), ensuring Bread is ready to enter `~_oven` the exact minute Pie comes out at minute 25.
 
+## Modular Anchoring (`@use ... ~{-1d}`)
+
+When composing modular recipes with `@gram-lang/modules`, you can attach a retro-planning offset directly to an import directive:
+
+```gram
+@use "@/components/bases/sourdough-starter.gram" as &starter ~{-2d}
+```
+
+ALAP scheduling propagates this anchor backward through the imported sub-tree:
+- The section producing the exported `&starter` is pinned to finish **2 days before** the main recipe's start time (T-zero).
+- All upstream preparations within the sourdough module (feeding, fermenting) are scheduled *even earlier*, pulling the entire sub-timeline along with it.
+- During compilation Phase 4 (Rebasing), the entire global timeline shifts forward so all start times remain positive numbers beginning at 0.
+
 ## Best Practices for a Coherent Timeline
 
 To make the most of Gram's ALAP scheduling and ensure your generated timeline is both realistic and useful, follow these best practices:

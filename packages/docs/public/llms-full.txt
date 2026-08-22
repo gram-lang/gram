@@ -1439,7 +1439,46 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 
-## 3. Ingredient database (YAML)
+## 3. Composed recipes (`@gram-lang/modules`)
+
+When a recipe imports sub-modules via `@use`, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:
+
+```json
+{
+  "title": "Lemon Tart",
+  "modules": [
+    {
+      "binding": "dough",
+      "uri": "/bases/sweet-pastry-dough.gram",
+      "title": "Sweet Pastry Dough",
+      "meta": { "title": "Sweet Pastry Dough" },
+      "scaleFactor": 1.5,
+      "mode": "inline"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Sweet Pastry Dough",
+      "module": {
+        "binding": "dough",
+        "uri": "/bases/sweet-pastry-dough.gram",
+        "title": "Sweet Pastry Dough",
+        "mode": "inline"
+      },
+      "steps": [ "/* spliced steps from the imported module */" ]
+    },
+    {
+      "title": "Assembly",
+      "steps": [ "/* host steps */" ]
+    }
+  ]
+}
+```
+
+- **`modules`**: Array of all imported module contributors (`ModuleInfo`), detailing local binding name, source URI, resolved scale factor, and execution mode (`"inline"` or `"stocked"`).
+- **`section.module`**: Present on any section spliced in from an import (`ComposedSection`), preserving traceability for UIs and custom renderers.
+
+## 4. Ingredient database (YAML)
 
 The database passed to `validateIngredientDatabase()` / `analyze()` is a flat `Record<string, IngredientData>` keyed by ingredient slug. The `gram` CLI additionally accepts (and unwraps) an optional top-level `ingredients:` key, so both of these are valid `.gram/ingredients.yaml` files:
 
@@ -1525,7 +1564,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
 | `MODULE_DEPTH_EXCEEDED` | error | `Import depth limit exceeded ({depth}) while importing "{specifier}".` |
-| `MODULE_EXPORT_NOT_FOUND` | error | `Module "{specifier}" does not export '&{exported}'. Did you mean '&{suggestion}'?` |
+| `MODULE_EXPORT_NOT_FOUND` | error | `Module "{specifier}" does not export '&{exported}' — it exists in the module but isn't re-exported. Add '-> &{exported}' to the section that produces it.` |
 | `UNUSED_IMPORT` | warning | `Unused import '&{local}' from "{specifier}".` |
 | `UNRESOLVED_MODULE_YIELD` | error | `Cannot compute yield for '&{binding}' from "{specifier}": missing physical mass data for one or more ingredients.` |
 | `ESTIMATED_MODULE_YIELD` | warning | `Yield of '&{binding}' from "{specifier}" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.` |

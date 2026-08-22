@@ -74,6 +74,14 @@ Si les calculs du boulanger ont été demandés (`--bakers-math` ou `--bakers-re
 
 **L'agrégation reste cohérente avec la masse.** Si un même ingrédient est utilisé plusieurs fois dans une section (ex : du sucre ajouté à deux étapes distinctes), la méthode `aggregateSectionIngredients` de `@gram-lang/kitchen` additionne à la fois sa `normalizedMass` et son `bakersPercentage`. Puisque le pourcentage est linéaire par rapport à la masse de référence, les deux valeurs concordent systématiquement (ex: 100 g/10 % + 100 g/10 % donne bien 200 g/20 %, et non un aberrant 200 g/10 %). Tous les moteurs de rendu lisent cette valeur précalculée et agrégée sans jamais la recalculer de leur côté.
 
+## Ajustement des Imports Modulaires (`@gram-lang/modules`)
+
+Lorsqu'une recette importe une sous-base via `@use` (ex : `@use "./bases/pate.gram" as &pate`), le scaling suit une évaluation basée sur le rendement :
+
+1. **Mesure du Rendement** : `@gram-lang/modules` pré-analyse le sous-module pour déterminer sa masse totale (`resolveYield`), en sommant récursivement toutes ses sections contributrices.
+2. **Calcul du Ratio** : Lorsque la recette hôte précise une quantité (ex : `&pate{300g}` pour une base qui produit `400g`), `computeScaleFactor()` calcule un facteur de `300 / 400 = 0.75`.
+3. **Pré-Scaling de l'AST** : L'AST du sous-module est ajusté en amont (`scaleAst`) avant d'être greffé dans la recette hôte. Si plusieurs étapes demandent des quantités d'un même export, elles sont sommées ; si plusieurs exports sont importés, le ratio maximal est retenu.
+
 ## Consommer ceci depuis un nouveau frontend
 
 import { Steps } from '@astrojs/starlight/components';

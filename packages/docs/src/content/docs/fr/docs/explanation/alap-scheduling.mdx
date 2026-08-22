@@ -93,6 +93,19 @@ gantt
 
 Remarquez comment l'étape `Préparer le Pain` est automatiquement planifiée pendant la cuisson de la tarte (entre la 15e et la 20e minute), garantissant que le pain est prêt à entrer dans le `~_four` à la minute exacte 25 où la tarte en sort.
 
+## Ancrage Modulaire (`@use ... ~{-1d}`)
+
+Lors de la composition de recettes modulaires avec `@gram-lang/modules`, vous pouvez déclarer un décalage rétro-planning directement sur une directive d'importation :
+
+```gram
+@use "@/components/bases/levain.gram" as &levain ~{-2d}
+```
+
+L'algorithme ALAP propage cet ancrage vers l'arrière à travers tout le sous-arbre importé :
+- La section produisant l'export `&levain` est ancrée pour se terminer **2 jours avant** le démarrage de la recette principale (T-zéro).
+- Toutes les étapes amont du module de levain (rafraîchis, fermentation) sont planifiées *encore plus tôt*, entraînant l'ensemble du sous-planning.
+- En Phase 4 de compilation (Recalage positif), la chronologie globale est décalée vers l'avant pour que tous les temps absolus débutent à 0.
+
 ## Bonnes Pratiques pour une Chronologie Cohérente
 
 Pour tirer le meilleur parti de l'ordonnancement ALAP de Gram et vous assurer que votre chronologie générée est à la fois réaliste et utile, suivez ces bonnes pratiques :

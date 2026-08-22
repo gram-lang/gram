@@ -164,7 +164,46 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (ils n'ont pas de champ `type` et sont identifiés par la présence d'un `id`) ; les minuteurs, températures, commentaires et déclarations portent chacun un `type` explicite en minuscules. Cette distinction avec le `ASTNodeType` (en PascalCase) du *parser* est volontaire : on décrit ici la *sortie* compilée, non l'entrée. Consultez [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un tutoriel d'intégration de ces données dans un framework front-end.
 
-## 3. Base de données d'ingrédients (YAML)
+## 3. Recettes composées (`@gram-lang/modules`)
+
+Lorsqu'une recette importe des sous-modules via `@use`, `finalizeComposed()` enrichit le `CompilationResult` standard en un `ComposedCompilationResult`. Il ajoute des métadonnées modulaires à la racine de la charge utile et sur chaque section injectée :
+
+```json
+{
+  "title": "Tarte au citron",
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "/bases/pate-sablee.gram",
+      "title": "Pâte Sablée",
+      "meta": { "title": "Pâte Sablée" },
+      "scaleFactor": 1.5,
+      "mode": "inline"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Pâte Sablée",
+      "module": {
+        "binding": "pate",
+        "uri": "/bases/pate-sablee.gram",
+        "title": "Pâte Sablée",
+        "mode": "inline"
+      },
+      "steps": [ "/* étapes injectées du sous-module */" ]
+    },
+    {
+      "title": "Assemblage",
+      "steps": [ "/* étapes de la recette hôte */" ]
+    }
+  ]
+}
+```
+
+- **`modules`** : Tableau des modules importés contributeurs (`ModuleInfo`), précisant le nom de liaison local, l'URI source, le facteur d'échelle résolu et le mode d'exécution (`"inline"` ou `"stocked"`).
+- **`section.module`** : Présent sur toute section issue d'un import (`ComposedSection`), garantissant la traçabilité de provenance pour les interfaces et moteurs de rendu.
+
+## 4. Base de données d'ingrédients (YAML)
 
 La base de données passée à `validateIngredientDatabase()` ou `analyze()` est un dictionnaire plat `Record<string, IngredientData>`, indexé par *slug* d'ingrédient. Le CLI `gram` tolère également (et aplatit) une clé racine optionnelle `ingredients:`. Les deux formats suivants pour `.gram/ingredients.yaml` sont donc valides :
 

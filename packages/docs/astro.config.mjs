@@ -113,6 +113,7 @@ export default defineConfig({
           items: [
             { label: 'Overview', translations: { fr: "Vue d'ensemble" }, slug: 'docs/reference/api' },
             { label: '@gram-lang/parser', slug: 'docs/reference/api/parser' },
+            { label: '@gram-lang/modules', slug: 'docs/reference/api/modules' },
             { label: '@gram-lang/kitchen', slug: 'docs/reference/api/kitchen' },
             { label: '@gram-lang/analyzer', slug: 'docs/reference/api/analyzer' },
             { label: '@gram-lang/renderer', slug: 'docs/reference/api/renderer' },
@@ -129,6 +130,7 @@ export default defineConfig({
           items: [
             { label: 'The Gram Lifecycle', translations: { fr: 'Cycle de vie' }, slug: 'docs/explanation/engine/lifecycle' },
             { label: 'Parsing & AST', slug: 'docs/explanation/engine/parser' },
+            { label: 'Module Resolution & Composition', translations: { fr: 'Résolution & Composition' }, slug: 'docs/explanation/engine/modules' },
             { label: 'Compilation & Structure', translations: { fr: 'Compilation & Structure' }, slug: 'docs/explanation/engine/kitchen' },
             { label: 'Semantic Analysis', translations: { fr: 'Analyse Sémantique' }, slug: 'docs/explanation/engine/analyzer' },
             { label: 'Rendering & Output', translations: { fr: 'Rendu & Sortie' }, slug: 'docs/explanation/engine/renderer' }

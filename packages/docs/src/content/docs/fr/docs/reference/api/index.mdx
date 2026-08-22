@@ -1,6 +1,6 @@
 ---
 title: "Référence API"
-description: "Vue d'ensemble des packages composables de Gram (parser, kitchen, analyzer, renderer, format, i18n) et de leur articulation."
+description: "Vue d'ensemble des packages composables de Gram (parser, modules, kitchen, analyzer, renderer, format, i18n) et de leur articulation."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
@@ -13,10 +13,10 @@ Gram n'est pas qu'un simple format de fichier : c'est un *pipeline* de petites b
 
 <CodeTabs>
   ```bash title="npm"
-  npm install @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
+  npm install @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
   ```bash title="bun"
-  bun add @gram-lang/parser @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
+  bun add @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
 </CodeTabs>
 
@@ -27,6 +27,7 @@ Tous ces *packages* sont `ESM only`, *side-effect free*, et tournent partout où
 | Paquet | Rôle | Point d'entrée principal |
 |---|---|---|
 | [`@gram-lang/parser`](/fr/docs/reference/api/parser) | Transforme le texte source `.gram` en Arbre Syntaxique Abstrait (AST) | `getAST(source)` |
+| [`@gram-lang/modules`](/fr/docs/reference/api/modules) | Résout les imports `@use`, suit les dépendances, ajuste les sous-bases et compose un AST unifié | `loadModuleGraph(entry, host)`, `composeRecipe(graph, opts)` |
 | [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée, prête au rendu (liste de courses, minutages, registre) | `compile(ast, options?)` |
 | [`@gram-lang/analyzer`](/fr/docs/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
 | [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
@@ -89,6 +90,36 @@ function renderRecipe(source: string, rawIngredientDb: unknown) {
 :::note
 l'appel `analyze()` ci-dessus prend la base de données d'ingrédients comme **deuxième argument positionnel** — `analyze(compiled, database, options?)` — pas comme un champ d'un objet d'options.
 :::
+
+### Recettes modulaires avec `@gram-lang/modules`
+
+Lorsque vous manipulez des recettes composées de directives `@use` réparties sur plusieurs fichiers, insérez `@gram-lang/modules` entre l'analyseur syntaxique et le compilateur :
+
+```typescript
+import { loadModuleGraph, composeRecipe, finalizeComposed, createMemoryHost } from '@gram-lang/modules';
+import { compile } from '@gram-lang/kitchen';
+import { analyze } from '@gram-lang/analyzer';
+import { toHTML } from '@gram-lang/renderer';
+
+async function renderModularRecipe(entryUri: string, host: ModuleHost, rawIngredientDb: unknown) {
+  // 1. Résoudre et charger le graphe complet d'importation (DFS, détection de cycles)
+  const graph = await loadModuleGraph(entryUri, host);
+
+  // 2. Composer en un AST unique avec calcul des proportions et renommage hygiénique
+  const composed = composeRecipe(graph, { db: database });
+
+  // 3. Compiler l'AST composé
+  const compiled = compile(composed.ast);
+  const result = finalizeComposed(compiled, composed);
+
+  // 4. Enrichir avec la base physique + ingrédients synthétiques pour le stock
+  const enrichedDb = { ...database, ...composed.syntheticIngredients };
+  const { result: analyzed } = analyze(result, enrichedDb);
+
+  // 5. Rendu en HTML
+  return toHTML(analyzed);
+}
+```
 
 ### Gérer les erreurs de parsing et les avertissements
 

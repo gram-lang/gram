@@ -64,6 +64,8 @@ The editor (VS Code and any other client of the language server) now actually re
 
 That now propagates through the whole import chain, too: editing a base recipe refreshes every open file that uses it, even indirectly through another import, and even if the base was edited outside the editor entirely (a `git pull`, another tool, a save from a different window). A problem inside a deeply-imported base points you straight to the exact file and line — not just "something's wrong somewhere in your imports."
 
+Asking for something a base recipe never meant to share now says so plainly instead of a bare "not found": if `&bouillon` is used inside `base.gram` itself but never re-exported, `@use "./base.gram" as { &bouillon }` now points straight at the fix — add `-> &bouillon` to the section that produces it — instead of leaving you to guess whether it's a typo or a missing export. The editor offers that exact fix as a one-click quick action, editing the base file directly.
+
 Go to Definition on `&pate` now jumps into the base file itself, landing on the exact section that binding was exported from — including a destructured `&blancs`/`&jaunes` each going to their own section, not just to the top of the file.
 
 Typing `@use "` now completes: `./`, `../`, `@/`, and any `paths:` alias as starting points, then the `.gram` files and subdirectories actually there once the path commits to one of them.
