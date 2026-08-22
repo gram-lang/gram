@@ -1,0 +1,10 @@
+---
+title: Mod Density Override Shadowed
+densities: ["honey: 1.4"]
+---
+
+@use "./glaze.gram" as &glaze
+
+## Assemble
+
+Use &glaze{100g}.

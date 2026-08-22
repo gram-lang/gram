@@ -1,0 +1,89 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Unresolved Module Yield"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./batter.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "batter",
+          "loc": {
+            "start": 68,
+            "end": 75
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 44,
+        "end": 76
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 90,
+                "end": 94
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "batter",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 102,
+                  "end": 106
+                }
+              },
+              "loc": {
+                "start": 94,
+                "end": 107
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 107,
+                "end": 108
+              }
+            }
+          ],
+          "loc": {
+            "start": 90,
+            "end": 109
+          }
+        }
+      ],
+      "loc": {
+        "start": 77,
+        "end": 109
+      }
+    }
+  ]
+}

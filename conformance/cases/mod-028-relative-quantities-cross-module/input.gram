@@ -1,0 +1,11 @@
+---
+title: Mod Relative Quantities Cross Module
+---
+
+@use "./pate.gram" as &pate
+
+## Glacage
+
+Use &pate{200g}.
+
+@sugar{50% &pate}.

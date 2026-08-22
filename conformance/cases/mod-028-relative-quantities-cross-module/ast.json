@@ -1,0 +1,129 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Relative Quantities Cross Module"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 75,
+            "end": 80
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 53,
+        "end": 81
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Glacage",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 94,
+                "end": 98
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 104,
+                  "end": 108
+                }
+              },
+              "loc": {
+                "start": 98,
+                "end": 109
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 109,
+                "end": 110
+              }
+            }
+          ],
+          "loc": {
+            "start": 94,
+            "end": 112
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "RelativeQuantity",
+                "percent": 50,
+                "target": "pate",
+                "referenceType": "variable",
+                "loc": {
+                  "start": 119,
+                  "end": 128
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 112,
+                "end": 129
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 129,
+                "end": 130
+              }
+            }
+          ],
+          "loc": {
+            "start": 112,
+            "end": 131
+          }
+        }
+      ],
+      "loc": {
+        "start": 82,
+        "end": 131
+      }
+    }
+  ]
+}

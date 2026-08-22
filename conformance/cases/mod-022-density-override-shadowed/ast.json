@@ -1,0 +1,92 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Density Override Shadowed",
+    "densities": [
+      "honey: 1.4"
+    ]
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./glaze.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "glaze",
+          "loc": {
+            "start": 95,
+            "end": 101
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 72,
+        "end": 102
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 116,
+                "end": 120
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "glaze",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 127,
+                  "end": 131
+                }
+              },
+              "loc": {
+                "start": 120,
+                "end": 132
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 132,
+                "end": 133
+              }
+            }
+          ],
+          "loc": {
+            "start": 116,
+            "end": 134
+          }
+        }
+      ],
+      "loc": {
+        "start": 103,
+        "end": 134
+      }
+    }
+  ]
+}

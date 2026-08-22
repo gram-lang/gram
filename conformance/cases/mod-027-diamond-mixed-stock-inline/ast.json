@@ -1,0 +1,138 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Diamond Mixed Stock Inline"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./b.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "b",
+          "loc": {
+            "start": 66,
+            "end": 68
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 47,
+        "end": 69
+      }
+    },
+    {
+      "type": "ImportDecl",
+      "specifier": "./c.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "c",
+          "loc": {
+            "start": 88,
+            "end": 90
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 69,
+        "end": 91
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 105,
+                "end": 109
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "b",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 112,
+                  "end": 113
+                }
+              },
+              "loc": {
+                "start": 109,
+                "end": 114
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 115,
+                "end": 119
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "c",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 122,
+                  "end": 123
+                }
+              },
+              "loc": {
+                "start": 119,
+                "end": 124
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 124,
+                "end": 125
+              }
+            }
+          ],
+          "loc": {
+            "start": 105,
+            "end": 126
+          }
+        }
+      ],
+      "loc": {
+        "start": 92,
+        "end": 126
+      }
+    }
+  ]
+}

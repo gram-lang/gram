@@ -1,0 +1,9 @@
+---
+title: Mod Estimated Module Yield
+---
+
+@use "./batter.gram" as &batter
+
+## Assemble
+
+Use &batter{206g}.

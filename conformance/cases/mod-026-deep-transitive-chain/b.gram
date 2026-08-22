@@ -1,0 +1,9 @@
+---
+title: B Module
+---
+
+@use "./c.gram" as &c
+
+## B ->&b
+
+Combine &c{500g} with @egg{50g} for ~{5min}.

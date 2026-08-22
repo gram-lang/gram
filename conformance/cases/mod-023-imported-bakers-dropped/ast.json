@@ -1,0 +1,143 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Imported Bakers Dropped"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 66,
+            "end": 71
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 44,
+        "end": 72
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 86,
+                "end": 90
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [
+                "*"
+              ],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 98,
+                  "end": 102
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 90,
+                "end": 103
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 103,
+                "end": 104
+              }
+            }
+          ],
+          "loc": {
+            "start": 86,
+            "end": 106
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 106,
+                "end": 110
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 116,
+                  "end": 120
+                }
+              },
+              "loc": {
+                "start": 110,
+                "end": 121
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 121,
+                "end": 122
+              }
+            }
+          ],
+          "loc": {
+            "start": 106,
+            "end": 123
+          }
+        }
+      ],
+      "loc": {
+        "start": 73,
+        "end": 123
+      }
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "title": "Mod Density Override Shadowed",
+  "slug": "mod-density-override-shadowed",
+  "meta": {
+    "title": "Mod Density Override Shadowed",
+    "densities": [
+      "honey:1.4"
+    ]
+  },
+  "registry": {
+    "ingredients": {
+      "glaze": {
+        "id": "glaze",
+        "name": "glaze",
+        "is_intermediate": true
+      },
+      "honey": {
+        "id": "honey",
+        "name": "honey",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "honey",
+      "name": "honey",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Glaze",
+      "ingredients": [
+        {
+          "id": "honey",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "honey",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "glaze",
+      "module": {
+        "binding": "glaze",
+        "uri": "glaze.gram",
+        "title": "Glaze",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "glaze",
+          "name": "glaze",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "glaze",
+              "name": "glaze",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 100,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "DENSITY_OVERRIDE_SHADOWED",
+      "message": "Density for \"honey\" in host recipe (1.4) overrides module \"./glaze.gram\" (1.3).",
+      "loc": {
+        "start": 72,
+        "end": 102
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"honey\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 6,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Glaze",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Glaze",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
+    "totalMass": 100,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"honey\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "glaze",
+      "uri": "glaze.gram",
+      "title": "Glaze",
+      "meta": {
+        "title": "Glaze",
+        "densities": [
+          "honey: 1.3"
+        ]
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

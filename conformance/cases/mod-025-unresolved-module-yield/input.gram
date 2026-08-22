@@ -1,0 +1,9 @@
+---
+title: Mod Unresolved Module Yield
+---
+
+@use "./batter.gram" as &batter
+
+## Assemble
+
+Use &batter{200g}.

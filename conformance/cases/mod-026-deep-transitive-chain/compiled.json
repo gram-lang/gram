@@ -1,0 +1,379 @@
+{
+  "title": "Mod Deep Transitive Chain",
+  "slug": "mod-deep-transitive-chain",
+  "meta": {
+    "title": "Mod Deep Transitive Chain"
+  },
+  "registry": {
+    "ingredients": {
+      "b-c-d": {
+        "id": "b-c-d",
+        "name": "b$c$d",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "b-c": {
+        "id": "b-c",
+        "name": "b$c",
+        "is_intermediate": true
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      },
+      "b": {
+        "id": "b",
+        "name": "b",
+        "is_intermediate": true
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 216.21,
+      "unit": "g"
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 54.06,
+      "unit": "g"
+    },
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 48.65,
+      "unit": "g"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "D",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 216.21,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 216.21,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 10,
+                "text": "10"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 10,
+            "activeDuration": 10
+          }
+        }
+      ],
+      "intermediate_preparation": "b$c$d",
+      "module": {
+        "binding": "d",
+        "uri": "d.gram",
+        "title": "D Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "C",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b-c-d",
+          "name": "b$c$d",
+          "_usageId": "2",
+          "qty": 200,
+          "unit": "g"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "3",
+          "qty": 54.06,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Combine ",
+            {
+              "type": "reference",
+              "id": "b-c-d",
+              "name": "b$c$d",
+              "_usageId": "2",
+              "qty": 200,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "3",
+              "qty": 54.06,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 5,
+                "text": "5"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 10,
+            "end": 15,
+            "activeDuration": 5
+          }
+        }
+      ],
+      "intermediate_preparation": "b$c",
+      "module": {
+        "binding": "c",
+        "uri": "c.gram",
+        "title": "C Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "B",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b-c",
+          "name": "b$c",
+          "_usageId": "4",
+          "qty": 500,
+          "unit": "g"
+        },
+        {
+          "id": "egg",
+          "_usageId": "5",
+          "qty": 48.65,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Combine ",
+            {
+              "type": "reference",
+              "id": "b-c",
+              "name": "b$c",
+              "_usageId": "4",
+              "qty": 500,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "egg",
+              "_usageId": "5",
+              "qty": 48.65,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 5,
+                "text": "5"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 15,
+            "end": 20,
+            "activeDuration": 5
+          }
+        }
+      ],
+      "intermediate_preparation": "b",
+      "retro_planning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d",
+        "minutes": -1440
+      },
+      "module": {
+        "binding": "b",
+        "uri": "b.gram",
+        "title": "B Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b",
+          "name": "b",
+          "_usageId": "6",
+          "qty": 1000,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b",
+              "name": "b",
+              "_usageId": "6",
+              "qty": 1000,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1458,
+            "end": 1460,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 1466,
+    "totalBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 10
+      },
+      {
+        "label": "section_active:C",
+        "duration": 5
+      },
+      {
+        "label": "section_active:B",
+        "duration": 5
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 1438,
+    "activeTime": 22,
+    "activeBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 10
+      },
+      {
+        "label": "section_active:C",
+        "duration": 5
+      },
+      {
+        "label": "section_active:B",
+        "duration": 5
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 6,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 6
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "d",
+      "uri": "d.gram",
+      "title": "D Module",
+      "meta": {
+        "title": "D Module"
+      },
+      "scaleFactor": 2,
+      "mode": "inline"
+    },
+    {
+      "binding": "c",
+      "uri": "c.gram",
+      "title": "C Module",
+      "meta": {
+        "title": "C Module"
+      },
+      "scaleFactor": 1.1111111111111112,
+      "mode": "inline"
+    },
+    {
+      "binding": "b",
+      "uri": "b.gram",
+      "title": "B Module",
+      "meta": {
+        "title": "B Module"
+      },
+      "scaleFactor": 0.9729708692521746,
+      "mode": "inline"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+---
+title: Mod Deep Transitive Chain
+---
+
+@use "./b.gram" as &b ~{-1d}
+
+## Assemble
+
+Use &b{1000g}.

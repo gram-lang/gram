@@ -1,0 +1,213 @@
+{
+  "title": "Mod Estimated Module Yield",
+  "slug": "mod-estimated-module-yield",
+  "meta": {
+    "title": "Mod Estimated Module Yield"
+  },
+  "registry": {
+    "ingredients": {
+      "batter": {
+        "id": "batter",
+        "name": "batter",
+        "is_intermediate": true
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "milk",
+      "name": "Milk",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "ml",
+      "normalizedMass": 206,
+      "isEstimate": true,
+      "conversionMethod": "estimate"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Batter",
+      "ingredients": [
+        {
+          "id": "milk",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "ml",
+          "conversionMethod": "density",
+          "isEstimate": true,
+          "normalizedMass": 206
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "milk",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "ml",
+              "normalizedMass": 206,
+              "conversionMethod": "density",
+              "isEstimate": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "batter",
+      "module": {
+        "binding": "batter",
+        "uri": "batter.gram",
+        "title": "Batter",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 206,
+        "massStatus": "estimated",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "batter",
+          "name": "batter",
+          "_usageId": "2",
+          "qty": 206,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 206
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "batter",
+              "name": "batter",
+              "_usageId": "2",
+              "qty": 206,
+              "unit": "g",
+              "normalizedMass": 206,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 206,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "ESTIMATED_MODULE_YIELD",
+      "message": "Yield of '&batter' from \"./batter.gram\" is estimated using standard ingredient densities or unit weights. Scale factor is approximate.",
+      "loc": {
+        "start": 43,
+        "end": 75
+      }
+    },
+    {
+      "code": "MISSING_MACROS",
+      "message": "Ingredient \"milk\" has no macronutrient data in database — nutritional totals are partial."
+    }
+  ],
+  "metrics": {
+    "totalTime": 6,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 4,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Batter",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 2,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 2
+      }
+    ],
+    "totalMass": 206,
+    "massStatus": "estimated",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": true,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_MACROS",
+          "message": "Ingredient \"milk\" has no macronutrient data in database — nutritional totals are partial."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "batter",
+      "uri": "batter.gram",
+      "title": "Batter",
+      "meta": {
+        "title": "Batter"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

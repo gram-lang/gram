@@ -1,0 +1,10 @@
+---
+title: Mod Diamond Mixed Stock Inline
+---
+
+@use "./b.gram" as &b
+@use "./c.gram" as &c
+
+## Assemble
+
+Use &b{1} and &c{1}.

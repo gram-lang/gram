@@ -1,0 +1,9 @@
+---
+title: C Module
+---
+
+@use "./d.gram" as &d
+
+## C ->&c
+
+Combine &d{200g} with @sugar{50g} for ~{5min}.

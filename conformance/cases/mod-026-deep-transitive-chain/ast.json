@@ -1,0 +1,94 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Deep Transitive Chain"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./b.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "b",
+          "loc": {
+            "start": 61,
+            "end": 63
+          }
+        }
+      ],
+      "retroPlanning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d"
+      },
+      "loc": {
+        "start": 42,
+        "end": 71
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Use ",
+              "loc": {
+                "start": 85,
+                "end": 89
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "b",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1000,
+                  "text": "1000"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 92,
+                  "end": 97
+                }
+              },
+              "loc": {
+                "start": 89,
+                "end": 98
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 98,
+                "end": 99
+              }
+            }
+          ],
+          "loc": {
+            "start": 85,
+            "end": 100
+          }
+        }
+      ],
+      "loc": {
+        "start": 72,
+        "end": 100
+      }
+    }
+  ]
+}

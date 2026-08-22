@@ -1,0 +1,11 @@
+---
+title: Mod Imported Bakers Dropped
+---
+
+@use "./pate.gram" as &pate
+
+## Assemble
+
+Mix @*sugar{100g}.
+
+Use &pate{200g}.

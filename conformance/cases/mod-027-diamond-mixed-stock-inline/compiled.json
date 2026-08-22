@@ -1,0 +1,281 @@
+{
+  "title": "Mod Diamond Mixed Stock Inline",
+  "slug": "mod-diamond-mixed-stock-inline",
+  "meta": {
+    "title": "Mod Diamond Mixed Stock Inline"
+  },
+  "registry": {
+    "ingredients": {
+      "c": {
+        "id": "c",
+        "name": "C Module",
+        "is_module_synthetic": true
+      },
+      "b-d": {
+        "id": "b-d",
+        "name": "b$d",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "b": {
+        "id": "b",
+        "name": "b",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "c",
+      "name": "C Module",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 1
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "D",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "b$d",
+      "module": {
+        "binding": "d",
+        "uri": "d.gram",
+        "title": "D Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "B",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b-d",
+          "name": "b$d",
+          "_usageId": "2",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b-d",
+              "name": "b$d",
+              "_usageId": "2",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "b",
+      "module": {
+        "binding": "b",
+        "uri": "b.gram",
+        "title": "B Module",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "b",
+          "name": "b",
+          "_usageId": "3",
+          "qty": 1
+        },
+        {
+          "type": "reference",
+          "id": "c",
+          "name": "c",
+          "_usageId": "4",
+          "qty": 1
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "b",
+              "name": "b",
+              "_usageId": "3",
+              "qty": 1
+            },
+            "and ",
+            {
+              "type": "reference",
+              "id": "c",
+              "name": "c",
+              "_usageId": "4",
+              "qty": 1
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&d' from \"./d.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 25,
+        "end": 47
+      }
+    },
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&b' from \"./b.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 47,
+        "end": 69
+      }
+    },
+    {
+      "code": "MODULE_BATCH_INTERPRETATION",
+      "message": "'&c' from \"./c.gram\" requested without unit — scaled as 1 batch(es) of the module.",
+      "loc": {
+        "start": 69,
+        "end": 91
+      }
+    }
+  ],
+  "metrics": {
+    "totalTime": 10,
+    "totalBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 2
+      },
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:D",
+        "duration": 2
+      },
+      {
+        "label": "section_active:B",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 4,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 4
+      }
+    ]
+  },
+  "modules": [
+    {
+      "binding": "d",
+      "uri": "d.gram",
+      "title": "D Module",
+      "meta": {
+        "title": "D Module"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "b",
+      "uri": "b.gram",
+      "title": "B Module",
+      "meta": {
+        "title": "B Module"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "c",
+      "uri": "c.gram",
+      "title": "C Module",
+      "meta": {
+        "title": "C Module"
+      },
+      "scaleFactor": 1,
+      "mode": "stocked"
+    }
+  ]
+}

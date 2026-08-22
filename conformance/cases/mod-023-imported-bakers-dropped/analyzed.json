@@ -1,0 +1,284 @@
+{
+  "title": "Mod Imported Bakers Dropped",
+  "slug": "mod-imported-bakers-dropped",
+  "meta": {
+    "title": "Mod Imported Bakers Dropped"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical",
+      "bakersPercentage": 200
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "modifiers": [
+        "bakers_percentage"
+      ],
+      "qty": 100,
+      "unit": "g",
+      "normalizedMass": 100,
+      "isEstimate": false,
+      "conversionMethod": "physical",
+      "bakersPercentage": 100
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Pastry",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200,
+          "bakersPercentage": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false,
+              "bakersPercentage": 200
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "pate.gram",
+        "title": "Pate",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g",
+          "modifiers": [
+            "bakers_percentage"
+          ],
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 100,
+          "bakersPercentage": 100
+        },
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "3",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200,
+          "bakersPercentage": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g",
+              "modifiers": [
+                "bakers_percentage"
+              ],
+              "normalizedMass": 100,
+              "conversionMethod": "physical",
+              "isEstimate": false,
+              "bakersPercentage": 100
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Use ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "3",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 300,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "IMPORTED_BAKERS_REFERENCE_DROPPED",
+      "message": "Baker's percentage base (*) from \"./pate.gram\" is scoped to its own module and was not imported.",
+      "loc": {
+        "start": 44,
+        "end": 72
+      }
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 9,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pastry",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 4
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pastry",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 4
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 300,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"sugar\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "pate.gram",
+      "title": "Pate",
+      "meta": {
+        "title": "Pate"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}
