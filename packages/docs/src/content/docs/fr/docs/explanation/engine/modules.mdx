@@ -3,7 +3,7 @@ title: "Résolution & Composition (@gram-lang/modules)"
 description: "Comment @gram-lang/modules résout les graphes de dépendances, isole la portée des variables intermédiaires, calcule l'ajustement par le rendement et compose les ASTs multi-fichiers."
 ---
 
-Le package `@gram-lang/modules` constitue la deuxième étape du pipeline de Gram. Il reçoit un `RecipeAST` racine comportant des directives d'importation `@use` et transforme le graphe de dépendances multi-fichiers en un **AST composé** unique, autonome et prêt pour la compilation.
+Le package `@gram-lang/modules` constitue la deuxième étape officielle du pipeline de Gram. Dès qu'une recette contient une ou plusieurs directives d'importation `@use`, ce module prend le relais du *parser* pour explorer le graphe de dépendances, résoudre les conflits de nommage, mesurer les rendements réels et fusionner le tout en un **AST composé unique**, prêt pour la compilation.
 
 ```mermaid
 flowchart LR
@@ -15,71 +15,71 @@ flowchart LR
     ComposedAST --> Kitchen["⚙️ @gram-lang/kitchen"]
 ```
 
-## Pourquoi composer au niveau de l'AST ?
+## Pourquoi composer directement au niveau de l'AST ?
 
-En compilation logicielle classique, les modules peuvent être compilés en fichiers objets distincts puis liés ultérieurement. En cuisine computationnelle, compiler des modules séparément produirait des plannings erronés :
+Dans un compilateur logiciel classique, chaque fichier source peut être transformé en binaire objet séparé avant d'être relié à l'édition de liens (*linking*). En cuisine computationnelle, cette approche produit des plannings absurdes :
 
-- **Ordonnancement ALAP (As Late As Possible)** : Si une pâte à tarte nécessite 1 heure de repos au frais et 20 minutes de cuisson à blanc, son planning doit s'entremêler dynamiquement avec la préparation de la crème et des garnitures de la recette hôte. Compiler la pâte de manière isolée figerait ses minutages et briserait cette optimisation globale.
-- **Ingrédients relationnels & Composites** : Les ingrédients des sous-bases (comme le beurre et la farine) doivent fusionner avec la liste de courses globale de l'hôte, en respectant les règles composites (`<@citron`) et les conversions d'unités pour l'ensemble du plat.
+- **L'ordonnancement ALAP (*As Late As Possible*)** : Si une pâte brisée demande 1 heure de repos au frais puis 20 minutes de cuisson à blanc, son planning doit s'entremêler en direct avec la préparation de la garniture de la recette hôte. Si l'on compilait la pâte de manière isolée au préalable, ses horaires seraient figés et briseraient toute optimisation globale du temps de cuisine.
+- **La consolidation des ingrédients & des composites** : Les ingrédients des sous-bases (le beurre, la farine, le sel) doivent s'agréger directement dans la liste de courses globale, en respectant la logique MAX/SUM des composites (`<@citron`) et les conversions d'unités sur l'intégralité du menu.
 
-En effectuant la composition au niveau AST **avant** l'exécution de `@gram-lang/kitchen`, Gram compile et planifie l'ensemble du menu comme une recette unique en une seule passe.
+En réalisant la composition au niveau AST **en amont** de `@gram-lang/kitchen`, Gram compile, planifie et optimise l'ensemble du repas comme s'il s'agissait d'une seule et même recette écrite d'un seul trait.
 
-## Abstraction de l'Hôte (`ModuleHost`)
+## L'Abstraction de l'Hôte (`ModuleHost`)
 
-`@gram-lang/modules` est totalement exempt d'I/O système ou de logique spécifique à une plateforme. Il définit l'interface `ModuleHost`, déléguant la lecture des fichiers et la résolution des chemins à l'environnement d'exécution :
+Fidèle aux principes d'architecture de Gram, `@gram-lang/modules` ne fait aucun appel direct au système de fichiers (`node:fs`) et ne dépend d'aucune API propriétaire :
 
-- **CLI (`@gram-lang/cli`)** : Résout les chemins de racine (`@/...`) et les alias (`@bases/...`) via `node:fs` et `node:path`.
-- **Serveur de Langage (`@gram-lang/language-server`)** : Lit en priorité depuis les tampons d'édition en mémoire avant de basculer sur le disque.
-- **Playground Web (`packages/docs`)** : Utilise `createMemoryHost` avec un dictionnaire virtuel de fichiers en mémoire, autorisant l'édition multi-onglets en direct sans aucun système de fichiers.
+- **Dans le CLI (`@gram-lang/cli`)** : L'hôte implémente la résolution des chemins locaux (`./`), de la racine projet (`@/...`) et des alias de configuration (`@bases/...`) sur le disque.
+- **Dans le Serveur de Langage (`@gram-lang/language-server`)** : L'hôte lit en priorité le contenu des tampons ouverts en mémoire dans l'éditeur avant d'aller chercher sur le disque, garantissant un retour instantané à la frappe.
+- **Dans le Playground Web (`packages/docs`)** : La fonction `createMemoryHost` monte un système de fichiers virtuel en mémoire, rendant possible l'édition multi-onglets en direct dans le navigateur sans aucun serveur.
 
-## 1. Parcours du Graphe & Détection de Cycles (`graph.ts`)
+## 1. Exploration DFS & Détection des Cycles (`graph.ts`)
 
-Lors de l'appel à `loadModuleGraph(entryUri, host)`, le module effectue un parcours unique en profondeur (DFS) :
+La fonction `loadModuleGraph(entryUri, host)` explore récursivement l'arbre de dépendances en une seule passe en profondeur (DFS) :
 
-1. **Détection de Cycles** : Maintient une pile de parcours `pathStack`. Si une dépendance correspond à un URI parent actif, il consigne un diagnostic `MODULE_CYCLE` non fatal (`A → B → A`) et interrompt cette branche sans bloquer le système.
-2. **Dépendances en Diamant** : Chaque URI est lue et analysée au maximum une fois. Si les recettes `A` et `B` importent toutes deux la base `C`, `C` est chargée une seule fois et conservée dans le registre `modules`.
-3. **Ordre Topologique** : Les modules sont empilés dans `order` au fil des retours DFS (feuilles en premier). Cela garantit que les dépendances enfants sont mesurées et composées avant leurs importateurs.
+1. **Anti-cycle chirurgical** : Le moteur maintient une pile d'exécution `pathStack`. Dès qu'un import pointe vers un module déjà présent dans la chaîne courante, un diagnostic `MODULE_CYCLE` (`A → B → A`) est émis sans jamais planter le processus.
+2. **Gestion des diamants** : Chaque fichier `.gram` est chargé et analysé une seule fois. Si deux préparations distinctes importent la même sous-base, celle-ci n'est lue qu'une fois.
+3. **Ordre topologique (*Leaves First*)** : Les modules sont enregistrés dans `order` au fur et à mesure que leurs dépendances se résolvent (les feuilles d'abord). Ainsi, une base est toujours complètement analysée avant la recette qui la consomme.
 
-## 2. Exports Publics & Hygiène des Variables (`exports.ts`, `rename.ts`)
+## 2. Exports Publics & Hygiène Lexicale (`exports.ts`, `rename.ts`)
 
-### Règles d'Exportation
-Seules les déclarations intermédiaires de niveau section (`## Pâte Sablée ->&pate`) constituent des exports publics :
-- Les déclarations intermédiaires d'étape (`->&hachis`) restent strictement privées au sous-module.
-- Si un module ne comporte aucune déclaration de section, sa dernière section est sélectionnée de manière déterministe comme export `default`.
+### Que diffuse un sous-module ?
+Seules les déclarations intermédiaires portées au niveau des en-têtes de section (`## Pâte Sablée ->&pate`) constituent des exports publics exploitables par l'importateur :
+- Les déclarations intermédiaires d'étape (`->&hachis`) restent strictement privées et invisibles à l'extérieur.
+- Si un module ne comporte aucune déclaration explicite sur ses sections, sa dernière section est automatiquement désignée comme export `default`.
 
-### Renommage & Isolation Lexicale
-Afin d'éviter tout conflit de nom lorsque plusieurs fichiers utilisent des identifiants génériques (ex : `&pate` ou `&melange`) :
-1. **Exports Liés** : Renommés directement selon l'identifiant local choisi sur la ligne `@use` de l'hôte (`@use "./base.gram" as &maPate`).
-2. **Variables Internes** : Préfixées avec le nom de liaison (ex : `&pate` devient `&maPate$pate`).
-3. **Filet de Sécurité Anti-Collision** : Après renommage, `checkRenameCollisions()` valide les identifiants après slugification pour s'assurer qu'aucun intermédiaire distinct ne fusionne accidentellement.
+### Renommage automatique sans collision
+Pour éviter qu'une recette hôte et son sous-module ne se marchent sur les pieds avec des variables aux noms courants (`&pate`, `&appareil`, `&sirop`) :
+1. **Liaison explicite** : L'export demandé est renommé selon l'identifiant local choisi sur la ligne `@use` (`@use "./base.gram" as &maPate`).
+2. **Variables privées** : Toutes les autres variables internes du module sont préfixées par le nom de la liaison (ex : `&pate` devient `&maPate$pate`).
+3. **Contrôle anti-collision post-slug** : Même si deux séparateurs diffèrent, `checkRenameCollisions()` vérifie le slug final de chaque identifiant pour garantir qu'aucune variable distincte ne fusionne par inadvertance.
 
-## 3. Mesure du Rendement & Calcul des Proportions (`yield.ts`)
+## 3. Pesée des Rendements & Facteur d'Échelle (`yield.ts`)
 
-Lorsqu'une recette importatrice réclame une quantité précise d'une base (ex : `&pate{300g}`) :
+Lorsqu'une recette hôte ne consomme qu'une fraction d'une préparation de base (par exemple `&pate{300g}`) :
 
 ```mermaid
 flowchart TD
-    ModuleAST["AST du Sous-Module"] --> PreCompile["Pré-Compilation & Analyse<br/><i>(Feuilles en Premier)</i>"]
-    PreCompile --> MeasureYield["resolveYield()<br/><i>Somme Récursive des Masses</i>"]
-    MeasureYield --> Compare["Demande Hôte (300g)<br/>vs Rendement Base (400g)"]
-    Compare --> Factor["Facteur = 0.75<br/><i>scaleAst(depAst, 0.75)</i>"]
+    ModuleAST["AST du Sous-Module"] --> PreCompile["Pré-Analyse<br/><i>(Feuilles en Premier)</i>"]
+    PreCompile --> MeasureYield["resolveYield()<br/><i>Pesée physique réelle</i>"]
+    MeasureYield --> Compare["Demande hôte (300 g)<br/>vs Rendement base (400 g)"]
+    Compare --> Factor["Facteur d'échelle = 0.75<br/><i>scaleAst(depAst, 0.75)</i>"]
 ```
 
-1. **`resolveYield`** : Mesure récursivement la masse physique totale en grammes (`metrics.totalMass`) produite par la section exportée cible et toutes les sections en amont qui l'alimentent.
-2. **`computeScaleFactor`** : Évalue le ratio :
+1. **`resolveYield`** : Mesure récursivement la masse comestible totale en grammes (`metrics.totalMass`) produite par la section exportée et les éventuelles sous-étapes qui la composent.
+2. **`computeScaleFactor`** : Calcule le coefficient multiplicateur :
    ```text
    Facteur d'échelle = max(Somme des quantités demandées / Rendement de l'export)
    ```
-3. **Ajustement de l'AST** : `scaleAst()` multiplie chaque quantité numérique d'ingrédient et chaque minuteur dans le sous-arbre avant de l'insérer dans l'hôte.
+3. **Ajustement en amont** : `scaleAst()` multiplie les ingrédients et durées du sous-arbre **avant** son injection dans l'hôte, garantissant des proportions parfaites.
 
-## 4. Mode Inline vs Mode Stock (`--stock`)
+## 4. Mode Direct vs Mode Stock (`--stock`)
 
-Gram prend en charge deux modes d'exécution pour les dépendances modulaires :
+Gram propose deux approches complémentaires pour cuisiner avec des sous-recettes :
 
-| Fonctionnalité | Mode Inline (Défaut) | Mode Stock (`--stock`) |
+| Comportement | Mode Direct (Par défaut) | Mode Stock (`--stock`) |
 |---|---|---|
-| **Timeline / Gantt** | Toutes les étapes du sous-module sont insérées dans le planning hôte et entrelacées via ALAP. | **Coût timeline nul** : les étapes de préparation sont totalement omises. |
-| **Liste de Courses** | Les ingrédients bruts (farine, beurre) remontent dans la liste de courses globale. | Apparaît comme une unité d'achat unique (ex : `1 pâte sablée`). |
-| **Profil Nutritionnel** | Agrégé à partir de chaque ingrédient brut. | Calculé via des entrées d'ingrédients synthétiques pondérées par `accountedMass / yieldBasisMass`. |
+| **Chronologie / Gantt** | Les étapes du sous-module sont intercalées au bon moment via ALAP. | **Impact chronologique nul** : toutes les étapes de préparation sont masquées. |
+| **Liste de Courses** | Les matières premières brutes (œufs, beurre, farine) sont ajoutées au panier. | Transformé en un produit fini unique à acheter (ex : `1 pâte brisée`). |
+| **Calcul Nutritionnel** | Somme des ingrédients bruts individuels. | Calculé via un ingrédient synthétique pondéré selon la masse réelle et les macros du sous-module. |
 
-En mode stock, `composeRecipe()` génère des définitions d'ingrédients synthétiques (`syntheticIngredients`) conservant le profil nutritionnel et la masse unitaire réels du sous-module. Transmises à `@gram-lang/analyzer`, elles permettent à la recette hôte de préserver une exactitude nutritionnelle absolue sans alourdir le planning de préparation.
+En mode stock, `composeRecipe()` crée à la volée un ingrédient synthétique (`syntheticIngredients`) porteur du profil nutritionnel et de la masse unitaire exacte de la sous-recette. Transmis à `@gram-lang/analyzer`, il assure que le total calorique et les macronutriments de votre plat restent mathématiquement rigoureux, même quand vous gagnez du temps en cuisine en achetant une base toute prête.

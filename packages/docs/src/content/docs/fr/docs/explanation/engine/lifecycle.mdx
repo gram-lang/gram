@@ -20,7 +20,7 @@ import { Steps } from '@astrojs/starlight/components';
    Si la syntaxe est correcte, il produit un **Arbre Syntaxique Abstrait (AST)**. Cet AST est dénué de toute logique métier : c'est une simple représentation structurelle du texte.
 
 2. ### Résolution & Composition de modules (`@gram-lang/modules`)
-   Si la recette fait appel à des directives `@use`, `@gram-lang/modules` parcourt le graphe de dépendances (détection de cycles, calcul des rendements des sous-bases et isolation des variables intermédiaires) et fusionne les modules en un **AST composé** unique et autonome. Une recette sans import passe cette étape inchangée.
+   Si la recette fait appel à des directives `@use`, `@gram-lang/modules` entre en scène : il explore le graphe de dépendances, désamorce les cycles, pèse les rendements des sous-recettes et isole les variables pour fusionner l'ensemble en un **AST composé** unique et autonome. Une recette mono-fichier sans import franchit cette étape sans la moindre altération.
 
 3. ### Compilation (`@gram-lang/kitchen`)
    L'AST composé est ensuite transmis à la Kitchen (*Cuisine*). Elle porte la responsabilité de la logique structurelle de la recette :
