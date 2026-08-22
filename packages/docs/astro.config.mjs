@@ -70,7 +70,7 @@ export default defineConfig({
           translations: { fr: 'Guides pratiques' },
           collapsed: false,
           items: [
-            { label: 'Organize Modular Recipes', translations: { fr: 'Organiser des recettes modulaires' }, slug: 'docs/how-to/organize-modular-recipes' },
+            { label: 'Organize Modular Recipes', translations: { fr: 'Organiser des recettes modulaires' }, slug: 'docs/how-to/organize-modular-recipes', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Manage Database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
             { label: 'Configure AI Provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
             { label: 'Scale Recipes Dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
@@ -84,7 +84,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'Document Structure', translations: { fr: 'Structure du document' }, slug: 'docs/reference/syntax/document-structure' },
-            { label: 'Module Imports', translations: { fr: 'Imports de modules' }, slug: 'docs/reference/syntax/modules' },
+            { label: 'Module Imports', translations: { fr: 'Imports de modules' }, slug: 'docs/reference/syntax/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Ingredients', translations: { fr: 'Ingrédients' }, slug: 'docs/reference/syntax/ingredients' },
             { label: 'Cookware', translations: { fr: 'Matériel' }, slug: 'docs/reference/syntax/cookware' },
             { label: 'Times', translations: { fr: 'Temps' }, slug: 'docs/reference/syntax/times' },
@@ -113,7 +113,7 @@ export default defineConfig({
           items: [
             { label: 'Overview', translations: { fr: "Vue d'ensemble" }, slug: 'docs/reference/api' },
             { label: '@gram-lang/parser', slug: 'docs/reference/api/parser' },
-            { label: '@gram-lang/modules', slug: 'docs/reference/api/modules' },
+            { label: '@gram-lang/modules', slug: 'docs/reference/api/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: '@gram-lang/kitchen', slug: 'docs/reference/api/kitchen' },
             { label: '@gram-lang/analyzer', slug: 'docs/reference/api/analyzer' },
             { label: '@gram-lang/renderer', slug: 'docs/reference/api/renderer' },
@@ -130,7 +130,7 @@ export default defineConfig({
           items: [
             { label: 'The Gram Lifecycle', translations: { fr: 'Cycle de vie' }, slug: 'docs/explanation/engine/lifecycle' },
             { label: 'Parsing & AST', slug: 'docs/explanation/engine/parser' },
-            { label: 'Module Resolution & Composition', translations: { fr: 'Résolution & composition' }, slug: 'docs/explanation/engine/modules' },
+            { label: 'Module Resolution & Composition', translations: { fr: 'Résolution & composition' }, slug: 'docs/explanation/engine/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Compilation & Structure', translations: { fr: 'Compilation & structure' }, slug: 'docs/explanation/engine/kitchen' },
             { label: 'Semantic Analysis', translations: { fr: 'Analyse sémantique' }, slug: 'docs/explanation/engine/analyzer' },
             { label: 'Rendering & Output', translations: { fr: 'Rendu & sortie' }, slug: 'docs/explanation/engine/renderer' }

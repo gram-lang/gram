@@ -8,6 +8,7 @@ Le CLI de Gram (`@gram-lang/cli`) peut s'appuyer sur des modèles de langage (LL
 Ce guide explique pas à pas comment configurer votre fournisseur d'IA préféré.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Ce que permet l'IA dans le CLI Gram
 
@@ -154,6 +155,22 @@ Si vous préférez exécuter vos modèles en local sans envoyer de données à d
 :::note
 Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de base via la variable d'environnement `OLLAMA_BASE_URL`.
 :::
+
+---
+
+### Surcharges dynamiques en ligne de commande
+
+<Since v="1.1.0" />
+
+Vous pouvez surcharger à la volée votre fournisseur ou votre modèle par défaut pour une commande unique sans toucher à vos fichiers de configuration :
+
+```bash
+gram import recette.json --model gemini-3.1-pro   # Surcharge temporaire du modèle
+gram db enrich --provider anthropic               # Surcharge temporaire du fournisseur
+gram db lint --pick-model                         # Sélecteur interactif de modèle
+```
+
+Consultez [Choisir le modèle IA](/fr/docs/reference/tooling/cli#choisir-le-modèle-ia) pour tous les détails.
 
 ---
 

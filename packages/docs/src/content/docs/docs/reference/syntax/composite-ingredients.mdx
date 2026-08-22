@@ -3,6 +3,8 @@ title: "Composite Ingredients"
 description: "Group related ingredient parts like zest and juice under one parent so Gram computes an accurate shopping list."
 ---
 
+import Since from '../../../../../components/Since.astro';
+
 In real-world cooking, recipes often require specific parts of an `@ingredient`—like the **zest** and **juice** of a lemon. 
 
 If you write `@lemon zest` and `@lemon juice` separately, your shopping list will treat them as two completely different products. But lemons are bought whole!
@@ -20,6 +22,8 @@ You define a composite ingredient using the `<` operator (which can be read as *
 - **`{parentCost}`**: *(Optional)* How much of the parent is consumed to yield this child part (e.g., `{2}`). If you don't write it, it defaults to `1`.
 
 ### Naming the child
+
+<Since v="1.2.0" />
 
 While Gram accepts a bare single-word child (`@juice<@lemon{1}`), you should write its full name instead (`@lemon juice{}<@lemon{1}`). That name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
 

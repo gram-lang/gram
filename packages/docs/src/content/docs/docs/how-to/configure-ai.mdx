@@ -8,6 +8,7 @@ The Gram CLI (`@gram-lang/cli`) can leverage Large Language Models (LLMs) to aut
 This guide explains how to set up and configure your preferred AI provider step by step.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 ## What AI Powers in the Gram CLI
 
@@ -154,6 +155,22 @@ If you prefer running AI models locally without sending data to external APIs, y
 :::note
 Ollama requires no API key. You can also specify a custom base URL via the `OLLAMA_BASE_URL` environment variable.
 :::
+
+---
+
+### Dynamic Overrides via Flags
+
+<Since v="1.1.0" />
+
+You can override your default provider or model on the fly for any single command without editing your configuration:
+
+```bash
+gram import recipe.json --model gemini-3.1-pro   # Temporary model override
+gram db enrich --provider anthropic              # Temporary provider override
+gram db lint --pick-model                        # Interactive model picker
+```
+
+See [Choosing the AI model](/docs/reference/tooling/cli#choosing-the-ai-model) for full details.
 
 ---
 

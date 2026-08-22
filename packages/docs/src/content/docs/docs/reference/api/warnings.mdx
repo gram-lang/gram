@@ -4,6 +4,7 @@ description: "Full reference of Warning codes, severities, and the --strict flag
 ---
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../components/Since.astro';
 import { warningCodesTable } from '../../../../../data/api-reference';
 
 A malformed or incomplete recipe still compiles — the compiler and analyzer collect structured `Warning` objects instead of throwing, so callers can render a recipe and surface what's wrong at the same time. `WarningCode` and friends are exported from `@gram-lang/kitchen`.
@@ -76,3 +77,15 @@ The ingredient marked as the baker's-percentage base (via the `*` modifier or th
 
 ### `NO_BAKERS_REFERENCE`
 Baker's math was explicitly requested (`enableBakersMath` with a bare `*` search, or an explicit `bakersReference` id) but no ingredient matched. **Fix**: mark an ingredient with the `*` modifier, or correct the `bakersReference` id to match an existing ingredient.
+
+### `COMPOSITE_PARENT_CONFLICT`
+
+<Since v="1.2.0" />
+
+A short composite child name (e.g. `@juice`) is drawn from two different parent ingredients within the same recipe (e.g. `<@lemon` in one step and `<@orange` in another). **Fix**: use the full name for the child (e.g. `@lemon juice` and `@orange juice`) to prevent database identity collisions.
+
+### `MODULE_NOT_FOUND`
+
+<Since v="1.2.0" />
+
+An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.

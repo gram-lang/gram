@@ -10,6 +10,7 @@ Néanmoins, les données nutritionnelles étant particulièrement sensibles (ave
 ## Le flux de calcul
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 <Steps>
 
@@ -17,7 +18,7 @@ import { Steps } from '@astrojs/starlight/components';
 2. **Recherche dans la Base de Données** : L'Analyseur interroge votre base de données `ingredients.yaml` pour le bloc `nutrition` de chaque ingrédient. Les valeurs de la base de données doivent toujours représenter les nutriments **pour 100 g** de l'ingrédient cru.
 3. **Adaptation proportionnelle** : L'Analyseur adapte les valeurs aux 100 g issues de la base de données pour correspondre à la masse réellement utilisée dans la recette.
 4. **Agrégation** : Les valeurs ajustées pour tous les ingrédients sont additionnées pour calculer la Nutrition Totale de la Recette.
-5. **Bases de service** : La Nutrition Totale de la Recette est ensuite exprimée sur les bases qu'un cuisinier lit réellement. Si le frontmatter définit `portions: 4`, elle est divisée par 4 pour donner `perPortion`. Elle est aussi divisée par la masse dont elle est issue pour donner `per100g` — qui ne dépend pas de `portions`, si bien qu'une recette sans portions déclarées obtient malgré tout une base standardisée.
+5. **Bases de service** <Since v="1.1.0" /> : La Nutrition Totale de la Recette est ensuite exprimée sur les bases qu'un cuisinier lit réellement. Si le frontmatter définit `portions: 4`, elle est divisée par 4 pour donner `perPortion`. Elle est aussi divisée par la masse dont elle est issue pour donner `per100g` — qui ne dépend pas de `portions`, si bien qu'une recette sans portions déclarées obtient malgré tout une base standardisée.
 </Steps>
 
 ## Rapport transparent des données partielles
@@ -33,7 +34,7 @@ Plutôt que de purement et simplement cacher le total, Gram l'affiche en y adoss
 
 Le *renderer* HTML de référence reflète directement ce parti pris : il affiche systématiquement le panneau nutritionnel (dès lors qu'il y a des données ou un avertissement), flanqué d'un badge `Couverture : X %`. Le cuisinier accède ainsi instantanément à une valeur utile, tout en mesurant d'un coup d'œil la proportion réelle de la recette couverte par l'estimation (plutôt que de cacher totalement une estimation exacte à 90 %).
 
-## Ce que « pour 100 g » signifie ici
+## Ce que « pour 100 g » signifie ici <Since v="1.1.0" />
 
 Gram ne modélise **aucune perte à la cuisson**. Ni évaporation, ni réduction, ni perte au four — le champ `yield` de la base d'ingrédients concerne le parage (épluchures, tiges, os), pas ce qui se passe dans la casserole.
 

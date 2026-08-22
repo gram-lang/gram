@@ -3,6 +3,10 @@ title: "@gram-lang/modules"
 description: "Reference for loadModuleGraph, composeRecipe, ModuleHost, and utilities that resolve and compose multi-file @use recipes."
 ---
 
+import Since from '../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
 Resolves and composes multi-file `@use` import directives into a single unified AST before compilation. This package handles dependency graph traversal, cycle detection, hygienic intermediate variable renaming, yield-based scaling, and stocked (`--stock`) leaf integration.
 
 Like all packages in the core pipeline, `@gram-lang/modules` is pure and environment-agnostic: it defines the `ModuleHost` interface for reading files and resolving paths, but never touches the filesystem directly.

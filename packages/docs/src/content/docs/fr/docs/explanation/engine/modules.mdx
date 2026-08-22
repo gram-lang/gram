@@ -3,6 +3,10 @@ title: "Résolution & composition (@gram-lang/modules)"
 description: "Comment @gram-lang/modules résout les graphes de dépendances, isole la portée des variables intermédiaires, calcule l'ajustement par le rendement et compose les ASTs multi-fichiers."
 ---
 
+import Since from '../../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
 Le package `@gram-lang/modules` constitue la deuxième étape officielle du pipeline de Gram. Dès qu'une recette contient une ou plusieurs directives d'importation `@use`, ce module prend le relais du *parser* pour explorer le graphe de dépendances, résoudre les conflits de nommage, mesurer les rendements réels et fusionner le tout en un **AST composé unique**, prêt pour la compilation.
 
 ```mermaid

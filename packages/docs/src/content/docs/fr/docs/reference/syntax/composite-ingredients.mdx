@@ -3,6 +3,8 @@ title: "Ingrédients composites"
 description: "Regroupez les parties d'un même ingrédient, comme le zeste et le jus, pour que Gram calcule une liste de courses juste."
 ---
 
+import Since from '../../../../../../components/Since.astro';
+
 En cuisine, les recettes réclament souvent des parties spécifiques d'un même `@ingrédient` (ex : le **zeste** et le **jus** d'un citron).
 
 Si vous déclarez `@zeste de citron` et `@jus de citron` séparément, votre liste de courses les considèrera comme deux produits distincts. Or, les citrons s'achètent entiers !
@@ -20,6 +22,8 @@ Un ingrédient composite se déclare via l'opérateur `<` (qui se lit *« provie
 - **`{coûtParent}`** : *(Optionnel)* La quantité du parent qui est consommée pour obtenir cette partie enfant (ex : `{2}`). Si vous ne l'écrivez pas, la valeur par défaut est `1`.
 
 ### Nommer l'enfant
+
+<Since v="1.2.0" />
 
 Bien que Gram accepte un enfant en un seul mot (`@jus<@citron{1}`), privilégiez son nom complet (`@jus de citron{}<@citron{1}`). C'est ce nom qui définit l'identité de l'ingrédient dans la base partagée (`ingredients.yaml`), utilisée pour la conversion de masse, la nutrition et `gram db enrich`.
 

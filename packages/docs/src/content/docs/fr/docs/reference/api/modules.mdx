@@ -3,6 +3,10 @@ title: "@gram-lang/modules"
 description: "Référence de l'API de @gram-lang/modules : loadModuleGraph, composeRecipe, ModuleHost et utilitaires de composition multi-recettes."
 ---
 
+import Since from '../../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
 Le package `@gram-lang/modules` est le chef d'orchestre de la modularité dans Gram. Il prend en charge la résolution et la composition des directives d'import `@use` réparties sur plusieurs fichiers pour produire un AST unifié unique avant compilation. 
 
 C'est lui qui gère la traversée du graphe de dépendances, la détection des imports circulaires, l'isolation des variables intermédiaires (hygiène lexicale), le redimensionnement automatique des sous-bases en fonction de leur rendement réel, ainsi que le mode stock (`--stock`).

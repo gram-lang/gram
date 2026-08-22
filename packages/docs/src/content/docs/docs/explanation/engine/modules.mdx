@@ -3,6 +3,10 @@ title: "Module Resolution & Composition (@gram-lang/modules)"
 description: "How @gram-lang/modules resolves dependency graphs, isolates intermediate variable scopes, computes yield-based scaling, and composes multi-file ASTs."
 ---
 
+import Since from '../../../../../components/Since.astro';
+
+<Since v="1.2.0" />
+
 The `@gram-lang/modules` package forms the second stage in the Gram pipeline. It takes an entry `RecipeAST` containing `@use` import directives and transforms the multi-file dependency graph into a single, self-contained **composed AST** ready for compilation.
 
 ```mermaid

@@ -4,6 +4,7 @@ description: "Référence de la structure d'un fichier .gram : frontmatter YAML,
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import Since from '../../../../../../components/Since.astro';
 
 Un fichier de recette Gram (`.gram`) se découpe en plusieurs blocs distincts : les Métadonnées, les Sections, les Étapes et les Commentaires.
 
@@ -52,6 +53,8 @@ densities:
 </CodeTabs>
 
 ## 2. Imports de modules
+
+<Since v="1.2.0" />
 
 Juste après le frontmatter, avant toute étape, une recette peut `@use` d'autres fichiers `.gram` comme sous-composants réutilisables.
 

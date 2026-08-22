@@ -213,3 +213,29 @@ pre.astro-code,
 pre.shiki {
 	background-color: var(--sl-color-bg) !important;
 }
+
+/*
+ * Version & Sidebar Badges Harmonization
+ * Replaces Starlight's default blocky monospace badges with refined, compact sans-serif pills.
+ */
+.sl-badge {
+	font-family: var(--sl-font), system-ui, -apple-system, sans-serif !important;
+	font-size: 0.68rem !important;
+	font-weight: 500 !important;
+	border-radius: 9999px !important;
+	padding: 0.08rem 0.42rem !important;
+	line-height: 1.2 !important;
+	letter-spacing: 0.02em !important;
+	vertical-align: middle;
+}
+
+.sidebar-content .sl-badge {
+	font-family: var(--sl-font), system-ui, -apple-system, sans-serif !important;
+	font-size: 0.68rem !important;
+	font-weight: 500 !important;
+	padding: 0.08rem 0.42rem !important;
+	border-radius: 9999px !important;
+	line-height: 1.2 !important;
+	letter-spacing: 0.02em !important;
+	background-color: transparent !important;
+}

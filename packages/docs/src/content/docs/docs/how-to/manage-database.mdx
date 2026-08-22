@@ -8,6 +8,7 @@ Gram uses a local `ingredients.yaml` file to store physical and nutritional data
 This guide explains the standard workflow for maintaining your database using the Gram CLI.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../components/Since.astro';
 
 ## The Database Workflow
 
@@ -50,6 +51,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    :::
 
 3. ### Enriching Data
+   <Since v="1.1.0" type="changed" />
    
    Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 
    
@@ -69,6 +71,8 @@ The recommended workflow consists of three steps, to be run in this exact order:
 </Steps>
 
 ## Validating Your Database
+
+<Since v="1.1.0" />
 
 Before committing your `ingredients.yaml` to version control, it is good practice to validate it against the Gram schema to ensure there are no formatting errors (like overlapping aliases).
 
