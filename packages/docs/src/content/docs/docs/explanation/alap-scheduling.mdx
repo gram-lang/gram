@@ -1,5 +1,5 @@
 ---
-title: "ALAP Scheduling"
+title: "ALAP scheduling"
 description: "How Gram's ALAP algorithm reschedules recipe steps to minimize idle time and interleave passive cooking tasks."
 ---
 
@@ -7,7 +7,7 @@ Gram doesn't just read recipes from top to bottom; it actively reschedules them 
 
 It does this using an algorithm called **ALAP (As Late As Possible)** scheduling. This ensures that every ingredient is prepared exactly when it is needed, preventing components from sitting idle on the kitchen counter for too long.
 
-## The Problem: Forward Scheduling
+## The problem: forward scheduling
 
 Imagine a recipe that asks you to make a dough and let it rest for 1 hour, and then make a quick sauce that takes 10 minutes, before finally baking the dish.
 
@@ -41,7 +41,7 @@ gantt
 
 The problem is obvious: you finish the sauce at minute 12, but the dough doesn't finish resting until minute 62. The sauce sits on the counter getting cold (or spoiling) for 50 minutes! 
 
-## The Solution: ALAP Scheduling
+## The solution: ALAP scheduling
 
 Instead of scheduling steps as soon as possible, Gram's compiler schedules them **As Late As Possible**. 
 
@@ -70,7 +70,7 @@ gantt
 
 By pushing the `&dough` generation step backward, Gram automatically interleaves the `Mix` step *before* the dough preparation. You are kept efficiently busy, and no ingredient sits idle.
 
-## Named Tracks
+## Named tracks
 
 This "push-backward" mechanism natively powers Gram's `Named Tracks` (sequential passive timers). When you assign multiple passive timers the same name (e.g., `~_oven{20min}` and `~_oven{30min}`), Gram forces them to execute sequentially in the background because they share a single constrained resource (the oven).
 
@@ -93,7 +93,7 @@ gantt
 
 Notice how `Prep Bread` is automatically scheduled during Pie's baking time (15m–20m), ensuring Bread is ready to enter `~_oven` the exact minute Pie comes out at minute 25.
 
-## Modular Anchoring (`@use ... ~{-1d}`)
+## Modular anchoring (`@use ... ~{-1d}`)
 
 When composing modular recipes with `@gram-lang/modules`, you can attach a retro-planning offset directly to an import directive:
 
@@ -106,7 +106,7 @@ ALAP scheduling propagates this anchor backward through the imported sub-tree:
 - All upstream preparations within the sourdough module (feeding, fermenting) are scheduled *even earlier*, pulling the entire sub-timeline along with it.
 - During compilation Phase 4 (Rebasing), the entire global timeline shifts forward so all start times remain positive numbers beginning at 0.
 
-## Best Practices for a Coherent Timeline
+## Best practices for a coherent timeline
 
 To make the most of Gram's ALAP scheduling and ensure your generated timeline is both realistic and useful, follow these best practices:
 
@@ -126,7 +126,7 @@ import { Steps } from '@astrojs/starlight/components';
     Steps without timers default to adding 2 minutes of active time. Do not break a single fluid motion into 10 micro-steps, or you will artificially inflate the timeline by 20 minutes. Keep steps logical to the workflow.
 </Steps>
 
-## Use Case: Data Visualization
+## Use case: data visualization
 
 Because Gram's ALAP scheduling automatically calculates the absolute `start` and `end` times for every step (down to the minute) and pushes them into the final JSON output, front-end interfaces do not need to perform complex date math. They can simply render the data.
 

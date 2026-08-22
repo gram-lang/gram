@@ -1,5 +1,5 @@
 ---
-title: "Composite Ingredients"
+title: "Composite ingredients"
 description: "Group related ingredient parts like zest and juice under one parent so Gram computes an accurate shopping list."
 ---
 
@@ -60,11 +60,11 @@ Spaces are **strictly forbidden** around the `<` operator.
 - ✅ `@lemon zest{1}<@lemon`
 :::
 
-## Calculation Rules
+## Calculation rules
 
 How does the compiler actually calculate the total number of lemons you need to buy? It uses three simple rules to automatically optimize your shopping list.
 
-### 1. The Overlap Rule (Different Parts)
+### 1. The overlap rule (different parts)
 If you use different parts of the same parent (like zest and juice), Gram knows they can come from the exact same physical lemon. It takes the **maximum** required amount across those parts.
 
 ```gram
@@ -74,7 +74,7 @@ Add @lemon juice{1}<@lemon. // Needs 1 lemon
 ```
 > 🛒 **Shopping List**: 1 Lemon (The single lemon provides both parts).
 
-### 2. The Addition Rule (Same Part)
+### 2. The addition rule (same part)
 If you use the *same* part multiple times across different steps of your recipe, Gram adds them up. You can't magically get two zests from one lemon!
 
 ```gram
@@ -84,7 +84,7 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 ```
 > 🛒 **Shopping List**: 2 Lemons.
 
-### 3. Direct Usage Aggregation
+### 3. Direct usage aggregation
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
@@ -96,7 +96,7 @@ Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
 > 🛒 **Shopping List**: 3 Lemons.
 
-## Shopping List Output
+## Shopping list output
 
 The resulting shopping list structure handles composite ingredients gracefully, allowing front-end applications to display them hierarchically.
 
@@ -116,7 +116,7 @@ For the example above, the JSON output would look like this:
 }
 ```
 
-## Section Ingredient Lists
+## Section ingredient lists
 
 Unlike the shopping list, a section's own ingredient list is flat, not nested — but it still shows which parent a composite child came from, appended in parentheses right after the child's name:
 

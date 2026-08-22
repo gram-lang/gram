@@ -35,7 +35,7 @@ interface FormatterOptions {
 }
 ```
 
-## Formatting Rules
+## Formatting rules
 
 `formatGram` applies 13 deterministic formatting rules:
 

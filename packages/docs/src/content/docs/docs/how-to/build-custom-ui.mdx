@@ -1,5 +1,5 @@
 ---
-title: "How to Build a Custom UI (Consuming JSON)"
+title: "How to build a custom UI (consuming JSON)"
 description: "Consume Gram's compiled JSON output directly in React, Vue, or Svelte to build a fully custom recipe UI."
 ---
 
@@ -10,7 +10,7 @@ While the raw output of the parser is an Abstract Syntax Tree (AST), the `@gram-
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. ### Getting the JSON Data
+1. ### Getting the JSON data
    
    Gram is designed to run anywhere (Node.js, Edge, or directly in the browser). To get the fully enriched JSON representation of a recipe, you compose the three core packages:
    
@@ -57,7 +57,7 @@ import { Steps } from '@astrojs/starlight/components';
    See the [API Reference](/docs/reference/api/) for the full signature of `getAST`, `compile`, and `analyze`, plus everything else the pipeline exposes (scaling, diffing, warnings, i18n).
    :::
 
-2. ### Understanding the JSON Structure
+2. ### Understanding the JSON structure
    
    The returned JSON object represents the complete, structured recipe. It contains everything you need to build a UI.
    
@@ -67,7 +67,7 @@ import { Steps } from '@astrojs/starlight/components';
    - `shopping_list` *(array)*: An aggregated list of all ingredients across all sections.
    - `sections` *(array)*: The actual instructions, broken down by recipe section.
    
-   #### Inside a Section
+   #### Inside a section
    
    Each `section` in the `sections` array has its own `ingredients`, `cookware`, and `steps`.
    
@@ -108,11 +108,11 @@ import { Steps } from '@astrojs/starlight/components';
    }
    ```
 
-3. ### Rendering Logic
+3. ### Rendering logic
    
    Because Gram's JSON payload is highly structured, building a UI is a matter of writing simple loops or `map` functions in your frontend framework.
    
-   #### Example: Rendering Steps in React
+   #### Example: rendering steps in React
    
    Here is a conceptual example of how you might render the `steps` array in React:
    

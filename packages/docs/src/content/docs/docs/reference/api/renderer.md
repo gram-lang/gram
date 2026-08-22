@@ -43,7 +43,7 @@ All three formatters share a single traversal architecture (`RenderBackend`), en
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for translating UI strings, via `@gram-lang/i18n`'s dictionaries. |
 | `renderId` | `string` | Prefix for footnote anchor ids — override when rendering multiple recipes on one page to avoid id collisions. |
 
-## Gantt Chart (`toGanttHTML` & `attachGanttInteractivity`)
+## Gantt chart (`toGanttHTML` & `attachGanttInteractivity`)
 
 Renders a compiled/analyzed recipe into an interactive timeline view, offering a precise visual and temporal representation of preparation steps, active tasks, and background timers.
 

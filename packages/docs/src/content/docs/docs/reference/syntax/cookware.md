@@ -5,7 +5,7 @@ description: "How to declare cookware with the # symbol, including quantity coun
 
 You can define the tools and equipment needed for a recipe using the `#` symbol.
 
-## Basic Declaration
+## Basic declaration
 
 Like an `@ingredient`, if the `#cookware` name is a single word and you only need one of it, you can omit the braces `{}`.
 
@@ -19,11 +19,11 @@ If the name contains spaces or you want to specify a quantity, you must use brac
 Take a #baking sheet{}.
 ```
 
-## Quantities vs Dimensions
+## Quantities vs dimensions
 
 Unlike an `@ingredient` (which can have complex units like grams or cups), `#cookware` has a strict syntax separation between its **count** and its **physical description**.
 
-### 1. Quantity (Integer Count)
+### 1. Quantity (integer count)
 The braces `{}` are strictly reserved for the number of items you need. This must be a pure integer.
 
 ```gram
@@ -31,7 +31,7 @@ The braces `{}` are strictly reserved for the number of items you need. This mus
 #ramekins{4}      // 4 ramekins
 ```
 
-### 2. Dimensions and Materials
+### 2. Dimensions and materials
 To specify the size, dimensions, material, or any other description of the `#cookware`, you must use parentheses `()`.
 
 ```gram
@@ -43,7 +43,7 @@ To specify the size, dimensions, material, or any other description of the `#coo
 Do not put dimensions inside quantity braces (e.g. ❌ `#pan{20cm}`). Gram expects a strict integer inside `{}`. Use parentheses instead: ✅ `#pan(20cm)`.
 :::
 
-## Scaling Behavior
+## Scaling behavior
 
 Unlike an `@ingredient` which usually scales linearly by default, `#cookware` scaling behavior depends on how the quantity is specified:
 
@@ -53,7 +53,7 @@ Unlike an `@ingredient` which usually scales linearly by default, `#cookware` sc
 | **With quantity** | `#pan{1}` or `#ramequins{4}` | **Scalable** | Doubling the recipe asks for 2 pans or 8 ramequins. |
 | **Explicit Fixed** | `#=pan{2}` | **Fixed** | Even if you double the recipe, it will still only ask for 2 pans. |
 
-## Modifiers and Advanced Syntax
+## Modifiers and advanced syntax
 
 `#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](/docs/reference/syntax/ingredients).
 
@@ -66,7 +66,7 @@ Use a #?wok if you have one, otherwise a #-large pan will do.
 Return to the #&wok to finish the sauce.
 ```
 
-### [Component Alias (Renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
+### [Component alias (renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
 You can rename `#cookware` for display purposes using the `:` operator.
 
 ```gram

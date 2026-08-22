@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: Mass Standardization & Yield"
+title: "Deep dive: mass standardization & yield"
 description: "How Gram converts volumes and counts into grams, and calculates purchasing weight from ingredient yield."
 ---
 
@@ -9,7 +9,7 @@ This page explains the physics engine behind Gram's mass and yield calculations.
 
 import { Steps } from '@astrojs/starlight/components';
 
-## The Three Pillars of Physics
+## The three pillars of physics
 
 Gram separates the physical properties of ingredients into three distinct concepts within your database. This strict separation ensures the math is always perfect, whether you write in volumes, counts, or weights.
 
@@ -20,13 +20,13 @@ Gram separates the physical properties of ingredients into three distinct concep
 3. **Yield (`yield`)**: The **Waste Factor**. Used strictly to calculate the ratio of edible **Net Mass** to purchasing **Gross Mass** (due to peels, seeds, bones).
     * *Example*: An avocado has a yield of 0.70 (30% is the pit and skin).
 
-## The Goal of Mass Standardization
+## The goal of mass standardization
 
 The primary goal of the Analyzer is to calculate the **Total Mass** of a recipe. This is essential for nutritional estimation, cost calculation, and baking ratios.
 
 To do this, the Analyzer must convert every ingredient quantity into a unified baseline: **grams (g)**.
 
-### The Conversion Algorithm
+### The conversion algorithm
 
 When the Analyzer encounters an ingredient, it runs it through a strict priority algorithm to find its mass:
 
@@ -38,7 +38,7 @@ When the Analyzer encounters an ingredient, it runs it through a strict priority
 5. **Incomplete**: If a volume has no density available (no override, no database entry) or a count has no `unit_weight`, the Analyzer refuses to guess. It will **not** assume a default density (e.g. treating everything as water) — doing so would silently corrupt shopping-list totals. The mass calculation fails, the ingredient is marked as "incomplete", and it is listed in its raw, unconverted unit.
 </Steps>
 
-## Yield Calculation (The Waste Factor)
+## Yield calculation (the waste factor)
 
 In professional kitchens, there is a fundamental difference between what goes *into the pot* and what you *buy at the store*.
 
@@ -47,9 +47,11 @@ In professional kitchens, there is a fundamental difference between what goes *i
 
 The ratio between these two is the **Yield Factor**. 
 
-### How Gram handles Yield
+### How Gram handles yield
 
 By default, Gram assumes that any ingredient written in your recipe refers to the **Net Mass**. The shopping list generator then works backwards using the `yield` and `unit_weight` to tell you exactly how much to buy.
+
+## Concrete example: the complete flow
 
 Let's look at two scenarios for an avocado (`unit_weight: 150g`, `yield: 0.70`):
 

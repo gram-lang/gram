@@ -1,5 +1,5 @@
 ---
-title: "How to Manage an Ingredient Database"
+title: "How to manage an ingredient database"
 description: "Sync, lint, and enrich your ingredients.yaml database with the Gram CLI to power nutrition and mass calculations."
 ---
 
@@ -10,12 +10,12 @@ This guide explains the standard workflow for maintaining your database using th
 import { Steps } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
 
-## The Database Workflow
+## The database workflow
 
 The recommended workflow consists of three steps, to be run in this exact order:
 
 <Steps>
-1. ### Syncing New Ingredients
+1. ### Syncing new ingredients
    
    As you write new recipes, you will inevitably use ingredients that are not yet in your database. Instead of adding them manually, let the CLI find them.
    
@@ -29,7 +29,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    It uses fuzzy matching to suggest avoiding duplicates if it finds a typo!
    :::
 
-2. ### Linting and Deduplication
+2. ### Linting and deduplication
    
    Sometimes, you might write `@egg` in one recipe and `@eggs` in another. Or `@sugar` and `@sucre` if you write in multiple languages.
    
@@ -50,7 +50,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    This `aliases` list is what shopping-list aggregation uses to group ingredients across recipes. It's unrelated to the recipe-level `@Real Name:Display Name` renaming syntax (see [Ingredients syntax](/docs/reference/syntax/ingredients#component-alias-renaming)), which only changes how an ingredient is displayed inline in the recipe steps — it never affects grouping or the shopping list.
    :::
 
-3. ### Enriching Data
+3. ### Enriching data
    <Since v="1.1.0" type="changed" />
    
    Now that your database has clean, deduplicated entries, you need to fill in their physical (density, unit weight, yield) and nutritional (calories, macros) data. 
@@ -70,7 +70,7 @@ The recommended workflow consists of three steps, to be run in this exact order:
    :::
 </Steps>
 
-## Validating Your Database
+## Validating your database
 
 <Since v="1.1.0" />
 
@@ -80,7 +80,7 @@ Before committing your `ingredients.yaml` to version control, it is good practic
 gram db validate --strict
 ```
 
-## Sharing and Merging Databases
+## Sharing and merging databases
 
 If you are working on a team, or if you want to import a community-driven ingredient database, you can merge an external YAML file into your local one:
 

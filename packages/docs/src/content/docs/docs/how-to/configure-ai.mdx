@@ -1,5 +1,5 @@
 ---
-title: "How to Configure AI for the Gram CLI"
+title: "How to configure AI for the Gram CLI"
 description: "Learn how to configure AI providers (Google Gemini, OpenAI, Anthropic, Ollama) for recipe importing, ingredient database linting, and AI-assisted, human-reviewed data enrichment in the Gram CLI."
 ---
 
@@ -10,7 +10,7 @@ This guide explains how to set up and configure your preferred AI provider step 
 import { Steps } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
 
-## What AI Powers in the Gram CLI
+## What AI powers in the Gram CLI
 
 Configuring an AI provider unlocks three powerful CLI features:
 
@@ -20,7 +20,7 @@ Configuring an AI provider unlocks three powerful CLI features:
 
 ---
 
-## Why AI? Restructuring vs. Transliteration
+## Why AI? Restructuring vs. transliteration
 
 Gram is not just a markup format; it is a domain-specific model for recipes. Converting a traditional recipe into `.gram` syntax is **not a mechanical string transformation**. 
 
@@ -39,11 +39,11 @@ Similarly, for database management:
 
 ---
 
-## Configuration Methods
+## Configuration methods
 
 You can configure AI using **interactive setup**, **environment variables** (recommended for security), or **configuration files**.
 
-### Method 1: Interactive Setup with `gram init`
+### Method 1: Interactive setup with `gram init`
 
 If you are initializing a new project or want a guided setup, run:
 
@@ -61,11 +61,11 @@ During initialization, the CLI will ask:
 
 ---
 
-### Method 2: Environment Variables (Recommended)
+### Method 2: Environment variables (recommended)
 
 The Gram CLI automatically checks environment variables for credentials. On both Node.js (>=20.6.0) and [Bun](https://bun.sh/), `.env` files in your project root are automatically loaded.
 
-#### 1. Provider Environment Variable Names
+#### 1. Provider environment variable names
 
 Export the appropriate environment variable for your provider:
 
@@ -80,7 +80,7 @@ Export the appropriate environment variable for your provider:
 If you don't set `ai.model`, each provider falls back to a small, cheap default model (see the auto-detection box below). For a curated, up-to-date list of recommended higher-quality models per provider, run `gram init` — it always reflects what's current in the CLI, unlike a hardcoded list here.
 :::
 
-#### 2. Create a `.env` File
+#### 2. Create a `.env` file
 
 Add your key to a `.env` file at the root of your project:
 
@@ -108,7 +108,7 @@ Never commit your `.env` file or API keys to version control. Make sure `.env` i
 
 ---
 
-### Method 3: Configuration Files (`config.yaml`)
+### Method 3: Configuration files (`config.yaml`)
 
 You can explicitly set your AI provider, model, or custom endpoint in your project's `.gram/config.yaml` or globally in `~/.config/gram/config.yaml`.
 
@@ -123,14 +123,14 @@ ai:
   model: gemini-3.5-flash       # Optional: override default model
 ```
 
-#### Global vs. Project Configuration
+#### Global vs. project configuration
 
 - **Global Config (`~/.config/gram/config.yaml`)**: Applies system-wide for all Gram projects on your machine.
 - **Project Config (`.gram/config.yaml`)**: Overrides global settings for the current project.
 
 ---
 
-### Method 4: Running Local AI with Ollama
+### Method 4: Running local AI with Ollama
 
 If you prefer running AI models locally without sending data to external APIs, you can use [Ollama](https://ollama.ai/):
 
@@ -158,7 +158,7 @@ Ollama requires no API key. You can also specify a custom base URL via the `OLLA
 
 ---
 
-### Dynamic Overrides via Flags
+### Dynamic overrides via flags
 
 <Since v="1.1.0" />
 
@@ -174,7 +174,7 @@ See [Choosing the AI model](/docs/reference/tooling/cli#choosing-the-ai-model) f
 
 ---
 
-## Verifying Your Setup
+## Verifying your setup
 
 To test if your AI setup is working properly:
 
@@ -193,7 +193,7 @@ To test if your AI setup is working properly:
 
 ## Troubleshooting
 
-### Missing API Key Error
+### Missing API key error
 
 If you see the following error:
 ```text

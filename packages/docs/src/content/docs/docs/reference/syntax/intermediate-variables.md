@@ -1,5 +1,5 @@
 ---
-title: "Intermediate Variables"
+title: "Intermediate variables"
 description: "Declare reusable sub-components like dough or sauce as intermediate &variables at the step or section level."
 ---
 
@@ -7,11 +7,11 @@ In complex recipes, you often create sub-components (like a dough, a sauce, or a
 
 Once declared, an intermediate `&variable` acts exactly like an `@ingredient`, allowing you to reference it, measure it, or calculate percentages from it.
 
-## Declaring a Variable
+## Declaring a variable
 
 You can declare a `&variable` using the `->&` syntax. There are two places you can declare them: at the end of a **Step**, or at the end of a **Section Title**.
 
-### Step-level Declaration
+### Step-level declaration
 
 When placed at the very end of a step (a paragraph), the `&variable` captures everything produced in that specific step.
 
@@ -21,7 +21,7 @@ When placed at the very end of a step (a paragraph), the `&variable` captures ev
 [Rest] Let the &dough rest for ~_{1h}.
 ```
 
-### Section-level Declaration
+### Section-level declaration
 
 When placed at the end of a `## Section` title, the `&variable` captures the output of the *entire* section. This is perfect for components that take several steps to prepare.
 
@@ -37,7 +37,7 @@ When placed at the end of a `## Section` title, the `&variable` captures the out
 // The `&puff pastry` variable now contains the final result of all the steps above!
 ```
 
-## Using a Variable
+## Using a variable
 
 To use a previously declared `&variable`, simply reference it with `&`. 
 
@@ -57,12 +57,12 @@ When you use an intermediate `&variable` in a later step, it **will** appear in 
 However, it **will not** appear in the global **Shopping List**. The Gram Compiler knows that the `&puff pastry` is made of flour and butter, and it will automatically unpack it and count the raw flour and butter towards your shopping list instead.
 :::
 
-## Advanced Mechanics
+## Advanced mechanics
 
-### Global Scoping
+### Global scoping
 When a `&variable` is declared at the Section-level, it is registered in the **Global Scope**. This means you can declare a `&variable` in the first section of your recipe and safely reference it in the last section.
 
-### Relative Quantities
+### Relative quantities
 As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantities) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
 
 ```gram
@@ -71,7 +71,7 @@ As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantit
 [Add] @salt{2% &dough}.
 ```
 
-## Error Handling
+## Error handling
 
 The compiler helps you maintain clean and conflict-free code by emitting specific warnings:
 

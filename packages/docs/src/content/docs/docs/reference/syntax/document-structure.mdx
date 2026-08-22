@@ -1,5 +1,5 @@
 ---
-title: "Document Structure"
+title: "Document structure"
 description: "Reference for the .gram file structure: YAML frontmatter, functional and informational metadata keys, sections, steps, and comments."
 ---
 
@@ -8,19 +8,19 @@ import Since from '../../../../../components/Since.astro';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
 
-## 1. Metadata (Frontmatter)
+## 1. Metadata (frontmatter)
 
 The frontmatter is a **YAML** block at the very start of the file, enclosed by `---`.
 
 The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
 
-### Functional Keys
+### Functional keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
-### Informational Keys
+### Informational keys
 These keys are recommended for proper display and metadata management:
 
 *   `title`: The recipe name.
@@ -52,7 +52,7 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Module Imports
+## 2. Module imports
 
 <Since v="1.2.0" />
 
@@ -79,7 +79,7 @@ the same step.
 A different step.
 ```
 
-### Action Verbs
+### Action verbs
 Steps can optionally start with an **Action** enclosed in brackets `[]`. This highlights the primary method used in that step, making it easy to parse visually or programmatically.
 
 ```gram
@@ -102,7 +102,7 @@ Mix @flour{200g} and @water{100ml} together until smooth.
 Combine @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
-### Retro-planning (Scheduling)
+### Retro-planning (scheduling)
 You can assign a preparation timeframe to a `## Section` by adding a `~timer`-like annotation anywhere in the title.
 
 ```gram
@@ -113,7 +113,7 @@ Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free 
 
 *See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
-### Section Outputs (Declarations)
+### Section outputs (declarations)
 If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
 
 ```gram

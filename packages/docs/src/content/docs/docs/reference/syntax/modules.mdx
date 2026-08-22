@@ -1,5 +1,5 @@
 ---
-title: "Module Imports"
+title: "Module imports"
 description: "Import another .gram file as a reusable sub-component with @use, and how scaling, encapsulation, and the shopping list work across files."
 ---
 
@@ -49,14 +49,14 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
 @use "./bases/starter.gram" as &starter ~{-2d}
 ```
 
-### Specifier Rules
+### Specifier rules
 * The specifier must end in `.gram`.
 * Supported formats: relative path (`./`, `../`), project root (`@/`), or custom alias (`@alias/`).
 * Paths are strictly confined to the project root containing `.gram/` — absolute paths or URLs are rejected.
 
 ---
 
-## Project-Root & Aliased Paths
+## Project-root & aliased paths
 
 `./` and `../` resolve relative to the *importing file's directory*. For deeply nested recipes, Gram provides two clean alternatives:
 
@@ -90,7 +90,7 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
 
 ---
 
-## What a Module Exports
+## What a module exports
 
 Only **section-level** intermediate variables (`->&` on a `## Section` header) are exported. Step-level intermediates (`->&` inside a step) remain private to the module. See [Intermediate Variables](/docs/reference/syntax/intermediate-variables).
 
@@ -136,7 +136,7 @@ title: 'Shortcrust Pastry'
 If working out a module's mass depends on an estimated density or a default unit weight rather than an explicit mass, Gram emits an `ESTIMATED_MODULE_YIELD` diagnostic rather than treating the scale factor as exact.
 :::
 
-### Scaling Destructured Exports
+### Scaling destructured exports
 
 When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
 
@@ -170,7 +170,7 @@ title: 'Tart Elements'
 When asymmetrical ingredient demands force Gram to apply the higher multiplier across the entire module, the compiler flags the resulting excess production (here 400g of frangipane cream) with a `MODULE_SURPLUS` diagnostic rather than silently ignoring it.
 :::
 
-### Timers & Batches
+### Timers & batches
 
 **Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration.
 
@@ -178,7 +178,7 @@ When a discrete count is requested against a module's measured mass (`&cookies{2
 
 ---
 
-## Chained Imports & Transitivity
+## Chained imports & transitivity
 
 Modules can import other modules, creating a dependency chain:
 
@@ -191,16 +191,16 @@ recipe.gram ──▶ @use "./sauce.gram" ──▶ @use "./stock.gram"
 
 ---
 
-## Diamond Dependencies & Cycle Prevention
+## Diamond dependencies & cycle prevention
 
-### Diamond Dependencies
+### Diamond dependencies
 
 When a menu imports multiple dishes sharing a common base (e.g. an entrée and a dessert both importing `pate-sablee.gram`):
 * The shared base file is parsed **only once**.
 * The compiler creates independent instances scaled to each dish's requirements.
 * Raw ingredients (flour, butter) merge cleanly on the shopping list.
 
-### Cycle Prevention
+### Cycle prevention
 
 :::danger[Circular Dependencies (`MODULE_CYCLE`)]
 If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency, cuts off that one import branch, and reports a `MODULE_CYCLE` error diagnostic displaying the full dependency loop (`A -> B -> A`). The rest of the recipe still compiles — the cyclic binding is left unresolved rather than crashing the whole build — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
@@ -215,7 +215,7 @@ If Recipe A imports B which imports A (directly or indirectly), Gram detects the
 
 ---
 
-## Frontmatter Inheritance
+## Frontmatter inheritance
 
 Informational metadata (`title`, `description`, `author`, `tags`, `category`) belongs strictly to the host recipe — importing a `vegan` base does not make an egg-based host tart vegan.
 
@@ -225,7 +225,7 @@ Informational metadata (`title`, `description`, `author`, `tags`, `category`) be
 
 ---
 
-## Stocking an Import (`--stock`)
+## Stocking an import (`--stock`)
 
 When a component is already on hand (bought ready-made or prepared ahead of time), pass `--stock` to the CLI:
 
@@ -242,7 +242,7 @@ Supported by all CLI commands resolving `@use` (`build`, `check`, `view`, `expor
 
 ---
 
-## Anchoring an Import in Time (`~{-2d}`)
+## Anchoring an import in time (`~{-2d}`)
 
 When a fresh preparation must be started in advance (e.g. a sourdough starter or marinade), anchor it directly on the `@use` line:
 
@@ -261,7 +261,7 @@ When a fresh preparation must be started in advance (e.g. a sourdough starter or
 
 ---
 
-## Editor & Language Server Support
+## Editor & language server support
 
 The Gram Language Server resolves `@use` directives in real time:
 
@@ -272,21 +272,21 @@ The Gram Language Server resolves `@use` directives in real time:
 
 ---
 
-## Related Documentation
+## Related documentation
 
 <CardGrid>
   <LinkCard 
-    title="How-To: Organize Modular Recipes" 
+    title="How-to: organize modular recipes" 
     description="Hands-on guide to splitting recipes, configuring aliases, multi-day scheduling, and --stock workflows." 
     href="/docs/how-to/organize-modular-recipes" 
   />
   <LinkCard 
-    title="Document Structure" 
+    title="Document structure" 
     description="Overview of frontmatter metadata, directives, sections, and overall file layout." 
     href="/docs/reference/syntax/document-structure" 
   />
   <LinkCard 
-    title="CLI Reference" 
+    title="CLI reference" 
     description="Complete documentation for gram build, gram shop, and global CLI options." 
     href="/docs/reference/tooling/cli" 
   />

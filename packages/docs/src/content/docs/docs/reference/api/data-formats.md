@@ -1,5 +1,5 @@
 ---
-title: "Data Formats"
+title: "Data formats"
 description: "Reference JSON shapes for the AST, compiled and analyzed recipes, plus the YAML schema for the ingredient database."
 ---
 

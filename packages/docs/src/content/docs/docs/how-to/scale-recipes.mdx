@@ -1,5 +1,5 @@
 ---
-title: "How to Scale Recipes Dynamically"
+title: "How to scale recipes dynamically"
 description: "Use Relative Quantities and Baker's Math to write ratio-based recipes that recalculate themselves automatically."
 ---
 
@@ -7,7 +7,7 @@ Gram is designed to ensure that recipes scale mathematically across its entire e
 
 This guide shows you how to use **Relative Quantities** to build dynamic, self-documenting recipes based on ratios, and how to use **Baker's Math** to display traditional recipes in percentage format.
 
-## The Limit of Static Quantities
+## The limit of static quantities
 
 Imagine a bread recipe:
 ```gram
@@ -21,7 +21,7 @@ So why would we need anything else?
 The problem arises **when you want to modify the recipe itself**. 
 What if you want to increase the hydration from 70% to 75%? You would have to manually calculate what 75% of 500g is, and change `350ml` to `375ml`. The recipe's underlying logic (the ratios) is hidden behind static numbers, making it hard to read and hard to tweak.
 
-## The Solution for Ratio-Based Recipes: Relative Quantities
+## The solution for ratio-based recipes: relative quantities
 
 Some recipes are fundamentally built around the mathematical relationship between ingredients, rather than strict absolute quantities (e.g., a bread dough defined by its 70% hydration).
 
@@ -30,14 +30,14 @@ In Gram, you can express these relationships directly in the source code using *
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. ### Define the Anchor (Target)
+1. ### Define the anchor (target)
    First, define the flour as a standard ingredient in your recipe.
    
    ```gram
    [Add] The @flour{500g}.
    ```
 
-2. ### Define the Relatives
+2. ### Define the relatives
    Now, replace the static quantities of water, salt, and yeast with percentages pointing to the flour. Since the flour was already defined in a previous step, you reference it using `@&flour`.
    
    ```gram
@@ -51,7 +51,7 @@ import { Steps } from '@astrojs/starlight/components';
    :::
 </Steps>
 
-## Scaling the Dynamic Recipe
+## Scaling the dynamic recipe
 
 Because the relationships are encoded directly in the recipe, Gram handles the math dynamically. Any baker reading your `.gram` file immediately sees that this is a 70% hydration dough. 
 
@@ -61,7 +61,7 @@ If you want to tweak the recipe to a wetter 75% hydration, you just change one n
 ```
 Gram handles the math. You never have to manually calculate absolute weights again when designing or tweaking your recipes.
 
-### Universal Scaling
+### Universal scaling
 
 You can scale recipes visually in the Playground, or from the CLI using the `--scale` flag (available on `view`, `build`, `print`, and `export`):
 
@@ -71,7 +71,7 @@ gram view bread.gram --scale flour=400g
 
 Gram will compute the global factor (400/500 = 0.8), scale the anchor (flour) to 400g, and the relative ingredients will perfectly evaluate against this new base (Water: 70% of 400g = 280g).
 
-### Limits of Reference Scaling
+### Limits of reference scaling
 
 Since scaling by reference derives the factor from an ingredient's own quantity, not every ingredient can be used as the target — only an ingredient with a genuine, standalone absolute quantity qualifies. If you pass one of the following, Gram rejects it with a specific error rather than silently computing a wrong factor:
 
@@ -94,7 +94,7 @@ densities: ["water:1.0"]
 
 With that, `--scale water=150g` against a recipe written in `ml` resolves correctly — no database required for that specific ingredient.
 
-## Baker's Math
+## Baker's math
 
 While Relative Quantities are great for *designing* dynamic recipes, professional bakers often use a concept called **Baker's Percentage** to read and analyze *static* recipes. In Baker's Percentage, the main ingredient (usually flour) is defined as 100%, and everything else is displayed as a percentage of that weight.
 
@@ -127,7 +127,7 @@ gram view bread.gram --bakers-reference=flour
 
 *(You can also use the `--bakers-math-only` flag if you want to hide the absolute weights completely.)*
 
-## Scaling Fixed Ingredients
+## Scaling fixed ingredients
 
 Sometimes, a recipe contains ingredients that **should never scale**, regardless of how many portions you make. For example, frying oil in a pan, or a pinch of salt.
 

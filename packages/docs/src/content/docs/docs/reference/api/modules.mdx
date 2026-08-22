@@ -140,9 +140,9 @@ const enrichedDb = { ...database, ...composed.syntheticIngredients };
 const { result: analyzed } = analyze(result, enrichedDb);
 ```
 
-## Secondary Utilities
+## Secondary utilities
 
-### Export Analysis & Scaling
+### Export analysis & scaling
 
 ```typescript
 function computeExports(ast: RecipeAST): ModuleExports;
@@ -161,7 +161,7 @@ function computeScaleFactor(
 - **`resolveYield`**: Recursively measures the total physical mass (in grams) of an exported section and any intermediate sections it references.
 - **`computeScaleFactor`**: Evaluates the ratio between requested reference quantities in the host recipe and the module's yield.
 
-### Reverse Dependency Indexing
+### Reverse dependency indexing
 
 Used by `gram watch` and the Language Server (`@gram-lang/language-server`) to perform incremental diagnostics and cache invalidation when a shared sub-recipe is edited.
 
@@ -170,7 +170,7 @@ function buildReverseDependencyIndex(edges: Iterable<DependencyEdge>): ReverseDe
 function transitiveDependents(index: ReverseDependencyIndex, uri: string): Set<string>;
 ```
 
-### Module Diagnostics
+### Module diagnostics
 
 ```typescript
 enum ModuleWarningCode {

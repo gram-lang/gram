@@ -11,7 +11,7 @@ Gram's syntax rules are defined using [OhmJS](https://ohmjs.org/), an object-ori
 
 Ohm makes it extremely easy to build modular grammars. Because of this, `@gram-lang/parser` is incredibly fast and strictly enforces the structural rules of the language — for example, a space is forbidden immediately around the composite marker `<@` itself (`invalidComposite` in the grammar), so `pastry < @dough` fails to parse while `<@dough` succeeds.
 
-## The Abstract Syntax Tree (AST)
+## The abstract syntax tree (AST)
 
 If the parser succeeds, it outputs an AST. This is a tree of JavaScript objects representing every semantic token in the recipe.
 
@@ -40,7 +40,7 @@ Is parsed into a `Step` node containing a `Text` node ("Add the "), an `Ingredie
 
 Note that `quantity.value` is always a `QuantityValueAST` object, never a bare number — this is what allows the parser to also represent fractions (`1/2`) and ranges (`2-3`) without losing the original text representation.
 
-### Supported AST Nodes
+### Supported AST nodes
 
 The parser exposes specific node types for everything in the Gram language (`ASTNodeType` in `src/types.ts`):
 - `Recipe`: The root node containing the frontmatter (`meta`) and a list of `Section` nodes.
@@ -55,7 +55,7 @@ The parser exposes specific node types for everything in the Gram language (`AST
 The `modifiers` array on `Ingredient`/`Cookware` nodes holds the raw punctuation characters as written in the source (`?`, `-`, `*`, `&`), not semantic labels. `=` is handled separately: it doesn't appear in `modifiers` at all, it instead sets `quantity.fixed` to `true`.
 :::
 
-## Purely Syntactic
+## Purely syntactic
 
 `@gram-lang/parser` performs no domain or semantic reasoning. It has no knowledge of:
 - Whether a referenced variable `&dough` was actually declared earlier.

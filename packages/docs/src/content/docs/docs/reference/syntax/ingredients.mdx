@@ -7,7 +7,7 @@ import { CodeTabs } from 'starlight-theme-nova/components';
 
 Ingredients are the core building blocks of any Gram recipe.
 
-## Basic Declaration
+## Basic declaration
 
 To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name contains spaces or requires a specific quantity, you **must** append the quantity inside `{}` braces. If it is a single word without a specific quantity, the braces are optional (the quantity defaults to 1).
 
@@ -28,12 +28,12 @@ To specify a unit of measurement (weight, volume, etc.), add it directly after t
 [Place] @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
 ```
 
-## Scaling & Fixed Quantities
+## Scaling & fixed quantities
 
 By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 
 If you scale a recipe from 2 to 4 servings, an `@ingredient` with `{100g}` becomes `{200g}`.
 
-### Fixed Quantities (`=`)
+### Fixed quantities (`=`)
 Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
 
 ```gram
@@ -41,7 +41,7 @@ Season with @=salt{1 tsp} to taste.
 ```
 This keeps the salt at 1 tsp regardless of how many servings the user calculates.
 
-## Ingredient Modifiers
+## Ingredient modifiers
 
 Gram provides several modifiers to alter how an `@ingredient` behaves in the parser and the shopping list. Modifiers are placed immediately after the `@` symbol.
 
@@ -57,7 +57,7 @@ Gram provides several modifiers to alter how an `@ingredient` behaves in the par
 You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g. `?*`, `-*`, `-&`) or duplicates (`**`) will generate a compiler warning (`INVALID_MODIFIER_COMBINATION`).
 :::
 
-### Optional and Hidden Modifiers (`?`, `-`)
+### Optional and hidden modifiers (`?`, `-`)
 
 Use `?` to mark an `@ingredient` as optional — useful for garnishes or substitutions the cook may skip. Use `-` to hide an `@ingredient` from the generated shopping list entirely, e.g. something you always have on hand.
 
@@ -65,7 +65,7 @@ Use `?` to mark an `@ingredient` as optional — useful for garnishes or substit
 [Garnish] Sprinkle with @?thyme{} and a pinch of @-salt{} to taste.
 ```
 
-### The Reference Modifier (`&`)
+### The reference modifier (`&`)
 
 The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an `@ingredient` after its initial declaration, you should use the `&` modifier.**
 
@@ -87,7 +87,7 @@ Sometimes you need to use the *same* `@ingredient` multiple times with *differen
 [Grease] Use @&butter{50g} to grease the pan. // The shopping list will correctly aggregate 150g of butter.
 ```
 
-### Baker's Percentage (`*`)
+### Baker's percentage (`*`)
 
 In baking, recipes are often built around the **Baker's Percentage**, where the main `@ingredient` (usually flour) represents 100%, and all other items are expressed as a percentage of that weight.
 
@@ -103,9 +103,9 @@ This allows tools (like the CLI or web renderers) to automatically calculate and
 For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](/docs/how-to/scale-recipes#bakers-math) guide.
 :::
 
-## Advanced Syntax
+## Advanced syntax
 
-### Short-hand Preparations
+### Short-hand preparations
 Often, an `@ingredient` requires preparation before use. You can define this directly within the declaration using parentheses `()`.
 
 ```gram
@@ -120,7 +120,7 @@ Gram encourages writing dense, data-oriented recipes. Instead of creating dedica
 The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
 :::
 
-### Component Alias (Renaming)
+### Component alias (renaming)
 You can rename an `@ingredient` for display purposes using a colon `:` immediately after the real name. This is useful for keeping the shopping list clean while using a colloquial name in the instructions.
 
 **Format**: `@Real Name:Display Name{Quantity}`
@@ -147,7 +147,7 @@ Aliases are applied locally. To mention this same `@ingredient` again later in t
 This `:` syntax only renames how the ingredient is *displayed* in the rendered steps — it never affects shopping-list grouping. The shopping list and the canonical ingredient id are always derived from the **real name** (before the colon), matched against `ingredients.yaml`'s own `aliases` list — a separate, database-level mechanism used to merge synonyms and cross-language duplicates (e.g. `sugar`/`sucre`/`azúcar`) across recipes, see [Manage an Ingredient Database](/docs/how-to/manage-database). Writing `@egg yolks:eggs{2}` and `@egg whites:eggs{4}` will **not** merge them in the shopping list, even though they share the same display alias `eggs` — they have different real names.
 :::
 
-### Alternatives (Substitutions)
+### Alternatives (substitutions)
 You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 
 ```gram
@@ -178,7 +178,7 @@ Add @flour{1 1/2 cups}.
 Add @butter{1½ sticks}.
 ```
 
-## Error Handling
+## Error handling
 
 The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
 

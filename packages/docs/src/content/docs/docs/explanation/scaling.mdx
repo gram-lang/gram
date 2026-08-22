@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: Scaling"
+title: "Deep dive: scaling"
 description: "How Gram's ScaleEngine resolves global, reverse, and baker's-percentage scaling for recipes."
 ---
 
@@ -64,7 +64,7 @@ function resolveScaleFactor(
 
 The resulting `CompilationResult` carries an honest `scaleFactor` field (default `1`) recording how it relates to the unscaled original — this is what interactive UIs (like the renderer's HTML portions widget) read to compute a baseline, instead of a hidden/underscored field.
 
-## Baker's Percentage validation
+## Baker's percentage validation
 
 Baker's Percentage isn't scaling, but it shares the same "don't compute a wrong number silently" philosophy. `@gram-lang/analyzer` computes it as a `bakersPercentage` field per shopping-list item and per in-step ingredient mention — `@gram-lang/renderer` just displays that precomputed value, it doesn't recompute it.
 
@@ -74,7 +74,7 @@ If Baker's Math was requested (`--bakers-math` or `--bakers-reference`) but no `
 
 **Aggregation stays consistent with mass.** When the same ingredient is used more than once within a section (e.g. sugar added at two different steps), `@gram-lang/kitchen`'s `aggregateSectionIngredients` sums both `normalizedMass` and `bakersPercentage` across the repeated occurrences — since percentage is linear in mass for a fixed reference, the two always agree (e.g. two 100g/10% occurrences aggregate to 200g/20%, never a mismatched 200g/10%). Every renderer (`@gram-lang/renderer`'s HTML, Markdown, and print formatters, plus the CLI's `gram cook` TUI) reads this same precomputed, already-aggregated value — none of them recompute it themselves.
 
-## Scaling Modular Imports (`@gram-lang/modules`)
+## Scaling modular imports (`@gram-lang/modules`)
 
 When a recipe imports an external base via `@use` (such as `@use "./bases/crust.gram" as &crust`), scaling follows a yield-based evaluation:
 

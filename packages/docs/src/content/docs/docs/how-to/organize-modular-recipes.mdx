@@ -1,5 +1,5 @@
 ---
-title: "How to Organize and Compose Modular Recipes"
+title: "How to organize and compose modular recipes"
 description: "A practical guide to splitting recipes into reusable modules, organizing folders, configuring path aliases, chaining imports, scheduling multi-day bases, and managing ready-made stock."
 ---
 
@@ -12,7 +12,7 @@ As your collection of `.gram` recipes grows, decomposing complex dishes into reu
 
 This guide walks you through practical patterns for structuring, organizing, and executing modular Gram projects with `@use`.
 
-## Step-by-step: Extracting and importing your first module
+## Step-by-step: extracting and importing your first module
 
 If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon Meringue Tart** was written from start to finish in a single `.gram` file. Here is how to extract the sweet pastry dough into a reusable component and import it with `@use`.
 
@@ -173,7 +173,7 @@ Gram provides three intuitive ways to reference component files across your proj
   </TabItem>
 </Tabs>
 
-## Managing multi-component preparations (Destructuring)
+## Managing multi-component preparations (destructuring)
 
 Some sub-recipes produce **multiple distinct components** intended to be used together.
 
@@ -281,26 +281,26 @@ gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 * **Simplified shopping list:** Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
 * **Accurate nutritional totals:** Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
 
-## Encapsulation & Math Scoping
+## Encapsulation & math scoping
 
 A module's relative quantities and ingredient dependencies (`@sugar{125% @&lemon juice}` in the curd) resolve only against *the sections within that specific module*. A host recipe that uses the same ingredient names elsewhere never collides with a base's internal math, and vice versa. 
 
 This strict section-scoping guarantees that splitting a recipe into files never introduces unexpected side effects. See [Encapsulation](/docs/reference/syntax/modules#encapsulation) for complete details.
 
-## Try it in the Playground
+## Try it in the playground
 
 The web-based [Playground](/play) supports editing multi-file recipes: open the **Lemon Tart (multi-file, @use)** example from the recipe dropdown to explore a host recipe and its imported base side by side in separate tabs.
 
-## Related Resources
+## Related resources
 
 <CardGrid>
   <LinkCard 
-    title="Module Imports Reference" 
+    title="Module imports reference" 
     description="Detailed specifications for syntax, scaling equations, and encapsulation rules." 
     href="/docs/reference/syntax/modules" 
   />
   <LinkCard 
-    title="CLI Reference" 
+    title="CLI reference" 
     description="Complete documentation for gram build, gram shop, --stock and global CLI options." 
     href="/docs/reference/tooling/cli" 
   />

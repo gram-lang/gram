@@ -1,5 +1,5 @@
 ---
-title: "Semantic Analysis (@gram-lang/analyzer)"
+title: "Semantic analysis (@gram-lang/analyzer)"
 description: "How @gram-lang/analyzer standardizes ingredient mass, resolves aliases, and estimates nutrition using a database."
 ---
 
@@ -7,7 +7,7 @@ The `@gram-lang/analyzer` package represents the final analytical step in the co
 
 This is where the physical world meets the digital code. The analyzer executes a modular 4-pass pipeline (`standardizeSectionMasses`, `enrichShoppingList`, `applyBakersMath`, `estimateNutrition`) computing five major feature sets — each of which can be individually enabled or disabled via options.
 
-## Pass 1: Section Mass Standardization & Yield Calculation
+## Pass 1: Section mass standardization & yield calculation
 
 Gram is designed to unify and normalize masses across recipes, calculating the true Total Mass of a dish even if ingredients are written in volumes (cups) or units (eggs).
 
@@ -37,7 +37,7 @@ The direction of this calculation depends on how the quantity was written. An ex
 
 This adjustment is computed per ingredient usage — including inline mentions throughout the recipe text — and `@gram-lang/renderer` surfaces the Gross Mass figure in shopping lists across HTML, Markdown, and Print formats.
 
-## Pass 2: Shopping List Enrichment & Alias Resolution
+## Pass 2: Shopping list enrichment & alias resolution
 
 Beyond enriching individual ingredient masses, the Analyzer also re-groups the shopping list itself. `@gram-lang/kitchen` groups purely by the raw id it assigned during parsing, with no knowledge of `ingredients.yaml` — so it can't tell that `@butter` and `@beurre` are the same ingredient, nor merge `100g` of an ingredient with `1 cup` of the same ingredient into one total.
 
@@ -53,16 +53,16 @@ Only the `id` is rewritten to the canonical form for grouping purposes. The entr
 - **Missing entries** keep the recipe's own wording.
 
 
-<LinkCard  title="Shopping List Aggregation"
+<LinkCard  title="Shopping list aggregation"
     description="See how shopping list aggregates for the full breakdown and fallback behavior."
     href="/docs/explanation/shopping-list-aggregation"
 />
 
-## Pass 2.5: Baker's Percentages
+## Pass 2.5: Baker's percentages
 
 If the recipe (or the caller, via a `bakersReference` option) designates a reference ingredient — typically flour, marked with the `*` modifier — the analyzer computes every other ingredient's mass as a percentage of that reference, both for shopping-list items and inline recipe ingredients.
 
-## Pass 3: Nutritional Estimation
+## Pass 3: Nutritional estimation
 
 The Analyzer can automatically calculate estimated Calories and Macronutrients (Protein, Carbs, Fat, Sugar, Fiber, Sodium) based on the ingredients list. The ingredient database schema also supports finer-grained fields (`sat_fat`, `mono_fat`, `poly_fat`, `alcohol`), but these are not currently aggregated into recipe totals.
 
@@ -78,7 +78,7 @@ The Analyzer can automatically calculate estimated Calories and Macronutrients (
 Unlike a strict all-or-nothing model, the analyzer always returns whatever nutrition totals it could compute, along with a `coverage` ratio and warnings for any ingredient that was missing nutrition data or couldn't be mass-standardized. Consumers of the data (like the CLI viewer or `@gram-lang/renderer`'s HTML output) use this to show an explicit "incomplete data" indicator alongside the partial totals, rather than hiding the panel outright.
 :::
 
-## Open Architecture
+## Open architecture
 
 The `@gram-lang/analyzer` is designed for open ecosystems. It **does not** read files directly from the filesystem. Instead, the host application (like the CLI or the Playground) loads the database and passes it as a parameter to the `analyze(compilationResult, database, options?)` function, where `options` lets the caller toggle each feature set on or off and configure things like the baker's-percentage reference or the portion count.
 

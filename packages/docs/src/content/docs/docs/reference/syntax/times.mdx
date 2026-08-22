@@ -1,5 +1,5 @@
 ---
-title: "Times & Scheduling"
+title: "Times & scheduling"
 description: "Define ~timer durations and units in your recipes, and how Gram schedules active versus passive time."
 ---
 
@@ -8,7 +8,7 @@ import { timeUnitsTable } from '../../../../../data/api-reference';
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
-## Basic Declaration
+## Basic declaration
 
 A `~timer` **must** specify a unit inside the braces. Fuzzy text like `~{about 10 minutes}` is invalid.
 
@@ -30,7 +30,7 @@ These units are resolved through Gram's multi-language time dictionary: the loca
 
 <GeneratedTable table={timeUnitsTable("en")} />
 
-### Timer Names
+### Timer names
 You can assign a specific name to a `~timer`. This is especially useful for passive tasks: when multiple `~timer` declarations run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
 
 ```gram
@@ -47,7 +47,7 @@ Bake for ~{30-40min}.
 For global timeline calculations (total recipe duration), the compiler automatically uses the average of the range (here, 35 minutes).
 :::
 
-## Active vs Passive
+## Active vs passive
 
 The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a `~timer` requires your full attention or if it runs in the background.
 
@@ -60,7 +60,7 @@ The Gram compiler builds a complete execution timeline (similar to a Gantt chart
 
 :::
 
-### Active (Default)
+### Active (default)
 By default, a `~timer` is active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
 
 ```gram
@@ -78,7 +78,7 @@ Meanwhile, prepare the glaze...
 ```
 > ⏱️ **Result:** Adds 0 minutes to the Active Time, but ensures the **Cook Time** is extended to cover this 45-minute wait.
 
-### Sequential Passive Timers (Named Tracks)
+### Sequential passive timers (named tracks)
 By default, passive timers run in parallel with the rest of your recipe. However, some background tasks cannot physically run at the same time (e.g. baking something for 10 minutes, then lowering the temperature and baking it for another 30 minutes). 
 
 If you want passive timers to run **sequentially** (one after the other), simply give them the **same name**:
@@ -91,7 +91,7 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 
 > ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The total Cook Time increases by 40 minutes, but your Active Time remains untouched.
 
-## How Time is Calculated
+## How time is calculated
 
 Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.
 
@@ -102,7 +102,7 @@ Behind the scenes, Gram computes four distinct time metrics to give you a realis
 4. **Total Time**: The sum of Preparation Time + Cook Time. This is the realistic "time in the kitchen".
 :::
 
-### Cheat Sheet: What adds time?
+### Cheat sheet: what adds time?
 
 Here is a concrete breakdown of how the compiler automatically calculates minutes based on your syntax:
 
@@ -114,12 +114,12 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 | **Passive Timer** (`~_{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
 | **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
 
-### Smart Dependency Tracking (ALAP)
+### Smart dependency tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
 
 For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](/docs/explanation/alap-scheduling).
 
-## Section Retro-Planning
+## Section retro-planning
 
 You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This allows you to indicate to the compiler when that section must end relative to its final use.
 
@@ -152,7 +152,7 @@ The unit is resolved through the same multi-language time dictionary used by `~t
 
 See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
 
-## Error Handling
+## Error handling
 
 The compiler validates `~timer` declarations and section retro-planning annotations to ensure precise scheduling, and will output specific warnings for malformed data:
 

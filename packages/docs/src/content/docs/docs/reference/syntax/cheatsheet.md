@@ -5,7 +5,7 @@ description: "A quick reference table of Gram's syntax: ingredients, cookware, t
 
 A quick reference guide to the Gram syntax.
 
-## Basic Elements
+## Basic elements
 
 | Element | Syntax | Example | Description |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | `-` (Hidden) | `@-sugar` | Hides the `@ingredient` from the generated shopping list. |
 | `*` (Baker's %) | `@*flour{500g}` | Marks the `@ingredient` as the reference (100%) for baker's percentages. |
 
-## Advanced Syntax
+## Advanced syntax
 
 | Feature | Syntax | Example |
 |---|---|---|
@@ -42,7 +42,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Mixed Fraction** | `n n/d` | `@flour{1 1/2 cups}` |
 | **Unicode Fraction** | `½` `¾` … | `@sugar{½ cup}` |
 
-## Intermediate Variables
+## Intermediate variables
 
 Used to declare sub-components (like a dough or sauce) that are referenced later.
 
@@ -51,7 +51,7 @@ Used to declare sub-components (like a dough or sauce) that are referenced later
 | **End of a Step** | `->&name` | `Mix until smooth. ->&dough` | Captures only that step. |
 | **End of a Section**| `->&name` | `## Puff Pastry ->&pastry` | Captures the entire `## Section`. |
 
-## Section Scheduling (Retro-planning)
+## Section scheduling (retro-planning)
 
 Placed anywhere in a section title to indicate preparation timeframe.
 

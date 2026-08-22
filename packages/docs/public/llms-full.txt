@@ -5,9 +5,13 @@
 
 Gram is an open-source declarative, computational recipe DSL (Domain-Specific Language) built for developers.
 
+Most recipe websites are written for search engines and humans, resulting in verbose stories, unstructured ingredient lists, and uncoordinated timers.
+
+**Gram takes a different approach: Recipes as Code.**
+
 Most recipe formats out there are just static blocks of text. Gram takes a different approach: it takes your natural cooking instructions written in plain text and compiles them into structured, calculated, and relational data.
 
-## The Philosophy
+## The philosophy
 
 Cooking is a bit like an algorithm: you take raw ingredients as input and output a finished dish. But to me, it's above all a passion. That's where Gram comes from: I love cooking, and I wanted a tool that combines the rigor of code with creativity in the kitchen. 
 
@@ -28,7 +32,7 @@ If you're building a recipe app, a meal planner, or a smart kitchen dashboard, y
 :::
 
 
-## Designed for Developers
+## Designed for developers
 
 The Gram ecosystem gives you everything you need to treat recipes like software:
 
@@ -147,19 +151,19 @@ Notice how the `[Incorporate]` step uses `<@eggs{6}`? This *composite ingredient
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
 
-## 1. Metadata (Frontmatter)
+## 1. Metadata (frontmatter)
 
 The frontmatter is a **YAML** block at the very start of the file, enclosed by `---`.
 
 The Gram parser accepts **any** key-value pair in this block. You can add custom fields for your own application's needs. However, the Gram Compiler recognizes two types of keys: **Functional** and **Informational**.
 
-### Functional Keys
+### Functional keys
 These keys directly alter how the Gram Compiler processes the recipe:
 
 *   `portions`: (Integer) The baseline number of servings. Divides the [Nutritional Estimation](/docs/explanation/nutrition) into per-portion figures, and is rescaled alongside quantities when a recipe is scaled — so per-portion values stay the same whatever factor you apply. A trailing label (`portions: 4 servings`) is tolerated; a zero or negative count is ignored.
 *   `densities`: (Object) Custom density overrides for specific `@ingredient` items, used by the [Mass Standardization](/docs/explanation/engine/kitchen) algorithm.
 
-### Informational Keys
+### Informational keys
 These keys are recommended for proper display and metadata management:
 
 *   `title`: The recipe name.
@@ -191,7 +195,7 @@ densities:
 ```
 </CodeTabs>
 
-## 2. Module Imports
+## 2. Module imports
 
 *(since v1.2.0)*
 
@@ -218,7 +222,7 @@ the same step.
 A different step.
 ```
 
-### Action Verbs
+### Action verbs
 Steps can optionally start with an **Action** enclosed in brackets `[]`. This highlights the primary method used in that step, making it easy to parse visually or programmatically.
 
 ```gram
@@ -241,7 +245,7 @@ Mix @flour{200g} and @water{100ml} together until smooth.
 Combine @cheese{100g} and @spinach{50g}, then season to taste.
 ```
 
-### Retro-planning (Scheduling)
+### Retro-planning (scheduling)
 You can assign a preparation timeframe to a `## Section` by adding a `~timer`-like annotation anywhere in the title.
 
 ```gram
@@ -252,7 +256,7 @@ Supported suffixes are `d` (days), `h` (hours), `min` or `m` (minutes) — free 
 
 *See [Times & Scheduling](/docs/reference/syntax/times#section-retro-planning) for the full syntax rules and error handling.*
 
-### Section Outputs (Declarations)
+### Section outputs (declarations)
 If a `## Section` produces a sub-component that will be used later in the recipe, you can declare it using `->&` at the end of the title.
 
 ```gram
@@ -284,7 +288,7 @@ Comments are preserved during compilation and are rendered alongside the instruc
 
 Ingredients are the core building blocks of any Gram recipe.
 
-## Basic Declaration
+## Basic declaration
 
 To declare an `@ingredient`, use the `@` symbol. If the `@ingredient` name contains spaces or requires a specific quantity, you **must** append the quantity inside `{}` braces. If it is a single word without a specific quantity, the braces are optional (the quantity defaults to 1).
 
@@ -305,12 +309,12 @@ To specify a unit of measurement (weight, volume, etc.), add it directly after t
 [Place] @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
 ```
 
-## Scaling & Fixed Quantities
+## Scaling & fixed quantities
 
 By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 
 If you scale a recipe from 2 to 4 servings, an `@ingredient` with `{100g}` becomes `{200g}`.
 
-### Fixed Quantities (`=`)
+### Fixed quantities (`=`)
 Some `@ingredient` items (like salt, yeast, or spices) should not scale linearly. You can lock their quantity using the `=` modifier.
 
 ```gram
@@ -318,7 +322,7 @@ Season with @=salt{1 tsp} to taste.
 ```
 This keeps the salt at 1 tsp regardless of how many servings the user calculates.
 
-## Ingredient Modifiers
+## Ingredient modifiers
 
 Gram provides several modifiers to alter how an `@ingredient` behaves in the parser and the shopping list. Modifiers are placed immediately after the `@` symbol.
 
@@ -334,7 +338,7 @@ Gram provides several modifiers to alter how an `@ingredient` behaves in the par
 You can combine modifiers (e.g., `@?-thyme`). However, absurd combinations (e.g. `?*`, `-*`, `-&`) or duplicates (`**`) will generate a compiler warning (`INVALID_MODIFIER_COMBINATION`).
 :::
 
-### Optional and Hidden Modifiers (`?`, `-`)
+### Optional and hidden modifiers (`?`, `-`)
 
 Use `?` to mark an `@ingredient` as optional — useful for garnishes or substitutions the cook may skip. Use `-` to hide an `@ingredient` from the generated shopping list entirely, e.g. something you always have on hand.
 
@@ -342,7 +346,7 @@ Use `?` to mark an `@ingredient` as optional — useful for garnishes or substit
 [Garnish] Sprinkle with @?thyme{} and a pinch of @-salt{} to taste.
 ```
 
-### The Reference Modifier (`&`)
+### The reference modifier (`&`)
 
 The reference modifier is crucial for multi-step recipes. **As a best practice, any time you mention an `@ingredient` after its initial declaration, you should use the `&` modifier.**
 
@@ -364,7 +368,7 @@ Sometimes you need to use the *same* `@ingredient` multiple times with *differen
 [Grease] Use @&butter{50g} to grease the pan. // The shopping list will correctly aggregate 150g of butter.
 ```
 
-### Baker's Percentage (`*`)
+### Baker's percentage (`*`)
 
 In baking, recipes are often built around the **Baker's Percentage**, where the main `@ingredient` (usually flour) represents 100%, and all other items are expressed as a percentage of that weight.
 
@@ -380,9 +384,9 @@ This allows tools (like the CLI or web renderers) to automatically calculate and
 For a full guide on leveraging this feature, see the [How to Scale Recipes Dynamically](/docs/how-to/scale-recipes#bakers-math) guide.
 :::
 
-## Advanced Syntax
+## Advanced syntax
 
-### Short-hand Preparations
+### Short-hand preparations
 Often, an `@ingredient` requires preparation before use. You can define this directly within the declaration using parentheses `()`.
 
 ```gram
@@ -397,7 +401,7 @@ Gram encourages writing dense, data-oriented recipes. Instead of creating dedica
 The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
 :::
 
-### Component Alias (Renaming)
+### Component alias (renaming)
 You can rename an `@ingredient` for display purposes using a colon `:` immediately after the real name. This is useful for keeping the shopping list clean while using a colloquial name in the instructions.
 
 **Format**: `@Real Name:Display Name{Quantity}`
@@ -424,7 +428,7 @@ Aliases are applied locally. To mention this same `@ingredient` again later in t
 This `:` syntax only renames how the ingredient is *displayed* in the rendered steps — it never affects shopping-list grouping. The shopping list and the canonical ingredient id are always derived from the **real name** (before the colon), matched against `ingredients.yaml`'s own `aliases` list — a separate, database-level mechanism used to merge synonyms and cross-language duplicates (e.g. `sugar`/`sucre`/`azúcar`) across recipes, see [Manage an Ingredient Database](/docs/how-to/manage-database). Writing `@egg yolks:eggs{2}` and `@egg whites:eggs{4}` will **not** merge them in the shopping list, even though they share the same display alias `eggs` — they have different real names.
 :::
 
-### Alternatives (Substitutions)
+### Alternatives (substitutions)
 You can define acceptable alternatives for an `@ingredient` using the pipe `|` operator.
 
 ```gram
@@ -455,7 +459,7 @@ Add @flour{1 1/2 cups}.
 Add @butter{1½ sticks}.
 ```
 
-## Error Handling
+## Error handling
 
 The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
 
@@ -471,7 +475,7 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 
 You can define the tools and equipment needed for a recipe using the `#` symbol.
 
-## Basic Declaration
+## Basic declaration
 
 Like an `@ingredient`, if the `#cookware` name is a single word and you only need one of it, you can omit the braces `{}`.
 
@@ -485,11 +489,11 @@ If the name contains spaces or you want to specify a quantity, you must use brac
 Take a #baking sheet{}.
 ```
 
-## Quantities vs Dimensions
+## Quantities vs dimensions
 
 Unlike an `@ingredient` (which can have complex units like grams or cups), `#cookware` has a strict syntax separation between its **count** and its **physical description**.
 
-### 1. Quantity (Integer Count)
+### 1. Quantity (integer count)
 The braces `{}` are strictly reserved for the number of items you need. This must be a pure integer.
 
 ```gram
@@ -497,7 +501,7 @@ The braces `{}` are strictly reserved for the number of items you need. This mus
 #ramekins{4}      // 4 ramekins
 ```
 
-### 2. Dimensions and Materials
+### 2. Dimensions and materials
 To specify the size, dimensions, material, or any other description of the `#cookware`, you must use parentheses `()`.
 
 ```gram
@@ -509,7 +513,7 @@ To specify the size, dimensions, material, or any other description of the `#coo
 Do not put dimensions inside quantity braces (e.g. ❌ `#pan{20cm}`). Gram expects a strict integer inside `{}`. Use parentheses instead: ✅ `#pan(20cm)`.
 :::
 
-## Scaling Behavior
+## Scaling behavior
 
 Unlike an `@ingredient` which usually scales linearly by default, `#cookware` scaling behavior depends on how the quantity is specified:
 
@@ -519,7 +523,7 @@ Unlike an `@ingredient` which usually scales linearly by default, `#cookware` sc
 | **With quantity** | `#pan{1}` or `#ramequins{4}` | **Scalable** | Doubling the recipe asks for 2 pans or 8 ramequins. |
 | **Explicit Fixed** | `#=pan{2}` | **Fixed** | Even if you double the recipe, it will still only ask for 2 pans. |
 
-## Modifiers and Advanced Syntax
+## Modifiers and advanced syntax
 
 `#cookware` supports many of the same advanced syntax features as an `@ingredient`. For a detailed deep-dive on these concepts, refer to the [Ingredients documentation](/docs/reference/syntax/ingredients).
 
@@ -532,7 +536,7 @@ Use a #?wok if you have one, otherwise a #-large pan will do.
 Return to the #&wok to finish the sauce.
 ```
 
-### [Component Alias (Renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
+### [Component alias (renaming)](/docs/reference/syntax/ingredients#component-alias-renaming)
 You can rename `#cookware` for display purposes using the `:` operator.
 
 ```gram
@@ -552,7 +556,7 @@ Cook in a #pan|#wok.
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
-## Basic Declaration
+## Basic declaration
 
 A `~timer` **must** specify a unit inside the braces. Fuzzy text like `~{about 10 minutes}` is invalid.
 
@@ -579,7 +583,7 @@ These units are resolved through Gram's multi-language time dictionary: the loca
 | `m` | `min`, `mins`, `minute`, `minutes` |
 | `s` | `sec`, `secs`, `second`, `seconds` |
 
-### Timer Names
+### Timer names
 You can assign a specific name to a `~timer`. This is especially useful for passive tasks: when multiple `~timer` declarations run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
 
 ```gram
@@ -596,7 +600,7 @@ Bake for ~{30-40min}.
 For global timeline calculations (total recipe duration), the compiler automatically uses the average of the range (here, 35 minutes).
 :::
 
-## Active vs Passive
+## Active vs passive
 
 The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a `~timer` requires your full attention or if it runs in the background.
 
@@ -609,7 +613,7 @@ The Gram compiler builds a complete execution timeline (similar to a Gantt chart
 
 :::
 
-### Active (Default)
+### Active (default)
 By default, a `~timer` is active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
 
 ```gram
@@ -627,7 +631,7 @@ Meanwhile, prepare the glaze...
 ```
 > ⏱️ **Result:** Adds 0 minutes to the Active Time, but ensures the **Cook Time** is extended to cover this 45-minute wait.
 
-### Sequential Passive Timers (Named Tracks)
+### Sequential passive timers (named tracks)
 By default, passive timers run in parallel with the rest of your recipe. However, some background tasks cannot physically run at the same time (e.g. baking something for 10 minutes, then lowering the temperature and baking it for another 30 minutes). 
 
 If you want passive timers to run **sequentially** (one after the other), simply give them the **same name**:
@@ -640,7 +644,7 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 
 > ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The total Cook Time increases by 40 minutes, but your Active Time remains untouched.
 
-## How Time is Calculated
+## How time is calculated
 
 Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.
 
@@ -651,7 +655,7 @@ Behind the scenes, Gram computes four distinct time metrics to give you a realis
 4. **Total Time**: The sum of Preparation Time + Cook Time. This is the realistic "time in the kitchen".
 :::
 
-### Cheat Sheet: What adds time?
+### Cheat sheet: what adds time?
 
 Here is a concrete breakdown of how the compiler automatically calculates minutes based on your syntax:
 
@@ -663,12 +667,12 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 | **Passive Timer** (`~_{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
 | **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
 
-### Smart Dependency Tracking (ALAP)
+### Smart dependency tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
 
 For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](/docs/explanation/alap-scheduling).
 
-## Section Retro-Planning
+## Section retro-planning
 
 You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This allows you to indicate to the compiler when that section must end relative to its final use.
 
@@ -701,7 +705,7 @@ The unit is resolved through the same multi-language time dictionary used by `~t
 
 See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
 
-## Error Handling
+## Error handling
 
 The compiler validates `~timer` declarations and section retro-planning annotations to ensure precise scheduling, and will output specific warnings for malformed data:
 
@@ -722,7 +726,7 @@ You can define `^temperature` declarations in your recipes using the `^` symbol.
 
 Gram supports two formats for a `^temperature` to accommodate both precise baking requirements and subjective stovetop cooking instructions: **Exact Temperatures** and **Semantic Temperatures**.
 
-## Exact Temperatures
+## Exact temperatures
 
 Exact temperatures must specify a numeric value and a valid unit: `C` or `F`, case-insensitive, with or without the leading degree sign (`°C`/`°F`). Whatever spelling you use, the compiler normalizes it to the canonical `°C`/`°F` form in its output.
 
@@ -732,14 +736,14 @@ Preheat the #oven to ^{180C}.
 Bake at ^{350°F} until golden brown.
 ```
 
-### Temperature Names
+### Temperature names
 Just like a `~timer`, you can assign a specific name to a `^temperature`. This is especially useful for clarity, allowing tools (like the CLI) or custom UI renderers to quickly extract and highlight key step information at a glance (e.g. which appliance needs to be set).
 
 ```gram
 Preheat the #oven to ^oven{180°C}.
 ```
 
-## Semantic Temperatures
+## Semantic temperatures
 
 For stovetop cooking or subjective instructions where an exact degree measurement doesn't make sense, you can use semantic `^temperature` strings. This allows you to write generic free-text strings.
 
@@ -755,7 +759,7 @@ When the Gram compiler encounters a `^temperature`, it checks if the content ins
 - If it doesn't, it treats the entire content as a Semantic text string.
 :::
 
-## Error Handling
+## Error handling
 
 Only Celsius and Fahrenheit are supported — no Kelvin or other scales. The compiler validates `^temperature` declarations and will output specific warnings for malformed exact temperatures:
 
@@ -770,11 +774,11 @@ In complex recipes, you often create sub-components (like a dough, a sauce, or a
 
 Once declared, an intermediate `&variable` acts exactly like an `@ingredient`, allowing you to reference it, measure it, or calculate percentages from it.
 
-## Declaring a Variable
+## Declaring a variable
 
 You can declare a `&variable` using the `->&` syntax. There are two places you can declare them: at the end of a **Step**, or at the end of a **Section Title**.
 
-### Step-level Declaration
+### Step-level declaration
 
 When placed at the very end of a step (a paragraph), the `&variable` captures everything produced in that specific step.
 
@@ -784,7 +788,7 @@ When placed at the very end of a step (a paragraph), the `&variable` captures ev
 [Rest] Let the &dough rest for ~_{1h}.
 ```
 
-### Section-level Declaration
+### Section-level declaration
 
 When placed at the end of a `## Section` title, the `&variable` captures the output of the *entire* section. This is perfect for components that take several steps to prepare.
 
@@ -800,7 +804,7 @@ When placed at the end of a `## Section` title, the `&variable` captures the out
 // The `&puff pastry` variable now contains the final result of all the steps above!
 ```
 
-## Using a Variable
+## Using a variable
 
 To use a previously declared `&variable`, simply reference it with `&`. 
 
@@ -820,12 +824,12 @@ When you use an intermediate `&variable` in a later step, it **will** appear in 
 However, it **will not** appear in the global **Shopping List**. The Gram Compiler knows that the `&puff pastry` is made of flour and butter, and it will automatically unpack it and count the raw flour and butter towards your shopping list instead.
 :::
 
-## Advanced Mechanics
+## Advanced mechanics
 
-### Global Scoping
+### Global scoping
 When a `&variable` is declared at the Section-level, it is registered in the **Global Scope**. This means you can declare a `&variable` in the first section of your recipe and safely reference it in the last section.
 
-### Relative Quantities
+### Relative quantities
 As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantities) documentation, you can calculate the mass of an ingredient based on the total mass of an intermediate variable.
 
 ```gram
@@ -834,7 +838,7 @@ As detailed in the [Relative Quantities](/docs/reference/syntax/relative-quantit
 [Add] @salt{2% &dough}.
 ```
 
-## Error Handling
+## Error handling
 
 The compiler helps you maintain clean and conflict-free code by emitting specific warnings:
 
@@ -871,7 +875,7 @@ Add @salt{2% &dough}. // 2% of the total mass of the &dough variable
 - `@name{ value% @&TargetIngredient }`
 - `@name{ value% &TargetVariable }`
 
-## Resolution Rules
+## Resolution rules
 
 When the Gram Compiler calculates a relative quantity, it follows these strict rules:
 
@@ -881,7 +885,7 @@ When the Gram Compiler calculates a relative quantity, it follows these strict r
 | **Accumulation** | If you declare the same `@ingredient` multiple times in a `## Section`, the percentage will be applied to the **total sum** of those quantities. |
 | **Mass-Based** | The calculation is always based on the **weight in grams**. For example, 50% of "2 eggs" (50g each) will output **50g**, not 1 egg. |
 
-## Mass Calculation Rules
+## Mass calculation rules
 
 Since relative quantities rely on computing percentages of existing masses, the analyzer (`@gram-lang/analyzer`) standardizes the masses before calculating:
 
@@ -892,11 +896,11 @@ Since relative quantities rely on computing percentages of existing masses, the 
 | **Count** (`@egg{2}`) | Looks up the average `physical.unit_weight` field in the YAML database. | 2 eggs (50g ea) ➡️ 100g.<br/>`50%` = **50g** |
 | **Unknown** (`1 flask`) | Cannot guess. Emits `UNKNOWN_MASS` warning. | Leaves the quantity unresolved. |
 
-## Shopping List Behavior
+## Shopping list behavior
 
 Because relative quantities are essentially mathematical formulas (e.g., `125% of lemon juice`), the Gram Compiler must decide how to display them in the final **Shopping List**. It does this based on whether it can successfully resolve the formula into a physical mass.
 
-### 1. Fully Resolved (Standard Behavior)
+### 1. Fully resolved (standard behavior)
 
 If the compiler successfully determines the physical mass of the target (using the mass calculation rules above), it evaluates the formula. The result is treated exactly like a fixed physical mass and is seamlessly aggregated into your shopping list. You will not see the internal math, only the final required weight for purchasing.
 
@@ -905,7 +909,7 @@ If the compiler successfully determines the physical mass of the target (using t
 - Sugar: 156g
 ```
 
-### 2. Unresolved & Hybrid Output
+### 2. Unresolved & hybrid output
 
 Sometimes, the compiler cannot evaluate the formula. This happens if you disabled mass standardization globally, or if the target's mass is completely unknown (e.g., the target uses an unstandardized unit like `1 flask`, or it requires a volume-to-mass conversion but the `@ingredient` is missing from your `ingredients.yaml` database).
 
@@ -917,7 +921,7 @@ In this case, Gram cannot give you a final weight in grams. Instead, it falls ba
 ```
 This ensures you never lose purchasing requirements, even if the math cannot be perfectly resolved!
 
-## Error Handling
+## Error handling
 
 The compiler is designed to catch logic errors in relative quantities and will output specific warnings:
 
@@ -925,7 +929,7 @@ The compiler is designed to catch logic errors in relative quantities and will o
 - **Circular Reference**: If an `@ingredient` tries to calculate a percentage of itself (e.g., `@flour{10% @&flour}`), the compiler warns `CIRCULAR_REFERENCE` and outputs `(10% of self) ⚠️`.
 - **Unknown Target Mass**: If the target's mass cannot be resolved from the physical database, the analyzer warns `RELATIVE_QUANTITY_UNKNOWN_MASS` and leaves the output unresolved.
 
-Because a relative quantity's value is always derived from another ingredient, it also can't be used as a [`--scale` reference target](/docs/how-to/scale-recipes#limits-of-reference-scaling) or as the Baker's Percentage base — see [Deep Dive: Scaling](/docs/explanation/scaling) for the full set of rules and error codes shared across both.
+Because a relative quantity's value is always derived from another ingredient, it also can't be used as a [`--scale` reference target](/docs/how-to/scale-recipes#limits-of-reference-scaling) or as the Baker's Percentage base — see [Deep dive: scaling](/docs/explanation/scaling) for the full set of rules and error codes shared across both.
 
 ---
 
@@ -986,11 +990,11 @@ Spaces are **strictly forbidden** around the `<` operator.
 - ✅ `@lemon zest{1}<@lemon`
 :::
 
-## Calculation Rules
+## Calculation rules
 
 How does the compiler actually calculate the total number of lemons you need to buy? It uses three simple rules to automatically optimize your shopping list.
 
-### 1. The Overlap Rule (Different Parts)
+### 1. The overlap rule (different parts)
 If you use different parts of the same parent (like zest and juice), Gram knows they can come from the exact same physical lemon. It takes the **maximum** required amount across those parts.
 
 ```gram
@@ -1000,7 +1004,7 @@ Add @lemon juice{1}<@lemon. // Needs 1 lemon
 ```
 > 🛒 **Shopping List**: 1 Lemon (The single lemon provides both parts).
 
-### 2. The Addition Rule (Same Part)
+### 2. The addition rule (same part)
 If you use the *same* part multiple times across different steps of your recipe, Gram adds them up. You can't magically get two zests from one lemon!
 
 ```gram
@@ -1010,7 +1014,7 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 ```
 > 🛒 **Shopping List**: 2 Lemons.
 
-### 3. Direct Usage Aggregation
+### 3. Direct usage aggregation
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
@@ -1022,7 +1026,7 @@ Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
 > 🛒 **Shopping List**: 3 Lemons.
 
-## Shopping List Output
+## Shopping list output
 
 The resulting shopping list structure handles composite ingredients gracefully, allowing front-end applications to display them hierarchically.
 
@@ -1042,7 +1046,7 @@ For the example above, the JSON output would look like this:
 }
 ```
 
-## Section Ingredient Lists
+## Section ingredient lists
 
 Unlike the shopping list, a section's own ingredient list is flat, not nested — but it still shows which parent a composite child came from, appended in parentheses right after the child's name:
 
@@ -1069,7 +1073,7 @@ The parent's preparation never appears in the shopping list — like any other p
 
 A quick reference guide to the Gram syntax.
 
-## Basic Elements
+## Basic elements
 
 | Element | Syntax | Example | Description |
 |---|---|---|---|
@@ -1090,7 +1094,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | `-` (Hidden) | `@-sugar` | Hides the `@ingredient` from the generated shopping list. |
 | `*` (Baker's %) | `@*flour{500g}` | Marks the `@ingredient` as the reference (100%) for baker's percentages. |
 
-## Advanced Syntax
+## Advanced syntax
 
 | Feature | Syntax | Example |
 |---|---|---|
@@ -1106,7 +1110,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Mixed Fraction** | `n n/d` | `@flour{1 1/2 cups}` |
 | **Unicode Fraction** | `½` `¾` … | `@sugar{½ cup}` |
 
-## Intermediate Variables
+## Intermediate variables
 
 Used to declare sub-components (like a dough or sauce) that are referenced later.
 
@@ -1115,7 +1119,7 @@ Used to declare sub-components (like a dough or sauce) that are referenced later
 | **End of a Step** | `->&name` | `Mix until smooth. ->&dough` | Captures only that step. |
 | **End of a Section**| `->&name` | `## Puff Pastry ->&pastry` | Captures the entire `## Section`. |
 
-## Section Scheduling (Retro-planning)
+## Section scheduling (retro-planning)
 
 Placed anywhere in a section title to indicate preparation timeframe.
 

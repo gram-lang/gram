@@ -1,5 +1,5 @@
 ---
-title: "How to Generate a Weekly Shopping List"
+title: "How to generate a weekly shopping list"
 description: "Generate a single consolidated shopping list from multiple .gram recipes with the gram shop CLI command."
 ---
 
@@ -7,7 +7,7 @@ If you use Gram for meal prepping or batch cooking, you likely have multiple `.g
 
 Generating a single, consolidated shopping list across multiple recipes is one of Gram's most powerful features. The `@gram-lang/kitchen` compiler aggregates ingredients intelligently, fusing quantities when possible.
 
-## The `gram shop` Command
+## The `gram shop` command
 
 Use the CLI `gram shop` command and pass a glob pattern targeting your recipes.
 
@@ -27,7 +27,7 @@ import { Steps } from '@astrojs/starlight/components';
 4. **Categorization**: The final list is sorted by culinary categories (e.g., *Dairy*, *Produce*, *Pantry*) based on your `ingredients.yaml` data, making it easy to navigate a supermarket.
 </Steps>
 
-## Batch Scaling
+## Batch scaling
 
 You can scale your entire meal plan at once. If your recipes are written for 2 portions, but you have 4 guests this week, you can pass a global scale multiplier:
 
@@ -39,7 +39,7 @@ gram shop "menus/week-1/*.gram" --scale 2
 When scaling multiple files at once, you must use a numeric multiplier (`--scale 2`). You cannot scale by a specific ingredient reference (`--scale flour=500g`), as the compiler wouldn't know *which* recipe's flour to target.
 :::
 
-## Output Formats
+## Output formats
 
 By default, `gram shop` outputs a beautifully formatted ASCII list directly in your terminal. 
 

@@ -1,5 +1,5 @@
 ---
-title: "Rendering & Output (@gram-lang/renderer)"
+title: "Rendering & output (@gram-lang/renderer)"
 description: "How @gram-lang/renderer turns compiled recipe JSON into Markdown, HTML, print, and Gantt output."
 ---
 
@@ -7,7 +7,7 @@ Once a recipe has been parsed by `@gram-lang/parser`, compiled by `@gram-lang/ki
 
 The `@gram-lang/renderer` package takes this final enriched JSON object and transforms it into structured Markdown or semantic HTML.
 
-## Rendering Formats
+## Rendering formats
 
 The renderer supports four output formats:
 
@@ -20,14 +20,14 @@ Generates a standalone, semantic HTML document. The HTML renderer is designed wi
 ### 3. Print HTML (`toPrintHTML`)
 Generates a complete, self-contained `<!DOCTYPE html>` document with its own inlined print stylesheet (A4 page size, page-break-aware sections) and a fixed icon set — designed to be opened directly in a browser and printed, with no external stylesheet or asset dependency. Unlike `toHTML`, it does not accept custom `icons`/`classes` overrides, but it does honor `formatDuration`, `formatFraction`, and `hideStepQty`.
 
-### 4. Gantt Chart (`toGanttHTML` + `attachGanttInteractivity`)
+### 4. Gantt chart (`toGanttHTML` + `attachGanttInteractivity`)
 Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/docs/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract.
 
-## Unified Traversal (`RenderBackend`)
+## Unified traversal (`RenderBackend`)
 
 Under the hood, the three document formatters (Markdown, HTML, Print HTML) delegate to a single orchestrator function (`renderRecipe` in `traversal.ts`) which invokes a `RenderBackend` implementation for each format. This guarantees structural parity across those output formats — a title, metadata block, shopping list, cookware section, instructions, footnotes, and nutrition panel are traversed in the exact same sequence regardless of whether you're targeting HTML, Markdown, or Print HTML. The Gantt chart renders a fundamentally different shape of output (a timeline, not a document) and doesn't go through this traversal.
 
-## Usage Example
+## Usage example
 
 ```typescript
 import { toMarkdown, toHTML } from '@gram-lang/renderer';
@@ -77,7 +77,7 @@ const html = toHTML(recipe, {
 - **Duration Formatting**: Converts raw minute integers into human-readable strings (e.g., `90` becomes `1h 30m`).
 - **CSS Pre-styling**: The package ships a `gram.css` stylesheet with live-preview theming (light/dark tokens for each element type, e.g. ingredients, timers) and a `gantt.css` stylesheet for the Gantt chart (loaded alongside `gram.css`, never standalone — it reuses its `--color-*`/`--gray-*`/`--gram-font-*` tokens and dark-mode selector). The dedicated print stylesheet used for `toPrintHTML` is a separate, inlined stylesheet — you don't need to load any CSS file yourself to use print output.
 
-## Direct JSON Consumption
+## Direct JSON consumption
 
 If you are building a modern web app (e.g., using React, Vue, or Svelte), you **do not** have to use `@gram-lang/renderer`.
 

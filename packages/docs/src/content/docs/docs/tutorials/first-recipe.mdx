@@ -1,5 +1,5 @@
 ---
-title: "Tutorial: Your First Complex Recipe"
+title: "Tutorial: Your first complex recipe"
 description: "A step-by-step tutorial writing a complete Lemon Tart recipe using Gram's advanced compiler features."
 ---
 
@@ -10,7 +10,7 @@ Time to bake! In this tutorial, a complete recipe for a **Lemon Tart** is writte
 
 This recipe demonstrates how to move beyond a simple list of ingredients and use Gram's advanced compiler features to write a truly dynamic, scalable, and data-driven recipe.
 
-## Step 1: The Basics (The Dough)
+## Step 1: The basics (the dough)
 
 Start by defining the sweet pastry dough. The `@` symbol is used for ingredients and `#` for cookware.
 
@@ -48,7 +48,7 @@ Notice the `[Action]` tags at the start of each line (e.g., `[Process]`, `[Rest]
 
 Furthermore, this syntax is highly readable. The compiler will automatically extract the ingredients into a shopping list and sum the active time (assuming 2 minutes per step by default) plus the 1-hour timer.
 
-## Step 2: Intermediate Variables
+## Step 2: Intermediate variables
 
 The dough is currently just a list of steps. To use this dough later (to bake it), the compiler must be told that the result of this section is a unified entity.
 
@@ -108,7 +108,7 @@ Now, in the next section, this dough can be referenced using `&name` instead of 
 ```
 </CodeTabs>
 
-## Step 3: Background Timers
+## Step 3: Background timers
 
 In Step 1, the following was written: `[Rest] Wrap in #plastic wrap{} and let it rest in the fridge for ~{1h}`. 
 By default, timers are **active**. The compiler assumes you are actively waiting for 1 hour, and adds it to your *Active Time*.
@@ -126,7 +126,7 @@ But resting dough in the fridge is a passive task. You can do other things while
 
 Now, the compiler will subtract 1 hour from your *Active Time* but keep it in the *Total Time*.
 
-## Step 4: Composite Ingredients
+## Step 4: Composite ingredients
 
 A lemon tart requires lemon zest and lemon juice. If you write `@lemon zest{1 tbsp}` and `@lemon juice{120g}`, the shopping list will treat them as two completely different products. But lemons are bought whole!
 
@@ -158,7 +158,7 @@ Here is the Lemon Curd section:
 
 Because both the zest and the juice point to `<@lemon`, the compiler understands they are different parts of the same parent ingredient. Rather than relying on a database to guess yields, it applies the **MAX Rule**: it looks at the parent quantities required for each *distinct* part (`<@lemon` defaults to 1 for the zest, and `<@lemon{2}` for the juice) and takes the maximum. Here, since `max(1, 2) = 2`, the shopping list will smartly require exactly 2 whole lemons!
 
-## Step 5: Relative Quantities
+## Step 5: Relative quantities
 
 In pastry, precision is key. What if your lemons are particularly juicy and yield 140g of juice instead of the expected 120g? If your sugar was a fixed amount, the curd would become too tart. To ensure the curd is perfectly balanced regardless of the real-life yield, the sugar must dynamically adjust to be exactly 125% of the weight of the juice.
 
@@ -179,7 +179,7 @@ Now, the sugar is strictly bound to the juice. If you adjust the juice amount la
 For a deep dive into how Gram handles complex relative calculations (like using volumes or units as targets), check out the [Relative Quantities](/docs/reference/syntax/relative-quantities) reference.
 :::
 
-## The Final Recipe
+## The final recipe
 
 Here is the complete recipe. Notice how clean and readable it remains, despite packing an incredible amount of logic!
 
@@ -304,18 +304,18 @@ By running `gram view lemon-tart.gram`, the compiler handled all the math and ou
 
 You've just written a highly scalable, data-driven recipe!
 
-## Next Steps
+## Next steps
 
 Now that you've written a complete single-file recipe, explore how to organize multi-file collections and master Gram's syntax:
 
 <CardGrid>
   <LinkCard 
-    title="How-To: Organize Modular Recipes" 
+    title="How-to: organize modular recipes" 
     description="Learn how to extract reusable bases with @use, manage project folders, and configure aliases." 
     href="/docs/how-to/organize-modular-recipes" 
   />
   <LinkCard 
-    title="Language Reference" 
+    title="Language reference" 
     description="Explore the complete grammar specification for ingredients, cookware, timers, and variables." 
     href="/docs/reference/syntax/document-structure" 
   />

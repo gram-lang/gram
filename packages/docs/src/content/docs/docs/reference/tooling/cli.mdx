@@ -1,5 +1,5 @@
 ---
-title: "Command Line Interface (CLI)"
+title: "Command line interface (CLI)"
 description: "Reference for the Gram CLI: installation, global options, and the core commands for compiling and managing recipes."
 ---
 
@@ -25,16 +25,16 @@ The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `
 
 <Since v="1.2.0" /> When a newer version is published on npm, gram prints a short notice after any command finishes (skipped in CI and non-interactive runs). Run `gram upgrade` to check and install it on demand, or silence the passive notice with `gram config set updateCheck false` — or, for a single run, the `GRAM_NO_UPDATE_CHECK` environment variable.
 
-## Global Options
+## Global options
 
 - `--verbose` / `--debug`: works with any command, prints a full stack trace on error instead of just the terse message.
 - `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable item on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
 
 ---
 
-## Core Commands
+## Core commands
 
-### Project Management & Developer Workflow
+### Project management & developer workflow
 
 #### `gram init`
 Scaffolds a new Gram environment in the current directory.
@@ -334,7 +334,7 @@ gram config unset ai.apiKey         # Removes the API key env var from .env
 
 ---
 
-### Database Management
+### Database management
 
 Commands nested under `gram db` to manage your `ingredients.yaml`.
 
@@ -403,7 +403,7 @@ The merge is **alias-aware**: if your database has `butter` with alias `beurre`,
 
 ---
 
-## Configuration File Details
+## Configuration file details
 
 The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
 
@@ -427,7 +427,7 @@ Neither flag writes anything to your config. To change the default for good, use
 
 When `--provider` (or `--pick-model`) selects a provider your config did not name, the `model`, `apiKey` and `baseUrl` written under `ai:` are **not** carried over — they belong to the provider they were written for. You will be asked for the new provider's own environment variable instead. This holds whether your `ai:` block names a different provider or names none at all: a block with no `provider:` belongs to whichever provider Gram would have auto-detected, not to one you picked by hand.
 
-### Cascading AI Configuration
+### Cascading AI configuration
 Gram uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
 1. **Environment Variables**: The variable belonging to the provider in use — `GEMINI_API_KEY`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (from the system or a `.env` file) — takes absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
 2. **`config.yaml` Fallback**: If that variable is missing, Gram falls back to the `ai.apiKey` field in your `config.yaml` — but only when it was written for the provider being called.
@@ -438,7 +438,7 @@ A key is never reused across providers. If you have configured `provider: openai
 Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
 :::
 
-### `config.yaml` Settings
+### `config.yaml` settings
 
 Here is the complete reference of all available settings in `config.yaml`:
 

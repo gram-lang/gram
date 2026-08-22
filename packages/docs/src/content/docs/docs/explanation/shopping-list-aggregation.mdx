@@ -1,5 +1,5 @@
 ---
-title: "Deep Dive: Shopping List Aggregation"
+title: "Deep dive: shopping list aggregation"
 description: "How Gram merges, deduplicates, and resolves units to build an accurate, purchase-ready shopping list."
 ---
 
@@ -7,7 +7,7 @@ When the `@gram-lang/kitchen` package processes an Abstract Syntax Tree (AST), o
 
 This is not a simple concatenation of ingredients. The compiler performs a complex aggregation process to ensure the list is physically accurate and optimized for purchasing.
 
-## The Aggregation Pipeline
+## The aggregation pipeline
 
 When a recipe (or a batch of multiple recipes) is passed to the Kitchen for shopping list generation, the following pipeline executes:
 
@@ -30,12 +30,12 @@ flowchart TD
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
-1. ### ID Normalization and Aliasing
+1. ### ID normalization and aliasing
    `@gram-lang/kitchen` itself groups ingredients purely by the raw id it assigned during parsing (a slug of the name you wrote) — it has no access to `ingredients.yaml` and can't know that `@butter` and `@beurre` refer to the same ingredient. On its own, kitchen's shopping list lists them as two separate entries.
 
    Alias resolution happens one layer up, in `@gram-lang/analyzer`, which does have access to the ingredient database. If `beurre` is listed as an alias of `butter` in `ingredients.yaml`, the analyzer re-groups kitchen's raw entries by this canonical id, merging `@butter` and `@beurre` into a single `butter` entry. **This step only runs when an ingredient database is supplied** — without one (compiling with `@gram-lang/kitchen` alone, or a CLI command run without a database), aliases are not resolved and the two ingredients stay separate.
 
-2. ### Unit Merging
+2. ### Unit merging
    If the grouped ingredients share the same unit (e.g., `100g` and `50g`), they are simply summed (`150g`) — this happens directly in `@gram-lang/kitchen`, no database needed.
 
    If they have different units (e.g., `100g` and `1 cup`), summing them requires converting through mass, which — like aliasing — depends on the ingredient database and therefore happens in `@gram-lang/analyzer`. If every contributing quantity resolves to a mass (density known, from the database or a recipe-level override), the analyzer converts them all to grams and merges them into a single entry.
@@ -46,7 +46,7 @@ import { Steps } from '@astrojs/starlight/components';
    The canonical id (e.g. `butter`) exists purely so entries can be grouped and merged — it's an internal key, not the label shown to the cook. The **name** displayed in a shopping-list entry follows one rule, applied identically everywhere (the Playground, `gram view`, `gram shop`, `gram export`):
 
    | In Recipe | Matched ID | Database `name` | Displayed Name | Why? |
-   | --- | --- | --- | --- | --- |
+   | --- | --- | --- | --- | --- | --- |
    | `@flour` | `flour` (Exact) | Wheat Flour | **Wheat Flour** | Exact match = prefer database's enriched name. |
    | `@farine` (FR) | `flour` (Alias) | Wheat Flour | **farine** | Alias match = keep recipe's wording to preserve language. |
    | `@harina` (ES) | `flour` (Alias) | Wheat Flour | **harina** | The trick works with any language configured in your aliases. |
@@ -57,12 +57,12 @@ import { Steps } from '@astrojs/starlight/components';
    **No database, or no matching entry?** There's simply no canonical `name` to prefer, so the recipe's own wording is always used — this works with an empty database (`{}`), a database that has no entry at all for that ingredient, and with `@gram-lang/kitchen`'s `compile()` used on its own without ever calling `@gram-lang/analyzer`.
    :::
 
-3. ### Ghosting Relative Quantities
+3. ### Ghosting relative quantities
    Relative quantities (like `@water{50% @&flour}`) pose a unique problem for shopping lists, especially in multi-recipe batch processing. 
 
    If you scale the batch, the water quantity depends on a flour quantity that might belong to a specific recipe. To prevent mathematical paradoxes, the Kitchen **ghosts** relative quantities in the shopping list. This means they are excluded from the main aggregation and listed separately as unresolvable dependencies, ensuring the static weights remain mathematically pure.
 
-4. ### Resolving Composites (MAX vs SUM)
+4. ### Resolving composites (MAX vs SUM)
    The most complex part of the aggregation pipeline is handling Composite Ingredients (`<@`). 
 
    When multiple children point to the same parent, the compiler uses two distinct rules to figure out how many parents you need to buy:
@@ -73,6 +73,6 @@ import { Steps } from '@astrojs/starlight/components';
       If the children use the *same part* of the parent (e.g., chicken breast for a salad, and chicken breast for a soup), you cannot reuse the same chicken. The compiler sums the equivalent parent masses required by both children.
 </Steps>
 
-## The Final Output
+## The final output
 The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by stable culinary categories (`CATEGORY_KEYS` from `@gram-lang/i18n`) and sorted according to localized category rules (`getCategoryLabels(lang)`), ready to be rendered in the terminal or a web UI.
 
