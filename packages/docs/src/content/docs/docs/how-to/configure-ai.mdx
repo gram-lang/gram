@@ -28,7 +28,7 @@ Traditional recipes contain many steps that exist only because unstructured text
 - *"In a small bowl, combine salt and pepper and set aside"* → In Gram, this becomes an intermediate variable reference (`&seasoning`).
 - *"Remove from heat and let cool for 30 minutes"* → In Gram, this is a passive rest timer annotation (`~_{30min}`).
 
-A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@juice<@lemon{1}`).
+A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@lemon juice{}<@lemon{1}`).
 
 **AI acts as a domain-aware recipe compiler.** It analyzes unstructured recipe text, extracts the underlying culinary logic, absorbs preparation steps directly into ingredient annotations, restructures the workflow into logical sections, and outputs clean, idiomatic `.gram` code that a human expert recipe author would write.
 

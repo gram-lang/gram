@@ -135,6 +135,31 @@ function processIngredient(
 		const parentId = registry.registerIngredient(item.composite.parent, {
 			is_composite: true,
 		});
+
+		// A bare/generic child name (e.g. `@juice`) slugifies to the same
+		// registry id regardless of which parent it's attached to — so the
+		// same id resolving to two different parents means two physically
+		// different substances are about to share one database entry (and
+		// one nutrition/mass profile). Check before registerIngredient's
+		// unconditional `existing.parent = data.parent` overwrite erases the
+		// evidence.
+		const childId = registry.getIngredientId(item.name);
+		const existingChild = registry.ingredients.get(childId);
+		if (
+			existingChild?.is_composite &&
+			existingChild.parent &&
+			existingChild.parent !== parentId
+		) {
+			pushWarning(ctx, WarningCode.COMPOSITE_PARENT_CONFLICT, {
+				childName: item.name,
+				previousParent:
+					registry.ingredients.get(existingChild.parent)?.name ??
+					existingChild.parent,
+				newParent: item.composite.parent,
+				loc: item.loc,
+			});
+		}
+
 		registry.registerIngredient(item.name, {
 			is_composite: true,
 			parent: parentId,

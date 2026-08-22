@@ -40,6 +40,16 @@ export interface FuzzyMatch {
 	score: number;
 }
 
+// A composite child (e.g. `juice` from `@juice<@lemon`) whose id was seen
+// attached to more than one distinct parent across the synced files (e.g.
+// `@juice<@orange` elsewhere). Both usages would collapse onto the same
+// `ingredients.yaml` entry despite being physically different substances.
+export interface CompositeConflict {
+	id: string;
+	name: string;
+	parents: string[];
+}
+
 export interface DbSyncOptions {
 	dryRun?: boolean;
 	dbPathOverride?: string;
@@ -51,6 +61,7 @@ export interface DbSyncAnalysis {
 	exactMatches: string[];
 	fuzzyMatches: FuzzyMatch[];
 	genuinelyNew: string[];
+	compositeConflicts: CompositeConflict[];
 }
 
 export interface DbSyncResult {

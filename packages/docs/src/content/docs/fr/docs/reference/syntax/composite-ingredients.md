@@ -15,18 +15,26 @@ Un ingrédient composite se déclare via l'opérateur `<` (qui se lit *« provie
 
 **Format** : `@nomEnfant{qtéEnfant}<@nomParent{coûtParent}`
 
-- **`nomEnfant{qtéEnfant}`** : La partie spécifique que vous utilisez dans cette étape (ex : `@jus de citron{100 ml}`). Comme pour tout `@ingrédient`, `{qtéEnfant}` n'est requis que pour un nom à plusieurs mots — un enfant en un seul mot (ex : `@jus`) peut s'en passer complètement : `@jus<@citron{1}`.
+- **`nomEnfant{qtéEnfant}`** : La partie spécifique que vous utilisez dans cette étape. Écrivez son **nom complet**, mot du parent inclus (ex : `@jus de citron{100 ml}`), et non un mot générique isolé — voir [Nommer l'enfant](#nommer-lenfant) ci-dessous pour comprendre pourquoi. Comme pour tout `@ingrédient`, `{qtéEnfant}` n'est requis que pour un nom à plusieurs mots.
 - **`<@nomParent`** : L'article physique que vous achetez réellement au magasin (ex : `<@citron`).
 - **`{coûtParent}`** : *(Optionnel)* La quantité du parent qui est consommée pour obtenir cette partie enfant (ex : `{2}`). Si vous ne l'écrivez pas, la valeur par défaut est `1`.
 
+### Nommer l'enfant
+
+Gram accepte un enfant en un seul mot (`@jus<@citron{1}`). Mais écrivez plutôt son nom complet (`@jus de citron{}<@citron{1}`) : c'est ce nom qui devient l'identité de l'ingrédient dans la base de données partagée (`ingredients.yaml`), utilisée pour la masse, la nutrition et `gram db enrich`.
+
+Cette base ne connaît que l'id de l'enfant, pas son parent. Un `jus` isolé provenant de `@jus<@citron` et un `jus` isolé provenant de `@jus<@orange` dans une autre recette entreraient donc en collision dans la même entrée, alors que le jus de citron et le jus d'orange n'ont rien en commun. Le nom complet (`jus de citron`, `jus d'orange`) évite cette collision — et fusionne en prime avec un usage non composite du même ingrédient ailleurs (ex : un `@jus d'orange{1l}` acheté en brique).
+
+Réservez la forme courte aux cas où l'enfant est un usage ponctuel, jamais suivi nutritionnellement pour lui-même. Le compilateur avertit (`COMPOSITE_PARENT_CONFLICT`) si un même enfant court résout vers deux parents dans une recette, et `gram db sync` fait de même à l'échelle de toute la collection.
+
 L'enfant comme le parent peuvent chacun porter leur propre note de préparation `()`, et ce de manière totalement indépendante :
-- **La préparation de l'enfant** se place juste après son nom (et sa quantité, le cas échéant), avant le `<` : `@jus(filtré)<@citron{1}`.
-- **La préparation du parent** se place juste après son coût (ou son nom, si le coût est omis) : `@jus<@citron{1}(coupé en deux)`.
+- **La préparation de l'enfant** se place juste après son nom (et sa quantité, le cas échéant), avant le `<` : `@jus de citron{}(filtré)<@citron{1}`.
+- **La préparation du parent** se place juste après son coût (ou son nom, si le coût est omis) : `@jus de citron{}<@citron{1}(coupé en deux)`.
 
 Accrochez toujours la préparation à l'élément qu'elle qualifie réellement (l'action subie par la partie extraite *vs* l'action subie par l'ingrédient entier). Les deux peuvent bien sûr se combiner :
 
 ```gram
-Ajouter le @jus{150 ml}(filtré)<@citron{1}(coupé en deux) dans le saladier.
+Ajouter le @jus de citron{150 ml}(filtré)<@citron{1}(coupé en deux) dans le saladier.
 ```
 
 ### Exemple
@@ -74,9 +82,9 @@ Ajouter le @zeste de citron{1}<@citron.  // Nécessite un autre citron
 Si vous utilisez également l'ingrédient parent entier directement (ex : couper un citron entier en quartiers pour décorer), Gram l'ajoute simplement au total optimisé.
 
 ```gram
-Ajouter le @zeste{1}<@citron.  // Couvert par le 1er citron
+Ajouter le @zeste de citron{1}<@citron.  // Couvert par le 1er citron
 
-Ajouter le @jus{1}<@citron.    // Couvert par le 1er citron
+Ajouter le @jus de citron{1}<@citron.    // Couvert par le 1er citron
 
 Couper le @citron{2} en quartiers.       // Nécessite 2 citrons entiers
 ```
@@ -95,8 +103,8 @@ Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
   "name": "citron",
   "qty": 3,
   "usage": [
-    { "id": "zeste", "qty": 1 },
-    { "id": "jus", "qty": 1 },
+    { "id": "zeste-de-citron", "qty": 1 },
+    { "id": "jus-de-citron", "qty": 1 },
     { "id": "citron", "qty": 2, "alias": "Direct Use" }
   ]
 }
@@ -108,17 +116,17 @@ Pour l'exemple ci-dessus, la sortie JSON ressemblerait à ceci :
 
 ```md
 **Ingrédients** :
-- **zeste** (citron)
-- **jus** (citron)
+- **zeste de citron** (citron)
+- **jus de citron** (citron)
 ```
 
-Cette astuce permet d'utiliser des noms raccourcis pour les enfants composites (`@zeste`, `@jus`) sans jamais perdre leur traçabilité vers l'ingrédient parent.
+Cette parenthèse fonctionne de la même façon quel que soit le nom donné à l'enfant — c'est elle qui garde un nom court (`@zeste`, `@jus`) traçable vers son parent si vous en utilisez un. Mais ce n'est qu'une aide d'*affichage* : elle ne change rien à l'identité de l'enfant dans la base de données, ce qui explique pourquoi le nom complet reste le choix par défaut le plus sûr (voir [Nommer l'enfant](#nommer-lenfant) ci-dessus).
 
-Si le parent lui-même a aussi une préparation `()` (ex : `@jus{150 ml}<@citron{1}(coupé en deux)`), elle est repliée dans la même parenthèse, après le nom du parent :
+Si le parent lui-même a aussi une préparation `()` (ex : `@jus de citron{150 ml}<@citron{1}(coupé en deux)`), elle est repliée dans la même parenthèse, après le nom du parent :
 
 ```md
 **Ingrédients** :
-- **jus** (citron, coupé en deux)
+- **jus de citron** (citron, coupé en deux)
 ```
 
 Notez que la préparation du parent n'apparaîtra **jamais** dans la liste de courses globale : au même titre que n'importe quelle autre note de préparation, il s'agit d'une consigne de recette, et non d'un attribut d'achat.

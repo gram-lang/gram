@@ -57,9 +57,9 @@ Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sur macOS) p
 
 ```diff
 - ##    Pâte   ->&pâte
-- Ajouter le @zeste{1} < @citron et le @sel{ 15 g }.
+- Ajouter le @zeste de citron{1} < @citron et le @sel{ 15 g }.
 + ## Pâte ->&pâte
-+ Ajouter le @zeste{1}<@citron et le @sel{15g}.
++ Ajouter le @zeste de citron{1}<@citron et le @sel{15g}.
 ```
 
 ## Améliorations de l'interface de l'éditeur

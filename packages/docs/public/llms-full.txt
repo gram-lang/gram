@@ -941,18 +941,26 @@ You define a composite ingredient using the `<` operator (which can be read as *
 
 **Format**: `@childName{childQty}<@parentName{parentCost}`
 
-- **`childName{childQty}`**: The specific part you are using in this step (e.g., `@lemon juice{100ml}`). Like any other `@ingredient`, `{childQty}` is only required for a multi-word name — a single-word child (e.g. `@juice`) can drop it entirely: `@juice<@lemon{1}`.
+- **`childName{childQty}`**: The specific part you are using in this step. Write its **full name**, parent word included (e.g., `@lemon juice{100ml}`), not a bare generic word — see [Naming the child](#naming-the-child) below for why. Like any other `@ingredient`, `{childQty}` is only required for a multi-word name.
 - **`<@parentName`**: The physical item you actually buy at the store (e.g., `<@lemon`).
 - **`{parentCost}`**: *(Optional)* How much of the parent is consumed to yield this child part (e.g., `{2}`). If you don't write it, it defaults to `1`.
 
+### Naming the child
+
+Gram accepts a bare single-word child (`@juice<@lemon{1}`). But write its full name instead (`@lemon juice<@lemon{1}`): that name becomes the ingredient's identity in the shared database (`ingredients.yaml`), used for mass standardization, nutrition, and `gram db enrich`.
+
+That database only knows the child's id, not its parent. A bare `juice` from `@juice<@lemon` and a bare `juice` from `@juice<@orange` in another recipe would collide into the same entry, even though lemon juice and orange juice have nothing in common. The full name (`lemon juice`, `orange juice`) avoids that collision — and, as a bonus, merges with a plain, non-composite usage of the same ingredient elsewhere (e.g. `@orange juice{1l}` bought as a carton).
+
+Reserve the short form for a child that's a one-off you'll never track nutritionally on its own. The compiler warns (`COMPOSITE_PARENT_CONFLICT`) if the same short child resolves to two different parents within one recipe, and `gram db sync` flags the same collision across your whole recipe collection.
+
 Both the child and the parent can carry their own independent `()` preparation notes:
-- **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@juice(strained)<@lemon{1}`.
-- **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@juice<@lemon{1}(cut in half)`.
+- **Child's preparation** goes right after its name (and quantity, if any), before the `<`: `@lemon juice(strained)<@lemon{1}`.
+- **Parent's preparation** goes right after its cost (or name, if cost is omitted): `@lemon juice<@lemon{1}(cut in half)`.
 
 Attach the preparation to whichever part it actually describes — something done to the extracted part vs something done to the whole item. The two can also combine if both need one:
 
 ```gram
-Add the @juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
+Add the @lemon juice{150ml}(strained)<@lemon{1}(cut in half) to the bowl.
 ```
 
 ### Example
@@ -1000,9 +1008,9 @@ Add @lemon zest{1}<@lemon.  // Needs another lemon
 If you also use the whole parent ingredient directly (e.g., cutting a whole lemon into wedges for garnish), Gram simply adds it to the optimized total.
 
 ```gram
-Add @zest{1}<@lemon.  // Covered by the 1st lemon
+Add @lemon zest{1}<@lemon.  // Covered by the 1st lemon
 
-Add @juice{1}<@lemon. // Covered by the 1st lemon
+Add @lemon juice{1}<@lemon. // Covered by the 1st lemon
 
 Cut @lemon{2} into wedges.  // Needs 2 whole lemons
 ```
@@ -1021,8 +1029,8 @@ For the example above, the JSON output would look like this:
   "name": "lemon",
   "qty": 3,
   "usage": [
-    { "id": "zest", "qty": 1 },
-    { "id": "juice", "qty": 1 },
+    { "id": "lemon-zest", "qty": 1 },
+    { "id": "lemon-juice", "qty": 1 },
     { "id": "lemon", "qty": 2, "alias": "Direct Use" }
   ]
 }
@@ -1034,17 +1042,17 @@ Unlike the shopping list, a section's own ingredient list is flat, not nested �
 
 ```md
 **Ingredients**:
-- **zest** (lemon)
-- **juice** (lemon)
+- **lemon zest** (lemon)
+- **lemon juice** (lemon)
 ```
 
-This lets you write short composite child names (`@zest`, `@juice`) without losing traceability to the parent.
+This parenthetical works the same regardless of how you named the child — it's what keeps a bare short name (`@zest`, `@juice`) traceable to its parent if you do use one. But it's a *display* aid only; it doesn't change the child's underlying database identity, which is why the full name is still the safer default (see [Naming the child](#naming-the-child) above).
 
-If the parent itself also has a `()` preparation (e.g. `@juice{150ml}<@lemon{1}(cut in half)`), it's folded into the same parenthetical, after the parent's name:
+If the parent itself also has a `()` preparation (e.g. `@lemon juice{150ml}<@lemon{1}(cut in half)`), it's folded into the same parenthetical, after the parent's name:
 
 ```md
 **Ingredients**:
-- **juice** (lemon, cut in half)
+- **lemon juice** (lemon, cut in half)
 ```
 
 The parent's preparation never appears in the shopping list — like any other preparation note, it's instructional context for the recipe, not a shopping-list attribute.
@@ -1085,7 +1093,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Short-hand Prep** | `(...)` | `@butter{10g}(room temp)` |
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
-| **Composite** | `<@parent` | `@zest{1}<@lemon` |
+| **Composite** | `<@parent` | `@lemon zest{1}<@lemon` |
 | **Passive Timer** | `~_` | `~_{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
 | **Semantic Temp**| `^{text}` | `^{medium heat}` |
@@ -1205,37 +1213,37 @@ See [Intermediate Variables](/docs/reference/syntax/intermediate-variables) for 
 ❌  [Prep] Cut @lemon{1} in half. Thinly slice one half for garnish.
     [Cook] Squeeze juice from @lemon{1/2} into the pan.
 
-✅  [Cook] Squeeze @juice<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
+✅  [Cook] Squeeze @lemon juice{}<@lemon{1}(cut in half, one half sliced for garnish) into the pan.
 ```
 Any step whose entire purpose is "take X and do Y to it before the real step" should collapse into the ingredient reference of the step that actually uses it, using the `()` preparation shorthand — here it attaches to the composite's parent (`<@lemon{1}(...)`), since "cut in half" describes the lemon, not the juice.
 
 ### "The juice/zest/part of" phrasing instead of composite syntax
 
 ```gram
-❌  the juice from @lemon{1/2}    →   ✅  @juice<@lemon{1/2}
-❌  the zest of @lemon{2}         →   ✅  @zest{1}<@lemon{2}
+❌  the juice from @lemon{1/2}    →   ✅  @lemon juice{}<@lemon{1/2}
+❌  the zest of @lemon{2}         →   ✅  @lemon zest{1}<@lemon{2}
 ```
-[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step.
+[Composite ingredients](/docs/reference/syntax/composite-ingredients) keep the shopping list accurate (the overlap rule: zest + juice from the same lemon still aggregates to one lemon) and remove the need for a standalone prep step. Always give the child its **full name** (parent word included), not a bare generic word like `@juice` — a bare child name becomes its own entry in the shared ingredient database with no memory of which parent it came from, so "juice" from a lemon and "juice" from an orange elsewhere would wrongly collide into one database entry. See [Naming the child](/docs/reference/syntax/composite-ingredients#naming-the-child) for the full reasoning.
 
 ### Spaces around the composite operator
 
 ```gram
-❌  @zest{1} < @lemon{2}
-❌  @zest{1} <@lemon{2}
-✅  @zest{1}<@lemon{2}
+❌  @lemon zest{1} < @lemon{2}
+❌  @lemon zest{1} <@lemon{2}
+✅  @lemon zest{1}<@lemon{2}
 ```
 
 ### Attaching a composite's preparation to the wrong side
 
 ```gram
-❌  @juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
-✅  @juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
+❌  @lemon juice(cut in half, one half sliced for garnish)<@lemon{1}    // says the JUICE was cut in half
+✅  @lemon juice<@lemon{1}(cut in half, one half sliced for garnish)    // says the LEMON was cut in half
 ```
 Both the child and the parent of a composite can carry their own independent `()` preparation:
 - **Child's preparation** goes right after its own name (and quantity, if any).
 - **Parent's preparation** goes right after `<@parentName{parentCost}`.
 
-Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@juice{150ml}(strained)<@lemon{1}(cut in half)`.
+Attach it to whichever one it actually describes — "cut in half" happens to the whole lemon, not to the extracted juice. They can also combine when both genuinely need one: `@lemon juice{150ml}(strained)<@lemon{1}(cut in half)`.
 
 ### A redundant `->&name` when the section title already declares one
 
@@ -1556,6 +1564,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `MISSING_MACROS` | info | `Ingredient "{id}" has no macronutrient data in database — nutritional totals are partial.` |
 | `UNKNOWN_MASS` | info | `Cannot calculate mass for "{id}" — omitted from nutritional totals.` |
 | `INVALID_MODIFIER_COMBINATION` | warning | `Incompatible modifiers on "{item}": {combination}.` |
+| `COMPOSITE_PARENT_CONFLICT` | error | `Composite child "{childName}" was already linked to parent "{previousParent}" — using it with a different parent "{newParent}" here means both will share the same database entry, which is very likely wrong.` |
 | `INVALID_BAKERS_REFERENCE` | warning | `'{item}' cannot be used as the Baker's percentage reference (*).` |
 | `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
 | `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |

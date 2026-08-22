@@ -13,6 +13,7 @@ export enum WarningCode {
 	MISSING_MACROS = "MISSING_MACROS",
 	UNKNOWN_MASS = "UNKNOWN_MASS",
 	INVALID_MODIFIER_COMBINATION = "INVALID_MODIFIER_COMBINATION",
+	COMPOSITE_PARENT_CONFLICT = "COMPOSITE_PARENT_CONFLICT",
 	// Produced by @gram-lang/analyzer (not kitchen itself), but part of the same
 	// shared warning vocabulary that flows through CompilationResult.warnings.
 	INVALID_BAKERS_REFERENCE = "INVALID_BAKERS_REFERENCE",
@@ -79,6 +80,12 @@ export interface WarningPayloads {
 		combination: string;
 		loc?: Location;
 	};
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: {
+		childName: string;
+		previousParent: string;
+		newParent: string;
+		loc?: Location;
+	};
 	[WarningCode.INVALID_BAKERS_REFERENCE]: { item: string };
 	[WarningCode.NO_BAKERS_REFERENCE]: Record<string, never>;
 	[WarningCode.TIME_PARADOX]: {
@@ -129,6 +136,8 @@ export const warningTemplates: {
 		`Cannot calculate mass for "${p.id}" — omitted from nutritional totals.`,
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: (p) =>
 		`Incompatible modifiers on "${p.item}": ${p.combination}.`,
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: (p) =>
+		`Composite child "${p.childName}" was already linked to parent "${p.previousParent}" — using it with a different parent "${p.newParent}" here means both will share the same database entry, which is very likely wrong.`,
 	// These two are pushed directly (by @gram-lang/analyzer) as ready-made
 	// Warning objects rather than through pushWarning(), so their templates are
 	// never actually invoked — they exist only to keep WarningPayloads exhaustive.
@@ -192,6 +201,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.MISSING_MACROS]: "info",
 	[WarningCode.UNKNOWN_MASS]: "info",
 	[WarningCode.INVALID_MODIFIER_COMBINATION]: "warning",
+	[WarningCode.COMPOSITE_PARENT_CONFLICT]: "error",
 	[WarningCode.INVALID_BAKERS_REFERENCE]: "warning",
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",

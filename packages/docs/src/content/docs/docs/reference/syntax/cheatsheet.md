@@ -35,7 +35,7 @@ Modifiers are placed immediately after the `@` or `#` symbol.
 | **Short-hand Prep** | `(...)` | `@butter{10g}(room temp)` |
 | **Alias (Rename)** | `:display` | `@dry white wine:wine{10ml}` |
 | **Relative Qty** | `% @&target` | `@water{70% @&flour}` |
-| **Composite** | `<@parent` | `@zest{1}<@lemon` |
+| **Composite** | `<@parent` | `@lemon zest{1}<@lemon` |
 | **Passive Timer** | `~_` | `~_{1h}` |
 | **Named Timer** | `~name{...}`| `~eggs{3min}` |
 | **Semantic Temp**| `^{text}` | `^{medium heat}` |

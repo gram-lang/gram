@@ -14,6 +14,7 @@ import type {
 	DbSyncOptions,
 	DbSyncAnalysis,
 	FuzzyMatch,
+	CompositeConflict,
 } from "../types";
 
 export async function analyzeIngredients(
@@ -42,6 +43,8 @@ export async function analyzeIngredients(
 						name: string;
 						is_intermediate?: boolean;
 						is_module_synthetic?: boolean;
+						is_composite?: boolean;
+						parent?: string;
 					}
 				>;
 				// `is_module_synthetic` (a `--stock`ed import's per-recipe nutrition
@@ -52,17 +55,50 @@ export async function analyzeIngredients(
 					.filter(
 						(entry) => !entry.is_intermediate && !entry.is_module_synthetic,
 					)
-					.map((entry) => ({ id: entry.id, name: entry.name }));
+					.map((entry) => ({
+						id: entry.id,
+						name: entry.name,
+						// The parent's own registry entry is guaranteed present in
+						// this same file's `reg` whenever a composite child is —
+						// both are registered together in processIngredient().
+						parentName:
+							entry.is_composite && entry.parent
+								? (reg[entry.parent]?.name ?? entry.parent)
+								: undefined,
+					}));
 			}),
 		),
 	);
 
 	const allIds = new Map<string, string>();
+	// id -> (parent name -> seen), across every synced file. A composite
+	// child id attached to more than one distinct parent name means two
+	// physically different substances would collapse onto one
+	// `ingredients.yaml` entry — see CompositeConflict.
+	const compositeParentsById = new Map<string, Set<string>>();
 	for (const batch of itemBatches) {
-		for (const { id, name } of batch) {
+		for (const { id, name, parentName } of batch) {
 			if (!allIds.has(id)) allIds.set(id, name);
+			if (parentName) {
+				if (!compositeParentsById.has(id)) {
+					compositeParentsById.set(id, new Set());
+				}
+				compositeParentsById.get(id)!.add(parentName);
+			}
 		}
 	}
+
+	const compositeConflicts: CompositeConflict[] = [];
+	for (const [id, parents] of compositeParentsById) {
+		if (parents.size > 1) {
+			compositeConflicts.push({
+				id,
+				name: allIds.get(id) ?? id,
+				parents: [...parents].sort(),
+			});
+		}
+	}
+	compositeConflicts.sort((a, b) => a.id.localeCompare(b.id));
 
 	const exactMatches: string[] = [];
 	const fuzzyMatches: FuzzyMatch[] = [];
@@ -85,7 +121,14 @@ export async function analyzeIngredients(
 	fuzzyMatches.sort((a, b) => a.newId.localeCompare(b.newId));
 	genuinelyNew.sort();
 
-	return { dbPath, allIds, exactMatches, fuzzyMatches, genuinelyNew };
+	return {
+		dbPath,
+		allIds,
+		exactMatches,
+		fuzzyMatches,
+		genuinelyNew,
+		compositeConflicts,
+	};
 }
 
 // decisions: Map<newId, 'new' | `alias-of:${existingId}` | 'ignore'>

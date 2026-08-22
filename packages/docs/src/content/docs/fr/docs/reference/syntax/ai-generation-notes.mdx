@@ -96,37 +96,37 @@ Voir [Variables Intermédiaires](/fr/docs/reference/syntax/intermediate-variable
 ❌  [Prép] Couper le @citron{1} en deux. Émincer finement une moitié pour la décoration.
     [Cuisson] Presser le jus de @citron{1/2} dans la poêle.
 
-✅  [Cuisson] Presser le @jus<@citron{1}(coupé en deux, une moitié émincée pour la décoration) dans la poêle.
+✅  [Cuisson] Presser le @jus de citron{}<@citron{1}(coupé en deux, une moitié émincée pour la décoration) dans la poêle.
 ```
 Toute étape dont l'unique but se résume à « prendre X et lui faire subir Y avant l'étape principale » devrait être absorbée directement dans la référence de l'ingrédient de l'étape consommatrice. Utilisez pour cela le modificateur de préparation `()` : ici, on l'accroche au parent du composite (`<@citron{1}(...)`), car le qualificatif « coupé en deux » porte sur le citron entier, non sur son jus.
 
 ### La formulation « le jus/zeste/partie de » au lieu de la syntaxe composite
 
 ```gram
-❌  le jus de @citron{1/2}   →   ✅  @jus<@citron{1/2}
-❌  le zeste de @citron{2}    →   ✅  @zeste{1}<@citron{2}
+❌  le jus de @citron{1/2}   →   ✅  @jus de citron{}<@citron{1/2}
+❌  le zeste de @citron{2}    →   ✅  @zeste de citron{1}<@citron{2}
 ```
-Les [ingrédients composites](/fr/docs/reference/syntax/composite-ingredients) gardent la liste de courses exacte (la règle de chevauchement : zeste + jus du même citron s'agrègent toujours en un seul citron) et suppriment le besoin d'une étape de préparation autonome.
+Les [ingrédients composites](/fr/docs/reference/syntax/composite-ingredients) gardent la liste de courses exacte (la règle de chevauchement : zeste + jus du même citron s'agrègent toujours en un seul citron) et suppriment le besoin d'une étape de préparation autonome. Donnez toujours à l'enfant son **nom complet** (mot du parent inclus), jamais un mot générique isolé comme `@jus` — un nom d'enfant isolé devient sa propre entrée dans la base de données d'ingrédients partagée, sans aucune mémoire du parent d'où il provient : le « jus » d'un citron et le « jus » d'une orange ailleurs entreraient alors à tort en collision dans une seule entrée. Voir [Nommer l'enfant](/fr/docs/reference/syntax/composite-ingredients#nommer-lenfant) pour le raisonnement complet.
 
 ### Des espaces autour de l'opérateur composite
 
 ```gram
-❌  @zeste{1} < @citron{2}
-❌  @zeste{1} <@citron{2}
-✅  @zeste{1}<@citron{2}
+❌  @zeste de citron{1} < @citron{2}
+❌  @zeste de citron{1} <@citron{2}
+✅  @zeste de citron{1}<@citron{2}
 ```
 
 ### Rattacher la préparation d'un composite au mauvais côté
 
 ```gram
-❌  @jus(coupé en deux, une moitié émincée pour la décoration)<@citron{1}    // dit que le JUS a été coupé en deux
-✅  @jus<@citron{1}(coupé en deux, une moitié émincée pour la décoration)    // dit que le CITRON a été coupé en deux
+❌  @jus de citron(coupé en deux, une moitié émincée pour la décoration)<@citron{1}    // dit que le JUS a été coupé en deux
+✅  @jus de citron<@citron{1}(coupé en deux, une moitié émincée pour la décoration)    // dit que le CITRON a été coupé en deux
 ```
 L'enfant et le parent d'un composite peuvent chacun porter leur propre préparation `()`, de manière indépendante :
 - **La préparation de l'enfant** se place juste après son propre nom (et sa quantité, le cas échéant).
 - **La préparation du parent** se place juste après `<@nomParent{coûtParent}`.
 
-Rattachez-la à l'élément que la préparation décrit réellement — « coupé en deux » s'applique au citron entier, pas au jus extrait. Les deux peuvent se combiner quand c'est réellement nécessaire : `@jus{150 ml}(filtré)<@citron{1}(coupé en deux)`.
+Rattachez-la à l'élément que la préparation décrit réellement — « coupé en deux » s'applique au citron entier, pas au jus extrait. Les deux peuvent se combiner quand c'est réellement nécessaire : `@jus de citron{150 ml}(filtré)<@citron{1}(coupé en deux)`.
 
 ### Un `->&nom` redondant quand le titre de section en déclare déjà un
 

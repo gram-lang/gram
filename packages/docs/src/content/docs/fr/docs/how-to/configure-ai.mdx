@@ -28,7 +28,7 @@ Les recettes traditionnelles contiennent de nombreuses étapes qui n'existent qu
 - *"Dans un ramequin, mélanger le sel et le poivre et réserver"* → Dans Gram, cela devient une référence à une variable intermédiaire (`&assaisonnement`).
 - *"Retirer du feu et laisser reposer 30 minutes"* → Dans Gram, c'est une annotation de minuteur passif de repos (`~_{30min}`).
 
-Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus<@citron{1}`).
+Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus de citron{}<@citron{1}`).
 
 **L'IA agit comme un compilateur de recettes intelligent.** Elle lit le texte non structuré, extrait la logique culinaire sous-jacente, absorbe les étapes de préparation dans les déclarations d'ingrédients, réorganise le flux en sections logiques et produit un fichier `.gram` propre et idiomatique, exactement comme le rédigerait un auteur de recettes humain.
 
