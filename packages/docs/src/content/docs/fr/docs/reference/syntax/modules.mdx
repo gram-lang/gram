@@ -1,27 +1,27 @@
 ---
-title: "Imports de Modules"
-description: "Découpez vos recettes en composants réutilisables avec @use, et découvrez comment Gram gère la mise à l'échelle, l'encapsulation et la liste de courses multi-fichiers."
+title: "Imports de modules"
+description: "Apprenez à structurer vos recettes en composants réutilisables grâce à @use : adaptation automatique des quantités, encapsulation des variables et consolidation de la liste de courses."
 ---
 
-import { Tabs, TabItem, CardGrid, Card, LinkCard } from '@astrojs/starlight/components';
+import { Tabs, TabItem, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Une recette peut intégrer un autre fichier `.gram` via la directive `@use` pour en faire un composant réutilisable (une pâte sablée, un bouillon, des blancs d'œufs séparés), évitant ainsi de dupliquer les mêmes étapes d'une recette à l'autre.
+Plutôt que de recopier les mêmes étapes d'une recette à l'autre, vous pouvez factoriser vos préparations de base (pâte sablée, bouillon maison, œufs séparés...) dans des fichiers autonomes et les inclure grâce à la directive `@use`.
 
 ```gram
 ---
 title: 'Tarte au Citron Meringuée'
 ---
 
-@use "./bases/pate-sablee.gram" as &pate
+@use "./bases/pate-sablee.gram" as &pâte
 
 ## Montage
 
-[Foncer] le moule avec &pate{250g}.
+[Foncer] Le #moule avec la &pâte{250g}.
 
-[Garnir] avec @creme-citron{300g}.
+[Garnir] Avec l' &appareil au citron{300g}.
 ```
 
-Les étapes du module s'intègrent naturellement au déroulé global : le temps de repos d'une pâte s'intercale pendant les préparations de la recette principale, tandis que l'ensemble des ingrédients bruts vient enrichir automatiquement la liste de courses.
+Le compilateur se charge d'harmoniser l'ensemble : les temps de repos d'une base s'intercalent judicieusement pendant la préparation du plat principal, et tous les ingrédients bruts sont directement rassemblés dans votre liste de courses.
 
 ---
 
@@ -31,10 +31,10 @@ Les directives `@use` se placent en tête de fichier, immédiatement après le f
 
 <Tabs>
   <TabItem label="Import par défaut">
-    Associe l'export par défaut du module à la variable `&nom` :
+    Associe la préparation principale du module à une variable locale `&nom` :
 
     ```gram
-    @use "./bases/pate-sablee.gram" as &pate
+    @use "./bases/pate-sablee.gram" as &pâte
     ```
   </TabItem>
 
@@ -47,24 +47,24 @@ Les directives `@use` se placent en tête de fichier, immédiatement après le f
   </TabItem>
 
   <TabItem label="Renommage">
-    Renomme un composant importé pour éviter tout conflit de nom dans la recette hôte :
+    Renomme une variable importée afin d'éviter tout conflit de nom dans votre recette :
 
     ```gram
-    @use "./bases/creme.gram" as { &creme as &creme-patissiere }
+    @use "./bases/creme.gram" as { &crème as &crémeux }
     ```
   </TabItem>
 
   <TabItem label="Noms composés">
-    Encadrez avec des accolades `{}` les identifiants comportant des espaces ou des caractères accentués :
+    Entourez d'accolades `{}` les identifiants qui comportent des espaces ou des caractères accentués :
 
     ```gram
-    @use "./bases/feuilletage.gram" as &pate feuilletée{}
-    @use "./bases/feuilletage.gram" as { &detrempe{} as &base-pate }
+    @use "./bases/feuilletage.gram" as &pâte feuilletée{}
+    @use "./bases/feuilletage.gram" as { &détrempe as &base de pâte{} }
     ```
   </TabItem>
 
-  <TabItem label="Planification rétroactive (~{...})">
-    Décale le calendrier du module pour anticiper sa préparation par rapport à la recette hôte :
+  <TabItem label="Décalage temporel (~{...})">
+    Programme le démarrage de la préparation quelques jours ou heures à l'avance :
 
     ```gram
     @use "./bases/levain-chef.gram" as &levain ~{-2d}
@@ -73,27 +73,27 @@ Les directives `@use` se placent en tête de fichier, immédiatement après le f
 </Tabs>
 
 ### Règles sur les chemins d'import (*specifiers*)
-* Le chemin (*specifier*) doit impérativement se terminer par l'extension `.gram`.
-* Formats pris en charge : chemins relatifs (`./`, `../`), racine du projet (`@/`), ou alias configuré (`@alias/`).
-* Les chemins sont strictement confinés à l'arborescence du projet (définie par la présence du dossier `.gram/`) — les chemins absolus système et les URL distantes sont interdits.
+* Le chemin d'accès doit obligatoirement inclure l'extension `.gram`.
+* Trois formats sont pris en charge : chemin relatif (`./`, `../`), racine du projet (`@/`) ou alias personnalisé (`@alias/`).
+* Par sécurité, tous les chemins doivent rester circonscrits à votre projet (le répertoire abritant le dossier `.gram/`) : les chemins absolus sur le disque ou les URL distantes ne sont pas autorisés.
 
 ---
 
 ## Chemins depuis la racine et alias
 
-Les chemins relatifs (`./` et `../`) sont calculés à partir du *dossier contenant le fichier courant*. Lorsque l'arborescence de votre projet s'étoffe, deux solutions élégantes simplifient vos imports :
+Par défaut, les chemins relatifs (`./` et `../`) partent du dossier où se trouve le fichier en cours d'écriture. Pour vous épargner des chemins à rallonge dans les projets plus volumineux, Gram propose deux raccourcis bien pratiques :
 
 <Tabs>
   <TabItem label="Racine du projet (@/)">
-    Le préfixe `@/` pointe toujours vers la racine du projet (le dossier abritant `.gram/`), peu importe l'emplacement du fichier qui effectue l'import :
+    Le préfixe `@/` pointe toujours vers la racine du projet (le dossier abritant `.gram/`), quel que soit l'endroit où est rangée votre recette :
 
     ```gram
-    @use "@/bases/pate-sablee.gram" as &pate
+    @use "@/bases/pate-sablee.gram" as &pâte
     ```
   </TabItem>
 
   <TabItem label="Alias de dossiers (@alias/)">
-    Déclarez des raccourcis de dossiers dans votre fichier `.gram/config.yaml` :
+    Déclarez des raccourcis dans votre fichier `.gram/config.yaml` :
 
     ```yaml
     # .gram/config.yaml
@@ -102,10 +102,10 @@ Les chemins relatifs (`./` et `../`) sont calculés à partir du *dossier conten
       sauces: ./partage/sauces
     ```
 
-    Puis importez directement vos modules avec le préfixe `@alias/` :
+    Puis utilisez-les directement avec le préfixe `@nom-alias/` :
 
     ```gram
-    @use "@bases/pate-sablee.gram" as &pate
+    @use "@bases/pate-sablee.gram" as &pâte
     @use "@sauces/bechamel.gram" as &sauce
     ```
   </TabItem>
@@ -113,31 +113,35 @@ Les chemins relatifs (`./` et `../`) sont calculés à partir du *dossier conten
 
 ---
 
-## Ce qu'un Module Exporte
+## Ce qu'un module exporte
 
-Seules les variables intermédiaires déclarées **au niveau d'une section** (`->&` accolé à un titre `## Section`) sont publiques et exportées. Les variables créées à l'intérieur d'une étape individuelle restent strictement internes et privées au module. Pour plus de détails, consultez [Variables intermédiaires](/fr/docs/reference/syntax/intermediate-variables).
+Un module n'expose que les préparations déclarées **au niveau de ses sections** (`->&` accolé à un titre `## Section`). Toutes les étapes et variables intermédiaires définies à l'intérieur d'une section restent strictement privées au module (voir [Variables intermédiaires](/fr/docs/reference/syntax/intermediate-variables)).
 
 ```gram title="bases/elements-feuilletage-inverse.gram"
 ---
 title: 'Éléments pour feuilletage inversé'
 ---
 
-## Détrempe ->&detrempe
-[Mélanger] la @farine{250g}, l'@eau{120ml}, le @sel{5g} et le @beurre{50g}(fondu). Réserver ~_{2h}.
+## Détrempe ->&détrempe
 
-## Beurre de tourage manié ->&beurre-manie
-[Malaxer] le @beurre{300g}(froid) avec la @farine{100g}. Réserver ~_{1h}.
+[Mélanger] La @farine{250g}, l'@eau{120ml}, le @sel{5g} et le @beurre{50g}(fondu). Réserver ~_{2h}.
+
+## Beurre de tourage manié ->&beurre manié{}
+
+[Malaxer] Le @beurre{300g}(froid) avec la @farine{100g}. Réserver ~_{1h}.
 ```
 
-* **Export par défaut** : lorsqu'un module ne comporte qu'une seule section exportée, elle est automatiquement associée lors d'un import simple `as &nom`. Si le module compte plusieurs sections exportées, l'import simple retombe par défaut sur la production de sa *dernière* section.
-* **Exports déstructurés** : utilisez la syntaxe `as { &a, &b }` pour extraire des préparations spécifiques.
-* **Aucun réexport implicite** : si `sauce.gram` importe `&bouillon` depuis un autre fichier, importer `sauce.gram` ne donnera accès qu'à `&sauce`, pas à `&bouillon`. Toute réexportation doit être explicitement déclarée en sortie d'une section dédiée.
+:::note[Comportement par défaut & réexportations]
+* **Export par défaut :** lorsqu'un module ne comporte qu'une seule section exportée, elle est automatiquement associée lors d'un import simple `as &nom`. Si le module compte plusieurs sections exportées, l'import simple retombe par défaut sur la production de sa *dernière* section.
+* **Sélection précise (déstructuration) :** utilisez la syntaxe `as { &a, &b }` pour récupérer nominativement les préparations qui vous intéressent.
+* **Aucun réexport implicite :** si `sauce.gram` utilise un `&bouillon` venu d'ailleurs, importer `sauce.gram` ne donnera accès qu'à la sauce, jamais au bouillon. Toute réexportation doit être explicitement déclarée en sortie d'une section.
+:::
 
 ---
 
-## Mise à l'échelle
+## Ajustement des proportions
 
-Gram calcule automatiquement le rendement d'un module en faisant la somme de ses ingrédients — aucune déclaration manuelle n'est nécessaire :
+Gram détermine automatiquement le rendement d'une préparation de base en additionnant le poids de ses ingrédients : vous n'avez aucun calcul à renseigner.
 
 ```gram title="bases/pate-sablee.gram"
 ---
@@ -145,129 +149,147 @@ title: 'Pâte Sablée'
 ---
 
 ## Pâte
-Mélanger @farine{300g} avec @beurre{200g}.
+
+[Mélanger] La @farine{300g} avec le @beurre{200g}.
 ```
 
-Dans cet exemple, les ingrédients de `pate-sablee.gram` totalisent 500 g. Lorsqu'une recette hôte demande `&pate{250g}`, Gram applique automatiquement un coefficient de `0.5` à chaque ingrédient — soit le ratio exact entre la quantité requise et la masse totale du module.
+Ici, la pâte totalise 500 g d'ingrédients bruts. Si votre recette n'en réclame que `&pâte{250g}`, Gram calcule le ratio (250 / 500 = 0,5) et divise spontanément chaque ingrédient par deux.
 
-:::note[Quand le rendement repose sur une estimation]
-Si le calcul de la masse du module dépend d'une densité estimée ou d'un poids unitaire moyen plutôt que d'une masse explicite en grammes, Gram émet l'avertissement `ESTIMATED_MODULE_YIELD` pour signaler que le facteur d'échelle appliqué est une approximation.
+:::note[Rendement basé sur une estimation]
+Si certains ingrédients utilisent des volumes ou des unités approximatives (sans grammage direct), Gram s'appuie sur sa table de densités et émet un avertissement informatif `ESTIMATED_MODULE_YIELD` pour signaler que le calcul des proportions repose sur une estimation.
 :::
 
-### Mise à l'échelle des liaisons déstructurées
-Lorsque plusieurs composants d'un même module sont importés, chaque préparation est évaluée individuellement (selon les ingrédients de sa section et ses éventuelles références). Si des ratios différents sont demandés, c'est le **ratio le plus élevé** qui s'applique à l'ensemble du module, et Gram signale l'excédent de production :
+### Ajustement des proportions lors d'exports multiples
 
-```gram title="bases/oeufs.gram"
+Quand une recette demande plusieurs préparations issues du même fichier, Gram calcule le besoin pour chacune d'entre elles. Si ces éléments nécessitent des proportions différentes, c'est toujours **le coefficient le plus fort** qui dicte la production globale du module, afin de ne jamais manquer d'ingrédients :
+
+```gram title="bases/elements-feuilletage-inverse.gram"
 ---
-title: 'Œufs séparés'
+title: 'Éléments pour feuilletage inversé'
 ---
 
-## Blancs ->&blancs
-[Séparer] les @œufs{100g} pour ne garder que les blancs.
+## Détrempe ->&détrempe
 
-## Jaunes ->&jaunes
-[Séparer] les @œufs{50g} pour ne garder que les jaunes.
+[Mélanger] La @farine{250g}, l'@eau{120ml}, le @sel{5g} et le @beurre{50g}(fondu). Réserver ~_{2h}.
+
+## Beurre de tourage manié ->&beurre manié{}
+
+[Malaxer] Le @beurre{300g}(froid) avec la @farine{100g}. Réserver ~_{1h}.
 ```
 
 ```gram
-@use "./bases/oeufs.gram" as { &blancs, &jaunes }
+@use "./bases/elements-feuilletage-inverse.gram" as { &détrempe, &beurre manié{} }
 
-[Fouetter] &blancs{200g} et &jaunes{50g}.
+## Tourage
+
+[Enchâsser] La &détrempe{850g} dans le &beurre manié{400g}.
 ```
 
-Demander `&blancs{200g}` pour une base mesurée à 100 g de blancs donne un ratio de ×2 ; demander `&jaunes{50g}` pour 50 g de jaunes donne un ratio de ×1. Le ratio maximal (×2) s'applique à la totalité du module : les jaunes sont donc produits à hauteur de 100 g pour 50 g réellement utilisés. Gram signale ce surplus via l'avertissement `MODULE_SURPLUS` au lieu de l'ignorer silencieusement.
+Pour obtenir 850 g de détrempe à partir d'une base mesurée à 425 g, il faut doubler la préparation (facteur ×2). En revanche, 400 g de beurre manié ne demandent qu'un facteur ×1 face aux 400 g de base. Pour garantir la quantité de détrempe requise, Gram applique le multiplicateur maximal (×2) à l'ensemble du module : il produira donc 800 g de beurre manié pour les 400 g réellement utilisés.
+
+:::caution[Surplus de production (`MODULE_SURPLUS`)]
+Lorsque des quantités asymétriques forcent Gram à appliquer le multiplicateur le plus élevé, le compilateur signale automatiquement la portion excédentaire générée (ici 400 g de beurre manié) via l'avertissement `MODULE_SURPLUS` au lieu de l'ignorer silencieusement.
+:::
 
 ### Durées et calcul par fournées
-**Les minuteurs de cuisson et de repos ne sont jamais mis à l'échelle.** Doubler la quantité d'une pâte à cookies ne modifie en rien sa durée de cuisson au four.
 
-Lorsqu'un nombre entier d'unités est demandé pour un module dont le rendement est mesuré en masse (`&cookies{2}` face à un module totalisant 500 g), Gram l'interprète comme *2 fournées complètes* et émet le diagnostic `MODULE_BATCH_INTERPRETATION`.
+**Les temps de cuisson et de repos restent invariables.** Doubler les proportions d'une pâte à cookies ne multiplie pas son temps au four.
+
+Si vous demandez une quantité sans unité (`&cookies{2}`) pour un module dont la recette est exprimée en grammes, Gram comprend que vous souhaitez réaliser *deux fournées complètes* de la préparation et l'indique par le diagnostic `MODULE_BATCH_INTERPRETATION`.
 
 ---
 
 ## Chaînage d'imports et transitivité
 
-Les modules peuvent s'importer en cascade :
+Vous pouvez imbriquer des modules les uns dans les autres sans restriction :
 
 ```gram
 recette.gram ──▶ @use "./sauce.gram" ──▶ @use "./bouillon.gram"
 ```
 
-* **Encapsulation stricte** : `recette.gram` interagit uniquement avec `&sauce`. Les variables internes et détails de fabrication de `bouillon.gram` demeurent parfaitement isolés.
-* **Planning et courses unifiés** : Tous les ingrédients bruts (viandes, aromates, légumes) et les temps de mijotage du bouillon remontent naturellement dans le planning global et la liste de courses consolidée.
+* **Étanchéité complète :** `recette.gram` ne communique qu'avec `&sauce`. Les détails de fabrication du bouillon restent cantonnés à son fichier.
+* **Consolidation automatique :** Les ingrédients bruts (viande, légumes, aromates) et le temps de mijotage du bouillon sont automatiquement intégrés à la liste de courses et au rétro-planning global.
 
 ---
 
 ## Dépendances en diamant et détection de cycles
 
-### Dépendances partagées (en diamant)
-Lorsqu'un menu importe plusieurs plats partageant une même préparation de base (par exemple une entrée et un dessert qui utilisent tous deux `pate-sablee.gram`) :
-* Le fichier de base partagé n'est lu et analysé **qu'une seule fois**.
-* Le compilateur génère des instances indépendantes, mises à l'échelle pour chaque plat selon ses besoins.
-* Les ingrédients bruts (farine, beurre) sont automatiquement consolidés et sommés sur votre liste de courses.
+### Modules partagés (dépendances en diamant)
 
-### Détection des cycles
-Si la recette A importe B et que B tente d'importer A, Gram détecte immédiatement la dépendance circulaire et s'arrête avec une erreur `MODULE_CYCLE` retraçant l'intégralité du cycle (`A -> B -> A`).
+Si plusieurs plats d'un même menu font appel à la même préparation de base (par exemple une quiche et une tarte sucrée utilisant chacune `pate-sablee.gram`) :
+* Le fichier de base n'est analysé **qu'une seule fois**.
+* Le compilateur dimensionne séparément les quantités nécessaires pour chaque recette.
+* Les ingrédients bruts (farine, beurre) sont additionnés de manière transparente dans la liste de courses globale.
+
+### Détection des dépendances circulaires
+
+:::danger[Cycles interdits (`MODULE_CYCLE`)]
+Si une recette A importe B et que B tente d'importer A (directement ou indirectement), Gram bloque immédiatement la dépendance circulaire et interrompt la compilation avec une erreur explicite `MODULE_CYCLE` affichant la boucle (`A -> B -> A`).
+:::
 
 ---
 
 ## Encapsulation
 
-* **Portée par section** : Les quantités relatives (`@eau{70% @&farine}`) et les relations entre ingrédients se résolvent exclusivement au sein des sections propres au module. Aucun risque de collision de noms avec la recette hôte.
-* **Modules sans en-tête de section** : Un module dépourvu de titres `##` est encapsulé dans sa propre section dédiée lors de l'import — ses étapes ne fusionnent jamais avec les étapes non sectionnées de l'hôte.
+* **Portée confinée à chaque section :** Les pourcentages et quantités relatives (`@eau{70% @&farine}`) s'appliquent exclusivement au sein des sections du module. Même si la recette principale utilise de la farine ou de l'eau, aucun conflit de variable ne peut survenir.
+* **Modules sans titre de section :** Lorsqu'un fichier importé ne contient aucun titre `##`, Gram l'isole automatiquement dans une section distincte. Ses étapes ne risquent pas de se mélanger avec celles du plat principal.
 
 ---
 
 ## Héritage du Frontmatter
 
-Les métadonnées déclaratives (`title`, `description`, `author`, `tags`, `category`) appartiennent exclusivement à la recette hôte — importer une base étiquetée `vegan` ne confère pas l'attribut « vegan » à une tarte aux œufs.
+Les informations générales du frontmatter (`title`, `description`, `author`, `tags`, `category`) restent propres à la recette principale : importer une pâte étiquetée `vegan` ne transformera pas magiquement votre plat en recette végane si vous y ajoutez de la viande.
 
 **Cas particuliers :**
-* `densities:` fusionne avec les données de l'hôte (les valeurs déclarées dans l'hôte prévalent en cas de conflit).
-* Les pourcentages boulangers (`*`) déclarés dans les modules importés sont ignorés lors de l'import pour préserver les calculs de l'hôte.
+* **Tables de densités (`densities:`) :** les valeurs définies dans un module sont fusionnées avec celles de la recette principale. En cas de doublon, c'est la valeur de la recette hôte qui l'emporte.
+* **Pourcentages boulangers (`*`) :** la référence de farine (`*`) définie dans un module reste cantonnée à celui-ci et n'altère pas les calculs de la recette appelante.
 
 ---
 
 ## Utiliser un composant en stock (`--stock`)
 
-Lorsqu'un composant est déjà disponible (acheté tout prêt dans le commerce ou cuisiné la veille), indiquez l'option `--stock` à la CLI pour ne pas réafficher sa préparation :
+Si vous avez déjà préparé une base la veille ou si vous utilisez un produit du commerce, l'option `--stock` permet de l'indiquer à la ligne de commande pour adapter le rendu :
 
 ```bash
 gram shop diner.gram --stock @bases/bouillon.gram
 gram cook diner.gram --stock @bases/bouillon.gram
 ```
 
-* **Chronologie (Gantt)** : Les étapes de préparation du module en stock sont masquées du planning.
-* **Liste de courses** : Le module apparaît sous la forme d'un produit fini à acheter (ex. `1 bouillon`) plutôt que sous forme d'ingrédients bruts détaillés.
-* **Nutrition** : Les apports caloriques et macronutriments exacts sont fidèlement préservés.
+* **Planning et chronologie (Gantt) :** les étapes de confection de la base sont masquées.
+* **Liste de courses :** le composant apparaît comme un article unique à acheter (ex. `1 bouillon`) au lieu d'énumérer ses ingrédients élémentaires.
+* **Valeurs nutritionnelles :** le profil calorique et nutritionnel reste parfaitement exact, calculé à partir de la composition réelle du module.
 
-Cette option est prise en charge par l'ensemble des commandes CLI qui résolvent `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`).
+Cette option fonctionne avec toutes les commandes CLI qui traitent les imports (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`).
 
 ---
 
 ## Décaler une préparation dans le temps (`~{-2d}`)
 
-Lorsqu'une préparation fraîche doit être lancée en amont (ex. rafraîchissement d'un levain, marinade longue), indiquez ce décalage temporel directement sur la directive `@use` :
+Certaines préparations doivent être démarrées bien avant le reste du plat (rafraîchir un levain deux jours plus tôt, faire mariner une viande 24 h). Vous pouvez renseigner cette avance directement sur la directive `@use` :
 
 ```gram
 @use "./bases/levain.gram" as &levain ~{-2d}
 
 ## Pain
-[Pétrir] avec le &levain{150g}.
+
+[Pétrir] Avec le &levain{150g}.
 ```
 
-* La clause `~{...}` définie au niveau de l'importateur l'emporte sur toute planification rétroactive déclarée au sein de la base (ce qui déclenche l'avertissement `RETRO_PLANNING_OVERRIDE_SHADOWED`).
-* Associer `--stock` et `~{...}` sur le même import émet l'avertissement `STOCKED_RETRO_PLANNING_IGNORED` (la préparation étant déjà prête, le décalage temporel devient sans objet).
+:::tip[Priorité du décalage temporel]
+* Le décalage temporel `~{...}` précisé à l'import est prioritaire sur les éventuels minuteurs internes de la base (ce qui émet l'avertissement informatif `RETRO_PLANNING_OVERRIDE_SHADOWED`).
+* Si vous combinez `--stock` et un décalage `~{...}` sur le même import, le décalage est ignoré puisque le produit est déjà prêt, et Gram le signale via `STOCKED_RETRO_PLANNING_IGNORED`.
+:::
 
 ---
 
 ## Prise en charge dans l'éditeur et serveur de langage (LSP)
 
-Le serveur de langage Gram (LSP) résout les directives `@use` en direct pendant votre saisie :
+Le serveur de langage Gram (LSP) interprète les directives `@use` en continu pendant que vous écrivez vos recettes :
 
-* **Diagnostics instantanés** : Validation cohérente et détection d'erreurs entre tous vos fichiers en temps réel.
-* **Gantt et aperçu en direct** : Planning global tenant compte des durées imbriquées et de la mise à l'échelle.
-* **Aller à la définition** : Cliquer sur `&pate` ouvre directement le fichier de la base à la section exportée correspondante.
-* **Autocomplétion intelligente** : Saisir `@use "` suggère automatiquement `./`, `../`, `@/`, ainsi que les alias configurés dans `paths:`.
+* **Contrôle en temps réel :** vérification instantanée des liens entre fichiers et signalement des erreurs de syntaxe.
+* **Aperçu et chronologie dynamiques :** mise à jour en direct de la frise de Gantt, en tenant compte des étapes imbriquées et de l'ajustement des quantités.
+* **Navigation rapide (« Aller à la définition ») :** un simple clic sur une variable comme `&pâte` ouvre directement le fichier source à la section correspondante.
+* **Autocomplétion intelligente :** dès que vous tapez `@use "`, l'éditeur vous propose les chemins relatifs (`./`, `../`), la racine (`@/`) ainsi que vos alias `paths:`.
 
 ---
 

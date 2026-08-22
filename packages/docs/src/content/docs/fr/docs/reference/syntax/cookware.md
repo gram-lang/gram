@@ -43,13 +43,13 @@ Pour préciser la taille, les dimensions, le matériau ou tout autre qualificati
 Ne mettez pas les dimensions à l'intérieur des accolades de quantité (ex : ❌ `#poêle{20cm}`). Gram attend un entier strict à l'intérieur de `{}`. Utilisez plutôt des parenthèses : ✅ `#poêle(20cm)`.
 :::
 
-## Comportement de Mise à l'échelle
+## Ajustement selon les portions
 
-Contrairement à un `@ingrédient` dont les quantités sont par défaut proportionnelles au nombre de portions, le comportement de mise à l'échelle (*scaling*) du `#matériel` dépend de la façon dont sa quantité a été formulée :
+Contrairement à un `@ingrédient` dont les quantités sont par défaut proportionnelles au nombre de portions, l'adaptation du `#matériel` lors d'un changement de portions dépend de la façon dont sa quantité a été formulée :
 
-| Format | Exemple | Comportement | Description |
-| :--- | :--- | :--- | :--- |
-| **Sans quantité** | `#poêle` | **Fixe** | Ne se met pas à l'échelle. |
+| Forme | Exemple | Type | Comportement lors de l'ajustement |
+| --- | --- | --- | --- |
+| **Sans quantité** | `#poêle` | **Fixe** | Ne varie pas avec les portions. |
 | **Avec quantité** | `#poêle{1}` ou `#ramequins{4}` | **Évolutif** | Doubler la recette demandera 2 poêles ou 8 ramequins. |
 | **Fixe Explicite** | `#=poêle{2}` | **Fixe** | Même si vous doublez la recette, elle ne demandera toujours que 2 poêles. |
 

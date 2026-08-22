@@ -58,8 +58,8 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
     Wrap names containing spaces or special characters in `{}`:
 
     ```gram
-    @use "./bases/puff-pastry.gram" as &puff pastry{}
-    @use "./bases/puff-pastry.gram" as { &water dough{} as &detrempe }
+    @use "./bases/poached-chicken.gram" as &poached chicken{}
+    @use "./bases/poached-chicken.gram" as { &shredded meat{} as &chicken }
     ```
   </TabItem>
 
@@ -117,16 +117,16 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
 
 Only **section-level** intermediate variables (`->&` on a `## Section` header) are exported. Step-level intermediates (`->&` inside a step) remain private to the module. See [Intermediate Variables](/docs/reference/syntax/intermediate-variables).
 
-```gram title="bases/inverted-puff-pastry.gram"
+```gram title="bases/poached-chicken.gram"
 ---
-title: 'Inverted Puff Pastry Elements'
+title: 'Poached Chicken & Broth'
 ---
 
-## Water Dough ->&detrempe
-[Mix] @flour{250g}, @water{120ml}, @salt{5g}, and @butter{50g}(melted). Chill for ~_{2h}.
+## Shredded Chicken ->&meat
+[Poach] The @whole chicken{1.5kg} with aromatics in water for ~{45min}. [Shred] the meat once cooled.
 
-## Tourage Butter Block ->&beurre-manie
-[Knead] @butter{300g}(cold) with @flour{100g} into a block. Chill for ~_{1h}.
+## Golden Broth ->&broth
+[Strain] and [simmer] the cooking liquid for ~{15min} to concentrate flavor.
 ```
 
 * **Default Export**: A module with a single section export binds that target when using `as &name`. A module with multiple exports defaults to the output of its *last* section.
@@ -157,25 +157,27 @@ If working out a module's mass depends on an estimated density or a default unit
 ### Scaling Destructured Exports
 When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
 
-```gram title="bases/oeufs.gram"
+```gram title="bases/poached-chicken.gram"
 ---
-title: 'Eggs, Separated'
+title: 'Poached Chicken & Broth'
 ---
 
-## Blancs ->&blancs
-[Separate] @egg{100g} into whites only.
+## Shredded Meat ->&meat
+[Poach] The @whole chicken{1.5kg} with aromatics. [Shred] the meat (yields ~500g).
 
-## Jaunes ->&jaunes
-[Separate] @egg{50g} into yolks only.
+## Golden Broth ->&broth
+[Strain] and [simmer] the cooking liquid (yields ~1000g).
 ```
 
 ```gram
-@use "./bases/oeufs.gram" as { &blancs, &jaunes }
+@use "./bases/poached-chicken.gram" as { &meat, &broth }
 
-[Whisk] &blancs{200g} and &jaunes{50g}.
+## Risotto
+[Cook] The @arborio rice{400g} with the &broth{2000g}.
+[Top] With the shredded &meat{500g}.
 ```
 
-`&blancs{200g}` against a measured 100g of blancs is a ×2 ratio; `&jaunes{50g}` against a measured 50g of jaunes is ×1. The larger ratio (×2) applies to the whole module, so jaunes comes out to 100g produced against the 50g actually used — Gram reports that surplus via `MODULE_SURPLUS` rather than silently discarding it.
+`&broth{2000g}` against a measured 1000g of broth requires a ×2 ratio; `&meat{500g}` against 500g of meat requires ×1. The larger ratio (×2) applies to the whole module, so meat comes out to 1000g produced against the 500g actually used — Gram reports that surplus via `MODULE_SURPLUS` rather than silently discarding it.
 
 ### Timers & Batches
 **Cooking and resting times are never scaled.** Doubling a cookie dough does not double or halve the baking duration.
