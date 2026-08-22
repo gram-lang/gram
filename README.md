@@ -35,6 +35,7 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to g
 Gram turns plain-text recipes into structured, queryable data while keeping them easy to read and write.
 
 * **Plain Text**: Recipes are saved as simple `.gram` text files, so you can track changes with Git and use any text editor.
+* **Modular Recipes (`@use`)**: Import and compose external base recipes (`@use "./bases/shortcrust.gram" as &crust`) with automatic yield scaling, timeline interleaving, and unified shopping lists.
 * **Dynamic Calculations**: Declare Baker's percentages, relative quantities (`@water{75% @&flour}`), and automatic unit conversions directly in your recipe.
 * **Step References & Variables**: Reuse intermediate preparations (`->&dough`) and sub-ingredients (`<@lemons{2}`) without messing up shopping list totals.
 * **Timers & Gantt Charts**: Separate active steps (`~{10min}`) from background waiting times (`~_{2h}`) to generate recipe timelines and Gantt charts.
@@ -112,6 +113,7 @@ This monorepo is divided into specialized packages under `packages/`:
 | Package | Version | Description |
 |---|---|---|
 | [**`@gram-lang/parser`**](./packages/parser/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/parser?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/parser) | The core parser using Ohm.js to generate the AST. |
+| [**`@gram-lang/modules`**](./packages/modules/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/modules?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/modules) | Resolves `@use` imports and composes multi-file recipe ASTs. |
 | [**`@gram-lang/kitchen`**](./packages/kitchen/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/kitchen?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/kitchen) | The compiler logic, transforming the AST into final JSON structures. |
 | [**`@gram-lang/format`**](./packages/format/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/format?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/format) | Canonical `.gram` source code formatter. |
 | [**`@gram-lang/analyzer`**](./packages/analyzer/README.md) | [![npm](https://img.shields.io/npm/v/@gram-lang/analyzer?color=cb3837&style=flat-square)](https://www.npmjs.com/package/@gram-lang/analyzer) | The physical resolver for mass normalization, yield, and nutrition. |
