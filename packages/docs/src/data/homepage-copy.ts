@@ -75,9 +75,9 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		recipeFileName: "lemon-curd.gram",
 		recipeCode: `## Lemon Curd
 
-[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @eggs{2}, and @sugar{120% @&lemon juice} in a #saucepan{}. ->&base{}
+[Mix] Whisk @lemon juice{100 g}<@lemons{3}, @eggs{2}, and @sugar{120% @&lemon juice} in a #saucepan{}. ->&base
 
-[Cook] Heat the &base{} to ^{82C} over medium heat for ~{5m}.
+[Cook] Heat the &base to ^{82C} over medium heat for ~{5m}.
 
 [Emulsify] Remove from heat and blend in @butter{120 g}. Chill for ~_fridge{2h}.`,
 
@@ -359,9 +359,9 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		recipeFileName: "cremeux-citron.gram",
 		recipeCode: `## Crémeux Citron
 
-[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @œufs{2}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base{}
+[Mélanger] Fouetter le @jus de citron{100 g}<@citrons{3}, les @œufs{2}, et le @sucre{120% @&jus de citron} dans une #casserole{}. ->&base
 
-[Cuire] Chauffer la &base{} à ^{82C} sur feu moyen pendant ~{5m}.
+[Cuire] Chauffer la &base à ^{82C} sur feu moyen pendant ~{5m}.
 
 [Emulsionner] Retirer du feu et incorporer le @beurre{120 g}. Réserver au frais pendant ~_frigo{2h}.`,
 

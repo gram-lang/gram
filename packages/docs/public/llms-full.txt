@@ -3,13 +3,9 @@
 
 <!-- Source: https://gram-lang.org/docs/explanation/philosophy -->
 
-Gram is an open-source declarative, computational recipe DSL (Domain-Specific Language) built for developers.
+Gram is an open-source declarative DSL (*Domain-Specific Language*) for cooking recipes, built for developers.
 
-Most recipe websites are written for search engines and humans, resulting in verbose stories, unstructured ingredient lists, and uncoordinated timers.
-
-**Gram takes a different approach: Recipes as Code.**
-
-Most recipe formats out there are just static blocks of text. Gram takes a different approach: it takes your natural cooking instructions written in plain text and compiles them into structured, calculated, and relational data.
+Most recipe formats are just static blocks of text. Gram takes a different approach: it takes your instructions written in plain text and compiles them into structured, calculated, and relational data.
 
 ## The philosophy
 
@@ -44,7 +40,7 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
     **`@gram-lang/analyzer`**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
   </Card>
   <Card title="Language Server (LSP)" icon="laptop">
-    Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
+    **`@gram-lang/language-server`**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
   </Card>
   <Card title="CLI" icon="window">
     **`@gram-lang/cli`**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
