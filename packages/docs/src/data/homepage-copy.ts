@@ -423,7 +423,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabNutritionLink: "/fr/docs/how-to/manage-database/",
 		tabScheduleTitle: "Planification intelligente (ALAP)",
 		tabScheduleDesc:
-			"Visualisez votre rétroplanning. Gram détecte vos minuteries et planifie les tâches passives « Aussi Tard Que Possible » pour réduire les temps morts en cuisine.",
+			"Visualisez votre rétroplanning. Gram détecte vos minuteries et planifie les tâches passives « As Late As Possible » (aussi tard que possible) pour réduire les temps morts en cuisine.",
 		tabScheduleLink: "/fr/docs/explanation/alap-scheduling",
 		tabScaleTitle: "Le pourcentage du boulanger",
 		tabScaleDesc:
