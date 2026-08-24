@@ -10,7 +10,7 @@ const { currentLang = "en" } = Astro.props;
   <div class="header-container">
     <div class="logo">
       <a href={currentLang === "fr" ? "/fr/" : "/"}>
-        <img src="/logo.svg" alt="Gram Logo" />
+        <img src="/logo.svg" alt="Gram Logo" height="32" width="32"/>
         <span class="site-title">Gram</span>
       </a>
     </div>
@@ -138,7 +138,7 @@ const { currentLang = "en" } = Astro.props;
     font-weight: 600;
     font-size: 1.25rem;
   }
-  .logo img {J
+  .logo img {
     height: 2rem;
     width: 2rem;
   }
