@@ -9,32 +9,9 @@ import {
 } from "../utils";
 import { getDictionary } from "@gram-lang/i18n";
 
-export const DEFAULT_ICONS = {
-	html: {
-		hourglass: '<i class="ph ph-hourglass"></i>',
-		timer: '<i class="ph ph-timer"></i>',
-		thermometer: '<i class="ph ph-thermometer"></i>',
-		caretRight: '<i class="ph ph-caret-circle-right"></i>',
-		arrowRight: '<i class="ph ph-arrow-right"></i>',
-		arrowUDownLeft: '<i class="ph ph-arrow-u-down-left"></i>',
-		warning: '<i class="ph ph-warning"></i>',
-		pencilSimple: '<i class="ph ph-pencil-simple"></i>',
-		minus: '<i class="ph ph-minus"></i>',
-		plus: '<i class="ph ph-plus"></i>',
-	},
-	md: {
-		hourglass: "⏳ ",
-		timer: "⏲️ ",
-		thermometer: "🔥",
-		caretRight: "👉",
-		arrowRight: "->&",
-		arrowUDownLeft: "",
-		warning: " ⚠️",
-		pencilSimple: "",
-		minus: "-",
-		plus: "+",
-	},
-};
+import { DEFAULT_ICONS } from "../icons";
+
+export { DEFAULT_ICONS };
 
 const strategies: Record<
 	string,
@@ -387,7 +364,7 @@ const strategies: Record<
 		if (format === "html") {
 			const arrowIcon =
 				context.icons?.arrowElbowDownRight ??
-				'<i class="ph ph-arrow-elbow-down-right"></i>';
+				DEFAULT_ICONS.html.arrowElbowDownRight;
 			const className = `${context.classes?.declaration || "declaration"} declaration-block`;
 			return `<span class="${className}">${arrowIcon} ${escapeHtml(name)}</span>`;
 		} else {

@@ -179,12 +179,6 @@ export default defineConfig({
             content: `${SITE_URL}/gram-social-wide.png`
           }
         },
-        {
-          tag: 'script',
-          attrs: {
-            src: 'https://unpkg.com/@phosphor-icons/web'
-          }
-        },
         ...(isProd ? [{
           tag: /** @type {'script'} */ ('script'),
           attrs: {

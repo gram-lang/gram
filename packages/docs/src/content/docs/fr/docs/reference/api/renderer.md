@@ -94,7 +94,7 @@ const html = toHTML(compiled, {
 });
 ```
 
-`DEFAULT_ICONS` a deux variantes, `DEFAULT_ICONS.html` (balises `<i>` Phosphor) et `DEFAULT_ICONS.md` (emoji), chacune indexée par un sous-ensemble de `RendererIcons` : `hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `warning`, `pencilSimple`, `minus`, `plus`. Les autres champs de `RendererIcons` (`clock`, `fire`, `knife`, `scales`, `clockCounterClockwise`, `arrowElbowDownRight`, `info`) ne font pas partie de `DEFAULT_ICONS` — `toHTML` utilise son propre balisage Phosphor codé en dur pour ceux-ci quand `options.icons` ne les redéfinit pas ; les redéfinir n'a donc d'effet que si on les passe directement via `options.icons`, pas via un spread de `DEFAULT_ICONS`.
+`DEFAULT_ICONS` propose deux variantes : `DEFAULT_ICONS.html` (éléments `<svg>` Phosphor autonomes intégrés en ligne) et `DEFAULT_ICONS.md` (emoji), couvrant toutes les deux l'intégralité des champs de `RendererIcons` (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Chaque icône peut être personnalisée individuellement via `options.icons`.
 
 ## Utilitaires de formatage
 

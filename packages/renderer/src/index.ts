@@ -10,7 +10,8 @@ export {
 	resolveNutritionBasis,
 } from "./nutrition";
 export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
-export { formatElement, DEFAULT_ICONS } from "./formatters/element";
+export { formatElement } from "./formatters/element";
+export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";
 export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";

@@ -94,7 +94,7 @@ const html = toHTML(compiled, {
 });
 ```
 
-`DEFAULT_ICONS` has two variants, `DEFAULT_ICONS.html` (Phosphor `<i>` tags) and `DEFAULT_ICONS.md` (emoji), each keyed by a subset of `RendererIcons`: `hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `warning`, `pencilSimple`, `minus`, `plus`. The remaining `RendererIcons` fields (`clock`, `fire`, `knife`, `scales`, `clockCounterClockwise`, `arrowElbowDownRight`, `info`) aren't part of `DEFAULT_ICONS` — `toHTML` falls back to its own hardcoded Phosphor markup for those when `options.icons` doesn't override them, so overriding one of these seven only has an effect when passed directly via `options.icons`, not via a spread of `DEFAULT_ICONS`.
+`DEFAULT_ICONS` has two variants: `DEFAULT_ICONS.html` (self-contained Phosphor inline `<svg>` elements) and `DEFAULT_ICONS.md` (emoji), each covering the full set of `RendererIcons` fields (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Any icon can be overridden individually via `options.icons`.
 
 ## Formatting utilities
 
