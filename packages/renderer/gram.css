@@ -89,6 +89,15 @@ body.vscode-dark,
   font-size: 15px;
 }
 
+.gram-preview svg.gicon,
+.gram-preview .gicon,
+svg.gicon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  width: 1em;
+  height: 1em;
+}
+
 .gram-preview h1 {
   font-size: 2rem;
   font-weight: 700;

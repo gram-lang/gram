@@ -54,6 +54,14 @@ const PRINT_CSS = `
     -webkit-font-smoothing: antialiased;
   }
 
+  svg.gicon,
+  .gicon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    display: inline-block;
+  }
+
   /* ── Title ── */
   h1 {
     font-family: 'Courier Prime', monospace;
@@ -268,7 +276,7 @@ const PRINT_CSS = `
   .declaration {
     font-size: 9pt;
     font-style: italic;
-    color: var(--grey);
+    color: var(--black);
   }
   .comment-step {
     padding-left: 0 !important;
@@ -399,30 +407,7 @@ const PRINT_CSS = `
   }
 `;
 
-const SVG = {
-	// Clock (sync timer) — Lucide Clock
-	clock: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-	// Hourglass (async timer) — Lucide Hourglass
-	hourglass: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M17 2v4.172a2 2 0 0 0-.586 1.414L12 12 7.586 7.586A2 2 0 0 1 7 6.172V2"/></svg>`,
-	// Thermometer — Lucide Thermometer
-	thermometer: `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`,
-};
-
-const PRINT_ICONS = {
-	hourglass: SVG.hourglass,
-	timer: SVG.clock,
-	thermometer: SVG.thermometer,
-	caretRight: "→",
-	arrowRight: "→",
-	arrowUDownLeft: "↵",
-	warning: "⚠",
-	pencilSimple: "✎",
-	clock: SVG.clock,
-	fire: "△",
-	knife: "—",
-	scales: "⚖",
-	clockCounterClockwise: "↺",
-};
+import { PRINT_ICONS } from "../icons";
 
 const printBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -430,7 +415,7 @@ const printBackend: RenderBackend = {
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		return {
 			registry,
-			icons: PRINT_ICONS,
+			icons: options.icons ? { ...PRINT_ICONS, ...options.icons } : PRINT_ICONS,
 			formatDuration,
 			formatFraction: options.formatFraction,
 			bakersMathOnly: options.bakersMathOnly,

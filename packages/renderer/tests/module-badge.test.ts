@@ -53,7 +53,7 @@ describe("module provenance badge rendering", () => {
 			},
 		});
 		const html = toHTML(result);
-		expect(html).toContain("></i> pate</small>");
+		expect(html).toContain("</svg> pate</small>");
 	});
 
 	it("escapes a module title that could inject markup", () => {

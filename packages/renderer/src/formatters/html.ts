@@ -23,7 +23,7 @@ import {
 	nutritionGroups,
 	resolveNutritionBasis,
 } from "../nutrition";
-import { formatElement } from "./element";
+import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
@@ -150,7 +150,7 @@ const htmlBackend: RenderBackend = {
 				return htmlStr;
 			};
 
-			const clockIcon = options.icons?.clock ?? '<i class="ph ph-clock"></i>';
+			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
 				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
 				metrics.prepBreakdown,
@@ -167,12 +167,12 @@ const htmlBackend: RenderBackend = {
 						"Idle Time = Total Time - Prep - Active",
 				);
 				html += ` <div class="${timingCardClass}">\n`;
-				html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? '<i class="ph ph-hourglass-high"></i>'} ${t.renderer.idleTime}</div>\n`;
+				html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} ${t.renderer.idleTime}</div>\n`;
 				html += `   <div class="${metaValueClass}">${formatDuration(metrics.idleTime)}</div>${idleTooltip}\n`;
 				html += ` </div>\n`;
 			}
 
-			const fireIcon = options.icons?.fire ?? '<i class="ph ph-fire"></i>';
+			const fireIcon = options.icons?.fire ?? DEFAULT_ICONS.html.fire;
 			const activeTooltip = renderTooltipHTML(
 				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
 				metrics.activeBreakdown,
@@ -182,7 +182,7 @@ const htmlBackend: RenderBackend = {
 			html += `   <div class="${metaValueClass}">${formatDuration(metrics.activeTime)}</div>${activeTooltip}\n`;
 			html += ` </div>\n`;
 
-			const knifeIcon = options.icons?.knife ?? '<i class="ph ph-knife"></i>';
+			const knifeIcon = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
 			const prepTooltip = renderTooltipHTML(
 				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
 				metrics.prepBreakdown,
@@ -232,9 +232,9 @@ const htmlBackend: RenderBackend = {
 								? round2(numericV / data.scaleFactor)
 								: v;
 						html += `    <span class="value interactive-portions" data-base-portions="${escapeHtml(String(basePortions))}">\n`;
-						html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? '<i class="ph ph-minus"></i>'}</button>\n`;
+						html += `      <button class="scale-btn minus" data-scale-action="dec-portions" title="${escapeHtml(t.renderer.decreasePortions)}">${options.icons?.minus ?? DEFAULT_ICONS.html.minus}</button>\n`;
 						html += `      <input type="number" class="scale-input-inline portions-input" value="${escapeHtml(String(v))}" min="0.1" step="any" title="${escapeHtml(t.renderer.editPortions)}" />\n`;
-						html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? '<i class="ph ph-plus"></i>'}</button>\n`;
+						html += `      <button class="scale-btn plus" data-scale-action="inc-portions" title="${escapeHtml(t.renderer.increasePortions)}">${options.icons?.plus ?? DEFAULT_ICONS.html.plus}</button>\n`;
 						html += `      <span class="scale-multipliers">\n`;
 						html += `        <button class="scale-btn factor reset" data-scale-action="set-factor" data-value="1" title="${escapeHtml(t.renderer.originalRecipe)}">${escapeHtml(t.renderer.reset)}</button>\n`;
 						html += `      </span>\n`;
@@ -356,7 +356,7 @@ const htmlBackend: RenderBackend = {
 				if (sec.retro_planning) {
 					const rIcon =
 						options.icons?.clockCounterClockwise ??
-						'<i class="ph ph-clock-counter-clockwise"></i>';
+						DEFAULT_ICONS.html.clockCounterClockwise;
 					titleHtml += ` <small class="section-meta-badge section-meta-retroplanning">${rIcon} ${escapeHtml(sec.retro_planning.raw)}</small>`;
 				}
 
@@ -375,23 +375,23 @@ const htmlBackend: RenderBackend = {
 							t.renderer.someIngredients;
 						title += `${t.renderer.missingMass}${missingStr})`;
 					}
-					const sIcon = options.icons?.scales ?? '<i class="ph ph-scales"></i>';
+					const sIcon = options.icons?.scales ?? DEFAULT_ICONS.html.scales;
 					titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
 				}
 
 				if (sec.intermediate_preparation && sec.module) {
 					const arrowIcon =
-						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
+						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
 					const packageIcon =
-						options.icons?.package ?? '<i class="ph ph-package"></i>';
+						options.icons?.package ?? DEFAULT_ICONS.html.package;
 					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span></span>`;
 				} else if (sec.intermediate_preparation) {
 					const arrowIcon =
-						options.icons?.arrowRight ?? '<i class="ph ph-arrow-right"></i>';
+						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
 					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
 				} else if (sec.module) {
 					const packageIcon =
-						options.icons?.package ?? '<i class="ph ph-package"></i>';
+						options.icons?.package ?? DEFAULT_ICONS.html.package;
 					titleHtml += ` <small class="section-meta-badge section-meta-module" data-tooltip="${escapeHtml(t.renderer.moduleFrom)}">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</small>`;
 				}
 
@@ -425,7 +425,7 @@ const htmlBackend: RenderBackend = {
 					const stepCommentClass = options.classes?.stepComment
 						? ` class="${options.classes.stepComment}"`
 						: ' class="step-comment"';
-					const icon = options.icons?.info ?? '<i class="ph ph-info"></i>';
+					const icon = options.icons?.info ?? DEFAULT_ICONS.html.info;
 					html += `      <li${stepCommentClass}>\n`;
 					html += `        <span class="comment-icon">${icon}</span>\n`;
 					html += `        <span class="comment-text">${escapeHtml(step.value)}</span>\n`;
