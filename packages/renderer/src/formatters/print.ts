@@ -479,11 +479,11 @@ const printBackend: RenderBackend = {
 		for (const group of renderGroups) {
 			const item = group[0];
 			if (isAlternativeGroup(item)) {
-				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", context)).join(" <em>or</em> ")}</li>\n`;
+				body += `  <li>${item.options.map((o: any) => formatElement(o, "html", { ...context, formatMode: "shopping-list" })).join(" <em>or</em> ")}</li>\n`;
 			} else if (isCompositeItem(item)) {
-				body += `  <li>${formatElement(item, "html", context)}</li>\n`;
+				body += `  <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 				for (const u of item.usage ?? []) {
-					body += `  <li style="padding-left:12pt">${formatElement(u, "html", context)}</li>\n`;
+					body += `  <li style="padding-left:12pt">${formatElement(u, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 				}
 			} else if (item.display) {
 				body += `  <li>${escapeHtml(item.display)}</li>\n`;
@@ -492,7 +492,7 @@ const printBackend: RenderBackend = {
 				body += `    <strong>${escapeHtml(item.name || item.id)}</strong> <span class="mixed-units-badge">${escapeHtml(t.renderer.mixedUnits)}</span>\n`;
 				body += `    <ul>\n`;
 				group.forEach((entry) => {
-					body += `      <li>${formatElement(entry, "html", context)}</li>\n`;
+					body += `      <li>${formatElement(entry, "html", { ...context, formatMode: "shopping-list" })}</li>\n`;
 				});
 				body += `    </ul>\n`;
 				body += `  </li>\n`;
@@ -505,7 +505,7 @@ const printBackend: RenderBackend = {
 					const gross = round1(item.purchasingMass);
 					extra = ` <span class="gross-mass">${gross}g ${escapeHtml(t.renderer.gross)}</span>`;
 				}
-				body += `  <li>${formatElement(item, "html", context)}${extra}</li>\n`;
+				body += `  <li>${formatElement(item, "html", { ...context, formatMode: "shopping-list" })}${extra}</li>\n`;
 			}
 		}
 		body += `</ul>\n</div>\n\n`;
@@ -557,7 +557,7 @@ const printBackend: RenderBackend = {
 			if (secItems.length > 0) {
 				body += `  <div class="section-ingredients"><ul>\n`;
 				for (const ing of secItems) {
-					body += `    <li>${formatElement(ing, "html", context)}</li>\n`;
+					body += `    <li>${formatElement(ing, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
 				}
 				body += `  </ul></div>\n`;
 			}
