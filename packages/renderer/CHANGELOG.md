@@ -1,5 +1,17 @@
 # @gram-lang/renderer
 
+## 1.2.1
+
+### Patch Changes
+
+- 532ea55: **Renderer**: Switched icons to embedded inline SVGs, removing external CDN dependencies (`unpkg.com`) and enabling full offline previews in VS Code.
+- 728e2ba: **CLI / Export**: Fixed missing ingredient quantities in `gram print` and HTML exports (`gram export --format html`).
+- Updated dependencies [c8c4d49]
+  - @gram-lang/i18n@1.2.1
+  - @gram-lang/analyzer@1.2.1
+  - @gram-lang/kitchen@1.2.1
+  - @gram-lang/parser@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

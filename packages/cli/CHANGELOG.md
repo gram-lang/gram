@@ -1,5 +1,20 @@
 # @gram-lang/cli
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [532ea55]
+- Updated dependencies [728e2ba]
+- Updated dependencies [c8c4d49]
+  - @gram-lang/renderer@1.2.1
+  - @gram-lang/i18n@1.2.1
+  - @gram-lang/analyzer@1.2.1
+  - @gram-lang/kitchen@1.2.1
+  - @gram-lang/modules@1.2.1
+  - @gram-lang/parser@1.2.1
+  - @gram-lang/format@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

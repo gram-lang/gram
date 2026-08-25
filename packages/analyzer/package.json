@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/analyzer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Gram recipe analyzer for physical properties (mass, yield, nutrition)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

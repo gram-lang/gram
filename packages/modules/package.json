@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/modules",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Module resolution and composition for Gram's @use import directive",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

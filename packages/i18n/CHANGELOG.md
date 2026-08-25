@@ -1,5 +1,11 @@
 # @gram-lang/i18n
 
+## 1.2.1
+
+### Patch Changes
+
+- c8c4d49: **Documentation & Playground**: Improved accessibility and keyboard navigation across the website and interactive playground (ARIA roles, tab navigation, `prefers-reduced-motion`).
+
 ## 1.2.0
 
 ### Minor Changes

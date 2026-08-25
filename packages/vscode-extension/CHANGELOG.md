@@ -1,5 +1,15 @@
 # @gram-lang/vscode-extension
 
+## 1.2.1
+
+### Patch Changes
+
+- 532ea55: **Renderer**: Switched icons to embedded inline SVGs, removing external CDN dependencies (`unpkg.com`) and enabling full offline previews in VS Code.
+- Updated dependencies [532ea55]
+- Updated dependencies [728e2ba]
+  - @gram-lang/renderer@1.2.1
+  - @gram-lang/language-server@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes

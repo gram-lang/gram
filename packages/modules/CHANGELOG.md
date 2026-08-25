@@ -1,5 +1,15 @@
 # @gram-lang/modules
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [c8c4d49]
+  - @gram-lang/i18n@1.2.1
+  - @gram-lang/analyzer@1.2.1
+  - @gram-lang/kitchen@1.2.1
+  - @gram-lang/parser@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

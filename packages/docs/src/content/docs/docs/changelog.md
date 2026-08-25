@@ -6,6 +6,15 @@ tableOfContents:
   maxHeadingLevel: 2
 ---
 
+## [1.2.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.2.0...v.1.2.1) - 2026-08-25
+
+### Bug fixes and improvements
+- **Renderer**: Switched icons to embedded inline SVGs, removing external CDN dependencies (`unpkg.com`) and enabling full offline previews in VS Code.
+- **CLI / Export**: Fixed missing ingredient quantities in `gram print` and HTML exports (`gram export --format html`).
+- **Documentation & Playground**: Improved accessibility and keyboard navigation across the website and interactive playground (ARIA roles, tab navigation, `prefers-reduced-motion`).
+
+---
+
 ## [1.2.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.1.0...v.1.2.0) - 2026-08-22
 
 ### New features

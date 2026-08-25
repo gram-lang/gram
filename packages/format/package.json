@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/format",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Canonical .gram source formatter, shared by the CLI and language server",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

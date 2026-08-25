@@ -1,5 +1,14 @@
 # @gram-lang/audit
 
+## 1.2.1
+
+### Patch Changes
+
+- @gram-lang/analyzer@1.2.1
+- @gram-lang/kitchen@1.2.1
+- @gram-lang/parser@1.2.1
+- @gram-lang/format@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes

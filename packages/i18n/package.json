@@ -1,6 +1,6 @@
 {
   "name": "@gram-lang/i18n",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Gram recipe i18n and unit normalization logic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
