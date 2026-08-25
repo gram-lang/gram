@@ -581,10 +581,10 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 <div class="shopping-list">
 <h2>Shopping List</h2>
 <ul>
-  <li><span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span></li>
-  <li><span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span></li>
+  <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
+  <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
   <li><span class="ingredient" data-name="salt">salt</span></li>
-  <li><span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <em>or</em> <span class="ingredient" data-name="egg substitute" data-tooltip="2">egg substitute</span></li>
+  <li><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <em>or</em> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></li>
 </ul>
 </div>
 
@@ -601,11 +601,10 @@ exports[`renderer output snapshots toPrintHTML output is stable 1`] = `
 <section>
   <h3>Batter</h3>
   <div class="section-ingredients"><ul>
-    <li><span class="ingredient" data-name="flour" data-tooltip="200 g">flour</span></li>
-    <li><span class="ingredient" data-name="sugar" data-tooltip="1 tbsp">sugar</span></li>
+    <li><span class="ingredient" data-name="flour">flour <span class="quantity">200 g</span></span></li>
+    <li><span class="ingredient" data-name="sugar">sugar <span class="quantity">1 tbsp</span></span></li>
     <li><span class="ingredient" data-name="salt">salt</span></li>
-    <li><span class="ingredient" data-name="egg" data-tooltip="2">egg</span> <span class="ingredient-alt-badge" data-tooltip="Alternatives:
-egg-substitute">(alt)</span></li>
+    <li><span class="alt-group"><span class="ingredient" data-name="egg">egg <span class="quantity">2</span></span> <span class="keyword">or</span> <span class="ingredient" data-name="egg substitute">egg substitute <span class="quantity">2</span></span></span></li>
   </ul></div>
   <ol class="steps">
     <li value="1">
@@ -624,7 +623,7 @@ egg-substitute">(alt)</span> and whisk for <span class="timer" data-tooltip="Act
 <section>
   <h3>Cooking</h3>
   <div class="section-ingredients"><ul>
-    <li><span class="reference" data-tooltip="Intermediate Ingredient">→ batter</span></li>
+    <li><span class="reference">→ batter</span></li>
   </ul></div>
   <ol class="steps">
     <li value="1">
