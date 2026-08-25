@@ -147,7 +147,7 @@
     "build": "node build.cjs",
     "typecheck": "tsc --noEmit",
     "dev": "node build.cjs --watch",
-    "package": "vsce package --no-dependencies"
+    "package": "bunx turbo run build --filter=gram-lang && vsce package --no-dependencies"
   },
   "dependencies": {
     "@gram-lang/language-server": "workspace:*",
