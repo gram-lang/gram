@@ -47,11 +47,11 @@ const mockBases = [
 
 <Layout title="Gram" description={t.metaDescription} currentLang={lang}>
   <!-- Hero Section -->
-  <section class="section hero">
+  <section class="section hero" aria-labelledby="hero-heading">
     <div class="homepage-container">
       <div class="hero-layout">
         <div class="hero-text">
-          <h1 class="title">{t.heroTitle}</h1>
+          <h1 class="title" id="hero-heading">{t.heroTitle}</h1>
           <p class="subtitle">{t.heroSubtitle}</p>
           <p class="description">
             {t.heroDescription}
@@ -78,7 +78,7 @@ const mockBases = [
         </div>
 
         <div class="hero-code">
-          <div class="code-block">
+          <div class="code-block" role="region" aria-label={t.recipeFileName || "recipe.gram"}>
             <div class="code-header">
               <span class="filename">{t.recipeFileName || "recipe.gram"}</span>
             </div>
@@ -116,7 +116,9 @@ const mockBases = [
                 <p>{item.details}</p>
                 {item.link && (
                   <a href={item.link} class="learn-more-link">
-                    {t.learnMore} &rarr;
+                    {t.learnMore}
+                    <span class="sr-only">: {item.title}</span>
+                    <span aria-hidden="true"> &rarr;</span>
                   </a>
                 )}
               </div>
@@ -145,6 +147,7 @@ const mockBases = [
             </summary>
             <FeaturePanel
               id="feature-nutrition"
+              title={t.tabNutritionTitle}
               desc={t.tabNutritionDesc}
               link={t.tabNutritionLink}
               learnMoreText={t.learnMore}
@@ -153,9 +156,9 @@ const mockBases = [
               gramLang={gramLang}
               codeThemes={codeThemes}
             >
-              <div class="modern-mockup-card nut-card-mock">
+              <div class="modern-mockup-card nut-card-mock" role="region" aria-label={nutritionDict.renderer.nutrition}>
                 <div class="mockup-steps">
-                  <ol class="gram-steps">
+                  <ol class="gram-steps" aria-label={lang === "fr" ? "Étapes de la recette Chantilly" : "Chantilly recipe steps"}>
                     <li>
                       <span class="action"
                         >{lang === "fr" ? "Fouetter" : "Whisk"}</span
@@ -195,15 +198,18 @@ const mockBases = [
                     </li>
                   </ol>
                 </div>
-                <div class="nut-panel-mock">
+                <div class="nut-panel-mock" role="group" aria-label={nutritionDict.renderer.nutrition}>
                   <div class="nut-header-mock">
                     {nutritionDict.renderer.nutrition}
                     <span>{nutritionDict.renderer.estimateTooltip}</span>
                   </div>
-                  <div class="nut-basis-switch-mock">
+                  <div class="nut-basis-switch-mock" role="group" aria-label={lang === "fr" ? "Base de calcul nutritionnel" : "Nutrition calculation basis"}>
                     {
                       mockBases.map((basis) => (
-                        <span class:list={["pill", { active: basis.active }]}>
+                        <span
+                          class:list={["pill", { active: basis.active }]}
+                          aria-current={basis.active ? "true" : undefined}
+                        >
                           {basis.label}
                         </span>
                       ))
@@ -219,7 +225,7 @@ const mockBases = [
                             <span class="unit">{group.unit}</span>
                           </strong>
                           {group.children.length > 0 && (
-                            <ul class="nut-item-children">
+                            <ul class="nut-item-children" aria-label={group.label}>
                               {group.children.map((child) => (
                                 <li>
                                   <span class="label">{child.label}</span>
@@ -246,6 +252,7 @@ const mockBases = [
             </summary>
             <FeaturePanel
               id="feature-schedule"
+              title={t.tabScheduleTitle}
               desc={t.tabScheduleDesc}
               link={t.tabScheduleLink}
               learnMoreText={t.learnMore}
@@ -254,78 +261,89 @@ const mockBases = [
               gramLang={gramLang}
               codeThemes={codeThemes}
             >
-              <div class="modern-mockup-card timeline-mockup-card">
-                <div class="gantt-header-mock">
-                  <span
-                    >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
-                      >17m</strong
-                    ></span
-                  >
-                  <span
-                    >{lang === "fr" ? " · Actif" : " · Active"}: <strong>7m</strong
-                    ></span
-                  >
+              <div
+                class="modern-mockup-card timeline-mockup-card"
+                role="region"
+                aria-label={lang === "fr" ? "Aperçu de la planification et du rétro-planning" : "Schedule and timeline preview"}
+              >
+                <div class="sr-only">
+                  {lang === "fr"
+                    ? "Rétro-planning : Temps total 17 minutes, temps actif 7 minutes. Déroulé : 0 à 5m : Mise en place ; 5 à 15m : Ébullition ; 10 à 15m : Sauter ; 15 à 17m : Mélanger."
+                    : "Timeline schedule: Total time 17 minutes, active time 7 minutes. Steps: 0 to 5m: Mise en place; 5 to 15m: Boiling; 10 to 15m: Sauté; 15 to 17m: Toss."}
                 </div>
-                <div class="gantt-tracks-container">
-                  <div class="gantt-track-mock" style="height: 120px;">
-                    <div class="track-label-mock">
-                      {lang === "fr" ? "Actions" : "Actions"}
-                    </div>
-                    <div class="track-content-mock">
-                      <div
-                        class="time-block-mock passive-mock"
-                        style="width: 26%; left: 0; top: 8px; border: none;"
-                      >
-                        <span
-                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                          >Mise en place</span
-                        >
-                      </div>
-                      <div
-                        class="time-block-mock active-mock"
-                        style="width: 26%; left: 52%; top: 44px;"
-                      >
-                        <span
-                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                          >{lang === "fr" ? "Sauter" : "Sauté"}</span
-                        >
-                      </div>
-                      <div
-                        class="time-block-mock active-mock"
-                        style="width: 10%; left: 78%; top: 80px;"
-                      >
-                        <span
-                          style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                          >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
-                        >
-                      </div>
-                    </div>
+                <div aria-hidden="true">
+                  <div class="gantt-header-mock">
+                    <span
+                      >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
+                        >17m</strong
+                      ></span
+                    >
+                    <span
+                      >{lang === "fr" ? " · Actif" : " · Active"}: <strong>7m</strong
+                      ></span
+                    >
                   </div>
-                  <div class="gantt-track-mock">
-                    <div class="track-label-mock">
-                      {lang === "fr" ? "Ébullition" : "Boiling"}
-                    </div>
-                    <div class="track-content-mock">
-                      <div
-                        class="time-block-mock passive-mock"
-                        style="width: 52%; left: 26%;"
-                      >
-                        <span class="block-label-mock">10m</span>
+                  <div class="gantt-tracks-container">
+                    <div class="gantt-track-mock" style="height: 120px;">
+                      <div class="track-label-mock">
+                        {lang === "fr" ? "Actions" : "Actions"}
+                      </div>
+                      <div class="track-content-mock">
+                        <div
+                          class="time-block-mock passive-mock"
+                          style="width: 26%; left: 0; top: 8px; border: none;"
+                        >
+                          <span
+                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                            >Mise en place</span
+                          >
+                        </div>
+                        <div
+                          class="time-block-mock active-mock"
+                          style="width: 26%; left: 52%; top: 44px;"
+                        >
+                          <span
+                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                            >{lang === "fr" ? "Sauter" : "Sauté"}</span
+                          >
+                        </div>
+                        <div
+                          class="time-block-mock active-mock"
+                          style="width: 10%; left: 78%; top: 80px;"
+                        >
+                          <span
+                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
+                            >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
+                          >
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    class="gantt-track-mock"
-                    style="height: 36px; border-bottom: none;"
-                  >
-                    <div class="track-label-mock" style="border-right: none;">
+                    <div class="gantt-track-mock">
+                      <div class="track-label-mock">
+                        {lang === "fr" ? "Ébullition" : "Boiling"}
+                      </div>
+                      <div class="track-content-mock">
+                        <div
+                          class="time-block-mock passive-mock"
+                          style="width: 52%; left: 26%;"
+                        >
+                          <span class="block-label-mock">10m</span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="track-content-mock" style="position: relative;">
-                      <div class="gantt-tick" style="left: 0%;">0m</div>
-                      <div class="gantt-tick" style="left: 26%;">5m</div>
-                      <div class="gantt-tick" style="left: 52%;">10m</div>
-                      <div class="gantt-tick" style="left: 78%;">15m</div>
-                      <div class="gantt-tick" style="left: 88%;">17m</div>
+                    <div
+                      class="gantt-track-mock"
+                      style="height: 36px; border-bottom: none;"
+                    >
+                      <div class="track-label-mock" style="border-right: none;">
+                      </div>
+                      <div class="track-content-mock" style="position: relative;">
+                        <div class="gantt-tick" style="left: 0%;">0m</div>
+                        <div class="gantt-tick" style="left: 26%;">5m</div>
+                        <div class="gantt-tick" style="left: 52%;">10m</div>
+                        <div class="gantt-tick" style="left: 78%;">15m</div>
+                        <div class="gantt-tick" style="left: 88%;">17m</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -340,6 +358,7 @@ const mockBases = [
             </summary>
             <FeaturePanel
               id="feature-modules"
+              title={t.tabModulesTitle}
               desc={t.tabModulesDesc}
               link={t.tabModulesLink}
               learnMoreText={t.learnMore}
@@ -348,7 +367,7 @@ const mockBases = [
               gramLang={gramLang}
               codeThemes={codeThemes}
             >
-              <div class="modern-mockup-card rendered-recipe-mock">
+              <div class="modern-mockup-card rendered-recipe-mock" role="region" aria-label={lang === "fr" ? "Recette modulaire assemblée" : "Composed modular recipe"}>
                 <!-- Section 1 : Base importée (inlinée et mise à l'échelle) -->
                 <div class="rendered-section">
                   <div class="rendered-section-header">
@@ -408,6 +427,7 @@ const mockBases = [
             </summary>
             <FeaturePanel
               id="feature-scale"
+              title={t.tabScaleTitle}
               desc={t.tabScaleDesc}
               link={t.tabScaleLink}
               learnMoreText={t.learnMore}
@@ -416,44 +436,55 @@ const mockBases = [
               gramLang={gramLang}
               codeThemes={codeThemes}
             >
-              <div class="modern-mockup-card tabular-mockup">
-                <div class="tab-row reference-row">
-                  <span class="tab-name"
-                    ><strong
-                      >{lang === "fr" ? "Farine T65" : "Bread Flour"}</strong
-                    > - 400g</span
-                  >
-                  <span class="tab-val tab-val-ref">100%</span>
-                </div>
-                <div class="tab-row reference-row">
-                  <span class="tab-name"
-                    ><strong
-                      >{
-                        lang === "fr" ? "Farine Complète" : "Whole Wheat"
-                      }</strong
-                    > - 100g</span
-                  >
-                  <span class="tab-val">25%</span>
-                </div>
-                <div class="tab-row">
-                  <span class="tab-name"
-                    ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</span
-                  >
-                  <span class="tab-val">75%</span>
-                </div>
-                <div class="tab-row">
-                  <span class="tab-name"
-                    ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong> - 100g</span
-                  >
-                  <span class="tab-val">20%</span>
-                </div>
-                <div class="tab-row">
-                  <span class="tab-name"
-                    ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</span
-                  >
-                  <span class="tab-val">2%</span>
-                </div>
-              </div>
+              <table class="modern-mockup-card tabular-mockup">
+                <caption class="sr-only">
+                  {lang === "fr" ? "Pourcentages du boulanger pour la recette" : "Baker's percentages for the recipe"}
+                </caption>
+                <thead>
+                  <tr class="sr-only">
+                    <th scope="col">{lang === "fr" ? "Ingrédient et poids" : "Ingredient and weight"}</th>
+                    <th scope="col">{lang === "fr" ? "Pourcentage" : "Percentage"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="tab-row reference-row">
+                    <td class="tab-name"
+                      ><strong
+                        >{lang === "fr" ? "Farine T65" : "Bread Flour"}</strong
+                      > - 400g</td
+                    >
+                    <td class="tab-val tab-val-ref">100%</td>
+                  </tr>
+                  <tr class="tab-row reference-row">
+                    <td class="tab-name"
+                      ><strong
+                        >{
+                          lang === "fr" ? "Farine Complète" : "Whole Wheat"
+                        }</strong
+                      > - 100g</td
+                    >
+                    <td class="tab-val">25%</td>
+                  </tr>
+                  <tr class="tab-row">
+                    <td class="tab-name"
+                      ><strong>{lang === "fr" ? "Eau" : "Water"}</strong> - 375g</td
+                    >
+                    <td class="tab-val">75%</td>
+                  </tr>
+                  <tr class="tab-row">
+                    <td class="tab-name"
+                      ><strong>{lang === "fr" ? "Levain" : "Levain"}</strong> - 100g</td
+                    >
+                    <td class="tab-val">20%</td>
+                  </tr>
+                  <tr class="tab-row">
+                    <td class="tab-name"
+                      ><strong>{lang === "fr" ? "Sel" : "Salt"}</strong> - 10g</td
+                    >
+                    <td class="tab-val">2%</td>
+                  </tr>
+                </tbody>
+              </table>
             </FeaturePanel>
           </details>
         </div>
@@ -484,7 +515,8 @@ const mockBases = [
             href={lang === "fr"
               ? "/fr/docs/explanation/philosophy"
               : "/docs/explanation/philosophy"}
-            class="link-btn">{t.readBookLink} &rarr;</a
+            class="link-btn"
+            >{t.readBookLink}<span class="sr-only">: {t.readBookTitle}</span><span aria-hidden="true"> &rarr;</span></a
           >
         </div>
         <div class="grid-item card">
@@ -493,7 +525,7 @@ const mockBases = [
             {t.contributeDesc}
           </p>
           <a href="https://git.gram-lang.org/gram-lang/gram" class="link-btn"
-            >{t.contributeLink} &rarr;</a
+            >{t.contributeLink}<span class="sr-only">: {t.contributeTitle}</span><span aria-hidden="true"> &rarr;</span></a
           >
         </div>
       </div>
@@ -514,15 +546,19 @@ const mockBases = [
       >
         {t.tryDesc}
       </p>
-      <div class="terminal-mini">
+      <div class="terminal-mini" role="region" aria-label={lang === "fr" ? "Commande d'initialisation CLI" : "CLI initialization command"}>
         <code id="cli-init-cmd"
-          ><span class="prompt">$</span> npx @gram-lang/cli init</code
+          ><span class="prompt" aria-hidden="true">$</span> npx @gram-lang/cli init</code
         >
         <button
+          type="button"
           class="copy-cmd-btn"
-          aria-label="Copy command"
-          data-umami-event="copy-cli-init-command">Copy</button
+          aria-label={lang === "fr" ? "Copier la commande d'initialisation dans le presse-papiers" : "Copy initialization command to clipboard"}
+          data-umami-event="copy-cli-init-command"
         >
+          <span class="copy-label" aria-hidden="true">Copy</span>
+          <span class="sr-only" aria-live="polite" id="copy-status"></span>
+        </button>
       </div>
     </div>
   </section>
@@ -533,36 +569,76 @@ const mockBases = [
   import { trackEvent } from "../lib/umami";
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Preview/JSON Toggle Logic
-    const featurePanels = document.querySelectorAll(".feature-panel");
+    // Preview/JSON Toggle Logic with ARIA tabs and keyboard support
+    const featurePanels = document.querySelectorAll<HTMLElement>(".feature-panel");
     featurePanels.forEach((panel) => {
-      const toggleBtns = panel.querySelectorAll(".pill-btn");
-      const viewContents = panel.querySelectorAll(".view-content");
+      const toggleBtns = Array.from(panel.querySelectorAll<HTMLButtonElement>(".pill-btn"));
+      const viewContents = Array.from(panel.querySelectorAll<HTMLElement>(".view-content"));
 
-      toggleBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          toggleBtns.forEach((b) => b.classList.remove("active"));
-          viewContents.forEach((vc) => vc.classList.remove("active"));
+      const switchTab = (btn: HTMLButtonElement) => {
+        const viewType = btn.getAttribute("data-view");
+        toggleBtns.forEach((b) => {
+          const isActive = b === btn;
+          b.classList.toggle("active", isActive);
+          b.setAttribute("aria-selected", isActive ? "true" : "false");
+          b.setAttribute("tabindex", isActive ? "0" : "-1");
+        });
 
-          btn.classList.add("active");
-          const viewType = btn.getAttribute("data-view");
-          const targetView = panel.querySelector(`.${viewType}-view`);
-          if (targetView) targetView.classList.add("active");
-          trackEvent("homepage-feature-view", { feature: panel.id, view: viewType });
+        viewContents.forEach((vc) => {
+          const isTarget = vc.classList.contains(`${viewType}-view`);
+          vc.classList.toggle("active", isTarget);
+          if (isTarget) {
+            vc.removeAttribute("hidden");
+          } else {
+            vc.setAttribute("hidden", "");
+          }
+        });
+
+        trackEvent("homepage-feature-view", { feature: panel.id, view: viewType });
+      };
+
+      toggleBtns.forEach((btn, index) => {
+        btn.addEventListener("click", () => switchTab(btn));
+
+        btn.addEventListener("keydown", (e) => {
+          let targetIndex = -1;
+          if (e.key === "ArrowRight") {
+            targetIndex = (index + 1) % toggleBtns.length;
+          } else if (e.key === "ArrowLeft") {
+            targetIndex = (index - 1 + toggleBtns.length) % toggleBtns.length;
+          } else if (e.key === "Home") {
+            targetIndex = 0;
+          } else if (e.key === "End") {
+            targetIndex = toggleBtns.length - 1;
+          }
+
+          if (targetIndex !== -1) {
+            e.preventDefault();
+            toggleBtns[targetIndex].focus();
+            switchTab(toggleBtns[targetIndex]);
+          }
         });
       });
     });
 
-    // Copy Command Logic
-    const copyBtn = document.querySelector(".copy-cmd-btn") as HTMLElement;
-    if (copyBtn) {
-      const defaultLabel = copyBtn.textContent;
+    // Copy Command Logic with Screen Reader feedback
+    const copyBtn = document.querySelector<HTMLButtonElement>(".copy-cmd-btn");
+    const copyLabel = copyBtn?.querySelector<HTMLElement>(".copy-label");
+    const copyStatus = document.getElementById("copy-status");
+    if (copyBtn && copyLabel) {
+      const defaultText = copyLabel.textContent || "Copy";
       copyBtn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText("npx @gram-lang/cli init");
-          copyBtn.textContent = "Copied";
+          copyLabel.textContent = "Copied";
+          if (copyStatus) {
+            copyStatus.textContent = document.documentElement.lang === "fr"
+              ? "Commande copiée dans le presse-papiers"
+              : "Command copied to clipboard";
+          }
           setTimeout(() => {
-            copyBtn.textContent = defaultLabel;
+            copyLabel.textContent = defaultText;
+            if (copyStatus) copyStatus.textContent = "";
           }, 2000);
         } catch (err) {
           console.error("Failed to copy!", err);
@@ -658,7 +734,11 @@ const mockBases = [
   .version-badge a {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--sl-color-text-accent);
+    color: var(--sl-color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--gram-orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   .title {
@@ -694,14 +774,17 @@ const mockBases = [
     text-decoration: none;
     font-weight: 600;
     border: 1px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
 
   .button.primary {
     background-color: var(--sl-color-accent);
-    color: var(--sl-color-white);
+    color: #1a0d00;
+    font-weight: 700;
   }
   .button.primary:hover {
-    filter: brightness(1.1);
+    background-color: var(--gram-orange-light, #ff952b);
+    color: #1a0d00;
   }
 
   .button.secondary {
@@ -709,9 +792,16 @@ const mockBases = [
     color: var(--sl-color-white);
     border-color: var(--sl-color-border);
   }
+  :root[data-theme="light"] .button.secondary {
+    color: var(--sl-color-text);
+  }
   .button.secondary:hover {
-    border-color: var(--sl-color-text-accent);
+    border-color: var(--sl-color-accent);
     background-color: var(--sl-color-bg-nav);
+    color: var(--sl-color-white);
+  }
+  :root[data-theme="light"] .button.secondary:hover {
+    color: var(--sl-color-text);
   }
 
   /* Code Block Styling */
@@ -777,9 +867,13 @@ const mockBases = [
   }
   .learn-more-link {
     display: inline-block;
-    color: var(--sl-color-text-accent);
     font-weight: 600;
     font-size: 1rem;
+    color: var(--sl-color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--gram-orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   .philosophy h3 {
@@ -813,13 +907,15 @@ const mockBases = [
   }
   .link-btn {
     display: inline-block;
-    color: var(--sl-color-text-accent);
     font-weight: 500;
     margin-top: 1rem;
-  }
-  .link-btn:hover {
+    color: var(--sl-color-text);
     text-decoration: underline;
+    text-decoration-color: var(--gram-orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
+
 
   /* Mini terminal */
   .terminal-mini {
@@ -964,7 +1060,7 @@ const mockBases = [
   .nut-header-mock span {
     font-size: 0.6em;
     text-transform: uppercase;
-    background-color: var(--sl-color-gray-4);
+    background-color: var(--sl-color-gray-3);
     padding: 2px 6px;
     font-weight: 700;
     color: var(--sl-color-bg);
@@ -1011,7 +1107,7 @@ const mockBases = [
   .nut-item-mock .label {
     font-size: 0.65em;
     text-transform: uppercase;
-    color: var(--sl-color-text-accent);
+    color: var(--sl-color-gray-3);
     font-weight: 600;
   }
   .nut-item-mock strong {
@@ -1139,20 +1235,27 @@ const mockBases = [
 
   /* Tabular Mockup */
   .tabular-mockup {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    border-collapse: collapse;
     padding: 0;
+    text-align: left;
+  }
+
+  .tabular-mockup tbody {
+    display: table-row-group;
   }
 
   .tab-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--sl-color-border);
   }
 
   .tab-row:last-child {
     border-bottom: none;
+  }
+
+  .tabular-mockup td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
   }
 
   .reference-row {
@@ -1167,6 +1270,7 @@ const mockBases = [
     color: var(--sl-color-text-accent);
     font-family: var(--sl-font-mono);
     font-weight: bold;
+    text-align: right;
   }
 
   .tab-val-ref {
@@ -1222,5 +1326,33 @@ const mockBases = [
 
   #cli-init-cmd {
     display: block;
+  }
+
+  /* Accessibility: Focus visible and reduced motion */
+  .button:focus-visible,
+  .copy-cmd-btn:focus-visible,
+  .learn-more-link:focus-visible,
+  .link-btn:focus-visible,
+  .version-badge a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .feature-summary:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>

@@ -4,6 +4,7 @@ import Icon from "./Icon.astro";
 
 interface Props {
 	id: string;
+	title?: string;
 	desc: string;
 	link: string;
 	learnMoreText: string;
@@ -15,6 +16,7 @@ interface Props {
 
 const {
 	id,
+	title,
 	desc,
 	link,
 	learnMoreText,
@@ -29,36 +31,65 @@ const {
 	<p class="feature-desc">
 		{desc}
 		<a href={link} class="learn-more-link" style="margin-left: 0.5rem;">
-			{learnMoreText} &rarr;
+			{learnMoreText}{title && <span class="sr-only">: {title}</span>}<span aria-hidden="true"> &rarr;</span>
 		</a>
 	</p>
 	<div class="feature-columns">
 		<div class="col-input">
-			<div class="code-block">
+			<div class="code-block" role="region" aria-label="input.gram">
 				<div class="code-header">
 					<span class="filename">input.gram</span>
 				</div>
 				<Code code={inputCode} lang={gramLang} themes={codeThemes} />
 			</div>
 		</div>
-		<div class="col-arrow">
+		<div class="col-arrow" aria-hidden="true">
 			<Icon name="right-arrow" class="arrow-icon" />
 		</div>
 		<div class="col-output">
 			<div class="modern-output-pane">
 				<div class="output-header">
-					<div class="view-toggles pill-toggles">
-						<button class="pill-btn active" data-view="preview"
-							>Preview</button
-						>
-						<button class="pill-btn" data-view="json">JSON</button>
+					<div class="view-toggles pill-toggles" role="tablist" aria-label="Output format">
+						<button
+							type="button"
+							role="tab"
+							id={`${id}-tab-preview`}
+							aria-controls={`${id}-view-preview`}
+							aria-selected="true"
+							class="pill-btn active"
+							data-view="preview"
+							tabindex="0"
+						>Preview</button>
+						<button
+							type="button"
+							role="tab"
+							id={`${id}-tab-json`}
+							aria-controls={`${id}-view-json`}
+							aria-selected="false"
+							class="pill-btn"
+							data-view="json"
+							tabindex="-1"
+						>JSON</button>
 					</div>
 				</div>
-				<div class="view-content preview-view active">
+				<div
+					id={`${id}-view-preview`}
+					role="tabpanel"
+					aria-labelledby={`${id}-tab-preview`}
+					class="view-content preview-view active"
+					tabindex="0"
+				>
 					<slot />
 				</div>
-				<div class="view-content json-view">
-					<div class="code-block json-block">
+				<div
+					id={`${id}-view-json`}
+					role="tabpanel"
+					aria-labelledby={`${id}-tab-json`}
+					class="view-content json-view"
+					tabindex="0"
+					hidden
+				>
+					<div class="code-block json-block" role="region" aria-label="JSON Output">
 						<Code
 							code={outputCode}
 							lang="json"
@@ -159,8 +190,18 @@ const {
 
 	.learn-more-link {
 		display: inline-block;
-		color: var(--sl-color-text-accent);
 		font-weight: 600;
+		color: var(--sl-color-text);
+		text-decoration: underline;
+		text-decoration-color: var(--gram-orange);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 3px;
+	}
+
+	.learn-more-link:focus-visible {
+		outline: 2px solid var(--sl-color-accent);
+		outline-offset: 3px;
+		border-radius: 2px;
 	}
 
 	/* Output Pane */
@@ -203,8 +244,14 @@ const {
 		color: var(--sl-color-white);
 	}
 
+	.pill-btn:focus-visible {
+		outline: 2px solid var(--sl-color-accent);
+		outline-offset: 3px;
+		border-radius: 2px;
+	}
+
 	.pill-btn.active {
-		color: var(--sl-color-text-accent);
+		color: var(--sl-color-text);
 		border-bottom-color: var(--sl-color-text-accent);
 	}
 
@@ -214,7 +261,7 @@ const {
 		background-color: var(--sl-color-bg);
 	}
 
-	.view-content.active {
+	.view-content:not([hidden]).active {
 		display: block;
 	}
 

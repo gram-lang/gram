@@ -23,8 +23,10 @@ import type { HighlighterCore } from "shiki/core";
 
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 import { shikiHighlightExtension } from "./codemirror/shikiHighlightExtension";
+import { useI18n } from "./useI18n";
 
 const isDark = inject<Ref<boolean>>("isDark")!;
+const { t } = useI18n();
 
 const props = defineProps<{
 	files: Map<string, string>;
@@ -71,11 +73,19 @@ const editorTheme = EditorView.theme({
 	},
 	".cm-gutters": {
 		backgroundColor: "var(--sl-color-bg)",
-		color: "var(--sl-color-gray-4)",
+		// gray-4 fails WCAG AA (2.65:1 dark / 3.19:1 light) against
+		// --sl-color-bg; gray-3 clears 4.5:1 in both themes.
+		color: "var(--sl-color-gray-3)",
 		border: "none",
 	},
 	"&.cm-focused": {
+		// CodeMirror's default focus outline gets clipped by
+		// .editor-container's overflow: hidden, so it's replaced with an
+		// inset box-shadow ring to keep focus visible for keyboard users.
+		// accent-high (not accent) so the ring still clears the 3:1
+		// non-text contrast minimum in light mode (accent alone is 2.33:1).
 		outline: "none",
+		boxShadow: "inset 0 0 0 2px var(--sl-color-accent-high)",
 	},
 });
 
@@ -84,6 +94,9 @@ function makeExtensions(theme: string) {
 		lineNumbers(),
 		highlightActiveLine(),
 		EditorView.lineWrapping,
+		EditorView.contentAttributes.of({
+			"aria-label": t.value.playground.inputTab,
+		}),
 		history(),
 		keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
 		editorTheme,

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, useId } from "vue";
 
-const _props = defineProps<{
+const props = defineProps<{
 	modelValue: string;
 	options: { label: string; value: string }[];
 	placeholder?: string;
+	ariaLabel: string;
 }>();
 
 const emit = defineEmits<{
@@ -13,52 +14,148 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
+const highlightedIndex = ref(-1);
 const dropdownRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
+const listboxId = useId();
+
+function optionId(index: number): string {
+	return `${listboxId}-option-${index}`;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: activeDescendant is used in the <template> block below, which Biome's Vue support doesn't see.
+const activeDescendant = computed(() =>
+	isOpen.value && highlightedIndex.value >= 0
+		? optionId(highlightedIndex.value)
+		: undefined,
+);
+
+function selectedIndex(): number {
+	return props.options.findIndex((o) => o.value === props.modelValue);
+}
+
+function openDropdown() {
+	isOpen.value = true;
+	const idx = selectedIndex();
+	highlightedIndex.value = idx >= 0 ? idx : 0;
+}
+
+function closeDropdown(focusTrigger = false) {
+	isOpen.value = false;
+	if (focusTrigger) triggerRef.value?.focus();
+}
 
 // biome-ignore lint/correctness/noUnusedVariables: toggle is used in the <template> block below, which Biome's Vue support doesn't see.
 function toggle() {
-	isOpen.value = !isOpen.value;
+	if (isOpen.value) closeDropdown();
+	else openDropdown();
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: selectOption is used in the <template> block below, which Biome's Vue support doesn't see.
 function selectOption(value: string) {
 	emit("update:modelValue", value);
 	emit("change", value);
-	isOpen.value = false;
+	closeDropdown(true);
 }
 
-function closeDropdown(e: MouseEvent) {
+// biome-ignore lint/correctness/noUnusedVariables: onTriggerKeydown is used in the <template> block below, which Biome's Vue support doesn't see.
+function onTriggerKeydown(e: KeyboardEvent) {
+	switch (e.key) {
+		case "ArrowDown":
+			e.preventDefault();
+			if (!isOpen.value) openDropdown();
+			else
+				highlightedIndex.value = Math.min(
+					highlightedIndex.value + 1,
+					props.options.length - 1,
+				);
+			break;
+		case "ArrowUp":
+			e.preventDefault();
+			if (!isOpen.value) openDropdown();
+			else highlightedIndex.value = Math.max(highlightedIndex.value - 1, 0);
+			break;
+		case "Home":
+			if (isOpen.value) {
+				e.preventDefault();
+				highlightedIndex.value = 0;
+			}
+			break;
+		case "End":
+			if (isOpen.value) {
+				e.preventDefault();
+				highlightedIndex.value = props.options.length - 1;
+			}
+			break;
+		case "Enter":
+		case " ":
+			e.preventDefault();
+			if (isOpen.value && highlightedIndex.value >= 0) {
+				selectOption(props.options[highlightedIndex.value].value);
+			} else if (!isOpen.value) {
+				openDropdown();
+			}
+			break;
+		case "Escape":
+			if (isOpen.value) {
+				e.preventDefault();
+				closeDropdown();
+			}
+			break;
+		case "Tab":
+			isOpen.value = false;
+			break;
+	}
+}
+
+function onOutsideClick(e: MouseEvent) {
 	if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
 		isOpen.value = false;
 	}
 }
 
 onMounted(() => {
-	document.addEventListener("click", closeDropdown);
+	document.addEventListener("click", onOutsideClick);
 });
 
 onUnmounted(() => {
-	document.removeEventListener("click", closeDropdown);
+	document.removeEventListener("click", onOutsideClick);
 });
 </script>
 
 <template>
   <div class="custom-dropdown" ref="dropdownRef">
-    <div class="dropdown-header" @click="toggle" :class="{ 'is-open': isOpen }">
+    <div
+      class="dropdown-header"
+      ref="triggerRef"
+      role="combobox"
+      tabindex="0"
+      :aria-label="ariaLabel"
+      aria-haspopup="listbox"
+      :aria-expanded="isOpen"
+      :aria-controls="listboxId"
+      :aria-activedescendant="activeDescendant"
+      :class="{ 'is-open': isOpen }"
+      @click="toggle"
+      @keydown="onTriggerKeydown"
+    >
       <span class="dropdown-label">
         {{ options.find(o => o.value === modelValue)?.label || placeholder }}
       </span>
-      <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 24 24">
+      <svg class="dropdown-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 15.0006L7.75732 10.758L9.17154 9.34375L12 12.1722L14.8284 9.34375L16.2426 10.758L12 15.0006Z"></path>
       </svg>
     </div>
-    
-    <div v-show="isOpen" class="dropdown-menu">
-      <div 
-        v-for="opt in options" 
-        :key="opt.value" 
-        class="dropdown-item" 
-        :class="{ active: opt.value === modelValue }"
+
+    <div v-show="isOpen" class="dropdown-menu" role="listbox" :id="listboxId">
+      <div
+        v-for="(opt, index) in options"
+        :key="opt.value"
+        :id="optionId(index)"
+        class="dropdown-item"
+        role="option"
+        :aria-selected="opt.value === modelValue"
+        :class="{ active: opt.value === modelValue, highlighted: index === highlightedIndex }"
+        @mousemove="highlightedIndex = index"
         @click="selectOption(opt.value)"
       >
         {{ opt.label }}
@@ -144,7 +241,8 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item.highlighted {
   background-color: var(--sl-color-gray-7);
 }
 

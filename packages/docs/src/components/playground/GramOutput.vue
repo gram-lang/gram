@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
+import {
+	ref,
+	computed,
+	watch,
+	nextTick,
+	inject,
+	defineAsyncComponent,
+	type Ref,
+} from "vue";
 
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
@@ -8,9 +16,12 @@ import type { PlaygroundDiagnostic } from "./diagnostics";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
-import GramGantt from "./GramGantt.vue";
-// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import GramErrorState from "./GramErrorState.vue";
+
+// Only rendered when the user switches to the Gantt tab: load it on demand
+// so its code doesn't inflate the initial GramPlayground bundle.
+// biome-ignore lint/correctness/noUnusedVariables: used as a component in the <template> block below
+const GramGantt = defineAsyncComponent(() => import("./GramGantt.vue"));
 
 const props = defineProps<{
 	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview" | "gantt";
@@ -327,7 +338,8 @@ function handlePreviewClick(e: MouseEvent) {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--sl-color-gray-4);
+  /* gray-4 fails 4.5:1 in both themes against --sl-color-bg; gray-3 clears it. */
+  color: var(--sl-color-gray-3);
   font-size: 14px;
 }
 

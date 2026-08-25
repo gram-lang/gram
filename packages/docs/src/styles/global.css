@@ -436,3 +436,15 @@ div[data-nova-code-container] > div:first-child:not(pre) {
 	letter-spacing: 0.02em !important;
 	background-color: transparent !important;
 }
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+	color: var(--sl-color-text);
+	text-decoration: underline;
+	text-decoration-color: var(--gram-orange);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+	color: var(--sl-color-accent);
+}

@@ -24,5 +24,15 @@ import GramPlayground from "../../components/playground/GramPlayground.vue";
     flex: 1;
     display: flex;
     flex-direction: column;
+    /* Reserve the space GramPlayground.vue's .playground-workspace takes once
+       hydrated, so the client:only island doesn't collapse to 0 height and
+       shift the footer down when it mounts. */
+    min-height: calc(100vh - 60px);
+  }
+
+  @media (max-width: 767px) {
+    .playground-wrapper {
+      min-height: calc(100dvh + 30px);
+    }
   }
 </style>

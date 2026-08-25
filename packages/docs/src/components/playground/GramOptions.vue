@@ -410,7 +410,11 @@ function submitScale() {
 .scale-apply-btn {
   padding: 6px 12px;
   background-color: var(--sl-color-accent);
-  color: var(--sl-color-bg);
+  /* --sl-color-bg text (white in light mode) is only 2.33:1 against
+     accent; a fixed dark brown clears 4.5:1 against accent in both
+     light and dark mode, where a theme token can't since accent's
+     lightness doesn't invert the way bg/text tokens do. */
+  color: #1a1613;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -447,7 +451,9 @@ function submitScale() {
 }
 
 .option-item:hover .option-name {
-  color: var(--sl-color-accent);
+  /* orange-high, not accent: plain accent is 2.33:1 on white, well
+     under the 4.5:1 text minimum in light mode. */
+  color: var(--sl-color-orange-high);
 }
 
 .child-option {

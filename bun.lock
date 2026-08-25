@@ -20,7 +20,7 @@
     },
     "audit": {
       "name": "@gram-lang/audit",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "dependencies": {
         "@gram-lang/analyzer": "workspace:*",
         "@gram-lang/format": "workspace:*",
@@ -97,7 +97,7 @@
     },
     "packages/docs": {
       "name": "@gram-lang/docs",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "dependencies": {
         "@astrojs/markdown-remark": "^7.2.2",
         "@astrojs/mdx": "^7.0.5",
@@ -198,7 +198,7 @@
     },
     "packages/vscode-extension": {
       "name": "gram-lang",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "dependencies": {
         "@gram-lang/language-server": "workspace:*",
         "@gram-lang/renderer": "workspace:*",

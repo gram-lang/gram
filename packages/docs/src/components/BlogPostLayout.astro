@@ -116,13 +116,15 @@ const topicHref = `${basePath}/topic/${getTopicSlug(post.data.topic)}`;
   }
 
   .post-content :global(a) {
-    color: var(--sl-color-accent);
+    color: var(--sl-color-text);
     text-decoration: underline;
-    text-underline-offset: 4px;
+    text-decoration-color: var(--gram-orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   .post-content :global(a:hover) {
-    color: var(--sl-color-accent-high);
+    color: var(--sl-color-accent);
   }
 
   .post-content :global(ul),

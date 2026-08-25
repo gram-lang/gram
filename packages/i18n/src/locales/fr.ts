@@ -166,6 +166,8 @@ export const fr: GramLocale = {
 			entryFile: "Entrée",
 			newFileName: "Nom du nouveau fichier",
 			previewingStandalone: "Aperçu isolé de",
+			openFiles: "Fichiers ouverts",
+			hasErrors: "contient des erreurs",
 		},
 		mobileTabs: {
 			editor: "Éditeur",

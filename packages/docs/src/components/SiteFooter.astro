@@ -10,7 +10,7 @@ const t = {
 		resources: "Resources",
 		ecosystemTooling: "Ecosystem & Tooling",
 		community: "Community",
-		documentation: "Documentation",
+		documentation: "Docs",
 		playground: "Playground",
 		blog: "Blog",
 		changelog: "Changelog",
@@ -31,7 +31,7 @@ const t = {
 		resources: "Ressources",
 		ecosystemTooling: "Écosystème & Outils",
 		community: "Communauté",
-		documentation: "Documentation",
+		documentation: "Docs",
 		playground: "Playground",
 		blog: "Blog",
 		changelog: "Changelog",
@@ -58,7 +58,7 @@ const prefix = currentLang === "fr" ? "/fr" : "";
       <!-- Column 1: Brand -->
       <div class="footer-col brand-col">
         <a href={currentLang === "fr" ? "/fr/" : "/"} class="footer-logo">
-          <img src="/logo.svg" alt="Gram Logo" />
+          <img src="/logo.svg" alt="Gram Logo" width="32" height="32" />
           <span class="site-title">Gram</span>
         </a>
         <p class="tagline">{langText.tagline}</p>
@@ -243,7 +243,8 @@ const prefix = currentLang === "fr" ? "/fr" : "";
   }
 
   .brand-col img {
-    height: 2.2rem;
+    width: 32px;
+    height: 32px;
   }
 
   .brand-col .tagline {

@@ -63,8 +63,16 @@ const count = computed(() => keys.value.length);
 
     <!-- Objects and Arrays -->
     <template v-else>
-      <div class="json-line json-header" @click.stop="toggle">
-        <span class="json-toggle">{{ isExpanded ? '▼' : '▶' }}</span>
+      <div
+        class="json-line json-header"
+        role="button"
+        tabindex="0"
+        :aria-expanded="isExpanded"
+        @click.stop="toggle"
+        @keydown.enter.prevent="toggle"
+        @keydown.space.prevent="toggle"
+      >
+        <span class="json-toggle" aria-hidden="true">{{ isExpanded ? '▼' : '▶' }}</span>
         <span v-if="name" class="json-key">"{{ name }}"</span>
         <span v-if="name" class="json-colon">: </span>
         <span :class="type === 'array' ? 'json-bracket' : 'json-brace'">
@@ -141,7 +149,8 @@ const count = computed(() => keys.value.length);
   width: 14px;
   text-align: center;
   font-size: 10px;
-  color: var(--sl-color-gray-4);
+  /* gray-4 fails 4.5:1 in both themes against --sl-color-bg; gray-3 clears it. */
+  color: var(--sl-color-gray-3);
   margin-right: 4px;
 }
 
@@ -160,5 +169,5 @@ const count = computed(() => keys.value.length);
 .json-brace {
   color: var(--json-punct-color);
 }
-.json-count { color: var(--sl-color-gray-4); font-style: italic; margin: 0 4px; }
+.json-count { color: var(--sl-color-gray-3); font-style: italic; margin: 0 4px; }
 </style>

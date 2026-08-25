@@ -76,12 +76,14 @@ const primaryError = computed(() => {
   text-align: center;
   padding: 32px 24px;
   border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  background-color: rgba(239, 68, 68, 0.03);
+  border: 1px solid var(--sl-color-red);
+  background-color: var(--sl-color-red-low);
 }
 
 .error-state-icon {
-  color: #ef4444;
+  /* red-high, not the base red: the base red only clears 3:1 against
+     red-low in dark mode (4.80:1) but drops to 2.61:1 in light mode. */
+  color: var(--sl-color-red-high);
   margin-bottom: 16px;
 }
 
@@ -118,8 +120,8 @@ const primaryError = computed(() => {
   font-family: var(--sl-font-mono);
   font-size: 12px;
   font-weight: 600;
-  color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--sl-color-red-high);
+  background-color: var(--sl-color-bg);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -150,19 +152,21 @@ const primaryError = computed(() => {
   justify-content: center;
   gap: 8px;
   padding: 8px 16px;
-  background-color: #ef4444;
-  color: #ffffff;
+  background-color: var(--sl-color-red);
+  /* white text on --sl-color-red only reaches ~3.4:1 in either theme;
+     a fixed dark brown clears 4.5:1 against red's lightness in both. */
+  color: #1a1613;
   font-size: 13px;
   font-weight: 600;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: filter 0.2s;
   align-self: center;
   margin-top: 4px;
 }
 
 .jump-button:hover {
-  background-color: #dc2626;
+  filter: brightness(0.9);
 }
 </style>

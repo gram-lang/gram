@@ -176,6 +176,8 @@ export const en = {
 			entryFile: "Entry",
 			newFileName: "New file name",
 			previewingStandalone: "Standalone preview of",
+			openFiles: "Open files",
+			hasErrors: "has errors",
 		},
 		mobileTabs: {
 			editor: "Editor",

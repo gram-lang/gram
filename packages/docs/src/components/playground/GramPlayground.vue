@@ -94,6 +94,12 @@ const entryFile = ref<string>(DEFAULT_ENTRY_URI);
 const files = ref<Map<string, string>>(new Map([[DEFAULT_ENTRY_URI, ""]]));
 const activeFile = ref<string>(DEFAULT_ENTRY_URI);
 
+const EDITOR_PANEL_ID = "editor-panel";
+function tabId(path: string): string {
+	return `file-tab-${path.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+}
+const activeTabId = computed(() => tabId(activeFile.value));
+
 const mobileTab = ref<"editor" | "preview">("editor");
 
 const diagnostics = ref<PlaygroundDiagnostic[]>([]);
@@ -681,11 +687,12 @@ onUnmounted(() => {
       <div class="toolbar-right">
         <div class="toolbar-item" v-if="examples.length > 0">
           <span class="toolbar-label">{{ t.playground.recipe }}</span>
-          <PlaygroundDropdown 
-            v-model="selectedExample" 
-            :options="examples" 
+          <PlaygroundDropdown
+            v-model="selectedExample"
+            :options="examples"
             :placeholder="t.playground.loadExample"
-            @change="loadExample" 
+            :aria-label="t.playground.loadExample"
+            @change="loadExample"
           />
         </div>
         
@@ -757,13 +764,20 @@ onUnmounted(() => {
             :active-file="activeFile"
             :entry-file="entryFile"
             :error-files="errorFiles"
+            :editor-panel-id="EDITOR_PANEL_ID"
             @select="selectFile"
             @add="addFile"
             @rename="renameFile"
             @remove="removeFile"
             @done-rename="handleDoneRename"
           />
-          <div class="editor-wrapper">
+          <div
+            class="editor-wrapper"
+            :id="EDITOR_PANEL_ID"
+            role="tabpanel"
+            :aria-labelledby="activeTabId"
+            tabindex="-1"
+          >
             <GramEditor
               ref="editorRef"
               :files="files"
@@ -796,9 +810,10 @@ onUnmounted(() => {
               <template #view-selector>
                 <div class="header-view-wrapper">
                   <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                  <PlaygroundDropdown 
-                    v-model="viewMode" 
-                    :options="viewModeOptions" 
+                  <PlaygroundDropdown
+                    v-model="viewMode"
+                    :options="viewModeOptions"
+                    :aria-label="t.playground.viewLabel"
                     class="header-view-selector"
                   />
                 </div>
@@ -886,16 +901,22 @@ onUnmounted(() => {
   background-color: var(--sl-color-gray-7);
 }
 
+/*
+ * The -high variants (not the flat hex values used previously) are the
+ * only reliable way to clear 4.5:1 text contrast against --sl-color-bg
+ * *and* the is-clickable:hover --sl-color-gray-7 background in both
+ * light and dark mode.
+ */
 .status-badge.valid {
-  color: #008829;
+  color: var(--sl-color-green-high);
 }
 
 .status-badge.warning {
-  color: #d97706;
+  color: var(--sl-color-orange-high);
 }
 
 .status-badge.invalid {
-  color: #ef4444;
+  color: var(--sl-color-red-high);
 }
 
 .toolbar-item {
@@ -1028,11 +1049,11 @@ onUnmounted(() => {
   }
 
   .mobile-tab-dot.dot-error {
-    background-color: #ef4444;
+    background-color: var(--sl-color-red);
   }
 
   .mobile-tab-dot.dot-warning {
-    background-color: #f59e0b;
+    background-color: var(--sl-color-orange);
   }
 }
 

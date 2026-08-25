@@ -281,37 +281,44 @@ const overallSeverity = computed<WarningSeverity>(() => {
   height: 6px;
 }
 
+/*
+ * Pills use the same -low/base/-high triad as the severity badges below:
+ * base for the dot (3:1 non-text minimum), -high for the label text
+ * (4.5:1), -low for the hover/active fill (verified to keep -high text
+ * at 4.5:1+ on top of it in both light and dark mode). The flat hex
+ * values previously here dropped as low as 3.19:1 in light mode.
+ */
 .pill-error {
-  color: #ef4444;
+  color: var(--sl-color-red-high);
 }
 .pill-error .pill-dot {
-  background-color: #ef4444;
+  background-color: var(--sl-color-red);
 }
 .pill-error:hover, .pill-error.active {
-  background-color: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background-color: var(--sl-color-red-low);
+  border-color: var(--sl-color-red);
 }
 
 .pill-warning {
-  color: #d97706;
+  color: var(--sl-color-orange-high);
 }
 .pill-warning .pill-dot {
-  background-color: #f59e0b;
+  background-color: var(--sl-color-orange);
 }
 .pill-warning:hover, .pill-warning.active {
-  background-color: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.3);
+  background-color: var(--sl-color-orange-low);
+  border-color: var(--sl-color-orange);
 }
 
 .pill-info {
-  color: #2563eb;
+  color: var(--sl-color-blue-high);
 }
 .pill-info .pill-dot {
-  background-color: #3b82f6;
+  background-color: var(--sl-color-blue);
 }
 .pill-info:hover, .pill-info.active {
-  background-color: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
+  background-color: var(--sl-color-blue-low);
+  border-color: var(--sl-color-blue);
 }
 
 .console-header-right {
@@ -377,13 +384,13 @@ const overallSeverity = computed<WarningSeverity>(() => {
 }
 
 .diagnostic-item.item-error .diagnostic-icon {
-  color: #ef4444;
+  color: var(--sl-color-red);
 }
 .diagnostic-item.item-warning .diagnostic-icon {
-  color: #f59e0b;
+  color: var(--sl-color-orange);
 }
 .diagnostic-item.item-info .diagnostic-icon {
-  color: #3b82f6;
+  color: var(--sl-color-blue);
 }
 
 .diagnostic-icon {
@@ -414,16 +421,16 @@ const overallSeverity = computed<WarningSeverity>(() => {
 }
 
 .severity-badge.badge-error {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background-color: var(--sl-color-red-low);
+  color: var(--sl-color-red-high);
 }
 .severity-badge.badge-warning {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #d97706;
+  background-color: var(--sl-color-orange-low);
+  color: var(--sl-color-orange-high);
 }
 .severity-badge.badge-info {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #2563eb;
+  background-color: var(--sl-color-blue-low);
+  color: var(--sl-color-blue-high);
 }
 
 .diagnostic-code {
@@ -438,7 +445,8 @@ const overallSeverity = computed<WarningSeverity>(() => {
 .diagnostic-uri {
   font-size: 11px;
   font-family: var(--sl-font-mono);
-  color: var(--sl-color-gray-3);
+  /* gray-3 on --sl-color-bg-inline-code is only 3.62:1 in dark mode; gray-2 clears 4.5:1 in both. */
+  color: var(--sl-color-gray-2);
   background-color: var(--sl-color-bg-inline-code);
   padding: 3px 5px;
 }

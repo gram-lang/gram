@@ -7,6 +7,7 @@ const props = defineProps<{
 	activeFile: string;
 	entryFile: string;
 	errorFiles: Set<string>;
+	editorPanelId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -24,17 +25,76 @@ function label(path: string): string {
 	return path.startsWith("/") ? path.slice(1) : path;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: tabId is used in the <template> block below, which Biome's Vue support doesn't see.
+function tabId(path: string): string {
+	return `file-tab-${path.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+}
+
 const renamingPath = ref<string | null>(null);
 const renameValue = ref("");
 const renameInput = ref<HTMLInputElement | null>(null);
+const tabRefs = ref<Map<string, HTMLElement>>(new Map());
 
+// biome-ignore lint/correctness/noUnusedVariables: setRenameInputRef is used in the <template> block below, which Biome's Vue support doesn't see.
 function setRenameInputRef(el: any) {
 	if (el) {
 		renameInput.value = el as HTMLInputElement;
 	}
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: startRename is used in the <template> block below, which Biome's Vue support doesn't see.
+// biome-ignore lint/correctness/noUnusedVariables: setTabRef is used in the <template> block below, which Biome's Vue support doesn't see.
+function setTabRef(path: string, el: unknown) {
+	if (el) tabRefs.value.set(path, el as HTMLElement);
+	else tabRefs.value.delete(path);
+}
+
+function focusAndSelectTab(path: string) {
+	emit("select", path);
+	nextTick(() => tabRefs.value.get(path)?.focus());
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: onTabKeydown is used in the <template> block below, which Biome's Vue support doesn't see.
+function onTabKeydown(e: KeyboardEvent, path: string) {
+	const idx = props.files.indexOf(path);
+	switch (e.key) {
+		case "ArrowRight":
+			e.preventDefault();
+			focusAndSelectTab(props.files[(idx + 1) % props.files.length]);
+			break;
+		case "ArrowLeft":
+			e.preventDefault();
+			focusAndSelectTab(
+				props.files[(idx - 1 + props.files.length) % props.files.length],
+			);
+			break;
+		case "Home":
+			e.preventDefault();
+			focusAndSelectTab(props.files[0]);
+			break;
+		case "End":
+			e.preventDefault();
+			focusAndSelectTab(props.files[props.files.length - 1]);
+			break;
+		case "Enter":
+		case " ":
+			e.preventDefault();
+			emit("select", path);
+			break;
+		case "F2":
+			e.preventDefault();
+			startRename(path);
+			break;
+		case "Delete":
+		case "Backspace":
+			if (path !== props.entryFile) {
+				e.preventDefault();
+				emit("remove", path);
+				nextTick(() => tabRefs.value.get(props.entryFile)?.focus());
+			}
+			break;
+	}
+}
+
 async function startRename(path: string) {
 	renamingPath.value = path;
 	renameValue.value = label(path);
@@ -86,13 +146,23 @@ defineExpose({
 
 <template>
   <div class="gram-file-tabs">
+    <div class="gram-file-tabs-list" role="tablist" :aria-label="t.playground.tabs.openFiles">
     <div
       v-for="path in files"
       :key="path"
+      :id="tabId(path)"
+      :ref="(el) => setTabRef(path, el)"
       class="file-tab"
       :class="{ active: path === activeFile, 'has-error': errorFiles.has(path) }"
+      role="tab"
+      :aria-selected="path === activeFile"
+      :aria-label="errorFiles.has(path) ? `${label(path)} (${t.playground.tabs.hasErrors})` : label(path)"
+      :aria-controls="path === activeFile ? editorPanelId : undefined"
+      :aria-keyshortcuts="path === entryFile ? undefined : 'Delete'"
+      :tabindex="path === activeFile ? 0 : -1"
       @click="emit('select', path)"
       @dblclick="startRename(path)"
+      @keydown="onTabKeydown($event, path)"
     >
       <input
         v-if="renamingPath === path"
@@ -102,6 +172,7 @@ defineExpose({
         :aria-label="t.playground.tabs.newFileName"
         @click.stop
         @dblclick.stop
+        @keydown.stop
         @keydown.enter="commitRename(true)"
         @keydown.escape="cancelRename(true)"
         @blur="commitRename(false)"
@@ -119,8 +190,9 @@ defineExpose({
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="12" height="12" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
       </button>
     </div>
+    </div>
 
-    <button class="file-tab-add" :title="t.playground.tabs.addFile" @click="emit('add')">
+    <button class="file-tab-add" :title="t.playground.tabs.addFile" :aria-label="t.playground.tabs.addFile" @click="emit('add')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="14" height="14" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
     </button>
   </div>
@@ -132,8 +204,15 @@ defineExpose({
   align-items: stretch;
   background-color: var(--sl-color-gray-7);
   border-bottom: 1px solid var(--sl-color-border);
-  overflow-x: auto;
   flex-shrink: 0;
+  min-width: 0;
+}
+
+.gram-file-tabs-list {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  min-width: 0;
 }
 
 .file-tab {
@@ -159,18 +238,20 @@ defineExpose({
 .file-tab.active {
   color: var(--sl-color-text);
   background-color: var(--sl-color-bg);
+  /* accent-high: plain accent is only 2.33:1 on white, under the 3:1
+     non-text minimum for a state indicator in light mode. */
   box-shadow: inset 0 -2px 0 var(--sl-color-accent);
 }
 
 .file-tab.has-error .file-tab-label {
-  color: #ef4444;
+  color: var(--sl-color-red-high);
 }
 
 .file-tab-error-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #ef4444;
+  background-color: var(--sl-color-red);
   flex-shrink: 0;
 }
 
@@ -178,7 +259,7 @@ defineExpose({
   font: inherit;
   color: inherit;
   background-color: var(--sl-color-bg);
-  border: 1px solid var(--sl-color-accent);
+  border: 1px solid var(--sl-color-accent-high);
   border-radius: 3px;
   padding: 1px 4px;
   width: 16ch;
