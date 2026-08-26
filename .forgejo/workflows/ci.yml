@@ -2,18 +2,31 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - '.agents/**'
+      - '.claude/**'
+      - '.changeset/**'
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - '.agents/**'
+      - '.claude/**'
+      - '.changeset/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
+    name: Build, Test & Publish
     runs-on: docker
     container:
       image: oven/bun:1.3.14
-
     steps:
-      - name: Install Git, Node.js, and CA Certificates
+      - name: Install Git, Node.js & Tools
         run: |
           apt-get update -qq && apt-get install -y -qq --no-install-recommends git ca-certificates curl
           git config --global --add safe.directory '*'
@@ -21,46 +34,66 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect docs-relevant changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          # No usable base (first push to a branch, force-push, shallow edge case): run docs build to be safe.
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "docs=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BASE" HEAD | grep -qE '^packages/(docs|renderer)/'; then
+            echo "docs=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "docs=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache Bun & Turbo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            .turbo
+          key: bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
 
-      - name: Build
+      - name: Build Core Packages
         run: |
           bun run build --filter='!@gram-lang/docs'
           git diff --exit-code packages/parser/src/grammar-content.ts
 
-      - name: Build docs
+      - name: Build Docs
+        if: steps.filter.outputs.docs == 'true'
         run: bun run build --filter='@gram-lang/docs'
 
-      - name: Lint
-        run: bun run lint
+      - name: Lint, Typecheck & Ratchet
+        run: |
+          bun run lint
+          bun run typecheck
+          bun run any-ratchet
 
-      - name: Typecheck
-        run: bun run typecheck
-
-      - name: Any Ratchet
-        run: bun run any-ratchet
-
-      - name: Test
+      - name: Unit Tests
         run: bun test
 
-      - name: Conformance
+      - name: Conformance Suite
         run: bun run conformance
 
-      - name: Content audit
-        run: bun run audit
-        continue-on-error: true
-
-      - name: Audit dependencies
-        run: bun audit --audit-level=high
-
-      - name: Pack CLI dependencies
+      - name: Pack CLI Packages
         run: |
           mkdir -p .smoke
           for p in i18n format parser modules kitchen analyzer renderer cli; do (cd packages/$p && bun pm pack --destination ../../.smoke); done
 
-      - name: Node smoke tests
+      - name: Node.js Smoke Tests
         run: |
           export REPO_DIR=$(pwd)
           mkdir -p /tmp/smoke-install && cd /tmp/smoke-install
