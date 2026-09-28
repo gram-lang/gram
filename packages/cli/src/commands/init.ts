@@ -138,7 +138,7 @@ export default defineCommand({
 					}),
 				);
 				if (saveKey) {
-					const apiKey = guardCancel(
+					const apiKey = guardCancel<string>(
 						await text({ message: "Enter your API key:" }),
 					);
 					if (apiKey) {
