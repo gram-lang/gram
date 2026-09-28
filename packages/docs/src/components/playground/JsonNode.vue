@@ -109,6 +109,7 @@ const count = computed(() => keys.value.length);
 <style scoped>
 .json-node {
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   font-size: 14px;
   line-height: 1.5;
 }

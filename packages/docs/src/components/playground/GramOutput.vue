@@ -304,7 +304,8 @@ function handlePreviewClick(e: MouseEvent) {
   box-sizing: border-box;
   background: transparent !important;
   line-height: 1.6;
-  font-family: var(--sl-font-mono), "Fira Code", monospace;
+  font-family: var(--sl-font-mono), monospace;
+  font-variant-ligatures: none;
   white-space: pre-wrap;
   word-break: break-word;
 }

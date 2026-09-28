@@ -1149,6 +1149,7 @@ onUnmounted(() => {
 
 .preview-scope-banner code {
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   color: var(--sl-color-text);
   font-weight: 600;
 }

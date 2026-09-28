@@ -1,3 +1,6 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+
 :root {
 	/* Gram Orange Theme - matching the new logo #FF7F00 */
 	--sl-color-accent-low: #331900;
@@ -10,12 +13,24 @@
 	--gram-orange-dark: #cc6600;
 	--gram-orange-soft: rgba(255, 127, 0, 0.1);
 
-	/* Fonts */
+	/* Fonts
+	 * Inter is bundled with the site (@fontsource-variable/inter registers it as
+	 * "Inter Variable"), so a locally installed — and possibly outdated or
+	 * mismatched — "Inter" is never picked up. The same goes for JetBrains Mono
+	 * ("JetBrains Mono Variable"). Keep the bare family names out of these stacks. */
 	--sl-font:
-		"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-		Arial, sans-serif;
+		"Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		Helvetica, Arial, sans-serif;
 	--sl-font-mono:
-		"JetBrains Mono", "Fira Code", Consolas, Monaco, "Courier New", monospace;
+		"JetBrains Mono Variable", Consolas, Monaco, "Courier New", monospace;
+}
+
+/* No programming ligatures (->, =>, !=, ...) in code, whatever the component. */
+code,
+pre,
+kbd,
+samp {
+	font-variant-ligatures: none;
 }
 
 :root[data-theme="light"] {

@@ -65,7 +65,8 @@ const editorTheme = EditorView.theme({
 		fontSize: "14px",
 	},
 	".cm-scroller": {
-		fontFamily: 'var(--sl-font-mono), "Fira Code", monospace',
+		fontFamily: "var(--sl-font-mono), monospace",
+		fontVariantLigatures: "none",
 		overflow: "auto",
 	},
 	".cm-content": {

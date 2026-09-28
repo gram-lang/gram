@@ -118,6 +118,7 @@ const primaryError = computed(() => {
 
 .error-code {
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   font-size: 12px;
   font-weight: 600;
   color: var(--sl-color-red-high);
@@ -128,6 +129,7 @@ const primaryError = computed(() => {
 
 .error-uri {
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   font-size: 12px;
   color: var(--sl-color-gray-3);
 }
@@ -138,6 +140,7 @@ const primaryError = computed(() => {
   border: 1px solid var(--sl-color-border);
   border-radius: 6px;
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   font-size: 13px;
   color: var(--sl-color-text);
   white-space: pre-wrap;
