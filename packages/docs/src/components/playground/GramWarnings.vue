@@ -438,6 +438,7 @@ const overallSeverity = computed<WarningSeverity>(() => {
   color: var(--sl-color-gray-3);
   font-size: 11px;
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   background-color: var(--sl-color-bg-sidebar);
   padding: 3px 5px;
 }
@@ -445,6 +446,7 @@ const overallSeverity = computed<WarningSeverity>(() => {
 .diagnostic-uri {
   font-size: 11px;
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   /* gray-3 on --sl-color-bg-inline-code is only 3.62:1 in dark mode; gray-2 clears 4.5:1 in both. */
   color: var(--sl-color-gray-2);
   background-color: var(--sl-color-bg-inline-code);
@@ -458,6 +460,7 @@ const overallSeverity = computed<WarningSeverity>(() => {
 
 .diagnostic-item-name code {
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   color: var(--sl-color-text);
 }
 

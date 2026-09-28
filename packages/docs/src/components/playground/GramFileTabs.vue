@@ -223,6 +223,7 @@ defineExpose({
   height: 42px;
   font-size: 12px;
   font-family: var(--sl-font-mono);
+  font-variant-ligatures: none;
   color: var(--sl-color-gray-3);
   border-right: 1px solid var(--sl-color-border);
   cursor: pointer;
