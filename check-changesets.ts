@@ -5,8 +5,8 @@
 // anything or touching versions. Run this before `bun run version-packages`,
 // fix whatever it flags, then release.
 
-import readChangesets from "@changesets/read";
-import { read as readConfig } from "@changesets/config";
+import { readChangesets } from "@changesets/read";
+import { readConfig } from "@changesets/config";
 import { getPackages } from "@manypkg/get-packages";
 import { readFile } from "node:fs/promises";
 import {
@@ -25,7 +25,11 @@ async function main() {
 		root: rawPackages.root || rawPackages.rootPackage || { dir: cwd },
 	};
 	const allChangesets = await readChangesets(cwd);
-	await readConfig(cwd, packages); // validates .changeset/config.json exists and is well-formed
+	// validates .changeset/config.json exists and is well-formed
+	const { errors: configErrors } = await readConfig(cwd, packages);
+	if (configErrors) {
+		throw new Error(`Invalid .changeset/config.json: ${configErrors.join("; ")}`);
+	}
 
 	let preState: { changesets: string[]; tag?: string } | undefined;
 	try {
