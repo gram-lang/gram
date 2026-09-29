@@ -96,6 +96,8 @@ export function scheduleALAP(
 				// binding win, exactly like today's `Math.max` over all
 				// background-task ends used to before this refactor.
 				for (const step of sectionSteps) {
+					// A synthetic mise en place entry produces nothing.
+					if (step.isPrep) continue;
 					if (!step.produced.includes(section.intermediate_preparation)) {
 						step.produced.push(section.intermediate_preparation);
 					}

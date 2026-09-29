@@ -38,6 +38,20 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     ],
     "totalTime": 21,
   },
+  "miseEnPlace": [
+    {
+      "duration": 5,
+      "items": [
+        {
+          "count": 5,
+          "duration": 5,
+          "kind": "gather",
+          "target": "ingredient",
+        },
+      ],
+      "section": 0,
+    },
+  ],
   "registry": {
     "cookware": {},
     "ingredients": {
@@ -64,6 +78,144 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         "id": "sugar",
         "name": "sugar",
       },
+    },
+  },
+  "schedules": {
+    "perSection": {
+      "blocks": [
+        {
+          "end": 5,
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "end": 7,
+          "kind": "step",
+          "section": 0,
+          "start": 5,
+          "step": 0,
+        },
+        {
+          "end": 9,
+          "kind": "step",
+          "section": 0,
+          "start": 7,
+          "step": 1,
+        },
+        {
+          "end": 11,
+          "kind": "step",
+          "section": 0,
+          "start": 9,
+          "step": 2,
+        },
+        {
+          "end": 13,
+          "kind": "step",
+          "section": 0,
+          "start": 11,
+          "step": 3,
+        },
+        {
+          "end": 15,
+          "kind": "step",
+          "section": 0,
+          "start": 13,
+          "step": 4,
+        },
+        {
+          "end": 17,
+          "kind": "step",
+          "section": 0,
+          "start": 15,
+          "step": 5,
+        },
+        {
+          "end": 19,
+          "kind": "step",
+          "section": 0,
+          "start": 17,
+          "step": 6,
+        },
+        {
+          "end": 21,
+          "kind": "step",
+          "section": 1,
+          "start": 19,
+          "step": 0,
+        },
+      ],
+      "idleTime": 0,
+      "totalTime": 21,
+    },
+    "upfront": {
+      "blocks": [
+        {
+          "end": 5,
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "end": 7,
+          "kind": "step",
+          "section": 0,
+          "start": 5,
+          "step": 0,
+        },
+        {
+          "end": 9,
+          "kind": "step",
+          "section": 0,
+          "start": 7,
+          "step": 1,
+        },
+        {
+          "end": 11,
+          "kind": "step",
+          "section": 0,
+          "start": 9,
+          "step": 2,
+        },
+        {
+          "end": 13,
+          "kind": "step",
+          "section": 0,
+          "start": 11,
+          "step": 3,
+        },
+        {
+          "end": 15,
+          "kind": "step",
+          "section": 0,
+          "start": 13,
+          "step": 4,
+        },
+        {
+          "end": 17,
+          "kind": "step",
+          "section": 0,
+          "start": 15,
+          "step": 5,
+        },
+        {
+          "end": 19,
+          "kind": "step",
+          "section": 0,
+          "start": 17,
+          "step": 6,
+        },
+        {
+          "end": 21,
+          "kind": "step",
+          "section": 1,
+          "start": 19,
+          "step": 0,
+        },
+      ],
+      "idleTime": 0,
+      "totalTime": 21,
     },
   },
   "sections": [
@@ -556,6 +708,54 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     ],
     "totalTime": 149,
   },
+  "miseEnPlace": [
+    {
+      "duration": 15,
+      "items": [
+        {
+          "count": 12,
+          "duration": 12,
+          "kind": "gather",
+          "target": "ingredient",
+        },
+        {
+          "count": 1,
+          "duration": 1,
+          "kind": "gather",
+          "target": "cookware",
+        },
+        {
+          "duration": 2,
+          "kind": "prepare",
+          "ref": {
+            "id": "butter",
+            "type": "ingredient",
+          },
+        },
+      ],
+      "section": 0,
+    },
+    {
+      "duration": 4,
+      "items": [
+        {
+          "count": 2,
+          "duration": 2,
+          "kind": "gather",
+          "target": "cookware",
+        },
+        {
+          "duration": 2,
+          "kind": "prepare",
+          "ref": {
+            "id": "frying-pan",
+            "type": "cookware",
+          },
+        },
+      ],
+      "section": 1,
+    },
+  ],
   "registry": {
     "cookware": {
       "bowl": {
@@ -631,6 +831,142 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         "id": "vanilla-paste",
         "name": "vanilla paste",
       },
+    },
+  },
+  "schedules": {
+    "perSection": {
+      "blocks": [
+        {
+          "end": 15,
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "end": 17,
+          "kind": "step",
+          "section": 0,
+          "start": 15,
+          "step": 0,
+        },
+        {
+          "end": 19,
+          "kind": "step",
+          "section": 0,
+          "start": 17,
+          "step": 1,
+        },
+        {
+          "end": 21,
+          "kind": "step",
+          "section": 0,
+          "start": 19,
+          "step": 2,
+        },
+        {
+          "end": 23,
+          "kind": "step",
+          "section": 0,
+          "start": 21,
+          "step": 3,
+        },
+        {
+          "end": 83,
+          "kind": "step",
+          "section": 0,
+          "start": 23,
+          "step": 4,
+        },
+        {
+          "end": 143,
+          "kind": "prep",
+          "section": 1,
+          "start": 139,
+        },
+        {
+          "end": 143,
+          "kind": "step",
+          "section": 1,
+          "start": 143,
+          "step": 0,
+        },
+        {
+          "end": 145,
+          "kind": "passive",
+          "section": 1,
+          "start": 143,
+          "step": 0,
+        },
+      ],
+      "idleTime": 58,
+      "totalTime": 145,
+    },
+    "upfront": {
+      "blocks": [
+        {
+          "end": 15,
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "end": 19,
+          "kind": "prep",
+          "section": 1,
+          "start": 15,
+        },
+        {
+          "end": 21,
+          "kind": "step",
+          "section": 0,
+          "start": 19,
+          "step": 0,
+        },
+        {
+          "end": 23,
+          "kind": "step",
+          "section": 0,
+          "start": 21,
+          "step": 1,
+        },
+        {
+          "end": 25,
+          "kind": "step",
+          "section": 0,
+          "start": 23,
+          "step": 2,
+        },
+        {
+          "end": 27,
+          "kind": "step",
+          "section": 0,
+          "start": 25,
+          "step": 3,
+        },
+        {
+          "end": 87,
+          "kind": "step",
+          "section": 0,
+          "start": 27,
+          "step": 4,
+        },
+        {
+          "end": 147,
+          "kind": "step",
+          "section": 1,
+          "start": 147,
+          "step": 0,
+        },
+        {
+          "end": 149,
+          "kind": "passive",
+          "section": 1,
+          "start": 147,
+          "step": 0,
+        },
+      ],
+      "idleTime": 62,
+      "totalTime": 149,
     },
   },
   "sections": [

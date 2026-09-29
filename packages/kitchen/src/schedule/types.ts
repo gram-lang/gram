@@ -16,8 +16,13 @@ import type { ProcessedStepItem } from "../types";
  */
 export interface StepSchedule {
 	sectionIndex: number;
-	stepObj: ProcessedStepItem;
+	// Null only for a synthetic mise en place entry (`isPrep`), which stands in
+	// for a section's preparation and has no compiled step behind it.
+	stepObj: ProcessedStepItem | null;
 	isComment: boolean;
+	// True for the synthetic entry the per-section pass injects at the head of a
+	// section: it is scheduled like any other work but reported as a `prep` block.
+	isPrep?: boolean;
 	localActiveTime: number;
 	productionTime: number;
 	produced: string[];
@@ -27,7 +32,7 @@ export interface StepSchedule {
 	lf: number;
 }
 
-interface PassiveTask {
+export interface PassiveTask {
 	name: string;
 	duration: number;
 	localOffset: number;

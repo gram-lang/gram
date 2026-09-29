@@ -1,32 +1,13 @@
 import type {
+	MiseEnPlaceItem,
 	ProcessedSection,
 	Registry,
+	SectionMiseEnPlace,
 	StepToken,
 	TimeBreakdownItem,
 	Usage,
 } from "./types";
 import { addToBreakdown, slugify } from "./utils";
-
-/** One line of a section's mise en place cost. */
-export type MiseEnPlaceItem =
-	| {
-			kind: "gather";
-			target: "ingredient" | "cookware";
-			count: number;
-			duration: number;
-	  }
-	| {
-			kind: "prepare";
-			ref: { type: "ingredient" | "cookware"; id: string };
-			duration: number;
-	  };
-
-/** What preparing section `section` costs. Only sections with a cost appear. */
-export interface SectionMiseEnPlace {
-	section: number; // index into the sections array
-	duration: number; // == sum of items[].duration
-	items: MiseEnPlaceItem[];
-}
 
 // Tracks the ingredient's stable `id` rather than a display name — the label is
 // resolved to a name via the registry at render time, the same way every other

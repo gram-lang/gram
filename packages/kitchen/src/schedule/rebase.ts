@@ -1,6 +1,7 @@
 import type {
 	ProcessedSection,
 	ProcessedStep,
+	ScheduleBlock,
 	TimeBreakdownItem,
 } from "../types";
 import { addToBreakdown } from "../utils";
@@ -14,21 +15,46 @@ export interface ScheduleMetrics {
 }
 
 /**
+ * The rebased, side-effect-free result of laying out a set of schedules:
+ * every timing shifted so the earliest lands at 0, ready to be committed onto
+ * the compiled output (`commitTimeline`) or read as-is (the per-section pass).
+ */
+export interface Timeline {
+	blocks: ScheduleBlock[];
+	steps: Array<{ sched: StepSchedule; start: number; end: number }>;
+	passives: Array<{ entry: ScheduledPassiveTask; start: number; end: number }>;
+	workflowDuration: number;
+	activeBreakdown: TimeBreakdownItem[];
+	totalBreakdown: TimeBreakdownItem[];
+}
+
+const KIND_ORDER = { prep: 0, step: 1, passive: 2 } as const;
+
+/** Deterministic order: by start, then end, then kind, then position in the recipe. */
+export function sortBlocks(blocks: ScheduleBlock[]): ScheduleBlock[] {
+	return blocks.sort(
+		(a, b) =>
+			a.start - b.start ||
+			a.end - b.end ||
+			KIND_ORDER[a.kind] - KIND_ORDER[b.kind] ||
+			a.section - b.section ||
+			("step" in a ? a.step : -1) - ("step" in b ? b.step : -1),
+	);
+}
+
+/**
  * Shifts every `ls`/`lf`/passive-task start so the earliest one lands at 0
  * (ALAP scheduling naturally produces negative offsets from an arbitrary
- * T-zero), writes the final `timings.start`/`timings.end` onto each step's
- * output object, and computes the timing breakdowns / idle time.
+ * T-zero) and computes the blocks and timing breakdowns.
  *
- * This is the only phase that mutates the compiled output's `timings` —
- * scheduleALAP and serializeTracks only compute `ls`/`lf`/actualStart on the
- * internal StepSchedule/ScheduledPassiveTask records.
+ * Pure: reads `schedules`/`passiveTasks`, writes nothing. A synthetic `isPrep`
+ * schedule becomes a `prep` block and is left out of the active breakdown.
  */
-export function rebaseAndCommit(
+export function computeTimeline(
 	schedules: StepSchedule[],
 	passiveTasks: ScheduledPassiveTask[],
 	sections: ProcessedSection[],
-	globalActiveTime: number,
-): ScheduleMetrics {
+): Timeline {
 	let globalMinStart = 0;
 	for (const sched of schedules) {
 		if (!sched.isComment) globalMinStart = Math.min(globalMinStart, sched.ls);
@@ -39,6 +65,9 @@ export function rebaseAndCommit(
 
 	const rebaseOffset = Math.abs(globalMinStart);
 
+	const blocks: ScheduleBlock[] = [];
+	const steps: Timeline["steps"] = [];
+	const passives: Timeline["passives"] = [];
 	const activeBreakdown: TimeBreakdownItem[] = [];
 	const totalContributions: Array<{
 		label: string;
@@ -49,13 +78,29 @@ export function rebaseAndCommit(
 	for (const sched of schedules) {
 		if (sched.isComment) continue;
 
-		const stepObj = sched.stepObj as ProcessedStep;
 		const rebasedLs = sched.ls + rebaseOffset;
 		const rebasedLf = sched.lf + rebaseOffset;
 
-		stepObj.timings.start = rebasedLs;
-		stepObj.timings.end = rebasedLf;
-		stepObj.timings.activeDuration = sched.localActiveTime;
+		if (sched.isPrep) {
+			blocks.push({
+				kind: "prep",
+				section: sched.sectionIndex,
+				start: rebasedLs,
+				end: rebasedLf,
+			});
+			continue;
+		}
+
+		steps.push({ sched, start: rebasedLs, end: rebasedLf });
+		blocks.push({
+			kind: "step",
+			section: sched.sectionIndex,
+			step: sections[sched.sectionIndex]!.steps.indexOf(
+				sched.stepObj as ProcessedStep,
+			),
+			start: rebasedLs,
+			end: rebasedLf,
+		});
 
 		if (sched.localActiveTime > 0) {
 			const sectionTitle = sections[sched.sectionIndex]!.title || "unnamed";
@@ -70,15 +115,22 @@ export function rebaseAndCommit(
 	}
 
 	for (const entry of passiveTasks) {
-		const stepObj = entry.sched.stepObj as ProcessedStep;
 		const rebasedStart = entry.actualStart + rebaseOffset;
 		const rebasedEnd = entry.actualEnd + rebaseOffset;
+		passives.push({ entry, start: rebasedStart, end: rebasedEnd });
 
-		stepObj.backgroundTasks.push({
-			name: entry.task.sourceName,
-			duration: entry.task.duration,
-			startOffset: rebasedStart - stepObj.timings.start,
-		});
+		const passiveBlock: ScheduleBlock = {
+			kind: "passive",
+			section: entry.sched.sectionIndex,
+			step: sections[entry.sched.sectionIndex]!.steps.indexOf(
+				entry.sched.stepObj as ProcessedStep,
+			),
+			start: rebasedStart,
+			end: rebasedEnd,
+		};
+		// Anonymous timers carry no track: keep the key absent rather than undefined.
+		if (entry.task.isNamed) passiveBlock.track = entry.task.name;
+		blocks.push(passiveBlock);
 
 		const timerLabel = entry.task.isNamed
 			? `timer_named:${entry.task.name}`
@@ -103,13 +155,60 @@ export function rebaseAndCommit(
 		}
 	}
 
-	const workflowDuration = maxEnd;
-	const idleTime = workflowDuration - globalActiveTime;
-
 	return {
-		idleTime,
-		activeTime: globalActiveTime,
+		blocks: sortBlocks(blocks),
+		steps,
+		passives,
+		workflowDuration: maxEnd,
 		activeBreakdown,
 		totalBreakdown,
 	};
+}
+
+/**
+ * Writes a timeline onto the compiled output: `timings.start`/`end`/
+ * `activeDuration` on each step and `backgroundTasks` on each step with a
+ * passive task. This is the only phase that mutates the compiled output's
+ * `timings` — scheduleALAP and serializeTracks only compute `ls`/`lf`/
+ * actualStart on the internal StepSchedule/ScheduledPassiveTask records.
+ */
+export function commitTimeline(
+	timeline: Timeline,
+	globalActiveTime: number,
+): ScheduleMetrics {
+	for (const { sched, start, end } of timeline.steps) {
+		const stepObj = sched.stepObj as ProcessedStep;
+		stepObj.timings.start = start;
+		stepObj.timings.end = end;
+		stepObj.timings.activeDuration = sched.localActiveTime;
+	}
+
+	for (const { entry, start } of timeline.passives) {
+		const stepObj = entry.sched.stepObj as ProcessedStep;
+		stepObj.backgroundTasks.push({
+			name: entry.task.sourceName,
+			duration: entry.task.duration,
+			startOffset: start - stepObj.timings.start,
+		});
+	}
+
+	return {
+		idleTime: timeline.workflowDuration - globalActiveTime,
+		activeTime: globalActiveTime,
+		activeBreakdown: timeline.activeBreakdown,
+		totalBreakdown: timeline.totalBreakdown,
+	};
+}
+
+/** Lays out `schedules` and commits the result onto the compiled output. */
+export function rebaseAndCommit(
+	schedules: StepSchedule[],
+	passiveTasks: ScheduledPassiveTask[],
+	sections: ProcessedSection[],
+	globalActiveTime: number,
+): ScheduleMetrics {
+	return commitTimeline(
+		computeTimeline(schedules, passiveTasks, sections),
+		globalActiveTime,
+	);
 }
