@@ -74,7 +74,7 @@ L'objet `RendererOptions` offre aussi `bakersReference`/`bakersMathOnly` (pour l
   :::caution
   Même si cet échappement bloque les injections HTML vicieuses (le vecteur XSS classique via `markdown-it`/`remark`), `toMarkdown` ne purge **pas** tout. Un lien `[texte](javascript:...)` passera. Si vous rendez des `.gram` issus de sources douteuses, passez un coup de `DOMPurify` ou `rehype-sanitize` sur le HTML final par principe.
   :::
-- **Formatage des Durées** : Transforme d'infâmes minutes brutes en temps humain (`90` → `1 h 30 min`).
+- **Formatage des Durées** : Transforme d'infâmes minutes brutes en temps humain (`90` → `1h 30m`).
 - **Pré-stylisation CSS** : Le *package* *ship* un fichier `gram.css` embarquant le thème officiel (tokens clair/sombre par composant) ainsi qu'un `gantt.css` (dépendant du premier). Le Print HTML, lui, a sa propre CSS directement injectée dans son *header* : c'est *plug and play*.
 
 ## Consommation directe du JSON

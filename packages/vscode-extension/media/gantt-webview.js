@@ -89,6 +89,17 @@
   var EMPTY_MACROS = Object.fromEntries(
     NUTRIENTS.filter((n) => n.required).map((n) => [n.key, 0])
   );
+  var COMMON_FRACTIONS = [
+    { val: 0.5, str: "1/2" },
+    { val: 0.25, str: "1/4" },
+    { val: 0.75, str: "3/4" },
+    { val: 1 / 3, str: "1/3" },
+    { val: 2 / 3, str: "2/3" },
+    { val: 0.125, str: "1/8" },
+    { val: 0.375, str: "3/8" },
+    { val: 0.625, str: "5/8" },
+    { val: 0.875, str: "7/8" }
+  ];
   function formatTime(minutes) {
     const h = Math.floor(minutes / 60);
     const m = Math.floor(minutes % 60);

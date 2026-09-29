@@ -3,7 +3,11 @@ import { runPipeline } from "../core/pipeline";
 import { fmtNumber } from "../core/format";
 import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
-import type { NutritionBasis } from "@gram-lang/renderer";
+import {
+	formatTimer,
+	toCommonFraction,
+	type NutritionBasis,
+} from "@gram-lang/renderer";
 import type { RecipeViewModel } from "../types";
 
 function formatMass(grams: number): string {
@@ -16,9 +20,8 @@ function formatQty(item: any): string {
 	if (qty == null) return "";
 	const decimals = isCoarseUnit(item.unit) ? 1 : 2;
 	if (typeof qty === "number") {
-		return item.unit
-			? `${fmtNumber(qty, decimals)} ${item.unit}`
-			: fmtNumber(qty, decimals);
+		const shown = toCommonFraction(qty) ?? fmtNumber(qty, decimals);
+		return item.unit ? `${shown} ${item.unit}` : shown;
 	}
 	if (typeof qty === "string") return item.unit ? `${qty} ${item.unit}` : qty;
 	if (typeof qty === "object") {
@@ -79,12 +82,8 @@ function tokenToText(item: any, registry: Record<string, any>): string {
 	switch (item.type) {
 		case "text":
 			return item.value ?? "";
-		case "timer": {
-			const q = item.quantity;
-			if (!q) return "";
-			const val = q.text ?? (q.value != null ? String(q.value) : "");
-			return `~${val}${q.unit ?? "min"}`;
-		}
+		case "timer":
+			return item.quantity ? `~${formatTimer(item)}` : "";
 		case "temperature": {
 			const q = item.quantity;
 			if (!q) return item.text ?? "";
@@ -182,7 +181,7 @@ export async function buildViewModel(
 		m && (m.totalTime || m.idleTime || m.activeTime || m.preparationTime)
 			? {
 					total: m.totalTime || undefined,
-					idle: m.idleTime || undefined,
+					rest: m.idleTime || undefined,
 					active: m.activeTime || undefined,
 					prep: m.preparationTime || undefined,
 				}
