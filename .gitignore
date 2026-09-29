@@ -15,3 +15,5 @@ dist/
 **/.vitepress/dist
 packages/docs/src/reference/api/parts/
 packages/docs/src/public/llms-full.txt
+# Generated at the root by Turborepo
+/AGENTS.md

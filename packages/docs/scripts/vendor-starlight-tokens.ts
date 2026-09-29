@@ -16,7 +16,7 @@ import { dirname, join } from "node:path";
 const starlightPkgDir = dirname(
 	require.resolve("@astrojs/starlight/package.json"),
 );
-const starlightStyleDir = join(starlightPkgDir, "style");
+const starlightStyleDir = join(starlightPkgDir, "dist/style");
 const destDir = join(import.meta.dirname, "../src/styles/starlight");
 
 mkdirSync(destDir, { recursive: true });
