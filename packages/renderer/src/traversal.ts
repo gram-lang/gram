@@ -25,6 +25,7 @@ export interface RenderSections {
 	meta: string;
 	shoppingList: string;
 	cookware: string;
+	miseEnPlace: string;
 	instructions: string;
 	footnotes: string;
 	nutrition: string;
@@ -51,6 +52,16 @@ export interface RenderBackend {
 		options: RendererOptions,
 	): string;
 	renderCookware(
+		data: RenderableCompilationResult,
+		context: RenderContext,
+		options: RendererOptions,
+	): string;
+	/**
+	 * The up-front "Mise en place" block, placed between the cookware and the
+	 * instructions. Empty unless the reader picked the `upfront` schedule —
+	 * in `perSection` each section carries its own badge instead.
+	 */
+	renderMiseEnPlace(
 		data: RenderableCompilationResult,
 		context: RenderContext,
 		options: RendererOptions,
@@ -95,13 +106,23 @@ export function renderRecipe(
 	const meta = backend.renderMeta(data, context, options);
 	const shoppingList = backend.renderShoppingList(data, context, options);
 	const cookware = backend.renderCookware(data, context, options);
+	const miseEnPlace = backend.renderMiseEnPlace(data, context, options);
 	const instructions = backend.renderInstructions(data, context, options);
 	// Must run after instructions — see renderFootnotes's own doc comment.
 	const footnotes = backend.renderFootnotes(data, context, options);
 	const nutrition = backend.renderNutrition(data, context, options);
 
 	return backend.assembleDocument(
-		{ title, meta, shoppingList, cookware, instructions, footnotes, nutrition },
+		{
+			title,
+			meta,
+			shoppingList,
+			cookware,
+			miseEnPlace,
+			instructions,
+			footnotes,
+			nutrition,
+		},
 		data,
 		context,
 		options,

@@ -110,6 +110,12 @@ export interface RendererClasses {
 	formulaText?: string;
 }
 
+/**
+ * Which complete timeline a view follows: preparation right before each
+ * section (`perSection`, the default) or all of it at the start (`upfront`).
+ */
+export type ScheduleMode = "perSection" | "upfront";
+
 export interface RendererOptions {
 	icons?: RendererIcons;
 	classes?: RendererClasses;
@@ -117,6 +123,13 @@ export interface RendererOptions {
 	formatDuration?: (minutes: number) => string;
 	/** When true, ingredient quantities are omitted from step text (not from shopping list or section mise en place). */
 	hideStepQty?: boolean;
+	/**
+	 * Which timeline to follow: mise en place right before each section
+	 * (`"perSection"`, the default) or all of it at the start (`"upfront"`).
+	 * Drives the total/idle times, the per-section badge and the up-front
+	 * "Mise en place" block.
+	 */
+	schedule?: ScheduleMode;
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
 	/**

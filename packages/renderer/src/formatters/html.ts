@@ -23,6 +23,13 @@ import {
 	nutritionGroups,
 	resolveNutritionBasis,
 } from "../nutrition";
+import {
+	describeMiseEnPlaceItem,
+	isPerSection,
+	miseEnPlaceForSection,
+	resolveSchedule,
+	upfrontPreparationItems,
+} from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
 import {
@@ -126,12 +133,51 @@ const htmlBackend: RenderBackend = {
 					.join("\n");
 			};
 
+			const timingRow = (labelHtml: string, duration: number) =>
+				`      <div class="timing-row">
+        <span class="timing-label">${labelHtml}</span>
+        <span class="timing-val">+ ${formatDuration(duration)}</span>
+      </div>`;
+
+			// Mise en place rows come from the structured `miseEnPlace` field —
+			// names from the registry, titles escaped — never from parsed labels.
+			const sectionTitle = (index: number) =>
+				data.sections[index]?.title || t.renderer.miseEnPlace;
+			const miseSummaryRows = (data.miseEnPlace ?? [])
+				.map((m) => timingRow(escapeHtml(sectionTitle(m.section)), m.duration))
+				.join("\n");
+			const miseDetailRows = (data.miseEnPlace ?? [])
+				.map((m) =>
+					[
+						timingRow(
+							`<strong>${escapeHtml(sectionTitle(m.section))}</strong>`,
+							m.duration,
+						),
+						...m.items.map((item) =>
+							timingRow(
+								`<span class="timing-detail-type">${escapeHtml(
+									describeMiseEnPlaceItem(
+										item,
+										data.registry,
+										t.renderer,
+										formatDuration,
+									),
+								)}</span>`,
+								item.duration,
+							),
+						),
+					].join("\n"),
+				)
+				.join(`\n      <div class="timing-divider"></div>\n`);
+
 			const renderTooltipHTML = (
 				base?: string,
 				breakdown1?: TimeBreakdownItem[],
 				breakdown2?: TimeBreakdownItem[],
+				rowsHtml?: string,
 			) => {
-				if (!base && !breakdown1?.length && !breakdown2?.length) return "";
+				if (!base && !breakdown1?.length && !breakdown2?.length && !rowsHtml)
+					return "";
 
 				let htmlStr = `\n    <div class="timing-tooltip">`;
 				if (base) {
@@ -147,29 +193,37 @@ const htmlBackend: RenderBackend = {
 					}
 					htmlStr += "\n" + formatBreakdownHTML(breakdown2);
 				}
+				if (rowsHtml) htmlStr += "\n" + rowsHtml;
 				htmlStr += `\n    </div>`;
 				return htmlStr;
 			};
 
+			// Total and idle time depend on the chosen schedule; preparation and
+			// active time are the same in both.
+			const schedule = resolveSchedule(data, options.schedule);
+			const totalTime = schedule?.totalTime ?? metrics.totalTime;
+			const idleTime = schedule?.idleTime ?? metrics.idleTime;
+
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
 				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
-				metrics.prepBreakdown,
-				metrics.totalBreakdown,
+				undefined,
+				undefined,
+				miseSummaryRows,
 			);
 			html += ` <div class="${timingCardClass}">\n`;
 			html += `   <div class="${metaLabelClass}">${clockIcon} ${t.renderer.totalTime}</div>\n`;
-			html += `   <div class="${metaValueClass}">${formatDuration(metrics.totalTime)}</div>${totalTooltip}\n`;
+			html += `   <div class="${metaValueClass}">${formatDuration(totalTime)}</div>${totalTooltip}\n`;
 			html += ` </div>\n`;
 
-			if (metrics.idleTime) {
+			if (idleTime) {
 				const idleTooltip = renderTooltipHTML(
 					t.renderer.idleTimeTooltip ??
 						"Idle Time = Total Time - Prep - Active",
 				);
 				html += ` <div class="${timingCardClass}">\n`;
 				html += `   <div class="${metaLabelClass}">${options.icons?.hourglass ?? DEFAULT_ICONS.html.hourglass} ${t.renderer.idleTime}</div>\n`;
-				html += `   <div class="${metaValueClass}">${formatDuration(metrics.idleTime)}</div>${idleTooltip}\n`;
+				html += `   <div class="${metaValueClass}">${formatDuration(idleTime)}</div>${idleTooltip}\n`;
 				html += ` </div>\n`;
 			}
 
@@ -186,7 +240,9 @@ const htmlBackend: RenderBackend = {
 			const knifeIcon = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
 			const prepTooltip = renderTooltipHTML(
 				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
-				metrics.prepBreakdown,
+				undefined,
+				undefined,
+				miseDetailRows,
 			);
 			html += ` <div class="${timingCardClass}">\n`;
 			html += `   <div class="${metaLabelClass}">${knifeIcon} ${t.renderer.prepTime}</div>\n`;
@@ -338,6 +394,22 @@ const htmlBackend: RenderBackend = {
 		return html;
 	},
 
+	renderMiseEnPlace(data, context, options) {
+		if (isPerSection(options.schedule)) return "";
+		const items = upfrontPreparationItems(data);
+		if (items.length === 0) return "";
+		const t = getDictionary(options.lang);
+
+		let html = `<div class="mise-en-place">\n`;
+		html += `  <h2>${escapeHtml(t.renderer.miseEnPlace)}</h2>\n`;
+		html += `  <div class="section-ingredients">\n    <ul>\n`;
+		for (const item of items) {
+			html += `      <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
+		}
+		html += `    </ul>\n  </div>\n</div>\n\n`;
+		return html;
+	},
+
 	renderInstructions(data, context, options) {
 		if (!data.sections || data.sections.length === 0) return "";
 		const t = getDictionary(options.lang);
@@ -350,8 +422,28 @@ const htmlBackend: RenderBackend = {
 		let html = "";
 		const instructionsClass = options.classes?.instructions || "instructions";
 		html += `<div class="${instructionsClass}">\n`;
-		data.sections.forEach((sec: any) => {
+		data.sections.forEach((sec: any, sectionIdx: number) => {
 			html += `  <section>\n`;
+
+			// This section's own mise en place, when preparation follows the sections.
+			// Shown as the caption of the section's ingredient list, duration on hover only —
+			// times appear at the top of the recipe, not along the sections (a p, not an h4 that gram.css hides nor a nested div that would cut a `</div>` split) — it covers
+			// gathering and preparing those, not doing the steps, so it must not read
+			// as the section's total time next to the title badges.
+			const mise = isPerSection(options.schedule)
+				? miseEnPlaceForSection(data, sectionIdx)
+				: undefined;
+			let prepLabel = "";
+			if (mise) {
+				const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
+				const fmt = context.formatDuration ?? defaultFormatDuration;
+				const detail = mise.items
+					.map((item) =>
+						describeMiseEnPlaceItem(item, data.registry, t.renderer, fmt),
+					)
+					.join(" · ");
+				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip} : ${fmt(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
+			}
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning) {
@@ -408,6 +500,14 @@ const htmlBackend: RenderBackend = {
 				html += `    <h3 class="section-header${sHeaderClass}">${titleHtml}</h3>\n`;
 			}
 
+			// No ingredient list of its own: the label stands alone above the steps.
+			if (
+				prepLabel &&
+				aggregateSectionIngredients(sec.ingredients ?? []).length === 0
+			) {
+				html += `    <div class="section-prep">${prepLabel}</div>\n`;
+			}
+
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
 			const sectionItems = aggregateSectionIngredients(
 				sec.ingredients ?? [],
@@ -416,6 +516,9 @@ const htmlBackend: RenderBackend = {
 				const sIngredientsClass =
 					options.classes?.sectionIngredients || "section-ingredients";
 				html += `    <div class="${sIngredientsClass}">\n`;
+				if (prepLabel) {
+					html += `      <p class="section-prep">${prepLabel}</p>\n`;
+				}
 				html += `      <ul>\n`;
 				sectionItems.forEach((item: any) => {
 					html += `        <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
@@ -583,6 +686,7 @@ const htmlBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
+			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition

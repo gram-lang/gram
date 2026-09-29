@@ -26,9 +26,10 @@ export function toGanttHTML(
 	options: GanttRenderOptions = {},
 ): string {
 	const t = getDictionary(options.lang);
-	const gaps = computeGaps(data, options.gapThresholdMinutes);
+	const gaps = computeGaps(data, options.gapThresholdMinutes, options.schedule);
 	const { tracks, totalVirtualTime, maxRealTime } = buildTracks(data, {
 		lang: options.lang,
+		schedule: options.schedule,
 	});
 
 	if (tracks.length === 0 || maxRealTime <= 0) {
@@ -162,6 +163,7 @@ ${overflowLegend
 			trackType === "active"
 				? `section-color-${block.sectionIndex ?? "default"}`
 				: "",
+			block.isPrep ? "prep" : "",
 		]
 			.filter(Boolean)
 			.join(" ");

@@ -1,11 +1,21 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type { RenderContext, RenderableCompilationResult } from "../types";
+import type { ProcessedStep, ScheduleBlock } from "@gram-lang/kitchen";
+import type {
+	RenderContext,
+	RenderableCompilationResult,
+	ScheduleMode,
+} from "../types";
+import {
+	describeMiseEnPlaceItem,
+	miseEnPlaceForSection,
+	resolveSchedule,
+} from "../mise-en-place";
+import { formatDuration } from "../utils";
 import { formatElement } from "../formatters/element";
 import { joinStepTokens } from "../utils";
 import type {
 	GanttGap,
 	GanttLegendItem,
-	GanttTimeBlock,
 	GanttTimeTick,
 	GanttTimeMode,
 	GanttTrack,
@@ -70,44 +80,22 @@ export function formatAxisTime(
 export function computeGaps(
 	data: RenderableCompilationResult,
 	gapThreshold = DEFAULT_GAP_THRESHOLD,
+	schedule: ScheduleMode = "perSection",
 ): GanttGap[] {
-	const sections = data?.sections;
-	if (!sections) return [];
+	const blocks = resolveSchedule(data, schedule)?.blocks;
+	if (!blocks) return [];
 
-	const prepTime = data.metrics?.preparationTime || 0;
-	const activePeriods: { start: number; end: number; sectionIndex?: number }[] =
-		[];
-	let overallMaxRealTime = prepTime;
+	const activePeriods: { start: number; end: number }[] = [];
+	let overallMaxRealTime = 0;
 
-	if (prepTime > 0) {
-		activePeriods.push({ start: 0, end: prepTime });
-	}
-
-	for (let i = 0; i < sections.length; i++) {
-		const section = sections[i]!;
-		for (const step of section.steps) {
-			if (step.type === "step" && step.timings) {
-				if (step.timings.activeDuration > 0) {
-					activePeriods.push({
-						start: step.timings.start + prepTime,
-						end: step.timings.end + prepTime,
-						sectionIndex: i,
-					});
-					overallMaxRealTime = Math.max(
-						overallMaxRealTime,
-						step.timings.end + prepTime,
-					);
-				}
-				if (step.backgroundTasks) {
-					for (const task of step.backgroundTasks) {
-						overallMaxRealTime = Math.max(
-							overallMaxRealTime,
-							step.timings.start + prepTime + task.startOffset + task.duration,
-						);
-					}
-				}
-			}
+	for (const b of blocks) {
+		// A zero-length step (a passive-only one) is not active work.
+		if (b.kind === "passive" || b.end <= b.start) {
+			overallMaxRealTime = Math.max(overallMaxRealTime, b.end);
+			continue;
 		}
+		activePeriods.push({ start: b.start, end: b.end });
+		overallMaxRealTime = Math.max(overallMaxRealTime, b.end);
 	}
 
 	// Add zero-duration periods at the start and end to compress
@@ -119,7 +107,7 @@ export function computeGaps(
 
 	activePeriods.sort((a, b) => a.start - b.start);
 
-	const merged: { start: number; end: number; sectionIndex?: number }[] = [];
+	const merged: { start: number; end: number }[] = [];
 	for (const period of activePeriods) {
 		if (merged.length === 0) {
 			merged.push({ ...period });
@@ -127,8 +115,6 @@ export function computeGaps(
 			const last = merged[merged.length - 1]!;
 			if (period.start <= last.end) {
 				last.end = Math.max(last.end, period.end);
-				if (period.sectionIndex !== undefined)
-					last.sectionIndex = period.sectionIndex;
 			} else {
 				merged.push({ ...period });
 			}
@@ -203,22 +189,60 @@ function serializeStepContent(
 	return joined.replace(/\s+/g, " ").trim();
 }
 
+/** The temperature target and assembly flag of a step's content tokens. */
+function readStepInfo(step: ProcessedStep): {
+	temperature?: string;
+	isAssembly: boolean;
+} {
+	let temperature: string | undefined;
+	let isAssembly = false;
+	// Step content tokens are a discriminated union (declarations,
+	// references, temperatures, plain strings, ...) — narrowing each
+	// member out just to read `.text`/`.quantity`/`.unit` here would
+	// bury the actual logic, same tradeoff html.ts already makes for
+	// step content (see its `(c: any) => ...` filters).
+	for (const c of (step.content ?? []) as unknown as Record<
+		string,
+		unknown
+	>[]) {
+		if (c && typeof c === "object") {
+			if (c.type === "temperature") {
+				temperature =
+					(c.text as string | undefined) ||
+					(c.quantity
+						? `${typeof c.quantity === "object" ? (c.quantity as Record<string, unknown>).value : c.quantity}${c.unit || "C"}`
+						: undefined);
+			}
+			if (c.type === "reference") {
+				isAssembly = true;
+			}
+		}
+	}
+	return { temperature, isAssembly };
+}
+
 /**
- * Build the active/passive tracks and their blocks. Ported 1:1 from
- * GramGantt.vue's `tracksData` computed.
+ * Build the active/passive tracks and their blocks from the chosen timeline
+ * (`data.schedules[schedule].blocks`); the step blocks point back at the
+ * compiled steps for their label, temperature and assembly flag.
  */
 export function buildTracks(
 	data: RenderableCompilationResult,
-	opts: { lang?: string } = {},
+	opts: { lang?: string; schedule?: ScheduleMode } = {},
 ): GanttTracksData {
 	const sections = data?.sections;
-	if (!sections) return { tracks: [], totalVirtualTime: 0, maxRealTime: 0 };
+	const blocks: ScheduleBlock[] | undefined = resolveSchedule(
+		data,
+		opts.schedule,
+	)?.blocks;
+	if (!sections || !blocks) {
+		return { tracks: [], totalVirtualTime: 0, maxRealTime: 0 };
+	}
 
 	const t = getDictionary(opts.lang);
-	const gaps = computeGaps(data);
+	const gaps = computeGaps(data, DEFAULT_GAP_THRESHOLD, opts.schedule);
 	const registry = data.registry;
 
-	const prepTime = data.metrics?.preparationTime || 0;
 	const cookTrack: GanttTrack = {
 		id: "cook",
 		title: t.playground?.views?.gantt_cook || "Actions",
@@ -230,126 +254,85 @@ export function buildTracks(
 	let maxRealTime = 0;
 	let activeStepIndex = 0;
 
-	if (prepTime > 0) {
-		const label = t.renderer?.prepTime || "Prep";
-		const fitsInside = prepTime * 12 >= label.length * 7 + 36;
-
-		cookTrack.blocks.push({
-			id: "cook_prep",
-			start: 0,
-			end: prepTime,
-			duration: prepTime,
-			label,
-			tooltip: t.renderer?.prepTimeTooltip || "Mise en place",
-			verticalIndex: activeStepIndex++,
-			fitsInside,
-		});
-		maxRealTime = prepTime;
-	}
-
-	let sectionIndex = 0;
 	const isSingleUnnamedSection = sections.length === 1 && !sections[0]?.title;
+	const colorOf = (section: number): number | string =>
+		isSingleUnnamedSection ? "default" : section % 9;
 
-	for (const section of sections) {
-		const computedSectionIndex = isSingleUnnamedSection
-			? "default"
-			: sectionIndex % 9;
+	for (const b of blocks) {
+		const duration = b.end - b.start;
 
-		for (const step of section.steps) {
-			if (step.type === "step" && step.timings) {
-				let temperature: string | undefined;
-				let isAssembly = false;
-				// Step content tokens are a discriminated union (declarations,
-				// references, temperatures, plain strings, ...) — narrowing each
-				// member out just to read `.text`/`.quantity`/`.unit` here would
-				// bury the actual logic, same tradeoff html.ts already makes for
-				// step content (see its `(c: any) => ...` filters).
-				for (const c of (step.content ?? []) as unknown as Record<
-					string,
-					unknown
-				>[]) {
-					if (c && typeof c === "object") {
-						if (c.type === "temperature") {
-							temperature =
-								(c.text as string | undefined) ||
-								(c.quantity
-									? `${typeof c.quantity === "object" ? (c.quantity as Record<string, unknown>).value : c.quantity}${c.unit || "C"}`
-									: undefined);
-						}
-						if (c.type === "reference") {
-							isAssembly = true;
-						}
-					}
-				}
-
-				// Active block
-				if (step.timings.activeDuration > 0) {
-					const blockStart = step.timings.start + prepTime;
-					const blockEnd = step.timings.end + prepTime;
-					const fullText = serializeStepContent(
-						step.content,
-						registry,
-						opts.lang,
-					);
-					const label =
-						step.action || t.playground?.views?.gantt_cook || "Actions";
-					const fitsInside =
-						step.timings.activeDuration * 12 >= label.length * 7 + 36;
-
-					const block: GanttTimeBlock = {
-						id: `cook_${blockStart}`,
-						start: blockStart,
-						end: blockEnd,
-						duration: step.timings.activeDuration,
-						label,
-						tooltip:
-							fullText.length > 100
-								? fullText.substring(0, 100) + "..."
-								: fullText,
-						sectionIndex: computedSectionIndex,
-						isAssembly,
-						verticalIndex: activeStepIndex++,
-						fitsInside,
-						temperature,
-					};
-					cookTrack.blocks.push(block);
-					maxRealTime = Math.max(maxRealTime, blockEnd);
-				}
-
-				// Passive blocks
-				if (step.backgroundTasks) {
-					for (const task of step.backgroundTasks) {
-						const trackName =
-							task.name || t.playground?.views?.gantt_timer || "Timer";
-						if (!passiveTracksMap.has(trackName)) {
-							passiveTracksMap.set(trackName, {
-								id: `track_${trackName}`,
-								title: trackName.charAt(0).toUpperCase() + trackName.slice(1),
-								blocks: [],
-								type: "passive",
-							});
-						}
-
-						const taskStart = step.timings.start + prepTime + task.startOffset;
-						const taskEnd = taskStart + task.duration;
-
-						passiveTracksMap.get(trackName)?.blocks.push({
-							id: `task_${taskStart}_${task.name}`,
-							start: taskStart,
-							end: taskEnd,
-							duration: task.duration,
-							label: formatTime(task.duration),
-							tooltip: trackName,
-							temperature,
-						});
-
-						maxRealTime = Math.max(maxRealTime, taskEnd);
-					}
-				}
-			}
+		if (b.kind === "prep") {
+			const label = t.renderer?.miseEnPlace || "Mise en place";
+			const entry = miseEnPlaceForSection(data, b.section);
+			const detail = (entry?.items ?? [])
+				.map((item) =>
+					describeMiseEnPlaceItem(item, registry, t.renderer, formatDuration),
+				)
+				.join(" · ");
+			cookTrack.blocks.push({
+				id: `prep_${b.section}`,
+				start: b.start,
+				end: b.end,
+				duration,
+				label,
+				tooltip: detail || label,
+				sectionIndex: colorOf(b.section),
+				verticalIndex: activeStepIndex++,
+				fitsInside: duration * 12 >= label.length * 7 + 36,
+				isPrep: true,
+			});
+			maxRealTime = Math.max(maxRealTime, b.end);
+			continue;
 		}
 
-		sectionIndex++;
+		const step = sections[b.section]?.steps[b.step];
+		if (!step || step.type !== "step") continue;
+		const { temperature, isAssembly } = readStepInfo(step);
+
+		if (b.kind === "step") {
+			// A zero-length step (a passive-only one) has no active block.
+			if (duration <= 0) continue;
+			const fullText = serializeStepContent(step.content, registry, opts.lang);
+			const label = step.action || t.playground?.views?.gantt_cook || "Actions";
+
+			cookTrack.blocks.push({
+				id: `cook_${b.start}`,
+				start: b.start,
+				end: b.end,
+				duration,
+				label,
+				tooltip:
+					fullText.length > 100 ? fullText.substring(0, 100) + "..." : fullText,
+				sectionIndex: colorOf(b.section),
+				isAssembly,
+				verticalIndex: activeStepIndex++,
+				fitsInside: duration * 12 >= label.length * 7 + 36,
+				temperature,
+			});
+			maxRealTime = Math.max(maxRealTime, b.end);
+			continue;
+		}
+
+		// Passive block: a named track keeps its own row, anonymous timers share one.
+		const trackName = b.track || t.playground?.views?.gantt_timer || "Timer";
+		if (!passiveTracksMap.has(trackName)) {
+			passiveTracksMap.set(trackName, {
+				id: `track_${trackName}`,
+				title: trackName.charAt(0).toUpperCase() + trackName.slice(1),
+				blocks: [],
+				type: "passive",
+			});
+		}
+		passiveTracksMap.get(trackName)?.blocks.push({
+			id: `task_${b.start}_${b.track}`,
+			start: b.start,
+			end: b.end,
+			duration,
+			label: formatTime(duration),
+			tooltip: trackName,
+			temperature,
+		});
+		maxRealTime = Math.max(maxRealTime, b.end);
 	}
 
 	cookTrack.dynamicHeight = Math.max(48, activeStepIndex * 40 + 16);

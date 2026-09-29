@@ -21,6 +21,11 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
+import {
+	isPerSection,
+	resolveSchedule,
+	upfrontPreparationItems,
+} from "../mise-en-place";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -58,11 +63,15 @@ const markdownBackend: RenderBackend = {
 
 		let md = `> **Metadata**\n`;
 		if (data.metrics) {
-			if (data.metrics.totalTime) {
-				md += `> - **${t.renderer.totalTime}**: ${formatDuration(data.metrics.totalTime)}\n`;
+			// Total and idle time follow the chosen schedule; the other two do not.
+			const schedule = resolveSchedule(data, options.schedule);
+			const totalTime = schedule?.totalTime ?? data.metrics.totalTime;
+			const idleTime = schedule?.idleTime ?? data.metrics.idleTime;
+			if (totalTime) {
+				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
 			}
-			if (data.metrics.idleTime) {
-				md += `> - **${t.renderer.idleTime}**: ${formatDuration(data.metrics.idleTime)}\n`;
+			if (idleTime) {
+				md += `> - **${t.renderer.idleTime}**: ${formatDuration(idleTime)}\n`;
 			}
 			if (data.metrics.activeTime) {
 				md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;
@@ -140,6 +149,18 @@ const markdownBackend: RenderBackend = {
 		});
 		md += "\n";
 		return md;
+	},
+
+	renderMiseEnPlace(data, context, options) {
+		if (isPerSection(options.schedule)) return "";
+		const items = upfrontPreparationItems(data);
+		if (items.length === 0) return "";
+		const t = getDictionary(options.lang);
+		let md = `## 🔪 ${t.renderer.miseEnPlace}\n\n`;
+		for (const item of items) {
+			md += `- ${formatElement(item, "md", { ...context, formatMode: "mise-en-place" })}\n`;
+		}
+		return `${md}\n`;
 	},
 
 	renderInstructions(data, context, options) {
@@ -250,6 +271,7 @@ const markdownBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
+			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition
