@@ -148,7 +148,7 @@ gram init
 bun add -g @gram-lang/cli
 gram init
 ```
-The CLI runs on both Node.js (>=20) and Bun — pick whichever you already have installed.
+The CLI runs on both Node.js (>=22) and Bun — pick whichever you already have installed.
 
 ### 2. Run the Docs & Playground locally
 
