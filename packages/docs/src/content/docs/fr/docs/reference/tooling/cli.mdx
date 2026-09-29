@@ -21,7 +21,7 @@ import { Steps } from '@astrojs/starlight/components';
 ```
 </CodeTabs>
 
-Le CLI tourne aussi bien sous Node.js (>=20.6.0, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un *runtime* n'est requise, les deux options sont strictement équivalentes.
+Le CLI tourne aussi bien sous Node.js (>=22, chargeant nativement les fichiers `.env` via `process.loadEnvFile`) que sous [Bun](https://bun.sh/). Aucune API spécifique à un *runtime* n'est requise, les deux options sont strictement équivalentes.
 
 <Since v="1.2.0" /> Quand une nouvelle version est publiée sur npm, gram affiche une courte notice une fois la commande terminée (ignorée en CI et hors terminal interactif). Lancez `gram upgrade` pour vérifier et l'installer à la demande, ou désactivez cette notice avec `gram config set updateCheck false` — ou, pour une seule exécution, la variable d'environnement `GRAM_NO_UPDATE_CHECK`.
 
@@ -85,6 +85,8 @@ gram view brioche.gram --scale farine=300g  # Voir ajusté pour farine = 300g
 ```
 - Prend en charge la pagination automatique pour les recettes longues.
 - Affiche la nutrition calculée, les minutages, et les listes d'ingrédients à cocher.
+- Les minuteurs gardent l'unité écrite dans la recette (`~{1h}` s'affiche `~1h`, `~{20s}` s'affiche `~20s`) et les durées sont arrondies pour rester lisibles (`1h 5m`, `25m 5s`).
+- Le temps de repos apparaît dans l'en-tête de la recette, et les fractions courantes comme `1/4 tsp` restent des fractions dans la liste de courses.
 - Le flag `--scale` ajuste toutes les quantités d'ingrédients (liste de courses *et* références *inline* dans les étapes).
 - Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
@@ -358,6 +360,7 @@ Utilisez `gram db search` à tout moment pour inspecter les entrées et vérifie
    - Détecte les doublons inter-langues (ex : `sucre` / `sugar`) et les formes plurielles (ex : `oeufs` → `oeuf`).
    - Pour chaque conflit, vous décidez de la clé à conserver. La clé écartée est automatiquement recyclée en alias.
    - Affiche un diff nutritionnel (uniquement les champs qui diffèrent) quand les deux entrées ont des données contradictoires, pour que vous puissiez faire un choix éclairé.
+   - Signale les ingrédients dont les noms ou les alias se confondent une fois normalisés (ex : `Huile d'olive` et `huile-dolive`), pour qu'une recette ne pointe jamais en silence vers la mauvaise entrée.
    - Options : `--report/-r` (afficher les problèmes sans appliquer les corrections), `--db <chemin>`, ainsi que les [options IA communes](#choisir-le-modèle-ia).
 
 3. #### `gram db enrich`

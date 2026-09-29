@@ -21,7 +21,7 @@ import { Steps } from '@astrojs/starlight/components';
 ```
 </CodeTabs>
 
-The CLI runs on both Node.js (>=20.6.0, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
+The CLI runs on both Node.js (>=22, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
 
 <Since v="1.2.0" /> When a newer version is published on npm, gram prints a short notice after any command finishes (skipped in CI and non-interactive runs). Run `gram upgrade` to check and install it on demand, or silence the passive notice with `gram config set updateCheck false` — or, for a single run, the `GRAM_NO_UPDATE_CHECK` environment variable.
 
@@ -85,6 +85,8 @@ gram view brioche.gram --scale flour=300g   # View scaled to flour = 300g
 ```
 - Supports automatic paging for long recipes.
 - Displays calculated nutrition, timings, and ingredient checklists.
+- Timers keep the unit written in the recipe (`~{1h}` shows as `~1h`, `~{20s}` as `~20s`), and durations are rounded to be readable (`1h 5m`, `25m 5s`).
+- The resting time appears in the recipe header, and common fractions such as `1/4 tsp` stay fractions in the shopping list.
 - With `--scale`, all ingredient quantities (shopping list and in-step references) are adjusted.
 - Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
@@ -358,6 +360,7 @@ Use `gram db search` at any time to inspect entries and audit completeness. Use 
    - Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `egg`).
    - For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
    - Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
+   - Reports ingredients whose names or aliases would be confused with each other once normalized (e.g. `Huile d'olive` and `huile-dolive`), so a recipe never silently resolves to the wrong entry.
    - Options: `--report/-r` (show issues without applying fixes), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 
 3. #### `gram db enrich`
