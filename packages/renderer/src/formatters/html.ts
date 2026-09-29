@@ -424,6 +424,26 @@ const htmlBackend: RenderBackend = {
 		html += `<div class="${instructionsClass}">\n`;
 		data.sections.forEach((sec: any, sectionIdx: number) => {
 			html += `  <section>\n`;
+
+			// This section's own mise en place, when preparation follows the sections.
+			// Shown as the caption of the section's ingredient list, duration on hover only —
+			// times appear at the top of the recipe, not along the sections (a p, not an h4 that gram.css hides nor a nested div that would cut a `</div>` split) — it covers
+			// gathering and preparing those, not doing the steps, so it must not read
+			// as the section's total time next to the title badges.
+			const mise = isPerSection(options.schedule)
+				? miseEnPlaceForSection(data, sectionIdx)
+				: undefined;
+			let prepLabel = "";
+			if (mise) {
+				const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
+				const fmt = context.formatDuration ?? defaultFormatDuration;
+				const detail = mise.items
+					.map((item) =>
+						describeMiseEnPlaceItem(item, data.registry, t.renderer, fmt),
+					)
+					.join(" · ");
+				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip} : ${fmt(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
+			}
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning) {
@@ -480,23 +500,12 @@ const htmlBackend: RenderBackend = {
 				html += `    <h3 class="section-header${sHeaderClass}">${titleHtml}</h3>\n`;
 			}
 
-			// This section's own mise en place, when preparation follows the sections.
-			const mise = isPerSection(options.schedule)
-				? miseEnPlaceForSection(data, sectionIdx)
-				: undefined;
-			if (mise) {
-				const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
-				const detail = mise.items
-					.map((item) =>
-						describeMiseEnPlaceItem(
-							item,
-							data.registry,
-							t.renderer,
-							context.formatDuration ?? defaultFormatDuration,
-						),
-					)
-					.join(" · ");
-				html += `    <div class="section-prep"><small class="section-meta-badge section-meta-prep" data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip} — ${detail}`)}">${knife} ${escapeHtml((context.formatDuration ?? defaultFormatDuration)(mise.duration))}</small></div>\n`;
+			// No ingredient list of its own: the label stands alone above the steps.
+			if (
+				prepLabel &&
+				aggregateSectionIngredients(sec.ingredients ?? []).length === 0
+			) {
+				html += `    <div class="section-prep">${prepLabel}</div>\n`;
 			}
 
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
@@ -507,6 +516,9 @@ const htmlBackend: RenderBackend = {
 				const sIngredientsClass =
 					options.classes?.sectionIngredients || "section-ingredients";
 				html += `    <div class="${sIngredientsClass}">\n`;
+				if (prepLabel) {
+					html += `      <p class="section-prep">${prepLabel}</p>\n`;
+				}
 				html += `      <ul>\n`;
 				sectionItems.forEach((item: any) => {
 					html += `        <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;

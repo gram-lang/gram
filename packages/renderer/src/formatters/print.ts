@@ -23,9 +23,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import {
-	describeMiseEnPlaceItem,
 	isPerSection,
-	miseEnPlaceForSection,
 	resolveSchedule,
 	upfrontPreparationItems,
 } from "../mise-en-place";
@@ -562,7 +560,7 @@ const printBackend: RenderBackend = {
 			: context;
 
 		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
-		for (const [sectionIdx, sec] of data.sections.entries()) {
+		for (const sec of data.sections) {
 			body += `<section>\n`;
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
@@ -572,26 +570,6 @@ const printBackend: RenderBackend = {
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel(sec.module))})</small>`;
 				}
 				body += `  <h3>${titleHtml}</h3>\n`;
-			}
-
-			// This section's own mise en place, when preparation follows the sections.
-			const mise = isPerSection(options.schedule)
-				? miseEnPlaceForSection(data, sectionIdx)
-				: undefined;
-			if (mise) {
-				const t = getDictionary(options.lang);
-				const formatDuration = options.formatDuration || defaultFormatDuration;
-				const detail = mise.items
-					.map((item) =>
-						describeMiseEnPlaceItem(
-							item,
-							data.registry,
-							t.renderer,
-							formatDuration,
-						),
-					)
-					.join(" · ");
-				body += `  <div class="section-prep"><small style="opacity:0.7;font-size:0.8em" title="${escapeHtml(detail)}">${escapeHtml(t.renderer.miseEnPlace)} · ${formatDuration(mise.duration)}</small></div>\n`;
 			}
 
 			// Section-level ingredients — aggregated (dedup, addition, intermediates)

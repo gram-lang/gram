@@ -38,9 +38,52 @@ describe("compiled data used below", () => {
 describe("HTML — perSection (default)", () => {
 	const html = toHTML(compiled);
 
-	it("puts a duration badge in each section that has a mise en place", () => {
-		expect(countOf(html, 'class="section-prep"')).toBe(2);
-		expect(html).toContain("section-meta-prep");
+	it("captions the ingredient list of each section that has a mise en place", () => {
+		expect(countOf(html, '<p class="section-prep">')).toBe(2);
+		const boxes = html.match(
+			/<div class="section-ingredients">[\s\S]*?<\/div>/g,
+		)!;
+		expect(boxes).toHaveLength(3);
+		// The caption is the first thing in the box, before the list.
+		for (const box of boxes.slice(0, 2)) {
+			expect(box.indexOf("section-prep")).toBeGreaterThan(-1);
+			expect(box.indexOf("section-prep")).toBeLessThan(box.indexOf("<ul>"));
+			expect(box).toContain("Mise en place</span>");
+		}
+		expect(boxes[2]).not.toContain("section-prep");
+	});
+
+	it("shows the duration only on hover, never as visible text", () => {
+		const tips = [
+			...html.matchAll(
+				/<p class="section-prep"><span data-tooltip="([^"]*)">([\s\S]*?)<\/span>/g,
+			),
+		];
+		expect(tips).toHaveLength(2);
+		tips.forEach((m, i) => {
+			const minutes = fmt(compiled.miseEnPlace[i]!.duration);
+			expect(m[1]).toContain(`: ${minutes} —`);
+			expect(m[2]).not.toMatch(/\d+\s?m\b|\d+\s?min/);
+		});
+	});
+
+	it("keeps the duration out of the section title, where it would read as the section's total time", () => {
+		for (const h3 of html.match(/<h3 class="section-header[\s\S]*?<\/h3>/g)!) {
+			expect(h3).not.toContain("Mise en place");
+			expect(h3).not.toContain("gicon-knife");
+		}
+	});
+
+	it("never uses an h4 (gram.css hides it) nor a nested div (it would cut a </div> split)", () => {
+		const out = toHTML(compiled);
+		expect(out).not.toContain("<h4");
+		expect(out).not.toMatch(/<div class="section-ingredients">\s*<div/);
+	});
+
+	it("lets a section without an ingredient list carry the label on its own", () => {
+		const out = toHTML(compile(getAST("## Heat\n\nHeat a #pan.\n")));
+		expect(out).toContain('<div class="section-prep"><span data-tooltip=');
+		expect(out).not.toContain("section-ingredients");
 	});
 
 	it("has no up-front block", () => {
@@ -90,7 +133,7 @@ describe("HTML — upfront", () => {
 	});
 
 	it("has no per-section badge", () => {
-		expect(html).not.toContain('class="section-prep"');
+		expect(html).not.toContain("section-prep");
 	});
 
 	it("reads total and idle time from the upfront schedule", () => {
@@ -128,18 +171,22 @@ describe("backend parity", () => {
 	};
 
 	for (const [name, render] of Object.entries(backends)) {
-		it(`${name}: perSection shows the mise en place of the sections, not a block`, () => {
-			const out = render({ schedule: "perSection" });
-			expect(out).toContain("Mise en place");
-			expect(out).not.toMatch(/mise-en-place"|## 🔪/);
-		});
-
 		it(`${name}: upfront shows one block listing the preparations`, () => {
 			const out = render({ schedule: "upfront" });
 			expect(out).toMatch(/mise-en-place"|## 🔪/);
 			expect(out).toContain("onions");
 		});
 	}
+
+	it("markdown and print show no mise en place block by section, just the times", () => {
+		for (const render of [backends.markdown, backends.print]) {
+			const out = render({ schedule: "perSection" });
+			expect(out).not.toMatch(
+				/mise-en-place"|## 🔪|section-prep|🔪 Mise en place/,
+			);
+			expect(out).not.toContain("Ingredients lookup");
+		}
+	});
 
 	it("markdown and print take their totals from the chosen schedule", () => {
 		const up = compiled.schedules.upfront.totalTime;
@@ -207,7 +254,7 @@ describe("data without schedules", () => {
 	it("still renders, without a badge or a block", () => {
 		const { schedules: _s, miseEnPlace: _m, ...legacy } = compiled;
 		const html = toHTML(legacy as never);
-		expect(html).not.toContain('class="section-prep"');
+		expect(html).not.toContain("section-prep");
 		expect(html).not.toContain('class="mise-en-place"');
 	});
 });

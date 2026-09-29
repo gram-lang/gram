@@ -22,9 +22,7 @@ import {
 	resolveNutritionBasis,
 } from "../nutrition";
 import {
-	describeMiseEnPlaceItem,
 	isPerSection,
-	miseEnPlaceForSection,
 	resolveSchedule,
 	upfrontPreparationItems,
 } from "../mise-en-place";
@@ -174,7 +172,7 @@ const markdownBackend: RenderBackend = {
 			: context;
 
 		let md = `## 👨‍🍳 Instructions\n\n`;
-		data.sections.forEach((sec: any, sectionIdx: number) => {
+		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
 				if (sec.retro_planning)
@@ -183,24 +181,6 @@ const markdownBackend: RenderBackend = {
 					md += ` _(${escapeMarkdownHtml(moduleLabel(sec.module))})_`;
 				}
 				md += `\n\n`;
-			}
-
-			// This section's own mise en place, when preparation follows the sections.
-			const mise = isPerSection(options.schedule)
-				? miseEnPlaceForSection(data, sectionIdx)
-				: undefined;
-			if (mise) {
-				const detail = mise.items
-					.map((item) =>
-						describeMiseEnPlaceItem(
-							item,
-							data.registry,
-							getDictionary(options.lang).renderer,
-							options.formatDuration || defaultFormatDuration,
-						),
-					)
-					.join(" · ");
-				md += `*🔪 ${escapeMarkdownHtml(getDictionary(options.lang).renderer.miseEnPlace)}: ${(options.formatDuration || defaultFormatDuration)(mise.duration)}* — ${escapeMarkdownHtml(detail)}\n\n`;
 			}
 
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules

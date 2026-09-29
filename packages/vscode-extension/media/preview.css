@@ -1079,19 +1079,37 @@ flex-direction: column;
 
 .gram-preview .section-prep {
   margin: 0 0 8px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
-.gram-preview .section-meta-prep {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.8em;
+/* As the caption of a section's ingredient list: a label sitting on the box's top border. */
+.gram-preview .section-ingredients {
+  position: relative;
+}
+
+.gram-preview .section-ingredients:has(> .section-prep) {
+  padding-top: 25px;
+  margin-top: 20px;
+}
+
+.gram-preview .section-prep [data-tooltip] {
+  text-decoration: none !important;
+}
+
+.gram-preview .section-ingredients > .section-prep {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  transform: translateY(-50%);
+  margin: 0;
+  padding: 2px 8px;
+  font-size: 0.85em;
+  line-height: 1.6;
+  white-space: nowrap;
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 2px 6px;
-  line-height: 1.5;
-  font-weight: 500;
+  background: var(--color-bg);
 }
 
 .gram-preview .mise-en-place {
