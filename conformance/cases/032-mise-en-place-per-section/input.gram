@@ -1,0 +1,17 @@
+---
+title: Mise en place per section
+---
+
+## Dough ->&dough
+
+Mix @flour{500g}, @water{300ml} and @yeast{5g} in a #bowl.
+
+[Rest] Let the dough rest ~_{2h}.
+
+## Filling ->&filling
+
+Cook @onions{200g}(finely sliced) with @butter{30g}(cut into cubes) in a #pan.
+
+## Assembly
+
+Spread &filling over &dough, then bake for ~{25min}.

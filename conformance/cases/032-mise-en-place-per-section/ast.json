@@ -1,0 +1,451 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mise en place per section"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 51,
+          "end": 59
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 61,
+                "end": 65
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 72,
+                  "end": 76
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 65,
+                "end": 77
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", ",
+              "loc": {
+                "start": 77,
+                "end": 79
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 86,
+                  "end": 91
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 79,
+                "end": 92
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 93,
+                "end": 97
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "yeast",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 5,
+                  "text": "5"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 104,
+                  "end": 106
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 97,
+                "end": 107
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 108,
+                "end": 113
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "bowl",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 113,
+                  "end": 118
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 113,
+                "end": 118
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 118,
+                "end": 119
+              }
+            }
+          ],
+          "loc": {
+            "start": 61,
+            "end": 121
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Rest",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Let the dough rest ",
+              "loc": {
+                "start": 128,
+                "end": 147
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 150,
+                  "end": 152
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 147,
+                "end": 153
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 153,
+                "end": 154
+              }
+            }
+          ],
+          "loc": {
+            "start": 121,
+            "end": 156
+          }
+        }
+      ],
+      "loc": {
+        "start": 42,
+        "end": 156
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Filling",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "filling",
+        "loc": {
+          "start": 167,
+          "end": 177
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook ",
+              "loc": {
+                "start": 179,
+                "end": 184
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "onions",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 192,
+                  "end": 196
+                }
+              },
+              "alias": null,
+              "preparation": "finely sliced",
+              "composite": null,
+              "loc": {
+                "start": 184,
+                "end": 212
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 213,
+                "end": 218
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 226,
+                  "end": 229
+                }
+              },
+              "alias": null,
+              "preparation": "cut into cubes",
+              "composite": null,
+              "loc": {
+                "start": 218,
+                "end": 246
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 247,
+                "end": 252
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 252,
+                  "end": 256
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 252,
+                "end": 256
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 256,
+                "end": 257
+              }
+            }
+          ],
+          "loc": {
+            "start": 179,
+            "end": 259
+          }
+        }
+      ],
+      "loc": {
+        "start": 156,
+        "end": 259
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Assembly",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Spread ",
+              "loc": {
+                "start": 272,
+                "end": 279
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "filling",
+              "quantity": null,
+              "loc": {
+                "start": 279,
+                "end": 287
+              }
+            },
+            {
+              "type": "Text",
+              "value": "over ",
+              "loc": {
+                "start": 288,
+                "end": 293
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": null,
+              "loc": {
+                "start": 293,
+                "end": 299
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then bake for ",
+              "loc": {
+                "start": 299,
+                "end": 315
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 25,
+                  "text": "25"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 317,
+                  "end": 322
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 315,
+                "end": 323
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 323,
+                "end": 324
+              }
+            }
+          ],
+          "loc": {
+            "start": 272,
+            "end": 325
+          }
+        }
+      ],
+      "loc": {
+        "start": 259,
+        "end": 325
+      }
+    }
+  ]
+}

@@ -1,0 +1,660 @@
+{
+  "title": "Mise en place per section",
+  "slug": "mise-en-place-per-section",
+  "meta": {
+    "title": "Mise en place per section"
+  },
+  "registry": {
+    "ingredients": {
+      "dough": {
+        "id": "dough",
+        "name": "dough",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "water": {
+        "id": "water",
+        "name": "water",
+        "default_unit": "ml"
+      },
+      "yeast": {
+        "id": "yeast",
+        "name": "yeast",
+        "default_unit": "g"
+      },
+      "filling": {
+        "id": "filling",
+        "name": "filling",
+        "is_intermediate": true
+      },
+      "onions": {
+        "id": "onions",
+        "name": "onions",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {
+      "bowl": {
+        "id": "bowl",
+        "name": "bowl"
+      },
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 500,
+      "unit": "g",
+      "normalizedMass": 500,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 300,
+      "unit": "ml"
+    },
+    {
+      "id": "yeast",
+      "name": "yeast",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 5,
+      "unit": "g",
+      "normalizedMass": 5,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "onions",
+      "name": "onions",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "6"
+      ],
+      "qty": 30,
+      "unit": "g",
+      "normalizedMass": 30,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [
+    {
+      "id": "bowl",
+      "_usageId": "4",
+      "fixed": false
+    },
+    {
+      "id": "pan",
+      "_usageId": "7",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Dough",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 500,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 500
+        },
+        {
+          "id": "water",
+          "_usageId": "2",
+          "qty": 300,
+          "unit": "ml"
+        },
+        {
+          "id": "yeast",
+          "_usageId": "3",
+          "qty": 5,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 5
+        }
+      ],
+      "cookware": [
+        {
+          "id": "bowl",
+          "_usageId": "4",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 500,
+              "unit": "g",
+              "normalizedMass": 500,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ", ",
+            {
+              "id": "water",
+              "_usageId": "2",
+              "qty": 300,
+              "unit": "ml"
+            },
+            "and ",
+            {
+              "id": "yeast",
+              "_usageId": "3",
+              "qty": 5,
+              "unit": "g",
+              "normalizedMass": 5,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "in a ",
+            {
+              "id": "bowl",
+              "_usageId": "4",
+              "fixed": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Let the dough rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 2,
+                "text": "2"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 2,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 120,
+              "startOffset": 0
+            }
+          ],
+          "action": "Rest"
+        }
+      ],
+      "intermediate_preparation": "dough",
+      "metrics": {
+        "totalMass": 505,
+        "massStatus": "incomplete",
+        "missingMassIngredients": [
+          "water"
+        ]
+      }
+    },
+    {
+      "title": "Filling",
+      "ingredients": [
+        {
+          "id": "onions",
+          "_usageId": "5",
+          "qty": 200,
+          "unit": "g",
+          "preparation": "finely sliced",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        },
+        {
+          "id": "butter",
+          "_usageId": "6",
+          "qty": 30,
+          "unit": "g",
+          "preparation": "cut into cubes",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 30
+        }
+      ],
+      "cookware": [
+        {
+          "id": "pan",
+          "_usageId": "7",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Cook ",
+            {
+              "id": "onions",
+              "_usageId": "5",
+              "qty": 200,
+              "unit": "g",
+              "preparation": "finely sliced",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "6",
+              "qty": 30,
+              "unit": "g",
+              "preparation": "cut into cubes",
+              "normalizedMass": 30,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            "in a ",
+            {
+              "id": "pan",
+              "_usageId": "7",
+              "fixed": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 120,
+            "end": 122,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "filling",
+      "metrics": {
+        "totalMass": 230,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assembly",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "filling",
+          "name": "filling",
+          "_usageId": "8"
+        },
+        {
+          "type": "reference",
+          "id": "dough",
+          "name": "dough",
+          "_usageId": "9"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Spread ",
+            {
+              "type": "reference",
+              "id": "filling",
+              "name": "filling",
+              "_usageId": "8"
+            },
+            "over ",
+            {
+              "type": "reference",
+              "id": "dough",
+              "name": "dough",
+              "_usageId": "9"
+            },
+            ", then bake for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 25,
+                "text": "25"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 122,
+            "end": 147,
+            "activeDuration": 25
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "UNKNOWN_MASS",
+      "message": "Cannot calculate mass for \"water\" — omitted from nutritional totals."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"yeast\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"onions\" not found in database — nutritional metrics and density conversions unavailable."
+    },
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 160,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "timer_passive",
+        "duration": 120
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 25
+      }
+    ],
+    "idleTime": 118,
+    "activeTime": 29,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Dough",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Filling",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 25
+      }
+    ],
+    "preparationTime": 13,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 7
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 2
+      },
+      {
+        "label": "prep_onions",
+        "duration": 2
+      },
+      {
+        "label": "prep_butter",
+        "duration": 2
+      }
+    ],
+    "totalMass": 735,
+    "massStatus": "incomplete",
+    "missingMassIngredients": [
+      "water"
+    ],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"flour\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "UNKNOWN_MASS",
+          "message": "Cannot calculate mass for \"water\" — omitted from nutritional totals."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"yeast\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"onions\" not found in database — nutritional metrics and density conversions unavailable."
+        },
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"butter\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 8,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "onions"
+          },
+          "duration": 2
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "butter"
+          },
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 152,
+      "idleTime": 110,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 5,
+          "end": 7
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 7
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 127
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 117,
+          "end": 125
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 125,
+          "end": 127
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 127,
+          "end": 152
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 160,
+      "idleTime": 118,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 5,
+          "end": 13
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 13,
+          "end": 15
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 15,
+          "end": 15
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 15,
+          "end": 135
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 133,
+          "end": 135
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 135,
+          "end": 160
+        }
+      ]
+    }
+  }
+}

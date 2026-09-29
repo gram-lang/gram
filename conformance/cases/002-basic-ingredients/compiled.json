@@ -181,5 +181,65 @@
         "duration": 1
       }
     ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 7,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 5,
+          "end": 7
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 7,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 5,
+          "end": 7
+        }
+      ]
+    }
   }
 }

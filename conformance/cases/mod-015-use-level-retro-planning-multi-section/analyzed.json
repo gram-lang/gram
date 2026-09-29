@@ -322,6 +322,126 @@
       ]
     }
   },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 3,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 1459,
+      "idleTime": 1438,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 3
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 3,
+          "end": 18
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 18,
+          "end": 19
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 19,
+          "end": 19
+        },
+        {
+          "kind": "passive",
+          "section": 1,
+          "step": 0,
+          "start": 19,
+          "end": 79
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 1457,
+          "end": 1459
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 1459,
+      "idleTime": 1438,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 3
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 3,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 4,
+          "end": 19
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 19,
+          "end": 19
+        },
+        {
+          "kind": "passive",
+          "section": 1,
+          "step": 0,
+          "start": 19,
+          "end": 79
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 1457,
+          "end": 1459
+        }
+      ]
+    }
+  },
   "modules": [
     {
       "binding": "pate",

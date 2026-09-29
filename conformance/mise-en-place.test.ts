@@ -8,7 +8,9 @@ import {
 	type CompilerOptions,
 	compile,
 	computeMiseEnPlace,
+	type ProcessedStep,
 	type Registry,
+	type Schedule,
 } from "@gram-lang/kitchen";
 import {
 	composeRecipe,
@@ -81,6 +83,7 @@ function toRegistry(compiled: CompilationResult): Registry {
 }
 
 function checkInvariants(compiled: CompilationResult): void {
+	checkSchedules(compiled);
 	const registry = toRegistry(compiled);
 	const mise = computeMiseEnPlace(compiled.sections, registry);
 
@@ -132,6 +135,95 @@ function checkInvariants(compiled: CompilationResult): void {
 			compiled.metrics.preparationTime,
 		);
 	}
+}
+
+const overlaps = (
+	a: { start: number; end: number },
+	b: { start: number; end: number },
+) => a.start < b.end && b.start < a.end;
+
+function checkSchedules(compiled: CompilationResult): void {
+	const { miseEnPlace, schedules, metrics, sections } = compiled;
+	const preparation = metrics.preparationTime;
+
+	// The compiled field is the same fact computeMiseEnPlace derives.
+	expect(miseEnPlace).toEqual(
+		computeMiseEnPlace(sections, toRegistry(compiled)),
+	);
+
+	for (const [mode, schedule] of Object.entries(schedules) as Array<
+		[string, Schedule]
+	>) {
+		// Invariant 3: a prep block per mise en place entry, of the right length.
+		const prep = schedule.blocks.filter((b) => b.kind === "prep");
+		expect(prep.map((b) => b.section).sort((a, b) => a - b)).toEqual(
+			miseEnPlace.map((m) => m.section),
+		);
+		for (const b of prep) {
+			const entry = miseEnPlace.find((m) => m.section === b.section);
+			expect(b.end - b.start).toBe(entry?.duration);
+		}
+
+		// Invariant 4: the three times add up, and nothing is negative.
+		expect(schedule.idleTime).toBeGreaterThanOrEqual(0);
+		expect(schedule.totalTime).toBe(
+			preparation + metrics.activeTime + schedule.idleTime,
+		);
+		expect(schedule.totalTime).toBe(
+			schedule.blocks.reduce((max, b) => Math.max(max, b.end), 0),
+		);
+
+		// Blocks are sorted by start, then end.
+		for (let i = 1; i < schedule.blocks.length; i++) {
+			const [a, b] = [schedule.blocks[i - 1], schedule.blocks[i]];
+			expect(a.start < b.start || (a.start === b.start && a.end <= b.end)).toBe(
+				true,
+			);
+		}
+
+		// Every step block points at a real, non-comment step.
+		for (const b of schedule.blocks) {
+			if (b.kind === "prep") continue;
+			expect(sections[b.section].steps[b.step]?.type).toBe("step");
+		}
+		expect(mode).toMatch(/perSection|upfront/);
+	}
+
+	// Invariant 5: upfront is the legacy timeline pushed back by the preparation.
+	const upfront = schedules.upfront;
+	expect(upfront.totalTime).toBe(metrics.totalTime);
+	for (const b of upfront.blocks) {
+		if (b.kind !== "step") continue;
+		const step = sections[b.section].steps[b.step] as ProcessedStep;
+		expect(b.start).toBe(step.timings.start + preparation);
+		expect(b.end).toBe(step.timings.end + preparation);
+	}
+	const expectedPassives: number[] = [];
+	for (const sec of sections) {
+		for (const st of sec.steps) {
+			if (st.type !== "step") continue;
+			for (const bg of st.backgroundTasks ?? []) {
+				expectedPassives.push(st.timings.start + bg.startOffset + preparation);
+			}
+		}
+	}
+	expect(
+		upfront.blocks
+			.filter((b) => b.kind === "passive")
+			.map((b) => b.start)
+			.sort((a, b) => a - b),
+	).toEqual(expectedPassives.sort((a, b) => a - b));
+
+	// Invariant 6: with one cook, a preparation never overlaps a step, and the
+	// steps add up to the active time.
+	const perSection = schedules.perSection;
+	const steps = perSection.blocks.filter((b) => b.kind === "step");
+	for (const p of perSection.blocks.filter((b) => b.kind === "prep")) {
+		for (const st of steps) expect(overlaps(p, st)).toBe(false);
+	}
+	expect(steps.reduce((sum, b) => sum + (b.end - b.start), 0)).toBe(
+		metrics.activeTime,
+	);
 }
 
 describe("mise en place per section", () => {

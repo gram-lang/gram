@@ -72,5 +72,34 @@
       }
     ],
     "preparationTime": 0
+  },
+  "miseEnPlace": [],
+  "schedules": {
+    "perSection": {
+      "totalTime": 2,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 0,
+          "end": 2
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 2,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 0,
+          "end": 2
+        }
+      ]
+    }
   }
 }

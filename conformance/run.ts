@@ -58,6 +58,19 @@ function toJSON(value: unknown): string {
 	return `${JSON.stringify(value, null, 2)}\n`;
 }
 
+/**
+ * Drops the `generator` field (`@gram-lang/kitchen@<version>`) from a
+ * compiled/analyzed result before it is written or compared: it changes on
+ * every release, and a golden that embedded it would fail on each one for no
+ * behavioral reason. Every other field stays locked in.
+ */
+function withoutGenerator<T extends object>(result: T): Omit<T, "generator"> {
+	const { generator: _generator, ...rest } = result as T & {
+		generator?: string;
+	};
+	return rest;
+}
+
 interface CaseOptions {
 	compilerOptions?: CompilerOptions;
 	scaleTarget?: { id: string; qty: number; unit?: string | null };
@@ -207,13 +220,13 @@ async function runCase(
 		writeOrCompare(join(caseDir, "ast.json"), toJSON(ast), diffs, "ast.json");
 		writeOrCompare(
 			join(caseDir, "compiled.json"),
-			toJSON(compiled),
+			toJSON(withoutGenerator(compiled)),
 			diffs,
 			"compiled.json",
 		);
 		writeOrCompare(
 			join(caseDir, "analyzed.json"),
-			toJSON(analyzed),
+			toJSON(withoutGenerator(analyzed)),
 			diffs,
 			"analyzed.json",
 		);
