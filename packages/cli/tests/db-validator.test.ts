@@ -348,3 +348,31 @@ describe("validateDb", () => {
 		expect(result.hasErrors).toBe(false);
 	});
 });
+
+describe("validateDb — identifier collisions", () => {
+	it("flags an alias that slugifies to another entry's key or name", () => {
+		const result = validateDb(
+			db({
+				"olive-oil": { name: "Huile d'olive" },
+				other: { name: "Other", aliases: ["Huile d'Olive!"] },
+			}),
+			"ingredients.yaml",
+		);
+		const errors = result.issues.filter((i) => i.category === "Coherence");
+		expect(errors).toHaveLength(1);
+		expect(errors[0]?.ingredient).toBe("other");
+	});
+
+	it("still flags the same alias declared on two entries", () => {
+		const result = validateDb(
+			db({
+				a: { aliases: ["Crème"] },
+				b: { aliases: ["creme"] },
+			}),
+			"ingredients.yaml",
+		);
+		expect(
+			result.issues.filter((i) => i.category === "Coherence"),
+		).toHaveLength(1);
+	});
+});

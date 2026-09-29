@@ -4,7 +4,7 @@ import {
 	type NutrientDef,
 	type NutrientKey,
 } from "@gram-lang/analyzer";
-import { round2 } from "@gram-lang/kitchen";
+import { round2, slugify } from "@gram-lang/kitchen";
 import { isCategoryKey, type CategoryKey } from "@gram-lang/i18n";
 import type { DbIssue, DbValidateResult } from "../types";
 
@@ -74,22 +74,32 @@ export function validateDb(
 ): DbValidateResult {
 	const issues: DbIssue[] = [];
 
-	// 1. Duplicate aliases across different ingredients
-	const aliasMap = new Map<string, string>();
-	for (const [id, data] of Object.entries(db)) {
-		for (const alias of data.aliases ?? []) {
-			const normalized = alias.toLowerCase().trim();
-			if (aliasMap.has(normalized)) {
-				issues.push({
-					level: "error",
-					category: "Coherence",
-					ingredient: id,
-					message: `"${alias}" is also an alias for "${aliasMap.get(normalized)}"`,
-				});
-			} else {
-				aliasMap.set(normalized, id);
-			}
+	// 1. Ambiguous identifiers across different ingredients. Lookup resolves
+	// `slugify(key | name | alias)`, so two entries sharing a slug are ambiguous
+	// (e.g. "Huile d'olive" vs "huile-d-olive"). A key or name clash is only
+	// reported when it involves an alias, since the lookup itself arbitrates
+	// those by priority (key > name > alias).
+	const owners = new Map<string, { id: string; label: string }>();
+	const claim = (label: string, id: string, isAlias: boolean) => {
+		const slug = slugify(label);
+		const owner = owners.get(slug);
+		if (!owner) {
+			owners.set(slug, { id, label });
+		} else if (owner.id !== id && isAlias) {
+			issues.push({
+				level: "error",
+				category: "Coherence",
+				ingredient: id,
+				message: `"${label}" already identifies "${owner.id}"`,
+			});
 		}
+	};
+	const dbEntries = Object.entries(db);
+	for (const [id] of dbEntries) claim(id, id, false);
+	for (const [id, data] of dbEntries)
+		if (data.name) claim(data.name, id, false);
+	for (const [id, data] of dbEntries) {
+		for (const alias of data.aliases ?? []) claim(alias, id, true);
 	}
 
 	// 2. Missing density and nutrition

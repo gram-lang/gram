@@ -1,0 +1,73 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Db Non Canonical Key"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Section",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fry in ",
+              "loc": {
+                "start": 49,
+                "end": 56
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "Huile d'olive",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 71,
+                  "end": 75
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 56,
+                "end": 76
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 76,
+                "end": 77
+              }
+            }
+          ],
+          "loc": {
+            "start": 49,
+            "end": 78
+          }
+        }
+      ],
+      "loc": {
+        "start": 37,
+        "end": 78
+      }
+    }
+  ]
+}

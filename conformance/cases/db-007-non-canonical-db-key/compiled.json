@@ -1,0 +1,88 @@
+{
+  "title": "Db Non Canonical Key",
+  "slug": "db-non-canonical-key",
+  "meta": {
+    "title": "Db Non Canonical Key"
+  },
+  "registry": {
+    "ingredients": {
+      "huile-d-olive": {
+        "id": "huile-d-olive",
+        "name": "Huile d'olive",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "huile-d-olive",
+      "name": "Huile d'olive",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 10,
+      "unit": "ml"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "huile-d-olive",
+          "_usageId": "1",
+          "qty": 10,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fry in ",
+            {
+              "id": "huile-d-olive",
+              "_usageId": "1",
+              "qty": 10,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ]
+  }
+}

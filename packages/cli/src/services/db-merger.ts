@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { validateIngredientDatabase } from "@gram-lang/analyzer";
+import {
+	buildIngredientIndex,
+	validateIngredientDatabase,
+} from "@gram-lang/analyzer";
 import type {
 	IngredientData,
 	IngredientValidationIssue,
@@ -34,20 +37,6 @@ export interface MergeAnalysis {
 	toEnrich: MergeEntry[];
 	conflicts: MergeConflict[];
 	unchanged: string[];
-}
-
-function buildLocalIndex(
-	db: Record<string, IngredientData>,
-): Map<string, string> {
-	const index = new Map<string, string>();
-	for (const [key, entry] of Object.entries(db)) {
-		index.set(slugify(key), key);
-		if (entry.name) index.set(slugify(entry.name), key);
-		for (const alias of entry.aliases ?? []) {
-			index.set(slugify(alias), key);
-		}
-	}
-	return index;
 }
 
 function findLocalKey(
@@ -124,7 +113,7 @@ export async function analyzeMerge(
 	dbPath: string,
 	onlyNew = false,
 ): Promise<MergeAnalysis> {
-	const localIndex = buildLocalIndex(localDb);
+	const localIndex = buildIngredientIndex(localDb);
 
 	const toAdd: MergeAnalysis["toAdd"] = [];
 	const toEnrich: MergeEntry[] = [];
