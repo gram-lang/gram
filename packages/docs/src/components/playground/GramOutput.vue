@@ -28,6 +28,7 @@ const props = defineProps<{
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
+	schedule?: "perSection" | "upfront";
 	blockingDiagnostics?: PlaygroundDiagnostic[];
 }>();
 
@@ -222,7 +223,7 @@ function handlePreviewClick(e: MouseEvent) {
 
         <!-- Gantt Chart -->
         <div v-else-if="viewMode === 'gantt'" class="output-gantt">
-          <GramGantt :json-data="jsonData" />
+          <GramGantt :json-data="jsonData" :schedule="schedule" />
         </div>
         
         <!-- HTML Preview -->
@@ -258,6 +259,16 @@ function handlePreviewClick(e: MouseEvent) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+@media (max-width: 767px) {
+  /* Room for a second selector line instead of clipping it. */
+  .output-header {
+    height: auto;
+    min-height: 42px;
+    padding-block: 4px;
+    gap: 8px;
+  }
 }
 
 .output-title {

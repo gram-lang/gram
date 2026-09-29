@@ -128,6 +128,49 @@ const errorFiles = computed(() => {
 const viewMode = ref<
 	"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
+// Which complete timeline the views follow: mise en place right before each
+// section, or all of it at the start. A reading choice, shared by the preview,
+// the Gantt and the Markdown views, and remembered in the browser.
+type Schedule = "perSection" | "upfront";
+const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
+
+function loadSchedule(): Schedule {
+	try {
+		const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
+		if (saved === "perSection" || saved === "upfront") return saved;
+	} catch {
+		// Storage can be blocked or absent (private window, embedded frame).
+	}
+	return "perSection";
+}
+
+const schedule = ref<Schedule>(loadSchedule());
+
+watch(schedule, (value) => {
+	try {
+		localStorage.setItem(SCHEDULE_STORAGE_KEY, value);
+	} catch {
+		// Nothing to do: the choice just won't survive a reload.
+	}
+	trackEvent("playground-change-schedule", { schedule: value });
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: scheduleOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const scheduleOptions = computed(() => [
+	{
+		label: t.value.renderer.schedulePerSection,
+		value: "perSection",
+	},
+	{ label: t.value.renderer.scheduleUpfront, value: "upfront" },
+]);
+
+// Only the views that draw a timeline or a mise en place depend on it: the
+// JSON, AST and tree views always carry both schedules.
+// biome-ignore lint/correctness/noUnusedVariables: showScheduleSelector is used in the <template> block below, which Biome's Vue support doesn't see.
+const showScheduleSelector = computed(() =>
+	["preview", "gantt", "markdown"].includes(viewMode.value),
+);
+
 const options = ref({
 	enableMassStandardization: true,
 	enableYieldCalculation: false,
@@ -481,13 +524,17 @@ async function updateGram() {
 		} else if (viewMode.value === "ast") {
 			content.value = renderSExpr(composed.ast);
 		} else if (viewMode.value === "markdown") {
-			content.value = toMarkdown(result, { lang: currentLang.value });
+			content.value = toMarkdown(result, {
+				lang: currentLang.value,
+				schedule: schedule.value,
+			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
 				interactiveScaling: true,
 				interactiveNutrition: true,
 				bakersMathOnly: options.value.bakersMathOnly,
 				lang: currentLang.value,
+				schedule: schedule.value,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);
@@ -531,6 +578,7 @@ watch(
 		currentLang,
 		activeFile,
 		stockedUris,
+		schedule,
 	],
 	() => {
 		if (!scaleTargetId.value) {
@@ -803,19 +851,31 @@ onUnmounted(() => {
               :content="content" 
               :html-preview="htmlPreview" 
               :json-data="jsonData" 
+              :schedule="schedule"
               :blocking-diagnostics="blockingDiagnostics"
               @scale-update="handleScaleUpdate"
               @jump="handleJump"
             >
               <template #view-selector>
-                <div class="header-view-wrapper">
-                  <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                  <PlaygroundDropdown
-                    v-model="viewMode"
-                    :options="viewModeOptions"
-                    :aria-label="t.playground.viewLabel"
-                    class="header-view-selector"
-                  />
+                <div class="header-view-controls">
+                  <div class="header-view-wrapper">
+                    <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
+                    <PlaygroundDropdown
+                      v-model="viewMode"
+                      :options="viewModeOptions"
+                      :aria-label="t.playground.viewLabel"
+                      class="header-view-selector"
+                    />
+                  </div>
+                  <div v-if="showScheduleSelector" class="header-view-wrapper">
+                    <span class="toolbar-label">{{ t.renderer.scheduleLabel }}</span>
+                    <PlaygroundDropdown
+                      v-model="schedule"
+                      :options="scheduleOptions"
+                      :aria-label="t.renderer.scheduleLabel"
+                      class="header-view-selector"
+                    />
+                  </div>
                 </div>
               </template>
             </GramOutput>
@@ -1162,6 +1222,19 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* The view selector and the schedule selector: at the two ends on a wide
+   header, wrapping onto two lines when the header is too narrow for both. */
+.header-view-controls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  row-gap: 2px;
 }
 
 .header-view-selector :deep(.dropdown-header) {

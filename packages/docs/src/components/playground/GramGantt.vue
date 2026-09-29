@@ -11,12 +11,18 @@ const { lang } = useI18n();
 
 const props = defineProps<{
 	jsonData: any;
+	schedule?: "perSection" | "upfront";
 }>();
 
 const container = ref<HTMLElement | null>(null);
 let handle: GanttInteractivityHandle | null = null;
 
-const html = computed(() => toGanttHTML(props.jsonData, { lang: lang.value }));
+const html = computed(() =>
+	toGanttHTML(props.jsonData, {
+		lang: lang.value,
+		schedule: props.schedule,
+	}),
+);
 
 function render() {
 	if (!container.value) return;
