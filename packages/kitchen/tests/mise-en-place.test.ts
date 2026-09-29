@@ -51,3 +51,41 @@ describe("compiled mise en place and schedules", () => {
 		);
 	});
 });
+
+describe("gathering skips what the recipe makes itself", () => {
+	const SOURCE = `## Dough ->&dough
+
+Mix @flour{500g} and @water{300ml}.
+
+## Filling ->&filling
+
+Cook @onions{200g}(finely sliced).
+
+## Assembly
+
+Spread &filling over &dough.
+`;
+
+	it("charges nothing for an intermediate", () => {
+		const result = compile(getAST(SOURCE));
+		const gathered = result.miseEnPlace.flatMap((m) =>
+			m.items.flatMap((i) =>
+				i.kind === "gather" && i.target === "ingredient" ? [i.count] : [],
+			),
+		);
+		// flour, water, onions — not dough, not filling.
+		expect(gathered.reduce((a, b) => a + b, 0)).toBe(3);
+		expect(result.metrics.preparationTime).toBe(5);
+	});
+
+	it("still lists the intermediates in the registry", () => {
+		const result = compile(getAST(SOURCE));
+		expect(result.registry.ingredients.dough?.is_intermediate).toBe(true);
+		expect(result.registry.ingredients.filling?.is_intermediate).toBe(true);
+	});
+
+	it("keeps the section that only assembles free of any gathering", () => {
+		const result = compile(getAST(SOURCE));
+		expect(result.miseEnPlace.map((m) => m.section)).toEqual([0, 1]);
+	});
+});
