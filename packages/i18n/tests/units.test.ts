@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import {
 	normalizeUnit,
+	unitKey,
 	UNIT_CONVERSIONS,
 	UNIT_DICTIONARIES,
 } from "../src/units";
@@ -35,6 +36,21 @@ describe("normalizeUnit", () => {
 		expect(normalizeUnit(null)).toBe("");
 		expect(normalizeUnit(undefined)).toBe("");
 		expect(normalizeUnit("")).toBe("");
+	});
+
+	it("resolves abbreviation-dot, spacing and accent variants to the same canonical unit", () => {
+		for (const v of ["c.à.s", "c. à s.", "c.a.s", "càs", "CAS", "c à s"]) {
+			expect(normalizeUnit(v)).toBe("tbsp");
+			expect(normalizeUnit(v, "fr")).toBe("tbsp");
+		}
+		for (const v of ["c.à.c", "c. à c.", "c.a.c", "càc"]) {
+			expect(normalizeUnit(v)).toBe("tsp");
+		}
+		expect(normalizeUnit("fl. oz.")).toBe("fl oz");
+	});
+
+	it("keeps an unknown unit exactly as written (lowercased), never its folded key", () => {
+		expect(normalizeUnit("Foo.Bar")).toBe("foo.bar");
 	});
 
 	// Regression tests for the audit (2026-07-22, finding F-01): French unit
@@ -106,6 +122,26 @@ describe("UNIT_CONVERSIONS", () => {
 		];
 		for (const unit of convertible) {
 			expect(canonicals.has(unit)).toBe(true);
+		}
+	});
+});
+
+describe("unitKey", () => {
+	it("folds case, diacritics, dots, apostrophes and spaces", () => {
+		expect(unitKey("C. À S.")).toBe("cas");
+	});
+
+	it("never maps two different canonical units onto the same folded key", () => {
+		const seen = new Map<string, string>();
+		for (const dict of Object.values(UNIT_DICTIONARIES)) {
+			for (const [canonical, aliases] of Object.entries(dict)) {
+				for (const alias of [canonical, ...aliases]) {
+					const key = unitKey(alias);
+					const prev = seen.get(key);
+					expect(prev === undefined || prev === canonical).toBe(true);
+					seen.set(key, canonical);
+				}
+			}
 		}
 	});
 });

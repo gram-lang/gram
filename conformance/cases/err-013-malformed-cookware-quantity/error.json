@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Invalid quantity '{grande}' for cookware 'casserole'. Expected a number only, with no unit (cookware quantities take no unit), e.g. {2}.",
+  "offset": 25,
+  "expected": "a valid quantity in braces, e.g. {2}",
+  "code": null,
+  "file": null
+}

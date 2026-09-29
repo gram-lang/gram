@@ -92,6 +92,28 @@ export const UNIT_DICTIONARIES = { en, fr };
 export const { byLang: UNIT_BY_LANG, global: UNIT_GLOBAL } =
 	compileDictionary(UNIT_DICTIONARIES);
 
+/**
+ * Spelling-insensitive lookup key for a unit: lowercased, diacritics stripped,
+ * and abbreviation punctuation / spaces removed, so "c.à.s", "c. à s.", "c.a.s"
+ * and "càs" all collapse to "cas". Only used to *find* a canonical unit --
+ * unknown units are still returned as the author wrote them.
+ */
+export function unitKey(raw: string): string {
+	return raw
+		.normalize("NFD")
+		.replace(/\p{M}/gu, "")
+		.toLowerCase()
+		.replace(/[.'’\s]/g, "");
+}
+
+const foldTable = (table: Record<string, string>): Record<string, string> =>
+	Object.fromEntries(Object.entries(table).map(([k, v]) => [unitKey(k), v]));
+
+const UNIT_BY_LANG_FOLDED = Object.fromEntries(
+	Object.entries(UNIT_BY_LANG).map(([lang, table]) => [lang, foldTable(table)]),
+);
+const UNIT_GLOBAL_FOLDED = foldTable(UNIT_GLOBAL);
+
 export interface UnitMap {
 	base: string;
 	map: Record<string, number>;
@@ -158,8 +180,14 @@ export function normalizeUnit(
 	if (lang && UNIT_BY_LANG[lang]?.[clean]) {
 		return UNIT_BY_LANG[lang][clean];
 	}
+	if (UNIT_GLOBAL[clean]) return UNIT_GLOBAL[clean];
 
-	return UNIT_GLOBAL[clean] || clean;
+	const key = unitKey(clean);
+	return (
+		(lang && UNIT_BY_LANG_FOLDED[lang]?.[key]) ||
+		UNIT_GLOBAL_FOLDED[key] ||
+		clean
+	);
 }
 
 /**

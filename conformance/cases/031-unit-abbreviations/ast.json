@@ -1,0 +1,257 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Unit abbreviations"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Sucre",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Ingredient",
+              "name": "sucre a",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "fraction",
+                  "value": 0.5,
+                  "numerator": 1,
+                  "denominator": 2,
+                  "text": "1/2"
+                },
+                "unit": "c.à.s",
+                "fixed": false,
+                "loc": {
+                  "start": 54,
+                  "end": 63
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 45,
+                "end": 64
+              }
+            },
+            {
+              "type": "Text",
+              "value": "puis ",
+              "loc": {
+                "start": 65,
+                "end": 70
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sucre b",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "c.à.c",
+                "fixed": false,
+                "loc": {
+                  "start": 79,
+                  "end": 86
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 70,
+                "end": 87
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 87,
+                "end": 88
+              }
+            }
+          ],
+          "loc": {
+            "start": 45,
+            "end": 90
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Ingredient",
+              "name": "sucre c",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "c. à s.",
+                "fixed": false,
+                "loc": {
+                  "start": 99,
+                  "end": 108
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 90,
+                "end": 109
+              }
+            },
+            {
+              "type": "Text",
+              "value": "et ",
+              "loc": {
+                "start": 110,
+                "end": 113
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sucre d",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "c.à.s.",
+                "fixed": false,
+                "loc": {
+                  "start": 122,
+                  "end": 130
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 113,
+                "end": 131
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 131,
+                "end": 132
+              }
+            }
+          ],
+          "loc": {
+            "start": 90,
+            "end": 134
+          }
+        },
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Ingredient",
+              "name": "sucre e",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "c.a.s",
+                "fixed": false,
+                "loc": {
+                  "start": 143,
+                  "end": 150
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 134,
+                "end": 151
+              }
+            },
+            {
+              "type": "Text",
+              "value": "et ",
+              "loc": {
+                "start": 152,
+                "end": 155
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sucre f",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "càs",
+                "fixed": false,
+                "loc": {
+                  "start": 164,
+                  "end": 169
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 155,
+                "end": 170
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 170,
+                "end": 171
+              }
+            }
+          ],
+          "loc": {
+            "start": 134,
+            "end": 172
+          }
+        }
+      ],
+      "loc": {
+        "start": 35,
+        "end": 172
+      }
+    }
+  ]
+}

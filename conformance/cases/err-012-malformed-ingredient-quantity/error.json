@@ -1,0 +1,7 @@
+{
+  "message": "Gram Syntax Error: Invalid quantity '{1 g/l}' for ingredient 'sel'. Expected a number and/or a unit, e.g. {200 g} or {1/2 c.à.s}.",
+  "offset": 17,
+  "expected": "a valid quantity in braces, e.g. {200 g} or {1/2 c.à.s}",
+  "code": null,
+  "file": null
+}
