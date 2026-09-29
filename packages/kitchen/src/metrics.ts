@@ -62,16 +62,6 @@ const collectUsageIds = (usage: Usage | StepToken, out: Set<string>): void => {
 	}
 };
 
-// Registry ingredients that have to be gone and fetched: everything but the
-// intermediates, which the recipe makes itself.
-const gatherableIngredients = (registry: Registry): number => {
-	let count = 0;
-	for (const entry of registry.ingredients.values()) {
-		if (!entry.is_intermediate) count++;
-	}
-	return count;
-};
-
 /**
  * Splits the mise en place cost by section. Each registry ingredient/cookware
  * is gathered by the first section that touches it (an id never touched goes
@@ -89,18 +79,26 @@ export function computeMiseEnPlace(
 	const ingredientOwner = new Map<string, number>();
 	const cookwareOwner = new Map<string, number>();
 
+	// The section that makes each intermediate (`->&dough`).
+	const producerOf = new Map<string, number>();
+	sections.forEach((sec, idx) => {
+		if (!sec.intermediate_preparation) return;
+		const id = slugify(sec.intermediate_preparation);
+		if (!producerOf.has(id)) producerOf.set(id, idx);
+	});
+
 	sections.forEach((sec, idx) => {
 		const touched = new Set<string>();
 		for (const u of sec.ingredients) collectUsageIds(u, touched);
-		if (sec.intermediate_preparation) {
-			touched.add(slugify(sec.intermediate_preparation));
-		}
 		for (const step of sec.steps) {
 			if (step.type === "step") {
 				for (const c of step.content) collectUsageIds(c, touched);
 			}
 		}
 		for (const id of touched) {
+			// An intermediate is fetched where it is used, not where it is made:
+			// the section producing it doesn't count as a use.
+			if (producerOf.get(id) === idx) continue;
 			if (registry.ingredients.has(id) && !ingredientOwner.has(id)) {
 				ingredientOwner.set(id, idx);
 			}
@@ -115,14 +113,14 @@ export function computeMiseEnPlace(
 		}
 	});
 
-	// An intermediate (`&dough`, an inline module binding) is made during the
-	// recipe, so there is nothing to go and get. A stocked module's leaf is a
-	// real thing taken off the shelf and stays counted — the same line the
-	// shopping list draws (see `isPurchasableReference`).
+	// Every ingredient is gone and fetched (weighed, set on the counter) once,
+	// in the first section that uses it. That holds for an intermediate too —
+	// 100 g of `&dough` still has to be weighed out — but at the section that
+	// uses it, not the one that makes it. An intermediate nobody reuses stays
+	// with its own section, so the total never depends on how it is used.
 	const ingredientCount = new Map<number, number>();
-	for (const [id, entry] of registry.ingredients) {
-		if (entry.is_intermediate) continue;
-		const owner = ingredientOwner.get(id) ?? fallbackIdx;
+	for (const id of registry.ingredients.keys()) {
+		const owner = ingredientOwner.get(id) ?? producerOf.get(id) ?? fallbackIdx;
 		ingredientCount.set(owner, (ingredientCount.get(owner) ?? 0) + 1);
 	}
 	const cookwareCount = new Map<number, number>();
@@ -215,7 +213,7 @@ export function calculatePreparationTime(
 	// overhead so the total is unchanged.
 	ingredients = Math.max(
 		ingredients,
-		sections.length ? 0 : gatherableIngredients(registry),
+		sections.length ? 0 : registry.ingredients.size,
 	);
 	cookware = Math.max(cookware, sections.length ? 0 : registry.cookware.size);
 
