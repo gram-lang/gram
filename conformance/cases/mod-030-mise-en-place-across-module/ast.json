@@ -1,0 +1,303 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mise en place across a module"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./bases/pate.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "pate",
+          "loc": {
+            "start": 74,
+            "end": 79
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 46,
+        "end": 80
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Filling",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "filling",
+        "loc": {
+          "start": 92,
+          "end": 102
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook ",
+              "loc": {
+                "start": 104,
+                "end": 109
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "onions",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 117,
+                  "end": 121
+                }
+              },
+              "alias": null,
+              "preparation": "finely sliced",
+              "composite": null,
+              "loc": {
+                "start": 109,
+                "end": 137
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 138,
+                "end": 143
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 151,
+                  "end": 154
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 143,
+                "end": 155
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 156,
+                "end": 161
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 161,
+                  "end": 165
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 161,
+                "end": 165
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 165,
+                "end": 166
+              }
+            }
+          ],
+          "loc": {
+            "start": 104,
+            "end": 168
+          }
+        }
+      ],
+      "loc": {
+        "start": 81,
+        "end": 168
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Assembly",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fill ",
+              "loc": {
+                "start": 181,
+                "end": 186
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "pate",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 192,
+                  "end": 196
+                }
+              },
+              "loc": {
+                "start": 186,
+                "end": 197
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 198,
+                "end": 203
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "filling",
+              "quantity": null,
+              "loc": {
+                "start": 203,
+                "end": 211
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", brush with ",
+              "loc": {
+                "start": 211,
+                "end": 224
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 229,
+                  "end": 230
+                }
+              },
+              "alias": null,
+              "preparation": "beaten",
+              "composite": null,
+              "loc": {
+                "start": 224,
+                "end": 239
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and bake for ",
+              "loc": {
+                "start": 240,
+                "end": 253
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 255,
+                  "end": 260
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 253,
+                "end": 261
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 261,
+                "end": 262
+              }
+            }
+          ],
+          "loc": {
+            "start": 181,
+            "end": 263
+          }
+        }
+      ],
+      "loc": {
+        "start": 168,
+        "end": 263
+      }
+    }
+  ]
+}

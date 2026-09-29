@@ -1,0 +1,592 @@
+{
+  "title": "Mise en place across a module",
+  "slug": "mise-en-place-across-a-module",
+  "meta": {
+    "title": "Mise en place across a module"
+  },
+  "registry": {
+    "ingredients": {
+      "pate": {
+        "id": "pate",
+        "name": "pate",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "salt",
+        "default_unit": "g"
+      },
+      "filling": {
+        "id": "filling",
+        "name": "filling",
+        "is_intermediate": true
+      },
+      "onions": {
+        "id": "onions",
+        "name": "onions",
+        "default_unit": "g"
+      },
+      "egg": {
+        "id": "egg",
+        "name": "egg"
+      }
+    },
+    "cookware": {
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 331.13,
+      "unit": "g"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "2",
+        "5"
+      ],
+      "qty": 185.56,
+      "unit": "g"
+    },
+    {
+      "id": "salt",
+      "name": "salt",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 3.31,
+      "unit": "g"
+    },
+    {
+      "id": "onions",
+      "name": "onions",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 300,
+      "unit": "g"
+    },
+    {
+      "id": "egg",
+      "name": "egg",
+      "_usageIds": [
+        "9"
+      ],
+      "qty": 1
+    }
+  ],
+  "cookware": [
+    {
+      "id": "pan",
+      "_usageId": "6",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Pate",
+      "ingredients": [
+        {
+          "id": "flour",
+          "_usageId": "1",
+          "qty": 331.13,
+          "unit": "g"
+        },
+        {
+          "id": "butter",
+          "_usageId": "2",
+          "qty": 165.56,
+          "unit": "g",
+          "preparation": "cold, cubed"
+        },
+        {
+          "id": "salt",
+          "_usageId": "3",
+          "qty": 3.31,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "id": "flour",
+              "_usageId": "1",
+              "qty": 331.13,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "2",
+              "qty": 165.56,
+              "unit": "g",
+              "preparation": "cold, cubed"
+            },
+            "and ",
+            {
+              "id": "salt",
+              "_usageId": "3",
+              "qty": 3.31,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            "Let it rest ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 1,
+                "text": "1"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 2,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 60,
+              "startOffset": 0
+            }
+          ],
+          "action": "Rest"
+        }
+      ],
+      "intermediate_preparation": "pate",
+      "module": {
+        "binding": "pate",
+        "uri": "bases/pate.gram",
+        "title": "Pate",
+        "mode": "inline"
+      }
+    },
+    {
+      "title": "Filling",
+      "ingredients": [
+        {
+          "id": "onions",
+          "_usageId": "4",
+          "qty": 300,
+          "unit": "g",
+          "preparation": "finely sliced"
+        },
+        {
+          "id": "butter",
+          "_usageId": "5",
+          "qty": 20,
+          "unit": "g"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "pan",
+          "_usageId": "6",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Cook ",
+            {
+              "id": "onions",
+              "_usageId": "4",
+              "qty": 300,
+              "unit": "g",
+              "preparation": "finely sliced"
+            },
+            "with ",
+            {
+              "id": "butter",
+              "_usageId": "5",
+              "qty": 20,
+              "unit": "g"
+            },
+            "in a ",
+            {
+              "id": "pan",
+              "_usageId": "6",
+              "fixed": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 60,
+            "end": 62,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "filling"
+    },
+    {
+      "title": "Assembly",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "pate",
+          "name": "pate",
+          "_usageId": "7",
+          "qty": 500,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "filling",
+          "name": "filling",
+          "_usageId": "8"
+        },
+        {
+          "id": "egg",
+          "_usageId": "9",
+          "qty": 1,
+          "preparation": "beaten"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fill ",
+            {
+              "type": "reference",
+              "id": "pate",
+              "name": "pate",
+              "_usageId": "7",
+              "qty": 500,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "type": "reference",
+              "id": "filling",
+              "name": "filling",
+              "_usageId": "8"
+            },
+            ", brush with ",
+            {
+              "id": "egg",
+              "_usageId": "9",
+              "qty": 1,
+              "preparation": "beaten"
+            },
+            "and bake for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 30,
+                "text": "30"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 62,
+            "end": 92,
+            "activeDuration": 30
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 106,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Pate",
+        "duration": 2
+      },
+      {
+        "label": "timer_passive",
+        "duration": 60
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 30
+      }
+    ],
+    "idleTime": 58,
+    "activeTime": 34,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Pate",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Filling",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 30
+      }
+    ],
+    "preparationTime": 14,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 7
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      },
+      {
+        "label": "prep_butter",
+        "duration": 2
+      },
+      {
+        "label": "prep_onions",
+        "duration": 2
+      },
+      {
+        "label": "prep_egg",
+        "duration": 2
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 6,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "butter"
+          },
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "onions"
+          },
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 2,
+      "duration": 3,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "egg"
+          },
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 98,
+      "idleTime": 50,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 6
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 6,
+          "end": 8
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 8,
+          "end": 8
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 8,
+          "end": 68
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 58,
+          "end": 63
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 63,
+          "end": 65
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 65,
+          "end": 68
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 68,
+          "end": 98
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 106,
+      "idleTime": 58,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 6
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 6,
+          "end": 11
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 11,
+          "end": 14
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 14,
+          "end": 16
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 16,
+          "end": 16
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 16,
+          "end": 76
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 74,
+          "end": 76
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 76,
+          "end": 106
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "pate",
+      "uri": "bases/pate.gram",
+      "title": "Pate",
+      "meta": {
+        "title": "Pate"
+      },
+      "scaleFactor": 1.6556291390728477,
+      "mode": "inline"
+    }
+  ]
+}

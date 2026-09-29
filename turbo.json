@@ -11,6 +11,10 @@
       "outputs": ["src/grammar-content.ts"],
       "outputLogs": "errors-only"
     },
+    "@gram-lang/kitchen#prebuild": {
+      "outputs": ["src/version.ts"],
+      "outputLogs": "errors-only"
+    },
     "@gram-lang/docs#prebuild": {
       "dependsOn": ["^build"],
       "outputs": ["public/llms-full.txt"],

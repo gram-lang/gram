@@ -2,7 +2,7 @@ import { slugify, cleanObject } from "./utils";
 import { applyScale } from "./scale";
 import { processSections } from "./processor";
 import { generateShoppingList } from "./shopping";
-import { calculatePreparationTime } from "./metrics";
+import { KITCHEN_VERSION } from "./version";
 import { RecipeRegistry } from "./registry";
 import type { RecipeAST } from "@gram-lang/parser";
 import type { CompilationResult, Usage } from "./types";
@@ -62,6 +62,7 @@ export function compile(
 	const title = typeof titleValue === "string" ? titleValue : null;
 
 	const result: CompilationResult = {
+		generator: `@gram-lang/kitchen@${KITCHEN_VERSION}`,
 		title,
 		slug: title ? slugify(title) : null,
 		// Cloned defensively: compile() must never mutate the caller's AST,
@@ -73,7 +74,7 @@ export function compile(
 		sections,
 		warnings: registry.warnings,
 		metrics: (() => {
-			const prepRes = calculatePreparationTime(sections, registry);
+			const prepRes = resultPayload.preparation;
 			return {
 				totalTime:
 					prepRes.total +
@@ -87,6 +88,8 @@ export function compile(
 				prepBreakdown: prepRes.breakdown,
 			};
 		})(),
+		miseEnPlace: resultPayload.miseEnPlace,
+		schedules: resultPayload.schedules,
 	};
 
 	const scaled =

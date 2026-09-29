@@ -344,6 +344,150 @@
       }
     ]
   },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 2,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 1466,
+      "idleTime": 1438,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 2
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 2,
+          "end": 12
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 12,
+          "end": 14
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 14,
+          "end": 19
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 19,
+          "end": 21
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 21,
+          "end": 26
+        },
+        {
+          "kind": "step",
+          "section": 3,
+          "step": 0,
+          "start": 1464,
+          "end": 1466
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 1466,
+      "idleTime": 1438,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 2
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 2,
+          "end": 4
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 4,
+          "end": 6
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 6,
+          "end": 16
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 16,
+          "end": 21
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 21,
+          "end": 26
+        },
+        {
+          "kind": "step",
+          "section": 3,
+          "step": 0,
+          "start": 1464,
+          "end": 1466
+        }
+      ]
+    }
+  },
   "modules": [
     {
       "binding": "d",

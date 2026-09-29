@@ -173,11 +173,13 @@ export interface ProcessedStep {
 	type: "step";
 	action?: string; // The explicit action verb (e.g. "Mix")
 	// Gantt Data
+	/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 	timings: {
 		start: number; // Global start time (in minutes, relative to T=0)
 		end: number; // Global end time (when the cook is free)
 		activeDuration: number; // How long the cook is blocked on this step
 	};
+	/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 	backgroundTasks: Array<{
 		name?: string; // E.g., "baking" or the timer name
 		duration: number; // In minutes
@@ -198,12 +200,63 @@ export interface ProcessedSection {
 	retro_planning?: RetroPlanning | null;
 }
 
+/** One line of a section's mise en place cost. */
+export type MiseEnPlaceItem =
+	| {
+			kind: "gather";
+			target: "ingredient" | "cookware";
+			count: number;
+			duration: number;
+	  }
+	| {
+			kind: "prepare";
+			ref: { type: "ingredient" | "cookware"; id: string };
+			duration: number;
+	  };
+
+/**
+ * Mode-independent fact: what preparing section `section` costs. Present only
+ * when the cost is above zero.
+ */
+export interface SectionMiseEnPlace {
+	section: number; // index into CompilationResult.sections
+	duration: number; // == sum of items[].duration (derived, kept so consumers needn't sum)
+	items: MiseEnPlaceItem[];
+}
+
+export type ScheduleBlock =
+	| { kind: "prep"; section: number; start: number; end: number }
+	| {
+			kind: "step";
+			section: number;
+			step: number; // index in sections[section].steps (comments included)
+			start: number;
+			end: number;
+	  }
+	| {
+			kind: "passive";
+			section: number;
+			step: number;
+			track?: string; // only for named passive timers (~_name{})
+			start: number;
+			end: number;
+	  };
+
+/** A complete timeline, in minutes from T0 = 0, preparation included. */
+export interface Schedule {
+	totalTime: number; // max(end) over blocks
+	idleTime: number; // totalTime - metrics.activeTime - metrics.preparationTime
+	blocks: ScheduleBlock[]; // sorted by start, then end
+}
+
 export interface TimeBreakdownItem {
 	label: string;
 	duration: number; // in minutes
 }
 
 export interface CompilationResult {
+	/** Version of the compiler that produced this JSON: "@gram-lang/kitchen@<version>". */
+	generator: string;
 	title: string | null;
 	slug: string | null;
 	meta: Meta;
@@ -217,12 +270,24 @@ export interface CompilationResult {
 	sections: ProcessedSection[];
 	warnings: Warning[];
 	metrics: {
-		preparationTime: number; // Estimated mise-en-place time
+		preparationTime: number; // Estimated mise-en-place time (sum of miseEnPlace[].duration)
 		activeTime: number; // Sum of blocking work time (default step durations + active timers)
+		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 		idleTime: number; // Duration of passive background tasks / waiting
+		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 		totalTime: number; // preparationTime + activeTime + idleTime
+		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 		activeBreakdown: TimeBreakdownItem[]; // Added for exact tooltip calculation
+		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 		prepBreakdown: TimeBreakdownItem[];
+		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
 		totalBreakdown: TimeBreakdownItem[]; // The critical path
 	};
+	/** What preparing each section costs — independent of the chosen schedule. */
+	miseEnPlace: SectionMiseEnPlace[];
+	/**
+	 * Two complete timelines: preparation right before each section
+	 * (`perSection`), or all of it at the start (`upfront`).
+	 */
+	schedules: { perSection: Schedule; upfront: Schedule };
 }

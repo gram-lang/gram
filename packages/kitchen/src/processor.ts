@@ -33,6 +33,8 @@ import type {
 	RetroPlanning,
 	TimeBreakdownItem,
 	DeferredImport,
+	Schedule,
+	SectionMiseEnPlace,
 } from "./types";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
@@ -42,9 +44,14 @@ import { detectIntermediateCycles } from "./graph";
 import {
 	scheduleALAP,
 	serializeTracks,
-	rebaseAndCommit,
+	computeTimeline,
+	commitTimeline,
+	cloneSchedules,
+	buildPerSectionSchedule,
+	buildUpfrontSchedule,
 	type StepSchedule,
 } from "./schedule";
+import { calculatePreparationTime, computeMiseEnPlace } from "./metrics";
 
 export interface ProcessorContext extends Context {
 	options?: CompilerOptions;
@@ -657,6 +664,9 @@ export function processSections(
 		activeBreakdown: TimeBreakdownItem[];
 		totalBreakdown: TimeBreakdownItem[];
 	};
+	preparation: { total: number; breakdown: TimeBreakdownItem[] };
+	miseEnPlace: SectionMiseEnPlace[];
+	schedules: { perSection: Schedule; upfront: Schedule };
 } {
 	const ctx: ProcessorContext = {
 		warnings: registry.warnings,
@@ -900,6 +910,12 @@ export function processSections(
 	// commit) live in ./schedule — extracted so each is independently
 	// unit-testable on synthetic StepSchedule arrays, without going through
 	// the parser (audit 2026-07-22, kitchen finding F-004/P-001).
+	//
+	// The schedules are cloned *before* the legacy pass: scheduleALAP pushes
+	// into `produced` and rebaseAndCommit writes onto the compiled steps, and
+	// the per-section pass below must start from the untouched records.
+	const pristineSchedules = cloneSchedules(globalSchedules);
+
 	scheduleALAP(globalSchedules, sections, sectionASTs, registry.warnings);
 	const scheduledPassiveTasks = serializeTracks(
 		globalSchedules,
@@ -907,12 +923,49 @@ export function processSections(
 		sectionASTs,
 		registry.warnings,
 	);
-	const metrics = rebaseAndCommit(
+	const legacyTimeline = computeTimeline(
 		globalSchedules,
 		scheduledPassiveTasks,
 		sections,
+	);
+	const metrics = commitTimeline(legacyTimeline, globalActiveTime);
+
+	// Mise en place: one cost per section, then the two complete timelines.
+	const preparation = calculatePreparationTime(sections, registry);
+	const miseEnPlace = computeMiseEnPlace(sections, registry);
+	const upfront = buildUpfrontSchedule(
+		legacyTimeline,
+		miseEnPlace,
+		preparation.total,
+		globalActiveTime,
+	);
+	const perSection = buildPerSectionSchedule(
+		pristineSchedules,
+		miseEnPlace,
+		sections,
+		sectionASTs,
+		preparation.total,
 		globalActiveTime,
 	);
 
-	return { sections, metrics };
+	// A contention that only exists in the default (per-section) timeline must
+	// not be hidden: add its warnings to the official ones, skipping any the
+	// legacy pass already raised (same code + message).
+	for (const w of perSection.warnings) {
+		if (
+			!registry.warnings.some(
+				(o) => o.code === w.code && o.message === w.message,
+			)
+		) {
+			registry.warnings.push(w);
+		}
+	}
+
+	return {
+		sections,
+		metrics,
+		preparation,
+		miseEnPlace,
+		schedules: { perSection: perSection.schedule, upfront },
+	};
 }

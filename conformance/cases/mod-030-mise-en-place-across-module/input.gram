@@ -1,0 +1,13 @@
+---
+title: Mise en place across a module
+---
+
+@use "./bases/pate.gram" as &pate
+
+## Filling ->&filling
+
+Cook @onions{300g}(finely sliced) with @butter{20g} in a #pan.
+
+## Assembly
+
+Fill &pate{500g} with &filling, brush with @egg{1}(beaten) and bake for ~{30min}.

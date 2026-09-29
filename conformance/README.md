@@ -171,3 +171,7 @@ suitable for CI.
   sibling `.gram` files inside the same case directory. `ast.json` still
   documents `getAST(input.gram)` alone (unresolved `imports`); `compiled.json`
   / `analyzed.json` reflect the fully composed, spliced document.
+
+## The `generator` field
+
+Compiled and analyzed results carry a `generator` field (`@gram-lang/kitchen@<version>`). The runner drops it before writing or comparing `compiled.json` / `analyzed.json`, since it changes on every release. Every other field is compared as usual.

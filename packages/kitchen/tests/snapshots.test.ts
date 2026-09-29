@@ -12,7 +12,10 @@ describe("Compiler Snapshots", () => {
 		it(`should compile ${file} correctly`, () => {
 			const input = readFileSync(join(fixturesDir, file), "utf-8");
 			const ast = getAST(input);
-			const result = compile(ast);
+			// `generator` embeds the package version: keep it out of the snapshot so
+			// a release doesn't invalidate every one.
+			const { generator, ...result } = compile(ast);
+			expect(generator).toMatch(/^@gram-lang\/kitchen@\d+\.\d+\.\d+/);
 			expect(result).toMatchSnapshot();
 		});
 	}

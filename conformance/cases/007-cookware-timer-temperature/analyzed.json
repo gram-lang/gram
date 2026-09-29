@@ -166,5 +166,81 @@
       "isEstimate": false,
       "coverage": 0
     }
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 4,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 2,
+          "duration": 2
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "cookware",
+            "id": "big-pot"
+          },
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 39,
+      "idleTime": 30,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 4,
+          "end": 9
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 0,
+          "start": 9,
+          "end": 39
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 39,
+      "idleTime": 30,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 4,
+          "end": 9
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 0,
+          "start": 9,
+          "end": 39
+        }
+      ]
+    }
   }
 }
