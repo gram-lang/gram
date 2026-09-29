@@ -1,7 +1,6 @@
-import readChangesets from "@changesets/read";
-import { read as readConfig } from "@changesets/config";
-// @ts-ignore
-import assembleReleasePlan from "@changesets/assemble-release-plan";
+import { readChangesets } from "@changesets/read";
+import { readConfig } from "@changesets/config";
+import { assembleReleasePlan } from "@changesets/assemble-release-plan";
 import { getPackages } from "@manypkg/get-packages";
 import { writeFile, readFile } from "node:fs/promises";
 import fs from "node:fs";
@@ -41,7 +40,10 @@ async function main() {
         // ignore
     }
 
-    const config = await readConfig(cwd, packages);
+    const { config, errors: configErrors } = await readConfig(cwd, packages);
+    if (!config) {
+        throw new Error(`Invalid .changeset/config.json: ${configErrors.join("; ")}`);
+    }
     const releasePlan = assembleReleasePlan(changesets, packages, config, preState);
 
     // 2. Safely resolve the clean version number
