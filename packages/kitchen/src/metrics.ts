@@ -62,6 +62,16 @@ const collectUsageIds = (usage: Usage | StepToken, out: Set<string>): void => {
 	}
 };
 
+// Registry ingredients that have to be gone and fetched: everything but the
+// intermediates, which the recipe makes itself.
+const gatherableIngredients = (registry: Registry): number => {
+	let count = 0;
+	for (const entry of registry.ingredients.values()) {
+		if (!entry.is_intermediate) count++;
+	}
+	return count;
+};
+
 /**
  * Splits the mise en place cost by section. Each registry ingredient/cookware
  * is gathered by the first section that touches it (an id never touched goes
@@ -105,8 +115,13 @@ export function computeMiseEnPlace(
 		}
 	});
 
+	// An intermediate (`&dough`, an inline module binding) is made during the
+	// recipe, so there is nothing to go and get. A stocked module's leaf is a
+	// real thing taken off the shelf and stays counted — the same line the
+	// shopping list draws (see `isPurchasableReference`).
 	const ingredientCount = new Map<number, number>();
-	for (const id of registry.ingredients.keys()) {
+	for (const [id, entry] of registry.ingredients) {
+		if (entry.is_intermediate) continue;
 		const owner = ingredientOwner.get(id) ?? fallbackIdx;
 		ingredientCount.set(owner, (ingredientCount.get(owner) ?? 0) + 1);
 	}
@@ -200,7 +215,7 @@ export function calculatePreparationTime(
 	// overhead so the total is unchanged.
 	ingredients = Math.max(
 		ingredients,
-		sections.length ? 0 : registry.ingredients.size,
+		sections.length ? 0 : gatherableIngredients(registry),
 	);
 	cookware = Math.max(cookware, sections.length ? 0 : registry.cookware.size);
 

@@ -264,7 +264,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 1459,
+    "totalTime": 1457,
     "totalBreakdown": [
       {
         "label": "section_active:Petrissage",
@@ -291,11 +291,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 4,
+    "preparationTime": 2,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 4
+        "duration": 2
       }
     ],
     "totalMass": 500,
@@ -325,119 +325,95 @@
   "miseEnPlace": [
     {
       "section": 0,
-      "duration": 3,
+      "duration": 2,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 3,
-          "duration": 3
-        }
-      ]
-    },
-    {
-      "section": 1,
-      "duration": 1,
-      "items": [
-        {
-          "kind": "gather",
-          "target": "ingredient",
-          "count": 1,
-          "duration": 1
+          "count": 2,
+          "duration": 2
         }
       ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 1459,
+      "totalTime": 1457,
       "idleTime": 1438,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 3
+          "end": 2
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 3,
-          "end": 18
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 18,
-          "end": 19
+          "start": 2,
+          "end": 17
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 19,
-          "end": 19
+          "start": 17,
+          "end": 17
         },
         {
           "kind": "passive",
           "section": 1,
           "step": 0,
-          "start": 19,
-          "end": 79
+          "start": 17,
+          "end": 77
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 1457,
-          "end": 1459
+          "start": 1455,
+          "end": 1457
         }
       ]
     },
     "upfront": {
-      "totalTime": 1459,
+      "totalTime": 1457,
       "idleTime": 1438,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 3
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 3,
-          "end": 4
+          "end": 2
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 4,
-          "end": 19
+          "start": 2,
+          "end": 17
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 19,
-          "end": 19
+          "start": 17,
+          "end": 17
         },
         {
           "kind": "passive",
           "section": 1,
           "step": 0,
-          "start": 19,
-          "end": 79
+          "start": 17,
+          "end": 77
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 1457,
-          "end": 1459
+          "start": 1455,
+          "end": 1457
         }
       ]
     }

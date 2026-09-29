@@ -202,7 +202,7 @@
   ],
   "warnings": [],
   "metrics": {
-    "totalTime": 1447,
+    "totalTime": 1444,
     "totalBreakdown": [
       {
         "label": "section_active:Press",
@@ -241,130 +241,75 @@
         "duration": 2
       }
     ],
-    "preparationTime": 3,
-    "prepBreakdown": [
-      {
-        "label": "ingredients_overhead",
-        "duration": 3
-      }
-    ]
+    "preparationTime": 0
   },
-  "miseEnPlace": [
-    {
-      "section": 0,
-      "duration": 2,
-      "items": [
-        {
-          "kind": "gather",
-          "target": "ingredient",
-          "count": 2,
-          "duration": 2
-        }
-      ]
-    },
-    {
-      "section": 1,
-      "duration": 1,
-      "items": [
-        {
-          "kind": "gather",
-          "target": "ingredient",
-          "count": 1,
-          "duration": 1
-        }
-      ]
-    }
-  ],
+  "miseEnPlace": [],
   "schedules": {
     "perSection": {
-      "totalTime": 1447,
+      "totalTime": 1444,
       "idleTime": 1436,
       "blocks": [
         {
-          "kind": "prep",
+          "kind": "step",
           "section": 0,
+          "step": 0,
           "start": 0,
           "end": 2
         },
         {
           "kind": "step",
-          "section": 0,
+          "section": 1,
           "step": 0,
           "start": 2,
           "end": 4
         },
         {
-          "kind": "prep",
-          "section": 1,
-          "start": 4,
-          "end": 5
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 5,
-          "end": 7
-        },
-        {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 1443,
-          "end": 1445
+          "start": 1440,
+          "end": 1442
         },
         {
           "kind": "step",
           "section": 3,
           "step": 0,
-          "start": 1445,
-          "end": 1447
+          "start": 1442,
+          "end": 1444
         }
       ]
     },
     "upfront": {
-      "totalTime": 1447,
+      "totalTime": 1444,
       "idleTime": 1436,
       "blocks": [
         {
-          "kind": "prep",
+          "kind": "step",
           "section": 0,
+          "step": 0,
           "start": 0,
           "end": 2
         },
         {
-          "kind": "prep",
+          "kind": "step",
           "section": 1,
+          "step": 0,
           "start": 2,
-          "end": 3
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 3,
-          "end": 5
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 5,
-          "end": 7
+          "end": 4
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 1443,
-          "end": 1445
+          "start": 1440,
+          "end": 1442
         },
         {
           "kind": "step",
           "section": 3,
           "step": 0,
-          "start": 1445,
-          "end": 1447
+          "start": 1442,
+          "end": 1444
         }
       ]
     }

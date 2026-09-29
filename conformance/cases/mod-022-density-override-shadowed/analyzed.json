@@ -151,7 +151,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 6,
+    "totalTime": 5,
     "totalBreakdown": [
       {
         "label": "section_active:Glaze",
@@ -174,11 +174,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 2,
+    "preparationTime": 1,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 2
+        "duration": 1
       }
     ],
     "totalMass": 100,
@@ -204,67 +204,67 @@
   "miseEnPlace": [
     {
       "section": 0,
-      "duration": 2,
+      "duration": 1,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 2,
-          "duration": 2
+          "count": 1,
+          "duration": 1
         }
       ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 6,
+      "totalTime": 5,
       "idleTime": 0,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 2
+          "end": 1
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 4
+          "start": 1,
+          "end": 3
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 3,
+          "end": 5
         }
       ]
     },
     "upfront": {
-      "totalTime": 6,
+      "totalTime": 5,
       "idleTime": 0,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 2
+          "end": 1
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 4
+          "start": 1,
+          "end": 3
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 3,
+          "end": 5
         }
       ]
     }

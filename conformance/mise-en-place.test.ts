@@ -129,7 +129,12 @@ function checkInvariants(compiled: CompilationResult): void {
 
 	// Invariant 1: Σ sections == metrics.preparationTime.
 	if (hasRealSteps) {
-		expect(gatheredIngredients).toBe(registry.ingredients.size);
+		// Everything but the intermediates, which the recipe makes itself; a
+		// stocked module's leaf is not one and stays counted.
+		expect(gatheredIngredients).toBe(
+			[...registry.ingredients.values()].filter((e) => !e.is_intermediate)
+				.length,
+		);
 		expect(gatheredCookware).toBe(registry.cookware.size);
 		expect(mise.reduce((sum, m) => sum + m.duration, 0)).toBe(
 			compiled.metrics.preparationTime,

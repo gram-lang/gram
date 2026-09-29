@@ -420,7 +420,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 106,
+    "totalTime": 104,
     "totalBreakdown": [
       {
         "label": "section_active:Pate",
@@ -451,11 +451,11 @@
         "duration": 30
       }
     ],
-    "preparationTime": 14,
+    "preparationTime": 12,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 7
+        "duration": 5
       },
       {
         "label": "cookware_overhead",
@@ -515,13 +515,13 @@
   "miseEnPlace": [
     {
       "section": 0,
-      "duration": 6,
+      "duration": 5,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 4,
-          "duration": 4
+          "count": 3,
+          "duration": 3
         },
         {
           "kind": "prepare",
@@ -535,13 +535,13 @@
     },
     {
       "section": 1,
-      "duration": 5,
+      "duration": 4,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 2,
-          "duration": 2
+          "count": 1,
+          "duration": 1
         },
         {
           "kind": "gather",
@@ -582,120 +582,120 @@
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 98,
-      "idleTime": 50,
+      "totalTime": 97,
+      "idleTime": 51,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 6
+          "end": 5
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 6,
-          "end": 8
+          "start": 5,
+          "end": 7
         },
         {
           "kind": "step",
           "section": 0,
           "step": 1,
-          "start": 8,
-          "end": 8
+          "start": 7,
+          "end": 7
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 8,
-          "end": 68
+          "start": 7,
+          "end": 67
         },
         {
           "kind": "prep",
           "section": 1,
           "start": 58,
-          "end": 63
+          "end": 62
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 63,
-          "end": 65
+          "start": 62,
+          "end": 64
         },
         {
           "kind": "prep",
           "section": 2,
-          "start": 65,
-          "end": 68
+          "start": 64,
+          "end": 67
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 68,
-          "end": 98
+          "start": 67,
+          "end": 97
         }
       ]
     },
     "upfront": {
-      "totalTime": 106,
+      "totalTime": 104,
       "idleTime": 58,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 6
+          "end": 5
         },
         {
           "kind": "prep",
           "section": 1,
-          "start": 6,
-          "end": 11
+          "start": 5,
+          "end": 9
         },
         {
           "kind": "prep",
           "section": 2,
-          "start": 11,
+          "start": 9,
+          "end": 12
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 12,
           "end": 14
         },
         {
           "kind": "step",
           "section": 0,
-          "step": 0,
-          "start": 14,
-          "end": 16
-        },
-        {
-          "kind": "step",
-          "section": 0,
           "step": 1,
-          "start": 16,
-          "end": 16
+          "start": 14,
+          "end": 14
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 16,
-          "end": 76
+          "start": 14,
+          "end": 74
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 74,
-          "end": 76
+          "start": 72,
+          "end": 74
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 76,
-          "end": 106
+          "start": 74,
+          "end": 104
         }
       ]
     }

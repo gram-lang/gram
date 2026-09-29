@@ -333,7 +333,7 @@
   ],
   "warnings": [],
   "metrics": {
-    "totalTime": 160,
+    "totalTime": 158,
     "totalBreakdown": [
       {
         "label": "section_active:Dough",
@@ -364,11 +364,11 @@
         "duration": 25
       }
     ],
-    "preparationTime": 13,
+    "preparationTime": 11,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 7
+        "duration": 5
       },
       {
         "label": "cookware_overhead",
@@ -387,13 +387,13 @@
   "miseEnPlace": [
     {
       "section": 0,
-      "duration": 5,
+      "duration": 4,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 4,
-          "duration": 4
+          "count": 3,
+          "duration": 3
         },
         {
           "kind": "gather",
@@ -405,13 +405,13 @@
     },
     {
       "section": 1,
-      "duration": 8,
+      "duration": 7,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 3,
-          "duration": 3
+          "count": 2,
+          "duration": 2
         },
         {
           "kind": "gather",
@@ -440,108 +440,108 @@
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 152,
-      "idleTime": 110,
+      "totalTime": 151,
+      "idleTime": 111,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 5
+          "end": 4
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 4,
+          "end": 6
         },
         {
           "kind": "step",
           "section": 0,
           "step": 1,
-          "start": 7,
-          "end": 7
+          "start": 6,
+          "end": 6
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 7,
-          "end": 127
+          "start": 6,
+          "end": 126
         },
         {
           "kind": "prep",
           "section": 1,
           "start": 117,
-          "end": 125
+          "end": 124
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 125,
-          "end": 127
+          "start": 124,
+          "end": 126
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 127,
-          "end": 152
+          "start": 126,
+          "end": 151
         }
       ]
     },
     "upfront": {
-      "totalTime": 160,
+      "totalTime": 158,
       "idleTime": 118,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 5
+          "end": 4
         },
         {
           "kind": "prep",
           "section": 1,
-          "start": 5,
+          "start": 4,
+          "end": 11
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 11,
           "end": 13
         },
         {
           "kind": "step",
           "section": 0,
-          "step": 0,
-          "start": 13,
-          "end": 15
-        },
-        {
-          "kind": "step",
-          "section": 0,
           "step": 1,
-          "start": 15,
-          "end": 15
+          "start": 13,
+          "end": 13
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 15,
-          "end": 135
+          "start": 13,
+          "end": 133
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 133,
-          "end": 135
+          "start": 131,
+          "end": 133
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 135,
-          "end": 160
+          "start": 133,
+          "end": 158
         }
       ]
     }
