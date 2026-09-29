@@ -52,7 +52,7 @@ describe("compiled mise en place and schedules", () => {
 	});
 });
 
-describe("gathering skips what the recipe makes itself", () => {
+describe("an intermediate is fetched where it is used", () => {
 	const SOURCE = `## Dough ->&dough
 
 Mix @flour{500g} and @water{300ml}.
@@ -63,29 +63,45 @@ Cook @onions{200g}(finely sliced).
 
 ## Assembly
 
-Spread &filling over &dough.
+Spread &filling{100g} over &dough{200g}.
 `;
 
-	it("charges nothing for an intermediate", () => {
-		const result = compile(getAST(SOURCE));
-		const gathered = result.miseEnPlace.flatMap((m) =>
-			m.items.flatMap((i) =>
+	const gathered = (result: ReturnType<typeof compile>, section: number) =>
+		result.miseEnPlace
+			.find((m) => m.section === section)
+			?.items.flatMap((i) =>
 				i.kind === "gather" && i.target === "ingredient" ? [i.count] : [],
+			)
+			.reduce((a, b) => a + b, 0) ?? 0;
+
+	it("charges the section that uses it, not the one that makes it", () => {
+		const result = compile(getAST(SOURCE));
+		expect(gathered(result, 0)).toBe(2); // flour, water
+		expect(gathered(result, 1)).toBe(1); // onions
+		expect(gathered(result, 2)).toBe(2); // &filling, &dough
+	});
+
+	it("keeps the total the same wherever the intermediates are charged", () => {
+		expect(compile(getAST(SOURCE)).metrics.preparationTime).toBe(7);
+	});
+
+	it("keeps an intermediate nobody reuses with the section that makes it", () => {
+		const result = compile(
+			getAST(
+				"## Dough ->&dough\n\nMix @flour{500g}.\n\n## Bake\n\nBake for ~{20min}.\n",
 			),
 		);
-		// flour, water, onions — not dough, not filling.
-		expect(gathered.reduce((a, b) => a + b, 0)).toBe(3);
-		expect(result.metrics.preparationTime).toBe(5);
+		expect(gathered(result, 0)).toBe(2); // flour, &dough
+		expect(result.metrics.preparationTime).toBe(2);
 	});
 
-	it("still lists the intermediates in the registry", () => {
-		const result = compile(getAST(SOURCE));
-		expect(result.registry.ingredients.dough?.is_intermediate).toBe(true);
-		expect(result.registry.ingredients.filling?.is_intermediate).toBe(true);
-	});
-
-	it("keeps the section that only assembles free of any gathering", () => {
-		const result = compile(getAST(SOURCE));
-		expect(result.miseEnPlace.map((m) => m.section)).toEqual([0, 1]);
+	it("does not charge the section that makes it, even if it mentions it again", () => {
+		const result = compile(
+			getAST(
+				"## Dough ->&dough\n\nMix @flour{500g}.\n\nShape the &dough{200g}.\n\n## Bake\n\nBake &dough for ~{20min}.\n",
+			),
+		);
+		expect(gathered(result, 0)).toBe(1); // flour
+		expect(gathered(result, 1)).toBe(1); // &dough
 	});
 });

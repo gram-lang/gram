@@ -166,7 +166,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 8,
+    "totalTime": 9,
     "totalBreakdown": [
       {
         "label": "section_active:Pastry",
@@ -189,11 +189,11 @@
         "duration": 4
       }
     ],
-    "preparationTime": 2,
+    "preparationTime": 3,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 2
+        "duration": 3
       }
     ]
   },
@@ -212,20 +212,20 @@
     },
     {
       "section": 1,
-      "duration": 1,
+      "duration": 2,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 1,
-          "duration": 1
+          "count": 2,
+          "duration": 2
         }
       ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 8,
+      "totalTime": 9,
       "idleTime": 0,
       "blocks": [
         {
@@ -245,26 +245,26 @@
           "kind": "prep",
           "section": 1,
           "start": 3,
-          "end": 4
+          "end": 5
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 5,
+          "end": 7
         },
         {
           "kind": "step",
           "section": 1,
           "step": 1,
-          "start": 6,
-          "end": 8
+          "start": 7,
+          "end": 9
         }
       ]
     },
     "upfront": {
-      "totalTime": 8,
+      "totalTime": 9,
       "idleTime": 0,
       "blocks": [
         {
@@ -277,28 +277,28 @@
           "kind": "prep",
           "section": 1,
           "start": 1,
-          "end": 2
+          "end": 3
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 4
+          "start": 3,
+          "end": 5
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 5,
+          "end": 7
         },
         {
           "kind": "step",
           "section": 1,
           "step": 1,
-          "start": 6,
-          "end": 8
+          "start": 7,
+          "end": 9
         }
       ]
     }

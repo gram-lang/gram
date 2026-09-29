@@ -407,7 +407,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 158,
+    "totalTime": 160,
     "totalBreakdown": [
       {
         "label": "section_active:Dough",
@@ -438,11 +438,11 @@
         "duration": 25
       }
     ],
-    "preparationTime": 11,
+    "preparationTime": 13,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 5
+        "duration": 7
       },
       {
         "label": "cookware_overhead",
@@ -547,12 +547,24 @@
           "duration": 2
         }
       ]
+    },
+    {
+      "section": 2,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
     }
   ],
   "schedules": {
     "perSection": {
       "totalTime": 151,
-      "idleTime": 111,
+      "idleTime": 109,
       "blocks": [
         {
           "kind": "prep",
@@ -584,13 +596,19 @@
         {
           "kind": "prep",
           "section": 1,
-          "start": 117,
-          "end": 124
+          "start": 115,
+          "end": 122
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
+          "start": 122,
+          "end": 124
+        },
+        {
+          "kind": "prep",
+          "section": 2,
           "start": 124,
           "end": 126
         },
@@ -604,7 +622,7 @@
       ]
     },
     "upfront": {
-      "totalTime": 158,
+      "totalTime": 160,
       "idleTime": 118,
       "blocks": [
         {
@@ -620,39 +638,45 @@
           "end": 11
         },
         {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
+          "kind": "prep",
+          "section": 2,
           "start": 11,
           "end": 13
         },
         {
           "kind": "step",
           "section": 0,
-          "step": 1,
+          "step": 0,
           "start": 13,
-          "end": 13
+          "end": 15
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 15,
+          "end": 15
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 13,
-          "end": 133
+          "start": 15,
+          "end": 135
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 131,
-          "end": 133
+          "start": 133,
+          "end": 135
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 133,
-          "end": 158
+          "start": 135,
+          "end": 160
         }
       ]
     }

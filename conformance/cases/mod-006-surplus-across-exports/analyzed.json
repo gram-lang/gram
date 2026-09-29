@@ -223,7 +223,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 7,
+    "totalTime": 9,
     "totalBreakdown": [
       {
         "label": "section_active:Blancs",
@@ -254,11 +254,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 1,
+    "preparationTime": 3,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 1
+        "duration": 3
       }
     ],
     "totalMass": 300,
@@ -293,11 +293,23 @@
           "duration": 1
         }
       ]
+    },
+    {
+      "section": 2,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 7,
+      "totalTime": 9,
       "idleTime": 0,
       "blocks": [
         {
@@ -321,16 +333,22 @@
           "end": 5
         },
         {
+          "kind": "prep",
+          "section": 2,
+          "start": 5,
+          "end": 7
+        },
+        {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 7,
+          "end": 9
         }
       ]
     },
     "upfront": {
-      "totalTime": 7,
+      "totalTime": 9,
       "idleTime": 0,
       "blocks": [
         {
@@ -340,25 +358,31 @@
           "end": 1
         },
         {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
+          "kind": "prep",
+          "section": 2,
           "start": 1,
           "end": 3
         },
         {
           "kind": "step",
-          "section": 1,
+          "section": 0,
           "step": 0,
           "start": 3,
           "end": 5
         },
         {
           "kind": "step",
-          "section": 2,
+          "section": 1,
           "step": 0,
           "start": 5,
           "end": 7
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 7,
+          "end": 9
         }
       ]
     }
