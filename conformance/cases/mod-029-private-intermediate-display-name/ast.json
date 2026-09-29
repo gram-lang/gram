@@ -1,0 +1,85 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Mod Private Intermediate Display Name"
+  },
+  "imports": [
+    {
+      "type": "ImportDecl",
+      "specifier": "./b.gram",
+      "bindings": [
+        {
+          "exported": "default",
+          "local": "tofu",
+          "loc": {
+            "start": 73,
+            "end": 78
+          }
+        }
+      ],
+      "retroPlanning": null,
+      "loc": {
+        "start": 54,
+        "end": 79
+      }
+    }
+  ],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Assemble",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            {
+              "type": "Text",
+              "value": "Add the ",
+              "loc": {
+                "start": 93,
+                "end": 101
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "tofu",
+              "quantity": {
+                "type": "Quantity",
+                "value": null,
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 107,
+                  "end": 107
+                }
+              },
+              "loc": {
+                "start": 101,
+                "end": 108
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 108,
+                "end": 109
+              }
+            }
+          ],
+          "loc": {
+            "start": 93,
+            "end": 110
+          }
+        }
+      ],
+      "loc": {
+        "start": 80,
+        "end": 110
+      }
+    }
+  ]
+}

@@ -339,8 +339,8 @@ function processReference(
 	if (!registry.ingredients.has(id)) {
 		pushWarning(ctx, WarningCode.UNDEFINED_REFERENCE, {
 			prefix: "&",
-			name: cleanName,
-			item: cleanName,
+			name: item.displayName ?? cleanName,
+			item: item.displayName ?? cleanName,
 			loc: item.loc,
 		});
 	}
@@ -378,7 +378,10 @@ function processIntermediateDecl(
 	ctx: ProcessorContext,
 	registry: RecipeRegistry,
 ): ProcessedBlockResult {
-	const id = registry.registerIngredient(item.name, { is_intermediate: true });
+	const id = registry.registerIngredient(item.name, {
+		is_intermediate: true,
+		displayName: item.displayName,
+	});
 	ctx.intermediateDecl = id;
 	ctx.currentSectionIntermediates.add(item.name);
 	return { type: "declaration", name: item.name, id };
@@ -719,14 +722,17 @@ export function processSections(
 			const varName = sectionAST.intermediateDecl.name;
 			if (ctx.globalScopes.has(varName)) {
 				pushWarning(registry.warnings, WarningCode.SCOPE_CONFLICT, {
-					varName,
+					varName: sectionAST.intermediateDecl.displayName ?? varName,
 					section: sectionAST.title,
 					loc: sectionAST.intermediateDecl?.loc,
 				});
 			} else {
 				ctx.globalScopes.set(varName, sectionAST.title || "");
 			}
-			registry.registerIngredient(varName, { is_intermediate: true });
+			registry.registerIngredient(varName, {
+				is_intermediate: true,
+				displayName: sectionAST.intermediateDecl.displayName,
+			});
 			ctx.definedIntermediates.add(varName);
 			ctx.currentSectionIntermediates.add(varName);
 		}

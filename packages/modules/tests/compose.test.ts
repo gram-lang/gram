@@ -693,3 +693,70 @@ Mix in the &levain{200g}.
 		expect(result.sections[0]?.retro_planning?.raw).toBe("-2d");
 	});
 });
+
+// Issue #26: composition scope-qualifies a module's private intermediates
+// (`tofu$marinated$pressed`) to keep two modules from colliding, but that
+// internal identity used to leak into every rendered label.
+describe("composeRecipe display names", () => {
+	const labels = (result: Awaited<ReturnType<typeof build>>["result"]) =>
+		Object.values(result.registry.ingredients)
+			.filter((e) => e.is_intermediate)
+			.map((e) => e.name)
+			.sort();
+
+	it("labels intermediates of a deep import chain with the authored name", async () => {
+		const { result } = await build(
+			{
+				"/c.gram": `@use "./b.gram" as &tofu
+
+## Assemble
+
+Add the &tofu{}.
+`,
+				"/b.gram": `@use "./a.gram" as &marinated
+
+## Grill ->&grilled
+
+Pan-fry the &marinated{}.
+`,
+				"/a.gram": `## Press
+
+Press the @tofu{200g}. ->&pressed
+
+## Marinate ->&marinated
+
+Slice the &pressed{} and coat it.
+`,
+			},
+			"/c.gram",
+		);
+
+		expect(result.registry.ingredients["tofu-marinated-pressed"]?.name).toBe(
+			"pressed",
+		);
+		expect(result.registry.ingredients["tofu-marinated"]?.name).toBe(
+			"marinated",
+		);
+		expect(result.registry.ingredients.tofu?.name).toBe("tofu");
+		// identity is untouched: sections still chain on the qualified names
+		expect(result.sections[1]?.intermediate_preparation).toBe("tofu$marinated");
+	});
+
+	it("keeps two modules that each declare &dough distinct but both labelled dough", async () => {
+		const { result } = await build({
+			"/recipe.gram": `@use "./x.gram" as &x
+@use "./y.gram" as &y
+
+## Assemble
+
+Combine &x{} and &y{}.
+`,
+			"/x.gram": "## X ->&xout\n\nMix @flour{100g} ->&dough.\n",
+			"/y.gram": "## Y ->&yout\n\nMix @flour{100g} ->&dough.\n",
+		});
+
+		expect(result.registry.ingredients["x-dough"]?.name).toBe("dough");
+		expect(result.registry.ingredients["y-dough"]?.name).toBe("dough");
+		expect(labels(result)).toEqual(["dough", "dough", "x", "y"]);
+	});
+});

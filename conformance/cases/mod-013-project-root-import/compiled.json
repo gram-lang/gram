@@ -8,7 +8,7 @@
     "ingredients": {
       "mid-pate": {
         "id": "mid-pate",
-        "name": "mid$pate",
+        "name": "pate",
         "is_intermediate": true
       },
       "flour": {

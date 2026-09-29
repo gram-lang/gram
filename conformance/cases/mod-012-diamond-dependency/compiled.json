@@ -4,7 +4,7 @@
     "ingredients": {
       "b-d": {
         "id": "b-d",
-        "name": "b$d",
+        "name": "d",
         "is_intermediate": true
       },
       "flour": {
@@ -19,7 +19,7 @@
       },
       "c-d": {
         "id": "c-d",
-        "name": "c$d",
+        "name": "d",
         "is_intermediate": true
       },
       "c": {

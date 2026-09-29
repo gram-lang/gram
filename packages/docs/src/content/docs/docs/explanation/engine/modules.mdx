@@ -55,7 +55,8 @@ Only section-level intermediate declarations (`## Pastry Dough ->&crust`) are co
 To prevent name collisions when multiple files declare common names (e.g. `&dough` or `&mixture`):
 1. **Bound Exports**: Renamed directly to the local identifier chosen in the host's `@use` line (`@use "./base.gram" as &myDough`).
 2. **Internal Variables**: Prefixed using the binding name (e.g. `&dough` becomes `&myDough$dough`).
-3. **Collision Safety Net**: After renaming, `checkRenameCollisions()` validates all identifiers post-slugification to ensure no distinct intermediates accidentally merge.
+3. **Display Names**: The `$`-qualified name is an internal identity only. Each renamed node keeps the name its author wrote in `displayName`, and the compiled registry uses it as the label, so rendered output shows `&dough`, never `&myDough$dough`.
+4. **Collision Safety Net**: After renaming, `checkRenameCollisions()` validates all identifiers post-slugification to ensure no distinct intermediates accidentally merge.
 
 ## 3. Physical yield measurement & proportional scaling (`yield.ts`)
 

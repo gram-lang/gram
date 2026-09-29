@@ -1,0 +1,9 @@
+---
+title: B
+---
+
+@use "./a.gram" as &marinated ~{-1d}
+
+## Grill ->&grilled
+
+Pan-fry the &marinated{}.

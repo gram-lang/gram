@@ -1,0 +1,9 @@
+---
+title: Mod Private Intermediate Display Name
+---
+
+@use "./b.gram" as &tofu
+
+## Assemble
+
+Add the &tofu{}.
