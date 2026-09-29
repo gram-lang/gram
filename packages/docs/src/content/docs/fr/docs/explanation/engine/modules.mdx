@@ -55,7 +55,8 @@ Seules les déclarations intermédiaires portées au niveau des en-têtes de sec
 Pour éviter qu'une recette hôte et son sous-module ne se marchent sur les pieds avec des variables aux noms courants (`&pate`, `&appareil`, `&sirop`) :
 1. **Liaison explicite** : L'export demandé est renommé selon l'identifiant local choisi sur la ligne `@use` (`@use "./base.gram" as &maPate`).
 2. **Variables privées** : Toutes les autres variables internes du module sont préfixées par le nom de la liaison (ex : `&pate` devient `&maPate$pate`).
-3. **Contrôle anti-collision post-slug** : Même si deux séparateurs diffèrent, `checkRenameCollisions()` vérifie le slug final de chaque identifiant pour garantir qu'aucune variable distincte ne fusionne par inadvertance.
+3. **Noms affichés** : le nom qualifié avec `$` n'est qu'un identifiant interne. Chaque nœud renommé conserve le nom choisi par son auteur dans `displayName`, et le registre compilé s'en sert comme libellé : le rendu affiche `&pate`, jamais `&maPate$pate`.
+4. **Contrôle anti-collision post-slug** : Même si deux séparateurs diffèrent, `checkRenameCollisions()` vérifie le slug final de chaque identifiant pour garantir qu'aucune variable distincte ne fusionne par inadvertance.
 
 ## 3. Pesée des rendements & facteur d'échelle (`yield.ts`)
 
