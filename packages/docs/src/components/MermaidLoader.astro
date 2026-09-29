@@ -12,6 +12,7 @@
 			const isDark = document.documentElement.dataset.theme === "dark";
 			mermaid.initialize({
 				startOnLoad: false,
+				layout: "elk",
 				theme: isDark ? "dark" : "default",
 			});
 
