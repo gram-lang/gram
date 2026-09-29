@@ -32,7 +32,7 @@
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
     "astro": "^7.3.5",
-    "mermaid": "^11.16.1",
+    "mermaid": "^12.0.0",
     "shiki": "^4.3.1",
     "starlight-theme-nova": "^0.12.2",
     "unist-util-visit": "^5.1.0",
