@@ -20,6 +20,8 @@ export {
 	getQty,
 	formatQuantityValue,
 	formatDuration,
+	formatTimer,
+	toCommonFraction,
 	escapeHtml,
 	escapeMarkdownHtml,
 	joinStepTokens,
