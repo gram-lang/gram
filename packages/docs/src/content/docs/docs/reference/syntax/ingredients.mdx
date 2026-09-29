@@ -28,6 +28,12 @@ To specify a unit of measurement (weight, volume, etc.), add it directly after t
 [Place] @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
 ```
 
+A unit can be several words (`{2 tablespoons}`) and can contain dots or apostrophes (`{1 c.à.s}`, `{1 c. à s.}`). Common spellings of the same unit are recognized as equivalent: `c.à.s`, `c.a.s` and `càs` all mean tablespoon in French.
+
+:::caution
+A quantity in braces that can't be read (`@salt{1 g/l}`, or a brace that is never closed) stops parsing with an error pointing at the offending brace.
+:::
+
 ## Scaling & fixed quantities
 
 By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 
@@ -179,6 +185,8 @@ Add @butter{1½ sticks}.
 ```
 
 ## Error handling
+
+Some syntax errors stop the recipe from being read before it is even compiled: an unreadable quantity in braces (`@salt{1 g/l}`), a brace that is never closed. The message points at the exact spot to fix, and the editor underlines it.
 
 The compiler checks for semantic errors in your `@ingredient` declarations and will output specific warnings:
 
