@@ -13,6 +13,58 @@ import {
 // slugify, so picking one "unlikely" doesn't protect anything by itself).
 
 describe("buildRenameTable + applyRename", () => {
+	it("keeps the authored name as displayName on scope-qualified intermediates", () => {
+		const ast = getAST(
+			"## Pastry ->&paton\n\nMix @flour{200g} ->&mixed, then rest 10min.\n\n## Bake\n\nUse &mixed{} and &paton{}.\n",
+		);
+		const { sections, exports } = computeExports(ast);
+		const table = buildRenameTable(sections, exports, [
+			{ exported: "default", local: "pate" },
+		]);
+		const renamed = applyRename(sections, table);
+
+		const nodes = renamed.flatMap((sec) =>
+			sec.children.flatMap((c) => ("children" in c ? c.children : [])),
+		) as { type: string; name?: string; displayName?: string }[];
+		const decl = nodes.find((c) => c.type === "IntermediateDecl");
+		const refs = nodes.filter((c) => c.type === "Reference");
+		expect(decl).toMatchObject({ name: "pate$mixed", displayName: "mixed" });
+		// bound export: the host's own local name, nothing to override
+		expect(refs.map((r) => r.name)).toEqual(["pate$mixed", "pate"]);
+		expect(refs[0]?.displayName).toBe("mixed");
+		expect(refs[1]?.displayName).toBeUndefined();
+		expect(renamed[0]?.intermediateDecl?.displayName).toBeUndefined();
+	});
+
+	it("preserves the innermost authored name across nested splices", () => {
+		const ast = getAST("## Pastry ->&paton\n\nMix ->&mixed.\n");
+		const { sections, exports } = computeExports(ast);
+		const inner = applyRename(
+			sections,
+			buildRenameTable(sections, exports, [
+				{ exported: "default", local: "pate" },
+			]),
+		);
+		const outer = computeExports({
+			...ast,
+			children: inner,
+		} as unknown as typeof ast);
+		const renamed = applyRename(
+			outer.sections,
+			buildRenameTable(outer.sections, outer.exports, [
+				{ exported: "default", local: "tarte" },
+			]),
+		);
+		const decl = renamed[0]?.children
+			.flatMap((c) => ("children" in c ? c.children : []))
+			.find((c) => c.type === "IntermediateDecl") as {
+			name: string;
+			displayName?: string;
+		};
+		expect(decl.name).toBe("tarte$pate$mixed");
+		expect(decl.displayName).toBe("mixed");
+	});
+
 	it("renames a bound default export directly to the local binding name", () => {
 		const ast = getAST("## Pastry ->&paton\n\nMix @flour{200g}.\n");
 		const { sections, exports } = computeExports(ast);
