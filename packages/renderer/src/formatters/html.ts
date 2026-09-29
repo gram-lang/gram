@@ -27,6 +27,7 @@ import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
+	intermediateLabel,
 	round2,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
@@ -379,16 +380,22 @@ const htmlBackend: RenderBackend = {
 					titleHtml += ` <small class="section-meta-badge section-meta-mass" data-tooltip="${escapeHtml(title)}">${sIcon} ${msg}</small>`;
 				}
 
+				const declLabel = sec.intermediate_preparation
+					? intermediateLabel(
+							context.registry?.ingredients ?? {},
+							sec.intermediate_preparation,
+						)
+					: "";
 				if (sec.intermediate_preparation && sec.module) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
 					const packageIcon =
 						options.icons?.package ?? DEFAULT_ICONS.html.package;
-					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span></span>`;
+					titleHtml += ` <span class="section-declaration-badge has-module" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}"><span class="section-module-source">${packageIcon} ${escapeHtml(moduleLabel(sec.module))}</span><span class="section-decl-target">${arrowIcon} ${escapeHtml(declLabel)}</span></span>`;
 				} else if (sec.intermediate_preparation) {
 					const arrowIcon =
 						options.icons?.arrowRight ?? DEFAULT_ICONS.html.arrowRight;
-					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(sec.intermediate_preparation)}</span>`;
+					titleHtml += ` <span class="section-declaration-badge" data-tooltip="${escapeHtml(t.renderer.intermediateResult)}">${arrowIcon} ${escapeHtml(declLabel)}</span>`;
 				} else if (sec.module) {
 					const packageIcon =
 						options.icons?.package ?? DEFAULT_ICONS.html.package;
