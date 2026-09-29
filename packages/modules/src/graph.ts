@@ -160,6 +160,7 @@ export async function loadModuleGraph(
 				pushModuleWarning(diagnostics, ModuleWarningCode.MODULE_PARSE_ERROR, {
 					specifier: displaySpecifier,
 					parseMessage: err.message,
+					isEntry: !fromDecl,
 					loc: { start: err.offset, end: err.offset, uri },
 				});
 				return;
