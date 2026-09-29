@@ -141,7 +141,7 @@
   ],
   "warnings": [],
   "metrics": {
-    "totalTime": 6,
+    "totalTime": 7,
     "totalBreakdown": [
       {
         "label": "section_active:B Section",
@@ -164,11 +164,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 2,
+    "preparationTime": 3,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 2
+        "duration": 3
       }
     ]
   },
@@ -184,11 +184,23 @@
           "duration": 2
         }
       ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 6,
+      "totalTime": 7,
       "idleTime": 0,
       "blocks": [
         {
@@ -205,16 +217,22 @@
           "end": 4
         },
         {
+          "kind": "prep",
+          "section": 1,
+          "start": 4,
+          "end": 5
+        },
+        {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 5,
+          "end": 7
         }
       ]
     },
     "upfront": {
-      "totalTime": 6,
+      "totalTime": 7,
       "idleTime": 0,
       "blocks": [
         {
@@ -224,18 +242,24 @@
           "end": 2
         },
         {
+          "kind": "prep",
+          "section": 1,
+          "start": 2,
+          "end": 3
+        },
+        {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 4
+          "start": 3,
+          "end": 5
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 5,
+          "end": 7
         }
       ]
     }

@@ -30,8 +30,9 @@ const shoppingList = (html: string) =>
 	);
 
 describe("compiled data used below", () => {
-	it("has a mise en place for two of the three sections", () => {
-		expect(compiled.miseEnPlace.map((m) => m.section)).toEqual([0, 1]);
+	it("has a mise en place for each of the three sections", () => {
+		// Assembly makes nothing but weighs out the two intermediates it uses.
+		expect(compiled.miseEnPlace.map((m) => m.section)).toEqual([0, 1, 2]);
 	});
 });
 
@@ -39,18 +40,17 @@ describe("HTML — perSection (default)", () => {
 	const html = toHTML(compiled);
 
 	it("captions the ingredient list of each section that has a mise en place", () => {
-		expect(countOf(html, '<p class="section-prep">')).toBe(2);
+		expect(countOf(html, '<p class="section-prep">')).toBe(3);
 		const boxes = html.match(
 			/<div class="section-ingredients">[\s\S]*?<\/div>/g,
 		)!;
 		expect(boxes).toHaveLength(3);
 		// The caption is the first thing in the box, before the list.
-		for (const box of boxes.slice(0, 2)) {
+		for (const box of boxes) {
 			expect(box.indexOf("section-prep")).toBeGreaterThan(-1);
 			expect(box.indexOf("section-prep")).toBeLessThan(box.indexOf("<ul>"));
 			expect(box).toContain("Mise en place</span>");
 		}
-		expect(boxes[2]).not.toContain("section-prep");
 	});
 
 	it("shows the duration only on hover, never as visible text", () => {
@@ -59,7 +59,7 @@ describe("HTML — perSection (default)", () => {
 				/<p class="section-prep"><span data-tooltip="([^"]*)">([\s\S]*?)<\/span>/g,
 			),
 		];
-		expect(tips).toHaveLength(2);
+		expect(tips).toHaveLength(3);
 		tips.forEach((m, i) => {
 			const minutes = fmt(compiled.miseEnPlace[i]!.duration);
 			expect(m[1]).toContain(`: ${minutes} —`);
@@ -213,9 +213,10 @@ describe("Gantt", () => {
 	it("draws one preparation block per section with a cost, in the section colour", () => {
 		const html = toGanttHTML(compiled);
 		const blocks = prepBlocks(html);
-		expect(blocks).toHaveLength(2);
+		expect(blocks).toHaveLength(3);
 		expect(blocks[0]).toContain("section-color-0");
 		expect(blocks[1]).toContain("section-color-1");
+		expect(blocks[2]).toContain("section-color-2");
 		expect(blocks[0]).toContain('data-label="Mise en place"');
 	});
 
