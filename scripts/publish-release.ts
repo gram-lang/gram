@@ -28,7 +28,8 @@ function parseArgs(): ReleaseOptions {
 
 function run(cmd: string, options: { stdio?: "inherit" | "pipe" } = { stdio: "pipe" }): string {
 	try {
-		return execSync(cmd, { encoding: "utf-8", stdio: options.stdio }).trim();
+		// With stdio "inherit" execSync returns null (output goes straight to the terminal).
+		return (execSync(cmd, { encoding: "utf-8", stdio: options.stdio }) ?? "").trim();
 	} catch (error: any) {
 		if (options.stdio === "pipe" && error.stderr) {
 			console.error(error.stderr.toString());
