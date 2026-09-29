@@ -22,6 +22,13 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
+import {
+	describeMiseEnPlaceItem,
+	isPerSection,
+	miseEnPlaceForSection,
+	resolveSchedule,
+	upfrontPreparationItems,
+} from "../mise-en-place";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -440,11 +447,15 @@ const printBackend: RenderBackend = {
 
 		let body = `<div class="meta">\n`;
 		if (metrics) {
-			if (metrics.totalTime) {
-				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(metrics.totalTime)}</span>\n`;
+			// Total and idle time follow the chosen schedule; the other two do not.
+			const schedule = resolveSchedule(data, options.schedule);
+			const totalTime = schedule?.totalTime ?? metrics.totalTime;
+			const idleTime = schedule?.idleTime ?? metrics.idleTime;
+			if (totalTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(totalTime)}</span>\n`;
 			}
-			if (metrics.idleTime) {
-				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(metrics.idleTime)}</span>\n`;
+			if (idleTime) {
+				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.idleTime}</span>${formatDuration(idleTime)}</span>\n`;
 			}
 			if (metrics.activeTime) {
 				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.activeTime}</span>${formatDuration(metrics.activeTime)}</span>\n`;
@@ -530,6 +541,19 @@ const printBackend: RenderBackend = {
 		return body;
 	},
 
+	renderMiseEnPlace(data, context, options) {
+		if (isPerSection(options.schedule)) return "";
+		const items = upfrontPreparationItems(data);
+		if (items.length === 0) return "";
+		const t = getDictionary(options.lang);
+		let body = `<div class="mise-en-place">\n<h2>${escapeHtml(t.renderer.miseEnPlace)}</h2>\n<div class="section-ingredients"><ul>\n`;
+		for (const item of items) {
+			body += `  <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
+		}
+		body += `</ul></div>\n</div>\n\n`;
+		return body;
+	},
+
 	renderInstructions(data, context, options) {
 		if (!(data.sections?.length > 0)) return "";
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
@@ -538,7 +562,7 @@ const printBackend: RenderBackend = {
 			: context;
 
 		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
-		for (const sec of data.sections) {
+		for (const [sectionIdx, sec] of data.sections.entries()) {
 			body += `<section>\n`;
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
@@ -548,6 +572,26 @@ const printBackend: RenderBackend = {
 					titleHtml += ` <small style="opacity:0.55;font-size:0.8em">(${escapeHtml(moduleLabel(sec.module))})</small>`;
 				}
 				body += `  <h3>${titleHtml}</h3>\n`;
+			}
+
+			// This section's own mise en place, when preparation follows the sections.
+			const mise = isPerSection(options.schedule)
+				? miseEnPlaceForSection(data, sectionIdx)
+				: undefined;
+			if (mise) {
+				const t = getDictionary(options.lang);
+				const formatDuration = options.formatDuration || defaultFormatDuration;
+				const detail = mise.items
+					.map((item) =>
+						describeMiseEnPlaceItem(
+							item,
+							data.registry,
+							t.renderer,
+							formatDuration,
+						),
+					)
+					.join(" · ");
+				body += `  <div class="section-prep"><small style="opacity:0.7;font-size:0.8em" title="${escapeHtml(detail)}">${escapeHtml(t.renderer.miseEnPlace)} · ${formatDuration(mise.duration)}</small></div>\n`;
 			}
 
 			// Section-level ingredients — aggregated (dedup, addition, intermediates)
@@ -652,6 +696,7 @@ const printBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
+			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition;

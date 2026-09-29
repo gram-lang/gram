@@ -21,6 +21,13 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
+import {
+	describeMiseEnPlaceItem,
+	isPerSection,
+	miseEnPlaceForSection,
+	resolveSchedule,
+	upfrontPreparationItems,
+} from "../mise-en-place";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -58,11 +65,15 @@ const markdownBackend: RenderBackend = {
 
 		let md = `> **Metadata**\n`;
 		if (data.metrics) {
-			if (data.metrics.totalTime) {
-				md += `> - **${t.renderer.totalTime}**: ${formatDuration(data.metrics.totalTime)}\n`;
+			// Total and idle time follow the chosen schedule; the other two do not.
+			const schedule = resolveSchedule(data, options.schedule);
+			const totalTime = schedule?.totalTime ?? data.metrics.totalTime;
+			const idleTime = schedule?.idleTime ?? data.metrics.idleTime;
+			if (totalTime) {
+				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
 			}
-			if (data.metrics.idleTime) {
-				md += `> - **${t.renderer.idleTime}**: ${formatDuration(data.metrics.idleTime)}\n`;
+			if (idleTime) {
+				md += `> - **${t.renderer.idleTime}**: ${formatDuration(idleTime)}\n`;
 			}
 			if (data.metrics.activeTime) {
 				md += `> - **${t.renderer.activeTime}**: ${formatDuration(data.metrics.activeTime)}\n`;
@@ -142,6 +153,18 @@ const markdownBackend: RenderBackend = {
 		return md;
 	},
 
+	renderMiseEnPlace(data, context, options) {
+		if (isPerSection(options.schedule)) return "";
+		const items = upfrontPreparationItems(data);
+		if (items.length === 0) return "";
+		const t = getDictionary(options.lang);
+		let md = `## 🔪 ${t.renderer.miseEnPlace}\n\n`;
+		for (const item of items) {
+			md += `- ${formatElement(item, "md", { ...context, formatMode: "mise-en-place" })}\n`;
+		}
+		return `${md}\n`;
+	},
+
 	renderInstructions(data, context, options) {
 		if (!data.sections || data.sections.length === 0) return "";
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
@@ -151,7 +174,7 @@ const markdownBackend: RenderBackend = {
 			: context;
 
 		let md = `## 👨‍🍳 Instructions\n\n`;
-		data.sections.forEach((sec: any) => {
+		data.sections.forEach((sec: any, sectionIdx: number) => {
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
 				if (sec.retro_planning)
@@ -160,6 +183,24 @@ const markdownBackend: RenderBackend = {
 					md += ` _(${escapeMarkdownHtml(moduleLabel(sec.module))})_`;
 				}
 				md += `\n\n`;
+			}
+
+			// This section's own mise en place, when preparation follows the sections.
+			const mise = isPerSection(options.schedule)
+				? miseEnPlaceForSection(data, sectionIdx)
+				: undefined;
+			if (mise) {
+				const detail = mise.items
+					.map((item) =>
+						describeMiseEnPlaceItem(
+							item,
+							data.registry,
+							getDictionary(options.lang).renderer,
+							options.formatDuration || defaultFormatDuration,
+						),
+					)
+					.join(" · ");
+				md += `*🔪 ${escapeMarkdownHtml(getDictionary(options.lang).renderer.miseEnPlace)}: ${(options.formatDuration || defaultFormatDuration)(mise.duration)}* — ${escapeMarkdownHtml(detail)}\n\n`;
 			}
 
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
@@ -250,6 +291,7 @@ const markdownBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
+			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition

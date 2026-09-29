@@ -1077,6 +1077,27 @@ flex-direction: column;
   font-weight: 500;
 }
 
+.gram-preview .section-prep {
+  margin: 0 0 8px;
+}
+
+.gram-preview .section-meta-prep {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8em;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.gram-preview .mise-en-place {
+  margin-bottom: 24px;
+}
+
 .gram-preview .section-meta-module {
   font-size: 0.6em;
   color: var(--color-text-muted);

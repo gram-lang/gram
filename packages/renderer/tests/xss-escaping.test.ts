@@ -59,15 +59,42 @@ describe("toHTML XSS escaping — timing tooltips (audit 2026-07-22, finding B-1
 		expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
 	});
 
-	it("escapes special characters in a named timer shown in the total-time tooltip", () => {
+	it("never leaks a named timer's special characters unescaped", () => {
+		// The total-time tooltip used to list the critical path, timer names
+		// included; it now lists the mise en place per section instead, so the
+		// name no longer appears there. What must hold is that it never shows up raw.
 		const source =
 			"## Section\n\nMix @flour{200g}.\n\nWait ~_evil name>&{5min}.\n";
 		const compiled = compile(getAST(source));
 		const html = toHTML(compiled);
 
 		expect(html).not.toContain("evil name>&");
-		expect(html).toContain("evil name&gt;&amp;");
 	});
+});
+
+// The mise en place surfaces (total/prep tooltips, per-section badge, up-front
+// block) take ingredient and section names straight from the recipe, and the
+// badge puts them in a `data-tooltip` attribute — a quote or ampersand must
+// not break out of it.
+describe("mise en place XSS escaping", () => {
+	const NAME = 'o"nion&s';
+	const source = `## <b>Prep</b>\n\nSlice @${NAME}{200g}(finely chopped) in a #pan"x.\n`;
+	const compiled = compile(getAST(source));
+
+	for (const schedule of ["perSection", "upfront"] as const) {
+		it(`escapes names in the ${schedule} HTML`, () => {
+			const html = toHTML(compiled, { schedule });
+			expect(html).not.toContain(NAME);
+			expect(html).not.toContain("<b>Prep</b>");
+			expect(html).toContain("o&quot;nion&amp;s");
+		});
+
+		it(`escapes names in the ${schedule} print HTML`, () => {
+			const html = toPrintHTML(compiled, { schedule });
+			expect(html).not.toContain(NAME);
+			expect(html).not.toContain("<b>Prep</b>");
+		});
+	}
 });
 
 // P-5 from the renderer audit: a single parametrized sweep across text

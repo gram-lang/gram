@@ -1,3 +1,5 @@
+import type { ScheduleMode } from "../types";
+
 export type GanttTimeMode = "forward" | "reverse" | "target";
 
 export interface GanttRenderOptions {
@@ -7,6 +9,8 @@ export interface GanttRenderOptions {
 	gapThresholdMinutes?: number;
 	/** Virtual-minute width a compressed gap collapses to. Default 20. */
 	compressedGapSize?: number;
+	/** Which timeline to draw. Default "perSection". */
+	schedule?: ScheduleMode;
 }
 
 export interface GanttInteractivityOptions {
@@ -34,6 +38,8 @@ export interface GanttTimeBlock {
 	isAssembly?: boolean;
 	verticalIndex?: number;
 	fitsInside?: boolean;
+	/** A section's mise en place, drawn in its section colour. */
+	isPrep?: boolean;
 }
 
 export interface GanttTrack {

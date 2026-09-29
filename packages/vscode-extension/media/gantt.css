@@ -601,6 +601,12 @@ body.vscode-dark .temp-badge,
 	background: rgba(0, 0, 0, 0.2);
 }
 
+/* A section's mise en place keeps its section colour but is dashed, so it reads as preparation rather than a step. */
+.time-block.prep {
+	border: 1px dashed currentColor;
+	opacity: 0.9;
+}
+
 /* Section Colors (overrides .active) */
 .time-block.section-color-0 {
 	background-color: #b8cae6;
