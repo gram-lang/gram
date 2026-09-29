@@ -32,6 +32,14 @@ export function collectIntermediateNames(sections: SectionAST[]): Set<string> {
 }
 
 /**
+ * The rewrite table plus the set of names that were *scope-qualified* (as
+ * opposed to bound to a host-chosen local name). Only qualified names get a
+ * `displayName`: the qualified string is an internal identity, never
+ * something a reader should see.
+ */
+export type RenameTable = Map<string, string> & { scoped: Set<string> };
+
+/**
  * Builds the name → name rewrite table for one `@use` splice (Phase C.2):
  * a bound export (the module's own `->&x` matched by one of this import's
  * bindings) is renamed directly to the host's chosen local name; every
@@ -46,8 +54,10 @@ export function buildRenameTable(
 	sections: SectionAST[],
 	exports: Map<string, ExportInfo>,
 	bindings: ImportBinding[],
-): Map<string, string> {
-	const table = new Map<string, string>();
+): RenameTable {
+	const table = Object.assign(new Map<string, string>(), {
+		scoped: new Set<string>(),
+	});
 	const prefix = bindings[0]?.local ?? "module";
 
 	for (const binding of bindings) {
@@ -57,7 +67,9 @@ export function buildRenameTable(
 	}
 
 	collectIntermediateNames(sections).forEach((name) => {
-		if (!table.has(name)) table.set(name, `${prefix}$${name}`);
+		if (table.has(name)) return;
+		table.set(name, `${prefix}$${name}`);
+		table.scoped.add(name);
 	});
 
 	return table;
@@ -88,28 +100,42 @@ function renameRelativeTarget(
 
 export function applyRename(
 	sections: SectionAST[],
-	table: Map<string, string>,
+	table: Map<string, string> & { scoped?: ReadonlySet<string> },
 ): SectionAST[] {
 	const cloned = structuredClone(sections);
-	const rename = (name: string) => table.get(name) ?? name;
+
+	// Renames `node.name` and keeps `displayName` (what the author wrote) in
+	// step with it. `??=` preserves the innermost original across nested
+	// splices (`pressed` → `marinated$pressed` → `tofu$marinated$pressed`);
+	// a bound name is what the host author wrote, so it needs no override.
+	const rename = (node: { name: string; displayName?: string }) => {
+		const renamed = table.get(node.name);
+		if (renamed === undefined) return;
+		if (table.scoped?.has(node.name)) {
+			node.displayName ??= node.name;
+		} else {
+			delete node.displayName;
+		}
+		node.name = renamed;
+	};
+	const renameName = (name: string) => table.get(name) ?? name;
 
 	cloned.forEach((section) => {
-		if (section.intermediateDecl) {
-			section.intermediateDecl.name = rename(section.intermediateDecl.name);
-		}
+		if (section.intermediateDecl) rename(section.intermediateDecl);
 		section.children.forEach((child) => {
 			if (child.type !== ASTNodeType.Step) return;
 			(child as StepAST).children.forEach((c) => {
-				if (c.type === ASTNodeType.IntermediateDecl) {
-					c.name = rename(c.name);
-				} else if (c.type === ASTNodeType.Reference) {
-					c.name = rename(c.name);
+				if (
+					c.type === ASTNodeType.IntermediateDecl ||
+					c.type === ASTNodeType.Reference
+				) {
+					rename(c);
 				} else if (c.type === ASTNodeType.Ingredient) {
-					renameRelativeTarget(c, rename);
+					renameRelativeTarget(c, renameName);
 				} else if (c.type === ASTNodeType.Alternative) {
 					c.options.forEach((opt) => {
 						if (opt.type === ASTNodeType.Ingredient) {
-							renameRelativeTarget(opt, rename);
+							renameRelativeTarget(opt, renameName);
 						}
 					});
 				}

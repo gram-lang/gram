@@ -1,0 +1,327 @@
+{
+  "title": "Mod Private Intermediate Display Name",
+  "slug": "mod-private-intermediate-display-name",
+  "meta": {
+    "title": "Mod Private Intermediate Display Name"
+  },
+  "registry": {
+    "ingredients": {
+      "tofu": {
+        "id": "tofu",
+        "name": "tofu",
+        "default_unit": "g",
+        "is_intermediate": true
+      },
+      "tofu-marinated-pressed": {
+        "id": "tofu-marinated-pressed",
+        "name": "pressed",
+        "is_intermediate": true
+      },
+      "tofu-marinated": {
+        "id": "tofu-marinated",
+        "name": "marinated",
+        "is_intermediate": true
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "tofu",
+      "name": "tofu",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 200,
+      "unit": "g",
+      "normalizedMass": 200,
+      "isEstimate": false,
+      "conversionMethod": "physical"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Press",
+      "ingredients": [
+        {
+          "id": "tofu",
+          "_usageId": "1",
+          "qty": 200,
+          "unit": "g",
+          "conversionMethod": "physical",
+          "isEstimate": false,
+          "normalizedMass": 200
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Press the ",
+            {
+              "id": "tofu",
+              "_usageId": "1",
+              "qty": 200,
+              "unit": "g",
+              "normalizedMass": 200,
+              "conversionMethod": "physical",
+              "isEstimate": false
+            },
+            ". ",
+            {
+              "type": "declaration",
+              "name": "tofu$marinated$pressed",
+              "id": "tofu-marinated-pressed"
+            }
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          },
+          "intermediate_preparation": "tofu-marinated-pressed"
+        }
+      ],
+      "module": {
+        "binding": "marinated",
+        "uri": "a.gram",
+        "title": "A",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 200,
+        "massStatus": "precise",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Marinate",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "tofu-marinated-pressed",
+          "name": "tofu$marinated$pressed",
+          "_usageId": "2"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Slice the ",
+            {
+              "type": "reference",
+              "id": "tofu-marinated-pressed",
+              "name": "tofu$marinated$pressed",
+              "_usageId": "2"
+            },
+            "and coat it."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "tofu$marinated",
+      "retro_planning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d",
+        "minutes": -1440
+      },
+      "module": {
+        "binding": "marinated",
+        "uri": "a.gram",
+        "title": "A",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Grill",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "tofu-marinated",
+          "name": "tofu$marinated",
+          "_usageId": "3"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Pan-fry the ",
+            {
+              "type": "reference",
+              "id": "tofu-marinated",
+              "name": "tofu$marinated",
+              "_usageId": "3"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1440,
+            "end": 1442,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "intermediate_preparation": "tofu",
+      "module": {
+        "binding": "tofu",
+        "uri": "b.gram",
+        "title": "B",
+        "mode": "inline"
+      },
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    },
+    {
+      "title": "Assemble",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "tofu",
+          "name": "tofu",
+          "_usageId": "4"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Add the ",
+            {
+              "type": "reference",
+              "id": "tofu",
+              "name": "tofu",
+              "_usageId": "4"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1442,
+            "end": 1444,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 0,
+        "massStatus": "incomplete",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_INGREDIENT",
+      "message": "Ingredient \"tofu\" not found in database — nutritional metrics and density conversions unavailable."
+    }
+  ],
+  "metrics": {
+    "totalTime": 1447,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Press",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Marinate",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Grill",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "idleTime": 1436,
+    "activeTime": 8,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Press",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Marinate",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Grill",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assemble",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 3,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 3
+      }
+    ],
+    "totalMass": 200,
+    "massStatus": "precise",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 0,
+        "fat": 0,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": false,
+      "coverage": 0,
+      "warnings": [
+        {
+          "code": "MISSING_INGREDIENT",
+          "message": "Ingredient \"tofu\" not found in database — nutritional metrics and density conversions unavailable."
+        }
+      ]
+    }
+  },
+  "modules": [
+    {
+      "binding": "marinated",
+      "uri": "a.gram",
+      "title": "A",
+      "meta": {
+        "title": "A"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    },
+    {
+      "binding": "tofu",
+      "uri": "b.gram",
+      "title": "B",
+      "meta": {
+        "title": "B"
+      },
+      "scaleFactor": 1,
+      "mode": "inline"
+    }
+  ]
+}

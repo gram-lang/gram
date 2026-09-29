@@ -104,7 +104,9 @@ Une poignée d'utilitaires bas niveau (utilisés en interne par les formateurs) 
 function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
 function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
 function formatQuantityValue(q: any): string                // Quantité de minuteur/température -> chaîne d'affichage
-function formatDuration(minutes: number): string            // 90 -> "1h 30m"
+function formatDuration(minutes: number): string            // 90 -> "1h 30m" ; arrondi à la minute dès 1h, à la seconde en dessous (64.5 -> "1h 5m", 0.33 -> "20s")
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
+function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
 function escapeHtml(unsafe: string | null | undefined): string
 function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralise `<`/`&` pour un rendu Markdown vers HTML sûr en aval
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string

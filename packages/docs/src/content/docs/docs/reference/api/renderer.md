@@ -104,7 +104,9 @@ Lower-level helpers used internally by the three formatters, exported for buildi
 function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
 function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
 function formatQuantityValue(q: any): string                // Timer/Temperature quantity -> display string
-function formatDuration(minutes: number): string            // 90 -> "1h 30m"
+function formatDuration(minutes: number): string            // 90 -> "1h 30m"; rounded to the minute from 1h up, to the second below (64.5 -> "1h 5m", 0.33 -> "20s")
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
+function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
 function escapeHtml(unsafe: string | null | undefined): string
 function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralizes `<`/`&` for safe Markdown-to-HTML rendering downstream
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string

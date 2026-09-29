@@ -28,6 +28,28 @@ export function isPurchasableReference(
 	return !!entry && !entry.is_intermediate;
 }
 
+/**
+ * Human-facing label for an intermediate name: the registry's display name
+ * when one exists (module composition scope-qualifies private intermediates,
+ * e.g. `tofu$marinated`, but registers the author's own name for display),
+ * otherwise the name itself. Works on both a live `RecipeRegistry` and a
+ * compiled `registry.ingredients` plain object.
+ */
+export function intermediateLabel(
+	ingredients:
+		| ReadonlyMap<string, RegistryEntry>
+		| Readonly<Record<string, RegistryEntry>>,
+	name: string,
+): string {
+	const id = slugify(cleanRegistryName(name));
+	const entry =
+		typeof (ingredients as ReadonlyMap<string, RegistryEntry>).get ===
+		"function"
+			? (ingredients as ReadonlyMap<string, RegistryEntry>).get(id)
+			: (ingredients as Readonly<Record<string, RegistryEntry>>)[id];
+	return entry?.name ?? name;
+}
+
 export class RecipeRegistry implements Registry {
 	ingredients = new Map<string, RegistryEntry>();
 	cookware = new Map<string, { id: string; name: string }>();

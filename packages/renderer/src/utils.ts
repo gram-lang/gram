@@ -50,6 +50,24 @@ export function round1(value: number): number {
 	return Math.round(value * 10) / 10;
 }
 
+const COMMON_FRACTIONS = [
+	{ val: 0.5, str: "1/2" },
+	{ val: 0.25, str: "1/4" },
+	{ val: 0.75, str: "3/4" },
+	{ val: 1 / 3, str: "1/3" },
+	{ val: 2 / 3, str: "2/3" },
+	{ val: 0.125, str: "1/8" },
+	{ val: 0.375, str: "3/8" },
+	{ val: 0.625, str: "5/8" },
+	{ val: 0.875, str: "7/8" },
+];
+
+/** "1/4" for a value strictly below 1 that is (nearly) a common fraction. */
+export function toCommonFraction(value: number): string | undefined {
+	if (value >= 1) return undefined;
+	return COMMON_FRACTIONS.find((f) => Math.abs(value - f.val) < 0.01)?.str;
+}
+
 export function formatDecimalToFraction(value: unknown, unit?: string): string {
 	if (typeof value !== "number") return String(value);
 
@@ -58,22 +76,8 @@ export function formatDecimalToFraction(value: unknown, unit?: string): string {
 		return String(Math.round(value));
 	}
 
-	// Fractions only for values strictly below 1
-	if (value < 1) {
-		const commonFractions = [
-			{ val: 0.5, str: "1/2" },
-			{ val: 0.25, str: "1/4" },
-			{ val: 0.75, str: "3/4" },
-			{ val: 1 / 3, str: "1/3" },
-			{ val: 2 / 3, str: "2/3" },
-			{ val: 0.125, str: "1/8" },
-			{ val: 0.375, str: "3/8" },
-			{ val: 0.625, str: "5/8" },
-			{ val: 0.875, str: "7/8" },
-		];
-		const match = commonFractions.find((f) => Math.abs(value - f.val) < 0.01);
-		if (match) return match.str;
-	}
+	const fraction = toCommonFraction(value);
+	if (fraction) return fraction;
 
 	if (unit && isCoarseUnit(unit)) {
 		return String(round1(value));
@@ -135,13 +139,35 @@ export function formatQuantityValue(q: any): string {
 
 /**
  * Formats duration values into human readable strings (e.g. 90 -> 1h 30m).
+ * Compiled timings are floats (20s is 0.333 min), so the value is rounded:
+ * to the minute from one hour up, to the second below — never a raw decimal.
  */
 export function formatDuration(minutes: number): string {
-	if (!minutes) return "0m";
-	const h = Math.floor(minutes / 60);
-	const m = minutes % 60;
-	if (h > 0) return `${h}h ${m > 0 ? `${m}m` : ""}`;
-	return `${m}m`;
+	if (!Number.isFinite(minutes) || minutes <= 0) return "0m";
+	if (minutes >= 60) {
+		const total = Math.round(minutes);
+		const h = Math.floor(total / 60);
+		const m = total % 60;
+		return m > 0 ? `${h}h ${m}m` : `${h}h`;
+	}
+	const totalSeconds = Math.round(minutes * 60);
+	const m = Math.floor(totalSeconds / 60);
+	const s = totalSeconds % 60;
+	if (m === 0) return `${s}s`;
+	return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
+/**
+ * Displays a compiled timer token: its value followed by its unit. The unit
+ * lives on the token (`{ type: "timer", quantity, unit }`), never on the
+ * quantity. No unit means the value alone — there is no implicit "min".
+ */
+export function formatTimer(
+	item: { quantity?: unknown; unit?: string | null },
+	separator = "",
+): string {
+	const value = formatQuantityValue(item.quantity ?? "");
+	return item.unit ? `${value}${separator}${item.unit}` : value;
 }
 
 /**

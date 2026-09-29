@@ -360,7 +360,10 @@ const strategies: Record<
 	},
 
 	declaration: (item, format, context) => {
-		const name = item.name || "";
+		const name =
+			(item.id && context.registry?.ingredients?.[item.id]?.name) ||
+			item.name ||
+			"";
 		if (format === "html") {
 			const arrowIcon =
 				context.icons?.arrowElbowDownRight ??

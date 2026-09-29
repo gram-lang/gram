@@ -126,4 +126,27 @@ describe("buildViewModel", () => {
 		const vm = await buildViewModel(path, { scaleFactor: 2 });
 		expect(vm.sections[0]?.ingredients[0]?.displayQty).toBe("400 g");
 	});
+
+	it("keeps each timer's own unit in the step text", async () => {
+		const path = await tmp(
+			"## T\n\nA ~{20s} B ~{20 s} C ~{90s} D ~{2min} E ~{1h}\n",
+		);
+		const vm = await buildViewModel(path, {});
+		const text = vm.sections[0]?.steps[0]?.text ?? "";
+		expect(text).toContain("~20s");
+		expect(text).toContain("~90s");
+		expect(text).toContain("~2min");
+		expect(text).toContain("~1h");
+		expect(text).not.toContain("~20min");
+		expect(text).not.toContain("~1min");
+	});
+
+	it("exposes the resting time as `rest`", async () => {
+		const path = await tmp(
+			"## T\n\nMix @flour{200g}. ~_{30min}\n\nBake it ~{10min}.\n",
+		);
+		const vm = await buildViewModel(path, {});
+		expect(vm.times?.rest).toBeGreaterThan(0);
+		expect(vm.times).not.toHaveProperty("idle");
+	});
 });
