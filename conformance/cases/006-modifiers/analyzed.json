@@ -271,7 +271,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 9,
+    "totalTime": 8,
     "totalBreakdown": [
       {
         "label": "section_active:Prep",
@@ -294,11 +294,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 5,
+    "preparationTime": 4,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 5
+        "duration": 4
       }
     ],
     "totalMass": 260,
@@ -335,67 +335,67 @@
   "miseEnPlace": [
     {
       "section": 0,
-      "duration": 5,
+      "duration": 4,
       "items": [
         {
           "kind": "gather",
           "target": "ingredient",
-          "count": 5,
-          "duration": 5
+          "count": 4,
+          "duration": 4
         }
       ]
     }
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 9,
+      "totalTime": 8,
       "idleTime": 0,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 5
+          "end": 4
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 4,
+          "end": 6
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 7,
-          "end": 9
+          "start": 6,
+          "end": 8
         }
       ]
     },
     "upfront": {
-      "totalTime": 9,
+      "totalTime": 8,
       "idleTime": 0,
       "blocks": [
         {
           "kind": "prep",
           "section": 0,
           "start": 0,
-          "end": 5
+          "end": 4
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 4,
+          "end": 6
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 7,
-          "end": 9
+          "start": 6,
+          "end": 8
         }
       ]
     }
