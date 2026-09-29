@@ -123,6 +123,11 @@ export interface TextAST extends NodeAST {
 export interface IntermediateDecl extends NodeAST {
 	type: ASTNodeType.IntermediateDecl;
 	name: string;
+	/**
+	 * Set by module composition when `name` is scope-qualified (e.g.
+	 * `tofu$marinated`): the name as the module author wrote it.
+	 */
+	displayName?: string;
 }
 
 // --- Ingredients & Quantities ---
@@ -223,6 +228,11 @@ export interface CookwareAST extends NodeAST {
 export interface ReferenceAST extends NodeAST {
 	type: ASTNodeType.Reference;
 	name: string;
+	/**
+	 * Set by module composition when `name` is scope-qualified (e.g.
+	 * `tofu$marinated`): the name as the module author wrote it.
+	 */
+	displayName?: string;
 	quantity?: QuantityAST | TextQuantityAST | null;
 }
 
