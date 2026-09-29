@@ -73,6 +73,28 @@ describe("loadModuleGraph", () => {
 		]);
 	});
 
+	it("words a syntax error in the entry document without calling it an imported module", async () => {
+		const host = createFakeHost({ "/a.gram": "## S\n@ <@parent\n" });
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		const [diag] = graph.diagnostics;
+		expect(diag?.code).toBe("MODULE_PARSE_ERROR");
+		expect(diag?.message).toStartWith("Gram Syntax Error:");
+		expect(diag?.message).not.toContain("imported module");
+	});
+
+	it("still names the imported module when the syntax error is in a dependency", async () => {
+		const host = createFakeHost({
+			"/a.gram": '@use "./bad.gram" as &b\n\n## S\n\n[Use] &b{1}.\n',
+			"/bad.gram": "## S\n@ <@parent\n",
+		});
+		const graph = await loadModuleGraph("/a.gram", host);
+
+		expect(graph.diagnostics[0]?.message).toContain(
+			'Syntax error in imported module "./bad.gram"',
+		);
+	});
+
 	it("reports MODULE_CYCLE for a direct self-import (A -> A)", async () => {
 		const host = createFakeHost({
 			"/a.gram": '@use "./a.gram" as &a\n\n## S\n\n[Use] &a{1}.\n',
