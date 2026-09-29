@@ -9,7 +9,7 @@
       },
       "a-b": {
         "id": "a-b",
-        "name": "a$b",
+        "name": "b",
         "is_intermediate": true
       }
     },

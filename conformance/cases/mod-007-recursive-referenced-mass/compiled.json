@@ -4,7 +4,7 @@
     "ingredients": {
       "meringue-blancs": {
         "id": "meringue-blancs",
-        "name": "meringue$blancs",
+        "name": "blancs",
         "is_intermediate": true
       },
       "egg": {

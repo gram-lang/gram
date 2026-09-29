@@ -8,7 +8,7 @@
     "ingredients": {
       "pate-petrissage": {
         "id": "pate-petrissage",
-        "name": "pate$petrissage",
+        "name": "petrissage",
         "is_intermediate": true
       },
       "flour": {
