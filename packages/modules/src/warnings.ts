@@ -41,6 +41,8 @@ export interface ModuleWarningPayloads {
 	[ModuleWarningCode.MODULE_PARSE_ERROR]: {
 		specifier: string;
 		parseMessage: string;
+		/** True when the file that failed to parse is the entry document itself, not an imported module. */
+		isEntry?: boolean;
 		loc?: Location;
 	};
 	[ModuleWarningCode.MODULE_CYCLE]: {
@@ -143,7 +145,14 @@ export const moduleWarningTemplates: {
 	[K in ModuleWarningCode]: (payload: ModuleWarningPayloads[K]) => string;
 } = {
 	[ModuleWarningCode.MODULE_PARSE_ERROR]: (p) =>
-		`Syntax error in imported module "${p.specifier}": ${p.parseMessage}`,
+		// The entry document has no importing `@use` to blame, and the parser's
+		// own message already reads "Gram Syntax Error: ...", so show it as is.
+		// Strict `=== true`: the docs table renders templates with a proxy that
+		// answers every field with a truthy "{field}" string, and must keep
+		// showing the imported-module form.
+		p.isEntry === true
+			? p.parseMessage
+			: `Syntax error in imported module "${p.specifier}": ${p.parseMessage}`,
 	[ModuleWarningCode.MODULE_CYCLE]: (p) =>
 		`Circular module import detected: ${p.chain}.`,
 	[ModuleWarningCode.MODULE_DEPTH_EXCEEDED]: (p) =>
