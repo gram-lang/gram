@@ -28,7 +28,6 @@ import {
 	isPerSection,
 	miseEnPlaceForSection,
 	resolveSchedule,
-	upfrontPreparationItems,
 } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
@@ -394,22 +393,6 @@ const htmlBackend: RenderBackend = {
 		return html;
 	},
 
-	renderMiseEnPlace(data, context, options) {
-		if (isPerSection(options.schedule)) return "";
-		const items = upfrontPreparationItems(data);
-		if (items.length === 0) return "";
-		const t = getDictionary(options.lang);
-
-		let html = `<div class="mise-en-place">\n`;
-		html += `  <h2>${escapeHtml(t.renderer.miseEnPlace)}</h2>\n`;
-		html += `  <div class="section-ingredients">\n    <ul>\n`;
-		for (const item of items) {
-			html += `      <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
-		}
-		html += `    </ul>\n  </div>\n</div>\n\n`;
-		return html;
-	},
-
 	renderInstructions(data, context, options) {
 		if (!data.sections || data.sections.length === 0) return "";
 		const t = getDictionary(options.lang);
@@ -686,7 +669,6 @@ const htmlBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
-			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition

@@ -22,11 +22,7 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
-import {
-	isPerSection,
-	resolveSchedule,
-	upfrontPreparationItems,
-} from "../mise-en-place";
+import { resolveSchedule } from "../mise-en-place";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -539,19 +535,6 @@ const printBackend: RenderBackend = {
 		return body;
 	},
 
-	renderMiseEnPlace(data, context, options) {
-		if (isPerSection(options.schedule)) return "";
-		const items = upfrontPreparationItems(data);
-		if (items.length === 0) return "";
-		const t = getDictionary(options.lang);
-		let body = `<div class="mise-en-place">\n<h2>${escapeHtml(t.renderer.miseEnPlace)}</h2>\n<div class="section-ingredients"><ul>\n`;
-		for (const item of items) {
-			body += `  <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
-		}
-		body += `</ul></div>\n</div>\n\n`;
-		return body;
-	},
-
 	renderInstructions(data, context, options) {
 		if (!(data.sections?.length > 0)) return "";
 		// Context variant used when rendering inline step tokens — hides qty if flag is set
@@ -674,7 +657,6 @@ const printBackend: RenderBackend = {
 			sections.meta +
 			sections.shoppingList +
 			sections.cookware +
-			sections.miseEnPlace +
 			sections.instructions +
 			sections.footnotes +
 			sections.nutrition;
