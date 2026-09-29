@@ -59,6 +59,30 @@ const grammar = ohm.grammar(grammarContent);
 
 const clean = (str: string) => str.trim();
 
+/**
+ * Raises the readable error for a "{...}" glued to an element that isn't a
+ * valid quantity (see `malformedBraces` in grammar.ohm). Without it the element
+ * silently fell back to its bare form and the braces leaked into prose.
+ */
+function throwMalformedQuantity(
+	kind: string,
+	name: string,
+	braces: ohm.Node,
+	example: string,
+	hint = "a number and/or a unit",
+): never {
+	const raw = braces.sourceString;
+	const target = name ? `${kind} '${name}'` : kind;
+	const problem = raw.endsWith("}")
+		? `Invalid quantity '${raw}' for ${target}`
+		: `Unclosed quantity '${raw}' for ${target} (missing '}')`;
+	throw new GramParseError(
+		`Gram Syntax Error: ${problem}. Expected ${hint}, e.g. ${example}.`,
+		braces.source.startIdx,
+		`a valid quantity in braces, e.g. ${example}`,
+	);
+}
+
 const RETRO_PLANNING_NUMBER_UNIT = /^(-)?\s*(\d+(?:\.\d+)?)\s*(\p{L}+)$/u;
 const RETRO_PLANNING_NUMBER_ONLY = /^(-)?\s*(\d+(?:\.\d+)?)\s*$/;
 
@@ -468,6 +492,15 @@ semantics.addOperation("toAST", {
 		};
 	},
 
+	simpleIngredient_malformed(_at, _mods, name, _alias, braces) {
+		throwMalformedQuantity(
+			"ingredient",
+			clean(name.sourceString),
+			braces,
+			"{200 g} or {1/2 c.à.s}",
+		);
+	},
+
 	simpleIngredient_bare(
 		_at,
 		_mods,
@@ -504,6 +537,15 @@ semantics.addOperation("toAST", {
 			preparation: getOpt(_prep),
 			loc: { start: this.source.startIdx, end: this.source.endIdx },
 		};
+	},
+
+	composite_malformed(_ltat, _mods, name, braces) {
+		throwMalformedQuantity(
+			"composite parent",
+			clean(name.sourceString),
+			braces,
+			"{200 g}",
+		);
 	},
 
 	composite_bare(_ltat, _mods, name, _prep): CompositeAST {
@@ -646,6 +688,16 @@ semantics.addOperation("toAST", {
 		};
 	},
 
+	simpleCookware_malformed(_hash, _mods, name, _alias, braces) {
+		throwMalformedQuantity(
+			"cookware",
+			clean(name.sourceString),
+			braces,
+			"{2}",
+			"a number only, with no unit (cookware quantities take no unit)",
+		);
+	},
+
 	simpleCookware_bare(_hash, mods, name, alias, prep): CookwareAST {
 		const modifiers = mods.children
 			.map((c) => c.sourceString)
@@ -676,6 +728,15 @@ semantics.addOperation("toAST", {
 		};
 	},
 
+	Reference_malformed(_amp, name, braces) {
+		throwMalformedQuantity(
+			"reference",
+			clean(name.sourceString),
+			braces,
+			"{200 g}",
+		);
+	},
+
 	Reference_bare(_amp, _name): ReferenceAST {
 		return {
 			type: ASTNodeType.Reference,
@@ -685,7 +746,17 @@ semantics.addOperation("toAST", {
 		};
 	},
 
-	Timer(_1, passiveMod, name, qty): TimerAST {
+	Timer_malformed(_tilde, _passive, name, braces) {
+		const child = name.children[0];
+		throwMalformedQuantity(
+			"timer",
+			child ? clean(child.sourceString) : "",
+			braces,
+			"{10 min}",
+		);
+	},
+
+	Timer_full(_1, passiveMod, name, qty): TimerAST {
 		const child = name.children[0];
 		const n = child ? clean(child.sourceString) : null;
 		return {

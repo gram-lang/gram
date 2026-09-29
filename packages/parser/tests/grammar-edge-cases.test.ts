@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { getAST, ASTNodeType } from "../src/index";
+import { getAST, ASTNodeType, GramParseError } from "../src/index";
 
 // The audit (Phase 5) noted @gram-lang/parser — the foundation of the whole
 // toolchain — had zero dedicated tests, only indirect coverage via kitchen's/
@@ -406,8 +406,10 @@ describe("robustness against malformed / adversarial input", () => {
 		expect(() => getAST("\x00\x01\x02 binary garbage\n")).not.toThrow();
 	});
 
-	it("does not throw on an unterminated quantity brace", () => {
-		expect(() => getAST("## Section\nMix @flour{200g\n")).not.toThrow();
+	it("reports an unterminated quantity brace as a structured parse error, not a crash", () => {
+		expect(() => getAST("## Section\n\nMix @flour{200g\n")).toThrow(
+			GramParseError,
+		);
 	});
 
 	it("does not throw on deeply repeated sigils with no content", () => {
@@ -447,5 +449,83 @@ describe("robustness against malformed / adversarial input", () => {
 		// `Object.keys` (own enumerable keys only) is the correct check here.
 		expect(Object.keys(ast.meta)).not.toContain("__proto__");
 		expect(ast.meta).toEqual({ title: "Proto" });
+	});
+});
+
+const firstIngredients = (src: string) => {
+	const ast = getAST(`## T\n\n${src}\n`);
+	const section = ast.children[0] as { children: { children: any[] }[] };
+	return section.children[0].children.filter(
+		(c) => c.type === ASTNodeType.Ingredient,
+	);
+};
+
+describe("unit abbreviations with dots (issue #24)", () => {
+	const variants = [
+		["1/2 c.à.s", "c.à.s"],
+		["1 c.à.c", "c.à.c"],
+		["1 c. à s.", "c. à s."],
+		["1 c.à.s.", "c.à.s."],
+		["1 c.a.s", "c.a.s"],
+		["1 càs", "càs"],
+	] as const;
+
+	for (const [qty, unit] of variants) {
+		it(`parses {${qty}} keeping the multi-word name and the unit`, () => {
+			const [ing] = firstIngredients(`@sucre roux{${qty}}`);
+			expect(ing.name).toBe("sucre roux");
+			expect(ing.quantity.unit).toBe(unit);
+		});
+	}
+
+	it("keeps six distinct ingredients distinct", () => {
+		const src = variants.map(([q], i) => `@sucre n${i}{${q}}`).join(" ");
+		expect(firstIngredients(src).map((i) => i.name)).toEqual(
+			variants.map((_, i) => `sucre n${i}`),
+		);
+	});
+
+	it("still accepts dots in names and numbers", () => {
+		expect(firstIngredients("@St.Môret{100g}")[0].name).toBe("St.Môret");
+		expect(firstIngredients("@lait 1.5%{200ml}")[0].quantity.unit).toBe("ml");
+		expect(firstIngredients("@huile d'olive{15g}")[0].name).toBe(
+			"huile d'olive",
+		);
+		expect(firstIngredients("@eau{1.5-2l}")[0].quantity.unit).toBe("l");
+		expect(firstIngredients("@lait{2 1/2 cup}")[0].quantity.unit).toBe("cup");
+	});
+});
+
+describe("malformed quantity braces are errors, not silent drops (issue #24)", () => {
+	const cases: [string, string, number][] = [
+		["@sel{1 g/l}", "ingredient 'sel'", 4],
+		["@sucre{2 càs", "missing '}'", 6],
+		["@sucre{1. kg}", "ingredient 'sucre'", 6],
+		["#casserole{grande}", "cookware 'casserole'", 10],
+		["#casserole{2 l}", "cookware 'casserole'", 10],
+		["@farine{200g}<@pâte{x/y}", "composite parent 'pâte'", 19],
+		["&dough{1 /}", "reference 'dough'", 6],
+		["~repos{1 /}", "timer 'repos'", 6],
+	];
+
+	for (const [src, fragment, col] of cases) {
+		it(`rejects ${src}`, () => {
+			const text = `## T\n\n${src}\n`;
+			try {
+				getAST(text);
+				throw new Error("expected a GramParseError");
+			} catch (e) {
+				expect(e).toBeInstanceOf(GramParseError);
+				const err = e as GramParseError;
+				expect(err.message).toContain(fragment);
+				expect(err.offset).toBe(text.indexOf(src) + col);
+			}
+		});
+	}
+
+	it("keeps a temperature text quantity valid", () => {
+		expect(() =>
+			getAST("## T\n\nPréchauffer ^four{thermostat 6/7}\n"),
+		).not.toThrow();
 	});
 });

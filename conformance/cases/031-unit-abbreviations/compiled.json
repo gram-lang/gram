@@ -1,0 +1,254 @@
+{
+  "title": "Unit abbreviations",
+  "slug": "unit-abbreviations",
+  "meta": {
+    "title": "Unit abbreviations"
+  },
+  "registry": {
+    "ingredients": {
+      "sucre-a": {
+        "id": "sucre-a",
+        "name": "sucre a",
+        "default_unit": "c.à.s"
+      },
+      "sucre-b": {
+        "id": "sucre-b",
+        "name": "sucre b",
+        "default_unit": "c.à.c"
+      },
+      "sucre-c": {
+        "id": "sucre-c",
+        "name": "sucre c",
+        "default_unit": "c. à s."
+      },
+      "sucre-d": {
+        "id": "sucre-d",
+        "name": "sucre d",
+        "default_unit": "c.à.s."
+      },
+      "sucre-e": {
+        "id": "sucre-e",
+        "name": "sucre e",
+        "default_unit": "c.a.s"
+      },
+      "sucre-f": {
+        "id": "sucre-f",
+        "name": "sucre f",
+        "default_unit": "càs"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "sucre-a",
+      "name": "sucre a",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 0.5,
+      "unit": "c.à.s"
+    },
+    {
+      "id": "sucre-b",
+      "name": "sucre b",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 1,
+      "unit": "c.à.c"
+    },
+    {
+      "id": "sucre-c",
+      "name": "sucre c",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 1,
+      "unit": "c. à s."
+    },
+    {
+      "id": "sucre-d",
+      "name": "sucre d",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 1,
+      "unit": "c.à.s."
+    },
+    {
+      "id": "sucre-e",
+      "name": "sucre e",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 1,
+      "unit": "c.a.s"
+    },
+    {
+      "id": "sucre-f",
+      "name": "sucre f",
+      "_usageIds": [
+        "6"
+      ],
+      "qty": 1,
+      "unit": "càs"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Sucre",
+      "ingredients": [
+        {
+          "id": "sucre-a",
+          "_usageId": "1",
+          "qty": {
+            "type": "fraction",
+            "value": 0.5,
+            "numerator": 1,
+            "denominator": 2,
+            "text": "1/2"
+          },
+          "unit": "c.à.s"
+        },
+        {
+          "id": "sucre-b",
+          "_usageId": "2",
+          "qty": 1,
+          "unit": "c.à.c"
+        },
+        {
+          "id": "sucre-c",
+          "_usageId": "3",
+          "qty": 1,
+          "unit": "c. à s."
+        },
+        {
+          "id": "sucre-d",
+          "_usageId": "4",
+          "qty": 1,
+          "unit": "c.à.s."
+        },
+        {
+          "id": "sucre-e",
+          "_usageId": "5",
+          "qty": 1,
+          "unit": "c.a.s"
+        },
+        {
+          "id": "sucre-f",
+          "_usageId": "6",
+          "qty": 1,
+          "unit": "càs"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "sucre-a",
+              "_usageId": "1",
+              "qty": {
+                "type": "fraction",
+                "value": 0.5,
+                "numerator": 1,
+                "denominator": 2,
+                "text": "1/2"
+              },
+              "unit": "c.à.s"
+            },
+            "puis ",
+            {
+              "id": "sucre-b",
+              "_usageId": "2",
+              "qty": 1,
+              "unit": "c.à.c"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "sucre-c",
+              "_usageId": "3",
+              "qty": 1,
+              "unit": "c. à s."
+            },
+            "et ",
+            {
+              "id": "sucre-d",
+              "_usageId": "4",
+              "qty": 1,
+              "unit": "c.à.s."
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 4,
+            "activeDuration": 2
+          }
+        },
+        {
+          "type": "step",
+          "content": [
+            {
+              "id": "sucre-e",
+              "_usageId": "5",
+              "qty": 1,
+              "unit": "c.a.s"
+            },
+            "et ",
+            {
+              "id": "sucre-f",
+              "_usageId": "6",
+              "qty": 1,
+              "unit": "càs"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4,
+            "end": 6,
+            "activeDuration": 2
+          }
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 12,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Sucre",
+        "duration": 6
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 6,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Sucre",
+        "duration": 6
+      }
+    ],
+    "preparationTime": 6,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 6
+      }
+    ]
+  }
+}

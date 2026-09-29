@@ -110,6 +110,7 @@ GRAM {
   // for ~" as a bogus multi-word name with the timer's quantity attached.
   simpleIngredient =
     | "@" modifier* refName alias? ingredientQuantity preparation? composite? -- full
+    | "@" modifier* refName alias? malformedBraces -- malformed
     | "@" modifier* singleWordName alias? preparation? composite? -- bare
 
   modifier = "?" | "-" | "*" | "&" | "="
@@ -119,8 +120,20 @@ GRAM {
   absoluteQuantity = (range | number)? space* (unit space*)?
   textQuantity = "{" space* (~"}" any)+ space* "}"
   fixed = "="
+  // A unit is one or more words. A word may contain "." or an apostrophe after
+  // its first character (c.à.s, fl. oz., d'eau) but never starts with one, so a
+  // stray "{1. kg}" or "{.5 g}" is still rejected rather than half-parsed.
   unit = unitName
-  unitName = (alnum | sp | "°" | "%")+
+  unitName = unitWord (sp+ unitWord)*
+  unitWord = unitLead unitChar*
+  unitLead = alnum | "°" | "%"
+  unitChar = unitLead | "." | "'" | "’"
+
+  // A "{...}" glued to an element that did not parse as a valid quantity. Without
+  // this, the element silently fell back to its bare form (name truncated to its
+  // first word) and the braces leaked into prose -- merging distinct ingredients.
+  // Each "-- malformed" branch below turns that into a readable error instead.
+  malformedBraces = "{" (~("}" | nl) any)* ("}" | &nl | end)
   preparation = "(" (~")" any)* ")"
   // `modifier*` mirrors simpleIngredient: a composite parent is an ingredient
   // reference like any other, and authors (and AI importers) write `<@&parent`
@@ -133,6 +146,7 @@ GRAM {
   // because the MAX rule already collapses repeat draws into one purchase.
   composite =
     | "<@" modifier* refName ingredientQuantity preparation? -- full
+    | "<@" modifier* refName malformedBraces                 -- malformed
     | "<@" modifier* singleWordName preparation?             -- bare
 
   // Cookware
@@ -146,13 +160,16 @@ GRAM {
   // quantity) into its own name.
   simpleCookware =
     | "#" modifier* refName alias? cookwareQuantity preparation? -- full
+    | "#" modifier* refName alias? malformedBraces -- malformed
     | "#" modifier* singleWordName alias? preparation? -- bare
 
   // Cookware quantity is numbers only, no units (e.g. {}, {2}) -- unlike ingredientQuantity.
   cookwareQuantity = "{" space* number? space* "}"
 
   // Timer
-  Timer = "~" "_"? name? ingredientQuantity
+  Timer =
+    | "~" "_"? name? ingredientQuantity -- full
+    | "~" "_"? name? malformedBraces    -- malformed
   
   // Temperature
   Temperature = "^" name? (ingredientQuantity | textQuantity)
@@ -184,6 +201,7 @@ GRAM {
 
   Reference =
     | "&" refName ingredientQuantity -- full
+    | "&" refName malformedBraces    -- malformed
     | "&" singleWordName             -- bare
 
   // Delimiters that end a name (start of quantity/alias/preparation/composite/alternative).

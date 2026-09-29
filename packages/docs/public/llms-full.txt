@@ -305,6 +305,10 @@ To specify a unit of measurement (weight, volume, etc.), add it directly after t
 [Place] @bacon strips{1kg} on a baking sheet and glaze with @syrup{1/2 tbsp}.
 ```
 
+A unit can be several words (`{2 tablespoons}`) and can contain dots or apostrophes (`{1 c.à.s}`, `{1 c. à s.}`). Common spellings of the same unit are recognized as equivalent: `c.à.s`, `c.a.s` and `càs` all mean tablespoon in French.
+
+A quantity in braces that can't be read (`@salt{1 g/l}`, or a brace that is never closed) raises an error pointing at the offending brace, instead of being silently ignored.
+
 ## Scaling & fixed quantities
 
 By default, the Gram Compiler scales an `@ingredient` **linearly** based on the number of portions requested. 

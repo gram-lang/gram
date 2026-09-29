@@ -28,6 +28,12 @@ Pour préciser une unité de mesure (poids, volume, etc.), glissez-la directemen
 [Placer] Les @tranches de bacon{1 kg} sur une plaque de cuisson et glacer avec du @sirop{1/2 c.à.s}.
 ```
 
+Une unité peut tenir en plusieurs mots (`{2 cuillères à soupe}`) et contenir des points ou des apostrophes (`{1 c.à.s}`, `{1 c. à s.}`). Toutes les graphies courantes d'une même unité sont reconnues comme équivalentes : `c.à.s`, `c.a.s` et `càs` désignent la cuillère à soupe.
+
+:::caution
+Une quantité entre accolades qui ne peut pas être lue (`@sel{1 g/l}`, ou une accolade jamais refermée) arrête la lecture avec une erreur qui pointe l'accolade fautive.
+:::
+
 ## Ajustement des proportions & quantités fixes
 
 Par défaut, le compilateur Gram ajuste les quantités d'un `@ingrédient` de manière **strictement linéaire** en fonction du nombre de portions demandées.
@@ -179,6 +185,8 @@ Ajouter le @beurre{1½ plaquette}.
 ```
 
 ## Gestion des erreurs
+
+Certaines erreurs de syntaxe arrêtent la lecture de la recette avant même la compilation : une quantité entre accolades illisible (`@sel{1 g/l}`), une accolade jamais refermée. Le message indique l'endroit exact à corriger, et l'éditeur le souligne.
 
 Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingrédient` et produira des avertissements spécifiques :
 
