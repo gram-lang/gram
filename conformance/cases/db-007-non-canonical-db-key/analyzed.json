@@ -1,0 +1,125 @@
+{
+  "title": "Db Non Canonical Key",
+  "slug": "db-non-canonical-key",
+  "meta": {
+    "title": "Db Non Canonical Key"
+  },
+  "registry": {
+    "ingredients": {
+      "huile-d-olive": {
+        "id": "huile-d-olive",
+        "name": "Huile d'olive",
+        "default_unit": "ml"
+      }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "huile-dolive",
+      "name": "Huile d'olive",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 10,
+      "unit": "ml",
+      "normalizedMass": 11.4,
+      "isEstimate": true,
+      "conversionMethod": "estimate"
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Section",
+      "ingredients": [
+        {
+          "id": "huile-d-olive",
+          "_usageId": "1",
+          "qty": 10,
+          "unit": "ml",
+          "conversionMethod": "density",
+          "isEstimate": true,
+          "normalizedMass": 11.4
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Fry in ",
+            {
+              "id": "huile-d-olive",
+              "_usageId": "1",
+              "qty": 10,
+              "unit": "ml",
+              "normalizedMass": 11.4,
+              "conversionMethod": "density",
+              "isEstimate": true
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          }
+        }
+      ],
+      "metrics": {
+        "totalMass": 11.4,
+        "massStatus": "estimated",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 3,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "idleTime": 0,
+    "activeTime": 2,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Section",
+        "duration": 2
+      }
+    ],
+    "preparationTime": 1,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 1
+      }
+    ],
+    "totalMass": 11.4,
+    "massStatus": "estimated",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": {
+        "calories": 94,
+        "fat": 10.4,
+        "carbs": 0,
+        "protein": 0
+      },
+      "isEstimate": true,
+      "coverage": 1,
+      "per100g": {
+        "calories": 822,
+        "fat": 91,
+        "carbs": 0,
+        "protein": 0
+      },
+      "basis": {
+        "mass": 11.4,
+        "massStatus": "estimated"
+      }
+    }
+  }
+}

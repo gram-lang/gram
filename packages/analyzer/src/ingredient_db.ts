@@ -1,54 +1,59 @@
 import type { IngredientData } from "./types";
 import { slugify } from "@gram-lang/kitchen";
 
-function buildAliasIndex(
-	database: Record<string, IngredientData>,
-): Map<string, string> {
+type Database = Record<string, IngredientData>;
+
+/**
+ * Maps `slugify(key | name | alias)` -> canonical database key, the same
+ * normalization the compiler uses for ingredient ids. That is what makes a
+ * recipe's `@Huile d'olive` (id `huile-d-olive`) find a hand-written database
+ * entry keyed `huile-dolive`. On collision a real key beats a name, which
+ * beats an alias, so an alias can never shadow another entry's own key.
+ */
+export function buildIngredientIndex(database: Database): Map<string, string> {
 	const index = new Map<string, string>();
-	for (const [key, entry] of Object.entries(database)) {
-		if (entry.name) index.set(entry.name.toLowerCase(), key);
-		if (entry.aliases) {
-			entry.aliases.forEach((a) => {
-				index.set(a.toLowerCase(), key);
-			});
-		}
+	const claim = (label: string, key: string) => {
+		const slug = slugify(label);
+		if (!index.has(slug)) index.set(slug, key);
+	};
+	const entries = Object.entries(database);
+	for (const [key] of entries) claim(key, key);
+	for (const [key, entry] of entries) {
+		if (entry.name) claim(entry.name, key);
+	}
+	for (const [key, entry] of entries) {
+		for (const alias of entry.aliases ?? []) claim(alias, key);
 	}
 	return index;
 }
 
-// Maps alias/name (lowercased) -> canonical database key. Lazily built and
-// memoized on the database object itself, so repeated lookups don't rebuild it.
-// `__aliasIndex` is a hidden, non-enumerable field attached at runtime — not
-// part of the public `Record<string, IngredientData>` shape callers pass in,
-// so it's typed as its own narrow extension rather than widening that shape.
-type DatabaseWithAliasIndex = Record<string, IngredientData> & {
-	__aliasIndex?: Map<string, string>;
-};
+// Memoized per database object, so repeated lookups don't rebuild the index.
+const indexCache = new WeakMap<object, Map<string, string>>();
 
-function getAliasIndex(
-	database: Record<string, IngredientData>,
-): Map<string, string> {
-	const db = database as DatabaseWithAliasIndex;
-	if (!db.__aliasIndex) {
-		Object.defineProperty(db, "__aliasIndex", {
-			value: buildAliasIndex(database),
-			enumerable: false,
-			writable: true,
-		});
+function getIngredientIndex(database: Database): Map<string, string> {
+	let index = indexCache.get(database);
+	if (!index) {
+		index = buildIngredientIndex(database);
+		indexCache.set(database, index);
 	}
-	return db.__aliasIndex!;
+	return index;
+}
+
+/**
+ * Resolves a recipe name or compiler id to its database key. `slugify` is
+ * idempotent, so `"Huile d'olive"` and `"huile-d-olive"` resolve identically.
+ */
+function resolveKey(nameOrId: string, database: Database): string | undefined {
+	const slug = slugify(nameOrId);
+	if (Object.hasOwn(database, slug)) return slug;
+	return getIngredientIndex(database).get(slug);
 }
 
 export function getIngredientData(
 	name: string,
-	database: Record<string, IngredientData>,
+	database: Database,
 ): IngredientData | null {
-	const slug = slugify(name);
-	const direct = database[slug];
-	if (direct) return direct;
-
-	const index = getAliasIndex(database);
-	const key = index.get(name.toLowerCase()) || index.get(slug);
+	const key = resolveKey(name, database);
 	return key !== undefined ? (database[key] ?? null) : null;
 }
 
@@ -57,13 +62,6 @@ export function getIngredientData(
  * so that shopping-list aggregation can group aliased ingredients under one entry.
  * Falls back to `slugify(name)` when the ingredient isn't found in the database.
  */
-export function resolveCanonicalId(
-	name: string,
-	database: Record<string, IngredientData>,
-): string {
-	const slug = slugify(name);
-	if (database[slug]) return slug;
-
-	const index = getAliasIndex(database);
-	return index.get(name.toLowerCase()) || index.get(slug) || slug;
+export function resolveCanonicalId(name: string, database: Database): string {
+	return resolveKey(name, database) ?? slugify(name);
 }
