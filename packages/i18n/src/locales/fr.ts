@@ -14,7 +14,13 @@ export const fr: GramLocale = {
 		idleTimeTooltip: "Temps d'Attente = Temps Total - Préparation - Actif",
 		activeTimeCardTooltip:
 			"Temps Actif = Somme des temps de manipulation manuelle",
-		prepTimeTooltip: "Préparation = Temps nécessaire avant l'étape 1",
+		prepTimeTooltip:
+			"Préparation = Temps pour rassembler et préparer ingrédients et ustensiles",
+		miseEnPlace: "Mise en place",
+		miseEnPlaceTooltip: "Mise en place de cette section",
+		scheduleLabel: "Mise en place",
+		schedulePerSection: "Par section",
+		scheduleUpfront: "Tout au début",
 		est: "(est.)",
 		passiveTimeTooltip: "Temps passif (Repos, attente...)",
 		activeTimeTooltip: "Temps actif",
