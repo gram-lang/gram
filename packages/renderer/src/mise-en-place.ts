@@ -1,13 +1,9 @@
 import type {
-	AggregatedIngredient,
 	MiseEnPlaceItem,
 	Schedule,
 	SectionMiseEnPlace,
-	Usage,
 } from "@gram-lang/kitchen";
-import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import type { RenderableCompilationResult, ScheduleMode } from "./types";
-import { aggToRendererItem } from "./utils";
 
 /** Preparation right before each section, unless the reader picks otherwise. */
 export const DEFAULT_SCHEDULE: ScheduleMode = "perSection";
@@ -66,36 +62,4 @@ export function describeMiseEnPlaceItem(
 			: registry?.ingredients?.[item.ref.id];
 	const name = entry?.name ?? item.ref.id;
 	return `${labels.breakdownPrep} : ${name} (+ ${formatDuration(item.duration)})`;
-}
-
-const hasPreparation = (u: Usage): boolean =>
-	Boolean(u.preparation || u.composite?.preparation) ||
-	(Array.isArray(u.options) &&
-		u.options.some(
-			(o) =>
-				typeof o === "object" &&
-				Boolean(
-					(o as Usage).preparation || (o as Usage).composite?.preparation,
-				),
-		));
-
-/**
- * Everything that has to be prepared, gathered from every section, for the
- * "all at the start" block. References (intermediates and module bindings)
- * are left out: they don't exist yet at T0. Same aggregation and item shape
- * as a section's own ingredient list, so it formats and scales the same way.
- */
-export function upfrontPreparationItems(
-	data: RenderableCompilationResult,
-): Array<Record<string, unknown>> {
-	const usages: Usage[] = [];
-	for (const sec of data.sections) {
-		for (const u of sec.ingredients ?? []) {
-			if (u.type === "reference") continue;
-			if (hasPreparation(u)) usages.push(u);
-		}
-	}
-	return aggregateSectionIngredients(usages).map((agg: AggregatedIngredient) =>
-		aggToRendererItem(agg),
-	);
 }

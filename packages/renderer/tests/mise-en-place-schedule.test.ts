@@ -104,36 +104,12 @@ describe("HTML — perSection (default)", () => {
 describe("HTML — upfront", () => {
 	const html = toHTML(compiled, { schedule: "upfront" });
 
-	it("has one 'Mise en place' block, before the instructions and after the cookware", () => {
-		expect(countOf(html, 'class="mise-en-place"')).toBe(1);
-		const block = html.indexOf('class="mise-en-place"');
-		expect(block).toBeGreaterThan(html.indexOf('class="cookware"'));
-		expect(block).toBeLessThan(html.indexOf('class="instructions"'));
-	});
-
-	it("lists what has to be prepared, and not the intermediates", () => {
-		const block = html.slice(
-			html.indexOf('class="mise-en-place"'),
-			html.indexOf('class="instructions"'),
-		);
-		expect(block).toContain("onions");
-		expect(block).toContain("finely sliced");
-		expect(block).toContain("butter");
-		expect(block).not.toContain("flour");
-		expect(block).not.toContain("dough");
-		expect(block).not.toContain("filling");
-	});
-
-	it("keeps the block scalable like any other ingredient list", () => {
-		const block = html.slice(
-			html.indexOf('class="mise-en-place"'),
-			html.indexOf('class="instructions"'),
-		);
-		expect(block).toContain('data-name="onions"');
-	});
-
-	it("has no per-section badge", () => {
+	it("has no per-section label: the preparation doesn't happen there", () => {
 		expect(html).not.toContain("section-prep");
+	});
+
+	it("has no separate block: the time setting never adds to the lists", () => {
+		expect(html).not.toContain("mise-en-place");
 	});
 
 	it("reads total and idle time from the upfront schedule", () => {
@@ -144,6 +120,25 @@ describe("HTML — upfront", () => {
 });
 
 describe("both schedules describe the same recipe", () => {
+	// The setting is about time: the ingredient lists must not depend on it.
+	const withoutLabels = (html: string) =>
+		html
+			.replace(/<p class="section-prep">[\s\S]*?<\/p>\s*/g, "")
+			.replace(/<div class="section-prep">[\s\S]*?<\/div>\s*/g, "");
+	const listsOf = (html: string) =>
+		html.slice(
+			html.indexOf('<div class="instructions"'),
+			html.lastIndexOf("</div>") + 6,
+		);
+
+	it("keeps every ingredient list identical, apart from the per-section label", () => {
+		expect(
+			withoutLabels(listsOf(toHTML(compiled, { schedule: "upfront" }))),
+		).toBe(
+			withoutLabels(listsOf(toHTML(compiled, { schedule: "perSection" }))),
+		);
+	});
+
 	it("keeps the shopping list identical", () => {
 		expect(shoppingList(toHTML(compiled, { schedule: "upfront" }))).toBe(
 			shoppingList(toHTML(compiled, { schedule: "perSection" })),
@@ -171,14 +166,18 @@ describe("backend parity", () => {
 	};
 
 	for (const [name, render] of Object.entries(backends)) {
-		it(`${name}: upfront shows one block listing the preparations`, () => {
-			const out = render({ schedule: "upfront" });
-			expect(out).toMatch(/mise-en-place"|## 🔪/);
-			expect(out).toContain("onions");
+		it(`${name}: the two schedules differ by time only, never by an ingredient list`, () => {
+			const strip = (out: string) =>
+				out
+					.replace(/\d+h( \d+m)?|\d+m\b/g, "T")
+					.replace(/<p class="section-prep">[\s\S]*?<\/p>\s*/g, "");
+			expect(strip(render({ schedule: "upfront" }))).toBe(
+				strip(render({ schedule: "perSection" })),
+			);
 		});
 	}
 
-	it("markdown and print show no mise en place block by section, just the times", () => {
+	it("markdown and print show no mise en place by section, just the times", () => {
 		for (const render of [backends.markdown, backends.print]) {
 			const out = render({ schedule: "perSection" });
 			expect(out).not.toMatch(

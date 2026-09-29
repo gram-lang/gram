@@ -1112,10 +1112,6 @@ flex-direction: column;
   background: var(--color-bg);
 }
 
-.gram-preview .mise-en-place {
-  margin-bottom: 24px;
-}
-
 .gram-preview .section-meta-module {
   font-size: 0.6em;
   color: var(--color-text-muted);
