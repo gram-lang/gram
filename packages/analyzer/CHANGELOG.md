@@ -1,5 +1,20 @@
 # @gram-lang/analyzer
 
+## 1.3.0
+
+### Patch Changes
+
+- 48c856d: **Analyzer**: Fixed ingredients being ignored for density conversion and nutrition when their entry in `ingredients.yaml` isn't spelled exactly like the recipe name, such as "Huile d'olive" stored under `huile-dolive`:
+
+  - Volumes like `@Huile d'olive{10ml}` are now converted to grams and no longer trigger "ingredient missing nutrition data"
+  - `gram db lint` now reports ingredients whose names or aliases would be confused with each other
+
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/kitchen@1.3.0
+  - @gram-lang/i18n@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

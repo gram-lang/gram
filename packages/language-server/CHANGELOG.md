@@ -1,5 +1,9 @@
 # @gram-lang/language-server
 
+## 1.3.0
+
+No changes in this release.
+
 ## 1.2.1
 
 ## 1.2.0

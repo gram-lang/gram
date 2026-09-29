@@ -1,5 +1,15 @@
 # @gram-lang/kitchen
 
+## 1.3.0
+
+### Patch Changes
+
+- 95698cc: **Modules & Rendering**: Intermediates declared inside imported modules now show the name you wrote (for example `pressed`) instead of an internal path like `tofu$marinated$pressed`, in `gram view`, HTML and Markdown output.
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/i18n@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

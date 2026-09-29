@@ -6,6 +6,33 @@ tableOfContents:
   maxHeadingLevel: 2
 ---
 
+## [1.3.0](https://git.gram-lang.org/gram-lang/gram/compare/v.1.2.1...v.1.3.0) - 2026-09-29
+
+### New features
+- **CLI / Requirements**: The CLI now requires Node.js 22 or later (Bun keeps working as before).
+- **Parser & Kitchen**: Units written with abbreviation dots are now understood:
+  - `{1/2 c.à.s}`, `{1 c. à c.}`, `{2 fl. oz.}` and similar spellings now parse and are recognized as the same unit as `càs`, `càc` or `fl oz`
+
+### Bug fixes and improvements
+- **CLI / View**: Fixed several display issues in `gram view` and cook mode:
+  - Timers now show their real unit (`~{1h}` is shown as `~1h`, `~{20s}` as `~20s`) instead of always "min".
+  - Recipe durations are rounded and readable (`1h 5m`, `25m 5s`) instead of raw decimals like `1h4.5`.
+  - The resting time now appears in the recipe header.
+  - Common fractions such as `1/4 tsp` stay fractions in the shopping list instead of becoming `0.3`.
+- **Modules**: Fixed a misleading error message: a syntax error in the recipe you are editing was reported as coming from an "imported module", even when the recipe imports nothing. It now shows the plain syntax error, and the "imported module" wording is kept only for errors that really are in an imported file.
+- **Analyzer**: Fixed ingredients being ignored for density conversion and nutrition when their entry in `ingredients.yaml` isn't spelled exactly like the recipe name, such as "Huile d'olive" stored under `huile-dolive`:
+  - Volumes like `@Huile d'olive{10ml}` are now converted to grams and no longer trigger "ingredient missing nutrition data"
+  - `gram db lint` now reports ingredients whose names or aliases would be confused with each other
+- **Modules & Rendering**: Intermediates declared inside imported modules now show the name you wrote (for example `pressed`) instead of an internal path like `tofu$marinated$pressed`, in `gram view`, HTML and Markdown output.
+
+#### Breaking
+- **CLI**: Node.js 20 reached end of life in April 2026 and is no longer supported: upgrade to Node.js 22+ before updating the CLI
+
+#### Fixed
+- **Parser**: A quantity in braces that can't be read (for example `@salt{1 g/l}` or a missing `}`) is now reported as an error pointing at the brace, instead of being ignored and merging the ingredient with others that share the same first word
+
+---
+
 ## [1.2.1](https://git.gram-lang.org/gram-lang/gram/compare/v.1.2.0...v.1.2.1) - 2026-08-25
 
 ### Bug fixes and improvements
