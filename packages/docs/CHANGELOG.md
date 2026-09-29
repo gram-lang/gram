@@ -1,5 +1,21 @@
 # @gram-lang/docs
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [4c9652c]
+- Updated dependencies [a5891a9]
+- Updated dependencies [48c856d]
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/renderer@1.3.0
+  - @gram-lang/modules@1.3.0
+  - @gram-lang/analyzer@1.3.0
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/kitchen@1.3.0
+  - @gram-lang/i18n@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

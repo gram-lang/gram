@@ -75,7 +75,6 @@ const primaryError = computed(() => {
   align-items: center;
   text-align: center;
   padding: 32px 24px;
-  border-radius: 12px;
   border: 1px solid var(--sl-color-red);
   background-color: var(--sl-color-red-low);
 }
@@ -124,7 +123,6 @@ const primaryError = computed(() => {
   color: var(--sl-color-red-high);
   background-color: var(--sl-color-bg);
   padding: 2px 6px;
-  border-radius: 4px;
 }
 
 .error-uri {
@@ -138,7 +136,6 @@ const primaryError = computed(() => {
   padding: 12px;
   background-color: var(--sl-color-bg-sidebar);
   border: 1px solid var(--sl-color-border);
-  border-radius: 6px;
   font-family: var(--sl-font-mono);
   font-variant-ligatures: none;
   font-size: 13px;
@@ -162,7 +159,6 @@ const primaryError = computed(() => {
   font-size: 13px;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
   transition: filter 0.2s;
   align-self: center;

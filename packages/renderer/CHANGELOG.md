@@ -1,5 +1,25 @@
 # @gram-lang/renderer
 
+## 1.3.0
+
+### Patch Changes
+
+- 4c9652c: **CLI / View**: Fixed several display issues in `gram view` and cook mode:
+
+  - Timers now show their real unit (`~{1h}` is shown as `~1h`, `~{20s}` as `~20s`) instead of always "min".
+  - Recipe durations are rounded and readable (`1h 5m`, `25m 5s`) instead of raw decimals like `1h4.5`.
+  - The resting time now appears in the recipe header.
+  - Common fractions such as `1/4 tsp` stay fractions in the shopping list instead of becoming `0.3`.
+
+- 95698cc: **Modules & Rendering**: Intermediates declared inside imported modules now show the name you wrote (for example `pressed`) instead of an internal path like `tofu$marinated$pressed`, in `gram view`, HTML and Markdown output.
+- Updated dependencies [48c856d]
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/analyzer@1.3.0
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/kitchen@1.3.0
+  - @gram-lang/i18n@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

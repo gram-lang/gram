@@ -1,5 +1,42 @@
 # @gram-lang/cli
 
+## 1.3.0
+
+### Minor Changes
+
+- e0d0e9a: **CLI / Requirements**: The CLI now requires Node.js 22 or later (Bun keeps working as before).
+
+  **Breaking**
+
+  - **CLI**: Node.js 20 reached end of life in April 2026 and is no longer supported: upgrade to Node.js 22+ before updating the CLI
+
+### Patch Changes
+
+- 4c9652c: **CLI / View**: Fixed several display issues in `gram view` and cook mode:
+
+  - Timers now show their real unit (`~{1h}` is shown as `~1h`, `~{20s}` as `~20s`) instead of always "min".
+  - Recipe durations are rounded and readable (`1h 5m`, `25m 5s`) instead of raw decimals like `1h4.5`.
+  - The resting time now appears in the recipe header.
+  - Common fractions such as `1/4 tsp` stay fractions in the shopping list instead of becoming `0.3`.
+
+- 48c856d: **Analyzer**: Fixed ingredients being ignored for density conversion and nutrition when their entry in `ingredients.yaml` isn't spelled exactly like the recipe name, such as "Huile d'olive" stored under `huile-dolive`:
+
+  - Volumes like `@Huile d'olive{10ml}` are now converted to grams and no longer trigger "ingredient missing nutrition data"
+  - `gram db lint` now reports ingredients whose names or aliases would be confused with each other
+
+- Updated dependencies [4c9652c]
+- Updated dependencies [a5891a9]
+- Updated dependencies [48c856d]
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/renderer@1.3.0
+  - @gram-lang/modules@1.3.0
+  - @gram-lang/analyzer@1.3.0
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/kitchen@1.3.0
+  - @gram-lang/i18n@1.3.0
+  - @gram-lang/format@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

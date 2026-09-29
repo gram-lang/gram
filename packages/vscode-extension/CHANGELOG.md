@@ -1,5 +1,14 @@
 # @gram-lang/vscode-extension
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [4c9652c]
+- Updated dependencies [95698cc]
+  - @gram-lang/renderer@1.3.0
+  - @gram-lang/language-server@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

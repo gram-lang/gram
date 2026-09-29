@@ -1,5 +1,19 @@
 # @gram-lang/modules
 
+## 1.3.0
+
+### Patch Changes
+
+- a5891a9: **Modules**: Fixed a misleading error message: a syntax error in the recipe you are editing was reported as coming from an "imported module", even when the recipe imports nothing. It now shows the plain syntax error, and the "imported module" wording is kept only for errors that really are in an imported file.
+- 95698cc: **Modules & Rendering**: Intermediates declared inside imported modules now show the name you wrote (for example `pressed`) instead of an internal path like `tofu$marinated$pressed`, in `gram view`, HTML and Markdown output.
+- Updated dependencies [48c856d]
+- Updated dependencies [95698cc]
+- Updated dependencies [fac320b]
+  - @gram-lang/analyzer@1.3.0
+  - @gram-lang/parser@1.3.0
+  - @gram-lang/kitchen@1.3.0
+  - @gram-lang/i18n@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes
