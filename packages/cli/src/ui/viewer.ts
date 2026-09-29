@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import { spawn } from "node:child_process";
 import {
+	formatDuration,
+	formatTimer,
 	nutritionRows,
 	resolveNutritionBasis,
 	type NutritionBasis,
@@ -31,10 +33,8 @@ function tokenToRichText(
 	}
 
 	if (item.type === "timer") {
-		const q = item.quantity;
-		if (!q) return "";
-		const val = q.text ?? (q.value != null ? String(q.value) : "");
-		return chalk.dim(`~${val}${q.unit ?? "min"}`);
+		if (!item.quantity) return "";
+		return chalk.dim(`~${formatTimer(item)}`);
 	}
 
 	if (item.type === "temperature") {
@@ -106,13 +106,6 @@ function rule(label?: string): string {
 	return chalk.dim(inner + "─".repeat(Math.max(0, COL - inner.length)));
 }
 
-function formatMinutes(mins: number): string {
-	if (mins < 60) return `${mins}min`;
-	const h = Math.floor(mins / 60);
-	const m = mins % 60;
-	return m ? `${h}h${m}` : `${h}h`;
-}
-
 function renderHeader(model: RecipeViewModel): string {
 	const lines: string[] = [];
 	const servStr = model.servings ? ` ${model.servings} servings ` : " ";
@@ -128,10 +121,10 @@ function renderHeader(model: RecipeViewModel): string {
 	if (model.times) {
 		const t = model.times;
 		const parts: string[] = [];
-		if (t.prep) parts.push(`Prep: ${formatMinutes(t.prep)}`);
-		if (t.active) parts.push(`Active: ${formatMinutes(t.active)}`);
-		if (t.rest) parts.push(`Rest: ${formatMinutes(t.rest)}`);
-		if (t.total) parts.push(`Total: ${formatMinutes(t.total)}`);
+		if (t.prep) parts.push(`Prep: ${formatDuration(t.prep)}`);
+		if (t.active) parts.push(`Active: ${formatDuration(t.active)}`);
+		if (t.rest) parts.push(`Rest: ${formatDuration(t.rest)}`);
+		if (t.total) parts.push(`Total: ${formatDuration(t.total)}`);
 		if (parts.length > 0) {
 			const inner = `⏱  ${parts.join("  ·  ")}`;
 			lines.push(
@@ -194,7 +187,7 @@ function renderSections(
 				? chalk.cyan(`[${step.action}]`).padEnd(12)
 				: "".padEnd(10);
 			const timer = step.timerMinutes
-				? chalk.dim(` (~${formatMinutes(step.timerMinutes)})`)
+				? chalk.dim(` (~${formatDuration(step.timerMinutes)})`)
 				: "";
 			const richText = stepToRichText(
 				step._tokens,
