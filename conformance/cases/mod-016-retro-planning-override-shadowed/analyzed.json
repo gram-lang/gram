@@ -212,7 +212,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 2882,
+    "totalTime": 2883,
     "totalBreakdown": [
       {
         "label": "timer_passive",
@@ -231,11 +231,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 2,
+    "preparationTime": 3,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 2
+        "duration": 3
       }
     ],
     "totalMass": 200,
@@ -274,12 +274,24 @@
           "duration": 2
         }
       ]
+    },
+    {
+      "section": 1,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ]
     }
   ],
   "schedules": {
     "perSection": {
       "totalTime": 2882,
-      "idleTime": 2878,
+      "idleTime": 2877,
       "blocks": [
         {
           "kind": "prep",
@@ -300,6 +312,12 @@
           "step": 0,
           "start": 2,
           "end": 1442
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 2879,
+          "end": 2880
         },
         {
           "kind": "step",
@@ -311,7 +329,7 @@
       ]
     },
     "upfront": {
-      "totalTime": 2882,
+      "totalTime": 2883,
       "idleTime": 2878,
       "blocks": [
         {
@@ -321,25 +339,31 @@
           "end": 2
         },
         {
+          "kind": "prep",
+          "section": 1,
+          "start": 2,
+          "end": 3
+        },
+        {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 2
+          "start": 3,
+          "end": 3
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 0,
-          "start": 2,
-          "end": 1442
+          "start": 3,
+          "end": 1443
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 2880,
-          "end": 2882
+          "start": 2881,
+          "end": 2883
         }
       ]
     }

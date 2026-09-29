@@ -180,7 +180,7 @@
     }
   ],
   "metrics": {
-    "totalTime": 7,
+    "totalTime": 8,
     "totalBreakdown": [
       {
         "label": "section_active:Batter",
@@ -203,11 +203,11 @@
         "duration": 2
       }
     ],
-    "preparationTime": 3,
+    "preparationTime": 4,
     "prepBreakdown": [
       {
         "label": "ingredients_overhead",
-        "duration": 2
+        "duration": 3
       },
       {
         "label": "cookware_overhead",
@@ -255,8 +255,14 @@
     },
     {
       "section": 1,
-      "duration": 1,
+      "duration": 2,
       "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        },
         {
           "kind": "gather",
           "target": "cookware",
@@ -268,7 +274,7 @@
   ],
   "schedules": {
     "perSection": {
-      "totalTime": 7,
+      "totalTime": 8,
       "idleTime": 0,
       "blocks": [
         {
@@ -288,19 +294,19 @@
           "kind": "prep",
           "section": 1,
           "start": 4,
-          "end": 5
+          "end": 6
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 6,
+          "end": 8
         }
       ]
     },
     "upfront": {
-      "totalTime": 7,
+      "totalTime": 8,
       "idleTime": 0,
       "blocks": [
         {
@@ -313,21 +319,21 @@
           "kind": "prep",
           "section": 1,
           "start": 2,
-          "end": 3
+          "end": 4
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 3,
-          "end": 5
+          "start": 4,
+          "end": 6
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 6,
+          "end": 8
         }
       ]
     }
