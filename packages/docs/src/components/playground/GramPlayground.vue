@@ -575,24 +575,25 @@ function clearTarget() {
 	scaleTargetQty.value = null;
 }
 
+// Everything a view is built from, the recipe included: a change re-runs the
+// pipeline whether or not a scale target is set.
 watch(
-	[
-		files,
-		options,
-		viewMode,
-		scaleFactorString,
-		currentLang,
-		activeFile,
-		stockedUris,
-		schedule,
-	],
+	[files, options, viewMode, currentLang, activeFile, stockedUris, schedule],
 	() => {
-		if (!scaleTargetId.value) {
-			updateGram();
-		}
+		updateGram();
 	},
 	{ deep: true },
 );
+
+// The scale factor is the one input a target overrides: with a target set,
+// `updateGram` itself writes the factor it resolved from it, and re-running
+// on that write would go around in circles. The target is applied from its
+// own button (`handleScaleApply`).
+watch(scaleFactorString, () => {
+	if (!scaleTargetId.value) {
+		updateGram();
+	}
+});
 
 watch(
 	[viewMode, () => options.value],
