@@ -26,6 +26,36 @@ import type {
 const DEFAULT_GAP_THRESHOLD = 60; // minutes
 const DEFAULT_COMPRESSED_GAP_SIZE = 20; // virtual minutes
 
+/** The two options that decide how an idle gap is compressed. */
+export interface GapOptions {
+	gapThresholdMinutes?: number;
+	compressedGapSize?: number;
+}
+
+// Infinity is a fair value (a threshold that never compresses, a size that
+// never shrinks a gap); NaN and negatives are not.
+const validOr = (value: number | undefined, fallback: number): number =>
+	typeof value === "number" && value >= 0 ? value : fallback;
+
+/**
+ * The threshold and compressed size to use, anything unusable (missing, NaN,
+ * negative) falling back on the default. Every function that places something
+ * on the time axis takes its values from here: the gaps, the width and the
+ * positions must all be computed from the same two numbers.
+ */
+export function resolveGapOptions(options: GapOptions = {}): {
+	gapThreshold: number;
+	compressedGapSize: number;
+} {
+	return {
+		gapThreshold: validOr(options.gapThresholdMinutes, DEFAULT_GAP_THRESHOLD),
+		compressedGapSize: validOr(
+			options.compressedGapSize,
+			DEFAULT_COMPRESSED_GAP_SIZE,
+		),
+	};
+}
+
 export function formatTime(minutes: number): string {
 	const h = Math.floor(minutes / 60);
 	const m = Math.floor(minutes % 60);
@@ -146,14 +176,16 @@ export function getVirtualTime(
 	for (const gap of gaps) {
 		if (realTime <= gap.start) break;
 
+		const gapDuration = gap.end - gap.start;
+		// A gap only ever shrinks: a compressed size above its length would
+		// stretch it instead.
+		const size = Math.min(compressedGapSize, gapDuration);
 		if (realTime >= gap.end) {
-			const gapDuration = gap.end - gap.start;
-			subtracted += gapDuration - compressedGapSize;
+			subtracted += gapDuration - size;
 		} else {
 			const timeInGap = realTime - gap.start;
-			const gapDuration = gap.end - gap.start;
 			const proportion = timeInGap / gapDuration;
-			const virtualTimeInGap = proportion * compressedGapSize;
+			const virtualTimeInGap = proportion * size;
 			subtracted += timeInGap - virtualTimeInGap;
 		}
 	}
@@ -228,7 +260,7 @@ function readStepInfo(step: ProcessedStep): {
  */
 export function buildTracks(
 	data: RenderableCompilationResult,
-	opts: { lang?: string; schedule?: ScheduleMode } = {},
+	opts: { lang?: string; schedule?: ScheduleMode } & GapOptions = {},
 ): GanttTracksData {
 	const sections = data?.sections;
 	const blocks: ScheduleBlock[] | undefined = resolveSchedule(
@@ -240,7 +272,8 @@ export function buildTracks(
 	}
 
 	const t = getDictionary(opts.lang);
-	const gaps = computeGaps(data, DEFAULT_GAP_THRESHOLD, opts.schedule);
+	const { gapThreshold, compressedGapSize } = resolveGapOptions(opts);
+	const gaps = computeGaps(data, gapThreshold, opts.schedule);
 	const registry = data.registry;
 
 	const cookTrack: GanttTrack = {
@@ -338,7 +371,7 @@ export function buildTracks(
 	cookTrack.dynamicHeight = Math.max(48, activeStepIndex * 40 + 16);
 
 	const tracks = [cookTrack, ...Array.from(passiveTracksMap.values())];
-	const totalVirtualTime = getVirtualTime(maxRealTime, gaps);
+	const totalVirtualTime = getVirtualTime(maxRealTime, gaps, compressedGapSize);
 
 	return { tracks, totalVirtualTime, maxRealTime };
 }
@@ -350,6 +383,7 @@ export function computeTimeTicks(
 	gaps: GanttGap[],
 	timeMode: GanttTimeMode,
 	targetTime: string,
+	compressedGapSize?: number,
 ): GanttTimeTick[] {
 	const ticks: GanttTimeTick[] = [];
 
@@ -373,7 +407,8 @@ export function computeTimeTicks(
 
 		ticks.push({
 			realTime: t,
-			virtualPercent: (getVirtualTime(t, gaps) / totalVirtualTime) * 100,
+			virtualPercent:
+				(getVirtualTime(t, gaps, compressedGapSize) / totalVirtualTime) * 100,
 			label: label(t),
 		});
 	}
@@ -411,10 +446,11 @@ export function computeTimeTicks(
 export function computeVisualGaps(
 	gaps: GanttGap[],
 	totalVirtualTime: number,
+	compressedGapSize?: number,
 ): GanttVisualGap[] {
 	return gaps.map((g) => {
-		const vStart = getVirtualTime(g.start, gaps);
-		const vEnd = getVirtualTime(g.end, gaps);
+		const vStart = getVirtualTime(g.start, gaps, compressedGapSize);
+		const vEnd = getVirtualTime(g.end, gaps, compressedGapSize);
 		const skipped = g.end - g.start;
 		return {
 			leftPercent: (vStart / totalVirtualTime) * 100,
