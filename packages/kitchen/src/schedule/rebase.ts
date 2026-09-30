@@ -199,16 +199,3 @@ export function commitTimeline(
 		totalBreakdown: timeline.totalBreakdown,
 	};
 }
-
-/** Lays out `schedules` and commits the result onto the compiled output. */
-export function rebaseAndCommit(
-	schedules: StepSchedule[],
-	passiveTasks: ScheduledPassiveTask[],
-	sections: ProcessedSection[],
-	globalActiveTime: number,
-): ScheduleMetrics {
-	return commitTimeline(
-		computeTimeline(schedules, passiveTasks, sections),
-		globalActiveTime,
-	);
-}
