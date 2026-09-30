@@ -87,12 +87,24 @@ export function computeMiseEnPlace(
 	const ingredientOwner = new Map<string, number>();
 	const cookwareOwner = new Map<string, number>();
 
-	// The section that makes each intermediate (`->&dough`).
+	// The section that makes each intermediate: declared on the section itself
+	// (`## Dough ->&dough`) or at the end of one of its steps (`... ->&dough`).
 	const producerOf = new Map<string, number>();
-	sections.forEach((sec, idx) => {
-		if (!sec.intermediate_preparation) return;
-		const id = slugify(sec.intermediate_preparation);
+	const markProducer = (id: string, idx: number) => {
 		if (!producerOf.has(id)) producerOf.set(id, idx);
+	};
+	sections.forEach((sec, idx) => {
+		if (sec.intermediate_preparation) {
+			markProducer(slugify(sec.intermediate_preparation), idx);
+		}
+		for (const step of sec.steps) {
+			if (step.type !== "step") continue;
+			for (const token of step.content) {
+				if (typeof token !== "string" && "type" in token) {
+					if (token.type === "declaration") markProducer(token.id, idx);
+				}
+			}
+		}
 	});
 
 	sections.forEach((sec, idx) => {
