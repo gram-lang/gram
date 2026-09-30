@@ -268,3 +268,48 @@ describe("diffRecipes — module-imports RFC §F.0.2", () => {
 		expect(diffRecipes(a, b).modules).toEqual([]);
 	});
 });
+
+describe("diffRecipes — timings follow the per-section schedule", () => {
+	const base =
+		"## Pastry\n\nMix @flour{200g}(sifted).\n\n## Assembly\n\nCombine with @filling{300g}(chopped).\n";
+	// A retro-planning offset moves total and idle time — and only those two —
+	// apart between the per-section schedule and the legacy (upfront) total.
+	const shifted = base.replace("## Pastry", "## Pastry ~{-2d}");
+
+	it("reports the change of the per-section total, not of the legacy one", () => {
+		const a = compileRecipe(base);
+		const b = compileRecipe(shifted);
+		const { timings } = diffRecipes(a, b);
+
+		const total = timings.find((t) => t.field === "totalTime");
+		expect(total?.from).toBe(a.schedules.perSection.totalTime);
+		expect(total?.to).toBe(b.schedules.perSection.totalTime);
+		// Would differ if it read the deprecated metric instead.
+		expect(total?.to).not.toBe(b.metrics.totalTime);
+	});
+
+	it("reports idle time from the same schedule", () => {
+		const a = compileRecipe(base);
+		const b = compileRecipe(shifted);
+		const idle = diffRecipes(a, b).timings.find((t) => t.field === "idleTime");
+		expect(idle?.from).toBe(a.schedules.perSection.idleTime);
+		expect(idle?.to).toBe(b.schedules.perSection.idleTime);
+	});
+
+	it("still compares preparation and active time from the metrics", () => {
+		const a = compileRecipe(base);
+		const b = compileRecipe(base.replace("(sifted)", ""));
+		const { timings } = diffRecipes(a, b);
+		expect(timings.find((t) => t.field === "preparationTime")).toEqual({
+			field: "preparationTime",
+			from: a.metrics.preparationTime,
+			to: b.metrics.preparationTime,
+		});
+	});
+
+	it("reports nothing when nothing changed", () => {
+		expect(
+			diffRecipes(compileRecipe(base), compileRecipe(base)).timings,
+		).toEqual([]);
+	});
+});

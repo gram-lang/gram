@@ -12,7 +12,7 @@ export async function generatePrintHTML(
 	scaleFactor?: number,
 	rendererOptions?: Pick<
 		RendererOptions,
-		"hideStepQty" | "bakersMathOnly" | "nutritionBasis"
+		"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "schedule"
 	> & {
 		bakersReference?: string;
 		lang?: string;

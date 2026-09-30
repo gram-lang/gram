@@ -7,8 +7,11 @@ import {
 	formatTimer,
 	toCommonFraction,
 	type NutritionBasis,
+	type ScheduleMode,
 } from "@gram-lang/renderer";
+import type { CompilationResult } from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
+import { passiveTimers, scheduleOf } from "../core/schedule";
 
 function formatMass(grams: number): string {
 	if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`;
@@ -133,10 +136,12 @@ function stepToText(content: any[], registry: Record<string, any>): string {
 	return parts.join("").trim();
 }
 
-function getTimerMinutes(step: any): number | undefined {
-	const tasks: any[] = step.backgroundTasks ?? [];
-	if (tasks.length > 0) return tasks[0].duration;
-	return undefined;
+function getTimerMinutes(
+	compiled: CompilationResult,
+	section: number,
+	step: number,
+): number | undefined {
+	return passiveTimers(compiled, section, step)[0]?.duration;
 }
 
 export async function buildViewModel(
@@ -147,6 +152,8 @@ export async function buildViewModel(
 		bakersReference?: string;
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
+		/** Which timeline the total and rest times follow. Default per section. */
+		schedule?: ScheduleMode;
 		lang?: string;
 		paths?: Record<string, string>;
 		stock?: Set<string>;
@@ -176,12 +183,17 @@ export async function buildViewModel(
 			? parsedPortions
 			: null;
 
+	// Total and rest time follow the chosen timeline; active and preparation
+	// time are the same in both.
 	const m = compiled.metrics;
+	const timeline = scheduleOf(compiled, opts.schedule ?? "perSection");
+	const total = timeline?.totalTime;
+	const rest = timeline?.idleTime;
 	const times =
-		m && (m.totalTime || m.idleTime || m.activeTime || m.preparationTime)
+		m && (total || rest || m.activeTime || m.preparationTime)
 			? {
-					total: m.totalTime || undefined,
-					rest: m.idleTime || undefined,
+					total: total || undefined,
+					rest: rest || undefined,
 					active: m.activeTime || undefined,
 					prep: m.preparationTime || undefined,
 				}
@@ -223,108 +235,116 @@ export async function buildViewModel(
 	}
 
 	// Sections
-	const sections: RecipeViewModel["sections"] = sourceSections.map((sec) => {
-		const secIngs: any[] = sec.ingredients ?? [];
+	const sections: RecipeViewModel["sections"] = sourceSections.map(
+		(sec, secIdx) => {
+			const secIngs: any[] = sec.ingredients ?? [];
 
-		// Regular (non-composite) ingredients
-		const regularEntries: RecipeViewModel["sections"][0]["ingredients"] =
-			secIngs
-				.filter(
-					(ing: any) =>
-						!ing.composite && ing.type !== "alternative" && ing.qty != null,
-				)
-				.map((ing: any) => {
-					const name =
-						opts.db?.[ing.id]?.name ??
-						ing.alias ??
-						registry[ing.id]?.name ??
-						ing.name ??
-						ing.id;
-					return {
-						name,
-						displayQty: formatDisplayQty(ing, opts),
-						isEstimate: ing.isEstimate ?? false,
-					};
-				});
+			// Regular (non-composite) ingredients
+			const regularEntries: RecipeViewModel["sections"][0]["ingredients"] =
+				secIngs
+					.filter(
+						(ing: any) =>
+							!ing.composite && ing.type !== "alternative" && ing.qty != null,
+					)
+					.map((ing: any) => {
+						const name =
+							opts.db?.[ing.id]?.name ??
+							ing.alias ??
+							registry[ing.id]?.name ??
+							ing.name ??
+							ing.id;
+						return {
+							name,
+							displayQty: formatDisplayQty(ing, opts),
+							isEstimate: ing.isEstimate ?? false,
+						};
+					});
 
-		// Composite ingredients — group children by parent, apply MAX rule for parent qty
-		// composite.quantity can be a number OR a fraction/qty object — extract numeric value for MAX comparison
-		function compositeNumericValue(q: any): number {
-			if (q == null) return 0;
-			if (typeof q === "number") return q;
-			if (typeof q === "object" && q.value != null) return q.value;
-			return 0;
-		}
-		const parentMap = new Map<
-			string,
-			{
-				name: string;
-				maxQtyRaw: any;
-				unit?: string;
-				children: Array<{ name: string; displayQty: string }>;
+			// Composite ingredients — group children by parent, apply MAX rule for parent qty
+			// composite.quantity can be a number OR a fraction/qty object — extract numeric value for MAX comparison
+			function compositeNumericValue(q: any): number {
+				if (q == null) return 0;
+				if (typeof q === "number") return q;
+				if (typeof q === "object" && q.value != null) return q.value;
+				return 0;
 			}
-		>();
-		for (const ing of secIngs.filter((i: any) => i.composite)) {
-			const parentName: string = ing.composite.parent;
-			const childQtyRaw = ing.composite.quantity ?? null;
-			const childUnit: string | undefined = ing.composite.unit ?? undefined;
-			if (!parentMap.has(parentName)) {
-				parentMap.set(parentName, {
-					name: parentName,
-					maxQtyRaw: childQtyRaw,
-					unit: childUnit,
-					children: [],
-				});
-			}
-			const parent = parentMap.get(parentName)!;
-			if (
-				childQtyRaw != null &&
-				compositeNumericValue(childQtyRaw) >
-					compositeNumericValue(parent.maxQtyRaw)
-			) {
-				parent.maxQtyRaw = childQtyRaw;
-			}
-			const childName =
-				opts.db?.[ing.id]?.name ?? registry[ing.id]?.name ?? ing.name ?? ing.id;
-			const childDisplayQty = formatDisplayQty(
+			const parentMap = new Map<
+				string,
 				{
-					qty: childQtyRaw,
-					unit: childUnit,
-					normalizedMass: ing.normalizedMass,
-					bakersPercentage: ing.bakersPercentage,
-				},
-				opts,
-			);
-			parent.children.push({ name: childName, displayQty: childDisplayQty });
-		}
-		const compositeEntries: RecipeViewModel["sections"][0]["ingredients"] =
-			Array.from(parentMap.values()).map((p) => ({
-				name: p.name,
-				displayQty: formatDisplayQty({ qty: p.maxQtyRaw, unit: p.unit }, opts),
-				isEstimate: false,
-				children: p.children,
-			}));
+					name: string;
+					maxQtyRaw: any;
+					unit?: string;
+					children: Array<{ name: string; displayQty: string }>;
+				}
+			>();
+			for (const ing of secIngs.filter((i: any) => i.composite)) {
+				const parentName: string = ing.composite.parent;
+				const childQtyRaw = ing.composite.quantity ?? null;
+				const childUnit: string | undefined = ing.composite.unit ?? undefined;
+				if (!parentMap.has(parentName)) {
+					parentMap.set(parentName, {
+						name: parentName,
+						maxQtyRaw: childQtyRaw,
+						unit: childUnit,
+						children: [],
+					});
+				}
+				const parent = parentMap.get(parentName)!;
+				if (
+					childQtyRaw != null &&
+					compositeNumericValue(childQtyRaw) >
+						compositeNumericValue(parent.maxQtyRaw)
+				) {
+					parent.maxQtyRaw = childQtyRaw;
+				}
+				const childName =
+					opts.db?.[ing.id]?.name ??
+					registry[ing.id]?.name ??
+					ing.name ??
+					ing.id;
+				const childDisplayQty = formatDisplayQty(
+					{
+						qty: childQtyRaw,
+						unit: childUnit,
+						normalizedMass: ing.normalizedMass,
+						bakersPercentage: ing.bakersPercentage,
+					},
+					opts,
+				);
+				parent.children.push({ name: childName, displayQty: childDisplayQty });
+			}
+			const compositeEntries: RecipeViewModel["sections"][0]["ingredients"] =
+				Array.from(parentMap.values()).map((p) => ({
+					name: p.name,
+					displayQty: formatDisplayQty(
+						{ qty: p.maxQtyRaw, unit: p.unit },
+						opts,
+					),
+					isEstimate: false,
+					children: p.children,
+				}));
 
-		const ingredients: RecipeViewModel["sections"][0]["ingredients"] = [
-			...regularEntries,
-			...compositeEntries,
-		];
+			const ingredients: RecipeViewModel["sections"][0]["ingredients"] = [
+				...regularEntries,
+				...compositeEntries,
+			];
 
-		const steps: RecipeViewModel["sections"][0]["steps"] = [];
-		for (const step of (sec.steps ?? []) as any[]) {
-			if (step.type === "comment") continue;
-			const text = stepToText(step.content ?? [], registry);
-			if (!text) continue;
-			steps.push({
-				action: step.action ?? undefined,
-				text,
-				timerMinutes: getTimerMinutes(step),
-				_tokens: step.content ?? [],
-			});
-		}
+			const steps: RecipeViewModel["sections"][0]["steps"] = [];
+			for (const [stepIdx, step] of ((sec.steps ?? []) as any[]).entries()) {
+				if (step.type === "comment") continue;
+				const text = stepToText(step.content ?? [], registry);
+				if (!text) continue;
+				steps.push({
+					action: step.action ?? undefined,
+					text,
+					timerMinutes: getTimerMinutes(compiled, secIdx, stepIdx),
+					_tokens: step.content ?? [],
+				});
+			}
 
-		return { title: sec.title ?? null, ingredients, steps };
-	});
+			return { title: sec.title ?? null, ingredients, steps };
+		},
+	);
 
 	const nutrition = analyzed?.result.metrics?.nutrition ?? null;
 	const missingIngredients = analyzed?.missingIngredients ?? [];

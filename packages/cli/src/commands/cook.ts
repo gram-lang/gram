@@ -15,6 +15,7 @@ import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
 import App from "../ui/cook/App";
 import { ExitCode, reportError } from "../errors";
+import { scheduleOf } from "../core/schedule";
 
 export default defineCommand({
 	meta: {
@@ -79,7 +80,7 @@ export default defineCommand({
 				paths: config.paths,
 				stock,
 			});
-			totalTime = compiled.metrics?.totalTime ?? 0;
+			totalTime = scheduleOf(compiled, "perSection")?.totalTime ?? 0;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")

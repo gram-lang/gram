@@ -18,7 +18,7 @@ export async function exportRecipe(
 	// only forwarded to the pipeline below, not into RendererOptions.
 	rendererOptions?: Pick<
 		RendererOptions,
-		"hideStepQty" | "bakersMathOnly" | "nutritionBasis"
+		"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "schedule"
 	> & {
 		bakersReference?: string;
 		lang?: string;
