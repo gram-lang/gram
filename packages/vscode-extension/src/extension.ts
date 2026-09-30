@@ -3,9 +3,9 @@ import * as vscode from "vscode";
 import type { ExtensionContext } from "vscode";
 import { PreviewPanel } from "./preview";
 import { GanttPanel } from "./gantt-panel";
+import { createClientOptions } from "./client-options";
 import {
 	LanguageClient,
-	type LanguageClientOptions,
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
@@ -24,9 +24,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		},
 	};
 
-	const clientOptions: LanguageClientOptions = {
-		documentSelector: [{ scheme: "file", language: "gram" }],
-	};
+	const clientOptions = createClientOptions();
 
 	const previewHtmlCache = new Map<string, string>();
 	const ganttHtmlCache = new Map<string, string>();
