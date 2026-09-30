@@ -6,6 +6,7 @@ import {
 	isScheduleMode,
 	SCHEDULE_MODES,
 	scheduleFor,
+	scheduleTimes,
 } from "../src/index";
 
 describe("schedule modes", () => {
@@ -34,5 +35,35 @@ describe("schedule modes", () => {
 	it("returns nothing for data without schedules instead of throwing", () => {
 		expect(scheduleFor({})).toBeUndefined();
 		expect(scheduleFor({ schedules: undefined }, "upfront")).toBeUndefined();
+	});
+
+	describe("scheduleTimes", () => {
+		const result = compile(
+			getAST("## A ~{-2d}\n\nMix @flour{1g}.\n\n## B\n\nBake @egg{1}.\n"),
+		);
+
+		it("reads total and idle time of the chosen timeline", () => {
+			for (const mode of SCHEDULE_MODES) {
+				expect(scheduleTimes(result, mode)).toEqual({
+					totalTime: result.schedules[mode].totalTime,
+					idleTime: result.schedules[mode].idleTime,
+				});
+			}
+			expect(scheduleTimes(result)).toEqual(
+				scheduleTimes(result, "perSection"),
+			);
+		});
+
+		it("falls back on the deprecated metrics for JSON without schedules", () => {
+			const { schedules: _s, ...stored } = result;
+			expect(scheduleTimes(stored)).toEqual({
+				totalTime: result.metrics.totalTime,
+				idleTime: result.metrics.idleTime,
+			});
+		});
+
+		it("gives 0 when there is nothing to read at all", () => {
+			expect(scheduleTimes({})).toEqual({ totalTime: 0, idleTime: 0 });
+		});
 	});
 });

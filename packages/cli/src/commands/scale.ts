@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { resolve } from "node:path";
 import { log, spinner } from "@clack/prompts";
-import { scheduleFor } from "@gram-lang/kitchen";
+import { scheduleTimes } from "@gram-lang/kitchen";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
@@ -102,7 +102,7 @@ export default defineCommand({
 			);
 			const warnings = getScaleWarnings(
 				factor,
-				scheduleFor(original)?.totalTime ?? 0,
+				scheduleTimes(original).totalTime,
 			);
 			renderScaleResult(original.title, factor, items, warnings);
 		} catch (err) {

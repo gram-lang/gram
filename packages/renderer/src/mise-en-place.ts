@@ -24,23 +24,6 @@ export function resolveSchedule(
 	return scheduleFor(data, mode);
 }
 
-/**
- * Total and idle time of the timeline the reader picked, falling back on the
- * deprecated `metrics` fields for a result that carries no `schedules`. The one
- * place the renderer's outputs read them, so the fallback goes away in one go.
- */
-export function scheduleTimes(
-	data: RenderableCompilationResult,
-	mode: ScheduleMode | undefined,
-	metrics: { totalTime: number; idleTime: number },
-): { totalTime: number; idleTime: number } {
-	const schedule = resolveSchedule(data, mode);
-	return {
-		totalTime: schedule?.totalTime ?? metrics.totalTime,
-		idleTime: schedule?.idleTime ?? metrics.idleTime,
-	};
-}
-
 /** What preparing section `index` costs, when it costs anything. */
 export function miseEnPlaceForSection(
 	data: RenderableCompilationResult,

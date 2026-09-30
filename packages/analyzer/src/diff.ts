@@ -8,7 +8,7 @@ import type {
 	ShoppingListItem,
 	CompositeItem,
 } from "@gram-lang/kitchen";
-import { getNumericQty, scheduleFor } from "@gram-lang/kitchen";
+import { getNumericQty, scheduleTimes } from "@gram-lang/kitchen";
 
 // Structural, analyzer-local shapes for the module-composition metadata a
 // `CompilationResult` may carry when it actually came from
@@ -428,10 +428,10 @@ function diffIngredients(
 function timingsOf(
 	recipe: CompilationResult,
 ): Record<TimingDelta["field"], number> {
-	const schedule = scheduleFor(recipe);
+	const { totalTime, idleTime } = scheduleTimes(recipe);
 	return {
-		totalTime: schedule?.totalTime ?? 0,
-		idleTime: schedule?.idleTime ?? 0,
+		totalTime,
+		idleTime,
 		activeTime: recipe.metrics?.activeTime ?? 0,
 		preparationTime: recipe.metrics?.preparationTime ?? 0,
 	};

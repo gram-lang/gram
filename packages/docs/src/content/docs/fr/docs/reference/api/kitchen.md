@@ -113,6 +113,10 @@ Ces champs gardent les mêmes valeurs et le même sens jusqu'à la 2.0.0, mais i
 `metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux plannings. Attention : l'ancien `metrics.totalTime` est le total du planning `upfront`.
 :::
 
+:::note[JSON compilé avant la 1.4.0]
+Le JSON écrit par kitchen 1.3.0 ou une version antérieure n'a pas de `schedules`. Il s'affiche toujours : `scheduleTimes` lit le temps total et le temps d'attente dans l'ancien `metrics.totalTime` et `metrics.idleTime`, et le diff les compare correctement au lieu de lire zéro. En revanche, il n'y a ni mise en place ni chronologie à dessiner, donc le diagramme de Gantt reste vide. Recompilez la recette avec la 1.4.0 ou plus pour les obtenir. Ce repli disparaîtra avec les champs dépréciés en 2.0.0.
+:::
+
 Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté de cette structure, et [Avertissements](/fr/docs/reference/api/warnings) pour le catalogue de ce qui peut apparaître dans `.warnings`.
 
 ## Ajustement des proportions
@@ -163,6 +167,13 @@ function generateShoppingList(
 function calculatePreparationTime(sections: ProcessedSection[], registry: Registry): { total: number; breakdown: TimeBreakdownItem[] }
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
+
+type ScheduleMode = "perSection" | "upfront"
+const SCHEDULE_MODES: readonly ["perSection", "upfront"]
+const DEFAULT_SCHEDULE_MODE: ScheduleMode // "perSection"
+function isScheduleMode(value: unknown): value is ScheduleMode
+function scheduleFor(compiled, mode?: ScheduleMode): Schedule | undefined
+function scheduleTimes(compiled, mode?: ScheduleMode): { totalTime: number; idleTime: number }
 ```
 
 ## `RecipeRegistry`

@@ -27,7 +27,6 @@ import {
 	describeMiseEnPlaceItem,
 	isPerSection,
 	miseEnPlaceForSection,
-	scheduleTimes,
 } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
@@ -35,6 +34,7 @@ import {
 	aggregateSectionIngredients,
 	intermediateLabel,
 	round2,
+	scheduleTimes,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
@@ -180,11 +180,7 @@ const htmlBackend: RenderBackend = {
 
 			// Total and idle time depend on the chosen schedule; preparation and
 			// active time are the same in both.
-			const { totalTime, idleTime } = scheduleTimes(
-				data,
-				options.schedule,
-				metrics,
-			);
+			const { totalTime, idleTime } = scheduleTimes(data, options.schedule);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(

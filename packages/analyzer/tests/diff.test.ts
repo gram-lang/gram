@@ -312,4 +312,17 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 			diffRecipes(compileRecipe(base), compileRecipe(base)).timings,
 		).toEqual([]);
 	});
+
+	it("compares JSON stored before 1.4.0 (no schedules) through its old metrics, not as zero", () => {
+		const current = compileRecipe(base);
+		const { schedules: _s, ...stored } = compileRecipe(base);
+		const timings = diffRecipes(current, stored as never).timings;
+
+		// Never the "150 -> 0" a missing schedule used to read as.
+		for (const field of ["totalTime", "idleTime"] as const) {
+			const delta = timings.find((t) => t.field === field);
+			expect(delta === undefined || delta.to > 0).toBe(true);
+		}
+		expect(diffRecipes(stored as never, stored as never).timings).toEqual([]);
+	});
 });

@@ -11,7 +11,7 @@ import {
 import {
 	type CompilationResult,
 	type ScheduleMode,
-	scheduleFor,
+	scheduleTimes,
 } from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
 import { passiveTimers } from "../core/schedule";
@@ -189,9 +189,10 @@ export async function buildViewModel(
 	// Total and rest time follow the chosen timeline; active and preparation
 	// time are the same in both.
 	const m = compiled.metrics;
-	const timeline = scheduleFor(compiled, opts.schedule);
-	const total = timeline?.totalTime;
-	const rest = timeline?.idleTime;
+	const { totalTime: total, idleTime: rest } = scheduleTimes(
+		compiled,
+		opts.schedule,
+	);
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)
 			? {
