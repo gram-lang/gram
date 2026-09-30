@@ -95,6 +95,12 @@ const collectUsageIds = (
  * carries a cost (there would be nothing to schedule it before): its share
  * moves to the first section that has steps, and a recipe with no step at all
  * has no mise en place.
+ *
+ * Public API, like `calculatePreparationTime`: `compile()` returns its result as
+ * `miseEnPlace`, and any `ProcessedSection[]` with its registry (e.g. one you
+ * built yourself) can be run through it to get the same split. Its signature
+ * is stable; how the cost is split between sections may still be refined in a
+ * minor version, the same way a compiler fix is.
  */
 export function computeMiseEnPlace(
 	sections: ProcessedSection[],

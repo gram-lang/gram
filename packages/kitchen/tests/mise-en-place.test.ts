@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
 import { getAST } from "@gram-lang/parser";
-import { compile } from "../src/index";
+import {
+	calculatePreparationTime,
+	compile,
+	computeMiseEnPlace,
+	type Registry,
+} from "../src/index";
 import { KITCHEN_VERSION } from "../src/version";
 
 const RECIPE = `## Dough ->&dough
@@ -203,6 +208,34 @@ Spread &filling{100g} over &dough{200g}.
 			);
 			expect(gather(entries, 0, "ingredient")).toMatchObject({ count: 2 });
 			expect(gather(entries, 1, "ingredient")).toMatchObject({ count: 1 });
+		});
+	});
+
+	describe("public derivation (computeMiseEnPlace)", () => {
+		// What a consumer holding only a compiled recipe can rebuild.
+		const registryOf = (result: ReturnType<typeof compile>): Registry => ({
+			ingredients: new Map(Object.entries(result.registry.ingredients)),
+			cookware: new Map(Object.entries(result.registry.cookware)),
+			warnings: [],
+		});
+
+		it("gives back the compiled `miseEnPlace` from its sections and registry", () => {
+			const result = compile(getAST(RECIPE));
+			expect(computeMiseEnPlace(result.sections, registryOf(result))).toEqual(
+				result.miseEnPlace,
+			);
+		});
+
+		it("lets calculatePreparationTime take the split instead of computing it again", () => {
+			const result = compile(getAST(RECIPE));
+			const registry = registryOf(result);
+			const mise = computeMiseEnPlace(result.sections, registry);
+			expect(calculatePreparationTime(result.sections, registry, mise)).toEqual(
+				calculatePreparationTime(result.sections, registry),
+			);
+			expect(
+				calculatePreparationTime(result.sections, registry, mise).total,
+			).toBe(result.metrics.preparationTime);
 		});
 	});
 });
