@@ -127,6 +127,8 @@ Each section has its own mise en place: gathering and preparing its ingredients 
 
 This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option and the renderer a `schedule` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in both, and the ingredient lists don't change.
 
+An intermediate (`&dough`) is weighed in the section that uses it, however it is declared. That minute is an approximation: by section, it can fall while the intermediate is still resting, so a preparation may appear to happen just before the dough is ready. The total time stays right to within a minute.
+
 ### Smart dependency tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
 
