@@ -164,9 +164,14 @@ function generateShoppingList(
   options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[]
 
-function calculatePreparationTime(sections: ProcessedSection[], registry: Registry): { total: number; breakdown: TimeBreakdownItem[] }
+function calculatePreparationTime(
+  sections: ProcessedSection[],
+  registry: Registry,
+  mise?: SectionMiseEnPlace[], // the split below, when you already have it
+): { total: number; breakdown: TimeBreakdownItem[] }
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
+// ^ the `miseEnPlace` field of a compiled recipe, derived from its sections
 
 type ScheduleMode = "perSection" | "upfront"
 const SCHEDULE_MODES: readonly ["perSection", "upfront"]
