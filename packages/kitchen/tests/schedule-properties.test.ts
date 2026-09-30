@@ -219,7 +219,8 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
-	// Compiling is deterministic, and scaling never moves a duration.
+	// Compiling is deterministic, scaling never moves a duration, and scaling a
+	// compiled result gives what compiling with that factor gives (documented).
 	if (JSON.stringify(compile(getAST(source))) !== JSON.stringify(result)) {
 		bad.push("compile is not deterministic");
 	}
@@ -232,6 +233,9 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		) {
 			bad.push("scaling changes schedules or miseEnPlace");
 		}
+	}
+	if (JSON.stringify(applied) !== JSON.stringify(scaled)) {
+		bad.push("applyScale differs from compile({ scaleFactor })");
 	}
 	return bad;
 }
@@ -273,9 +277,4 @@ describe("schedules: properties over random recipes", () => {
 			[...breaches].map(([message, source]) => `${message}\n${source}`),
 		).toEqual([]);
 	}, 60_000); // generous: a CI runner is several times slower than a laptop
-
-	// `applyScale(compile(ast), k)` should equal `compile(ast, { scaleFactor: k })`
-	// (documented), but does not when a step quotes a reference's quantity
-	// (`&mix{100g}`): audit C1, present since 1.3.0.
-	it.todo("applyScale equals compile({ scaleFactor }) (audit C1)");
 });
