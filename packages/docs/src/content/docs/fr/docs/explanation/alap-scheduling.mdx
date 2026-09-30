@@ -80,24 +80,26 @@ La mise en place d'une section (rassembler et préparer ses ingrédients et son 
 ```gram
 ## Pâte ->&pâte
 
-Mélanger @farine{500g} et @eau{300ml} dans un #saladier.
+[Mélanger] La @farine{500g} et l'@eau{300ml} dans un #saladier.
 
 [Repos] Laisser reposer la pâte ~_{2h}.
 
 ## Garniture ->&garniture
 
-Faire revenir @oignons{200g}(émincés) dans une #poêle.
+[Suer] Faire revenir les @oignons{200g}(émincés) dans une #poêle.
 
 ## Montage
 
-Étaler la &garniture sur la &pâte, puis cuire ~{25min}.
+[Étaler] La &garniture sur la &pâte
+
+[Cuire] Au #four pendant ~{25min}.
 ```
 
 Planifiée **par section** (le comportement par défaut), chaque préparation se fait juste avant sa section. Celles de la garniture et du montage glissent dans les deux heures de repos de la pâte, quand vos mains sont libres de toute façon :
 
 ```mermaid
 gantt
-    title Mise en place par section (2 h 30)
+    title Mise en place par section (2 h 32)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -106,35 +108,37 @@ gantt
     Mélanger                          : active, a1, 00:03, 2m
     Repos (passif)                    : r1, 00:05, 120m
     section Garniture
-    Mise en place                     : p2, 01:57, 4m
-    Faire revenir                     : active, a2, 02:01, 2m
+    Mise en place                     : p2, 01:56, 4m
+    Suer                              : active, a2, 02:00, 2m
     section Montage
-    Mise en place                     : p3, 02:03, 2m
-    Monter et cuire                   : active, a3, 02:05, 25m
+    Mise en place                     : p3, 02:02, 3m
+    Étaler                            : active, a3, 02:05, 2m
+    Cuire                             : active, a4, 02:07, 25m
 ```
 
 Planifiée **tout au début**, toutes les préparations passent en premier, et la cuisine ne commence qu'une fois qu'elles sont terminées :
 
 ```mermaid
 gantt
-    title Mise en place tout au début (2 h 36)
+    title Mise en place tout au début (2 h 39)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
     section Mise en place
     Pâte                              : p1, 00:00, 3m
     Garniture                         : p2, 00:03, 4m
-    Montage                           : p3, 00:07, 2m
+    Montage                           : p3, 00:07, 3m
     section Pâte
-    Mélanger                          : active, a1, 00:09, 2m
-    Repos (passif)                    : r1, 00:11, 120m
+    Mélanger                          : active, a1, 00:10, 2m
+    Repos (passif)                    : r1, 00:12, 120m
     section Garniture
-    Faire revenir                     : active, a2, 02:09, 2m
+    Suer                              : active, a2, 02:10, 2m
     section Montage
-    Monter et cuire                   : active, a3, 02:11, 25m
+    Étaler                            : active, a3, 02:12, 2m
+    Cuire                             : active, a4, 02:14, 25m
 ```
 
-Les deux plans décrivent la même recette. Seule la chronologie change, de six minutes de préparation qui ne tiennent plus dans le repos. C'est pour ça que le défaut est « par section », et c'est aussi pour ça qu'on peut préférer tout faire au début : un seul passage devant le plan de travail, et plus rien à préparer pendant qu'une étape tourne.
+Les deux plans décrivent la même recette. Seule la chronologie change, de sept minutes de préparation (les quatre de la garniture et les trois du montage) qui ne tiennent plus dans le repos. C'est pour ça que le défaut est « par section », et c'est aussi pour ça qu'on peut préférer tout faire au début : un seul passage devant le plan de travail, et plus rien à préparer pendant qu'une étape tourne.
 
 :::note[Un intermédiaire se pèse là où il sert]
 Un intermédiaire comme `&pâte` coûte une minute de mise en place, comme n'importe quel ingrédient : il faut bien le peser. Cette minute est comptée dans la section qui l'**utilise** (ici, le montage), pas dans celle qui le fabrique.

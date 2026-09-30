@@ -80,24 +80,26 @@ The mise en place of a section (gathering and preparing its ingredients and cook
 ```gram
 ## Dough ->&dough
 
-Mix @flour{500g} and @water{300ml} in a #bowl.
+[Mix] @flour{500g} and @water{300ml} in a #bowl.
 
 [Rest] Let the dough rest ~_{2h}.
 
 ## Filling ->&filling
 
-Cook @onions{200g}(finely sliced) in a #pan.
+[Cook] The @onions{200g}(finely sliced) in a #pan.
 
 ## Assembly
 
-Spread &filling over &dough, then bake for ~{25min}.
+[Spread] The &filling over &dough.
+
+[Bake] For ~{25min}.
 ```
 
 Planned **by section** (the default), each preparation happens right before its section. The filling's and the assembly's mise en place slide into the dough's two hours of rest, when your hands are free anyway:
 
 ```mermaid
 gantt
-    title Mise en place by section (2h30)
+    title Mise en place by section (2h32)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -110,14 +112,15 @@ gantt
     Cook                              : active, a2, 02:01, 2m
     section Assembly
     Mise en place                     : p3, 02:03, 2m
-    Assemble and bake                 : active, a3, 02:05, 25m
+    Spread                            : active, a3, 02:05, 2m
+    Bake                              : active, a4, 02:07, 25m
 ```
 
 Planned **all at the start**, every preparation comes first, and the cooking only begins once they are done:
 
 ```mermaid
 gantt
-    title Mise en place all at the start (2h36)
+    title Mise en place all at the start (2h38)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -131,10 +134,11 @@ gantt
     section Filling
     Cook                              : active, a2, 02:09, 2m
     section Assembly
-    Assemble and bake                 : active, a3, 02:11, 25m
+    Spread                            : active, a3, 02:11, 2m
+    Bake                              : active, a4, 02:13, 25m
 ```
 
-The two plans describe the same recipe. Only the timeline differs, by the six minutes of preparation that no longer fit into the rest. That is why the default is by section, and why you might still prefer everything at the start: it is one sitting at the counter, and nothing is left to prepare while a step is running.
+The two plans describe the same recipe. Only the timeline differs, by the six minutes of preparation (the filling's four and the assembly's two) that no longer fit into the rest. That is why the default is by section, and why you might still prefer everything at the start: it is one sitting at the counter, and nothing is left to prepare while a step is running.
 
 :::note[Intermediates are weighed where they are used]
 An intermediate such as `&dough` costs one minute of mise en place, like any other ingredient: you still weigh it out. That minute is counted in the section that **uses** it (here, the assembly), not in the one that makes it.
