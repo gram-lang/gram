@@ -39,7 +39,7 @@ import type {
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import { resolveTimeUnit } from "@gram-lang/i18n";
-import { WarningCode, pushWarning } from "./warnings";
+import { type Warning, WarningCode, pushWarning } from "./warnings";
 import { detectIntermediateCycles } from "./graph";
 import {
 	scheduleALAP,
@@ -950,13 +950,16 @@ export function processSections(
 
 	// A contention that only exists in the default (per-section) timeline must
 	// not be hidden: add its warnings to the official ones, skipping any the
-	// legacy pass already raised (same code + message).
+	// legacy pass already raised. A time paradox is one problem however the
+	// timeline is laid out, but its message embeds a timeline-dependent instant,
+	// so it is matched on where it sits in the source instead.
+	const sameWarning = (a: Warning, b: Warning) =>
+		a.code === b.code &&
+		(a.code === WarningCode.TIME_PARADOX && a.loc
+			? JSON.stringify(a.loc) === JSON.stringify(b.loc)
+			: a.message === b.message);
 	for (const w of perSection.warnings) {
-		if (
-			!registry.warnings.some(
-				(o) => o.code === w.code && o.message === w.message,
-			)
-		) {
+		if (!registry.warnings.some((o) => sameWarning(o, w))) {
 			registry.warnings.push(w);
 		}
 	}

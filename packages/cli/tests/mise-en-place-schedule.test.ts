@@ -80,6 +80,22 @@ describe("passiveTimers", () => {
 		]);
 	});
 
+	it("keeps the order the timers are written in the step, not the schedule's", () => {
+		const two = compile(
+			getAST(
+				"## A\n\n[Bake] Put in ~_oven{30min} then rest ~_{10min}.\n\n[Cool] Cool ~_{5min} then ~_fridge{20min}.\n",
+			),
+		);
+		expect(passiveTimers(two, 0, 0)).toEqual([
+			{ name: "oven", duration: 30 },
+			{ name: undefined, duration: 10 },
+		]);
+		expect(passiveTimers(two, 0, 1)).toEqual([
+			{ name: undefined, duration: 5 },
+			{ name: "fridge", duration: 20 },
+		]);
+	});
+
 	it("returns nothing for a step without a background timer", () => {
 		expect(passiveTimers(compiled, 0, 0)).toEqual([]);
 		expect(passiveTimers(compiled, 5, 0)).toEqual([]);

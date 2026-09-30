@@ -126,8 +126,8 @@ export interface RendererOptions {
 	/**
 	 * Which timeline to follow: mise en place right before each section
 	 * (`"perSection"`, the default) or all of it at the start (`"upfront"`).
-	 * Drives the total/idle times, the per-section badge and the up-front
-	 * "Mise en place" block.
+	 * Drives the total and idle times, and whether each section shows its own
+	 * "Mise en place" label (`"perSection"` only).
 	 */
 	schedule?: ScheduleMode;
 	bakersMathOnly?: boolean;

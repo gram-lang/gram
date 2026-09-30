@@ -1112,6 +1112,30 @@ flex-direction: column;
   background: var(--color-bg);
 }
 
+/* The label hugs the box's left edge: anchor its tooltip there instead of centring it, or the start is cut off. */
+.gram-preview .section-prep[data-tooltip]::after,
+.gram-preview .section-prep [data-tooltip]::after {
+  left: 0;
+  transform: translateY(-2px);
+  text-align: left;
+}
+
+.gram-preview .section-prep[data-tooltip]:hover::after,
+.gram-preview .section-prep [data-tooltip]:hover::after {
+  transform: translateY(-8px);
+}
+
+.gram-preview .section-prep[data-tooltip]::before,
+.gram-preview .section-prep [data-tooltip]::before {
+  left: 12px;
+  transform: translateY(2px);
+}
+
+.gram-preview .section-prep[data-tooltip]:hover::before,
+.gram-preview .section-prep [data-tooltip]:hover::before {
+  transform: translateY(-3px);
+}
+
 .gram-preview .section-meta-module {
   font-size: 0.6em;
   color: var(--color-text-muted);
