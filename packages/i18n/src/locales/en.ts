@@ -37,6 +37,8 @@ export const en = {
 		breakdownPassive: "Passive",
 		breakdownTimer: "Timer",
 		breakdownPrep: "Preparation",
+		// What separates a label from its value: no space before the colon in English.
+		colon: ": ",
 		standardizedMass: "Standardized mass",
 		quantity: "Quantity",
 		intermediateIngredient: "Intermediate Ingredient",
