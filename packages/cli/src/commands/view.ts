@@ -11,6 +11,10 @@ import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import {
+	MISE_EN_PLACE_FLAG_DESCRIPTION,
+	parseMiseEnPlace,
+} from "../services/mise-en-place-flag";
+import {
 	NUTRITION_BASIS_FLAG_DESCRIPTION,
 	parseNutritionBasis,
 } from "../services/nutrition-basis";
@@ -64,6 +68,10 @@ export default defineCommand({
 			type: "string",
 			description: NUTRITION_BASIS_FLAG_DESCRIPTION,
 		},
+		"mise-en-place": {
+			type: "string",
+			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
+		},
 		stock: {
 			type: "string",
 			description:
@@ -91,6 +99,7 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
+		const schedule = parseMiseEnPlace(args["mise-en-place"]);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let model;
@@ -101,6 +110,7 @@ export default defineCommand({
 				bakersReference,
 				bakersMathOnly,
 				nutritionBasis,
+				schedule,
 				lang: config.language,
 				paths: config.paths,
 				stock,

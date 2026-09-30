@@ -14,6 +14,7 @@ import {
 } from "../services/scaler";
 import { renderScaleResult } from "../ui/scaler";
 import { ExitCode, reportError } from "../errors";
+import { scheduleOf } from "../core/schedule";
 
 export default defineCommand({
 	meta: {
@@ -99,7 +100,10 @@ export default defineCommand({
 				original.shopping_list,
 				scaled.shopping_list,
 			);
-			const warnings = getScaleWarnings(factor, original.metrics.totalTime);
+			const warnings = getScaleWarnings(
+				factor,
+				scheduleOf(original, "perSection")?.totalTime ?? 0,
+			);
 			renderScaleResult(original.title, factor, items, warnings);
 		} catch (err) {
 			s.stop("Failed.");

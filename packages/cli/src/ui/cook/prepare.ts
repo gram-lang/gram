@@ -4,6 +4,7 @@ import {
 	aggregateSectionIngredients,
 } from "@gram-lang/kitchen";
 import { splitDuration } from "../../core/format";
+import { passiveTimers } from "../../core/schedule";
 import type { RecipeData, FlatStep, CookTimer } from "./types";
 
 // Shared quantity formatter: preserves fraction text ('1/2', '2/3') and adds space before unit
@@ -45,24 +46,26 @@ function quantityToMs(qty: any): number {
 }
 
 function extractTimers(
+	compiled: CompilationResult,
 	step: any,
 	sectionIdx: number,
 	stepIdx: number,
+	// The step's index in `sections[].steps` (comments included), which is
+	// what the schedule blocks use — `stepIdx` counts only the cook's steps.
+	sourceStepIdx: number,
 ): CookTimer[] {
 	const timers: CookTimer[] = [];
 	const seen = new Set<string>();
 
-	// 1. backgroundTasks (async timers ~_name{})
-	if (Array.isArray(step.backgroundTasks)) {
-		step.backgroundTasks.forEach((t: any, i: number) => {
-			const id = `${sectionIdx}-${stepIdx}-bg-${i}`;
-			const name = t.name ?? `Timer step ${stepIdx + 1}`;
-			if (!seen.has(name)) {
-				seen.add(name);
-				timers.push({ id, name, durationMs: (t.duration ?? 0) * 60 * 1000 });
-			}
-		});
-	}
+	// 1. background timers (async, ~_name{}) — read from the schedule blocks
+	passiveTimers(compiled, sectionIdx, sourceStepIdx).forEach((t, i) => {
+		const id = `${sectionIdx}-${stepIdx}-bg-${i}`;
+		const name = t.name ?? `Timer step ${stepIdx + 1}`;
+		if (!seen.has(name)) {
+			seen.add(name);
+			timers.push({ id, name, durationMs: t.duration * 60 * 1000 });
+		}
+	});
 
 	// 2. inline timer tokens in content (~name{})
 	if (Array.isArray(step.content)) {
@@ -109,7 +112,13 @@ export function prepareRecipeData(
 						compiled.registry.ingredients[ing.id]?.name ?? ing.name ?? ing.id,
 				})),
 				step,
-				timers: extractTimers(step, sectionIdx, globalIndex),
+				timers: extractTimers(
+					compiled,
+					step,
+					sectionIdx,
+					globalIndex,
+					(section.steps ?? []).indexOf(step),
+				),
 			});
 			globalIndex++;
 		});
