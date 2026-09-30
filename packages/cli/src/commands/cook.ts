@@ -4,7 +4,7 @@ import { PassThrough } from "node:stream";
 import { log, spinner } from "@clack/prompts";
 import chalk from "chalk";
 import { render } from "ink";
-import { scheduleFor } from "@gram-lang/kitchen";
+import { scheduleTimes } from "@gram-lang/kitchen";
 import React from "react";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
@@ -80,7 +80,7 @@ export default defineCommand({
 				paths: config.paths,
 				stock,
 			});
-			totalTime = scheduleFor(compiled)?.totalTime ?? 0;
+			totalTime = scheduleTimes(compiled).totalTime;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")
