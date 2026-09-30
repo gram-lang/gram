@@ -36,30 +36,38 @@ interface Labels {
 	ingredientsOverhead: string;
 	cookwareOverhead: string;
 	breakdownPrep: string;
+	colon: string;
 }
 
 /**
  * Plain-text (not escaped) description of one line of a section's mise en
  * place — callers escape it for their own output format. Names come from the
  * registry, never from a parsed label.
+ *
+ * A preparation says how long it takes unless `showDuration` is false, for the
+ * callers that print the duration in a column of their own.
  */
 export function describeMiseEnPlaceItem(
 	item: MiseEnPlaceItem,
 	registry: RenderableCompilationResult["registry"] | undefined,
 	labels: Labels,
 	formatDuration: (minutes: number) => string,
+	{ showDuration = true }: { showDuration?: boolean } = {},
 ): string {
 	if (item.kind === "gather") {
 		const label =
 			item.target === "ingredient"
 				? labels.ingredientsOverhead
 				: labels.cookwareOverhead;
-		return `${label} (${item.count} × 1min)`;
+		return `${label} (${item.count} × ${formatDuration(item.duration / item.count)})`;
 	}
 	const entry =
 		item.ref.type === "cookware"
 			? registry?.cookware?.[item.ref.id]
 			: registry?.ingredients?.[item.ref.id];
 	const name = entry?.name ?? item.ref.id;
-	return `${labels.breakdownPrep} : ${name} (+ ${formatDuration(item.duration)})`;
+	const prepared = `${labels.breakdownPrep}${labels.colon}${name}`;
+	return showDuration
+		? `${prepared} (+ ${formatDuration(item.duration)})`
+		: prepared;
 }

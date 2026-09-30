@@ -266,3 +266,35 @@ function fmt(minutes: number): string {
 	if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
 	return `${m}m`;
 }
+
+describe("mise en place wording", () => {
+	// The preparation card lists each line with its duration in a column of its
+	// own; the tooltips that have no such column spell it out.
+	it("does not give a preparation's duration twice on the preparation card", () => {
+		const html = toHTML(compiled);
+		expect(html).toContain('timing-detail-type">Preparation: onions</span>');
+		expect(html).not.toContain('timing-detail-type">Preparation: onions (+');
+	});
+
+	it("still gives it where there is no column, in the Gantt block's tooltip", () => {
+		const tooltips = toGanttHTML(compiled).match(/data-tooltip="[^"]*"/g) ?? [];
+		expect(tooltips.some((t) => t.includes("Preparation: onions (+ 2m)"))).toBe(
+			true,
+		);
+	});
+
+	it("puts no space before the colon in English, one in French", () => {
+		const en = toHTML(compiled, { lang: "en" });
+		const fr = toHTML(compiled, { lang: "fr" });
+		expect(en).toContain("Mise en place for this section: ");
+		expect(fr).toContain("Mise en place de cette section : ");
+		expect(fr).toContain("Préparation : ");
+		expect(en).not.toContain("Preparation : ");
+	});
+
+	it("writes the gathering unit with the caller's duration format", () => {
+		const html = toHTML(compiled, { formatDuration: (m) => `${m} min` });
+		expect(html).toContain("(2 × 1 min)");
+		expect(html).not.toContain("× 1min");
+	});
+});

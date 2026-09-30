@@ -40,6 +40,8 @@ export const fr: GramLocale = {
 		breakdownPassive: "Passif",
 		breakdownTimer: "Minuteur",
 		breakdownPrep: "Préparation",
+		// What separates a label from its value: a space before the colon in French.
+		colon: " : ",
 		standardizedMass: "Masse standardisée",
 		quantity: "Quantité",
 		intermediateIngredient: "Ingrédient intermédiaire",

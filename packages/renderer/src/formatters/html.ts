@@ -148,6 +148,7 @@ const htmlBackend: RenderBackend = {
 										data.registry,
 										t.renderer,
 										formatDuration,
+										{ showDuration: false },
 									),
 								)}</span>`,
 								item.duration,
@@ -404,7 +405,7 @@ const htmlBackend: RenderBackend = {
 						describeMiseEnPlaceItem(item, data.registry, t.renderer, fmt),
 					)
 					.join(" · ");
-				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip} : ${fmt(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
+				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip}${t.renderer.colon}${fmt(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
 			}
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
