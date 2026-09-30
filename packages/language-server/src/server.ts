@@ -34,21 +34,14 @@ import {
 } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
-import {
-	DEFAULT_MISE_EN_PLACE,
-	parseMiseEnPlaceSetting,
-} from "./utils/mise-en-place-setting";
+import { parseMiseEnPlaceSetting } from "./utils/mise-en-place-setting";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
-import {
-	toHTML,
-	toGanttHTML,
-	escapeHtml,
-	type ScheduleMode,
-} from "@gram-lang/renderer";
+import { toHTML, toGanttHTML, escapeHtml } from "@gram-lang/renderer";
+import { DEFAULT_SCHEDULE_MODE, type ScheduleMode } from "@gram-lang/kitchen";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -159,7 +152,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 // `gram.miseEnPlace`: which timeline the preview, the Gantt and the title hint
 // follow. Read once at start and again whenever the settings change.
-let miseEnPlace: ScheduleMode = DEFAULT_MISE_EN_PLACE;
+let miseEnPlace: ScheduleMode = DEFAULT_SCHEDULE_MODE;
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the default.

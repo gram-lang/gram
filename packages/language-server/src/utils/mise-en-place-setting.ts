@@ -1,7 +1,8 @@
-import type { ScheduleMode } from "@gram-lang/renderer";
-
-/** Preparation right before each section, unless the reader picks otherwise. */
-export const DEFAULT_MISE_EN_PLACE: ScheduleMode = "perSection";
+import {
+	DEFAULT_SCHEDULE_MODE,
+	type ScheduleMode,
+	isScheduleMode,
+} from "@gram-lang/kitchen";
 
 /**
  * Reads `gram.miseEnPlace` out of whatever `getConfiguration("gram")` hands
@@ -12,7 +13,5 @@ export const DEFAULT_MISE_EN_PLACE: ScheduleMode = "perSection";
 export function parseMiseEnPlaceSetting(config: unknown): ScheduleMode {
 	const value = (config as { miseEnPlace?: unknown } | null | undefined)
 		?.miseEnPlace;
-	return value === "upfront" || value === "perSection"
-		? value
-		: DEFAULT_MISE_EN_PLACE;
+	return isScheduleMode(value) ? value : DEFAULT_SCHEDULE_MODE;
 }
