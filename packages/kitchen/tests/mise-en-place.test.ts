@@ -166,4 +166,43 @@ Spread &filling{100g} over &dough{200g}.
 		]);
 		expect(onStep).toEqual(onSection);
 	});
+
+	describe("names shared between kinds of usage", () => {
+		const mise = (src: string) => compile(getAST(src)).miseEnPlace;
+		const gather = (
+			entries: ReturnType<typeof mise>,
+			section: number,
+			target: "ingredient" | "cookware",
+		) =>
+			entries
+				.find((m) => m.section === section)
+				?.items.find((i) => i.kind === "gather" && i.target === target);
+
+		it("does not let a piece of cookware own an ingredient of the same name", () => {
+			const entries = mise(
+				"## A\n\nGrease the #moule.\n\n## B\n\nAdd @moule{1}.\n",
+			);
+			expect(gather(entries, 0, "cookware")).toMatchObject({ count: 1 });
+			expect(gather(entries, 0, "ingredient")).toBeUndefined();
+			expect(gather(entries, 1, "ingredient")).toMatchObject({ count: 1 });
+		});
+
+		it("labels a preparation by what it sits on, and keeps the two apart", () => {
+			const [entry] = mise(
+				"## A\n\nGrease the #moule{}(buttered) and add @moule{1}(sifted).\n",
+			);
+			const prepared = (entry?.items ?? [])
+				.flatMap((i) => (i.kind === "prepare" ? [i.ref.type] : []))
+				.sort();
+			expect(prepared).toEqual(["cookware", "ingredient"]);
+		});
+
+		it("does not read the group of an alternative as an ingredient called `alternative`", () => {
+			const entries = mise(
+				"## A\n\nUse @butter{1}|@oil{1}.\n\n## B\n\nAdd @alternative{1}.\n",
+			);
+			expect(gather(entries, 0, "ingredient")).toMatchObject({ count: 2 });
+			expect(gather(entries, 1, "ingredient")).toMatchObject({ count: 1 });
+		});
+	});
 });

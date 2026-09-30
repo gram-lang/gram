@@ -14,11 +14,12 @@ import { addToBreakdown, slugify } from "./utils";
 // ingredient reference in the compiled output is (shopping list, section lists).
 const countPrep = (
 	item: StepToken | undefined,
-): { duration: number; id?: string } => {
+): { duration: number; id?: string; usageId?: string } => {
 	let localTime = 0;
 	if (!item || typeof item === "string") return { duration: 0 };
 
 	let itemId = "id" in item ? item.id : undefined;
+	let usageId = "_usageId" in item ? item._usageId : undefined;
 
 	const options = "options" in item ? item.options : undefined;
 	if (options && Array.isArray(options)) {
@@ -29,6 +30,7 @@ const countPrep = (
 			if (res.duration > maxOpt) {
 				maxOpt = res.duration;
 				if (res.id) itemId = res.id;
+				usageId = res.usageId;
 			}
 		});
 		localTime += maxOpt;
@@ -46,19 +48,42 @@ const countPrep = (
 		localTime += 2;
 	}
 
-	return { duration: localTime, id: itemId };
+	return { duration: localTime, id: itemId, usageId };
+};
+
+// The `_usageId`s of a section's usages, options of alternatives included.
+// An ingredient and a piece of cookware read the same in a step's text (`#moule`
+// and `@moule` are both `{ id: "moule" }`); the section's `ingredients` and
+// `cookware` lists, whose entries share those `_usageId`s, tell them apart.
+const usageIdsOf = (usages: Usage[], out = new Set<string>()): Set<string> => {
+	for (const u of usages) {
+		if (u._usageId) out.add(u._usageId);
+		if (Array.isArray(u.options)) usageIdsOf(u.options as Usage[], out);
+	}
+	return out;
 };
 
 // Ids a usage touches: itself, every option of an alternative, and the parent
 // of a composite (resolved through the same slugify the registry uses).
-const collectUsageIds = (usage: Usage | StepToken, out: Set<string>): void => {
+// Usages listed in `skip` (by `_usageId`) are left out. The group of an
+// alternative (`a|b`) carries a generic id of its own, which is no registry
+// entry: only its options count.
+const collectUsageIds = (
+	usage: Usage | StepToken,
+	out: Set<string>,
+	skip?: Set<string>,
+): void => {
 	if (!usage || typeof usage === "string" || !("id" in usage)) return;
-	if (usage.id) out.add(usage.id);
+	if ("_usageId" in usage && usage._usageId && skip?.has(usage._usageId)) {
+		return;
+	}
+	const isAlternative = "options" in usage && Array.isArray(usage.options);
+	if (usage.id && !isAlternative) out.add(usage.id);
 	if ("composite" in usage && usage.composite?.parent) {
 		out.add(slugify(usage.composite.parent));
 	}
 	if ("options" in usage && Array.isArray(usage.options)) {
-		for (const opt of usage.options) collectUsageIds(opt, out);
+		for (const opt of usage.options) collectUsageIds(opt, out, skip);
 	}
 };
 
@@ -108,11 +133,14 @@ export function computeMiseEnPlace(
 	});
 
 	sections.forEach((sec, idx) => {
+		const cookwareUsages = usageIdsOf(sec.cookware);
 		const touched = new Set<string>();
 		for (const u of sec.ingredients) collectUsageIds(u, touched);
 		for (const step of sec.steps) {
 			if (step.type === "step") {
-				for (const c of step.content) collectUsageIds(c, touched);
+				for (const c of step.content) {
+					collectUsageIds(c, touched, cookwareUsages);
+				}
 			}
 		}
 		for (const id of touched) {
@@ -173,23 +201,36 @@ export function computeMiseEnPlace(
 			});
 		}
 
-		const prepared = new Map<string, number>();
+		const cookwareUsages = usageIdsOf(sec.cookware);
+		const prepared = new Map<
+			string,
+			{ type: "ingredient" | "cookware"; id: string; duration: number }
+		>();
 		for (const step of sec.steps) {
 			if (step.type !== "step" || !step.content) continue;
 			for (const c of step.content) {
 				const prep = countPrep(c);
-				if (prep.duration > 0 && prep.id) {
-					prepared.set(prep.id, (prepared.get(prep.id) ?? 0) + prep.duration);
-				}
+				if (prep.duration <= 0 || !prep.id) continue;
+				// A preparation can sit on cookware too (e.g. a greased pan). The
+				// section's cookware list says so; the registry is only the
+				// fallback for a usage without an id, and an ingredient and a
+				// piece of cookware sharing a name stay two separate entries.
+				const type =
+					prep.usageId !== undefined
+						? cookwareUsages.has(prep.usageId)
+							? "cookware"
+							: "ingredient"
+						: !registry.ingredients.has(prep.id) &&
+								registry.cookware.has(prep.id)
+							? "cookware"
+							: "ingredient";
+				const key = `${type}:${prep.id}`;
+				const entry = prepared.get(key);
+				if (entry) entry.duration += prep.duration;
+				else prepared.set(key, { type, id: prep.id, duration: prep.duration });
 			}
 		}
-		for (const [id, duration] of prepared) {
-			// A preparation can sit on cookware too (e.g. a greased pan): the
-			// step token doesn't say which, so the registry does.
-			const type =
-				!registry.ingredients.has(id) && registry.cookware.has(id)
-					? "cookware"
-					: "ingredient";
+		for (const { type, id, duration } of prepared.values()) {
 			items.push({ kind: "prepare", ref: { type, id }, duration });
 		}
 
