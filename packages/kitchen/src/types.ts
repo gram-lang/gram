@@ -7,6 +7,7 @@ import type {
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
+import type { ScheduleMode } from "./schedule-mode";
 
 // The compiled-JSON shape kept on a Usage for its composite-child info
 // (`@juice{150ml}<@lemon{1}`) — deliberately narrower than the parser's
@@ -289,5 +290,5 @@ export interface CompilationResult {
 	 * Two complete timelines: preparation right before each section
 	 * (`perSection`), or all of it at the start (`upfront`).
 	 */
-	schedules: { perSection: Schedule; upfront: Schedule };
+	schedules: Record<ScheduleMode, Schedule>;
 }
