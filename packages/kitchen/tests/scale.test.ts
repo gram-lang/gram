@@ -365,6 +365,36 @@ Heat @=oil{50ml} in a pan.
 			);
 		});
 
+		// Same class of bug again (audit C1): a reference to an intermediate that
+		// quotes a quantity (`&mix{100g}`) is a step token with `type: "reference"`,
+		// which the step-content walk skipped: `applyScale` left it at 100 where
+		// `compile({ scaleFactor: 2 })` gave 200.
+		it("scales the quantity quoted by a reference to an intermediate the same way", () => {
+			const source =
+				"## Dough ->&mix\n\nMix @flour{100g}.\n\n## Bake\n\nUse &mix{100g}.\n";
+			const viaCompile = compile(getAST(source), { scaleFactor: 2 });
+			const viaApplyScale = applyScale(compile(getAST(source)), 2);
+
+			const quoted = (result: typeof viaCompile) => {
+				const step = result.sections[1]?.steps[0];
+				const token =
+					step?.type === "step"
+						? step.content.find(
+								(t) =>
+									typeof t === "object" &&
+									"type" in t &&
+									t.type === "reference",
+							)
+						: undefined;
+				return token && typeof token === "object" && "qty" in token
+					? token.qty
+					: undefined;
+			};
+			expect(quoted(viaCompile)).toBe(200);
+			expect(quoted(viaApplyScale)).toBe(200);
+			expect(viaApplyScale).toEqual(viaCompile);
+		});
+
 		it("produces the same full result through both entry points for a mixed ingredient/cookware recipe", () => {
 			const ast = getAST(cookwareSource);
 			const viaCompile = compile(ast, { scaleFactor: 3 });
