@@ -9,7 +9,7 @@ interface SelfTestCase {
 	good: string;
 }
 
-// Hand-transcribed from packages/docs/src/reference/syntax/ai-generation-notes.md's
+// Hand-transcribed from the EN reference/syntax/ai-generation-notes page's
 // ❌/✅ pairs (EN). The doc's own formatting (some fences hold two unrelated
 // pairs, some interleave prose comments) is too irregular for a generic
 // parser to be worth building for ~12 rarely-changing categories — see
@@ -100,7 +100,7 @@ export function extractSelfTestSnippets(): {
 		bad.push({
 			id: `self-test:${c.label}:bad`,
 			sourceKind: "self-test-bad",
-			file: "packages/docs/src/reference/syntax/ai-generation-notes.md",
+			file: AI_GENERATION_NOTES_FILES[0] ?? "ai-generation-notes",
 			label: c.label,
 			content: c.bad,
 			expectation: "unclear", // some ❌ examples are hard parse errors, some are semantic
@@ -108,7 +108,7 @@ export function extractSelfTestSnippets(): {
 		good.push({
 			id: `self-test:${c.label}:good`,
 			sourceKind: "self-test-good",
-			file: "packages/docs/src/reference/syntax/ai-generation-notes.md",
+			file: AI_GENERATION_NOTES_FILES[0] ?? "ai-generation-notes",
 			label: c.label,
 			content: c.good,
 			expectation: "must-parse",
@@ -124,7 +124,7 @@ export function extractSelfTestSnippets(): {
 			const liveCount = (text.match(/❌/g) ?? []).length;
 			if (liveCount !== EXPECTED_BAD_GLYPH_COUNT) {
 				staleness =
-					`ai-generation-notes.md now has ${liveCount} "❌" glyphs, expected ${EXPECTED_BAD_GLYPH_COUNT} ` +
+					`ai-generation-notes now has ${liveCount} "❌" glyphs, expected ${EXPECTED_BAD_GLYPH_COUNT} ` +
 					`— the doc may have gained/lost a mistake example; check whether self-test-cases.ts needs updating.`;
 			}
 		}

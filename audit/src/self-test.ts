@@ -5,7 +5,7 @@ import { checkFormatDiff } from "./checks/format-diff";
 import { checkWarnings } from "./checks/warnings";
 import type { Finding } from "./types";
 
-// Runs checks 1-4 against every ai-generation-notes.md ❌/✅ pair. This
+// Runs checks 1-4 against every ai-generation-notes ❌/✅ pair. This
 // validates the AUDIT TOOL's own coverage, not new content: a ❌ example that
 // trips zero checks is a gap in the tool (it can't catch a known mistake); a
 // ✅ example that trips any check is a false positive on doc-sanctioned Gram.

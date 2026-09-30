@@ -40,11 +40,13 @@ function extractFences(text: string): Fence[] {
 	return fences;
 }
 
+const isDocPage = (name: string) => name.endsWith(".md") || name.endsWith(".mdx");
+
 function walkMarkdownFiles(root: string): string[] {
 	const absRoot = join(REPO_ROOT, root);
 	if (!existsSync(absRoot)) return [];
 	const stat = statSync(absRoot);
-	if (stat.isFile()) return absRoot.endsWith(".md") ? [absRoot] : [];
+	if (stat.isFile()) return isDocPage(absRoot) ? [absRoot] : [];
 
 	const results: string[] = [];
 	const stack = [absRoot];
@@ -56,7 +58,7 @@ function walkMarkdownFiles(root: string): string[] {
 			if (entry.isDirectory()) {
 				if (DOCS_EXCLUDE_DIRS.some((excluded) => full.includes(excluded))) continue;
 				stack.push(full);
-			} else if (entry.name.endsWith(".md")) {
+			} else if (isDocPage(entry.name)) {
 				results.push(full);
 			}
 		}
@@ -64,8 +66,8 @@ function walkMarkdownFiles(root: string): string[] {
 	return results;
 }
 
-// Trusted-corpus fences (reference/syntax/*.md, EN+FR, excluding
-// ai-generation-notes.md which is handled by extract/self-test-cases.ts) —
+// Trusted-corpus fences (reference/syntax pages, EN+FR, excluding
+// ai-generation-notes, which is handled by extract/self-test-cases.ts) —
 // the known-good vocabulary source for checks/vocabulary + calibration.
 export function extractTrustedCorpusFences(): Snippet[] {
 	return extractFromFileList(TRUSTED_SYNTAX_FILES, "trusted-corpus");
@@ -93,7 +95,7 @@ function extractFromFileList(relFiles: string[], sourceKind: SourceKind): Snippe
 
 // Every other ```gram fence in the docs (+ root README.md) — audit targets,
 // not trust sources. Anything already claimed by the trusted corpus or the
-// ai-generation-notes.md self-test set is skipped so it isn't double-counted.
+// ai-generation-notes self-test set is skipped so it isn't double-counted.
 export function extractNonTrustedDocsFences(): Snippet[] {
 	const excluded = new Set([...TRUSTED_SYNTAX_FILES, ...AI_GENERATION_NOTES_FILES]);
 	const snippets: Snippet[] = [];
