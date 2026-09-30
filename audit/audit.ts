@@ -3,7 +3,7 @@
  * Gram content audit. Triages every piece of Gram source embedded in the
  * repo (test fixtures, inline getAST()/parseDocument()/formatGram() calls,
  * docs examples, conformance cases) against a trusted vocabulary built from
- * the human-verified packages/docs/src/{,fr/}reference/syntax/*.md corpus,
+ * the human-verified reference/syntax pages (EN+FR) of the docs,
  * so manual review only has to cover what's flagged below.
  *
  * Usage:
@@ -18,7 +18,7 @@ import { calibrateFormatter, checkFormatDiff } from "./src/checks/format-diff";
 import { checkParse } from "./src/checks/parse";
 import { buildTrustedVocabulary, checkConstructVocabulary } from "./src/checks/construct-vocabulary";
 import { checkWarnings } from "./src/checks/warnings";
-import { REPO_ROOT } from "./src/config";
+import { missingConfiguredPaths, REPO_ROOT } from "./src/config";
 import { extractConformanceCases, extractPhysicalFixtures } from "./src/extract/fixtures";
 import { extractInlineTestLiterals } from "./src/extract/inline-tests";
 import { extractNonTrustedDocsFences, extractTrustedCorpusFences } from "./src/extract/markdown-fences";
@@ -36,6 +36,16 @@ function matchesFilter(snippet: Snippet): boolean {
 	return filters.some(
 		(f) => snippet.file.includes(f) || (snippet.label?.includes(f) ?? false),
 	);
+}
+
+// 0. The paths this tool is configured with must exist. Without the check, a
+// moved docs folder leaves it running on an empty trusted corpus.
+const missing = missingConfiguredPaths();
+if (missing.length > 0) {
+	console.error(
+		`audit: ${missing.length} configured path(s) not found (audit/src/config.ts is out of date):\n${missing.map((p) => `  - ${p}`).join("\n")}`,
+	);
+	process.exit(1);
 }
 
 // 1. Extraction

@@ -1,8 +1,8 @@
 export type SourceKind =
-	| "trusted-corpus" // reference/syntax/*.md (EN+FR) ✅ fences — known-good vocabulary
-	| "self-test-bad" // ai-generation-notes.md ❌ examples — must be caught by the checks
-	| "self-test-good" // ai-generation-notes.md ✅ examples — must NOT be flagged
-	| "physical-fixture" // packages/*/tests/fixtures/**/*.gram + docs/src/public/examples/*.gram
+	| "trusted-corpus" // reference/syntax pages (EN+FR) ✅ fences — known-good vocabulary
+	| "self-test-bad" // ai-generation-notes ❌ examples — must be caught by the checks
+	| "self-test-good" // ai-generation-notes ✅ examples — must NOT be flagged
+	| "physical-fixture" // packages/*/tests/fixtures/**/*.gram + docs/public/examples/*.gram
 	| "conformance-case" // conformance/cases/*/input.gram
 	| "inline-test-literal" // getAST(...) / parseDocument(...) / formatGram(...) string args
 	| "inline-test-tmpfile" // writeFile(...)/writeFileSync(...) gram-looking content in tests

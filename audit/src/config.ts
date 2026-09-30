@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,8 +9,24 @@ export const REPO_ROOT = join(
 	"..",
 );
 
-const SYNTAX_DIR_EN = "packages/docs/src/reference/syntax";
-const SYNTAX_DIR_FR = "packages/docs/src/fr/reference/syntax";
+// The Astro/Starlight content collection: `docs/` is English, `fr/docs/` French.
+const DOCS_CONTENT_EN = "packages/docs/src/content/docs/docs";
+const DOCS_CONTENT_FR = "packages/docs/src/content/docs/fr/docs";
+const SYNTAX_DIR_EN = `${DOCS_CONTENT_EN}/reference/syntax`;
+const SYNTAX_DIR_FR = `${DOCS_CONTENT_FR}/reference/syntax`;
+
+// A page is `.md` or `.mdx` depending on whether it needs components; the
+// same page keeps the same extension in both languages, but nothing here
+// should depend on that. A page found in neither form is a hard error (see
+// `missingConfiguredPaths`): silently skipping it is how this tool once kept
+// running for weeks on an empty trusted corpus.
+const docPage = (dir: string, name: string): string => {
+	for (const ext of [".md", ".mdx"]) {
+		const candidate = join(dir, `${name}${ext}`);
+		if (existsSync(join(REPO_ROOT, candidate))) return candidate;
+	}
+	return join(dir, `${name}.md`);
+};
 
 // The trusted vocabulary corpus: syntax reference pages the project owner has
 // personally re-read and validated repeatedly (both locales — confirmed
@@ -17,20 +34,23 @@ const SYNTAX_DIR_FR = "packages/docs/src/fr/reference/syntax";
 // excluded here because its ❌/✅ pairs are handled separately as a self-test
 // fixture set (see extract/self-test-cases.ts), not as plain trusted fences.
 export const TRUSTED_SYNTAX_FILES: string[] = [
-	"cheatsheet.md",
-	"composite-ingredients.md",
-	"cookware.md",
-	"document-structure.md",
-	"ingredients.md",
-	"intermediate-variables.md",
-	"relative-quantities.md",
-	"temperatures.md",
-	"times.md",
-].flatMap((name) => [join(SYNTAX_DIR_EN, name), join(SYNTAX_DIR_FR, name)]);
+	"cheatsheet",
+	"composite-ingredients",
+	"cookware",
+	"document-structure",
+	"ingredients",
+	"intermediate-variables",
+	"relative-quantities",
+	"temperatures",
+	"times",
+].flatMap((name) => [
+	docPage(SYNTAX_DIR_EN, name),
+	docPage(SYNTAX_DIR_FR, name),
+]);
 
 export const AI_GENERATION_NOTES_FILES: string[] = [
-	join(SYNTAX_DIR_EN, "ai-generation-notes.md"),
-	join(SYNTAX_DIR_FR, "ai-generation-notes.md"),
+	docPage(SYNTAX_DIR_EN, "ai-generation-notes"),
+	docPage(SYNTAX_DIR_FR, "ai-generation-notes"),
 ];
 
 // Narrative/tutorial doc directories (EN+FR) build up one continuous recipe
@@ -42,10 +62,10 @@ export const AI_GENERATION_NOTES_FILES: string[] = [
 // positives (e.g. UNDEFINED_REFERENCE for something declared in an earlier
 // fence), so the warnings check is skipped for fences under these roots.
 export const NARRATIVE_DOC_DIRS: string[] = [
-	"packages/docs/src/tutorials",
-	"packages/docs/src/fr/tutorials",
-	"packages/docs/src/how-to",
-	"packages/docs/src/fr/how-to",
+	`${DOCS_CONTENT_EN}/tutorials`,
+	`${DOCS_CONTENT_FR}/tutorials`,
+	`${DOCS_CONTENT_EN}/how-to`,
+	`${DOCS_CONTENT_FR}/how-to`,
 ];
 
 // Everything under here is scanned for ```gram fences; anything already in
@@ -53,17 +73,17 @@ export const NARRATIVE_DOC_DIRS: string[] = [
 // (see extract/markdown-fences.ts) so it isn't double-counted.
 export const DOCS_ROOTS: string[] = ["packages/docs/src", "README.md"];
 
-// Never descend into build output.
-export const DOCS_EXCLUDE_DIRS: string[] = [".vitepress/dist"];
+// Never descend into dependencies or Astro's generated output.
+export const DOCS_EXCLUDE_DIRS: string[] = ["node_modules", ".astro"];
 
 export const PHYSICAL_FIXTURES: string[] = [
 	"packages/kitchen/tests/fixtures/valid/simple_recipe.gram",
 	"packages/kitchen/tests/fixtures/valid/with_warnings.gram",
 	"packages/renderer/tests/fixtures/sample.gram",
-	"packages/docs/src/public/examples/canneles.gram",
-	"packages/docs/src/public/examples/canneles-fr.gram",
-	"packages/docs/src/public/examples/empanadas.gram",
-	"packages/docs/src/public/examples/empanadas-fr.gram",
+	"packages/docs/public/examples/canneles.gram",
+	"packages/docs/public/examples/canneles-fr.gram",
+	"packages/docs/public/examples/empanadas.gram",
+	"packages/docs/public/examples/empanadas-fr.gram",
 ];
 
 export const CONFORMANCE_CASES_DIR = "conformance/cases";
@@ -95,3 +115,24 @@ export const FORMATTER_TEST_FILES: string[] = [
 // written via writeFileSync in a language-server test) and would misclassify
 // it as Gram source.
 export const GRAM_SIGNAL_PATTERN = /(@|#|~|\^|->&)/;
+
+/**
+ * Every path the tool is configured to read that does not exist. The extractors
+ * skip a missing file quietly (a recipe folder may legitimately be empty), so
+ * without this check a docs reorganisation leaves the audit running on less
+ * and less, and reporting on it as if nothing were wrong.
+ */
+export function missingConfiguredPaths(): string[] {
+	const configured = [
+		...TRUSTED_SYNTAX_FILES,
+		...AI_GENERATION_NOTES_FILES,
+		...NARRATIVE_DOC_DIRS,
+		...DOCS_ROOTS,
+		...PHYSICAL_FIXTURES,
+		...FORMATTER_TEST_FILES,
+		CONFORMANCE_CASES_DIR,
+		TEST_GLOB_ROOT,
+	];
+	return configured.filter((path) => !existsSync(join(REPO_ROOT, path)));
+}
+
