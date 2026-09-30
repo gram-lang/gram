@@ -6,7 +6,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import {
 	resolveScaleFactor,
@@ -76,25 +76,27 @@ export default defineCommand({
 				config.paths,
 			);
 
-			const [{ compiled: original }, { compiled: scaled }] = await Promise.all([
-				runPipeline(filePath, {
-					db,
-					skipAnalyzer: !db,
-					lang: config.language,
-					paths: config.paths,
-					stock,
-				}),
-				runPipeline(filePath, {
-					db,
-					skipAnalyzer: !db,
-					scaleFactor: factor,
-					lang: config.language,
-					paths: config.paths,
-					stock,
-				}),
-			]);
+			const [{ compiled: original, usedStock }, { compiled: scaled }] =
+				await Promise.all([
+					runPipeline(filePath, {
+						db,
+						skipAnalyzer: !db,
+						lang: config.language,
+						paths: config.paths,
+						stock,
+					}),
+					runPipeline(filePath, {
+						db,
+						skipAnalyzer: !db,
+						scaleFactor: factor,
+						lang: config.language,
+						paths: config.paths,
+						stock,
+					}),
+				]);
 
 			s.stop("Done.");
+			reportUnusedStock("gram scale", "scaled", stock, [{ usedStock }]);
 
 			const items = buildScaleComparison(
 				original.shopping_list,

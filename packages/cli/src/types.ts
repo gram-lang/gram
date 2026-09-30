@@ -23,6 +23,8 @@ export interface CheckResult {
 	diagnostics: Diagnostic[];
 	hasErrors: boolean;
 	fileCount: number;
+	/** The `--stock` entries some `@use` of the checked files matched. */
+	usedStock: Set<string>;
 }
 
 export interface BuildResult {
@@ -168,6 +170,8 @@ export interface RecipeViewModel {
 	}>;
 	nutrition: NutritionMetrics | null;
 	missingIngredients: string[];
+	/** The `--stock` entries a `@use` of the recipe matched. */
+	usedStock: Set<string>;
 	_registries: {
 		ingredients: Record<string, any>;
 		cookware: Record<string, any>;

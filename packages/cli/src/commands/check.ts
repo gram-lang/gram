@@ -3,7 +3,7 @@ import { spinner, log } from "@clack/prompts";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { resolveGlob } from "../core/glob";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { checkFiles } from "../services/checker";
 import {
 	renderCheckResult,
@@ -76,6 +76,7 @@ export default defineCommand({
 		s.stop(`Checked ${n} file${n !== 1 ? "s" : ""}.`);
 
 		renderCheckResult(result);
+		reportUnusedStock("gram check", "checked", stock, [result]);
 
 		if (result.hasErrors) {
 			process.exit(ExitCode.Error);

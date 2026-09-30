@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { buildViewModel } from "../services/viewer";
 import { outputRecipe } from "../ui/viewer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -122,6 +122,8 @@ export default defineCommand({
 			}
 			throw err;
 		}
+
+		reportUnusedStock("gram view", "viewed", stock, [model]);
 
 		if (scaleFactor !== 1) {
 			const factorStr =

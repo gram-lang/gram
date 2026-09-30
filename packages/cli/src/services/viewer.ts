@@ -162,7 +162,7 @@ export async function buildViewModel(
 		stock?: Set<string>;
 	},
 ): Promise<RecipeViewModel> {
-	const { compiled, analyzed } = await runPipeline(file, {
+	const { compiled, analyzed, usedStock } = await runPipeline(file, {
 		db: opts.db,
 		scaleFactor: opts.scaleFactor,
 		bakersReference: opts.bakersReference,
@@ -363,6 +363,7 @@ export async function buildViewModel(
 		sections,
 		nutrition,
 		missingIngredients,
+		usedStock,
 		_registries: { ingredients: registry, cookware: cwRegistry },
 	};
 }
