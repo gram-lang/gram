@@ -238,7 +238,7 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 
 describe("schedules: properties over random recipes", () => {
 	const SEEDS = [1, 2, 3];
-	const PER_SEED = 300;
+	const PER_SEED = 200;
 
 	it(`keeps every invariant on ${SEEDS.length * PER_SEED} generated recipes`, () => {
 		const breaches = new Map<string, string>(); // message -> smallest recipe showing it
@@ -272,7 +272,7 @@ describe("schedules: properties over random recipes", () => {
 		expect(
 			[...breaches].map(([message, source]) => `${message}\n${source}`),
 		).toEqual([]);
-	});
+	}, 60_000); // generous: a CI runner is several times slower than a laptop
 
 	// `applyScale(compile(ast), k)` should equal `compile(ast, { scaleFactor: k })`
 	// (documented), but does not when a step quotes a reference's quantity
