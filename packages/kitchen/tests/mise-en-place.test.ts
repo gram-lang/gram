@@ -104,4 +104,50 @@ Spread &filling{100g} over &dough{200g}.
 		expect(gathered(result, 0)).toBe(1); // flour
 		expect(gathered(result, 1)).toBe(1); // &dough
 	});
+
+	describe("sections without a step", () => {
+		const consistent = (result: ReturnType<typeof compile>) => {
+			for (const key of ["perSection", "upfront"] as const) {
+				const s = result.schedules[key];
+				expect(s.idleTime).toBeGreaterThanOrEqual(0);
+				const prep = s.blocks
+					.filter((b) => b.kind === "prep")
+					.reduce((sum, b) => sum + b.end - b.start, 0);
+				expect(prep).toBe(result.metrics.preparationTime);
+			}
+		};
+
+		it("never charges a section that has no step (typing `## Dough ->&dough` before its steps)", () => {
+			const result = compile(
+				getAST(
+					"## Pate ->&pate\n\n// todo\n\n## Cuisson\n\nCuire @riz{200g}.\n",
+				),
+			);
+			expect(result.miseEnPlace.map((m) => m.section)).toEqual([1]);
+			consistent(result);
+		});
+
+		it("has no mise en place at all when nothing has a step", () => {
+			for (const src of [
+				'@use "./sauce.gram" as &sauce\n\n// todo\n',
+				'@use "./sauce.gram" as &sauce\n',
+			]) {
+				const result = compile(getAST(src));
+				expect(result.miseEnPlace).toEqual([]);
+				expect(result.metrics.preparationTime).toBe(0);
+				consistent(result);
+			}
+		});
+	});
+
+	it("raises a time paradox once, whichever timeline finds it", () => {
+		const result = compile(
+			getAST(
+				"## Base ~{-1min} ->&base\n\nMix @flour{100g}.\n\n## Finish\n\nAdd &base and @salt{1g}.\n\n## Serve\n\nServe with @parsley{1}.\n",
+			),
+		);
+		expect(
+			result.warnings.filter((w) => w.code === "TIME_PARADOX"),
+		).toHaveLength(1);
+	});
 });

@@ -66,7 +66,10 @@ const collectUsageIds = (usage: Usage | StepToken, out: Set<string>): void => {
  * Splits the mise en place cost by section. Each registry ingredient/cookware
  * is gathered by the first section that touches it (an id never touched goes
  * to the first section that has steps), and each ingredient `preparation` is
- * charged to the section it appears in.
+ * charged to the section it appears in. A section without a real step never
+ * carries a cost (there would be nothing to schedule it before): its share
+ * moves to the first section that has steps, and a recipe with no step at all
+ * has no mise en place.
  */
 export function computeMiseEnPlace(
 	sections: ProcessedSection[],
@@ -74,7 +77,12 @@ export function computeMiseEnPlace(
 ): SectionMiseEnPlace[] {
 	const hasSteps = (sec: ProcessedSection) =>
 		sec.steps.some((s) => s.type === "step");
-	const fallbackIdx = Math.max(0, sections.findIndex(hasSteps));
+	const fallbackIdx = sections.findIndex(hasSteps);
+	// -1 when no section has a step: nothing can carry the cost.
+	const resolveOwner = (idx: number | undefined): number =>
+		idx !== undefined && sections[idx] && hasSteps(sections[idx])
+			? idx
+			: fallbackIdx;
 
 	const ingredientOwner = new Map<string, number>();
 	const cookwareOwner = new Map<string, number>();
@@ -120,12 +128,14 @@ export function computeMiseEnPlace(
 	// with its own section, so the total never depends on how it is used.
 	const ingredientCount = new Map<number, number>();
 	for (const id of registry.ingredients.keys()) {
-		const owner = ingredientOwner.get(id) ?? producerOf.get(id) ?? fallbackIdx;
+		const owner = resolveOwner(ingredientOwner.get(id) ?? producerOf.get(id));
+		if (owner === -1) continue;
 		ingredientCount.set(owner, (ingredientCount.get(owner) ?? 0) + 1);
 	}
 	const cookwareCount = new Map<number, number>();
 	for (const id of registry.cookware.keys()) {
-		const owner = cookwareOwner.get(id) ?? fallbackIdx;
+		const owner = resolveOwner(cookwareOwner.get(id));
+		if (owner === -1) continue;
 		cookwareCount.set(owner, (cookwareCount.get(owner) ?? 0) + 1);
 	}
 
@@ -209,14 +219,6 @@ export function calculatePreparationTime(
 			}
 		}
 	}
-	// Nothing to attach the gathering to (no sections at all): keep the flat
-	// overhead so the total is unchanged.
-	ingredients = Math.max(
-		ingredients,
-		sections.length ? 0 : registry.ingredients.size,
-	);
-	cookware = Math.max(cookware, sections.length ? 0 : registry.cookware.size);
-
 	// Base overhead: 1 minute per unique ingredient and cookware item
 	addToBreakdown(breakdown, "ingredients_overhead", ingredients * 1);
 	addToBreakdown(breakdown, "cookware_overhead", cookware * 1);
