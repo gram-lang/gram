@@ -34,12 +34,21 @@ import {
 } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
+import {
+	DEFAULT_MISE_EN_PLACE,
+	parseMiseEnPlaceSetting,
+} from "./utils/mise-en-place-setting";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
 import { resolveFreshState } from "./utils/fresh-state";
 import { reloadDbAndRefreshDiagnostics as computeDbReload } from "./utils/db-reload";
-import { toHTML, toGanttHTML, escapeHtml } from "@gram-lang/renderer";
+import {
+	toHTML,
+	toGanttHTML,
+	escapeHtml,
+	type ScheduleMode,
+} from "@gram-lang/renderer";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -148,6 +157,24 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
+// `gram.miseEnPlace`: which timeline the preview, the Gantt and the title hint
+// follow. Read once at start and again whenever the settings change.
+let miseEnPlace: ScheduleMode = DEFAULT_MISE_EN_PLACE;
+
+// Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
+// without workspace configuration just keeps the default.
+async function loadMiseEnPlace(): Promise<boolean> {
+	try {
+		const config = await connection.workspace.getConfiguration("gram");
+		const next = parseMiseEnPlaceSetting(config);
+		const changed = next !== miseEnPlace;
+		miseEnPlace = next;
+		return changed;
+	} catch {
+		return false;
+	}
+}
+
 // Called from onDidChangeWatchedFiles/
 // onDidChangeConfiguration without awaiting or catching the returned
 // promise. This function must never reject — every call site treats it as
@@ -175,6 +202,7 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 }
 
 connection.onInitialized(async () => {
+	await loadMiseEnPlace();
 	await reloadDbAndRefreshDiagnostics();
 
 	// Watch ingredients.yaml so edits made outside the editor (gram db sync/enrich,
@@ -225,6 +253,23 @@ connection.onInitialized(async () => {
 		reloadDbAndRefreshDiagnostics().catch((e) =>
 			connection.console.error(`DB reload failed: ${e}`),
 		);
+		// A new schedule re-renders every open preview and Gantt, and refreshes
+		// the title hint — nothing else about the documents changed.
+		loadMiseEnPlace()
+			.then(async (changed) => {
+				if (!changed) return;
+				await Promise.all(
+					[...states].map(([uri, state]) =>
+						refresh(uri, state.text, state.version),
+					),
+				);
+				await connection.languages.inlayHint.refresh().catch(() => {
+					// Client without inlay hint refresh: the hint updates on next edit.
+				});
+			})
+			.catch((e) =>
+				connection.console.error(`Mise en place refresh failed: ${e}`),
+			);
 	});
 });
 
@@ -259,7 +304,10 @@ async function refresh(
 			// The VS Code preview ships the renderer's stylesheet (mirrored in
 			// media/preview.css), so the CSS-only nutrition basis toggle works
 			// there — quantities stay read-only.
-			const html = toHTML(state.compilation, { interactiveNutrition: true });
+			const html = toHTML(state.compilation, {
+				interactiveNutrition: true,
+				schedule: miseEnPlace,
+			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
 			console.error("HTML render error", e);
@@ -268,7 +316,9 @@ async function refresh(
 		// Rendered and sent independently from the main preview — a bug in the
 		// Gantt renderer must not blank the HTML preview, and vice versa.
 		try {
-			const ganttHtml = toGanttHTML(state.compilation, {});
+			const ganttHtml = toGanttHTML(state.compilation, {
+				schedule: miseEnPlace,
+			});
 			connection.sendNotification("gram/ganttUpdated", {
 				uri,
 				html: ganttHtml,
@@ -469,7 +519,7 @@ connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
 
 connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 	const s = states.get(uri);
-	return s ? provideInlayHints(s) : [];
+	return s ? provideInlayHints(s, miseEnPlace) : [];
 });
 
 connection.onCodeLens(({ textDocument: { uri } }) => {

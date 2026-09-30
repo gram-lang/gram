@@ -1,11 +1,19 @@
 import { type InlayHint, InlayHintKind, Position } from "vscode-languageserver";
+import type { ScheduleMode } from "@gram-lang/renderer";
 import type { DocumentState } from "../document-state";
+import { DEFAULT_MISE_EN_PLACE } from "../utils/mise-en-place-setting";
 
-export function provideInlayHints(state: DocumentState): InlayHint[] {
+export function provideInlayHints(
+	state: DocumentState,
+	schedule: ScheduleMode = DEFAULT_MISE_EN_PLACE,
+): InlayHint[] {
 	const hints: InlayHint[] = [];
 	if (!state.ast || !state.compilation?.metrics) return hints;
 
 	const metrics = state.compilation.metrics;
+	// The total follows the chosen schedule (`gram.miseEnPlace`).
+	const totalTime =
+		state.compilation.schedules?.[schedule]?.totalTime ?? metrics.totalTime;
 
 	let titleLine = 0;
 	let titleChar = 0;
@@ -18,8 +26,8 @@ export function provideInlayHints(state: DocumentState): InlayHint[] {
 		}
 	}
 
-	if (metrics.totalTime > 0) {
-		const totalMinutes = Math.round(metrics.totalTime);
+	if (totalTime > 0) {
+		const totalMinutes = Math.round(totalTime);
 		const hours = Math.floor(totalMinutes / 60);
 		const mins = totalMinutes % 60;
 		const timeStr =

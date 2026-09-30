@@ -102,6 +102,19 @@
           "type": "string",
           "default": "",
           "description": "Path to a YAML ingredient database file. Leave empty to auto-detect .gram/ingredients.yaml in the workspace root."
+        },
+        "gram.miseEnPlace": {
+          "type": "string",
+          "enum": [
+            "perSection",
+            "upfront"
+          ],
+          "enumDescriptions": [
+            "Each section's mise en place happens right before that section.",
+            "All the mise en place happens at the start of the recipe."
+          ],
+          "default": "perSection",
+          "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the Gantt chart and the title hint."
         }
       }
     },
