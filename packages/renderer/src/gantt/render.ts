@@ -8,6 +8,7 @@ import {
 	computeTimeTicks,
 	computeVisualGaps,
 	getVirtualTime,
+	resolveGapOptions,
 } from "./layout";
 import type { GanttRenderOptions } from "./types";
 
@@ -26,10 +27,13 @@ export function toGanttHTML(
 	options: GanttRenderOptions = {},
 ): string {
 	const t = getDictionary(options.lang);
-	const gaps = computeGaps(data, options.gapThresholdMinutes, options.schedule);
+	const { gapThreshold, compressedGapSize } = resolveGapOptions(options);
+	const gaps = computeGaps(data, gapThreshold, options.schedule);
 	const { tracks, totalVirtualTime, maxRealTime } = buildTracks(data, {
 		lang: options.lang,
 		schedule: options.schedule,
+		gapThresholdMinutes: gapThreshold,
+		compressedGapSize,
 	});
 
 	if (tracks.length === 0 || maxRealTime <= 0) {
@@ -39,13 +43,18 @@ export function toGanttHTML(
 		return `<div class="empty-state">${escapeHtml(emptyText)}</div>`;
 	}
 
-	const visualGaps = computeVisualGaps(gaps, totalVirtualTime);
+	const visualGaps = computeVisualGaps(
+		gaps,
+		totalVirtualTime,
+		compressedGapSize,
+	);
 	const ticks = computeTimeTicks(
 		maxRealTime,
 		totalVirtualTime,
 		gaps,
 		"forward",
 		"",
+		compressedGapSize,
 	);
 	const legendItems = computeSectionLegendItems(data, options.lang);
 	const visibleLegend = legendItems.slice(0, VISIBLE_SECTIONS_LIMIT);
@@ -168,8 +177,8 @@ ${overflowLegend
 			.filter(Boolean)
 			.join(" ");
 		const styleParts = [
-			`left:${(getVirtualTime(block.start, gaps) / totalVirtualTime) * 100}%`,
-			`width:${((getVirtualTime(block.end, gaps) - getVirtualTime(block.start, gaps)) / totalVirtualTime) * 100}%`,
+			`left:${(getVirtualTime(block.start, gaps, compressedGapSize) / totalVirtualTime) * 100}%`,
+			`width:${((getVirtualTime(block.end, gaps, compressedGapSize) - getVirtualTime(block.start, gaps, compressedGapSize)) / totalVirtualTime) * 100}%`,
 		];
 		if (trackType === "active") {
 			const top = (block.verticalIndex ?? 0) * 40 + 8;
