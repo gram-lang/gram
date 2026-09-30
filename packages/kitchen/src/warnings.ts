@@ -20,6 +20,7 @@ export enum WarningCode {
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
+	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
 	// no-resolution-happened degraded path (§C.4) — every other module-only
@@ -65,6 +66,11 @@ export interface WarningPayloads {
 		type: "Timer" | "Temperature" | "RetroPlanning";
 		value: string;
 		item?: string;
+		loc?: Location;
+	};
+	[WarningCode.DURATION_OUT_OF_RANGE]: {
+		type: "Timer" | "RetroPlanning";
+		item: string;
 		loc?: Location;
 	};
 	[WarningCode.SCOPE_CONFLICT]: {
@@ -126,6 +132,8 @@ export const warningTemplates: {
 		p.type === "RetroPlanning"
 			? `Invalid retro-planning unit "${p.value}"${p.item ? ` on "${p.item}"` : ""} — expected d, h, or min.`
 			: `Invalid unit "${p.value}" for ${p.type}.`,
+	[WarningCode.DURATION_OUT_OF_RANGE]: (p) =>
+		`${p.type === "RetroPlanning" ? `Retro-planning offset for "${p.item}"` : `Timer "${p.item}"`} is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.`,
 	[WarningCode.SCOPE_CONFLICT]: (p) =>
 		`Intermediate variable '&${p.varName}' is redefined; variable names must be unique across the recipe.`,
 	[WarningCode.MISSING_INGREDIENT]: (p) =>
@@ -196,6 +204,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.UNDEFINED_REFERENCE]: "error",
 	[WarningCode.MISSING_UNIT]: "warning",
 	[WarningCode.INVALID_UNIT]: "warning",
+	[WarningCode.DURATION_OUT_OF_RANGE]: "warning",
 	[WarningCode.SCOPE_CONFLICT]: "error",
 	[WarningCode.MISSING_INGREDIENT]: "warning",
 	[WarningCode.MISSING_MACROS]: "info",

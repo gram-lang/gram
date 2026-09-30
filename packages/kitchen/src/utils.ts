@@ -235,9 +235,18 @@ interface TimeQuantity {
 	unit?: string;
 }
 
-export const quantityToMinutes = (
-	qty: TimeQuantity | null | undefined,
-): number => {
+/**
+ * The longest duration Gram plans with: 1000 years, in minutes. It is not a
+ * judgement on recipes (a solera runs for decades): it is a technical bound.
+ * Past about 10^9 days a duration stops being exact, and past 10^15 it comes
+ * out as 0 minutes, `Infinity` or `NaN` — which is `null` in the compiled JSON.
+ * A longer duration is capped here, and `compile()` raises
+ * `DURATION_OUT_OF_RANGE` for it.
+ */
+export const MAX_DURATION_MINUTES = 1000 * 365 * 24 * 60;
+
+/** The duration `qty` asks for, in minutes, before any capping. */
+const rawMinutes = (qty: TimeQuantity | null | undefined): number => {
 	if (!qty || qty.value === undefined || qty.value === null) return 0;
 
 	let val: number | string | QuantityValueAST = qty.value;
@@ -253,6 +262,29 @@ export const quantityToMinutes = (
 	// 17), alongside the unit-name resolution above.
 	const factor = TIME_TO_MINUTES[u];
 	return factor !== undefined ? val * factor : val;
+};
+
+/** True when `qty` asks for more than `MAX_DURATION_MINUTES` (in either direction). */
+export const isDurationTooLong = (
+	qty: TimeQuantity | null | undefined,
+): boolean => Math.abs(rawMinutes(qty)) > MAX_DURATION_MINUTES;
+
+/**
+ * The longest duration, expressed in `unit` (`min`, `h`, `d`…), for writing
+ * the capped value back where a quantity is kept as written.
+ */
+export const maxDurationIn = (unit: string): number =>
+	MAX_DURATION_MINUTES / (TIME_TO_MINUTES[resolveTimeUnit(unit)] ?? 1);
+
+export const quantityToMinutes = (
+	qty: TimeQuantity | null | undefined,
+): number => {
+	const minutes = rawMinutes(qty);
+	if (Number.isNaN(minutes)) return 0;
+	return Math.max(
+		-MAX_DURATION_MINUTES,
+		Math.min(MAX_DURATION_MINUTES, minutes),
+	);
 };
 
 /**

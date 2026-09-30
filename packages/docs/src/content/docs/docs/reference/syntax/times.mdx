@@ -177,5 +177,6 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
 - **Time Paradox**: If a section retro-planning anchor conflicts with an earlier required dependency (e.g., a section anchored at `-10 min` but used in a section anchored at `-1 h`), the compiler warns `TIME_PARADOX`.
 - **Track Contention**: If you use named passive timers (e.g. `~_oven{30min}`) and the ALAP algorithm is forced to delay them due to crowding (multiple timers on the same track at the same time), the compiler warns `TRACK_CONTENTION`.
+- **Duration out of range**: A timer or a retro-planning offset longer than 1000 years is capped at 1000 years and the compiler warns `DURATION_OUT_OF_RANGE`. It is a technical limit, far beyond any real recipe, that keeps the timeline finite when a number has a stray digit.
 
 For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.

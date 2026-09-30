@@ -746,6 +746,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
 - **Time Paradox**: If a section retro-planning anchor conflicts with an earlier required dependency (e.g., a section anchored at `-10 min` but used in a section anchored at `-1 h`), the compiler warns `TIME_PARADOX`.
 - **Track Contention**: If you use named passive timers (e.g. `~_oven{30min}`) and the ALAP algorithm is forced to delay them due to crowding (multiple timers on the same track at the same time), the compiler warns `TRACK_CONTENTION`.
+- **Duration out of range**: A timer or a retro-planning offset longer than 1000 years is capped at 1000 years and the compiler warns `DURATION_OUT_OF_RANGE`. It is a technical limit, far beyond any real recipe, that keeps the timeline finite when a number has a stray digit.
 
 For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.
 
@@ -1630,6 +1631,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
 | `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
 | `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
+| `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |
 | `MODULE_CYCLE` | error | `Circular module import detected: {chain}.` |
@@ -1670,6 +1672,11 @@ A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` in
 
 ### `INVALID_UNIT`
 Either a `Timer` was given a non-numeric (text) quantity, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a numeric value + a recognized unit for timers; use `°C` or `°F` for temperatures.
+
+### `DURATION_OUT_OF_RANGE`
+*(since v1.4.0)*
+
+A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
 
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.

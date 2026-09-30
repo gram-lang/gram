@@ -57,6 +57,11 @@ Un `Timer` (minuteur) ou une `Temperature` a été écrit sans unité explicite 
 ### `INVALID_UNIT`
 Soit un `Timer` a reçu une quantité non numérique (du texte), soit une `Temperature` a reçu une unité autre que Celsius ou Fahrenheit. **Correction** : utilisez une valeur numérique couplée à une unité temporelle reconnue pour les minuteurs, et limitez-vous à `°C` ou `°F` pour les températures.
 
+### `DURATION_OUT_OF_RANGE`
+<Since v="1.4.0" />
+
+Un minuteur, ou le décalage du rétroplanning d'une section, dure plus de 1000 ans. **Correction** : vérifiez le nombre, souvent un chiffre en trop ou une lettre d'unité oubliée (`~{-3000d}` fait huit ans, `~{-3000000000d}` n'est plus une recette). La durée est ramenée à 1000 ans, pour que la chronologie reste finie au lieu de donner `0`, `Infinity` ou `NaN`. Cette limite est une borne technique, pas un jugement sur les recettes : tout ce qui la respecte, une solera de plusieurs décennies comprise, est planifié tel quel et ne déclenche rien.
+
 ### `SCOPE_CONFLICT`
 Deux sections déclarent un même nom de variable (`>> nom`). Les noms de variables doivent être uniques à l'échelle de toute la recette, pas juste de la section. **Correction** : renommez l'une des deux variables.
 
