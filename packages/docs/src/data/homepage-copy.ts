@@ -196,32 +196,65 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		scheduleOutput: JSON.stringify(
 			{
 				metrics: {
-					totalTime: 19,
-					totalBreakdown: [
-						{
-							label: "timer_named:boiling",
-							duration: 10,
-						},
-						{
-							label: "section_active:Tomato Basil Pasta",
-							duration: 2,
-						},
-					],
-					idleTime: 5,
-					activeTime: 7,
-					activeBreakdown: [
-						{
-							label: "section_active:Tomato Basil Pasta",
-							duration: 7,
-						},
-					],
 					preparationTime: 7,
-					prepBreakdown: [
-						{
-							label: "ingredients_overhead",
-							duration: 7,
-						},
-					],
+					activeTime: 7,
+				},
+				miseEnPlace: [
+					{
+						section: 0,
+						duration: 7,
+						items: [
+							{
+								kind: "gather",
+								target: "ingredient",
+								count: 7,
+								duration: 7,
+							},
+						],
+					},
+				],
+				schedules: {
+					perSection: {
+						totalTime: 19,
+						idleTime: 5,
+						blocks: [
+							{
+								kind: "prep",
+								section: 0,
+								start: 0,
+								end: 7,
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 0,
+								start: 7,
+								end: 7,
+							},
+							{
+								kind: "passive",
+								section: 0,
+								step: 0,
+								start: 7,
+								end: 17,
+								track: "boiling",
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 1,
+								start: 12,
+								end: 17,
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 2,
+								start: 17,
+								end: 19,
+							},
+						],
+					},
 				},
 			},
 			null,
@@ -479,32 +512,65 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		scheduleOutput: JSON.stringify(
 			{
 				metrics: {
-					totalTime: 19,
-					totalBreakdown: [
-						{
-							label: "timer_named:ebullition",
-							duration: 10,
-						},
-						{
-							label: "section_active:Pâtes Tomate Basilic",
-							duration: 2,
-						},
-					],
-					idleTime: 5,
-					activeTime: 7,
-					activeBreakdown: [
-						{
-							label: "section_active:Pâtes Tomate Basilic",
-							duration: 7,
-						},
-					],
 					preparationTime: 7,
-					prepBreakdown: [
-						{
-							label: "ingredients_overhead",
-							duration: 7,
-						},
-					],
+					activeTime: 7,
+				},
+				miseEnPlace: [
+					{
+						section: 0,
+						duration: 7,
+						items: [
+							{
+								kind: "gather",
+								target: "ingredient",
+								count: 7,
+								duration: 7,
+							},
+						],
+					},
+				],
+				schedules: {
+					perSection: {
+						totalTime: 19,
+						idleTime: 5,
+						blocks: [
+							{
+								kind: "prep",
+								section: 0,
+								start: 0,
+								end: 7,
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 0,
+								start: 7,
+								end: 7,
+							},
+							{
+								kind: "passive",
+								section: 0,
+								step: 0,
+								start: 7,
+								end: 17,
+								track: "ebullition",
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 1,
+								start: 12,
+								end: 17,
+							},
+							{
+								kind: "step",
+								section: 0,
+								step: 2,
+								start: 17,
+								end: 19,
+							},
+						],
+					},
 				},
 			},
 			null,
