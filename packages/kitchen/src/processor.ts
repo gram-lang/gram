@@ -912,7 +912,7 @@ export function processSections(
 	// the parser (audit 2026-07-22, kitchen finding F-004/P-001).
 	//
 	// The schedules are cloned *before* the legacy pass: scheduleALAP pushes
-	// into `produced` and rebaseAndCommit writes onto the compiled steps, and
+	// into `produced` and commitTimeline writes onto the compiled steps, and
 	// the per-section pass below must start from the untouched records.
 	const pristineSchedules = cloneSchedules(globalSchedules);
 
@@ -931,8 +931,8 @@ export function processSections(
 	const metrics = commitTimeline(legacyTimeline, globalActiveTime);
 
 	// Mise en place: one cost per section, then the two complete timelines.
-	const preparation = calculatePreparationTime(sections, registry);
 	const miseEnPlace = computeMiseEnPlace(sections, registry);
+	const preparation = calculatePreparationTime(sections, registry, miseEnPlace);
 	const upfront = buildUpfrontSchedule(
 		legacyTimeline,
 		miseEnPlace,
