@@ -8,6 +8,7 @@ Si vous construisez une application web moderne (avec React, Vue, Svelte ou Next
 Bien que le *parser* produise d'abord un Arbre Syntaxique Abstrait (AST) brut, les *packages* `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un JSON hyper-structuré, prêt à l'emploi. Ce guide vous montre comment l'extraire programmatiquement et comment il est architecturé, afin que vous puissiez l'exploiter librement.
 
 import { Steps } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 <Steps>
 1. ### Récupérer le JSON
@@ -66,6 +67,12 @@ import { Steps } from '@astrojs/starlight/components';
    - `meta` *(object)* : Paires clé-valeur pour les métadonnées (ex : `author`, `yield`).
    - `shopping_list` *(array)* : Une liste agrégée de tous les ingrédients de toutes les sections.
    - `sections` *(array)* : Les instructions elles-mêmes, découpées par section de recette.
+   - `metrics` *(object)* : `preparationTime` et `activeTime` en minutes, plus la masse et la nutrition quand la recette est passée par l'analyzer.
+   - `miseEnPlace` *(array)* : Ce que coûte la préparation de chaque section, une entrée par section qui a une préparation.
+   - `schedules` *(object)* : Deux chronologies complètes, `perSection` et `upfront`, chacune avec un `totalTime`, un `idleTime` et une liste de `blocks`.
+   - `generator` *(string)* : La version du compilateur qui a écrit ce JSON.
+   
+   Ignorez les champs inconnus et les valeurs de `kind` de bloc que vous ne connaissez pas : votre interface continuera de fonctionner quand une version mineure en ajoutera.
    
    #### À l'intérieur d'une Section
    
@@ -97,16 +104,13 @@ import { Steps } from '@astrojs/starlight/components';
              "unit": "ml"
            },
            "."
-         ],
-         "timings": {
-           "start": 0,
-           "end": 2,
-           "activeDuration": 2
-         }
+         ]
        }
      ]
    }
    ```
+   
+   Une étape ne porte plus son propre début et sa propre fin. Sa place dans le temps dépend du moment où se fait la mise en place, elle vit donc dans `schedules` (voir « Dessiner la chronologie » plus bas).
 
 3. ### Logique de Rendu
    
@@ -169,4 +173,36 @@ import { Steps } from '@astrojs/starlight/components';
    ```
    
    En mappant intelligemment la propriété `type` sur vos propres composants, vous gardez un **contrôle total** sur le design, l'interactivité et l'accessibilité de votre application !
+
+4. ### Dessiner la chronologie
+   
+   <Since v="1.4.0" />
+   
+   Pour dessiner un diagramme de Gantt ou un planning, lisez les blocs de l'une des deux chronologies. Tous les temps sont en minutes depuis `0` et incluent déjà la préparation :
+   
+   ```typescript
+   // 'perSection' : la préparation de chaque section juste avant elle.
+   // 'upfront' : toute la préparation au début.
+   const schedule = recipe.schedules[modeChoisi];
+   
+   for (const block of schedule.blocks) {
+     if (block.kind === 'prep') {
+       // La mise en place d'une section. `miseEnPlace` dit de quoi elle est faite.
+       const prep = recipe.miseEnPlace.find((m) => m.section === block.section);
+       draw('Mise en place', block.start, block.end, prep?.items);
+     } else {
+       // 'step' ou 'passive' : `block.step` est l'indice dans `sections[block.section].steps`,
+       // commentaires compris.
+       const step = recipe.sections[block.section].steps[block.step];
+       const label = block.kind === 'passive' ? (block.track ?? 'Minuteur') : step.action;
+       draw(label, block.start, block.end);
+     }
+   }
+   ```
+   
+   Laissez votre lecteur choisir le mode : le temps total et le temps d'attente diffèrent d'un mode à l'autre (`schedule.totalTime`, `schedule.idleTime`), pas `metrics.preparationTime` ni `metrics.activeTime`. Le moteur de rendu Gram, le playground, l'extension VS Code et la CLI offrent tous ce choix.
+   
+   :::caution[Champs dépréciés]
+   Du code plus ancien peut lire `step.timings`, `step.backgroundTasks` ou `metrics.totalTime`. Ils fonctionnent encore et seront retirés en 2.0.0 : lisez plutôt `schedules`. Voir la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
+   :::
 </Steps>

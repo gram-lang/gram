@@ -3,6 +3,8 @@ title: "ALAP scheduling"
 description: "How Gram's ALAP algorithm reschedules recipe steps to minimize idle time and interleave passive cooking tasks."
 ---
 
+import Since from '../../../../components/Since.astro';
+
 Gram doesn't just read recipes from top to bottom; it actively reschedules them to save you time. 
 
 It does this using an algorithm called **ALAP (As Late As Possible)** scheduling. This ensures that every ingredient is prepared exactly when it is needed, preventing components from sitting idle on the kitchen counter for too long.
@@ -69,6 +71,74 @@ gantt
 *(Note: The active time for the dough step falls back to the default 2 minutes since it only specifies a passive timer).*
 
 By pushing the `&dough` generation step backward, Gram automatically interleaves the `Mix` step *before* the dough preparation. You are kept efficiently busy, and no ingredient sits idle.
+
+## Scheduling the mise en place
+<Since v="1.4.0" />
+
+The mise en place of a section (gathering and preparing its ingredients and cookware) is scheduled like a step of its own, at the head of that section. Take a dough that rests for two hours, followed by a filling that needs onions sliced:
+
+```gram
+## Dough ->&dough
+
+Mix @flour{500g} and @water{300ml} in a #bowl.
+
+[Rest] Let the dough rest ~_{2h}.
+
+## Filling ->&filling
+
+Cook @onions{200g}(finely sliced) in a #pan.
+
+## Assembly
+
+Spread &filling over &dough, then bake for ~{25min}.
+```
+
+Planned **by section** (the default), each preparation happens right before its section. The filling's and the assembly's mise en place slide into the dough's two hours of rest, when your hands are free anyway:
+
+```mermaid
+gantt
+    title Mise en place by section (2h30)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Dough
+    Mise en place                     : p1, 00:00, 3m
+    Mix                               : active, a1, 00:03, 2m
+    Rest (passive)                    : r1, 00:05, 120m
+    section Filling
+    Mise en place                     : p2, 01:57, 4m
+    Cook                              : active, a2, 02:01, 2m
+    section Assembly
+    Mise en place                     : p3, 02:03, 2m
+    Assemble and bake                 : active, a3, 02:05, 25m
+```
+
+Planned **all at the start**, every preparation comes first, and the cooking only begins once they are done:
+
+```mermaid
+gantt
+    title Mise en place all at the start (2h36)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Mise en place
+    Dough                             : p1, 00:00, 3m
+    Filling                           : p2, 00:03, 4m
+    Assembly                          : p3, 00:07, 2m
+    section Dough
+    Mix                               : active, a1, 00:09, 2m
+    Rest (passive)                    : r1, 00:11, 120m
+    section Filling
+    Cook                              : active, a2, 02:09, 2m
+    section Assembly
+    Assemble and bake                 : active, a3, 02:11, 25m
+```
+
+The two plans describe the same recipe. Only the timeline differs, by the six minutes of preparation that no longer fit into the rest. That is why the default is by section, and why you might still prefer everything at the start: it is one sitting at the counter, and nothing is left to prepare while a step is running.
+
+:::note[Intermediates are weighed where they are used]
+An intermediate such as `&dough` costs one minute of mise en place, like any other ingredient: you still weigh it out. That minute is counted in the section that **uses** it (here, the assembly), not in the one that makes it.
+:::
 
 ## Named tracks
 

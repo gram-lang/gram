@@ -80,6 +80,7 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
 
 ```json
 {
+  "generator": "@gram-lang/kitchen@1.4.0",
   "title": "Crêpes",
   "slug": "crepes",
   "meta": { "title": "Crêpes" },
@@ -125,8 +126,6 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
       "steps": [
         {
           "type": "step",
-          "timings": { "start": 0, "end": 2, "activeDuration": 2 },
-          "backgroundTasks": [],
           "content": [
             "Mélanger ",
             { "id": "farine", "_usageId": "1", "qty": 200, "unit": "g", "normalizedMass": 200 },
@@ -146,9 +145,7 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
   "warnings": [],
   "metrics": {
     "preparationTime": 2,
-    "cookTime": 0,
-    "activeTime": 0,
-    "totalTime": 2,
+    "activeTime": 2,
 
     "totalMass": 406,                   // analyzer, global
     "massStatus": "estimated",          // analyzer
@@ -158,9 +155,32 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
       "isEstimate": true,
       "coverage": 1
     }
+  },
+  "miseEnPlace": [
+    { "section": 0, "duration": 2, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ] }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ]
+    },
+    "upfront": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ]
+    }
   }
 }
 ```
+
+Depuis la 1.4.0, la recette compilée porte `generator` (le compilateur qui l'a écrite), `miseEnPlace` (ce que coûte la préparation de chaque section) et deux chronologies complètes dans `schedules` ; les anciens `timings` et `backgroundTasks` par étape et les décomptes de `metrics` sont dépréciés et disparaîtront en 2.0.0. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) décrit chaque champ et ce qui remplace les champs dépréciés. Avec une seule section et aucune attente, les deux chronologies sont identiques ici ; elles diffèrent dès qu'une recette a un long repos avant une section ultérieure.
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (ils n'ont pas de champ `type` et sont identifiés par la présence d'un `id`) ; les minuteurs, températures, commentaires et déclarations portent chacun un `type` explicite en minuscules. Cette distinction avec le `ASTNodeType` (en PascalCase) du *parser* est volontaire : on décrit ici la *sortie* compilée, non l'entrée. Consultez [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un tutoriel d'intégration de ces données dans un framework front-end.
 

@@ -4,6 +4,7 @@ description: "Définissez des durées de ~minuteur et leurs unités, et découvr
 ---
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../../components/Since.astro';
 import { timeUnitsTable } from '../../../../../../data/api-reference';
 
 Les minuteurs (`~minuteur`) et les durées se déclarent à l'aide du symbole `~`.
@@ -66,7 +67,7 @@ Par défaut, un `~minuteur` est actif. Cela implique que vous avez les mains dan
 ```gram
 Fouetter la @crème liquide{} en continu pendant ~{5 min}.
 ```
-> ⏱️ **Résultat :** Ajoute 5 minutes au **Temps Actif**.
+> ⏱️ **Résultat :** Ajoute 5 minutes au **temps actif**.
 
 ### Passif (`_`)
 Accolez le modificateur `_` pour rendre un `~minuteur` passif. C'est une **tâche de fond**. Vous enclenchez le `~minuteur` (ex : enfourner un plat) et basculez instantanément sur l'étape suivante, sans attendre.
@@ -76,7 +77,7 @@ Cuire dans le #four pendant ~_{45 min}.
 
 Pendant ce temps, préparer le glaçage...
 ```
-> ⏱️ **Résultat :** N'ajoute aucune (0) minute au Temps Actif, mais prolonge en toute logique le **Temps de Cuisson** global pour s'assurer que ces 45 minutes s'écoulent.
+> ⏱️ **Résultat :** N'ajoute aucune (0) minute au temps actif, mais prolonge en toute logique le **temps d'attente** pour s'assurer que ces 45 minutes s'écoulent.
 
 ### Timers passifs séquentiels (les "Named Tracks")
 Par défaut, tous les *timers* passifs s'exécutent en parallèle du reste de la recette. Or, certaines tâches de fond ne peuvent pas matériellement se chevaucher (ex: cuire un gâteau 10 minutes, puis baisser le feu et poursuivre 30 minutes de plus).
@@ -89,30 +90,42 @@ Cuire dans le four à 240°C pendant ~_cuisson{10 min}.
 Baisser la température à 180°C et cuire pendant ~_cuisson{30 min}.
 ```
 
-> ⏱️ **Résultat :** En partageant le nom `cuisson`, Gram place ces deux *timers* sur la même « piste » de fond (*named track*). Le timer de 30 minutes ne démarrera qu'une fois les 10 premières minutes écoulées. Votre temps d'attente total augmentera donc de 40 minutes, le tout sans jamais impacter votre Temps Actif (qui reste à zéro) !
+> ⏱️ **Résultat :** En partageant le nom `cuisson`, Gram place ces deux *timers* sur la même « piste » de fond (*named track*). Le timer de 30 minutes ne démarrera qu'une fois les 10 premières minutes écoulées. Votre temps d'attente augmentera donc de 40 minutes, le tout sans jamais impacter votre temps actif (qui reste à zéro) !
 
 ## Comment le temps est calculé
 
 En coulisses, Gram maintient quatre compteurs de temps distincts pour dresser un planning réaliste :
 
-:::note[⏱️ Les 4 Métriques de Temps]
-1. **Temps de Préparation** (Mise-en-place) : Temps nécessaire *avant* de commencer l'étape 1 (rassembler les ingrédients, éplucher, couper).
-2. **Temps Actif** : Temps passé à travailler activement pendant les étapes de la recette (les mains occupées).
-3. **Temps de Cuisson** : Le temps absolu du flux de la recette, de l'étape 1 jusqu'à la fin (incluant l'attente passive).
-4. **Temps Total** : La somme du Temps de Préparation + Temps de Cuisson. C'est le "temps passé en cuisine" réaliste.
+:::note[⏱️ Les 4 mesures de temps]
+1. **Temps de préparation** (mise en place) : le temps passé à rassembler et à préparer les ingrédients et le matériel (aller les chercher, peser, éplucher, couper).
+2. **Temps actif** : le temps passé à travailler activement pendant les étapes (les mains occupées).
+3. **Temps d'attente** : le temps où l'on attend sans rien faire (repos d'une pâte, cuisson au four, longue mijotée).
+4. **Temps total** : temps de préparation + temps actif + temps d'attente. C'est le « temps passé en cuisine », tel qu'on le vit.
 :::
 
 ### Antisèche : qu'est-ce qui ajoute du temps ?
 
-Voici une antisèche de la façon dont le compilateur convertit automatiquement votre syntaxe en minutes de cuisine :
+Voici comment le compilateur convertit automatiquement votre syntaxe en minutes de cuisine :
 
-| Syntaxe / Scénario | Ajoute au Temps de Préparation | Ajoute au Temps Actif | Ajoute au Temps de Cuisson | Ajoute au Temps Total |
-| :--- | :--- | :--- | :--- | :--- |
-| **Nouvel Ingrédient** (`@farine`) | **+ 1 min** | - | - | **+ 1 min** |
-| **Préparation courte** (`@oignon(épluché)`) | **+ 2 min** | - | - | **+ 2 min** |
-| **Minuteur Actif** (`~{10 min}`) | - | **+ 10 min** | **+ 10 min** | **+ 10 min** |
-| **Minuteur Passif** (`~_{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) | **+ 1 heure** |
-| **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | **+ 2 min** | **+ 2 min** |
+| Syntaxe / scénario | Ajoute au temps de préparation | Ajoute au temps actif | Ajoute au temps d'attente |
+| :--- | :--- | :--- | :--- |
+| **Nouvel ingrédient** (`@farine`) | **+ 1 min** (pour le sortir) | - | - |
+| **Intermédiaire utilisé** (`&pâte`) | **+ 1 min** (pour le peser, là où il sert) | - | - |
+| **Préparation courte** (`@oignon(épluché)`) | **+ 2 min** | - | - |
+| **Matériel** (`#poêle`) | **+ 1 min** (pour le sortir) | - | - |
+| **Minuteur actif** (`~{10 min}`) | - | **+ 10 min** | - |
+| **Minuteur passif** (`~_{1 h}`) | - | - | **+ 1 heure** (en arrière-plan) |
+| **Étape sans aucun minuteur** | - | **+ 2 min** (valeur par défaut) | - |
+
+### Quand se fait la mise en place
+<Since v="1.4.0" />
+
+Chaque section a sa propre mise en place : rassembler et préparer ses ingrédients et son matériel. Gram peut la planifier de deux façons, sans que la recette s'écrive différemment :
+
+- **Par section** (par défaut) : la préparation d'une section est placée juste avant cette section. Un ingrédient qui ne servira que deux jours plus tard n'est pas sorti maintenant, et une préparation peut se faire pendant le repos d'une étape précédente.
+- **Tout au début** : toutes les préparations passent en premier, puis la cuisine commence.
+
+C'est un choix de lecture, pas une déclaration de la recette : le playground a un sélecteur pour ça, VS Code un réglage `gram.miseEnPlace`, la CLI une option `--mise-en-place` et le moteur de rendu une option `schedule`. Il ne change que les temps **total** et **d'attente**, et la place des préparations sur le diagramme de Gantt. Le temps de préparation et le temps actif restent les mêmes, et les listes d'ingrédients ne bougent pas.
 
 ### Suivi intelligent des dépendances (ALAP)
 Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur planifiera automatiquement son pétrissage au moment optimal. Le repos de la pâte se terminera exactement au moment où l'étape suivante débutera.
@@ -125,7 +138,7 @@ En glissant une annotation `~{...}` dans le titre d'une `## Section`, vous force
 
 **Voyez cela comme une ancre temporelle.** L'annotation `~{-2j}` prévient le compilateur que la section doit être achevée **2 jours pleins avant** son incorporation dans la suite de la recette. 
 
-Pour garantir une chronologie propre (avec des temps absolus toujours positifs, démarrant à `0`), le compilateur procède à un réajustement automatique de ses `timings` : cette préparation anticipée deviendra le nouveau point de départ (Temps 0) de la recette, et toutes les étapes de cuisson ultérieures seront décalées proportionnellement. Un outil magique pour programmer un repas sur plusieurs jours sans casser le modèle de données de vos interfaces.
+Pour garantir une chronologie propre (avec des temps absolus toujours positifs, démarrant à `0`), le compilateur réajuste automatiquement le planning : cette préparation anticipée devient le nouveau point de départ (temps 0) de la recette, et tout ce qui suit est décalé proportionnellement. La mise en place de la section suit le mouvement : elle est planifiée juste avant la section, deux jours avant la fin. Un outil idéal pour programmer un repas sur plusieurs jours sans compliquer la lecture de vos interfaces.
 
 ```gram
 ## Pâte Feuilletée ~{-2j}

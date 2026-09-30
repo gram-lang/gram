@@ -4,6 +4,7 @@ description: "Define ~timer durations and units in your recipes, and how Gram sc
 ---
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
+import Since from '../../../../../components/Since.astro';
 import { timeUnitsTable } from '../../../../../data/api-reference';
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
@@ -66,7 +67,7 @@ By default, a `~timer` is active. This implies you are actively working and **bl
 ```gram
 Whisk the @heavy cream{} continuously for ~{5min}.
 ```
-> ⏱️ **Result:** Adds 5 minutes to the **Active Time**.
+> ⏱️ **Result:** Adds 5 minutes to the **active time**.
 
 ### Passive (`_`)
 Use the `_` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
@@ -76,7 +77,7 @@ Bake in the #oven for ~_{45min}.
 
 Meanwhile, prepare the glaze...
 ```
-> ⏱️ **Result:** Adds 0 minutes to the Active Time, but ensures the **Cook Time** is extended to cover this 45-minute wait.
+> ⏱️ **Result:** Adds 0 minutes to the active time, but extends the **idle time** to cover this 45-minute wait.
 
 ### Sequential passive timers (named tracks)
 By default, passive timers run in parallel with the rest of your recipe. However, some background tasks cannot physically run at the same time (e.g. baking something for 10 minutes, then lowering the temperature and baking it for another 30 minutes). 
@@ -89,30 +90,42 @@ Bake in the #oven at 240°C for ~_baking{10min}.
 Lower the heat to 180°C and bake for ~_baking{30min}.
 ```
 
-> ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The total Cook Time increases by 40 minutes, but your Active Time remains untouched.
+> ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The idle time increases by 40 minutes, but your active time remains untouched.
 
 ## How time is calculated
 
 Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.
 
-:::note[⏱️ The 4 Time Metrics]
-1. **Preparation Time** (Mise-en-place): Time needed *before* you start step 1 (gathering ingredients, peeling, chopping).
-2. **Active Time**: Time spent actively working during the cooking steps (hands busy).
-3. **Cook Time**: The absolute time of the cooking workflow from step 1 to finish (including passive waiting).
-4. **Total Time**: The sum of Preparation Time + Cook Time. This is the realistic "time in the kitchen".
+:::note[⏱️ The 4 time metrics]
+1. **Preparation time** (mise en place): Time spent gathering and preparing ingredients and cookware (fetching, weighing, peeling, chopping).
+2. **Active time**: Time spent actively working during the cooking steps (hands busy).
+3. **Idle time**: Time spent waiting, with nothing to do (resting dough, baking, a long simmer).
+4. **Total time**: Preparation time + active time + idle time. This is the realistic "time in the kitchen".
 :::
 
 ### Cheat sheet: what adds time?
 
 Here is a concrete breakdown of how the compiler automatically calculates minutes based on your syntax:
 
-| Syntax / Scenario | Adds to Prep Time | Adds to Active Time | Adds to Cook Time | Adds to Total Time |
-| :--- | :--- | :--- | :--- | :--- |
-| **New Ingredient** (`@flour`) | **+ 1 min** | - | - | **+ 1 min** |
-| **Prep shorthand** (`@onion(peeled)`) | **+ 2 min** | - | - | **+ 2 min** |
-| **Active Timer** (`~{10min}`) | - | **+ 10 min** | **+ 10 min** | **+ 10 min** |
-| **Passive Timer** (`~_{1h}`) | - | - | **+ 1 hour** (in background) | **+ 1 hour** |
-| **Step without any timer** | - | **+ 2 min** (default fallback) | **+ 2 min** | **+ 2 min** |
+| Syntax / Scenario | Adds to preparation time | Adds to active time | Adds to idle time |
+| :--- | :--- | :--- | :--- |
+| **New ingredient** (`@flour`) | **+ 1 min** (to fetch it) | - | - |
+| **Intermediate used** (`&dough`) | **+ 1 min** (to weigh it out, where it is used) | - | - |
+| **Prep shorthand** (`@onion(peeled)`) | **+ 2 min** | - | - |
+| **Cookware** (`#pan`) | **+ 1 min** (to fetch it) | - | - |
+| **Active timer** (`~{10min}`) | - | **+ 10 min** | - |
+| **Passive timer** (`~_{1h}`) | - | - | **+ 1 hour** (in the background) |
+| **Step without any timer** | - | **+ 2 min** (default fallback) | - |
+
+### When the mise en place happens
+<Since v="1.4.0" />
+
+Each section has its own mise en place: gathering and preparing its ingredients and cookware. Gram can plan it in two ways, and the recipe reads the same either way:
+
+- **By section** (the default): the preparation of a section is scheduled right before that section. An ingredient that is only needed two days later isn't gathered now, and a preparation can overlap the resting time of an earlier step.
+- **All at the start**: every preparation is done first, then the cooking starts.
+
+This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option and the renderer a `schedule` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in both, and the ingredient lists don't change.
 
 ### Smart dependency tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
@@ -125,7 +138,7 @@ You can assign a preparation offset to a `## Section` by adding a `~{...}` annot
 
 **This acts as a time anchor**. If you add `~{-2d}` to a section, you are telling the compiler to schedule this preparation **2 days before** it is actually needed. 
 
-To ensure the generated timeline remains coherent and all absolute times are positive (starting at `0`), the compiler automatically resets the time calculations (`timings`): this early preparation becomes the new starting point (Time 0) of the recipe, and all subsequent cooking steps are shifted proportionally. It is the perfect tool for managing multi-day recipes while keeping the output data easily consumable by user interfaces.
+To ensure the generated timeline remains coherent and all absolute times are positive (starting at `0`), the compiler automatically resets the time calculations: this early preparation becomes the new starting point (Time 0) of the recipe, and everything after it is shifted proportionally. The section's mise en place follows it: it is planned right before the section, two days before the end. It is the perfect tool for managing multi-day recipes while keeping the output data easily consumable by user interfaces.
 
 ```gram
 ## Puff Pastry ~{-2d}

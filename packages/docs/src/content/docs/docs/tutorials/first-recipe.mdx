@@ -222,9 +222,10 @@ portions: 8
 # Lemon Meringue Tart
 
 > **Metadata**
-> - **Total Time**: 3h 44.5m
-> - **Active Time**: 24.5m
-> - **Prep Time**: 20m (est.)
+> - **Total Time**: 3h 41m
+> - **Idle Time**: 2h 57m
+> - **Active Time**: 22m 30s
+> - **Prep Time**: 21m (est.)
 > - portions: 8
 
 ## 🛒 Shopping List
@@ -298,8 +299,8 @@ portions: 8
 ### What did the compiler do?
 
 By running `gram view lemon-tart.gram`, the compiler handled all the math and output formatting for you:
-- **Active Time**: ~24.5 mins (it intelligently ignores the 3 hours of fridge time).
-- **Total Time**: ~3h 44.5 mins.
+- **Active Time**: ~22.5 mins (it intelligently ignores the 3 hours of fridge time).
+- **Total Time**: ~3h 41 mins, with each section's mise en place planned right before it (the default; you can also plan it all at the start, see [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens)).
 - **Shopping List**: It aggregates all ingredients globally. It grouped the `@egg{1}` and `@eggs{3}` into `4 eggs`. It calculated the whole lemons needed for the zest and juice. It automatically converted the relative sugar proportion into exactly `150g` of sugar.
 
 You've just written a highly scalable, data-driven recipe!

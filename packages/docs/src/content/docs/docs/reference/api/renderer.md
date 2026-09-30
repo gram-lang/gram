@@ -35,7 +35,8 @@ All three formatters share a single traversal architecture (`RenderBackend`), en
 | `classes` | `RendererClasses` | Override CSS class names on generated elements (HTML/print only). |
 | `formatFraction` | `(value: number) => string` | Custom decimal → fraction formatter (default: common fractions like `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (default: e.g. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (shopping list and mise-en-place are unaffected). |
+| `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (the shopping list and each section's ingredient list are unaffected). |
+| `schedule` | `'perSection' \| 'upfront'` | *(Since 1.4.0)* Which of the recipe's two timelines to follow: mise en place right before each section (`'perSection'`, the default) or all at the start (`'upfront'`). Drives the total and idle times in the header, and in HTML a "Mise en place" label on each section's ingredient list (`'perSection'` only; the duration and detail show on hover). Ingredient lists are the same in both. Markdown and print show only the header times. |
 | `bakersMathOnly` | `boolean` | Show only baker's percentages, hiding absolute quantities. |
 | `interactiveScaling` | `boolean` | Render interactive portion/ingredient scaling controls (HTML only). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Which nutrition basis to display. `'auto'` (the default) shows per-portion when the recipe declares a portion count, otherwise the whole recipe. |
@@ -75,6 +76,7 @@ handle.dispose();
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for UI translations via `@gram-lang/i18n`. |
 | `gapThresholdMinutes` | `number` | Minimum idle gap duration in minutes before gap compression is applied (default: `60`). |
 | `compressedGapSize` | `number` | Virtual minute width that compressed idle gaps collapse down to (default: `20`). |
+| `schedule` | `'perSection' \| 'upfront'` | *(Since 1.4.0)* Which timeline to draw (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section or all at the start. It reads `schedules[schedule].blocks` from the compiled recipe. |
 
 ### `GanttInteractivityOptions`
 

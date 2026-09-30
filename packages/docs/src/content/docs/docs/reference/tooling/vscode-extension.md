@@ -19,6 +19,16 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 - **Timeline Panel**: Run `Gram: Gantt Chart` (or click the graph icon in the editor toolbar) to open a dedicated timeline view of the recipe — active preparation steps, background timers, and idle-time compression — in its own WebView panel, independent from the Live Preview.
 - **Time Modes**: Switch between elapsed time (stopwatch, T+), countdown (T-), and clock time based on a target serve time, via the panel's options dropdown.
 - **Compact View**: Toggle a tighter row layout for recipes with many overlapping steps.
+- **Mise en place**: Each section's preparation is drawn as a dashed block in the section's colour, right before that section by default, or all at the start (see the `gram.miseEnPlace` setting below).
+
+#### The `gram.miseEnPlace` setting (since 1.4.0)
+
+| Value | Effect |
+|---|---|
+| `perSection` (default) | Each section's mise en place is planned right before that section. |
+| `upfront` | All the mise en place is planned at the start of the recipe. |
+
+The setting drives the live preview, the Gantt chart and the total time hint next to the recipe title. It changes the total and idle times, not the ingredient lists, and it applies immediately to every open recipe, without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 
 ### 3. Smart ingredient management
 - **Silent Plural Management**: The extension maps simple plural nouns in your recipe (e.g., `@carrots`) to singular entries in your YAML database (`carrot`), maintaining language naturalness without raising false errors.
@@ -63,7 +73,7 @@ Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to inst
 ```
 
 ## Editor UI enhancements
-- **Inlay Hints**: Displays cumulative elapsed time (in gray text) next to section headers, helping you gauge total preparation durations at a glance.
+- **Inlay Hints**: Displays the recipe's total time (in gray text) at the end of the `title:` line, so you can gauge the whole duration at a glance. It follows the `gram.miseEnPlace` setting.
 - **Outline View**: The native VS Code Outline panel populates with a clean hierarchy of your recipe's sections and intermediates, making large documents easy to navigate.
 - **Gutter Folding**: Sections and frontmatter blocks can be folded to save screen space.
 - **Rich Snippets**: Type shortcuts like `recipe`, `##`, `step`, `@ing`, or `#cw` to rapidly scaffold common recipe structures.

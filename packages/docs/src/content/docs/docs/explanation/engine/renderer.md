@@ -21,7 +21,7 @@ Generates a standalone, semantic HTML document. The HTML renderer is designed wi
 Generates a complete, self-contained `<!DOCTYPE html>` document with its own inlined print stylesheet (A4 page size, page-break-aware sections) and a fixed icon set — designed to be opened directly in a browser and printed, with no external stylesheet or asset dependency. Unlike `toHTML`, it does not accept custom `icons`/`classes` overrides, but it does honor `formatDuration`, `formatFraction`, and `hideStepQty`.
 
 ### 4. Gantt chart (`toGanttHTML` + `attachGanttInteractivity`)
-Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/docs/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract.
+Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/docs/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract. Its `schedule` option (`"perSection"` by default, or `"upfront"`) picks which of the recipe's two timelines to draw (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)): each section's preparation is drawn as a dashed block in the section's colour, right before the section or all at the start. The same option drives the total and idle times in the HTML, Markdown and print headers, and a small "Mise en place" label on each section's ingredient list in the HTML view (since 1.4.0).
 
 ## Unified traversal (`RenderBackend`)
 
@@ -35,7 +35,8 @@ import { toMarkdown, toHTML } from '@gram-lang/renderer';
 // Assuming `recipe` is the output from @gram-lang/kitchen or @gram-lang/analyzer
 const recipe = {
   title: "Simple Crepes",
-  metrics: { totalTime: 30, activeTime: 10 },
+  metrics: { preparationTime: 5, activeTime: 10 },
+  schedules: { perSection: { totalTime: 30, idleTime: 15, blocks: [] }, upfront: { totalTime: 30, idleTime: 15, blocks: [] } },
   shopping_list: [
     { id: "flour", qty: 200, unit: "g" }
   ],

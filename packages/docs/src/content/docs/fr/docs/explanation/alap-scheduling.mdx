@@ -3,6 +3,8 @@ title: "Ordonnancement ALAP"
 description: "Comment l'algorithme ALAP de Gram réordonnance les étapes pour réduire les temps morts et intercaler les tâches passives."
 ---
 
+import Since from '../../../../../components/Since.astro';
+
 Gram ne se contente pas de lire les recettes de haut en bas ; il les réordonnance activement pour vous faire gagner du temps.
 
 Pour ce faire, il s'appuie sur un algorithme d'ordonnancement nommé **ALAP (As Late As Possible - *Le plus tard possible*)**. Cela garantit que chaque ingrédient est préparé pile au moment où il est requis, évitant que des préparations ne patientent inutilement sur le plan de travail.
@@ -69,6 +71,74 @@ gantt
 *(Note : Le temps actif pour l'étape de la pâte revient à la valeur par défaut de 2 minutes puisqu'elle ne spécifie qu'un minuteur passif).*
 
 En repoussant la création de la `&pâte` vers la fin, Gram vient automatiquement intercaler l'étape `Mélanger` *pendant* le repos de la pâte. Votre temps actif est optimisé, et aucune préparation n'attend dans le vide.
+
+## Planifier la mise en place
+<Since v="1.4.0" />
+
+La mise en place d'une section (rassembler et préparer ses ingrédients et son matériel) est planifiée comme une étape à part entière, en tête de cette section. Prenons une pâte qui repose deux heures, suivie d'une garniture qui demande d'émincer des oignons :
+
+```gram
+## Pâte ->&pâte
+
+Mélanger @farine{500g} et @eau{300ml} dans un #saladier.
+
+[Repos] Laisser reposer la pâte ~_{2h}.
+
+## Garniture ->&garniture
+
+Faire revenir @oignons{200g}(émincés) dans une #poêle.
+
+## Montage
+
+Étaler la &garniture sur la &pâte, puis cuire ~{25min}.
+```
+
+Planifiée **par section** (le comportement par défaut), chaque préparation se fait juste avant sa section. Celles de la garniture et du montage glissent dans les deux heures de repos de la pâte, quand vos mains sont libres de toute façon :
+
+```mermaid
+gantt
+    title Mise en place par section (2 h 30)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Pâte
+    Mise en place                     : p1, 00:00, 3m
+    Mélanger                          : active, a1, 00:03, 2m
+    Repos (passif)                    : r1, 00:05, 120m
+    section Garniture
+    Mise en place                     : p2, 01:57, 4m
+    Faire revenir                     : active, a2, 02:01, 2m
+    section Montage
+    Mise en place                     : p3, 02:03, 2m
+    Monter et cuire                   : active, a3, 02:05, 25m
+```
+
+Planifiée **tout au début**, toutes les préparations passent en premier, et la cuisine ne commence qu'une fois qu'elles sont terminées :
+
+```mermaid
+gantt
+    title Mise en place tout au début (2 h 36)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Mise en place
+    Pâte                              : p1, 00:00, 3m
+    Garniture                         : p2, 00:03, 4m
+    Montage                           : p3, 00:07, 2m
+    section Pâte
+    Mélanger                          : active, a1, 00:09, 2m
+    Repos (passif)                    : r1, 00:11, 120m
+    section Garniture
+    Faire revenir                     : active, a2, 02:09, 2m
+    section Montage
+    Monter et cuire                   : active, a3, 02:11, 25m
+```
+
+Les deux plans décrivent la même recette. Seule la chronologie change, de six minutes de préparation qui ne tiennent plus dans le repos. C'est pour ça que le défaut est « par section », et c'est aussi pour ça qu'on peut préférer tout faire au début : un seul passage devant le plan de travail, et plus rien à préparer pendant qu'une étape tourne.
+
+:::note[Un intermédiaire se pèse là où il sert]
+Un intermédiaire comme `&pâte` coûte une minute de mise en place, comme n'importe quel ingrédient : il faut bien le peser. Cette minute est comptée dans la section qui l'**utilise** (ici, le montage), pas dans celle qui le fabrique.
+:::
 
 ## Les "Named Tracks" (minuteurs séquentiels)
 

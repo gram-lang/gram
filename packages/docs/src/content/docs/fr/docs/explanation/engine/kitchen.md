@@ -17,11 +17,12 @@ Le processeur boucle sur chaque section et chaque étape de l'AST pour bâtir la
 
 - **Résolution des variables** : Au moindre `->&pâte`, la déclaration est enregistrée dans le Scope Global. À la moindre référence `&pâte`, il tisse le lien.
 - **Diagnostics** : Le processeur a pour mission d'intercepter les erreurs logiques. Plutôt que d'échouer brutalement, il empile des objets `Warning` structurés dans `CompilationResult.warnings`. L'objectif est de permettre à l'éditeur de toujours afficher un rendu, même partiel. Si vous invoquez `&pâte` sans la déclarer, une alerte `UNDEFINED_REFERENCE` est émise. En cas de cycle de dépendances (`&a -> &b -> &a`), l'algorithme DFS dans `graph.ts` l'identifie et lève un `CIRCULAR_REFERENCE`. Si besoin, la commande `gram check --strict` basculera ces avertissements en erreurs bloquantes.
-- **Génération de la Chronologie (*ALAP Scheduling*)** : Le moteur s'appuie sur un ordonnancement **ALAP (As Late As Possible)** (éclaté dans `src/schedule/` pour être bétonné de tests unitaires). Quatre passes s'enchaînent pour accoucher d'une timeline chirurgicale :
+- **Génération de la Chronologie (*ALAP Scheduling*)** : Le moteur s'appuie sur un ordonnancement **ALAP (As Late As Possible)** (éclaté dans `src/schedule/` pour être bétonné de tests unitaires). Plusieurs passes s'enchaînent pour accoucher d'une timeline chirurgicale :
   - **Phase 1 (*Forward Pass*)** : Le compilateur jauge les temps actifs et les tâches de fond pour chronométrer le temps de production des intermédiaires (`->&nom`) de chaque section.
   - **Phase 2 (*Backward Pass*)** : Il remonte la recette à l'envers (`alap.ts`). À la moindre consommation d'un intermédiaire (`&nom`), le moteur note l'échéance critique à laquelle il *doit* être prêt, tout en digérant les éventuelles ancres de rétro-planning de section (`~{-1j}`). L'étape productrice sera alors calée *juste-à-temps* (JIT).
   - **Phase 3 (*Serialization*)** : L'algorithme des « pistes nommées » (*Named Tracks*, `tracks.ts`) entre en piste pour s'assurer que des *timers* passifs partageant un même nom (ex. `~_four`) ne se chevauchent pas matériellement. En cas de collision, les horaires de départ sont glissés chronologiquement.
-  - **Phase 4 (*Positive Rebasing*)** : C'est l'étape d'ajustement final (`rebase.ts`). Si des préparations ont basculé dans le négatif (ex: la veille du jour J), l'intégralité de la chronologie est translatée vers l'avant (de l'opposé du minimum absolu). La structure `timings` finale ne contiendra donc que des temps absolus, toujours positifs, démarrant à un repère zéro, facilitant ainsi l'intégration front-end.
+  - **Phase 4 (*Positive Rebasing*)** : C'est l'étape d'ajustement final (`rebase.ts`). Si des préparations ont basculé dans le négatif (ex: la veille du jour J), l'intégralité de la chronologie est translatée vers l'avant (de l'opposé du minimum absolu). La chronologie finale ne contient donc que des temps absolus, toujours positifs, démarrant à un repère zéro, ce qui facilite l'intégration front-end.
+  - **Phase 5 (mise en place, deux chronologies)** *(depuis la 1.4.0)* : la préparation de chaque section (voir les métriques ci-dessous) est ensuite planifiée de deux façons. La chronologie **upfront** reprend le résultat précédent, décalé de la durée totale de préparation, avec toutes les préparations posées bout à bout depuis 0. La chronologie **par section** rejoue la passe arrière sur une copie des étapes, en insérant cette fois la préparation de chaque section comme une étape en tête de cette section : le chaînage existant la fait finir pile quand la première vraie étape de la section commence, et lui permet de chevaucher le repos d'une étape antérieure. Les deux sont stockées dans le résultat, et c'est le lecteur qui choisit.
 
 ```mermaid
 flowchart LR
@@ -29,20 +30,27 @@ flowchart LR
     P1 --> P2["Phase 2 : Backward Pass<br/><i>Rétro-planning ALAP</i>"]
     P2 --> P3["Phase 3 : Serialization<br/><i>File d'attente Named Tracks</i>"]
     P3 --> P4["Phase 4 : Rebasing<br/><i>Recalage de T-Zéro à 0</i>"]
-    P4 --> Result["⚙️ CompilationResult<br/><i>(Ligne du temps optimisée)</i>"]
+    P4 --> P5["Phase 5 : Mise en place<br/><i>Deux chronologies</i>"]
+    P5 --> Result["⚙️ CompilationResult<br/><i>(schedules.perSection / upfront)</i>"]
 ```
 
   ::: tip
   La flèche `👉` que vous voyez dans les recettes rendues (ex : `👉*pâte*`) est une icône d'affichage ajoutée par `@gram-lang/renderer`, pas de la syntaxe Gram. Dans le code source `.gram`, un intermédiaire est consommé avec un simple `&nom`.
   :::
 
-### 2. Métriques de temps (`metrics.ts` / `processor.ts`)
+### 2. Temps et mise en place (`metrics.ts` / `processor.ts`)
 
-La Kitchen calcule quatre métriques de temps, combinées dans `core.ts` :
-- **Temps Actif (`activeTime`)** : La somme de toutes les durées des minuteurs actifs, plus un défaut de 2 minutes pour toute étape qui ne déclare aucun minuteur.
-- **Temps de Cuisson (`cookTime`)** : Le temps de fin absolu maximal de la chronologie de cuisson, en tenant compte de toute tâche de fond passive (comme faire reposer une pâte pendant 24 heures) qui se termine après la dernière étape active.
-- **Temps de Préparation (`preparationTime`)** : Complètement indépendant des *timers*. C'est le temps forfaitaire de *mise-en-place* : 1 minute par ingrédient/matériel unique, plus 2 minutes additionnelles si une étape de préparation est exigée (ex : `@oignon(épluché)`).
-- **Temps Total (`totalTime`)** : `preparationTime + cookTime` — le véritable investissement en temps pour ce plat (du fouinage dans les placards jusqu'au service).
+La Kitchen calcule quatre mesures de temps, combinées dans `core.ts` :
+- **Temps actif (`activeTime`)** : la somme des durées de tous les minuteurs actifs, plus 2 minutes par défaut pour toute étape qui ne déclare aucun minuteur.
+- **Temps d'attente** : le temps où l'on attend sans rien faire, soit le temps total moins la préparation et le temps actif. Il dépend du planning choisi, on le lit donc dans `schedules`.
+- **Temps de préparation (`preparationTime`)** : *indépendant des minuteurs.* C'est le forfait de *mise en place* : 1 minute par ingrédient ou ustensile unique, plus 2 minutes supplémentaires quand une note de préparation est exigée (ex. `@oignon(épluché et émincé)`). Un ingrédient est compté une fois, dans la première section qui l'utilise ; un intermédiaire (`&pâte`) est compté là où il sert, pas là où il est fabriqué.
+- **Temps total** : `preparationTime + activeTime + temps d'attente`, à lire aussi dans `schedules`, puisqu'il dépend du moment où se fait la préparation.
+
+*(Depuis la 1.4.0)* Le temps de préparation n'est pas qu'un total : il est réparti par section dans `miseEnPlace`, une liste où chaque entrée dit à quelle section elle appartient et de quoi elle est faite (rassembler les ingrédients, rassembler le matériel, préparer un ingrédient). La somme des entrées vaut `preparationTime`. Les deux chronologies de `schedules` (`perSection` et `upfront`) placent ces entrées différemment.
+
+:::note[Déprécié en 1.4.0]
+Les anciens champs de temps (`timings` et `backgroundTasks` sur chaque étape, et `metrics.totalTime`, `idleTime`, `activeBreakdown`, `prepBreakdown` et `totalBreakdown`) gardent les mêmes valeurs et le même sens, mais sont dépréciés et retirés en 2.0.0. Lisez `schedules` et `miseEnPlace` à la place. Voir la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
+:::
 
 ### 3. Agrégation de la liste de courses (`shopping.ts`)
 
