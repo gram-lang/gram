@@ -421,25 +421,39 @@ function diffIngredients(
 	return deltas;
 }
 
+// The four times a diff reports. Preparation and active time are the same in
+// both mise en place schedules; total and idle time depend on the schedule, so
+// they are read from the default one (preparation right before each section)
+// — the same on both sides, which is all a comparison needs.
+function timingsOf(
+	recipe: CompilationResult,
+): Record<TimingDelta["field"], number> {
+	const schedule = recipe.schedules?.perSection;
+	return {
+		totalTime: schedule?.totalTime ?? 0,
+		idleTime: schedule?.idleTime ?? 0,
+		activeTime: recipe.metrics?.activeTime ?? 0,
+		preparationTime: recipe.metrics?.preparationTime ?? 0,
+	};
+}
+
 function diffTimings(
-	a: CompilationResult["metrics"],
-	b: CompilationResult["metrics"],
+	a: CompilationResult,
+	b: CompilationResult,
 ): TimingDelta[] {
-	// Typed as the narrow TimingDelta["field"] union (not the full
-	// `keyof CompilationResult["metrics"]`, which now also includes the
-	// array-typed *Breakdown fields) so `a[field]`/`b[field]` stay `number`
-	// without needing a cast.
 	const fields: readonly TimingDelta["field"][] = [
 		"totalTime",
 		"idleTime",
 		"activeTime",
 		"preparationTime",
 	];
+	const from = timingsOf(a);
+	const to = timingsOf(b);
 	const deltas: TimingDelta[] = [];
 	for (const field of fields) {
-		const from = a[field] ?? 0;
-		const to = b[field] ?? 0;
-		if (from !== to) deltas.push({ field, from, to });
+		if (from[field] !== to[field]) {
+			deltas.push({ field, from: from[field], to: to[field] });
+		}
 	}
 	return deltas;
 }
@@ -767,7 +781,7 @@ export function diffRecipes(
 		b.shopping_list ?? [],
 	);
 	const preparations = diffPreparations(aSections, bSections);
-	const timings = diffTimings(a.metrics, b.metrics);
+	const timings = diffTimings(a, b);
 	const sections = diffSections(aSections, bSections);
 	const meta = diffMeta(
 		(a.meta ?? {}) as Record<string, unknown>,
