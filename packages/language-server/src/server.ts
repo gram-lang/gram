@@ -201,8 +201,24 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
+// A new schedule re-renders every open preview and Gantt, and refreshes the
+// title hint — nothing else about the documents changed.
+async function reloadMiseEnPlaceAndRefresh(): Promise<void> {
+	if (!(await loadMiseEnPlace())) return;
+	await Promise.all(
+		[...states].map(([uri, state]) => refresh(uri, state.text, state.version)),
+	);
+	await connection.languages.inlayHint.refresh().catch(() => {
+		// Client without inlay hint refresh: the hint updates on next edit.
+	});
+}
+
 connection.onInitialized(async () => {
-	await loadMiseEnPlace();
+	// A document may already be open by the time the setting answers: without
+	// the refresh it would keep the default schedule until its next edit.
+	await reloadMiseEnPlaceAndRefresh().catch((e) =>
+		connection.console.error(`Mise en place refresh failed: ${e}`),
+	);
 	await reloadDbAndRefreshDiagnostics();
 
 	// Watch ingredients.yaml so edits made outside the editor (gram db sync/enrich,
@@ -253,23 +269,9 @@ connection.onInitialized(async () => {
 		reloadDbAndRefreshDiagnostics().catch((e) =>
 			connection.console.error(`DB reload failed: ${e}`),
 		);
-		// A new schedule re-renders every open preview and Gantt, and refreshes
-		// the title hint — nothing else about the documents changed.
-		loadMiseEnPlace()
-			.then(async (changed) => {
-				if (!changed) return;
-				await Promise.all(
-					[...states].map(([uri, state]) =>
-						refresh(uri, state.text, state.version),
-					),
-				);
-				await connection.languages.inlayHint.refresh().catch(() => {
-					// Client without inlay hint refresh: the hint updates on next edit.
-				});
-			})
-			.catch((e) =>
-				connection.console.error(`Mise en place refresh failed: ${e}`),
-			);
+		reloadMiseEnPlaceAndRefresh().catch((e) =>
+			connection.console.error(`Mise en place refresh failed: ${e}`),
+		);
 	});
 });
 
