@@ -113,6 +113,10 @@ These fields keep the same values and the same meaning until 2.0.0, but you shou
 `metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both schedules. Note that the old `metrics.totalTime` is the total of the `upfront` schedule.
 :::
 
+:::note[JSON compiled before 1.4.0]
+JSON written by kitchen 1.3.0 or earlier has no `schedules`. It still renders: `scheduleTimes` reads the total and idle time from the old `metrics.totalTime` and `metrics.idleTime`, and the diff compares them fairly instead of reading zero. There is no mise en place and no timeline to draw, though, so the Gantt chart stays empty. Compile the recipe again with 1.4.0 or later to get them. This fallback goes away with the deprecated fields in 2.0.0.
+:::
+
 See [Data Formats](/docs/reference/api/data-formats) for a fully annotated example of this shape, and [Warnings](/docs/reference/api/warnings) for what can appear in `.warnings`.
 
 ## Scaling
@@ -163,6 +167,13 @@ function generateShoppingList(
 function calculatePreparationTime(sections: ProcessedSection[], registry: Registry): { total: number; breakdown: TimeBreakdownItem[] }
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
+
+type ScheduleMode = "perSection" | "upfront"
+const SCHEDULE_MODES: readonly ["perSection", "upfront"]
+const DEFAULT_SCHEDULE_MODE: ScheduleMode // "perSection"
+function isScheduleMode(value: unknown): value is ScheduleMode
+function scheduleFor(compiled, mode?: ScheduleMode): Schedule | undefined
+function scheduleTimes(compiled, mode?: ScheduleMode): { totalTime: number; idleTime: number }
 ```
 
 ## `RecipeRegistry`
