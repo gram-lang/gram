@@ -1,6 +1,8 @@
 import {
 	minifyQuantity,
 	createCleanUsage,
+	isDurationTooLong,
+	maxDurationIn,
 	quantityToMinutes,
 	nextUsageId,
 } from "./utils";
@@ -430,6 +432,16 @@ function processTimer(
 				} else {
 					if (q.value) obj.quantity = q.value;
 					obj.unit = unit;
+					// Written back capped, so the quantity kept in the JSON agrees
+					// with the duration the schedule was built on.
+					if (isDurationTooLong({ value: obj.quantity, unit })) {
+						pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
+							type: "Timer",
+							item: item.name || "Timer",
+							loc: item.loc,
+						});
+						obj.quantity = maxDurationIn(unit);
+					}
 				}
 			}
 		} else if (q.type === ASTNodeType.TextQuantity) {
@@ -535,12 +547,22 @@ function processRetroPlanning(
 		return { raw: rp.raw };
 	}
 
+	let value = rp.value;
+	if (isDurationTooLong({ value, unit: resolved })) {
+		pushWarning(ctx, WarningCode.DURATION_OUT_OF_RANGE, {
+			type: "RetroPlanning",
+			item,
+			loc: section.loc,
+		});
+		value = maxDurationIn(resolved);
+	}
+
 	return {
 		raw: rp.raw,
 		sign: rp.sign,
-		value: rp.value,
+		value,
 		unit,
-		minutes: quantityToMinutes({ value: rp.value, unit: resolved }) * rp.sign,
+		minutes: quantityToMinutes({ value, unit: resolved }) * rp.sign,
 	};
 }
 
