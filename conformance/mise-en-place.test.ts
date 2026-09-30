@@ -68,9 +68,12 @@ async function compileDir(
 			compile(composed.ast, options.compilerOptions),
 			composed,
 		);
-	} catch {
-		// Expected parse/scale/module failures (err-*, mod-008/009/…): no compiled output to check.
-		return null;
+	} catch (e) {
+		// Only a case whose golden is an `error.json` is expected to throw (err-*,
+		// a scale overflow…): it has no compiled output to check. Any other case
+		// failing here is a crash, which the suite must report, not skip.
+		if (existsSync(join(dir, "error.json"))) return null;
+		throw e;
 	}
 }
 
