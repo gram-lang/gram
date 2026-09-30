@@ -28,3 +28,25 @@ export function scheduleFor(
 ): Schedule | undefined {
 	return compiled.schedules?.[mode];
 }
+
+/**
+ * Total and idle time, in minutes, of the timeline for `mode` (the default one
+ * when none is given). JSON compiled before 1.4.0 carries no `schedules`: it
+ * falls back on the deprecated `metrics.totalTime` / `metrics.idleTime` it does
+ * have, and on 0 when even those are missing. Every reader of these two times
+ * goes through here, so the fallback is dropped in one place with the
+ * deprecated fields in 2.0.0.
+ */
+export function scheduleTimes(
+	compiled: {
+		schedules?: Partial<Record<ScheduleMode, Schedule>>;
+		metrics?: { totalTime?: number; idleTime?: number };
+	},
+	mode?: ScheduleMode,
+): { totalTime: number; idleTime: number } {
+	const schedule = scheduleFor(compiled, mode);
+	return {
+		totalTime: schedule?.totalTime ?? compiled.metrics?.totalTime ?? 0,
+		idleTime: schedule?.idleTime ?? compiled.metrics?.idleTime ?? 0,
+	};
+}
