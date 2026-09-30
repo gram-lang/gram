@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { rebaseAndCommit } from "../../src/schedule/rebase";
+import { commitTimeline, computeTimeline } from "../../src/schedule/rebase";
 import type {
 	ScheduledPassiveTask,
 	StepSchedule,
@@ -43,7 +43,20 @@ function makeSection(
 	};
 }
 
-describe("rebaseAndCommit", () => {
+// Lays the schedules out, then writes the result onto the compiled steps: the
+// two calls `compile()` makes for the default timeline.
+const rebaseAndCommit = (
+	schedules: Parameters<typeof computeTimeline>[0],
+	passiveTasks: Parameters<typeof computeTimeline>[1],
+	sections: Parameters<typeof computeTimeline>[2],
+	globalActiveTime: number,
+) =>
+	commitTimeline(
+		computeTimeline(schedules, passiveTasks, sections),
+		globalActiveTime,
+	);
+
+describe("layout and commit", () => {
 	it("shifts every timing so the earliest ls lands at zero", () => {
 		const a = makeSchedule({ ls: -15, lf: -5, localActiveTime: 10 });
 		const b = makeSchedule({

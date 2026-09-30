@@ -198,13 +198,16 @@ export function computeMiseEnPlace(
  * Derived from `computeMiseEnPlace`: base lookup overhead (gathering
  * ingredients & cookware) plus active preparation times (e.g. chopping,
  * peeling) declared on ingredients.
+ *
+ * `mise` is the section split when the caller already has it, so it isn't
+ * computed twice.
  */
 export function calculatePreparationTime(
 	sections: ProcessedSection[],
 	registry: Registry,
+	mise: SectionMiseEnPlace[] = computeMiseEnPlace(sections, registry),
 ): { total: number; breakdown: TimeBreakdownItem[] } {
 	const breakdown: TimeBreakdownItem[] = [];
-	const mise = computeMiseEnPlace(sections, registry);
 
 	let ingredients = 0;
 	let cookware = 0;

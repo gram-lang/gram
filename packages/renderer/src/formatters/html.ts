@@ -67,7 +67,6 @@ const htmlBackend: RenderBackend = {
 
 	renderMeta(data, _context, options) {
 		const t = getDictionary(options.lang);
-		const registry = data.registry || { ingredients: {}, cookware: {} };
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		// See RenderableMetrics's own comment: a plain (un-analyzed) compile()
 		// result's `metrics` never carries mass/nutrition fields at all.
@@ -88,13 +87,13 @@ const htmlBackend: RenderBackend = {
 
 		html += `<div class="${timingsGridClass}">\n`;
 		if (metrics) {
-			// Prefixes used by kitchen's TimeBreakdownItem labels (processor.ts /
-			// metrics.ts) — kept as named constants and sliced by their own
+			// Prefixes used by kitchen's active-time TimeBreakdownItem labels
+			// (schedule/rebase.ts) — kept as named constants and sliced by their own
 			// `.length` so a label check can never silently drift out of sync with
-			// the slice that strips it.
+			// the slice that strips it. Only the active time still shows such a
+			// breakdown: the mise en place is rendered from `miseEnPlace`.
 			const SECTION_ACTIVE_PREFIX = "section_active:";
 			const TIMER_NAMED_PREFIX = "timer_named:";
-			const PREP_PREFIX = "prep_";
 
 			const formatBreakdownHTML = (breakdown?: TimeBreakdownItem[]) => {
 				if (!breakdown || breakdown.length === 0) return "";
@@ -111,17 +110,6 @@ const htmlBackend: RenderBackend = {
 							label = `${t.renderer.breakdownTimer} "${escapeHtml(label.slice(TIMER_NAMED_PREFIX.length))}"`;
 						} else if (label === "timer_passive") {
 							label = t.renderer.breakdownPassive;
-						} else if (label === "ingredients_overhead") {
-							label = `${t.renderer.ingredientsOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
-						} else if (label === "cookware_overhead") {
-							label = `${t.renderer.cookwareOverhead} <span class="timing-detail-type">(${b.duration} x 1min)</span>`;
-						} else if (label.startsWith(PREP_PREFIX)) {
-							const id = label.slice(PREP_PREFIX.length);
-							const name =
-								registry.ingredients?.[id]?.name ??
-								registry.cookware?.[id]?.name ??
-								id;
-							label = `${t.renderer.breakdownPrep} : ${escapeHtml(name)} <span class="timing-detail-type">(+ 2min)</span>`;
 						}
 
 						return `      <div class="timing-row">
@@ -171,28 +159,20 @@ const htmlBackend: RenderBackend = {
 
 			const renderTooltipHTML = (
 				base?: string,
-				breakdown1?: TimeBreakdownItem[],
-				breakdown2?: TimeBreakdownItem[],
+				breakdown?: TimeBreakdownItem[],
 				rowsHtml?: string,
 			) => {
-				if (!base && !breakdown1?.length && !breakdown2?.length && !rowsHtml)
-					return "";
+				if (!base && !breakdown?.length && !rowsHtml) return "";
 
 				let htmlStr = `\n    <div class="timing-tooltip">`;
 				if (base) {
 					htmlStr += `\n      <div class="timing-tooltip-title">${escapeHtml(base)}</div>`;
 				}
 
-				if (breakdown1 && breakdown1.length > 0) {
-					htmlStr += "\n" + formatBreakdownHTML(breakdown1);
+				if (breakdown && breakdown.length > 0) {
+					htmlStr += `\n${formatBreakdownHTML(breakdown)}`;
 				}
-				if (breakdown2 && breakdown2.length > 0) {
-					if (breakdown1 && breakdown1.length > 0) {
-						htmlStr += `\n      <div class="timing-divider"></div>`;
-					}
-					htmlStr += "\n" + formatBreakdownHTML(breakdown2);
-				}
-				if (rowsHtml) htmlStr += "\n" + rowsHtml;
+				if (rowsHtml) htmlStr += `\n${rowsHtml}`;
 				htmlStr += `\n    </div>`;
 				return htmlStr;
 			};
@@ -206,7 +186,6 @@ const htmlBackend: RenderBackend = {
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
 				t.renderer.totalTimeTooltip ?? t.renderer.totalTime,
-				undefined,
 				undefined,
 				miseSummaryRows,
 			);
@@ -239,7 +218,6 @@ const htmlBackend: RenderBackend = {
 			const knifeIcon = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
 			const prepTooltip = renderTooltipHTML(
 				t.renderer.prepTimeTooltip ?? t.renderer.prepTime,
-				undefined,
 				undefined,
 				miseDetailRows,
 			);
