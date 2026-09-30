@@ -62,16 +62,23 @@ export async function checkFiles(
 ): Promise<CheckResult> {
 	const limit = pLimit(20);
 	const diagnostics: Diagnostic[] = [];
+	const usedStock = new Set<string>();
 
 	await Promise.all(
 		files.map((file) =>
 			limit(async () => {
 				try {
-					const { content, compiled, analyzed } = await runPipeline(file, {
+					const {
+						content,
+						compiled,
+						analyzed,
+						usedStock: used,
+					} = await runPipeline(file, {
 						db: opts.db,
 						paths: opts.paths,
 						stock: opts.stock,
 					});
+					for (const u of used) usedStock.add(u);
 
 					// Compiler warnings, leveled by warningSeverityOf — a nutritional/
 					// estimation gap (e.g. RELATIVE_QUANTITY_UNKNOWN_MASS) no longer
@@ -108,5 +115,6 @@ export async function checkFiles(
 		diagnostics,
 		hasErrors: diagnostics.some((d) => d.level === "error"),
 		fileCount: files.length,
+		usedStock,
 	};
 }

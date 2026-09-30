@@ -91,7 +91,7 @@ export function reportUnusedStock(
 	for (const uri of stock) {
 		if (!used.has(uri)) {
 			process.stderr.write(
-				`${commandLabel}: --stock entry never matched a @use in the files ${filesDescription}: ${uri}\n`,
+				`${commandLabel}: --stock entry never matched a @use in the files ${filesDescription}: ${uri} (a relative path is resolved from the current directory, not from the recipe)\n`,
 			);
 		}
 	}

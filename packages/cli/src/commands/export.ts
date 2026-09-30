@@ -5,7 +5,7 @@ import { log } from "@clack/prompts";
 import chalk from "chalk";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { exportRecipe } from "../services/exporter";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -125,6 +125,7 @@ export default defineCommand({
 				);
 
 		let content: string;
+		let usedStock = new Set<string>();
 
 		try {
 			content = await exportRecipe(filePath, fmt, db, scaleFactor, {
@@ -136,6 +137,9 @@ export default defineCommand({
 				lang: config.language,
 				paths: config.paths,
 				stock,
+				onUsedStock: (used) => {
+					usedStock = used;
+				},
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {
@@ -145,6 +149,7 @@ export default defineCommand({
 			throw err;
 		}
 
+		reportUnusedStock("gram export", "exported", stock, [{ usedStock }]);
 		await writeFile(outputPath, content, "utf-8");
 		log.success(`Exported to ${chalk.dim(outputPath)}`);
 	},

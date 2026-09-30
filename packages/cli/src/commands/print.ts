@@ -4,7 +4,7 @@ import { log } from "@clack/prompts";
 import chalk from "chalk";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { resolveScaleArg } from "../services/scaler";
 import { generatePrintHTML, openInBrowser } from "../services/printer";
 import { reportRejectedIngredients } from "../ui/diagnostics";
@@ -107,6 +107,7 @@ export default defineCommand({
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let htmlPath: string;
+		let usedStock = new Set<string>();
 		try {
 			htmlPath = await generatePrintHTML(filePath, db, scaleFactor, {
 				hideStepQty: !args["step-qty"],
@@ -117,6 +118,9 @@ export default defineCommand({
 				lang: config.language,
 				paths: config.paths,
 				stock,
+				onUsedStock: (used) => {
+					usedStock = used;
+				},
 			});
 		} catch (err) {
 			if (err instanceof GramCLIError) {
@@ -126,6 +130,7 @@ export default defineCommand({
 			throw err;
 		}
 
+		reportUnusedStock("gram print", "printed", stock, [{ usedStock }]);
 		log.success(`HTML generated: ${chalk.dim(htmlPath)}`);
 
 		if (args.open !== false) {

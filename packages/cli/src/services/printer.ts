@@ -2,23 +2,14 @@ import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
-import type { RendererOptions } from "@gram-lang/renderer";
 import type { IngredientData } from "@gram-lang/analyzer";
-import { exportRecipe } from "./exporter";
+import { type ExportOptions, exportRecipe } from "./exporter";
 
 export async function generatePrintHTML(
 	filePath: string,
 	db: Record<string, IngredientData> | null,
 	scaleFactor?: number,
-	rendererOptions?: Pick<
-		RendererOptions,
-		"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "schedule"
-	> & {
-		bakersReference?: string;
-		lang?: string;
-		paths?: Record<string, string>;
-		stock?: Set<string>;
-	},
+	rendererOptions?: ExportOptions,
 ): Promise<string> {
 	const html = await exportRecipe(
 		filePath,

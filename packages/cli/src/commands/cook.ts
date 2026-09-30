@@ -10,7 +10,7 @@ import { version } from "../../package.json";
 import { loadConfig } from "../core/config";
 import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
-import { resolveStockFromConfig } from "../core/stock";
+import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
@@ -72,7 +72,7 @@ export default defineCommand({
 		let recipe;
 		let totalTime = 0;
 		try {
-			const { compiled, analyzed } = await runPipeline(filePath, {
+			const { compiled, analyzed, usedStock } = await runPipeline(filePath, {
 				db,
 				skipAnalyzer: !db,
 				scaleFactor,
@@ -80,6 +80,7 @@ export default defineCommand({
 				paths: config.paths,
 				stock,
 			});
+			reportUnusedStock("gram cook", "cooked", stock, [{ usedStock }]);
 			totalTime = scheduleTimes(compiled).totalTime;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
