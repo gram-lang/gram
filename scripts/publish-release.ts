@@ -122,6 +122,7 @@ async function main() {
 		console.log("\n🧪 Running quality gates (lint, typecheck, tests, conformance)...");
 		try {
 			execSync("bun run ci", { stdio: "inherit" });
+			execSync("bun run conformance", { stdio: "inherit" });
 			console.log("✓ All quality gates passed.\n");
 		} catch {
 			console.error("\n❌ Quality gates failed. Aborting release.");
