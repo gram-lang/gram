@@ -57,6 +57,11 @@ A `Timer` or `Temperature` was written without an explicit unit (e.g. `~{10}` in
 ### `INVALID_UNIT`
 Either a `Timer` was given a non-numeric (text) quantity, or a `Temperature` was given a unit other than Celsius/Fahrenheit. **Fix**: use a numeric value + a recognized unit for timers; use `°C` or `°F` for temperatures.
 
+### `DURATION_OUT_OF_RANGE`
+<Since v="1.4.0" />
+
+A timer or a section's retro-planning offset lasts longer than 1000 years. **Fix**: check the number, often a stray digit or a missing unit letter (`~{-3000d}` is eight years, `~{-3000000000d}` is not a recipe). The duration is capped at 1000 years, so the timeline stays finite instead of coming out as `0`, `Infinity` or `NaN`. That limit is a technical bound, not a judgement on recipes: anything up to it, a solera that runs for decades included, is planned as written and raises nothing.
+
 ### `SCOPE_CONFLICT`
 Two sections declare the same intermediate/global variable name (`>> name`). Variable names must be unique across the whole recipe, not just within a section. **Fix**: rename one of the two declarations.
 
