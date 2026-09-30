@@ -74,8 +74,8 @@ handle.dispose();
 | Option | Type | Description |
 |---|---|---|
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for UI translations via `@gram-lang/i18n`. |
-| `gapThresholdMinutes` | `number` | Minimum idle gap duration in minutes before gap compression is applied (default: `60`). |
-| `compressedGapSize` | `number` | Virtual minute width that compressed idle gaps collapse down to (default: `20`). |
+| `gapThresholdMinutes` | `number` | Minimum idle gap duration in minutes before gap compression is applied (default: `60`). `Infinity` never compresses. |
+| `compressedGapSize` | `number` | Virtual minute width that compressed idle gaps collapse down to (default: `20`); never wider than the gap itself. |
 | `schedule` | `'perSection' \| 'upfront'` | *(Since 1.4.0)* Which timeline to draw (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section or all at the start. It reads `schedules[schedule].blocks` from the compiled recipe. |
 
 ### `GanttInteractivityOptions`

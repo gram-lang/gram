@@ -74,8 +74,8 @@ handle.dispose();
 | Option | Type | Description |
 |---|---|---|
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI via `@gram-lang/i18n`. |
-| `gapThresholdMinutes` | `number` | Durée minimale d'inactivité en minutes avant d'appliquer la compression de la période d'attente (par défaut : `60`). |
-| `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`). |
+| `gapThresholdMinutes` | `number` | Durée minimale d'inactivité en minutes avant d'appliquer la compression de la période d'attente (par défaut : `60`). `Infinity` ne compresse jamais. |
+| `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`), sans jamais dépasser la durée de la période elle-même. |
 | `schedule` | `'perSection' \| 'upfront'` | *(Depuis la 1.4.0)* Quelle chronologie dessiner (défaut : `'perSection'`). La mise en place de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle ou tout au début. Elle lit `schedules[schedule].blocks` dans la recette compilée. |
 
 ### `GanttInteractivityOptions`
