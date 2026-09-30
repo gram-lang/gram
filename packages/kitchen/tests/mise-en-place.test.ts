@@ -150,4 +150,20 @@ Spread &filling{100g} over &dough{200g}.
 			result.warnings.filter((w) => w.code === "TIME_PARADOX"),
 		).toHaveLength(1);
 	});
+
+	it("weighs an intermediate where it is used, however it is declared", () => {
+		const perSection = (src: string) =>
+			compile(getAST(src)).miseEnPlace.map((m) => [m.section, m.duration]);
+		const onSection = perSection(
+			"## A ->&dough\n\nMix @flour{100g}.\n\n## B\n\nBake &dough.\n",
+		);
+		const onStep = perSection(
+			"## A\n\nMix @flour{100g}. ->&dough\n\n## B\n\nBake &dough.\n",
+		);
+		expect(onSection).toEqual([
+			[0, 1],
+			[1, 1],
+		]);
+		expect(onStep).toEqual(onSection);
+	});
 });

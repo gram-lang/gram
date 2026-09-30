@@ -127,6 +127,8 @@ Chaque section a sa propre mise en place : rassembler et préparer ses ingrédie
 
 C'est un choix de lecture, pas une déclaration de la recette : le playground a un sélecteur pour ça, VS Code un réglage `gram.miseEnPlace`, la CLI une option `--mise-en-place` et le moteur de rendu une option `schedule`. Il ne change que les temps **total** et **d'attente**, et la place des préparations sur le diagramme de Gantt. Le temps de préparation et le temps actif restent les mêmes, et les listes d'ingrédients ne bougent pas.
 
+Un intermédiaire (`&pâte`) se pèse dans la section qui l'utilise, quelle que soit la façon dont il est déclaré. Cette minute est une approximation : en mode par section, elle peut tomber pendant que l'intermédiaire repose encore, et la pesée semble alors se faire juste avant que la pâte soit prête. Le temps total reste juste à la minute près.
+
 ### Suivi intelligent des dépendances (ALAP)
 Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur planifiera automatiquement son pétrissage au moment optimal. Le repos de la pâte se terminera exactement au moment où l'étape suivante débutera.
 
