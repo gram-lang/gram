@@ -297,11 +297,13 @@ export function applyScale(
 				if (!token || typeof token !== "object") continue;
 				// Ingredient usage tokens have an 'id' and no token-type discriminator,
 				// except an alternative group, which has both an 'id' ("alternative")
-				// and a 'type' — handled by mutateUsageOrAlternative below.
+				// and a 'type' — handled by mutateUsageOrAlternative below — and a
+				// reference to an intermediate (`&dough{100g}`, `type: "reference"`),
+				// whose quantity scales like any other.
+				const type = (token as Partial<Usage>).type;
 				if (
 					"id" in token &&
-					(!("type" in token) ||
-						(token as Partial<Usage>).type === "alternative")
+					(type === undefined || type === "alternative" || type === "reference")
 				)
 					mutateUsageOrAlternative(token, factor, scaled);
 			}
