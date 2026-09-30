@@ -38,7 +38,13 @@ import {
 
 const recipe = {
   title: "Simple Crepes",
-  metrics: { totalTime: 30, activeTime: 10 },
+  metrics: { activeTime: 10 },
+  // The timelines a compiled recipe carries (`compile()` produces them for you).
+  // `metrics.totalTime` is deprecated: it is only read when `schedules` is missing.
+  schedules: {
+    perSection: { totalTime: 30, idleTime: 20, blocks: [] },
+    upfront: { totalTime: 30, idleTime: 20, blocks: [] }
+  },
   shopping_list: [
     { id: "flour", qty: 200, unit: "g" }
   ],
@@ -46,7 +52,7 @@ const recipe = {
     {
       title: "Preparation",
       steps: [
-        { type: "text", value: "Whisk everything together." }
+        { type: "step", content: ["Whisk everything together."] }
       ]
     }
   ]
