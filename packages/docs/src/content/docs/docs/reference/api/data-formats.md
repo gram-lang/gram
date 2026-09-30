@@ -80,6 +80,7 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
 
 ```json
 {
+  "generator": "@gram-lang/kitchen@1.4.0",
   "title": "Crepes",
   "slug": "crepes",
   "meta": { "title": "Crepes" },
@@ -125,8 +126,6 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "steps": [
         {
           "type": "step",
-          "timings": { "start": 0, "end": 2, "activeDuration": 2 },
-          "backgroundTasks": [],
           "content": [
             "Mix ",
             { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g", "normalizedMass": 200 },
@@ -146,9 +145,7 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
   "warnings": [],
   "metrics": {
     "preparationTime": 2,
-    "cookTime": 0,
-    "activeTime": 0,
-    "totalTime": 2,
+    "activeTime": 2,
 
     "totalMass": 406,                   // analyzer, global
     "massStatus": "estimated",          // analyzer
@@ -158,9 +155,32 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "isEstimate": true,
       "coverage": 1
     }
+  },
+  "miseEnPlace": [
+    { "section": 0, "duration": 2, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ] }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ]
+    },
+    "upfront": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ]
+    }
   }
 }
 ```
+
+Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and two complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks` and the `metrics` breakdowns are deprecated and go away in 2.0.0. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the two timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 

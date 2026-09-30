@@ -80,8 +80,10 @@ portions: 10
 {
   "title": "Cannelés",
   "meta": { "portions": "10" },
+  "generator": "@gram-lang/kitchen@1.4.0",
   "metrics": {
-    "totalTime": 1465,
+    "preparationTime": 24,
+    "activeTime": 41,
     "totalMass": 2132,
     "nutrition": {
       "total": {
@@ -91,6 +93,14 @@ portions: 10
         // ...
       }
     }
+  },
+  "miseEnPlace": [
+    { "section": 0, "duration": 9, "items": [ { "kind": "gather", "target": "ingredient", "count": 7, "duration": 7 } /* ... */ ] }
+    // ...
+  ],
+  "schedules": {
+    "perSection": { "totalTime": 1465, "idleTime": 1400, "blocks": [ { "kind": "prep", "section": 0, "start": 0, "end": 9 } /* ... */ ] },
+    "upfront": { "totalTime": 1489, "idleTime": 1424, "blocks": [ /* ... */ ] }
   },
   "shopping_list": [
     {
@@ -123,8 +133,7 @@ portions: 10
             ", combiner la ",
             { "id": "farine", "qty": 300, "unit": "g", "normalizedMass": 300 },
             // ... (suite de l'AST)
-          ],
-          "timings": { "start": 0, "end": 2, "activeDuration": 2 }
+          ]
         }
         // ... (autres étapes)
       ]

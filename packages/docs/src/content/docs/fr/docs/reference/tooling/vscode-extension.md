@@ -19,6 +19,16 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 - **Panneau Chronologique** : Lancez `Gram: Gantt Chart` (ou cliquez sur l'icône de graphique dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, *timers* passifs, et compression des temps morts. Le tout dans une WebView dédiée, indépendante de l'Aperçu en Direct.
 - **Modes Horaires** : Depuis le menu du panneau, basculez à l'envie entre le temps écoulé (chronomètre, T+), le compte à rebours (T-), et un rétroplanning basé sur l'heure de service souhaitée.
 - **Vue Compacte** : Pour les recettes complexes grouillant d'étapes simultanées, activez une mise en page densifiée.
+- **Mise en place** : la préparation de chaque section est dessinée comme un bloc en pointillés à la couleur de la section, par défaut juste avant elle, ou tout au début (voir le réglage `gram.miseEnPlace` ci-dessous).
+
+#### Le réglage `gram.miseEnPlace` (depuis la 1.4.0)
+
+| Valeur | Effet |
+|---|---|
+| `perSection` (par défaut) | La mise en place de chaque section est planifiée juste avant cette section. |
+| `upfront` | Toute la mise en place est planifiée au début de la recette. |
+
+Le réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total à côté du titre de la recette. Il change les temps total et d'attente, pas les listes d'ingrédients, et s'applique tout de suite à toutes les recettes ouvertes, sans recharger la fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 ### 3. Gestion intelligente des ingrédients
 - **Gestion silencieuse des pluriels** : L'extension fait intelligemment correspondre les pluriels basiques de votre recette (ex : `@carottes`) aux entrées singulières de votre base YAML (`carotte`). Vous conservez une rédaction naturelle sans déclencher de fausses alertes.
@@ -63,7 +73,7 @@ Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sur macOS) p
 ```
 
 ## Améliorations de l'interface de l'éditeur
-- **Indications *inline* (*Inlay Hints*)** : Injecte le temps cumulé (en texte grisé) en fin de ligne de chaque en-tête de section. Parfait pour évaluer la durée de préparation d'un seul coup d'œil.
+- **Indications *inline* (*Inlay Hints*)** : affiche le temps total de la recette (en texte grisé) en fin de ligne `title:`, pour évaluer la durée d'ensemble d'un seul coup d'œil. Il suit le réglage `gram.miseEnPlace`.
 - **Vue Plan (*Outline*)** : Le panneau natif *Outline* de VS Code s'enrichit de la hiérarchie des sections et des variables intermédiaires : un atout majeur pour naviguer dans de longues recettes.
 - **Pliage (*Gutter Folding*)** : Le frontmatter et le contenu des sections peuvent être repliés pour alléger votre écran.
 - **Snippets malins** : Tapez des raccourcis comme `recipe`, `##`, `step`, `@ing` ou `#cw` pour *bootstrapper* rapidement des blocs entiers.

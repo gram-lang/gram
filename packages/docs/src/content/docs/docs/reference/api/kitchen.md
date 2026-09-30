@@ -34,10 +34,11 @@ interface CompilerOptions {
 
 ```typescript
 interface CompilationResult {
+  generator: string;                 // "@gram-lang/kitchen@<version>": which compiler wrote this JSON
   title: string | null;
   slug: string | null;
   meta: Meta;                        // parsed frontmatter
-  scaleFactor?: number;               // present once any scaling has been applied
+  scaleFactor?: number;              // present once any scaling has been applied
   registry: {
     ingredients: Record<string, RegistryEntry>;
     cookware: Record<string, { id: string; name: string }>;
@@ -47,13 +48,70 @@ interface CompilationResult {
   sections: ProcessedSection[];
   warnings: Warning[];
   metrics: {
-    preparationTime: number; // estimated mise-en-place time (minutes)
-    cookTime: number;        // critical path duration (minutes)
-    activeTime: number;      // sum of active cook work time (minutes)
-    totalTime: number;       // preparationTime + cookTime
+    preparationTime: number;         // sum of miseEnPlace[].duration (minutes)
+    activeTime: number;              // sum of active cook work time (minutes)
+    // Deprecated since 1.4.0, removed in 2.0.0 (see below):
+    totalTime: number;
+    idleTime: number;
+    activeBreakdown: TimeBreakdownItem[];
+    prepBreakdown: TimeBreakdownItem[];
+    totalBreakdown: TimeBreakdownItem[];
   };
+  miseEnPlace: SectionMiseEnPlace[]; // what preparing each section costs
+  schedules: { perSection: Schedule; upfront: Schedule };
 }
+
+interface SectionMiseEnPlace {
+  section: number;                   // index into `sections`
+  duration: number;                  // == sum of items[].duration
+  items: MiseEnPlaceItem[];
+}
+
+type MiseEnPlaceItem =
+  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number }
+  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number };
+
+interface Schedule {
+  totalTime: number;                 // max(end) over blocks, from 0
+  idleTime: number;                  // totalTime - metrics.activeTime - metrics.preparationTime
+  blocks: ScheduleBlock[];           // sorted by start, then end
+}
+
+type ScheduleBlock =
+  | { kind: "prep"; section: number; start: number; end: number }
+  | { kind: "step"; section: number; step: number; start: number; end: number }
+  | { kind: "passive"; section: number; step: number; track?: string; start: number; end: number };
 ```
+
+:::note[New in 1.4.0: `generator`, `miseEnPlace` and `schedules`]
+`miseEnPlace` says what preparing each section costs, and `schedules` holds two complete timelines built from it: `perSection` (each section's preparation right before that section) and `upfront` (all the preparation first). All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block.
+
+Where a field comes from, so that you know what to trust and what to recompute:
+
+| Field | Kind | Note |
+|---|---|---|
+| `generator`, `miseEnPlace[].items` | Source | Written by the compiler. |
+| `miseEnPlace[].duration` | Derived | The sum of its `items`, kept so you don't have to add them up. |
+| `metrics.preparationTime` | Derived | The sum of every `miseEnPlace[].duration`. |
+| `schedules[mode].totalTime` | Derived | The latest `end` among the blocks. |
+| `schedules[mode].idleTime` | Derived | `totalTime - metrics.activeTime - metrics.preparationTime`. |
+
+Readers should ignore fields and block `kind` values they don't know: new ones can be added in a minor version.
+:::
+
+:::caution[Deprecated in 1.4.0, removed in 2.0.0]
+These fields keep the same values and the same meaning until 2.0.0, but you should read their replacement:
+
+| Deprecated | Use instead |
+|---|---|
+| `steps[].timings` | The `step` blocks of `schedules[mode].blocks` |
+| `steps[].backgroundTasks` | The `passive` blocks of `schedules[mode].blocks` |
+| `metrics.totalTime` | `schedules[mode].totalTime` |
+| `metrics.idleTime` | `schedules[mode].idleTime` |
+| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedules` |
+
+`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both schedules. Note that the old `metrics.totalTime` is the total of the `upfront` schedule.
+:::
 
 See [Data Formats](/docs/reference/api/data-formats) for a fully annotated example of this shape, and [Warnings](/docs/reference/api/warnings) for what can appear in `.warnings`.
 
@@ -102,7 +160,9 @@ function generateShoppingList(
   options?: CompilerOptions,
 ): (ShoppingListItem | CompositeItem | Usage)[]
 
-function calculatePreparationTime(sections: ProcessedSection[], registry: Registry): number
+function calculatePreparationTime(sections: ProcessedSection[], registry: Registry): { total: number; breakdown: TimeBreakdownItem[] }
+
+function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 ```
 
 ## `RecipeRegistry`

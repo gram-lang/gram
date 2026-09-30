@@ -17,11 +17,12 @@ The processor walks through every section and step in the AST sequentially to bu
 
 - **Variable Resolution**: When it encounters an intermediate declaration (`->&dough`), it registers it in the Global Scope. When it encounters a reference (`&dough`), it links it back to the declaration.
 - **Diagnostics**: It is the processor's job to catch logical errors — placing structured `Warning` objects in `CompilationResult.warnings` rather than throwing exceptions, so callers can render partial output while surfacing issues. If you reference `&dough` but never declared it, it emits an `UNDEFINED_REFERENCE` warning. Multi-hop circular references between intermediates (`&a -> &b -> &a`) are detected by a DFS traversal in `graph.ts` and surfaced as `CIRCULAR_REFERENCE` (`warn-016`). Under `gram check --strict`, warnings are promoted to fatal exit codes.
-- **Timeline Generation (ALAP Scheduling)**: The engine uses an **As Late As Possible (ALAP)** scheduling algorithm (decoupled into modular phases under `src/schedule/` for unit testability) through a four-phase compilation to generate a highly optimized execution timeline.
+- **Timeline Generation (ALAP Scheduling)**: The engine uses an **As Late As Possible (ALAP)** scheduling algorithm (decoupled into modular phases under `src/schedule/` for unit testability) through a multi-phase compilation to generate a highly optimized execution timeline.
   - **Phase 1 (Forward Pass)**: The compiler estimates durations and passive background tasks to determine the time required to produce intermediate preparations (`->&name`) within each section.
   - **Phase 2 (Backward Pass)**: It walks backward from the end of the recipe (`alap.ts`). When a step consumes an intermediate (`&name`), the engine records this dependency to find the latest possible time it must be ready. It also processes explicit section retro-planning anchors (`~{-1d}`). The step that produces the intermediate is then scheduled *just-in-time* so it finishes exactly when needed.
   - **Phase 3 (Serialization)**: The engine evaluates "Named Tracks" logic (`tracks.ts`), ensuring that sequential background timers sharing the same name (e.g., `~_oven`) do not overlap, adjusting their start times chronologically to avoid contention.
-  - **Phase 4 (Positive Rebasing)**: Finally (`rebase.ts`), if any steps were pushed into negative time (e.g. starting a day before serving), the entire timeline is shifted forward by the absolute minimum start time (T-Zero). This guarantees the final timeline data (`timings`) strictly contains positive absolute times starting exactly at 0, making it easy for user interfaces to consume.
+  - **Phase 4 (Positive Rebasing)**: Finally (`rebase.ts`), if any steps were pushed into negative time (e.g. starting a day before serving), the entire timeline is shifted forward by the absolute minimum start time (T-Zero). This guarantees the final timeline strictly contains positive absolute times starting exactly at 0, making it easy for user interfaces to consume.
+  - **Phase 5 (Mise en place, two timelines)** *(since 1.4.0)*: The preparation of each section (see the metrics below) is then planned in two ways. The **upfront** timeline is the result above pushed back by the total preparation time, with every preparation laid end to end from 0. The **per-section** timeline runs the backward pass again on a copy of the steps, this time with each section's preparation inserted as a step at the head of that section: the existing chaining then makes it end exactly when the section's first real step starts, and lets it overlap the rest of an earlier step. Both are stored in the result, and the reader picks one.
 
 ```mermaid
 flowchart LR
@@ -29,20 +30,27 @@ flowchart LR
     P1 --> P2["Phase 2: Backward Pass<br/><i>ALAP Retro-Planning</i>"]
     P2 --> P3["Phase 3: Serialization<br/><i>Named Tracks Queueing</i>"]
     P3 --> P4["Phase 4: Rebasing<br/><i>Shift T-Zero to 0</i>"]
-    P4 --> Result["⚙️ CompilationResult<br/><i>(Optimized Timeline)</i>"]
+    P4 --> P5["Phase 5: Mise en place<br/><i>Two timelines</i>"]
+    P5 --> Result["⚙️ CompilationResult<br/><i>(schedules.perSection / upfront)</i>"]
 ```
 
   ::: tip
   The `👉` arrow you see in rendered recipes (e.g. `👉*pastry dough*`) is a display icon added by `@gram-lang/renderer`, not Gram syntax. In `.gram` source, an intermediate is consumed with plain `&name`.
   :::
 
-### 2. Time metrics (`metrics.ts` / `processor.ts`)
+### 2. Time metrics and mise en place (`metrics.ts` / `processor.ts`)
 
 The Kitchen calculates four time metrics, combined in `core.ts`:
-- **Active Time (`activeTime`)**: The sum of all active timer durations, plus a 2-minute default for any step that declares no timer at all.
-- **Cook Time (`cookTime`)**: The absolute maximum end time of the cooking timeline, taking into account any passive background tasks (like resting dough for 24 hours) that finish after the last active step.
-- **Preparation Time (`preparationTime`)**: *Independent of timers.* It calculates the *mise en place* overhead by adding 1 minute for every unique ingredient/cookware item (tracked in the registry), plus an additional 2 minutes for every ingredient or cookware item that requires a preparation note (e.g. `@onion(peeled and chopped)`).
-- **Total Time (`totalTime`)**: `preparationTime + cookTime` — the full, realistic time investment from gathering ingredients to the dish being ready.
+- **Active time (`activeTime`)**: The sum of all active timer durations, plus a 2-minute default for any step that declares no timer at all.
+- **Idle time**: The time spent waiting, with nothing to do: the total time minus the preparation and the active time. It depends on the chosen schedule, so it is read from `schedules`.
+- **Preparation time (`preparationTime`)**: *Independent of timers.* The *mise en place* overhead: 1 minute for every unique ingredient and cookware item, plus an additional 2 minutes for every ingredient or cookware item that requires a preparation note (e.g. `@onion(peeled and chopped)`). An ingredient is counted once, in the first section that uses it; an intermediate (`&dough`) is counted where it is used, not where it is made.
+- **Total time**: `preparationTime + activeTime + idle time`, read from `schedules` too, since it depends on when the preparation happens.
+
+*(Since 1.4.0)* The preparation time is not just a total: it is split per section in `miseEnPlace`, a list where each entry says which section it belongs to and what it is made of (gathering ingredients, gathering cookware, preparing one ingredient). The sum of the entries is `preparationTime`. The two timelines in `schedules` (`perSection` and `upfront`) place these entries differently.
+
+:::note[Deprecated in 1.4.0]
+The old timing fields (`timings` and `backgroundTasks` on each step, and `metrics.totalTime`, `idleTime`, `activeBreakdown`, `prepBreakdown` and `totalBreakdown`) still hold the same values and meaning, but are deprecated and removed in 2.0.0. Read `schedules` and `miseEnPlace` instead. See the [Kitchen API reference](/docs/reference/api/kitchen).
+:::
 
 ### 3. Shopping list aggregation (`shopping.ts`)
 

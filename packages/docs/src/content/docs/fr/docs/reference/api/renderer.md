@@ -35,7 +35,8 @@ Ces trois formateurs partagent un seul et même moteur de traversée sous le cap
 | `classes` | `RendererClasses` | Surcharge les noms de classes CSS appliquées aux éléments générés (HTML/print uniquement). |
 | `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (par défaut, on gère les fractions courantes, ex : `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut : ex. `90` → `"1h 30m"`). |
-| `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et les instructions de mise en place restent intactes). |
+| `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et la liste d'ingrédients de chaque section restent intactes). |
+| `schedule` | `'perSection' \| 'upfront'` | *(Depuis la 1.4.0)* Laquelle des deux chronologies de la recette suivre : mise en place juste avant chaque section (`'perSection'`, par défaut) ou tout au début (`'upfront'`). Pilote les temps total et d'attente de l'en-tête, et en HTML un libellé « Mise en place » sur la liste d'ingrédients de chaque section (`'perSection'` seulement ; la durée et le détail s'affichent au survol). Les listes d'ingrédients sont identiques dans les deux modes. Markdown et impression n'affichent que les temps de l'en-tête. |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Affiche des contrôles interactifs d'ajustement des portions/ingrédients (HTML uniquement). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Base nutritionnelle affichée. `'auto'` (défaut) montre le par-portion si la recette déclare des portions, sinon la recette entière. |
@@ -75,6 +76,7 @@ handle.dispose();
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI via `@gram-lang/i18n`. |
 | `gapThresholdMinutes` | `number` | Durée minimale d'inactivité en minutes avant d'appliquer la compression de la période d'attente (par défaut : `60`). |
 | `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`). |
+| `schedule` | `'perSection' \| 'upfront'` | *(Depuis la 1.4.0)* Quelle chronologie dessiner (défaut : `'perSection'`). La mise en place de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle ou tout au début. Elle lit `schedules[schedule].blocks` dans la recette compilée. |
 
 ### `GanttInteractivityOptions`
 

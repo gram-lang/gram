@@ -25,7 +25,8 @@ import { Steps } from '@astrojs/starlight/components';
 3. ### Compilation (`@gram-lang/kitchen`)
    L'AST composé est ensuite transmis à la Kitchen (*Cuisine*). Elle porte la responsabilité de la logique structurelle de la recette :
    - **Scope & Ordonnancement** : Résolution des variables et calcul des plannings d'exécution optimisés via l'algorithme **ALAP (As Late As Possible)**.
-   - **Métriques de Temps** : Extraction et calcul des *timers* (`activeTime`, `cookTime`, `preparationTime` et `totalTime`).
+   - **Métriques de temps** : extraction et calcul des *timers* (`activeTime` et `preparationTime`), et répartition de la préparation par section (`miseEnPlace`).
+   - **Chronologies** : deux chronologies complètes, `schedules.perSection` (la préparation de chaque section juste avant elle) et `schedules.upfront` (toute la préparation d'abord), chacune avec son temps total et son temps d'attente.
    - **Liste de courses** : Agrégation de base des ingrédients, sommation, et résolution des composites (ex : regrouper un zeste et un jus en un citron entier).
 
    Le résultat ? Une recette logiquement irréprochable et compilée sous la forme d'un `CompilationResult` (ou `ComposedCompilationResult`).

@@ -122,6 +122,10 @@ Often, an `@ingredient` requires preparation before use. You can define this dir
 Gram encourages writing dense, data-oriented recipes. Instead of creating dedicated steps for basic *mise-en-place* tasks (e.g., `[Peel] The garlic.` then `[Mince] The garlic.`), it is highly recommended to declare these states inline using `(...)`. This keeps your recipe concise, avoids polluting the step flow, and allows frontend renderers to cleanly group preparations in the ingredient list!
 :::
 
+:::note[Where a preparation counts]
+Each preparation counts toward the mise en place of **its own section**, where it adds 2 minutes. In the HTML view, a "Mise en place" label on the section's ingredient list shows that its preparation happens there; hover it for the detail. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+:::
+
 :::caution[Spacing is strict]
 The preparation parenthesis `(...)` MUST be immediately adjacent to the quantity braces `{...}` (or to the name if there are no braces). Do not add a space between them, otherwise it will be parsed as plain text.
 :::

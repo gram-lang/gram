@@ -21,7 +21,7 @@ Génère un DOM HTML sémantique. L'export HTML repose sur l'**Inversion de Cont
 Génère un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
 
 ### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`.
+Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`. Son option `schedule` (`"perSection"` par défaut, ou `"upfront"`) choisit laquelle des deux chronologies de la recette dessiner (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)) : la préparation de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle ou tout au début. La même option pilote les temps total et d'attente dans les en-têtes HTML, Markdown et impression, ainsi qu'un petit libellé « Mise en place » sur la liste d'ingrédients de chaque section dans la vue HTML (depuis la 1.4.0).
 
 ## Traversée unifiée (`RenderBackend`)
 
@@ -35,7 +35,8 @@ import { toMarkdown, toHTML } from '@gram-lang/renderer';
 // En supposant que `recipe` soit la sortie de @gram-lang/kitchen ou @gram-lang/analyzer
 const recipe = {
   title: "Crêpes Simples",
-  metrics: { totalTime: 30, activeTime: 10 },
+  metrics: { preparationTime: 5, activeTime: 10 },
+  schedules: { perSection: { totalTime: 30, idleTime: 15, blocks: [] }, upfront: { totalTime: 30, idleTime: 15, blocks: [] } },
   shopping_list: [
     { id: "farine", qty: 200, unit: "g" }
   ],

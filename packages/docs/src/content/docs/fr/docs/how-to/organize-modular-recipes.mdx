@@ -86,7 +86,7 @@ Si vous avez suivi le guide [Votre première recette](/fr/docs/tutorials/first-r
     [Verser] Le &crémeux dans le &fond cuit{}. Réfrigérer pendant ~_{2 h}.
     ```
 
-    Tous les outils de l'écosystème Gram (chronologie Gantt, liste de courses, analyse nutritionnelle) continuent de fonctionner harmonieusement. Le temps de repos passif `~_{1 h}` de la pâte s'imbrique naturellement avec la cuisson du crémeux : `@use` intègre les étapes importées directement dans la planification globale.
+    Tous les outils de l'écosystème Gram (chronologie Gantt, liste de courses, analyse nutritionnelle) continuent de fonctionner harmonieusement. Le temps de repos passif `~_{1 h}` de la pâte s'imbrique naturellement avec la cuisson du crémeux : `@use` intègre les étapes importées directement dans la planification globale. Il en va de même pour la mise en place : les préparations de la base sont planifiées avec ses sections, elles peuvent donc tomber pendant qu'autre chose repose.
 
 3.  **Partager la base entre plusieurs recettes**
 
@@ -231,7 +231,7 @@ graph LR
 ```
 
 * **Encapsulation stricte :** `plat-fete.gram` manipule uniquement la variable `&velouté`. Les détails et variables internes du bouillon restent totalement isolés dans leur fichier.
-* **Liste de courses et chronologie unifiées :** Tous les ingrédients bruts (volaille, carottes, poireaux) et le temps de mijotage du bouillon sont automatiquement consolidés dans votre liste de courses et sur le diagramme de Gantt global.
+* **Liste de courses et chronologie unifiées :** Tous les ingrédients bruts (volaille, carottes, poireaux) et le temps de mijotage du bouillon sont automatiquement consolidés dans votre liste de courses et sur le diagramme de Gantt global, avec leur mise en place.
 
 ### Dépendances partagées (en diamant)
 Lorsqu'un menu complet importe plusieurs plats qui partagent une même base (par exemple une entrée et un dessert qui utilisent tous deux `pate-sablee.gram`) :
@@ -280,7 +280,7 @@ gram shop diner.gram --stock @bases/pate-sablee.gram
 gram cook diner.gram --stock @bases/pate-sablee.gram,@sauces/bechamel.gram
 ```
 
-* **Chronologie épurée :** les étapes de préparation des éléments en stock sont automatiquement masquées du guide pas à pas et de la frise chronologique (Gantt).
+* **Chronologie épurée :** les étapes de préparation des éléments en stock sont automatiquement masquées du guide pas à pas et de la frise chronologique (Gantt), et rien n'est préparé dans le module. Le seul coût restant est une minute de mise en place, là où votre recette sort l'élément du placard.
 * **Liste de courses simplifiée :** le composant apparaît sous forme d'un produit fini à acheter (ex. `1 pâte sablée`) au lieu de détailler ses ingrédients bruts (farine, beurre).
 * **Valeurs nutritionnelles exactes :** le calcul des calories et des macronutriments reste complet et fidèle, basé sur la composition réelle de la sous-recette.
 

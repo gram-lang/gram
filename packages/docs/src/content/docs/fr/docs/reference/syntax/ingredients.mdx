@@ -122,6 +122,10 @@ Souvent, un `@ingrédient` nécessite une préparation avant utilisation. Vous p
 Gram prône des recettes denses et très orientées données. Au lieu de multiplier les étapes pour la *mise en place* de base (ex : `[Éplucher] L'ail.` suivi de `[Hacher] L'ail.`), nous vous encourageons vivement à déclarer ces états directement *inline* via `(...)`. Cela préserve la concision de votre recette, allège la lecture des étapes, et permet aux interfaces front-end de grouper intelligemment ces notes de préparation directement dans la liste des ingrédients !
 :::
 
+:::note[Où compte une préparation]
+Chaque préparation compte dans la mise en place de **sa propre section**, où elle ajoute 2 minutes. Dans la vue HTML, un libellé « Mise en place » sur la liste d'ingrédients de la section indique que sa préparation se fait à cet endroit ; survolez-le pour le détail. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+:::
+
 :::caution[L'espacement est strict]
 La parenthèse de préparation `(...)` DOIT être immédiatement collée aux accolades de quantité `{...}` (ou au nom s'il n'y a pas d'accolades). N'ajoutez pas d'espace entre les deux, sinon cela sera analysé comme du texte brut.
 :::

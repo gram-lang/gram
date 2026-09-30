@@ -86,7 +86,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
     [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
     ```
 
-    Downstream tools — the Gantt timeline, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule.
+    Downstream tools — the Gantt timeline, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule. The same goes for the mise en place: the base's own preparations are planned with its sections, so they can fall while something else is resting.
 
 3.  **Reuse the base across multiple recipes**
 
@@ -229,7 +229,7 @@ graph LR
 ```
 
 * **Encapsulation:** `dinner.gram` only interacts with `&veloute`. Internal variables within `chicken-stock.gram` remain completely private.
-* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and Gantt schedule.
+* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and Gantt schedule, along with their mise en place.
 
 ### Diamond dependencies
 When a menu imports multiple dishes that share a common foundation (e.g. an entrée and a dessert that both import `shortcrust.gram`):
@@ -277,7 +277,7 @@ gram shop dinner.gram --stock @bases/shortcrust.gram
 gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 ```
 
-* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and Gantt schedule.
+* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and Gantt schedule, and nothing inside the module is prepared. The only cost left is one minute of mise en place where your recipe takes the stocked item off the shelf.
 * **Simplified shopping list:** Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
 * **Accurate nutritional totals:** Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
 
