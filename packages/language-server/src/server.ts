@@ -206,6 +206,20 @@ async function reloadMiseEnPlaceAndRefresh(): Promise<void> {
 	});
 }
 
+// Registered here, not inside `onInitialized`: that callback awaits the first
+// settings and the database before it gets to the end, and a settings change
+// sent in the meantime (VS Code does send one right after starting) would
+// reach a connection with no handler and be dropped, leaving every open recipe
+// on the old setting until the next change.
+connection.onDidChangeConfiguration(() => {
+	reloadDbAndRefreshDiagnostics().catch((e) =>
+		connection.console.error(`DB reload failed: ${e}`),
+	);
+	reloadMiseEnPlaceAndRefresh().catch((e) =>
+		connection.console.error(`Mise en place refresh failed: ${e}`),
+	);
+});
+
 connection.onInitialized(async () => {
 	// A document may already be open by the time the setting answers: without
 	// the refresh it would keep the default schedule until its next edit.
@@ -256,15 +270,6 @@ connection.onInitialized(async () => {
 				connection.console.error(`DB reload failed: ${e}`),
 			);
 		}
-	});
-
-	connection.onDidChangeConfiguration(() => {
-		reloadDbAndRefreshDiagnostics().catch((e) =>
-			connection.console.error(`DB reload failed: ${e}`),
-		);
-		reloadMiseEnPlaceAndRefresh().catch((e) =>
-			connection.console.error(`Mise en place refresh failed: ${e}`),
-		);
 	});
 });
 
