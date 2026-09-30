@@ -22,7 +22,7 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
-import { resolveSchedule } from "../mise-en-place";
+import { scheduleTimes } from "../mise-en-place";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
@@ -442,9 +442,11 @@ const printBackend: RenderBackend = {
 		let body = `<div class="meta">\n`;
 		if (metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const schedule = resolveSchedule(data, options.schedule);
-			const totalTime = schedule?.totalTime ?? metrics.totalTime;
-			const idleTime = schedule?.idleTime ?? metrics.idleTime;
+			const { totalTime, idleTime } = scheduleTimes(
+				data,
+				options.schedule,
+				metrics,
+			);
 			if (totalTime) {
 				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(totalTime)}</span>\n`;
 			}

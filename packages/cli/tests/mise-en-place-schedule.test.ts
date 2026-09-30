@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { compile } from "@gram-lang/kitchen";
+import { compile, scheduleFor } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
-import { passiveTimers, scheduleOf } from "../src/core/schedule";
+import { passiveTimers } from "../src/core/schedule";
 import { exportRecipe } from "../src/services/exporter";
 import { parseMiseEnPlace } from "../src/services/mise-en-place-flag";
 import { buildViewModel } from "../src/services/viewer";
@@ -103,7 +103,7 @@ describe("passiveTimers", () => {
 
 	it("gives a timer the same length whichever timeline it is read from", () => {
 		const total = (mode: "perSection" | "upfront") =>
-			scheduleOf(compiled, mode)
+			scheduleFor(compiled, mode)
 				?.blocks.filter((b) => b.kind === "passive")
 				.map((b) => b.end - b.start)
 				.sort();

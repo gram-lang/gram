@@ -80,7 +80,7 @@ export function formatAxisTime(
 export function computeGaps(
 	data: RenderableCompilationResult,
 	gapThreshold = DEFAULT_GAP_THRESHOLD,
-	schedule: ScheduleMode = "perSection",
+	schedule?: ScheduleMode,
 ): GanttGap[] {
 	const blocks = resolveSchedule(data, schedule)?.blocks;
 	if (!blocks) return [];

@@ -7,11 +7,14 @@ import {
 	formatTimer,
 	toCommonFraction,
 	type NutritionBasis,
-	type ScheduleMode,
 } from "@gram-lang/renderer";
-import type { CompilationResult } from "@gram-lang/kitchen";
+import {
+	type CompilationResult,
+	type ScheduleMode,
+	scheduleFor,
+} from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
-import { passiveTimers, scheduleOf } from "../core/schedule";
+import { passiveTimers } from "../core/schedule";
 
 function formatMass(grams: number): string {
 	if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`;
@@ -186,7 +189,7 @@ export async function buildViewModel(
 	// Total and rest time follow the chosen timeline; active and preparation
 	// time are the same in both.
 	const m = compiled.metrics;
-	const timeline = scheduleOf(compiled, opts.schedule ?? "perSection");
+	const timeline = scheduleFor(compiled, opts.schedule);
 	const total = timeline?.totalTime;
 	const rest = timeline?.idleTime;
 	const times =

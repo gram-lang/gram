@@ -1,12 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import {
-	DEFAULT_MISE_EN_PLACE,
-	parseMiseEnPlaceSetting,
-} from "../src/utils/mise-en-place-setting";
+import { DEFAULT_SCHEDULE_MODE } from "@gram-lang/kitchen";
+import { parseMiseEnPlaceSetting } from "../src/utils/mise-en-place-setting";
 
 describe("parseMiseEnPlaceSetting", () => {
 	it("defaults to preparing right before each section", () => {
-		expect(DEFAULT_MISE_EN_PLACE).toBe("perSection");
+		expect(DEFAULT_SCHEDULE_MODE).toBe("perSection");
 	});
 
 	it("reads both known values", () => {

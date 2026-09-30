@@ -21,7 +21,14 @@ import GramWarnings from "./GramWarnings.vue";
 import GramOutput from "./GramOutput.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import PlaygroundDropdown from "./PlaygroundDropdown.vue";
-import { compile, resolveScaleFactor, applyScale } from "@gram-lang/kitchen";
+import {
+	compile,
+	resolveScaleFactor,
+	applyScale,
+	DEFAULT_SCHEDULE_MODE,
+	isScheduleMode,
+	type ScheduleMode,
+} from "@gram-lang/kitchen";
 import {
 	analyze,
 	convertUnit,
@@ -131,20 +138,19 @@ const viewMode = ref<
 // Which complete timeline the views follow: mise en place right before each
 // section, or all of it at the start. A reading choice, shared by the preview,
 // the Gantt and the Markdown views, and remembered in the browser.
-type Schedule = "perSection" | "upfront";
 const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
 
-function loadSchedule(): Schedule {
+function loadSchedule(): ScheduleMode {
 	try {
 		const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
-		if (saved === "perSection" || saved === "upfront") return saved;
+		if (isScheduleMode(saved)) return saved;
 	} catch {
 		// Storage can be blocked or absent (private window, embedded frame).
 	}
-	return "perSection";
+	return DEFAULT_SCHEDULE_MODE;
 }
 
-const schedule = ref<Schedule>(loadSchedule());
+const schedule = ref<ScheduleMode>(loadSchedule());
 
 watch(schedule, (value) => {
 	try {

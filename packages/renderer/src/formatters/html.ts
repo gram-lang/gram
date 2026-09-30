@@ -27,7 +27,7 @@ import {
 	describeMiseEnPlaceItem,
 	isPerSection,
 	miseEnPlaceForSection,
-	resolveSchedule,
+	scheduleTimes,
 } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
@@ -180,9 +180,11 @@ const htmlBackend: RenderBackend = {
 
 			// Total and idle time depend on the chosen schedule; preparation and
 			// active time are the same in both.
-			const schedule = resolveSchedule(data, options.schedule);
-			const totalTime = schedule?.totalTime ?? metrics.totalTime;
-			const idleTime = schedule?.idleTime ?? metrics.idleTime;
+			const { totalTime, idleTime } = scheduleTimes(
+				data,
+				options.schedule,
+				metrics,
+			);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(

@@ -9,3 +9,4 @@ export * from "./types";
 export * from "./section";
 export * from "./scale";
 export * from "./graph";
+export * from "./schedule-mode";

@@ -1,4 +1,4 @@
-import type { CompilationResult } from "@gram-lang/kitchen";
+import type { CompilationResult, ScheduleMode } from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -113,8 +113,9 @@ export interface RendererClasses {
 /**
  * Which complete timeline a view follows: preparation right before each
  * section (`perSection`, the default) or all of it at the start (`upfront`).
+ * Owned by `@gram-lang/kitchen`, re-exported so this import path keeps working.
  */
-export type ScheduleMode = "perSection" | "upfront";
+export type { ScheduleMode };
 
 export interface RendererOptions {
 	icons?: RendererIcons;

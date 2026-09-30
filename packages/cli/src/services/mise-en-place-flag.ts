@@ -1,4 +1,4 @@
-import type { ScheduleMode } from "@gram-lang/renderer";
+import type { ScheduleMode } from "@gram-lang/kitchen";
 import { ExitCode, reportError, GramCLIError } from "../errors";
 
 /**

@@ -1,16 +1,8 @@
-import { type CompilationResult, quantityToMinutes } from "@gram-lang/kitchen";
-import type { ScheduleMode } from "@gram-lang/renderer";
-
-/**
- * The compiled result's timeline for a mise en place mode. Undefined only for
- * JSON that carries no `schedules`, so callers degrade instead of crashing.
- */
-export function scheduleOf(
-	compiled: Pick<CompilationResult, "schedules">,
-	mode: ScheduleMode,
-) {
-	return compiled.schedules?.[mode];
-}
+import {
+	type CompilationResult,
+	quantityToMinutes,
+	scheduleFor,
+} from "@gram-lang/kitchen";
 
 /**
  * Duration, in minutes, of every background timer (`~_name{}`) that runs
@@ -23,7 +15,7 @@ export function passiveTimers(
 	section: number,
 	step: number,
 ): Array<{ name?: string; duration: number }> {
-	const blocks = (scheduleOf(compiled, "perSection")?.blocks ?? []).filter(
+	const blocks = (scheduleFor(compiled)?.blocks ?? []).filter(
 		(b) => b.kind === "passive" && b.section === section && b.step === step,
 	);
 	const timers = blocks.map((b) => ({

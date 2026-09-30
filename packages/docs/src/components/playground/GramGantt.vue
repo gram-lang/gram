@@ -6,12 +6,13 @@ import {
 	attachGanttInteractivity,
 	type GanttInteractivityHandle,
 } from "@gram-lang/renderer";
+import type { ScheduleMode } from "@gram-lang/kitchen";
 
 const { lang } = useI18n();
 
 const props = defineProps<{
 	jsonData: any;
-	schedule?: "perSection" | "upfront";
+	schedule?: ScheduleMode;
 }>();
 
 const container = ref<HTMLElement | null>(null);
