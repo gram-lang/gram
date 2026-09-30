@@ -409,10 +409,11 @@ const htmlBackend: RenderBackend = {
 			html += `  <section>\n`;
 
 			// This section's own mise en place, when preparation follows the sections.
-			// Shown as the caption of the section's ingredient list, duration on hover only —
-			// times appear at the top of the recipe, not along the sections (a p, not an h4 that gram.css hides nor a nested div that would cut a `</div>` split) — it covers
-			// gathering and preparing those, not doing the steps, so it must not read
-			// as the section's total time next to the title badges.
+			// Shown as the caption of the section's ingredient list, duration on hover
+			// only: it covers gathering and preparing the ingredients, not doing the
+			// steps, so it must not read as the section's total time next to the title
+			// badges. A `p` (not an `h4`, which gram.css hides, nor a nested `div`,
+			// which would break the `</div>` split of the output).
 			const mise = isPerSection(options.schedule)
 				? miseEnPlaceForSection(data, sectionIdx)
 				: undefined;
