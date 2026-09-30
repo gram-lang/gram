@@ -194,13 +194,13 @@ async function reloadDbAndRefreshDiagnostics(): Promise<void> {
 	}
 }
 
-// A new schedule re-renders every open preview and Gantt, and refreshes the
-// title hint — nothing else about the documents changed.
+// A new schedule re-renders every open preview and Gantt from the compilation
+// already in hand, and refreshes the title hint — nothing else about the
+// documents changed, so nothing is parsed or compiled again (which would also
+// race with an edit still waiting in the debounce).
 async function reloadMiseEnPlaceAndRefresh(): Promise<void> {
 	if (!(await loadMiseEnPlace())) return;
-	await Promise.all(
-		[...states].map(([uri, state]) => refresh(uri, state.text, state.version)),
-	);
+	for (const [uri, state] of states) renderViews(uri, state);
 	await connection.languages.inlayHint.refresh().catch(() => {
 		// Client without inlay hint refresh: the hint updates on next edit.
 	});
@@ -294,6 +294,16 @@ async function refresh(
 		),
 	});
 
+	renderViews(uri, state);
+}
+
+/**
+ * Renders the preview and the Gantt chart of an already compiled document and
+ * sends them to the client. Pure output of `state`: it neither parses nor
+ * compiles, so it can run again (a new `gram.miseEnPlace`) without touching the
+ * cached state, which a pending edit's refresh is about to replace anyway.
+ */
+function renderViews(uri: string, state: DocumentState): void {
 	if (state.compilation) {
 		try {
 			// The VS Code preview ships the renderer's stylesheet (mirrored in
