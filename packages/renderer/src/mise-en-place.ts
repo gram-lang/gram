@@ -1,16 +1,16 @@
-import type {
-	MiseEnPlaceItem,
-	Schedule,
-	SectionMiseEnPlace,
+import {
+	DEFAULT_SCHEDULE_MODE,
+	type MiseEnPlaceItem,
+	type Schedule,
+	type ScheduleMode,
+	type SectionMiseEnPlace,
+	scheduleFor,
 } from "@gram-lang/kitchen";
-import type { RenderableCompilationResult, ScheduleMode } from "./types";
-
-/** Preparation right before each section, unless the reader picks otherwise. */
-export const DEFAULT_SCHEDULE: ScheduleMode = "perSection";
+import type { RenderableCompilationResult } from "./types";
 
 /** True when each section carries its own preparation (the default). */
 export const isPerSection = (mode: ScheduleMode | undefined): boolean =>
-	(mode ?? DEFAULT_SCHEDULE) === "perSection";
+	(mode ?? DEFAULT_SCHEDULE_MODE) === "perSection";
 
 /**
  * The timeline the reader picked. Undefined for a result that carries no
@@ -19,9 +19,26 @@ export const isPerSection = (mode: ScheduleMode | undefined): boolean =>
  */
 export function resolveSchedule(
 	data: RenderableCompilationResult,
-	mode: ScheduleMode = DEFAULT_SCHEDULE,
+	mode?: ScheduleMode,
 ): Schedule | undefined {
-	return data.schedules?.[mode];
+	return scheduleFor(data, mode);
+}
+
+/**
+ * Total and idle time of the timeline the reader picked, falling back on the
+ * deprecated `metrics` fields for a result that carries no `schedules`. The one
+ * place the renderer's outputs read them, so the fallback goes away in one go.
+ */
+export function scheduleTimes(
+	data: RenderableCompilationResult,
+	mode: ScheduleMode | undefined,
+	metrics: { totalTime: number; idleTime: number },
+): { totalTime: number; idleTime: number } {
+	const schedule = resolveSchedule(data, mode);
+	return {
+		totalTime: schedule?.totalTime ?? metrics.totalTime,
+		idleTime: schedule?.idleTime ?? metrics.idleTime,
+	};
 }
 
 /** What preparing section `index` costs, when it costs anything. */
