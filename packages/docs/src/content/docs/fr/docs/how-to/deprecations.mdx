@@ -3,31 +3,19 @@ title: "Fonctionnalités dépréciées"
 description: "Ce qui est déprécié dans Gram, la version qui le retirera et ce qu'il faut utiliser à la place, avec du code avant et après."
 ---
 
-Cette page recense ce qui est déprécié dans Gram, classé par version de retrait. **Une fonctionnalité dépréciée continue de fonctionner, avec les mêmes valeurs, jusqu'à cette version**, et possède un remplaçant que vous pouvez adopter dès maintenant.
-
 import Since from '../../../../../components/Since.astro';
 
-:::note[Cette page s'étoffe à chaque version]
-Dès qu'une version déprécie quelque chose, une entrée vient s'ajouter ici : vous pouvez migrer au fil de l'eau plutôt que tout d'un coup.
-:::
+Cette page recense ce qui est déprécié dans Gram, classé par version de retrait, et elle s'étoffe à chaque version qui déprécie quelque chose. **Une fonctionnalité dépréciée continue de fonctionner, avec les mêmes valeurs, jusqu'à cette version**, et possède un remplaçant que vous pouvez adopter dès maintenant : vous migrez au fil de l'eau plutôt que tout d'un coup.
 
 ## Êtes-vous concerné ?
 
 | Vous… | Que faire |
 |---|---|
 | Écrivez des recettes `.gram` et utilisez la CLI, le moteur de rendu ou le playground | Rien. Aucune syntaxe n'est dépréciée. |
-| Lisez le JSON compilé (`gram build`, une interface sur mesure, un script) | Voyez [le JSON compilé](#le-json-compilé) ci-dessous. |
+| Lisez le JSON compilé (`gram build`, une interface sur mesure, un script) | Voyez [le JSON compilé](#le-json-compilé) et [le JSON d'une version plus ancienne](#le-json-dune-version-plus-ancienne). |
 | Appelez `@gram-lang/kitchen` ou `@gram-lang/analyzer` depuis votre code | Voyez [le JSON compilé](#le-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [le JSON d'une version plus ancienne](#le-json-dune-version-plus-ancienne). |
 
-## Repérer ce que vous utilisez
-
-Cherchez dans votre code les noms dépréciés listés plus bas (`timings`, `backgroundTasks`, `totalTime`, `idleTime`, `activeBreakdown`, `prepBreakdown`, `totalBreakdown`) :
-
-```bash
-grep -rnE "\.(timings|backgroundTasks|totalTime|idleTime|activeBreakdown|prepBreakdown|totalBreakdown)\b" src/
-```
-
-Si vous utilisez TypeScript, les champs dépréciés de `@gram-lang/kitchen` 1.4.0 et suivants sont barrés dans votre éditeur, avec le remplaçant dans l'infobulle.
+Un doute sur ce que votre code utilise ? [Cherchez-y les noms dépréciés](#repérer-ce-que-vous-utilisez).
 
 ## Retiré en 2.0.0
 
@@ -39,15 +27,17 @@ Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la pr�
 
 | Déprécié | À utiliser à la place |
 |---|---|
-| `steps[].timings` | Les blocs `step` de `schedules[mode].blocks` |
-| `steps[].backgroundTasks` | Les blocs `passive` de `schedules[mode].blocks` |
+| [`steps[].timings`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `step` de `schedules[mode].blocks` |
+| [`steps[].backgroundTasks`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `passive` de `schedules[mode].blocks` |
 | `metrics.totalTime` | `schedules[mode].totalTime` |
 | `metrics.idleTime` | `schedules[mode].idleTime` |
-| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
+| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#détail-des-temps) | `miseEnPlace` et `schedules` |
 
 `metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux chronologies.
 
-#### Temps des étapes et tâches de fond
+L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` si vous voulez retrouver exactement le chiffre d'avant.
+
+### Temps des étapes et tâches de fond
 
 Avant, chaque étape portait son propre horaire et ses tâches d'attente :
 
@@ -79,23 +69,7 @@ for (const block of schedule.blocks) {
 
 [Dessiner la chronologie](/fr/docs/how-to/build-custom-ui) donne un exemple complet.
 
-#### Temps total et temps d'attente
-
-Avant :
-
-```typescript
-const { totalTime, idleTime } = recipe.metrics;
-```
-
-Désormais :
-
-```typescript
-const { totalTime, idleTime } = recipe.schedules[chosenMode];
-```
-
-L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` si vous voulez retrouver exactement le chiffre d'avant.
-
-#### Détail des temps
+### Détail des temps
 
 `metrics.activeBreakdown`, `metrics.prepBreakdown` et `metrics.totalBreakdown` listaient des durées étiquetées. La même information se trouve maintenant dans les données dont elles étaient tirées :
 
@@ -106,7 +80,9 @@ L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outil
 
 <Since v="1.4.0" type="deprecated" />
 
-`calculatePreparationTime(sections, registry)` de `@gram-lang/kitchen` renvoie `{ total, breakdown }`. Son `breakdown` est une liste de durées étiquetées dont les libellés encodent des données en texte (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). Il est déprécié et retiré en 2.0.0, où la fonction renverra seulement `{ total }` : le code qui lit `total` continue de fonctionner tel quel.
+**Déprécié :** le `breakdown` du résultat. **À utiliser à la place :** les éléments de `computeMiseEnPlace`.
+
+`calculatePreparationTime(sections, registry)` de `@gram-lang/kitchen` renvoie `{ total, breakdown }`. Son `breakdown` est une liste de durées étiquetées dont les libellés encodent des données en texte (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). Il est retiré en 2.0.0, où la fonction renverra seulement `{ total }` : le code qui lit `total` continue de fonctionner tel quel.
 
 Avant :
 
@@ -134,9 +110,21 @@ Une recette compilée porte déjà ce même découpage dans son champ `miseEnPla
 
 ### Le JSON d'une version plus ancienne
 
+**Déprécié :** la lecture des anciens champs `metrics` comme solution de repli. **À utiliser à la place :** recompiler vos recettes avec la 1.4.0 ou plus.
+
 Le JSON compilé par kitchen 1.3.0 ou antérieur n'a pas de `schedules`. Jusqu'à la 2.0.0, `scheduleTimes(compiled, mode)` de `@gram-lang/kitchen` lit encore le temps total et le temps d'attente dans les anciens champs `metrics`, et renvoie les nouveaux dès qu'ils existent. Ce repli disparaît avec la 2.0.0.
 
 Pour distinguer les deux cas, regardez `generator` : une recette compilée avec la 1.4.0 ou plus indique quel compilateur l'a écrite (`"@gram-lang/kitchen@1.4.0"`), une plus ancienne n'a pas ce champ. Recompilez vos recettes stockées avec la 1.4.0 ou plus avant de passer à la 2.0.0.
+
+## Repérer ce que vous utilisez
+
+Cherchez dans votre code les noms dépréciés. La déstructuration, comme `const { totalTime } = recipe.metrics`, est repérée aussi, tout comme des mots sans rapport tels que `timings` : relisez les résultats.
+
+```bash
+grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
+```
+
+Si vous utilisez TypeScript, les champs et fonctions dépréciés de `@gram-lang/kitchen` 1.4.0 et suivants sont barrés dans votre éditeur, avec le remplaçant dans l'infobulle.
 
 ## Pour aller plus loin
 
