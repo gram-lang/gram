@@ -265,7 +265,11 @@ export function calculatePreparationTime(
 	sections: ProcessedSection[],
 	registry: Registry,
 	mise: SectionMiseEnPlace[] = computeMiseEnPlace(sections, registry),
-): { total: number; breakdown: TimeBreakdownItem[] } {
+): {
+	total: number;
+	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Read the `items` of `computeMiseEnPlace()` instead. (Ref: kitchen-prep-time-breakdown-signature) */
+	breakdown: TimeBreakdownItem[];
+} {
 	const breakdown: TimeBreakdownItem[] = [];
 
 	let ingredients = 0;

@@ -88,8 +88,8 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "calculatePreparationTime() returns legacy text breakdown alongside total"
-    replacement: "calculatePreparationTime() will return number or structured breakdown"
+    description: "calculatePreparationTime() returns a breakdown of text-encoded labels (ingredients_overhead, cookware_overhead, prep_<id>) alongside total"
+    replacement: "Read the items of computeMiseEnPlace() (kind gather or prepare); calculatePreparationTime() keeps returning { total } in 2.0.0"
     files:
       - "packages/kitchen/src/metrics.ts"
 

@@ -17,7 +17,7 @@ Whenever a release deprecates something, it gets an entry here, so you can move 
 |---|---|
 | Write `.gram` recipes and use the CLI, the renderer or the playground | Nothing. No syntax is deprecated. |
 | Read the compiled JSON (`gram build`, a custom UI, a script) | Check [the compiled JSON](#the-compiled-json) below. |
-| Call `@gram-lang/kitchen` or `@gram-lang/analyzer` from your own code | Check [the compiled JSON](#the-compiled-json) and [JSON from an older version](#json-from-an-older-version). |
+| Call `@gram-lang/kitchen` or `@gram-lang/analyzer` from your own code | Check [the compiled JSON](#the-compiled-json), [`calculatePreparationTime`](#the-calculatepreparationtime-function) and [JSON from an older version](#json-from-an-older-version). |
 
 ## Find what you use today
 
@@ -101,6 +101,36 @@ The old `metrics.totalTime` is the total of the `upfront` timeline. Gram's own t
 
 - what the preparation is made of: the `items` of each entry of `miseEnPlace`;
 - when and for how long each step runs: the blocks of `schedules[mode].blocks` (`end - start` is the duration of a block).
+
+### The `calculatePreparationTime` function
+
+<Since v="1.4.0" type="deprecated" />
+
+`calculatePreparationTime(sections, registry)` from `@gram-lang/kitchen` returns `{ total, breakdown }`. Its `breakdown` is a list of labelled durations whose labels encode data as text (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). It is deprecated and removed in 2.0.0, when the function returns `{ total }` only: code that reads `total` keeps working unchanged.
+
+Before:
+
+```typescript
+const { total, breakdown } = calculatePreparationTime(sections, registry);
+for (const item of breakdown) show(item.label, item.duration);
+```
+
+Now, read the structured items of the mise en place instead:
+
+```typescript
+import { calculatePreparationTime, computeMiseEnPlace } from '@gram-lang/kitchen';
+
+const { total } = calculatePreparationTime(sections, registry);
+for (const entry of computeMiseEnPlace(sections, registry)) {
+  for (const item of entry.items) {
+    // { kind: 'gather', target: 'ingredient' | 'cookware', count, duration }
+    // { kind: 'prepare', ref: { type, id }, duration }
+    show(item, item.duration);
+  }
+}
+```
+
+A compiled recipe already carries the same split in its `miseEnPlace` field.
 
 ### JSON from an older version
 

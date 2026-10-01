@@ -109,6 +109,7 @@ Ces champs gardent les mêmes valeurs et le même sens jusqu'à la 2.0.0, mais i
 | `metrics.totalTime` | `schedules[mode].totalTime` |
 | `metrics.idleTime` | `schedules[mode].idleTime` |
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
+| `calculatePreparationTime().breakdown` | Les `items` de `computeMiseEnPlace()` (`calculatePreparationTime()` renvoie toujours `total`) |
 
 `metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux plannings. Attention : l'ancien `metrics.totalTime` est le total du planning `upfront`.
 
@@ -170,7 +171,7 @@ function calculatePreparationTime(
   sections: ProcessedSection[],
   registry: Registry,
   mise?: SectionMiseEnPlace[], // la répartition ci-dessous, si vous l'avez déjà
-): { total: number; breakdown: TimeBreakdownItem[] }
+): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` est déprécié, voir plus bas
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ le champ `miseEnPlace` d'une recette compilée, déduit de ses sections

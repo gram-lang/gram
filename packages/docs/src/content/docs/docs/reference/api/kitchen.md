@@ -109,6 +109,7 @@ These fields keep the same values and the same meaning until 2.0.0, but you shou
 | `metrics.totalTime` | `schedules[mode].totalTime` |
 | `metrics.idleTime` | `schedules[mode].idleTime` |
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedules` |
+| `calculatePreparationTime().breakdown` | The `items` of `computeMiseEnPlace()` (`calculatePreparationTime()` still returns `total`) |
 
 `metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both schedules. Note that the old `metrics.totalTime` is the total of the `upfront` schedule.
 
@@ -170,7 +171,7 @@ function calculatePreparationTime(
   sections: ProcessedSection[],
   registry: Registry,
   mise?: SectionMiseEnPlace[], // the split below, when you already have it
-): { total: number; breakdown: TimeBreakdownItem[] }
+): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` is deprecated, see below
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ the `miseEnPlace` field of a compiled recipe, derived from its sections

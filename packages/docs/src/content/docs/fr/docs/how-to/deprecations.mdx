@@ -17,7 +17,7 @@ Dès qu'une version déprécie quelque chose, une entrée vient s'ajouter ici : 
 |---|---|
 | Écrivez des recettes `.gram` et utilisez la CLI, le moteur de rendu ou le playground | Rien. Aucune syntaxe n'est dépréciée. |
 | Lisez le JSON compilé (`gram build`, une interface sur mesure, un script) | Voyez [le JSON compilé](#le-json-compilé) ci-dessous. |
-| Appelez `@gram-lang/kitchen` ou `@gram-lang/analyzer` depuis votre code | Voyez [le JSON compilé](#le-json-compilé) et [le JSON d'une version plus ancienne](#le-json-dune-version-plus-ancienne). |
+| Appelez `@gram-lang/kitchen` ou `@gram-lang/analyzer` depuis votre code | Voyez [le JSON compilé](#le-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [le JSON d'une version plus ancienne](#le-json-dune-version-plus-ancienne). |
 
 ## Repérer ce que vous utilisez
 
@@ -101,6 +101,36 @@ L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outil
 
 - de quoi est faite la préparation : les `items` de chaque entrée de `miseEnPlace` ;
 - quand et combien de temps dure chaque étape : les blocs de `schedules[mode].blocks` (`end - start` donne la durée d'un bloc).
+
+### La fonction `calculatePreparationTime`
+
+<Since v="1.4.0" type="deprecated" />
+
+`calculatePreparationTime(sections, registry)` de `@gram-lang/kitchen` renvoie `{ total, breakdown }`. Son `breakdown` est une liste de durées étiquetées dont les libellés encodent des données en texte (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). Il est déprécié et retiré en 2.0.0, où la fonction renverra seulement `{ total }` : le code qui lit `total` continue de fonctionner tel quel.
+
+Avant :
+
+```typescript
+const { total, breakdown } = calculatePreparationTime(sections, registry);
+for (const item of breakdown) show(item.label, item.duration);
+```
+
+Désormais, lisez plutôt les éléments structurés de la mise en place :
+
+```typescript
+import { calculatePreparationTime, computeMiseEnPlace } from '@gram-lang/kitchen';
+
+const { total } = calculatePreparationTime(sections, registry);
+for (const entry of computeMiseEnPlace(sections, registry)) {
+  for (const item of entry.items) {
+    // { kind: 'gather', target: 'ingredient' | 'cookware', count, duration }
+    // { kind: 'prepare', ref: { type, id }, duration }
+    show(item, item.duration);
+  }
+}
+```
+
+Une recette compilée porte déjà ce même découpage dans son champ `miseEnPlace`.
 
 ### Le JSON d'une version plus ancienne
 
