@@ -6,6 +6,9 @@
 #   warningCode  the compiler warning that flags the old form (must exist in a WarningCode enum)
 #   migration    the `gram migrate` codemod id, or `manual` when no rewrite is possible
 #
+# An `internal: true` entry is a removal chore users never see (not allowed on syntax, ast,
+# compiled-json or analyzed-json): it is tracked and gated like the others, but not announced.
+#
 # status:
 #   planned  agreed for targetRemoval but not yet deprecated in code: no deprecatedIn, no markers.
 #   active   deprecated since deprecatedIn: every file listed must carry a marker for the id
@@ -74,6 +77,7 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
+    internal: true
     description: "HTML renderer active time tooltip reads metrics.activeBreakdown instead of schedule blocks"
     replacement: "Derive active duration tooltip directly from schedules[mode].blocks"
     files:

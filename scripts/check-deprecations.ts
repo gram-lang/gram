@@ -30,6 +30,8 @@ interface DeprecationEntry {
 	replacement: string;
 	/** Compiler warning raised for the deprecated form. Required for an active `syntax` entry. */
 	warningCode?: string;
+	/** A removal chore users never see (e.g. internal code reading a deprecated field): tracked, but not announced. */
+	internal?: boolean;
 	/** What rewrites the old form: a `gram migrate` codemod id, or `manual`. Required for an active `syntax` entry. */
 	migration?: string;
 	files?: string[];
@@ -138,6 +140,13 @@ function validateRegistry(raw: unknown, errors: string[]): DeprecationEntry[] {
 				if (target && compareSemver(since, target) >= 0) problems.push("`deprecatedIn` must be before `targetRemoval`");
 			} catch {
 				problems.push(`\`deprecatedIn\` is required for an ${entry.status} entry (a semver version)`);
+			}
+		}
+
+		if (entry.internal !== undefined) {
+			if (typeof entry.internal !== "boolean") problems.push("`internal` must be true or false");
+			else if (entry.internal && ["syntax", "ast", "compiled-json", "analyzed-json"].includes(entry.layer as string)) {
+				problems.push("`internal` cannot be used on a layer users read directly (syntax, ast, compiled-json, analyzed-json)");
 			}
 		}
 
@@ -347,7 +356,7 @@ function main() {
 		for (const dep of pending) {
 			const tag = dep.status === "active" ? "active " : "planned";
 			const n = markers.filter((m) => m.id === dep.id && m.kind !== "legacy-fixture").length;
-			console.log(`  [${tag}] ${dep.id} (${dep.layer}, ${n} marker${n === 1 ? "" : "s"})`);
+			console.log(`  [${tag}] ${dep.id} (${dep.layer}${dep.internal ? ", internal" : ""}, ${n} marker${n === 1 ? "" : "s"})`);
 			console.log(`      ${dep.description}`);
 			console.log(`      -> ${dep.replacement}`);
 			if (dep.warningCode || dep.migration) {
