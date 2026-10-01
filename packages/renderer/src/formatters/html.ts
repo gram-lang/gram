@@ -205,6 +205,7 @@ const htmlBackend: RenderBackend = {
 			}
 
 			const fireIcon = options.icons?.fire ?? DEFAULT_ICONS.html.fire;
+			// @remove-in: 2.0.0 [renderer-active-breakdown-tooltip]
 			const activeTooltip = renderTooltipHTML(
 				t.renderer.activeTimeCardTooltip ?? t.renderer.activeTime,
 				metrics.activeBreakdown,

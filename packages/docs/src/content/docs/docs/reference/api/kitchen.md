@@ -111,6 +111,8 @@ These fields keep the same values and the same meaning until 2.0.0, but you shou
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedules` |
 
 `metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both schedules. Note that the old `metrics.totalTime` is the total of the `upfront` schedule.
+
+The [Deprecated features](/docs/how-to/deprecations) page shows before and after code for each of them.
 :::
 
 :::note[JSON compiled before 1.4.0]

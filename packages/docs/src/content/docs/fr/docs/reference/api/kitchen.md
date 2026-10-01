@@ -111,6 +111,8 @@ Ces champs gardent les mêmes valeurs et le même sens jusqu'à la 2.0.0, mais i
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
 
 `metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux plannings. Attention : l'ancien `metrics.totalTime` est le total du planning `upfront`.
+
+La page [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) donne un avant/après en code pour chacun d'eux.
 :::
 
 :::note[JSON compilé avant la 1.4.0]

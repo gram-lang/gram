@@ -1,0 +1,114 @@
+---
+title: "Fonctionnalités dépréciées"
+description: "Ce qui est déprécié dans Gram, la version qui le retirera et ce qu'il faut utiliser à la place, avec du code avant et après."
+---
+
+Cette page recense ce qui est déprécié dans Gram, classé par version de retrait. **Une fonctionnalité dépréciée continue de fonctionner, avec les mêmes valeurs, jusqu'à cette version**, et possède un remplaçant que vous pouvez adopter dès maintenant.
+
+import Since from '../../../../../components/Since.astro';
+
+:::note[Cette page s'étoffe à chaque version]
+Dès qu'une version déprécie quelque chose, une entrée vient s'ajouter ici : vous pouvez migrer au fil de l'eau plutôt que tout d'un coup.
+:::
+
+## Êtes-vous concerné ?
+
+| Vous… | Que faire |
+|---|---|
+| Écrivez des recettes `.gram` et utilisez la CLI, le moteur de rendu ou le playground | Rien. Aucune syntaxe n'est dépréciée. |
+| Lisez le JSON compilé (`gram build`, une interface sur mesure, un script) | Voyez [le JSON compilé](#le-json-compilé) ci-dessous. |
+| Appelez `@gram-lang/kitchen` ou `@gram-lang/analyzer` depuis votre code | Voyez [le JSON compilé](#le-json-compilé) et [le JSON d'une version plus ancienne](#le-json-dune-version-plus-ancienne). |
+
+## Repérer ce que vous utilisez
+
+Cherchez dans votre code les noms dépréciés listés plus bas (`timings`, `backgroundTasks`, `totalTime`, `idleTime`, `activeBreakdown`, `prepBreakdown`, `totalBreakdown`) :
+
+```bash
+grep -rnE "\.(timings|backgroundTasks|totalTime|idleTime|activeBreakdown|prepBreakdown|totalBreakdown)\b" src/
+```
+
+Si vous utilisez TypeScript, les champs dépréciés de `@gram-lang/kitchen` 1.4.0 et suivants sont barrés dans votre éditeur, avec le remplaçant dans l'infobulle.
+
+## Retiré en 2.0.0
+
+### Le JSON compilé
+
+<Since v="1.4.0" type="deprecated" />
+
+Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la préparation de chaque section) et `schedules`, deux chronologies complètes : `perSection` (la préparation de chaque section juste avant elle) et `upfront` (toute la préparation d'abord). Elles remplacent les champs ci-dessous. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) détaille chaque champ.
+
+| Déprécié | À utiliser à la place |
+|---|---|
+| `steps[].timings` | Les blocs `step` de `schedules[mode].blocks` |
+| `steps[].backgroundTasks` | Les blocs `passive` de `schedules[mode].blocks` |
+| `metrics.totalTime` | `schedules[mode].totalTime` |
+| `metrics.idleTime` | `schedules[mode].idleTime` |
+| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
+
+`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux chronologies.
+
+#### Temps des étapes et tâches de fond
+
+Avant, chaque étape portait son propre horaire et ses tâches d'attente :
+
+```typescript
+for (const section of recipe.sections) {
+  for (const step of section.steps) {
+    if (step.type !== 'step') continue; // un commentaire n'a pas d'horaire
+    draw(step.action, step.timings.start, step.timings.end);
+    for (const task of step.backgroundTasks) {
+      const start = step.timings.start + task.startOffset;
+      draw(task.name ?? 'Timer', start, start + task.duration);
+    }
+  }
+}
+```
+
+Désormais, lisez les blocs d'une des deux chronologies. Tous les temps sont en minutes à partir de `0` et incluent la mise en place : ils dépendent donc de la chronologie choisie, ne les mélangez pas avec `timings` dans un même diagramme.
+
+```typescript
+const schedule = recipe.schedules[chosenMode]; // 'perSection' ou 'upfront'
+
+for (const block of schedule.blocks) {
+  if (block.kind === 'prep') continue; // la mise en place d'une section (nouveau)
+  const step = recipe.sections[block.section].steps[block.step];
+  const label = block.kind === 'passive' ? (block.track ?? 'Timer') : step.action;
+  draw(label, block.start, block.end);
+}
+```
+
+[Dessiner la chronologie](/fr/docs/how-to/build-custom-ui) donne un exemple complet.
+
+#### Temps total et temps d'attente
+
+Avant :
+
+```typescript
+const { totalTime, idleTime } = recipe.metrics;
+```
+
+Désormais :
+
+```typescript
+const { totalTime, idleTime } = recipe.schedules[chosenMode];
+```
+
+L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` si vous voulez retrouver exactement le chiffre d'avant.
+
+#### Détail des temps
+
+`metrics.activeBreakdown`, `metrics.prepBreakdown` et `metrics.totalBreakdown` listaient des durées étiquetées. La même information se trouve maintenant dans les données dont elles étaient tirées :
+
+- de quoi est faite la préparation : les `items` de chaque entrée de `miseEnPlace` ;
+- quand et combien de temps dure chaque étape : les blocs de `schedules[mode].blocks` (`end - start` donne la durée d'un bloc).
+
+### Le JSON d'une version plus ancienne
+
+Le JSON compilé par kitchen 1.3.0 ou antérieur n'a pas de `schedules`. Jusqu'à la 2.0.0, `scheduleTimes(compiled, mode)` de `@gram-lang/kitchen` lit encore le temps total et le temps d'attente dans les anciens champs `metrics`, et renvoie les nouveaux dès qu'ils existent. Ce repli disparaît avec la 2.0.0.
+
+Pour distinguer les deux cas, regardez `generator` : une recette compilée avec la 1.4.0 ou plus indique quel compilateur l'a écrite (`"@gram-lang/kitchen@1.4.0"`), une plus ancienne n'a pas ce champ. Recompilez vos recettes stockées avec la 1.4.0 ou plus avant de passer à la 2.0.0.
+
+## Pour aller plus loin
+
+- Le [journal des modifications](/fr/docs/changelog) de chaque version.
+- Les [formats de données](/fr/docs/reference/api/data-formats), avec un exemple annoté du JSON compilé.

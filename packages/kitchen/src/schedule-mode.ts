@@ -45,6 +45,7 @@ export function scheduleTimes(
 	mode?: ScheduleMode,
 ): { totalTime: number; idleTime: number } {
 	const schedule = scheduleFor(compiled, mode);
+	// @remove-in: 2.0.0 [kitchen-legacy-schedule-fallback]
 	return {
 		totalTime: schedule?.totalTime ?? compiled.metrics?.totalTime ?? 0,
 		idleTime: schedule?.idleTime ?? compiled.metrics?.idleTime ?? 0,

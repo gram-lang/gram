@@ -1,0 +1,109 @@
+# deprecations.yaml — Universal lifecycle and deprecation registry for Gram
+# This file tracks all deprecated features, scheduled removals, and migration paths.
+# Machine-readable and verified by: bun run deprecations (report) / deprecations:check (CI gate).
+#
+# An active `syntax` entry (the only layer reached through users' own .gram files) must also set
+#   warningCode  the compiler warning that flags the old form (must exist in a WarningCode enum)
+#   migration    the `gram migrate` codemod id, or `manual` when no rewrite is possible
+#
+# status:
+#   planned  agreed for targetRemoval but not yet deprecated in code: no deprecatedIn, no markers.
+#   active   deprecated since deprecatedIn: every file listed must carry a marker for the id
+#            (JSDoc "@deprecated ... (Ref: <id>)" or "// @remove-in: X.Y.Z [<id>]").
+#   removed  gone from the code: kept as migration history; any remaining marker fails the check.
+
+schemaVersion: 1
+
+deprecations:
+  - id: kitchen-step-timings
+    layer: compiled-json
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "steps[].timings is deprecated in favor of schedules[mode].blocks"
+    replacement: "recipe.schedules.perSection or recipe.schedules.upfront"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/kitchen/src/schedule/rebase.ts"
+
+  - id: kitchen-step-background-tasks
+    layer: compiled-json
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "steps[].backgroundTasks is deprecated in favor of schedules[mode].blocks"
+    replacement: "recipe.schedules[mode].blocks"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/kitchen/src/schedule/rebase.ts"
+
+  - id: kitchen-metrics-times
+    layer: compiled-json
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "metrics.totalTime and metrics.idleTime are deprecated in favor of schedule-specific totals"
+    replacement: "recipe.schedules[mode].totalTime and recipe.schedules[mode].idleTime"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/kitchen/src/core.ts"
+
+  - id: kitchen-metrics-breakdowns
+    layer: compiled-json
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "metrics.activeBreakdown, prepBreakdown, and totalBreakdown are deprecated"
+    replacement: "schedules[mode].blocks or structured breakdown items"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/kitchen/src/core.ts"
+
+  - id: kitchen-legacy-schedule-fallback
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "Fallback in scheduleTimes() supporting compiled JSON produced before 1.4.0"
+    replacement: "Recompile recipes with Gram >= 1.4.0 to generate schedules block"
+    files:
+      - "packages/kitchen/src/schedule-mode.ts"
+
+  - id: renderer-active-breakdown-tooltip
+    layer: renderer
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "HTML renderer active time tooltip reads metrics.activeBreakdown instead of schedule blocks"
+    replacement: "Derive active duration tooltip directly from schedules[mode].blocks"
+    files:
+      - "packages/renderer/src/formatters/html.ts"
+
+  - id: kitchen-prep-time-breakdown-signature
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "calculatePreparationTime() returns legacy text breakdown alongside total"
+    replacement: "calculatePreparationTime() will return number or structured breakdown"
+    files:
+      - "packages/kitchen/src/metrics.ts"
+
+  - id: json-snake-case-keys
+    layer: compiled-json
+    targetRemoval: "2.0.0"
+    status: planned
+    description: "8 snake_case keys in compiled/analyzed JSON (shopping_list, retro_planning, intermediate_preparation, default_unit, is_composite, is_intermediate, is_module_synthetic, variable_entries); _usageId/_usageIds are tracked separately in json-internal-usage-ids"
+    replacement: "Normalized camelCase keys (shoppingList, retroPlanning, etc.)"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/analyzer/src/types.ts"
+
+  - id: json-internal-usage-ids
+    layer: compiled-json
+    targetRemoval: "2.0.0"
+    status: planned
+    description: "_usageId and _usageIds exposed in public JSON without formal API contract"
+    replacement: "Explicit token kind/discriminant on StepToken and public usage references"
+    files:
+      - "packages/kitchen/src/types.ts"

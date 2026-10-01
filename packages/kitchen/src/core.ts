@@ -75,6 +75,7 @@ export function compile(
 		warnings: registry.warnings,
 		metrics: (() => {
 			const prepRes = resultPayload.preparation;
+			// @remove-in: 2.0.0 [kitchen-metrics-times, kitchen-metrics-breakdowns]
 			return {
 				totalTime:
 					prepRes.total +

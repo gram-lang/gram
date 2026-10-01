@@ -75,7 +75,8 @@ export default defineConfig({
             { label: 'Configure AI provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
             { label: 'Scale recipes dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
             { label: 'Generate shopping list', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
-            { label: 'How to build a custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' }
+            { label: 'How to build a custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' },
+            { label: 'Deprecated features', translations: { fr: 'Fonctionnalités dépréciées' }, slug: 'docs/how-to/deprecations' }
           ]
         },
         {

@@ -128,7 +128,7 @@ async function main() {
     }
 
     // Append unified sections
-    const prioritySections = ["Breaking", "Fixed", "New syntax", "Kitchen", "Analyzer", "Docs"];
+    const prioritySections = ["Breaking", "Deprecated", "Fixed", "New syntax", "Kitchen", "Analyzer", "Docs"];
     const allSections = Object.keys(extractedSections);
     
     // Sort sections: priority ones first, then alphabetical

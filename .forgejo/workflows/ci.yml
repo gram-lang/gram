@@ -81,6 +81,7 @@ jobs:
           bun run lint
           bun run typecheck
           bun run any-ratchet
+          bun run deprecations:check
 
       - name: Unit Tests
         run: bun test

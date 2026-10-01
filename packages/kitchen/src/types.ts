@@ -174,13 +174,13 @@ export interface ProcessedStep {
 	type: "step";
 	action?: string; // The explicit action verb (e.g. "Mix")
 	// Gantt Data
-	/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-step-timings) */
 	timings: {
 		start: number; // Global start time (in minutes, relative to T=0)
 		end: number; // Global end time (when the cook is free)
 		activeDuration: number; // How long the cook is blocked on this step
 	};
-	/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-step-background-tasks) */
 	backgroundTasks: Array<{
 		name?: string; // E.g., "baking" or the timer name
 		duration: number; // In minutes
@@ -273,15 +273,15 @@ export interface CompilationResult {
 	metrics: {
 		preparationTime: number; // Estimated mise-en-place time (sum of miseEnPlace[].duration)
 		activeTime: number; // Sum of blocking work time (default step durations + active timers)
-		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-times) */
 		idleTime: number; // Duration of passive background tasks / waiting
-		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-times) */
 		totalTime: number; // preparationTime + activeTime + idleTime
-		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
 		activeBreakdown: TimeBreakdownItem[]; // Added for exact tooltip calculation
-		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
 		prepBreakdown: TimeBreakdownItem[];
-		/** @deprecated since 1.4.0, removed in 2.0.0 — use schedules / miseEnPlace */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
 		totalBreakdown: TimeBreakdownItem[]; // The critical path
 	};
 	/** What preparing each section costs — independent of the chosen schedule. */

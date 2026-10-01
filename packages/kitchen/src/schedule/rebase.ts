@@ -176,6 +176,7 @@ export function commitTimeline(
 	timeline: Timeline,
 	globalActiveTime: number,
 ): ScheduleMetrics {
+	// @remove-in: 2.0.0 [kitchen-step-timings]
 	for (const { sched, start, end } of timeline.steps) {
 		const stepObj = sched.stepObj as ProcessedStep;
 		stepObj.timings.start = start;
@@ -183,6 +184,7 @@ export function commitTimeline(
 		stepObj.timings.activeDuration = sched.localActiveTime;
 	}
 
+	// @remove-in: 2.0.0 [kitchen-step-background-tasks]
 	for (const { entry, start } of timeline.passives) {
 		const stepObj = entry.sched.stepObj as ProcessedStep;
 		stepObj.backgroundTasks.push({

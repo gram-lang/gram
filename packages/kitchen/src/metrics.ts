@@ -287,5 +287,6 @@ export function calculatePreparationTime(
 	breakdown.push(...prepared);
 
 	const total = breakdown.reduce((sum, b) => sum + b.duration, 0);
+	// @remove-in: 2.0.0 [kitchen-prep-time-breakdown-signature]
 	return { total, breakdown };
 }

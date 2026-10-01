@@ -13,4 +13,10 @@
 - New `ScheduleMode`, `SCHEDULE_MODES`, `DEFAULT_SCHEDULE_MODE`, `isScheduleMode`, `scheduleFor` and `scheduleTimes` to choose between the two timelines the same way everywhere (the renderer keeps re-exporting `ScheduleMode`)
 - JSON compiled before 1.4.0, which has no `schedules`, still gets a total and idle time, read from its old `metrics` fields, in the renderer outputs, the editor hint and `gram diff` (its Gantt chart has nothing to draw)
 - The compiled recipe now says which version produced it (new `generator` field)
-- Step `timings`, `backgroundTasks` and the `metrics` time breakdowns are deprecated and will be removed in 2.0.0 — read `schedules` instead
+
+**Deprecated**
+
+- Kitchen: `steps[].timings` and `steps[].backgroundTasks`, removed in 2.0.0. Read the `step` and `passive` blocks of `schedules[mode].blocks` instead
+- Kitchen: `metrics.totalTime` and `metrics.idleTime`, removed in 2.0.0. Read `schedules[mode].totalTime` and `schedules[mode].idleTime` instead (the old `metrics.totalTime` is the total of the `upfront` timeline)
+- Kitchen: `metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown`, removed in 2.0.0. Use `miseEnPlace` and `schedules` instead
+- Everything above keeps working, with the same values, until 2.0.0. The Deprecated features page shows what to change for each of them: https://gram-lang.org/docs/how-to/deprecations/
