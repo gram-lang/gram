@@ -65,7 +65,14 @@ const targetUrl = href || getDefaultReleaseUrl(cleanVersion, isFrench);
 >{formattedVersion}</a>
 
 <style>
+	/* Each variant only sets three tokens. The --sl-color-* scales flip with
+	 * the theme (dark tint + light text in dark mode, light tint + dark text in
+	 * light mode), so every pair keeps a readable contrast in both. */
 	.since-badge {
+		--since-border: var(--sl-color-accent);
+		--since-bg: var(--sl-color-bg);
+		--since-fg: var(--sl-color-text-accent);
+
 		display: inline-flex;
 		align-items: center;
 		padding: 0.1rem 0.45rem;
@@ -79,30 +86,26 @@ const targetUrl = href || getDefaultReleaseUrl(cleanVersion, isFrench);
 		letter-spacing: 0.02em;
 		cursor: pointer;
 		margin-bottom: 0.5rem;
-		border: 1px solid var(--sl-badge-default-border, var(--sl-color-accent));
-		background: var(--sl-badge-default-bg, var(--sl-color-accent-low));
-		color: var(--sl-color-text-accent);
+		border: 1px solid var(--since-border);
+		background: var(--since-bg);
+		/* !important: the generic `.sl-markdown-content a` rule (and its
+		 * :hover) would otherwise repaint the text in the body colour. */
+		color: var(--since-fg) !important;
 	}
 
 	.since-badge:hover {
-
-	}
-
-	.since-added {
-		border-color: var(--sl-badge-default-border, var(--sl-color-accent));
-		background: var(--sl-color-bg);
-		color: var(--sl-color-text-accent);
+		border-color: var(--since-fg);
 	}
 
 	.since-changed {
-		border-color: var(--sl-badge-caution-border, var(--sl-color-orange, #f97316));
-		background: var(--sl-badge-caution-bg, var(--sl-color-orange-low, rgba(249, 115, 22, 0.15)));
-		color: var(--sl-color-orange-high, #fb923c);
+		--since-border: var(--sl-color-orange);
+		--since-bg: var(--sl-color-orange-low);
+		--since-fg: var(--sl-color-orange-high);
 	}
 
 	.since-deprecated {
-		border-color: var(--sl-badge-danger-border, var(--sl-color-red, #ef4444));
-		background: var(--sl-badge-danger-bg, var(--sl-color-red-low, rgba(239, 68, 68, 0.15)));
-		color: var(--sl-color-red-high, #f87171);
+		--since-border: var(--sl-color-red);
+		--since-bg: var(--sl-color-red-low);
+		--since-fg: var(--sl-color-red-high);
 	}
 </style>
