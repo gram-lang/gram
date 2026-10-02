@@ -84,7 +84,7 @@ type ScheduleBlock =
 ```
 
 :::note[Nouveau en 1.4.0 : `generator`, `miseEnPlace` et `schedules`]
-`miseEnPlace` dit ce que coûte la préparation de chaque section, et `schedules` contient deux chronologies complètes construites à partir de là : `perSection` (la préparation de chaque section juste avant elle) et `upfront` (toute la préparation d'abord). Tous les temps sont en minutes depuis 0 et incluent la préparation. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, et `track` n'existe que pour un minuteur nommé (`~_four{...}`). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep`.
+`miseEnPlace` dit ce que coûte la préparation de chaque section, et `schedules` contient deux chronologies complètes construites à partir de là : `perSection` (la préparation de chaque section juste avant elle) et `upfront` (toute la préparation d'abord). Tous les temps sont en minutes depuis 0 et incluent la préparation. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, et `track` n'existe que pour un minuteur nommé (`~_four{...}`). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep` : `miseEnPlace` n'est donc pas indexé par section, retrouvez une entrée grâce à son champ `section`, jamais à sa position dans le tableau.
 
 D'où vient chaque champ, pour savoir ce qu'on peut croire et ce qu'il faut recalculer :
 
