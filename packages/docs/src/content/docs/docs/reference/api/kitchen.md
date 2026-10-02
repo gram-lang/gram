@@ -84,7 +84,7 @@ type ScheduleBlock =
 ```
 
 :::note[New in 1.4.0: `generator`, `miseEnPlace` and `schedules`]
-`miseEnPlace` says what preparing each section costs, and `schedules` holds two complete timelines built from it: `perSection` (each section's preparation right before that section) and `upfront` (all the preparation first). All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block.
+`miseEnPlace` says what preparing each section costs, and `schedules` holds two complete timelines built from it: `perSection` (each section's preparation right before that section) and `upfront` (all the preparation first). All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block, so `miseEnPlace` is not indexed by section: find an entry by its `section` field, never by its position in the array.
 
 Where a field comes from, so that you know what to trust and what to recompute:
 
