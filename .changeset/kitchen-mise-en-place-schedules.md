@@ -19,4 +19,5 @@
 - Kitchen: `steps[].timings` and `steps[].backgroundTasks`, removed in 2.0.0. Read the `step` and `passive` blocks of `schedules[mode].blocks` instead
 - Kitchen: `metrics.totalTime` and `metrics.idleTime`, removed in 2.0.0. Read `schedules[mode].totalTime` and `schedules[mode].idleTime` instead (the old `metrics.totalTime` is the total of the `upfront` timeline)
 - Kitchen: `metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown`, removed in 2.0.0. Use `miseEnPlace` and `schedules` instead
+- Kitchen: the `breakdown` returned by `calculatePreparationTime`, removed in 2.0.0 (the function then returns `{ total }`, so code reading `total` is unaffected). Read the `items` of `computeMiseEnPlace()` instead
 - Everything above keeps working, with the same values, until 2.0.0. The Deprecated features page shows what to change for each of them: https://gram-lang.org/docs/how-to/deprecations/
