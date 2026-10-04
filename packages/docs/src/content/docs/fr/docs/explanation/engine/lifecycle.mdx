@@ -26,7 +26,8 @@ import { Steps } from '@astrojs/starlight/components';
    L'AST composé est ensuite transmis à la Kitchen (*Cuisine*). Elle porte la responsabilité de la logique structurelle de la recette :
    - **Scope & Ordonnancement** : Résolution des variables et calcul des plannings d'exécution optimisés via l'algorithme **ALAP (As Late As Possible)**.
    - **Métriques de temps** : extraction et calcul des *timers* (`activeTime` et `preparationTime`), et répartition de la préparation par section (`miseEnPlace`).
-   - **Chronologies** : trois chronologies complètes, `schedules.perSection` (la préparation de chaque section juste avant elle), `schedules.upfront` (toute la préparation d'abord) et `schedules.perSession` (la préparation de chaque journée de travail au début de cette journée), chacune avec son temps total et son temps d'attente.
+   - **Graphe des tâches** : tout ce qu'il y a à faire, avec sa durée (une fourchette reste une fourchette) et ce que chaque tâche attend (`tasks`).
+   - **Planning par défaut** : la chronologie posée à partir de ce graphe par `@gram-lang/scheduler` (`schedule`) : la préparation de chaque section juste avant elle, les repos les plus courts. Toute autre combinaison (toute la préparation d'abord, la préparation de chaque journée au début de cette journée, des repos plus longs) se calcule à la demande à partir du même graphe, sans recompiler.
    - **Liste de courses** : Agrégation de base des ingrédients, sommation, et résolution des composites (ex : regrouper un zeste et un jus en un citron entier).
 
    Le résultat ? Une recette logiquement irréprochable et compilée sous la forme d'un `CompilationResult` (ou `ComposedCompilationResult`).
@@ -44,6 +45,11 @@ import { Steps } from '@astrojs/starlight/components';
 5. ### Présentation (`@gram-lang/renderer` ou personnalisé)
    Votre recette enrichie en données est prête. Vous pouvez utiliser `@gram-lang/renderer` pour générer du Markdown, une UI web standard ou un HTML statique taillé pour l'impression. Vous pouvez également ignorer cette étape et injecter directement le JSON final dans votre application front-end (React, Vue, ou application native).
 </Steps>
+
+### Le moteur de planning (`@gram-lang/scheduler`)
+`@gram-lang/scheduler` se place sous la Kitchen : la Kitchen en dépend, jamais l'inverse. Il ne connaît ni l'AST ni la recette compilée, seulement un graphe neutre de tâches. Il fait deux choses :
+- **`layout()`** transforme le graphe en planning, pour n'importe quel choix de mise en place et de repos.
+- **`project()`** pose ce planning sur le calendrier, à partir d'une heure de service, d'un fuseau horaire et de vos disponibilités, et `runSheet()` met le résultat en forme de fiche de production. Voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/) et [Le moteur de planning](/fr/docs/explanation/engine/scheduler/).
 
 ### Infrastructure de support (`@gram-lang/i18n` & `@gram-lang/format`)
 - **`@gram-lang/i18n`** : La source de vérité absolue (SSOT) des dictionnaires de normalisation, des tables de conversion (`UNIT_CONVERSIONS`), des durées (`TIME_TO_MINUTES`) et des clés de catégories (`CATEGORY_KEYS`).
@@ -63,11 +69,14 @@ flowchart LR
         direction LR
         Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammaire"]
         Modules["📦 <b>@gram-lang/modules</b><br/>Graphe & Composition"]
-        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>DAG & Ordonnancement"]
+        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>Graphe de tâches & compilation"]
         Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physique & BDD"]
 
         Parser --> Modules --> Kitchen --> Analyzer
     end
+
+    Scheduler["⏱️ <b>@gram-lang/scheduler</b><br/>Plannings & plans"]
+    Kitchen -. pose avec .-> Scheduler
 
     subgraph Output ["Présentation"]
         Renderer["🎨 <b>@gram-lang/renderer</b><br/>HTML / UI / Markdown"]
@@ -80,6 +89,7 @@ flowchart LR
 
     Raw --> Parser
     Analyzer --> Renderer
+    Scheduler -. planifie .-> Renderer
     Format -. Formate .-> Raw
     I18n -. Dictionnaires .-> Kitchen
     I18n -. Conversions .-> Analyzer

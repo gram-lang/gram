@@ -1,6 +1,6 @@
 ---
 title: "API reference"
-description: "Overview of Gram's composable packages — parser, modules, kitchen, analyzer, renderer, format, and i18n — and how they fit together."
+description: "Overview of Gram's composable packages — parser, modules, kitchen, scheduler, analyzer, renderer, format, and i18n — and how they fit together."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
@@ -26,7 +26,8 @@ All packages are ESM-only, side-effect free, and run anywhere JavaScript runs �
 |---|---|---|
 | [`@gram-lang/parser`](/docs/reference/api/parser) | Turns `.gram` source text into an Abstract Syntax Tree (AST) | `getAST(source)` |
 | [`@gram-lang/modules`](/docs/reference/api/modules) | Resolves `@use` imports, tracks dependencies, scales bases by yield, and composes a unified AST | `loadModuleGraph(entry, host)`, `composeRecipe(graph, opts)` |
-| [`@gram-lang/kitchen`](/docs/reference/api/kitchen) | Compiles the AST into a structured, render-ready payload (shopping list, timings, registry) | `compile(ast, options?)` |
+| [`@gram-lang/kitchen`](/docs/reference/api/kitchen) | Compiles the AST into a structured, render-ready payload (shopping list, task graph, timeline, registry) | `compile(ast, options?)` |
+| [`@gram-lang/scheduler`](/docs/reference/api/scheduler) | Lays the task graph out on a timeline and places it on the calendar from a serving time and your availability | `layout(graph, options?)`, `project(recipes, context)` |
 | [`@gram-lang/analyzer`](/docs/reference/api/analyzer) | Enriches a compiled recipe with physical properties (mass, yield, nutrition, baker's percentages) using an ingredient database | `analyze(compiled, database, options?)` |
 | [`@gram-lang/renderer`](/docs/reference/api/renderer) | Renders a (compiled or analyzed) recipe to Markdown or HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
 | [`@gram-lang/format`](/docs/reference/api/format) | Canonical code formatter for `.gram` files (13 unified formatting rules) | `formatGram(source, options?)` |

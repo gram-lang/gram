@@ -9,7 +9,7 @@ The `@gram-lang/renderer` package takes this final enriched JSON object and tran
 
 ## Rendering formats
 
-The renderer supports four output formats:
+The renderer supports five output formats:
 
 ### 1. Markdown (`toMarkdown`)
 Generates standard Markdown that includes a formatted shopping list, equipment section, numbered steps, GFM footnotes (`[^1]`), gross mass badges, and an optional nutrition section (`## 🥗 Nutrition`). This is perfect for publishing recipes to static site generators (like VitePress or Hugo) or saving them to a notes app like Obsidian.
@@ -21,7 +21,12 @@ Generates a standalone, semantic HTML document. The HTML renderer is designed wi
 Generates a complete, self-contained `<!DOCTYPE html>` document with its own inlined print stylesheet (A4 page size, page-break-aware sections) and a fixed icon set — designed to be opened directly in a browser and printed, with no external stylesheet or asset dependency. Unlike `toHTML`, it does not accept custom `icons`/`classes` overrides, but it does honor `formatDuration`, `formatFraction`, and `hideStepQty`.
 
 ### 4. Gantt chart (`toGanttHTML` + `attachGanttInteractivity`)
-Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/docs/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract. Its `schedule` option (`"perSection"` by default, `"upfront"` or `"perSession"`) picks which of the recipe's three timelines to draw (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)): each section's preparation is drawn as a dashed block in the section's colour, right before the section, all at the start, or at the start of each working day, which the chart marks (D-1, Day D). The same option drives the total and idle times in the HTML, Markdown and print headers, and where the mise en place is shown: a small "Mise en place" label on each section's ingredient list in the HTML view with `"perSection"`, a "Mise en place" block at the start of each session otherwise (since 1.4.0).
+Renders an interactive timeline view of the recipe — active preparation steps, background timers, and idle-time compression — as an HTML fragment. Unlike the three formatters above, this isn't a single pure function: `toGanttHTML` produces static markup (no time-mode/compact-mode state baked in), and a companion `attachGanttInteractivity(container, options)` call wires up hover tooltips and the time-mode/target-time/compact-mode controls client-side, via plain DOM event delegation rather than the shared `RenderBackend` traversal. See the [API Reference](/docs/reference/api/renderer) for the full `GanttRenderOptions`/`GanttInteractivityOptions` contract. Its `miseEnPlace` option (`"perSection"` by default, `"upfront"` or `"perSession"`) picks where the mise en place goes and its `rests` option (`"shortest"` by default, `"balanced"` or `"longest"`) how long a rest written as a range lasts: the chart draws the timeline laid out from the recipe's task graph for that choice (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)). Each section's preparation is drawn as a dashed block in the section's colour, right before the section, all at the start, or at the start of each working day, which the chart marks (D-1, Day D). The same options drive the total and idle times in the HTML, Markdown and print headers, and where the mise en place is shown: a small "Mise en place" label on each section's ingredient list in the HTML view with `"perSection"`, a "Mise en place" block at the start of each session otherwise (since 1.4.0).
+
+A recipe placed on the calendar can be drawn too: the `projection` option takes the plan made by `project()` from `@gram-lang/scheduler`. The chart then draws the plan's own blocks (a rest that was stretched or shortened shows at its new length, outlined, with a note saying why), reads its axis in real days and times, and greys out the hours you are not available. See [Planning in real time](/docs/explanation/planning-in-real-time/).
+
+### 5. Production sheet (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) *(since 1.4.0)*
+Writes the plan made by `project()` as a production sheet: the days with their distance from the service (D-1, Day D), the tasks of each day in order with times rounded to the nearest five minutes for display, a note on every rest that was moved, and what could not be fixed. The words and dates follow the `lang` option; everything that comes from the recipe is escaped. `describeRunSheet()` gives the same sheet as structured data in words, for building another output (the CLI's calendar export is made from it).
 
 ## Unified traversal (`RenderBackend`)
 
@@ -36,8 +41,8 @@ import { toMarkdown, toHTML } from '@gram-lang/renderer';
 const recipe = {
   title: "Simple Crepes",
   metrics: { preparationTime: 5, activeTime: 10 },
-  // One timeline per mode (perSection, upfront, perSession): only the one you render is read.
-  schedules: { perSection: { totalTime: 30, idleTime: 15, blocks: [], sessions: [] } },
+  // The default timeline: the one rendered unless you pick another mise en place or rests.
+  schedule: { miseEnPlace: "perSection", rests: "shortest", totalTime: 30, idleTime: 15, blocks: [], sessions: [] },
   shopping_list: [
     { id: "flour", qty: 200, unit: "g" }
   ],

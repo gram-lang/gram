@@ -58,7 +58,8 @@ interface CompilationResult {
     totalBreakdown: TimeBreakdownItem[];
   };
   miseEnPlace: SectionMiseEnPlace[]; // what preparing each section costs
-  schedules: Record<MiseEnPlaceMode, Schedule>; // perSection, upfront, perSession
+  tasks: TaskGraph;                  // since 1.4.0: everything to do, and what each task waits for
+  schedule: Schedule;                // since 1.4.0: the default timeline, laid out from `tasks`
 }
 
 interface SectionMiseEnPlace {
@@ -72,8 +73,12 @@ type MiseEnPlaceItem =
   | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number; intermediate?: true };
 
 interface Schedule {
+  miseEnPlace: MiseEnPlaceMode;      // which plan laid it out: "perSection" by default
+  rests: RestChoice;                 // and which rests: "shortest" by default
   totalTime: number;                 // max(end) over blocks, from 0
-  idleTime: number;                  // totalTime - metrics.activeTime - metrics.preparationTime
+  activeTime: number;                // the cook's hands-on time, mise en place excluded
+  preparationTime: number;           // the mise en place: the sum of the `prep` tasks
+  idleTime: number;                  // totalTime - activeTime - preparationTime
   blocks: ScheduleBlock[];           // sorted by start, then end
   sessions: ScheduleSession[];       // one per working day, furthest day first
 }
@@ -86,23 +91,36 @@ interface ScheduleSession {
 }
 
 type ScheduleBlock =
-  | { kind: "prep"; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
-  | { kind: "step"; section: number; step: number; start: number; end: number }
-  | { kind: "passive"; section: number; step: number; track?: string; start: number; end: number };
+  | { kind: "prep"; task: string; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
+  | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
+  | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
+
+// `tasks`, in short; the full types are in the scheduler reference
+interface TaskGraph {
+  tasks: Task[];                     // `prep`, `step` and `passive` tasks, section by section
+  sections: { day: number; deadline?: number; intermediate?: string }[];
+}
 ```
 
-:::note[New in 1.4.0: `generator`, `miseEnPlace` and `schedules`]
-`miseEnPlace` says what preparing each section costs, and `schedules` holds three complete timelines built from it: `perSection` (each section's preparation right before that section), `upfront` (all the preparation first) and `perSession` (the preparation of each working day gathered at the start of that day, the days coming from the sections' `~{-Nd}` anchors; a recipe with no such anchor is a single session, like `upfront`). `sessions` lists the working days of a timeline. All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block, so `miseEnPlace` is not indexed by section: find an entry by its `section` field, never by its position in the array. `intermediates` (on a `gather` line) says how many of the gathered ingredients are intermediates (`&dough`), and `intermediate` (on a `prepare` line) that the prepared ingredient is one; both are left out otherwise. An intermediate is made during the recipe, so the `upfront` schedule doesn't gather it at the start: that part of a section's preparation is a second `prep` block, right before the section, so a section can have two `prep` blocks in `upfront` and `perSession`: the one planned later has `deferred: true`. `items` is present on a `prep` block only when it carries part of its section's entry (the rest being in the other block): read the entry's items otherwise.
+:::note[New in 1.4.0: `generator`, `miseEnPlace`, `tasks` and `schedule`]
+`miseEnPlace` says what preparing each section costs. `tasks` is the **task graph**: the preparation of each section and of each intermediate it uses, every step and every timer, with their durations and what each task waits for (see the [scheduler reference](/docs/reference/api/scheduler/) for its full shape). `schedule` is the **default timeline** laid out from it by `@gram-lang/scheduler`: the mise en place right before each section, the shortest rests. It describes itself (`miseEnPlace`, `rests`), so you never have to remember which options made it.
+
+Any other timeline comes from the same graph, without compiling again: `layout(compiled.tasks, { miseEnPlace: "upfront" })` (all the preparation first), `"perSession"` (the preparation of each working day gathered at the start of that day) and the choice of `rests` (`"shortest"`, `"balanced"`, `"longest"`). Never rebuild a timeline by hand from `miseEnPlace`.
+
+In a timeline, all times are in minutes from 0 and include the preparation. `sessions` lists the working days: they come from the sections' anchors **in days** (`~{-1d}`); an anchor in hours never opens a day, and a recipe with no anchor in days is a single session. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, `track` only exists for a named timer (`~_oven{...}`), and `task` is the id of the task in `tasks` (`s0.3`, `s0.3.t0`; a `prep` block that gathers several preparations carries the first one's id). A section without a preparation has no `miseEnPlace` entry and no `prep` block, so `miseEnPlace` is not indexed by section: find an entry by its `section` field, never by its position in the array. `intermediates` (on a `gather` line) says how many of the gathered ingredients are intermediates (`&dough`), and `intermediate` (on a `prepare` line) that the prepared ingredient is one; both are left out otherwise. An intermediate is made during the recipe, so the `upfront` timeline doesn't gather it at the start: that part of a section's preparation is a second `prep` block, right before the section, so a section can have two `prep` blocks in `upfront` and `perSession`: the one planned later has `deferred: true`. `items` is present on a `prep` block only when it carries part of its section's entry (the rest being in the other block): read the entry's items otherwise.
+
+A timer written as a range keeps its range in the graph (`{ nominal, min, max }`), and the timeline plans a passive range on the figure `rests` picks (the shortest by default) and an active range on its longest. The deprecated fields below keep counting a range as its average.
 
 Where a field comes from, so that you know what to trust and what to recompute:
 
 | Field | Kind | Note |
 |---|---|---|
-| `generator`, `miseEnPlace[].items` | Source | Written by the compiler. |
+| `generator`, `miseEnPlace[].items`, `tasks` | Source | Written by the compiler. |
 | `miseEnPlace[].duration` | Derived | The sum of its `items`, kept so you don't have to add them up. |
-| `metrics.preparationTime` | Derived | The sum of every `miseEnPlace[].duration`. |
-| `schedules[mode].totalTime` | Derived | The latest `end` among the blocks. |
-| `schedules[mode].idleTime` | Derived | `totalTime - metrics.activeTime - metrics.preparationTime`. |
+| `metrics.preparationTime`, `schedule.preparationTime` | Derived | The sum of every `miseEnPlace[].duration`. |
+| `schedule` | Derived | `layout(tasks)`, byte for byte: the graph is enough to get it back. |
+| `schedule.totalTime` | Derived | The latest `end` among the blocks. |
+| `schedule.idleTime` | Derived | `totalTime - activeTime - preparationTime`. |
 
 Readers should ignore fields and block `kind` values they don't know: new ones can be added in a minor version.
 :::
@@ -112,20 +130,21 @@ These fields keep the same values and the same meaning until 2.0.0, but you shou
 
 | Deprecated | Use instead |
 |---|---|
-| `steps[].timings` | The `step` blocks of `schedules[mode].blocks` |
-| `steps[].backgroundTasks` | The `passive` blocks of `schedules[mode].blocks` |
-| `metrics.totalTime` | `schedules[mode].totalTime` |
-| `metrics.idleTime` | `schedules[mode].idleTime` |
-| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedules` |
+| `steps[].timings` | The `step` blocks of `schedule.blocks` |
+| `steps[].backgroundTasks` | The `passive` blocks of `schedule.blocks` |
+| `metrics.totalTime` | `schedule.totalTime` |
+| `metrics.idleTime` | `schedule.idleTime` |
+| `metrics.activeTime` | `schedule.activeTime` (a timer written as a range counts as its average in the old field, and as its longest figure in the schedule) |
+| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedule` |
 | `calculatePreparationTime().breakdown` | The `items` of `computeMiseEnPlace()` (`calculatePreparationTime()` still returns `total`) |
 
-`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in every schedule. Note that the old `metrics.totalTime` is the total with every preparation first, which is the `upfront` schedule's total unless the recipe has intermediates: `upfront` gathers them once they exist, so it can be shorter.
+`metrics.preparationTime` is **not** deprecated: it is the same whatever the plan. Note that the old `metrics.totalTime` is the total with every preparation first, which is the total of `layout(tasks, { miseEnPlace: "upfront" })` unless the recipe has intermediates: `upfront` gathers them once they exist, so it can be shorter.
 
 The [Deprecated features](/docs/how-to/deprecations) page shows before and after code for each of them.
 :::
 
 :::note[JSON compiled before 1.4.0]
-JSON written by kitchen 1.3.0 or earlier has no `schedules`. It still renders: `scheduleTimes` reads the total and idle time from the old `metrics.totalTime` and `metrics.idleTime`, and the diff compares them fairly instead of reading zero. There is no mise en place and no timeline to draw, though, so the Gantt chart stays empty. Compile the recipe again with 1.4.0 or later to get them. This fallback goes away with the deprecated fields in 2.0.0.
+JSON written by kitchen 1.3.0 or earlier has no `tasks` and no `schedule`. It still renders: `scheduleTimes` reads the total and idle time from the old `metrics.totalTime` and `metrics.idleTime`, and the diff compares them fairly instead of reading zero. There is no mise en place and no timeline to draw, though, so the Gantt chart stays empty. Compile the recipe again with 1.4.0 or later to get them. This fallback goes away with the deprecated fields in 2.0.0.
 :::
 
 See [Data Formats](/docs/reference/api/data-formats) for a fully annotated example of this shape, and [Warnings](/docs/reference/api/warnings) for what can appear in `.warnings`.
@@ -181,7 +200,7 @@ function calculatePreparationTime(
   mise?: SectionMiseEnPlace[], // since 1.4.0: the split below, when you already have it
 ): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` is deprecated, see below
 
-// Since 1.4.0: the mise en place split and the timelines
+// Since 1.4.0: the mise en place split, and the choices of a timeline
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ the `miseEnPlace` field of a compiled recipe, derived from its sections
 
@@ -189,8 +208,19 @@ type MiseEnPlaceMode = "perSection" | "upfront" | "perSession"
 const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perSession"]
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode
-function scheduleFor(compiled, mode?: MiseEnPlaceMode): Schedule | undefined
-function scheduleTimes(compiled, mode?: MiseEnPlaceMode): { totalTime: number; idleTime: number }
+
+type RestChoice = "shortest" | "balanced" | "longest"
+const REST_CHOICES: readonly ["shortest", "balanced", "longest"]
+const DEFAULT_REST_CHOICE: RestChoice // "shortest"
+function isRestChoice(value: unknown): value is RestChoice
+
+// The timeline for a choice: the compiled `schedule` for the default one, else
+// laid out from `tasks` (once, then kept). Undefined for JSON without `tasks`.
+function scheduleFor(compiled, mode?: MiseEnPlaceMode, rests?: RestChoice): Schedule | undefined
+function scheduleTimes(compiled, mode?: MiseEnPlaceMode, rests?: RestChoice): { totalTime: number; idleTime: number }
+
+// Re-exported from @gram-lang/scheduler, for code that only knows the Kitchen
+function layout(graph: TaskGraph, options?: LayoutOptions): { schedule: Schedule; diagnostics: SchedulingDiagnostic[] }
 
 // Since 1.4.0: the longest duration Gram plans with (1000 years, see DURATION_OUT_OF_RANGE)
 const MAX_DURATION_MINUTES: number // 525_600_000

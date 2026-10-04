@@ -88,9 +88,10 @@ gram view brioche.gram --scale farine=300g  # Voir ajusté pour farine = 300g
 - Les minuteurs gardent l'unité écrite dans la recette (`~{1h}` s'affiche `~1h`, `~{20s}` s'affiche `~20s`) et les durées sont arrondies pour rester lisibles (`1h 5m`, `25m 5s`).
 - Le temps de repos apparaît dans l'en-tête de la recette, et les fractions courantes comme `1/4 tsp` restent des fractions dans la liste de courses.
 - Le flag `--scale` ajuste toutes les quantités d'ingrédients (liste de courses *et* références *inline* dans les étapes).
-- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
+- Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée : juste avant chaque section (`per-section`, par défaut), tout au début (`upfront`) ou au début de chaque journée de travail (`per-session`). Les temps total et d'attente de l'en-tête suivent ce choix ; les temps actif et de préparation restent les mêmes. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> choisit la durée d'un repos écrit en fourchette (`~_{12-24h}`) : le plus court (par défaut), le milieu ou le plus long. Un repos exact et un minuteur actif ne sont pas touchés. Change les mêmes temps que `--mise-en-place`.
 
 #### `gram import <source>`
 Importe une recette depuis une page web, un fichier JSON-LD local ou une vidéo / Short YouTube, et la convertit en un fichier `.gram` à l'aide de l'IA.
@@ -152,6 +153,8 @@ Lance un assistant de cuisine interactif étape par étape, directement dans le 
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
 ```
+Le temps total affiché à la fin suit `--mise-en-place` et `--rests`, comme `gram view` <Since v="1.4.0" />.
+
 **Déroulement :**
 <Steps>
 1. **Mise en place** : liste complète et agrégée des ingrédients pour la recette (Espace pour commencer)
@@ -255,9 +258,10 @@ gram print brioche.gram --no-open         # Ne pas ouvrir, imprimer le chemin su
 - Le HTML est écrit dans un fichier temporaire (`gram_print_<horodatage>.html` dans le dossier temporaire du système) et ouvert avec le navigateur par défaut (`open` sur macOS, `xdg-open` sur Linux, `cmd /c start` sur Windows).
 - Sortie identique à `gram export --format html` — idéal pour la boîte de dialogue d'impression du navigateur (`Ctrl+P` / `Cmd+P`) pour produire un PDF A4.
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes.
-- Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
+- Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente imprimés dans l'en-tête. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> choisit la durée d'un repos écrit en fourchette (`~_{12-24h}`) : le plus court (par défaut), le milieu ou le plus long. Un repos exact et un minuteur actif ne sont pas touchés. Change les mêmes temps que `--mise-en-place`.
 
 #### `gram export <fichier>`
 Exporte une recette vers Markdown ou HTML prêt à l'impression.
@@ -270,9 +274,26 @@ gram export brioche.gram --format html --scale 2       # exporter aux quantités
 - `--format html` — Document HTML A4 autonome avec CSS intégré pour l'impression, avec icônes SVG Lucide (pas de dépendances externes). Il charge Courier Prime et Inter depuis Google Fonts, donc une connexion réseau est requise lors de la première ouverture.
 - Chemin de sortie par défaut : le même dossier que le fichier source, avec l'extension remplacée (`.gram` → `.md` ou `.html`).
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes. **Format HTML uniquement** — sans effet avec `--format md`.
-- Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
+- Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`, `--rests <choice>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente de l'en-tête exporté. En HTML, `per-section` ajoute aussi un libellé « Mise en place » sur la liste d'ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> choisit la durée d'un repos écrit en fourchette (`~_{12-24h}`) : le plus court (par défaut), le milieu ou le plus long. Un repos exact et un minuteur actif ne sont pas touchés. Change les mêmes temps que `--mise-en-place`.
+
+#### `gram plan <fichier>` <Since v="1.4.0" />
+Planifie une recette à rebours depuis l'heure du service, et écrit une fiche de production : quand commencer chaque tâche, compte tenu de quand vous pouvez cuisiner.
+```bash
+gram plan pain.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
+gram plan pain.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --available sat=09:00-23:00 --available 2026-10-09=none
+gram plan pain.gram --serve "2026-10-11 13:00" --format md        # Markdown plutôt que du texte
+gram plan pain.gram --serve "2026-10-11 13:00" --ics pain.ics     # écrit aussi un fichier d'agenda
+```
+- `--serve "<date> <heure>"` (obligatoire) : quand on sert, une date et une heure locales dans le fuseau ci-dessous.
+- `--tz <fuseau>` : un fuseau IANA comme `Europe/Paris` (par défaut : celui de la machine). C'est là que se lisent l'heure du service et vos disponibilités, et là que s'applique l'heure d'été.
+- `--available <plage>`, répétable : quand vous pouvez travailler. `08:00-22:00` vaut pour tous les jours, `fri=18:00-22:00` pour un jour de la semaine (`mon` … `sun`), `2026-10-09=none` pour une date (`none` : pas disponible du tout). Plusieurs plages vont après une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage qui se termine avant son début passe minuit. Sans aucune, vous êtes disponible toute la journée.
+- Un repos écrit en fourchette (`~_{8-16h}`) est allongé ou raccourci pour que votre propre travail évite les heures où vous n'êtes pas disponible ; la fiche dit lequel et pourquoi, et liste ce qui n'a pas pu être arrangé. Voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+- `--format text|md|html|json` : la sortie (par défaut `text`). `json` affiche `{ plan, runSheet }`.
+- `--ics <fichier>` : écrit aussi un fichier iCalendar avec un événement par tâche (en UTC, votre agenda les affiche dans son propre fuseau) et une alarme 5 minutes avant chaque tâche qui demande vos mains. La confirmation va sur stderr, `--format json --ics …` reste donc utilisable en pipe.
+- `--mise-en-place`, `--rests`, `--scale` et `--stock` fonctionnent comme dans `gram view`. `--now <instant>` fixe le présent pour l'avertissement sur une première tâche qui aurait déjà dû commencer (par défaut : maintenant).
 
 #### `gram format [motif]`
 Formate automatiquement les fichiers `.gram` (*in-place*) en appliquant 13 règles canoniques via le package `@gram-lang/format`.

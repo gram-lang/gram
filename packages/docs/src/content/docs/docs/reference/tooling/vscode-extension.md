@@ -27,9 +27,21 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 |---|---|
 | `perSection` (default) | Each section's mise en place is planned right before that section. |
 | `upfront` | All the mise en place is planned at the start of the recipe. |
-| `perSession` | The mise en place of each working day is planned at the start of that day (the days come from the sections' `~{-Nd}` anchors). |
+| `perSession` | The mise en place of each working day is planned at the start of that day (the days come from the sections' anchors in days, `~{-Nd}`). |
 
 The setting drives the live preview, the Gantt chart and the total time hint next to the recipe title. It changes the total and idle times, not the ingredient lists, and it applies immediately to every open recipe, without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+
+#### The `gram.rests` setting (since 1.4.0)
+
+| Value | Effect |
+|---|---|
+| `shortest` (default) | A rest written as a range (`~_{12-24h}`) lasts the shortest of it. |
+| `balanced` | It lasts the middle of the range. |
+| `longest` | It lasts the longest of the range. |
+
+An exact rest and an active timer written as a range (`~{20-25min}`, always planned on its longest figure) are not affected. Like `gram.miseEnPlace`, the setting drives the preview, the Gantt chart and the total time hint, and applies at once to every open recipe. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+
+A working day that a long rest pushes out of its 24 hours is flagged on its section (`SESSION_OVERFLOW`), like any other warning of the recipe.
 
 ### 3. Smart ingredient management
 - **Silent Plural Management**: The extension maps simple plural nouns in your recipe (e.g., `@carrots`) to singular entries in your YAML database (`carrot`), maintaining language naturalness without raising false errors.

@@ -9,7 +9,7 @@ Le *package* `@gram-lang/renderer` embarque cet objet JSON complet pour le resti
 
 ## Formats de rendu
 
-Le *renderer* supporte quatre exports :
+Le *renderer* supporte cinq exports :
 
 ### 1. Markdown (`toMarkdown`)
 Génère un Markdown propre (GFM), incluant la liste de courses, le matos, des étapes numérotées, des notes de bas de page (`[^1]`), les badges de masse brute, et les macros nutritionnels (`## 🥗 Nutrition`). C'est l'export roi pour les générateurs de sites statiques (VitePress, Hugo, Astro) ou les apps de prise de notes (Obsidian).
@@ -21,7 +21,12 @@ Génère un DOM HTML sémantique. L'export HTML repose sur l'**Inversion de Cont
 Génère un `<!DOCTYPE html>` complet, *standalone*, armé de sa propre CSS d'impression intégrée (A4, sauts de page propres) et d'un set d'icônes SVG en dur. Conçu pour être ouvert dans un onglet et imprimé direct, sans le moindre appel externe. Contrairement à `toHTML`, vous ne pouvez pas écraser les `icons`/`classes`, mais les filtres classiques `formatDuration`, `formatFraction`, et `hideStepQty` restent supportés.
 
 ### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`. Son option `schedule` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) choisit laquelle des trois chronologies de la recette dessiner (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)) : la préparation de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle, tout au début, ou au début de chaque journée de travail, que le graphique repère (J-1, Jour J). La même option pilote les temps total et d'attente dans les en-têtes HTML, Markdown et impression, ainsi que l'endroit où la mise en place s'affiche : un petit libellé « Mise en place » sur la liste d'ingrédients de chaque section dans la vue HTML avec `"perSection"`, un bloc « Mise en place » au début de chaque session sinon (depuis la 1.4.0).
+Dessine la *timeline* interactive de la recette : étapes actives, *timers* passifs, et compression des temps morts (sous forme de fragment HTML). Contrairement aux trois autres cibles, c'est un travail en deux temps : `toGanttHTML` génère le balisage statique (sans présumer du mode d'affichage client), tandis qu'un helper `attachGanttInteractivity(container, options)` viendra brancher (côté navigateur) les événements, *tooltips*, et bascules de modes via délégation DOM. Jetez un œil à la [Référence API](/fr/docs/reference/api/renderer) pour maîtriser `GanttRenderOptions` et `GanttInteractivityOptions`. Son option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) choisit où va la mise en place, et son option `rests` (`"shortest"` par défaut, `"balanced"` ou `"longest"`) la durée d'un repos écrit en fourchette : le graphique dessine le planning posé à partir du graphe de tâches de la recette pour ce choix (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)). La préparation de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle, tout au début, ou au début de chaque journée de travail, que le graphique repère (J-1, Jour J). Les mêmes options pilotent les temps total et d'attente dans les en-têtes HTML, Markdown et impression, ainsi que l'endroit où la mise en place s'affiche : un petit libellé « Mise en place » sur la liste d'ingrédients de chaque section dans la vue HTML avec `"perSection"`, un bloc « Mise en place » au début de chaque session sinon (depuis la 1.4.0).
+
+On peut aussi dessiner une recette posée sur le calendrier : l'option `projection` prend le plan fabriqué par `project()` de `@gram-lang/scheduler`. Le graphique dessine alors les blocs du plan lui-même (un repos étiré ou raccourci apparaît à sa nouvelle longueur, entouré d'un contour pointillé, avec une note qui dit pourquoi), lit son axe en vrais jours et heures, et grise les heures où vous n'êtes pas disponible. Voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+
+### 5. Fiche de production (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) *(depuis la 1.4.0)*
+Écrit le plan fabriqué par `project()` sous forme de fiche de production : les jours avec leur distance au service (J-1, Jour J), les tâches de chaque jour dans l'ordre avec des heures arrondies à cinq minutes à l'affichage, une note sur chaque repos déplacé, et ce qui n'a pas pu être arrangé. Les mots et les dates suivent l'option `lang` ; tout ce qui vient de la recette est échappé. `describeRunSheet()` donne la même fiche en données structurées déjà mises en mots, pour fabriquer une autre sortie (l'export de calendrier de la CLI en est tiré).
 
 ## Traversée unifiée (`RenderBackend`)
 
@@ -37,7 +42,7 @@ const recipe = {
   title: "Crêpes Simples",
   metrics: { preparationTime: 5, activeTime: 10 },
   // Une chronologie par mode (perSection, upfront, perSession) : seule celle que vous affichez est lue.
-  schedules: { perSection: { totalTime: 30, idleTime: 15, blocks: [], sessions: [] } },
+  schedule: { miseEnPlace: "perSection", rests: "shortest", totalTime: 30, idleTime: 15, blocks: [], sessions: [] },
   shopping_list: [
     { id: "farine", qty: 200, unit: "g" }
   ],

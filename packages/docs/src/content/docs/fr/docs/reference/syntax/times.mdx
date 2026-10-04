@@ -38,14 +38,24 @@ Vous pouvez surcharger le nom d'un `~minuteur`. Une option redoutable pour les t
 Faire bouillir les @œufs{2} pendant ~œufs{3 min}.
 ```
 
-### Plages (intervalles)
-Si la durée est une fourchette estimée, vous pouvez indiquer une plage de temps via un tiret.
+### Durées exactes et fourchettes
+<Since v="1.4.0" />
+
+Un minuteur est **exact** : `~_{12h}` dure très exactement 12 heures. Quand la durée varie vraiment, écrivez une fourchette : c'est la seule façon de laisser à Gram un peu de marge.
 
 ```gram
-Cuire au four pendant ~{30-40 min}.
+Laisser la pâte reposer au frigo ~_{12-24h}.
+
+Rôtir le poulet pendant ~{40-50 min}.
 ```
-:::tip
-Pour ses calculs globaux de la ligne de temps (*timeline* totale de la recette), le compilateur utilise automatiquement la moyenne de cette plage (ici, 35 minutes).
+
+Une fourchette ne veut pas dire la même chose sur un minuteur passif et sur un minuteur actif :
+
+- **Une fourchette passive est une marge.** `~_{12-24h}` dit « prête dès 12 heures, encore bonne à 24 ». Par défaut, le planning part du chiffre le plus court, et c'est vous qui choisissez à la lecture (`shortest`, `balanced` pour le milieu, ou `longest`) : option `--rests` de la CLI, réglage `gram.rests` de VS Code, option `rests` du moteur de rendu. Quand vous donnez à Gram une heure de service et vos disponibilités, il se sert aussi de cette marge pour éviter que vous travailliez la nuit (voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/)).
+- **Une fourchette active est une incertitude.** `~{40-50 min}` est le temps que met le poulet à cuire, pas un choix. Le planning prend toujours le chiffre le plus long (50 minutes), pour ne jamais servir en retard. Le choix des repos ne s'y applique pas.
+
+:::note
+Les champs dépréciés de la recette compilée (`steps[].timings`, `steps[].backgroundTasks` et `metrics`) continuent de compter une fourchette comme sa moyenne, comme avant, jusqu'à la 2.0.0. Lisez plutôt le planning.
 :::
 
 ## Actif vs passif
@@ -124,13 +134,13 @@ Chaque section a sa propre mise en place : rassembler et préparer ses ingrédie
 
 - **Par section** (par défaut) : la préparation d'une section est placée juste avant cette section. Un ingrédient qui ne servira que deux jours plus tard n'est pas sorti maintenant, et une préparation peut se faire pendant le repos d'une étape précédente.
 - **Tout au début** : les préparations passent en premier, puis la cuisine commence. Sauf pour un intermédiaire (voir plus bas), qu'on ne peut pas préparer avant qu'il existe.
-- **Par journée de travail** : pour une recette sur plusieurs jours, la préparation de chaque journée est rassemblée au début de cette journée. Les jours viennent des ancres des sections (`~{-2d}`, `~{-36h}`...) : une section sans ancre prend le jour de la suivante, et les sections après la dernière ancre sont sur le jour même. Une recette sans ancre d'un jour ou plus tient en une seule journée, comme « tout au début ».
+- **Par journée de travail** : pour une recette sur plusieurs jours, la préparation de chaque journée est rassemblée au début de cette journée. Les jours viennent des ancres **en jours** des sections (`~{-1d}`, `~{-2d}`) : une section sans ancre prend le jour de l'ancre en jours la plus lointaine parmi les sections qui la suivent, et les sections après la dernière sont sur le jour même. Une recette sans ancre en jours tient en une seule journée, comme « tout au début ».
 
   Deux pièges quand on écrit une recette sur plusieurs jours :
   - **Un long minuteur passif n'est pas une ancre.** Un repos `~_{48h}` fait démarrer la chronologie deux jours plus tôt, mais seule l'ancre d'une section ouvre une journée de travail : sans `## Crème ~{-2d}` sur la section, elle est placée le jour même.
-  - **Une ancre de moins de 24 heures reste sur le jour même.** Le jour est l'ancre arrondie à des jours entiers : `~{-18h}` (une poolish pétrie la veille au soir) est donc le jour J, pas J-1. Pour ouvrir la veille, écrivez `~{-1d}` ou plus de 24 heures (`~{-26h}`). Voir [Mise en place et planning](/fr/docs/explanation/mise-en-place-and-planning/).
+  - **Une ancre en heures n'ouvre jamais de journée.** `~{-18h}` (une poolish pétrie la veille au soir) comme `~{-36h}` sont des échéances à l'intérieur de la journée où tombe la section, pas des journées à part entière. Pour ouvrir la veille, écrivez `~{-1d}`. Voir [Jours et heures](#jours-et-heures).
 
-C'est un choix de lecture, pas une déclaration de la recette : le playground a un sélecteur pour ça, VS Code un réglage `gram.miseEnPlace`, la CLI une option `--mise-en-place` et le moteur de rendu une option `schedule`. Il ne change que les temps **total** et **d'attente**, et la place des préparations sur le diagramme de Gantt. Le temps de préparation et le temps actif restent les mêmes, et les listes d'ingrédients ne bougent pas.
+C'est un choix de lecture, pas une déclaration de la recette : le playground a un sélecteur pour ça, VS Code un réglage `gram.miseEnPlace`, la CLI une option `--mise-en-place` et le moteur de rendu une option `miseEnPlace`. Il ne change que les temps **total** et **d'attente**, et la place des préparations sur le diagramme de Gantt. Le temps de préparation et le temps actif restent les mêmes, et les listes d'ingrédients ne bougent pas.
 
 Un intermédiaire (`&pâte`) se pèse dans la section qui l'utilise, quelle que soit la façon dont il est déclaré, et jamais avant d'avoir été fabriqué : même quand tout le reste est préparé au début, il est placé juste avant la section qui l'utilise. Cette minute est une approximation : elle peut tomber pendant que l'intermédiaire repose encore, et la pesée semble alors se faire juste avant que la pâte soit prête. Le temps total reste juste à la minute près.
 
@@ -152,6 +162,16 @@ Pour garantir une chronologie propre (avec des temps absolus toujours positifs, 
 ```
 
 La pâte feuilletée devra être prête **2 jours** avant le jour J.
+
+### Jours et heures
+<Since v="1.4.0" />
+
+L'unité d'une ancre dit ce qu'elle signifie :
+
+- **Une ancre en jours** (`~{-1d}`, `~{-2d}`) ouvre une journée de travail : la section appartient à la veille, à l'avant-veille. C'est de là que viennent le plan « par journée de travail » et les étiquettes de jour (J-1, J-2).
+- **Une ancre en heures ou en minutes** (`~{-18h}`, `~{-90min}`) est une échéance plus fine, à l'intérieur de la journée où tombe la section. Elle n'ouvre jamais de journée, aussi loin qu'elle remonte.
+
+Chaque journée de travail est censée tenir dans les 24 heures qui précèdent la suivante : si un long repos repousse le travail d'une journée hors de sa fenêtre (une pâte `~{-1d}` qui fermente 50 heures, ou une section ancrée à `~{-36h}`), le compilateur lève `SESSION_OVERFLOW` et suggère d'ancrer la section plus loin.
 
 ### Syntaxe stricte
 

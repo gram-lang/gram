@@ -36,7 +36,8 @@ Ces trois formateurs partagent un seul et même moteur de traversée sous le cap
 | `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (par défaut, on gère les fractions courantes, ex : `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut : ex. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Masque purement et simplement les quantités d'ingrédients au sein du texte narratif des étapes, pour tous les formats (la liste de courses et la liste d'ingrédients de chaque section restent intactes). |
-| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Depuis la 1.4.0)* Laquelle des trois chronologies de la recette suivre : mise en place juste avant chaque section (`'perSection'`, par défaut), tout au début (`'upfront'`) ou au début de chaque journée de travail (`'perSession'`). Pilote les temps total et d'attente de l'en-tête, et en HTML un libellé « Mise en place » sur la liste d'ingrédients de chaque section (`'perSection'` seulement ; la durée et le détail s'affichent au survol). Les listes d'ingrédients sont identiques dans les deux modes. Markdown et impression n'affichent que les temps de l'en-tête. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | *(Depuis la 1.4.0)* Où va la mise en place : juste avant chaque section (`'perSection'`, par défaut), tout au début (`'upfront'`) ou au début de chaque journée de travail (`'perSession'`). Pilote les temps total et d'attente dans l'en-tête. Avec `'perSection'`, le HTML affiche un libellé « Mise en place » sur la liste d'ingrédients de chaque section (la durée et le détail s'affichent au survol). Avec les deux autres, le HTML, le Markdown et l'impression ouvrent chaque session par un bloc « Mise en place » (étiqueté `J-3`, `J-1`, `Jour J`... quand la recette s'étale sur plusieurs jours), et le HTML ne garde un libellé sur une section que pour ce qui doit attendre, un intermédiaire fabriqué le même jour. Les listes d'ingrédients sont identiques dans les trois cas. Le planning est posé à partir des `tasks` de la recette. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | *(Depuis la 1.4.0)* La durée d'un repos écrit en fourchette (`~_{12-24h}`) : le plus court (par défaut), le milieu ou le plus long. Un repos exact et un minuteur actif ne sont pas touchés. Pilote les mêmes temps que `miseEnPlace`. |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages boulanger, masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Affiche des contrôles interactifs d'ajustement des portions/ingrédients (HTML uniquement). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Base nutritionnelle affichée. `'auto'` (défaut) montre le par-portion si la recette déclare des portions, sinon la recette entière. |
@@ -76,7 +77,9 @@ handle.dispose();
 | `lang` | `string` | Code de langue (ex. `'en'`, `'fr'`) pour traduire les chaînes UI via `@gram-lang/i18n`. |
 | `gapThresholdMinutes` | `number` | Durée minimale d'inactivité en minutes avant d'appliquer la compression de la période d'attente (par défaut : `60`). `Infinity` ne compresse jamais. |
 | `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`), sans jamais dépasser la durée de la période elle-même. |
-| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Depuis la 1.4.0)* Quelle chronologie dessiner (défaut : `'perSection'`). La mise en place de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle, tout au début ou au début de sa journée de travail ; avec `'perSession'`, un repère nomme chaque jour. Elle lit `schedules[schedule].blocks` dans la recette compilée. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | *(Depuis la 1.4.0)* Où va la mise en place (par défaut : `'perSection'`). La mise en place de chaque section est un bloc en pointillés à la couleur de la section, juste avant elle, tout au début ou au début de sa journée de travail ; avec `'perSession'`, un repère étiquette chaque jour. Le planning est posé à partir des `tasks` de la recette. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | *(Depuis la 1.4.0)* La durée d'un repos écrit en fourchette (par défaut : `'shortest'`). |
+| `projection` | `ProjectedPlan` | *(Depuis la 1.4.0)* La recette posée sur le calendrier par `project()` de `@gram-lang/scheduler`. Le graphique dessine les blocs du plan lui-même (un repos étiré ou raccourci apparaît à sa nouvelle longueur, entouré d'un contour pointillé, avec une note), lit son axe en vrais jours et heures du fuseau du plan, grise les heures où le cuisinier n'est pas disponible, et retire le sélecteur de mode de temps. `miseEnPlace` et `rests` sont alors ceux avec lesquels le plan a été fait, et sont ignorés ici. |
 
 ### `GanttInteractivityOptions`
 
@@ -113,3 +116,30 @@ function escapeHtml(unsafe: string | null | undefined): string
 function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralise `<`/`&` pour un rendu Markdown vers HTML sûr en aval
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
+
+## Fiche de production
+
+*(Depuis la 1.4.0)* À partir du plan fabriqué par `project()` et de la recette compilée dont il est tiré, le moteur de rendu écrit la fiche de production en quatre formats, plus la fiche en mots pour fabriquer la vôtre :
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+import { runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML, describeRunSheet } from '@gram-lang/renderer';
+
+const sheet = runSheet(project([{ graph: compiled.tasks }], context));
+
+runSheetToText(sheet, compiled, { lang: 'fr' });      // texte brut
+runSheetToMarkdown(sheet, compiled, { lang: 'fr' });  // Markdown
+runSheetToHTML(sheet, compiled, { lang: 'fr' });      // un fragment, mis en forme par gram.css
+runSheetToPrintHTML(sheet, compiled, { lang: 'fr' }); // un document complet, prêt à imprimer
+const model = describeRunSheet(sheet, compiled);       // { title, servedAt, days: [{ heading, lines }], problems }
+```
+
+### `RunSheetRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Code de langue (`'en'`, `'fr'`) pour les mots et les dates. |
+| `roundTo` | `number` | Affichage seulement : une heure est montrée à ce nombre de minutes près (par défaut : `5`). Le calcul reste exact à la minute. |
+| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé. |
+
+Chaque ligne dit quand la tâche commence (« vers 21:40 »), ce que c'est, combien de temps elle dure et, pour un repos, jusqu'à quand. Une étape sans temps actif à elle est laissée de côté : le repos qu'elle démarre porte ce qu'elle dit. Chaque repos déplacé par le plan a une note, et ce qui n'a pas pu être arrangé est listé à la fin. Tout ce qui vient de la recette est échappé. La fiche couvre la première recette du plan.

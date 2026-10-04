@@ -112,33 +112,42 @@ Un ingrédient intermédiaire (`&pâte`) est produit au cours de la recette : on
 - **En mode « Tout au début »** : les ingrédients bruts sont préparés dès le départ, mais l'intermédiaire n'est mobilisé qu'au moment précis où la section suivante en a besoin (dans notre exemple, `&pâte` est récupéré après son repos, juste avant le montage).
 :::
 
+## Les repos en fourchette
+
+Un repos peut être exact (`~_{12h}`) ou écrit en fourchette (`~_{12-24h}` : prêt dès 12 heures, encore bon à 24). Un repos exact ne bouge jamais. Une fourchette est une marge, et vous choisissez comment la lire, comme vous choisissez l'endroit de la mise en place :
+
+- **`shortest`** (par défaut) : chacun de ces repos dure le plus court de sa fourchette ;
+- **`balanced`** : le milieu ;
+- **`longest`** : le plus long.
+
+Cela change les temps total et d'attente et le diagramme de Gantt, rien d'autre. Un minuteur actif écrit en fourchette (`~{40-50min}`) est une incertitude de cuisson, pas une marge : il est toujours planifié sur son chiffre le plus long, pour ne jamais servir en retard, quel que soit votre choix.
+
+Quand vous indiquez aussi à Gram l'heure du service et vos disponibilités, il se sert de cette marge pour que votre propre travail évite la nuit : voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+
 ## Où et comment choisir son planning
 
 Une règle fondamentale dans Gram : **la recette ne contient aucune syntaxe pour imposer son planning**. Elle décrit uniquement des faits culinaires (les ingrédients, le matériel, les actions et les temps).
 
-Lors de la compilation, Gram ne vous oblige pas non plus à faire un choix figé : **les trois stratégies de planning sont calculées en parallèle et stockées ensemble dans le JSON compilé**, au sein de l'objet `schedules` :
+Lors de la compilation, Gram ne vous oblige pas non plus à faire un choix figé. Le JSON compilé transporte les faits (`miseEnPlace`, et `tasks` : la liste de tout ce qu'il y a à faire et de ce que chaque tâche attend) et **un seul planning par défaut**, `schedule` (mise en place par section, repos les plus courts) :
 
 ```json
 {
   "miseEnPlace": { /* faits bruts : durées estimées par section */ },
-  "schedules": {
-    "perSection": { /* chronologie optimisée par section (temps masqué) */ },
-    "upfront":    { /* chronologie avec préparation groupée au début */ },
-    "perSession": { /* chronologie découpée par jour ou session */ }
-  }
+  "tasks":       { /* le graphe des tâches, indépendant de tout réglage */ },
+  "schedule":    { /* le planning par défaut, posé à partir de `tasks` */ }
 }
 ```
 
-Le choix du planning intervient donc **uniquement au moment du rendu, de l'export ou de l'affichage**. C'est le consommateur final (le cuisinier ou l'interface UI) qui décide quelle projection temporelle visualiser :
+Toute autre combinaison (tout au début, par journée, repos les plus longs...) se calcule à la demande à partir de `tasks`, avec `layout()` de `@gram-lang/scheduler`, **sans recompiler**. Le choix du planning intervient donc **uniquement au moment du rendu, de l'export ou de l'affichage** : c'est le consommateur final (le cuisinier ou l'interface) qui décide quelle projection temporelle visualiser :
 
-| Outil | Comment sélectionner la vue |
-|---|---|
-| **CLI** (`gram view`, `gram export`, `gram print`) | Option `--mise-en-place <per-section\|upfront\|per-session>` |
-| **VS Code** | Réglage `gram.miseEnPlace` dans les paramètres |
-| **Playground** | Menu déroulant du planning en tête de prévisualisation |
-| **Moteur de rendu** (`@gram-lang/renderer`) | Option `schedule: "perSection" \| "upfront" \| "perSession"` |
+| Outil | Où va la mise en place | Durée des repos |
+|---|---|---|
+| **CLI** (`gram view`, `gram export`, `gram print`, `gram cook`, `gram plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
+| **VS Code** | Réglage `gram.miseEnPlace` | Réglage `gram.rests` |
+| **Playground** | Sélecteur « Mise en place » | Sélecteur « Repos » |
+| **Moteur de rendu** (`@gram-lang/renderer`) | Option `miseEnPlace: "perSection" \| "upfront" \| "perSession"` | Option `rests` |
 
-Pour les développeurs qui créent leur propre interface, c'est particulièrement pratique : vous n'avez aucun algorithme d'ordonnancement complexe à recalculer côté client. Il vous suffit de lire la clé désirée dans `compiled.schedules` pour afficher le diagramme de Gantt ou la feuille de route correspondante (voir la [référence de l'API kitchen](/fr/docs/reference/api/kitchen/)).
+Pour les développeurs qui créent leur propre interface, c'est particulièrement pratique : vous n'avez aucun algorithme d'ordonnancement à réécrire côté client. Lisez `schedule` pour le planning par défaut, ou appelez `layout()` pour un autre (voir la [référence de l'API kitchen](/fr/docs/reference/api/kitchen/) et celle de l'[API scheduler](/fr/docs/reference/api/scheduler/)).
 
 ## Les recettes sur plusieurs jours
 
@@ -151,11 +160,11 @@ Une recette longue (**pain au levain**, **bœuf mariné**, **croissants** ou **s
 
 [Reposer] Laisser prendre à ^{4C} pendant ~_{24h}.
 
-## Fond ~{-26h} ->&fond
+## Fond ->&fond
 
 [Travailler] La &crème{150g} avec la @farine{300g} et le @beurre{150g}.
 
-## Tarte ~{-24h}
+## Tarte ~{-1d}
 
 [Garnir] Avec le &fond{400g}
 
@@ -168,25 +177,26 @@ Une recette longue (**pain au levain**, **bœuf mariné**, **croissants** ou **s
 
 ### Comment Gram découpe les journées
 
-Pour structurer une recette en sessions quotidiennes, **la bonne pratique recommandée est d'utiliser des ancres explicites en jours : `~{-1d}`, `~{-2d}`, `~{-3d}`**.
+Pour structurer une recette en sessions quotidiennes, il faut des ancres **en jours** : `~{-1d}`, `~{-2d}`, `~{-3d}`. La distinction entre les deux unités est fondamentale :
 
-La distinction entre les deux unités est fondamentale :
-- **`~{-Nd}` (Jours) = Découpage en sessions de travail** : c'est une intention humaine claire (*« cette préparation se fait la veille (J-1) »* ou *« deux jours avant (J-2) »*). Gram regroupe alors la mise en place de ces sections dans une session dédiée.
-- **`~{-Nh}` (Heures) = Échéance relative ALAP au sein de la journée** : une ancre comme `~{-2h}` indique au moteur d'ordonnancement que l'étape doit impérativement s'achever 2 heures avant le service (par exemple pour laisser tiédir une garniture ou reposer une viande).
+- **`~{-Nd}` (jours) = une journée de travail.** C'est une intention humaine claire (*« cette préparation se fait la veille (J-1) »*, *« deux jours avant (J-2) »*). Gram regroupe alors la mise en place de ces sections dans une session dédiée.
+- **`~{-Nh}` (heures) = une échéance à l'intérieur de la journée.** Une ancre comme `~{-2h}` ou `~{-36h}` indique au moteur d'ordonnancement que l'étape doit s'achever 2 heures, ou 36 heures, avant le service, mais elle n'ouvre **jamais** de journée à elle seule : une recette `.gram` ne connaît pas l'heure réelle de votre repas, et convertir des heures en jours créerait des ambiguïtés (`~{-12h}` tombe le matin même si vous dînez à 20 h, mais la veille à minuit si vous déjeunez à 12 h).
 
-Techniquement, le compilateur sait convertir les heures en jours en arrondissant vers le bas (`floor(heures / 24)`), de sorte que `~{-26h}` ou `~{-36h}` basculent bien en J-1. Mais comme une recette `.gram` ne connaît pas l'heure réelle de votre repas sur l'horloge, utiliser des heures pour découper des journées crée des ambiguïtés (une ancre de `~{-12h}` tombe le matin même si vous dînez à 20h, mais la veille à minuit si vous déjeunez à 12h !). Pour ouvrir une session la veille ou l'avant-veille, **privilégiez toujours la notation en jours `~{-Nd}`**.
+Une section sans ancre prend le jour de **l'ancre en jours la plus lointaine parmi les sections qui la suivent**, ou le jour J s'il n'y en a pas. Dans l'exemple, le fond n'a pas d'ancre : il tombe à J-1 avec la tarte, et l'ordonnancement ALAP le place le plus tard possible, juste avant elle.
 
 :::caution[Attention aux faux amis]
 Deux situations courantes ne créent **pas** de nouvelle journée de travail :
 
 1. **Un long repos passif sans ancre de section** : une étape `[Repos] Laisser reposer ~_{48h}.` fait remonter l'étape de deux jours sur le diagramme de Gantt, mais ne crée pas de session J-2 si la section n'est pas explicitement ancrée. Pensez à nommer votre section avec son ancre (ex. : `## Crème ~{-2d}`).
-2. **Une ancre en heures inférieure à 24 heures** : une valeur comme `~{-18h}` s'arrondit mathématiquement à 0 jour. Une pâte préparée la veille au soir restera donc groupée sur le jour J. Pour ouvrir une vraie session la veille, utilisez explicitement `~{-1d}`.
+2. **Une ancre en heures** : une valeur comme `~{-18h}` ou `~{-36h}` reste une échéance du jour où tombe la section. Une pâte préparée la veille au soir restera donc groupée sur le jour J. Pour ouvrir une vraie session la veille, utilisez explicitement `~{-1d}`.
 :::
 
 Dans l'exemple ci-dessus :
 - La **crème** est travaillée à **J-3** ;
-- Le **fond** et la **tarte** sont réalisés à **J-1** (26 h et 24 h avant le service) ;
+- Le **fond** et la **tarte** sont réalisés à **J-1** ;
 - Le **service** a lieu le **jour J**.
+
+Chaque journée est censée tenir dans les 24 heures qui précèdent la suivante. Si un long repos repousse le travail d'une journée hors de cette fenêtre (une pâte `~{-1d}` qui fermente 50 heures), Gram prévient avec `SESSION_OVERFLOW` et suggère d'ancrer la section plus loin.
 
 ### Ce que chaque session rassemble
 
@@ -198,7 +208,7 @@ Au début de chaque journée de travail, Gram rassemble la mise en place nécess
 Le temps de préparation global et le temps actif restent rigoureusement identiques entre tous les modes de planning.
 
 :::tip
-Quand plusieurs sections d'une même journée dépendent les unes des autres, décalez légèrement leurs ancres respectives (par exemple `~{-26h}`, `~{-25h}`, `~{-24h}`) plutôt que de leur attribuer à toutes `~{-1d}`. Chaque ancre constituant une échéance stricte, deux sections interdépendantes partageant la même ancre déclencheraient un avertissement de paradoxe temporel.
+Quand plusieurs sections se suivent le même jour, n'ancrez que la dernière (`## Tarte ~{-1d}`) et laissez les autres sans ancre, comme le fond ci-dessus : elles prennent son jour et se placent juste avant elle. Leur donner à toutes `~{-1d}` fait de chacune une échéance au même instant, et quand l'une a besoin de l'autre, cela déclenche un avertissement de paradoxe temporel.
 :::
 
 ## Pour aller plus loin

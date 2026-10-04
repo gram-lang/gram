@@ -98,9 +98,11 @@ portions: 10
     { "section": 0, "duration": 9, "items": [ { "kind": "gather", "target": "ingredient", "count": 7, "duration": 7 } /* ... */ ] }
     // ...
   ],
-  "schedules": {
-    "perSection": { "totalTime": 1465, "idleTime": 1400, "blocks": [ { "kind": "prep", "section": 0, "start": 0, "end": 9 } /* ... */ ] },
-    "upfront": { "totalTime": 1489, "idleTime": 1424, "blocks": [ /* ... */ ] }
+  "tasks": { "tasks": [ /* ... */ ], "sections": [ /* ... */ ] },
+  "schedule": {
+    "miseEnPlace": "perSection", "rests": "shortest",
+    "totalTime": 1465, "activeTime": 56, "preparationTime": 9, "idleTime": 1400,
+    "blocks": [ { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 9 } /* ... */ ]
   },
   "shopping_list": [
     {

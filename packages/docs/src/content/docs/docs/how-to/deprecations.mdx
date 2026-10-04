@@ -23,19 +23,22 @@ Not sure what your code uses? [Search it for the deprecated names](#find-what-yo
 
 <Since v="1.4.0" type="deprecated" />
 
-Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section costs) and `schedules`, three complete timelines: `perSection` (each section's preparation right before it), `upfront` (all the preparation first) and `perSession` (the preparation of each working day at the start of that day). They replace the fields below. See the [Kitchen API reference](/docs/reference/api/kitchen) for every field.
+Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section costs), `tasks` (everything there is to do and what each task waits for) and `schedule`, the default timeline laid out from them (each section's preparation right before it, the shortest rests). Any other timeline (all the preparation first, the preparation of each working day at the start of that day, longer rests) comes from `layout(recipe.tasks, options)` or `scheduleFor(recipe, mode, rests)`, without compiling again. They replace the fields below. See the [Kitchen API reference](/docs/reference/api/kitchen) for every field.
 
 | Deprecated | Use instead |
 |---|---|
-| [`steps[].timings`](#step-timings-and-background-tasks) | The `step` blocks of `schedules[mode].blocks` |
-| [`steps[].backgroundTasks`](#step-timings-and-background-tasks) | The `passive` blocks of `schedules[mode].blocks` |
-| `metrics.totalTime` | `schedules[mode].totalTime` |
-| `metrics.idleTime` | `schedules[mode].idleTime` |
-| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#time-breakdowns) | `miseEnPlace` and `schedules` |
+| [`steps[].timings`](#step-timings-and-background-tasks) | The `step` blocks of `schedule.blocks` |
+| [`steps[].backgroundTasks`](#step-timings-and-background-tasks) | The `passive` blocks of `schedule.blocks` |
+| `metrics.totalTime` | `schedule.totalTime` |
+| `metrics.idleTime` | `schedule.idleTime` |
+| `metrics.activeTime` | `schedule.activeTime` |
+| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#time-breakdowns) | `miseEnPlace` and `schedule` |
 
-`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in every timeline.
+`metrics.preparationTime` is **not** deprecated: it is the same in every timeline.
 
-The old `metrics.totalTime` is the total with every preparation first. Gram's own tools show `perSection` by default, so use `recipe.schedules.upfront` if you want the closest number to the one you had before: it is the same unless the recipe has intermediates, which `upfront` prepares once they exist, so it can be shorter.
+`metrics.activeTime` counts a timer written as a range (`~{20-25min}`) as its average, as it always did; `schedule.activeTime` plans it on its longest figure, so dinner is never late. The two are the same for a recipe without ranges.
+
+The old `metrics.totalTime` is the total with every preparation first. Gram's own tools show `perSection` by default, so use `scheduleFor(recipe, 'upfront')` if you want the closest number to the one you had before: it is the same unless the recipe has intermediates, which `upfront` prepares once they exist, so it can be shorter.
 
 ### Step timings and background tasks
 
@@ -57,7 +60,9 @@ for (const section of recipe.sections) {
 Now, read the blocks of one timeline. Every time is in minutes from `0` and includes the mise en place, so it depends on the timeline you choose: do not mix these blocks with `timings` in the same chart.
 
 ```typescript
-const schedule = recipe.schedules[chosenMode]; // 'perSection', 'upfront' or 'perSession'
+import { scheduleFor } from '@gram-lang/kitchen';
+
+const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' or 'perSession'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // a section's mise en place (new)
@@ -74,7 +79,7 @@ for (const block of schedule.blocks) {
 `metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown` listed labelled durations. The same information is now in the data they were computed from:
 
 - what the preparation is made of: the `items` of each entry of `miseEnPlace`;
-- when and for how long each step runs: the blocks of `schedules[mode].blocks` (`end - start` is the duration of a block).
+- when and for how long each step runs: the blocks of `schedule.blocks` (`end - start` is the duration of a block).
 
 ### The `calculatePreparationTime` function
 
@@ -114,7 +119,7 @@ A compiled recipe already carries the same split in its `miseEnPlace` field.
 
 **Deprecated:** reading the old `metrics` fields as a fallback. **Use instead:** compile your recipes again with 1.4.0 or later.
 
-JSON compiled by kitchen 1.3.0 or earlier has no `schedules`. Until 2.0.0, `scheduleTimes(compiled, mode)` from `@gram-lang/kitchen` still reads the total and idle time from the old `metrics` fields, and returns the new ones when they exist. That fallback is removed in 2.0.0.
+JSON compiled by kitchen 1.3.0 or earlier has no `tasks` and no `schedule`. Until 2.0.0, `scheduleTimes(compiled, mode, rests)` from `@gram-lang/kitchen` still reads the total and idle time from the old `metrics` fields, and returns the new ones when they exist. That fallback is removed in 2.0.0.
 
 To tell the two apart, look at `generator`: a recipe compiled with 1.4.0 or later says which compiler wrote it (`"@gram-lang/kitchen@1.4.0"`), an older one has no such field. Compile your stored recipes again with 1.4.0 or later before upgrading to 2.0.0.
 
@@ -123,7 +128,7 @@ To tell the two apart, look at `generator`: a recipe compiled with 1.4.0 or late
 Search your code for the deprecated names. Destructuring such as `const { totalTime } = recipe.metrics` is caught too, and so are unrelated words like `timings`, so read the matches:
 
 ```bash
-grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
+grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
 ```
 
 If you use TypeScript, the deprecated fields and functions of `@gram-lang/kitchen` 1.4.0 and later are struck through in your editor, with the replacement in the tooltip.

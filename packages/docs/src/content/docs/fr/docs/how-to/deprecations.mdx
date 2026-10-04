@@ -23,19 +23,22 @@ Un doute sur ce que votre code utilise ? [Cherchez-y les noms dépréciés](#rep
 
 <Since v="1.4.0" type="deprecated" />
 
-Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la préparation de chaque section) et `schedules`, trois chronologies complètes : `perSection` (la préparation de chaque section juste avant elle), `upfront` (toute la préparation d'abord) et `perSession` (la préparation de chaque journée de travail au début de cette journée). Elles remplacent les champs ci-dessous. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) détaille chaque champ.
+Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la préparation de chaque section), `tasks` (tout ce qu'il y a à faire et ce que chaque tâche attend) et `schedule`, le planning par défaut posé à partir d'eux (la préparation de chaque section juste avant elle, les repos les plus courts). Tout autre planning (toute la préparation d'abord, la préparation de chaque journée au début de cette journée, des repos plus longs) sort de `layout(recipe.tasks, options)` ou de `scheduleFor(recipe, mode, rests)`, sans recompiler. Ils remplacent les champs ci-dessous.
 
 | Déprécié | À utiliser à la place |
 |---|---|
-| [`steps[].timings`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `step` de `schedules[mode].blocks` |
-| [`steps[].backgroundTasks`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `passive` de `schedules[mode].blocks` |
-| `metrics.totalTime` | `schedules[mode].totalTime` |
-| `metrics.idleTime` | `schedules[mode].idleTime` |
-| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#détail-des-temps) | `miseEnPlace` et `schedules` |
+| [`steps[].timings`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `step` de `schedule.blocks` |
+| [`steps[].backgroundTasks`](#temps-des-étapes-et-tâches-de-fond) | Les blocs `passive` de `schedule.blocks` |
+| `metrics.totalTime` | `schedule.totalTime` |
+| `metrics.idleTime` | `schedule.idleTime` |
+| `metrics.activeTime` | `schedule.activeTime` |
+| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#détail-des-temps) | `miseEnPlace` et `schedule` |
 
-`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans toutes les chronologies.
+`metrics.preparationTime` n'est **pas** déprécié : il est identique dans toutes les chronologies.
 
-L'ancien `metrics.totalTime` est le total avec toutes les préparations au début. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` pour vous rapprocher le plus du chiffre d'avant. C'est le même, sauf si la recette a des intermédiaires, que `upfront` prépare une fois qu'ils existent : il peut alors être plus court.
+`metrics.activeTime` compte un minuteur écrit en fourchette (`~{20-25min}`) pour sa moyenne, comme il l'a toujours fait ; `schedule.activeTime` le planifie sur son chiffre le plus long, pour ne jamais servir en retard. Les deux sont identiques pour une recette sans fourchette.
+
+L'ancien `metrics.totalTime` est le total avec toutes les préparations au début. Les outils de Gram affichent `perSection` par défaut : utilisez `scheduleFor(recipe, 'upfront')` pour vous rapprocher le plus du chiffre d'avant. C'est le même, sauf si la recette a des intermédiaires, que `upfront` prépare une fois qu'ils existent : il peut alors être plus court.
 
 ### Temps des étapes et tâches de fond
 
@@ -57,7 +60,9 @@ for (const section of recipe.sections) {
 Désormais, lisez les blocs d'une des trois chronologies. Tous les temps sont en minutes à partir de `0` et incluent la mise en place : ils dépendent donc de la chronologie choisie, ne les mélangez pas avec `timings` dans un même diagramme.
 
 ```typescript
-const schedule = recipe.schedules[chosenMode]; // 'perSection', 'upfront' ou 'perSession'
+import { scheduleFor } from '@gram-lang/kitchen';
+
+const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' ou 'perSession'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // la mise en place d'une section (nouveau)
@@ -74,7 +79,7 @@ for (const block of schedule.blocks) {
 `metrics.activeBreakdown`, `metrics.prepBreakdown` et `metrics.totalBreakdown` listaient des durées étiquetées. La même information se trouve maintenant dans les données dont elles étaient tirées :
 
 - de quoi est faite la préparation : les `items` de chaque entrée de `miseEnPlace` ;
-- quand et combien de temps dure chaque étape : les blocs de `schedules[mode].blocks` (`end - start` donne la durée d'un bloc).
+- quand et combien de temps dure chaque étape : les blocs de `schedule.blocks` (`end - start` donne la durée d'un bloc).
 
 ### La fonction `calculatePreparationTime`
 
@@ -114,7 +119,7 @@ Une recette compilée porte déjà ce même découpage dans son champ `miseEnPla
 
 **Déprécié :** la lecture des anciens champs `metrics` comme solution de repli. **À utiliser à la place :** recompiler vos recettes avec la 1.4.0 ou plus.
 
-Le JSON compilé par kitchen 1.3.0 ou antérieur n'a pas de `schedules`. Jusqu'à la 2.0.0, `scheduleTimes(compiled, mode)` de `@gram-lang/kitchen` lit encore le temps total et le temps d'attente dans les anciens champs `metrics`, et renvoie les nouveaux dès qu'ils existent. Ce repli disparaît avec la 2.0.0.
+Le JSON compilé par kitchen 1.3.0 ou antérieur n'a ni `tasks` ni `schedule`. Jusqu'à la 2.0.0, `scheduleTimes(compiled, mode, rests)` de `@gram-lang/kitchen` lit encore le temps total et le temps d'attente dans les anciens champs `metrics`, et renvoie les nouveaux dès qu'ils existent. Ce repli disparaît avec la 2.0.0.
 
 Pour distinguer les deux cas, regardez `generator` : une recette compilée avec la 1.4.0 ou plus indique quel compilateur l'a écrite (`"@gram-lang/kitchen@1.4.0"`), une plus ancienne n'a pas ce champ. Recompilez vos recettes stockées avec la 1.4.0 ou plus avant de passer à la 2.0.0.
 
@@ -123,7 +128,7 @@ Pour distinguer les deux cas, regardez `generator` : une recette compilée avec 
 Cherchez dans votre code les noms dépréciés. La déstructuration, comme `const { totalTime } = recipe.metrics`, est repérée aussi, tout comme des mots sans rapport tels que `timings` : relisez les résultats.
 
 ```bash
-grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
+grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
 ```
 
 Si vous utilisez TypeScript, les champs et fonctions dépréciés de `@gram-lang/kitchen` 1.4.0 et suivants sont barrés dans votre éditeur, avec le remplaçant dans l'infobulle.

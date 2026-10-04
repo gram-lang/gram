@@ -1,6 +1,6 @@
 ---
 title: "Référence API"
-description: "Vue d'ensemble des packages composables de Gram (parser, modules, kitchen, analyzer, renderer, format, i18n) et de leur articulation."
+description: "Vue d'ensemble des packages composables de Gram (parser, modules, kitchen, scheduler, analyzer, renderer, format, i18n) et de leur articulation."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
@@ -28,7 +28,8 @@ Tous ces *packages* sont `ESM only`, *side-effect free*, et tournent partout où
 |---|---|---|
 | [`@gram-lang/parser`](/fr/docs/reference/api/parser) | Transforme le texte source `.gram` en Arbre Syntaxique Abstrait (AST) | `getAST(source)` |
 | [`@gram-lang/modules`](/fr/docs/reference/api/modules) | Résout les imports `@use`, suit les dépendances, ajuste les sous-bases et compose un AST unifié | `loadModuleGraph(entry, host)`, `composeRecipe(graph, opts)` |
-| [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée, prête au rendu (liste de courses, minutages, registre) | `compile(ast, options?)` |
+| [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée, prête au rendu (liste de courses, graphe de tâches, planning, registre) | `compile(ast, options?)` |
+| [`@gram-lang/scheduler`](/fr/docs/reference/api/scheduler) | Pose le graphe de tâches sur un planning, puis sur le calendrier à partir d'une heure de service et de vos disponibilités | `layout(graph, options?)`, `project(recipes, context)` |
 | [`@gram-lang/analyzer`](/fr/docs/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
 | [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
 | [`@gram-lang/format`](/fr/docs/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles unifiées) | `formatGram(source, options?)` |
