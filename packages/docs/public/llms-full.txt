@@ -751,6 +751,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
 - **Time Paradox**: If a section retro-planning anchor conflicts with an earlier required dependency (e.g., a section anchored at `-10 min` but used in a section anchored at `-1 h`), the compiler warns `TIME_PARADOX`.
 - **Track Contention**: If you use named passive timers (e.g. `~_oven{30min}`) and the ALAP algorithm is forced to delay them due to crowding (multiple timers on the same track at the same time), the compiler warns `TRACK_CONTENTION`.
+- **Session overflow** *(Since 1.4.0)*: If a long rest pushes the work of a working day before the 24 hours that day is meant to fit in (a `~{-1d}` section whose dough ferments for 50 hours, or a section anchored at `~{-36h}`, which never opens a day of its own), the compiler warns `SESSION_OVERFLOW`. Anchor the section further back, for example `~{-2d}`, or shorten the rest.
 - **Duration out of range**: A timer or a retro-planning offset longer than 1000 years is capped at 1000 years and the compiler warns `DURATION_OUT_OF_RANGE`. It is a technical limit, far beyond any real recipe, that keeps the timeline finite when a number has a stray digit.
 
 For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.
@@ -1647,6 +1648,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
 | `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
 | `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
+| `SESSION_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
 | `MODULE_PARSE_ERROR` | error | `Syntax error in imported module "{specifier}": {parseMessage}` |

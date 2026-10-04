@@ -58,7 +58,7 @@ interface CompilationResult {
     totalBreakdown: TimeBreakdownItem[];
   };
   miseEnPlace: SectionMiseEnPlace[]; // what preparing each section costs
-  schedules: Record<ScheduleMode, Schedule>; // perSection, upfront, perSession
+  schedules: Record<MiseEnPlaceMode, Schedule>; // perSection, upfront, perSession
 }
 
 interface SectionMiseEnPlace {
@@ -185,12 +185,12 @@ function calculatePreparationTime(
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ the `miseEnPlace` field of a compiled recipe, derived from its sections
 
-type ScheduleMode = "perSection" | "upfront" | "perSession"
-const SCHEDULE_MODES: readonly ["perSection", "upfront", "perSession"]
-const DEFAULT_SCHEDULE_MODE: ScheduleMode // "perSection"
-function isScheduleMode(value: unknown): value is ScheduleMode
-function scheduleFor(compiled, mode?: ScheduleMode): Schedule | undefined
-function scheduleTimes(compiled, mode?: ScheduleMode): { totalTime: number; idleTime: number }
+type MiseEnPlaceMode = "perSection" | "upfront" | "perSession"
+const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perSession"]
+const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode // "perSection"
+function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode
+function scheduleFor(compiled, mode?: MiseEnPlaceMode): Schedule | undefined
+function scheduleTimes(compiled, mode?: MiseEnPlaceMode): { totalTime: number; idleTime: number }
 
 // Since 1.4.0: the longest duration Gram plans with (1000 years, see DURATION_OUT_OF_RANGE)
 const MAX_DURATION_MINUTES: number // 525_600_000

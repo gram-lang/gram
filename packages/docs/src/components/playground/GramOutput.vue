@@ -12,7 +12,7 @@ import {
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 import { trackEvent } from "../../lib/umami";
-import type { ScheduleMode } from "@gram-lang/kitchen";
+import type { MiseEnPlaceMode } from "@gram-lang/kitchen";
 import type { PlaygroundDiagnostic } from "./diagnostics";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import JsonNode from "./JsonNode.vue";
@@ -29,7 +29,7 @@ const props = defineProps<{
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
-	schedule?: ScheduleMode;
+	schedule?: MiseEnPlaceMode;
 	blockingDiagnostics?: PlaygroundDiagnostic[];
 }>();
 
