@@ -1,7 +1,9 @@
-import type { SectionAST } from "@gram-lang/parser";
-import type { ProcessedSection } from "../types";
-import { WarningCode, pushWarning, type Warning } from "../warnings";
-import type { ScheduledPassiveTask, StepSchedule } from "./types";
+import type {
+	ScheduledPassiveTask,
+	SchedulingDiagnostic,
+	SchedulingSection,
+	StepSchedule,
+} from "./types";
 
 /**
  * Resolves the actual (as opposed to theoretical) start/end of every passive
@@ -13,7 +15,7 @@ import type { ScheduledPassiveTask, StepSchedule } from "./types";
  * scheduleALAP (alap.ts) already treats same-track usage as an implicit
  * dependency, so the ordinary case — several steps chaining one physical
  * resource back-to-back, in textual order — has matching theoretical and
- * actual times and never warns here. A delay can still surface when some
+ * actual times and never reports here. A delay can still surface when some
  * *other* dependency reorders a track's users relative to their textual
  * order, which is a genuine, unforeseen conflict worth flagging.
  *
@@ -22,9 +24,8 @@ import type { ScheduledPassiveTask, StepSchedule } from "./types";
  */
 export function serializeTracks(
 	schedules: StepSchedule[],
-	sections: ProcessedSection[],
-	sectionASTs: SectionAST[],
-	warnings: Warning[],
+	sections: SchedulingSection[],
+	diagnostics: SchedulingDiagnostic[],
 ): ScheduledPassiveTask[] {
 	const backgroundTrackCursors = new Map<string, number>();
 
@@ -63,11 +64,12 @@ export function serializeTracks(
 		const delay = entry.actualEnd - theoreticalEnd;
 
 		if (delay > 0) {
-			pushWarning(warnings, WarningCode.TRACK_CONTENTION, {
+			diagnostics.push({
+				code: "TRACK_CONTENTION",
+				section: entry.sched.sectionIndex,
 				trackName: entry.task.name,
 				delay: delay,
 				item: `Step in section '${sections[entry.sched.sectionIndex]!.title || "unnamed"}'`,
-				loc: sectionASTs[entry.sched.sectionIndex]?.loc,
 			});
 		}
 	}

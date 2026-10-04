@@ -1,4 +1,4 @@
-import type { ScheduleBlock, ScheduleSession } from "../types";
+import type { ScheduleBlock, ScheduleSession } from "./types";
 
 const MINUTES_PER_DAY = 1440;
 

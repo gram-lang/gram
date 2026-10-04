@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { isSameSchedulingProblem } from "../../src/schedule/build";
-import { type Warning, WarningCode, pushWarning } from "../../src/warnings";
+import { isSameSchedulingProblem } from "../src/schedule-warnings";
+import { type Warning, WarningCode, pushWarning } from "../src/warnings";
 
 const loc = (offset: number) => ({ start: offset, end: offset + 10 });
 

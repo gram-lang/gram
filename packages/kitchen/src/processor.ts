@@ -38,22 +38,27 @@ import type {
 	Schedule,
 	SectionMiseEnPlace,
 } from "./types";
-import { SCHEDULE_MODES, type ScheduleMode } from "./schedule-mode";
+import {
+	SCHEDULE_MODES,
+	type ScheduleMode,
+	type SchedulingDiagnostic,
+	type StepSchedule,
+	buildSchedule,
+	cloneSchedules,
+	computeTimeline,
+	scheduleALAP,
+	serializeTracks,
+} from "@gram-lang/scheduler";
+import { commitTimeline } from "./legacy-timings";
+import {
+	isSameSchedulingProblem,
+	pushSchedulingWarnings,
+} from "./schedule-warnings";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import { resolveTimeUnit } from "@gram-lang/i18n";
-import { WarningCode, pushWarning } from "./warnings";
+import { type Warning, WarningCode, pushWarning } from "./warnings";
 import { detectIntermediateCycles } from "./graph";
-import {
-	scheduleALAP,
-	serializeTracks,
-	computeTimeline,
-	commitTimeline,
-	cloneSchedules,
-	buildSchedule,
-	isSameSchedulingProblem,
-	type StepSchedule,
-} from "./schedule";
 import { calculatePreparationTime } from "./metrics";
 import { analyzeMiseEnPlace } from "./mise-en-place";
 
@@ -878,7 +883,7 @@ export function processSections(
 				steps.push(stepObj);
 				globalSchedules.push({
 					sectionIndex,
-					stepObj,
+					stepIndex: steps.length - 1,
 					isComment: false,
 					localActiveTime,
 					productionTime,
@@ -899,7 +904,7 @@ export function processSections(
 				steps.push(commentObj);
 				globalSchedules.push({
 					sectionIndex,
-					stepObj: commentObj,
+					stepIndex: steps.length - 1,
 					isComment: true,
 					localActiveTime: 0,
 					productionTime: 0,
@@ -939,20 +944,22 @@ export function processSections(
 	// into `produced` and commitTimeline writes onto the compiled steps, and
 	// the per-section pass below must start from the untouched records.
 	const pristineSchedules = cloneSchedules(globalSchedules);
+	const locationOf = (section: number) => sectionASTs[section]?.loc;
 
-	scheduleALAP(globalSchedules, sections, sectionASTs, registry.warnings);
+	const legacyDiagnostics: SchedulingDiagnostic[] = [];
+	scheduleALAP(globalSchedules, sections, legacyDiagnostics);
 	const scheduledPassiveTasks = serializeTracks(
 		globalSchedules,
 		sections,
-		sectionASTs,
-		registry.warnings,
+		legacyDiagnostics,
 	);
+	pushSchedulingWarnings(registry.warnings, legacyDiagnostics, locationOf);
 	const legacyTimeline = computeTimeline(
 		globalSchedules,
 		scheduledPassiveTasks,
 		sections,
 	);
-	const metrics = commitTimeline(legacyTimeline, globalActiveTime);
+	const metrics = commitTimeline(legacyTimeline, sections, globalActiveTime);
 
 	// Mise en place: one cost per section, then one complete timeline per mode.
 	const analysis = analyzeMiseEnPlace(sections, registry);
@@ -960,12 +967,11 @@ export function processSections(
 	const preparation = calculatePreparationTime(sections, registry, miseEnPlace);
 	const schedules = {} as Record<ScheduleMode, Schedule>;
 	for (const mode of SCHEDULE_MODES) {
-		const { schedule, warnings } = buildSchedule(
+		const { schedule, diagnostics } = buildSchedule(
 			mode,
 			pristineSchedules,
 			miseEnPlace,
 			sections,
-			sectionASTs,
 			preparation.total,
 			globalActiveTime,
 			analysis,
@@ -974,6 +980,8 @@ export function processSections(
 		// The compiled JSON carries every timeline, so a problem that only one
 		// of them runs into must not be hidden: add its warnings to the official
 		// ones, once, the default timeline's first.
+		const warnings: Warning[] = [];
+		pushSchedulingWarnings(warnings, diagnostics, locationOf);
 		for (const w of warnings) {
 			if (!registry.warnings.some((o) => isSameSchedulingProblem(o, w))) {
 				registry.warnings.push(w);

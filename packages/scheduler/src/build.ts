@@ -1,14 +1,6 @@
-import type { SectionAST } from "@gram-lang/parser";
-import { type MiseEnPlaceAnalysis, sumDuration } from "../mise-en-place";
-import type { ScheduleMode } from "../schedule-mode";
-import type {
-	MiseEnPlaceItem,
-	ProcessedSection,
-	Schedule,
-	SectionMiseEnPlace,
-} from "../types";
-import { type Warning, WarningCode } from "../warnings";
 import { scheduleALAP } from "./alap";
+import { sumDuration } from "./breakdown";
+import type { ScheduleMode } from "./mode";
 import { computeTimeline, type Timeline } from "./rebase";
 import {
 	type SessionPlan,
@@ -17,14 +9,19 @@ import {
 	singleSessionPlan,
 } from "./sessions";
 import { serializeTracks } from "./tracks";
-import type { StepSchedule } from "./types";
+import type {
+	MiseEnPlaceItem,
+	Schedule,
+	SchedulingDiagnostic,
+	SchedulingSection,
+	SectionMiseEnPlace,
+	StepSchedule,
+} from "./types";
 
 /**
  * Deep-enough copy of the scheduling records for a second, independent pass:
  * `produced`/`consumed`/`passiveTasks` are copied (scheduleALAP pushes into
- * `produced`) and `ls`/`lf` reset. `stepObj` stays shared — the per-section
- * pass never writes to it (only `commitTimeline` does, and only for the
- * legacy pass).
+ * `produced`) and `ls`/`lf` reset.
  */
 export function cloneSchedules(schedules: StepSchedule[]): StepSchedule[] {
 	return schedules.map((s) => ({
@@ -39,9 +36,14 @@ export function cloneSchedules(schedules: StepSchedule[]): StepSchedule[] {
 
 /**
  * What `scheduleWithGroups` needs to tell which intermediates a group makes
- * itself (see `analyzeMiseEnPlace`).
+ * itself: the caller's analysis of the mise en place.
  */
-type IntermediateInfo = Pick<MiseEnPlaceAnalysis, "producers" | "gathered">;
+export interface IntermediateInfo {
+	/** Intermediate id -> index of the section that makes it. */
+	producers: Map<string, number>;
+	/** Section index -> ids of the intermediates its gather item counts. */
+	gathered: Map<number, string[]>;
+}
 
 /** Without it every intermediate is of unknown origin, so it waits. */
 const NO_INTERMEDIATES: IntermediateInfo = {
@@ -134,11 +136,10 @@ function scheduleWithGroups(
 	pristine: StepSchedule[],
 	mise: SectionMiseEnPlace[],
 	groups: number[][],
-	sections: ProcessedSection[],
-	sectionASTs: SectionAST[],
+	sections: SchedulingSection[],
 	info: IntermediateInfo,
 	defer: boolean,
-): { timeline: Timeline; warnings: Warning[] } {
+): { timeline: Timeline; diagnostics: SchedulingDiagnostic[] } {
 	const schedules = cloneSchedules(pristine);
 	const withSteps = new Set(
 		pristine.filter((s) => !s.isComment).map((s) => s.sectionIndex),
@@ -155,7 +156,7 @@ function scheduleWithGroups(
 		const duration = sumDuration(items);
 		return {
 			sectionIndex,
-			stepObj: null,
+			stepIndex: null,
 			isComment: false,
 			isPrep: true,
 			...(prepFor !== sectionIndex && { prepFor }),
@@ -210,17 +211,12 @@ function scheduleWithGroups(
 		schedules.splice(headAt, 0, ...heads);
 	}
 
-	const warnings: Warning[] = [];
-	scheduleALAP(schedules, sections, sectionASTs, warnings);
-	const passiveTasks = serializeTracks(
-		schedules,
-		sections,
-		sectionASTs,
-		warnings,
-	);
+	const diagnostics: SchedulingDiagnostic[] = [];
+	scheduleALAP(schedules, sections, diagnostics);
+	const passiveTasks = serializeTracks(schedules, sections, diagnostics);
 	return {
 		timeline: computeTimeline(schedules, passiveTasks, sections),
-		warnings,
+		diagnostics,
 	};
 }
 
@@ -251,7 +247,7 @@ interface ModePlan {
 
 const MODE_PLANS: Record<
 	ScheduleMode,
-	(sections: ProcessedSection[]) => ModePlan
+	(sections: SchedulingSection[]) => ModePlan
 > = {
 	// Each section's preparation is scheduled like a step of its own, at the
 	// head of the section: the ALAP chaining makes it finish right when the
@@ -283,52 +279,29 @@ const MODE_PLANS: Record<
 
 /**
  * The complete timeline of `mode`. Runs on a clone of the schedules and with
- * its own warnings array — it must never touch the compiled steps or the
+ * its own diagnostics array — it must never touch the caller's records or
  * official warnings (see the caller).
  */
 export function buildSchedule(
 	mode: ScheduleMode,
 	pristine: StepSchedule[],
 	mise: SectionMiseEnPlace[],
-	sections: ProcessedSection[],
-	sectionASTs: SectionAST[],
+	sections: SchedulingSection[],
 	preparationTime: number,
 	activeTime: number,
 	info: IntermediateInfo = NO_INTERMEDIATES,
-): { schedule: Schedule; warnings: Warning[] } {
+): { schedule: Schedule; diagnostics: SchedulingDiagnostic[] } {
 	const plan = MODE_PLANS[mode](sections);
-	const { timeline, warnings } = scheduleWithGroups(
+	const { timeline, diagnostics } = scheduleWithGroups(
 		pristine,
 		mise,
 		plan.groups,
 		sections,
-		sectionASTs,
 		info,
 		plan.defer,
 	);
 	return {
 		schedule: toSchedule(timeline, plan.sessions, preparationTime, activeTime),
-		warnings,
+		diagnostics,
 	};
-}
-
-/**
- * Whether two scheduling warnings report the same problem. A recipe is laid
- * out several times (the legacy pass, then one timeline per mise en place
- * mode), and a problem more than one layout runs into is reported once — but
- * the figures in its message depend on the layout: the instant a time paradox
- * is pulled to, the delay of a contention. A paradox is matched on where it
- * sits in the source, a contention on its message without the delay.
- */
-export function isSameSchedulingProblem(a: Warning, b: Warning): boolean {
-	if (a.code !== b.code) return false;
-	if (a.code === WarningCode.TIME_PARADOX && a.loc) {
-		return JSON.stringify(a.loc) === JSON.stringify(b.loc);
-	}
-	if (a.code === WarningCode.TRACK_CONTENTION) {
-		const withoutDelay = (w: Warning) =>
-			w.message.replace(/delayed by \S+ min/, "delayed");
-		return withoutDelay(a) === withoutDelay(b);
-	}
-	return a.message === b.message;
 }

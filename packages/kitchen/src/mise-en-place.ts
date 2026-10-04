@@ -1,3 +1,4 @@
+import { sumDuration } from "@gram-lang/scheduler";
 import type {
 	MiseEnPlaceItem,
 	ProcessedSection,
@@ -10,10 +11,6 @@ import { slugify } from "./utils";
 
 // Internal: not re-exported by index.ts. The public entry points are
 // `computeMiseEnPlace` and `calculatePreparationTime` (metrics.ts).
-
-/** Total duration, in minutes, of a list of mise en place items. */
-export const sumDuration = (items: MiseEnPlaceItem[]): number =>
-	items.reduce((total, item) => total + item.duration, 0);
 
 // Tracks the ingredient's stable `id` rather than a display name — the label is
 // resolved to a name via the registry at render time, the same way every other

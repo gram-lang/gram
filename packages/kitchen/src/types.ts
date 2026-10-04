@@ -201,92 +201,24 @@ export interface ProcessedSection {
 	retro_planning?: RetroPlanning | null;
 }
 
-/** One line of a section's mise en place cost. */
-export type MiseEnPlaceItem =
-	| {
-			kind: "gather";
-			target: "ingredient" | "cookware";
-			count: number;
-			duration: number;
-			/**
-			 * How many of `count` are intermediates (`&dough`), present only when
-			 * above zero. They are made during the recipe, so they can't be gathered
-			 * before it starts.
-			 */
-			intermediates?: number;
-	  }
-	| {
-			kind: "prepare";
-			ref: { type: "ingredient" | "cookware"; id: string };
-			duration: number;
-			/** The ingredient is an intermediate (`&dough`); present only when true. */
-			intermediate?: true;
-	  };
+import type {
+	MiseEnPlaceItem,
+	Schedule,
+	ScheduleBlock,
+	ScheduleSession,
+	SectionMiseEnPlace,
+	TimeBreakdownItem,
+} from "@gram-lang/scheduler";
 
-/**
- * Mode-independent fact: what preparing section `section` costs. Present only
- * when the cost is above zero.
- */
-export interface SectionMiseEnPlace {
-	section: number; // index into CompilationResult.sections
-	duration: number; // == sum of items[].duration (derived, kept so consumers needn't sum)
-	items: MiseEnPlaceItem[];
-}
-
-export type ScheduleBlock =
-	| {
-			kind: "prep";
-			section: number;
-			start: number;
-			end: number;
-			/** Preparation of an intermediate, planned later than the rest of the section's. */
-			deferred?: true;
-			/**
-			 * The part of the section's mise en place this block carries, present only
-			 * when it isn't all of it (some of it was deferred or gathered elsewhere).
-			 */
-			items?: MiseEnPlaceItem[];
-	  }
-	| {
-			kind: "step";
-			section: number;
-			step: number; // index in sections[section].steps (comments included)
-			start: number;
-			end: number;
-	  }
-	| {
-			kind: "passive";
-			section: number;
-			step: number;
-			track?: string; // only for named passive timers (~_name{})
-			start: number;
-			end: number;
-	  };
-
-/**
- * One working day of a timeline: `day` is 0 for the day itself, 1 for the day
- * before (`~{-1d}`), and so on. `start`/`end` bound its active work (passive
- * waiting is left out) and `sections` lists the sections prepared that day.
- */
-export interface ScheduleSession {
-	day: number;
-	start: number;
-	end: number;
-	sections: number[];
-}
-
-/** A complete timeline, in minutes from T0 = 0, preparation included. */
-export interface Schedule {
-	totalTime: number; // max(end) over blocks
-	idleTime: number; // totalTime - metrics.activeTime - metrics.preparationTime
-	blocks: ScheduleBlock[]; // sorted by start, then end
-	sessions: ScheduleSession[]; // one per working day, furthest day first
-}
-
-export interface TimeBreakdownItem {
-	label: string;
-	duration: number; // in minutes
-}
+// Defined by the scheduler, which lays them out; part of the compiled JSON.
+export type {
+	MiseEnPlaceItem,
+	Schedule,
+	ScheduleBlock,
+	ScheduleSession,
+	SectionMiseEnPlace,
+	TimeBreakdownItem,
+};
 
 export interface CompilationResult {
 	/** Version of the compiler that produced this JSON: "@gram-lang/kitchen@<version>". */

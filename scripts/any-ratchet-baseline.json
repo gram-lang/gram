@@ -8,5 +8,6 @@
 	"modules": 0,
 	"parser": 0,
 	"renderer": 31,
+	"scheduler": 0,
 	"vscode-extension": 0
 }

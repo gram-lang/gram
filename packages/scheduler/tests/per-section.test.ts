@@ -1,12 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { buildSchedule } from "../../src/schedule/build";
-import type { StepSchedule } from "../../src/schedule/types";
+import { buildSchedule } from "../src/build";
 import type {
 	MiseEnPlaceItem,
-	ProcessedSection,
-	ProcessedStep,
+	SchedulingSection,
 	SectionMiseEnPlace,
-} from "../../src/types";
+	StepSchedule,
+} from "../src/types";
 
 // One-minute gathers, so a section's mise en place lasts `count` minutes.
 const gather = (count: number): MiseEnPlaceItem => ({
@@ -16,19 +15,10 @@ const gather = (count: number): MiseEnPlaceItem => ({
 	duration: count,
 });
 
-function makeStep(): ProcessedStep {
-	return {
-		type: "step",
-		content: [],
-		timings: { start: 0, end: 0, activeDuration: 0 },
-		backgroundTasks: [],
-	};
-}
-
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
 		sectionIndex: 0,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 2,
 		productionTime: 2,
@@ -58,20 +48,9 @@ function doughRecipe() {
 		productionTime: 10,
 		consumed: ["dough"],
 	});
-	const sections: ProcessedSection[] = [
-		{
-			title: "Dough",
-			ingredients: [],
-			cookware: [],
-			steps: [rest.stepObj as ProcessedStep],
-			intermediate_preparation: "dough",
-		},
-		{
-			title: "Assembly",
-			ingredients: [],
-			cookware: [],
-			steps: [assemble.stepObj as ProcessedStep],
-		},
+	const sections: SchedulingSection[] = [
+		{ title: "Dough", intermediate_preparation: "dough" },
+		{ title: "Assembly" },
 	];
 	const mise: SectionMiseEnPlace[] = [
 		{ section: 0, duration: 3, items: [gather(3)] },
@@ -88,7 +67,6 @@ describe('buildSchedule("perSection")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			11,
 			12,
 		);
@@ -115,7 +93,6 @@ describe('buildSchedule("perSection")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			11,
 			12,
 		);
@@ -134,7 +111,6 @@ describe('buildSchedule("perSection")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			11,
 			12,
 		);
@@ -143,33 +119,30 @@ describe('buildSchedule("perSection")', () => {
 		expect(schedule.idleTime).toBe(maxEnd - 12 - 11);
 	});
 
-	it("never writes to the inputs (schedules, steps, produced)", () => {
+	it("never writes to the inputs (schedules, produced)", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		buildSchedule("perSection", schedules, mise, sections, [], 11, 12);
+		buildSchedule("perSection", schedules, mise, sections, 11, 12);
 
 		for (const s of schedules) {
 			expect(s.ls).toBe(0);
 			expect(s.lf).toBe(0);
-			expect((s.stepObj as ProcessedStep).timings.start).toBe(0);
-			expect((s.stepObj as ProcessedStep).backgroundTasks).toEqual([]);
 		}
 		// scheduleALAP would push the section's product into every step's `produced`.
 		expect(schedules[0]!.produced).toEqual(["dough"]);
 		expect(schedules).toHaveLength(2);
 	});
 
-	it("keeps its warnings apart from the caller's", () => {
+	it("keeps its diagnostics apart from the caller's", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { warnings } = buildSchedule(
+		const { diagnostics } = buildSchedule(
 			"perSection",
 			schedules,
 			mise,
 			sections,
-			[],
 			11,
 			12,
 		);
-		expect(Array.isArray(warnings)).toBe(true);
+		expect(Array.isArray(diagnostics)).toBe(true);
 	});
 
 	it("emits no prep block for a section without mise en place", () => {
@@ -179,7 +152,6 @@ describe('buildSchedule("perSection")', () => {
 			schedules,
 			[],
 			sections,
-			[],
 			0,
 			12,
 		);
@@ -193,7 +165,6 @@ describe('buildSchedule("perSection")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			11,
 			12,
 		);
