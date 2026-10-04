@@ -9,6 +9,7 @@ export {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "./nutrition";
+export { timesOf } from "./mise-en-place";
 export type { NutrientGroup, NutrientRow, ResolvedBasis } from "./nutrition";
 export { formatElement } from "./formatters/element";
 export { DEFAULT_ICONS, HTML_ICONS, MD_ICONS, PRINT_ICONS } from "./icons";

@@ -4,6 +4,7 @@ import {
 	type RendererOptions,
 } from "@gram-lang/renderer";
 import { runPipeline } from "../core/pipeline";
+import { type PlanContext, placeOnCalendar } from "./plan-options";
 import type { IngredientData } from "@gram-lang/analyzer";
 
 // bakersReference/lang are analyzer concerns (which ingredient is the 100%
@@ -15,6 +16,10 @@ export type ExportOptions = Pick<
 	RendererOptions,
 	"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "miseEnPlace" | "rests"
 > & {
+	/** Put the recipe on the calendar: a time next to each step. */
+	plan?: PlanContext;
+	/** With a `plan`: also write the production sheet after the recipe. */
+	withSheet?: boolean;
 	bakersReference?: string;
 	lang?: string;
 	paths?: Record<string, string>;
@@ -41,7 +46,18 @@ export async function exportRecipe(
 	rendererOptions?.onUsedStock?.(usedStock);
 
 	const ast = analyzed ? analyzed.result : compiled;
+	const plan = rendererOptions?.plan;
+	const options = {
+		...rendererOptions,
+		...(plan && {
+			projection: placeOnCalendar(compiled, plan, {
+				miseEnPlace: rendererOptions?.miseEnPlace,
+				rests: rendererOptions?.rests,
+			}),
+			runSheet: rendererOptions?.withSheet,
+		}),
+	};
 
-	if (format === "md") return toMarkdown(ast, rendererOptions);
-	return toPrintHTML(ast, rendererOptions);
+	if (format === "md") return toMarkdown(ast, options);
+	return toPrintHTML(ast, options);
 }

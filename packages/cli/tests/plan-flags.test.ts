@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { GramCLIError } from "../src/errors";
+import { resolvePlanContext } from "../src/services/plan-options";
 import {
 	collectFlag,
 	parseAvailability,
@@ -145,5 +146,55 @@ describe("parseAvailability", () => {
 		expect(messageOf(() => parseAvailability(["25:00-26:00"]))).toContain(
 			"25:00",
 		);
+	});
+});
+
+describe("resolvePlanContext", () => {
+	const flags = (args: Record<string, unknown>, raw: string[] = []) =>
+		resolvePlanContext(args, raw, {});
+
+	it("is no plan without --serve", () => {
+		expect(flags({})).toBeUndefined();
+	});
+
+	it("reads the serving time, the zone, the availability and the present", () => {
+		const context = flags(
+			{
+				serve: "2026-10-11 13:00",
+				tz: "Europe/Paris",
+				now: "2026-10-01T09:00:00Z",
+			},
+			["--available", "08:00-22:00"],
+		)!;
+		expect(context).toEqual({
+			serveAt: "2026-10-11T13:00",
+			timeZone: "Europe/Paris",
+			availability: { daily: [{ start: "08:00", end: "22:00" }] },
+			now: "2026-10-01T09:00:00Z",
+		});
+	});
+
+	it("takes the configured zone, and the present from the clock", () => {
+		const context = resolvePlanContext({ serve: "2026-10-11 13:00" }, [], {
+			timezone: "Asia/Tokyo",
+		})!;
+		expect(context.timeZone).toBe("Asia/Tokyo");
+		expect(Date.parse(context.now)).toBeGreaterThan(0);
+	});
+
+	it("refuses a plan flag that would be ignored for want of --serve", () => {
+		expect(messageOf(() => flags({ tz: "Europe/Paris" }))).toContain("--serve");
+		expect(
+			messageOf(() => flags({}, ["--available", "08:00-22:00"])),
+		).toContain("--serve");
+		expect(messageOf(() => flags({ now: "2026-10-01T09:00:00Z" }))).toContain(
+			"--serve",
+		);
+	});
+
+	it("insists on --serve when the command needs a plan", () => {
+		expect(
+			messageOf(() => resolvePlanContext({}, [], {}, { required: true })),
+		).toContain("--serve");
 	});
 });

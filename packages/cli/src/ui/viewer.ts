@@ -134,6 +134,12 @@ function renderHeader(model: RecipeViewModel): string {
 	}
 
 	lines.push(chalk.bold(`└${"─".repeat(COL - 2)}┘`));
+	if (model.plan) {
+		lines.push(chalk.bold(`  ${model.plan.servedAt}`));
+		for (const problem of model.plan.problems) {
+			lines.push(chalk.yellow(`  ⚠ ${problem}`));
+		}
+	}
 	return lines.join("\n");
 }
 
@@ -182,19 +188,30 @@ function renderSections(
 		}
 
 		for (const step of sec.steps) {
+			if (step.day) lines.push("", chalk.bold(`  ${step.day}`));
 			const num = String(stepNum++).padStart(2);
 			const action = step.action
 				? chalk.cyan(`[${step.action}]`).padEnd(12)
 				: "".padEnd(10);
-			const timer = step.timerMinutes
-				? chalk.dim(` (~${formatDuration(step.timerMinutes)})`)
-				: "";
+			// On the calendar, the rests below say how long they last: the figure of the
+			// default timeline would contradict a stretched one.
+			const timer =
+				step.timerMinutes && !step.rests?.length
+					? chalk.dim(` (~${formatDuration(step.timerMinutes)})`)
+					: "";
 			const richText = stepToRichText(
 				step._tokens,
 				registries.ingredients,
 				registries.cookware,
 			);
-			lines.push(`  ${chalk.dim(`${num}.`)} ${action} ${richText}${timer}`);
+			const when = step.when ? chalk.dim(` — ${step.when}`) : "";
+			lines.push(
+				`  ${chalk.dim(`${num}.`)} ${action} ${richText}${timer}${when}`,
+			);
+			for (const rest of step.rests ?? []) {
+				lines.push(`      ${chalk.dim(`⏳ ${rest.text}`)}`);
+				if (rest.note) lines.push(`      ${chalk.yellow(`⚠ ${rest.note}`)}`);
+			}
 		}
 	}
 
