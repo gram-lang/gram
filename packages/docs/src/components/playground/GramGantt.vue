@@ -21,7 +21,7 @@ let handle: GanttInteractivityHandle | null = null;
 const html = computed(() =>
 	toGanttHTML(props.jsonData, {
 		lang: lang.value,
-		schedule: props.schedule,
+		miseEnPlace: props.schedule,
 	}),
 );
 

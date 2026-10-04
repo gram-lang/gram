@@ -61,7 +61,11 @@ const markdownBackend: RenderBackend = {
 		let md = `> **Metadata**\n`;
 		if (data.metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = scheduleTimes(data, options.schedule);
+			const { totalTime, idleTime } = scheduleTimes(
+				data,
+				options.miseEnPlace,
+				options.rests,
+			);
 			if (totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
 			}
@@ -159,7 +163,7 @@ const markdownBackend: RenderBackend = {
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		const sessionBlocks = sessionMiseEnPlace(
 			data,
-			options.schedule,
+			options,
 			t.renderer,
 			formatDuration,
 		);

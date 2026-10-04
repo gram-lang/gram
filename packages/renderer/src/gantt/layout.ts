@@ -1,22 +1,22 @@
 import { getDictionary } from "@gram-lang/i18n";
-import {
-	type ProcessedStep,
-	type ScheduleBlock,
-	scheduleFor,
-} from "@gram-lang/kitchen";
 import type {
-	RenderContext,
-	RenderableCompilationResult,
-	MiseEnPlaceMode,
-} from "../types";
+	ProcessedStep,
+	ScheduleBlock,
+	ScheduleSession,
+} from "@gram-lang/kitchen";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
+import type { RenderContext, RenderableCompilationResult } from "../types";
 import {
+	type TimelineChoice,
 	describeMiseEnPlaceItem,
 	prepItems,
 	sessionDayLabel,
+	timelineOf,
 } from "../mise-en-place";
 import { formatDuration, joinStepTokens } from "../utils";
 import { formatElement } from "../formatters/element";
 import type {
+	GanttCalendar,
 	GanttGap,
 	GanttLegendItem,
 	GanttTimeTick,
@@ -106,6 +106,58 @@ export function formatAxisTime(
 	return formatTime(realTime);
 }
 
+/** What decides which timeline a chart draws: a choice laid out from the graph, or a plan placed on the calendar. */
+export interface GanttTimelineOptions extends TimelineChoice {
+	projection?: ProjectedPlan;
+}
+
+/** The blocks and sessions to draw, and where they sit on the calendar, for a projected chart. */
+interface Timeline {
+	blocks: ScheduleBlock[];
+	sessions: ScheduleSession[];
+	calendar?: Omit<GanttCalendar, "unavailable">;
+}
+
+const MS_PER_MINUTE = 60_000;
+
+/**
+ * The timeline to draw. A projection brings its own blocks (a stretched rest is
+ * longer than the layout's), turned back into minutes from the first of them,
+ * so the rest of the chart works the same on both.
+ */
+export function resolveTimeline(
+	data: RenderableCompilationResult,
+	options: GanttTimelineOptions,
+): Timeline | undefined {
+	const recipe = options.projection?.recipes[0];
+	if (options.projection && recipe) {
+		const instants = recipe.blocks.map(
+			(b) => Date.parse(b.start) / MS_PER_MINUTE,
+		);
+		const origin = instants.length > 0 ? Math.min(...instants) : 0;
+		const minutes = (iso: string) => Date.parse(iso) / MS_PER_MINUTE - origin;
+		return {
+			blocks: recipe.blocks.map((b) => {
+				const { start, end, startLocal: _a, endLocal: _b, ...rest } = b;
+				return {
+					...rest,
+					start: minutes(start),
+					end: minutes(end),
+				} as ScheduleBlock;
+			}),
+			sessions: recipe.sessions.map((s) => ({
+				day: s.day,
+				start: minutes(s.start),
+				end: minutes(s.end),
+				sections: s.sections,
+			})),
+			calendar: { origin, timeZone: options.projection.timeZone },
+		};
+	}
+	const schedule = timelineOf(data, options);
+	return schedule && { blocks: schedule.blocks, sessions: schedule.sessions };
+}
+
 /**
  * Extract and merge active periods to find idle gaps eligible for
  * compression. Ported 1:1 from GramGantt.vue's `gaps` computed.
@@ -113,9 +165,9 @@ export function formatAxisTime(
 export function computeGaps(
 	data: RenderableCompilationResult,
 	gapThreshold = DEFAULT_GAP_THRESHOLD,
-	schedule?: MiseEnPlaceMode,
+	options: GanttTimelineOptions = {},
 ): GanttGap[] {
-	const blocks = scheduleFor(data, schedule)?.blocks;
+	const blocks = resolveTimeline(data, options)?.blocks;
 	if (!blocks) return [];
 
 	const activePeriods: { start: number; end: number }[] = [];
@@ -196,7 +248,7 @@ export function getVirtualTime(
 	return realTime - subtracted;
 }
 
-function serializeStepContent(
+export function serializeStepContent(
 	content: unknown[],
 	registry: RenderContext["registry"],
 	lang: string | undefined,
@@ -258,25 +310,31 @@ function readStepInfo(step: ProcessedStep): {
 
 /**
  * Build the active/passive tracks and their blocks from the chosen timeline
- * (`data.schedules[schedule].blocks`); the step blocks point back at the
- * compiled steps for their label, temperature and assembly flag.
+ * (or the projected plan); the step blocks point back at the compiled steps for
+ * their label, temperature and assembly flag.
  */
 export function buildTracks(
 	data: RenderableCompilationResult,
-	opts: { lang?: string; schedule?: MiseEnPlaceMode } & GapOptions = {},
+	opts: { lang?: string } & GanttTimelineOptions & GapOptions = {},
 ): GanttTracksData {
 	const sections = data?.sections;
-	const blocks: ScheduleBlock[] | undefined = scheduleFor(
-		data,
-		opts.schedule,
-	)?.blocks;
+	const timeline = resolveTimeline(data, opts);
+	const blocks = timeline?.blocks;
 	if (!sections || !blocks) {
 		return { tracks: [], totalVirtualTime: 0, maxRealTime: 0, gaps: [] };
 	}
 
 	const t = getDictionary(opts.lang);
 	const { gapThreshold, compressedGapSize } = resolveGapOptions(opts);
-	const gaps = computeGaps(data, gapThreshold, opts.schedule);
+	const gaps = computeGaps(data, gapThreshold, opts);
+	const calendar = timeline.calendar;
+	const adjustments = new Map(
+		(opts.projection?.adjustments ?? []).map((a) => [a.task, a]),
+	);
+	const clock = (minutes: number) =>
+		calendar
+			? formatWallClock(calendar.origin + minutes, calendar.timeZone, opts.lang)
+			: undefined;
 	const registry = data.registry;
 
 	const cookTrack: GanttTrack = {
@@ -363,14 +421,29 @@ export function buildTracks(
 				type: "passive",
 			});
 		}
+		const adjustment = adjustments.get(b.task);
 		passiveTracksMap.get(trackName)?.blocks.push({
 			id: `task_${b.start}_${b.track}`,
 			start: b.start,
 			end: b.end,
 			duration,
 			label: formatTime(duration),
-			tooltip: trackName,
+			tooltip: adjustment
+				? `${trackName}. ${(
+						t.playground?.views?.gantt_rest_adjusted ||
+						"Rest changed from {from} to {to} to stay out of unavailable hours"
+					)
+						.replace("{from}", formatTime(adjustment.from))
+						.replace("{to}", formatTime(adjustment.to))}`
+				: trackName,
 			temperature,
+			...(adjustment && {
+				adjusted: { from: adjustment.from, to: adjustment.to },
+			}),
+			...(calendar && {
+				startLabel: clock(b.start),
+				endLabel: clock(b.end),
+			}),
 		});
 		maxRealTime = Math.max(maxRealTime, b.end);
 	}
@@ -380,7 +453,55 @@ export function buildTracks(
 	const tracks = [cookTrack, ...Array.from(passiveTracksMap.values())];
 	const totalVirtualTime = getVirtualTime(maxRealTime, gaps, compressedGapSize);
 
-	return { tracks, totalVirtualTime, maxRealTime, gaps };
+	return {
+		tracks,
+		totalVirtualTime,
+		maxRealTime,
+		gaps,
+		...(calendar && {
+			calendar: {
+				...calendar,
+				unavailable: unavailableOn(
+					opts.projection?.unavailable ?? [],
+					calendar.origin,
+					maxRealTime,
+				),
+			},
+		}),
+	};
+}
+
+/** The wall-clock reading of an instant, "Sat 21:40", in a zone, for the language. */
+export function formatWallClock(
+	utcMinutes: number,
+	timeZone: string,
+	lang?: string,
+): string {
+	return new Intl.DateTimeFormat(lang || "en", {
+		timeZone,
+		weekday: "short",
+		hour: "2-digit",
+		minute: "2-digit",
+		hourCycle: "h23",
+	}).format(new Date(Math.round(utcMinutes) * MS_PER_MINUTE));
+}
+
+/** The hours the cook is not available, as axis minutes, clipped to the chart. */
+function unavailableOn(
+	intervals: { start: string; end: string }[],
+	origin: number,
+	maxRealTime: number,
+): GanttGap[] {
+	const out: GanttGap[] = [];
+	for (const i of intervals) {
+		const start = Math.max(0, Date.parse(i.start) / MS_PER_MINUTE - origin);
+		const end = Math.min(
+			maxRealTime,
+			Date.parse(i.end) / MS_PER_MINUTE - origin,
+		);
+		if (end > start) out.push({ start, end });
+	}
+	return out;
 }
 
 /** Axis tick calculation. Ported 1:1 from GramGantt.vue's `timeTicks` computed. */
@@ -391,6 +512,7 @@ export function computeTimeTicks(
 	timeMode: GanttTimeMode,
 	targetTime: string,
 	compressedGapSize?: number,
+	labelOf?: (realTime: number) => string,
 ): GanttTimeTick[] {
 	const ticks: GanttTimeTick[] = [];
 
@@ -399,8 +521,10 @@ export function computeTimeTicks(
 	if (totalVirtualTime > 300) interval = 60;
 	if (totalVirtualTime > 1200) interval = 240;
 
-	const label = (realTime: number) =>
-		formatAxisTime(realTime, { timeMode, targetTime, maxRealTime });
+	const label =
+		labelOf ??
+		((realTime: number) =>
+			formatAxisTime(realTime, { timeMode, targetTime, maxRealTime }));
 
 	for (let t = 0; t <= maxRealTime; t += interval) {
 		let inGap = false;
@@ -484,10 +608,10 @@ export function computeSessionMarkers(
 	gaps: GanttGap[],
 	totalVirtualTime: number,
 	compressedGapSize: number | undefined,
-	mode: MiseEnPlaceMode | undefined,
+	options: GanttTimelineOptions,
 	lang?: string,
 ): GanttSessionMarker[] {
-	const sessions = scheduleFor(data, mode)?.sessions ?? [];
+	const sessions = resolveTimeline(data, options)?.sessions ?? [];
 	if (sessions.length < 2) return [];
 	const t = getDictionary(lang);
 	return sessions.map((session, i) => ({

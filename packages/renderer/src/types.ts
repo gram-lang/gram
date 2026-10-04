@@ -1,4 +1,8 @@
-import type { CompilationResult, MiseEnPlaceMode } from "@gram-lang/kitchen";
+import type {
+	CompilationResult,
+	MiseEnPlaceMode,
+	RestChoice,
+} from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -116,7 +120,7 @@ export interface RendererClasses {
  * at the start of each working day (`perSession`).
  * Owned by `@gram-lang/kitchen`, re-exported so this import path keeps working.
  */
-export type { MiseEnPlaceMode };
+export type { MiseEnPlaceMode, RestChoice };
 
 export interface RendererOptions {
 	icons?: RendererIcons;
@@ -134,7 +138,13 @@ export interface RendererOptions {
 	 * section keeping its own label only for what has to wait for an
 	 * intermediate made the same day.
 	 */
-	schedule?: MiseEnPlaceMode;
+	miseEnPlace?: MiseEnPlaceMode;
+	/**
+	 * How long a passive rest written as a range (`~_{12-24h}`) lasts: the
+	 * shortest (`"shortest"`, the default), the middle or the longest. An exact
+	 * rest and an active timer are unaffected.
+	 */
+	rests?: RestChoice;
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
 	/**

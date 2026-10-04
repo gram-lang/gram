@@ -105,12 +105,12 @@ describe("HTML — perSection (default)", () => {
 	});
 
 	it("is the default", () => {
-		expect(toHTML(compiled, { schedule: "perSection" })).toBe(html);
+		expect(toHTML(compiled, { miseEnPlace: "perSection" })).toBe(html);
 	});
 });
 
 describe("HTML — upfront", () => {
-	const html = toHTML(compiled, { schedule: "upfront" });
+	const html = toHTML(compiled, { miseEnPlace: "upfront" });
 
 	it("gathers the mise en place in one block before the first section", () => {
 		expect(countOf(html, 'class="mise-en-place-session"')).toBe(1);
@@ -157,21 +157,21 @@ describe("both schedules describe the same recipe", () => {
 
 	it("keeps every ingredient list identical, apart from the per-section label", () => {
 		expect(
-			withoutLabels(listsOf(toHTML(compiled, { schedule: "upfront" }))),
+			withoutLabels(listsOf(toHTML(compiled, { miseEnPlace: "upfront" }))),
 		).toBe(
-			withoutLabels(listsOf(toHTML(compiled, { schedule: "perSection" }))),
+			withoutLabels(listsOf(toHTML(compiled, { miseEnPlace: "perSection" }))),
 		);
 	});
 
 	it("keeps the shopping list identical", () => {
-		expect(shoppingList(toHTML(compiled, { schedule: "upfront" }))).toBe(
-			shoppingList(toHTML(compiled, { schedule: "perSection" })),
+		expect(shoppingList(toHTML(compiled, { miseEnPlace: "upfront" }))).toBe(
+			shoppingList(toHTML(compiled, { miseEnPlace: "perSection" })),
 		);
 	});
 
 	it("keeps preparation and active time the same", () => {
-		const a = toHTML(compiled, { schedule: "perSection" });
-		const b = toHTML(compiled, { schedule: "upfront" });
+		const a = toHTML(compiled, { miseEnPlace: "perSection" });
+		const b = toHTML(compiled, { miseEnPlace: "upfront" });
 		for (const v of [
 			fmt(compiled.metrics.preparationTime),
 			fmt(compiled.metrics.activeTime),
@@ -200,15 +200,15 @@ describe("backend parity", () => {
 					)
 					.replace(/\*\*Mise en place[^\n]*\n\n(- [^\n]*\n)+\n/g, "")
 					.replace(/<p class="section-prep">[\s\S]*?<\/p>\s*/g, "");
-			expect(strip(render({ schedule: "upfront" }))).toBe(
-				strip(render({ schedule: "perSection" })),
+			expect(strip(render({ miseEnPlace: "upfront" }))).toBe(
+				strip(render({ miseEnPlace: "perSection" })),
 			);
 		});
 	}
 
 	it("markdown and print show no mise en place by section, just the times", () => {
 		for (const render of [backends.markdown, backends.print]) {
-			const out = render({ schedule: "perSection" });
+			const out = render({ miseEnPlace: "perSection" });
 			expect(out).not.toMatch(
 				/mise-en-place"|## 🔪|section-prep|🔪 Mise en place/,
 			);
@@ -220,12 +220,14 @@ describe("backend parity", () => {
 		const up = schedulesOf(compiled).upfront.totalTime;
 		const per = schedulesOf(compiled).perSection.totalTime;
 		expect(up).not.toBe(per);
-		expect(toMarkdown(compiled, { schedule: "upfront" })).toContain(fmt(up));
-		expect(toMarkdown(compiled, { schedule: "perSection" })).toContain(
+		expect(toMarkdown(compiled, { miseEnPlace: "upfront" })).toContain(fmt(up));
+		expect(toMarkdown(compiled, { miseEnPlace: "perSection" })).toContain(
 			fmt(per),
 		);
-		expect(toPrintHTML(compiled, { schedule: "upfront" })).toContain(fmt(up));
-		expect(toPrintHTML(compiled, { schedule: "perSection" })).toContain(
+		expect(toPrintHTML(compiled, { miseEnPlace: "upfront" })).toContain(
+			fmt(up),
+		);
+		expect(toPrintHTML(compiled, { miseEnPlace: "perSection" })).toContain(
 			fmt(per),
 		);
 	});
@@ -257,7 +259,7 @@ describe("Gantt", () => {
 
 	it("puts every preparation at the start in upfront, end to end", () => {
 		const [first, second] = prepBlocks(
-			toGanttHTML(compiled, { schedule: "upfront" }),
+			toGanttHTML(compiled, { miseEnPlace: "upfront" }),
 		);
 		expect(attr(first!, "start")).toBe(0);
 		expect(attr(second!, "start")).toBe(attr(first!, "end"));
@@ -265,7 +267,7 @@ describe("Gantt", () => {
 
 	it("spans the chosen schedule's total time", () => {
 		for (const mode of ["perSection", "upfront"] as const) {
-			const html = toGanttHTML(compiled, { schedule: mode });
+			const html = toGanttHTML(compiled, { miseEnPlace: mode });
 			expect(html).toContain(
 				`data-max-real-time="${schedulesOf(compiled)[mode].totalTime}"`,
 			);
@@ -302,7 +304,7 @@ Dust with @sugar{10g}.
 
 describe("perSession", () => {
 	const multi = compile(getAST(MULTI_DAY));
-	const options = { schedule: "perSession" } as const;
+	const options = { miseEnPlace: "perSession" } as const;
 
 	it("opens each working day with its mise en place, labelled D-N", () => {
 		const html = toHTML(multi, options);

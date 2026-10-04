@@ -156,7 +156,7 @@ export async function buildViewModel(
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
 		/** Which timeline the total and rest times follow. Default per section. */
-		schedule?: MiseEnPlaceMode;
+		miseEnPlace?: MiseEnPlaceMode;
 		lang?: string;
 		paths?: Record<string, string>;
 		stock?: Set<string>;
@@ -191,7 +191,7 @@ export async function buildViewModel(
 	const m = compiled.metrics;
 	const { totalTime: total, idleTime: rest } = scheduleTimes(
 		compiled,
-		opts.schedule,
+		opts.miseEnPlace,
 	);
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)

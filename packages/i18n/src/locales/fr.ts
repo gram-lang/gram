@@ -24,6 +24,27 @@ export const fr: GramLocale = {
 		schedulePerSession: "Par journée de travail",
 		sessionDay: "J-",
 		sessionToday: "Jour J",
+		runSheetTitle: "Fiche de production",
+		runSheetServedAt: "Servi le {date} à {time}",
+		runSheetAround: "vers {time}",
+		runSheetUntil: "jusqu'à vers {time}",
+		runSheetStep: "Étape {n}",
+		runSheetRest: "Repos",
+		runSheetUnnamedSection: "Recette",
+		runSheetStretched:
+			"Repos allongé de {from} à {to} pour éviter vos heures d'indisponibilité",
+		runSheetShortened:
+			"Repos raccourci de {from} à {to} pour éviter vos heures d'indisponibilité",
+		runSheetProblems: "À régler",
+		runSheetOutside:
+			"{task}, vers {time}, tombe quand vous n'êtes pas disponible, et aucun repos ne peut bouger pour arranger ça.",
+		runSheetExceeds:
+			"{task} dure {duration} sans pause, plus que votre plus longue disponibilité ({largest}) : élargissez-la.",
+		runSheetDayMismatch:
+			"Le travail de {day} tombe le {actual} au lieu du {expected}.",
+		runSheetPast:
+			"La première tâche aurait dû commencer {start}, et nous sommes déjà {now}.",
+		runSheetMulti: "Seule la première des {count} recettes est planifiée.",
 		est: "(est.)",
 		passiveTimeTooltip: "Temps passif (Repos, attente...)",
 		activeTimeTooltip: "Temps actif",
@@ -122,6 +143,9 @@ export const fr: GramLocale = {
 			gantt_mode_reverse: "Compte à rebours (T-)",
 			gantt_mode_target: "Heure cible",
 			gantt_target_time_label: "Servir à :",
+			gantt_unavailable: "Indisponible",
+			gantt_rest_adjusted:
+				"Repos modifié de {from} à {to} pour éviter les heures d'indisponibilité",
 		},
 		options: {
 			scaleTitle: "Modifier les quantités",

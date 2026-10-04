@@ -145,7 +145,7 @@ describe("view, export and print follow --mise-en-place", () => {
 		expect(perSection.totalTime).not.toBe(upfront.totalTime);
 
 		const per = await buildViewModel(path, {});
-		const up = await buildViewModel(path, { schedule: "upfront" });
+		const up = await buildViewModel(path, { miseEnPlace: "upfront" });
 		expect(per.times?.total).toBe(perSection.totalTime);
 		expect(per.times?.rest).toBe(perSection.idleTime);
 		expect(up.times?.total).toBe(upfront.totalTime);
@@ -163,7 +163,7 @@ describe("view, export and print follow --mise-en-place", () => {
 	it("keeps active and preparation time the same in both", async () => {
 		const path = await tmp(TART);
 		const per = await buildViewModel(path, {});
-		const up = await buildViewModel(path, { schedule: "upfront" });
+		const up = await buildViewModel(path, { miseEnPlace: "upfront" });
 		expect(up.times?.active).toBe(per.times?.active);
 		expect(up.times?.prep).toBe(per.times?.prep);
 	});
@@ -178,10 +178,10 @@ describe("view, export and print follow --mise-en-place", () => {
 	it("changes the exported Markdown total with the flag", async () => {
 		const path = await tmp(TART);
 		const per = await exportRecipe(path, "md", null, undefined, {
-			schedule: "perSection",
+			miseEnPlace: "perSection",
 		});
 		const up = await exportRecipe(path, "md", null, undefined, {
-			schedule: "upfront",
+			miseEnPlace: "upfront",
 		});
 		expect(per).not.toBe(up);
 	});
@@ -189,10 +189,10 @@ describe("view, export and print follow --mise-en-place", () => {
 	it("changes the exported print total with the flag", async () => {
 		const path = await tmp(TART);
 		const per = await exportRecipe(path, "html", null, undefined, {
-			schedule: "perSection",
+			miseEnPlace: "perSection",
 		});
 		const up = await exportRecipe(path, "html", null, undefined, {
-			schedule: "upfront",
+			miseEnPlace: "upfront",
 		});
 		expect(per).not.toBe(up);
 	});

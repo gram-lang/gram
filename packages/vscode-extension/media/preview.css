@@ -1283,3 +1283,53 @@ flex-direction: column;
 .gram-preview .scale-input-inline[type=number] {
   -moz-appearance: textfield;
 }
+/* The production sheet (runSheetToHTML). */
+.gram-run-sheet .run-sheet-served {
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .run-sheet-day h3 {
+  margin-top: 1.5em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gram-run-sheet ul {
+  list-style: none;
+  padding: 0;
+}
+
+.gram-run-sheet .run-sheet-entry {
+  margin: 0.6em 0;
+}
+
+.gram-run-sheet .run-sheet-when {
+  display: inline-block;
+  min-width: 9em;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .run-sheet-entry.active .run-sheet-title {
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.gram-run-sheet .run-sheet-entry.passive .run-sheet-title {
+  font-style: italic;
+}
+
+.gram-run-sheet .run-sheet-detail,
+.gram-run-sheet .run-sheet-note {
+  margin: 0.1em 0 0 9em;
+  font-size: 0.9em;
+  color: var(--color-text);
+}
+
+.gram-run-sheet .run-sheet-note {
+  font-weight: 600;
+}
+
+.gram-run-sheet .run-sheet-problems li {
+  list-style: disc;
+  margin-left: 1.2em;
+}
