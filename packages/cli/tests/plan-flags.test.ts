@@ -55,17 +55,38 @@ describe("parseServe", () => {
 });
 
 describe("parseTimeZone", () => {
+	const machine = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 	it("accepts an IANA zone and falls back on the machine's", () => {
 		expect(parseTimeZone("Europe/Paris")).toBe("Europe/Paris");
-		expect(parseTimeZone(undefined)).toBe(
-			Intl.DateTimeFormat().resolvedOptions().timeZone,
-		);
+		expect(parseTimeZone(undefined)).toBe(machine);
+		expect(parseTimeZone("")).toBe(machine);
+	});
+
+	it("takes the configured zone before the machine's", () => {
+		expect(parseTimeZone(undefined, "Asia/Tokyo")).toBe("Asia/Tokyo");
+		expect(parseTimeZone("", "Asia/Tokyo")).toBe("Asia/Tokyo");
+	});
+
+	it("takes the flag before the configured zone", () => {
+		expect(parseTimeZone("Europe/Paris", "Asia/Tokyo")).toBe("Europe/Paris");
+	});
+
+	it("does not look at the configured zone when the flag is given", () => {
+		expect(parseTimeZone("Europe/Paris", "Mars/Olympus")).toBe("Europe/Paris");
 	});
 
 	it("refuses a zone that does not exist, by name", () => {
 		expect(messageOf(() => parseTimeZone("Mars/Olympus"))).toContain(
 			"Mars/Olympus",
 		);
+	});
+
+	it("says a bad configured zone comes from the setting, and how to fix it", () => {
+		const message = messageOf(() => parseTimeZone(undefined, "Mars/Olympus"));
+		expect(message).toContain("Mars/Olympus");
+		expect(message).toContain("timezone");
+		expect(message).toContain("gram config set timezone");
 	});
 });
 

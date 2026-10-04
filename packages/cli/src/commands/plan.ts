@@ -49,7 +49,7 @@ export default defineCommand({
 		tz: {
 			type: "string",
 			description:
-				"IANA time zone of the serving time and of your availability (default: this machine's, e.g. Europe/Paris)",
+				"IANA time zone of the serving time and of your availability (default: the `timezone` setting of the project, else this machine's, e.g. Europe/Paris)",
 		},
 		available: {
 			type: "string",
@@ -102,7 +102,7 @@ export default defineCommand({
 				);
 			}
 			const serveAt = parseServe(args.serve);
-			const timeZone = parseTimeZone(args.tz);
+			const timeZone = parseTimeZone(args.tz, config.timezone);
 			const availability = parseAvailability(
 				collectFlag(rawArgs ?? [], "available"),
 			);

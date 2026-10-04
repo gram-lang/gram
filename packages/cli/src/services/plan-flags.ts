@@ -42,20 +42,37 @@ export function parseServe(value: unknown): string {
 	return `${m[1]}T${m[2]!.padStart(2, "0")}:${m[3]}`;
 }
 
-/** `--tz Europe/Paris`: checked here so a typo is a clear message, not a stack trace. */
-export function parseTimeZone(value: unknown): string {
-	const zone =
-		typeof value === "string" && value !== ""
-			? value
-			: Intl.DateTimeFormat().resolvedOptions().timeZone;
+const isTimeZone = (zone: string) => {
 	try {
 		new Intl.DateTimeFormat("en", { timeZone: zone });
+		return true;
 	} catch {
-		return fail(
-			`Unknown time zone "${zone}". Use an IANA name like Europe/Paris.`,
-		);
+		return false;
 	}
-	return zone;
+};
+
+/**
+ * The time zone of a plan, from the first of: `--tz Europe/Paris`, the
+ * `timezone` of the project (or global) config, this machine's. A typo is a
+ * clear message naming where it came from, not a stack trace, and it is only
+ * raised here: the other commands never look at the setting.
+ */
+export function parseTimeZone(value: unknown, configured?: string): string {
+	if (typeof value === "string" && value !== "") {
+		return isTimeZone(value)
+			? value
+			: fail(
+					`Unknown time zone "${value}". Use an IANA name like Europe/Paris.`,
+				);
+	}
+	if (configured !== undefined && configured !== "") {
+		return isTimeZone(configured)
+			? configured
+			: fail(
+					`Unknown time zone "${configured}" in the \`timezone\` setting of .gram/config.yaml. Use an IANA name like Europe/Paris, or fix it with \`gram config set timezone <zone>\`.`,
+				);
+	}
+	return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 const CLOCK = /^([01]?\d|2[0-4]):([0-5]\d)$/;
