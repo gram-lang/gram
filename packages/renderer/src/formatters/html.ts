@@ -27,14 +27,16 @@ import {
 	describeMiseEnPlaceItem,
 	ownMiseEnPlace,
 	sessionMiseEnPlace,
+	timesOf,
 } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
+import { runSheetToHTML, stepKey } from "../run-sheet";
+import { dayHTML, stepHTML, summaryHTML } from "./annotations";
 import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
 	intermediateLabel,
 	round2,
-	scheduleTimes,
 	type TimeBreakdownItem,
 } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
@@ -180,11 +182,7 @@ const htmlBackend: RenderBackend = {
 
 			// Total and idle time depend on the chosen schedule; preparation and
 			// active time are the same in all of them.
-			const { totalTime, idleTime } = scheduleTimes(
-				data,
-				options.miseEnPlace,
-				options.rests,
-			);
+			const { totalTime, idleTime } = timesOf(data, options);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
@@ -387,6 +385,8 @@ const htmlBackend: RenderBackend = {
 		let html = "";
 		const instructionsClass = options.classes?.instructions || "instructions";
 		html += `<div class="${instructionsClass}">\n`;
+		const annotations = context._annotations;
+		if (annotations) html += summaryHTML(annotations, options.lang);
 		const fmtDuration = context.formatDuration ?? defaultFormatDuration;
 		const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
 		const sessionBlocks = sessionMiseEnPlace(
@@ -517,7 +517,7 @@ const htmlBackend: RenderBackend = {
 			const stepsListClass = options.classes?.stepsList || "steps";
 			html += `    <ol class="${stepsListClass}">\n`;
 			let stepCounter = 0;
-			sec.steps.forEach((step: any) => {
+			sec.steps.forEach((step: any, stepIdx: number) => {
 				if (step.type === "comment") {
 					const stepCommentClass = options.classes?.stepComment
 						? ` class="${options.classes.stepComment}"`
@@ -531,6 +531,8 @@ const htmlBackend: RenderBackend = {
 				}
 
 				stepCounter++;
+				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
+				if (note) html += `      ${dayHTML(note)}`;
 				const stepItemClass = options.classes?.stepItem
 					? ` class="${options.classes.stepItem}"`
 					: "";
@@ -563,6 +565,7 @@ const htmlBackend: RenderBackend = {
 
 				const stepContent = renderGroup(inlineItems) + renderGroup(declItems);
 				html += `        ${stepContent}\n`;
+				if (note) html += `        ${stepHTML(note)}\n`;
 				html += `      </li>\n`;
 			});
 			html += `    </ol>\n`;
@@ -675,8 +678,13 @@ const htmlBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition
+			sections.nutrition +
+			sections.runSheet
 		);
+	},
+
+	renderRunSheet(data, options, sheet) {
+		return runSheetToHTML(sheet, data, { lang: options.lang });
 	},
 };
 

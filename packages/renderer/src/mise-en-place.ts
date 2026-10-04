@@ -6,7 +6,9 @@ import {
 	type RestChoice,
 	type SectionMiseEnPlace,
 	scheduleFor,
+	scheduleTimes,
 } from "@gram-lang/kitchen";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
 import type { RenderableCompilationResult } from "./types";
 
 /** Which timeline a view follows: where the mise en place goes, and how long the rests written as a range last. */
@@ -18,6 +20,28 @@ export interface TimelineChoice {
 /** True when each section carries its own preparation (the default). */
 export const isPerSection = (choice: TimelineChoice): boolean =>
 	(choice.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE) === "perSection";
+
+/**
+ * The total and idle time to show: those of the timeline the options choose, or,
+ * for a recipe placed on the calendar (`projection`), those of the plan itself,
+ * whose rests may have been stretched or shortened.
+ */
+export function timesOf(
+	data: RenderableCompilationResult,
+	options: TimelineChoice & { projection?: ProjectedPlan },
+): { totalTime: number; idleTime: number } {
+	const blocks = options.projection?.recipes[0]?.blocks;
+	if (blocks && blocks.length > 0) {
+		const ms = (iso: string) => Date.parse(iso) / 60000;
+		const start = Math.min(...blocks.map((b) => ms(b.start)));
+		const end = Math.max(...blocks.map((b) => ms(b.end)));
+		const active = blocks
+			.filter((b) => b.kind !== "passive")
+			.reduce((sum, b) => sum + ms(b.end) - ms(b.start), 0);
+		return { totalTime: end - start, idleTime: end - start - active };
+	}
+	return scheduleTimes(data, options.miseEnPlace, options.rests);
+}
 
 /** The timeline of a choice, laid out from the recipe's task graph. */
 export const timelineOf = (
