@@ -11,6 +11,7 @@ import {
 import {
 	type CompilationResult,
 	type MiseEnPlaceMode,
+	type RestChoice,
 	scheduleTimes,
 } from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
@@ -157,6 +158,8 @@ export async function buildViewModel(
 		nutritionBasis?: NutritionBasis;
 		/** Which timeline the total and rest times follow. Default per section. */
 		miseEnPlace?: MiseEnPlaceMode;
+		/** How long a rest written as a range lasts. Default shortest. */
+		rests?: RestChoice;
 		lang?: string;
 		paths?: Record<string, string>;
 		stock?: Set<string>;
@@ -192,6 +195,7 @@ export async function buildViewModel(
 	const { totalTime: total, idleTime: rest } = scheduleTimes(
 		compiled,
 		opts.miseEnPlace,
+		opts.rests,
 	);
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)

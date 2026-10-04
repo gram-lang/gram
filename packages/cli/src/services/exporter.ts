@@ -13,7 +13,7 @@ import type { IngredientData } from "@gram-lang/analyzer";
 // forwarded to the pipeline, not into RendererOptions.
 export type ExportOptions = Pick<
 	RendererOptions,
-	"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "miseEnPlace"
+	"hideStepQty" | "bakersMathOnly" | "nutritionBasis" | "miseEnPlace" | "rests"
 > & {
 	bakersReference?: string;
 	lang?: string;
