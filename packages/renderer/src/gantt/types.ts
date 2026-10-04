@@ -54,6 +54,8 @@ export interface GanttTracksData {
 	tracks: GanttTrack[];
 	totalVirtualTime: number;
 	maxRealTime: number;
+	/** The compressed gaps the virtual times were computed with. */
+	gaps: GanttGap[];
 }
 
 export interface GanttGap {

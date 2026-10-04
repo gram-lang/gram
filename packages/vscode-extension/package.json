@@ -107,11 +107,13 @@
           "type": "string",
           "enum": [
             "perSection",
-            "upfront"
+            "upfront",
+            "perSession"
           ],
           "enumDescriptions": [
             "Each section's mise en place happens right before that section.",
-            "All the mise en place happens at the start of the recipe."
+            "All the mise en place happens at the start of the recipe.",
+            "The mise en place of each working day happens at the start of that day (days come from the sections' ~{-Nd} anchors)."
           ],
           "default": "perSection",
           "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the Gantt chart and the title hint."

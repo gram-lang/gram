@@ -422,7 +422,7 @@ function diffIngredients(
 }
 
 // The four times a diff reports. Preparation and active time are the same in
-// both mise en place schedules; total and idle time depend on the schedule, so
+// every mise en place schedule; total and idle time depend on the schedule, so
 // they are read from the default one (preparation right before each section)
 // — the same on both sides, which is all a comparison needs.
 function timingsOf(

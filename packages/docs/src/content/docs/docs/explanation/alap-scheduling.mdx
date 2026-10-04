@@ -167,6 +167,17 @@ gantt
 
 Notice how `Prep Bread` is automatically scheduled during Pie's baking time (15m–20m), ensuring Bread is ready to enter `~_oven` the exact minute Pie comes out at minute 25.
 
+## Anchors, days and sections that depend on each other
+
+Each section's retro-planning anchor (`~{-2d}`) is a **deadline**: the section's work must be done by then, counted back from the end of the recipe. Between two anchors, the sections without one chain backward from the next section, as described above.
+
+Two consequences when you write a recipe over several days:
+
+- **Annotate every section of a day.** The working days used by the "by working day" planning come from these anchors. A section without an anchor takes the day of the **next anchor** in the recipe, and the sections after the last anchor are on the day itself, so an unannotated section can land on a later day than you meant.
+- **A long passive timer doesn't make a day.** With `~_{48h}` in a step and no anchor on its section, ALAP moves the step two days back on the Gantt, but the working days used by the "by working day" planning only read section anchors, so the section stays on the day itself. Write the anchor (`## Cream ~{-2d}`).
+- **An anchor under 24 hours stays on the day itself.** The day is `⌊|anchor| / 24 h⌋`: `~{-18h}` is day D, `~{-26h}` is D-1. To open the day before, use `~{-1d}` or more than 24 hours.
+- **Two sections of the same day that depend on each other need different anchors.** With `~{-1d}` on both a crust and the syrup made from it, the syrup's deadline is also the crust's: the crust would have to be ready before its own deadline, and you get a time paradox warning. Space them out (`~{-26h}` then `~{-25h}`: both are still on D-1).
+
 ## Modular anchoring (`@use ... ~{-1d}`)
 
 When composing modular recipes with `@gram-lang/modules`, you can attach a retro-planning offset directly to an import directive:

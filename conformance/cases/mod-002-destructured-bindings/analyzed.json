@@ -342,7 +342,8 @@
           "kind": "gather",
           "target": "ingredient",
           "count": 3,
-          "duration": 3
+          "duration": 3,
+          "intermediates": 2
         }
       ]
     }
@@ -385,6 +386,18 @@
           "start": 8,
           "end": 10
         }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 10,
+          "sections": [
+            0,
+            1,
+            2
+          ]
+        }
       ]
     },
     "upfront": {
@@ -401,21 +414,45 @@
           "kind": "prep",
           "section": 2,
           "start": 1,
-          "end": 4
+          "end": 2,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
         },
         {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 4,
-          "end": 6
+          "start": 2,
+          "end": 4
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
+          "start": 4,
+          "end": 6
+        },
+        {
+          "kind": "prep",
+          "section": 2,
           "start": 6,
-          "end": 8
+          "end": 8,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 2,
+              "duration": 2,
+              "intermediates": 2
+            }
+          ]
         },
         {
           "kind": "step",
@@ -423,6 +460,93 @@
           "step": 0,
           "start": 8,
           "end": 10
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 10,
+          "sections": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 10,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 1
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 1,
+          "end": 2,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 2,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 4,
+          "end": 6
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 6,
+          "end": 8,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 2,
+              "duration": 2,
+              "intermediates": 2
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 8,
+          "end": 10
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 10,
+          "sections": [
+            0,
+            1,
+            2
+          ]
         }
       ]
     }

@@ -24,7 +24,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "steps[].timings is deprecated in favor of schedules[mode].blocks"
-    replacement: "recipe.schedules.perSection or recipe.schedules.upfront"
+    replacement: "The step blocks of recipe.schedules[mode].blocks"
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/schedule/rebase.ts"

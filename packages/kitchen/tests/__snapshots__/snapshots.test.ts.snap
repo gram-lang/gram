@@ -45,6 +45,7 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         {
           "count": 5,
           "duration": 5,
+          "intermediates": 1,
           "kind": "gather",
           "target": "ingredient",
         },
@@ -147,15 +148,50 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         },
       ],
       "idleTime": 0,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 21,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
       "totalTime": 21,
     },
-    "upfront": {
+    "perSession": {
       "blocks": [
         {
-          "end": 5,
+          "end": 4,
+          "items": [
+            {
+              "count": 4,
+              "duration": 4,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
           "kind": "prep",
           "section": 0,
           "start": 0,
+        },
+        {
+          "deferred": true,
+          "end": 5,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 4,
         },
         {
           "end": 7,
@@ -215,6 +251,120 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
         },
       ],
       "idleTime": 0,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 21,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
+      "totalTime": 21,
+    },
+    "upfront": {
+      "blocks": [
+        {
+          "end": 4,
+          "items": [
+            {
+              "count": 4,
+              "duration": 4,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "deferred": true,
+          "end": 5,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 4,
+        },
+        {
+          "end": 7,
+          "kind": "step",
+          "section": 0,
+          "start": 5,
+          "step": 0,
+        },
+        {
+          "end": 9,
+          "kind": "step",
+          "section": 0,
+          "start": 7,
+          "step": 1,
+        },
+        {
+          "end": 11,
+          "kind": "step",
+          "section": 0,
+          "start": 9,
+          "step": 2,
+        },
+        {
+          "end": 13,
+          "kind": "step",
+          "section": 0,
+          "start": 11,
+          "step": 3,
+        },
+        {
+          "end": 15,
+          "kind": "step",
+          "section": 0,
+          "start": 13,
+          "step": 4,
+        },
+        {
+          "end": 17,
+          "kind": "step",
+          "section": 0,
+          "start": 15,
+          "step": 5,
+        },
+        {
+          "end": 19,
+          "kind": "step",
+          "section": 0,
+          "start": 17,
+          "step": 6,
+        },
+        {
+          "end": 21,
+          "kind": "step",
+          "section": 1,
+          "start": 19,
+          "step": 0,
+        },
+      ],
+      "idleTime": 0,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 21,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
       "totalTime": 21,
     },
   },
@@ -715,6 +865,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         {
           "count": 11,
           "duration": 11,
+          "intermediates": 1,
           "kind": "gather",
           "target": "ingredient",
         },
@@ -741,6 +892,7 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         {
           "count": 1,
           "duration": 1,
+          "intermediates": 1,
           "kind": "gather",
           "target": "ingredient",
         },
@@ -905,74 +1057,314 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
         },
       ],
       "idleTime": 57,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 142,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
       "totalTime": 144,
     },
-    "upfront": {
+    "perSession": {
       "blocks": [
         {
-          "end": 14,
+          "end": 13,
+          "items": [
+            {
+              "count": 10,
+              "duration": 10,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+            {
+              "count": 1,
+              "duration": 1,
+              "kind": "gather",
+              "target": "cookware",
+            },
+            {
+              "duration": 2,
+              "kind": "prepare",
+              "ref": {
+                "id": "butter",
+                "type": "ingredient",
+              },
+            },
+          ],
           "kind": "prep",
           "section": 0,
           "start": 0,
         },
         {
-          "end": 19,
+          "end": 17,
+          "items": [
+            {
+              "count": 2,
+              "duration": 2,
+              "kind": "gather",
+              "target": "cookware",
+            },
+            {
+              "duration": 2,
+              "kind": "prepare",
+              "ref": {
+                "id": "frying-pan",
+                "type": "cookware",
+              },
+            },
+          ],
           "kind": "prep",
           "section": 1,
-          "start": 14,
+          "start": 13,
         },
         {
-          "end": 21,
+          "deferred": true,
+          "end": 18,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 17,
+        },
+        {
+          "end": 20,
           "kind": "step",
           "section": 0,
-          "start": 19,
+          "start": 18,
           "step": 0,
         },
         {
-          "end": 23,
+          "end": 22,
           "kind": "step",
           "section": 0,
-          "start": 21,
+          "start": 20,
           "step": 1,
         },
         {
-          "end": 25,
+          "end": 24,
           "kind": "step",
           "section": 0,
-          "start": 23,
+          "start": 22,
           "step": 2,
         },
         {
-          "end": 27,
+          "end": 26,
           "kind": "step",
           "section": 0,
-          "start": 25,
+          "start": 24,
           "step": 3,
         },
         {
-          "end": 87,
+          "end": 86,
           "kind": "step",
           "section": 0,
-          "start": 27,
+          "start": 26,
           "step": 4,
         },
         {
-          "end": 147,
+          "deferred": true,
+          "end": 146,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 1,
+          "start": 145,
+        },
+        {
+          "end": 146,
           "kind": "step",
           "section": 1,
-          "start": 147,
+          "start": 146,
           "step": 0,
         },
         {
-          "end": 149,
+          "end": 148,
           "kind": "passive",
           "section": 1,
-          "start": 147,
+          "start": 146,
           "step": 0,
         },
       ],
-      "idleTime": 62,
-      "totalTime": 149,
+      "idleTime": 61,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 146,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
+      "totalTime": 148,
+    },
+    "upfront": {
+      "blocks": [
+        {
+          "end": 13,
+          "items": [
+            {
+              "count": 10,
+              "duration": 10,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+            {
+              "count": 1,
+              "duration": 1,
+              "kind": "gather",
+              "target": "cookware",
+            },
+            {
+              "duration": 2,
+              "kind": "prepare",
+              "ref": {
+                "id": "butter",
+                "type": "ingredient",
+              },
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+        },
+        {
+          "end": 17,
+          "items": [
+            {
+              "count": 2,
+              "duration": 2,
+              "kind": "gather",
+              "target": "cookware",
+            },
+            {
+              "duration": 2,
+              "kind": "prepare",
+              "ref": {
+                "id": "frying-pan",
+                "type": "cookware",
+              },
+            },
+          ],
+          "kind": "prep",
+          "section": 1,
+          "start": 13,
+        },
+        {
+          "deferred": true,
+          "end": 18,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 0,
+          "start": 17,
+        },
+        {
+          "end": 20,
+          "kind": "step",
+          "section": 0,
+          "start": 18,
+          "step": 0,
+        },
+        {
+          "end": 22,
+          "kind": "step",
+          "section": 0,
+          "start": 20,
+          "step": 1,
+        },
+        {
+          "end": 24,
+          "kind": "step",
+          "section": 0,
+          "start": 22,
+          "step": 2,
+        },
+        {
+          "end": 26,
+          "kind": "step",
+          "section": 0,
+          "start": 24,
+          "step": 3,
+        },
+        {
+          "end": 86,
+          "kind": "step",
+          "section": 0,
+          "start": 26,
+          "step": 4,
+        },
+        {
+          "deferred": true,
+          "end": 146,
+          "items": [
+            {
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1,
+              "kind": "gather",
+              "target": "ingredient",
+            },
+          ],
+          "kind": "prep",
+          "section": 1,
+          "start": 145,
+        },
+        {
+          "end": 146,
+          "kind": "step",
+          "section": 1,
+          "start": 146,
+          "step": 0,
+        },
+        {
+          "end": 148,
+          "kind": "passive",
+          "section": 1,
+          "start": 146,
+          "step": 0,
+        },
+      ],
+      "idleTime": 61,
+      "sessions": [
+        {
+          "day": 0,
+          "end": 146,
+          "sections": [
+            0,
+            1,
+          ],
+          "start": 0,
+        },
+      ],
+      "totalTime": 148,
     },
   },
   "sections": [

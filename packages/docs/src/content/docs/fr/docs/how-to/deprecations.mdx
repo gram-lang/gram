@@ -23,7 +23,7 @@ Un doute sur ce que votre code utilise ? [Cherchez-y les noms dépréciés](#rep
 
 <Since v="1.4.0" type="deprecated" />
 
-Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la préparation de chaque section) et `schedules`, deux chronologies complètes : `perSection` (la préparation de chaque section juste avant elle) et `upfront` (toute la préparation d'abord). Elles remplacent les champs ci-dessous. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) détaille chaque champ.
+Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la préparation de chaque section) et `schedules`, trois chronologies complètes : `perSection` (la préparation de chaque section juste avant elle), `upfront` (toute la préparation d'abord) et `perSession` (la préparation de chaque journée de travail au début de cette journée). Elles remplacent les champs ci-dessous. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) détaille chaque champ.
 
 | Déprécié | À utiliser à la place |
 |---|---|
@@ -33,9 +33,9 @@ Depuis la 1.4.0, une recette compilée porte `miseEnPlace` (ce que coûte la pr�
 | `metrics.idleTime` | `schedules[mode].idleTime` |
 | [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#détail-des-temps) | `miseEnPlace` et `schedules` |
 
-`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux chronologies.
+`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans toutes les chronologies.
 
-L'ancien `metrics.totalTime` est le total de la chronologie `upfront`. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` si vous voulez retrouver exactement le chiffre d'avant.
+L'ancien `metrics.totalTime` est le total avec toutes les préparations au début. Les outils de Gram affichent `perSection` par défaut : utilisez `recipe.schedules.upfront` pour vous rapprocher le plus du chiffre d'avant. C'est le même, sauf si la recette a des intermédiaires, que `upfront` prépare une fois qu'ils existent : il peut alors être plus court.
 
 ### Temps des étapes et tâches de fond
 
@@ -54,10 +54,10 @@ for (const section of recipe.sections) {
 }
 ```
 
-Désormais, lisez les blocs d'une des deux chronologies. Tous les temps sont en minutes à partir de `0` et incluent la mise en place : ils dépendent donc de la chronologie choisie, ne les mélangez pas avec `timings` dans un même diagramme.
+Désormais, lisez les blocs d'une des trois chronologies. Tous les temps sont en minutes à partir de `0` et incluent la mise en place : ils dépendent donc de la chronologie choisie, ne les mélangez pas avec `timings` dans un même diagramme.
 
 ```typescript
-const schedule = recipe.schedules[chosenMode]; // 'perSection' ou 'upfront'
+const schedule = recipe.schedules[chosenMode]; // 'perSection', 'upfront' ou 'perSession'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // la mise en place d'une section (nouveau)
@@ -109,6 +109,8 @@ for (const entry of computeMiseEnPlace(sections, registry)) {
 Une recette compilée porte déjà ce même découpage dans son champ `miseEnPlace`.
 
 ### Le JSON d'une version plus ancienne
+
+<Since v="1.4.0" type="deprecated" />
 
 **Déprécié :** la lecture des anciens champs `metrics` comme solution de repli. **À utiliser à la place :** recompiler vos recettes avec la 1.4.0 ou plus.
 

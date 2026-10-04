@@ -58,7 +58,7 @@ interface CompilationResult {
     totalBreakdown: TimeBreakdownItem[];
   };
   miseEnPlace: SectionMiseEnPlace[]; // ce que coûte la préparation de chaque section
-  schedules: { perSection: Schedule; upfront: Schedule };
+  schedules: Record<ScheduleMode, Schedule>; // perSection, upfront, perSession
 }
 
 interface SectionMiseEnPlace {
@@ -68,23 +68,31 @@ interface SectionMiseEnPlace {
 }
 
 type MiseEnPlaceItem =
-  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number }
-  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number };
+  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number; intermediates?: number }
+  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number; intermediate?: true };
 
 interface Schedule {
   totalTime: number;                 // max(end) sur les blocs, à partir de 0
   idleTime: number;                  // totalTime - metrics.activeTime - metrics.preparationTime
   blocks: ScheduleBlock[];           // triés par start, puis par end
+  sessions: ScheduleSession[];       // une par journée de travail, jour le plus lointain d'abord
+}
+
+interface ScheduleSession {
+  day: number;                       // 0 = le jour même, 1 = la veille (~{-1d})...
+  start: number;                     // bornes du travail actif de la session
+  end: number;
+  sections: number[];                // sections travaillées ce jour-là
 }
 
 type ScheduleBlock =
-  | { kind: "prep"; section: number; start: number; end: number }
+  | { kind: "prep"; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
   | { kind: "step"; section: number; step: number; start: number; end: number }
   | { kind: "passive"; section: number; step: number; track?: string; start: number; end: number };
 ```
 
 :::note[Nouveau en 1.4.0 : `generator`, `miseEnPlace` et `schedules`]
-`miseEnPlace` dit ce que coûte la préparation de chaque section, et `schedules` contient deux chronologies complètes construites à partir de là : `perSection` (la préparation de chaque section juste avant elle) et `upfront` (toute la préparation d'abord). Tous les temps sont en minutes depuis 0 et incluent la préparation. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, et `track` n'existe que pour un minuteur nommé (`~_four{...}`). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep` : `miseEnPlace` n'est donc pas indexé par section, retrouvez une entrée grâce à son champ `section`, jamais à sa position dans le tableau.
+`miseEnPlace` dit ce que coûte la préparation de chaque section, et `schedules` contient trois chronologies complètes construites à partir de là : `perSection` (la préparation de chaque section juste avant elle), `upfront` (toute la préparation d'abord) et `perSession` (la préparation de chaque journée de travail rassemblée au début de cette journée, les jours venant des ancres `~{-Nd}` des sections ; une recette sans ancre de ce genre tient en une seule session, comme `upfront`). `sessions` liste les journées de travail d'une chronologie. Tous les temps sont en minutes depuis 0 et incluent la préparation. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, et `track` n'existe que pour un minuteur nommé (`~_four{...}`). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep` : `miseEnPlace` n'est donc pas indexé par section, retrouvez une entrée grâce à son champ `section`, jamais à sa position dans le tableau. `intermediates` (sur une ligne `gather`) dit combien des ingrédients rassemblés sont des intermédiaires (`&pâte`), et `intermediate` (sur une ligne `prepare`) que l'ingrédient préparé en est un ; les deux sont absents sinon. Un intermédiaire est fabriqué pendant la recette : le planning `upfront` ne le rassemble donc pas au début, cette part de la préparation d'une section devient un second bloc `prep`, juste avant la section, et une section peut avoir deux blocs `prep` en `upfront` et `perSession` : celui qui est placé plus tard porte `deferred: true`. `items` n'existe sur un bloc `prep` que s'il ne porte qu'une partie de l'entrée de sa section (le reste étant dans l'autre bloc) : sinon, lisez les items de l'entrée.
 
 D'où vient chaque champ, pour savoir ce qu'on peut croire et ce qu'il faut recalculer :
 
@@ -111,7 +119,7 @@ Ces champs gardent les mêmes valeurs et le même sens jusqu'à la 2.0.0, mais i
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
 | `calculatePreparationTime().breakdown` | Les `items` de `computeMiseEnPlace()` (`calculatePreparationTime()` renvoie toujours `total`) |
 
-`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans les deux plannings. Attention : l'ancien `metrics.totalTime` est le total du planning `upfront`.
+`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans tous les plannings. Attention : l'ancien `metrics.totalTime` est le total avec toutes les préparations au début, c'est-à-dire celui du planning `upfront` sauf si la recette a des intermédiaires : `upfront` les prépare une fois qu'ils existent, et peut donc être plus court.
 
 La page [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) donne un avant/après en code pour chacun d'eux.
 :::
@@ -170,18 +178,25 @@ function generateShoppingList(
 function calculatePreparationTime(
   sections: ProcessedSection[],
   registry: Registry,
-  mise?: SectionMiseEnPlace[], // la répartition ci-dessous, si vous l'avez déjà
+  mise?: SectionMiseEnPlace[], // depuis la 1.4.0 : la répartition ci-dessous, si vous l'avez déjà
 ): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` est déprécié, voir plus bas
 
+// Depuis la 1.4.0 : la répartition de la mise en place et les chronologies
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ le champ `miseEnPlace` d'une recette compilée, déduit de ses sections
 
-type ScheduleMode = "perSection" | "upfront"
-const SCHEDULE_MODES: readonly ["perSection", "upfront"]
+type ScheduleMode = "perSection" | "upfront" | "perSession"
+const SCHEDULE_MODES: readonly ["perSection", "upfront", "perSession"]
 const DEFAULT_SCHEDULE_MODE: ScheduleMode // "perSection"
 function isScheduleMode(value: unknown): value is ScheduleMode
 function scheduleFor(compiled, mode?: ScheduleMode): Schedule | undefined
 function scheduleTimes(compiled, mode?: ScheduleMode): { totalTime: number; idleTime: number }
+
+// Depuis la 1.4.0 : la plus longue durée que Gram planifie (1000 ans, voir DURATION_OUT_OF_RANGE)
+const MAX_DURATION_MINUTES: number // 525_600_000
+function quantityToMinutes(qty): number // une quantité de temps ({ value, unit }) en minutes, plafonnée à ±MAX_DURATION_MINUTES depuis la 1.4.0
+function isDurationTooLong(qty): boolean // vrai quand la quantité demande plus que MAX_DURATION_MINUTES
+function maxDurationIn(unit: string): number // MAX_DURATION_MINUTES exprimé dans `unit` ("min", "h", "d"…)
 ```
 
 ## `RecipeRegistry`

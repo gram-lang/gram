@@ -1,4 +1,4 @@
-import type { ProcessedStepItem } from "../types";
+import type { MiseEnPlaceItem, ProcessedStepItem } from "../types";
 
 /**
  * A step (or comment) flattened out of a compiled section, carrying exactly
@@ -23,6 +23,13 @@ export interface StepSchedule {
 	// True for the synthetic entry the per-section pass injects at the head of a
 	// section: it is scheduled like any other work but reported as a `prep` block.
 	isPrep?: boolean;
+	// For an `isPrep` entry gathered at the head of another section's group: the
+	// section whose preparation it is (defaults to `sectionIndex`).
+	prepFor?: number;
+	// For an `isPrep` entry: the preparation is an intermediate's, planned later.
+	deferred?: boolean;
+	// For an `isPrep` entry: the items it carries when that's not the whole entry.
+	items?: MiseEnPlaceItem[];
 	localActiveTime: number;
 	productionTime: number;
 	produced: string[];

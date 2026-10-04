@@ -689,14 +689,19 @@ Here is a concrete breakdown of how the compiler automatically calculates minute
 ### When the mise en place happens
 *(since v1.4.0)*
 
-Each section has its own mise en place: gathering and preparing its ingredients and cookware. Gram can plan it in two ways, and the recipe reads the same either way:
+Each section has its own mise en place: gathering and preparing its ingredients and cookware. Gram can plan it in three ways, and the recipe reads the same either way:
 
 - **By section** (the default): the preparation of a section is scheduled right before that section. An ingredient that is only needed two days later isn't gathered now, and a preparation can overlap the resting time of an earlier step.
-- **All at the start**: every preparation is done first, then the cooking starts.
+- **All at the start**: the preparations are done first, then the cooking starts. Except for an intermediate (see below), which can't be prepared before it exists.
+- **By working day**: for a recipe over several days, the preparation of each day is gathered at the start of that day. The days come from the section anchors (`~{-2d}`, `~{-36h}`...): a section without an anchor takes the day of the next one, and the sections after the last anchor are on the day itself. A recipe without any anchor of a day or more is a single day, the same as "all at the start".
 
-This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option and the renderer a `schedule` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in both, and the ingredient lists don't change.
+  Two traps when you write a recipe over several days:
+  - **A long passive timer isn't an anchor.** A `~_{48h}` rest makes the timeline start two days earlier, but only a section anchor opens a working day: without `## Cream ~{-2d}` on the section, it is placed on the day itself.
+  - **An anchor under 24 hours stays on the day itself.** The day is the anchor rounded down to whole days, so `~{-18h}` (a poolish kneaded the evening before) is day D, not D-1. To open the day before, write `~{-1d}` or more than 24 hours (`~{-26h}`). See [Mise en place and planning](/docs/explanation/mise-en-place-and-planning/).
 
-An intermediate (`&dough`) is weighed in the section that uses it, however it is declared. That minute is an approximation: by section, it can fall while the intermediate is still resting, so a preparation may appear to happen just before the dough is ready. The total time stays right to within a minute.
+This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option (`per-section`, `upfront` or `per-session`) and the renderer a `schedule` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in all three, and the ingredient lists don't change.
+
+An intermediate (`&dough`) is weighed in the section that uses it, however it is declared, and never before it is made: even when everything else is prepared at the start, it is planned right before the section that uses it. That minute is an approximation: it can fall while the intermediate is still resting, so a preparation may appear to happen just before the dough is ready. The total time stays right to within a minute.
 
 ### Smart dependency tracking (ALAP)
 You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
@@ -1491,7 +1496,8 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     },
     "upfront": {
       "totalTime": 4,
@@ -1499,13 +1505,23 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    },
+    "perSession": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     }
   }
 }
 ```
 
-Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and two complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks` and the `metrics` breakdowns are deprecated and go away in 2.0.0. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the two timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
+Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and three complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks`, `metrics.totalTime`, `metrics.idleTime` and the `metrics` breakdowns are deprecated: they are still written until 2.0.0 removes them, but left out of the example above. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 

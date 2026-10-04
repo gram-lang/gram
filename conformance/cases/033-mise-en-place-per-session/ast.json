@@ -1,0 +1,1084 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Vanilla tart over four days"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Mother cream",
+      "retroPlanning": {
+        "raw": "-3d",
+        "sign": -1,
+        "value": 3,
+        "unit": "d"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "cream",
+        "loc": {
+          "start": 67,
+          "end": 75
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Whisk",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 85,
+                "end": 91
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 6,
+                  "text": "6"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 102,
+                  "end": 103
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 91,
+                "end": 104
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 105,
+                "end": 110
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 117,
+                  "end": 121
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 110,
+                "end": 122
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then add ",
+              "loc": {
+                "start": 122,
+                "end": 133
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 139,
+                  "end": 144
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 133,
+                "end": 145
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 146,
+                "end": 150
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "vanilla pod",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 2,
+                  "text": "2"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 163,
+                  "end": 164
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 150,
+                "end": 165
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 166,
+                "end": 171
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "saucepan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 171,
+                  "end": 180
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 171,
+                "end": 180
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 180,
+                "end": 181
+              }
+            }
+          ],
+          "loc": {
+            "start": 77,
+            "end": 183
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Chill",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Let the cream set in the fridge ",
+              "loc": {
+                "start": 191,
+                "end": 223
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 24,
+                  "text": "24"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 226,
+                  "end": 229
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 223,
+                "end": 230
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 230,
+                "end": 231
+              }
+            }
+          ],
+          "loc": {
+            "start": 183,
+            "end": 233
+          }
+        }
+      ],
+      "loc": {
+        "start": 44,
+        "end": 233
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Praline",
+      "retroPlanning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "praline",
+        "loc": {
+          "start": 251,
+          "end": 261
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Caramelize",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Cook ",
+              "loc": {
+                "start": 276,
+                "end": 281
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 150,
+                  "text": "150"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 288,
+                  "end": 292
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 281,
+                "end": 293
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 294,
+                "end": 299
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "pan",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 299,
+                  "end": 303
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 299,
+                "end": 303
+              }
+            },
+            {
+              "type": "Text",
+              "value": "until golden, then stir in ",
+              "loc": {
+                "start": 304,
+                "end": 331
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "hazelnuts",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 342,
+                  "end": 346
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 331,
+                "end": 347
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 347,
+                "end": 348
+              }
+            }
+          ],
+          "loc": {
+            "start": 263,
+            "end": 350
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Rest",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Let the praline cool and harden ",
+              "loc": {
+                "start": 357,
+                "end": 389
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 12,
+                  "text": "12"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 392,
+                  "end": 395
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 389,
+                "end": 396
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 396,
+                "end": 397
+              }
+            }
+          ],
+          "loc": {
+            "start": 350,
+            "end": 399
+          }
+        }
+      ],
+      "loc": {
+        "start": 233,
+        "end": 399
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Crust",
+      "retroPlanning": {
+        "raw": "-26h",
+        "sign": -1,
+        "value": 26,
+        "unit": "h"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "crust",
+        "loc": {
+          "start": 416,
+          "end": 424
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Mix",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Work ",
+              "loc": {
+                "start": 432,
+                "end": 437
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "cream",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 150,
+                  "text": "150"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 444,
+                  "end": 448
+                }
+              },
+              "loc": {
+                "start": 437,
+                "end": 449
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 450,
+                "end": 455
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 462,
+                  "end": 466
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 455,
+                "end": 467
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 468,
+                "end": 472
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "butter",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 150,
+                  "text": "150"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 480,
+                  "end": 484
+                }
+              },
+              "alias": null,
+              "preparation": "cold, cut into cubes",
+              "composite": null,
+              "loc": {
+                "start": 472,
+                "end": 507
+              }
+            },
+            {
+              "type": "Text",
+              "value": "in a ",
+              "loc": {
+                "start": 508,
+                "end": 513
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "bowl",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 513,
+                  "end": 518
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 513,
+                "end": 518
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 518,
+                "end": 519
+              }
+            }
+          ],
+          "loc": {
+            "start": 426,
+            "end": 521
+          }
+        }
+      ],
+      "loc": {
+        "start": 399,
+        "end": 521
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Syrup",
+      "retroPlanning": {
+        "raw": "-25h",
+        "sign": -1,
+        "value": 25,
+        "unit": "h"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "syrup",
+        "loc": {
+          "start": 538,
+          "end": 546
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Simmer",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Simmer ",
+              "loc": {
+                "start": 557,
+                "end": 564
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "crust",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 571,
+                  "end": 574
+                }
+              },
+              "loc": {
+                "start": 564,
+                "end": 575
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 576,
+                "end": 581
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 588,
+                  "end": 593
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 581,
+                "end": 594
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 595,
+                "end": 599
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 80,
+                  "text": "80"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 606,
+                  "end": 609
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 599,
+                "end": 610
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 611,
+                "end": 615
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 617,
+                  "end": 622
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 615,
+                "end": 623
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 623,
+                "end": 624
+              }
+            }
+          ],
+          "loc": {
+            "start": 548,
+            "end": 626
+          }
+        }
+      ],
+      "loc": {
+        "start": 521,
+        "end": 626
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Powder",
+      "retroPlanning": {
+        "raw": "-24h",
+        "sign": -1,
+        "value": 24,
+        "unit": "h"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "powder",
+        "loc": {
+          "start": 644,
+          "end": 653
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Grind",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Blend ",
+              "loc": {
+                "start": 663,
+                "end": 669
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "syrup",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 676,
+                  "end": 679
+                }
+              },
+              "loc": {
+                "start": 669,
+                "end": 680
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 681,
+                "end": 686
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "almonds",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 695,
+                  "end": 699
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 686,
+                "end": 700
+              }
+            },
+            {
+              "type": "Text",
+              "value": "until powdery.",
+              "loc": {
+                "start": 701,
+                "end": 715
+              }
+            }
+          ],
+          "loc": {
+            "start": 655,
+            "end": 717
+          }
+        }
+      ],
+      "loc": {
+        "start": 626,
+        "end": 717
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Assembly",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Bake",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake the ",
+              "loc": {
+                "start": 737,
+                "end": 746
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "crust",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 400,
+                  "text": "400"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 753,
+                  "end": 757
+                }
+              },
+              "loc": {
+                "start": 746,
+                "end": 758
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 759,
+                "end": 763
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 25,
+                  "text": "25"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 765,
+                  "end": 770
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 763,
+                "end": 771
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 772,
+                "end": 775
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 775,
+                "end": 782
+              },
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 782,
+                "end": 783
+              }
+            }
+          ],
+          "loc": {
+            "start": 730,
+            "end": 785
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Fill",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Spread ",
+              "loc": {
+                "start": 792,
+                "end": 799
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "praline",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 808,
+                  "end": 812
+                }
+              },
+              "loc": {
+                "start": 799,
+                "end": 813
+              }
+            },
+            {
+              "type": "Text",
+              "value": "on the tart, then dust with ",
+              "loc": {
+                "start": 814,
+                "end": 842
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "powder",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 850,
+                  "end": 853
+                }
+              },
+              "loc": {
+                "start": 842,
+                "end": 854
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 854,
+                "end": 855
+              }
+            }
+          ],
+          "loc": {
+            "start": 785,
+            "end": 856
+          }
+        }
+      ],
+      "loc": {
+        "start": 717,
+        "end": 856
+      }
+    }
+  ]
+}

@@ -25,8 +25,8 @@ import {
 } from "../nutrition";
 import {
 	describeMiseEnPlaceItem,
-	isPerSection,
-	miseEnPlaceForSection,
+	ownMiseEnPlace,
+	sessionMiseEnPlace,
 } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
 import { moduleLabel } from "./shared";
@@ -179,7 +179,7 @@ const htmlBackend: RenderBackend = {
 			};
 
 			// Total and idle time depend on the chosen schedule; preparation and
-			// active time are the same in both.
+			// active time are the same in all of them.
 			const { totalTime, idleTime } = scheduleTimes(data, options.schedule);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
@@ -383,7 +383,29 @@ const htmlBackend: RenderBackend = {
 		let html = "";
 		const instructionsClass = options.classes?.instructions || "instructions";
 		html += `<div class="${instructionsClass}">\n`;
+		const fmtDuration = context.formatDuration ?? defaultFormatDuration;
+		const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
+		const sessionBlocks = sessionMiseEnPlace(
+			data,
+			options.schedule,
+			t.renderer,
+			fmtDuration,
+		);
 		data.sections.forEach((sec: any, sectionIdx: number) => {
+			// The mise en place gathered at the start of a working day, before the
+			// first section of that day.
+			const session = sessionBlocks.get(sectionIdx);
+			if (session) {
+				html += `  <section class="mise-en-place-session">\n`;
+				html += `    <p>${knife} <strong>${escapeHtml(session.heading)}</strong> <small>(${escapeHtml(fmtDuration(session.duration))})</small></p>\n    <ul>\n`;
+				for (const line of session.lines) {
+					const prefix = line.title
+						? `<em>${escapeHtml(line.title)}</em>${escapeHtml(t.renderer.colon)}`
+						: "";
+					html += `      <li>${prefix}${escapeHtml(line.text)}</li>\n`;
+				}
+				html += `    </ul>\n  </section>\n`;
+			}
 			html += `  <section>\n`;
 
 			// This section's own mise en place, when preparation follows the sections.
@@ -392,19 +414,20 @@ const htmlBackend: RenderBackend = {
 			// steps, so it must not read as the section's total time next to the title
 			// badges. A `p` (not an `h4`, which gram.css hides, nor a nested `div`,
 			// which would break the `</div>` split of the output).
-			const mise = isPerSection(options.schedule)
-				? miseEnPlaceForSection(data, sectionIdx)
-				: undefined;
+			const mise = ownMiseEnPlace(data, options.schedule, sectionIdx);
 			let prepLabel = "";
 			if (mise) {
-				const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
-				const fmt = context.formatDuration ?? defaultFormatDuration;
 				const detail = mise.items
 					.map((item) =>
-						describeMiseEnPlaceItem(item, data.registry, t.renderer, fmt),
+						describeMiseEnPlaceItem(
+							item,
+							data.registry,
+							t.renderer,
+							fmtDuration,
+						),
 					)
 					.join(" · ");
-				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip}${t.renderer.colon}${fmt(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
+				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip}${t.renderer.colon}${fmtDuration(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
 			}
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
@@ -462,18 +485,16 @@ const htmlBackend: RenderBackend = {
 				html += `    <h3 class="section-header${sHeaderClass}">${titleHtml}</h3>\n`;
 			}
 
-			// No ingredient list of its own: the label stands alone above the steps.
-			if (
-				prepLabel &&
-				aggregateSectionIngredients(sec.ingredients ?? []).length === 0
-			) {
-				html += `    <div class="section-prep">${prepLabel}</div>\n`;
-			}
-
 			// Section Ingredients — aggregated to remove duplicates and apply addition/segregation rules
 			const sectionItems = aggregateSectionIngredients(
 				sec.ingredients ?? [],
 			).map(aggToRendererItem);
+
+			// No ingredient list of its own: the label stands alone above the steps.
+			if (prepLabel && sectionItems.length === 0) {
+				html += `    <div class="section-prep">${prepLabel}</div>\n`;
+			}
+
 			if (sectionItems.length > 0) {
 				const sIngredientsClass =
 					options.classes?.sectionIngredients || "section-ingredients";

@@ -1,0 +1,1492 @@
+{
+  "title": "Vanilla tart over four days",
+  "slug": "vanilla-tart-over-four-days",
+  "meta": {
+    "title": "Vanilla tart over four days"
+  },
+  "registry": {
+    "ingredients": {
+      "cream": {
+        "id": "cream",
+        "name": "cream",
+        "is_intermediate": true
+      },
+      "egg-yolks": {
+        "id": "egg-yolks",
+        "name": "egg yolks"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      },
+      "vanilla-pod": {
+        "id": "vanilla-pod",
+        "name": "vanilla pod"
+      },
+      "praline": {
+        "id": "praline",
+        "name": "praline",
+        "is_intermediate": true
+      },
+      "hazelnuts": {
+        "id": "hazelnuts",
+        "name": "hazelnuts",
+        "default_unit": "g"
+      },
+      "crust": {
+        "id": "crust",
+        "name": "crust",
+        "is_intermediate": true
+      },
+      "flour": {
+        "id": "flour",
+        "name": "flour",
+        "default_unit": "g"
+      },
+      "butter": {
+        "id": "butter",
+        "name": "butter",
+        "default_unit": "g"
+      },
+      "syrup": {
+        "id": "syrup",
+        "name": "syrup",
+        "is_intermediate": true
+      },
+      "water": {
+        "id": "water",
+        "name": "water",
+        "default_unit": "ml"
+      },
+      "powder": {
+        "id": "powder",
+        "name": "powder",
+        "is_intermediate": true
+      },
+      "almonds": {
+        "id": "almonds",
+        "name": "almonds",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {
+      "saucepan": {
+        "id": "saucepan",
+        "name": "saucepan"
+      },
+      "pan": {
+        "id": "pan",
+        "name": "pan"
+      },
+      "bowl": {
+        "id": "bowl",
+        "name": "bowl"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "egg-yolks",
+      "name": "egg yolks",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 6
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2",
+        "6",
+        "15"
+      ],
+      "qty": 330,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 500,
+      "unit": "ml"
+    },
+    {
+      "id": "vanilla-pod",
+      "name": "vanilla pod",
+      "_usageIds": [
+        "4"
+      ],
+      "qty": 2
+    },
+    {
+      "id": "hazelnuts",
+      "name": "hazelnuts",
+      "_usageIds": [
+        "8"
+      ],
+      "qty": 200,
+      "unit": "g"
+    },
+    {
+      "id": "flour",
+      "name": "flour",
+      "_usageIds": [
+        "10"
+      ],
+      "qty": 300,
+      "unit": "g"
+    },
+    {
+      "id": "butter",
+      "name": "butter",
+      "_usageIds": [
+        "11"
+      ],
+      "qty": 150,
+      "unit": "g"
+    },
+    {
+      "id": "water",
+      "name": "water",
+      "_usageIds": [
+        "14"
+      ],
+      "qty": 200,
+      "unit": "ml"
+    },
+    {
+      "id": "almonds",
+      "name": "almonds",
+      "_usageIds": [
+        "17"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [
+    {
+      "id": "saucepan",
+      "_usageId": "5",
+      "fixed": false
+    },
+    {
+      "id": "pan",
+      "_usageId": "7",
+      "fixed": false
+    },
+    {
+      "id": "bowl",
+      "_usageId": "12",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Mother cream",
+      "ingredients": [
+        {
+          "id": "egg-yolks",
+          "_usageId": "1",
+          "qty": 6
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "ml"
+        },
+        {
+          "id": "vanilla-pod",
+          "_usageId": "4",
+          "qty": 2
+        }
+      ],
+      "cookware": [
+        {
+          "id": "saucepan",
+          "_usageId": "5",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "id": "egg-yolks",
+              "_usageId": "1",
+              "qty": 6
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g"
+            },
+            ", then add ",
+            {
+              "id": "milk",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "ml"
+            },
+            "and ",
+            {
+              "id": "vanilla-pod",
+              "_usageId": "4",
+              "qty": 2
+            },
+            "in a ",
+            {
+              "id": "saucepan",
+              "_usageId": "5",
+              "fixed": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          },
+          "action": "Whisk"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Let the cream set in the fridge ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 24,
+                "text": "24"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 2,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 1440,
+              "startOffset": 0
+            }
+          ],
+          "action": "Chill"
+        }
+      ],
+      "intermediate_preparation": "cream",
+      "retro_planning": {
+        "raw": "-3d",
+        "sign": -1,
+        "value": 3,
+        "unit": "d",
+        "minutes": -4320
+      }
+    },
+    {
+      "title": "Praline",
+      "ingredients": [
+        {
+          "id": "sugar",
+          "_usageId": "6",
+          "qty": 150,
+          "unit": "g"
+        },
+        {
+          "id": "hazelnuts",
+          "_usageId": "8",
+          "qty": 200,
+          "unit": "g"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "pan",
+          "_usageId": "7",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Cook ",
+            {
+              "id": "sugar",
+              "_usageId": "6",
+              "qty": 150,
+              "unit": "g"
+            },
+            "in a ",
+            {
+              "id": "pan",
+              "_usageId": "7",
+              "fixed": false
+            },
+            "until golden, then stir in ",
+            {
+              "id": "hazelnuts",
+              "_usageId": "8",
+              "qty": 200,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1440,
+            "end": 1442,
+            "activeDuration": 2
+          },
+          "action": "Caramelize"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Let the praline cool and harden ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 12,
+                "text": "12"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 1442,
+            "end": 1442,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 720,
+              "startOffset": 0
+            }
+          ],
+          "action": "Rest"
+        }
+      ],
+      "intermediate_preparation": "praline",
+      "retro_planning": {
+        "raw": "-2d",
+        "sign": -1,
+        "value": 2,
+        "unit": "d",
+        "minutes": -2880
+      }
+    },
+    {
+      "title": "Crust",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "cream",
+          "name": "cream",
+          "_usageId": "9",
+          "qty": 150,
+          "unit": "g"
+        },
+        {
+          "id": "flour",
+          "_usageId": "10",
+          "qty": 300,
+          "unit": "g"
+        },
+        {
+          "id": "butter",
+          "_usageId": "11",
+          "qty": 150,
+          "unit": "g",
+          "preparation": "cold, cut into cubes"
+        }
+      ],
+      "cookware": [
+        {
+          "id": "bowl",
+          "_usageId": "12",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Work ",
+            {
+              "type": "reference",
+              "id": "cream",
+              "name": "cream",
+              "_usageId": "9",
+              "qty": 150,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "flour",
+              "_usageId": "10",
+              "qty": 300,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "butter",
+              "_usageId": "11",
+              "qty": 150,
+              "unit": "g",
+              "preparation": "cold, cut into cubes"
+            },
+            "in a ",
+            {
+              "id": "bowl",
+              "_usageId": "12",
+              "fixed": false
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2760,
+            "end": 2762,
+            "activeDuration": 2
+          },
+          "action": "Mix"
+        }
+      ],
+      "intermediate_preparation": "crust",
+      "retro_planning": {
+        "raw": "-26h",
+        "sign": -1,
+        "value": 26,
+        "unit": "h",
+        "minutes": -1560
+      }
+    },
+    {
+      "title": "Syrup",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "crust",
+          "name": "crust",
+          "_usageId": "13",
+          "qty": 50,
+          "unit": "g"
+        },
+        {
+          "id": "water",
+          "_usageId": "14",
+          "qty": 200,
+          "unit": "ml"
+        },
+        {
+          "id": "sugar",
+          "_usageId": "15",
+          "qty": 80,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Simmer ",
+            {
+              "type": "reference",
+              "id": "crust",
+              "name": "crust",
+              "_usageId": "13",
+              "qty": 50,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "water",
+              "_usageId": "14",
+              "qty": 200,
+              "unit": "ml"
+            },
+            "and ",
+            {
+              "id": "sugar",
+              "_usageId": "15",
+              "qty": 80,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 10,
+                "text": "10"
+              },
+              "unit": "min"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2812,
+            "end": 2822,
+            "activeDuration": 10
+          },
+          "action": "Simmer"
+        }
+      ],
+      "intermediate_preparation": "syrup",
+      "retro_planning": {
+        "raw": "-25h",
+        "sign": -1,
+        "value": 25,
+        "unit": "h",
+        "minutes": -1500
+      }
+    },
+    {
+      "title": "Powder",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "syrup",
+          "name": "syrup",
+          "_usageId": "16",
+          "qty": 30,
+          "unit": "g"
+        },
+        {
+          "id": "almonds",
+          "_usageId": "17",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Blend ",
+            {
+              "type": "reference",
+              "id": "syrup",
+              "name": "syrup",
+              "_usageId": "16",
+              "qty": 30,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "almonds",
+              "_usageId": "17",
+              "qty": 100,
+              "unit": "g"
+            },
+            "until powdery."
+          ],
+          "timings": {
+            "start": 2880,
+            "end": 2882,
+            "activeDuration": 2
+          },
+          "action": "Grind"
+        }
+      ],
+      "intermediate_preparation": "powder",
+      "retro_planning": {
+        "raw": "-24h",
+        "sign": -1,
+        "value": 24,
+        "unit": "h",
+        "minutes": -1440
+      }
+    },
+    {
+      "title": "Assembly",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "crust",
+          "name": "crust",
+          "_usageId": "18",
+          "qty": 400,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "praline",
+          "name": "praline",
+          "_usageId": "19",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "type": "reference",
+          "id": "powder",
+          "name": "powder",
+          "_usageId": "20",
+          "qty": 50,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Bake the ",
+            {
+              "type": "reference",
+              "id": "crust",
+              "name": "crust",
+              "_usageId": "18",
+              "qty": 400,
+              "unit": "g"
+            },
+            "for ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 25,
+                "text": "25"
+              },
+              "unit": "min"
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4295,
+            "end": 4320,
+            "activeDuration": 25
+          },
+          "action": "Bake"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Spread ",
+            {
+              "type": "reference",
+              "id": "praline",
+              "name": "praline",
+              "_usageId": "19",
+              "qty": 100,
+              "unit": "g"
+            },
+            "on the tart, then dust with ",
+            {
+              "type": "reference",
+              "id": "powder",
+              "name": "powder",
+              "_usageId": "20",
+              "qty": 50,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 4320,
+            "end": 4322,
+            "activeDuration": 2
+          },
+          "action": "Fill"
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 4341,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Mother cream",
+        "duration": 2
+      },
+      {
+        "label": "timer_passive",
+        "duration": 2160
+      },
+      {
+        "label": "section_active:Crust",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Syrup",
+        "duration": 10
+      },
+      {
+        "label": "section_active:Powder",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 27
+      }
+    ],
+    "idleTime": 4277,
+    "activeTime": 45,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Mother cream",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Praline",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Crust",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Syrup",
+        "duration": 10
+      },
+      {
+        "label": "section_active:Powder",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Assembly",
+        "duration": 27
+      }
+    ],
+    "preparationTime": 19,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 14
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 3
+      },
+      {
+        "label": "prep_butter",
+        "duration": 2
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 5,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "section": 2,
+      "duration": 6,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3,
+          "intermediates": 1
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "butter"
+          },
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "section": 3,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 1
+        }
+      ]
+    },
+    {
+      "section": 4,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 1
+        }
+      ]
+    },
+    {
+      "section": 5,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 2
+        }
+      ]
+    }
+  ],
+  "schedules": {
+    "perSection": {
+      "totalTime": 4327,
+      "idleTime": 4263,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 5,
+          "end": 7
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 7
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 1447
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 1443,
+          "end": 1445
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 1445,
+          "end": 1447
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 1,
+          "start": 1447,
+          "end": 1447
+        },
+        {
+          "kind": "passive",
+          "section": 1,
+          "step": 1,
+          "start": 1447,
+          "end": 2167
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 2759,
+          "end": 2765
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 2765,
+          "end": 2767
+        },
+        {
+          "kind": "prep",
+          "section": 3,
+          "start": 2815,
+          "end": 2817
+        },
+        {
+          "kind": "step",
+          "section": 3,
+          "step": 0,
+          "start": 2817,
+          "end": 2827
+        },
+        {
+          "kind": "prep",
+          "section": 4,
+          "start": 2883,
+          "end": 2885
+        },
+        {
+          "kind": "step",
+          "section": 4,
+          "step": 0,
+          "start": 2885,
+          "end": 2887
+        },
+        {
+          "kind": "prep",
+          "section": 5,
+          "start": 4298,
+          "end": 4300
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 0,
+          "start": 4300,
+          "end": 4325
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 1,
+          "start": 4325,
+          "end": 4327
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": 0,
+          "end": 7,
+          "sections": [
+            0
+          ]
+        },
+        {
+          "day": 2,
+          "start": 1443,
+          "end": 1447,
+          "sections": [
+            1
+          ]
+        },
+        {
+          "day": 1,
+          "start": 2759,
+          "end": 2887,
+          "sections": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "day": 0,
+          "start": 4298,
+          "end": 4327,
+          "sections": [
+            5
+          ]
+        }
+      ]
+    },
+    "upfront": {
+      "totalTime": 4336,
+      "idleTime": 4272,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 5,
+          "end": 7
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 7,
+          "end": 12,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 2,
+              "duration": 2
+            },
+            {
+              "kind": "gather",
+              "target": "cookware",
+              "count": 1,
+              "duration": 1
+            },
+            {
+              "kind": "prepare",
+              "ref": {
+                "type": "ingredient",
+                "id": "butter"
+              },
+              "duration": 2
+            }
+          ]
+        },
+        {
+          "kind": "prep",
+          "section": 3,
+          "start": 12,
+          "end": 13,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "kind": "prep",
+          "section": 4,
+          "start": 13,
+          "end": 14,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 14,
+          "end": 16
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 16,
+          "end": 16
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 16,
+          "end": 1456
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 1454,
+          "end": 1456
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 1,
+          "start": 1456,
+          "end": 1456
+        },
+        {
+          "kind": "passive",
+          "section": 1,
+          "step": 1,
+          "start": 1456,
+          "end": 2176
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 2773,
+          "end": 2774,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 2774,
+          "end": 2776
+        },
+        {
+          "kind": "prep",
+          "section": 3,
+          "start": 2825,
+          "end": 2826,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 3,
+          "step": 0,
+          "start": 2826,
+          "end": 2836
+        },
+        {
+          "kind": "prep",
+          "section": 4,
+          "start": 2893,
+          "end": 2894,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 4,
+          "step": 0,
+          "start": 2894,
+          "end": 2896
+        },
+        {
+          "kind": "prep",
+          "section": 5,
+          "start": 4307,
+          "end": 4309,
+          "deferred": true
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 0,
+          "start": 4309,
+          "end": 4334
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 1,
+          "start": 4334,
+          "end": 4336
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": 0,
+          "end": 4336,
+          "sections": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 4327,
+      "idleTime": 4263,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 5
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 5,
+          "end": 7
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 7
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 7,
+          "end": 1447
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 1443,
+          "end": 1445
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 1445,
+          "end": 1447
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 1,
+          "start": 1447,
+          "end": 1447
+        },
+        {
+          "kind": "passive",
+          "section": 1,
+          "step": 1,
+          "start": 1447,
+          "end": 2167
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 2757,
+          "end": 2763
+        },
+        {
+          "kind": "prep",
+          "section": 3,
+          "start": 2763,
+          "end": 2764,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "kind": "prep",
+          "section": 4,
+          "start": 2764,
+          "end": 2765,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 2765,
+          "end": 2767
+        },
+        {
+          "kind": "prep",
+          "section": 3,
+          "start": 2816,
+          "end": 2817,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 3,
+          "step": 0,
+          "start": 2817,
+          "end": 2827
+        },
+        {
+          "kind": "prep",
+          "section": 4,
+          "start": 2884,
+          "end": 2885,
+          "deferred": true,
+          "items": [
+            {
+              "kind": "gather",
+              "target": "ingredient",
+              "count": 1,
+              "duration": 1,
+              "intermediates": 1
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "section": 4,
+          "step": 0,
+          "start": 2885,
+          "end": 2887
+        },
+        {
+          "kind": "prep",
+          "section": 5,
+          "start": 4298,
+          "end": 4300
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 0,
+          "start": 4300,
+          "end": 4325
+        },
+        {
+          "kind": "step",
+          "section": 5,
+          "step": 1,
+          "start": 4325,
+          "end": 4327
+        }
+      ],
+      "sessions": [
+        {
+          "day": 3,
+          "start": 0,
+          "end": 7,
+          "sections": [
+            0
+          ]
+        },
+        {
+          "day": 2,
+          "start": 1443,
+          "end": 1447,
+          "sections": [
+            1
+          ]
+        },
+        {
+          "day": 1,
+          "start": 2757,
+          "end": 2887,
+          "sections": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "day": 0,
+          "start": 4298,
+          "end": 4327,
+          "sections": [
+            5
+          ]
+        }
+      ]
+    }
+  }
+}

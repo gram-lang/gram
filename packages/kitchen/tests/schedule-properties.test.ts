@@ -5,10 +5,11 @@ import {
 	type CompilationResult,
 	compile,
 	type ScheduleBlock,
+	SCHEDULE_MODES,
 } from "../src/index";
 
 /*
- * Property test for the mise en place and the two schedules: random recipes
+ * Property test for the mise en place and the schedules: random recipes
  * (from a seeded generator, so a failure is reproducible) must all satisfy the
  * invariants below. It grew out of the 1.4.0 audit, whose 29,000-recipe run
  * found the empty-section and duplicated-warning bugs that hand-written cases
@@ -104,7 +105,6 @@ const EPS = 1e-9;
 const overlaps = (a: ScheduleBlock, b: ScheduleBlock) =>
 	a.start < b.end && b.start < a.end;
 const finite = (n: unknown) => typeof n === "number" && Number.isFinite(n);
-const MODES = ["perSection", "upfront"] as const;
 
 /** Every invariant a compiled recipe must satisfy; one message per breach. */
 function violationsOf(result: CompilationResult, source: string): string[] {
@@ -135,22 +135,29 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
-	for (const mode of MODES) {
+	for (const mode of SCHEDULE_MODES) {
 		const s = schedules[mode];
 		const preps = s.blocks.filter((b) => b.kind === "prep");
 		const steps = s.blocks.filter((b) => b.kind === "step");
 
-		// One prep block per section with a cost, as long as its cost.
-		const prepSections = preps.map((b) => b.section).sort((x, y) => x - y);
+		// Every section with a cost has prep blocks as long as its cost in all:
+		// one block, or two in `upfront` when it also gathers an intermediate.
+		const prepSections = [...new Set(preps.map((b) => b.section))].sort(
+			(x, y) => x - y,
+		);
 		if (prepSections.join() !== miseEnPlace.map((m) => m.section).join()) {
 			bad.push(`${mode}: prep blocks != miseEnPlace entries`);
 		}
-		for (const p of preps) {
-			const m = miseEnPlace.find((x) => x.section === p.section);
-			if (m && Math.abs(p.end - p.start - m.duration) > EPS) {
+		for (const m of miseEnPlace) {
+			const blocks = preps.filter((p) => p.section === m.section);
+			const length = blocks.reduce((a, p) => a + p.end - p.start, 0);
+			if (Math.abs(length - m.duration) > EPS) {
 				bad.push(
-					`${mode}: prep block of section ${p.section} has the wrong length`,
+					`${mode}: prep blocks of section ${m.section} have the wrong length`,
 				);
+			}
+			if (mode === "perSection" && blocks.length !== 1) {
+				bad.push(`perSection: section ${m.section} has ${blocks.length} preps`);
 			}
 		}
 
@@ -194,6 +201,19 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 				}
 			}
 		}
+		// Sessions come furthest day first, within the timeline.
+		for (let i = 0; i < s.sessions.length; i++) {
+			const session = s.sessions[i] as (typeof s.sessions)[number];
+			if (i > 0 && (s.sessions[i - 1]?.day ?? 0) <= session.day) {
+				bad.push(`${mode}: sessions not ordered by day`);
+			}
+			if (
+				session.start > session.end + EPS ||
+				session.end > s.totalTime + EPS
+			) {
+				bad.push(`${mode}: session outside the timeline`);
+			}
+		}
 		// ...and, by section, a preparation never overlaps a step either.
 		if (mode === "perSection") {
 			for (const p of preps) {
@@ -203,12 +223,25 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
-	// Upfront is the legacy timeline pushed back by the preparation.
-	if (Math.abs(schedules.upfront.totalTime - metrics.totalTime) > EPS) {
+	// Upfront is the legacy timeline pushed back by the preparation, except for
+	// what concerns an intermediate: that is gathered once it exists, so it can
+	// only make the timeline shorter.
+	const hasIntermediate = miseEnPlace.some((m) =>
+		m.items.some((i) =>
+			i.kind === "gather" ? (i.intermediates ?? 0) > 0 : i.intermediate,
+		),
+	);
+	if (schedules.upfront.totalTime > metrics.totalTime + EPS) {
+		bad.push("upfront total > metrics.totalTime");
+	}
+	if (
+		!hasIntermediate &&
+		Math.abs(schedules.upfront.totalTime - metrics.totalTime) > EPS
+	) {
 		bad.push("upfront total != metrics.totalTime");
 	}
 	for (const b of schedules.upfront.blocks) {
-		if (b.kind !== "step") continue;
+		if (b.kind !== "step" || hasIntermediate) continue;
 		const step = sections[b.section]?.steps[b.step];
 		if (
 			step?.type === "step" &&
@@ -217,6 +250,15 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		) {
 			bad.push("upfront step != legacy timings + preparation");
 		}
+	}
+
+	// A recipe on a single working day plans per session exactly like upfront.
+	if (
+		schedules.perSession.sessions.length <= 1 &&
+		JSON.stringify(schedules.perSession.blocks) !==
+			JSON.stringify(schedules.upfront.blocks)
+	) {
+		bad.push("single-session perSession != upfront");
 	}
 
 	// Compiling is deterministic, scaling never moves a duration, and scaling a

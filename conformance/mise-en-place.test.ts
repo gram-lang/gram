@@ -157,14 +157,18 @@ function checkSchedules(compiled: CompilationResult): void {
 	for (const [mode, schedule] of Object.entries(schedules) as Array<
 		[string, Schedule]
 	>) {
-		// Invariant 3: a prep block per mise en place entry, of the right length.
+		// Invariant 3: prep blocks for each mise en place entry, of its length in
+		// all (two in `upfront` and `perSession` when the section also gathers an intermediate).
 		const prep = schedule.blocks.filter((b) => b.kind === "prep");
-		expect(prep.map((b) => b.section).sort((a, b) => a - b)).toEqual(
-			miseEnPlace.map((m) => m.section),
-		);
-		for (const b of prep) {
-			const entry = miseEnPlace.find((m) => m.section === b.section);
-			expect(b.end - b.start).toBe(entry?.duration);
+		expect(
+			[...new Set(prep.map((b) => b.section))].sort((a, b) => a - b),
+		).toEqual(miseEnPlace.map((m) => m.section));
+		for (const entry of miseEnPlace) {
+			const own = prep.filter((b) => b.section === entry.section);
+			expect(own.reduce((sum, b) => sum + b.end - b.start, 0)).toBeCloseTo(
+				entry.duration,
+			);
+			if (mode === "perSection") expect(own).toHaveLength(1);
 		}
 
 		// Invariant 4: the three times add up, and nothing is negative.
@@ -189,33 +193,56 @@ function checkSchedules(compiled: CompilationResult): void {
 			if (b.kind === "prep") continue;
 			expect(sections[b.section].steps[b.step]?.type).toBe("step");
 		}
-		expect(mode).toMatch(/perSection|upfront/);
-	}
+		expect(mode).toMatch(/perSection|upfront|perSession/);
 
-	// Invariant 5: upfront is the legacy timeline pushed back by the preparation.
-	const upfront = schedules.upfront;
-	expect(upfront.totalTime).toBe(metrics.totalTime);
-	for (const b of upfront.blocks) {
-		if (b.kind !== "step") continue;
-		const step = sections[b.section].steps[b.step] as ProcessedStep;
-		expect(b.start).toBe(step.timings.start + preparation);
-		expect(b.end).toBe(step.timings.end + preparation);
-	}
-	const expectedPassives: number[] = [];
-	for (const sec of sections) {
-		for (const st of sec.steps) {
-			if (st.type !== "step") continue;
-			for (const bg of st.backgroundTasks ?? []) {
-				expectedPassives.push(st.timings.start + bg.startOffset + preparation);
-			}
+		// Sessions: one per working day, furthest day first, each within the timeline.
+		for (let i = 1; i < schedule.sessions.length; i++) {
+			expect(schedule.sessions[i - 1].day).toBeGreaterThan(
+				schedule.sessions[i].day,
+			);
+		}
+		for (const session of schedule.sessions) {
+			expect(session.start).toBeLessThanOrEqual(session.end);
+			expect(session.end).toBeLessThanOrEqual(schedule.totalTime);
 		}
 	}
-	expect(
-		upfront.blocks
-			.filter((b) => b.kind === "passive")
-			.map((b) => b.start)
-			.sort((a, b) => a - b),
-	).toEqual(expectedPassives.sort((a, b) => a - b));
+
+	// Invariant 5: upfront is the legacy timeline pushed back by the preparation,
+	// except for an intermediate, which is gathered once it exists: then it can
+	// only be shorter, and nothing else is pinned down here.
+	const upfront = schedules.upfront;
+	const hasIntermediate = miseEnPlace.some((m) =>
+		m.items.some((i) =>
+			i.kind === "gather" ? (i.intermediates ?? 0) > 0 : i.intermediate,
+		),
+	);
+	expect(upfront.totalTime).toBeLessThanOrEqual(metrics.totalTime);
+	if (!hasIntermediate) {
+		expect(upfront.totalTime).toBe(metrics.totalTime);
+		for (const b of upfront.blocks) {
+			if (b.kind !== "step") continue;
+			const step = sections[b.section].steps[b.step] as ProcessedStep;
+			expect(b.start).toBe(step.timings.start + preparation);
+			expect(b.end).toBe(step.timings.end + preparation);
+		}
+		const expectedPassives: number[] = [];
+		for (const sec of sections) {
+			for (const st of sec.steps) {
+				if (st.type !== "step") continue;
+				for (const bg of st.backgroundTasks ?? []) {
+					expectedPassives.push(
+						st.timings.start + bg.startOffset + preparation,
+					);
+				}
+			}
+		}
+		expect(
+			upfront.blocks
+				.filter((b) => b.kind === "passive")
+				.map((b) => b.start)
+				.sort((a, b) => a - b),
+		).toEqual(expectedPassives.sort((a, b) => a - b));
+	}
 
 	// Invariant 6: with one cook, a preparation never overlaps a step, and the
 	// steps add up to the active time.

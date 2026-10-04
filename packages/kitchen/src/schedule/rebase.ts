@@ -31,7 +31,7 @@ export interface Timeline {
 const KIND_ORDER = { prep: 0, step: 1, passive: 2 } as const;
 
 /** Deterministic order: by start, then end, then kind, then position in the recipe. */
-export function sortBlocks(blocks: ScheduleBlock[]): ScheduleBlock[] {
+function sortBlocks(blocks: ScheduleBlock[]): ScheduleBlock[] {
 	return blocks.sort(
 		(a, b) =>
 			a.start - b.start ||
@@ -84,9 +84,11 @@ export function computeTimeline(
 		if (sched.isPrep) {
 			blocks.push({
 				kind: "prep",
-				section: sched.sectionIndex,
+				section: sched.prepFor ?? sched.sectionIndex,
 				start: rebasedLs,
 				end: rebasedLf,
+				...(sched.deferred && { deferred: true as const }),
+				...(sched.items && { items: sched.items }),
 			});
 			continue;
 		}

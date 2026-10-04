@@ -38,10 +38,11 @@ import type {
 	Schedule,
 	SectionMiseEnPlace,
 } from "./types";
+import { SCHEDULE_MODES, type ScheduleMode } from "./schedule-mode";
 import type { CompilerOptions } from "./core";
 import type { RecipeRegistry } from "./registry";
 import { resolveTimeUnit } from "@gram-lang/i18n";
-import { type Warning, WarningCode, pushWarning } from "./warnings";
+import { WarningCode, pushWarning } from "./warnings";
 import { detectIntermediateCycles } from "./graph";
 import {
 	scheduleALAP,
@@ -49,11 +50,12 @@ import {
 	computeTimeline,
 	commitTimeline,
 	cloneSchedules,
-	buildPerSectionSchedule,
-	buildUpfrontSchedule,
+	buildSchedule,
+	isSameSchedulingProblem,
 	type StepSchedule,
 } from "./schedule";
-import { calculatePreparationTime, computeMiseEnPlace } from "./metrics";
+import { calculatePreparationTime } from "./metrics";
+import { analyzeMiseEnPlace } from "./mise-en-place";
 
 export interface ProcessorContext extends Context {
 	options?: CompilerOptions;
@@ -688,7 +690,7 @@ export function processSections(
 	};
 	preparation: { total: number; breakdown: TimeBreakdownItem[] };
 	miseEnPlace: SectionMiseEnPlace[];
-	schedules: { perSection: Schedule; upfront: Schedule };
+	schedules: Record<ScheduleMode, Schedule>;
 } {
 	const ctx: ProcessorContext = {
 		warnings: registry.warnings,
@@ -952,37 +954,30 @@ export function processSections(
 	);
 	const metrics = commitTimeline(legacyTimeline, globalActiveTime);
 
-	// Mise en place: one cost per section, then the two complete timelines.
-	const miseEnPlace = computeMiseEnPlace(sections, registry);
+	// Mise en place: one cost per section, then one complete timeline per mode.
+	const analysis = analyzeMiseEnPlace(sections, registry);
+	const miseEnPlace = analysis.entries;
 	const preparation = calculatePreparationTime(sections, registry, miseEnPlace);
-	const upfront = buildUpfrontSchedule(
-		legacyTimeline,
-		miseEnPlace,
-		preparation.total,
-		globalActiveTime,
-	);
-	const perSection = buildPerSectionSchedule(
-		pristineSchedules,
-		miseEnPlace,
-		sections,
-		sectionASTs,
-		preparation.total,
-		globalActiveTime,
-	);
-
-	// A contention that only exists in the default (per-section) timeline must
-	// not be hidden: add its warnings to the official ones, skipping any the
-	// legacy pass already raised. A time paradox is one problem however the
-	// timeline is laid out, but its message embeds a timeline-dependent instant,
-	// so it is matched on where it sits in the source instead.
-	const sameWarning = (a: Warning, b: Warning) =>
-		a.code === b.code &&
-		(a.code === WarningCode.TIME_PARADOX && a.loc
-			? JSON.stringify(a.loc) === JSON.stringify(b.loc)
-			: a.message === b.message);
-	for (const w of perSection.warnings) {
-		if (!registry.warnings.some((o) => sameWarning(o, w))) {
-			registry.warnings.push(w);
+	const schedules = {} as Record<ScheduleMode, Schedule>;
+	for (const mode of SCHEDULE_MODES) {
+		const { schedule, warnings } = buildSchedule(
+			mode,
+			pristineSchedules,
+			miseEnPlace,
+			sections,
+			sectionASTs,
+			preparation.total,
+			globalActiveTime,
+			analysis,
+		);
+		schedules[mode] = schedule;
+		// The compiled JSON carries every timeline, so a problem that only one
+		// of them runs into must not be hidden: add its warnings to the official
+		// ones, once, the default timeline's first.
+		for (const w of warnings) {
+			if (!registry.warnings.some((o) => isSameSchedulingProblem(o, w))) {
+				registry.warnings.push(w);
+			}
 		}
 	}
 
@@ -991,6 +986,6 @@ export function processSections(
 		metrics,
 		preparation,
 		miseEnPlace,
-		schedules: { perSection: perSection.schedule, upfront },
+		schedules,
 	};
 }

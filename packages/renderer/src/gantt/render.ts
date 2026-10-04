@@ -3,7 +3,7 @@ import type { RenderableCompilationResult } from "../types";
 import { escapeHtml } from "../utils";
 import {
 	buildTracks,
-	computeGaps,
+	computeSessionMarkers,
 	computeSectionLegendItems,
 	computeTimeTicks,
 	computeVisualGaps,
@@ -28,8 +28,7 @@ export function toGanttHTML(
 ): string {
 	const t = getDictionary(options.lang);
 	const { gapThreshold, compressedGapSize } = resolveGapOptions(options);
-	const gaps = computeGaps(data, gapThreshold, options.schedule);
-	const { tracks, totalVirtualTime, maxRealTime } = buildTracks(data, {
+	const { tracks, totalVirtualTime, maxRealTime, gaps } = buildTracks(data, {
 		lang: options.lang,
 		schedule: options.schedule,
 		gapThresholdMinutes: gapThreshold,
@@ -55,6 +54,14 @@ export function toGanttHTML(
 		"forward",
 		"",
 		compressedGapSize,
+	);
+	const sessionMarkers = computeSessionMarkers(
+		data,
+		gaps,
+		totalVirtualTime,
+		compressedGapSize,
+		options.schedule,
+		options.lang,
 	);
 	const legendItems = computeSectionLegendItems(data, options.lang);
 	const visibleLegend = legendItems.slice(0, VISIBLE_SECTIONS_LIMIT);
@@ -162,6 +169,20 @@ ${overflowLegend
 		)
 		.join("\n");
 
+	const sessionLabelsHtml = sessionMarkers
+		.map(
+			(m) =>
+				`          <div class="session-label" style="position:absolute;left:${m.leftPercent}%;top:0;font-size:0.75em;font-weight:600;white-space:nowrap">${escapeHtml(m.label)}</div>`,
+		)
+		.join("\n");
+	const sessionLinesHtml = sessionMarkers
+		.filter((m) => m.line)
+		.map(
+			(m) =>
+				`          <div class="gantt-marker session-marker" style="left:${m.leftPercent}%"><div class="marker-line"></div></div>`,
+		)
+		.join("\n");
+
 	const renderBlock = (
 		block: (typeof tracks)[number]["blocks"][number],
 		trackType: "active" | "passive",
@@ -237,6 +258,7 @@ ${blocksHtml}
           <div class="gantt-axis-gaps">
 ${axisGapsHtml}
           </div>
+${sessionLabelsHtml}
 ${ticksHtml}
         </div>
       </div>
@@ -245,6 +267,7 @@ ${ticksHtml}
           <div class="gantt-marker start-marker" style="left:0%"><div class="marker-line"></div></div>
           <div class="gantt-marker end-marker" style="left:100%"><div class="marker-line"></div></div>
 ${trackOverlayGapsHtml}
+${sessionLinesHtml}
         </div>
 ${tracksHtml}
       </div>

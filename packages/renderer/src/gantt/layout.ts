@@ -1,5 +1,9 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type { ProcessedStep, ScheduleBlock } from "@gram-lang/kitchen";
+import {
+	type ProcessedStep,
+	type ScheduleBlock,
+	scheduleFor,
+} from "@gram-lang/kitchen";
 import type {
 	RenderContext,
 	RenderableCompilationResult,
@@ -7,12 +11,11 @@ import type {
 } from "../types";
 import {
 	describeMiseEnPlaceItem,
-	miseEnPlaceForSection,
-	resolveSchedule,
+	prepItems,
+	sessionDayLabel,
 } from "../mise-en-place";
-import { formatDuration } from "../utils";
+import { formatDuration, joinStepTokens } from "../utils";
 import { formatElement } from "../formatters/element";
-import { joinStepTokens } from "../utils";
 import type {
 	GanttGap,
 	GanttLegendItem,
@@ -112,7 +115,7 @@ export function computeGaps(
 	gapThreshold = DEFAULT_GAP_THRESHOLD,
 	schedule?: ScheduleMode,
 ): GanttGap[] {
-	const blocks = resolveSchedule(data, schedule)?.blocks;
+	const blocks = scheduleFor(data, schedule)?.blocks;
 	if (!blocks) return [];
 
 	const activePeriods: { start: number; end: number }[] = [];
@@ -263,12 +266,12 @@ export function buildTracks(
 	opts: { lang?: string; schedule?: ScheduleMode } & GapOptions = {},
 ): GanttTracksData {
 	const sections = data?.sections;
-	const blocks: ScheduleBlock[] | undefined = resolveSchedule(
+	const blocks: ScheduleBlock[] | undefined = scheduleFor(
 		data,
 		opts.schedule,
 	)?.blocks;
 	if (!sections || !blocks) {
-		return { tracks: [], totalVirtualTime: 0, maxRealTime: 0 };
+		return { tracks: [], totalVirtualTime: 0, maxRealTime: 0, gaps: [] };
 	}
 
 	const t = getDictionary(opts.lang);
@@ -290,20 +293,24 @@ export function buildTracks(
 	const isSingleUnnamedSection = sections.length === 1 && !sections[0]?.title;
 	const colorOf = (section: number): number | string =>
 		isSingleUnnamedSection ? "default" : section % 9;
+	// Whether a block's label fits inside it (rough width estimate).
+	const fitsInside = (duration: number, label: string) =>
+		duration * 12 >= label.length * 7 + 36;
 
 	for (const b of blocks) {
 		const duration = b.end - b.start;
 
 		if (b.kind === "prep") {
 			const label = t.renderer?.miseEnPlace || "Mise en place";
-			const entry = miseEnPlaceForSection(data, b.section);
-			const detail = (entry?.items ?? [])
+			const detail = prepItems(data, b)
 				.map((item) =>
 					describeMiseEnPlaceItem(item, registry, t.renderer, formatDuration),
 				)
 				.join(" · ");
 			cookTrack.blocks.push({
-				id: `prep_${b.section}`,
+				// A section can have a part gathered at the head of its session and one
+				// left for later: the two must not share an id.
+				id: `prep_${b.section}${b.deferred ? "_later" : ""}`,
 				start: b.start,
 				end: b.end,
 				duration,
@@ -311,7 +318,7 @@ export function buildTracks(
 				tooltip: detail || label,
 				sectionIndex: colorOf(b.section),
 				verticalIndex: activeStepIndex++,
-				fitsInside: duration * 12 >= label.length * 7 + 36,
+				fitsInside: fitsInside(duration, label),
 				isPrep: true,
 			});
 			maxRealTime = Math.max(maxRealTime, b.end);
@@ -339,7 +346,7 @@ export function buildTracks(
 				sectionIndex: colorOf(b.section),
 				isAssembly,
 				verticalIndex: activeStepIndex++,
-				fitsInside: duration * 12 >= label.length * 7 + 36,
+				fitsInside: fitsInside(duration, label),
 				temperature,
 			});
 			maxRealTime = Math.max(maxRealTime, b.end);
@@ -373,7 +380,7 @@ export function buildTracks(
 	const tracks = [cookTrack, ...Array.from(passiveTracksMap.values())];
 	const totalVirtualTime = getVirtualTime(maxRealTime, gaps, compressedGapSize);
 
-	return { tracks, totalVirtualTime, maxRealTime };
+	return { tracks, totalVirtualTime, maxRealTime, gaps };
 }
 
 /** Axis tick calculation. Ported 1:1 from GramGantt.vue's `timeTicks` computed. */
@@ -458,6 +465,39 @@ export function computeVisualGaps(
 			label: `⏳ ${formatTime(skipped)}`,
 		};
 	});
+}
+
+/** Where a working day starts on the axis, with its label ("D-3"). */
+export interface GanttSessionMarker {
+	leftPercent: number;
+	label: string;
+	/** The first session starts at the chart's own start: no line to draw. */
+	line: boolean;
+}
+
+/**
+ * One marker per working day, when the schedule spans several. Positions go
+ * through `getVirtualTime`, so they stay right when long waits are compressed.
+ */
+export function computeSessionMarkers(
+	data: RenderableCompilationResult,
+	gaps: GanttGap[],
+	totalVirtualTime: number,
+	compressedGapSize: number | undefined,
+	mode: ScheduleMode | undefined,
+	lang?: string,
+): GanttSessionMarker[] {
+	const sessions = scheduleFor(data, mode)?.sessions ?? [];
+	if (sessions.length < 2) return [];
+	const t = getDictionary(lang);
+	return sessions.map((session, i) => ({
+		leftPercent:
+			(getVirtualTime(session.start, gaps, compressedGapSize) /
+				totalVirtualTime) *
+			100,
+		label: sessionDayLabel(session.day, t.renderer),
+		line: i > 0,
+	}));
 }
 
 /** Section legend entries. Ported 1:1 from `sectionLegendItems` computed. */

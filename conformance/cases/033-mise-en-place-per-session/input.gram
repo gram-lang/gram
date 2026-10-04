@@ -1,0 +1,33 @@
+---
+title: Vanilla tart over four days
+---
+
+## Mother cream ~{-3d} ->&cream
+
+[Whisk] Whisk @egg yolks{6} with @sugar{100g}, then add @milk{500ml} and @vanilla pod{2} in a #saucepan.
+
+[Chill] Let the cream set in the fridge ~_{24h}.
+
+## Praline ~{-2d} ->&praline
+
+[Caramelize] Cook @sugar{150g} in a #pan until golden, then stir in @hazelnuts{200g}.
+
+[Rest] Let the praline cool and harden ~_{12h}.
+
+## Crust ~{-26h} ->&crust
+
+[Mix] Work &cream{150g} with @flour{300g} and @butter{150g}(cold, cut into cubes) in a #bowl.
+
+## Syrup ~{-25h} ->&syrup
+
+[Simmer] Simmer &crust{50g} with @water{200ml} and @sugar{80g} for ~{10min}.
+
+## Powder ~{-24h} ->&powder
+
+[Grind] Blend &syrup{30g} with @almonds{100g} until powdery.
+
+## Assembly
+
+[Bake] Bake the &crust{400g} for ~{25min} at ^{180C}.
+
+[Fill] Spread &praline{100g} on the tart, then dust with &powder{50g}.

@@ -120,14 +120,19 @@ Voici comment le compilateur convertit automatiquement votre syntaxe en minutes 
 ### Quand se fait la mise en place
 <Since v="1.4.0" />
 
-Chaque section a sa propre mise en place : rassembler et préparer ses ingrédients et son matériel. Gram peut la planifier de deux façons, sans que la recette s'écrive différemment :
+Chaque section a sa propre mise en place : rassembler et préparer ses ingrédients et son matériel. Gram peut la planifier de trois façons, sans que la recette s'écrive différemment :
 
 - **Par section** (par défaut) : la préparation d'une section est placée juste avant cette section. Un ingrédient qui ne servira que deux jours plus tard n'est pas sorti maintenant, et une préparation peut se faire pendant le repos d'une étape précédente.
-- **Tout au début** : toutes les préparations passent en premier, puis la cuisine commence.
+- **Tout au début** : les préparations passent en premier, puis la cuisine commence. Sauf pour un intermédiaire (voir plus bas), qu'on ne peut pas préparer avant qu'il existe.
+- **Par journée de travail** : pour une recette sur plusieurs jours, la préparation de chaque journée est rassemblée au début de cette journée. Les jours viennent des ancres des sections (`~{-2d}`, `~{-36h}`...) : une section sans ancre prend le jour de la suivante, et les sections après la dernière ancre sont sur le jour même. Une recette sans ancre d'un jour ou plus tient en une seule journée, comme « tout au début ».
+
+  Deux pièges quand on écrit une recette sur plusieurs jours :
+  - **Un long minuteur passif n'est pas une ancre.** Un repos `~_{48h}` fait démarrer la chronologie deux jours plus tôt, mais seule l'ancre d'une section ouvre une journée de travail : sans `## Crème ~{-2d}` sur la section, elle est placée le jour même.
+  - **Une ancre de moins de 24 heures reste sur le jour même.** Le jour est l'ancre arrondie à des jours entiers : `~{-18h}` (une poolish pétrie la veille au soir) est donc le jour J, pas J-1. Pour ouvrir la veille, écrivez `~{-1d}` ou plus de 24 heures (`~{-26h}`). Voir [Mise en place et planning](/fr/docs/explanation/mise-en-place-and-planning/).
 
 C'est un choix de lecture, pas une déclaration de la recette : le playground a un sélecteur pour ça, VS Code un réglage `gram.miseEnPlace`, la CLI une option `--mise-en-place` et le moteur de rendu une option `schedule`. Il ne change que les temps **total** et **d'attente**, et la place des préparations sur le diagramme de Gantt. Le temps de préparation et le temps actif restent les mêmes, et les listes d'ingrédients ne bougent pas.
 
-Un intermédiaire (`&pâte`) se pèse dans la section qui l'utilise, quelle que soit la façon dont il est déclaré. Cette minute est une approximation : en mode par section, elle peut tomber pendant que l'intermédiaire repose encore, et la pesée semble alors se faire juste avant que la pâte soit prête. Le temps total reste juste à la minute près.
+Un intermédiaire (`&pâte`) se pèse dans la section qui l'utilise, quelle que soit la façon dont il est déclaré, et jamais avant d'avoir été fabriqué : même quand tout le reste est préparé au début, il est placé juste avant la section qui l'utilise. Cette minute est une approximation : elle peut tomber pendant que l'intermédiaire repose encore, et la pesée semble alors se faire juste avant que la pâte soit prête. Le temps total reste juste à la minute près.
 
 ### Suivi intelligent des dépendances (ALAP)
 Gram intègre nativement un ordonnancement **ALAP (*As Late As Possible*)**. Si vous indiquez qu'une pâte doit reposer `~_{1 h}` en tâche de fond, et qu'une étape ultérieure la réclame, le compilateur planifiera automatiquement son pétrissage au moment optimal. Le repos de la pâte se terminera exactement au moment où l'étape suivante débutera.

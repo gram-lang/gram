@@ -146,7 +146,8 @@ export default defineConfig({
             { label: 'Mass & yield', translations: { fr: 'Masse & rendement' }, slug: 'docs/explanation/mass-and-yield' },
             { label: 'Nutrition', slug: 'docs/explanation/nutrition' },
             { label: 'Shopping lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
-            { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' }
+            { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' },
+            { label: 'Mise en place & planning', translations: { fr: 'Mise en place & planning' }, slug: 'docs/explanation/mise-en-place-and-planning', badge: { text: 'v1.4.0', variant: 'default' } }
           ]
         },
         { label: 'Changelog', translations: { fr: 'Changelog' }, slug: 'docs/changelog' }

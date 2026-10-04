@@ -10,8 +10,12 @@ import {
 } from "../src/index";
 
 describe("schedule modes", () => {
-	it("knows both modes, and defaults to preparing right before each section", () => {
-		expect([...SCHEDULE_MODES]).toEqual(["perSection", "upfront"]);
+	it("knows every mode, and defaults to preparing right before each section", () => {
+		expect([...SCHEDULE_MODES]).toEqual([
+			"perSection",
+			"upfront",
+			"perSession",
+		]);
 		expect(DEFAULT_SCHEDULE_MODE).toBe("perSection");
 	});
 

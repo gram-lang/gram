@@ -19,7 +19,7 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 - **Panneau Chronologique** : Lancez `Gram: Gantt Chart` (ou cliquez sur l'icône de graphique dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, *timers* passifs, et compression des temps morts. Le tout dans une WebView dédiée, indépendante de l'Aperçu en Direct.
 - **Modes Horaires** : Depuis le menu du panneau, basculez à l'envie entre le temps écoulé (chronomètre, T+), le compte à rebours (T-), et un rétroplanning basé sur l'heure de service souhaitée.
 - **Vue Compacte** : Pour les recettes complexes grouillant d'étapes simultanées, activez une mise en page densifiée.
-- **Mise en place** : la préparation de chaque section est dessinée comme un bloc en pointillés à la couleur de la section, par défaut juste avant elle, ou tout au début (voir le réglage `gram.miseEnPlace` ci-dessous).
+- **Mise en place** : la préparation de chaque section est dessinée comme un bloc en pointillés à la couleur de la section, par défaut juste avant elle, tout au début, ou au début de chaque journée de travail (voir le réglage `gram.miseEnPlace` ci-dessous).
 
 #### Le réglage `gram.miseEnPlace` (depuis la 1.4.0)
 
@@ -27,6 +27,7 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 |---|---|
 | `perSection` (par défaut) | La mise en place de chaque section est planifiée juste avant cette section. |
 | `upfront` | Toute la mise en place est planifiée au début de la recette. |
+| `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les jours viennent des ancres `~{-Nd}` des sections). |
 
 Le réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total à côté du titre de la recette. Il change les temps total et d'attente, pas les listes d'ingrédients, et s'applique tout de suite à toutes les recettes ouvertes, sans recharger la fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 

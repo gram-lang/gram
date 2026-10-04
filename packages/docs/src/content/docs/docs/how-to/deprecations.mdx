@@ -23,7 +23,7 @@ Not sure what your code uses? [Search it for the deprecated names](#find-what-yo
 
 <Since v="1.4.0" type="deprecated" />
 
-Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section costs) and `schedules`, two complete timelines: `perSection` (each section's preparation right before it) and `upfront` (all the preparation first). They replace the fields below. See the [Kitchen API reference](/docs/reference/api/kitchen) for every field.
+Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section costs) and `schedules`, three complete timelines: `perSection` (each section's preparation right before it), `upfront` (all the preparation first) and `perSession` (the preparation of each working day at the start of that day). They replace the fields below. See the [Kitchen API reference](/docs/reference/api/kitchen) for every field.
 
 | Deprecated | Use instead |
 |---|---|
@@ -33,9 +33,9 @@ Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section
 | `metrics.idleTime` | `schedules[mode].idleTime` |
 | [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#time-breakdowns) | `miseEnPlace` and `schedules` |
 
-`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both timelines.
+`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in every timeline.
 
-The old `metrics.totalTime` is the total of the `upfront` timeline. Gram's own tools show `perSection` by default, so use `recipe.schedules.upfront` if you need exactly the number you had before.
+The old `metrics.totalTime` is the total with every preparation first. Gram's own tools show `perSection` by default, so use `recipe.schedules.upfront` if you want the closest number to the one you had before: it is the same unless the recipe has intermediates, which `upfront` prepares once they exist, so it can be shorter.
 
 ### Step timings and background tasks
 
@@ -57,7 +57,7 @@ for (const section of recipe.sections) {
 Now, read the blocks of one timeline. Every time is in minutes from `0` and includes the mise en place, so it depends on the timeline you choose: do not mix these blocks with `timings` in the same chart.
 
 ```typescript
-const schedule = recipe.schedules[chosenMode]; // 'perSection' or 'upfront'
+const schedule = recipe.schedules[chosenMode]; // 'perSection', 'upfront' or 'perSession'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // a section's mise en place (new)
@@ -109,6 +109,8 @@ for (const entry of computeMiseEnPlace(sections, registry)) {
 A compiled recipe already carries the same split in its `miseEnPlace` field.
 
 ### JSON from an older version
+
+<Since v="1.4.0" type="deprecated" />
 
 **Deprecated:** reading the old `metrics` fields as a fallback. **Use instead:** compile your recipes again with 1.4.0 or later.
 

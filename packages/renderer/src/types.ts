@@ -112,7 +112,8 @@ export interface RendererClasses {
 
 /**
  * Which complete timeline a view follows: preparation right before each
- * section (`perSection`, the default) or all of it at the start (`upfront`).
+ * section (`perSection`, the default), all of it at the start (`upfront`), or
+ * at the start of each working day (`perSession`).
  * Owned by `@gram-lang/kitchen`, re-exported so this import path keeps working.
  */
 export type { ScheduleMode };
@@ -126,9 +127,12 @@ export interface RendererOptions {
 	hideStepQty?: boolean;
 	/**
 	 * Which timeline to follow: mise en place right before each section
-	 * (`"perSection"`, the default) or all of it at the start (`"upfront"`).
-	 * Drives the total and idle times, and whether each section shows its own
-	 * "Mise en place" label (`"perSection"` only).
+	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
+	 * the start of each working day (`"perSession"`). Drives the total and idle
+	 * times, and where the mise en place is shown: on each section's ingredient
+	 * list by section; otherwise in a block at the start of each session, a
+	 * section keeping its own label only for what has to wait for an
+	 * intermediate made the same day.
 	 */
 	schedule?: ScheduleMode;
 	bakersMathOnly?: boolean;

@@ -39,11 +39,12 @@ import {
 const recipe = {
   title: "Simple Crepes",
   metrics: { activeTime: 10 },
-  // The timelines a compiled recipe carries (`compile()` produces them for you).
-  // `metrics.totalTime` is deprecated: it is only read when `schedules` is missing.
+  // The timelines a compiled recipe carries, one per mode (`perSection`,
+  // `upfront`, `perSession`; `compile()` produces them for you): only the one
+  // you render is read. `metrics.totalTime` is deprecated: it is only read when
+  // `schedules` is missing.
   schedules: {
-    perSection: { totalTime: 30, idleTime: 20, blocks: [] },
-    upfront: { totalTime: 30, idleTime: 20, blocks: [] }
+    perSection: { totalTime: 30, idleTime: 20, blocks: [], sessions: [] }
   },
   shopping_list: [
     { id: "flour", qty: 200, unit: "g" }

@@ -58,7 +58,7 @@ interface CompilationResult {
     totalBreakdown: TimeBreakdownItem[];
   };
   miseEnPlace: SectionMiseEnPlace[]; // what preparing each section costs
-  schedules: { perSection: Schedule; upfront: Schedule };
+  schedules: Record<ScheduleMode, Schedule>; // perSection, upfront, perSession
 }
 
 interface SectionMiseEnPlace {
@@ -68,23 +68,31 @@ interface SectionMiseEnPlace {
 }
 
 type MiseEnPlaceItem =
-  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number }
-  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number };
+  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number; intermediates?: number }
+  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number; intermediate?: true };
 
 interface Schedule {
   totalTime: number;                 // max(end) over blocks, from 0
   idleTime: number;                  // totalTime - metrics.activeTime - metrics.preparationTime
   blocks: ScheduleBlock[];           // sorted by start, then end
+  sessions: ScheduleSession[];       // one per working day, furthest day first
+}
+
+interface ScheduleSession {
+  day: number;                       // 0 = the day itself, 1 = the day before (~{-1d})...
+  start: number;                     // bounds of the session's active work
+  end: number;
+  sections: number[];                // sections worked that day
 }
 
 type ScheduleBlock =
-  | { kind: "prep"; section: number; start: number; end: number }
+  | { kind: "prep"; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
   | { kind: "step"; section: number; step: number; start: number; end: number }
   | { kind: "passive"; section: number; step: number; track?: string; start: number; end: number };
 ```
 
 :::note[New in 1.4.0: `generator`, `miseEnPlace` and `schedules`]
-`miseEnPlace` says what preparing each section costs, and `schedules` holds two complete timelines built from it: `perSection` (each section's preparation right before that section) and `upfront` (all the preparation first). All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block, so `miseEnPlace` is not indexed by section: find an entry by its `section` field, never by its position in the array.
+`miseEnPlace` says what preparing each section costs, and `schedules` holds three complete timelines built from it: `perSection` (each section's preparation right before that section), `upfront` (all the preparation first) and `perSession` (the preparation of each working day gathered at the start of that day, the days coming from the sections' `~{-Nd}` anchors; a recipe with no such anchor is a single session, like `upfront`). `sessions` lists the working days of a timeline. All times are in minutes from 0 and include the preparation. In a `step` or `passive` block, `step` is the index in `sections[section].steps`, comments included, and `track` only exists for a named timer (`~_oven{...}`). A section without a preparation has no `miseEnPlace` entry and no `prep` block, so `miseEnPlace` is not indexed by section: find an entry by its `section` field, never by its position in the array. `intermediates` (on a `gather` line) says how many of the gathered ingredients are intermediates (`&dough`), and `intermediate` (on a `prepare` line) that the prepared ingredient is one; both are left out otherwise. An intermediate is made during the recipe, so the `upfront` schedule doesn't gather it at the start: that part of a section's preparation is a second `prep` block, right before the section, so a section can have two `prep` blocks in `upfront` and `perSession`: the one planned later has `deferred: true`. `items` is present on a `prep` block only when it carries part of its section's entry (the rest being in the other block): read the entry's items otherwise.
 
 Where a field comes from, so that you know what to trust and what to recompute:
 
@@ -111,7 +119,7 @@ These fields keep the same values and the same meaning until 2.0.0, but you shou
 | `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedules` |
 | `calculatePreparationTime().breakdown` | The `items` of `computeMiseEnPlace()` (`calculatePreparationTime()` still returns `total`) |
 
-`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in both schedules. Note that the old `metrics.totalTime` is the total of the `upfront` schedule.
+`metrics.preparationTime` and `metrics.activeTime` are **not** deprecated: they are the same in every schedule. Note that the old `metrics.totalTime` is the total with every preparation first, which is the `upfront` schedule's total unless the recipe has intermediates: `upfront` gathers them once they exist, so it can be shorter.
 
 The [Deprecated features](/docs/how-to/deprecations) page shows before and after code for each of them.
 :::
@@ -170,18 +178,25 @@ function generateShoppingList(
 function calculatePreparationTime(
   sections: ProcessedSection[],
   registry: Registry,
-  mise?: SectionMiseEnPlace[], // the split below, when you already have it
+  mise?: SectionMiseEnPlace[], // since 1.4.0: the split below, when you already have it
 ): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` is deprecated, see below
 
+// Since 1.4.0: the mise en place split and the timelines
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ the `miseEnPlace` field of a compiled recipe, derived from its sections
 
-type ScheduleMode = "perSection" | "upfront"
-const SCHEDULE_MODES: readonly ["perSection", "upfront"]
+type ScheduleMode = "perSection" | "upfront" | "perSession"
+const SCHEDULE_MODES: readonly ["perSection", "upfront", "perSession"]
 const DEFAULT_SCHEDULE_MODE: ScheduleMode // "perSection"
 function isScheduleMode(value: unknown): value is ScheduleMode
 function scheduleFor(compiled, mode?: ScheduleMode): Schedule | undefined
 function scheduleTimes(compiled, mode?: ScheduleMode): { totalTime: number; idleTime: number }
+
+// Since 1.4.0: the longest duration Gram plans with (1000 years, see DURATION_OUT_OF_RANGE)
+const MAX_DURATION_MINUTES: number // 525_600_000
+function quantityToMinutes(qty): number // a time quantity ({ value, unit }) in minutes, capped at ±MAX_DURATION_MINUTES since 1.4.0
+function isDurationTooLong(qty): boolean // true when the quantity asks for more than MAX_DURATION_MINUTES
+function maxDurationIn(unit: string): number // MAX_DURATION_MINUTES expressed in `unit` ("min", "h", "d"…)
 ```
 
 ## `RecipeRegistry`

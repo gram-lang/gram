@@ -22,7 +22,7 @@ The processor walks through every section and step in the AST sequentially to bu
   - **Phase 2 (Backward Pass)**: It walks backward from the end of the recipe (`alap.ts`). When a step consumes an intermediate (`&name`), the engine records this dependency to find the latest possible time it must be ready. It also processes explicit section retro-planning anchors (`~{-1d}`). The step that produces the intermediate is then scheduled *just-in-time* so it finishes exactly when needed.
   - **Phase 3 (Serialization)**: The engine evaluates "Named Tracks" logic (`tracks.ts`), ensuring that sequential background timers sharing the same name (e.g., `~_oven`) do not overlap, adjusting their start times chronologically to avoid contention.
   - **Phase 4 (Positive Rebasing)**: Finally (`rebase.ts`), if any steps were pushed into negative time (e.g. starting a day before serving), the entire timeline is shifted forward by the absolute minimum start time (T-Zero). This guarantees the final timeline strictly contains positive absolute times starting exactly at 0, making it easy for user interfaces to consume.
-  - **Phase 5 (Mise en place, two timelines)** *(since 1.4.0)*: The preparation of each section (see the metrics below) is then planned in two ways. The **upfront** timeline is the result above pushed back by the total preparation time, with every preparation laid end to end from 0. The **per-section** timeline runs the backward pass again on a copy of the steps, this time with each section's preparation inserted as a step at the head of that section: the existing chaining then makes it end exactly when the section's first real step starts, and lets it overlap the rest of an earlier step. Both are stored in the result, and the reader picks one.
+  - **Phase 5 (Mise en place, three timelines)** *(since 1.4.0)*: The preparation of each section (see the metrics below) is then planned in three ways by one engine, which runs the backward pass again on a copy of the steps with the preparation inserted as steps of its own, one group of sections at a time: the existing chaining then makes each end exactly when the work it precedes starts, and lets it overlap the rest of an earlier step. The **per-section** timeline has one group per section, with its preparation at the head of that section. The **upfront** timeline has a single group, so all the preparation is gathered at the head of the first section. The **per-session** timeline has one group per working day (the day comes from the sections' `~{-Nd}` anchors, in one backward pass over the sections), so each day starts with its own preparation. In a group, an intermediate (`&dough`) made by a section of the same group doesn't exist when the group starts: its preparation is planned right before the section that uses it. All three are stored in the result, and the reader picks one.
 
 ```mermaid
 flowchart LR
@@ -31,7 +31,7 @@ flowchart LR
     P2 --> P3["Phase 3: Serialization<br/><i>Named Tracks Queueing</i>"]
     P3 --> P4["Phase 4: Rebasing<br/><i>Shift T-Zero to 0</i>"]
     P4 --> P5["Phase 5: Mise en place<br/><i>Two timelines</i>"]
-    P5 --> Result["⚙️ CompilationResult<br/><i>(schedules.perSection / upfront)</i>"]
+    P5 --> Result["⚙️ CompilationResult<br/><i>(schedules.perSection / upfront / perSession)</i>"]
 ```
 
   ::: tip
@@ -46,7 +46,7 @@ The Kitchen calculates four time metrics, combined in `core.ts`:
 - **Preparation time (`preparationTime`)**: *Independent of timers.* The *mise en place* overhead: 1 minute for every unique ingredient and cookware item, plus an additional 2 minutes for every ingredient or cookware item that requires a preparation note (e.g. `@onion(peeled and chopped)`). An ingredient is counted once, in the first section that uses it; an intermediate (`&dough`) is counted where it is used, not where it is made.
 - **Total time**: `preparationTime + activeTime + idle time`, read from `schedules` too, since it depends on when the preparation happens.
 
-*(Since 1.4.0)* The preparation time is not just a total: it is split per section in `miseEnPlace`, a list where each entry says which section it belongs to and what it is made of (gathering ingredients, gathering cookware, preparing one ingredient). The sum of the entries is `preparationTime`. The two timelines in `schedules` (`perSection` and `upfront`) place these entries differently.
+*(Since 1.4.0)* The preparation time is not just a total: it is split per section in `miseEnPlace`, a list where each entry says which section it belongs to and what it is made of (gathering ingredients, gathering cookware, preparing one ingredient). The sum of the entries is `preparationTime`. The three timelines in `schedules` (`perSection`, `upfront` and `perSession`) place these entries differently.
 
 :::note[Deprecated in 1.4.0]
 The old timing fields (`timings` and `backgroundTasks` on each step, and `metrics.totalTime`, `idleTime`, `activeBreakdown`, `prepBreakdown` and `totalBreakdown`) still hold the same values and meaning, but are deprecated and removed in 2.0.0. Read `schedules` and `miseEnPlace` instead. See the [Kitchen API reference](/docs/reference/api/kitchen).

@@ -1,15 +1,20 @@
 import { describe, expect, it } from "bun:test";
-import { buildUpfrontSchedule } from "../../src/schedule/build";
-import { computeTimeline } from "../../src/schedule/rebase";
+import { buildSchedule } from "../../src/schedule/build";
+import type { StepSchedule } from "../../src/schedule/types";
 import type {
-	ScheduledPassiveTask,
-	StepSchedule,
-} from "../../src/schedule/types";
-import type {
+	MiseEnPlaceItem,
 	ProcessedSection,
 	ProcessedStep,
 	SectionMiseEnPlace,
 } from "../../src/types";
+
+// One-minute gathers, so a section's mise en place lasts `count` minutes.
+const gather = (count: number): MiseEnPlaceItem => ({
+	kind: "gather",
+	target: "ingredient",
+	count,
+	duration: count,
+});
 
 function makeStep(): ProcessedStep {
 	return {
@@ -29,9 +34,11 @@ function fixture() {
 		productionTime: 5,
 		produced: [],
 		consumed: [],
-		passiveTasks: [],
-		ls: -20,
-		lf: -15,
+		passiveTasks: [
+			{ name: "oven", duration: 30, localOffset: 0, isNamed: true },
+		],
+		ls: 0,
+		lf: 0,
 	};
 	const b: StepSchedule = {
 		sectionIndex: 1,
@@ -42,15 +49,8 @@ function fixture() {
 		produced: [],
 		consumed: [],
 		passiveTasks: [],
-		ls: -10,
+		ls: 0,
 		lf: 0,
-	};
-	const passive: ScheduledPassiveTask = {
-		sched: a,
-		task: { name: "oven", duration: 30, localOffset: 0, isNamed: true },
-		theoreticalStart: -15,
-		actualStart: -15,
-		actualEnd: 15,
 	};
 	const sections: ProcessedSection[] = [a, b].map((s) => ({
 		title: null,
@@ -59,63 +59,82 @@ function fixture() {
 		steps: [s.stepObj as ProcessedStep],
 	}));
 	const mise: SectionMiseEnPlace[] = [
-		{ section: 0, duration: 3, items: [] },
-		{ section: 1, duration: 2, items: [] },
+		{ section: 0, duration: 3, items: [gather(3)] },
+		{ section: 1, duration: 2, items: [gather(2)] },
 	];
-	return { schedules: [a, b], passives: [passive], sections, mise };
+	return { schedules: [a, b], sections, mise };
 }
 
-describe("buildUpfrontSchedule", () => {
-	it("lays the preparations end to end from T0", () => {
-		const { schedules, passives, sections, mise } = fixture();
-		const legacy = computeTimeline(schedules, passives, sections);
-		const up = buildUpfrontSchedule(legacy, mise, 5, 15);
+describe('buildSchedule("upfront")', () => {
+	it("lays the preparations end to end, right before the first step", () => {
+		const { schedules, sections, mise } = fixture();
+		const { schedule } = buildSchedule(
+			"upfront",
+			schedules,
+			mise,
+			sections,
+			[],
+			5,
+			15,
+		);
 
-		const preps = up.blocks.filter((b) => b.kind === "prep");
+		const preps = schedule.blocks.filter((b) => b.kind === "prep");
 		expect(preps).toEqual([
 			{ kind: "prep", section: 0, start: 0, end: 3 },
 			{ kind: "prep", section: 1, start: 3, end: 5 },
 		]);
+		const first = schedule.blocks.find((b) => b.kind === "step")!;
+		expect(first.start).toBe(5);
 	});
 
-	it("pushes every step and passive block back by the preparation time", () => {
-		const { schedules, passives, sections, mise } = fixture();
-		const legacy = computeTimeline(schedules, passives, sections);
-		const up = buildUpfrontSchedule(legacy, mise, 5, 15);
+	it("reports total and idle time, and a single session", () => {
+		const { schedules, sections, mise } = fixture();
+		const { schedule } = buildSchedule(
+			"upfront",
+			schedules,
+			mise,
+			sections,
+			[],
+			5,
+			15,
+		);
 
-		const shifted = up.blocks.filter((b) => b.kind !== "prep");
-		expect(shifted).toHaveLength(legacy.blocks.length);
-		for (const b of shifted) {
-			const orig = legacy.blocks.find(
-				(o) =>
-					o.kind === b.kind &&
-					o.section === b.section &&
-					"step" in o &&
-					"step" in b &&
-					o.step === b.step,
-			)!;
-			expect(b.start).toBe(orig.start + 5);
-			expect(b.end).toBe(orig.end + 5);
-		}
+		const maxEnd = Math.max(...schedule.blocks.map((b) => b.end));
+		expect(schedule.totalTime).toBe(maxEnd);
+		expect(schedule.idleTime).toBe(maxEnd - 15 - 5);
+		expect(schedule.sessions).toEqual([
+			{ day: 0, start: 0, end: 20, sections: [0, 1] },
+		]);
 	});
 
-	it("adds the preparation to the legacy total, and keeps the track name", () => {
-		const { schedules, passives, sections, mise } = fixture();
-		const legacy = computeTimeline(schedules, passives, sections);
-		const up = buildUpfrontSchedule(legacy, mise, 5, 15);
-
-		expect(up.totalTime).toBe(legacy.workflowDuration + 5);
-		expect(up.idleTime).toBe(up.totalTime - 15 - 5);
-		const passive = up.blocks.find((b) => b.kind === "passive");
+	it("keeps the track name of a named passive block", () => {
+		const { schedules, sections, mise } = fixture();
+		const { schedule } = buildSchedule(
+			"upfront",
+			schedules,
+			mise,
+			sections,
+			[],
+			5,
+			15,
+		);
+		const passive = schedule.blocks.find((b) => b.kind === "passive");
 		expect(passive && "track" in passive && passive.track).toBe("oven");
 	});
 
 	it("leaves anonymous passive blocks without a track key", () => {
-		const { schedules, passives, sections, mise } = fixture();
-		passives[0]!.task.isNamed = false;
-		const legacy = computeTimeline(schedules, passives, sections);
-		const up = buildUpfrontSchedule(legacy, mise, 5, 15);
-		const passive = up.blocks.find((b) => b.kind === "passive")!;
+		const { schedules, sections, mise } = fixture();
+		schedules[0]!.passiveTasks[0]!.isNamed = false;
+		const { schedule } = buildSchedule(
+			"upfront",
+			schedules,
+			mise,
+			sections,
+			[],
+			5,
+			15,
+		);
+		const passive = schedule.blocks.find((b) => b.kind === "passive")!;
 		expect("track" in passive).toBe(false);
 	});
 });

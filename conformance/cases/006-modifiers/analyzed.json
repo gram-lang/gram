@@ -353,7 +353,8 @@
           "kind": "gather",
           "target": "ingredient",
           "count": 1,
-          "duration": 1
+          "duration": 1,
+          "intermediates": 1
         }
       ]
     }
@@ -389,6 +390,17 @@
           "start": 7,
           "end": 9
         }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 9,
+          "sections": [
+            0,
+            1
+          ]
+        }
       ]
     },
     "upfront": {
@@ -402,17 +414,18 @@
           "end": 4
         },
         {
-          "kind": "prep",
-          "section": 1,
-          "start": 4,
-          "end": 5
-        },
-        {
           "kind": "step",
           "section": 0,
           "step": 0,
-          "start": 5,
-          "end": 7
+          "start": 4,
+          "end": 6
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 6,
+          "end": 7,
+          "deferred": true
         },
         {
           "kind": "step",
@@ -420,6 +433,61 @@
           "step": 0,
           "start": 7,
           "end": 9
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 9,
+          "sections": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 9,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 4,
+          "end": 6
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 6,
+          "end": 7,
+          "deferred": true
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 7,
+          "end": 9
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 9,
+          "sections": [
+            0,
+            1
+          ]
         }
       ]
     }

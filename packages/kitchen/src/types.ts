@@ -208,11 +208,19 @@ export type MiseEnPlaceItem =
 			target: "ingredient" | "cookware";
 			count: number;
 			duration: number;
+			/**
+			 * How many of `count` are intermediates (`&dough`), present only when
+			 * above zero. They are made during the recipe, so they can't be gathered
+			 * before it starts.
+			 */
+			intermediates?: number;
 	  }
 	| {
 			kind: "prepare";
 			ref: { type: "ingredient" | "cookware"; id: string };
 			duration: number;
+			/** The ingredient is an intermediate (`&dough`); present only when true. */
+			intermediate?: true;
 	  };
 
 /**
@@ -226,7 +234,19 @@ export interface SectionMiseEnPlace {
 }
 
 export type ScheduleBlock =
-	| { kind: "prep"; section: number; start: number; end: number }
+	| {
+			kind: "prep";
+			section: number;
+			start: number;
+			end: number;
+			/** Preparation of an intermediate, planned later than the rest of the section's. */
+			deferred?: true;
+			/**
+			 * The part of the section's mise en place this block carries, present only
+			 * when it isn't all of it (some of it was deferred or gathered elsewhere).
+			 */
+			items?: MiseEnPlaceItem[];
+	  }
 	| {
 			kind: "step";
 			section: number;
@@ -243,11 +263,24 @@ export type ScheduleBlock =
 			end: number;
 	  };
 
+/**
+ * One working day of a timeline: `day` is 0 for the day itself, 1 for the day
+ * before (`~{-1d}`), and so on. `start`/`end` bound its active work (passive
+ * waiting is left out) and `sections` lists the sections prepared that day.
+ */
+export interface ScheduleSession {
+	day: number;
+	start: number;
+	end: number;
+	sections: number[];
+}
+
 /** A complete timeline, in minutes from T0 = 0, preparation included. */
 export interface Schedule {
 	totalTime: number; // max(end) over blocks
 	idleTime: number; // totalTime - metrics.activeTime - metrics.preparationTime
 	blocks: ScheduleBlock[]; // sorted by start, then end
+	sessions: ScheduleSession[]; // one per working day, furthest day first
 }
 
 export interface TimeBreakdownItem {
@@ -287,8 +320,9 @@ export interface CompilationResult {
 	/** What preparing each section costs — independent of the chosen schedule. */
 	miseEnPlace: SectionMiseEnPlace[];
 	/**
-	 * Two complete timelines: preparation right before each section
-	 * (`perSection`), or all of it at the start (`upfront`).
+	 * Three complete timelines: preparation right before each section
+	 * (`perSection`), all of it at the start (`upfront`), or gathered at the
+	 * start of each working day (`perSession`).
 	 */
 	schedules: Record<ScheduleMode, Schedule>;
 }

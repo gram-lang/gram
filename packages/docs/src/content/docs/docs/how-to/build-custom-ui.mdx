@@ -69,7 +69,7 @@ import Since from '../../../../components/Since.astro';
    - `sections` *(array)*: The actual instructions, broken down by recipe section.
    - `metrics` *(object)*: `preparationTime` and `activeTime` in minutes, plus mass and nutrition when the recipe went through the analyzer.
    - `miseEnPlace` *(array)*: What preparing each section costs, one entry per section that has a preparation.
-   - `schedules` *(object)*: Two complete timelines, `perSection` and `upfront`, each with a `totalTime`, an `idleTime` and a list of `blocks`.
+   - `schedules` *(object)*: Three complete timelines, `perSection`, `upfront` and `perSession`, each with a `totalTime`, an `idleTime`, a list of `blocks` and its working-day `sessions`.
    - `generator` *(string)*: Which version of the compiler wrote this JSON.
    
    Unknown fields and unknown block `kind` values should be ignored, so your UI keeps working when a minor version adds new ones.
@@ -178,11 +178,12 @@ import Since from '../../../../components/Since.astro';
    
    <Since v="1.4.0" />
    
-   To draw a Gantt chart or a schedule, read the blocks of one of the two timelines. Every time is in minutes from `0` and already includes the preparation:
+   To draw a Gantt chart or a schedule, read the blocks of one of the three timelines. Every time is in minutes from `0` and already includes the preparation:
    
    ```typescript
    // 'perSection': each section's preparation right before it.
    // 'upfront': all the preparation at the start.
+   // 'perSession': the preparation of each working day at the start of that day.
    const schedule = recipe.schedules[chosenMode];
    
    for (const block of schedule.blocks) {

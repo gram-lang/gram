@@ -36,7 +36,7 @@ All three formatters share a single traversal architecture (`RenderBackend`), en
 | `formatFraction` | `(value: number) => string` | Custom decimal → fraction formatter (default: common fractions like `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (default: e.g. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (the shopping list and each section's ingredient list are unaffected). |
-| `schedule` | `'perSection' \| 'upfront'` | *(Since 1.4.0)* Which of the recipe's two timelines to follow: mise en place right before each section (`'perSection'`, the default) or all at the start (`'upfront'`). Drives the total and idle times in the header, and in HTML a "Mise en place" label on each section's ingredient list (`'perSection'` only; the duration and detail show on hover). Ingredient lists are the same in both. Markdown and print show only the header times. |
+| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Which of the recipe's three timelines to follow: mise en place right before each section (`'perSection'`, the default), all at the start (`'upfront'`) or at the start of each working day (`'perSession'`). Drives the total and idle times in the header. With `'perSection'`, HTML shows a "Mise en place" label on each section's ingredient list (the duration and detail show on hover). With the other two, HTML, Markdown and print open each session with one "Mise en place" block (labelled `D-3`, `D-1`, `Day D`... when the recipe spans several days), and HTML keeps a label on a section only for what has to wait, an intermediate made the same day. Ingredient lists are the same in all three. |
 | `bakersMathOnly` | `boolean` | Show only baker's percentages, hiding absolute quantities. |
 | `interactiveScaling` | `boolean` | Render interactive portion/ingredient scaling controls (HTML only). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Which nutrition basis to display. `'auto'` (the default) shows per-portion when the recipe declares a portion count, otherwise the whole recipe. |
@@ -76,7 +76,7 @@ handle.dispose();
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for UI translations via `@gram-lang/i18n`. |
 | `gapThresholdMinutes` | `number` | Minimum idle gap duration in minutes before gap compression is applied (default: `60`). `Infinity` never compresses. |
 | `compressedGapSize` | `number` | Virtual minute width that compressed idle gaps collapse down to (default: `20`); never wider than the gap itself. |
-| `schedule` | `'perSection' \| 'upfront'` | *(Since 1.4.0)* Which timeline to draw (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section or all at the start. It reads `schedules[schedule].blocks` from the compiled recipe. |
+| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Which timeline to draw (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section, all at the start or at the start of its working day; with `'perSession'` a marker labels each day. It reads `schedules[schedule].blocks` from the compiled recipe. |
 
 ### `GanttInteractivityOptions`
 

@@ -168,10 +168,11 @@ const scheduleOptions = computed(() => [
 		value: "perSection",
 	},
 	{ label: t.value.renderer.scheduleUpfront, value: "upfront" },
+	{ label: t.value.renderer.schedulePerSession, value: "perSession" },
 ]);
 
 // Only the views that draw a timeline or a mise en place depend on it: the
-// JSON, AST and tree views always carry both schedules.
+// JSON, AST and tree views always carry every schedule.
 // biome-ignore lint/correctness/noUnusedVariables: showScheduleSelector is used in the <template> block below, which Biome's Vue support doesn't see.
 const showScheduleSelector = computed(() =>
 	["preview", "gantt", "markdown"].includes(viewMode.value),

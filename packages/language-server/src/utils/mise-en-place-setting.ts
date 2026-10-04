@@ -6,7 +6,7 @@ import {
 
 /**
  * Reads `gram.miseEnPlace` out of whatever `getConfiguration("gram")` hands
- * back. Anything that isn't one of the two known values — a missing key, a
+ * back. Anything that isn't a known schedule mode — a missing key, a
  * typo, a client that returned nothing — falls back to the default, so a bad
  * setting can never blank the preview.
  */

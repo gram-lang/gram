@@ -90,7 +90,7 @@ gram view brioche.gram --scale farine=300g  # Voir ajusté pour farine = 300g
 - Le flag `--scale` ajuste toutes les quantités d'ingrédients (liste de courses *et* références *inline* dans les étapes).
 - Options : `--scale <facteur|réf>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée : juste avant chaque section (`per-section`, par défaut) ou tout au début (`upfront`). Les temps total et d'attente de l'en-tête suivent ce choix ; les temps actif et de préparation restent les mêmes. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée : juste avant chaque section (`per-section`, par défaut), tout au début (`upfront`) ou au début de chaque journée de travail (`per-session`). Les temps total et d'attente de l'en-tête suivent ce choix ; les temps actif et de préparation restent les mêmes. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### `gram import <source>`
 Importe une recette depuis une page web, un fichier JSON-LD local ou une vidéo / Short YouTube, et la convertit en un fichier `.gram` à l'aide de l'IA.
@@ -257,7 +257,7 @@ gram print brioche.gram --no-open         # Ne pas ouvrir, imprimer le chemin su
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes.
 - Options : `--no-open`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente imprimés dans l'en-tête. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente imprimés dans l'en-tête. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### `gram export <fichier>`
 Exporte une recette vers Markdown ou HTML prêt à l'impression.
@@ -272,7 +272,7 @@ gram export brioche.gram --format html --scale 2       # exporter aux quantités
 - `--no-step-qty` — masque les quantités d'ingrédients dans le texte des étapes. **Format HTML uniquement** — sans effet avec `--format md`.
 - Options : `--format md|html`, `--output <chemin>`, `--scale <facteur|réf>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <base>`, `--mise-en-place <mode>`.
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> choisit la base nutritionnelle affichée (par défaut `auto` : par portion quand la recette déclare `portions:`, sinon toute la recette). `per-100g` est rapporté pour 100 g du mélange brut assemblé — voir [Estimation nutritionnelle](/fr/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente de l'en-tête exporté. En HTML, `per-section` ajoute aussi un libellé « Mise en place » sur la liste d'ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> choisit quand la mise en place est planifiée (par défaut `per-section`), ce qui change les temps total et d'attente de l'en-tête exporté. En HTML, `per-section` ajoute aussi un libellé « Mise en place » sur la liste d'ingrédients de chaque section. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### `gram format [motif]`
 Formate automatiquement les fichiers `.gram` (*in-place*) en appliquant 13 règles canoniques via le package `@gram-lang/format`.

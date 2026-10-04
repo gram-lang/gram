@@ -49,8 +49,15 @@ describe("compiled mise en place and schedules", () => {
 
 	it("keeps the deprecated fields' values and meaning", () => {
 		const result = compile(getAST(RECIPE));
-		// The legacy total is the upfront timeline's total.
-		expect(result.metrics.totalTime).toBe(result.schedules.upfront.totalTime);
+		// The legacy total is every preparation first. The upfront timeline can
+		// be shorter, as it gathers an intermediate once it exists.
+		expect(result.schedules.upfront.totalTime).toBeLessThanOrEqual(
+			result.metrics.totalTime,
+		);
+		const plain = compile(
+			getAST("## Bake\n\nBake @flour{500g} for ~{20min}.\n"),
+		);
+		expect(plain.metrics.totalTime).toBe(plain.schedules.upfront.totalTime);
 		expect(result.metrics.preparationTime).toBe(
 			result.miseEnPlace.reduce((sum, m) => sum + m.duration, 0),
 		);
@@ -84,6 +91,40 @@ Spread &filling{100g} over &dough{200g}.
 		expect(gathered(result, 0)).toBe(2); // flour, water
 		expect(gathered(result, 1)).toBe(1); // onions
 		expect(gathered(result, 2)).toBe(2); // &filling, &dough
+	});
+
+	it("says how many of the gathered ingredients are intermediates", () => {
+		const gather = (section: number) =>
+			compile(getAST(SOURCE))
+				.miseEnPlace.find((m) => m.section === section)
+				?.items.find((i) => i.kind === "gather" && i.target === "ingredient");
+		expect(gather(2)).toMatchObject({ count: 2, intermediates: 2 });
+		// Nothing to say when there is none: the field is left out.
+		expect(gather(0)).not.toHaveProperty("intermediates");
+	});
+
+	it("never plans an intermediate's preparation before the section making it", () => {
+		const { upfront } = compile(getAST(SOURCE)).schedules;
+		const preps = upfront.blocks.filter((b) => b.kind === "prep");
+		const lastStepOf = (section: number) =>
+			Math.max(
+				...upfront.blocks
+					.filter((b) => b.kind === "step" && b.section === section)
+					.map((b) => b.end),
+			);
+
+		// What can be gathered now: flour and water, then onions (and slicing them).
+		const head = preps.filter((b) => b.section < 2);
+		expect(head.map((b) => [b.start, b.end])).toEqual([
+			[0, 2],
+			[2, 5],
+		]);
+		// &filling and &dough wait until both are made.
+		const later = preps.filter((b) => b.section === 2);
+		expect(later).toHaveLength(1);
+		expect(later[0]?.start).toBeGreaterThanOrEqual(
+			Math.max(lastStepOf(0), lastStepOf(1)),
+		);
 	});
 
 	it("keeps the total the same wherever the intermediates are charged", () => {
@@ -237,5 +278,104 @@ Spread &filling{100g} over &dough{200g}.
 				calculatePreparationTime(result.sections, registry, mise).total,
 			).toBe(result.metrics.preparationTime);
 		});
+	});
+});
+
+describe("mise en place per working day (perSession)", () => {
+	// Day -3: a cream that rests; day -1: a crust made from it, then assembly.
+	const SOURCE = `## Cream ->&cream ~{-3d}
+
+Whisk @milk{500ml} and @eggs{4}.
+
+[Rest] Chill ~_{12h}.
+
+## Crust ->&crust ~{-1d}
+
+Mix &cream{100g} and @flour{200g}.
+
+## Pie ~{-1d}
+
+Fill with &crust{300g} and bake ~{30min}.
+`;
+
+	const compiled = () => compile(getAST(SOURCE)).schedules.perSession;
+
+	it("makes one session per anchored day, furthest first", () => {
+		const { sessions } = compiled();
+		expect(sessions.map((s) => [s.day, s.sections])).toEqual([
+			[3, [0]],
+			[1, [1, 2]],
+		]);
+		expect(sessions[0]!.end).toBeLessThanOrEqual(sessions[1]!.start);
+	});
+
+	it("gathers an intermediate made on an earlier day at the head of the day that uses it", () => {
+		const { blocks, sessions } = compiled();
+		const day1 = sessions[1]!;
+		const gathered = blocks.filter(
+			(b) => b.kind === "prep" && b.section === 1 && !b.deferred,
+		);
+		expect(gathered).toHaveLength(1);
+		// The head of the day: before any step of that day.
+		const firstStep = Math.min(
+			...blocks
+				.filter((b) => b.kind === "step" && day1.sections.includes(b.section))
+				.map((b) => b.start),
+		);
+		expect(gathered[0]!.end).toBeLessThanOrEqual(firstStep);
+		expect(gathered[0]!.start).toBe(day1.start);
+	});
+
+	it("waits to gather an intermediate made the same day", () => {
+		const { blocks } = compiled();
+		const deferred = blocks.filter((b) => b.kind === "prep" && b.deferred);
+		// &crust is made on day 1 and used by the pie.
+		const crust = deferred.find((b) => b.section === 2)!;
+		expect(crust).toBeDefined();
+		const crustEnd = Math.max(
+			...blocks
+				.filter((b) => b.kind === "step" && b.section === 1)
+				.map((b) => b.end),
+		);
+		expect(crust.start).toBeGreaterThanOrEqual(crustEnd);
+	});
+
+	it("is one session, like upfront, without an anchor of a day or more", () => {
+		const { schedules } = compile(getAST(RECIPE));
+		expect(schedules.perSession.sessions).toHaveLength(1);
+		expect(schedules.perSession.blocks).toEqual(schedules.upfront.blocks);
+	});
+
+	it("does not open a day for a long passive timer without a section anchor", () => {
+		const { schedules } = compile(
+			getAST(
+				"## Cream\n\nWhisk @milk{500ml}.\n\n[Rest] Chill ~_{48h}.\n\n## Pie\n\nBake @flour{200g} ~{30min}.\n",
+			),
+		);
+		expect(schedules.perSession.sessions).toHaveLength(1);
+		expect(schedules.perSession.sessions[0]!.day).toBe(0);
+	});
+
+	it("keeps a section anchored under 24 hours on the day itself", () => {
+		const { schedules } = compile(
+			getAST(
+				"## Poolish ~{-18h} ->&poolish\n\nMix @flour{100g}.\n\n## Bread\n\nKnead &poolish{100g}.\n",
+			),
+		);
+		expect(schedules.perSession.sessions.map((s) => s.day)).toEqual([0]);
+	});
+
+	it("keeps the same preparation and active time as the other schedules", () => {
+		const { schedules, metrics } = compile(getAST(SOURCE));
+		for (const mode of ["perSection", "upfront", "perSession"] as const) {
+			const s = schedules[mode];
+			const prep = s.blocks
+				.filter((b) => b.kind === "prep")
+				.reduce((sum, b) => sum + b.end - b.start, 0);
+			expect(prep).toBeCloseTo(metrics.preparationTime);
+			expect(s.idleTime).toBeCloseTo(
+				s.totalTime - metrics.activeTime - metrics.preparationTime,
+			);
+		}
 	});
 });

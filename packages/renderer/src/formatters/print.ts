@@ -27,6 +27,7 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
+import { sessionMiseEnPlace } from "../mise-en-place";
 
 const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -541,7 +542,27 @@ const printBackend: RenderBackend = {
 			: context;
 
 		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
-		for (const sec of data.sections) {
+		const t = getDictionary(options.lang);
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const sessionBlocks = sessionMiseEnPlace(
+			data,
+			options.schedule,
+			t.renderer,
+			formatDuration,
+		);
+		for (const [sectionIdx, sec] of data.sections.entries()) {
+			// The mise en place gathered at the start of a working day.
+			const session = sessionBlocks.get(sectionIdx);
+			if (session) {
+				body += `<section class="mise-en-place-session">\n  <p><strong>${escapeHtml(session.heading)}</strong> <small>(${escapeHtml(formatDuration(session.duration))})</small></p>\n  <ul>\n`;
+				for (const line of session.lines) {
+					const prefix = line.title
+						? `<em>${escapeHtml(line.title)}</em>${escapeHtml(t.renderer.colon)}`
+						: "";
+					body += `    <li>${prefix}${escapeHtml(line.text)}</li>\n`;
+				}
+				body += `  </ul>\n</section>\n`;
+			}
 			body += `<section>\n`;
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);

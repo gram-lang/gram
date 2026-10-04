@@ -19,7 +19,7 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 - **Timeline Panel**: Run `Gram: Gantt Chart` (or click the graph icon in the editor toolbar) to open a dedicated timeline view of the recipe — active preparation steps, background timers, and idle-time compression — in its own WebView panel, independent from the Live Preview.
 - **Time Modes**: Switch between elapsed time (stopwatch, T+), countdown (T-), and clock time based on a target serve time, via the panel's options dropdown.
 - **Compact View**: Toggle a tighter row layout for recipes with many overlapping steps.
-- **Mise en place**: Each section's preparation is drawn as a dashed block in the section's colour, right before that section by default, or all at the start (see the `gram.miseEnPlace` setting below).
+- **Mise en place**: Each section's preparation is drawn as a dashed block in the section's colour, right before that section by default, all at the start, or at the start of each working day (see the `gram.miseEnPlace` setting below).
 
 #### The `gram.miseEnPlace` setting (since 1.4.0)
 
@@ -27,6 +27,7 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 |---|---|
 | `perSection` (default) | Each section's mise en place is planned right before that section. |
 | `upfront` | All the mise en place is planned at the start of the recipe. |
+| `perSession` | The mise en place of each working day is planned at the start of that day (the days come from the sections' `~{-Nd}` anchors). |
 
 The setting drives the live preview, the Gantt chart and the total time hint next to the recipe title. It changes the total and idle times, not the ingredient lists, and it applies immediately to every open recipe, without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 

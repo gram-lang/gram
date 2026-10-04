@@ -187,7 +187,7 @@ export async function buildViewModel(
 			: null;
 
 	// Total and rest time follow the chosen timeline; active and preparation
-	// time are the same in both.
+	// time are the same in all of them.
 	const m = compiled.metrics;
 	const { totalTime: total, idleTime: rest } = scheduleTimes(
 		compiled,

@@ -1,12 +1,13 @@
 import type { Schedule } from "./types";
 
 /**
- * The two complete timelines a compiled recipe carries: mise en place right
- * before each section, or all of it at the start. Every package that lets the
+ * The complete timelines a compiled recipe carries: mise en place right
+ * before each section, all of it at the start, or at the start of each working
+ * day. Every package that lets the
  * reader pick one (renderer, CLI, language server, playground) reads its
  * choices, default and validation from here.
  */
-export const SCHEDULE_MODES = ["perSection", "upfront"] as const;
+export const SCHEDULE_MODES = ["perSection", "upfront", "perSession"] as const;
 
 export type ScheduleMode = (typeof SCHEDULE_MODES)[number];
 

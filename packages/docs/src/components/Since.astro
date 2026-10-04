@@ -1,4 +1,6 @@
 ---
+import { changelogAnchor } from "../lib/changelog-anchors";
+
 export interface Props {
 	v: "1.1.0" | "1.2.0" | string;
 	type?: "added" | "changed" | "deprecated";
@@ -46,8 +48,9 @@ function getDefaultReleaseUrl(ver: string, fr: boolean): string {
 	if (ver === "1.1.0") {
 		return `${prefix}/blog/2026-08-16-release-1.1.0`;
 	}
-	// Fallback to changelog anchor
-	return `${prefix}/docs/changelog#${ver.replace(/\./g, "")}`;
+	// Fallback to the release on the changelog page
+	const anchor = changelogAnchor(ver);
+	return `${prefix}/docs/changelog${anchor ? `#${anchor}` : ""}`;
 }
 
 const targetUrl = href || getDefaultReleaseUrl(cleanVersion, isFrench);

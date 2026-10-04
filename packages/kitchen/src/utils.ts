@@ -209,6 +209,7 @@ export const cleanObject = (obj: unknown): unknown => {
 						// Always present in the compiled output, even when empty.
 						"miseEnPlace",
 						"blocks",
+						"sessions",
 					];
 					if (!keepKeys.includes(key)) continue;
 				}

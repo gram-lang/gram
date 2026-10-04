@@ -307,6 +307,24 @@
           "start": 2882,
           "end": 2884
         }
+      ],
+      "sessions": [
+        {
+          "day": 2,
+          "start": 0,
+          "end": 4,
+          "sections": [
+            0
+          ]
+        },
+        {
+          "day": 0,
+          "start": 2881,
+          "end": 2884,
+          "sections": [
+            1
+          ]
+        }
       ]
     },
     "upfront": {
@@ -338,6 +356,67 @@
           "step": 0,
           "start": 2883,
           "end": 2885
+        }
+      ],
+      "sessions": [
+        {
+          "day": 2,
+          "start": 0,
+          "end": 2885,
+          "sections": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 2884,
+      "idleTime": 2877,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 2
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 2,
+          "end": 4
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 2881,
+          "end": 2882
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 2882,
+          "end": 2884
+        }
+      ],
+      "sessions": [
+        {
+          "day": 2,
+          "start": 0,
+          "end": 4,
+          "sections": [
+            0
+          ]
+        },
+        {
+          "day": 0,
+          "start": 2881,
+          "end": 2884,
+          "sections": [
+            1
+          ]
         }
       ]
     }

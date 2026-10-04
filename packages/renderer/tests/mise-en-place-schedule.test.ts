@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
+import { buildTracks } from "../src/gantt/layout";
 import { toGanttHTML, toHTML, toMarkdown, toPrintHTML } from "../src/index";
 
 const SOURCE = `## Dough ->&dough
@@ -104,12 +105,24 @@ describe("HTML — perSection (default)", () => {
 describe("HTML — upfront", () => {
 	const html = toHTML(compiled, { schedule: "upfront" });
 
-	it("has no per-section label: the preparation doesn't happen there", () => {
-		expect(html).not.toContain("section-prep");
+	it("gathers the mise en place in one block before the first section", () => {
+		expect(countOf(html, 'class="mise-en-place-session"')).toBe(1);
+		expect(html.indexOf('class="mise-en-place-session"')).toBeLessThan(
+			html.indexOf("<section>"),
+		);
+		// One session: nothing to tell days apart.
+		expect(html).not.toContain("D-");
+		// Each section's own line.
+		const block = html.match(
+			/<section class="mise-en-place-session">[\s\S]*?<\/section>/,
+		)![0];
+		expect(block).toContain("<em>Dough</em>: ");
+		expect(block).toContain("Preparation: onions");
 	});
 
-	it("has no separate block: the time setting never adds to the lists", () => {
-		expect(html).not.toContain("mise-en-place");
+	it("keeps a per-section label only for what has to wait (the intermediates)", () => {
+		// Assembly weighs out &filling and &dough, which don't exist at the start.
+		expect(countOf(html, '<p class="section-prep">')).toBe(1);
 	});
 
 	it("reads total and idle time from the upfront schedule", () => {
@@ -123,6 +136,10 @@ describe("both schedules describe the same recipe", () => {
 	// The setting is about time: the ingredient lists must not depend on it.
 	const withoutLabels = (html: string) =>
 		html
+			.replace(
+				/<section class="mise-en-place-session">[\s\S]*?<\/section>\s*/g,
+				"",
+			)
 			.replace(/<p class="section-prep">[\s\S]*?<\/p>\s*/g, "")
 			.replace(/<div class="section-prep">[\s\S]*?<\/div>\s*/g, "");
 	const listsOf = (html: string) =>
@@ -170,6 +187,11 @@ describe("backend parity", () => {
 			const strip = (out: string) =>
 				out
 					.replace(/\d+h( \d+m)?|\d+m\b/g, "T")
+					.replace(
+						/<section class="mise-en-place-session">[\s\S]*?<\/section>\s*/g,
+						"",
+					)
+					.replace(/\*\*Mise en place[^\n]*\n\n(- [^\n]*\n)+\n/g, "")
 					.replace(/<p class="section-prep">[\s\S]*?<\/p>\s*/g, "");
 			expect(strip(render({ schedule: "upfront" }))).toBe(
 				strip(render({ schedule: "perSection" })),
@@ -247,6 +269,104 @@ describe("Gantt", () => {
 		const [first] = prepBlocks(toGanttHTML(compiled));
 		expect(first).toContain("data-tooltip=");
 		expect(first).toContain("Ingredients lookup");
+	});
+});
+
+// Day -3: a cream that rests; day -1: a crust made from it, then the pie; the
+// last section has no anchor, so it falls on the day itself.
+const MULTI_DAY = `## Cream ~{-3d} ->&cream
+
+Whisk @milk{500ml} and @eggs{4}.
+
+[Rest] Chill ~_{12h}.
+
+## Crust ~{-30h} ->&crust
+
+Mix &cream{100g} and @flour{200g}.
+
+## Pie ~{-24h}
+
+Fill with &crust{300g} and bake ~{30min}.
+
+## Serve
+
+Dust with @sugar{10g}.
+`;
+
+describe("perSession", () => {
+	const multi = compile(getAST(MULTI_DAY));
+	const options = { schedule: "perSession" } as const;
+
+	it("opens each working day with its mise en place, labelled D-N", () => {
+		const html = toHTML(multi, options);
+		expect(countOf(html, 'class="mise-en-place-session"')).toBe(3);
+		expect(html).toContain("Mise en place — D-3");
+		expect(html).toContain("Mise en place — D-1");
+		expect(html).toContain("Mise en place — Day D");
+		expect(html.indexOf("D-3")).toBeLessThan(html.indexOf("D-1"));
+		expect(html.indexOf("D-1")).toBeLessThan(html.indexOf("Day D"));
+	});
+
+	it("says Jour J in French for the day itself", () => {
+		const html = toHTML(
+			compile(
+				getAST(
+					"## Prep ~{-2d}\n\nChop @onions{1}.\n\n## Cook\n\nFry @butter{10g}.\n",
+				),
+			),
+			{ ...options, lang: "fr" },
+		);
+		expect(html).toContain("Mise en place — J-2");
+		expect(html).toContain("Mise en place — Jour J");
+	});
+
+	it("gathers on day D-1 what the crust needs from D-3, and defers the same-day intermediate", () => {
+		const html = toHTML(multi, options);
+		const day1 = html.slice(html.indexOf("D-1"), html.indexOf("Day D"));
+		expect(day1).toContain("<em>Crust</em>");
+		// &crust is made on D-1 and used by the pie: not gathered at the head of
+		// the day, but labelled in the pie's own section.
+		expect(day1).not.toContain("<em>Pie</em>");
+		expect(countOf(html, '<p class="section-prep">')).toBe(1);
+	});
+
+	it("writes the same blocks in markdown and print", () => {
+		const md = toMarkdown(multi, options);
+		expect(md).toContain("**Mise en place — D-3**");
+		expect(md).toContain("**Mise en place — D-1**");
+		expect(md).toContain("**Mise en place — Day D**");
+		const print = toPrintHTML(multi, options);
+		expect(print).toContain("Mise en place — D-3");
+		expect(print).toContain("Mise en place — D-1");
+	});
+
+	it("escapes a section title written in the block", () => {
+		const evil = compile(
+			getAST(
+				"## <img src=x onerror=alert(1)> ~{-1d}\n\nChop @onions{1}.\n\n## Cook\n\nFry @butter{10g}.\n",
+			),
+		);
+		for (const out of [toHTML(evil, options), toPrintHTML(evil, options)]) {
+			expect(out).not.toContain("<img src=x");
+		}
+	});
+
+	it("marks each day on the Gantt and keeps block ids unique", () => {
+		const html = toGanttHTML(multi, options);
+		expect(html).toContain(">D-3<");
+		expect(html).toContain(">D-1<");
+		expect(countOf(html, 'class="gantt-marker session-marker"')).toBe(2);
+		const ids = buildTracks(multi, options).tracks.flatMap((t) =>
+			t.blocks.map((b) => b.id),
+		);
+		expect(ids.some((id) => id.endsWith("_later"))).toBe(true);
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it("is a single session, without day labels, when no section is anchored a day back", () => {
+		const html = toHTML(compiled, options);
+		expect(countOf(html, 'class="mise-en-place-session"')).toBe(1);
+		expect(html).not.toContain("D-");
 	});
 });
 

@@ -1,11 +1,20 @@
 import { describe, expect, it } from "bun:test";
-import { buildPerSectionSchedule } from "../../src/schedule/build";
+import { buildSchedule } from "../../src/schedule/build";
 import type { StepSchedule } from "../../src/schedule/types";
 import type {
+	MiseEnPlaceItem,
 	ProcessedSection,
 	ProcessedStep,
 	SectionMiseEnPlace,
 } from "../../src/types";
+
+// One-minute gathers, so a section's mise en place lasts `count` minutes.
+const gather = (count: number): MiseEnPlaceItem => ({
+	kind: "gather",
+	target: "ingredient",
+	count,
+	duration: count,
+});
 
 function makeStep(): ProcessedStep {
 	return {
@@ -65,16 +74,17 @@ function doughRecipe() {
 		},
 	];
 	const mise: SectionMiseEnPlace[] = [
-		{ section: 0, duration: 3, items: [] },
-		{ section: 1, duration: 8, items: [] },
+		{ section: 0, duration: 3, items: [gather(3)] },
+		{ section: 1, duration: 8, items: [gather(8)] },
 	];
 	return { schedules: [rest, assemble], sections, mise };
 }
 
-describe("buildPerSectionSchedule", () => {
+describe('buildSchedule("perSection")', () => {
 	it("places a section's preparation right before its first step, during an earlier rest", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { schedule } = buildPerSectionSchedule(
+		const { schedule } = buildSchedule(
+			"perSection",
 			schedules,
 			mise,
 			sections,
@@ -100,7 +110,8 @@ describe("buildPerSectionSchedule", () => {
 
 	it("starts with the first section's preparation at T0", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { schedule } = buildPerSectionSchedule(
+		const { schedule } = buildSchedule(
+			"perSection",
 			schedules,
 			mise,
 			sections,
@@ -118,7 +129,8 @@ describe("buildPerSectionSchedule", () => {
 
 	it("reports total and idle time from the blocks", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { schedule } = buildPerSectionSchedule(
+		const { schedule } = buildSchedule(
+			"perSection",
 			schedules,
 			mise,
 			sections,
@@ -133,7 +145,7 @@ describe("buildPerSectionSchedule", () => {
 
 	it("never writes to the inputs (schedules, steps, produced)", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		buildPerSectionSchedule(schedules, mise, sections, [], 11, 12);
+		buildSchedule("perSection", schedules, mise, sections, [], 11, 12);
 
 		for (const s of schedules) {
 			expect(s.ls).toBe(0);
@@ -148,7 +160,8 @@ describe("buildPerSectionSchedule", () => {
 
 	it("keeps its warnings apart from the caller's", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { warnings } = buildPerSectionSchedule(
+		const { warnings } = buildSchedule(
+			"perSection",
 			schedules,
 			mise,
 			sections,
@@ -161,7 +174,8 @@ describe("buildPerSectionSchedule", () => {
 
 	it("emits no prep block for a section without mise en place", () => {
 		const { schedules, sections } = doughRecipe();
-		const { schedule } = buildPerSectionSchedule(
+		const { schedule } = buildSchedule(
+			"perSection",
 			schedules,
 			[],
 			sections,
@@ -174,7 +188,8 @@ describe("buildPerSectionSchedule", () => {
 
 	it("never overlaps a preparation with a step (one cook)", () => {
 		const { schedules, sections, mise } = doughRecipe();
-		const { schedule } = buildPerSectionSchedule(
+		const { schedule } = buildSchedule(
+			"perSection",
 			schedules,
 			mise,
 			sections,

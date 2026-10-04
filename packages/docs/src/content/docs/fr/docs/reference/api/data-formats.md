@@ -166,7 +166,8 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     },
     "upfront": {
       "totalTime": 4,
@@ -174,13 +175,23 @@ Consultez [parser.md](/fr/docs/reference/api/parser) pour l'ensemble exhaustif d
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    },
+    "perSession": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     }
   }
 }
 ```
 
-Depuis la 1.4.0, la recette compilée porte `generator` (le compilateur qui l'a écrite), `miseEnPlace` (ce que coûte la préparation de chaque section) et deux chronologies complètes dans `schedules` ; les anciens `timings` et `backgroundTasks` par étape et les décomptes de `metrics` sont dépréciés et disparaîtront en 2.0.0. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) décrit chaque champ et ce qui remplace les champs dépréciés. Avec une seule section et aucune attente, les deux chronologies sont identiques ici ; elles diffèrent dès qu'une recette a un long repos avant une section ultérieure.
+Depuis la 1.4.0, la recette compilée porte `generator` (le compilateur qui l'a écrite), `miseEnPlace` (ce que coûte la préparation de chaque section) et trois chronologies complètes dans `schedules` ; les anciens `timings` et `backgroundTasks` par étape, `metrics.totalTime`, `metrics.idleTime` et les décomptes de `metrics` sont dépréciés : toujours écrits jusqu'à leur retrait en 2.0.0, ils sont omis de l'exemple ci-dessus. La [référence de l'API Kitchen](/fr/docs/reference/api/kitchen) décrit chaque champ et ce qui remplace les champs dépréciés. Avec une seule section et aucune attente, les chronologies sont identiques ici ; elles diffèrent dès qu'une recette a un long repos avant une section ultérieure.
 
 Remarquez le vocabulaire `StepToken` généré par le compilateur au sein de `content` : le texte narratif pur est une simple `string` ; les ingrédients, le matériel et les références partagent la forme `Usage` (ils n'ont pas de champ `type` et sont identifiés par la présence d'un `id`) ; les minuteurs, températures, commentaires et déclarations portent chacun un `type` explicite en minuscules. Cette distinction avec le `ASTNodeType` (en PascalCase) du *parser* est volontaire : on décrit ici la *sortie* compilée, non l'entrée. Consultez [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui) pour un tutoriel d'intégration de ces données dans un framework front-end.
 

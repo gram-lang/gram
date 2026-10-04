@@ -28,7 +28,7 @@ Combine the pastry with @filling{300g}(chopped).
 `;
 
 const expected = compile(getAST(TART));
-const minutes = (mode: "perSection" | "upfront") =>
+const minutes = (mode: "perSection" | "upfront" | "perSession") =>
 	Math.round(scheduleTimes(expected, mode).totalTime);
 
 let dir: string;
@@ -85,7 +85,18 @@ describe("gram view --mise-en-place", () => {
 		expect(minutes("upfront")).not.toBe(minutes("perSection"));
 	}, 60_000);
 
-	it("keeps preparation and active time the same in both", () => {
+	it("accepts per-session, and plans each working day", () => {
+		const { code, out } = gram(
+			"view",
+			recipe,
+			"--mise-en-place",
+			"per-session",
+		);
+		expect(code).toBe(0);
+		expect(viewTotal(out)).toBe(minutes("perSession"));
+	}, 30_000);
+
+	it("keeps preparation and active time the same in all of them", () => {
 		const times = (out: string) =>
 			/Prep: [^·]+·\s+Active: [^·]+/.exec(out)?.[0].trim();
 		const a = gram("view", recipe, "--mise-en-place", "per-section").out;

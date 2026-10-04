@@ -166,7 +166,8 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     },
     "upfront": {
       "totalTime": 4,
@@ -174,13 +175,23 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
       "blocks": [
         { "kind": "prep", "section": 0, "start": 0, "end": 2 },
         { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ]
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    },
+    "perSession": {
+      "totalTime": 4,
+      "idleTime": 0,
+      "blocks": [
+        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
+        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
+      ],
+      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
     }
   }
 }
 ```
 
-Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and two complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks` and the `metrics` breakdowns are deprecated and go away in 2.0.0. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the two timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
+Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and three complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks`, `metrics.totalTime`, `metrics.idleTime` and the `metrics` breakdowns are deprecated: they are still written until 2.0.0 removes them, but left out of the example above. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 

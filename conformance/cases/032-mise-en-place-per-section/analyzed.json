@@ -556,7 +556,8 @@
           "kind": "gather",
           "target": "ingredient",
           "count": 2,
-          "duration": 2
+          "duration": 2,
+          "intermediates": 2
         }
       ]
     }
@@ -619,11 +620,23 @@
           "start": 126,
           "end": 151
         }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 151,
+          "sections": [
+            0,
+            1,
+            2
+          ]
+        }
       ]
     },
     "upfront": {
-      "totalTime": 160,
-      "idleTime": 118,
+      "totalTime": 158,
+      "idleTime": 116,
       "blocks": [
         {
           "kind": "prep",
@@ -638,45 +651,130 @@
           "end": 11
         },
         {
-          "kind": "prep",
-          "section": 2,
+          "kind": "step",
+          "section": 0,
+          "step": 0,
           "start": 11,
           "end": 13
         },
         {
           "kind": "step",
           "section": 0,
-          "step": 0,
-          "start": 13,
-          "end": 15
-        },
-        {
-          "kind": "step",
-          "section": 0,
           "step": 1,
-          "start": 15,
-          "end": 15
+          "start": 13,
+          "end": 13
         },
         {
           "kind": "passive",
           "section": 0,
           "step": 1,
-          "start": 15,
-          "end": 135
+          "start": 13,
+          "end": 133
         },
         {
           "kind": "step",
           "section": 1,
           "step": 0,
-          "start": 133,
-          "end": 135
+          "start": 129,
+          "end": 131
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 131,
+          "end": 133,
+          "deferred": true
         },
         {
           "kind": "step",
           "section": 2,
           "step": 0,
-          "start": 135,
-          "end": 160
+          "start": 133,
+          "end": 158
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 158,
+          "sections": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 158,
+      "idleTime": 116,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 4
+        },
+        {
+          "kind": "prep",
+          "section": 1,
+          "start": 4,
+          "end": 11
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 11,
+          "end": 13
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 1,
+          "start": 13,
+          "end": 13
+        },
+        {
+          "kind": "passive",
+          "section": 0,
+          "step": 1,
+          "start": 13,
+          "end": 133
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 129,
+          "end": 131
+        },
+        {
+          "kind": "prep",
+          "section": 2,
+          "start": 131,
+          "end": 133,
+          "deferred": true
+        },
+        {
+          "kind": "step",
+          "section": 2,
+          "step": 0,
+          "start": 133,
+          "end": 158
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 158,
+          "sections": [
+            0,
+            1,
+            2
+          ]
         }
       ]
     }

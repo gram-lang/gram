@@ -192,6 +192,17 @@
           "start": 4,
           "end": 6
         }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 6,
+          "sections": [
+            0,
+            1
+          ]
+        }
       ]
     },
     "upfront": {
@@ -217,6 +228,54 @@
           "step": 0,
           "start": 4,
           "end": 6
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 6,
+          "sections": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "perSession": {
+      "totalTime": 6,
+      "idleTime": 0,
+      "blocks": [
+        {
+          "kind": "prep",
+          "section": 0,
+          "start": 0,
+          "end": 2
+        },
+        {
+          "kind": "step",
+          "section": 0,
+          "step": 0,
+          "start": 2,
+          "end": 4
+        },
+        {
+          "kind": "step",
+          "section": 1,
+          "step": 0,
+          "start": 4,
+          "end": 6
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": 0,
+          "end": 6,
+          "sections": [
+            0,
+            1
+          ]
         }
       ]
     }

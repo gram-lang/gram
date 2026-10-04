@@ -26,6 +26,7 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
+import { sessionMiseEnPlace } from "../mise-en-place";
 
 const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -154,7 +155,27 @@ const markdownBackend: RenderBackend = {
 			: context;
 
 		let md = `## 👨‍🍳 Instructions\n\n`;
-		data.sections.forEach((sec: any) => {
+		const t = getDictionary(options.lang);
+		const formatDuration = options.formatDuration || defaultFormatDuration;
+		const sessionBlocks = sessionMiseEnPlace(
+			data,
+			options.schedule,
+			t.renderer,
+			formatDuration,
+		);
+		data.sections.forEach((sec: any, sectionIdx: number) => {
+			// The mise en place gathered at the start of a working day.
+			const session = sessionBlocks.get(sectionIdx);
+			if (session) {
+				md += `**${escapeMarkdownHtml(session.heading)}** (${escapeMarkdownHtml(formatDuration(session.duration))})\n\n`;
+				for (const line of session.lines) {
+					const prefix = line.title
+						? `*${escapeMarkdownHtml(line.title)}*${t.renderer.colon}`
+						: "";
+					md += `- ${prefix}${escapeMarkdownHtml(line.text)}\n`;
+				}
+				md += "\n";
+			}
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
 				if (sec.retro_planning)
