@@ -1,0 +1,100 @@
+{
+  "serveAt": "2026-03-29T13:00",
+  "timeZone": "Europe/Paris",
+  "diagnostics": [
+    {
+      "code": "SESSION_DAY_MISMATCH",
+      "day": 0,
+      "expected": "2026-03-29",
+      "actual": "2026-03-28"
+    }
+  ],
+  "recipes": [
+    {
+      "days": [
+        {
+          "date": "2026-03-28",
+          "daysBefore": 1,
+          "entries": [
+            {
+              "task": "s0.prep",
+              "kind": "prep",
+              "active": true,
+              "section": 0,
+              "start": "2026-03-28T10:26:00Z",
+              "end": "2026-03-28T10:28:00Z",
+              "startLocal": "2026-03-28T11:26",
+              "endLocal": "2026-03-28T11:28",
+              "minutes": 2
+            },
+            {
+              "task": "s0.0",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 0,
+              "start": "2026-03-28T10:28:00Z",
+              "end": "2026-03-28T10:30:00Z",
+              "startLocal": "2026-03-28T11:28",
+              "endLocal": "2026-03-28T11:30",
+              "minutes": 2
+            },
+            {
+              "task": "s0.1",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 1,
+              "start": "2026-03-28T10:30:00Z",
+              "end": "2026-03-28T10:30:00Z",
+              "startLocal": "2026-03-28T11:30",
+              "endLocal": "2026-03-28T11:30",
+              "minutes": 0
+            },
+            {
+              "task": "s0.1.t0",
+              "kind": "passive",
+              "active": false,
+              "section": 0,
+              "step": 1,
+              "start": "2026-03-28T10:30:00Z",
+              "end": "2026-03-29T10:30:00Z",
+              "startLocal": "2026-03-28T11:30",
+              "endLocal": "2026-03-29T12:30",
+              "minutes": 1440
+            }
+          ]
+        },
+        {
+          "date": "2026-03-29",
+          "daysBefore": 0,
+          "entries": [
+            {
+              "task": "s1.prep.dough",
+              "kind": "prep",
+              "active": true,
+              "section": 1,
+              "start": "2026-03-29T10:29:00Z",
+              "end": "2026-03-29T10:30:00Z",
+              "startLocal": "2026-03-29T12:29",
+              "endLocal": "2026-03-29T12:30",
+              "minutes": 1
+            },
+            {
+              "task": "s1.0",
+              "kind": "step",
+              "active": true,
+              "section": 1,
+              "step": 0,
+              "start": "2026-03-29T10:30:00Z",
+              "end": "2026-03-29T11:00:00Z",
+              "startLocal": "2026-03-29T12:30",
+              "endLocal": "2026-03-29T13:00",
+              "minutes": 30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

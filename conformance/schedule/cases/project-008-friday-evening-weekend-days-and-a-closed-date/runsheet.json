@@ -1,0 +1,160 @@
+{
+  "serveAt": "2026-10-12T19:00",
+  "timeZone": "Europe/Paris",
+  "diagnostics": [
+    {
+      "code": "SESSION_DAY_MISMATCH",
+      "day": 0,
+      "expected": "2026-10-12",
+      "actual": "2026-10-10"
+    }
+  ],
+  "recipes": [
+    {
+      "title": "Folded bread",
+      "days": [
+        {
+          "date": "2026-10-10",
+          "daysBefore": 2,
+          "entries": [
+            {
+              "task": "s0.prep",
+              "kind": "prep",
+              "active": true,
+              "section": 0,
+              "start": "2026-10-10T17:38:00Z",
+              "end": "2026-10-10T17:40:00Z",
+              "startLocal": "2026-10-10T19:38",
+              "endLocal": "2026-10-10T19:40",
+              "minutes": 2
+            },
+            {
+              "task": "s0.0",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 0,
+              "start": "2026-10-10T17:40:00Z",
+              "end": "2026-10-10T18:00:00Z",
+              "startLocal": "2026-10-10T19:40",
+              "endLocal": "2026-10-10T20:00",
+              "minutes": 20
+            },
+            {
+              "task": "s0.1",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 1,
+              "start": "2026-10-10T18:00:00Z",
+              "end": "2026-10-10T18:00:00Z",
+              "startLocal": "2026-10-10T20:00",
+              "endLocal": "2026-10-10T20:00",
+              "minutes": 0
+            },
+            {
+              "task": "s0.1.t0",
+              "kind": "passive",
+              "active": false,
+              "section": 0,
+              "step": 1,
+              "start": "2026-10-10T18:00:00Z",
+              "end": "2026-10-12T06:15:00Z",
+              "startLocal": "2026-10-10T20:00",
+              "endLocal": "2026-10-12T08:15",
+              "minutes": 2175,
+              "adjustment": {
+                "task": "s0.1.t0",
+                "from": 480,
+                "to": 2175,
+                "reason": "avoid-unavailable"
+              }
+            }
+          ]
+        },
+        {
+          "date": "2026-10-12",
+          "daysBefore": 0,
+          "entries": [
+            {
+              "task": "s1.prep.dough",
+              "kind": "prep",
+              "active": true,
+              "section": 1,
+              "start": "2026-10-12T06:14:00Z",
+              "end": "2026-10-12T06:15:00Z",
+              "startLocal": "2026-10-12T08:14",
+              "endLocal": "2026-10-12T08:15",
+              "minutes": 1
+            },
+            {
+              "task": "s1.0",
+              "kind": "step",
+              "active": true,
+              "section": 1,
+              "step": 0,
+              "start": "2026-10-12T06:15:00Z",
+              "end": "2026-10-12T06:30:00Z",
+              "startLocal": "2026-10-12T08:15",
+              "endLocal": "2026-10-12T08:30",
+              "minutes": 15
+            },
+            {
+              "task": "s1.1",
+              "kind": "step",
+              "active": true,
+              "section": 1,
+              "step": 1,
+              "start": "2026-10-12T06:30:00Z",
+              "end": "2026-10-12T06:30:00Z",
+              "startLocal": "2026-10-12T08:30",
+              "endLocal": "2026-10-12T08:30",
+              "minutes": 0
+            },
+            {
+              "task": "s1.1.t0",
+              "kind": "passive",
+              "active": false,
+              "section": 1,
+              "step": 1,
+              "start": "2026-10-12T06:30:00Z",
+              "end": "2026-10-12T16:30:00Z",
+              "startLocal": "2026-10-12T08:30",
+              "endLocal": "2026-10-12T18:30",
+              "minutes": 600,
+              "adjustment": {
+                "task": "s1.1.t0",
+                "from": 360,
+                "to": 600,
+                "reason": "avoid-unavailable"
+              }
+            },
+            {
+              "task": "s2.prep.folded",
+              "kind": "prep",
+              "active": true,
+              "section": 2,
+              "start": "2026-10-12T16:29:00Z",
+              "end": "2026-10-12T16:30:00Z",
+              "startLocal": "2026-10-12T18:29",
+              "endLocal": "2026-10-12T18:30",
+              "minutes": 1
+            },
+            {
+              "task": "s2.0",
+              "kind": "step",
+              "active": true,
+              "section": 2,
+              "step": 0,
+              "start": "2026-10-12T16:30:00Z",
+              "end": "2026-10-12T17:00:00Z",
+              "startLocal": "2026-10-12T18:30",
+              "endLocal": "2026-10-12T19:00",
+              "minutes": 30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

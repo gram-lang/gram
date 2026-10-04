@@ -1,0 +1,12 @@
+{
+  "serveAt": "2026-10-11T13:00",
+  "timeZone": "Europe/Paris",
+  "availability": {
+    "daily": [
+      {
+        "start": "18:00",
+        "end": "20:00"
+      }
+    ]
+  }
+}

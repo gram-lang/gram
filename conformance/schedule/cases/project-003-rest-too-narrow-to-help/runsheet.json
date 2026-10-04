@@ -1,0 +1,94 @@
+{
+  "serveAt": "2026-10-11T13:00",
+  "timeZone": "Europe/Paris",
+  "diagnostics": [
+    {
+      "code": "ACTIVE_OUTSIDE_AVAILABILITY",
+      "task": "s0.prep",
+      "local": "2026-10-11T04:08",
+      "rest": "s0.1.t0"
+    }
+  ],
+  "recipes": [
+    {
+      "days": [
+        {
+          "date": "2026-10-11",
+          "daysBefore": 0,
+          "entries": [
+            {
+              "task": "s0.prep",
+              "kind": "prep",
+              "active": true,
+              "section": 0,
+              "start": "2026-10-11T02:08:00Z",
+              "end": "2026-10-11T02:10:00Z",
+              "startLocal": "2026-10-11T04:08",
+              "endLocal": "2026-10-11T04:10",
+              "minutes": 2
+            },
+            {
+              "task": "s0.0",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 0,
+              "start": "2026-10-11T02:10:00Z",
+              "end": "2026-10-11T02:30:00Z",
+              "startLocal": "2026-10-11T04:10",
+              "endLocal": "2026-10-11T04:30",
+              "minutes": 20
+            },
+            {
+              "task": "s0.1",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 1,
+              "start": "2026-10-11T02:30:00Z",
+              "end": "2026-10-11T02:30:00Z",
+              "startLocal": "2026-10-11T04:30",
+              "endLocal": "2026-10-11T04:30",
+              "minutes": 0
+            },
+            {
+              "task": "s0.1.t0",
+              "kind": "passive",
+              "active": false,
+              "section": 0,
+              "step": 1,
+              "start": "2026-10-11T02:30:00Z",
+              "end": "2026-10-11T10:30:00Z",
+              "startLocal": "2026-10-11T04:30",
+              "endLocal": "2026-10-11T12:30",
+              "minutes": 480
+            },
+            {
+              "task": "s1.prep.dough",
+              "kind": "prep",
+              "active": true,
+              "section": 1,
+              "start": "2026-10-11T10:29:00Z",
+              "end": "2026-10-11T10:30:00Z",
+              "startLocal": "2026-10-11T12:29",
+              "endLocal": "2026-10-11T12:30",
+              "minutes": 1
+            },
+            {
+              "task": "s1.0",
+              "kind": "step",
+              "active": true,
+              "section": 1,
+              "step": 0,
+              "start": "2026-10-11T10:30:00Z",
+              "end": "2026-10-11T11:00:00Z",
+              "startLocal": "2026-10-11T12:30",
+              "endLocal": "2026-10-11T13:00",
+              "minutes": 30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

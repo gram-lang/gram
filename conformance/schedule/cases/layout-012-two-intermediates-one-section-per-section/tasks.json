@@ -1,0 +1,197 @@
+{
+  "tasks": [
+    {
+      "id": "s0.prep",
+      "kind": "prep",
+      "section": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s0.0",
+      "kind": "step",
+      "section": 0,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    },
+    {
+      "id": "s0.1",
+      "kind": "step",
+      "section": 0,
+      "step": 1,
+      "duration": {
+        "nominal": 0
+      },
+      "after": [
+        "s0.0"
+      ]
+    },
+    {
+      "id": "s0.1.t0",
+      "kind": "passive",
+      "section": 0,
+      "step": 1,
+      "offset": 0,
+      "duration": {
+        "nominal": 720
+      },
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s1.prep",
+      "kind": "prep",
+      "section": 1,
+      "duration": {
+        "nominal": 2
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s1.0",
+      "kind": "step",
+      "section": 1,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    },
+    {
+      "id": "s1.1",
+      "kind": "step",
+      "section": 1,
+      "step": 1,
+      "duration": {
+        "nominal": 0
+      },
+      "after": [
+        "s1.0"
+      ]
+    },
+    {
+      "id": "s1.1.t0",
+      "kind": "passive",
+      "section": 1,
+      "step": 1,
+      "offset": 0,
+      "duration": {
+        "nominal": 30
+      },
+      "after": [
+        "s1.1"
+      ]
+    },
+    {
+      "id": "s2.prep",
+      "kind": "prep",
+      "section": 2,
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s2.prep.cream",
+      "kind": "prep",
+      "section": 2,
+      "intermediate": "cream",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s2.prep.crumble",
+      "kind": "prep",
+      "section": 2,
+      "intermediate": "crumble",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s1.1"
+      ]
+    },
+    {
+      "id": "s2.0",
+      "kind": "step",
+      "section": 2,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "consumes": [
+        "cream",
+        "crumble"
+      ],
+      "after": [
+        "s0.1",
+        "s1.1"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "day": 0,
+      "intermediate": "cream"
+    },
+    {
+      "day": 0,
+      "intermediate": "crumble"
+    },
+    {
+      "day": 0
+    }
+  ]
+}

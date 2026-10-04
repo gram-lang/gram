@@ -1,0 +1,240 @@
+{
+  "schedule": {
+    "miseEnPlace": "perSession",
+    "rests": "shortest",
+    "totalTime": 4327,
+    "activeTime": 45,
+    "preparationTime": 19,
+    "idleTime": 4263,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 7
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 1447
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 1443,
+        "end": 1445
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 1445,
+        "end": 1447
+      },
+      {
+        "kind": "step",
+        "task": "s1.1",
+        "section": 1,
+        "step": 1,
+        "start": 1447,
+        "end": 1447
+      },
+      {
+        "kind": "passive",
+        "task": "s1.1.t0",
+        "section": 1,
+        "step": 1,
+        "start": 1447,
+        "end": 2167
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep",
+        "section": 2,
+        "start": 2863,
+        "end": 2869
+      },
+      {
+        "kind": "prep",
+        "task": "s3.prep",
+        "section": 3,
+        "start": 2869,
+        "end": 2870,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "kind": "prep",
+        "task": "s4.prep",
+        "section": 4,
+        "start": 2870,
+        "end": 2871,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 2871,
+        "end": 2873
+      },
+      {
+        "kind": "prep",
+        "task": "s3.prep.crust",
+        "section": 3,
+        "start": 2873,
+        "end": 2874,
+        "deferred": true,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "task": "s3.0",
+        "section": 3,
+        "step": 0,
+        "start": 2874,
+        "end": 2884
+      },
+      {
+        "kind": "prep",
+        "task": "s4.prep.syrup",
+        "section": 4,
+        "start": 2884,
+        "end": 2885,
+        "deferred": true,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "task": "s4.0",
+        "section": 4,
+        "step": 0,
+        "start": 2885,
+        "end": 2887
+      },
+      {
+        "kind": "prep",
+        "task": "s5.prep.praline",
+        "section": 5,
+        "start": 4298,
+        "end": 4300
+      },
+      {
+        "kind": "step",
+        "task": "s5.0",
+        "section": 5,
+        "step": 0,
+        "start": 4300,
+        "end": 4325
+      },
+      {
+        "kind": "step",
+        "task": "s5.1",
+        "section": 5,
+        "step": 1,
+        "start": 4325,
+        "end": 4327
+      }
+    ],
+    "sessions": [
+      {
+        "day": 3,
+        "start": 0,
+        "end": 7,
+        "sections": [
+          0
+        ]
+      },
+      {
+        "day": 2,
+        "start": 1443,
+        "end": 1447,
+        "sections": [
+          1
+        ]
+      },
+      {
+        "day": 1,
+        "start": 2863,
+        "end": 2887,
+        "sections": [
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "day": 0,
+        "start": 4298,
+        "end": 4327,
+        "sections": [
+          5
+        ]
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "TIME_PARADOX",
+      "section": 3,
+      "pulledTo": -1442
+    },
+    {
+      "code": "TIME_PARADOX",
+      "section": 2,
+      "pulledTo": -1453
+    }
+  ]
+}

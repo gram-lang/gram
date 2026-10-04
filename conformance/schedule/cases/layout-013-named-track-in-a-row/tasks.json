@@ -1,0 +1,89 @@
+{
+  "tasks": [
+    {
+      "id": "s0.prep",
+      "kind": "prep",
+      "section": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s0.0",
+      "kind": "step",
+      "section": 0,
+      "step": 0,
+      "duration": {
+        "nominal": 0
+      },
+      "after": []
+    },
+    {
+      "id": "s0.0.t0",
+      "kind": "passive",
+      "section": 0,
+      "step": 0,
+      "track": "oven",
+      "offset": 0,
+      "duration": {
+        "nominal": 20
+      },
+      "after": [
+        "s0.0"
+      ]
+    },
+    {
+      "id": "s0.1",
+      "kind": "step",
+      "section": 0,
+      "step": 1,
+      "duration": {
+        "nominal": 0
+      },
+      "after": [
+        "s0.0"
+      ]
+    },
+    {
+      "id": "s0.1.t0",
+      "kind": "passive",
+      "section": 0,
+      "step": 1,
+      "track": "oven",
+      "offset": 0,
+      "duration": {
+        "nominal": 15
+      },
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s1.0",
+      "kind": "step",
+      "section": 1,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    }
+  ],
+  "sections": [
+    {
+      "day": 0
+    },
+    {
+      "day": 0
+    }
+  ]
+}

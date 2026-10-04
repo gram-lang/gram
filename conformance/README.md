@@ -175,3 +175,37 @@ suitable for CI.
 ## The `generator` field
 
 Compiled and analyzed results carry a `generator` field (`@gram-lang/kitchen@<version>`). The runner drops it before writing or comparing `compiled.json` / `analyzed.json`, since it changes on every release. Every other field is compared as usual.
+
+## The scheduler suite (`schedule/`)
+
+The planning engine, `@gram-lang/scheduler`, has a suite of its own, independent
+of the pipeline above: its inputs are task graphs, not recipes, so an
+implementation of the scheduler alone can be checked against the same files.
+
+```
+schedule/cases/layout-001-rests-shortest/
+  tasks.json       # the TaskGraph, as a compiled recipe carries it (`tasks`)
+  options.json     # optional: { miseEnPlace, rests }
+  schedule.json    # golden: { schedule, diagnostics } of layout(tasks, options)
+
+schedule/cases/project-001-night-stretches-a-rest/
+  tasks.json
+  context.json     # serveAt, timeZone, availability, optional now
+  options.json     # optional layout options
+  title.txt        # optional title of the recipe
+  projected.json   # golden: the ProjectedPlan of project()
+  runsheet.json    # golden: the RunSheet of runSheet(plan)
+```
+
+`bun run conformance` runs both suites; `bun run schedule/run.ts [--update]
+[name]` from this directory runs the second alone. Most `tasks.json` files were
+produced by compiling a small `.gram` recipe (`compile(getAST(source)).tasks`)
+and are meant to be read: a graph is a list of tasks with their durations and
+what they wait for. As everywhere here, **read a golden before committing it**:
+the runner locks in whatever the current code produces.
+
+What the project cases are there for: stretching and shrinking a rest to dodge
+the night, the same with an exact rest or a range too narrow (a diagnostic, not
+a silent failure), a day of 25 and of 23 hours, a stretch of work longer than any
+availability, availability by weekday and by date, a serving time already too
+close, and a working day that falls on another calendar date than its own.

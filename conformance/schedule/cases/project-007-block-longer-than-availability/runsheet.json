@@ -1,0 +1,50 @@
+{
+  "serveAt": "2026-10-11T13:00",
+  "timeZone": "Europe/Paris",
+  "diagnostics": [
+    {
+      "code": "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY",
+      "tasks": [
+        "s0.prep",
+        "s0.0"
+      ],
+      "minutes": 181,
+      "largest": 120
+    }
+  ],
+  "recipes": [
+    {
+      "days": [
+        {
+          "date": "2026-10-11",
+          "daysBefore": 0,
+          "entries": [
+            {
+              "task": "s0.prep",
+              "kind": "prep",
+              "active": true,
+              "section": 0,
+              "start": "2026-10-11T07:59:00Z",
+              "end": "2026-10-11T08:00:00Z",
+              "startLocal": "2026-10-11T09:59",
+              "endLocal": "2026-10-11T10:00",
+              "minutes": 1
+            },
+            {
+              "task": "s0.0",
+              "kind": "step",
+              "active": true,
+              "section": 0,
+              "step": 0,
+              "start": "2026-10-11T08:00:00Z",
+              "end": "2026-10-11T11:00:00Z",
+              "startLocal": "2026-10-11T10:00",
+              "endLocal": "2026-10-11T13:00",
+              "minutes": 180
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

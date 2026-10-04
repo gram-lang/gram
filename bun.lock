@@ -40,6 +40,7 @@
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/modules": "workspace:*",
         "@gram-lang/parser": "workspace:*",
+        "@gram-lang/scheduler": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^26.1.1",

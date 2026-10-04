@@ -1,0 +1,154 @@
+{
+  "serveAt": "2026-10-12T19:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Folded bread",
+      "blocks": [
+        {
+          "kind": "prep",
+          "task": "s0.prep",
+          "section": 0,
+          "start": "2026-10-10T17:38:00Z",
+          "end": "2026-10-10T17:40:00Z",
+          "startLocal": "2026-10-10T19:38",
+          "endLocal": "2026-10-10T19:40"
+        },
+        {
+          "kind": "step",
+          "task": "s0.0",
+          "section": 0,
+          "step": 0,
+          "start": "2026-10-10T17:40:00Z",
+          "end": "2026-10-10T18:00:00Z",
+          "startLocal": "2026-10-10T19:40",
+          "endLocal": "2026-10-10T20:00"
+        },
+        {
+          "kind": "step",
+          "task": "s0.1",
+          "section": 0,
+          "step": 1,
+          "start": "2026-10-10T18:00:00Z",
+          "end": "2026-10-10T18:00:00Z",
+          "startLocal": "2026-10-10T20:00",
+          "endLocal": "2026-10-10T20:00"
+        },
+        {
+          "kind": "passive",
+          "task": "s0.1.t0",
+          "section": 0,
+          "step": 1,
+          "start": "2026-10-10T18:00:00Z",
+          "end": "2026-10-12T06:15:00Z",
+          "startLocal": "2026-10-10T20:00",
+          "endLocal": "2026-10-12T08:15"
+        },
+        {
+          "kind": "prep",
+          "task": "s1.prep.dough",
+          "section": 1,
+          "start": "2026-10-12T06:14:00Z",
+          "end": "2026-10-12T06:15:00Z",
+          "startLocal": "2026-10-12T08:14",
+          "endLocal": "2026-10-12T08:15"
+        },
+        {
+          "kind": "step",
+          "task": "s1.0",
+          "section": 1,
+          "step": 0,
+          "start": "2026-10-12T06:15:00Z",
+          "end": "2026-10-12T06:30:00Z",
+          "startLocal": "2026-10-12T08:15",
+          "endLocal": "2026-10-12T08:30"
+        },
+        {
+          "kind": "step",
+          "task": "s1.1",
+          "section": 1,
+          "step": 1,
+          "start": "2026-10-12T06:30:00Z",
+          "end": "2026-10-12T06:30:00Z",
+          "startLocal": "2026-10-12T08:30",
+          "endLocal": "2026-10-12T08:30"
+        },
+        {
+          "kind": "passive",
+          "task": "s1.1.t0",
+          "section": 1,
+          "step": 1,
+          "start": "2026-10-12T06:30:00Z",
+          "end": "2026-10-12T16:30:00Z",
+          "startLocal": "2026-10-12T08:30",
+          "endLocal": "2026-10-12T18:30"
+        },
+        {
+          "kind": "prep",
+          "task": "s2.prep.folded",
+          "section": 2,
+          "start": "2026-10-12T16:29:00Z",
+          "end": "2026-10-12T16:30:00Z",
+          "startLocal": "2026-10-12T18:29",
+          "endLocal": "2026-10-12T18:30"
+        },
+        {
+          "kind": "step",
+          "task": "s2.0",
+          "section": 2,
+          "step": 0,
+          "start": "2026-10-12T16:30:00Z",
+          "end": "2026-10-12T17:00:00Z",
+          "startLocal": "2026-10-12T18:30",
+          "endLocal": "2026-10-12T19:00"
+        }
+      ],
+      "sessions": [
+        {
+          "day": 0,
+          "start": "2026-10-10T17:38:00Z",
+          "end": "2026-10-12T17:00:00Z",
+          "startLocal": "2026-10-10T19:38",
+          "endLocal": "2026-10-12T19:00",
+          "sections": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  ],
+  "adjustments": [
+    {
+      "task": "s0.1.t0",
+      "from": 480,
+      "to": 2175,
+      "reason": "avoid-unavailable"
+    },
+    {
+      "task": "s1.1.t0",
+      "from": 360,
+      "to": 600,
+      "reason": "avoid-unavailable"
+    }
+  ],
+  "unavailable": [
+    {
+      "start": "2026-10-10T18:00:00Z",
+      "end": "2026-10-12T05:00:00Z"
+    },
+    {
+      "start": "2026-10-12T06:30:00Z",
+      "end": "2026-10-12T16:00:00Z"
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "SESSION_DAY_MISMATCH",
+      "day": 0,
+      "expected": "2026-10-12",
+      "actual": "2026-10-10"
+    }
+  ]
+}
