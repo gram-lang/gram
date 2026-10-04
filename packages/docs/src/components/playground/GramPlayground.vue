@@ -26,9 +26,14 @@ import {
 	resolveScaleFactor,
 	applyScale,
 	DEFAULT_MISE_EN_PLACE_MODE,
+	DEFAULT_REST_CHOICE,
+	REST_CHOICES,
 	isMiseEnPlaceMode,
+	isRestChoice,
 	type MiseEnPlaceMode,
+	type RestChoice,
 } from "@gram-lang/kitchen";
+import { project, runSheet, type ProjectedPlan } from "@gram-lang/scheduler";
 import {
 	analyze,
 	convertUnit,
@@ -48,7 +53,7 @@ import {
 	enrichWarning,
 	sortDiagnostics,
 } from "./diagnostics";
-import { toMarkdown, toHTML } from "@gram-lang/renderer";
+import { toMarkdown, toHTML, runSheetToHTML } from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
 import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
@@ -133,7 +138,7 @@ const errorFiles = computed(() => {
 });
 
 const viewMode = ref<
-	"preview" | "gantt" | "json" | "ast" | "markdown" | "json-tree"
+	"preview" | "gantt" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
 // Which complete timeline the views follow: mise en place right before each
 // section, or all of it at the start. A reading choice, shared by the preview,
@@ -171,11 +176,138 @@ const scheduleOptions = computed(() => [
 	{ label: t.value.renderer.schedulePerSession, value: "perSession" },
 ]);
 
+// How long a rest written as a range lasts: the other half of what a view
+// follows, shared and remembered the same way.
+const RESTS_STORAGE_KEY = "gram-playground-rests";
+
+function loadRests(): RestChoice {
+	try {
+		const saved = localStorage.getItem(RESTS_STORAGE_KEY);
+		if (isRestChoice(saved)) return saved;
+	} catch {
+		// Storage can be blocked or absent (private window, embedded frame).
+	}
+	return DEFAULT_REST_CHOICE;
+}
+
+const rests = ref<RestChoice>(loadRests());
+
+watch(rests, (value) => {
+	try {
+		localStorage.setItem(RESTS_STORAGE_KEY, value);
+	} catch {
+		// Nothing to do: the choice just won't survive a reload.
+	}
+	trackEvent("playground-change-rests", { rests: value });
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: restsOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+const restsOptions = computed(() =>
+	REST_CHOICES.map((value) => ({
+		label:
+			t.value.renderer[
+				value === "shortest"
+					? "restsShortest"
+					: value === "balanced"
+						? "restsBalanced"
+						: "restsLongest"
+			],
+		value,
+	})),
+);
+
+// The plan: when it is served and when the cook is available. Setting a serving
+// time puts the recipe on the calendar (the Gantt chart reads in real dates,
+// the production sheet appears); clearing it goes back to a plain timeline.
+// Remembered in the browser like the other choices.
+const PLAN_STORAGE_KEY = "gram-playground-plan";
+
+interface PlanSettings {
+	serveAt: string;
+	timeZone: string;
+	from: string;
+	to: string;
+}
+
+function defaultTimeZone(): string {
+	try {
+		return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+	} catch {
+		return "UTC";
+	}
+}
+
+function loadPlan(): PlanSettings {
+	const fallback = {
+		serveAt: "",
+		timeZone: defaultTimeZone(),
+		from: "08:00",
+		to: "22:00",
+	};
+	try {
+		const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY) ?? "null");
+		if (saved && typeof saved === "object") {
+			const text = (v: unknown, d: string) => (typeof v === "string" ? v : d);
+			return {
+				serveAt: text(saved.serveAt, fallback.serveAt),
+				timeZone: text(saved.timeZone, fallback.timeZone),
+				from: text(saved.from, fallback.from),
+				to: text(saved.to, fallback.to),
+			};
+		}
+	} catch {
+		// Storage can be blocked or hold something else: start from the defaults.
+	}
+	return fallback;
+}
+
+const plan = ref<PlanSettings>(loadPlan());
+// The plan of the last run, for the Gantt chart; null without a serving time.
+const projection = shallowRef<ProjectedPlan | null>(null);
+const runSheetHtml = ref("");
+const planError = ref("");
+
+watch(
+	plan,
+	(value) => {
+		try {
+			localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(value));
+		} catch {
+			// Nothing to do: the plan just won't survive a reload.
+		}
+		trackEvent("playground-change-plan", { served: value.serveAt !== "" });
+	},
+	{ deep: true },
+);
+
+// biome-ignore lint/correctness/noUnusedVariables: timeZones is used in the <template> block below, which Biome's Vue support doesn't see.
+const timeZones: string[] = (() => {
+	try {
+		return (
+			(
+				Intl as unknown as { supportedValuesOf?: (k: string) => string[] }
+			).supportedValuesOf?.("timeZone") ?? []
+		);
+	} catch {
+		return [];
+	}
+})();
+
+// biome-ignore lint/correctness/noUnusedVariables: clearPlan is used in the <template> block below, which Biome's Vue support doesn't see.
+function clearPlan() {
+	plan.value = { ...plan.value, serveAt: "" };
+}
+
 // Only the views that draw a timeline or a mise en place depend on it: the
-// JSON, AST and tree views always carry every schedule.
+// JSON, AST and tree views always carry the task graph, not one timeline.
 // biome-ignore lint/correctness/noUnusedVariables: showScheduleSelector is used in the <template> block below, which Biome's Vue support doesn't see.
 const showScheduleSelector = computed(() =>
-	["preview", "gantt", "markdown"].includes(viewMode.value),
+	["preview", "gantt", "markdown", "runsheet"].includes(viewMode.value),
+);
+
+// biome-ignore lint/correctness/noUnusedVariables: showPlanControls is used in the <template> block below, which Biome's Vue support doesn't see.
+const showPlanControls = computed(() =>
+	["gantt", "runsheet"].includes(viewMode.value),
 );
 
 const options = ref({
@@ -219,6 +351,7 @@ const scaleTargetUnit = ref("");
 const viewModeOptions = computed(() => [
 	{ label: t.value.playground.views.preview, value: "preview" },
 	{ label: t.value.playground.views.gantt, value: "gantt" },
+	{ label: t.value.playground.views.runSheet, value: "runsheet" },
 	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
 	{ label: t.value.playground.views.json, value: "json" },
 	{ label: t.value.playground.views.ast, value: "ast" },
@@ -506,6 +639,7 @@ async function updateGram() {
 			...enrichedWarnings,
 		]);
 		jsonData.value = result;
+		placeOnCalendar(result);
 		trackPlaygroundWarnings(diagnostics.value.map((w) => w.code));
 
 		const fileWarnings = diagnostics.value.filter(
@@ -534,6 +668,7 @@ async function updateGram() {
 			content.value = toMarkdown(result, {
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
+				rests: rests.value,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
@@ -542,6 +677,7 @@ async function updateGram() {
 				bakersMathOnly: options.value.bakersMathOnly,
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
+				rests: rests.value,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);
@@ -554,6 +690,42 @@ async function updateGram() {
 		// vanishes even though it's still true of this compile.
 		diagnostics.value = sortDiagnostics([...collectedScaleDiagnostics, diag]);
 		trackPlaygroundRun(false, codeLength, { error_type: stage });
+	}
+}
+
+/**
+ * Places the compiled recipe on the calendar when a serving time is set, for
+ * the Gantt chart and the production sheet. A plan that can't be made (an
+ * unknown time zone, a half-typed time) is reported next to the controls, not
+ * as a problem of the recipe.
+ */
+function placeOnCalendar(result: any) {
+	projection.value = null;
+	runSheetHtml.value = "";
+	planError.value = "";
+	const { serveAt, timeZone, from, to } = plan.value;
+	if (!serveAt) return;
+	try {
+		const projected = project(
+			[
+				{
+					graph: result.tasks,
+					title: result.title ?? undefined,
+					options: { miseEnPlace: schedule.value, rests: rests.value },
+				},
+			],
+			{
+				serveAt,
+				timeZone,
+				availability: { daily: [{ start: from, end: to }] },
+			},
+		);
+		projection.value = projected;
+		runSheetHtml.value = runSheetToHTML(runSheet(projected), result, {
+			lang: currentLang.value,
+		});
+	} catch (e: any) {
+		planError.value = e?.message ?? String(e);
 	}
 }
 
@@ -579,7 +751,17 @@ function clearTarget() {
 // Everything a view is built from, the recipe included: a change re-runs the
 // pipeline whether or not a scale target is set.
 watch(
-	[files, options, viewMode, currentLang, activeFile, stockedUris, schedule],
+	[
+		files,
+		options,
+		viewMode,
+		currentLang,
+		activeFile,
+		stockedUris,
+		schedule,
+		rests,
+		plan,
+	],
 	() => {
 		updateGram();
 	},
@@ -860,6 +1042,9 @@ onUnmounted(() => {
               :html-preview="htmlPreview" 
               :json-data="jsonData" 
               :schedule="schedule"
+              :rests="rests"
+              :projection="projection"
+              :run-sheet-html="runSheetHtml"
               :blocking-diagnostics="blockingDiagnostics"
               @scale-update="handleScaleUpdate"
               @jump="handleJump"
@@ -884,6 +1069,43 @@ onUnmounted(() => {
                       class="header-view-selector"
                     />
                   </div>
+                  <div v-if="showScheduleSelector" class="header-view-wrapper">
+                    <span class="toolbar-label">{{ t.renderer.restsLabel }}</span>
+                    <PlaygroundDropdown
+                      v-model="rests"
+                      :options="restsOptions"
+                      :aria-label="t.renderer.restsLabel"
+                      class="header-view-selector"
+                    />
+                  </div>
+                  <details v-if="showPlanControls" class="plan-controls">
+                    <summary :class="{ 'is-active': plan.serveAt !== '' }">{{ t.playground.views.planSummary }}</summary>
+                    <div class="plan-popover">
+                      <label>
+                        <span>{{ t.playground.views.planServeAt }}</span>
+                        <input v-model="plan.serveAt" type="datetime-local" />
+                      </label>
+                      <label>
+                        <span>{{ t.playground.views.planTimeZone }}</span>
+                        <input v-model="plan.timeZone" type="text" list="plan-time-zones" spellcheck="false" />
+                        <datalist id="plan-time-zones">
+                          <option v-for="zone in timeZones" :key="zone" :value="zone"></option>
+                        </datalist>
+                      </label>
+                      <label class="plan-range">
+                        <span>{{ t.playground.views.planAvailableFrom }}</span>
+                        <input v-model="plan.from" type="time" />
+                        <span>{{ t.playground.views.planAvailableTo }}</span>
+                        <input v-model="plan.to" type="time" />
+                      </label>
+                      <p v-if="planError" class="plan-error" role="alert">
+                        {{ t.playground.views.planInvalid.replace('{message}', planError) }}
+                      </p>
+                      <button type="button" class="plan-clear" :disabled="plan.serveAt === ''" @click="clearPlan">
+                        {{ t.playground.views.planClear }}
+                      </button>
+                    </div>
+                  </details>
                 </div>
               </template>
             </GramOutput>
@@ -923,6 +1145,85 @@ onUnmounted(() => {
   margin: 0;
   padding: 1.5rem;
   box-sizing: border-box;
+}
+
+.plan-controls {
+  position: relative;
+}
+
+.plan-controls summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sl-color-gray-3);
+  padding: 4px 8px;
+  border: 1px solid var(--sl-color-border);
+  list-style: none;
+}
+
+.plan-controls summary.is-active {
+  color: var(--sl-color-white);
+  border-color: var(--sl-color-accent);
+}
+
+.plan-popover {
+  position: absolute;
+  right: 0;
+  z-index: 20;
+  margin-top: 4px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--sl-color-bg);
+  border: 1px solid var(--sl-color-border);
+}
+
+.plan-popover label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--sl-color-gray-2);
+}
+
+.plan-popover .plan-range {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.plan-popover input {
+  font: inherit;
+  color: var(--sl-color-white);
+  background: var(--sl-color-bg-nav);
+  border: 1px solid var(--sl-color-border);
+  padding: 4px 6px;
+}
+
+.plan-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sl-color-red);
+}
+
+.plan-clear {
+  align-self: flex-start;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--sl-color-gray-2);
+  background: transparent;
+  border: 1px solid var(--sl-color-border);
+  padding: 2px 8px;
+}
+
+.plan-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .playground-toolbar {

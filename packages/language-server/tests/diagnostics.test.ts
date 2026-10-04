@@ -18,3 +18,27 @@ describe("provideDiagnostics — shared warningSeverity map", () => {
 		expect(missingUnit?.severity).toBe(DiagnosticSeverity.Warning);
 	});
 });
+
+describe("SESSION_OVERFLOW", () => {
+	const OVERFLOWING =
+		"---\ntitle: Bread\n---\n\n## Dough ~{-1d} ->&dough\n\nMix @flour{500g}.\n\nFerment ~_{50h}.\n\n## Bake\n\nBake &dough{500g} ~{30min}.\n";
+
+	it("squiggles the section whose day a long rest pushes out of its 24 hours", () => {
+		const state = parseDocument(OVERFLOWING);
+		const found = provideDiagnostics(state).filter(
+			(d) => d.code === "SESSION_OVERFLOW",
+		);
+		expect(found).toHaveLength(1);
+		expect(found[0]!.severity).toBe(2); // warning
+		expect(found[0]!.message).toContain("Working day 1");
+		// Anchored on the section heading's line, not at the top of the file.
+		expect(found[0]!.range.start.line).toBe(4);
+	});
+
+	it("is silent when the rest fits the day", () => {
+		const state = parseDocument(OVERFLOWING.replace("50h", "10h"));
+		expect(
+			provideDiagnostics(state).some((d) => d.code === "SESSION_OVERFLOW"),
+		).toBe(false);
+	});
+});

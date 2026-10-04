@@ -117,6 +117,21 @@
           ],
           "default": "perSection",
           "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the Gantt chart and the title hint."
+        },
+        "gram.rests": {
+          "type": "string",
+          "enum": [
+            "shortest",
+            "balanced",
+            "longest"
+          ],
+          "enumDescriptions": [
+            "A rest written as a range (~_{12-24h}) lasts the shortest of it: ready as early as it can be.",
+            "A rest written as a range lasts the middle of it.",
+            "A rest written as a range lasts the longest of it."
+          ],
+          "default": "shortest",
+          "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the Gantt chart and the title hint."
         }
       }
     },

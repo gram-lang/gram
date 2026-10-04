@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import { DEFAULT_MISE_EN_PLACE_MODE } from "@gram-lang/kitchen";
-import { parseMiseEnPlaceSetting } from "../src/utils/mise-en-place-setting";
+import {
+	parseMiseEnPlaceSetting,
+	parseRestsSetting,
+} from "../src/utils/mise-en-place-setting";
 
 describe("parseMiseEnPlaceSetting", () => {
 	it("defaults to preparing right before each section", () => {
@@ -26,6 +29,28 @@ describe("parseMiseEnPlaceSetting", () => {
 			"upfront",
 		]) {
 			expect(parseMiseEnPlaceSetting(bad)).toBe("perSection");
+		}
+	});
+});
+
+describe("parseRestsSetting", () => {
+	it("reads the three known values", () => {
+		for (const value of ["shortest", "balanced", "longest"]) {
+			expect(parseRestsSetting({ rests: value })).toBe(value);
+		}
+	});
+
+	it("falls back on the shortest for anything else", () => {
+		for (const bad of [
+			undefined,
+			null,
+			{},
+			{ rests: "" },
+			{ rests: "LONGEST" },
+			{ rests: 2 },
+			"longest",
+		]) {
+			expect(parseRestsSetting(bad)).toBe("shortest");
 		}
 	});
 });

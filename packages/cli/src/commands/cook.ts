@@ -12,6 +12,11 @@ import { loadDbSafe } from "../core/db";
 import { runPipeline } from "../core/pipeline";
 import { reportUnusedStock, resolveStockFromConfig } from "../core/stock";
 import { reportRejectedIngredients } from "../ui/diagnostics";
+import {
+	MISE_EN_PLACE_FLAG_DESCRIPTION,
+	parseMiseEnPlace,
+} from "../services/mise-en-place-flag";
+import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import { resolveScaleArg, getScaleWarnings } from "../services/scaler";
 import { prepareRecipeData } from "../ui/cook/prepare";
 import App from "../ui/cook/App";
@@ -43,6 +48,14 @@ export default defineCommand({
 			description: "Skip ingredient database",
 			default: false,
 		},
+		"mise-en-place": {
+			type: "string",
+			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
+		},
+		rests: {
+			type: "string",
+			description: RESTS_FLAG_DESCRIPTION,
+		},
 		stock: {
 			type: "string",
 			description:
@@ -64,6 +77,8 @@ export default defineCommand({
 				config.language,
 				config.paths,
 			)) ?? 1;
+		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
+		const rests = parseRests(args.rests);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		const s = spinner();
@@ -81,7 +96,7 @@ export default defineCommand({
 				stock,
 			});
 			reportUnusedStock("gram cook", "cooked", stock, [{ usedStock }]);
-			totalTime = scheduleTimes(compiled).totalTime;
+			totalTime = scheduleTimes(compiled, miseEnPlace, rests).totalTime;
 			const massMap: Record<string, number> = {};
 			for (const item of analyzed?.result?.shopping_list ?? []) {
 				if (item.id && typeof item.normalizedMass === "number")

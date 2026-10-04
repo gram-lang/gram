@@ -60,6 +60,7 @@
     "@gram-lang/modules": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
+    "@gram-lang/scheduler": "workspace:*",
     "ai": "^7.0.22",
     "chalk": "^6.0.1",
     "citty": "^0.2.2",

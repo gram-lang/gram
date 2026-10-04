@@ -13,6 +13,7 @@ import {
 	MISE_EN_PLACE_FLAG_DESCRIPTION,
 	parseMiseEnPlace,
 } from "../services/mise-en-place-flag";
+import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import {
 	NUTRITION_BASIS_FLAG_DESCRIPTION,
 	parseNutritionBasis,
@@ -82,6 +83,10 @@ export default defineCommand({
 			type: "string",
 			description: MISE_EN_PLACE_FLAG_DESCRIPTION,
 		},
+		rests: {
+			type: "string",
+			description: RESTS_FLAG_DESCRIPTION,
+		},
 		stock: {
 			type: "string",
 			description:
@@ -115,6 +120,7 @@ export default defineCommand({
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
 		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
+		const rests = parseRests(args.rests);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		const outputPath = args.output
@@ -134,6 +140,7 @@ export default defineCommand({
 				bakersMathOnly,
 				nutritionBasis,
 				miseEnPlace,
+				rests,
 				lang: config.language,
 				paths: config.paths,
 				stock,

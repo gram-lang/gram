@@ -19,8 +19,17 @@ export interface RunSheetRenderOptions {
 	formatDuration?: (minutes: number) => string;
 }
 
-/** One line of the sheet, already in words. Plain text: each output escapes it its own way. */
-interface SheetLine {
+/**
+ * One line of the sheet, already in words. Plain text: each output escapes it
+ * its own way.
+ */
+export interface RunSheetLine {
+	/** The id of the task in the recipe's graph. */
+	task: string;
+	kind: RunSheetEntry["kind"];
+	/** ISO instants, UTC, exact to the minute. */
+	start: string;
+	end: string;
 	/** "around 21:40" */
 	when: string;
 	title: string;
@@ -32,15 +41,17 @@ interface SheetLine {
 	active: boolean;
 }
 
-interface SheetDay {
+export interface RunSheetDayModel {
+	/** "Saturday, October 10 · D-1" */
 	heading: string;
-	lines: SheetLine[];
+	lines: RunSheetLine[];
 }
 
-interface SheetModel {
+/** A production sheet in words: what every output (text, Markdown, HTML, calendar) is made from. */
+export interface RunSheetModel {
 	title: string;
 	servedAt: string;
-	days: SheetDay[];
+	days: RunSheetDayModel[];
 	problems: string[];
 }
 
@@ -81,13 +92,24 @@ const shortDay = (date: string, lang?: string) =>
 const fill = (template: string, values: Record<string, string>) =>
 	template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
 
-/** The words of a sheet, from the plan's structure and the recipe it is for. */
+/**
+ * The words of a sheet, from the plan's structure and the recipe it is for:
+ * the title, the days with their lines, and what could not be fixed.
+ */
+export function describeRunSheet(
+	sheet: RunSheet,
+	data: RenderableCompilationResult,
+	options: RunSheetRenderOptions = {},
+): RunSheetModel {
+	return buildModel(sheet, data, options, 0);
+}
+
 function buildModel(
 	sheet: RunSheet,
 	data: RenderableCompilationResult,
 	options: RunSheetRenderOptions,
 	recipeIndex: number,
-): SheetModel {
+): RunSheetModel {
 	const t = getDictionary(options.lang).renderer;
 	const lang = options.lang;
 	const step = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
@@ -151,7 +173,7 @@ function buildModel(
 			hourCycle: "h23",
 		}).format(new Date(iso));
 
-	const lineOf = (entry: RunSheetEntry): SheetLine => {
+	const lineOf = (entry: RunSheetEntry): RunSheetLine => {
 		const startDate = entry.startLocal.slice(0, 10);
 		const when = fill(t.runSheetAround, {
 			time: roundedClock(entry.startLocal, step),
@@ -202,10 +224,21 @@ function buildModel(
 				});
 			}
 		}
-		return { when, title, detail, length, note, active: entry.active };
+		return {
+			task: entry.task,
+			kind: entry.kind,
+			start: entry.start,
+			end: entry.end,
+			when,
+			title,
+			detail,
+			length,
+			note,
+			active: entry.active,
+		};
 	};
 
-	const daysOut: SheetDay[] = (recipe?.days ?? []).map((day) => ({
+	const daysOut: RunSheetDayModel[] = (recipe?.days ?? []).map((day) => ({
 		heading: `${longDate(day.date, lang)} · ${sessionDayLabel(day.daysBefore, t)}`,
 		lines: day.entries
 			.filter((entry) => entry.kind !== "step" || entry.minutes > 0)

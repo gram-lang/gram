@@ -303,7 +303,7 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 		expect(idle?.to).toBe(schedulesOf(b).perSection.idleTime);
 	});
 
-	it("still compares preparation and active time from the metrics", () => {
+	it("compares the preparation time of the schedule, the sum of the mise en place", () => {
 		const a = compileRecipe(base);
 		const b = compileRecipe(base.replace("(sifted)", ""));
 		const { timings } = diffRecipes(a, b);
@@ -320,9 +320,9 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 		).toEqual([]);
 	});
 
-	it("compares JSON stored before 1.4.0 (no schedules) through its old metrics, not as zero", () => {
+	it("compares JSON stored before 1.4.0 (no tasks) through its old metrics, not as zero", () => {
 		const current = compileRecipe(base);
-		const { schedules: _s, ...stored } = compileRecipe(base);
+		const { schedule: _s, tasks: _t, ...stored } = compileRecipe(base);
 		const timings = diffRecipes(current, stored as never).timings;
 
 		// Never the "150 -> 0" a missing schedule used to read as.
@@ -331,5 +331,34 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 			expect(delta === undefined || delta.to > 0).toBe(true);
 		}
 		expect(diffRecipes(stored as never, stored as never).timings).toEqual([]);
+	});
+});
+
+describe("diffRecipes — the active time is the schedule's", () => {
+	const cook = (range: string) =>
+		`## Roast\n\nRoast @chicken{1kg} for ~{${range}}.\n`;
+
+	it("shows a change of the range of a cooking time, planned on its longest figure", () => {
+		const a = compileRecipe(cook("40-50min"));
+		const b = compileRecipe(cook("40-60min"));
+		const active = diffRecipes(a, b).timings.find(
+			(t) => t.field === "activeTime",
+		);
+		expect(active).toEqual({ field: "activeTime", from: 50, to: 60 });
+		// The deprecated metric is the average: 45 and 50.
+		expect(a.metrics.activeTime).toBe(45);
+	});
+
+	it("falls back on the old metric for JSON stored before 1.4.0", () => {
+		const a = compileRecipe(cook("40-50min"));
+		const {
+			schedule: _s,
+			tasks: _t,
+			...stored
+		} = compileRecipe(cook("40-70min"));
+		const active = diffRecipes(a, stored as never).timings.find(
+			(t) => t.field === "activeTime",
+		);
+		expect(active).toEqual({ field: "activeTime", from: 50, to: 55 });
 	});
 });

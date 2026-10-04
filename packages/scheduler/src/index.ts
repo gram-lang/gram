@@ -53,3 +53,4 @@ export type {
 	TimeRange,
 } from "./projection";
 export { WEEKDAYS, type Weekday } from "./time";
+export { parseInstant, parseLocalIso, toLocalIso, toUtcIso } from "./time";

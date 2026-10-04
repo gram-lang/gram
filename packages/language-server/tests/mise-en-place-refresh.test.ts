@@ -53,6 +53,8 @@ class Client {
 	readonly notes: Note[] = [];
 	/** What the client answers to `workspace/configuration`. */
 	setting: unknown = "perSection";
+	/** And to `gram.rests`. */
+	rests: unknown = "shortest";
 	/** How long the client takes to answer it (ms). */
 	configDelay = 0;
 
@@ -100,7 +102,10 @@ class Client {
 				() =>
 					this.write({
 						id: message.id,
-						result: items.map(() => ({ miseEnPlace: this.setting })),
+						result: items.map(() => ({
+							miseEnPlace: this.setting,
+							rests: this.rests,
+						})),
 					}),
 				this.configDelay,
 			);
@@ -283,5 +288,61 @@ describe("gram.miseEnPlace in the language server", () => {
 		client.open(RECIPE("Tart"));
 		const html = await client.previewMatching((h) => totalOf(h) !== undefined);
 		expect(totalOf(html)).toBe(TOTAL.perSection);
+	}, 20_000);
+});
+
+// A rest written as a range: the choice of rests moves the total, and nothing
+// else here does.
+const RANGED = (title: string) => `---
+title: ${title}
+---
+
+## Dough ->&dough
+
+Knead @flour{500g} ~{20min}, then rest ~_{8-16h}.
+
+## Bake
+
+Bake &dough{500g} ~{30min}.
+`;
+const ranged = compile(getAST(RANGED("Bread")));
+const REST_TOTAL = {
+	shortest: fmt(scheduleTimes(ranged, undefined, "shortest").totalTime),
+	longest: fmt(scheduleTimes(ranged, undefined, "longest").totalTime),
+};
+
+describe("gram.rests in the language server", () => {
+	it("sanity: the shortest and the longest rests do not give the same total", () => {
+		expect(REST_TOTAL.longest).not.toBe(REST_TOTAL.shortest);
+	});
+
+	it("renders with the shortest rests until told otherwise", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RANGED("Bread"));
+		const html = await client.previewMatching((h) => totalOf(h) !== undefined);
+		expect(totalOf(html)).toBe(REST_TOTAL.shortest);
+	}, 20_000);
+
+	it("applies the setting to a recipe already open, and re-renders when it changes", async () => {
+		client = new Client();
+		client.rests = "longest";
+		client.configDelay = 300;
+		await client.start();
+		client.open(RANGED("Bread"));
+		await client.previewMatching((h) => totalOf(h) === REST_TOTAL.longest);
+
+		client.rests = "shortest";
+		client.settingChanged();
+		await client.previewMatching((h) => totalOf(h) === REST_TOTAL.shortest);
+	}, 20_000);
+
+	it("falls back on the shortest for a value it does not know", async () => {
+		client = new Client();
+		client.rests = "sideways";
+		await client.start();
+		client.open(RANGED("Bread"));
+		const html = await client.previewMatching((h) => totalOf(h) !== undefined);
+		expect(totalOf(html)).toBe(REST_TOTAL.shortest);
 	}, 20_000);
 });

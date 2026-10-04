@@ -34,7 +34,10 @@ import {
 } from "./features/semantic-tokens";
 import type { IngredientDB } from "./ingredient-loader";
 import { provideInlayHints } from "./features/inlay-hints";
-import { parseMiseEnPlaceSetting } from "./utils/mise-en-place-setting";
+import {
+	parseMiseEnPlaceSetting,
+	parseRestsSetting,
+} from "./utils/mise-en-place-setting";
 import { provideCodeLenses } from "./features/code-lens";
 import { positionToOffset } from "./utils/position";
 import { resolveWorkspaceFolders } from "./utils/workspace-folders";
@@ -44,6 +47,8 @@ import { toHTML, toGanttHTML, escapeHtml } from "@gram-lang/renderer";
 import {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	type MiseEnPlaceMode,
+	DEFAULT_REST_CHOICE,
+	type RestChoice,
 } from "@gram-lang/kitchen";
 
 const connection = createConnection(ProposedFeatures.all);
@@ -153,18 +158,22 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	};
 });
 
-// `gram.miseEnPlace`: which timeline the preview, the Gantt and the title hint
-// follow. Read once at start and again whenever the settings change.
+// `gram.miseEnPlace` and `gram.rests`: which timeline the preview, the Gantt and
+// the title hint follow. Read once at start and again whenever the settings
+// change.
 let miseEnPlace: MiseEnPlaceMode = DEFAULT_MISE_EN_PLACE_MODE;
+let rests: RestChoice = DEFAULT_REST_CHOICE;
 
 // Never rejects (same rule as reloadDbAndRefreshDiagnostics below): a client
 // without workspace configuration just keeps the default.
 async function loadMiseEnPlace(): Promise<boolean> {
 	try {
 		const config = await connection.workspace.getConfiguration("gram");
-		const next = parseMiseEnPlaceSetting(config);
-		const changed = next !== miseEnPlace;
-		miseEnPlace = next;
+		const nextMode = parseMiseEnPlaceSetting(config);
+		const nextRests = parseRestsSetting(config);
+		const changed = nextMode !== miseEnPlace || nextRests !== rests;
+		miseEnPlace = nextMode;
+		rests = nextRests;
 		return changed;
 	} catch {
 		return false;
@@ -320,6 +329,7 @@ function renderViews(uri: string, state: DocumentState): void {
 			const html = toHTML(state.compilation, {
 				interactiveNutrition: true,
 				miseEnPlace,
+				rests,
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
@@ -331,6 +341,7 @@ function renderViews(uri: string, state: DocumentState): void {
 		try {
 			const ganttHtml = toGanttHTML(state.compilation, {
 				miseEnPlace,
+				rests,
 			});
 			connection.sendNotification("gram/ganttUpdated", {
 				uri,
@@ -532,7 +543,7 @@ connection.languages.semanticTokens.on(({ textDocument: { uri } }) => {
 
 connection.languages.inlayHint.on(({ textDocument: { uri } }) => {
 	const s = states.get(uri);
-	return s ? provideInlayHints(s, miseEnPlace) : [];
+	return s ? provideInlayHints(s, miseEnPlace, rests) : [];
 });
 
 connection.onCodeLens(({ textDocument: { uri } }) => {
