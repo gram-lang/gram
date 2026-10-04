@@ -10,7 +10,7 @@ import {
 } from "@gram-lang/renderer";
 import {
 	type CompilationResult,
-	type ScheduleMode,
+	type MiseEnPlaceMode,
 	scheduleTimes,
 } from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
@@ -156,7 +156,7 @@ export async function buildViewModel(
 		bakersMathOnly?: boolean;
 		nutritionBasis?: NutritionBasis;
 		/** Which timeline the total and rest times follow. Default per section. */
-		schedule?: ScheduleMode;
+		schedule?: MiseEnPlaceMode;
 		lang?: string;
 		paths?: Record<string, string>;
 		stock?: Set<string>;

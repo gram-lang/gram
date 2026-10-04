@@ -1,0 +1,13 @@
+---
+title: Dough that does not fit its day
+---
+
+## Dough ~{-1d} ->&dough
+
+[Mix] Mix @flour{500g} with @water{350ml}.
+
+[Rest] Let it ferment ~_{50h}.
+
+## Bake
+
+[Bake] Bake &dough{850g} for ~{30min} at ^{230C}.

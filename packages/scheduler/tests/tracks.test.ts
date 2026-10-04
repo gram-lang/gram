@@ -8,6 +8,7 @@ import type {
 
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
+		taskId: "s0.0",
 		sectionIndex: 0,
 		stepIndex: 0,
 		isComment: false,
@@ -36,11 +37,17 @@ describe("serializeTracks", () => {
 		const sched = makeSchedule({
 			ls: 10,
 			passiveTasks: [
-				{ name: "oven", duration: 30, localOffset: 0, isNamed: false },
+				{
+					taskId: "s0.0.t0",
+					name: "oven",
+					duration: 30,
+					localOffset: 0,
+					isNamed: false,
+				},
 			],
 		});
 
-		const [entry] = serializeTracks([sched], [makeSection()], []);
+		const [entry] = serializeTracks([sched], []);
 
 		expect(entry?.theoreticalStart).toBe(10);
 		expect(entry?.actualStart).toBe(10);
@@ -52,21 +59,29 @@ describe("serializeTracks", () => {
 		const first = makeSchedule({
 			ls: 0,
 			passiveTasks: [
-				{ name: "oven", duration: 20, localOffset: 0, isNamed: true },
+				{
+					taskId: "s0.0.t0",
+					name: "oven",
+					duration: 20,
+					localOffset: 0,
+					isNamed: true,
+				},
 			],
 		});
 		const second = makeSchedule({
 			ls: 5, // theoretical start (5) falls inside the first task's 0-20 window
 			passiveTasks: [
-				{ name: "oven", duration: 10, localOffset: 0, isNamed: true },
+				{
+					taskId: "s0.0.t0",
+					name: "oven",
+					duration: 10,
+					localOffset: 0,
+					isNamed: true,
+				},
 			],
 		});
 
-		const entries = serializeTracks(
-			[first, second],
-			[makeSection(), makeSection()],
-			diagnostics,
-		);
+		const entries = serializeTracks([first, second], diagnostics);
 		const [a, b] = entries;
 
 		expect(a?.actualStart).toBe(0);
@@ -82,22 +97,29 @@ describe("serializeTracks", () => {
 		const first = makeSchedule({
 			ls: 0,
 			passiveTasks: [
-				{ name: "Timer", duration: 20, localOffset: 0, isNamed: false },
+				{
+					taskId: "s0.0.t0",
+					name: "Timer",
+					duration: 20,
+					localOffset: 0,
+					isNamed: false,
+				},
 			],
 		});
 		const second = makeSchedule({
 			ls: 5,
 			passiveTasks: [
-				{ name: "Timer", duration: 10, localOffset: 0, isNamed: false },
+				{
+					taskId: "s0.0.t0",
+					name: "Timer",
+					duration: 10,
+					localOffset: 0,
+					isNamed: false,
+				},
 			],
 		});
 
-		const [a, b] = serializeTracks(
-			[first, second],
-			[makeSection(), makeSection()],
-			[],
-			[],
-		);
+		const [a, b] = serializeTracks([first, second], []);
 
 		// Unnamed tasks never share a track cursor — both keep their
 		// theoretical start regardless of overlap.
@@ -109,11 +131,17 @@ describe("serializeTracks", () => {
 		const comment = makeSchedule({
 			isComment: true,
 			passiveTasks: [
-				{ name: "oven", duration: 30, localOffset: 0, isNamed: true },
+				{
+					taskId: "s0.0.t0",
+					name: "oven",
+					duration: 30,
+					localOffset: 0,
+					isNamed: true,
+				},
 			],
 		});
 
-		const entries = serializeTracks([comment], [makeSection()], []);
+		const entries = serializeTracks([comment], []);
 		expect(entries).toHaveLength(0);
 	});
 });

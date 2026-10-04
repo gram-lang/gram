@@ -10,7 +10,7 @@ import {
 	computeMiseEnPlace,
 	type ProcessedStep,
 	type Registry,
-	type Schedule,
+	scheduleFor,
 } from "@gram-lang/kitchen";
 import {
 	composeRecipe,
@@ -146,17 +146,25 @@ const overlaps = (
 ) => a.start < b.end && b.start < a.end;
 
 function checkSchedules(compiled: CompilationResult): void {
-	const { miseEnPlace, schedules, metrics, sections } = compiled;
+	const { miseEnPlace, metrics, sections } = compiled;
+	const schedules = {
+		perSection: scheduleFor(compiled, "perSection")!,
+		upfront: scheduleFor(compiled, "upfront")!,
+		perSession: scheduleFor(compiled, "perSession")!,
+	};
 	const preparation = metrics.preparationTime;
+	// A range in a timer makes the legacy fields (the average) and the timelines
+	// (the shortest rest, the longest active timer) differ on purpose.
+	const hasRange = compiled.tasks.tasks.some(
+		(t) => t.duration.min !== undefined,
+	);
 
 	// The compiled field is the same fact computeMiseEnPlace derives.
 	expect(miseEnPlace).toEqual(
 		computeMiseEnPlace(sections, toRegistry(compiled)),
 	);
 
-	for (const [mode, schedule] of Object.entries(schedules) as Array<
-		[string, Schedule]
-	>) {
+	for (const [mode, schedule] of Object.entries(schedules)) {
 		// Invariant 3: prep blocks for each mise en place entry, of its length in
 		// all (two in `upfront` and `perSession` when the section also gathers an intermediate).
 		const prep = schedule.blocks.filter((b) => b.kind === "prep");
@@ -173,9 +181,11 @@ function checkSchedules(compiled: CompilationResult): void {
 
 		// Invariant 4: the three times add up, and nothing is negative.
 		expect(schedule.idleTime).toBeGreaterThanOrEqual(0);
+		expect(schedule.preparationTime).toBe(preparation);
 		expect(schedule.totalTime).toBe(
-			preparation + metrics.activeTime + schedule.idleTime,
+			schedule.preparationTime + schedule.activeTime + schedule.idleTime,
 		);
+		if (!hasRange) expect(schedule.activeTime).toBe(metrics.activeTime);
 		expect(schedule.totalTime).toBe(
 			schedule.blocks.reduce((max, b) => Math.max(max, b.end), 0),
 		);
@@ -216,8 +226,9 @@ function checkSchedules(compiled: CompilationResult): void {
 			i.kind === "gather" ? (i.intermediates ?? 0) > 0 : i.intermediate,
 		),
 	);
-	expect(upfront.totalTime).toBeLessThanOrEqual(metrics.totalTime);
-	if (!hasIntermediate) {
+	if (!hasRange)
+		expect(upfront.totalTime).toBeLessThanOrEqual(metrics.totalTime);
+	if (!hasIntermediate && !hasRange) {
 		expect(upfront.totalTime).toBe(metrics.totalTime);
 		for (const b of upfront.blocks) {
 			if (b.kind !== "step") continue;
@@ -252,7 +263,7 @@ function checkSchedules(compiled: CompilationResult): void {
 		for (const st of steps) expect(overlaps(p, st)).toBe(false);
 	}
 	expect(steps.reduce((sum, b) => sum + (b.end - b.start), 0)).toBe(
-		metrics.activeTime,
+		perSection.activeTime,
 	);
 }
 

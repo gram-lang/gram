@@ -1,12 +1,20 @@
 import { describe, expect, it } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import {
+	scheduleFor,
 	calculatePreparationTime,
 	compile,
 	computeMiseEnPlace,
 	type Registry,
 } from "../src/index";
 import { KITCHEN_VERSION } from "../src/version";
+
+// The three timelines of a compiled recipe, laid out from its task graph.
+const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
+	perSection: scheduleFor(c, "perSection")!,
+	upfront: scheduleFor(c, "upfront")!,
+	perSession: scheduleFor(c, "perSession")!,
+});
 
 const RECIPE = `## Dough ->&dough
 
@@ -35,29 +43,29 @@ describe("compiled mise en place and schedules", () => {
 		const scaled = compile(getAST(RECIPE), { scaleFactor: 3 });
 
 		expect(scaled.miseEnPlace).toEqual(base.miseEnPlace);
-		expect(scaled.schedules).toEqual(base.schedules);
+		expect(schedulesOf(scaled)).toEqual(schedulesOf(base));
 		expect(scaled.metrics.preparationTime).toBe(base.metrics.preparationTime);
 	});
 
 	it("keeps `miseEnPlace` and the schedules present, and empty, for an empty recipe", () => {
 		const result = compile(getAST(""));
 		expect(result.miseEnPlace).toEqual([]);
-		expect(result.schedules.perSection.blocks).toEqual([]);
-		expect(result.schedules.upfront.blocks).toEqual([]);
-		expect(result.schedules.perSection.totalTime).toBe(0);
+		expect(schedulesOf(result).perSection.blocks).toEqual([]);
+		expect(schedulesOf(result).upfront.blocks).toEqual([]);
+		expect(schedulesOf(result).perSection.totalTime).toBe(0);
 	});
 
 	it("keeps the deprecated fields' values and meaning", () => {
 		const result = compile(getAST(RECIPE));
 		// The legacy total is every preparation first. The upfront timeline can
 		// be shorter, as it gathers an intermediate once it exists.
-		expect(result.schedules.upfront.totalTime).toBeLessThanOrEqual(
+		expect(schedulesOf(result).upfront.totalTime).toBeLessThanOrEqual(
 			result.metrics.totalTime,
 		);
 		const plain = compile(
 			getAST("## Bake\n\nBake @flour{500g} for ~{20min}.\n"),
 		);
-		expect(plain.metrics.totalTime).toBe(plain.schedules.upfront.totalTime);
+		expect(plain.metrics.totalTime).toBe(schedulesOf(plain).upfront.totalTime);
 		expect(result.metrics.preparationTime).toBe(
 			result.miseEnPlace.reduce((sum, m) => sum + m.duration, 0),
 		);
@@ -104,7 +112,7 @@ Spread &filling{100g} over &dough{200g}.
 	});
 
 	it("never plans an intermediate's preparation before the section making it", () => {
-		const { upfront } = compile(getAST(SOURCE)).schedules;
+		const { upfront } = schedulesOf(compile(getAST(SOURCE)));
 		const preps = upfront.blocks.filter((b) => b.kind === "prep");
 		const lastStepOf = (section: number) =>
 			Math.max(
@@ -154,7 +162,7 @@ Spread &filling{100g} over &dough{200g}.
 	describe("sections without a step", () => {
 		const consistent = (result: ReturnType<typeof compile>) => {
 			for (const key of ["perSection", "upfront"] as const) {
-				const s = result.schedules[key];
+				const s = schedulesOf(result)[key];
 				expect(s.idleTime).toBeGreaterThanOrEqual(0);
 				const prep = s.blocks
 					.filter((b) => b.kind === "prep")
@@ -298,7 +306,7 @@ Mix &cream{100g} and @flour{200g}.
 Fill with &crust{300g} and bake ~{30min}.
 `;
 
-	const compiled = () => compile(getAST(SOURCE)).schedules.perSession;
+	const compiled = () => schedulesOf(compile(getAST(SOURCE))).perSession;
 
 	it("makes one session per anchored day, furthest first", () => {
 		const { sessions } = compiled();
@@ -341,15 +349,17 @@ Fill with &crust{300g} and bake ~{30min}.
 	});
 
 	it("is one session, like upfront, without an anchor of a day or more", () => {
-		const { schedules } = compile(getAST(RECIPE));
+		const schedules = schedulesOf(compile(getAST(RECIPE)));
 		expect(schedules.perSession.sessions).toHaveLength(1);
 		expect(schedules.perSession.blocks).toEqual(schedules.upfront.blocks);
 	});
 
 	it("does not open a day for a long passive timer without a section anchor", () => {
-		const { schedules } = compile(
-			getAST(
-				"## Cream\n\nWhisk @milk{500ml}.\n\n[Rest] Chill ~_{48h}.\n\n## Pie\n\nBake @flour{200g} ~{30min}.\n",
+		const schedules = schedulesOf(
+			compile(
+				getAST(
+					"## Cream\n\nWhisk @milk{500ml}.\n\n[Rest] Chill ~_{48h}.\n\n## Pie\n\nBake @flour{200g} ~{30min}.\n",
+				),
 			),
 		);
 		expect(schedules.perSession.sessions).toHaveLength(1);
@@ -357,16 +367,20 @@ Fill with &crust{300g} and bake ~{30min}.
 	});
 
 	it("keeps a section anchored under 24 hours on the day itself", () => {
-		const { schedules } = compile(
-			getAST(
-				"## Poolish ~{-18h} ->&poolish\n\nMix @flour{100g}.\n\n## Bread\n\nKnead &poolish{100g}.\n",
+		const schedules = schedulesOf(
+			compile(
+				getAST(
+					"## Poolish ~{-18h} ->&poolish\n\nMix @flour{100g}.\n\n## Bread\n\nKnead &poolish{100g}.\n",
+				),
 			),
 		);
 		expect(schedules.perSession.sessions.map((s) => s.day)).toEqual([0]);
 	});
 
 	it("keeps the same preparation and active time as the other schedules", () => {
-		const { schedules, metrics } = compile(getAST(SOURCE));
+		const compiled = compile(getAST(SOURCE));
+		const schedules = schedulesOf(compiled);
+		const { metrics } = compiled;
 		for (const mode of ["perSection", "upfront", "perSession"] as const) {
 			const s = schedules[mode];
 			const prep = s.blocks

@@ -224,172 +224,161 @@
       ]
     }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 2882,
-      "idleTime": 2877,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 2
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 0
         },
-        {
-          "kind": "passive",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 1442
+        "after": []
+      },
+      {
+        "id": "s0.0.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 0,
+        "offset": 0,
+        "duration": {
+          "nominal": 1440
         },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2879,
-          "end": 2880
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.prep.levain",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "levain",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2880,
-          "end": 2882
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 2,
-          "sections": [
-            0
-          ]
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "day": 0,
-          "start": 2879,
-          "end": 2882,
-          "sections": [
-            1
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 2882,
-      "idleTime": 2877,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 2
-        },
-        {
-          "kind": "passive",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 1442
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2879,
-          "end": 2880,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2880,
-          "end": 2882
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 2882,
-          "sections": [
-            0,
-            1
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 2882,
-      "idleTime": 2877,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 2
-        },
-        {
-          "kind": "passive",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 1442
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2879,
-          "end": 2880
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2880,
-          "end": 2882
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 2,
-          "sections": [
-            0
-          ]
-        },
-        {
-          "day": 0,
-          "start": 2879,
-          "end": 2882,
-          "sections": [
-            1
-          ]
-        }
-      ]
-    }
+        "consumes": [
+          "levain"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 2,
+        "deadline": 2880,
+        "intermediate": "levain"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2882,
+    "activeTime": 2,
+    "preparationTime": 3,
+    "idleTime": 2877,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 2
+      },
+      {
+        "kind": "passive",
+        "task": "s0.0.t0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 1442
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.levain",
+        "section": 1,
+        "start": 2879,
+        "end": 2880
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 2880,
+        "end": 2882
+      }
+    ],
+    "sessions": [
+      {
+        "day": 2,
+        "start": 0,
+        "end": 2,
+        "sections": [
+          0
+        ]
+      },
+      {
+        "day": 0,
+        "start": 2879,
+        "end": 2882,
+        "sections": [
+          1
+        ]
+      }
+    ]
   },
   "modules": [
     {

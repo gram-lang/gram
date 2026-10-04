@@ -8,6 +8,13 @@ import { buildViewModel } from "../src/services/viewer";
 import { prepareRecipeData } from "../src/ui/cook/prepare";
 import { cleanupTmpFile, writeTmpFile } from "./helpers";
 
+// The three timelines of a compiled recipe, laid out from its task graph.
+const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
+	perSection: scheduleFor(c, "perSection")!,
+	upfront: scheduleFor(c, "upfront")!,
+	perSession: scheduleFor(c, "perSession")!,
+});
+
 // A section with a retro-planning offset makes the two timelines differ.
 const TART = `## Pastry ~{-2d}
 
@@ -134,7 +141,7 @@ describe("view, export and print follow --mise-en-place", () => {
 
 	it("takes the header times from the chosen timeline", async () => {
 		const path = await tmp(TART);
-		const { perSection, upfront } = compile(getAST(TART)).schedules;
+		const { perSection, upfront } = schedulesOf(compile(getAST(TART)));
 		expect(perSection.totalTime).not.toBe(upfront.totalTime);
 
 		const per = await buildViewModel(path, {});
@@ -149,7 +156,7 @@ describe("view, export and print follow --mise-en-place", () => {
 		const path = await tmp(TART);
 		const model = await buildViewModel(path, {});
 		expect(model.times?.total).toBe(
-			compile(getAST(TART)).schedules.perSection.totalTime,
+			schedulesOf(compile(getAST(TART))).perSection.totalTime,
 		);
 	});
 

@@ -14,6 +14,7 @@ import type {
 
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
+		taskId: "s0.0",
 		sectionIndex: 0,
 		stepIndex: 0,
 		isComment: false,
@@ -123,14 +124,26 @@ describe("scheduleALAP", () => {
 			sectionIndex: 0,
 			localActiveTime: 0,
 			passiveTasks: [
-				{ name: "cuisson", duration: 10, localOffset: 0, isNamed: true },
+				{
+					taskId: "s0.0.t0",
+					name: "cuisson",
+					duration: 10,
+					localOffset: 0,
+					isNamed: true,
+				},
 			],
 		});
 		const second = makeSchedule({
 			sectionIndex: 0,
 			localActiveTime: 0,
 			passiveTasks: [
-				{ name: "cuisson", duration: 30, localOffset: 0, isNamed: true },
+				{
+					taskId: "s0.0.t0",
+					name: "cuisson",
+					duration: 30,
+					localOffset: 0,
+					isNamed: true,
+				},
 			],
 		});
 		const sections = [makeSection()];

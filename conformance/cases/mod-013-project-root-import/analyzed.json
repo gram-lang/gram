@@ -343,182 +343,188 @@
       ]
     }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 10,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 4
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 4,
-          "end": 5
+        "after": []
+      },
+      {
+        "id": "s1.prep.mid-pate",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "mid-pate",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 5,
-          "end": 7
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 7,
-          "end": 8
+        "consumes": [
+          "mid$pate"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s2.prep.mid",
+        "kind": "prep",
+        "section": 2,
+        "intermediate": "mid",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 8,
-          "end": 10
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 10,
-          "sections": [
-            0,
-            1,
-            2
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 10,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s2.0",
+        "kind": "step",
+        "section": 2,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 4
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 4,
-          "end": 5,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 5,
-          "end": 7
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 7,
-          "end": 8,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 8,
-          "end": 10
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 10,
-          "sections": [
-            0,
-            1,
-            2
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 10,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 4
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 4,
-          "end": 5,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 5,
-          "end": 7
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 7,
-          "end": 8,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 8,
-          "end": 10
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 10,
-          "sections": [
-            0,
-            1,
-            2
-          ]
-        }
-      ]
-    }
+        "consumes": [
+          "mid"
+        ],
+        "after": [
+          "s1.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "mid$pate"
+      },
+      {
+        "day": 0,
+        "intermediate": "mid"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 10,
+    "activeTime": 6,
+    "preparationTime": 4,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.mid-pate",
+        "section": 1,
+        "start": 4,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep.mid",
+        "section": 2,
+        "start": 7,
+        "end": 8
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 8,
+        "end": 10
+      }
+    ],
+    "sessions": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 10,
+        "sections": [
+          0,
+          1,
+          2
+        ]
+      }
+    ]
   },
   "modules": [
     {

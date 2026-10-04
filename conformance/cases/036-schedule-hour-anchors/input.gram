@@ -1,0 +1,15 @@
+---
+title: Anchors in hours stay in one session
+---
+
+## Marinade ~{-36h}
+
+[Marinate] Mix @chicken{1kg} with @yogurt{200g} and @spices{20g}, then rest ~_{36h}.
+
+## Cook ~{-2h}
+
+[Fry] Fry the chicken in @oil{30ml} for ~{25min}.
+
+## Serve
+
+[Plate] Plate with @rice{300g}.

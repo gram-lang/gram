@@ -1,0 +1,349 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Overnight dough with a range"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": null,
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 54,
+          "end": 62
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Mix",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 70,
+                "end": 74
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 81,
+                  "end": 85
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 74,
+                "end": 86
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 87,
+                "end": 92
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 350,
+                  "text": "350"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 99,
+                  "end": 104
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 92,
+                "end": 105
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 106,
+                "end": 110
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "yeast",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 3,
+                  "text": "3"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 117,
+                  "end": 119
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 110,
+                "end": 120
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then knead for ",
+              "loc": {
+                "start": 120,
+                "end": 137
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 10,
+                  "text": "10"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 139,
+                  "end": 144
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 137,
+                "end": 145
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 145,
+                "end": 146
+              }
+            }
+          ],
+          "loc": {
+            "start": 64,
+            "end": 148
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Rest",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Let it rise in the fridge ",
+              "loc": {
+                "start": 155,
+                "end": 181
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "range",
+                  "value": 18,
+                  "range": {
+                    "min": 12,
+                    "max": 24
+                  },
+                  "text": "12-24"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 184,
+                  "end": 190
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 181,
+                "end": 191
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 191,
+                "end": 192
+              }
+            }
+          ],
+          "loc": {
+            "start": 148,
+            "end": 194
+          }
+        }
+      ],
+      "loc": {
+        "start": 45,
+        "end": 194
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Bake",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Shape ",
+              "loc": {
+                "start": 210,
+                "end": 216
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 850,
+                  "text": "850"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 223,
+                  "end": 227
+                }
+              },
+              "loc": {
+                "start": 216,
+                "end": 228
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and bake at ",
+              "loc": {
+                "start": 229,
+                "end": 241
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 241,
+                "end": 248
+              },
+              "value": {
+                "type": "single",
+                "value": 240,
+                "text": "240"
+              },
+              "unit": "C"
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 249,
+                "end": 253
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "range",
+                  "value": 22.5,
+                  "range": {
+                    "min": 20,
+                    "max": 25
+                  },
+                  "text": "20-25"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 255,
+                  "end": 263
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 253,
+                "end": 264
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 264,
+                "end": 265
+              }
+            }
+          ],
+          "loc": {
+            "start": 203,
+            "end": 266
+          }
+        }
+      ],
+      "loc": {
+        "start": 194,
+        "end": 266
+      }
+    }
+  ]
+}

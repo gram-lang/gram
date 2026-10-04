@@ -1,3 +1,5 @@
+import type { MiseEnPlaceMode, RestChoice } from "./mode";
+
 /** One line of a section's mise en place cost. */
 export type MiseEnPlaceItem =
 	| {
@@ -33,6 +35,11 @@ export interface SectionMiseEnPlace {
 export type ScheduleBlock =
 	| {
 			kind: "prep";
+			/**
+			 * The graph task it lays out; the first one when the block gathers
+			 * several preparations that start and end together.
+			 */
+			task: string;
 			section: number;
 			start: number;
 			end: number;
@@ -46,6 +53,7 @@ export type ScheduleBlock =
 	  }
 	| {
 			kind: "step";
+			task: string;
 			section: number;
 			step: number; // index in sections[section].steps (comments included)
 			start: number;
@@ -53,6 +61,7 @@ export type ScheduleBlock =
 	  }
 	| {
 			kind: "passive";
+			task: string;
 			section: number;
 			step: number;
 			track?: string; // only for named passive timers (~_name{})
@@ -72,10 +81,18 @@ export interface ScheduleSession {
 	sections: number[];
 }
 
-/** A complete timeline, in minutes from T0 = 0, preparation included. */
+/**
+ * A complete timeline, in minutes from T0 = 0, preparation included. It
+ * describes itself (`miseEnPlace`, `rests`), so a consumer never has to
+ * remember which options produced it.
+ */
 export interface Schedule {
+	miseEnPlace: MiseEnPlaceMode;
+	rests: RestChoice;
 	totalTime: number; // max(end) over blocks
-	idleTime: number; // totalTime - metrics.activeTime - metrics.preparationTime
+	activeTime: number; // the cook's hands-on time, mise en place excluded
+	preparationTime: number; // the mise en place, the sum of the `prep` tasks
+	idleTime: number; // totalTime - activeTime - preparationTime
 	blocks: ScheduleBlock[]; // sorted by start, then end
 	sessions: ScheduleSession[]; // one per working day, furthest day first
 }
@@ -91,7 +108,8 @@ export interface TimeBreakdownItem {
  * about sections (no AST, no steps, no ingredients).
  */
 export interface SchedulingSection {
-	title: string | null;
+	// Only the breakdown labels of the legacy timeline read it.
+	title?: string | null;
 	/** The `~{-1d}` anchor, when the section has one. */
 	retro_planning?: {
 		value?: number;
@@ -117,6 +135,8 @@ export interface SchedulingSection {
  * compiled output: the scheduler writes nothing but its own records.
  */
 export interface StepSchedule {
+	/** The graph task the entry lays out (the block's `task`). */
+	taskId: string;
 	sectionIndex: number;
 	// Index in the section's steps (comments included). Null only for a
 	// synthetic mise en place entry (`isPrep`), which stands in for a section's
@@ -143,6 +163,8 @@ export interface StepSchedule {
 }
 
 export interface PassiveTask {
+	/** The graph task of this timer. */
+	taskId: string;
 	name: string;
 	duration: number;
 	localOffset: number;
@@ -161,20 +183,27 @@ export interface ScheduledPassiveTask {
 
 /**
  * A scheduling problem found while laying work out. The scheduler never builds
- * a user-facing warning: the caller maps these onto its own registry (kitchen
- * adds the source location of `section`).
+ * a user-facing message: the caller maps these onto its own registry and
+ * words them (kitchen adds the title and the source location of `section`).
  */
 export type SchedulingDiagnostic =
 	| {
 			code: "TIME_PARADOX";
 			section: number;
-			cause: string;
-			conflict: string;
+			/** Where the dependency pulls the section's end, in minutes from T0 (negative: earlier). */
+			pulledTo: number;
 	  }
 	| {
 			code: "TRACK_CONTENTION";
 			section: number;
 			trackName: string;
 			delay: number;
-			item: string;
+	  }
+	| {
+			code: "SESSION_OVERFLOW";
+			/** The section of the session's earliest active work. */
+			section: number;
+			day: number;
+			/** How far before the session's 24 h window its active work starts. */
+			overflowMinutes: number;
 	  };

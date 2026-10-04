@@ -77,6 +77,7 @@ export function computeTimeline(
 		if (sched.isPrep) {
 			blocks.push({
 				kind: "prep",
+				task: sched.taskId,
 				section: sched.prepFor ?? sched.sectionIndex,
 				start: rebasedLs,
 				end: rebasedLf,
@@ -89,6 +90,7 @@ export function computeTimeline(
 		steps.push({ sched, start: rebasedLs, end: rebasedLf });
 		blocks.push({
 			kind: "step",
+			task: sched.taskId,
 			section: sched.sectionIndex,
 			step: sched.stepIndex as number,
 			start: rebasedLs,
@@ -114,6 +116,7 @@ export function computeTimeline(
 
 		const passiveBlock: ScheduleBlock = {
 			kind: "passive",
+			task: entry.task.taskId,
 			section: entry.sched.sectionIndex,
 			step: entry.sched.stepIndex as number,
 			start: rebasedStart,

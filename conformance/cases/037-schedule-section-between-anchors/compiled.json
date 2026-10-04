@@ -1,0 +1,617 @@
+{
+  "title": "A section without an anchor between two anchored ones",
+  "slug": "a-section-without-an-anchor-between-two-anchored-ones",
+  "meta": {
+    "title": "A section without an anchor between two anchored ones"
+  },
+  "registry": {
+    "ingredients": {
+      "cream": {
+        "id": "cream",
+        "name": "cream",
+        "is_intermediate": true
+      },
+      "egg-yolks": {
+        "id": "egg-yolks",
+        "name": "egg yolks"
+      },
+      "sugar": {
+        "id": "sugar",
+        "name": "sugar",
+        "default_unit": "g"
+      },
+      "milk": {
+        "id": "milk",
+        "name": "milk",
+        "default_unit": "ml"
+      },
+      "almond-flour": {
+        "id": "almond-flour",
+        "name": "almond flour",
+        "default_unit": "g"
+      }
+    },
+    "cookware": {
+      "tart": {
+        "id": "tart",
+        "name": "tart"
+      }
+    }
+  },
+  "shopping_list": [
+    {
+      "id": "egg-yolks",
+      "name": "egg yolks",
+      "_usageIds": [
+        "1"
+      ],
+      "qty": 6
+    },
+    {
+      "id": "sugar",
+      "name": "sugar",
+      "_usageIds": [
+        "2"
+      ],
+      "qty": 100,
+      "unit": "g"
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "_usageIds": [
+        "3"
+      ],
+      "qty": 500,
+      "unit": "ml"
+    },
+    {
+      "id": "almond-flour",
+      "name": "almond flour",
+      "_usageIds": [
+        "5"
+      ],
+      "qty": 100,
+      "unit": "g"
+    }
+  ],
+  "cookware": [
+    {
+      "id": "tart",
+      "_usageId": "6",
+      "fixed": false
+    }
+  ],
+  "sections": [
+    {
+      "title": "Cream",
+      "ingredients": [
+        {
+          "id": "egg-yolks",
+          "_usageId": "1",
+          "qty": 6
+        },
+        {
+          "id": "sugar",
+          "_usageId": "2",
+          "qty": 100,
+          "unit": "g"
+        },
+        {
+          "id": "milk",
+          "_usageId": "3",
+          "qty": 500,
+          "unit": "ml"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Whisk ",
+            {
+              "id": "egg-yolks",
+              "_usageId": "1",
+              "qty": 6
+            },
+            "with ",
+            {
+              "id": "sugar",
+              "_usageId": "2",
+              "qty": 100,
+              "unit": "g"
+            },
+            "and ",
+            {
+              "id": "milk",
+              "_usageId": "3",
+              "qty": 500,
+              "unit": "ml"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 0,
+            "end": 2,
+            "activeDuration": 2
+          },
+          "action": "Whisk"
+        },
+        {
+          "type": "step",
+          "content": [
+            "Chill ",
+            {
+              "type": "timer",
+              "isPassive": true,
+              "quantity": {
+                "type": "single",
+                "value": 24,
+                "text": "24"
+              },
+              "unit": "h"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2,
+            "end": 2,
+            "activeDuration": 0
+          },
+          "backgroundTasks": [
+            {
+              "duration": 1440,
+              "startOffset": 0
+            }
+          ],
+          "action": "Chill"
+        }
+      ],
+      "intermediate_preparation": "cream",
+      "retro_planning": {
+        "raw": "-3d",
+        "sign": -1,
+        "value": 3,
+        "unit": "d",
+        "minutes": -4320
+      }
+    },
+    {
+      "title": "Filling",
+      "ingredients": [
+        {
+          "type": "reference",
+          "id": "cream",
+          "name": "cream",
+          "_usageId": "4",
+          "qty": 300,
+          "unit": "g"
+        },
+        {
+          "id": "almond-flour",
+          "_usageId": "5",
+          "qty": 100,
+          "unit": "g"
+        }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            {
+              "type": "reference",
+              "id": "cream",
+              "name": "cream",
+              "_usageId": "4",
+              "qty": 300,
+              "unit": "g"
+            },
+            "with ",
+            {
+              "id": "almond-flour",
+              "_usageId": "5",
+              "qty": 100,
+              "unit": "g"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2840,
+            "end": 2842,
+            "activeDuration": 2
+          },
+          "action": "Mix"
+        }
+      ]
+    },
+    {
+      "title": "Tart",
+      "ingredients": [],
+      "cookware": [
+        {
+          "id": "tart",
+          "_usageId": "6",
+          "fixed": false
+        }
+      ],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Pour the filling into a ",
+            {
+              "id": "tart",
+              "_usageId": "6",
+              "fixed": false
+            },
+            "tin and bake ",
+            {
+              "type": "timer",
+              "quantity": {
+                "type": "single",
+                "value": 40,
+                "text": "40"
+              },
+              "unit": "min"
+            },
+            "at ",
+            {
+              "type": "temperature",
+              "quantity": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "°C"
+            },
+            "."
+          ],
+          "timings": {
+            "start": 2842,
+            "end": 2882,
+            "activeDuration": 40
+          },
+          "action": "Bake"
+        }
+      ],
+      "retro_planning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d",
+        "minutes": -1440
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "totalTime": 2888,
+    "totalBreakdown": [
+      {
+        "label": "section_active:Cream",
+        "duration": 2
+      },
+      {
+        "label": "timer_passive",
+        "duration": 1440
+      },
+      {
+        "label": "section_active:Filling",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Tart",
+        "duration": 40
+      }
+    ],
+    "idleTime": 2838,
+    "activeTime": 44,
+    "activeBreakdown": [
+      {
+        "label": "section_active:Cream",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Filling",
+        "duration": 2
+      },
+      {
+        "label": "section_active:Tart",
+        "duration": 40
+      }
+    ],
+    "preparationTime": 6,
+    "prepBreakdown": [
+      {
+        "label": "ingredients_overhead",
+        "duration": 5
+      },
+      {
+        "label": "cookware_overhead",
+        "duration": 1
+      }
+    ]
+  },
+  "miseEnPlace": [
+    {
+      "section": 0,
+      "duration": 3,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3
+        }
+      ]
+    },
+    {
+      "section": 1,
+      "duration": 2,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2,
+          "intermediates": 1
+        }
+      ]
+    },
+    {
+      "section": 2,
+      "duration": 1,
+      "items": [
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 3
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 3,
+            "duration": 3
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      },
+      {
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+        "duration": {
+          "nominal": 0
+        },
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s0.1.t0",
+        "kind": "passive",
+        "section": 0,
+        "step": 1,
+        "offset": 0,
+        "duration": {
+          "nominal": 1440
+        },
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.prep.cream",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "cream",
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "consumes": [
+          "cream"
+        ],
+        "after": [
+          "s0.1"
+        ]
+      },
+      {
+        "id": "s2.prep",
+        "kind": "prep",
+        "section": 2,
+        "duration": {
+          "nominal": 1
+        },
+        "items": [
+          {
+            "kind": "gather",
+            "target": "cookware",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s2.0",
+        "kind": "step",
+        "section": 2,
+        "step": 0,
+        "duration": {
+          "nominal": 40
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 3,
+        "deadline": 4320,
+        "intermediate": "cream"
+      },
+      {
+        "day": 1
+      },
+      {
+        "day": 1,
+        "deadline": 1440
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2885,
+    "activeTime": 44,
+    "preparationTime": 6,
+    "idleTime": 2835,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 3
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 3,
+        "end": 5
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 5,
+        "end": 5
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 5,
+        "end": 1445
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 2840,
+        "end": 2842
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 2842,
+        "end": 2844
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep",
+        "section": 2,
+        "start": 2844,
+        "end": 2845
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 2845,
+        "end": 2885
+      }
+    ],
+    "sessions": [
+      {
+        "day": 3,
+        "start": 0,
+        "end": 5,
+        "sections": [
+          0
+        ]
+      },
+      {
+        "day": 1,
+        "start": 2840,
+        "end": 2885,
+        "sections": [
+          1,
+          2
+        ]
+      }
+    ]
+  }
+}

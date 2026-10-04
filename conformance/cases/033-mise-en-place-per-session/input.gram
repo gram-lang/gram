@@ -14,15 +14,15 @@ title: Vanilla tart over four days
 
 [Rest] Let the praline cool and harden ~_{12h}.
 
-## Crust ~{-26h} ->&crust
+## Crust ~{-1d} ->&crust
 
 [Mix] Work &cream{150g} with @flour{300g} and @butter{150g}(cold, cut into cubes) in a #bowl.
 
-## Syrup ~{-25h} ->&syrup
+## Syrup ~{-1d} ->&syrup
 
 [Simmer] Simmer &crust{50g} with @water{200ml} and @sugar{80g} for ~{10min}.
 
-## Powder ~{-24h} ->&powder
+## Powder ~{-1d} ->&powder
 
 [Grind] Blend &syrup{30g} with @almonds{100g} until powdery.
 

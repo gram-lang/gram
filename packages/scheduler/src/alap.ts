@@ -110,8 +110,7 @@ export function scheduleALAP(
 				diagnostics.push({
 					code: "TIME_PARADOX",
 					section: sIdx,
-					cause: `Section '${section.title || "unnamed"}' (~{${section.retro_planning!.value}${section.retro_planning!.unit}})`,
-					conflict: `downstream dependency at T${dependencyLf}m`,
+					pulledTo: dependencyLf,
 				});
 			}
 		}

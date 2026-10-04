@@ -1,4 +1,4 @@
-import type { ScheduleMode } from "@gram-lang/kitchen";
+import type { MiseEnPlaceMode } from "@gram-lang/kitchen";
 import { ExitCode, reportError, GramCLIError } from "../errors";
 
 /**
@@ -6,7 +6,7 @@ import { ExitCode, reportError, GramCLIError } from "../errors";
  * but the renderer option is camelCase (`perSection`), so the mapping lives
  * here rather than being spelled out in each of `view`, `export` and `print`.
  */
-const SCHEDULE_BY_FLAG: Record<string, ScheduleMode> = {
+const SCHEDULE_BY_FLAG: Record<string, MiseEnPlaceMode> = {
 	"per-section": "perSection",
 	upfront: "upfront",
 	"per-session": "perSession",
@@ -21,7 +21,7 @@ export const MISE_EN_PLACE_FLAG_DESCRIPTION = `When the mise en place is planned
  * `parseNutritionBasis`: an argument-validation failure raised before any
  * work starts, from a command's `run()`.
  */
-export function parseMiseEnPlace(value: unknown): ScheduleMode | undefined {
+export function parseMiseEnPlace(value: unknown): MiseEnPlaceMode | undefined {
 	if (value === undefined || value === null || value === "") return undefined;
 	const mode = SCHEDULE_BY_FLAG[String(value)];
 	if (!mode) {

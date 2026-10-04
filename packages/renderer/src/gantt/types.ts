@@ -1,4 +1,4 @@
-import type { ScheduleMode } from "../types";
+import type { MiseEnPlaceMode } from "../types";
 
 export type GanttTimeMode = "forward" | "reverse" | "target";
 
@@ -10,7 +10,7 @@ export interface GanttRenderOptions {
 	/** Virtual-minute width a compressed gap collapses to. Default 20. */
 	compressedGapSize?: number;
 	/** Which timeline to draw. Default "perSection". */
-	schedule?: ScheduleMode;
+	schedule?: MiseEnPlaceMode;
 }
 
 export interface GanttInteractivityOptions {

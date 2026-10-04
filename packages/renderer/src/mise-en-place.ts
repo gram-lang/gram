@@ -1,16 +1,16 @@
 import {
-	DEFAULT_SCHEDULE_MODE,
+	DEFAULT_MISE_EN_PLACE_MODE,
 	type MiseEnPlaceItem,
 	type ScheduleBlock,
-	type ScheduleMode,
+	type MiseEnPlaceMode,
 	type SectionMiseEnPlace,
 	scheduleFor,
 } from "@gram-lang/kitchen";
 import type { RenderableCompilationResult } from "./types";
 
 /** True when each section carries its own preparation (the default). */
-export const isPerSection = (mode: ScheduleMode | undefined): boolean =>
-	(mode ?? DEFAULT_SCHEDULE_MODE) === "perSection";
+export const isPerSection = (mode: MiseEnPlaceMode | undefined): boolean =>
+	(mode ?? DEFAULT_MISE_EN_PLACE_MODE) === "perSection";
 
 /** What preparing section `index` costs, when it costs anything. */
 export function miseEnPlaceForSection(
@@ -79,7 +79,7 @@ export function prepItems(
  */
 export function ownMiseEnPlace(
 	data: RenderableCompilationResult,
-	mode: ScheduleMode | undefined,
+	mode: MiseEnPlaceMode | undefined,
 	index: number,
 ): { duration: number; items: MiseEnPlaceItem[] } | undefined {
 	if (isPerSection(mode)) return miseEnPlaceForSection(data, index);
@@ -121,7 +121,7 @@ interface SessionLabels extends Labels {
  */
 export function sessionMiseEnPlace(
 	data: RenderableCompilationResult,
-	mode: ScheduleMode | undefined,
+	mode: MiseEnPlaceMode | undefined,
 	labels: SessionLabels,
 	formatDuration: (minutes: number) => string,
 ): Map<number, SessionMiseEnPlace> {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { getAST } from "@gram-lang/parser";
 import {
+	scheduleFor,
 	compile,
 	isDurationTooLong,
 	MAX_DURATION_MINUTES,
@@ -9,6 +10,13 @@ import {
 	WarningCode,
 	warningSeverity,
 } from "../src/index";
+
+// The three timelines of a compiled recipe, laid out from its task graph.
+const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
+	perSection: scheduleFor(c, "perSection")!,
+	upfront: scheduleFor(c, "upfront")!,
+	perSession: scheduleFor(c, "perSession")!,
+});
 
 /*
  * A duration past `MAX_DURATION_MINUTES` (1000 years) used to come out as 0
@@ -30,14 +38,14 @@ const codes = (r: ReturnType<typeof compile>) => r.warnings.map((w) => w.code);
 /** No time in the compiled schedules is missing, infinite or `null` once serialized. */
 function expectFiniteTimes(r: ReturnType<typeof compile>) {
 	for (const mode of ["perSection", "upfront"] as const) {
-		const s = r.schedules[mode];
+		const s = schedulesOf(r)[mode];
 		for (const n of [s.totalTime, s.idleTime])
 			expect(Number.isFinite(n)).toBe(true);
 		for (const b of s.blocks) {
 			expect(Number.isFinite(b.start) && Number.isFinite(b.end)).toBe(true);
 		}
 	}
-	expect(JSON.stringify(r.schedules)).not.toContain("null");
+	expect(JSON.stringify(schedulesOf(r))).not.toContain("null");
 	expect(JSON.stringify(r.metrics)).not.toContain("null");
 }
 
@@ -88,7 +96,7 @@ describe("a retro-planning offset past the limit", () => {
 
 	it("turns the values that used to break the timeline into the same capped one", () => {
 		// 1e15 days lost all precision (0 minutes); 1e309 is Infinity; both gave NaN.
-		const expected = retro("-365001d").schedules.perSection.totalTime;
+		const expected = schedulesOf(retro("-365001d")).perSection.totalTime;
 		for (const digits of [
 			"1" + "0".repeat(15),
 			"9".repeat(24),
@@ -97,7 +105,7 @@ describe("a retro-planning offset past the limit", () => {
 		]) {
 			const r = retro(`-${digits}d`);
 			expect(codes(r)).toContain(WarningCode.DURATION_OUT_OF_RANGE);
-			expect(r.schedules.perSection.totalTime).toBe(expected);
+			expect(schedulesOf(r).perSection.totalTime).toBe(expected);
 			expectFiniteTimes(r);
 		}
 	});

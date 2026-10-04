@@ -1,7 +1,6 @@
 import type {
 	ScheduledPassiveTask,
 	SchedulingDiagnostic,
-	SchedulingSection,
 	StepSchedule,
 } from "./types";
 
@@ -24,7 +23,6 @@ import type {
  */
 export function serializeTracks(
 	schedules: StepSchedule[],
-	sections: SchedulingSection[],
 	diagnostics: SchedulingDiagnostic[],
 ): ScheduledPassiveTask[] {
 	const backgroundTrackCursors = new Map<string, number>();
@@ -69,7 +67,6 @@ export function serializeTracks(
 				section: entry.sched.sectionIndex,
 				trackName: entry.task.name,
 				delay: delay,
-				item: `Step in section '${sections[entry.sched.sectionIndex]!.title || "unnamed"}'`,
 			});
 		}
 	}

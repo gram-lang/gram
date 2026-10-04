@@ -23,8 +23,8 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "steps[].timings is deprecated in favor of schedules[mode].blocks"
-    replacement: "The step blocks of recipe.schedules[mode].blocks"
+    description: "steps[].timings is deprecated in favor of the blocks of the schedule"
+    replacement: "The step blocks of recipe.schedule.blocks (or of layout(recipe.tasks, options).schedule.blocks for another choice of mise en place and rests)"
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/legacy-timings.ts"
@@ -34,8 +34,8 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "steps[].backgroundTasks is deprecated in favor of schedules[mode].blocks"
-    replacement: "recipe.schedules[mode].blocks"
+    description: "steps[].backgroundTasks is deprecated in favor of the blocks of the schedule"
+    replacement: "The passive blocks of recipe.schedule.blocks (or of layout(recipe.tasks, options).schedule.blocks)"
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/legacy-timings.ts"
@@ -45,8 +45,19 @@ deprecations:
     deprecatedIn: "1.4.0"
     targetRemoval: "2.0.0"
     status: active
-    description: "metrics.totalTime and metrics.idleTime are deprecated in favor of schedule-specific totals"
-    replacement: "recipe.schedules[mode].totalTime and recipe.schedules[mode].idleTime"
+    description: "metrics.totalTime and metrics.idleTime are deprecated in favor of the totals of the schedule"
+    replacement: "recipe.schedule.totalTime and recipe.schedule.idleTime"
+    files:
+      - "packages/kitchen/src/types.ts"
+      - "packages/kitchen/src/core.ts"
+
+  - id: kitchen-metrics-active-time
+    layer: compiled-json
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "metrics.activeTime counts a timer written as a range as its average; the schedule plans an active range on its longest figure"
+    replacement: "recipe.schedule.activeTime"
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
@@ -57,7 +68,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "metrics.activeBreakdown, prepBreakdown, and totalBreakdown are deprecated"
-    replacement: "schedules[mode].blocks or structured breakdown items"
+    replacement: "recipe.miseEnPlace[].items for the preparation, recipe.schedule.blocks for the rest"
     files:
       - "packages/kitchen/src/types.ts"
       - "packages/kitchen/src/core.ts"
@@ -68,7 +79,7 @@ deprecations:
     targetRemoval: "2.0.0"
     status: active
     description: "Fallback in scheduleTimes() supporting compiled JSON produced before 1.4.0"
-    replacement: "Recompile recipes with Gram >= 1.4.0 to generate schedules block"
+    replacement: "Recompile recipes with Gram >= 1.4.0 to generate the tasks and the schedule"
     files:
       - "packages/kitchen/src/schedule-mode.ts"
 
@@ -79,7 +90,7 @@ deprecations:
     status: active
     internal: true
     description: "HTML renderer active time tooltip reads metrics.activeBreakdown instead of schedule blocks"
-    replacement: "Derive active duration tooltip directly from schedules[mode].blocks"
+    replacement: "Derive active duration tooltip directly from the schedule's blocks"
     files:
       - "packages/renderer/src/formatters/html.ts"
 

@@ -291,216 +291,217 @@
       ]
     }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 1458,
-      "idleTime": 1437,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 17
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 15
         },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 17,
-          "end": 18
+        "after": []
+      },
+      {
+        "id": "s1.prep.pate-petrissage",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "pate-petrissage",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 18
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 0
         },
-        {
-          "kind": "passive",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 78
+        "consumes": [
+          "pate$petrissage"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0.t0",
+        "kind": "passive",
+        "section": 1,
+        "step": 0,
+        "offset": 0,
+        "duration": {
+          "nominal": 60
         },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1455,
-          "end": 1456
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s2.prep.pate",
+        "kind": "prep",
+        "section": 2,
+        "intermediate": "pate",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1456,
-          "end": 1458
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 18,
-          "sections": [
-            0,
-            1
-          ]
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s2.0",
+        "kind": "step",
+        "section": 2,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "day": 0,
-          "start": 1455,
-          "end": 1458,
-          "sections": [
-            2
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 1458,
-      "idleTime": 1437,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 17
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 17,
-          "end": 18,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 18
-        },
-        {
-          "kind": "passive",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 78
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1455,
-          "end": 1456,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1456,
-          "end": 1458
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 1458,
-          "sections": [
-            0,
-            1,
-            2
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 1458,
-      "idleTime": 1437,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 17
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 17,
-          "end": 18,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 18
-        },
-        {
-          "kind": "passive",
-          "section": 1,
-          "step": 0,
-          "start": 18,
-          "end": 78
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1455,
-          "end": 1456
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1456,
-          "end": 1458
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 18,
-          "sections": [
-            0,
-            1
-          ]
-        },
-        {
-          "day": 0,
-          "start": 1455,
-          "end": 1458,
-          "sections": [
-            2
-          ]
-        }
-      ]
-    }
+        "consumes": [
+          "pate"
+        ],
+        "after": [
+          "s1.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 1,
+        "intermediate": "pate$petrissage"
+      },
+      {
+        "day": 1,
+        "deadline": 1440,
+        "intermediate": "pate"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 1458,
+    "activeTime": 17,
+    "preparationTime": 4,
+    "idleTime": 1437,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 17
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.pate-petrissage",
+        "section": 1,
+        "start": 17,
+        "end": 18
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 18,
+        "end": 18
+      },
+      {
+        "kind": "passive",
+        "task": "s1.0.t0",
+        "section": 1,
+        "step": 0,
+        "start": 18,
+        "end": 78
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep.pate",
+        "section": 2,
+        "start": 1455,
+        "end": 1456
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 1456,
+        "end": 1458
+      }
+    ],
+    "sessions": [
+      {
+        "day": 1,
+        "start": 0,
+        "end": 18,
+        "sections": [
+          0,
+          1
+        ]
+      },
+      {
+        "day": 0,
+        "start": 1455,
+        "end": 1458,
+        "sections": [
+          2
+        ]
+      }
+    ]
   },
   "modules": [
     {

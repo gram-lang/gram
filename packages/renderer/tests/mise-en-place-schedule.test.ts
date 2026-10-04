@@ -1,8 +1,15 @@
 import { describe, expect, it } from "bun:test";
-import { compile } from "@gram-lang/kitchen";
+import { scheduleFor, compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 import { buildTracks } from "../src/gantt/layout";
 import { toGanttHTML, toHTML, toMarkdown, toPrintHTML } from "../src/index";
+
+// The three timelines of a compiled recipe, laid out from its task graph.
+const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
+	perSection: scheduleFor(c, "perSection")!,
+	upfront: scheduleFor(c, "upfront")!,
+	perSession: scheduleFor(c, "perSession")!,
+});
 
 const SOURCE = `## Dough ->&dough
 
@@ -92,7 +99,7 @@ describe("HTML — perSection (default)", () => {
 	});
 
 	it("reads total and idle time from the per-section schedule", () => {
-		const { totalTime, idleTime } = compiled.schedules.perSection;
+		const { totalTime, idleTime } = schedulesOf(compiled).perSection;
 		expect(html).toContain(`<div class="meta-value">${fmt(totalTime)}</div>`);
 		expect(html).toContain(`<div class="meta-value">${fmt(idleTime)}</div>`);
 	});
@@ -126,7 +133,7 @@ describe("HTML — upfront", () => {
 	});
 
 	it("reads total and idle time from the upfront schedule", () => {
-		const { totalTime, idleTime } = compiled.schedules.upfront;
+		const { totalTime, idleTime } = schedulesOf(compiled).upfront;
 		expect(html).toContain(`<div class="meta-value">${fmt(totalTime)}</div>`);
 		expect(html).toContain(`<div class="meta-value">${fmt(idleTime)}</div>`);
 	});
@@ -210,8 +217,8 @@ describe("backend parity", () => {
 	});
 
 	it("markdown and print take their totals from the chosen schedule", () => {
-		const up = compiled.schedules.upfront.totalTime;
-		const per = compiled.schedules.perSection.totalTime;
+		const up = schedulesOf(compiled).upfront.totalTime;
+		const per = schedulesOf(compiled).perSection.totalTime;
 		expect(up).not.toBe(per);
 		expect(toMarkdown(compiled, { schedule: "upfront" })).toContain(fmt(up));
 		expect(toMarkdown(compiled, { schedule: "perSection" })).toContain(
@@ -260,7 +267,7 @@ describe("Gantt", () => {
 		for (const mode of ["perSection", "upfront"] as const) {
 			const html = toGanttHTML(compiled, { schedule: mode });
 			expect(html).toContain(
-				`data-max-real-time="${compiled.schedules[mode].totalTime}"`,
+				`data-max-real-time="${schedulesOf(compiled)[mode].totalTime}"`,
 			);
 		}
 	});
@@ -280,11 +287,11 @@ Whisk @milk{500ml} and @eggs{4}.
 
 [Rest] Chill ~_{12h}.
 
-## Crust ~{-30h} ->&crust
+## Crust ~{-1d} ->&crust
 
 Mix &cream{100g} and @flour{200g}.
 
-## Pie ~{-24h}
+## Pie ~{-1d}
 
 Fill with &crust{300g} and bake ~{30min}.
 

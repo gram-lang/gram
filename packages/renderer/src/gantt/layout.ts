@@ -7,7 +7,7 @@ import {
 import type {
 	RenderContext,
 	RenderableCompilationResult,
-	ScheduleMode,
+	MiseEnPlaceMode,
 } from "../types";
 import {
 	describeMiseEnPlaceItem,
@@ -113,7 +113,7 @@ export function formatAxisTime(
 export function computeGaps(
 	data: RenderableCompilationResult,
 	gapThreshold = DEFAULT_GAP_THRESHOLD,
-	schedule?: ScheduleMode,
+	schedule?: MiseEnPlaceMode,
 ): GanttGap[] {
 	const blocks = scheduleFor(data, schedule)?.blocks;
 	if (!blocks) return [];
@@ -263,7 +263,7 @@ function readStepInfo(step: ProcessedStep): {
  */
 export function buildTracks(
 	data: RenderableCompilationResult,
-	opts: { lang?: string; schedule?: ScheduleMode } & GapOptions = {},
+	opts: { lang?: string; schedule?: MiseEnPlaceMode } & GapOptions = {},
 ): GanttTracksData {
 	const sections = data?.sections;
 	const blocks: ScheduleBlock[] | undefined = scheduleFor(
@@ -484,7 +484,7 @@ export function computeSessionMarkers(
 	gaps: GanttGap[],
 	totalVirtualTime: number,
 	compressedGapSize: number | undefined,
-	mode: ScheduleMode | undefined,
+	mode: MiseEnPlaceMode | undefined,
 	lang?: string,
 ): GanttSessionMarker[] {
 	const sessions = scheduleFor(data, mode)?.sessions ?? [];
