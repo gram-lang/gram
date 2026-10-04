@@ -484,6 +484,25 @@ body.vscode-dark .color-box.section-color-8,
 			var(--color-border) 11px);
 }
 
+/* The hours the cook is not available, on a chart placed on the calendar. */
+.unavailable-band {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background-color: color-mix(in srgb, var(--gray-1000) 8%, transparent);
+	background-image: repeating-linear-gradient(-45deg,
+			transparent,
+			transparent 6px,
+			color-mix(in srgb, var(--gray-1000) 14%, transparent) 6px,
+			color-mix(in srgb, var(--gray-1000) 14%, transparent) 7px);
+}
+
+/* A rest the projection made longer or shorter. */
+.time-block.adjusted {
+	outline: 2px dashed var(--gantt-accent);
+	outline-offset: -2px;
+}
+
 .gantt-track {
 	display: flex;
 	position: relative;

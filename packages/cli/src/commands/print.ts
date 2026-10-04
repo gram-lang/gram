@@ -103,7 +103,7 @@ export default defineCommand({
 			(args["bakers-math"] ? "" : undefined);
 		const bakersMathOnly = args["bakers-math-only"] as boolean;
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
-		const schedule = parseMiseEnPlace(args["mise-en-place"]);
+		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let htmlPath: string;
@@ -114,7 +114,7 @@ export default defineCommand({
 				bakersReference,
 				bakersMathOnly,
 				nutritionBasis,
-				schedule,
+				miseEnPlace,
 				lang: config.language,
 				paths: config.paths,
 				stock,

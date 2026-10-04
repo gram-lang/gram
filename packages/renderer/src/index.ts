@@ -16,6 +16,13 @@ export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {
+	runSheetToHTML,
+	runSheetToMarkdown,
+	runSheetToPrintHTML,
+	runSheetToText,
+} from "./run-sheet";
+export type { RunSheetRenderOptions } from "./run-sheet";
+export {
 	formatDecimalToFraction,
 	getQty,
 	formatQuantityValue,

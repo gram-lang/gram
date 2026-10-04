@@ -38,10 +38,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@gram-lang/parser": "workspace:*",
-    "@gram-lang/kitchen": "workspace:*",
     "@gram-lang/analyzer": "workspace:*",
-    "@gram-lang/i18n": "workspace:*"
+    "@gram-lang/i18n": "workspace:*",
+    "@gram-lang/kitchen": "workspace:*",
+    "@gram-lang/parser": "workspace:*",
+    "@gram-lang/scheduler": "workspace:*"
   },
   "type": "module"
 }

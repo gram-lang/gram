@@ -174,9 +174,9 @@
       const body = tooltipText && tooltipText !== label ? `<div class="tooltip-text">${escapeHtml2(tooltipText)}</div>` : "";
       return `${header}
       <div class="tooltip-time">
-        <span class="time-badge">${formatAxisTime(start, axisOpts)}</span>
+        <span class="time-badge">${escapeHtml2(block.dataset.startLabel ?? formatAxisTime(start, axisOpts))}</span>
         <span class="time-arrow">\u2192</span>
-        <span class="time-badge">${formatAxisTime(end, axisOpts)}</span>
+        <span class="time-badge">${escapeHtml2(block.dataset.endLabel ?? formatAxisTime(end, axisOpts))}</span>
         <span class="time-duration">(${duration}m)</span>
       </div>
       ${body}`;
@@ -228,6 +228,7 @@
         maxRealTime
       };
       container2.querySelectorAll(".axis-tick").forEach((tick) => {
+        if (tick.dataset.fixedLabel) return;
         const label = tick.querySelector(".tick-label");
         const realTime = Number(tick.dataset.realTime ?? 0);
         if (label) label.textContent = formatAxisTime(realTime, axisOpts);

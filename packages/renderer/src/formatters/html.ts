@@ -180,7 +180,11 @@ const htmlBackend: RenderBackend = {
 
 			// Total and idle time depend on the chosen schedule; preparation and
 			// active time are the same in all of them.
-			const { totalTime, idleTime } = scheduleTimes(data, options.schedule);
+			const { totalTime, idleTime } = scheduleTimes(
+				data,
+				options.miseEnPlace,
+				options.rests,
+			);
 
 			const clockIcon = options.icons?.clock ?? DEFAULT_ICONS.html.clock;
 			const totalTooltip = renderTooltipHTML(
@@ -387,7 +391,7 @@ const htmlBackend: RenderBackend = {
 		const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
 		const sessionBlocks = sessionMiseEnPlace(
 			data,
-			options.schedule,
+			options,
 			t.renderer,
 			fmtDuration,
 		);
@@ -414,7 +418,7 @@ const htmlBackend: RenderBackend = {
 			// steps, so it must not read as the section's total time next to the title
 			// badges. A `p` (not an `h4`, which gram.css hides, nor a nested `div`,
 			// which would break the `</div>` split of the output).
-			const mise = ownMiseEnPlace(data, options.schedule, sectionIdx);
+			const mise = ownMiseEnPlace(data, options, sectionIdx);
 			let prepLabel = "";
 			if (mise) {
 				const detail = mise.items

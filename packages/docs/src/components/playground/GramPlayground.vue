@@ -533,7 +533,7 @@ async function updateGram() {
 		} else if (viewMode.value === "markdown") {
 			content.value = toMarkdown(result, {
 				lang: currentLang.value,
-				schedule: schedule.value,
+				miseEnPlace: schedule.value,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
@@ -541,7 +541,7 @@ async function updateGram() {
 				interactiveNutrition: true,
 				bakersMathOnly: options.value.bakersMathOnly,
 				lang: currentLang.value,
-				schedule: schedule.value,
+				miseEnPlace: schedule.value,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);

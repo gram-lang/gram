@@ -3,14 +3,27 @@ import {
 	type MiseEnPlaceItem,
 	type ScheduleBlock,
 	type MiseEnPlaceMode,
+	type RestChoice,
 	type SectionMiseEnPlace,
 	scheduleFor,
 } from "@gram-lang/kitchen";
 import type { RenderableCompilationResult } from "./types";
 
+/** Which timeline a view follows: where the mise en place goes, and how long the rests written as a range last. */
+export interface TimelineChoice {
+	miseEnPlace?: MiseEnPlaceMode;
+	rests?: RestChoice;
+}
+
 /** True when each section carries its own preparation (the default). */
-export const isPerSection = (mode: MiseEnPlaceMode | undefined): boolean =>
-	(mode ?? DEFAULT_MISE_EN_PLACE_MODE) === "perSection";
+export const isPerSection = (choice: TimelineChoice): boolean =>
+	(choice.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE) === "perSection";
+
+/** The timeline of a choice, laid out from the recipe's task graph. */
+export const timelineOf = (
+	data: RenderableCompilationResult,
+	choice: TimelineChoice,
+) => scheduleFor(data, choice.miseEnPlace, choice.rests);
 
 /** What preparing section `index` costs, when it costs anything. */
 export function miseEnPlaceForSection(
@@ -79,11 +92,11 @@ export function prepItems(
  */
 export function ownMiseEnPlace(
 	data: RenderableCompilationResult,
-	mode: MiseEnPlaceMode | undefined,
+	choice: TimelineChoice,
 	index: number,
 ): { duration: number; items: MiseEnPlaceItem[] } | undefined {
-	if (isPerSection(mode)) return miseEnPlaceForSection(data, index);
-	const blocks = (scheduleFor(data, mode)?.blocks ?? []).filter(
+	if (isPerSection(choice)) return miseEnPlaceForSection(data, index);
+	const blocks = (timelineOf(data, choice)?.blocks ?? []).filter(
 		(b): b is Extract<ScheduleBlock, { kind: "prep" }> =>
 			b.kind === "prep" && !!b.deferred && b.section === index,
 	);
@@ -121,13 +134,13 @@ interface SessionLabels extends Labels {
  */
 export function sessionMiseEnPlace(
 	data: RenderableCompilationResult,
-	mode: MiseEnPlaceMode | undefined,
+	choice: TimelineChoice,
 	labels: SessionLabels,
 	formatDuration: (minutes: number) => string,
 ): Map<number, SessionMiseEnPlace> {
 	const out = new Map<number, SessionMiseEnPlace>();
-	if (isPerSection(mode)) return out;
-	const schedule = scheduleFor(data, mode);
+	if (isPerSection(choice)) return out;
+	const schedule = timelineOf(data, choice);
 	const sessions = schedule?.sessions ?? [];
 	for (const session of sessions) {
 		const first = session.sections[0];

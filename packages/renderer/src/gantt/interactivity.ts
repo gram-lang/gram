@@ -86,9 +86,9 @@ export function attachGanttInteractivity(
 
 		return `${header}
       <div class="tooltip-time">
-        <span class="time-badge">${formatAxisTime(start, axisOpts)}</span>
+        <span class="time-badge">${escapeHtml(block.dataset.startLabel ?? formatAxisTime(start, axisOpts))}</span>
         <span class="time-arrow">→</span>
-        <span class="time-badge">${formatAxisTime(end, axisOpts)}</span>
+        <span class="time-badge">${escapeHtml(block.dataset.endLabel ?? formatAxisTime(end, axisOpts))}</span>
         <span class="time-duration">(${duration}m)</span>
       </div>
       ${body}`;
@@ -147,6 +147,8 @@ export function attachGanttInteractivity(
 		};
 
 		container.querySelectorAll<HTMLElement>(".axis-tick").forEach((tick) => {
+			// A projected chart reads in real dates and times: nothing to recompute.
+			if (tick.dataset.fixedLabel) return;
 			const label = tick.querySelector<HTMLElement>(".tick-label");
 			const realTime = Number(tick.dataset.realTime ?? 0);
 			if (label) label.textContent = formatAxisTime(realTime, axisOpts);

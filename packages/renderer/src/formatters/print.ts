@@ -29,7 +29,7 @@ import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
 import { sessionMiseEnPlace } from "../mise-en-place";
 
-const PRINT_CSS = `
+export const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
@@ -443,7 +443,11 @@ const printBackend: RenderBackend = {
 		let body = `<div class="meta">\n`;
 		if (metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = scheduleTimes(data, options.schedule);
+			const { totalTime, idleTime } = scheduleTimes(
+				data,
+				options.miseEnPlace,
+				options.rests,
+			);
 			if (totalTime) {
 				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(totalTime)}</span>\n`;
 			}
@@ -546,7 +550,7 @@ const printBackend: RenderBackend = {
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		const sessionBlocks = sessionMiseEnPlace(
 			data,
-			options.schedule,
+			options,
 			t.renderer,
 			formatDuration,
 		);

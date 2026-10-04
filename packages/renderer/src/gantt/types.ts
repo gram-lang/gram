@@ -1,4 +1,5 @@
-import type { MiseEnPlaceMode } from "../types";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
+import type { MiseEnPlaceMode, RestChoice } from "../types";
 
 export type GanttTimeMode = "forward" | "reverse" | "target";
 
@@ -9,8 +10,18 @@ export interface GanttRenderOptions {
 	gapThresholdMinutes?: number;
 	/** Virtual-minute width a compressed gap collapses to. Default 20. */
 	compressedGapSize?: number;
-	/** Which timeline to draw. Default "perSection". */
-	schedule?: MiseEnPlaceMode;
+	/** Where the mise en place goes. Default "perSection". */
+	miseEnPlace?: MiseEnPlaceMode;
+	/** How long a rest written as a range lasts. Default "shortest". */
+	rests?: RestChoice;
+	/**
+	 * The recipe placed on the calendar by `project()` (`@gram-lang/scheduler`):
+	 * the chart draws the plan's own blocks, so the rests it stretched show at
+	 * their new length, the axis reads in real dates and times, and the hours
+	 * the cook is not available are greyed out. `miseEnPlace` and `rests` are
+	 * then those the plan was made with, and are ignored here.
+	 */
+	projection?: ProjectedPlan;
 }
 
 export interface GanttInteractivityOptions {
@@ -40,6 +51,11 @@ export interface GanttTimeBlock {
 	fitsInside?: boolean;
 	/** A section's mise en place, drawn in its section colour. */
 	isPrep?: boolean;
+	/** A rest the projection made longer or shorter, with its length before and after, in minutes. */
+	adjusted?: { from: number; to: number };
+	/** Wall-clock readings of a projected block, for its tooltip. */
+	startLabel?: string;
+	endLabel?: string;
 }
 
 export interface GanttTrack {
@@ -56,6 +72,17 @@ export interface GanttTracksData {
 	maxRealTime: number;
 	/** The compressed gaps the virtual times were computed with. */
 	gaps: GanttGap[];
+	/** Set for a projected chart: where it sits on the calendar. */
+	calendar?: GanttCalendar;
+}
+
+/** A chart placed on the calendar: minute 0 of its axis is an instant in a zone. */
+export interface GanttCalendar {
+	/** Minutes since the epoch (UTC) of minute 0 of the axis. */
+	origin: number;
+	timeZone: string;
+	/** The hours the cook is not available, in axis minutes, clipped to the chart. */
+	unavailable: GanttGap[];
 }
 
 export interface GanttGap {

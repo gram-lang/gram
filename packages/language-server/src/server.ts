@@ -319,7 +319,7 @@ function renderViews(uri: string, state: DocumentState): void {
 			// there — quantities stay read-only.
 			const html = toHTML(state.compilation, {
 				interactiveNutrition: true,
-				schedule: miseEnPlace,
+				miseEnPlace,
 			});
 			connection.sendNotification("gram/previewUpdated", { uri, html });
 		} catch (e) {
@@ -330,7 +330,7 @@ function renderViews(uri: string, state: DocumentState): void {
 		// Gantt renderer must not blank the HTML preview, and vice versa.
 		try {
 			const ganttHtml = toGanttHTML(state.compilation, {
-				schedule: miseEnPlace,
+				miseEnPlace,
 			});
 			connection.sendNotification("gram/ganttUpdated", {
 				uri,

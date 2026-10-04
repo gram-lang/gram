@@ -198,6 +198,7 @@
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
+        "@gram-lang/scheduler": "workspace:*",
       },
     },
     "packages/scheduler": {
