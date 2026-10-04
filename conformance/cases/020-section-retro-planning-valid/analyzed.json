@@ -276,149 +276,129 @@
       ]
     }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 2884,
-      "idleTime": 2877,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep",
+        "kind": "prep",
+        "section": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 4
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2881,
-          "end": 2882
+        "after": []
+      },
+      {
+        "id": "s1.prep",
+        "kind": "prep",
+        "section": 1,
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2882,
-          "end": 2884
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 4,
-          "sections": [
-            0
-          ]
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1
+          }
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "day": 0,
-          "start": 2881,
-          "end": 2884,
-          "sections": [
-            1
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 2885,
-      "idleTime": 2878,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2,
-          "end": 3
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 3,
-          "end": 5
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2883,
-          "end": 2885
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 2885,
-          "sections": [
-            0,
-            1
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 2884,
-      "idleTime": 2877,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 2
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 2,
-          "end": 4
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 2881,
-          "end": 2882
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 2882,
-          "end": 2884
-        }
-      ],
-      "sessions": [
-        {
-          "day": 2,
-          "start": 0,
-          "end": 4,
-          "sections": [
-            0
-          ]
-        },
-        {
-          "day": 0,
-          "start": 2881,
-          "end": 2884,
-          "sections": [
-            1
-          ]
-        }
-      ]
-    }
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 2,
+        "deadline": 2880
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2884,
+    "activeTime": 4,
+    "preparationTime": 3,
+    "idleTime": 2877,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 2881,
+        "end": 2882
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 2882,
+        "end": 2884
+      }
+    ],
+    "sessions": [
+      {
+        "day": 2,
+        "start": 0,
+        "end": 4,
+        "sections": [
+          0
+        ]
+      },
+      {
+        "day": 0,
+        "start": 2881,
+        "end": 2884,
+        "sections": [
+          1
+        ]
+      }
+    ]
   }
 }

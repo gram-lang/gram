@@ -1,4 +1,4 @@
-import type { CompilationResult, ScheduleMode } from "@gram-lang/kitchen";
+import type { CompilationResult, MiseEnPlaceMode } from "@gram-lang/kitchen";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -116,7 +116,7 @@ export interface RendererClasses {
  * at the start of each working day (`perSession`).
  * Owned by `@gram-lang/kitchen`, re-exported so this import path keeps working.
  */
-export type { ScheduleMode };
+export type { MiseEnPlaceMode };
 
 export interface RendererOptions {
 	icons?: RendererIcons;
@@ -134,7 +134,7 @@ export interface RendererOptions {
 	 * section keeping its own label only for what has to wait for an
 	 * intermediate made the same day.
 	 */
-	schedule?: ScheduleMode;
+	schedule?: MiseEnPlaceMode;
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
 	/**

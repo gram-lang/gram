@@ -1,7 +1,14 @@
 import { describe, it, expect } from "bun:test";
 import { getAST } from "@gram-lang/parser";
-import { compile } from "@gram-lang/kitchen";
+import { scheduleFor, compile } from "@gram-lang/kitchen";
 import { diffRecipes } from "../src/diff";
+
+// The three timelines of a compiled recipe, laid out from its task graph.
+const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
+	perSection: scheduleFor(c, "perSection")!,
+	upfront: scheduleFor(c, "upfront")!,
+	perSession: scheduleFor(c, "perSession")!,
+});
 
 const compileRecipe = (src: string) => compile(getAST(src));
 
@@ -282,8 +289,8 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 		const { timings } = diffRecipes(a, b);
 
 		const total = timings.find((t) => t.field === "totalTime");
-		expect(total?.from).toBe(a.schedules.perSection.totalTime);
-		expect(total?.to).toBe(b.schedules.perSection.totalTime);
+		expect(total?.from).toBe(schedulesOf(a).perSection.totalTime);
+		expect(total?.to).toBe(schedulesOf(b).perSection.totalTime);
 		// Would differ if it read the deprecated metric instead.
 		expect(total?.to).not.toBe(b.metrics.totalTime);
 	});
@@ -292,8 +299,8 @@ describe("diffRecipes — timings follow the per-section schedule", () => {
 		const a = compileRecipe(base);
 		const b = compileRecipe(shifted);
 		const idle = diffRecipes(a, b).timings.find((t) => t.field === "idleTime");
-		expect(idle?.from).toBe(a.schedules.perSection.idleTime);
-		expect(idle?.to).toBe(b.schedules.perSection.idleTime);
+		expect(idle?.from).toBe(schedulesOf(a).perSection.idleTime);
+		expect(idle?.to).toBe(schedulesOf(b).perSection.idleTime);
 	});
 
 	it("still compares preparation and active time from the metrics", () => {

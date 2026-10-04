@@ -20,6 +20,7 @@ export enum WarningCode {
 	NO_BAKERS_REFERENCE = "NO_BAKERS_REFERENCE",
 	TIME_PARADOX = "TIME_PARADOX",
 	TRACK_CONTENTION = "TRACK_CONTENTION",
+	SESSION_OVERFLOW = "SESSION_OVERFLOW",
 	DURATION_OUT_OF_RANGE = "DURATION_OUT_OF_RANGE",
 	// Module imports (module-imports RFC, .notes/plan-ajout-imports-recettes.md
 	// Phase E). The only module-related code kitchen raises itself, in the
@@ -105,11 +106,23 @@ export interface WarningPayloads {
 		item: string;
 		loc?: Location;
 	};
+	[WarningCode.SESSION_OVERFLOW]: {
+		section: string | null;
+		day: number;
+		overflowMinutes: number;
+		loc?: Location;
+	};
 	[WarningCode.MODULE_NOT_FOUND]: {
 		specifier: string;
 		loc?: Location;
 	};
 }
+
+/** "45 min", "2 h", "1.5 h": a duration worded for a warning message. */
+const formatMinutes = (minutes: number): string =>
+	minutes < 120
+		? `${minutes} min`
+		: `${parseFloat((minutes / 60).toFixed(1))} h`;
 
 export const warningTemplates: {
 	[K in WarningCode]: (payload: WarningPayloads[K]) => string;
@@ -157,6 +170,8 @@ export const warningTemplates: {
 		`Timeline conflict: ${p.cause} is pulled earlier than recipe start to satisfy ${p.conflict}.`,
 	[WarningCode.TRACK_CONTENTION]: (p) =>
 		`Resource contention on track '${p.trackName}': delayed by ${p.delay} min for '${p.item}'.`,
+	[WarningCode.SESSION_OVERFLOW]: (p) =>
+		`Working day ${p.day} (from section '${p.section || "unnamed"}') starts ${formatMinutes(p.overflowMinutes)} before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-${p.day + 1}d}, or shorten the rest.`,
 	[WarningCode.MODULE_NOT_FOUND]: (p) =>
 		`Module "${p.specifier}" could not be found or resolved.`,
 };
@@ -215,6 +230,7 @@ export const warningSeverity: Record<WarningCode, WarningSeverity> = {
 	[WarningCode.NO_BAKERS_REFERENCE]: "warning",
 	[WarningCode.TIME_PARADOX]: "warning",
 	[WarningCode.TRACK_CONTENTION]: "info",
+	[WarningCode.SESSION_OVERFLOW]: "warning",
 	[WarningCode.MODULE_NOT_FOUND]: "error",
 };
 

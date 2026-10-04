@@ -5,7 +5,9 @@ import {
 	type CompilationResult,
 	compile,
 	type ScheduleBlock,
-	SCHEDULE_MODES,
+	MISE_EN_PLACE_MODES,
+	layout,
+	scheduleFor,
 } from "../src/index";
 
 /*
@@ -109,7 +111,12 @@ const finite = (n: unknown) => typeof n === "number" && Number.isFinite(n);
 /** Every invariant a compiled recipe must satisfy; one message per breach. */
 function violationsOf(result: CompilationResult, source: string): string[] {
 	const bad: string[] = [];
-	const { miseEnPlace, schedules, metrics, sections, registry } = result;
+	const { miseEnPlace, metrics, sections, registry } = result;
+	const schedules = {
+		perSection: scheduleFor(result, "perSection")!,
+		upfront: scheduleFor(result, "upfront")!,
+		perSession: scheduleFor(result, "perSession")!,
+	};
 	const prep = metrics.preparationTime;
 	const active = metrics.activeTime;
 	const hasRealStep = (i: number) =>
@@ -135,7 +142,7 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
-	for (const mode of SCHEDULE_MODES) {
+	for (const mode of MISE_EN_PLACE_MODES) {
 		const s = schedules[mode];
 		const preps = s.blocks.filter((b) => b.kind === "prep");
 		const steps = s.blocks.filter((b) => b.kind === "step");
@@ -252,6 +259,25 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
+	// The compiled `schedule` is the default layout of the graph, and the graph
+	// alone is enough to get it back (every other combination too). The generated
+	// recipes carry no range, so the choice of rests changes nothing.
+	if (
+		JSON.stringify(result.schedule) !==
+		JSON.stringify(layout(result.tasks).schedule)
+	) {
+		bad.push("schedule != layout(tasks)");
+	}
+	for (const rests of ["longest", "balanced"] as const) {
+		const other = layout(result.tasks, { rests }).schedule;
+		if (
+			JSON.stringify({ ...other, rests: "shortest" }) !==
+			JSON.stringify(result.schedule)
+		) {
+			bad.push(`rests ${rests} changes a recipe without range`);
+		}
+	}
+
 	// A recipe on a single working day plans per session exactly like upfront.
 	if (
 		schedules.perSession.sessions.length <= 1 &&
@@ -270,10 +296,11 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 	const applied = applyScale(result, 2);
 	for (const other of [scaled, applied]) {
 		if (
-			JSON.stringify(other.schedules) !== JSON.stringify(schedules) ||
+			JSON.stringify(other.schedule) !== JSON.stringify(result.schedule) ||
+			JSON.stringify(other.tasks) !== JSON.stringify(result.tasks) ||
 			JSON.stringify(other.miseEnPlace) !== JSON.stringify(miseEnPlace)
 		) {
-			bad.push("scaling changes schedules or miseEnPlace");
+			bad.push("scaling changes tasks, schedule or miseEnPlace");
 		}
 	}
 	if (JSON.stringify(applied) !== JSON.stringify(scaled)) {

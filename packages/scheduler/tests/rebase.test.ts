@@ -8,6 +8,7 @@ import type {
 
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
+		taskId: "s0.0",
 		sectionIndex: 0,
 		stepIndex: 0,
 		isComment: false,
@@ -59,7 +60,7 @@ describe("computeTimeline", () => {
 		});
 		const { blocks } = computeTimeline([sched], [], [section()]);
 		expect(blocks).toEqual([
-			{ kind: "step", section: 0, step: 3, start: 0, end: 4 },
+			{ kind: "step", task: "s0.0", section: 0, step: 3, start: 0, end: 4 },
 		]);
 	});
 
@@ -67,14 +68,26 @@ describe("computeTimeline", () => {
 		const sched = makeSchedule({ ls: -10, lf: 0, localActiveTime: 10 });
 		const named: ScheduledPassiveTask = {
 			sched,
-			task: { name: "oven", duration: 20, localOffset: 0, isNamed: true },
+			task: {
+				taskId: "s0.0.t0",
+				name: "oven",
+				duration: 20,
+				localOffset: 0,
+				isNamed: true,
+			},
 			theoreticalStart: -10,
 			actualStart: -10,
 			actualEnd: 10,
 		};
 		const anonymous: ScheduledPassiveTask = {
 			sched,
-			task: { name: "Timer", duration: 5, localOffset: 0, isNamed: false },
+			task: {
+				taskId: "s0.0.t1",
+				name: "Timer",
+				duration: 5,
+				localOffset: 0,
+				isNamed: false,
+			},
 			theoreticalStart: -10,
 			actualStart: -10,
 			actualEnd: -5,
@@ -88,9 +101,17 @@ describe("computeTimeline", () => {
 
 		const passives = blocks.filter((b) => b.kind === "passive");
 		expect(passives).toEqual([
-			{ kind: "passive", section: 0, step: 0, start: 0, end: 5 },
 			{
 				kind: "passive",
+				task: "s0.0.t1",
+				section: 0,
+				step: 0,
+				start: 0,
+				end: 5,
+			},
+			{
+				kind: "passive",
+				task: "s0.0.t0",
 				section: 0,
 				step: 0,
 				start: 0,
@@ -115,7 +136,13 @@ describe("computeTimeline", () => {
 		const sched = makeSchedule({ ls: -10, lf: -10, localActiveTime: 0 });
 		const passive: ScheduledPassiveTask = {
 			sched,
-			task: { name: "rest", duration: 10, localOffset: 0, isNamed: false },
+			task: {
+				taskId: "s0.0.t0",
+				name: "rest",
+				duration: 10,
+				localOffset: 0,
+				isNamed: false,
+			},
 			theoreticalStart: -10,
 			actualStart: -10,
 			actualEnd: 0,

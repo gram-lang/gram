@@ -1,6 +1,6 @@
-import { scheduleALAP } from "./alap";
 import { sumDuration } from "./breakdown";
-import type { ScheduleMode } from "./mode";
+import { scheduleALAP } from "./alap";
+import type { MiseEnPlaceMode } from "./mode";
 import { computeTimeline, type Timeline } from "./rebase";
 import {
 	type SessionPlan,
@@ -11,10 +11,9 @@ import {
 import { serializeTracks } from "./tracks";
 import type {
 	MiseEnPlaceItem,
-	Schedule,
+	ScheduleSession,
 	SchedulingDiagnostic,
 	SchedulingSection,
-	SectionMiseEnPlace,
 	StepSchedule,
 } from "./types";
 
@@ -34,87 +33,55 @@ export function cloneSchedules(schedules: StepSchedule[]): StepSchedule[] {
 	}));
 }
 
-/**
- * What `scheduleWithGroups` needs to tell which intermediates a group makes
- * itself: the caller's analysis of the mise en place.
- */
-export interface IntermediateInfo {
-	/** Intermediate id -> index of the section that makes it. */
-	producers: Map<string, number>;
-	/** Section index -> ids of the intermediates its gather item counts. */
-	gathered: Map<number, string[]>;
+/** A `prep` task of the graph, as the layout passes read it. */
+export interface PrepWork {
+	id: string;
+	section: number;
+	/** Set for the preparation of an intermediate (`&dough`). */
+	intermediate?: boolean;
+	/**
+	 * For an intermediate: the section whose step makes it. Absent when the graph
+	 * can't tell, so it is planned right before the section that uses it.
+	 */
+	producer?: number;
+	items: MiseEnPlaceItem[];
 }
 
-/** Without it every intermediate is of unknown origin, so it waits. */
-const NO_INTERMEDIATES: IntermediateInfo = {
-	producers: new Map(),
-	gathered: new Map(),
-};
-
 /**
- * Splits a section's mise en place into what is gathered with its group and
- * what has to wait until right before the section: an intermediate made by a
- * section of the same group (or by none we can find, the safe choice) doesn't
- * exist yet when the group starts (a section without a step makes nothing).
- * With `defer` off nothing waits.
+ * The items of several preparations as one list, the way a section's mise en
+ * place lists them: the ingredients gathered (`intermediates` counting how
+ * many of them are made during the recipe), the cookware gathered, then every
+ * preparation in order.
  */
-function splitEntry(
-	entry: SectionMiseEnPlace,
-	group: Set<number>,
-	withSteps: Set<number>,
-	info: IntermediateInfo,
-	defer: boolean,
-): { head: MiseEnPlaceItem[]; later: MiseEnPlaceItem[] } {
-	const head: MiseEnPlaceItem[] = [];
-	const later: MiseEnPlaceItem[] = [];
-	const waits = (id: string) => {
-		const producer = info.producers.get(id);
-		// A producer without a step makes nothing: as good as unknown.
-		return (
-			defer &&
-			(producer === undefined ||
-				group.has(producer) ||
-				!withSteps.has(producer))
-		);
-	};
-	for (const item of entry.items) {
-		if (item.kind === "prepare") {
-			(item.intermediate && waits(item.ref.id) ? later : head).push(item);
-			continue;
+export function mergeItems(parts: MiseEnPlaceItem[][]): MiseEnPlaceItem[] {
+	const zero = () => ({ count: 0, duration: 0, intermediates: 0 });
+	const gathered = { ingredient: zero(), cookware: zero() };
+	const prepares: MiseEnPlaceItem[] = [];
+	for (const items of parts) {
+		for (const item of items) {
+			if (item.kind === "prepare") {
+				prepares.push(item);
+				continue;
+			}
+			const total = gathered[item.target];
+			total.count += item.count;
+			total.duration += item.duration;
+			total.intermediates += item.intermediates ?? 0;
 		}
-		const intermediates = item.intermediates ?? 0;
-		if (intermediates === 0 || !defer) {
-			head.push(item);
-			continue;
-		}
-		const ids = info.gathered.get(entry.section) ?? [];
-		// Without the ids to tell them apart, every intermediate waits.
-		const waiting =
-			ids.length === intermediates ? ids.filter(waits).length : intermediates;
-		if (waiting === 0) {
-			head.push(item);
-			continue;
-		}
-		const share = item.duration / item.count;
-		const left = item.count - waiting;
-		if (left > 0) {
-			const kept = intermediates - waiting;
-			const { intermediates: _, ...rest } = item;
-			head.push({
-				...rest,
-				count: left,
-				duration: share * left,
-				...(kept > 0 && { intermediates: kept }),
-			});
-		}
-		later.push({
-			...item,
-			count: waiting,
-			duration: share * waiting,
-			intermediates: waiting,
+	}
+	const merged: MiseEnPlaceItem[] = [];
+	for (const target of ["ingredient", "cookware"] as const) {
+		const { count, duration, intermediates } = gathered[target];
+		if (count === 0) continue;
+		merged.push({
+			kind: "gather",
+			target,
+			count,
+			duration,
+			...(intermediates > 0 && { intermediates }),
 		});
 	}
-	return { head, later };
+	return [...merged, ...prepares];
 }
 
 /**
@@ -134,27 +101,33 @@ function splitEntry(
  */
 function scheduleWithGroups(
 	pristine: StepSchedule[],
-	mise: SectionMiseEnPlace[],
+	preps: PrepWork[],
 	groups: number[][],
 	sections: SchedulingSection[],
-	info: IntermediateInfo,
 	defer: boolean,
 ): { timeline: Timeline; diagnostics: SchedulingDiagnostic[] } {
 	const schedules = cloneSchedules(pristine);
 	const withSteps = new Set(
 		pristine.filter((s) => !s.isComment).map((s) => s.sectionIndex),
 	);
-	const entryOf = new Map(mise.map((e) => [e.section, e]));
+	const prepsOf = new Map<number, PrepWork[]>();
+	for (const prep of preps) {
+		const list = prepsOf.get(prep.section);
+		if (list) list.push(prep);
+		else prepsOf.set(prep.section, [prep]);
+	}
 
 	const synthetic = (
 		sectionIndex: number,
 		prepFor: number,
-		items: MiseEnPlaceItem[],
+		works: PrepWork[],
 		whole: boolean,
 		deferred: boolean,
 	): StepSchedule => {
+		const items = mergeItems(works.map((w) => w.items));
 		const duration = sumDuration(items);
 		return {
+			taskId: works[0]!.id,
 			sectionIndex,
 			stepIndex: null,
 			isComment: false,
@@ -174,6 +147,14 @@ function scheduleWithGroups(
 
 	for (const sectionsOfGroup of groups) {
 		const group = new Set(sectionsOfGroup);
+		// An intermediate made by a section of the same group (or by none we can
+		// find, the safe choice) doesn't exist yet when the group starts.
+		const waits = (work: PrepWork) =>
+			defer &&
+			work.intermediate === true &&
+			(work.producer === undefined ||
+				group.has(work.producer) ||
+				!withSteps.has(work.producer));
 		const heads: StepSchedule[] = [];
 		const laters: { section: number; sched: StepSchedule }[] = [];
 		const first = sectionsOfGroup.find((section) =>
@@ -182,9 +163,9 @@ function scheduleWithGroups(
 		if (first === undefined) continue;
 
 		for (const section of sectionsOfGroup) {
-			const entry = entryOf.get(section);
-			if (!entry) continue;
-			const { head, later } = splitEntry(entry, group, withSteps, info, defer);
+			const works = prepsOf.get(section) ?? [];
+			const head = works.filter((w) => !waits(w));
+			const later = works.filter(waits);
 			const split = head.length > 0 && later.length > 0;
 			if (head.length > 0) {
 				heads.push(synthetic(first, section, head, !split, false));
@@ -213,26 +194,10 @@ function scheduleWithGroups(
 
 	const diagnostics: SchedulingDiagnostic[] = [];
 	scheduleALAP(schedules, sections, diagnostics);
-	const passiveTasks = serializeTracks(schedules, sections, diagnostics);
+	const passiveTasks = serializeTracks(schedules, diagnostics);
 	return {
 		timeline: computeTimeline(schedules, passiveTasks, sections),
 		diagnostics,
-	};
-}
-
-/** Wraps a laid-out timeline into a `Schedule`, with its working-day sessions. */
-function toSchedule(
-	timeline: Timeline,
-	{ groups, days }: SessionPlan,
-	preparationTime: number,
-	activeTime: number,
-): Schedule {
-	const totalTime = timeline.blocks.reduce((max, b) => Math.max(max, b.end), 0);
-	return {
-		totalTime,
-		idleTime: totalTime - activeTime - preparationTime,
-		blocks: timeline.blocks,
-		sessions: sessionsOf(timeline.blocks, groups, days),
 	};
 }
 
@@ -245,63 +210,65 @@ interface ModePlan {
 	defer: boolean;
 }
 
-const MODE_PLANS: Record<
-	ScheduleMode,
-	(sections: SchedulingSection[]) => ModePlan
-> = {
+const MODE_PLANS: Record<MiseEnPlaceMode, (days: number[]) => ModePlan> = {
 	// Each section's preparation is scheduled like a step of its own, at the
 	// head of the section: the ALAP chaining makes it finish right when the
 	// section's first real step starts (and start only once the previous
 	// section's work is done), so it can overlap an earlier section's resting
 	// time. One section per group: nothing to defer.
-	perSection: (sections) => ({
-		groups: sections.map((_, i) => [i]),
-		sessions: sessionPlan(sections),
+	perSection: (days) => ({
+		groups: days.map((_, i) => [i]),
+		sessions: sessionPlan(days),
 		defer: false,
 	}),
 	// All the mise en place gathered first, in one session. An intermediate
 	// can't be gathered before it exists, so its share is planned right before
 	// the section that uses it instead.
-	upfront: (sections) => {
-		const sessions = singleSessionPlan(sections);
+	upfront: (days) => {
+		const sessions = singleSessionPlan(days);
 		return { groups: sessions.groups, sessions, defer: true };
 	},
-	// The mise en place of each working day (see `sessionDays`) gathered at the
-	// start of that day: what a section needs from an earlier day is gathered at
-	// the head of its own day, what is made the same day waits until right
-	// before the section that uses it. Without an anchor of a day or more, the
-	// recipe is a single session, like `upfront`.
-	perSession: (sections) => {
-		const sessions = sessionPlan(sections);
+	// The mise en place of each working day gathered at the start of that day:
+	// what a section needs from an earlier day is gathered at the head of its
+	// own day, what is made the same day waits until right before the section
+	// that uses it. Without an anchor of a day or more, the recipe is a single
+	// session, like `upfront`.
+	perSession: (days) => {
+		const sessions = sessionPlan(days);
 		return { groups: sessions.groups, sessions, defer: true };
 	},
 };
 
 /**
- * The complete timeline of `mode`. Runs on a clone of the schedules and with
- * its own diagnostics array — it must never touch the caller's records or
- * official warnings (see the caller).
+ * The blocks and sessions of `mode`. Runs on a clone of the schedules and with
+ * its own diagnostics array — it must never touch the caller's records.
  */
 export function buildSchedule(
-	mode: ScheduleMode,
+	mode: MiseEnPlaceMode,
 	pristine: StepSchedule[],
-	mise: SectionMiseEnPlace[],
+	preps: PrepWork[],
 	sections: SchedulingSection[],
-	preparationTime: number,
-	activeTime: number,
-	info: IntermediateInfo = NO_INTERMEDIATES,
-): { schedule: Schedule; diagnostics: SchedulingDiagnostic[] } {
-	const plan = MODE_PLANS[mode](sections);
+	days: number[],
+): {
+	blocks: Timeline["blocks"];
+	sessions: ScheduleSession[];
+	diagnostics: SchedulingDiagnostic[];
+} {
+	const plan = MODE_PLANS[mode](days);
 	const { timeline, diagnostics } = scheduleWithGroups(
 		pristine,
-		mise,
+		preps,
 		plan.groups,
 		sections,
-		info,
 		plan.defer,
 	);
 	return {
-		schedule: toSchedule(timeline, plan.sessions, preparationTime, activeTime),
+		blocks: timeline.blocks,
+		sessions: sessionsOf(
+			timeline.blocks,
+			plan.sessions.groups,
+			plan.sessions.days,
+		),
 		diagnostics,
 	};
 }

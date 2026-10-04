@@ -25,9 +25,9 @@ import {
 	compile,
 	resolveScaleFactor,
 	applyScale,
-	DEFAULT_SCHEDULE_MODE,
-	isScheduleMode,
-	type ScheduleMode,
+	DEFAULT_MISE_EN_PLACE_MODE,
+	isMiseEnPlaceMode,
+	type MiseEnPlaceMode,
 } from "@gram-lang/kitchen";
 import {
 	analyze,
@@ -140,17 +140,17 @@ const viewMode = ref<
 // the Gantt and the Markdown views, and remembered in the browser.
 const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
 
-function loadSchedule(): ScheduleMode {
+function loadSchedule(): MiseEnPlaceMode {
 	try {
 		const saved = localStorage.getItem(SCHEDULE_STORAGE_KEY);
-		if (isScheduleMode(saved)) return saved;
+		if (isMiseEnPlaceMode(saved)) return saved;
 	} catch {
 		// Storage can be blocked or absent (private window, embedded frame).
 	}
-	return DEFAULT_SCHEDULE_MODE;
+	return DEFAULT_MISE_EN_PLACE_MODE;
 }
 
-const schedule = ref<ScheduleMode>(loadSchedule());
+const schedule = ref<MiseEnPlaceMode>(loadSchedule());
 
 watch(schedule, (value) => {
 	try {

@@ -343,220 +343,230 @@
       ]
     }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 1446,
-      "idleTime": 1435,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 1
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.prep.tofu",
+        "kind": "prep",
+        "section": 0,
+        "intermediate": "tofu",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 1,
-          "end": 3
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s2.0"
+        ]
+      },
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 3,
-          "end": 4
+        "produces": [
+          "tofu$marinated$pressed"
+        ],
+        "after": []
+      },
+      {
+        "id": "s1.prep.tofu-marinated-pressed",
+        "kind": "prep",
+        "section": 1,
+        "intermediate": "tofu-marinated-pressed",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 4,
-          "end": 6
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1441,
-          "end": 1442
+        "consumes": [
+          "tofu$marinated$pressed"
+        ],
+        "after": [
+          "s0.0"
+        ]
+      },
+      {
+        "id": "s2.prep.tofu-marinated",
+        "kind": "prep",
+        "section": 2,
+        "intermediate": "tofu-marinated",
+        "duration": {
+          "nominal": 1
         },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1442,
-          "end": 1444
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1
+          }
+        ],
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s2.0",
+        "kind": "step",
+        "section": 2,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "kind": "step",
-          "section": 3,
-          "step": 0,
-          "start": 1444,
-          "end": 1446
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 6,
-          "sections": [
-            0,
-            1
-          ]
+        "consumes": [
+          "tofu$marinated"
+        ],
+        "after": [
+          "s1.0"
+        ]
+      },
+      {
+        "id": "s3.0",
+        "kind": "step",
+        "section": 3,
+        "step": 0,
+        "duration": {
+          "nominal": 2
         },
-        {
-          "day": 0,
-          "start": 1441,
-          "end": 1446,
-          "sections": [
-            2,
-            3
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 1446,
-      "idleTime": 1435,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 1,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 1,
-          "end": 3
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 3,
-          "end": 4,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 4,
-          "end": 6
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1441,
-          "end": 1442,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1442,
-          "end": 1444
-        },
-        {
-          "kind": "step",
-          "section": 3,
-          "step": 0,
-          "start": 1444,
-          "end": 1446
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 1446,
-          "sections": [
-            0,
-            1,
-            2,
-            3
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 1446,
-      "idleTime": 1435,
-      "blocks": [
-        {
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-          "end": 1
-        },
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 1,
-          "end": 3
-        },
-        {
-          "kind": "prep",
-          "section": 1,
-          "start": 3,
-          "end": 4,
-          "deferred": true
-        },
-        {
-          "kind": "step",
-          "section": 1,
-          "step": 0,
-          "start": 4,
-          "end": 6
-        },
-        {
-          "kind": "prep",
-          "section": 2,
-          "start": 1441,
-          "end": 1442
-        },
-        {
-          "kind": "step",
-          "section": 2,
-          "step": 0,
-          "start": 1442,
-          "end": 1444
-        },
-        {
-          "kind": "step",
-          "section": 3,
-          "step": 0,
-          "start": 1444,
-          "end": 1446
-        }
-      ],
-      "sessions": [
-        {
-          "day": 1,
-          "start": 0,
-          "end": 6,
-          "sections": [
-            0,
-            1
-          ]
-        },
-        {
-          "day": 0,
-          "start": 1441,
-          "end": 1446,
-          "sections": [
-            2,
-            3
-          ]
-        }
-      ]
-    }
+        "consumes": [
+          "tofu"
+        ],
+        "after": [
+          "s2.0"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "day": 1
+      },
+      {
+        "day": 1,
+        "deadline": 1440,
+        "intermediate": "tofu$marinated"
+      },
+      {
+        "day": 0,
+        "intermediate": "tofu"
+      },
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 1446,
+    "activeTime": 8,
+    "preparationTime": 3,
+    "idleTime": 1435,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep.tofu",
+        "section": 0,
+        "start": 0,
+        "end": 1
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 1,
+        "end": 3
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep.tofu-marinated-pressed",
+        "section": 1,
+        "start": 3,
+        "end": 4
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 4,
+        "end": 6
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep.tofu-marinated",
+        "section": 2,
+        "start": 1441,
+        "end": 1442
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 1442,
+        "end": 1444
+      },
+      {
+        "kind": "step",
+        "task": "s3.0",
+        "section": 3,
+        "step": 0,
+        "start": 1444,
+        "end": 1446
+      }
+    ],
+    "sessions": [
+      {
+        "day": 1,
+        "start": 0,
+        "end": 6,
+        "sections": [
+          0,
+          1
+        ]
+      },
+      {
+        "day": 0,
+        "start": 1441,
+        "end": 1446,
+        "sections": [
+          2,
+          3
+        ]
+      }
+    ]
   },
   "modules": [
     {

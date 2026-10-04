@@ -75,7 +75,7 @@ export function compile(
 		warnings: registry.warnings,
 		metrics: (() => {
 			const prepRes = resultPayload.preparation;
-			// @remove-in: 2.0.0 [kitchen-metrics-times, kitchen-metrics-breakdowns]
+			// @remove-in: 2.0.0 [kitchen-metrics-times, kitchen-metrics-active-time, kitchen-metrics-breakdowns]
 			return {
 				totalTime:
 					prepRes.total +
@@ -90,7 +90,8 @@ export function compile(
 			};
 		})(),
 		miseEnPlace: resultPayload.miseEnPlace,
-		schedules: resultPayload.schedules,
+		tasks: resultPayload.tasks,
+		schedule: resultPayload.schedule,
 	};
 
 	const scaled =

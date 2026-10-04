@@ -4,6 +4,7 @@ import {
 	isDurationTooLong,
 	maxDurationIn,
 	quantityToMinutes,
+	quantityToMinutesRange,
 	nextUsageId,
 } from "./utils";
 import {
@@ -39,16 +40,20 @@ import type {
 	SectionMiseEnPlace,
 } from "./types";
 import {
-	SCHEDULE_MODES,
-	type ScheduleMode,
 	type SchedulingDiagnostic,
 	type StepSchedule,
-	buildSchedule,
-	cloneSchedules,
+	type TaskGraph,
 	computeTimeline,
+	layout,
 	scheduleALAP,
 	serializeTracks,
 } from "@gram-lang/scheduler";
+import {
+	type StepFact,
+	type TimerFact,
+	buildTaskGraph,
+	taskIds,
+} from "./task-graph";
 import { commitTimeline } from "./legacy-timings";
 import {
 	isSameSchedulingProblem,
@@ -695,7 +700,8 @@ export function processSections(
 	};
 	preparation: { total: number; breakdown: TimeBreakdownItem[] };
 	miseEnPlace: SectionMiseEnPlace[];
-	schedules: Record<ScheduleMode, Schedule>;
+	tasks: TaskGraph;
+	schedule: Schedule;
 } {
 	const ctx: ProcessorContext = {
 		warnings: registry.warnings,
@@ -745,6 +751,7 @@ export function processSections(
 	const blocksToProcess: ASTNode[] = groupIntoSections(astChildren);
 
 	const globalSchedules: StepSchedule[] = [];
+	const stepFacts: StepFact[] = [];
 	// Parallel to `sections`, kept only to recover a `.loc` for warnings raised
 	// by the schedule module (see ./schedule) — `ProcessedSection` is the JSON
 	// output shape and doesn't carry source locations.
@@ -800,6 +807,12 @@ export function processSections(
 		sectionAST.children.forEach((block) => {
 			if (block.type === ASTNodeType.Step) {
 				let localActiveTime = 0;
+				// The same step, as the task graph sees it: a timer written as a range is
+				// planned on its longest figure when active, its shortest when passive
+				// (`localActiveTime` and the timers' durations keep the average, for the
+				// deprecated fields).
+				let nominalActive = 0;
+				const timerFacts: TimerFact[] = [];
 				const stepPassiveTasks: StepSchedule["passiveTasks"] = [];
 				const stepContentObjects: StepToken[] = [];
 				const produced: string[] = [];
@@ -832,12 +845,27 @@ export function processSections(
 									!("id" in processed) &&
 									processed.quantity
 								) {
-									const duration = quantityToMinutes({
+									const time = {
 										value: processed.quantity,
 										unit: processed.unit,
-									});
+									};
+									const duration = quantityToMinutes(time);
+									const { min, max } = quantityToMinutesRange(time);
 									if (processed.isPassive) {
+										timerFacts.push({
+											...(processed.name && { track: processed.name }),
+											offset: nominalActive,
+											duration:
+												min === max
+													? { nominal: min }
+													: { nominal: min, min, max },
+										});
 										stepPassiveTasks.push({
+											taskId: taskIds.timer(
+												sectionIndex,
+												steps.length,
+												stepPassiveTasks.length,
+											),
 											name: processed.name || "Timer",
 											duration: duration,
 											localOffset: localActiveTime,
@@ -850,6 +878,7 @@ export function processSections(
 										});
 									} else {
 										localActiveTime += duration;
+										nominalActive += max;
 									}
 								}
 							}
@@ -859,6 +888,7 @@ export function processSections(
 
 				if (localActiveTime === 0 && stepPassiveTasks.length === 0) {
 					localActiveTime = 2;
+					nominalActive = 2;
 				}
 
 				let productionTime = localActiveTime;
@@ -881,7 +911,16 @@ export function processSections(
 				}
 
 				steps.push(stepObj);
+				stepFacts.push({
+					section: sectionIndex,
+					step: steps.length - 1,
+					active: nominalActive,
+					timers: timerFacts,
+					produced: [...produced],
+					consumed: [...consumed],
+				});
 				globalSchedules.push({
+					taskId: taskIds.step(sectionIndex, steps.length - 1),
 					sectionIndex,
 					stepIndex: steps.length - 1,
 					isComment: false,
@@ -903,6 +942,7 @@ export function processSections(
 				};
 				steps.push(commentObj);
 				globalSchedules.push({
+					taskId: taskIds.step(sectionIndex, steps.length - 1),
 					sectionIndex,
 					stepIndex: steps.length - 1,
 					isComment: true,
@@ -939,21 +979,23 @@ export function processSections(
 	// commit) live in ./schedule — extracted so each is independently
 	// unit-testable on synthetic StepSchedule arrays, without going through
 	// the parser (audit 2026-07-22, kitchen finding F-004/P-001).
-	//
-	// The schedules are cloned *before* the legacy pass: scheduleALAP pushes
-	// into `produced` and commitTimeline writes onto the compiled steps, and
-	// the per-section pass below must start from the untouched records.
-	const pristineSchedules = cloneSchedules(globalSchedules);
+	// This legacy pass only feeds the deprecated fields (`timings`,
+	// `backgroundTasks`, `metrics`); the default timeline comes from the task
+	// graph below and never reads what it writes.
 	const locationOf = (section: number) => sectionASTs[section]?.loc;
 
 	const legacyDiagnostics: SchedulingDiagnostic[] = [];
 	scheduleALAP(globalSchedules, sections, legacyDiagnostics);
 	const scheduledPassiveTasks = serializeTracks(
 		globalSchedules,
-		sections,
 		legacyDiagnostics,
 	);
-	pushSchedulingWarnings(registry.warnings, legacyDiagnostics, locationOf);
+	pushSchedulingWarnings(
+		registry.warnings,
+		legacyDiagnostics,
+		sections,
+		locationOf,
+	);
 	const legacyTimeline = computeTimeline(
 		globalSchedules,
 		scheduledPassiveTasks,
@@ -961,31 +1003,20 @@ export function processSections(
 	);
 	const metrics = commitTimeline(legacyTimeline, sections, globalActiveTime);
 
-	// Mise en place: one cost per section, then one complete timeline per mode.
+	// Mise en place: one cost per section. With the steps, it makes the task
+	// graph; the scheduler lays it out into the default timeline.
 	const analysis = analyzeMiseEnPlace(sections, registry);
 	const miseEnPlace = analysis.entries;
 	const preparation = calculatePreparationTime(sections, registry, miseEnPlace);
-	const schedules = {} as Record<ScheduleMode, Schedule>;
-	for (const mode of SCHEDULE_MODES) {
-		const { schedule, diagnostics } = buildSchedule(
-			mode,
-			pristineSchedules,
-			miseEnPlace,
-			sections,
-			preparation.total,
-			globalActiveTime,
-			analysis,
-		);
-		schedules[mode] = schedule;
-		// The compiled JSON carries every timeline, so a problem that only one
-		// of them runs into must not be hidden: add its warnings to the official
-		// ones, once, the default timeline's first.
-		const warnings: Warning[] = [];
-		pushSchedulingWarnings(warnings, diagnostics, locationOf);
-		for (const w of warnings) {
-			if (!registry.warnings.some((o) => isSameSchedulingProblem(o, w))) {
-				registry.warnings.push(w);
-			}
+	const tasks = buildTaskGraph(sections, stepFacts, analysis);
+	const { schedule, diagnostics } = layout(tasks);
+	// Problems only this timeline runs into (the legacy pass above reports the
+	// others) must not be hidden: add their warnings to the official ones.
+	const found: Warning[] = [];
+	pushSchedulingWarnings(found, diagnostics, sections, locationOf);
+	for (const w of found) {
+		if (!registry.warnings.some((o) => isSameSchedulingProblem(o, w))) {
+			registry.warnings.push(w);
 		}
 	}
 
@@ -994,6 +1025,7 @@ export function processSections(
 		metrics,
 		preparation,
 		miseEnPlace,
-		schedules,
+		tasks,
+		schedule,
 	};
 }

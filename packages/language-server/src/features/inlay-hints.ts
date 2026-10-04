@@ -1,10 +1,10 @@
 import { type InlayHint, InlayHintKind, Position } from "vscode-languageserver";
-import { type ScheduleMode, scheduleTimes } from "@gram-lang/kitchen";
+import { type MiseEnPlaceMode, scheduleTimes } from "@gram-lang/kitchen";
 import type { DocumentState } from "../document-state";
 
 export function provideInlayHints(
 	state: DocumentState,
-	schedule?: ScheduleMode,
+	schedule?: MiseEnPlaceMode,
 ): InlayHint[] {
 	const hints: InlayHint[] = [];
 	if (!state.ast || !state.compilation?.metrics) return hints;

@@ -11,7 +11,7 @@ import {
  * blocks use. A timer's length doesn't depend on the mise en place mode.
  */
 export function passiveTimers(
-	compiled: Pick<CompilationResult, "schedules" | "sections">,
+	compiled: Pick<CompilationResult, "schedule" | "tasks" | "sections">,
 	section: number,
 	step: number,
 ): Array<{ name?: string; duration: number }> {

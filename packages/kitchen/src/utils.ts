@@ -210,6 +210,9 @@ export const cleanObject = (obj: unknown): unknown => {
 						"miseEnPlace",
 						"blocks",
 						"sessions",
+						// The task graph lists what each task waits for, nothing included.
+						"tasks",
+						"after",
 					];
 					if (!keepKeys.includes(key)) continue;
 				}
@@ -276,6 +279,27 @@ export const isDurationTooLong = (
  */
 export const maxDurationIn = (unit: string): number =>
 	MAX_DURATION_MINUTES / (TIME_TO_MINUTES[resolveTimeUnit(unit)] ?? 1);
+
+/** The shortest and longest duration `qty` allows, in minutes, each capped like `quantityToMinutes`. */
+export const quantityToMinutesRange = (
+	qty: TimeQuantity | null | undefined,
+): { min: number; max: number } => {
+	const val = qty?.value;
+	if (val && typeof val === "object" && val.type === "range") {
+		const { min, max } = val.range;
+		const lo = quantityToMinutes({
+			value: Math.min(min, max),
+			unit: qty?.unit,
+		});
+		const hi = quantityToMinutes({
+			value: Math.max(min, max),
+			unit: qty?.unit,
+		});
+		return { min: lo, max: hi };
+	}
+	const minutes = quantityToMinutes(qty);
+	return { min: minutes, max: minutes };
+};
 
 export const quantityToMinutes = (
 	qty: TimeQuantity | null | undefined,

@@ -81,292 +81,97 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
       },
     },
   },
-  "schedules": {
-    "perSection": {
-      "blocks": [
-        {
-          "end": 5,
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "end": 7,
-          "kind": "step",
-          "section": 0,
-          "start": 5,
-          "step": 0,
-        },
-        {
-          "end": 9,
-          "kind": "step",
-          "section": 0,
-          "start": 7,
-          "step": 1,
-        },
-        {
-          "end": 11,
-          "kind": "step",
-          "section": 0,
-          "start": 9,
-          "step": 2,
-        },
-        {
-          "end": 13,
-          "kind": "step",
-          "section": 0,
-          "start": 11,
-          "step": 3,
-        },
-        {
-          "end": 15,
-          "kind": "step",
-          "section": 0,
-          "start": 13,
-          "step": 4,
-        },
-        {
-          "end": 17,
-          "kind": "step",
-          "section": 0,
-          "start": 15,
-          "step": 5,
-        },
-        {
-          "end": 19,
-          "kind": "step",
-          "section": 0,
-          "start": 17,
-          "step": 6,
-        },
-        {
-          "end": 21,
-          "kind": "step",
-          "section": 1,
-          "start": 19,
-          "step": 0,
-        },
-      ],
-      "idleTime": 0,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 21,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 21,
-    },
-    "perSession": {
-      "blocks": [
-        {
-          "end": 4,
-          "items": [
-            {
-              "count": 4,
-              "duration": 4,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "deferred": true,
-          "end": 5,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 4,
-        },
-        {
-          "end": 7,
-          "kind": "step",
-          "section": 0,
-          "start": 5,
-          "step": 0,
-        },
-        {
-          "end": 9,
-          "kind": "step",
-          "section": 0,
-          "start": 7,
-          "step": 1,
-        },
-        {
-          "end": 11,
-          "kind": "step",
-          "section": 0,
-          "start": 9,
-          "step": 2,
-        },
-        {
-          "end": 13,
-          "kind": "step",
-          "section": 0,
-          "start": 11,
-          "step": 3,
-        },
-        {
-          "end": 15,
-          "kind": "step",
-          "section": 0,
-          "start": 13,
-          "step": 4,
-        },
-        {
-          "end": 17,
-          "kind": "step",
-          "section": 0,
-          "start": 15,
-          "step": 5,
-        },
-        {
-          "end": 19,
-          "kind": "step",
-          "section": 0,
-          "start": 17,
-          "step": 6,
-        },
-        {
-          "end": 21,
-          "kind": "step",
-          "section": 1,
-          "start": 19,
-          "step": 0,
-        },
-      ],
-      "idleTime": 0,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 21,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 21,
-    },
-    "upfront": {
-      "blocks": [
-        {
-          "end": 4,
-          "items": [
-            {
-              "count": 4,
-              "duration": 4,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "deferred": true,
-          "end": 5,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 4,
-        },
-        {
-          "end": 7,
-          "kind": "step",
-          "section": 0,
-          "start": 5,
-          "step": 0,
-        },
-        {
-          "end": 9,
-          "kind": "step",
-          "section": 0,
-          "start": 7,
-          "step": 1,
-        },
-        {
-          "end": 11,
-          "kind": "step",
-          "section": 0,
-          "start": 9,
-          "step": 2,
-        },
-        {
-          "end": 13,
-          "kind": "step",
-          "section": 0,
-          "start": 11,
-          "step": 3,
-        },
-        {
-          "end": 15,
-          "kind": "step",
-          "section": 0,
-          "start": 13,
-          "step": 4,
-        },
-        {
-          "end": 17,
-          "kind": "step",
-          "section": 0,
-          "start": 15,
-          "step": 5,
-        },
-        {
-          "end": 19,
-          "kind": "step",
-          "section": 0,
-          "start": 17,
-          "step": 6,
-        },
-        {
-          "end": 21,
-          "kind": "step",
-          "section": 1,
-          "start": 19,
-          "step": 0,
-        },
-      ],
-      "idleTime": 0,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 21,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 21,
-    },
+  "schedule": {
+    "activeTime": 16,
+    "blocks": [
+      {
+        "end": 5,
+        "kind": "prep",
+        "section": 0,
+        "start": 0,
+        "task": "s0.prep",
+      },
+      {
+        "end": 7,
+        "kind": "step",
+        "section": 0,
+        "start": 5,
+        "step": 0,
+        "task": "s0.0",
+      },
+      {
+        "end": 9,
+        "kind": "step",
+        "section": 0,
+        "start": 7,
+        "step": 1,
+        "task": "s0.1",
+      },
+      {
+        "end": 11,
+        "kind": "step",
+        "section": 0,
+        "start": 9,
+        "step": 2,
+        "task": "s0.2",
+      },
+      {
+        "end": 13,
+        "kind": "step",
+        "section": 0,
+        "start": 11,
+        "step": 3,
+        "task": "s0.3",
+      },
+      {
+        "end": 15,
+        "kind": "step",
+        "section": 0,
+        "start": 13,
+        "step": 4,
+        "task": "s0.4",
+      },
+      {
+        "end": 17,
+        "kind": "step",
+        "section": 0,
+        "start": 15,
+        "step": 5,
+        "task": "s0.5",
+      },
+      {
+        "end": 19,
+        "kind": "step",
+        "section": 0,
+        "start": 17,
+        "step": 6,
+        "task": "s0.6",
+      },
+      {
+        "end": 21,
+        "kind": "step",
+        "section": 1,
+        "start": 19,
+        "step": 0,
+        "task": "s1.0",
+      },
+    ],
+    "idleTime": 0,
+    "miseEnPlace": "perSection",
+    "preparationTime": 5,
+    "rests": "shortest",
+    "sessions": [
+      {
+        "day": 0,
+        "end": 21,
+        "sections": [
+          0,
+          1,
+        ],
+        "start": 0,
+      },
+    ],
+    "totalTime": 21,
   },
   "sections": [
     {
@@ -681,6 +486,153 @@ exports[`Compiler Snapshots should compile with_warnings.gram correctly 1`] = `
     },
   ],
   "slug": "recipe-with-all-warnings",
+  "tasks": {
+    "sections": [
+      {
+        "day": 0,
+        "intermediate": "dup",
+      },
+      {
+        "day": 0,
+        "intermediate": "dup",
+      },
+    ],
+    "tasks": [
+      {
+        "after": [],
+        "duration": {
+          "nominal": 4,
+        },
+        "id": "s0.prep",
+        "items": [
+          {
+            "count": 4,
+            "duration": 4,
+            "kind": "gather",
+            "target": "ingredient",
+          },
+        ],
+        "kind": "prep",
+        "section": 0,
+      },
+      {
+        "after": [
+          "s0.6",
+        ],
+        "duration": {
+          "nominal": 1,
+        },
+        "id": "s0.prep.dup",
+        "intermediate": "dup",
+        "items": [
+          {
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1,
+            "kind": "gather",
+            "target": "ingredient",
+          },
+        ],
+        "kind": "prep",
+        "section": 0,
+      },
+      {
+        "after": [],
+        "consumes": [
+          "ghost_step",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+      },
+      {
+        "after": [
+          "s0.0",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.1",
+        "kind": "step",
+        "section": 0,
+        "step": 1,
+      },
+      {
+        "after": [
+          "s0.1",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+      },
+      {
+        "after": [
+          "s0.2",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+      },
+      {
+        "after": [
+          "s0.3",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.4",
+        "kind": "step",
+        "section": 0,
+        "step": 4,
+      },
+      {
+        "after": [
+          "s0.4",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.5",
+        "kind": "step",
+        "section": 0,
+        "step": 5,
+      },
+      {
+        "after": [
+          "s0.5",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.6",
+        "kind": "step",
+        "section": 0,
+        "step": 6,
+      },
+      {
+        "after": [],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+      },
+    ],
+  },
   "title": "Recipe with ALL warnings",
   "warnings": [
     {
@@ -991,381 +943,96 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
       },
     },
   },
-  "schedules": {
-    "perSection": {
-      "blocks": [
-        {
-          "end": 14,
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "end": 16,
-          "kind": "step",
-          "section": 0,
-          "start": 14,
-          "step": 0,
-        },
-        {
-          "end": 18,
-          "kind": "step",
-          "section": 0,
-          "start": 16,
-          "step": 1,
-        },
-        {
-          "end": 20,
-          "kind": "step",
-          "section": 0,
-          "start": 18,
-          "step": 2,
-        },
-        {
-          "end": 22,
-          "kind": "step",
-          "section": 0,
-          "start": 20,
-          "step": 3,
-        },
-        {
-          "end": 82,
-          "kind": "step",
-          "section": 0,
-          "start": 22,
-          "step": 4,
-        },
-        {
-          "end": 142,
-          "kind": "prep",
-          "section": 1,
-          "start": 137,
-        },
-        {
-          "end": 142,
-          "kind": "step",
-          "section": 1,
-          "start": 142,
-          "step": 0,
-        },
-        {
-          "end": 144,
-          "kind": "passive",
-          "section": 1,
-          "start": 142,
-          "step": 0,
-        },
-      ],
-      "idleTime": 57,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 142,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 144,
-    },
-    "perSession": {
-      "blocks": [
-        {
-          "end": 13,
-          "items": [
-            {
-              "count": 10,
-              "duration": 10,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-            {
-              "count": 1,
-              "duration": 1,
-              "kind": "gather",
-              "target": "cookware",
-            },
-            {
-              "duration": 2,
-              "kind": "prepare",
-              "ref": {
-                "id": "butter",
-                "type": "ingredient",
-              },
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "end": 17,
-          "items": [
-            {
-              "count": 2,
-              "duration": 2,
-              "kind": "gather",
-              "target": "cookware",
-            },
-            {
-              "duration": 2,
-              "kind": "prepare",
-              "ref": {
-                "id": "frying-pan",
-                "type": "cookware",
-              },
-            },
-          ],
-          "kind": "prep",
-          "section": 1,
-          "start": 13,
-        },
-        {
-          "deferred": true,
-          "end": 18,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 17,
-        },
-        {
-          "end": 20,
-          "kind": "step",
-          "section": 0,
-          "start": 18,
-          "step": 0,
-        },
-        {
-          "end": 22,
-          "kind": "step",
-          "section": 0,
-          "start": 20,
-          "step": 1,
-        },
-        {
-          "end": 24,
-          "kind": "step",
-          "section": 0,
-          "start": 22,
-          "step": 2,
-        },
-        {
-          "end": 26,
-          "kind": "step",
-          "section": 0,
-          "start": 24,
-          "step": 3,
-        },
-        {
-          "end": 86,
-          "kind": "step",
-          "section": 0,
-          "start": 26,
-          "step": 4,
-        },
-        {
-          "deferred": true,
-          "end": 146,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 1,
-          "start": 145,
-        },
-        {
-          "end": 146,
-          "kind": "step",
-          "section": 1,
-          "start": 146,
-          "step": 0,
-        },
-        {
-          "end": 148,
-          "kind": "passive",
-          "section": 1,
-          "start": 146,
-          "step": 0,
-        },
-      ],
-      "idleTime": 61,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 146,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 148,
-    },
-    "upfront": {
-      "blocks": [
-        {
-          "end": 13,
-          "items": [
-            {
-              "count": 10,
-              "duration": 10,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-            {
-              "count": 1,
-              "duration": 1,
-              "kind": "gather",
-              "target": "cookware",
-            },
-            {
-              "duration": 2,
-              "kind": "prepare",
-              "ref": {
-                "id": "butter",
-                "type": "ingredient",
-              },
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 0,
-        },
-        {
-          "end": 17,
-          "items": [
-            {
-              "count": 2,
-              "duration": 2,
-              "kind": "gather",
-              "target": "cookware",
-            },
-            {
-              "duration": 2,
-              "kind": "prepare",
-              "ref": {
-                "id": "frying-pan",
-                "type": "cookware",
-              },
-            },
-          ],
-          "kind": "prep",
-          "section": 1,
-          "start": 13,
-        },
-        {
-          "deferred": true,
-          "end": 18,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 0,
-          "start": 17,
-        },
-        {
-          "end": 20,
-          "kind": "step",
-          "section": 0,
-          "start": 18,
-          "step": 0,
-        },
-        {
-          "end": 22,
-          "kind": "step",
-          "section": 0,
-          "start": 20,
-          "step": 1,
-        },
-        {
-          "end": 24,
-          "kind": "step",
-          "section": 0,
-          "start": 22,
-          "step": 2,
-        },
-        {
-          "end": 26,
-          "kind": "step",
-          "section": 0,
-          "start": 24,
-          "step": 3,
-        },
-        {
-          "end": 86,
-          "kind": "step",
-          "section": 0,
-          "start": 26,
-          "step": 4,
-        },
-        {
-          "deferred": true,
-          "end": 146,
-          "items": [
-            {
-              "count": 1,
-              "duration": 1,
-              "intermediates": 1,
-              "kind": "gather",
-              "target": "ingredient",
-            },
-          ],
-          "kind": "prep",
-          "section": 1,
-          "start": 145,
-        },
-        {
-          "end": 146,
-          "kind": "step",
-          "section": 1,
-          "start": 146,
-          "step": 0,
-        },
-        {
-          "end": 148,
-          "kind": "passive",
-          "section": 1,
-          "start": 146,
-          "step": 0,
-        },
-      ],
-      "idleTime": 61,
-      "sessions": [
-        {
-          "day": 0,
-          "end": 146,
-          "sections": [
-            0,
-            1,
-          ],
-          "start": 0,
-        },
-      ],
-      "totalTime": 148,
-    },
+  "schedule": {
+    "activeTime": 68,
+    "blocks": [
+      {
+        "end": 14,
+        "kind": "prep",
+        "section": 0,
+        "start": 0,
+        "task": "s0.prep",
+      },
+      {
+        "end": 16,
+        "kind": "step",
+        "section": 0,
+        "start": 14,
+        "step": 0,
+        "task": "s0.0",
+      },
+      {
+        "end": 18,
+        "kind": "step",
+        "section": 0,
+        "start": 16,
+        "step": 1,
+        "task": "s0.1",
+      },
+      {
+        "end": 20,
+        "kind": "step",
+        "section": 0,
+        "start": 18,
+        "step": 2,
+        "task": "s0.2",
+      },
+      {
+        "end": 22,
+        "kind": "step",
+        "section": 0,
+        "start": 20,
+        "step": 3,
+        "task": "s0.3",
+      },
+      {
+        "end": 82,
+        "kind": "step",
+        "section": 0,
+        "start": 22,
+        "step": 4,
+        "task": "s0.4",
+      },
+      {
+        "end": 142,
+        "kind": "prep",
+        "section": 1,
+        "start": 137,
+        "task": "s1.prep",
+      },
+      {
+        "end": 142,
+        "kind": "step",
+        "section": 1,
+        "start": 142,
+        "step": 0,
+        "task": "s1.0",
+      },
+      {
+        "end": 144,
+        "kind": "passive",
+        "section": 1,
+        "start": 142,
+        "step": 0,
+        "task": "s1.0.t0",
+      },
+    ],
+    "idleTime": 57,
+    "miseEnPlace": "perSection",
+    "preparationTime": 19,
+    "rests": "shortest",
+    "sessions": [
+      {
+        "day": 0,
+        "end": 142,
+        "sections": [
+          0,
+          1,
+        ],
+        "start": 0,
+      },
+    ],
+    "totalTime": 144,
   },
   "sections": [
     {
@@ -1937,6 +1604,210 @@ exports[`Compiler Snapshots should compile simple_recipe.gram correctly 1`] = `
     },
   ],
   "slug": "crepes",
+  "tasks": {
+    "sections": [
+      {
+        "day": 0,
+        "deadline": 60,
+        "intermediate": "batter",
+      },
+      {
+        "day": 0,
+      },
+    ],
+    "tasks": [
+      {
+        "after": [],
+        "duration": {
+          "nominal": 13,
+        },
+        "id": "s0.prep",
+        "items": [
+          {
+            "count": 10,
+            "duration": 10,
+            "kind": "gather",
+            "target": "ingredient",
+          },
+          {
+            "count": 1,
+            "duration": 1,
+            "kind": "gather",
+            "target": "cookware",
+          },
+          {
+            "duration": 2,
+            "kind": "prepare",
+            "ref": {
+              "id": "butter",
+              "type": "ingredient",
+            },
+          },
+        ],
+        "kind": "prep",
+        "section": 0,
+      },
+      {
+        "after": [
+          "s0.1",
+        ],
+        "duration": {
+          "nominal": 1,
+        },
+        "id": "s0.prep.mixture",
+        "intermediate": "mixture",
+        "items": [
+          {
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1,
+            "kind": "gather",
+            "target": "ingredient",
+          },
+        ],
+        "kind": "prep",
+        "section": 0,
+      },
+      {
+        "after": [],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+      },
+      {
+        "after": [
+          "s0.0",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.1",
+        "kind": "step",
+        "produces": [
+          "mixture",
+        ],
+        "section": 0,
+        "step": 1,
+      },
+      {
+        "after": [
+          "s0.1",
+        ],
+        "consumes": [
+          "mixture",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.2",
+        "kind": "step",
+        "section": 0,
+        "step": 2,
+      },
+      {
+        "after": [
+          "s0.2",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s0.3",
+        "kind": "step",
+        "section": 0,
+        "step": 3,
+      },
+      {
+        "after": [
+          "s0.3",
+        ],
+        "duration": {
+          "nominal": 60,
+        },
+        "id": "s0.4",
+        "kind": "step",
+        "section": 0,
+        "step": 4,
+      },
+      {
+        "after": [],
+        "duration": {
+          "nominal": 4,
+        },
+        "id": "s1.prep",
+        "items": [
+          {
+            "count": 2,
+            "duration": 2,
+            "kind": "gather",
+            "target": "cookware",
+          },
+          {
+            "duration": 2,
+            "kind": "prepare",
+            "ref": {
+              "id": "frying-pan",
+              "type": "cookware",
+            },
+          },
+        ],
+        "kind": "prep",
+        "section": 1,
+      },
+      {
+        "after": [
+          "s0.4",
+        ],
+        "duration": {
+          "nominal": 1,
+        },
+        "id": "s1.prep.batter",
+        "intermediate": "batter",
+        "items": [
+          {
+            "count": 1,
+            "duration": 1,
+            "intermediates": 1,
+            "kind": "gather",
+            "target": "ingredient",
+          },
+        ],
+        "kind": "prep",
+        "section": 1,
+      },
+      {
+        "after": [
+          "s0.4",
+        ],
+        "consumes": [
+          "batter",
+        ],
+        "duration": {
+          "nominal": 0,
+        },
+        "id": "s1.0",
+        "kind": "step",
+        "section": 1,
+        "step": 0,
+      },
+      {
+        "after": [
+          "s1.0",
+        ],
+        "duration": {
+          "nominal": 2,
+        },
+        "id": "s1.0.t0",
+        "kind": "passive",
+        "offset": 0,
+        "section": 1,
+        "step": 0,
+      },
+    ],
+  },
   "title": "Crepes",
   "warnings": [],
 }

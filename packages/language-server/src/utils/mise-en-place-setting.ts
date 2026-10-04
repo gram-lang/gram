@@ -1,7 +1,7 @@
 import {
-	DEFAULT_SCHEDULE_MODE,
-	type ScheduleMode,
-	isScheduleMode,
+	DEFAULT_MISE_EN_PLACE_MODE,
+	type MiseEnPlaceMode,
+	isMiseEnPlaceMode,
 } from "@gram-lang/kitchen";
 
 /**
@@ -10,8 +10,8 @@ import {
  * typo, a client that returned nothing — falls back to the default, so a bad
  * setting can never blank the preview.
  */
-export function parseMiseEnPlaceSetting(config: unknown): ScheduleMode {
+export function parseMiseEnPlaceSetting(config: unknown): MiseEnPlaceMode {
 	const value = (config as { miseEnPlace?: unknown } | null | undefined)
 		?.miseEnPlace;
-	return isScheduleMode(value) ? value : DEFAULT_SCHEDULE_MODE;
+	return isMiseEnPlaceMode(value) ? value : DEFAULT_MISE_EN_PLACE_MODE;
 }

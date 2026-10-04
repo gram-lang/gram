@@ -1,0 +1,17 @@
+---
+title: A section without an anchor between two anchored ones
+---
+
+## Cream ~{-3d} ->&cream
+
+[Whisk] Whisk @egg yolks{6} with @sugar{100g} and @milk{500ml}.
+
+[Chill] Chill ~_{24h}.
+
+## Filling
+
+[Mix] Mix &cream{300g} with @almond flour{100g}.
+
+## Tart ~{-1d}
+
+[Bake] Pour the filling into a #tart tin and bake ~{40min} at ^{180C}.

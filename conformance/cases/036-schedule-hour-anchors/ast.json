@@ -1,0 +1,341 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Anchors in hours stay in one session"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Marinade",
+      "retroPlanning": {
+        "raw": "-36h",
+        "sign": -1,
+        "value": 36,
+        "unit": "h"
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Marinate",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 85,
+                "end": 89
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "chicken",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 1,
+                  "text": "1"
+                },
+                "unit": "kg",
+                "fixed": false,
+                "loc": {
+                  "start": 98,
+                  "end": 101
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 89,
+                "end": 102
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 103,
+                "end": 108
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "yogurt",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 200,
+                  "text": "200"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 116,
+                  "end": 120
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 108,
+                "end": 121
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 122,
+                "end": 126
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "spices",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 20,
+                  "text": "20"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 134,
+                  "end": 137
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 126,
+                "end": 138
+              }
+            },
+            {
+              "type": "Text",
+              "value": ", then rest ",
+              "loc": {
+                "start": 138,
+                "end": 150
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 36,
+                  "text": "36"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 153,
+                  "end": 156
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 150,
+                "end": 157
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 157,
+                "end": 158
+              }
+            }
+          ],
+          "loc": {
+            "start": 74,
+            "end": 160
+          }
+        }
+      ],
+      "loc": {
+        "start": 53,
+        "end": 160
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Cook",
+      "retroPlanning": {
+        "raw": "-2h",
+        "sign": -1,
+        "value": 2,
+        "unit": "h"
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Fry",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Fry the chicken in ",
+              "loc": {
+                "start": 182,
+                "end": 201
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "oil",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 206,
+                  "end": 210
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 201,
+                "end": 211
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 212,
+                "end": 216
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 25,
+                  "text": "25"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 218,
+                  "end": 223
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 216,
+                "end": 224
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 224,
+                "end": 225
+              }
+            }
+          ],
+          "loc": {
+            "start": 176,
+            "end": 227
+          }
+        }
+      ],
+      "loc": {
+        "start": 160,
+        "end": 227
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Serve",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Plate",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Plate with ",
+              "loc": {
+                "start": 245,
+                "end": 256
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "rice",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 262,
+                  "end": 266
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 256,
+                "end": 267
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 267,
+                "end": 268
+              }
+            }
+          ],
+          "loc": {
+            "start": 237,
+            "end": 269
+          }
+        }
+      ],
+      "loc": {
+        "start": 227,
+        "end": 269
+      }
+    }
+  ]
+}

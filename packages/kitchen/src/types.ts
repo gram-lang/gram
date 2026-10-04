@@ -7,7 +7,6 @@ import type {
 } from "@gram-lang/parser";
 import type { Warning } from "./warnings";
 import type { ShoppingListItem, CompositeItem } from "./shopping";
-import type { ScheduleMode } from "./schedule-mode";
 
 // The compiled-JSON shape kept on a Usage for its composite-child info
 // (`@juice{150ml}<@lemon{1}`) — deliberately narrower than the parser's
@@ -174,13 +173,13 @@ export interface ProcessedStep {
 	type: "step";
 	action?: string; // The explicit action verb (e.g. "Mix")
 	// Gantt Data
-	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-step-timings) */
+	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Read the `step` blocks of `schedule.blocks` instead. (Ref: kitchen-step-timings) */
 	timings: {
 		start: number; // Global start time (in minutes, relative to T=0)
 		end: number; // Global end time (when the cook is free)
 		activeDuration: number; // How long the cook is blocked on this step
 	};
-	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-step-background-tasks) */
+	/** @deprecated Since 1.4.0, will be removed in 2.0.0. Read the `passive` blocks of `schedule.blocks` instead. (Ref: kitchen-step-background-tasks) */
 	backgroundTasks: Array<{
 		name?: string; // E.g., "baking" or the timer name
 		duration: number; // In minutes
@@ -207,6 +206,7 @@ import type {
 	ScheduleBlock,
 	ScheduleSession,
 	SectionMiseEnPlace,
+	TaskGraph,
 	TimeBreakdownItem,
 } from "@gram-lang/scheduler";
 
@@ -237,24 +237,30 @@ export interface CompilationResult {
 	warnings: Warning[];
 	metrics: {
 		preparationTime: number; // Estimated mise-en-place time (sum of miseEnPlace[].duration)
-		activeTime: number; // Sum of blocking work time (default step durations + active timers)
-		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-times) */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `schedule.activeTime`, which plans a range on its longest figure. (Ref: kitchen-metrics-active-time) */
+		activeTime: number; // Sum of blocking work time (default step durations + active timers; a range counts as its average)
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `schedule.totalTime` / `schedule.idleTime`. (Ref: kitchen-metrics-times) */
 		idleTime: number; // Duration of passive background tasks / waiting
-		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-times) */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `schedule.totalTime` / `schedule.idleTime`. (Ref: kitchen-metrics-times) */
 		totalTime: number; // preparationTime + activeTime + idleTime
-		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `miseEnPlace[].items` and `schedule.blocks`. (Ref: kitchen-metrics-breakdowns) */
 		activeBreakdown: TimeBreakdownItem[]; // Added for exact tooltip calculation
-		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `miseEnPlace[].items` and `schedule.blocks`. (Ref: kitchen-metrics-breakdowns) */
 		prepBreakdown: TimeBreakdownItem[];
-		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use schedules / miseEnPlace. (Ref: kitchen-metrics-breakdowns) */
+		/** @deprecated Since 1.4.0, will be removed in 2.0.0. Use `miseEnPlace[].items` and `schedule.blocks`. (Ref: kitchen-metrics-breakdowns) */
 		totalBreakdown: TimeBreakdownItem[]; // The critical path
 	};
 	/** What preparing each section costs — independent of the chosen schedule. */
 	miseEnPlace: SectionMiseEnPlace[];
 	/**
-	 * Three complete timelines: preparation right before each section
-	 * (`perSection`), all of it at the start (`upfront`), or gathered at the
-	 * start of each working day (`perSession`).
+	 * Every task of the recipe and what it waits for: the source of truth the
+	 * scheduler lays out, independent of any option.
 	 */
-	schedules: Record<ScheduleMode, Schedule>;
+	tasks: TaskGraph;
+	/**
+	 * The default timeline (mise en place right before each section, shortest
+	 * rests), laid out from `tasks`. Any other combination comes from
+	 * `layout(tasks, options)`, with no need to compile again.
+	 */
+	schedule: Schedule;
 }

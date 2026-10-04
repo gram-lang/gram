@@ -1,32 +1,10 @@
-import type { ScheduleBlock, ScheduleSession } from "./types";
+import type {
+	ScheduleBlock,
+	ScheduleSession,
+	SchedulingDiagnostic,
+} from "./types";
 
-const MINUTES_PER_DAY = 1440;
-
-/**
- * The working day of every section, in one backward pass: 0 is the day itself,
- * 1 the day before (`~{-1d}`), and so on. A section anchored at least a day
- * back sits on that day; any other section sits on the day of the next anchor
- * (the furthest one among itself and the sections after it, like the chaining
- * in alap.ts where every anchor is a deadline). Sections after the last anchor
- * fall on day 0.
- */
-export function sessionDays(
-	sections: { retro_planning?: { minutes?: number } | null }[],
-): number[] {
-	const days: number[] = new Array(sections.length).fill(0);
-	let running = 0;
-	for (let i = sections.length - 1; i >= 0; i--) {
-		const minutes = sections[i]!.retro_planning?.minutes;
-		if (minutes !== undefined) {
-			running = Math.max(
-				running,
-				Math.floor(Math.abs(minutes) / MINUTES_PER_DAY),
-			);
-		}
-		days[i] = running;
-	}
-	return days;
-}
+export const MINUTES_PER_DAY = 1440;
 
 /**
  * Sections grouped by working day, the furthest day first and each group in
@@ -50,22 +28,17 @@ export interface SessionPlan {
 	days: number[];
 }
 
-/** One session per working day, from the sections' anchors. */
-export function sessionPlan(
-	sections: Parameters<typeof sessionDays>[0],
-): SessionPlan {
-	const days = sessionDays(sections);
+/** One session per working day, from the sections' days. */
+export function sessionPlan(days: number[]): SessionPlan {
 	return { groups: groupsFromDays(days), days };
 }
 
 /** The whole recipe as one session, on its furthest day (`upfront`). */
-export function singleSessionPlan(
-	sections: Parameters<typeof sessionDays>[0],
-): SessionPlan {
-	const furthest = Math.max(0, ...sessionDays(sections));
+export function singleSessionPlan(days: number[]): SessionPlan {
+	const furthest = Math.max(0, ...days);
 	return {
-		groups: [sections.map((_, i) => i)],
-		days: sections.map(() => furthest),
+		groups: [days.map((_, i) => i)],
+		days: days.map(() => furthest),
 	};
 }
 
@@ -92,4 +65,40 @@ export function sessionsOf(
 		sessions.push({ day: days[sections[0]!]!, start, end, sections });
 	}
 	return sessions;
+}
+
+/**
+ * Sessions whose active work starts before their 24 h window opens: the
+ * session of day `d` is meant to happen within the `d + 1` days that end with
+ * the recipe, so its work can't start before `end - (d + 1) x 24 h`. A passive
+ * rest running through the night doesn't count, only the cook's own work does.
+ * Conservative on purpose: the calendar day the work really falls on is only
+ * known once a serving time is chosen.
+ */
+export function sessionOverflows(
+	sessions: ScheduleSession[],
+	blocks: ScheduleBlock[],
+	totalTime: number,
+): Extract<SchedulingDiagnostic, { code: "SESSION_OVERFLOW" }>[] {
+	const overflows: Extract<
+		SchedulingDiagnostic,
+		{ code: "SESSION_OVERFLOW" }
+	>[] = [];
+	for (const session of sessions) {
+		const opens = totalTime - (session.day + 1) * MINUTES_PER_DAY;
+		if (session.start >= opens) continue;
+		const first = blocks.find(
+			(b) =>
+				b.kind !== "passive" &&
+				b.start === session.start &&
+				session.sections.includes(b.section),
+		);
+		overflows.push({
+			code: "SESSION_OVERFLOW",
+			section: first?.section ?? session.sections[0]!,
+			day: session.day,
+			overflowMinutes: opens - session.start,
+		});
+	}
+	return overflows;
 }

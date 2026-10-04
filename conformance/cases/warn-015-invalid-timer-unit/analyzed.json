@@ -81,75 +81,51 @@
     }
   },
   "miseEnPlace": [],
-  "schedules": {
-    "perSection": {
-      "totalTime": 2,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 0,
-          "end": 2
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 2,
-          "sections": [
-            0
-          ]
-        }
-      ]
-    },
-    "upfront": {
-      "totalTime": 2,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 0,
-          "end": 2
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 2,
-          "sections": [
-            0
-          ]
-        }
-      ]
-    },
-    "perSession": {
-      "totalTime": 2,
-      "idleTime": 0,
-      "blocks": [
-        {
-          "kind": "step",
-          "section": 0,
-          "step": 0,
-          "start": 0,
-          "end": 2
-        }
-      ],
-      "sessions": [
-        {
-          "day": 0,
-          "start": 0,
-          "end": 2,
-          "sections": [
-            0
-          ]
-        }
-      ]
-    }
+  "tasks": {
+    "tasks": [
+      {
+        "id": "s0.0",
+        "kind": "step",
+        "section": 0,
+        "step": 0,
+        "duration": {
+          "nominal": 2
+        },
+        "after": []
+      }
+    ],
+    "sections": [
+      {
+        "day": 0
+      }
+    ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 2,
+    "activeTime": 2,
+    "preparationTime": 0,
+    "idleTime": 0,
+    "blocks": [
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 0,
+        "end": 2
+      }
+    ],
+    "sessions": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 2,
+        "sections": [
+          0
+        ]
+      }
+    ]
   }
 }

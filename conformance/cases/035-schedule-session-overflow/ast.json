@@ -1,0 +1,281 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "Dough that does not fit its day"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Dough",
+      "retroPlanning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "dough",
+        "loc": {
+          "start": 64,
+          "end": 72
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Mix",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 80,
+                "end": 84
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 91,
+                  "end": 95
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 84,
+                "end": 96
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 97,
+                "end": 102
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "water",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 350,
+                  "text": "350"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 109,
+                  "end": 114
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 102,
+                "end": 115
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 115,
+                "end": 116
+              }
+            }
+          ],
+          "loc": {
+            "start": 74,
+            "end": 118
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Rest",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Let it ferment ",
+              "loc": {
+                "start": 125,
+                "end": 140
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 50,
+                  "text": "50"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 143,
+                  "end": 146
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 140,
+                "end": 147
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 147,
+                "end": 148
+              }
+            }
+          ],
+          "loc": {
+            "start": 118,
+            "end": 150
+          }
+        }
+      ],
+      "loc": {
+        "start": 48,
+        "end": 150
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Bake",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Bake",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Bake ",
+              "loc": {
+                "start": 166,
+                "end": 171
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "dough",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 850,
+                  "text": "850"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 178,
+                  "end": 182
+                }
+              },
+              "loc": {
+                "start": 171,
+                "end": 183
+              }
+            },
+            {
+              "type": "Text",
+              "value": "for ",
+              "loc": {
+                "start": 184,
+                "end": 188
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 30,
+                  "text": "30"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 190,
+                  "end": 195
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 188,
+                "end": 196
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 197,
+                "end": 200
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 200,
+                "end": 207
+              },
+              "value": {
+                "type": "single",
+                "value": 230,
+                "text": "230"
+              },
+              "unit": "C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 207,
+                "end": 208
+              }
+            }
+          ],
+          "loc": {
+            "start": 159,
+            "end": 209
+          }
+        }
+      ],
+      "loc": {
+        "start": 150,
+        "end": 209
+      }
+    }
+  ]
+}

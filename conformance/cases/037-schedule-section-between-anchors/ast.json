@@ -1,0 +1,411 @@
+{
+  "type": "Recipe",
+  "meta": {
+    "title": "A section without an anchor between two anchored ones"
+  },
+  "imports": [],
+  "children": [
+    {
+      "type": "Section",
+      "title": "Cream",
+      "retroPlanning": {
+        "raw": "-3d",
+        "sign": -1,
+        "value": 3,
+        "unit": "d"
+      },
+      "intermediateDecl": {
+        "type": "IntermediateDecl",
+        "name": "cream",
+        "loc": {
+          "start": 86,
+          "end": 94
+        }
+      },
+      "children": [
+        {
+          "type": "Step",
+          "action": "Whisk",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Whisk ",
+              "loc": {
+                "start": 104,
+                "end": 110
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "egg yolks",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 6,
+                  "text": "6"
+                },
+                "unit": null,
+                "fixed": false,
+                "loc": {
+                  "start": 121,
+                  "end": 122
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 110,
+                "end": 123
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 124,
+                "end": 129
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "sugar",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 136,
+                  "end": 140
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 129,
+                "end": 141
+              }
+            },
+            {
+              "type": "Text",
+              "value": "and ",
+              "loc": {
+                "start": 142,
+                "end": 146
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 500,
+                  "text": "500"
+                },
+                "unit": "ml",
+                "fixed": false,
+                "loc": {
+                  "start": 152,
+                  "end": 157
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 146,
+                "end": 158
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 158,
+                "end": 159
+              }
+            }
+          ],
+          "loc": {
+            "start": 96,
+            "end": 161
+          }
+        },
+        {
+          "type": "Step",
+          "action": "Chill",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Chill ",
+              "loc": {
+                "start": 169,
+                "end": 175
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 24,
+                  "text": "24"
+                },
+                "unit": "h",
+                "fixed": false,
+                "loc": {
+                  "start": 178,
+                  "end": 181
+                }
+              },
+              "isPassive": true,
+              "loc": {
+                "start": 175,
+                "end": 182
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 182,
+                "end": 183
+              }
+            }
+          ],
+          "loc": {
+            "start": 161,
+            "end": 185
+          }
+        }
+      ],
+      "loc": {
+        "start": 70,
+        "end": 185
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Filling",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Mix",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Mix ",
+              "loc": {
+                "start": 203,
+                "end": 207
+              }
+            },
+            {
+              "type": "Reference",
+              "name": "cream",
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 300,
+                  "text": "300"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 214,
+                  "end": 218
+                }
+              },
+              "loc": {
+                "start": 207,
+                "end": 219
+              }
+            },
+            {
+              "type": "Text",
+              "value": "with ",
+              "loc": {
+                "start": 220,
+                "end": 225
+              }
+            },
+            {
+              "type": "Ingredient",
+              "name": "almond flour",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 100,
+                  "text": "100"
+                },
+                "unit": "g",
+                "fixed": false,
+                "loc": {
+                  "start": 239,
+                  "end": 243
+                }
+              },
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "loc": {
+                "start": 225,
+                "end": 244
+              }
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 244,
+                "end": 245
+              }
+            }
+          ],
+          "loc": {
+            "start": 197,
+            "end": 247
+          }
+        }
+      ],
+      "loc": {
+        "start": 185,
+        "end": 247
+      }
+    },
+    {
+      "type": "Section",
+      "title": "Tart",
+      "retroPlanning": {
+        "raw": "-1d",
+        "sign": -1,
+        "value": 1,
+        "unit": "d"
+      },
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": "Bake",
+          "children": [
+            {
+              "type": "Text",
+              "value": "Pour the filling into a ",
+              "loc": {
+                "start": 270,
+                "end": 294
+              }
+            },
+            {
+              "type": "Cookware",
+              "name": "tart",
+              "modifiers": [],
+              "alias": null,
+              "quantity": {
+                "type": "Quantity",
+                "fixed": false,
+                "loc": {
+                  "start": 294,
+                  "end": 299
+                }
+              },
+              "preparation": null,
+              "loc": {
+                "start": 294,
+                "end": 299
+              }
+            },
+            {
+              "type": "Text",
+              "value": "tin and bake ",
+              "loc": {
+                "start": 300,
+                "end": 313
+              }
+            },
+            {
+              "type": "Timer",
+              "name": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": {
+                  "type": "single",
+                  "value": 40,
+                  "text": "40"
+                },
+                "unit": "min",
+                "fixed": false,
+                "loc": {
+                  "start": 315,
+                  "end": 320
+                }
+              },
+              "isPassive": false,
+              "loc": {
+                "start": 313,
+                "end": 321
+              }
+            },
+            {
+              "type": "Text",
+              "value": "at ",
+              "loc": {
+                "start": 322,
+                "end": 325
+              }
+            },
+            {
+              "type": "Temperature",
+              "name": null,
+              "loc": {
+                "start": 325,
+                "end": 332
+              },
+              "value": {
+                "type": "single",
+                "value": 180,
+                "text": "180"
+              },
+              "unit": "C"
+            },
+            {
+              "type": "Text",
+              "value": ".",
+              "loc": {
+                "start": 332,
+                "end": 333
+              }
+            }
+          ],
+          "loc": {
+            "start": 263,
+            "end": 334
+          }
+        }
+      ],
+      "loc": {
+        "start": 247,
+        "end": 334
+      }
+    }
+  ]
+}
