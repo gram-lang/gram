@@ -1,0 +1,103 @@
+---
+title: "Planning in real time"
+description: "How Gram puts a recipe on the calendar: a serving time, a time zone and your availability turn a timeline into a production sheet, with the rests stretched to keep your work out of the night."
+---
+
+import Since from '../../../../components/Since.astro';
+
+<Since v="1.4.0" />
+
+A recipe describes its own time: tasks, how long they last, what they wait for. That is enough to say "this takes 17 hours, 50 minutes of it with your hands". It is not enough to say **when to start**. For that, Gram needs three things that only you know: when you serve, in which time zone, and when you can actually cook.
+
+Give it those, and it places every task of the recipe on the calendar, backward from the service, and writes a production sheet with a time for each of them.
+
+## What goes in
+
+| | Example | What it is |
+|---|---|---|
+| **Serving time** | `2026-10-11 13:00` | A local date and time, in the time zone below |
+| **Time zone** | `Europe/Paris` | An IANA zone: where the clock is read, and where daylight saving applies |
+| **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default range, exceptions by day of the week, exceptions by date |
+
+Availability is an object, not a list of rules: a default range for every day (`daily`), exceptions by day of the week (`weekdays`) and exceptions by date (`dates`). A date wins over a weekday, which wins over the default, and an empty list means you are not available at all that day. A range that ends before it starts runs past midnight (`22:00-02:00`).
+
+Gram never reads the clock of the machine to do this. The same recipe, serving time, zone and availability give the same plan, byte for byte, wherever it runs.
+
+## How the plan is made
+
+The timeline of the recipe (see [Mise en place and planning](/docs/explanation/mise-en-place-and-planning/)) is first placed so that it ends at the serving time. Then Gram looks at what **your own work** (the active tasks and the mise en place) asks of you:
+
+1. Work that cannot be interrupted counts as one stretch. A preparation followed by the step it prepares, with no wait between them, is one stretch: Gram doesn't know whether you can stop mid-kneading to go to bed.
+2. A stretch that fits in your availability is left where it is.
+3. A stretch that falls outside it is moved by changing the **nearest rest after it that is written as a range**:
+   - making the rest **longer** moves the work earlier, to the evening before;
+   - making it **shorter** moves the work later, to the morning.
+
+   Gram picks the direction your choice of rests prefers (shortest by default, so shortening comes first), and the smaller move when it doesn't matter. It never goes beyond the range, and it never touches an exact rest.
+4. Each move shifts everything before the rest, and the plan lists it: which rest, from how long to how long, and why.
+
+A rest on a named track (`~_oven{40min}`) is only stretched if the track stays free for the whole new length. The plan is computed by laying the recipe out again each time, so dependencies and tracks are checked on the result, not guessed.
+
+### An example
+
+```gram
+## Dough ->&dough
+
+[Knead] Knead @flour{500g} with @water{350ml}, ~{20min}.
+
+[Rise] Let it rise ~_{8-16h}.
+
+## Bake
+
+[Bake] Shape &dough{850g} and bake for ~{30min}.
+```
+
+Served on Sunday at 13:00, with `08:00-22:00` available every day, the 8-hour rise would put the kneading at 04:10. Gram stretches the rise to 14 h 30 so the kneading ends at 22:00 on Saturday:
+
+```text
+Saturday, October 10 · D-1
+  around 21:40      Dough — Mix (20m)
+  around 22:00      Rise — Dough (14h 30m, until around Sun 12:30)
+                    ! Rest stretched from 8h to 14h 30m to stay out of your unavailable hours
+```
+
+If the rest were exact (`~_{8h}`), or a range too narrow to help (`~_{8-10h}`), nothing could move: the plan keeps the kneading at 04:10 and says so.
+
+## What it cannot fix
+
+Gram doesn't hide a plan it can't make. What stays wrong is reported with the plan, never silently:
+
+| Diagnostic | What it means | What to do |
+|---|---|---|
+| `ACTIVE_OUTSIDE_AVAILABILITY` | Hands-on work falls when you are not available, and no rest can move it (exact rest, range too narrow, no rest after it) | Widen your availability, or write the rest as a range |
+| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | A stretch of work that can't be interrupted is longer than your longest availability | Widen the range; no rest could help |
+| `SESSION_DAY_MISMATCH` | A working day falls on another date than the one it is for (`~{-1d}` work that lands two days before) | Anchor the section, or change the rest |
+| `START_IN_PAST` | The first task should already have started | Serve later, or shorten the plan |
+| `MULTI_RECIPE_UNSUPPORTED` | Several recipes were given; only the first is planned | Plan them one by one |
+
+These belong to the plan, not to the recipe: they depend on **your** availability, so they are not compiler warnings. The warnings a recipe raises on its own (such as `SESSION_OVERFLOW`, for a working day that a long rest pushes out of its 24 hours) are in [Times and durations](/docs/reference/syntax/times/#error-handling).
+
+## Daylight saving time
+
+Instants are counted in absolute minutes and only read as local time at the end. A 24-hour rest across the night the clocks go back lasts 24 real hours, so it starts at 13:30 on the wall clock the day before and ends at 12:30. A time that doesn't exist (02:30 when the clocks go forward) becomes the next valid one; a time that happens twice is the first one.
+
+## The production sheet
+
+The plan is turned into a sheet: the days, in order, with the tasks of each day. Times are shown to the nearest five minutes ("around 21:40") because a recipe doesn't know your oven; the calculation itself stays exact to the minute. Every rest that was moved carries a note, and what couldn't be fixed is listed at the end.
+
+You can get it as text, Markdown, HTML, a printable page, or an iCalendar file with an event for every task and an alarm on the ones that need your hands. See [Plan a meal](/docs/how-to/plan-a-meal/) for the whole path, from a recipe to your calendar.
+
+## Where to use it
+
+| Tool | How |
+|---|---|
+| CLI | `gram plan recipe.gram --serve "2026-10-11 13:00" --available 08:00-22:00` |
+| Playground | the "Plan" settings of the Gantt chart and the "Production sheet" view |
+| `@gram-lang/scheduler` | `project()` and `runSheet()`, see the [scheduler API reference](/docs/reference/api/scheduler/) |
+| `@gram-lang/renderer` | the `projection` option of the Gantt chart, and `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML` |
+
+## Limits
+
+- One recipe at a time: planning a whole menu (a starter, a main and a dessert to one service, with a single cook and a single oven) comes later, and the API already takes a list of recipes.
+- The oven, its preheating and the room in the fridge are not shared resources yet, beyond named tracks.
+- The plan is greedy and explainable, not optimal: it fixes the latest problem first and works backward.

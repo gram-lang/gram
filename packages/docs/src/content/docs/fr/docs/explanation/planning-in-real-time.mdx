@@ -1,0 +1,103 @@
+---
+title: "Planifier en heures réelles"
+description: "Comment Gram pose une recette sur le calendrier : une heure de service, un fuseau horaire et vos disponibilités transforment un planning en fiche de production, avec des repos étirés pour que votre travail évite la nuit."
+---
+
+import Since from '../../../../../components/Since.astro';
+
+<Since v="1.4.0" />
+
+Une recette décrit son propre temps : des tâches, leur durée, ce qu'elles attendent. Cela suffit pour dire « ça prend 17 heures, dont 50 minutes les mains dans la pâte ». Cela ne suffit pas pour dire **quand commencer**. Pour ça, Gram a besoin de trois choses que vous seul connaissez : quand vous servez, dans quel fuseau horaire, et quand vous pouvez réellement cuisiner.
+
+Donnez-lui ces trois informations, et il pose chaque tâche de la recette sur le calendrier, à rebours depuis le service, puis écrit une fiche de production avec une heure pour chacune.
+
+## Ce qu'on lui donne
+
+| | Exemple | Ce que c'est |
+|---|---|---|
+| **Heure de service** | `2026-10-11 13:00` | Une date et une heure locales, dans le fuseau ci-dessous |
+| **Fuseau horaire** | `Europe/Paris` | Un fuseau IANA : là où l'on lit l'horloge, et où s'applique l'heure d'été |
+| **Disponibilités** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | Quand vous pouvez travailler : une plage par défaut, des exceptions par jour de la semaine, des exceptions par date |
+
+Les disponibilités forment un objet, pas une liste de règles : une plage pour tous les jours (`daily`), des exceptions par jour de la semaine (`weekdays`) et par date (`dates`). Une date l'emporte sur un jour de la semaine, qui l'emporte sur la plage par défaut, et une liste vide veut dire « pas disponible du tout ce jour-là ». Une plage qui se termine avant son début passe minuit (`22:00-02:00`).
+
+Gram ne lit jamais l'horloge de la machine pour faire ça. La même recette, la même heure de service, le même fuseau et les mêmes disponibilités donnent le même plan, à l'octet près, où que ce soit.
+
+## Comment le plan se construit
+
+Le planning de la recette (voir [Mise en place et planning](/fr/docs/explanation/mise-en-place-and-planning/)) est d'abord posé pour se terminer à l'heure du service. Puis Gram regarde ce que **votre propre travail** (les tâches actives et la mise en place) vous demande :
+
+1. Le travail qu'on ne peut pas interrompre forme un seul bloc. Une préparation suivie de l'étape qu'elle prépare, sans attente entre les deux, est un bloc : Gram ne sait pas si vous pouvez poser votre pétrissage pour aller dormir.
+2. Un bloc qui tient dans vos disponibilités reste où il est.
+3. Un bloc qui tombe en dehors est déplacé en modifiant le **repos écrit en fourchette le plus proche après lui** :
+   - **allonger** le repos fait remonter le travail, au soir de la veille ;
+   - le **raccourcir** le fait descendre, au matin.
+
+   Gram prend le sens que préfère votre choix de repos (les plus courts par défaut, donc on raccourcit d'abord), et le plus petit déplacement quand cela n'a pas d'importance. Il ne sort jamais de la fourchette, et ne touche jamais un repos exact.
+4. Chaque déplacement décale tout ce qui précède le repos, et le plan le consigne : quel repos, de quelle durée à quelle durée, et pourquoi.
+
+Un repos sur une piste nommée (`~_four{40min}`) n'est allongé que si la piste reste libre sur toute la nouvelle durée. Le plan se calcule en reposant la recette à chaque essai : les dépendances et les pistes sont vérifiées sur le résultat, pas devinées.
+
+### Un exemple
+
+```gram
+## Pâte ->&pâte
+
+[Pétrir] Pétrir la @farine{500g} avec l'@eau{350ml}, ~{20min}.
+
+[Pousse] Laisser pousser ~_{8-16h}.
+
+## Cuisson
+
+[Cuire] Façonner la &pâte{850g} et cuire ~{30min}.
+```
+
+Servie dimanche à 13 h, avec `08:00-22:00` de disponibilité tous les jours, la pousse de 8 heures placerait le pétrissage à 4 h 10. Gram allonge la pousse à 14 h 30 pour que le pétrissage se termine à 22 h le samedi :
+
+```text
+samedi 10 octobre · J-1
+  vers 21:40        Pâte — Pétrir (20m)
+  vers 22:00        Pousse — Pâte (14h 30m, jusqu'à vers dim. 12:30)
+                    ! Repos allongé de 8h à 14h 30m pour éviter vos heures d'indisponibilité
+```
+
+Si le repos était exact (`~_{8h}`), ou une fourchette trop étroite pour servir (`~_{8-10h}`), rien ne pourrait bouger : le plan garde le pétrissage à 4 h 10 et le dit.
+
+## Ce qu'il ne peut pas arranger
+
+Gram ne cache pas un plan qu'il n'arrive pas à faire. Ce qui reste faux est signalé avec le plan, jamais en silence :
+
+| Diagnostic | Ce que ça veut dire | Que faire |
+|---|---|---|
+| `ACTIVE_OUTSIDE_AVAILABILITY` | Du travail à vos mains tombe quand vous n'êtes pas disponible, et aucun repos ne peut le déplacer (repos exact, fourchette trop étroite, pas de repos après) | Élargissez vos disponibilités, ou écrivez le repos en fourchette |
+| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | Un bloc de travail ininterruptible dure plus que votre plus longue disponibilité | Élargissez la plage : aucun repos n'y changerait rien |
+| `SESSION_DAY_MISMATCH` | Une journée de travail tombe à une autre date que la sienne (du travail `~{-1d}` qui atterrit deux jours avant) | Ancrez la section, ou changez le repos |
+| `START_IN_PAST` | La première tâche aurait déjà dû commencer | Servez plus tard, ou raccourcissez le plan |
+| `MULTI_RECIPE_UNSUPPORTED` | Plusieurs recettes ont été données ; seule la première est planifiée | Planifiez-les une à une |
+
+Ces diagnostics appartiennent au plan, pas à la recette : ils dépendent de **vos** disponibilités, ce ne sont donc pas des avertissements du compilateur. Ceux qu'une recette lève toute seule (comme `SESSION_OVERFLOW`, pour une journée qu'un long repos pousse hors de ses 24 heures) sont décrits dans [Temps et durées](/fr/docs/reference/syntax/times/#gestion-des-erreurs).
+
+## L'heure d'été
+
+Les instants sont comptés en minutes absolues et ne se lisent en heure locale qu'à la fin. Un repos de 24 heures pendant la nuit où l'on recule les horloges dure 24 heures réelles : il commence donc à 13 h 30 sur le cadran la veille et finit à 12 h 30. Une heure qui n'existe pas (2 h 30 quand on avance les horloges) devient la suivante qui existe ; une heure qui existe deux fois est la première.
+
+## La fiche de production
+
+Le plan devient une fiche : les jours, dans l'ordre, avec les tâches de chacun. Les heures sont arrondies à cinq minutes (« vers 21:40 »), parce qu'une recette ne connaît pas votre four ; le calcul, lui, reste exact à la minute. Chaque repos déplacé porte une note, et ce qui n'a pas pu être arrangé est listé à la fin.
+
+On l'obtient en texte, en Markdown, en HTML, en page imprimable, ou en fichier iCalendar avec un événement par tâche et une alarme sur celles qui demandent vos mains. Voir [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour tout le chemin, de la recette à votre agenda.
+
+## Où s'en servir
+
+| Outil | Comment |
+|---|---|
+| CLI | `gram plan recette.gram --serve "2026-10-11 13:00" --available 08:00-22:00` |
+| Playground | les réglages « Plan » du diagramme de Gantt et la vue « Fiche de production » |
+| `@gram-lang/scheduler` | `project()` et `runSheet()`, voir la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/) |
+| `@gram-lang/renderer` | l'option `projection` du diagramme de Gantt, et `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML` |
+
+## Limites
+
+- Une recette à la fois : planifier un menu entier (entrée, plat et dessert vers un même service, avec un seul cuisinier et un seul four) viendra plus tard, et l'API prend déjà une liste de recettes.
+- Le four, son préchauffage et la place au frigo ne sont pas encore des ressources partagées, au-delà des pistes nommées.
+- Le plan est glouton et explicable, pas optimal : il règle le dernier problème d'abord et remonte le temps.

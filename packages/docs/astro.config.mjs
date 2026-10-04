@@ -76,6 +76,7 @@ export default defineConfig({
             { label: 'Scale recipes dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
             { label: 'Generate shopping list', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
             { label: 'How to build a custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' },
+            { label: 'Plan a meal', translations: { fr: 'Planifier un repas' }, slug: 'docs/how-to/plan-a-meal', badge: { text: 'v1.4.0', variant: 'default' } },
             { label: 'Deprecated features', translations: { fr: 'Fonctionnalités dépréciées' }, slug: 'docs/how-to/deprecations' }
           ]
         },
@@ -116,6 +117,7 @@ export default defineConfig({
             { label: '@gram-lang/parser', slug: 'docs/reference/api/parser' },
             { label: '@gram-lang/modules', slug: 'docs/reference/api/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: '@gram-lang/kitchen', slug: 'docs/reference/api/kitchen' },
+            { label: '@gram-lang/scheduler', slug: 'docs/reference/api/scheduler', badge: { text: 'v1.4.0', variant: 'default' } },
             { label: '@gram-lang/analyzer', slug: 'docs/reference/api/analyzer' },
             { label: '@gram-lang/renderer', slug: 'docs/reference/api/renderer' },
             { label: '@gram-lang/format', slug: 'docs/reference/api/format' },
@@ -133,6 +135,7 @@ export default defineConfig({
             { label: 'Parsing & AST', slug: 'docs/explanation/engine/parser' },
             { label: 'Module resolution & composition', translations: { fr: 'Résolution & composition' }, slug: 'docs/explanation/engine/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Compilation & structure', translations: { fr: 'Compilation & structure' }, slug: 'docs/explanation/engine/kitchen' },
+            { label: 'The scheduling engine', translations: { fr: 'Le moteur de planning' }, slug: 'docs/explanation/engine/scheduler', badge: { text: 'v1.4.0', variant: 'default' } },
             { label: 'Semantic analysis', translations: { fr: 'Analyse sémantique' }, slug: 'docs/explanation/engine/analyzer' },
             { label: 'Rendering & output', translations: { fr: 'Rendu & sortie' }, slug: 'docs/explanation/engine/renderer' }
           ]
@@ -147,7 +150,8 @@ export default defineConfig({
             { label: 'Nutrition', slug: 'docs/explanation/nutrition' },
             { label: 'Shopping lists', translations: { fr: 'Liste de courses' }, slug: 'docs/explanation/shopping-list-aggregation' },
             { label: 'Scaling', translations: { fr: "Ajustement des proportions" }, slug: 'docs/explanation/scaling' },
-            { label: 'Mise en place & planning', translations: { fr: 'Mise en place & planning' }, slug: 'docs/explanation/mise-en-place-and-planning', badge: { text: 'v1.4.0', variant: 'default' } }
+            { label: 'Mise en place & planning', translations: { fr: 'Mise en place & planning' }, slug: 'docs/explanation/mise-en-place-and-planning', badge: { text: 'v1.4.0', variant: 'default' } },
+            { label: 'Planning in real time', translations: { fr: 'Planifier en heures réelles' }, slug: 'docs/explanation/planning-in-real-time', badge: { text: 'v1.4.0', variant: 'default' } }
           ]
         },
         { label: 'Changelog', translations: { fr: 'Changelog' }, slug: 'docs/changelog' }
