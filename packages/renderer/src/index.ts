@@ -16,12 +16,18 @@ export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {
+	describeRunSheet,
 	runSheetToHTML,
 	runSheetToMarkdown,
 	runSheetToPrintHTML,
 	runSheetToText,
 } from "./run-sheet";
-export type { RunSheetRenderOptions } from "./run-sheet";
+export type {
+	RunSheetDayModel,
+	RunSheetLine,
+	RunSheetModel,
+	RunSheetRenderOptions,
+} from "./run-sheet";
 export {
 	formatDecimalToFraction,
 	getQty,
