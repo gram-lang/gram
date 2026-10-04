@@ -59,3 +59,18 @@ describe("provideInlayHints follows the chosen schedule", () => {
 		).toEqual([]);
 	});
 });
+
+describe("provideInlayHints follows the choice of rests", () => {
+	const state = parseDocument(
+		"---\ntitle: Bread\n---\n\n## Dough ->&dough\n\nKnead @flour{500g} ~{20min}, then rest ~_{8-16h}.\n\n## Bake\n\nBake &dough{500g} ~{30min}.\n",
+	);
+
+	it("reads the total of the shortest rests by default, and of the longest on request", () => {
+		const hint = (rests?: "shortest" | "longest") =>
+			label(provideInlayHints(state, undefined, rests));
+		expect(hint()).toBe(hint("shortest"));
+		expect(hint("longest")).not.toBe(hint("shortest"));
+		const hours = (text: string) => Number(/(\d+)h/.exec(text)?.[1]);
+		expect(hours(hint("longest")) - hours(hint("shortest"))).toBe(8);
+	});
+});

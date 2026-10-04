@@ -1,16 +1,21 @@
 import { type InlayHint, InlayHintKind, Position } from "vscode-languageserver";
-import { type MiseEnPlaceMode, scheduleTimes } from "@gram-lang/kitchen";
+import {
+	type MiseEnPlaceMode,
+	type RestChoice,
+	scheduleTimes,
+} from "@gram-lang/kitchen";
 import type { DocumentState } from "../document-state";
 
 export function provideInlayHints(
 	state: DocumentState,
 	schedule?: MiseEnPlaceMode,
+	rests?: RestChoice,
 ): InlayHint[] {
 	const hints: InlayHint[] = [];
 	if (!state.ast || !state.compilation?.metrics) return hints;
 
-	// The total follows the chosen schedule (`gram.miseEnPlace`).
-	const { totalTime } = scheduleTimes(state.compilation, schedule);
+	// The total follows the chosen timeline (`gram.miseEnPlace`, `gram.rests`).
+	const { totalTime } = scheduleTimes(state.compilation, schedule, rests);
 
 	let titleLine = 0;
 	let titleChar = 0;
