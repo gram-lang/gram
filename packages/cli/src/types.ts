@@ -287,6 +287,12 @@ export const GramConfigFileSchema = z.object({
 	version: z.number().optional(),
 	database: z.string().optional(),
 	language: z.string().optional(),
+	/**
+	 * The IANA time zone of the project's kitchen (`Europe/Paris`): the default of
+	 * `gram plan --tz`. Deliberately not checked here: a typo must not stop
+	 * `gram view` or `gram build`, only the command that needs a zone.
+	 */
+	timezone: z.string().optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */

@@ -16,7 +16,7 @@ Give it those, and it places every task of the recipe on the calendar, backward 
 | | Example | What it is |
 |---|---|---|
 | **Serving time** | `2026-10-11 13:00` | A local date and time, in the time zone below |
-| **Time zone** | `Europe/Paris` | An IANA zone: where the clock is read, and where daylight saving applies |
+| **Time zone** | `Europe/Paris` | An IANA zone: where the clock is read, and where daylight saving applies. The CLI reads it from `--tz`, then from the `timezone` setting of your project, then from your machine |
 | **Availability** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | When you can work: a default range, exceptions by day of the week, exceptions by date |
 
 Availability is an object, not a list of rules: a default range for every day (`daily`), exceptions by day of the week (`weekdays`) and exceptions by date (`dates`). A date wins over a weekday, which wins over the default, and an empty list means you are not available at all that day. A range that ends before it starts runs past midnight (`22:00-02:00`).

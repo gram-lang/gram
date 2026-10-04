@@ -40,7 +40,9 @@ Vous voulez servir un pain de campagne dimanche à 13 h. La pâte demande une po
    gram plan pain.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
    ```
 
-   `--serve` est une date et une heure locales, `--tz` le fuseau dans lequel on les lit (celui de votre machine par défaut), et `--available` quand vous pouvez travailler, tous les jours. Sans `--available`, Gram suppose que vous pouvez cuisiner à toute heure.
+   `--serve` est une date et une heure locales, `--tz` le fuseau dans lequel on les lit, et `--available` quand vous pouvez travailler, tous les jours. Sans `--available`, Gram suppose que vous pouvez cuisiner à toute heure.
+
+   Si vous cuisinez toujours au même endroit, réglez le fuseau une fois plutôt que de répéter `--tz` : `gram config set timezone Europe/Paris` (dans `.gram/config.yaml`, ou dans votre configuration globale pour tous les projets). Sans l'un ni l'autre, Gram prend le fuseau de votre machine, qui est le mauvais sur un serveur ou quand vous planifiez pour une autre ville.
 
 3. ### Lire la fiche
 

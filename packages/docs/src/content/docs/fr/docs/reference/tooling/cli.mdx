@@ -288,7 +288,7 @@ gram plan pain.gram --serve "2026-10-11 13:00" --format md        # Markdown plu
 gram plan pain.gram --serve "2026-10-11 13:00" --ics pain.ics     # écrit aussi un fichier d'agenda
 ```
 - `--serve "<date> <heure>"` (obligatoire) : quand on sert, une date et une heure locales dans le fuseau ci-dessous.
-- `--tz <fuseau>` : un fuseau IANA comme `Europe/Paris` (par défaut : celui de la machine). C'est là que se lisent l'heure du service et vos disponibilités, et là que s'applique l'heure d'été.
+- `--tz <fuseau>` : un fuseau IANA comme `Europe/Paris`. Par défaut : le réglage `timezone` de votre projet (ou de votre configuration globale), sinon celui de la machine. C'est là que se lisent l'heure du service et vos disponibilités, et là que s'applique l'heure d'été.
 - `--available <plage>`, répétable : quand vous pouvez travailler. `08:00-22:00` vaut pour tous les jours, `fri=18:00-22:00` pour un jour de la semaine (`mon` … `sun`), `2026-10-09=none` pour une date (`none` : pas disponible du tout). Plusieurs plages vont après une même clé, séparées par des virgules (`sat=08:00-09:00,18:00-22:00`), et une plage qui se termine avant son début passe minuit. Sans aucune, vous êtes disponible toute la journée.
 - Un repos écrit en fourchette (`~_{8-16h}`) est allongé ou raccourci pour que votre propre travail évite les heures où vous n'êtes pas disponible ; la fiche dit lequel et pourquoi, et liste ce qui n'a pas pu être arrangé. Voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
 - `--format text|md|html|json` : la sortie (par défaut `text`). `json` affiche `{ plan, runSheet }`.
@@ -472,6 +472,8 @@ version: 1                     # Réservé aux futures migrations de configurati
 database: ".gram/ingredients.yaml" # Chemin relatif ou absolu vers la base de données
 language: "fr"                 # Langue pour tout le contenu généré par l'IA (catégories, tags, recettes importées)
                                # Supporté : en, fr, de, es, it, pt, nl, ja, zh — défaut : en
+timezone: "Europe/Paris"       # Fuseau IANA de votre cuisine : valeur par défaut de `gram plan --tz` (par défaut : celui de la machine).
+                               # Seul `gram plan` le lit, et ne proteste que si ce n'est pas un fuseau : `gram config set timezone <fuseau>`
 updateCheck: true             # Passez à false pour désactiver la notice de mise à jour affichée après chaque commande
 
 # Alias nommés pour les imports `@use` — `@use "@bases/pate.gram"` résout vers

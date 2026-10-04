@@ -40,7 +40,9 @@ You want to serve a country bread on Sunday at 1 p.m. The dough needs an overnig
    gram plan bread.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
    ```
 
-   `--serve` is a local date and time, `--tz` the zone it is read in (your machine's by default), and `--available` when you can work, every day. Without `--available`, Gram assumes you can cook at any hour.
+   `--serve` is a local date and time, `--tz` the zone it is read in, and `--available` when you can work, every day. Without `--available`, Gram assumes you can cook at any hour.
+
+   If you always cook in the same place, set the zone once instead of repeating `--tz`: `gram config set timezone Europe/Paris` (in `.gram/config.yaml`, or in your global config for every project). Without either, Gram uses your machine's zone, which is the wrong one on a server or when you plan for another city.
 
 3. ### Read the sheet
 

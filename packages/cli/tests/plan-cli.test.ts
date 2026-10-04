@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -202,5 +202,86 @@ describe("--rests on the other commands", () => {
 			"longest",
 		);
 		expect(out.code).toBe(0);
+	});
+});
+
+describe("the timezone setting", () => {
+	let project: string;
+
+	const inProject = (...args: string[]) => {
+		const run = Bun.spawnSync([process.execPath, ENTRY, ...args], {
+			cwd: project,
+		});
+		const strip = (b: Uint8Array) =>
+			new TextDecoder().decode(b).replace(/\x1b\[[0-9;]*m/g, "");
+		return {
+			code: run.exitCode,
+			out: strip(run.stdout),
+			err: strip(run.stderr),
+		};
+	};
+	const withSetting = async (value: string) => {
+		await mkdir(join(project, ".gram"), { recursive: true });
+		await writeFile(
+			join(project, ".gram", "config.yaml"),
+			`timezone: ${value}\n`,
+			"utf-8",
+		);
+	};
+	const plan = (...extra: string[]) =>
+		inProject(
+			"plan",
+			"bread.gram",
+			"--serve",
+			"2026-10-11 13:00",
+			"--now",
+			"2026-10-01T09:00:00Z",
+			"--format",
+			"json",
+			...extra,
+		);
+	const serveInstant = (out: string) => {
+		const plan = JSON.parse(out).plan;
+		return plan.recipes[0].blocks.at(-1).end as string;
+	};
+
+	beforeAll(async () => {
+		project = await mkdtemp(join(tmpdir(), "gram-cli-plan-tz-"));
+		await writeFile(join(project, "bread.gram"), BREAD, "utf-8");
+	});
+
+	afterAll(async () => {
+		await rm(project, { recursive: true, force: true });
+	});
+
+	it("is the zone the serving time is read in", async () => {
+		await withSetting("America/New_York");
+		expect(serveInstant(plan().out)).toBe("2026-10-11T17:00:00Z");
+	});
+
+	it("loses to --tz", async () => {
+		await withSetting("America/New_York");
+		expect(serveInstant(plan("--tz", "Europe/Paris").out)).toBe(
+			"2026-10-11T11:00:00Z",
+		);
+	});
+
+	it("is an error for gram plan only when it is not a zone, naming the setting", async () => {
+		await withSetting("Mars/Olympus");
+		const { code, err, out } = plan();
+		expect(code).toBe(1);
+		expect(`${err}${out}`).toContain("Mars/Olympus");
+		expect(`${err}${out}`).toContain("timezone");
+	});
+
+	it("does not stop the other commands, whatever it holds", async () => {
+		await withSetting("Mars/Olympus");
+		expect(inProject("view", "bread.gram").code).toBe(0);
+		expect(inProject("build", "bread.gram").code).toBe(0);
+	});
+
+	it("still lets --tz rescue a bad setting", async () => {
+		await withSetting("Mars/Olympus");
+		expect(plan("--tz", "Europe/Paris").code).toBe(0);
 	});
 });

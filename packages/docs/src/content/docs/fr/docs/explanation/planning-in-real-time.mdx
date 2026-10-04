@@ -16,7 +16,7 @@ Donnez-lui ces trois informations, et il pose chaque tâche de la recette sur le
 | | Exemple | Ce que c'est |
 |---|---|---|
 | **Heure de service** | `2026-10-11 13:00` | Une date et une heure locales, dans le fuseau ci-dessous |
-| **Fuseau horaire** | `Europe/Paris` | Un fuseau IANA : là où l'on lit l'horloge, et où s'applique l'heure d'été |
+| **Fuseau horaire** | `Europe/Paris` | Un fuseau IANA : là où l'on lit l'horloge, et où s'applique l'heure d'été. La CLI le lit dans `--tz`, puis dans le réglage `timezone` de votre projet, puis sur votre machine |
 | **Disponibilités** | `08:00-22:00`, `fri=18:00-22:00`, `2026-10-09=none` | Quand vous pouvez travailler : une plage par défaut, des exceptions par jour de la semaine, des exceptions par date |
 
 Les disponibilités forment un objet, pas une liste de règles : une plage pour tous les jours (`daily`), des exceptions par jour de la semaine (`weekdays`) et par date (`dates`). Une date l'emporte sur un jour de la semaine, qui l'emporte sur la plage par défaut, et une liste vide veut dire « pas disponible du tout ce jour-là ». Une plage qui se termine avant son début passe minuit (`22:00-02:00`).

@@ -288,7 +288,7 @@ gram plan bread.gram --serve "2026-10-11 13:00" --format md        # Markdown in
 gram plan bread.gram --serve "2026-10-11 13:00" --ics bread.ics    # also write a calendar file
 ```
 - `--serve "<date> <time>"` (required): when it is served, a local date and time in the time zone below.
-- `--tz <zone>`: an IANA time zone like `Europe/Paris` (default: this machine's). It is where the serving time and your availability are read, and where daylight saving applies.
+- `--tz <zone>`: an IANA time zone like `Europe/Paris`. Default: the `timezone` setting of your project (or of your global config), else this machine's. It is where the serving time and your availability are read, and where daylight saving applies.
 - `--available <range>`, repeatable: when you can work. `08:00-22:00` is every day, `fri=18:00-22:00` a day of the week (`mon` … `sun`), `2026-10-09=none` a date (`none` means not available at all). Several ranges go after one key, separated by commas (`sat=08:00-09:00,18:00-22:00`), and a range that ends before it starts runs past midnight. Without any, you are available all day.
 - A rest written as a range (`~_{8-16h}`) is made longer or shorter to keep your own work out of the hours you are not available; the sheet says which one and why, and lists what could not be fixed. See [Planning in real time](/docs/explanation/planning-in-real-time/).
 - `--format text|md|html|json`: the output (default `text`). `json` prints `{ plan, runSheet }`.
@@ -476,6 +476,8 @@ language: "en"                 # Language for all AI-generated content (categori
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
                                # (the `gram init` interactive prompt currently only offers en/fr;
                                # other codes must be set manually with `gram config set language <code>`)
+timezone: "Europe/Paris"       # IANA time zone of your kitchen: the default of `gram plan --tz` (default: this machine's).
+                               # Only `gram plan` reads it, and only complains if it is not a zone: `gram config set timezone <zone>`
 updateCheck: true             # Set to false to silence the "update available" notice printed after each command
 
 # Named `@use` specifier aliases — `@use "@bases/pate.gram"` resolves to
