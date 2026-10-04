@@ -21,6 +21,27 @@ export const en = {
 		schedulePerSession: "By working day",
 		sessionDay: "D-",
 		sessionToday: "Day D",
+		runSheetTitle: "Production sheet",
+		runSheetServedAt: "Served {date} at {time}",
+		runSheetAround: "around {time}",
+		runSheetUntil: "until around {time}",
+		runSheetStep: "Step {n}",
+		runSheetRest: "Rest",
+		runSheetUnnamedSection: "Recipe",
+		runSheetStretched:
+			"Rest stretched from {from} to {to} to stay out of your unavailable hours",
+		runSheetShortened:
+			"Rest shortened from {from} to {to} to stay out of your unavailable hours",
+		runSheetProblems: "To fix",
+		runSheetOutside:
+			"{task}, around {time}, falls when you are not available, and no rest can be moved to fix it.",
+		runSheetExceeds:
+			"{task} takes {duration} without a break, more than your longest availability ({largest}): widen it.",
+		runSheetDayMismatch:
+			"The work of {day} falls on {actual} instead of {expected}.",
+		runSheetPast:
+			"The first task should have started {start}, and it is already {now}.",
+		runSheetMulti: "Only the first of {count} recipes is planned.",
 		est: "(est.)",
 		passiveTimeTooltip: "Passive Time (Waiting, resting...)",
 		activeTimeTooltip: "Active Time",
@@ -132,6 +153,9 @@ export const en = {
 			gantt_mode_reverse: "Countdown (T-)",
 			gantt_mode_target: "Target Time",
 			gantt_target_time_label: "Serve at:",
+			gantt_unavailable: "Not available",
+			gantt_rest_adjusted:
+				"Rest changed from {from} to {to} to stay out of unavailable hours",
 		},
 		options: {
 			scaleTitle: "Modify Quantities",
