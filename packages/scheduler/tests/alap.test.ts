@@ -1,8 +1,10 @@
 import { describe, it, expect } from "bun:test";
-import { scheduleALAP } from "../../src/schedule/alap";
-import type { StepSchedule } from "../../src/schedule/types";
-import type { ProcessedSection, ProcessedStep } from "../../src/types";
-import { WarningCode, type Warning } from "../../src/warnings";
+import { scheduleALAP } from "../src/alap";
+import type {
+	SchedulingDiagnostic,
+	SchedulingSection,
+	StepSchedule,
+} from "../src/types";
 
 // These exercise the ALAP algorithm directly on synthetic StepSchedule
 // arrays — no parser/compile() involved. Audit 2026-07-22, kitchen finding
@@ -10,19 +12,10 @@ import { WarningCode, type Warning } from "../../src/warnings";
 // meant to unlock; every scheduling test that existed before this refactor
 // had to go through getAST()+compile() to exercise this same code.
 
-function makeStep(): ProcessedStep {
-	return {
-		type: "step",
-		content: [],
-		timings: { start: 0, end: 0, activeDuration: 0 },
-		backgroundTasks: [],
-	};
-}
-
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
 		sectionIndex: 0,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 2,
 		productionTime: 2,
@@ -36,13 +29,10 @@ function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 }
 
 function makeSection(
-	overrides: Partial<ProcessedSection> = {},
-): ProcessedSection {
+	overrides: Partial<SchedulingSection> = {},
+): SchedulingSection {
 	return {
 		title: null,
-		ingredients: [],
-		cookware: [],
-		steps: [],
 		...overrides,
 	};
 }
@@ -53,7 +43,7 @@ describe("scheduleALAP", () => {
 		const b = makeSchedule({ sectionIndex: 1, localActiveTime: 5 });
 		const sections = [makeSection(), makeSection()];
 
-		scheduleALAP([a, b], sections, [], []);
+		scheduleALAP([a, b], sections, []);
 
 		// b has nothing after it: lf = 0 (its own local default), ls = -5.
 		expect(b.lf).toBe(0);
@@ -67,7 +57,7 @@ describe("scheduleALAP", () => {
 		const a = makeSchedule({ sectionIndex: 0, localActiveTime: 10 });
 		const sections = [makeSection({ retro_planning: { minutes: -60 } })];
 
-		scheduleALAP([a], sections, [], []);
+		scheduleALAP([a], sections, []);
 
 		expect(a.lf).toBe(-60);
 		expect(a.ls).toBe(-70);
@@ -89,7 +79,7 @@ describe("scheduleALAP", () => {
 		});
 		const sections = [makeSection(), makeSection()];
 
-		scheduleALAP([producer, consumer], sections, [], []);
+		scheduleALAP([producer, consumer], sections, []);
 
 		// consumer: lf=0, ls=-6 (nothing after it, no dependency of its own).
 		expect(consumer.ls).toBe(-6);
@@ -100,7 +90,7 @@ describe("scheduleALAP", () => {
 	});
 
 	it("warns TIME_PARADOX when a section's retro_planning anchor conflicts with a downstream dependency on it", () => {
-		const warnings: Warning[] = [];
+		const diagnostics: SchedulingDiagnostic[] = [];
 		// Section 0 is anchored at T-5 and declares &starter. Section 1
 		// consumes &starter but, given its own duration, needs it ready
 		// earlier, at T-6 — one minute before section 0's anchor even allows
@@ -119,11 +109,9 @@ describe("scheduleALAP", () => {
 			makeSection(),
 		];
 
-		scheduleALAP([s0, s1], sections, [], warnings);
+		scheduleALAP([s0, s1], sections, diagnostics);
 
-		expect(warnings.some((w) => w.code === WarningCode.TIME_PARADOX)).toBe(
-			true,
-		);
+		expect(diagnostics.some((w) => w.code === "TIME_PARADOX")).toBe(true);
 	});
 
 	it("chains two steps sharing a named track back-to-back, with no produced/consumed link", () => {
@@ -147,7 +135,7 @@ describe("scheduleALAP", () => {
 		});
 		const sections = [makeSection()];
 
-		scheduleALAP([first, second], sections, [], []);
+		scheduleALAP([first, second], sections, []);
 
 		// second has nothing after it: ls = 0.
 		expect(second.ls).toBe(0);
@@ -162,6 +150,6 @@ describe("scheduleALAP", () => {
 		const a = makeSchedule({ sectionIndex: 0 });
 		const sections = [makeSection(), makeSection({ title: "Empty" })];
 
-		expect(() => scheduleALAP([a], sections, [], [])).not.toThrow();
+		expect(() => scheduleALAP([a], sections, [])).not.toThrow();
 	});
 });

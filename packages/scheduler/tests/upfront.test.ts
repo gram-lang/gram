@@ -1,12 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { buildSchedule } from "../../src/schedule/build";
-import type { StepSchedule } from "../../src/schedule/types";
+import { buildSchedule } from "../src/build";
 import type {
 	MiseEnPlaceItem,
-	ProcessedSection,
-	ProcessedStep,
+	SchedulingSection,
 	SectionMiseEnPlace,
-} from "../../src/types";
+	StepSchedule,
+} from "../src/types";
 
 // One-minute gathers, so a section's mise en place lasts `count` minutes.
 const gather = (count: number): MiseEnPlaceItem => ({
@@ -16,19 +15,10 @@ const gather = (count: number): MiseEnPlaceItem => ({
 	duration: count,
 });
 
-function makeStep(): ProcessedStep {
-	return {
-		type: "step",
-		content: [],
-		timings: { start: 0, end: 0, activeDuration: 0 },
-		backgroundTasks: [],
-	};
-}
-
 function fixture() {
 	const a: StepSchedule = {
 		sectionIndex: 0,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 5,
 		productionTime: 5,
@@ -42,7 +32,7 @@ function fixture() {
 	};
 	const b: StepSchedule = {
 		sectionIndex: 1,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 10,
 		productionTime: 10,
@@ -52,12 +42,7 @@ function fixture() {
 		ls: 0,
 		lf: 0,
 	};
-	const sections: ProcessedSection[] = [a, b].map((s) => ({
-		title: null,
-		ingredients: [],
-		cookware: [],
-		steps: [s.stepObj as ProcessedStep],
-	}));
+	const sections: SchedulingSection[] = [{ title: null }, { title: null }];
 	const mise: SectionMiseEnPlace[] = [
 		{ section: 0, duration: 3, items: [gather(3)] },
 		{ section: 1, duration: 2, items: [gather(2)] },
@@ -73,7 +58,6 @@ describe('buildSchedule("upfront")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			5,
 			15,
 		);
@@ -94,7 +78,6 @@ describe('buildSchedule("upfront")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			5,
 			15,
 		);
@@ -114,7 +97,6 @@ describe('buildSchedule("upfront")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			5,
 			15,
 		);
@@ -130,7 +112,6 @@ describe('buildSchedule("upfront")', () => {
 			schedules,
 			mise,
 			sections,
-			[],
 			5,
 			15,
 		);

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import {
-	groupsFromDays,
-	sessionDays,
-	sessionsOf,
-} from "../../src/schedule/sessions";
-import type { ScheduleBlock } from "../../src/types";
+import { groupsFromDays, sessionDays, sessionsOf } from "../src/sessions";
+import type { ScheduleBlock } from "../src/types";
 
 const anchor = (minutes?: number) => ({
 	retro_planning: minutes === undefined ? null : { raw: "", minutes },

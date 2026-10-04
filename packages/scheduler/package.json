@@ -1,7 +1,7 @@
 {
-  "name": "@gram-lang/kitchen",
+  "name": "@gram-lang/scheduler",
   "version": "1.3.0",
-  "description": "Compiler for the Gram recipe language, converting AST to JSON.",
+  "description": "Scheduling engine for Gram recipes: lays tasks out on a timeline from a neutral task description.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
@@ -11,35 +11,28 @@
   "keywords": [
     "gram",
     "recipe",
-    "compiler",
-    "json"
+    "scheduler",
+    "planning"
   ],
   "author": "abiwab",
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://git.gram-lang.org/gram-lang/gram.git",
-    "directory": "packages/kitchen"
+    "directory": "packages/scheduler"
   },
   "bugs": {
     "url": "https://git.gram-lang.org/gram-lang/gram/issues"
   },
-  "homepage": "https://git.gram-lang.org/gram-lang/gram/src/branch/main/packages/kitchen#readme",
+  "homepage": "https://git.gram-lang.org/gram-lang/gram/src/branch/main/packages/scheduler#readme",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "prebuild": "node scripts/build-version.cjs",
     "build": "tsup src/index.ts --format esm --dts --tsconfig ../../tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test --only-failures",
     "prepublishOnly": "npm run build"
-  },
-  "dependencies": {
-    "@gram-lang/i18n": "workspace:*",
-    "@gram-lang/parser": "workspace:*",
-    "@gram-lang/scheduler": "workspace:*",
-    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.1"

@@ -6,7 +6,7 @@ import {
 	type CookwareAST,
 	ASTNodeType,
 } from "@gram-lang/parser";
-import type { Usage, TimeBreakdownItem, UsageComposite } from "./types";
+import type { Usage, UsageComposite } from "./types";
 import { resolveTimeUnit, TIME_TO_MINUTES } from "@gram-lang/i18n";
 import type { CompilerOptions } from "./core";
 // Imported from "./scale/types" (not the "./scale" barrel) to avoid a cycle:
@@ -362,26 +362,8 @@ export const scaleQty = (qty: Usage["qty"], factor: number): Usage["qty"] => {
  */
 export const round2 = (value: number): number => parseFloat(value.toFixed(2));
 
-/**
- * Adds a duration to a time breakdown, merging into an existing entry with
- * the same label regardless of its position in the array. A same-label match
- * is not guaranteed to be the last entry pushed — e.g. `totalBreakdown`
- * interleaves section-active and timer contributions — so this always scans
- * the full list rather than only checking the tail.
- */
-export const addToBreakdown = (
-	breakdown: TimeBreakdownItem[],
-	label: string,
-	duration: number,
-): void => {
-	if (duration <= 0) return;
-	const existing = breakdown.find((b) => b.label === label);
-	if (existing) {
-		existing.duration += duration;
-	} else {
-		breakdown.push({ label, duration });
-	}
-};
+// Lives in the scheduler, which builds the timeline breakdowns with it.
+export { addToBreakdown } from "@gram-lang/scheduler";
 
 export const getNumericQty = (
 	q: Usage["qty"] | null | undefined,

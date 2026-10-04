@@ -1,22 +1,15 @@
 import { describe, it, expect } from "bun:test";
-import { serializeTracks } from "../../src/schedule/tracks";
-import type { StepSchedule } from "../../src/schedule/types";
-import type { ProcessedSection, ProcessedStep } from "../../src/types";
-import { WarningCode, type Warning } from "../../src/warnings";
-
-function makeStep(): ProcessedStep {
-	return {
-		type: "step",
-		content: [],
-		timings: { start: 0, end: 0, activeDuration: 0 },
-		backgroundTasks: [],
-	};
-}
+import { serializeTracks } from "../src/tracks";
+import type {
+	SchedulingDiagnostic,
+	SchedulingSection,
+	StepSchedule,
+} from "../src/types";
 
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
 		sectionIndex: 0,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 0,
 		productionTime: 0,
@@ -30,13 +23,10 @@ function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 }
 
 function makeSection(
-	overrides: Partial<ProcessedSection> = {},
-): ProcessedSection {
+	overrides: Partial<SchedulingSection> = {},
+): SchedulingSection {
 	return {
 		title: null,
-		ingredients: [],
-		cookware: [],
-		steps: [],
 		...overrides,
 	};
 }
@@ -50,7 +40,7 @@ describe("serializeTracks", () => {
 			],
 		});
 
-		const [entry] = serializeTracks([sched], [makeSection()], [], []);
+		const [entry] = serializeTracks([sched], [makeSection()], []);
 
 		expect(entry?.theoreticalStart).toBe(10);
 		expect(entry?.actualStart).toBe(10);
@@ -58,7 +48,7 @@ describe("serializeTracks", () => {
 	});
 
 	it("delays the second of two overlapping tasks sharing a named track, and warns TRACK_CONTENTION", () => {
-		const warnings: Warning[] = [];
+		const diagnostics: SchedulingDiagnostic[] = [];
 		const first = makeSchedule({
 			ls: 0,
 			passiveTasks: [
@@ -75,8 +65,7 @@ describe("serializeTracks", () => {
 		const entries = serializeTracks(
 			[first, second],
 			[makeSection(), makeSection()],
-			[],
-			warnings,
+			diagnostics,
 		);
 		const [a, b] = entries;
 
@@ -86,9 +75,7 @@ describe("serializeTracks", () => {
 		// 20, so it's pushed to start right when the track frees up.
 		expect(b?.actualStart).toBe(20);
 		expect(b?.actualEnd).toBe(30);
-		expect(warnings.some((w) => w.code === WarningCode.TRACK_CONTENTION)).toBe(
-			true,
-		);
+		expect(diagnostics.some((w) => w.code === "TRACK_CONTENTION")).toBe(true);
 	});
 
 	it("does not apply track-contention delay to unnamed passive tasks, even if they overlap", () => {
@@ -126,7 +113,7 @@ describe("serializeTracks", () => {
 			],
 		});
 
-		const entries = serializeTracks([comment], [makeSection()], [], []);
+		const entries = serializeTracks([comment], [makeSection()], []);
 		expect(entries).toHaveLength(0);
 	});
 });

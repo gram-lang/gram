@@ -18,6 +18,7 @@
       "@gram-lang/cli",
       "@gram-lang/language-server",
       "@gram-lang/modules",
+      "@gram-lang/scheduler",
       "gram-lang",
       "@gram-lang/docs",
       "@gram-lang/audit"

@@ -1,10 +1,11 @@
-import { describe, it, expect } from "bun:test";
-import { commitTimeline, computeTimeline } from "../../src/schedule/rebase";
-import type {
-	ScheduledPassiveTask,
-	StepSchedule,
-} from "../../src/schedule/types";
-import type { ProcessedSection, ProcessedStep } from "../../src/types";
+import { describe, expect, it } from "bun:test";
+import {
+	computeTimeline,
+	type ScheduledPassiveTask,
+	type StepSchedule,
+} from "@gram-lang/scheduler";
+import { commitTimeline } from "../src/legacy-timings";
+import type { ProcessedSection, ProcessedStep } from "../src/types";
 
 function makeStep(): ProcessedStep {
 	return {
@@ -18,7 +19,7 @@ function makeStep(): ProcessedStep {
 function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	return {
 		sectionIndex: 0,
-		stepObj: makeStep(),
+		stepIndex: 0,
 		isComment: false,
 		localActiveTime: 0,
 		productionTime: 0,
@@ -31,6 +32,7 @@ function makeSchedule(overrides: Partial<StepSchedule> = {}): StepSchedule {
 	};
 }
 
+// A section holding one compiled step, the one `stepIndex: 0` points at.
 function makeSection(
 	overrides: Partial<ProcessedSection> = {},
 ): ProcessedSection {
@@ -38,25 +40,29 @@ function makeSection(
 		title: null,
 		ingredients: [],
 		cookware: [],
-		steps: [],
+		steps: [makeStep()],
 		...overrides,
 	};
 }
 
+const stepOf = (sections: ProcessedSection[], i = 0) =>
+	sections[i]!.steps[0] as ProcessedStep;
+
 // Lays the schedules out, then writes the result onto the compiled steps: the
 // two calls `compile()` makes for the default timeline.
 const rebaseAndCommit = (
-	schedules: Parameters<typeof computeTimeline>[0],
-	passiveTasks: Parameters<typeof computeTimeline>[1],
-	sections: Parameters<typeof computeTimeline>[2],
+	schedules: StepSchedule[],
+	passiveTasks: ScheduledPassiveTask[],
+	sections: ProcessedSection[],
 	globalActiveTime: number,
 ) =>
 	commitTimeline(
 		computeTimeline(schedules, passiveTasks, sections),
+		sections,
 		globalActiveTime,
 	);
 
-describe("layout and commit", () => {
+describe("commitTimeline", () => {
 	it("shifts every timing so the earliest ls lands at zero", () => {
 		const a = makeSchedule({ ls: -15, lf: -5, localActiveTime: 10 });
 		const b = makeSchedule({
@@ -65,15 +71,20 @@ describe("layout and commit", () => {
 			lf: 0,
 			localActiveTime: 5,
 		});
+		const sections = [makeSection(), makeSection()];
 
-		rebaseAndCommit([a, b], [], [makeSection(), makeSection()], 15);
+		rebaseAndCommit([a, b], [], sections, 15);
 
-		const aStep = a.stepObj as ProcessedStep;
-		const bStep = b.stepObj as ProcessedStep;
-		expect(aStep.timings.start).toBe(0);
-		expect(aStep.timings.end).toBe(10);
-		expect(bStep.timings.start).toBe(10);
-		expect(bStep.timings.end).toBe(15);
+		expect(stepOf(sections, 0).timings).toEqual({
+			start: 0,
+			end: 10,
+			activeDuration: 10,
+		});
+		expect(stepOf(sections, 1).timings).toEqual({
+			start: 10,
+			end: 15,
+			activeDuration: 5,
+		});
 	});
 
 	it("writes background tasks with a rebased startOffset relative to the step's own start", () => {
@@ -91,11 +102,11 @@ describe("layout and commit", () => {
 			actualStart: -10,
 			actualEnd: 10,
 		};
+		const sections = [makeSection()];
 
-		rebaseAndCommit([sched], [passive], [makeSection()], 10);
+		rebaseAndCommit([sched], [passive], sections, 10);
 
-		const step = sched.stepObj as ProcessedStep;
-		expect(step.backgroundTasks[0]).toMatchObject({
+		expect(stepOf(sections).backgroundTasks[0]).toMatchObject({
 			name: "oven",
 			duration: 20,
 			startOffset: 0, // task starts exactly when the step itself starts
@@ -103,12 +114,7 @@ describe("layout and commit", () => {
 	});
 
 	it("computes activeBreakdown grouped by section title", () => {
-		const a = makeSchedule({
-			sectionIndex: 0,
-			ls: -10,
-			lf: 0,
-			localActiveTime: 10,
-		});
+		const a = makeSchedule({ ls: -10, lf: 0, localActiveTime: 10 });
 
 		const { activeBreakdown } = rebaseAndCommit(
 			[a],
@@ -147,14 +153,19 @@ describe("layout and commit", () => {
 
 	it("ignores comment schedules when computing globalMinStart and breakdowns", () => {
 		const comment = makeSchedule({ isComment: true, ls: -1000 });
-		const step = makeSchedule({ ls: -5, lf: 0, localActiveTime: 5 });
+		const step = makeSchedule({
+			sectionIndex: 1,
+			ls: -5,
+			lf: 0,
+			localActiveTime: 5,
+		});
+		const sections = [makeSection(), makeSection()];
 
-		rebaseAndCommit([comment, step], [], [makeSection(), makeSection()], 5);
+		rebaseAndCommit([comment, step], [], sections, 5);
 
 		// If the comment's ls (-1000) were considered, everything would be
 		// shifted by 1000 instead of 5.
-		const stepObj = step.stepObj as ProcessedStep;
-		expect(stepObj.timings.start).toBe(0);
-		expect(stepObj.timings.end).toBe(5);
+		expect(stepOf(sections, 1).timings.start).toBe(0);
+		expect(stepOf(sections, 1).timings.end).toBe(5);
 	});
 });

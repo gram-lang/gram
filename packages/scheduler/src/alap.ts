@@ -1,7 +1,8 @@
-import type { SectionAST } from "@gram-lang/parser";
-import type { ProcessedSection } from "../types";
-import { WarningCode, pushWarning, type Warning } from "../warnings";
-import type { StepSchedule } from "./types";
+import type {
+	SchedulingDiagnostic,
+	SchedulingSection,
+	StepSchedule,
+} from "./types";
 
 /**
  * Backward ("as late as possible") scheduling pass. Walks sections from last
@@ -24,15 +25,13 @@ import type { StepSchedule } from "./types";
  * whose *other* dependencies reorder them relative to their textual order).
  *
  * Mutates `schedules` in place (sets `.ls`/`.lf`) and may push
- * `TIME_PARADOX` warnings. `sections`/`sectionASTs` are read-only here — only
- * used for `.title`/`.retro_planning`/`.intermediate_preparation` and `.loc`
- * on warnings, respectively.
+ * `TIME_PARADOX` diagnostics. `sections` is read-only here — only used for
+ * `.title`/`.retro_planning`/`.intermediate_preparation`.
  */
 export function scheduleALAP(
 	schedules: StepSchedule[],
-	sections: ProcessedSection[],
-	sectionASTs: SectionAST[],
-	warnings: Warning[],
+	sections: SchedulingSection[],
+	diagnostics: SchedulingDiagnostic[],
 ): void {
 	const latestReady = new Map<string, number>();
 	// Earliest theoretical start, seen so far walking backward, of the next
@@ -108,10 +107,11 @@ export function scheduleALAP(
 		// TIME PARADOX verification
 		if (retroPlanningLf !== Infinity && dependencyLf !== Infinity) {
 			if (dependencyLf < retroPlanningLf) {
-				pushWarning(warnings, WarningCode.TIME_PARADOX, {
+				diagnostics.push({
+					code: "TIME_PARADOX",
+					section: sIdx,
 					cause: `Section '${section.title || "unnamed"}' (~{${section.retro_planning!.value}${section.retro_planning!.unit}})`,
 					conflict: `downstream dependency at T${dependencyLf}m`,
-					loc: sectionASTs[sIdx]?.loc,
 				});
 			}
 		}

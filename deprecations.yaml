@@ -27,7 +27,7 @@ deprecations:
     replacement: "The step blocks of recipe.schedules[mode].blocks"
     files:
       - "packages/kitchen/src/types.ts"
-      - "packages/kitchen/src/schedule/rebase.ts"
+      - "packages/kitchen/src/legacy-timings.ts"
 
   - id: kitchen-step-background-tasks
     layer: compiled-json
@@ -38,7 +38,7 @@ deprecations:
     replacement: "recipe.schedules[mode].blocks"
     files:
       - "packages/kitchen/src/types.ts"
-      - "packages/kitchen/src/schedule/rebase.ts"
+      - "packages/kitchen/src/legacy-timings.ts"
 
   - id: kitchen-metrics-times
     layer: compiled-json

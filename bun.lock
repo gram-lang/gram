@@ -146,6 +146,7 @@
       "dependencies": {
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/parser": "workspace:*",
+        "@gram-lang/scheduler": "workspace:*",
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -196,6 +197,13 @@
         "@gram-lang/i18n": "workspace:*",
         "@gram-lang/kitchen": "workspace:*",
         "@gram-lang/parser": "workspace:*",
+      },
+    },
+    "packages/scheduler": {
+      "name": "@gram-lang/scheduler",
+      "version": "1.3.0",
+      "devDependencies": {
+        "@types/node": "^26.1.1",
       },
     },
     "packages/vscode-extension": {
@@ -595,6 +603,8 @@
     "@gram-lang/parser": ["@gram-lang/parser@workspace:packages/parser"],
 
     "@gram-lang/renderer": ["@gram-lang/renderer@workspace:packages/renderer"],
+
+    "@gram-lang/scheduler": ["@gram-lang/scheduler@workspace:packages/scheduler"],
 
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 
