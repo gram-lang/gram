@@ -43,3 +43,5 @@ En l'essayant sur une tarte vanille en quatre jours, j'ai aussi appris quelque c
 ### Essayez-le sur vos recettes
 
 Si vous avez une recette qui se travaille sur plusieurs jours ou en plusieurs temps, essayez `gram view recette.gram --mise-en-place per-session`, ou le nouveau choix « Par journée de travail » du playground. Si cela ne correspond pas à votre façon d'organiser les jours, envoyez-la-moi : ce sont les vraies recettes qui me diront si les jours devraient venir d'ailleurs que des ancres.
+
+> **Mise à jour avant la sortie de la 1.4.0 :** la règle des journées a changé depuis ce billet. Seule une ancre **en jours** (`~{-1d}`, `~{-2d}`) ouvre une journée de travail ; une ancre en heures (`~{-36h}`, `~{-26h}`) est une échéance à l'intérieur de la journée où tombe la section, jamais une journée à part entière. Une section sans ancre prend le jour de l'ancre en jours la plus lointaine parmi les sections qui la suivent, et pour garder un fond et le sirop qui en est fait sur le même jour, on n'ancre que le dernier. La page [Mise en place et planning](/docs/explanation/mise-en-place-and-planning/) donne les règles actuelles.
