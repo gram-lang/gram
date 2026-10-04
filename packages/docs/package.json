@@ -31,6 +31,7 @@
     "@gram-lang/modules": "workspace:*",
     "@gram-lang/parser": "workspace:*",
     "@gram-lang/renderer": "workspace:*",
+    "@gram-lang/scheduler": "workspace:*",
     "astro": "^7.3.5",
     "mermaid": "^12.0.0",
     "shiki": "^4.3.1",

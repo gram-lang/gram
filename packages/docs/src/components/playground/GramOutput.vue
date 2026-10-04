@@ -12,7 +12,8 @@ import {
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 import { trackEvent } from "../../lib/umami";
-import type { MiseEnPlaceMode } from "@gram-lang/kitchen";
+import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
 import type { PlaygroundDiagnostic } from "./diagnostics";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import JsonNode from "./JsonNode.vue";
@@ -25,11 +26,23 @@ import GramErrorState from "./GramErrorState.vue";
 const GramGantt = defineAsyncComponent(() => import("./GramGantt.vue"));
 
 const props = defineProps<{
-	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview" | "gantt";
+	viewMode:
+		| "json"
+		| "ast"
+		| "markdown"
+		| "json-tree"
+		| "preview"
+		| "gantt"
+		| "runsheet";
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
 	schedule?: MiseEnPlaceMode;
+	rests?: RestChoice;
+	/** The recipe placed on the calendar, when a serving time is set. */
+	projection?: ProjectedPlan | null;
+	/** The production sheet of that plan, as HTML. */
+	runSheetHtml?: string;
 	blockingDiagnostics?: PlaygroundDiagnostic[];
 }>();
 
@@ -224,7 +237,13 @@ function handlePreviewClick(e: MouseEvent) {
 
         <!-- Gantt Chart -->
         <div v-else-if="viewMode === 'gantt'" class="output-gantt">
-          <GramGantt :json-data="jsonData" :schedule="schedule" />
+          <GramGantt :json-data="jsonData" :schedule="schedule" :rests="rests" :projection="projection ?? undefined" />
+        </div>
+
+        <!-- Production sheet -->
+        <div v-else-if="viewMode === 'runsheet'" class="output-preview gram-preview vp-doc">
+          <div v-if="runSheetHtml" v-html="runSheetHtml"></div>
+          <p v-else class="run-sheet-hint">{{ t.playground.views.runSheetHint }}</p>
         </div>
         
         <!-- HTML Preview -->
@@ -339,6 +358,10 @@ function handlePreviewClick(e: MouseEvent) {
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+.run-sheet-hint {
+  color: var(--sl-color-gray-3);
 }
 
 .output-gantt{

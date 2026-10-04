@@ -6,13 +6,16 @@ import {
 	attachGanttInteractivity,
 	type GanttInteractivityHandle,
 } from "@gram-lang/renderer";
-import type { MiseEnPlaceMode } from "@gram-lang/kitchen";
+import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
 
 const { lang } = useI18n();
 
 const props = defineProps<{
 	jsonData: any;
 	schedule?: MiseEnPlaceMode;
+	rests?: RestChoice;
+	projection?: ProjectedPlan;
 }>();
 
 const container = ref<HTMLElement | null>(null);
@@ -22,6 +25,8 @@ const html = computed(() =>
 	toGanttHTML(props.jsonData, {
 		lang: lang.value,
 		miseEnPlace: props.schedule,
+		rests: props.rests,
+		projection: props.projection,
 	}),
 );
 
