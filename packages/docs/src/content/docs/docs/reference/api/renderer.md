@@ -36,7 +36,8 @@ All three formatters share a single traversal architecture (`RenderBackend`), en
 | `formatFraction` | `(value: number) => string` | Custom decimal → fraction formatter (default: common fractions like `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (default: e.g. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Omit ingredient quantities from inline step text across all formatters (the shopping list and each section's ingredient list are unaffected). |
-| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Which of the recipe's three timelines to follow: mise en place right before each section (`'perSection'`, the default), all at the start (`'upfront'`) or at the start of each working day (`'perSession'`). Drives the total and idle times in the header. With `'perSection'`, HTML shows a "Mise en place" label on each section's ingredient list (the duration and detail show on hover). With the other two, HTML, Markdown and print open each session with one "Mise en place" block (labelled `D-3`, `D-1`, `Day D`... when the recipe spans several days), and HTML keeps a label on a section only for what has to wait, an intermediate made the same day. Ingredient lists are the same in all three. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Where the mise en place goes: right before each section (`'perSection'`, the default), all at the start (`'upfront'`) or at the start of each working day (`'perSession'`). Drives the total and idle times in the header. With `'perSection'`, HTML shows a "Mise en place" label on each section's ingredient list (the duration and detail show on hover). With the other two, HTML, Markdown and print open each session with one "Mise en place" block (labelled `D-3`, `D-1`, `Day D`... when the recipe spans several days), and HTML keeps a label on a section only for what has to wait, an intermediate made the same day. Ingredient lists are the same in all three. The timeline is laid out from the recipe's `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | *(Since 1.4.0)* How long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Drives the same times as `miseEnPlace`. |
 | `bakersMathOnly` | `boolean` | Show only baker's percentages, hiding absolute quantities. |
 | `interactiveScaling` | `boolean` | Render interactive portion/ingredient scaling controls (HTML only). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Which nutrition basis to display. `'auto'` (the default) shows per-portion when the recipe declares a portion count, otherwise the whole recipe. |
@@ -76,7 +77,9 @@ handle.dispose();
 | `lang` | `string` | Locale code (e.g. `'en'`, `'fr'`) for UI translations via `@gram-lang/i18n`. |
 | `gapThresholdMinutes` | `number` | Minimum idle gap duration in minutes before gap compression is applied (default: `60`). `Infinity` never compresses. |
 | `compressedGapSize` | `number` | Virtual minute width that compressed idle gaps collapse down to (default: `20`); never wider than the gap itself. |
-| `schedule` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Which timeline to draw (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section, all at the start or at the start of its working day; with `'perSession'` a marker labels each day. It reads `schedules[schedule].blocks` from the compiled recipe. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | *(Since 1.4.0)* Where the mise en place goes (default: `'perSection'`). Each section's mise en place is a dashed block in the section's colour, right before the section, all at the start or at the start of its working day; with `'perSession'` a marker labels each day. The timeline is laid out from the recipe's `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | *(Since 1.4.0)* How long a rest written as a range lasts (default: `'shortest'`). |
+| `projection` | `ProjectedPlan` | *(Since 1.4.0)* The recipe placed on the calendar by `project()` from `@gram-lang/scheduler`. The chart draws the plan's own blocks (a rest that was stretched or shortened shows at its new length, outlined, with a note), reads its axis in real days and times of the plan's time zone, greys out the hours the cook is not available, and leaves out the time-mode selector. `miseEnPlace` and `rests` are then those the plan was made with, and are ignored here. |
 
 ### `GanttInteractivityOptions`
 
@@ -113,3 +116,30 @@ function escapeHtml(unsafe: string | null | undefined): string
 function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralizes `<`/`&` for safe Markdown-to-HTML rendering downstream
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
+
+## Production sheet
+
+*(Since 1.4.0)* From the plan made by `project()` and the compiled recipe it was made from, the renderer writes the production sheet in four formats, plus the sheet in words for building your own:
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+import { runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML, describeRunSheet } from '@gram-lang/renderer';
+
+const sheet = runSheet(project([{ graph: compiled.tasks }], context));
+
+runSheetToText(sheet, compiled, { lang: 'en' });      // plain text
+runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown
+runSheetToHTML(sheet, compiled, { lang: 'en' });      // a fragment, styled by gram.css
+runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // a complete, print-ready document
+const model = describeRunSheet(sheet, compiled);       // { title, servedAt, days: [{ heading, lines }], problems }
+```
+
+### `RunSheetRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Locale code (`'en'`, `'fr'`) for the words and the dates. |
+| `roundTo` | `number` | Display only: a time is shown to the nearest this many minutes (default: `5`). The calculation stays exact to the minute. |
+| `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
+
+Each line says when the task starts ("around 21:40"), what it is, how long it lasts and, for a rest, until when. A step with no hands-on time of its own is left out: the rest it starts carries what it says. Every rest the plan moved has a note, and what could not be fixed is listed at the end. Everything that comes from the recipe is escaped. The sheet covers the first recipe of the plan.

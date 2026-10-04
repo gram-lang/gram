@@ -69,7 +69,8 @@ import Since from '../../../../../components/Since.astro';
    - `sections` *(array)* : Les instructions elles-mêmes, découpées par section de recette.
    - `metrics` *(object)* : `preparationTime` et `activeTime` en minutes, plus la masse et la nutrition quand la recette est passée par l'analyzer.
    - `miseEnPlace` *(array)* : Ce que coûte la préparation de chaque section, une entrée par section qui a une préparation.
-   - `schedules` *(object)* : Trois chronologies complètes, `perSection`, `upfront` et `perSession`, chacune avec un `totalTime`, un `idleTime`, une liste de `blocks` et ses `sessions` (une par journée de travail).
+   - `tasks` *(object)* : Tout ce qu'il y a à faire, avec sa durée et ce que chaque tâche attend. Tous les plannings se posent à partir de lui.
+   - `schedule` *(object)* : Le planning par défaut posé à partir de `tasks`, avec un `totalTime`, un `idleTime`, une liste de `blocks` et ses `sessions` (une par journée de travail).
    - `generator` *(string)* : La version du compilateur qui a écrit ce JSON.
    
    Ignorez les champs inconnus et les valeurs de `kind` de bloc que vous ne connaissez pas : votre interface continuera de fonctionner quand une version mineure en ajoutera.
@@ -110,7 +111,7 @@ import Since from '../../../../../components/Since.astro';
    }
    ```
    
-   Une étape ne porte plus son propre début et sa propre fin. Sa place dans le temps dépend du moment où se fait la mise en place, elle vit donc dans `schedules` (voir « Dessiner la chronologie » plus bas).
+   Une étape ne porte plus son propre début et sa propre fin. Sa place dans le temps dépend du moment où se fait la mise en place, elle vit donc dans `schedule` (voir « Dessiner la chronologie » plus bas).
 
 3. ### Logique de Rendu
    
@@ -178,13 +179,17 @@ import Since from '../../../../../components/Since.astro';
    
    <Since v="1.4.0" />
    
-   Pour dessiner un diagramme de Gantt ou un planning, lisez les blocs de l'une des trois chronologies. Tous les temps sont en minutes depuis `0` et incluent déjà la préparation :
+   Pour dessiner un diagramme de Gantt ou un planning, lisez les blocs d'un planning. `recipe.schedule` est celui par défaut ; tout autre sort des mêmes `tasks` avec `layout()`, sans recompiler. Tous les temps sont en minutes depuis `0` et incluent déjà la préparation :
    
    ```typescript
-   // 'perSection' : la préparation de chaque section juste avant elle.
-   // 'upfront' : toute la préparation au début.
-   // 'perSession' : la préparation de chaque journée de travail au début de cette journée.
-   const schedule = recipe.schedules[modeChoisi];
+   import { layout } from '@gram-lang/scheduler'; // ou scheduleFor() de '@gram-lang/kitchen'
+
+   // miseEnPlace : 'perSection' (la préparation de chaque section juste avant elle, par défaut),
+   //   'upfront' (toute la préparation au début) ou 'perSession' (la préparation de chaque
+   //   journée de travail au début de cette journée).
+   // rests : la durée d'un repos écrit en fourchette : 'shortest' (par défaut), 'balanced', 'longest'.
+   const { schedule } = layout(recipe.tasks, { miseEnPlace: modeChoisi, rests: reposChoisis });
+   // Pour le choix par défaut, recipe.schedule est la même chose, déjà calculée.
    
    for (const block of schedule.blocks) {
      if (block.kind === 'prep') {
@@ -201,9 +206,11 @@ import Since from '../../../../../components/Since.astro';
    }
    ```
    
-   Laissez votre lecteur choisir le mode : le temps total et le temps d'attente diffèrent d'un mode à l'autre (`schedule.totalTime`, `schedule.idleTime`), pas `metrics.preparationTime` ni `metrics.activeTime`. Le moteur de rendu Gram, le playground, l'extension VS Code et la CLI offrent tous ce choix.
+   Laissez votre lecteur choisir : le temps total et le temps d'attente diffèrent d'un choix à l'autre (`schedule.totalTime`, `schedule.idleTime`), pas `schedule.preparationTime`. Le moteur de rendu Gram, le playground, l'extension VS Code et la CLI offrent tous ce choix.
+   
+   Pour dessiner sur le calendrier plutôt, avec de vrais jours et de vraies heures et des repos étirés pour que le cuisinier évite la nuit, donnez les mêmes `tasks` à `project()` avec une heure de service, un fuseau horaire et des disponibilités. Chaque bloc du plan porte `start` et `end` en instants (UTC) et `startLocal` et `endLocal` en heure du cadran du fuseau. Voir [Planifier un repas](/fr/docs/how-to/plan-a-meal/) et la [référence du scheduler](/fr/docs/reference/api/scheduler/).
    
    :::caution[Champs dépréciés]
-   Du code plus ancien peut lire `step.timings`, `step.backgroundTasks` ou `metrics.totalTime`. Ils fonctionnent encore et seront retirés en 2.0.0 : lisez plutôt `schedules`. Voir [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) et la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
+   Du code plus ancien peut lire `step.timings`, `step.backgroundTasks` ou `metrics.totalTime`. Ils fonctionnent encore et seront retirés en 2.0.0 : lisez plutôt `schedule`. Voir [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) et la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
    :::
 </Steps>

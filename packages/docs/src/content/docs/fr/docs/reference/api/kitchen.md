@@ -58,7 +58,8 @@ interface CompilationResult {
     totalBreakdown: TimeBreakdownItem[];
   };
   miseEnPlace: SectionMiseEnPlace[]; // ce que coûte la préparation de chaque section
-  schedules: Record<MiseEnPlaceMode, Schedule>; // perSection, upfront, perSession
+  tasks: TaskGraph;                  // depuis la 1.4.0 : tout ce qu'il y a à faire, et ce que chaque tâche attend
+  schedule: Schedule;                // depuis la 1.4.0 : le planning par défaut, posé à partir de `tasks`
 }
 
 interface SectionMiseEnPlace {
@@ -86,23 +87,36 @@ interface ScheduleSession {
 }
 
 type ScheduleBlock =
-  | { kind: "prep"; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
-  | { kind: "step"; section: number; step: number; start: number; end: number }
-  | { kind: "passive"; section: number; step: number; track?: string; start: number; end: number };
+  | { kind: "prep"; task: string; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
+  | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
+  | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
+
+// `tasks`, en bref ; les types complets sont dans la référence du scheduler
+interface TaskGraph {
+  tasks: Task[];                     // tâches `prep`, `step` et `passive`, section par section
+  sections: { day: number; deadline?: number; intermediate?: string }[];
+}
 ```
 
-:::note[Nouveau en 1.4.0 : `generator`, `miseEnPlace` et `schedules`]
-`miseEnPlace` dit ce que coûte la préparation de chaque section, et `schedules` contient trois chronologies complètes construites à partir de là : `perSection` (la préparation de chaque section juste avant elle), `upfront` (toute la préparation d'abord) et `perSession` (la préparation de chaque journée de travail rassemblée au début de cette journée, les jours venant des ancres `~{-Nd}` des sections ; une recette sans ancre de ce genre tient en une seule session, comme `upfront`). `sessions` liste les journées de travail d'une chronologie. Tous les temps sont en minutes depuis 0 et incluent la préparation. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, et `track` n'existe que pour un minuteur nommé (`~_four{...}`). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep` : `miseEnPlace` n'est donc pas indexé par section, retrouvez une entrée grâce à son champ `section`, jamais à sa position dans le tableau. `intermediates` (sur une ligne `gather`) dit combien des ingrédients rassemblés sont des intermédiaires (`&pâte`), et `intermediate` (sur une ligne `prepare`) que l'ingrédient préparé en est un ; les deux sont absents sinon. Un intermédiaire est fabriqué pendant la recette : le planning `upfront` ne le rassemble donc pas au début, cette part de la préparation d'une section devient un second bloc `prep`, juste avant la section, et une section peut avoir deux blocs `prep` en `upfront` et `perSession` : celui qui est placé plus tard porte `deferred: true`. `items` n'existe sur un bloc `prep` que s'il ne porte qu'une partie de l'entrée de sa section (le reste étant dans l'autre bloc) : sinon, lisez les items de l'entrée.
+:::note[Nouveau en 1.4.0 : `generator`, `miseEnPlace`, `tasks` et `schedule`]
+`miseEnPlace` dit ce que coûte la préparation de chaque section. `tasks` est le **graphe des tâches** : la préparation de chaque section et de chaque intermédiaire qu'elle utilise, chaque étape et chaque minuteur, avec leur durée et ce que chaque tâche attend (voir la [référence du scheduler](/fr/docs/reference/api/scheduler/) pour sa forme complète). `schedule` est le **planning par défaut**, posé à partir de lui par `@gram-lang/scheduler` : la mise en place juste avant chaque section, les repos les plus courts. Il se décrit lui-même (`miseEnPlace`, `rests`), si bien qu'il n'y a jamais à se rappeler avec quelles options il a été fait.
+
+Tout autre planning sort du même graphe, sans recompiler : `layout(compiled.tasks, { miseEnPlace: "upfront" })` (toute la préparation d'abord), `"perSession"` (la préparation de chaque journée de travail rassemblée au début de cette journée) et le choix des `rests` (`"shortest"`, `"balanced"`, `"longest"`). Ne reconstruisez jamais un planning à la main à partir de `miseEnPlace`.
+
+Dans un planning, tous les temps sont en minutes depuis 0 et incluent la préparation. `sessions` liste les journées de travail : elles viennent des ancres des sections **en jours** (`~{-1d}`) ; une ancre en heures n'ouvre jamais de journée, et une recette sans ancre en jours tient en une seule session. Dans un bloc `step` ou `passive`, `step` est l'indice dans `sections[section].steps`, commentaires compris, `track` n'existe que pour un minuteur nommé (`~_four{...}`), et `task` est l'identifiant de la tâche dans `tasks` (`s0.3`, `s0.3.t0` ; un bloc `prep` qui rassemble plusieurs préparations porte l'identifiant de la première). Une section sans préparation n'a ni entrée `miseEnPlace` ni bloc `prep` : `miseEnPlace` n'est donc pas indexé par section, retrouvez une entrée grâce à son champ `section`, jamais à sa position dans le tableau. `intermediates` (sur une ligne `gather`) dit combien des ingrédients rassemblés sont des intermédiaires (`&pâte`), et `intermediate` (sur une ligne `prepare`) que l'ingrédient préparé en est un ; les deux sont absents sinon. Un intermédiaire est fabriqué pendant la recette : le planning `upfront` ne le rassemble donc pas au début, cette part de la préparation d'une section devient un second bloc `prep`, juste avant la section, et une section peut avoir deux blocs `prep` en `upfront` et `perSession` : celui qui est placé plus tard porte `deferred: true`. `items` n'existe sur un bloc `prep` que s'il ne porte qu'une partie de l'entrée de sa section (le reste étant dans l'autre bloc) : sinon, lisez les items de l'entrée.
+
+Un minuteur écrit en fourchette garde sa fourchette dans le graphe (`{ nominal, min, max }`), et le planning prend une fourchette passive sur le chiffre que choisit `rests` (le plus court par défaut) et une fourchette active sur son chiffre le plus long. Les champs dépréciés ci-dessous continuent de compter une fourchette comme sa moyenne.
 
 D'où vient chaque champ, pour savoir ce qu'on peut croire et ce qu'il faut recalculer :
 
 | Champ | Nature | Remarque |
 |---|---|---|
-| `generator`, `miseEnPlace[].items` | Source | Écrits par le compilateur. |
+| `generator`, `miseEnPlace[].items`, `tasks` | Source | Écrits par le compilateur. |
 | `miseEnPlace[].duration` | Dérivé | La somme de ses `items`, gardée pour vous éviter de les additionner. |
-| `metrics.preparationTime` | Dérivé | La somme de tous les `miseEnPlace[].duration`. |
-| `schedules[mode].totalTime` | Dérivé | Le `end` le plus tardif parmi les blocs. |
-| `schedules[mode].idleTime` | Dérivé | `totalTime - metrics.activeTime - metrics.preparationTime`. |
+| `metrics.preparationTime`, `schedule.preparationTime` | Dérivé | La somme de tous les `miseEnPlace[].duration`. |
+| `schedule` | Dérivé | `layout(tasks)`, à l'octet près : le graphe suffit pour le retrouver. |
+| `schedule.totalTime` | Dérivé | Le `end` le plus tardif parmi les blocs. |
+| `schedule.idleTime` | Dérivé | `totalTime - activeTime - preparationTime`. |
 
 Un lecteur doit ignorer les champs et les valeurs de `kind` qu'il ne connaît pas : de nouveaux peuvent arriver dans une version mineure.
 :::
@@ -112,20 +126,21 @@ Ces champs gardent les mêmes valeurs et le même sens jusqu'à la 2.0.0, mais i
 
 | Déprécié | À utiliser à la place |
 |---|---|
-| `steps[].timings` | Les blocs `step` de `schedules[mode].blocks` |
-| `steps[].backgroundTasks` | Les blocs `passive` de `schedules[mode].blocks` |
-| `metrics.totalTime` | `schedules[mode].totalTime` |
-| `metrics.idleTime` | `schedules[mode].idleTime` |
-| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedules` |
+| `steps[].timings` | Les blocs `step` de `schedule.blocks` |
+| `steps[].backgroundTasks` | Les blocs `passive` de `schedule.blocks` |
+| `metrics.totalTime` | `schedule.totalTime` |
+| `metrics.idleTime` | `schedule.idleTime` |
+| `metrics.activeTime` | `schedule.activeTime` (un minuteur écrit en fourchette compte pour sa moyenne dans l'ancien champ, et pour son chiffre le plus long dans le planning) |
+| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` et `schedule` |
 | `calculatePreparationTime().breakdown` | Les `items` de `computeMiseEnPlace()` (`calculatePreparationTime()` renvoie toujours `total`) |
 
-`metrics.preparationTime` et `metrics.activeTime` ne sont **pas** dépréciés : ils sont identiques dans tous les plannings. Attention : l'ancien `metrics.totalTime` est le total avec toutes les préparations au début, c'est-à-dire celui du planning `upfront` sauf si la recette a des intermédiaires : `upfront` les prépare une fois qu'ils existent, et peut donc être plus court.
+`metrics.preparationTime` n'est **pas** déprécié : il est identique quel que soit le plan. Attention : l'ancien `metrics.totalTime` est le total avec toutes les préparations d'abord, soit le total de `layout(tasks, { miseEnPlace: "upfront" })` sauf si la recette a des intermédiaires : `upfront` les rassemble une fois qu'ils existent, il peut donc être plus court.
 
 La page [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) donne un avant/après en code pour chacun d'eux.
 :::
 
 :::note[JSON compilé avant la 1.4.0]
-Le JSON écrit par kitchen 1.3.0 ou une version antérieure n'a pas de `schedules`. Il s'affiche toujours : `scheduleTimes` lit le temps total et le temps d'attente dans l'ancien `metrics.totalTime` et `metrics.idleTime`, et le diff les compare correctement au lieu de lire zéro. En revanche, il n'y a ni mise en place ni chronologie à dessiner, donc le diagramme de Gantt reste vide. Recompilez la recette avec la 1.4.0 ou plus pour les obtenir. Ce repli disparaîtra avec les champs dépréciés en 2.0.0.
+Le JSON écrit par kitchen 1.3.0 ou une version antérieure n'a ni `tasks` ni `schedule`. Il s'affiche toujours : `scheduleTimes` lit le temps total et le temps d'attente dans l'ancien `metrics.totalTime` et `metrics.idleTime`, et le diff les compare correctement au lieu de lire zéro. En revanche, il n'y a ni mise en place ni chronologie à dessiner, donc le diagramme de Gantt reste vide. Recompilez la recette avec la 1.4.0 ou plus pour les obtenir. Ce repli disparaîtra avec les champs dépréciés en 2.0.0.
 :::
 
 Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté de cette structure, et [Avertissements](/fr/docs/reference/api/warnings) pour le catalogue de ce qui peut apparaître dans `.warnings`.
@@ -181,7 +196,7 @@ function calculatePreparationTime(
   mise?: SectionMiseEnPlace[], // depuis la 1.4.0 : la répartition ci-dessous, si vous l'avez déjà
 ): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` est déprécié, voir plus bas
 
-// Depuis la 1.4.0 : la répartition de la mise en place et les chronologies
+// Depuis la 1.4.0 : la répartition de la mise en place, et les choix d'un planning
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 // ^ le champ `miseEnPlace` d'une recette compilée, déduit de ses sections
 
@@ -189,8 +204,19 @@ type MiseEnPlaceMode = "perSection" | "upfront" | "perSession"
 const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perSession"]
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode
-function scheduleFor(compiled, mode?: MiseEnPlaceMode): Schedule | undefined
-function scheduleTimes(compiled, mode?: MiseEnPlaceMode): { totalTime: number; idleTime: number }
+
+type RestChoice = "shortest" | "balanced" | "longest"
+const REST_CHOICES: readonly ["shortest", "balanced", "longest"]
+const DEFAULT_REST_CHOICE: RestChoice // "shortest"
+function isRestChoice(value: unknown): value is RestChoice
+
+// Le planning d'un choix : le `schedule` compilé pour le choix par défaut, sinon
+// posé à partir de `tasks` (une fois, puis gardé). Undefined pour un JSON sans `tasks`.
+function scheduleFor(compiled, mode?: MiseEnPlaceMode, rests?: RestChoice): Schedule | undefined
+function scheduleTimes(compiled, mode?: MiseEnPlaceMode, rests?: RestChoice): { totalTime: number; idleTime: number }
+
+// Réexporté depuis @gram-lang/scheduler, pour le code qui ne connaît que la Kitchen
+function layout(graph: TaskGraph, options?: LayoutOptions): { schedule: Schedule; diagnostics: SchedulingDiagnostic[] }
 
 // Depuis la 1.4.0 : la plus longue durée que Gram planifie (1000 ans, voir DURATION_OUT_OF_RANGE)
 const MAX_DURATION_MINUTES: number // 525_600_000

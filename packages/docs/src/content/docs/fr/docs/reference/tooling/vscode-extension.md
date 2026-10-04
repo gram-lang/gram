@@ -27,9 +27,21 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 |---|---|
 | `perSection` (par défaut) | La mise en place de chaque section est planifiée juste avant cette section. |
 | `upfront` | Toute la mise en place est planifiée au début de la recette. |
-| `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les jours viennent des ancres `~{-Nd}` des sections). |
+| `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les jours viennent des ancres en jours des sections, `~{-Nd}`). |
 
 Le réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total à côté du titre de la recette. Il change les temps total et d'attente, pas les listes d'ingrédients, et s'applique tout de suite à toutes les recettes ouvertes, sans recharger la fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+
+#### Le réglage `gram.rests` (depuis la 1.4.0)
+
+| Valeur | Effet |
+|---|---|
+| `shortest` (par défaut) | Un repos écrit en fourchette (`~_{12-24h}`) dure le plus court de sa fourchette. |
+| `balanced` | Il dure le milieu de la fourchette. |
+| `longest` | Il dure le plus long de la fourchette. |
+
+Un repos exact et un minuteur actif écrit en fourchette (`~{20-25min}`, toujours planifié sur son chiffre le plus long) ne sont pas touchés. Comme `gram.miseEnPlace`, le réglage pilote l'aperçu, le diagramme de Gantt et l'indication du temps total, et s'applique tout de suite à toutes les recettes ouvertes. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+
+Une journée de travail qu'un long repos pousse hors de ses 24 heures est signalée sur sa section (`SESSION_OVERFLOW`), comme n'importe quel autre avertissement de la recette.
 
 ### 3. Gestion intelligente des ingrédients
 - **Gestion silencieuse des pluriels** : L'extension fait intelligemment correspondre les pluriels basiques de votre recette (ex : `@carottes`) aux entrées singulières de votre base YAML (`carotte`). Vous conservez une rédaction naturelle sans déclencher de fausses alertes.

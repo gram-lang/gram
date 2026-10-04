@@ -1,0 +1,122 @@
+---
+title: "Plan a meal"
+description: "From a recipe to a production sheet and a calendar: serve on Sunday at 1 p.m. and know when to start each task, given when you can cook."
+---
+
+import Since from '../../../../components/Since.astro';
+import { Steps } from '@astrojs/starlight/components';
+
+<Since v="1.4.0" />
+
+You want to serve a country bread on Sunday at 1 p.m. The dough needs an overnight rise, you only cook between 8 a.m. and 10 p.m., and you would rather not knead at 4 in the morning. This guide takes you from the recipe to a sheet with a time for every task, and to your calendar.
+
+<Steps>
+
+1. ### Write the rest as a range
+
+   A rest that is exact (`~_{8h}`) can never move. A rest written as a range can, and that is the slack Gram uses to keep your work out of the night:
+
+   ```gram
+   ---
+   title: Country bread
+   ---
+
+   ## Dough ->&dough
+
+   [Mix] Mix @flour{500g} with @water{350ml} and @salt{10g}, then knead ~{20min}.
+
+   [Rise] Let it rise ~_{8-16h}.
+
+   ## Bake
+
+   [Bake] Shape &dough{850g} and bake at ^{230C} for ~{30min}.
+   ```
+
+   `~_{8-16h}` says "ready from 8 hours, still good at 16". See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+
+2. ### Say when you serve and when you can cook
+
+   ```bash
+   gram plan bread.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
+   ```
+
+   `--serve` is a local date and time, `--tz` the zone it is read in (your machine's by default), and `--available` when you can work, every day. Without `--available`, Gram assumes you can cook at any hour.
+
+3. ### Read the sheet
+
+   ```text
+   Production sheet — Country bread
+   Served Sunday, October 11 at 13:00
+
+   Saturday, October 10 · D-1
+     around 21:35      Mise en place — Dough (3m)
+                       Ingredients lookup (base) (3 × 1m)
+     around 21:40      Dough — Mix (20m)
+                       Mix flour (500 g) with water (350 ml) and salt (10 g), then knead ⏲️ 20 min.
+     around 22:00      Rise — Dough (14h 30m, until around Sun 12:30)
+                       Let it rise ⏳ 8-16 h (passive).
+                       ! Rest stretched from 8h to 14h 30m to stay out of your unavailable hours
+
+   Sunday, October 11 · Day D
+     around 12:30      Mise en place — Bake (1m)
+                       Ingredients lookup (base) (1 × 1m)
+     around 12:30      Bake — Bake (30m)
+                       Shape dough (850 g) and bake at 🔥230 °C for ⏲️ 30 min.
+
+   To fix
+     - The work of Day D falls on Saturday, October 10 instead of Sunday, October 11.
+   ```
+
+   Without any constraint, the 8-hour rise would have put the kneading at 04:10 on Sunday. Gram stretched the rise to 14 h 30 so that the kneading ends at 22:00 on Saturday, and says so on the rest itself. Times are rounded to the nearest five minutes ("around"): your oven is not a stopwatch.
+
+   The "To fix" line is a reminder, not a failure: the recipe's work lands on Saturday while it never said it was a two-day recipe. For an overnight rise that is exactly what you want, and you can ignore it. If you would rather tell Gram, anchor the first section (`## Dough ~{-1d}`): Saturday is then day D-1 and the note goes away. An anchor is a deadline, though: the dough must be done by Saturday at the same time as the service, so the rise is no longer stretched. See [Days and hours](/docs/reference/syntax/times/#days-and-hours).
+
+4. ### Change what you can't do
+
+   Availability can differ by day of the week and by date, and you can repeat `--available`:
+
+   ```bash
+   gram plan bread.gram --serve "2026-10-11 13:00" \
+     --available 08:00-22:00 \
+     --available sat=09:00-23:00 \
+     --available 2026-10-09=none
+   ```
+
+   `sat=…` is a day of the week (`mon` … `sun`), `2026-10-09=none` a date on which you are not available at all. Several ranges go after one key (`sat=08:00-09:00,18:00-22:00`). If a limit can't be respected, the sheet says so after the days (for instance when the rest is exact, or a range too narrow to help), and what you can do about it. See [what it cannot fix](/docs/explanation/planning-in-real-time/#what-it-cannot-fix).
+
+5. ### Get a calendar
+
+   ```bash
+   gram plan bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --ics bread.ics
+   ```
+
+   The file has an event for every task, and an alarm 5 minutes before every task that needs your hands. Events are in UTC, so any calendar app shows them in its own time zone. Import it, or open it with your calendar.
+
+6. ### Pick another format
+
+   `--format md` for Markdown (to paste in your notes), `--format html` for a fragment, `--format json` for the plan and the sheet as data. The sheet is in the language of your project (`language` in `.gram/config.yaml`).
+
+</Steps>
+
+## In the playground
+
+Choose the Gantt chart or the "Production sheet" view, open "Plan", and set when it is served, your time zone and your availability range. The Gantt chart then reads in real days and times, greys out the hours you are not available and outlines the rests that were stretched.
+
+## From code
+
+```typescript
+import { compile } from '@gram-lang/kitchen';
+import { project, runSheet } from '@gram-lang/scheduler';
+import { runSheetToText } from '@gram-lang/renderer';
+
+const compiled = compile(ast);
+const plan = project([{ graph: compiled.tasks, title: compiled.title ?? undefined }], {
+  serveAt: '2026-10-11T13:00',
+  timeZone: 'Europe/Paris',
+  availability: { daily: [{ start: '08:00', end: '22:00' }] },
+});
+
+console.log(runSheetToText(runSheet(plan), compiled));
+```
+
+See the [scheduler reference](/docs/reference/api/scheduler/) and [Planning in real time](/docs/explanation/planning-in-real-time/).

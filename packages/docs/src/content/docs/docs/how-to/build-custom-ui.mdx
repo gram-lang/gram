@@ -69,7 +69,8 @@ import Since from '../../../../components/Since.astro';
    - `sections` *(array)*: The actual instructions, broken down by recipe section.
    - `metrics` *(object)*: `preparationTime` and `activeTime` in minutes, plus mass and nutrition when the recipe went through the analyzer.
    - `miseEnPlace` *(array)*: What preparing each section costs, one entry per section that has a preparation.
-   - `schedules` *(object)*: Three complete timelines, `perSection`, `upfront` and `perSession`, each with a `totalTime`, an `idleTime`, a list of `blocks` and its working-day `sessions`.
+   - `tasks` *(object)*: Everything there is to do, with its duration and what each task waits for. Every timeline is laid out from it.
+   - `schedule` *(object)*: The default timeline laid out from `tasks`, with a `totalTime`, an `idleTime`, a list of `blocks` and its working-day `sessions`.
    - `generator` *(string)*: Which version of the compiler wrote this JSON.
    
    Unknown fields and unknown block `kind` values should be ignored, so your UI keeps working when a minor version adds new ones.
@@ -110,7 +111,7 @@ import Since from '../../../../components/Since.astro';
    }
    ```
    
-   A step no longer carries its own start and end. Where it sits in time depends on when the mise en place happens, so it lives in `schedules` (see "Drawing the timeline" below).
+   A step no longer carries its own start and end. Where it sits in time depends on when the mise en place happens, so it lives in `schedule` (see "Drawing the timeline" below).
 
 3. ### Rendering logic
    
@@ -178,13 +179,17 @@ import Since from '../../../../components/Since.astro';
    
    <Since v="1.4.0" />
    
-   To draw a Gantt chart or a schedule, read the blocks of one of the three timelines. Every time is in minutes from `0` and already includes the preparation:
+   To draw a Gantt chart or a schedule, read the blocks of a timeline. `recipe.schedule` is the default one; any other comes from the same `tasks` with `layout()`, without compiling again. Every time is in minutes from `0` and already includes the preparation:
    
    ```typescript
-   // 'perSection': each section's preparation right before it.
-   // 'upfront': all the preparation at the start.
-   // 'perSession': the preparation of each working day at the start of that day.
-   const schedule = recipe.schedules[chosenMode];
+   import { layout } from '@gram-lang/scheduler'; // or scheduleFor() from '@gram-lang/kitchen'
+
+   // miseEnPlace: 'perSection' (each section's preparation right before it, the default),
+   //   'upfront' (all the preparation at the start) or 'perSession' (the preparation of
+   //   each working day at the start of that day).
+   // rests: how long a rest written as a range lasts: 'shortest' (default), 'balanced', 'longest'.
+   const { schedule } = layout(recipe.tasks, { miseEnPlace: chosenMode, rests: chosenRests });
+   // For the default choice, recipe.schedule is the same thing, already computed.
    
    for (const block of schedule.blocks) {
      if (block.kind === 'prep') {
@@ -201,9 +206,11 @@ import Since from '../../../../components/Since.astro';
    }
    ```
    
-   Let your reader pick the mode: the total and idle times differ between the two (`schedule.totalTime`, `schedule.idleTime`), while `metrics.preparationTime` and `metrics.activeTime` do not. The Gram renderer, playground, VS Code extension and CLI all expose that choice.
+   Let your reader pick: the total and idle times differ from one choice to the next (`schedule.totalTime`, `schedule.idleTime`), while `schedule.preparationTime` does not. The Gram renderer, playground, VS Code extension and CLI all expose that choice.
+   
+   To draw it on the calendar instead, with real days and times and the rests stretched to keep the cook out of the night, hand the same `tasks` to `project()` with a serving time, a time zone and availability. Each block of the plan carries `start` and `end` as instants (UTC) and `startLocal` and `endLocal` as the wall clock of the zone. See [Plan a meal](/docs/how-to/plan-a-meal/) and the [scheduler reference](/docs/reference/api/scheduler/).
    
    :::caution[Deprecated fields]
-   Older code may read `step.timings`, `step.backgroundTasks` or `metrics.totalTime`. They still work and are removed in 2.0.0: read `schedules` instead. See [Deprecated features](/docs/how-to/deprecations) and the [Kitchen API reference](/docs/reference/api/kitchen).
+   Older code may read `step.timings`, `step.backgroundTasks` or `metrics.totalTime`. They still work and are removed in 2.0.0: read `schedule` instead. See [Deprecated features](/docs/how-to/deprecations) and the [Kitchen API reference](/docs/reference/api/kitchen).
    :::
 </Steps>

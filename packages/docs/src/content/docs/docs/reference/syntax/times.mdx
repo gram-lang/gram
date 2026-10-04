@@ -38,14 +38,24 @@ You can assign a specific name to a `~timer`. This is especially useful for pass
 Boil @eggs{2} for ~eggs{3min}.
 ```
 
-### Ranges
-You can specify a time range if the duration is an estimate.
+### Exact times and ranges
+<Since v="1.4.0" />
+
+A timer is **exact**: `~_{12h}` lasts exactly 12 hours. When the duration really varies, write a range, and only then does Gram have some slack to play with:
 
 ```gram
-Bake for ~{30-40min}.
+Let the dough rest in the fridge ~_{12-24h}.
+
+Roast the chicken for ~{40-50min}.
 ```
-:::tip
-For global timeline calculations (total recipe duration), the compiler automatically uses the average of the range (here, 35 minutes).
+
+A range does not mean the same thing on a passive and on an active timer:
+
+- **A passive range is slack.** `~_{12-24h}` says "ready from 12 hours, still good at 24". The timeline is planned on the shortest figure by default, and you pick another one when you read it (`shortest`, `balanced` for the middle, or `longest`): the `--rests` option of the CLI, the `gram.rests` setting of VS Code, the `rests` option of the renderer. When you give Gram a serving time and your availability, it also uses this slack to keep your work out of the night (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
+- **An active range is uncertainty.** `~{40-50min}` is how long the chicken takes to cook, not a choice. The timeline is always planned on the longest figure (50 minutes), so that dinner is never late. The choice of rests doesn't apply to it.
+
+:::note
+The deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks` and `metrics`) keep counting a range as its average, as they always did, until 2.0.0. Read the schedule instead.
 :::
 
 ## Active vs passive
@@ -124,13 +134,13 @@ Each section has its own mise en place: gathering and preparing its ingredients 
 
 - **By section** (the default): the preparation of a section is scheduled right before that section. An ingredient that is only needed two days later isn't gathered now, and a preparation can overlap the resting time of an earlier step.
 - **All at the start**: the preparations are done first, then the cooking starts. Except for an intermediate (see below), which can't be prepared before it exists.
-- **By working day**: for a recipe over several days, the preparation of each day is gathered at the start of that day. The days come from the section anchors (`~{-2d}`, `~{-36h}`...): a section without an anchor takes the day of the next one, and the sections after the last anchor are on the day itself. A recipe without any anchor of a day or more is a single day, the same as "all at the start".
+- **By working day**: for a recipe over several days, the preparation of each day is gathered at the start of that day. The days come from the section anchors **in days** (`~{-1d}`, `~{-2d}`): a section without an anchor takes the day of the furthest anchor in days among the sections after it, and the sections after the last one are on the day itself. A recipe without any anchor in days is a single day, the same as "all at the start".
 
   Two traps when you write a recipe over several days:
   - **A long passive timer isn't an anchor.** A `~_{48h}` rest makes the timeline start two days earlier, but only a section anchor opens a working day: without `## Cream ~{-2d}` on the section, it is placed on the day itself.
-  - **An anchor under 24 hours stays on the day itself.** The day is the anchor rounded down to whole days, so `~{-18h}` (a poolish kneaded the evening before) is day D, not D-1. To open the day before, write `~{-1d}` or more than 24 hours (`~{-26h}`). See [Mise en place and planning](/docs/explanation/mise-en-place-and-planning/).
+  - **An anchor in hours never opens a day.** `~{-18h}` (a poolish kneaded the evening before) and `~{-36h}` are deadlines inside the day the section falls on, not days of their own. To open the day before, write `~{-1d}`. See [Days and hours](#days-and-hours).
 
-This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option (`per-section`, `upfront` or `per-session`) and the renderer a `schedule` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in all three, and the ingredient lists don't change.
+This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option (`per-section`, `upfront` or `per-session`) and the renderer a `miseEnPlace` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in all three, and the ingredient lists don't change.
 
 An intermediate (`&dough`) is weighed in the section that uses it, however it is declared, and never before it is made: even when everything else is prepared at the start, it is planned right before the section that uses it. That minute is an approximation: it can fall while the intermediate is still resting, so a preparation may appear to happen just before the dough is ready. The total time stays right to within a minute.
 
@@ -152,6 +162,16 @@ To ensure the generated timeline remains coherent and all absolute times are pos
 ```
 
 This means the "Puff Pastry" section should be prepared **2 days in advance**.
+
+### Days and hours
+<Since v="1.4.0" />
+
+The unit of an anchor says what it means:
+
+- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a working day: the section belongs to the day before, two days before. This is what the "by working day" plan and the day labels (D-1, D-2) are made of.
+- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) is a finer deadline inside the day the section falls on. It never opens a day, however far back it goes.
+
+Each working day is meant to fit in the 24 hours that end the day after: if a long rest pushes a day's work out of its window (a `~{-1d}` dough that ferments for 50 hours, or a section anchored at `~{-36h}`), the compiler raises `SESSION_OVERFLOW` and suggests anchoring the section further back.
 
 ### Strict syntax
 

@@ -171,12 +171,12 @@ Remarquez comment l'étape `Préparer le Pain` est automatiquement planifiée pe
 
 L'ancre de rétroplanning d'une section (`~{-2d}`) est une **échéance** : le travail de la section doit être terminé à ce moment-là, compté à rebours depuis la fin de la recette. Entre deux ancres, les sections qui n'en ont pas s'enchaînent en remontant depuis la section suivante, comme décrit plus haut.
 
-Deux conséquences quand vous écrivez une recette sur plusieurs jours :
+Quelques conséquences quand vous écrivez une recette sur plusieurs jours :
 
-- **Annotez chaque section d'une journée.** Les journées de travail du planning « par journée de travail » viennent de ces ancres. Une section sans ancre prend le jour de la **prochaine ancre** de la recette, et les sections après la dernière ancre sont sur le jour même : une section non annotée peut donc tomber plus tard que prévu.
-- **Un long minuteur passif ne crée pas de journée.** Avec `~_{48h}` dans une étape et sans ancre sur sa section, ALAP recule l'étape de deux jours sur le Gantt, mais les journées de travail du planning « par journée de travail » ne lisent que les ancres de section : la section reste donc sur le jour même. Écrivez l'ancre (`## Crème ~{-2d}`).
-- **Une ancre de moins de 24 heures reste sur le jour même.** Le jour vaut `⌊|ancre| / 24 h⌋` : `~{-18h}` est le jour J, `~{-26h}` est J-1. Pour ouvrir la veille, utilisez `~{-1d}` ou plus de 24 heures.
-- **Deux sections d'un même jour qui dépendent l'une de l'autre veulent des ancres différentes.** Avec `~{-1d}` sur un fond et sur le sirop qui en est fait, l'échéance du sirop est aussi celle du fond : le fond devrait être prêt avant sa propre échéance, et vous obtenez un avertissement de paradoxe temporel. Espacez-les (`~{-26h}` puis `~{-25h}` : les deux restent en J-1).
+- **Ancrez en jours.** Les journées de travail du planning « par journée de travail » viennent des ancres **en jours** (`~{-1d}`, `~{-2d}`). Une section sans ancre prend le jour de **l'ancre en jours la plus lointaine parmi les sections qui la suivent**, et les sections après la dernière sont sur le jour même : la section est placée le plus tard possible, c'est-à-dire le jour de la section qui en a besoin.
+- **Un long minuteur passif ne crée pas de journée.** Avec `~_{48h}` dans une étape et sans ancre sur sa section, ALAP recule l'étape de deux jours sur le Gantt, mais les journées de travail ne lisent que les ancres de section : la section reste donc sur le jour même. Écrivez l'ancre (`## Crème ~{-2d}`).
+- **Une ancre en heures n'ouvre jamais de journée.** `~{-18h}` ou `~{-36h}` est une échéance à l'intérieur de la journée où tombe la section : elle place bien le travail (ALAP la respecte), mais ne dit pas de quel jour il s'agit. Pour ouvrir la veille, utilisez `~{-1d}`.
+- **Des sections qui se suivent le même jour : n'ancrez que la dernière.** Avec `~{-1d}` sur un fond et sur le sirop qui en est fait, l'échéance du sirop est aussi celle du fond : le fond devrait être prêt avant sa propre échéance, et vous obtenez un avertissement de paradoxe temporel. Laissez le fond sans ancre : il prend le jour du sirop et se place juste avant lui.
 
 ## Ancrage modulaire (`@use ... ~{-1d}`)
 

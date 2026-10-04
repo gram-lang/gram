@@ -159,39 +159,30 @@ See [parser.md](/docs/reference/api/parser) for the full set of node interfaces 
   "miseEnPlace": [
     { "section": 0, "duration": 2, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ] }
   ],
-  "schedules": {
-    "perSection": {
-      "totalTime": 4,
-      "idleTime": 0,
-      "blocks": [
-        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
-        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ],
-      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
-    },
-    "upfront": {
-      "totalTime": 4,
-      "idleTime": 0,
-      "blocks": [
-        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
-        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ],
-      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
-    },
-    "perSession": {
-      "totalTime": 4,
-      "idleTime": 0,
-      "blocks": [
-        { "kind": "prep", "section": 0, "start": 0, "end": 2 },
-        { "kind": "step", "section": 0, "step": 0, "start": 2, "end": 4 }
-      ],
-      "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
-    }
+  "tasks": {                            // the task graph: everything to do, independent of any option
+    "tasks": [
+      { "id": "s0.prep", "kind": "prep", "section": 0, "duration": { "nominal": 2 }, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ], "after": [] },
+      { "id": "s0.0", "kind": "step", "section": 0, "step": 0, "duration": { "nominal": 2 }, "after": [] }
+    ],
+    "sections": [ { "day": 0 } ]
+  },
+  "schedule": {                         // the default timeline, laid out from `tasks`
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 4,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "idleTime": 0,
+    "blocks": [
+      { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
+      { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
+    ],
+    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
 
-Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs) and three complete timelines in `schedules`; the old per-step `timings` and `backgroundTasks`, `metrics.totalTime`, `metrics.idleTime` and the `metrics` breakdowns are deprecated: they are still written until 2.0.0 removes them, but left out of the example above. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. With only one section and no wait, the timelines are identical here; they differ as soon as a recipe has a long rest before a later section.
+Since 1.4.0, the compiled recipe carries `generator` (which compiler wrote it), `miseEnPlace` (what preparing each section costs), `tasks` (the task graph) and `schedule` (the default timeline laid out from it; any other one comes from `layout(tasks, options)`); the old per-step `timings` and `backgroundTasks`, `metrics.totalTime`, `metrics.idleTime` and the `metrics` breakdowns are deprecated: they are still written until 2.0.0 removes them, but left out of the example above. The [Kitchen API reference](/docs/reference/api/kitchen) describes each field and what replaces the deprecated ones. A rest written as a range (`{ "nominal": 720, "min": 720, "max": 1440 }`) stays a range in the graph, which is what lets you choose how to read it.
 
 Note the compiler's `StepToken` vocabulary inside `content`: plain narrative text is a bare `string`; ingredients/cookware/references share the `Usage` shape (no `type` field, identified by having an `id`); timers/temperatures/comments/declarations each carry their own lowercase `type`. This is intentionally distinct from the parser's PascalCase `ASTNodeType` — it describes compiled *output*, not parsed input. See [How to Build a Custom UI](/docs/how-to/build-custom-ui) for a walkthrough of consuming this shape in a frontend framework.
 

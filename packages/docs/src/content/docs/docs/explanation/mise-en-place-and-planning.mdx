@@ -73,18 +73,30 @@ So a recipe planned "all at the start" is really a mix: the raw ingredients and 
 That one minute to gather an intermediate is an approximation: it can fall while the intermediate is still resting. The total time stays right to within a minute.
 :::
 
+## Rests written as a range
+
+A rest can be exact (`~_{12h}`) or written as a range (`~_{12-24h}`: ready from 12 hours, still good at 24). An exact rest is never moved. A range is slack, and you choose how to read it, the same way you choose where the mise en place goes:
+
+- **`shortest`** (the default): every such rest lasts the shortest of its range.
+- **`balanced`**: the middle.
+- **`longest`**: the longest.
+
+This changes the total and idle times, and the Gantt chart, and nothing else. An active timer written as a range (`~{40-50min}`) is a cooking uncertainty, not slack: it is always planned on its longest figure, so dinner is never late, whatever you choose.
+
+When you also tell Gram when you serve and when you can cook, it uses this slack to keep your own work out of the night: see [Planning in real time](/docs/explanation/planning-in-real-time/).
+
 ## Where to choose
 
 The choice is made by the person reading the recipe, in the tool they use:
 
-| Tool | How |
-|---|---|
-| CLI (`gram view`, `gram export`, `gram print`) | `--mise-en-place <per-section\|upfront\|per-session>` |
-| VS Code | the `gram.miseEnPlace` setting |
-| Playground | the selector in the playground |
-| Renderer (`@gram-lang/renderer`) | the `schedule` option (`"perSection"`, `"upfront"` or `"perSession"`) |
+| Tool | Where the mise en place goes | How long the rests last |
+|---|---|---|
+| CLI (`gram view`, `gram export`, `gram print`, `gram cook`, `gram plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
+| VS Code | the `gram.miseEnPlace` setting | the `gram.rests` setting |
+| Playground | the "Mise en place" selector | the "Rests" selector |
+| Renderer (`@gram-lang/renderer`) | the `miseEnPlace` option (`"perSection"`, `"upfront"` or `"perSession"`) | the `rests` option |
 
-If you use the compiler directly, `miseEnPlace` holds the facts and `schedules` holds the three plannings (`perSection`, `upfront` and `perSession`). Read the one you want, and never rebuild the timeline from `miseEnPlace` yourself. See the [kitchen API reference](/docs/reference/api/kitchen/) for the exact shape.
+If you use the compiler directly, the compiled recipe holds the facts (`miseEnPlace`, and `tasks`, the list of everything there is to do and what each task waits for) and one default timeline, `schedule` (mise en place by section, shortest rests). Every other combination is laid out from `tasks` with `layout()` from `@gram-lang/scheduler`, without compiling again, and never from `miseEnPlace` by hand. See the [kitchen API reference](/docs/reference/api/kitchen/) and the [scheduler API reference](/docs/reference/api/scheduler/) for the exact shapes.
 
 ## Recipes over several days
 
@@ -97,11 +109,11 @@ Whisk @milk{500ml} and @eggs{4}.
 
 [Chill] Let it set ~_{24h}.
 
-## Crust ~{-26h} ->&crust
+## Crust ->&crust
 
 Work &cream{150g} with @flour{300g} and @butter{150g}.
 
-## Pie ~{-24h}
+## Pie ~{-1d}
 
 Fill with &crust{400g} and bake ~{30min}.
 
@@ -112,18 +124,20 @@ Dust with @sugar{10g}.
 
 ### Where the days come from
 
-The days come from the section anchors, nothing else:
+The days come from the section anchors **in days**, nothing else:
 
-- A section anchored `~{-Nd}` or more (in hours too: `~{-36h}` is one day back, `~{-12h}` is the day itself) sits on that day. The count rounds down.
-- A section without an anchor sits on the day of the **next anchor** in the recipe, like in [ALAP scheduling](/docs/explanation/alap-scheduling/), where each anchor is a deadline.
+- A section anchored `~{-1d}`, `~{-2d}`... sits on that day.
+- A section without an anchor sits on the day of the **furthest anchor in days among the sections after it**: in the example, the crust has no anchor of its own, so it falls on D-1 with the pie. This matches [ALAP scheduling](/docs/explanation/alap-scheduling/), which places it as late as it can, right before the pie.
 - Sections after the last anchor sit on the day itself.
 
 Two things don't open a day, and trip people up:
 
 - **A long passive timer.** A `~_{48h}` rest in a step makes [ALAP scheduling](/docs/explanation/alap-scheduling/) start the step two days earlier on the Gantt, but the days only read section anchors: without a `~{-2d}` on the section's title, the section is on the day itself. Anchor the section (`## Cream ~{-2d}`).
-- **An anchor under 24 hours.** `~{-18h}` rounds down to 0 days, so a poolish kneaded the evening before is on the day itself, not on D-1. To open the day before, use `~{-1d}` or more than 24 hours (`~{-26h}`).
+- **An anchor in hours.** `~{-18h}` and `~{-36h}` are deadlines inside the day a section falls on, never days of their own: a poolish kneaded the evening before is not on D-1 just because it was written in hours. To open the day before, use `~{-1d}`.
 
-In the example: the cream is on D-3, the crust and the pie on D-1, and the last section on the day itself. Without any anchor of a day or more, there is a single session, like "all at the start".
+In the example: the cream is on D-3, the crust and the pie on D-1, and the last section on the day itself. Without any anchor in days, there is a single session, like "all at the start".
+
+Each day is meant to fit in the 24 hours that end the day after. If a long rest pushes a day's work out of that window (a `~{-1d}` dough that ferments for 50 hours), Gram warns with `SESSION_OVERFLOW` and suggests anchoring the section further back.
 
 ### What each day gathers
 
@@ -135,7 +149,7 @@ At the start of each day, the mise en place of that day's sections is gathered: 
 The preparation time and the active time stay the same as in the other plannings.
 
 :::tip
-When several sections of the same day depend on each other, space their anchors a little (`~{-26h}`, `~{-25h}`, `~{-24h}`) rather than giving them all `~{-1d}`. Each anchor is a deadline, so two sections with the same deadline where one needs the other produce a time paradox warning.
+When several sections follow each other on the same day, anchor only the last one (`## Pie ~{-1d}`) and leave the others without an anchor, like the crust above: they take its day and are placed right before it. Giving them all `~{-1d}` makes each a deadline at the same moment, and where one needs the other, a time paradox warning.
 :::
 
 ## Going further

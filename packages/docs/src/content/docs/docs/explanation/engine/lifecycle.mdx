@@ -26,7 +26,8 @@ import { Steps } from '@astrojs/starlight/components';
    The composed AST is handed off to the Kitchen. The Kitchen is responsible for the structural logic of the recipe:
    - **Scoping & Scheduling**: Resolving intermediate variables and computing optimized execution timelines with **ALAP (As Late As Possible)** scheduling.
    - **Time Metrics**: Computing `activeTime` and `preparationTime` by mapping all timers, and how the preparation is split per section (`miseEnPlace`).
-   - **Schedules**: Three complete timelines, `schedules.perSection` (each section's preparation right before it), `schedules.upfront` (all preparation first) and `schedules.perSession` (each working day's preparation at the start of that day), each with its own total and idle time.
+   - **Task graph**: Everything there is to do, with its duration (a range stays a range) and what each task waits for (`tasks`).
+   - **Default schedule**: The timeline laid out from that graph by `@gram-lang/scheduler` (`schedule`): each section's preparation right before it, the shortest rests. Every other combination (all preparation first, each working day's preparation at the start of that day, longer rests) is laid out from the same graph on demand, without compiling again.
    - **Shopping List Generation**: Aggregating ingredients, summing quantities, and resolving composite ingredients (e.g., combining zest and juice into whole lemons).
 
    The output is a logically sound, compiled recipe — a `CompilationResult` (or `ComposedCompilationResult`) object.
@@ -44,6 +45,11 @@ import { Steps } from '@astrojs/starlight/components';
 5. ### Presentation (`@gram-lang/renderer` or custom)
    Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram-lang/renderer` to generate Markdown, a standard web view, or a self-contained print-ready HTML document — or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
 </Steps>
+
+### The scheduling engine (`@gram-lang/scheduler`)
+`@gram-lang/scheduler` sits beneath the Kitchen: the Kitchen depends on it, never the other way round. It knows nothing about the AST or the compiled recipe, only about a neutral graph of tasks. It does two things:
+- **`layout()`** turns the graph into a timeline, for any choice of mise en place and rests.
+- **`project()`** places that timeline on the calendar, from a serving time, a time zone and your availability, and `runSheet()` turns the result into a production sheet. See [Planning in real time](/docs/explanation/planning-in-real-time/) and [The scheduling engine](/docs/explanation/engine/scheduler/).
 
 ### Supporting infrastructure (`@gram-lang/i18n` & `@gram-lang/format`)
 - **`@gram-lang/i18n`**: Serves as the single source of truth for unit and time normalization dictionaries, unit conversion tables (`UNIT_CONVERSIONS`), duration multipliers (`TIME_TO_MINUTES`), and stable category keys (`CATEGORY_KEYS`).
@@ -63,11 +69,14 @@ flowchart LR
         direction LR
         Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammar"]
         Modules["📦 <b>@gram-lang/modules</b><br/>Graph & Composition"]
-        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>DAG & Scheduling"]
+        Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>Task graph & compilation"]
         Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physics & DB"]
 
         Parser --> Modules --> Kitchen --> Analyzer
     end
+
+    Scheduler["⏱️ <b>@gram-lang/scheduler</b><br/>Timelines & plans"]
+    Kitchen -. lays out with .-> Scheduler
 
     subgraph Output ["Presentation"]
         Renderer["🎨 <b>@gram-lang/renderer</b><br/>HTML / UI / Markdown"]
@@ -80,6 +89,7 @@ flowchart LR
 
     Raw --> Parser
     Analyzer --> Renderer
+    Scheduler -. plans .-> Renderer
     Format -. Formats .-> Raw
     I18n -. Dictionaries .-> Kitchen
     I18n -. Conversions .-> Analyzer
