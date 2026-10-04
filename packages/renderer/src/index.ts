@@ -16,17 +16,21 @@ export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {
+	annotateRecipe,
 	describeRunSheet,
+	stepKey,
 	runSheetToHTML,
 	runSheetToMarkdown,
-	runSheetToPrintHTML,
 	runSheetToText,
 } from "./run-sheet";
+export { runSheetToPrintHTML } from "./run-sheet-print";
 export type {
 	RunSheetDayModel,
 	RunSheetLine,
+	RecipeAnnotations,
 	RunSheetModel,
 	RunSheetRenderOptions,
+	StepNote,
 } from "./run-sheet";
 export {
 	formatDecimalToFraction,

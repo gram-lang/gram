@@ -1333,3 +1333,43 @@ flex-direction: column;
   list-style: disc;
   margin-left: 1.2em;
 }
+
+/* A recipe placed on the calendar (the `projection` option): the plan's summary
+   at the top, the day between steps, and the time next to each step. */
+.plan-summary {
+  margin: 0 0 1em;
+  padding: 0.6em 0.9em;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg-muted);
+}
+
+.plan-summary .plan-served {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.plan-summary .plan-problems {
+  margin: 0.3em 0 0;
+  padding-left: 1.2em;
+}
+
+.steps li.step-day {
+  list-style: none;
+  margin: 1.2em 0 0.3em -1.5em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.step-plan {
+  margin: 0.3em 0 0;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}
+
+.step-plan .step-note {
+  color: var(--color-text);
+  font-weight: 600;
+}
+

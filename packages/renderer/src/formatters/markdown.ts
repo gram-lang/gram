@@ -21,12 +21,18 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
-import { scheduleTimes } from "@gram-lang/kitchen";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { sessionMiseEnPlace } from "../mise-en-place";
+import { sessionMiseEnPlace, timesOf } from "../mise-en-place";
+import { runSheetToMarkdown, stepKey } from "../run-sheet";
+import {
+	dayMarkdown,
+	restsMarkdown,
+	summaryMarkdown,
+	whenMarkdown,
+} from "./annotations";
 
 const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -61,11 +67,7 @@ const markdownBackend: RenderBackend = {
 		let md = `> **Metadata**\n`;
 		if (data.metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = scheduleTimes(
-				data,
-				options.miseEnPlace,
-				options.rests,
-			);
+			const { totalTime, idleTime } = timesOf(data, options);
 			if (totalTime) {
 				md += `> - **${t.renderer.totalTime}**: ${formatDuration(totalTime)}\n`;
 			}
@@ -159,6 +161,8 @@ const markdownBackend: RenderBackend = {
 			: context;
 
 		let md = `## 👨‍🍳 Instructions\n\n`;
+		const annotations = context._annotations;
+		if (annotations) md += summaryMarkdown(annotations, options.lang);
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		const sessionBlocks = sessionMiseEnPlace(
@@ -203,7 +207,7 @@ const markdownBackend: RenderBackend = {
 			}
 
 			let stepCounter = 0;
-			sec.steps.forEach((step: any) => {
+			sec.steps.forEach((step: any, stepIdx: number) => {
 				if (step.type === "comment") {
 					const commentText = step.value ? step.value.trim() : "";
 					md += `> *${escapeMarkdownHtml(commentText)}*\n\n`;
@@ -222,7 +226,10 @@ const markdownBackend: RenderBackend = {
 					(c) => formatElement(c, "md", stepContext),
 					(c) => typeof c !== "string" && c.type !== "comment",
 				);
-				md += `${stepNum}. ${stepText}\n`;
+				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
+				if (note) md += dayMarkdown(note);
+				md += `${stepNum}. ${stepText}${note ? whenMarkdown(note) : ""}\n`;
+				if (note) md += restsMarkdown(note);
 			});
 			md += "\n";
 		});
@@ -280,8 +287,14 @@ const markdownBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition
+			sections.nutrition +
+			sections.runSheet
 		);
+	},
+
+	renderRunSheet(data, options, sheet) {
+		// After a recipe whose title is the `#`: one level down.
+		return `\n${runSheetToMarkdown(sheet, data, { lang: options.lang, headingLevel: 2 })}`;
 	},
 };
 

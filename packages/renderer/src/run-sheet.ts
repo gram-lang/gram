@@ -1,12 +1,13 @@
 import { getDictionary } from "@gram-lang/i18n";
 import type { MiseEnPlaceItem, ProcessedStep } from "@gram-lang/kitchen";
-import type {
-	ProjectionDiagnostic,
-	RunSheet,
-	RunSheetEntry,
+import {
+	type ProjectedPlan,
+	type ProjectionDiagnostic,
+	type RunSheet,
+	type RunSheetEntry,
+	runSheet,
 } from "@gram-lang/scheduler";
 import { serializeStepContent } from "./gantt/layout";
-import { PRINT_CSS } from "./formatters/print";
 import { describeMiseEnPlaceItem, sessionDayLabel } from "./mise-en-place";
 import type { RenderableCompilationResult } from "./types";
 import { escapeHtml, escapeMarkdownHtml, formatDuration } from "./utils";
@@ -17,6 +18,11 @@ export interface RunSheetRenderOptions {
 	/** Display only: a time is shown to the nearest this many minutes. Default 5. */
 	roundTo?: number;
 	formatDuration?: (minutes: number) => string;
+	/**
+	 * Markdown only: the level of the sheet's own heading, 1 for a document of its
+	 * own (the default), 2 when it follows a recipe, whose title is the `#`.
+	 */
+	headingLevel?: 1 | 2;
 }
 
 /**
@@ -88,6 +94,16 @@ const longDate = (date: string, lang?: string) =>
 
 const shortDay = (date: string, lang?: string) =>
 	dateFormat(date, lang, { weekday: "short" });
+
+/** What a rest is called: its track, else the action of its step, else "Rest". */
+const restName = (
+	fallback: string,
+	track: string | undefined,
+	action: string | undefined,
+) =>
+	track !== undefined
+		? track.charAt(0).toUpperCase() + track.slice(1)
+		: action || fallback;
 
 const fill = (template: string, values: Record<string, string>) =>
 	template.replace(/\{(\w+)\}/g, (_, k: string) => values[k] ?? `{${k}}`);
@@ -201,10 +217,7 @@ function buildModel(
 			detail = text.length > 200 ? `${text.slice(0, 200)}…` : text || undefined;
 		} else {
 			const s = stepOf(entry.section, entry.step ?? 0);
-			const name =
-				entry.track !== undefined
-					? entry.track.charAt(0).toUpperCase() + entry.track.slice(1)
-					: s?.action || t.runSheetRest;
+			const name = restName(t.runSheetRest, entry.track, s?.action);
 			title = `${name} — ${sectionTitle(entry.section)}`;
 			// A step with no hands-on time of its own is left out of the sheet: the
 			// rest it starts carries what it says.
@@ -331,9 +344,16 @@ export function runSheetToMarkdown(
 	const t = getDictionary(options.lang).renderer;
 	const md = escapeMarkdownHtml;
 	const model = buildModel(sheet, data, options, 0);
-	const out: string[] = [`# ${md(model.title)}`, "", md(model.servedAt), ""];
+	const h1 = "#".repeat(options.headingLevel ?? 1);
+	const h2 = `${h1}#`;
+	const out: string[] = [
+		`${h1} ${md(model.title)}`,
+		"",
+		md(model.servedAt),
+		"",
+	];
 	for (const day of model.days) {
-		out.push(`## ${md(day.heading)}`, "");
+		out.push(`${h2} ${md(day.heading)}`, "");
 		for (const line of day.lines) {
 			const title = line.active
 				? `**${md(line.title)}**`
@@ -345,7 +365,7 @@ export function runSheetToMarkdown(
 		out.push("");
 	}
 	if (model.problems.length > 0) {
-		out.push(`## ${md(t.runSheetProblems)}`, "");
+		out.push(`${h2} ${md(t.runSheetProblems)}`, "");
 		for (const p of model.problems) out.push(`- ${md(p)}`);
 		out.push("");
 	}
@@ -384,36 +404,111 @@ export function runSheetToHTML(
 	return `${html}</section>\n`;
 }
 
-const RUN_SHEET_PRINT_CSS = `
-  .gram-run-sheet h2 { font-size: 16pt; margin-bottom: 4pt; }
-  .gram-run-sheet .run-sheet-served { color: var(--grey); margin-bottom: 14pt; }
-  .gram-run-sheet h3 { font-size: 12pt; margin: 14pt 0 6pt; border-bottom: 1px solid var(--light-grey); padding-bottom: 2pt; }
-  .gram-run-sheet ul { list-style: none; }
-  .gram-run-sheet .run-sheet-entry { margin-bottom: 6pt; page-break-inside: avoid; }
-  .gram-run-sheet .run-sheet-when { display: inline-block; min-width: 9em; color: var(--grey); }
-  .gram-run-sheet .run-sheet-entry.passive .run-sheet-title { font-style: italic; }
-  .gram-run-sheet .run-sheet-entry.active .run-sheet-title { font-weight: 700; }
-  .gram-run-sheet .run-sheet-detail, .gram-run-sheet .run-sheet-note { margin-left: 9em; color: var(--dark-grey); font-size: 9pt; }
-  .gram-run-sheet .run-sheet-note { font-weight: 700; }
-  .gram-run-sheet .run-sheet-problems li { margin-left: 1em; list-style: disc; }
-`;
+/** What the recipe says next to one of its steps once it is on the calendar. */
+export interface StepNote {
+	/**
+	 * The day, "Saturday, October 10 · D-1", set when the step falls on another
+	 * date than the step shown before it: the order of the recipe is not the
+	 * order of the time, so it can come back to a day already seen.
+	 */
+	day?: string;
+	/** "around 21:40" */
+	when: string;
+	/** The rests the step starts, each with how long and until when. */
+	rests: { text: string; note?: string }[];
+}
 
-/** The production sheet as a complete, print-ready HTML document. */
-export function runSheetToPrintHTML(
-	sheet: RunSheet,
+/** A recipe on the calendar: what to say at the top, and next to each step. */
+export interface RecipeAnnotations {
+	/** "Served Sunday, October 11 at 13:00" */
+	servedAt: string;
+	/** What the plan could not fix, in words. */
+	problems: string[];
+	/** By `stepKey(section, step)`; a step the plan has no block for has no note. */
+	steps: Map<string, StepNote>;
+}
+
+/** The key of a step in `RecipeAnnotations.steps`: its section and its index in the section, comments included. */
+export const stepKey = (section: number, step: number) => `${section}:${step}`;
+
+const MS_PER_DAY = 86_400_000;
+const dayOf = (date: string) =>
+	Date.UTC(
+		Number(date.slice(0, 4)),
+		Number(date.slice(5, 7)) - 1,
+		Number(date.slice(8, 10)),
+	) / MS_PER_DAY;
+
+/**
+ * The words to put next to each step of a recipe whose plan is known: when it
+ * starts, on which day, and what it leaves resting. The same words and the same
+ * rounding as the production sheet, so the two never disagree. The sheet covers
+ * the first recipe of the plan, and so does this.
+ */
+export function annotateRecipe(
+	plan: ProjectedPlan,
 	data: RenderableCompilationResult,
 	options: RunSheetRenderOptions = {},
-): string {
-	const model = buildModel(sheet, data, options, 0);
-	return `<!DOCTYPE html>
-<html lang="${escapeHtml(options.lang || "en")}">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(model.title)}</title>
-  <style>${PRINT_CSS}${RUN_SHEET_PRINT_CSS}</style>
-</head>
-<body>
-${runSheetToHTML(sheet, data, options)}</body>
-</html>`;
+): RecipeAnnotations {
+	const sheet = describeRunSheet(runSheet(plan), data, options);
+	const t = getDictionary(options.lang).renderer;
+	const lang = options.lang;
+	const round = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
+	const fmt = options.formatDuration ?? formatDuration;
+	const blocks = plan.recipes[0]?.blocks ?? [];
+	const adjustments = new Map(plan.adjustments.map((a) => [a.task, a]));
+	const serveDay = dayOf(plan.serveAt.slice(0, 10));
+
+	const steps = new Map<string, StepNote>();
+	let previous: string | undefined;
+	data.sections?.forEach((section, s) => {
+		section.steps.forEach((step, i) => {
+			if (step.type !== "step") return;
+			const block = blocks.find(
+				(b) => b.kind === "step" && b.section === s && b.step === i,
+			);
+			if (!block) return;
+			const date = block.startLocal.slice(0, 10);
+			const note: StepNote = {
+				...(date !== previous && {
+					day: `${longDate(date, lang)} · ${sessionDayLabel(serveDay - dayOf(date), t)}`,
+				}),
+				when: fill(t.runSheetAround, {
+					time: roundedClock(block.startLocal, round),
+				}),
+				rests: [],
+			};
+			previous = date;
+			for (const rest of blocks) {
+				if (rest.kind !== "passive" || rest.section !== s || rest.step !== i) {
+					continue;
+				}
+				const minutes = (Date.parse(rest.end) - Date.parse(rest.start)) / 60000;
+				const endDate = rest.endLocal.slice(0, 10);
+				const until = roundedClock(rest.endLocal, round);
+				const adjustment = adjustments.get(rest.task);
+				note.rests.push({
+					text: `${restName(t.runSheetRest, rest.track, step.action)}: ${fmt(minutes)}, ${fill(
+						t.runSheetUntil,
+						{
+							time:
+								endDate === date
+									? until
+									: `${shortDay(endDate, lang)} ${until}`,
+						},
+					)}`,
+					...(adjustment && {
+						note: fill(
+							adjustment.to > adjustment.from
+								? t.runSheetStretched
+								: t.runSheetShortened,
+							{ from: fmt(adjustment.from), to: fmt(adjustment.to) },
+						),
+					}),
+				});
+			}
+			steps.set(stepKey(s, i), note);
+		});
+	});
+	return { servedAt: sheet.servedAt, problems: sheet.problems, steps };
 }

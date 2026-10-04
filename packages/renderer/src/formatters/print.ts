@@ -22,12 +22,14 @@ import {
 	nutritionRows,
 	resolveNutritionBasis,
 } from "../nutrition";
-import { scheduleTimes } from "@gram-lang/kitchen";
 import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { sessionMiseEnPlace } from "../mise-en-place";
+import { sessionMiseEnPlace, timesOf } from "../mise-en-place";
+import { runSheetToHTML, stepKey } from "../run-sheet";
+import { RUN_SHEET_PRINT_CSS } from "../run-sheet-css";
+import { dayHTML, stepHTML, summaryHTML } from "./annotations";
 
 export const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -443,11 +445,7 @@ const printBackend: RenderBackend = {
 		let body = `<div class="meta">\n`;
 		if (metrics) {
 			// Total and idle time follow the chosen schedule; the other two do not.
-			const { totalTime, idleTime } = scheduleTimes(
-				data,
-				options.miseEnPlace,
-				options.rests,
-			);
+			const { totalTime, idleTime } = timesOf(data, options);
 			if (totalTime) {
 				body += `  <span class="meta-item"><span class="meta-label">${t.renderer.totalTime}</span>${formatDuration(totalTime)}</span>\n`;
 			}
@@ -546,6 +544,8 @@ const printBackend: RenderBackend = {
 			: context;
 
 		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
+		const annotations = context._annotations;
+		if (annotations) body += summaryHTML(annotations, options.lang);
 		const t = getDictionary(options.lang);
 		const formatDuration = options.formatDuration || defaultFormatDuration;
 		const sessionBlocks = sessionMiseEnPlace(
@@ -592,13 +592,15 @@ const printBackend: RenderBackend = {
 
 			body += `  <ol class="steps">\n`;
 			let stepCounter = 0;
-			for (const stepItem of sec.steps ?? []) {
+			for (const [stepIdx, stepItem] of (sec.steps ?? []).entries()) {
 				if (!stepItem) continue;
 				if (stepItem.type === "comment") {
 					body += `    <li class="comment-step"><em>${escapeHtml(stepItem.value ?? "")}</em></li>\n`;
 					continue;
 				}
 				stepCounter++;
+				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
+				if (note) body += `    ${dayHTML(note)}`;
 				body += `    <li value="${stepCounter}">\n`;
 
 				if (stepItem.action) {
@@ -612,6 +614,7 @@ const printBackend: RenderBackend = {
 				);
 
 				body += stepContent ? `      ${stepContent}\n` : "";
+				if (note) body += `      ${stepHTML(note)}\n`;
 				body += `    </li>\n`;
 			}
 			body += `  </ol>\n</section>\n`;
@@ -674,7 +677,11 @@ const printBackend: RenderBackend = {
 		return body;
 	},
 
-	assembleDocument(sections: RenderSections, data) {
+	renderRunSheet(data, options, sheet) {
+		return runSheetToHTML(sheet, data, { lang: options.lang });
+	},
+
+	assembleDocument(sections: RenderSections, data, _context, options) {
 		const body =
 			sections.title +
 			sections.meta +
@@ -682,7 +689,8 @@ const printBackend: RenderBackend = {
 			sections.cookware +
 			sections.instructions +
 			sections.footnotes +
-			sections.nutrition;
+			sections.nutrition +
+			sections.runSheet;
 
 		const titleTag = data.title
 			? `<title>${escapeHtml(data.title)}</title>`
@@ -693,7 +701,7 @@ const printBackend: RenderBackend = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   ${titleTag}
-  <style>${PRINT_CSS}</style>
+  <style>${PRINT_CSS}${options.projection ? RUN_SHEET_PRINT_CSS : ""}</style>
 </head>
 <body>
 ${body}</body>

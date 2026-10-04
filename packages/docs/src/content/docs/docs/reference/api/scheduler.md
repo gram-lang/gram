@@ -203,7 +203,7 @@ type ProjectionDiagnostic =
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
 
-These diagnostics depend on the reader's context, so they are part of the result of `project()`, not compiler warnings. See [Planning in real time](/docs/explanation/planning-in-real-time/#what-it-cannot-fix) for what each means.
+These diagnostics depend on the reader's context, so they are part of the result of `project()`, not compiler warnings. See [Planning in real time](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints) for what each means.
 
 ## `runSheet`
 

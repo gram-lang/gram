@@ -3,6 +3,8 @@ import type {
 	MiseEnPlaceMode,
 	RestChoice,
 } from "@gram-lang/kitchen";
+import type { ProjectedPlan } from "@gram-lang/scheduler";
+import type { RecipeAnnotations } from "./run-sheet";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -148,6 +150,21 @@ export interface RendererOptions {
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
 	/**
+	 * The recipe placed on the calendar by `project()` (`@gram-lang/scheduler`).
+	 * The recipe then says when each step happens: a time next to every step, the
+	 * day when it changes, what the step leaves resting (with the note of a rest
+	 * the plan stretched or shortened), and at the top when it is served and what
+	 * could not be fixed. The words follow `lang`, and are those of the
+	 * production sheet. Without it, the recipe reads as it always did.
+	 */
+	projection?: ProjectedPlan;
+	/**
+	 * With a `projection`: also write the production sheet after the recipe, the
+	 * two in one document. The recipe and the sheet say the same things in two
+	 * orders: the sections, and the time.
+	 */
+	runSheet?: boolean;
+	/**
 	 * Which nutrition basis to display. The analyzer computes all of them;
 	 * picking one is presentation. "auto" keeps the historical behaviour —
 	 * per portion when the recipe declares a portion count, otherwise the
@@ -196,6 +213,9 @@ export interface RenderContext {
 
 	/** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
 	formatMode?: "inline" | "mise-en-place" | "shopping-list";
+
+	/** What to say next to each step, when the recipe is on the calendar. */
+	_annotations?: RecipeAnnotations;
 
 	// State for footnotes
 	_inlineComments?: string[];
