@@ -166,8 +166,16 @@ export interface RecipeViewModel {
 			text: string;
 			timerMinutes?: number;
 			_tokens: any[];
+			/** The recipe on the calendar: "around 21:40". */
+			when?: string;
+			/** The day, set when the step falls on another date than the step shown before it. */
+			day?: string;
+			/** What the step leaves resting, with the note of a stretched or shortened rest. */
+			rests?: Array<{ text: string; note?: string }>;
 		}>;
 	}>;
+	/** Set when the recipe is on the calendar (`--serve`): when it is served, and what could not be fixed. */
+	plan?: { servedAt: string; problems: string[] } | null;
 	nutrition: NutritionMetrics | null;
 	missingIngredients: string[];
 	/** The `--stock` entries a `@use` of the recipe matched. */

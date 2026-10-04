@@ -285,3 +285,137 @@ describe("the timezone setting", () => {
 		expect(plan("--tz", "Europe/Paris").code).toBe(0);
 	});
 });
+
+describe("a recipe on the calendar in view, export and print", () => {
+	const SERVE = [
+		"--serve",
+		"2026-10-11 13:00",
+		"--tz",
+		"Europe/Paris",
+		"--available",
+		"08:00-22:00",
+		"--now",
+		"2026-10-01T09:00:00Z",
+	];
+
+	it("gram view adds a time to every step, the day, the rests and the plan's total", () => {
+		const { code, out } = gram("view", "bread.gram", ...SERVE, "--no-pager");
+		expect(code).toBe(0);
+		expect(out).toContain("Served Sunday, October 11 at 13:00");
+		expect(out).toContain("Saturday, October 10 · D-1");
+		expect(out).toMatch(/\[Mix\].*— around 21:40/);
+		expect(out).toContain("Rise: 14h 30m, until around Sun 12:30");
+		expect(out).toContain("Rest stretched from 8h to 14h 30m");
+		// The total is the plan's (21:38 to 13:00), not the default timeline's.
+		expect(out).toContain("Total: 15h 22m");
+	});
+
+	it("gram view is the recipe as it was without --serve", () => {
+		const { out } = gram("view", "bread.gram", "--no-pager");
+		expect(out).not.toContain("around");
+		expect(out).not.toContain("Served");
+	});
+
+	it("gram export writes the same words in Markdown, and the sheet after it with --with-sheet", async () => {
+		const path = join(dir, "annotated.md");
+		const a = gram(
+			"export",
+			"bread.gram",
+			"--format",
+			"md",
+			"-o",
+			path,
+			...SERVE,
+		);
+		expect(a.code).toBe(0);
+		const md = await readFile(path, "utf-8");
+		expect(md).toContain("> **Served Sunday, October 11 at 13:00**");
+		expect(md).toMatch(/knead.*— \*around 21:40\*/);
+		expect(md).not.toContain("Production sheet");
+
+		const b = gram(
+			"export",
+			"bread.gram",
+			"--format",
+			"md",
+			"-o",
+			path,
+			"--with-sheet",
+			...SERVE,
+		);
+		expect(b.code).toBe(0);
+		expect(await readFile(path, "utf-8")).toContain(
+			"## Production sheet — Country bread",
+		);
+	});
+
+	it("gram export writes the print document with the plan's styles", async () => {
+		const path = join(dir, "annotated.html");
+		const { code } = gram(
+			"export",
+			"bread.gram",
+			"--format",
+			"html",
+			"-o",
+			path,
+			"--with-sheet",
+			...SERVE,
+		);
+		expect(code).toBe(0);
+		const html = await readFile(path, "utf-8");
+		expect(html).toContain('<aside class="plan-summary">');
+		expect(html).toContain('<section class="gram-run-sheet">');
+		expect(html).toContain(".plan-summary");
+	});
+
+	it("gram print writes it too (without opening a browser)", async () => {
+		const { code, out } = gram("print", "bread.gram", "--no-open", ...SERVE);
+		expect(code).toBe(0);
+		const path = /(\/\S*gram_print_\d+\.html)/.exec(out)![1]!;
+		const html = await readFile(path, "utf-8");
+		expect(html).toContain('<span class="step-when">around 21:40</span>');
+	});
+
+	it("refuses a plan flag without --serve, and --with-sheet without it", () => {
+		for (const args of [
+			["view", "bread.gram", "--tz", "Europe/Paris"],
+			["export", "bread.gram", "--format", "md", "--available", "08:00-22:00"],
+			["export", "bread.gram", "--format", "md", "--with-sheet"],
+			["print", "bread.gram", "--no-open", "--with-sheet"],
+		]) {
+			expect(gram(...args).code).toBe(1);
+		}
+	});
+
+	it("takes the time zone from the project setting too", async () => {
+		const project = await mkdtemp(join(tmpdir(), "gram-cli-annotated-tz-"));
+		try {
+			await mkdir(join(project, ".gram"), { recursive: true });
+			await writeFile(
+				join(project, ".gram", "config.yaml"),
+				"timezone: Asia/Tokyo\n",
+			);
+			await writeFile(join(project, "bread.gram"), BREAD);
+			const run = Bun.spawnSync(
+				[
+					process.execPath,
+					ENTRY,
+					"view",
+					"bread.gram",
+					"--serve",
+					"2026-10-11 13:00",
+					"--no-pager",
+				],
+				{ cwd: project },
+			);
+			const out = new TextDecoder()
+				.decode(run.stdout)
+				.replace(/\x1b\[[0-9;]*m/g, "");
+			// Tokyo, one hour on from the serving time's wall clock: served 13:00 there.
+			expect(out).toContain("Served Sunday, October 11 at 13:00");
+			expect(out).toMatch(/around 0[0-9]:|around 1[0-2]:/);
+		} finally {
+			await rm(project, { recursive: true, force: true });
+		}
+	});
+});

@@ -94,7 +94,18 @@ Vous voulez servir un pain de campagne dimanche à 13 h. La pâte demande une po
 
    Le fichier contient un événement par tâche, et une alarme 5 minutes avant chaque tâche qui demande vos mains. Les événements sont en UTC : n'importe quelle application d'agenda les affiche dans son propre fuseau. Importez-le, ou ouvrez-le avec votre agenda.
 
-6. ### Choisir un autre format
+6. ### Lire la recette avec ses heures
+
+   La fiche suit l'ordre du temps ; la recette suit l'ordre de ses sections. Pour lire la recette elle-même avec le moment de chaque étape, donnez les mêmes options aux commandes qui l'affichent :
+
+   ```bash
+   gram view pain.gram --serve "2026-10-11 13:00" --available 08:00-22:00
+   gram export pain.gram --format md --serve "2026-10-11 13:00" --available 08:00-22:00
+   ```
+
+   La recette porte alors une heure à côté de chaque étape, le jour quand il change, les repos avec la note de celui qui a été allongé, et en tête quand on sert et ce qui n'a pas pu être arrangé. Ajoutez `--with-sheet` à `gram export` ou `gram print` pour avoir la fiche après la recette, les deux dans un seul document. Dans le playground, l'aperçu et la vue Markdown le font dès qu'une heure de service est réglée dans « Plan ».
+
+7. ### Choisir un autre format
 
    `--format md` pour du Markdown (à coller dans vos notes), `--format html` pour un fragment, `--format json` pour le plan et la fiche sous forme de données. La fiche est dans la langue de votre projet (`language` dans `.gram/config.yaml`).
 

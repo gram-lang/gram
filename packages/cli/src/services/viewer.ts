@@ -4,18 +4,21 @@ import { fmtNumber } from "../core/format";
 import { isCoarseUnit } from "@gram-lang/i18n";
 import type { IngredientData } from "@gram-lang/analyzer";
 import {
+	annotateRecipe,
 	formatTimer,
+	stepKey,
+	timesOf,
 	toCommonFraction,
 	type NutritionBasis,
 } from "@gram-lang/renderer";
-import {
-	type CompilationResult,
-	type MiseEnPlaceMode,
-	type RestChoice,
-	scheduleTimes,
+import type {
+	CompilationResult,
+	MiseEnPlaceMode,
+	RestChoice,
 } from "@gram-lang/kitchen";
 import type { RecipeViewModel } from "../types";
 import { passiveTimers } from "../core/schedule";
+import { type PlanContext, placeOnCalendar } from "./plan-options";
 
 function formatMass(grams: number): string {
 	if (grams >= 1000) return `${fmtNumber(grams / 1000)} kg`;
@@ -160,6 +163,8 @@ export async function buildViewModel(
 		miseEnPlace?: MiseEnPlaceMode;
 		/** How long a rest written as a range lasts. Default shortest. */
 		rests?: RestChoice;
+		/** Put the recipe on the calendar: a time next to each step, and the total of the plan. */
+		plan?: PlanContext;
 		lang?: string;
 		paths?: Record<string, string>;
 		stock?: Set<string>;
@@ -192,11 +197,20 @@ export async function buildViewModel(
 	// Total and rest time follow the chosen timeline; active and preparation
 	// time are the same in all of them.
 	const m = compiled.metrics;
-	const { totalTime: total, idleTime: rest } = scheduleTimes(
-		compiled,
-		opts.miseEnPlace,
-		opts.rests,
-	);
+	const projection = opts.plan
+		? placeOnCalendar(compiled, opts.plan, {
+				miseEnPlace: opts.miseEnPlace,
+				rests: opts.rests,
+			})
+		: undefined;
+	const annotations = projection
+		? annotateRecipe(projection, compiled, { lang: opts.lang })
+		: undefined;
+	const { totalTime: total, idleTime: rest } = timesOf(compiled, {
+		miseEnPlace: opts.miseEnPlace,
+		rests: opts.rests,
+		projection,
+	});
 	const times =
 		m && (total || rest || m.activeTime || m.preparationTime)
 			? {
@@ -342,11 +356,13 @@ export async function buildViewModel(
 				if (step.type === "comment") continue;
 				const text = stepToText(step.content ?? [], registry);
 				if (!text) continue;
+				const note = annotations?.steps.get(stepKey(secIdx, stepIdx));
 				steps.push({
 					action: step.action ?? undefined,
 					text,
 					timerMinutes: getTimerMinutes(compiled, secIdx, stepIdx),
 					_tokens: step.content ?? [],
+					...(note && { when: note.when, day: note.day, rests: note.rests }),
 				});
 			}
 
@@ -363,6 +379,9 @@ export async function buildViewModel(
 		lang: opts.lang,
 		nutritionBasis: opts.nutritionBasis,
 		times,
+		plan: annotations
+			? { servedAt: annotations.servedAt, problems: annotations.problems }
+			: null,
 		shoppingList,
 		sections,
 		nutrition,

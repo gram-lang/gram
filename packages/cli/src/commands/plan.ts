@@ -13,12 +13,6 @@ import {
 } from "../services/mise-en-place-flag";
 import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import {
-	collectFlag,
-	parseAvailability,
-	parseServe,
-	parseTimeZone,
-} from "../services/plan-flags";
-import {
 	PLAN_FORMATS,
 	type PlanFormat,
 	formatPlan,
@@ -26,6 +20,7 @@ import {
 	planToICS,
 } from "../services/planner";
 import { ExitCode, GramCLIError } from "../errors";
+import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
 
 export default defineCommand({
 	meta: {
@@ -40,22 +35,8 @@ export default defineCommand({
 			required: true,
 			description: "Path to a .gram recipe file",
 		},
-		serve: {
-			type: "string",
-			required: true,
-			description:
-				'When it is served, a local date and time (e.g. "2026-10-11 13:00")',
-		},
-		tz: {
-			type: "string",
-			description:
-				"IANA time zone of the serving time and of your availability (default: the `timezone` setting of the project, else this machine's, e.g. Europe/Paris)",
-		},
-		available: {
-			type: "string",
-			description:
-				"When you are available, repeatable: 08:00-22:00 (every day), fri=18:00-22:00 (a day of the week), 2026-10-09=none (a date). Several ranges: 08:00-09:00,18:00-22:00. Default: all day",
-		},
+		...PLAN_FLAG_ARGS,
+		serve: { ...PLAN_FLAG_ARGS.serve, required: true },
 		format: {
 			type: "string",
 			description: `Output format: ${PLAN_FORMATS.join(" | ")} (default: text)`,
@@ -64,11 +45,6 @@ export default defineCommand({
 			type: "string",
 			description:
 				"Also write the plan as an iCalendar file (events in UTC, an alarm on every task that needs your hands)",
-		},
-		now: {
-			type: "string",
-			description:
-				"The present, to warn when the first task should already have started (default: now). Mostly for tests",
 		},
 		scale: {
 			type: "string",
@@ -101,11 +77,10 @@ export default defineCommand({
 					ExitCode.Error,
 				);
 			}
-			const serveAt = parseServe(args.serve);
-			const timeZone = parseTimeZone(args.tz, config.timezone);
-			const availability = parseAvailability(
-				collectFlag(rawArgs ?? [], "available"),
-			);
+			const context = resolvePlanContext(args, rawArgs, config, {
+				required: true,
+			})!;
+			const { serveAt, timeZone, availability, now } = context;
 			const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 			const rests = parseRests(args.rests);
 			const stock = resolveStockFromConfig(args.stock, config);
@@ -117,7 +92,6 @@ export default defineCommand({
 					config.language,
 					config.paths,
 				)) ?? 1;
-			const now = (args.now as string | undefined) ?? new Date().toISOString();
 
 			const result = await planRecipe(file, {
 				serveAt,

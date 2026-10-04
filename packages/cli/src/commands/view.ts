@@ -15,6 +15,7 @@ import {
 	parseMiseEnPlace,
 } from "../services/mise-en-place-flag";
 import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
+import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
 import {
 	NUTRITION_BASIS_FLAG_DESCRIPTION,
 	parseNutritionBasis,
@@ -77,13 +78,14 @@ export default defineCommand({
 			type: "string",
 			description: RESTS_FLAG_DESCRIPTION,
 		},
+		...PLAN_FLAG_ARGS,
 		stock: {
 			type: "string",
 			description:
 				"Comma-separated @use specifiers already on hand for this view (e.g. @bases/pate.gram,./levain.gram)",
 		},
 	},
-	async run({ args }) {
+	async run({ args, rawArgs }) {
 		const file = resolve(args.file as string);
 		const config = await loadConfig();
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
@@ -106,6 +108,7 @@ export default defineCommand({
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
 		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 		const rests = parseRests(args.rests);
+		const plan = resolvePlanContext(args, rawArgs, config);
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let model;
@@ -118,6 +121,7 @@ export default defineCommand({
 				nutritionBasis,
 				miseEnPlace,
 				rests,
+				plan,
 				lang: config.language,
 				paths: config.paths,
 				stock,

@@ -13,11 +13,12 @@ import {
 	parseMiseEnPlace,
 } from "../services/mise-en-place-flag";
 import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
+import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
 import {
 	NUTRITION_BASIS_FLAG_DESCRIPTION,
 	parseNutritionBasis,
 } from "../services/nutrition-basis";
-import { GramCLIError } from "../errors";
+import { ExitCode, GramCLIError } from "../errors";
 
 export default defineCommand({
 	meta: {
@@ -82,13 +83,19 @@ export default defineCommand({
 			type: "string",
 			description: RESTS_FLAG_DESCRIPTION,
 		},
+		...PLAN_FLAG_ARGS,
+		"with-sheet": {
+			type: "boolean",
+			description:
+				"With --serve: also write the production sheet after the recipe, in the same document",
+		},
 		stock: {
 			type: "string",
 			description:
 				"Comma-separated @use specifiers already on hand for this print (e.g. @bases/pate.gram,./levain.gram)",
 		},
 	},
-	async run({ args }) {
+	async run({ args, rawArgs }) {
 		const filePath = resolve(args.file as string);
 		const config = await loadConfig();
 		const dbResult = args["skip-db"] ? null : await loadDbSafe(config, args.db);
@@ -110,6 +117,11 @@ export default defineCommand({
 		const nutritionBasis = parseNutritionBasis(args.nutrition);
 		const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 		const rests = parseRests(args.rests);
+		const plan = resolvePlanContext(args, rawArgs, config);
+		if (args["with-sheet"] && !plan) {
+			log.error("--with-sheet needs --serve (when it is served).");
+			process.exit(ExitCode.Error);
+		}
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		let htmlPath: string;
@@ -122,6 +134,8 @@ export default defineCommand({
 				nutritionBasis,
 				miseEnPlace,
 				rests,
+				plan,
+				withSheet: args["with-sheet"] as boolean | undefined,
 				lang: config.language,
 				paths: config.paths,
 				stock,

@@ -8,3 +8,5 @@
 - A rest written as a range (`~_{8-16h}`) is made longer or shorter to keep your own work out of the hours you are not available, and the sheet says which one and why; what cannot be fixed is listed at the end
 - `--format text|md|html|json` picks the output, and `--ics plan.ics` also writes a calendar file with an event for every task and an alarm on the ones that need your hands
 - `--mise-en-place`, `--rests`, `--scale` and `--stock` work as they do in `gram view`
+- `gram view`, `gram export` and `gram print` accept `--serve`, `--tz` and `--available` too: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests with the note of one that was stretched, and when it is served and what could not be fixed at the top), and its total time is the plan's. In `gram export` and `gram print`, `--with-sheet` also writes the production sheet after the recipe, in the same document
+
