@@ -1,0 +1,398 @@
+{
+  "tasks": [
+    {
+      "id": "s0.prep",
+      "kind": "prep",
+      "section": 0,
+      "duration": {
+        "nominal": 5
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 4,
+          "duration": 4
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s0.0",
+      "kind": "step",
+      "section": 0,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    },
+    {
+      "id": "s0.1",
+      "kind": "step",
+      "section": 0,
+      "step": 1,
+      "duration": {
+        "nominal": 0
+      },
+      "after": [
+        "s0.0"
+      ]
+    },
+    {
+      "id": "s0.1.t0",
+      "kind": "passive",
+      "section": 0,
+      "step": 1,
+      "offset": 0,
+      "duration": {
+        "nominal": 1440
+      },
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s1.prep",
+      "kind": "prep",
+      "section": 1,
+      "duration": {
+        "nominal": 2
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s1.0",
+      "kind": "step",
+      "section": 1,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    },
+    {
+      "id": "s1.1",
+      "kind": "step",
+      "section": 1,
+      "step": 1,
+      "duration": {
+        "nominal": 0
+      },
+      "after": [
+        "s1.0"
+      ]
+    },
+    {
+      "id": "s1.1.t0",
+      "kind": "passive",
+      "section": 1,
+      "step": 1,
+      "offset": 0,
+      "duration": {
+        "nominal": 720
+      },
+      "after": [
+        "s1.1"
+      ]
+    },
+    {
+      "id": "s2.prep",
+      "kind": "prep",
+      "section": 2,
+      "duration": {
+        "nominal": 5
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 2,
+          "duration": 2
+        },
+        {
+          "kind": "gather",
+          "target": "cookware",
+          "count": 1,
+          "duration": 1
+        },
+        {
+          "kind": "prepare",
+          "ref": {
+            "type": "ingredient",
+            "id": "butter"
+          },
+          "duration": 2
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s2.prep.cream",
+      "kind": "prep",
+      "section": 2,
+      "intermediate": "cream",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s2.0",
+      "kind": "step",
+      "section": 2,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "consumes": [
+        "cream"
+      ],
+      "after": [
+        "s0.1"
+      ]
+    },
+    {
+      "id": "s3.prep",
+      "kind": "prep",
+      "section": 3,
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s3.prep.crust",
+      "kind": "prep",
+      "section": 3,
+      "intermediate": "crust",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s2.0"
+      ]
+    },
+    {
+      "id": "s3.0",
+      "kind": "step",
+      "section": 3,
+      "step": 0,
+      "duration": {
+        "nominal": 10
+      },
+      "consumes": [
+        "crust"
+      ],
+      "after": [
+        "s2.0"
+      ]
+    },
+    {
+      "id": "s4.prep",
+      "kind": "prep",
+      "section": 4,
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s4.prep.syrup",
+      "kind": "prep",
+      "section": 4,
+      "intermediate": "syrup",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s3.0"
+      ]
+    },
+    {
+      "id": "s4.0",
+      "kind": "step",
+      "section": 4,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "consumes": [
+        "syrup"
+      ],
+      "after": [
+        "s3.0"
+      ]
+    },
+    {
+      "id": "s5.prep.praline",
+      "kind": "prep",
+      "section": 5,
+      "intermediate": "praline",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s1.1"
+      ]
+    },
+    {
+      "id": "s5.prep.powder",
+      "kind": "prep",
+      "section": 5,
+      "intermediate": "powder",
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1,
+          "intermediates": 1
+        }
+      ],
+      "after": [
+        "s4.0"
+      ]
+    },
+    {
+      "id": "s5.0",
+      "kind": "step",
+      "section": 5,
+      "step": 0,
+      "duration": {
+        "nominal": 25
+      },
+      "consumes": [
+        "crust"
+      ],
+      "after": [
+        "s2.0"
+      ]
+    },
+    {
+      "id": "s5.1",
+      "kind": "step",
+      "section": 5,
+      "step": 1,
+      "duration": {
+        "nominal": 2
+      },
+      "consumes": [
+        "praline",
+        "powder"
+      ],
+      "after": [
+        "s5.0",
+        "s1.1",
+        "s4.0"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "day": 3,
+      "deadline": 4320,
+      "intermediate": "cream"
+    },
+    {
+      "day": 2,
+      "deadline": 2880,
+      "intermediate": "praline"
+    },
+    {
+      "day": 1,
+      "deadline": 1440,
+      "intermediate": "crust"
+    },
+    {
+      "day": 1,
+      "deadline": 1440,
+      "intermediate": "syrup"
+    },
+    {
+      "day": 1,
+      "deadline": 1440,
+      "intermediate": "powder"
+    },
+    {
+      "day": 0
+    }
+  ]
+}

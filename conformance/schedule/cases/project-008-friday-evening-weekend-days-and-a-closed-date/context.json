@@ -1,0 +1,33 @@
+{
+  "serveAt": "2026-10-12T19:00",
+  "timeZone": "Europe/Paris",
+  "availability": {
+    "daily": [
+      {
+        "start": "07:00",
+        "end": "08:30"
+      },
+      {
+        "start": "18:00",
+        "end": "22:00"
+      }
+    ],
+    "weekdays": {
+      "sat": [
+        {
+          "start": "09:00",
+          "end": "20:00"
+        }
+      ],
+      "sun": [
+        {
+          "start": "09:00",
+          "end": "20:00"
+        }
+      ]
+    },
+    "dates": {
+      "2026-10-11": []
+    }
+  }
+}

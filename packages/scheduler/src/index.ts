@@ -38,3 +38,18 @@ export {
 	isMiseEnPlaceMode,
 	isRestChoice,
 } from "./mode";
+export { project } from "./project";
+export { runSheet } from "./runsheet";
+export type { RunSheet, RunSheetDay, RunSheetEntry } from "./runsheet";
+export type {
+	Availability,
+	ProjectedBlock,
+	ProjectedPlan,
+	ProjectedSession,
+	ProjectionContext,
+	ProjectionDiagnostic,
+	ProjectionInput,
+	RestAdjustment,
+	TimeRange,
+} from "./projection";
+export { WEEKDAYS, type Weekday } from "./time";

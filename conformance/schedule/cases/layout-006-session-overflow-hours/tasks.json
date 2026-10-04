@@ -1,0 +1,111 @@
+{
+  "tasks": [
+    {
+      "id": "s0.prep",
+      "kind": "prep",
+      "section": 0,
+      "duration": {
+        "nominal": 3
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 3,
+          "duration": 3
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s0.0",
+      "kind": "step",
+      "section": 0,
+      "step": 0,
+      "duration": {
+        "nominal": 0
+      },
+      "after": []
+    },
+    {
+      "id": "s0.0.t0",
+      "kind": "passive",
+      "section": 0,
+      "step": 0,
+      "offset": 0,
+      "duration": {
+        "nominal": 2160
+      },
+      "after": [
+        "s0.0"
+      ]
+    },
+    {
+      "id": "s1.prep",
+      "kind": "prep",
+      "section": 1,
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s1.0",
+      "kind": "step",
+      "section": 1,
+      "step": 0,
+      "duration": {
+        "nominal": 25
+      },
+      "after": []
+    },
+    {
+      "id": "s2.prep",
+      "kind": "prep",
+      "section": 2,
+      "duration": {
+        "nominal": 1
+      },
+      "items": [
+        {
+          "kind": "gather",
+          "target": "ingredient",
+          "count": 1,
+          "duration": 1
+        }
+      ],
+      "after": []
+    },
+    {
+      "id": "s2.0",
+      "kind": "step",
+      "section": 2,
+      "step": 0,
+      "duration": {
+        "nominal": 2
+      },
+      "after": []
+    }
+  ],
+  "sections": [
+    {
+      "day": 0,
+      "deadline": 2160
+    },
+    {
+      "day": 0,
+      "deadline": 120
+    },
+    {
+      "day": 0
+    }
+  ]
+}

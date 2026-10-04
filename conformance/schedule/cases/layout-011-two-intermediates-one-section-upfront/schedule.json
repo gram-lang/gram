@@ -1,0 +1,127 @@
+{
+  "schedule": {
+    "miseEnPlace": "upfront",
+    "rests": "shortest",
+    "totalTime": 729,
+    "activeTime": 6,
+    "preparationTime": 7,
+    "idleTime": 716,
+    "blocks": [
+      {
+        "kind": "prep",
+        "task": "s0.prep",
+        "section": 0,
+        "start": 0,
+        "end": 2
+      },
+      {
+        "kind": "prep",
+        "task": "s1.prep",
+        "section": 1,
+        "start": 2,
+        "end": 4
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep",
+        "section": 2,
+        "start": 4,
+        "end": 5,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "cookware",
+            "count": 1,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "task": "s0.0",
+        "section": 0,
+        "step": 0,
+        "start": 5,
+        "end": 7
+      },
+      {
+        "kind": "step",
+        "task": "s0.1",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 7
+      },
+      {
+        "kind": "passive",
+        "task": "s0.1.t0",
+        "section": 0,
+        "step": 1,
+        "start": 7,
+        "end": 727
+      },
+      {
+        "kind": "step",
+        "task": "s1.0",
+        "section": 1,
+        "step": 0,
+        "start": 695,
+        "end": 697
+      },
+      {
+        "kind": "step",
+        "task": "s1.1",
+        "section": 1,
+        "step": 1,
+        "start": 697,
+        "end": 697
+      },
+      {
+        "kind": "passive",
+        "task": "s1.1.t0",
+        "section": 1,
+        "step": 1,
+        "start": 697,
+        "end": 727
+      },
+      {
+        "kind": "prep",
+        "task": "s2.prep.cream",
+        "section": 2,
+        "start": 725,
+        "end": 727,
+        "deferred": true,
+        "items": [
+          {
+            "kind": "gather",
+            "target": "ingredient",
+            "count": 2,
+            "duration": 2,
+            "intermediates": 2
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "task": "s2.0",
+        "section": 2,
+        "step": 0,
+        "start": 727,
+        "end": 729
+      }
+    ],
+    "sessions": [
+      {
+        "day": 0,
+        "start": 0,
+        "end": 729,
+        "sections": [
+          0,
+          1,
+          2
+        ]
+      }
+    ]
+  },
+  "diagnostics": []
+}

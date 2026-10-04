@@ -20,6 +20,13 @@ export interface LayoutOptions {
 	miseEnPlace?: MiseEnPlaceMode;
 	/** How long a passive rest written as a range lasts. Default `shortest`. */
 	rests?: RestChoice;
+	/**
+	 * Minutes to give particular rests, by the id of their task, instead of what
+	 * `rests` picks: how the projection stretches a rest to dodge the night. A
+	 * value outside the rest's range is ignored, so no rest is ever made longer
+	 * or shorter than the recipe allows.
+	 */
+	restOverrides?: Record<string, number>;
 }
 
 export interface LayoutResult {
@@ -36,6 +43,19 @@ function restDuration({ nominal, min, max }: TaskDuration, rests: RestChoice) {
 	if (rests === "longest") return max;
 	if (rests === "balanced") return (min + max) / 2;
 	return min;
+}
+
+/** The minutes asked for a timer, when they stay within its range. */
+function overridden(
+	timer: TimerTask,
+	overrides: Record<string, number> | undefined,
+): number | undefined {
+	const minutes = overrides?.[timer.id];
+	const { min, max } = timer.duration;
+	if (minutes === undefined || min === undefined || max === undefined) {
+		return undefined;
+	}
+	return minutes >= min && minutes <= max ? minutes : undefined;
 }
 
 /**
@@ -96,7 +116,9 @@ export function layout(
 			).map((t) => ({
 				taskId: t.id,
 				name: t.track ?? "Timer",
-				duration: restDuration(t.duration, rests),
+				duration:
+					overridden(t, options.restOverrides) ??
+					restDuration(t.duration, rests),
 				localOffset: t.offset,
 				isNamed: t.track !== undefined,
 				...(t.track !== undefined && { sourceName: t.track }),
