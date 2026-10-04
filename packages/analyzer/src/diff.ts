@@ -8,7 +8,7 @@ import type {
 	ShoppingListItem,
 	CompositeItem,
 } from "@gram-lang/kitchen";
-import { getNumericQty, scheduleTimes } from "@gram-lang/kitchen";
+import { getNumericQty, scheduleFor, scheduleTimes } from "@gram-lang/kitchen";
 
 // Structural, analyzer-local shapes for the module-composition metadata a
 // `CompilationResult` may carry when it actually came from
@@ -421,19 +421,22 @@ function diffIngredients(
 	return deltas;
 }
 
-// The four times a diff reports. Preparation and active time are the same in
-// every mise en place schedule; total and idle time depend on the schedule, so
-// they are read from the default one (preparation right before each section)
-// — the same on both sides, which is all a comparison needs.
+// The four times a diff reports, all read from the default timeline (mise en
+// place right before each section, the shortest rests): the same on both sides,
+// which is all a comparison needs. The active time is the schedule's, which
+// plans a timer written as a range on its longest figure, so changing the range
+// of a cooking time shows; `metrics.activeTime` (the average) is deprecated.
 function timingsOf(
 	recipe: CompilationResult,
 ): Record<TimingDelta["field"], number> {
 	const { totalTime, idleTime } = scheduleTimes(recipe);
+	const schedule = scheduleFor(recipe);
 	return {
 		totalTime,
 		idleTime,
-		activeTime: recipe.metrics?.activeTime ?? 0,
-		preparationTime: recipe.metrics?.preparationTime ?? 0,
+		activeTime: schedule?.activeTime ?? recipe.metrics?.activeTime ?? 0,
+		preparationTime:
+			schedule?.preparationTime ?? recipe.metrics?.preparationTime ?? 0,
 	};
 }
 
