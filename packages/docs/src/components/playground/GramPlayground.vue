@@ -305,9 +305,11 @@ const showScheduleSelector = computed(() =>
 	["preview", "gantt", "markdown", "runsheet"].includes(viewMode.value),
 );
 
+// The plan also puts a time next to each step of the preview and of the
+// Markdown, so its settings are there too.
 // biome-ignore lint/correctness/noUnusedVariables: showPlanControls is used in the <template> block below, which Biome's Vue support doesn't see.
 const showPlanControls = computed(() =>
-	["gantt", "runsheet"].includes(viewMode.value),
+	["preview", "gantt", "markdown", "runsheet"].includes(viewMode.value),
 );
 
 const options = ref({
@@ -669,6 +671,7 @@ async function updateGram() {
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
+				projection: projection.value ?? undefined,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
@@ -678,6 +681,7 @@ async function updateGram() {
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
+				projection: projection.value ?? undefined,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);

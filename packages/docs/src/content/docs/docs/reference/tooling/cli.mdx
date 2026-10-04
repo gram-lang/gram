@@ -92,6 +92,7 @@ gram view brioche.gram --scale flour=300g   # View scaled to flour = 300g
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned: right before each section (`per-section`, the default), all at the start (`upfront`) or at the start of each working day (`per-session`). The total and rest times in the header follow it; the active and preparation times stay the same. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
 
 #### `gram import <source>`
 Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into a `.gram` file using AI.
@@ -262,6 +263,8 @@ gram print brioche.gram --no-open         # Generate only, print the path to std
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned (default `per-section`), which changes the total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
+- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): also writes the production sheet after the recipe, in the same document.
 
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
@@ -278,6 +281,8 @@ gram export brioche.gram --format html --scale 2       # export at double quanti
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned (default `per-section`), which changes the total and idle times in the exported header. In HTML, `per-section` also puts a "Mise en place" label on each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
+- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): also writes the production sheet after the recipe, in the same document.
 
 #### `gram plan <file>` <Since v="1.4.0" />
 Plans a recipe backward from the time it is served, and writes a production sheet: when to start each task, given when you can cook.

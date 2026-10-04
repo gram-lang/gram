@@ -94,7 +94,18 @@ You want to serve a country bread on Sunday at 1 p.m. The dough needs an overnig
 
    The file has an event for every task, and an alarm 5 minutes before every task that needs your hands. Events are in UTC, so any calendar app shows them in its own time zone. Import it, or open it with your calendar.
 
-6. ### Pick another format
+6. ### Read the recipe with its times
+
+   The sheet is in the order of the time; the recipe is in the order of its sections. To read the recipe itself with when each step happens, give the same flags to the commands that show it:
+
+   ```bash
+   gram view bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00
+   gram export bread.gram --format md --serve "2026-10-11 13:00" --available 08:00-22:00
+   ```
+
+   The recipe now carries a time next to every step, the day when it changes, the rests with the note of one that was stretched, and at the top when it is served and what could not be fixed. Add `--with-sheet` to `gram export` or `gram print` to get the sheet after the recipe, the two in one document. In the playground, the preview and the Markdown view do it as soon as a serving time is set under "Plan".
+
+7. ### Pick another format
 
    `--format md` for Markdown (to paste in your notes), `--format html` for a fragment, `--format json` for the plan and the sheet as data. The sheet is in the language of your project (`language` in `.gram/config.yaml`).
 
