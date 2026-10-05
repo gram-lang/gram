@@ -71,12 +71,12 @@ export default defineConfig({
           collapsed: false,
           items: [
             { label: 'Organize modular recipes', translations: { fr: 'Organiser des recettes modulaires' }, slug: 'docs/how-to/organize-modular-recipes', badge: { text: 'v1.2.0', variant: 'default' } },
-            { label: 'Manage database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
-            { label: 'Configure AI provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
-            { label: 'Scale recipes dynamically', translations: { fr: "Ajustement dynamique des proportions" }, slug: 'docs/how-to/scale-recipes' },
-            { label: 'Generate shopping list', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
-            { label: 'How to build a custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' },
+            { label: 'Scale recipes dynamically', translations: { fr: 'Ajuster les proportions' }, slug: 'docs/how-to/scale-recipes' },
             { label: 'Plan a meal', translations: { fr: 'Planifier un repas' }, slug: 'docs/how-to/plan-a-meal', badge: { text: 'v1.4.0', variant: 'default' } },
+            { label: 'Generate shopping list', translations: { fr: 'Générer la liste de courses' }, slug: 'docs/how-to/weekly-shopping-list' },
+            { label: 'Configure AI provider', translations: { fr: "Configurer l'IA" }, slug: 'docs/how-to/configure-ai' },
+            { label: 'Manage database', translations: { fr: 'Gérer la base de données' }, slug: 'docs/how-to/manage-database' },
+            { label: 'How to build a custom UI', translations: { fr: 'Créer une UI personnalisée' }, slug: 'docs/how-to/build-custom-ui' },
             { label: 'Deprecated features', translations: { fr: 'Fonctionnalités dépréciées' }, slug: 'docs/how-to/deprecations' }
           ]
         },
@@ -135,7 +135,7 @@ export default defineConfig({
             { label: 'Parsing & AST', slug: 'docs/explanation/engine/parser' },
             { label: 'Module resolution & composition', translations: { fr: 'Résolution & composition' }, slug: 'docs/explanation/engine/modules', badge: { text: 'v1.2.0', variant: 'default' } },
             { label: 'Compilation & structure', translations: { fr: 'Compilation & structure' }, slug: 'docs/explanation/engine/kitchen' },
-            { label: 'The scheduling engine', translations: { fr: 'Le moteur de planning' }, slug: 'docs/explanation/engine/scheduler', badge: { text: 'v1.4.0', variant: 'default' } },
+            { label: 'The scheduling engine', translations: { fr: "Le moteur d'ordonnancement" }, slug: 'docs/explanation/engine/scheduler', badge: { text: 'v1.4.0', variant: 'default' } },
             { label: 'Semantic analysis', translations: { fr: 'Analyse sémantique' }, slug: 'docs/explanation/engine/analyzer' },
             { label: 'Rendering & output', translations: { fr: 'Rendu & sortie' }, slug: 'docs/explanation/engine/renderer' }
           ]

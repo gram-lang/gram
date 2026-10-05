@@ -4,6 +4,7 @@ description: "Comment déclarer les ingrédients avec le symbole @, préciser qu
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Les ingrédients constituent la matière première de toute recette Gram.
 
@@ -199,3 +200,28 @@ Le compilateur vérifie les erreurs sémantiques dans vos déclarations d'`@ingr
 - **Base de Données Manquante** : Si vous compilez avec une base de données et que l'`@ingrédient` est introuvable, il avertit `MISSING_INGREDIENT`.
 - **Macros Manquants** : Si la base de données ne contient pas d'informations nutritionnelles pour l'`@ingrédient`, il avertit `MISSING_MACROS`.
 - **Masse Inconnue** : S'il ne peut pas convertir un volume ou une unité en grammes pour estimer la nutrition, il avertit `UNKNOWN_MASS`.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Syntaxe des quantités relatives"
+    description="Exprimez des proportions par rapport à une ancre (% @&farine) pour la pâtisserie."
+    href="/fr/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Syntaxe des ingrédients composites"
+    description="Déclarez des relations parent-enfant (<@citron) pour le zeste et le jus."
+    href="/fr/docs/reference/syntax/composite-ingredients/"
+  />
+  <LinkCard
+    title="Masse et rendement"
+    description="Comment le compilateur convertit volumes et pièces en grammes via la densité."
+    href="/fr/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Référence des avertissements"
+    description="Catalogue des avertissements levés en cas de référence manquante ou de masse inconnue."
+    href="/fr/docs/reference/api/warnings/"
+  />
+</CardGrid>

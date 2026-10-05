@@ -5,6 +5,7 @@ description: "Reference for getAST, the GramParseError shape, AST node types, an
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import { astNodeTypesTable } from '../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Turns `.gram` source text into a plain-object Abstract Syntax Tree (AST). This is the only stage of the pipeline that can fail on malformed input — every other package trusts that if it received an AST, it's structurally valid.
 
@@ -176,3 +177,29 @@ import gramGrammar from '@gram-lang/parser/textmate' with { type: 'json' };
 ```
 
 It resolves to a `.tmLanguage.json` file — pass it straight into any TextMate-grammar-compatible highlighter (Shiki, Monaco, VS Code).
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Kitchen API"
+    description="Compile the AST into structured steps, cookware registry, and shopping items."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Modules API"
+    description="Resolve @use imports and compose multi-file recipes into a single AST."
+    href="/docs/reference/api/modules/"
+  />
+  <LinkCard
+    title="Format API"
+    description="Format and normalize .gram source code with 13 canonical style rules."
+    href="/docs/reference/api/format/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="Detailed JSON schemas for AST nodes and compiled recipe structures."
+    href="/docs/reference/api/data-formats/"
+  />
+</CardGrid>
+

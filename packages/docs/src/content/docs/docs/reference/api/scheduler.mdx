@@ -1,0 +1,327 @@
+---
+title: "@gram-lang/scheduler"
+description: "The scheduling engine: lays out a task graph on a timeline, projects it onto the calendar given a target serving time and availability, and builds an operational run sheet."
+---
+
+import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+<Since v="1.4.0" />
+
+Gram's scheduling engine takes an agnostic **task graph** (the `tasks` field of a compiled recipe) and answers two fundamental questions: how do these tasks lay out chronologically (`layout`), and precisely when should each task begin, given a target serving time and cooking availability (`project`).
+
+The scheduler has no knowledge of the AST or the `.gram` syntax, operating solely on the neutral task graph. See [The scheduling engine](/docs/explanation/engine/scheduler/) for how its architecture works and [Planning in real time](/docs/explanation/planning-in-real-time/) for practical usage.
+
+:::note[Pure functions and determinism]
+Every function in the engine is pure: identical inputs always yield identical outputs. Nothing is read from the runtime environment (no system clock, no host time zone), and input arguments are never mutated.
+:::
+
+```bash
+npm install @gram-lang/scheduler
+```
+
+The `@gram-lang/kitchen` compiler already re-exports `layout`, `LayoutOptions`, and the relevant choice constants (`MISE_EN_PLACE_MODES`, `REST_CHOICES`...): code that only interacts with Kitchen does not need to install this package directly.
+
+## `layout`
+
+```typescript
+function layout(graph: TaskGraph, options?: LayoutOptions): LayoutResult
+
+interface LayoutOptions {
+  miseEnPlace?: MiseEnPlaceMode; // "perSection" (default) | "upfront" | "perSession"
+  rests?: RestChoice;            // "shortest" (default) | "balanced" | "longest"
+  restOverrides?: Record<string, number>; // target passive durations in minutes, by task id (used by project())
+}
+
+interface LayoutResult {
+  schedule: Schedule;
+  diagnostics: SchedulingDiagnostic[];
+}
+```
+
+Lays out the task graph on a relative timeline, measured in minutes starting from 0 (the first task).
+
+Active work is consistently scheduled using its `nominal` duration regardless of the `rests` option. For passive durations specified as a range, the `rests` option selects the minimum (`shortest`), median (`balanced`), or maximum (`longest`) duration. Fixed passive durations and active timers remain unaffected.
+
+Any value in `restOverrides` that falls outside a passive duration's allowed range is ignored: no passive duration is ever lengthened or shortened beyond the bounds defined in the recipe.
+
+```typescript
+import { compile } from '@gram-lang/kitchen';
+import { layout } from '@gram-lang/scheduler';
+
+const { tasks } = compile(ast);
+
+const { schedule, diagnostics } = layout(tasks, {
+  miseEnPlace: 'upfront',
+  rests: 'longest',
+});
+// schedule.totalTime, schedule.blocks, schedule.sessions...
+```
+
+For default options, `compiled.schedule` matches `layout(compiled.tasks).schedule` exactly.
+
+### `Schedule`
+
+```typescript
+interface Schedule {
+  miseEnPlace: MiseEnPlaceMode;
+  rests: RestChoice;
+  totalTime: number;       // latest end time across all blocks
+  activeTime: number;      // total hands-on active work duration, excluding mise en place
+  preparationTime: number; // mise en place duration (sum of `prep` tasks)
+  idleTime: number;        // overall inactive time: totalTime - activeTime - preparationTime
+  blocks: ScheduleBlock[]; // sorted by start time, then end time
+  sessions: ScheduleSession[]; // one per working day, ordered from furthest day to serving day
+}
+
+type ScheduleBlock =
+  | { kind: "prep"; task: string; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
+  | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
+  | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
+
+interface ScheduleSession {
+  day: number;      // 0 = serving day (day 0), 1 = day before (day -1, ~{-1d})...
+  start: number;    // start and end bounds of the session's active work
+  end: number;
+  sections: number[];
+}
+```
+
+When a `prep` block bundles multiple preparations that start and end together, its `task` field carries the identifier of the first task.
+
+### `SchedulingDiagnostic`
+
+Structural diagnostics emitted by `layout()` as neutral data (the Kitchen compiler subsequently formats them as user warnings):
+
+```typescript
+type SchedulingDiagnostic =
+  | { code: "TIME_PARADOX"; section: number; pulledTo: number }
+  | { code: "TRACK_CONTENTION"; section: number; trackName: string; delay: number }
+  | { code: "SESSION_OVERFLOW"; section: number; day: number; overflowMinutes: number };
+```
+
+`SESSION_OVERFLOW` indicates that a session's active work starts before the 24-hour window allocated to that working day (pushed back by upstream task sequences). Only active work is counted against this threshold; passive durations spanning overnight are excluded.
+
+## The task graph
+
+```typescript
+interface TaskGraph {
+  tasks: Task[];                // sections in order, then steps, with `prep` first in each section
+  sections: TaskGraphSection[]; // parallel to the recipe's sections
+}
+
+type Task = PrepTask | StepTask | TimerTask;
+
+interface TaskDuration {
+  nominal: number; // default duration used by layout
+  min?: number;    // only for passive durations defined as a range
+  max?: number;
+}
+
+interface PrepTask {
+  id: string;
+  kind: "prep";
+  section: number;
+  intermediate?: string; // defined for the preparation of an intermediate (&dough)
+  duration: TaskDuration;
+  items: MiseEnPlaceItem[];
+  after: string[];       // step that produces the intermediate (when known)
+}
+
+interface StepTask {
+  id: string;
+  kind: "step";
+  section: number;
+  step: number;          // step index within the section (comments included)
+  duration: TaskDuration;
+  produces?: string[];   // intermediates declared in the recipe
+  consumes?: string[];
+  after: string[];
+}
+
+interface TimerTask {
+  id: string;
+  kind: "passive";
+  section: number;
+  step: number;
+  track?: string;        // dedicated equipment track (~_oven{})
+  offset: number;        // offset in minutes from step start
+  duration: TaskDuration;
+  after: string[];
+}
+
+interface TaskGraphSection {
+  day: number;           // 0 = serving day; a day anchor initiates a new working day
+  deadline?: number;     // anchor deadline in minutes before completion
+  intermediate?: string; // intermediate produced by the entire section
+}
+```
+
+Task identifiers are deterministic and human-readable: `s0.prep`, `s1.prep.dough`, `s0.3`, `s0.3.t0`.
+
+## `project`
+
+```typescript
+function project(recipes: ProjectionInput[], context: ProjectionContext): ProjectedPlan
+
+interface ProjectionInput {
+  graph: TaskGraph;
+  title?: string;
+  options?: LayoutOptions;
+}
+
+interface ProjectionContext {
+  serveAt: string;        // target local date-time ("2026-10-11T13:00") in timeZone
+  timeZone: string;       // IANA time zone identifier ("Europe/Paris")
+  availability: Availability;
+  now?: string;           // reference ISO instant or local time for START_IN_PAST (by default, no clock check is performed)
+}
+
+interface Availability {
+  daily: TimeRange[];                               // default daily availability window
+  weekdays?: Partial<Record<Weekday, TimeRange[]>>; // "mon" … "sun"; [] indicates complete unavailability
+  dates?: Record<string, TimeRange[]>;              // "2026-10-09"; overrides weekdays
+}
+
+interface TimeRange {
+  start: string;
+  end: string;            // "08:00"–"22:00"; an end time before start crosses midnight
+}
+```
+
+Projects a recipe's timeline onto the real calendar, aligning completion with the target serving time. Elastic passive durations are adjusted to schedule active work within the user's availability windows.
+
+The conflict resolution strategy is greedy and deterministic (prioritizing explainability over global optimality). While accepting a list of recipes as input, only the first recipe is scheduled in the current implementation (subsequent recipes trigger `MULTI_RECIPE_UNSUPPORTED`). An invalid IANA time zone or a malformed serving timestamp throws a `RangeError`.
+
+```typescript
+const plan = project(
+  [{ graph: tasks, title: 'Country bread' }],
+  {
+    serveAt: '2026-10-11T13:00',
+    timeZone: 'Europe/Paris',
+    availability: {
+      daily: [{ start: '08:00', end: '22:00' }],
+      weekdays: { sun: [{ start: '09:00', end: '20:00' }] },
+    },
+  },
+);
+```
+
+### `ProjectedPlan`
+
+```typescript
+interface ProjectedPlan {
+  serveAt: string;
+  timeZone: string;
+  recipes: {
+    title?: string;
+    blocks: ProjectedBlock[];     // scheduled blocks with start/end as ISO 8601 UTC timestamps
+    sessions: ProjectedSession[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
+  }[];
+  adjustments: RestAdjustment[];  // adjustments applied to elastic passive durations
+  unavailable: { start: string; end: string }[]; // unavailable windows overlapping the plan duration
+  diagnostics: ProjectionDiagnostic[];
+}
+
+interface RestAdjustment {
+  task: string;
+  from: number; // minutes
+  to: number;
+  reason: "avoid-unavailable";
+}
+
+type ProjectionDiagnostic =
+  | { code: "ACTIVE_OUTSIDE_AVAILABILITY"; task: string; local: string; rest?: string }
+  | { code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY"; tasks: string[]; minutes: number; largest: number }
+  | { code: "SESSION_DAY_MISMATCH"; day: number; expected: string; actual: string }
+  | { code: "START_IN_PAST"; start: string; now: string }
+  | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
+```
+
+These diagnostics depend on the user's execution context: they are included directly in the `ProjectedPlan` result rather than being compiler warnings. See [Planning in real time](/docs/explanation/planning-in-real-time/#diagnostics-and-unresolved-constraints) for a detailed breakdown of each code.
+
+## `runSheet`
+
+```typescript
+function runSheet(plan: ProjectedPlan): RunSheet
+
+interface RunSheet {
+  serveAt: string;
+  timeZone: string;
+  recipes: { title?: string; days: RunSheetDay[] }[];
+  diagnostics: ProjectionDiagnostic[];
+}
+
+interface RunSheetDay {
+  date: string;             // "2026-10-10"
+  daysBefore: number;       // 0 on serving day, 1 on the day before...
+  entries: RunSheetEntry[]; // in chronological order
+}
+
+interface RunSheetEntry {
+  task: string;
+  kind: "prep" | "step" | "passive";
+  active: boolean;
+  section: number;
+  step?: number;
+  track?: string;
+  start: string;            // ISO 8601 UTC timestamps
+  end: string;
+  startLocal: string;       // minute-exact local times
+  endLocal: string;
+  minutes: number;
+  adjustment?: RestAdjustment; // set when this passive duration was adjusted
+}
+```
+
+Represents the data structure of an operational production sheet. Textual formatting and visual presentation are handled by `@gram-lang/renderer` (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
+
+## Constants and helpers
+
+```typescript
+type MiseEnPlaceMode = "perSection" | "upfront" | "perSession";
+const MISE_EN_PLACE_MODES: readonly MiseEnPlaceMode[];
+const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode; // "perSection"
+function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode;
+
+type RestChoice = "shortest" | "balanced" | "longest";
+const REST_CHOICES: readonly RestChoice[];
+const DEFAULT_REST_CHOICE: RestChoice; // "shortest"
+function isRestChoice(value: unknown): value is RestChoice;
+
+const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+// Date utilities without external dependencies, based on an explicit time zone
+function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T13:00" → minutes since Unix epoch (UTC)
+function parseInstant(value: string, timeZone: string): number;  // ISO instant (with 'Z' or UTC offset) or local time
+function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
+function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
+```
+
+During daylight saving time transitions, an invalid local time (e.g. 02:30 when clocks spring forward) shifts to the next valid time; an ambiguous local time (occurring twice when clocks fall back) resolves to its first occurrence.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Planning in real time"
+    description="Understand how target serving times and availability constraints form a prep timeline."
+    href="/docs/explanation/planning-in-real-time/"
+  />
+  <LinkCard
+    title="The scheduling engine"
+    description="In-depth dive into the two-phase scheduling algorithm and ALAP backward passes."
+    href="/docs/explanation/engine/scheduler/"
+  />
+  <LinkCard
+    title="Renderer API"
+    description="Render run sheets to formatted terminal tables, Markdown, or print HTML."
+    href="/docs/reference/api/renderer/"
+  />
+  <LinkCard
+    title="Plan a meal guide"
+    description="Step-by-step tutorial on orchestrating multi-recipe prep schedules."
+    href="/docs/how-to/plan-a-meal/"
+  />
+</CardGrid>
+

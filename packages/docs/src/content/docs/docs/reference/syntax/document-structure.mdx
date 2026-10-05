@@ -4,6 +4,7 @@ description: "Reference for the .gram file structure: YAML frontmatter, function
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
 
 A Gram recipe file (`.gram`) is structured into several distinct parts: Metadata, Sections, Steps, and Comments.
@@ -138,3 +139,28 @@ Slowly add @milk{4 cup} /* TODO change units to litres */, keep mixing.
 :::note[Comments vs YAML Notes]
 Comments are preserved during compilation and are rendered alongside the instructions (typically in grey italics). They are perfect for small, step-specific tips. However, if you have global observations or general feedback about the recipe (e.g., "Decrease sugar next time", "Best served cold"), it is recommended to put them in the YAML Frontmatter under the `notes` key so they can be displayed prominently at the top.
 :::
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Ingredients syntax"
+    description="Learn how to declare quantities, preparation notes, alternatives, and modifiers."
+    href="/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Times and durations"
+    description="Full syntax for active durations, passive timers, and section day anchors."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Intermediate variables"
+    description="How to declare and consume sub-recipes and prepared intermediates with &name."
+    href="/docs/reference/syntax/intermediate-variables/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for all syntax markers, symbols, and annotations."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

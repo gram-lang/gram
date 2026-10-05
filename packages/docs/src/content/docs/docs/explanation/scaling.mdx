@@ -84,7 +84,7 @@ When a recipe imports an external base via `@use` (such as `@use "./bases/crust.
 
 ## Consuming this from a new frontend
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 
@@ -93,3 +93,23 @@ import { Steps } from '@astrojs/starlight/components';
 3. Call `resolveScaleFactor(compiled, request, convertUnit?)`. Catch `ScaleError` and switch on `.code` for UI-specific messaging — every error already carries a complete, user-facing `.message`.
 4. Call `applyScale(compiled, resolution.factor)` to get the scaled result. Keep the original `compiled` around if you need to re-scale later (e.g. a live slider) — never re-scale an already-scaled result.
 </Steps>
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="How to scale recipes"
+    description="Learn how to use relative quantities, anchor modifiers, and baker's math in daily cooking."
+    href="/docs/how-to/scale-recipes/"
+  />
+  <LinkCard
+    title="Relative quantities syntax"
+    description="Syntax specification for relative quantities (% @&flour) and fixed items."
+    href="/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Kitchen API reference"
+    description="Explore resolveScaleFactor(), applyScale(), and compiler scaling options."
+    href="/docs/reference/api/kitchen/"
+  />
+</CardGrid>

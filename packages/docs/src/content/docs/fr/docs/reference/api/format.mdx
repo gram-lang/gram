@@ -1,0 +1,114 @@
+---
+title: "@gram-lang/format"
+description: "Le formateur de code canonique pour les fichiers .gram, appliquant 13 règles déterministes utilisées par le CLI et les éditeurs."
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Le formateur de code canonique pour les fichiers `.gram`, utilisé à la fois par la commande `gram format` du CLI et par l'extension VS Code (via le serveur de langage LSP). Il applique 13 règles de mise en page en une passe déterministe unique.
+
+## `formatGram`
+
+```typescript
+function formatGram(source: string, options?: FormatterOptions): string
+```
+
+Formate une chaîne source `.gram` selon les 13 règles canoniques du langage.
+
+<Tabs>
+  <TabItem label="Code non formaté">
+```gram
+---
+title: 'Crêpes'
+---
+## Pâte
+Mélanger  @farine{200.00g}   et   @lait{200ml}.  ->&pâte
+```
+  </TabItem>
+  <TabItem label="Code formaté canonique">
+```gram
+---
+title: 'Crêpes'
+---
+
+## Pâte
+
+Mélanger @farine{200g} et @lait{200ml}. ->&pâte
+```
+  </TabItem>
+</Tabs>
+
+## `FormatterOptions`
+
+```typescript
+interface FormatterOptions {
+  tabSize?: number;       // Nombre d'espaces par niveau d'indentation (défaut : 2)
+  insertSpaces?: boolean; // Utiliser des espaces plutôt que des tabulations (défaut : true)
+}
+```
+
+## Règles de formatage canoniques
+
+`formatGram` applique 13 règles réparties en quatre domaines structurels :
+
+<CardGrid>
+  <Card title="Document & sections" icon="document">
+    - **1. Frontmatter** : Préserve les délimiteurs (`---`) et harmonise les espacements autour des métadonnées YAML.
+    - **2. Titres de section** : Garantit un espace unique après le marqueur `##` d'en-tête.
+    - **13. Espaces superflus** : Supprime les espaces blancs en fin de ligne et assure un saut de ligne final unique.
+  </Card>
+  <Card title="Étapes & actions" icon="list-format">
+    - **3. Numérotation des étapes** : Harmonise la présentation des préfixes numérotés (`1. `).
+    - **4. Balises d'action** : Normalise la typographie des balises d'action (`[Mélanger] `).
+  </Card>
+  <Card title="Jetons culinaires" icon="star">
+    - **5. Ingrédients** : Normalise l'espacement et la syntaxe d'accolades `@ingrédient{qte}`.
+    - **6. Matériel** : Normalise l'espacement et la syntaxe `#matériel{qte}`.
+    - **7. Minuteurs** : Normalise les minuteurs actifs `~minuteur{durée}` et passifs `~_minuteur{durée}`.
+    - **8. Températures** : Normalise la syntaxe `^temp{valeur}`.
+    - **11. Quantités décimales** : Épure les zéros décimaux superflus (`1.50` ➔ `1.5`).
+  </Card>
+  <Card title="Variables & commentaires" icon="pencil">
+    - **9. Variables intermédiaires** : Normalise les déclarations `->&nom` et les références `&nom`.
+    - **10. Composites** : Normalise la notation `<@parent` des composants d'ingrédients.
+    - **12. Commentaires** : Assure une séparation propre après les barres obliques (`// commentaire`).
+  </Card>
+</CardGrid>
+
+## `FormatterChanges`
+
+Fournit des métriques détaillées sur les transformations apportées (particulièrement utile pour les extensions d'éditeur et le diagnostic) :
+
+```typescript
+interface FormatterChanges {
+  formatted: string;
+  hasChanges: boolean;
+  rulesApplied: string[];
+}
+```
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Référence du CLI"
+    description="Découvrez comment utiliser gram format en ligne de commande avec aperçu ou modification sur place."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Serveur de langage"
+    description="Explorez l'intégration du formatage et des diagnostics dans les éditeurs compatibles LSP."
+    href="/fr/docs/reference/tooling/language-server/"
+  />
+  <LinkCard
+    title="Extension VS Code"
+    description="Activez le formatage automatique à la sauvegarde et la coloration syntaxique dans votre éditeur."
+    href="/fr/docs/reference/tooling/vscode-extension/"
+  />
+  <LinkCard
+    title="Aide-mémoire syntaxique"
+    description="Vue d'ensemble visuelle des règles et notations canoniques pour tous les jetons du langage."
+    href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>
+

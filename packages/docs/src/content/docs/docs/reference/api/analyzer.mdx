@@ -5,8 +5,9 @@ description: "Enrich compiled recipes with standardized mass, purchasing yield, 
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import { unitConversionsTable } from '../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Enriches a `CompilationResult` (from `@gram-lang/kitchen`) with physical properties — standardized mass, purchasing yield, nutrition estimates, and baker's percentages — by cross-referencing an ingredient database. This is the only stage that needs a database; parsing and compilation work on any recipe with no external data.
+Enriches a `CompilationResult` (from `@gram-lang/kitchen`) with physical properties — standardized mass, purchasing yield, nutrition estimates, and baker's percentages — by cross-referencing an ingredient database. This is the only stage in the pipeline that requires a database; parsing and compilation operate purely on any `.gram` source text without any external dependencies.
 
 ## `analyze`
 
@@ -33,20 +34,20 @@ const { result: analyzed, missingIngredients } = analyze(compiled, myIngredientD
 
 > The ingredient database is the **second positional argument**, not a field on `options` — `analyze(compiled, database, options?)`.
 
-`analyze()` is pure and never mutates `result`. `AnalyzedCompilationResult` extends `CompilationResult` — same shape, plus per-usage `normalizedMass`/`conversionMethod`/`isEstimate`/`purchasingMass`/`bakersPercentage` fields and a `metrics.nutrition` block. See [Data Formats](/docs/reference/api/data-formats) for a fully annotated example.
+`analyze()` is a pure function that never mutates its `result` argument. `AnalyzedCompilationResult` extends `CompilationResult` — same shape, plus per-usage `normalizedMass`, `conversionMethod`, `isEstimate`, `purchasingMass`, and `bakersPercentage` fields, along with a `metrics.nutrition` block. See [Data formats](/docs/reference/api/data-formats) for a fully annotated example.
 
 ### `AnalyzerOptions`
 
-All flags default to enabled (`!== false` checks internally) — pass `false` to opt out of a given enrichment pass.
+All enrichment flags default to enabled (via internal `!== false` checks) — pass explicit `false` to opt out of a given enrichment pass.
 
 | Option | Type | Description |
 |---|---|---|
 | `enableMassStandardization` | `boolean` | Convert ingredient quantities into standardized grams. |
-| `enableYieldCalculation` | `boolean` | Apply the ingredient database's `physical.yield` (waste factor) when standardizing mass. |
-| `enableNutritionalEstimation` | `boolean` | Compute `metrics.nutrition` (calories, macros, optionally per-portion). |
+| `enableYieldCalculation` | `boolean` | Apply the ingredient database's `physical.yield` (waste/prep factor) when standardizing mass. |
+| `enableNutritionalEstimation` | `boolean` | Compute `metrics.nutrition` (calories and macronutrients, globally and per-portion). |
 | `enableBakersMath` | `boolean` | Compute `bakersPercentage` relative to the `*`-marked (or `bakersReference`) ingredient. |
 | `bakersReference` | `string` | Explicit ingredient id to use as the 100% baker's-percentage base, instead of the `*` modifier. |
-| `portions` | `number` | Overrides the recipe's own `portions:` frontmatter as the divisor for `metrics.nutrition.perPortion`. Omit to use what the recipe declares. |
+| `portions` | `number` | Overrides the recipe's own `portions:` frontmatter as the divisor for `metrics.nutrition.perPortion`. |
 | `lang` | `string` | Optional locale code (e.g. `'en'`, `'fr'`) for locale-scoped unit normalization and category sorting. |
 
 ## `validateIngredientDatabase`
@@ -58,7 +59,7 @@ function validateIngredientDatabase(rawDb: unknown): {
 }
 ```
 
-Validates entry-by-entry rather than all-or-nothing: one malformed ingredient doesn't prevent every other valid one from loading. Use `data` to compile/analyze; surface `rejected` to the user (e.g. `gram db validate`). See [Data Formats](/docs/reference/api/data-formats) for the `IngredientData` YAML schema.
+Validates entry-by-entry rather than all-or-nothing: one malformed ingredient does not prevent valid entries from loading. Pass `data` to the pipeline and surface `rejected` issues to the user (e.g. via `gram db validate`). See [Data formats](/docs/reference/api/data-formats) for the `IngredientData` YAML schema.
 
 ## Mass utilities
 
@@ -81,13 +82,13 @@ function applyYield(
 ): { normalizedMass: number; purchasingMass?: number }
 ```
 
-`standardizeMass` resolves a quantity to grams via, in order: (1) a direct mass unit (`g`, `kg`, `oz`...), (2) a volume unit converted through the ingredient's resolved density, (3) an unrecognized unit (`clove`, `slice`...) treated as a count via the ingredient's `unit_weight`. Returns `null` — never guesses — when a volume unit has no resolvable density.
+`standardizeMass` resolves a quantity to grams via the following priority cascade: (1) direct mass units (`g`, `kg`, `oz`...), (2) volume units converted through the ingredient's resolved density, (3) count units (`clove`, `slice`...) converted via the ingredient's `unit_weight`. It returns `null` — never guessing blindly — when a volume unit has no resolvable density.
 
-`convertUnit` converts between two arbitrary unit strings, bridging mass↔volume families via `density` (g/mL) when given. Returns `null` for an unresolvable cross-family conversion without one.
+`convertUnit` converts between two arbitrary unit strings, bridging mass↔volume families when a `density` (expressed in g/mL) is provided. It returns `null` when a cross-family conversion is impossible without density data.
 
 ### Mass & volume conversion table
 
-The base conversion factors `standardizeMass`/`convertUnit` use for same-family (mass↔mass, volume↔volume) conversions, before any density is involved:
+The default base conversion factors used by `standardizeMass` and `convertUnit` for same-family conversions (mass↔mass, volume↔volume), prior to any ingredient density application:
 
 <GeneratedTable table={unitConversionsTable("en")} />
 
@@ -102,16 +103,16 @@ function calculateNutrition(
 ): NutritionMetrics
 ```
 
-Flattens composites and alternatives (taking the first option), skips `optional`-modifier and zero-quantity ingredients, and sums `nutrition` fields (declared **per 100g** in the database — see [Data Formats](/docs/reference/api/data-formats)) scaled by each ingredient's standardized mass. Returns `isEstimate: true` if any contributing mass was itself an estimate, and `coverage` (0–1: fraction of ingredients with known nutrition data).
+Flattens composite ingredients and alternatives (taking the first option), skips `optional`-modifier and zero-quantity items, and sums `nutrition` values (declared **per 100g** in the database — see [Data formats](/docs/reference/api/data-formats)) scaled by each ingredient's standardized mass. Returns `isEstimate: true` if any contributing mass was itself an estimate, and a `coverage` ratio (0–1: fraction of ingredients with known nutrition profiles).
 
-`NutritionMetrics` carries the same macro profile on up to three bases:
+`NutritionMetrics` provides the nutritional profile across three complementary bases:
 
 ```typescript
 interface NutritionMetrics {
-  total: Macros;          // the whole recipe, at its compiled/scaled quantities
-  perPortion?: Macros;    // present whenever a portion count is known
-  per100g?: Macros;       // per 100 g of the mass that contributed macros
-  portions?: number;      // the divisor perPortion was derived with
+  total: Macros;          // the entire recipe, at its compiled or scaled quantities
+  perPortion?: Macros;    // calculated whenever a portion count is known
+  per100g?: Macros;       // per 100 g of recipe mass that contributed to macros
+  portions?: number;      // the divisor applied to derive perPortion
   basis?: { mass: number; massStatus?: 'precise' | 'estimated' | 'incomplete' };
   isEstimate: boolean;
   coverage: number;
@@ -119,9 +120,9 @@ interface NutritionMetrics {
 }
 ```
 
-Every basis is derived from the same unrounded sums and rounded independently, so a per-portion figure never compounds the rounding of the total. `basis` is the denominator behind `per100g` — see [Nutritional Estimation](/docs/explanation/nutrition) for why it matters and what "per 100 g" means when no cooking loss is modelled.
+Every basis is derived directly from unrounded raw sums and rounded independently, preventing compounding rounding discrepancies between the total and individual portions. The `basis` property represents the mass denominator used for the `per100g` calculation — see [Nutritional estimation](/docs/explanation/nutrition/) for details on why this distinction matters when no cooking loss is modelled.
 
-Which nutrients exist, their units and their rounding all come from a single exported `NUTRIENTS` table, so `gram db enrich`, `gram db lint`, `gram db search`, the editor hover and every renderer enumerate exactly the same set.
+The list of tracked nutrients, their units, and their precision rules are defined in a single exported `NUTRIENTS` table, ensuring strict parity between `gram db enrich`, `gram db lint`, `gram db search`, editor hover hints, and all visual renderers.
 
 ## `diffRecipes`
 
@@ -129,8 +130,34 @@ Which nutrients exist, their units and their rounding all come from a single exp
 function diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult
 ```
 
-Structural diff between two compiled recipes (e.g. two versions of the same file, or a scaled vs. unscaled result) — ingredient quantity/unit changes (with `percentChange` when comparable), preparation changes, timing deltas (`totalTime`, `idleTime`, `activeTime`, `preparationTime`), added/removed/changed sections, temperature and timer changes, and frontmatter (`meta`) changes. `hasChanges` is `true` if any category is non-empty.
+Computes the structural diff between two compiled recipes (e.g. two revisions of the same recipe file, or an unscaled baseline compared to its scaled counterpart). It tracks changes in ingredient quantities and units (with `percentChange`), preparation updates, schedule deltas (`totalTime`, `idleTime`, `activeTime`, `preparationTime`), added, removed, or modified sections, timer and temperature adjustments, and frontmatter (`meta`) changes. The `hasChanges` property evaluates to `true` whenever any diff category is non-empty.
 
-The timing deltas compare the times of the default schedule (mise en place right before each section): `totalTime`, `idleTime`, `activeTime` and `preparationTime` all come from `schedule`, so an active timer written as a range (`~{20-25min}`) counts on its longest figure. They are the same on both sides of the comparison, and match what `gram view` shows by default. *(Since 1.4.0. Earlier versions read the deprecated `metrics.totalTime` and `metrics.idleTime`, which describe the "all at the start" plan.)*
+The timing deltas compare durations from the default schedule (`schedule`): `totalTime`, `idleTime`, `activeTime`, and `preparationTime` all originate from `schedule`. An active timer defined as a range (`~{20-25min}`) counts on its longest bound for safety. These baseline metrics are identical on both sides of the comparison and match the default layout shown in `gram view`. *(Since 1.4.0. Earlier versions read the deprecated `metrics.totalTime` and `metrics.idleTime`, which reflected the legacy "all prep upfront" plan).*
 
-A section spliced in from an `@use` import (`ProcessedSection.module` set) is excluded from the section/preparation/temperature/timer comparisons — otherwise adding a single import would shift every other section's position and look like the whole recipe changed. Its own import is compared separately instead, by `(uri, binding, scale factor)`, in `modules: ModuleDelta[]` — a rescaled or re-bound import is reported as `"changed"`.
+A section spliced in from a modular `@use` import (`ProcessedSection.module` populated) is isolated from step-level section comparisons — preventing a single imported module from offsetting subsequent section indices and reporting false-positive diffs. Its import statement is compared independently by `(uri, binding, scale factor)` inside the `modules: ModuleDelta[]` array — any re-bound or rescaled module is flagged with `"changed"`.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Mass and yield"
+    description="Learn how unit conversions, volume-to-weight density, and yield percentages work."
+    href="/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Nutritional estimation"
+    description="Explore how macronutrients and micronutrients are calculated across three bases."
+    href="/docs/explanation/nutrition/"
+  />
+  <LinkCard
+    title="Manage ingredient database"
+    description="Sync, enrich, and lint your local ingredient database via the CLI."
+    href="/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Kitchen API"
+    description="Understand the upstream CompilationResult that feeds into the analyzer."
+    href="/docs/reference/api/kitchen/"
+  />
+</CardGrid>
+

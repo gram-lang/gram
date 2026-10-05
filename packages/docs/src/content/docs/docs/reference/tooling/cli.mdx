@@ -1,6 +1,6 @@
 ---
 title: "Command line interface (CLI)"
-description: "Reference for the Gram CLI: installation, global options, and the core commands for compiling and managing recipes."
+description: "Reference for the Gram CLI: installation, global options, and core commands for compiling and managing recipes."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
@@ -10,7 +10,7 @@ The official Gram CLI (`@gram-lang/cli`) is the primary tool for validating, com
 
 ## Installation
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <CodeTabs>
   ```bash title="npm"
@@ -21,16 +21,14 @@ import { Steps } from '@astrojs/starlight/components';
 ```
 </CodeTabs>
 
-The CLI runs on both Node.js (>=22, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so any of the two works equally well.
+The CLI runs equally well on Node.js (>=22, automatically loading `.env` files via `process.loadEnvFile`) and [Bun](https://bun.sh/) — no runtime-specific APIs are required, so both environments behave identically.
 
-<Since v="1.2.0" /> When a newer version is published on npm, gram prints a short notice after any command finishes (skipped in CI and non-interactive runs). Run `gram upgrade` to check and install it on demand, or silence the passive notice with `gram config set updateCheck false` — or, for a single run, the `GRAM_NO_UPDATE_CHECK` environment variable.
+<Since v="1.2.0" /> When a newer version is published on npm, `gram` prints a short notice after any command finishes (skipped in CI environments and non-interactive runs). Run `gram upgrade` to check and install updates on demand, or silence the passive notice with `gram config set updateCheck false` — or, for a single invocation, via the `GRAM_NO_UPDATE_CHECK` environment variable.
 
 ## Global options
 
-- `--verbose` / `--debug`: works with any command, prints a full stack trace on error instead of just the terse message.
-- `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable item on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
-
----
+- `--verbose` / `--debug`: usable with any command, prints a full stack trace on error instead of just the terse message.
+- `--stock <specifiers>`: treats specified imported module paths as already on hand (skips their timeline cooking steps and collapses them into a single purchasable product on shopping lists). Accepts comma-separated paths (`@bases/shortcrust.gram,./sauces/bechamel.gram`).
 
 ## Core commands
 
@@ -42,8 +40,8 @@ Scaffolds a new Gram environment in the current directory.
 - Generates a plain, uncommented `config.yaml`.
 - Interactively configures your preferred recipe language (currently `en` or `fr`).
 - Interactively configures your preferred AI provider and model.
-- Generates/updates a `.env` file for your AI API keys.
-- Generates a heavily commented starter `ingredients.yaml` ingredient database at `.gram/ingredients.yaml`.
+- Generates or updates a `.env` file for your AI API keys.
+- Generates a documented starter `ingredients.yaml` ingredient database at `.gram/ingredients.yaml`.
 - Generates a `.gitignore` to prevent committing sensitive keys.
 
 #### `gram upgrade` <Since v="1.2.0" />
@@ -51,16 +49,16 @@ Checks npm for a newer `@gram-lang/cli` release and offers to install it.
 ```bash
 gram upgrade
 ```
-- Always performs a fresh lookup against the npm registry — independent of the passive background check described above.
-- Prints a comparison of the installed and latest versions, then asks for confirmation before running `npm install -g @gram-lang/cli@latest`.
-- Does nothing (beyond reporting) when already up to date.
+- Always performs a fresh lookup against the npm registry — independent of the passive background check.
+- Prints a comparison of the installed and latest versions, then asks for confirmation before executing `npm install -g @gram-lang/cli@latest`.
+- Performs no changes (beyond reporting status) when already up to date.
 
 #### `gram check [pattern]`
 Validates your `.gram` files for syntax errors, structural integrity, and undefined ingredients.
-- Runs the OhmJS parser to catch syntax errors.
-- Runs the Kitchen compiler to catch structural errors (e.g., cyclic dependencies).
-- Connects to your `ingredients.yaml` to warn about ingredients not documented in your database.
-- Warnings (nutritional/estimation gaps, incomplete-but-valid annotations) don't fail the command by default — only structural errors (undefined references, scope conflicts) do. Pass `--strict` to treat every warning as an error too (useful in CI).
+- Runs the Ohm.js parser to catch syntax errors.
+- Runs the Kitchen compiler to catch structural errors (e.g. cyclic dependencies).
+- Connects to your `ingredients.yaml` database to flag undocumented ingredients.
+- Warnings (nutritional estimation gaps, incomplete-but-valid annotations) do not fail the command by default — only structural errors (undefined references, scope conflicts) trigger a non-zero exit code. Pass `--strict` to treat every warning as a hard error (ideal for CI pipelines).
 - Options: `--db <path>`, `--skip-db`, `--strict`.
 
 #### `gram build [pattern]`
@@ -70,82 +68,81 @@ gram build "**/*.gram" --output ./dist
 gram build brioche.gram --pretty
 gram build brioche.gram --scale 2 --output ./dist-doubled
 ```
-- By default, outputs pure JSON directly to `stdout` for easy piping.
-- Computes nutritional data and physical mass standardization automatically via the database.
-- `--scale <factor>` bakes the scaling into the JSON output. Reference mode (e.g. `flour=300g`) isn't available here by design: `build` can batch multiple files at once, and a reproducible batch output shouldn't depend on reading one specific file's shopping list first. Use `gram view`/`gram scale` to find the factor you want, then pass that numeric factor to `build`.
-- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to build it anyway.
+- By default, outputs pure JSON directly to `stdout` for easy piping into downstream tools.
+- Automatically calculates nutritional data and physical mass standardization via the database.
+- `--scale <factor>` bakes the scaling factor directly into the JSON output. Reference mode (e.g. `flour=300g`) is intentionally unavailable here: because `build` processes files in batches, reproducible output must not depend on reading one specific file's shopping list first. Use `gram view` or `gram scale` to determine your factor, then pass that numeric multiplier to `build`.
+- When a glob or multiple files are supplied, files imported (via `@use`) by other recipes in the same batch are excluded by default, preventing their ingredients from being double-counted (both standalone and composed into the host recipe). Pass `--include-modules` to build them anyway.
 - Options: `--output/-o <dir>`, `--pretty`, `--scale <factor>`, `--db <path>`, `--skip-db`, `--include-modules`.
 
 #### `gram view <file>`
-Displays a recipe directly in the terminal in a beautifully styled ASCII box.
+Displays a recipe directly in the terminal, neatly formatted in an ASCII box.
 ```bash
 gram view brioche.gram                      # Default view
-gram view brioche.gram --scale 2            # View at double quantities
-gram view brioche.gram --scale flour=300g   # View scaled to flour = 300g
+gram view brioche.gram --scale 2            # Scaled to double quantities
+gram view brioche.gram --scale flour=300g   # Scaled to flour = 300g
 ```
 - Supports automatic paging for long recipes.
 - Displays calculated nutrition, timings, and ingredient checklists.
-- Timers keep the unit written in the recipe (`~{1h}` shows as `~1h`, `~{20s}` as `~20s`), and durations are rounded to be readable (`1h 5m`, `25m 5s`).
-- The resting time appears in the recipe header, and common fractions such as `1/4 tsp` stay fractions in the shopping list.
-- With `--scale`, all ingredient quantities (shopping list and in-step references) are adjusted.
+- Timers preserve the unit declared in the recipe (`~{1h}` displays as `~1h`, `~{20s}` as `~20s`), and durations are formatted for quick readability (`1h 5m`, `25m 5s`).
+- Passive waiting time appears in the recipe header, and common fractions such as `1/4 tsp` remain fractions in the shopping list.
+- Passing `--scale` adjusts all ingredient quantities (both in the shopping list and in-step references).
 - Options: `--scale <factor|ref>`, `--no-pager`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned: right before each section (`per-section`, the default), all at the start (`upfront`) or at the start of each working day (`per-session`). The total and rest times in the header follow it; the active and preparation times stay the same. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
-- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the displayed nutrition basis (default `auto`: per portion when the recipe declares `portions:`, otherwise for the entire recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> sets when mise en place is scheduled: immediately before each section (`per-section`, default), upfront at the start of the recipe (`upfront`), or at the opening of each working session (`per-session`). The total and idle times in the header adjust accordingly, while active and preparation times remain constant. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected. Adjusts the same computed times as `--mise-en-place`.
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> project the recipe schedule onto the real-world calendar using the same retro-planning engine as `gram plan`: each step is assigned an exact local timestamp (with day transition markers and passive time spans), and the header summarizes the target serving time and any unresolved constraints. The total time reflects the calendar span of the plan. These flags strictly require `--serve` and will error if it is omitted.
 
 #### `gram import <source>`
-Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into a `.gram` file using AI.
+Imports a recipe from a web page URL, a local JSON-LD file, or a YouTube video / Short, and converts it into valid Gram syntax using AI.
 
 ```bash
 gram import "https://example.com/recipe"          # Web page with Schema.org / JSON-LD
 gram import recipe.json                            # Local JSON / JSON-LD file
 gram import "https://www.youtube.com/watch?v=…"   # YouTube video
-gram import "https://www.youtube.com/shorts/…"    # YouTube Short (normalised automatically)
-gram import recipe.json -o brioche.gram -y         # Non-interactive export
+gram import "https://www.youtube.com/shorts/…"    # YouTube Short (automatically normalized)
+gram import recipe.json -o brioche.gram -y         # Direct export without interactive confirmation
 ```
 
-**Supported Sources:**
+**Supported sources:**
 - **Web page URLs**: automatically fetches the page and extracts structured `application/ld+json` recipe metadata (Schema.org `Recipe`).
 - **Local JSON / JSON-LD files**: parses exported JSON-LD schemas directly from disk.
-- **YouTube videos & Shorts** <Since v="1.1.0" />: analyzes cooking videos directly using Gemini multimodal video understanding (without requiring third-party transcript scrapers).
+- **YouTube videos & Shorts** <Since v="1.1.0" />: analyzes cooking videos directly using Gemini native multimodal video understanding (without requiring third-party transcript scrapers).
 
-**Import Workflow & Guardrails:**
-- Translates and formats the recipe into valid Gram syntax, respecting the `language` config.
-- Requires AI to be configured (see [Configure AI Provider](/docs/how-to/configure-ai)).
-- Before writing to `--output`, the converted recipe is shown for review and confirmation. In a non-interactive run the review is skipped with a warning — pass `--yes/-y` to skip it deliberately.
-- **Nothing is emitted when the import came back broken.** Two checks run on the result and refuse it outright:
-  - *Lost content* — every `@ingredient` written into the file is matched against what the compiler actually registered. A mismatch means text was swallowed, most often by a `//` comment dropped mid-sentence, which hides the rest of its line. Such a file compiles with no warning at all and is simply missing ingredients.
-  - *Unfixed errors* — the AI gets two attempts to repair error-severity problems. If any survive, they are reported rather than written out.
+**Workflow & guardrails:**
+- Translates and formats the recipe into valid Gram syntax, respecting the `language` configuration.
+- Requires an AI provider to be configured (see [Configure AI Provider](/docs/how-to/configure-ai)).
+- Before writing to `--output`, the converted recipe is presented for interactive review and confirmation. In non-interactive runs, the review is skipped with a warning — pass `--yes/-y` to deliberately accept writing.
+- **Nothing is written if the import result exhibits major defects.** Two strict verification checks are enforced:
+  - *Lost content detection* — every `@ingredient` present in the source text is verified against what the compiler actually registered. A mismatch indicates that text was swallowed (most commonly by a `//` comment dropped mid-sentence that hid the remainder of the line). Such a file would compile without error while missing critical ingredients.
+  - *Unresolved error handling* — the AI engine is granted two autonomous repair attempts to resolve syntax issues. If errors survive, they are reported in the terminal and file writing is canceled.
 
-  Pass `--force` to write the file anyway, or retry with a stronger `--model`.
-- `source:` and `author:` are taken from the source data (or YouTube metadata), or removed when it has none — never left for the model to invent.
-- **Ingredients that came back without a quantity are counted and listed by line.** Not an error — `@salt{}` is idiomatic for "to taste" — but it is the clearest measure of how finished the recipe is, and it points you at the lines to edit. An ingredient given an amount once and merely mentioned again later is not counted.
-- When an ingredient database is present, the analyzer also reports what it could not resolve (unknown ingredients, quantities with no usable mass). These are gaps in your database, not import failures, so they never block.
+  Pass `--force` to write the file despite warnings, or retry with a higher-capability `--model`.
+- `source:` and `author:` are extracted directly from source metadata (or YouTube video details), and are omitted when missing — the model never invents them.
+- **Ingredients returned without an explicit quantity are counted and listed by line number.** This is not a syntax error — `@salt{}` is idiomatic for "to taste" —, but it provides the clearest objective measure of how complete the recipe is, highlighting lines for manual review. An ingredient quantified on its first appearance and simply referenced later is not counted as unmeasured.
+- When an ingredient database is present, the analyzer also reports unresolvable items (unknown ingredients, units lacking a known density). These reflect gaps in your local database rather than import failures, so they never block the command.
 
-**YouTube Video Import Specifics:** <Since v="1.1.0" />
-- **Google / Gemini only**: Gemini is the one provider that natively processes YouTube URLs. With any other provider the import stops rather than sending it something that isn't a video.
-- **Cost scales with length**, at roughly 100 input tokens per second of video: a Short is a few thousand tokens, ten minutes is around 60,000, twenty-six minutes around 158,000. Videos over 20 minutes are refused by default; raise the ceiling with `--max-duration <minutes>`.
-- **Cost estimate needs `YOUTUBE_API_KEY`**: a plain YouTube Data API key, read from the environment only, never from `config.yaml`. Without it the import still runs, but it cannot determine the length upfront or enforce the limit, and says so.
-- **Video quantity expectations**: a video states far fewer explicit quantities than a written recipe. The prompt tells the model to leave `{}` empty rather than guess, and the checks above then refuse anything where content went missing. Expect gaps to fill in by hand — that is the honest outcome, not a failure.
-- `title:`, `author:` (channel name), and `source:` (URL) come directly from YouTube metadata and are used verbatim.
-
+**YouTube video import specifics:** <Since v="1.1.0" />
+- **Google / Gemini provider required**: Gemini is the only provider that natively processes YouTube video URLs. With any other provider, the import halts immediately.
+- **Token consumption scales with duration**, at roughly 100 input tokens per second of video: a Short uses a few thousand tokens, 10 minutes uses around 60,000 tokens, and 26 minutes uses around 158,000 tokens. Videos exceeding 20 minutes are rejected by default; raise the ceiling via `--max-duration <minutes>`.
+- **Pre-execution cost estimation requires `YOUTUBE_API_KEY`**: a standard YouTube Data API key, read strictly from environment variables (never stored in `config.yaml`). In its absence, the import still executes, but without the ability to determine length upfront or enforce limits beforehand.
+- **Video quantity expectations**: cooking videos convey far fewer explicit measurements than written recipes. The system prompt instructs the model to leave brackets `{}` empty rather than guess arbitrary figures. Expect to fill in certain measurements manually.
+- `title:`, `author:` (channel name), and `source:` (URL) are retrieved directly from YouTube metadata and used verbatim.
 - Options: `--output/-o <file>`, `--yes/-y`, `--force`, `--max-duration <minutes>` <Since v="1.1.0" />, plus the [shared AI options](#choosing-the-ai-model).
 
 #### `gram shop [pattern]`
-Generates an aggregated shopping list across multiple recipes.
+Compiles a consolidated shopping list across multiple recipes.
 ```bash
 gram shop "**/*.gram"                 # All recipes
 gram shop brioche.gram --scale 2      # Double all quantities
 gram shop "menus/*.gram" --scale 4    # Batch cooking × 4
 ```
-- Aggregates quantities intelligently via density (volume → grams when density is known).
-- Groups ingredients by their `category` field (culinary family: Produce, Dairy, Grains, etc.).
-- **Alias grouping**: if two recipes use different names for the same ingredient (e.g. `butter` and `beurre`), they are merged under the canonical key via the database aliases.
-- Ingredients without a quantity (e.g. `@salt{}`) are listed alongside their main entry rather than in a separate section.
-- Supports small units: `pinch`, `dash`, `drop` (and French variants) are handled without aggregation errors.
-- `--scale <factor>` applies a numeric multiplier to all recipes (factor only — ref mode not available for multi-file).
-- When a glob or several files are given, a file imported (via `@use`) by another file in the same batch is excluded by default, so its ingredients aren't counted both on their own and again composed into the importer — pass `--include-modules` to list it anyway.
+- Aggregates quantities intelligently using reference densities (volume → grams when density is known).
+- Groups ingredients by their `category` field (culinary families: Produce, Dairy, Grains, etc.).
+- **Alias consolidation**: if two recipes use different names for the same ingredient (e.g. `butter` and `beurre`), they are merged under their canonical key via database aliases.
+- Ingredients without quantities (e.g. `@salt{}`) are listed alongside their main entry rather than segregated into a separate section.
+- Full support for small units: `pinch`, `dash`, and `drop` (along with localized variants) aggregate cleanly.
+- `--scale <factor>` applies a uniform numeric multiplier to all recipes (global factor only — reference-based scaling is not supported for multi-file batches).
+- When a glob or multiple files are provided, files imported (via `@use`) by other recipes in the batch are excluded by default to avoid duplicate shopping list entries. Pass `--include-modules` to include them.
 - Options: `--format terminal|md|json`, `--output/-o <file>`, `--scale <factor>`, `--db`, `--skip-db`, `--include-modules`.
 
 #### `gram cook <file>`
@@ -154,26 +151,26 @@ Launches an interactive step-by-step cooking guide directly in the terminal.
 gram cook brioche.gram
 gram cook carbonara.gram --skip-db
 ```
-The total time shown at the end follows `--mise-en-place` and `--rests`, like `gram view` <Since v="1.4.0" />.
+The total time displayed on the summary screen respects `--mise-en-place` and `--rests` settings, matching `gram view` <Since v="1.4.0" />.
 
 **Flow:**
 <Steps>
-1. **Mise en place** : full aggregated ingredient list for the recipe (Space to start)
+1. **Mise en place**: comprehensive aggregated ingredient list for the entire recipe (Space to start).
 
-2. **Section intro** : ingredients for the upcoming section (aggregated, shown before each section)
+2. **Section intro**: ingredient summary for the upcoming section (shown before each section begins).
 
-3. **Cooking steps** : one step at a time in a two-column layout: ingredients on the left, instructions on the right
+3. **Cooking steps**: progressive one-step-at-a-time view in a two-column layout: required ingredients on the left, instructions on the right.
 
-4. **End screen** : total time spent
+4. **Summary screen**: total elapsed time spent cooking.
 </Steps>
 
-Ingredients are **aggregated per section**: repeated uses of the same ingredient in a section are grouped into one entry with quantities joined (e.g. `200g butter` + `50g butter` → shown as `200g + 50g butter`, not arithmetically summed). The ingredient panel shows all necessary quantities for that section at a glance.
+Ingredients are **aggregated per section**: repeated uses of the same ingredient within a single section are combined into one entry preserving individual amounts (e.g. `200g butter` followed by `50g butter` is displayed as `200g + 50g butter`, rather than arithmetically summed). The ingredient panel provides all necessary quantities for that section at a single glance.
 
-**Timers** — timers annotated in the recipe (`~label{30min}`) appear in the step view:
-- Press `T` to start a timer; if multiple are available, a picker appears
-- Timers run in the background — they remain visible as you advance through steps
-- A terminal bell sounds and the timer's display switches to a static "done" state when it finishes
-- `Q`/`Esc` trigger the quit-confirmation flow rather than dismissing a finished timer
+**Timers** — timers declared in the recipe (`~label{30min}`) appear in the step view:
+- Press `T` to start a timer; if multiple timers are available, a selection menu appears.
+- Timers run in the background and remain visible as you advance through steps.
+- A terminal bell rings and the timer display switches to a static "done" state when it reaches zero.
+- `Q` or `Esc` triggers a quit-confirmation prompt to avoid accidentally interrupting an active timer.
 
 **Keyboard shortcuts:**
 | Key | Action |
@@ -186,149 +183,149 @@ Ingredients are **aggregated per section**: repeated uses of the same ingredient
 - Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 
 #### `gram diff <file> [file-b]`
-Shows a semantic diff of a recipe — comparing ingredients, timings, sections, temperatures, timers, and frontmatter rather than raw text.
+Displays a semantic diff of a recipe — comparing the logical structure of ingredients, timings, sections, and temperatures rather than raw text differences.
 ```bash
 gram diff brioche.gram                        # Working tree vs HEAD (most common)
-gram diff brioche.gram --ref HEAD~2           # vs a specific git commit
-gram diff brioche.gram --ref v1.2             # vs a git tag
-gram diff brioche-v1.gram brioche-v2.gram     # Two explicit files (no git needed)
+gram diff brioche.gram --ref HEAD~2           # Compare against a specific commit
+gram diff brioche.gram --ref v1.2             # Compare against a git tag
+gram diff brioche-v1.gram brioche-v2.gram     # Compare two explicit files (no git dependency)
 ```
-The diff covers **seven axes**:
-- **Ingredients** — added/removed/changed quantities, with `percentChange` when units match.
-- **Timings** — `totalTime`, `idleTime`, `activeTime`, `preparationTime` in minutes. Total and idle time are those of the default schedule (mise en place right before each section), the same ones `gram view` shows.
-- **Sections** — added/removed sections and step-count changes.
-- **Frontmatter** — changes to `portions`, `description`, and other metadata fields. A `title` change is tracked separately and shown as its own line above the frontmatter block.
-- **Preparations** — changed preparation modes per ingredient (e.g. "diced" → "sliced").
-- **Temperatures & Timers** — added/removed/changed temperature targets and timer durations per section.
-- **Modules** — an `@use` import added, removed, re-bound to a different name, or rescaled to a different factor.
+The diff spans **seven distinct axes**:
+- **Ingredients** — added, removed, or modified quantities, with `percentChange` calculated when units match.
+- **Timings** — `totalTime`, `idleTime`, `activeTime`, `preparationTime` in minutes. Total and passive times reflect the default schedule (mise en place immediately before each section), matching `gram view`.
+- **Sections** — added or removed sections and step-count changes.
+- **Frontmatter** — changes to `portions`, `description`, and other metadata fields. A `title` change is tracked separately and displayed above the frontmatter block.
+- **Preparations** — modified preparation methods per ingredient (e.g. "diced" → "sliced").
+- **Temperatures & timers** — temperature targets and timer durations added, removed, or modified per section.
+- **Modules** — `@use` imports added, removed, re-bound to a different name, or rescaled to a different factor.
 
-- Operates on compiled objects (Kitchen output), not raw text — syntactic reformatting produces no diff.
-- Git mode requires the file to be tracked. Gracefully errors if `git` is unavailable.
-- A section spliced in from an `@use` import never counts toward the Sections/Preparations/Temperatures/Timers axes — otherwise adding one import would look like every other section moved. Its own import is what the Modules axis reports instead. `gram diff` doesn't resolve `@use` on its own, though: it compiles each side standalone, so a change *inside* an imported base isn't visible here — diff the base file directly for that.
+- Operates on compiled objects produced by the Kitchen compiler. Syntactic reformatting (whitespace, line breaks) produces no semantic diff.
+- Git mode requires the file to be tracked. An explicit error is returned if `git` is unavailable on the system.
+- A section spliced in from an `@use` import never counts toward the Sections/Preparations/Temperatures/Timers axes of the host recipe — otherwise adding one import would give the false impression that every other section had moved. The Modules axis reports the import itself. `gram diff` does not resolve `@use` recursively: each side is compiled standalone, so a change *inside* an imported base will not appear here — diff the base file directly for that.
 - Options: `--ref <git-ref>`.
 
 #### `gram scale <file>`
-Displays a before/after comparison of ingredient quantities at a given scale.
+Displays a before/after comparison table of ingredient quantities for a given scaling target.
 ```bash
 gram scale brioche.gram --scale 2            # Double all quantities
 gram scale brioche.gram --scale 0.5          # Halve all quantities
 gram scale brioche.gram --scale flour=300g   # Scale so that flour = 300g
 gram scale brioche.gram --scale eggs=3       # Scale so that eggs = 3
 ```
-- Displays a comparison table: original quantities (dimmed) vs scaled (green).
-- Quantities that cannot be scaled (text values like "1 pinch") are listed separately.
-- Warns on extreme factors (below ×0.1 or above ×20) and notes that cooking times are not adjusted.
-- Reference mode (`id=value`) computes the factor from the ingredient's current quantity. The ID must match the ingredient key in the recipe. Units in the same family convert automatically (e.g. `flour=1kg` against a recipe written in `500g`); crossing mass↔volume (e.g. `water=150g` against a recipe in `ml`) also works whenever a density is available — from `gram db enrich`, or a `densities: ["water:1.0"]` override in the recipe's own frontmatter.
-- Not every ingredient can be a reference target: fixed (`@=`) ingredients, relative quantities (`70% @&flour`), ingredients only used inside a sub-recipe (their composite parent's own total is a valid target instead), ingredients inside an alternative group, and ingredients split across incompatible units are all rejected with a specific error explaining why (and what to scale by instead). See [Deep Dive: Scaling](/docs/explanation/scaling) for the full list.
+- Displays a comparison table: original quantities (dimmed) versus recalculated quantities (highlighted).
+- Quantities that cannot be scaled (qualitative values like "1 pinch") are listed separately.
+- Warns on extreme factors (below ×0.1 or above ×20) and reminds that cooking times are never adjusted arithmetically.
+- Reference mode (`id=value`) computes the factor from the nominal quantity of the targeted ingredient (the ID must match the ingredient's canonical key). Units in the same family convert automatically (e.g. `flour=1kg` against a recipe written in `500g`). Crossing mass ↔ volume (e.g. `water=150g` against a recipe in `ml`) is supported whenever a density is known (via `gram db enrich` or a `densities: ["water:1.0"]` frontmatter override).
+- Not every ingredient can be used as a reference target: fixed (`@=`) ingredients, relative proportions (`70% @&flour`), ingredients used exclusively inside a sub-recipe (their composite parent is the valid reference instead), ingredients inside alternative groups, and ingredients split across incompatible units are rejected with a clear explanation. See [Deep Dive: Scaling](/docs/explanation/scaling) for the full list of constraints.
 - Options: `--scale <factor|ref>`, `--skip-db`, `--db`.
 
 #### `gram watch [dir]`
-Watches a directory for `.gram` file changes and re-runs `gram check` automatically on every save.
+Watches a directory for `.gram` file modifications and automatically re-runs `gram check` upon saving.
 ```bash
 gram watch                              # Watch project root
 gram watch recipes/                     # Watch a specific directory
-gram watch --build --output ./dist      # Also build changed files to JSON
+gram watch --build --output ./dist      # Also compile changed files to JSON
 ```
-- Displays a timestamped result line per change: `[12:34:01] ✓ brioche.gram` or `✗ brioche.gram — 1 error`.
-- Errors are shown inline below the filename — the watcher never stops on error.
-- 150ms debounce prevents redundant runs when editors write files in multiple chunks.
-- Saving a base recipe also re-checks every file under the watched directory that `@use`s it, directly or transitively — not just the file that changed on disk. A `→ rechecking N dependent file(s)` line names how many.
+- Displays a timestamped result line per event: `[12:34:01] ✓ brioche.gram` or `✗ brioche.gram — 1 error`.
+- Errors are displayed inline directly below the filename. The watch process never terminates upon a validation error.
+- A 150 ms debounce delay prevents redundant executions when editors save files in multiple chunks.
+- Saving an imported base recipe also re-checks every file under the watched directory that imports it via `@use` (directly or transitively). A `→ rechecking N dependent file(s)` message indicates how many files were affected.
 - Options: `--build`, `--output/-o <dir>`, `--skip-db`, `--db`.
 
 #### `gram suggest`
-Finds recipes in your project that use a given set of ingredients.
+Finds recipes across your project that can be prepared with a given set of ingredients.
 ```bash
 gram suggest --with "butter, eggs"
 gram suggest --with "chicken" --without "cream"
 gram suggest --with "lemon, garlic" --top 5 --min-match 50
-gram suggest --with "beurre" --json           # alias-aware: beurre → butter
+gram suggest --with "beurre" --json           # Alias-aware: beurre → butter
 ```
-- Scans all `.gram` files in parallel — uses only the parser (no full pipeline compilation), so it is fast even on large collections.
+- Scans all `.gram` files in parallel using only the parser (without full pipeline compilation), providing fast results across large collections.
 - **Alias-aware matching**: if a database is configured, ingredient names are resolved through the alias index. Searching for `"beurre"` will match recipes containing `@butter`.
-- Scores each recipe by match percentage (`matched / total with-terms`). Use `--min-match` to filter low-score results.
-- `--without` immediately excludes any recipe that contains one of those ingredients.
+- Scores each recipe by match percentage (`matched / total with-terms`). Use `--min-match` to filter out low-scoring matches.
+- `--without` immediately excludes any recipe containing one of those ingredients.
 - Options: `--with/-w <csv>`, `--without <csv>`, `--top/-n <n>` (default 10), `--min-match <0–100>` (default 1), `--pattern <glob>`, `--db`, `--skip-db`, `--json`.
 
 #### `gram print <file>`
-Generates a print-ready HTML and opens it in the default browser.
+Generates a print-ready HTML document and opens it in the default web browser.
 ```bash
 gram print brioche.gram                   # Generate and open
 gram print brioche.gram --scale 2         # Print at double quantities
-gram print brioche.gram --no-open         # Generate only, print the path to stdout
+gram print brioche.gram --no-open         # Generate only, print file path to stdout
 ```
-- The HTML is written to a temporary file (`gram_print_<timestamp>.html` in the OS temp directory, e.g. `/tmp` on Linux/macOS) and opened with the OS default browser (`open` on macOS, `xdg-open` on Linux, `cmd /c start` on Windows).
-- Identical output to `gram export --format html` — suitable for browser print dialog (`Ctrl+P` / `Cmd+P`) to produce an A4 PDF.
-- `--no-step-qty` — hides ingredient quantities in step text (useful when cooking from the ingredient list in the margin).
+- The HTML document is written to a temporary file (`gram_print_<timestamp>.html` in the OS temp directory) and opened via the system default handler (`open` on macOS, `xdg-open` on Linux, `cmd /c start` on Windows).
+- Output is identical to `gram export --format html` — designed for browser print dialogs (`Ctrl+P` / `Cmd+P`) to produce an A4 PDF.
+- `--no-step-qty` — hides ingredient quantities within step instructions (convenient when cooking from the ingredient list in the margin).
 - Options: `--no-open`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned (default `per-section`), which changes the total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
-- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
-- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): also writes the production sheet after the recipe, in the same document.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the displayed nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe). `per-100g` is calculated per 100 g of raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> sets the mise en place schedule (default `per-section`), updating total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected.
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> project the schedule onto the real calendar using the same retro-planning engine as `gram plan`: each step receives an exact timestamp (with day transitions and passive time spans), and the header summarizes the target serving time and unresolved constraints. Strictly requires `--serve`.
+- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): appends the detailed production sheet after the recipe in the same document.
 
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
 ```bash
-gram export brioche.gram --format md                   # brioche.md alongside the source
-gram export brioche.gram --format html -o ~/print.html # explicit output path
-gram export brioche.gram --format html --scale 2       # export at double quantities
+gram export brioche.gram --format md                   # Generates brioche.md alongside the source
+gram export brioche.gram --format html -o ~/print.html # Explicit destination path
+gram export brioche.gram --format html --scale 2       # Export at double quantities
 ```
-- `--format md` — standard Markdown with a shopping list, equipment section, and numbered steps.
-- `--format html` — standalone A4-ready HTML document with embedded CSS for printing, with inline Lucide SVG icons for timers and temperatures (no external dependency there). It does load Courier Prime (body) and Inter (labels) from Google Fonts via a CSS `@import`, so it is not fully offline-capable — a network connection is needed the first time fonts are fetched.
-- Default output path: same directory as the input file, extension replaced (`.gram` → `.md` or `.html`).
-- `--no-step-qty` — hides ingredient quantities in step text. **HTML format only** — has no effect with `--format md`. The section mise en place (ingredient list before each section) always shows full quantities.
+- `--format md` — standard Markdown formatted with a shopping list, equipment inventory, and numbered steps.
+- `--format html` — standalone A4-ready HTML document with embedded CSS for printing, featuring inline Lucide SVG icons for timers and temperatures (no external icon dependencies). It imports Courier Prime and Inter from Google Fonts via CSS `@import`, requiring internet connectivity on initial load.
+- Default output path: same directory as the input file, with the `.gram` extension replaced by `.md` or `.html`.
+- `--no-step-qty` — hides ingredient quantities in step instructions. **HTML format only** — has no effect with `--format md`. Section mise en place lists always display full quantities.
 - Options: `--format md|html`, `--output <path>`, `--scale <factor|ref>`, `--no-step-qty`, `--skip-db`, `--db`, `--bakers-math`, `--bakers-reference <id>`, `--bakers-math-only`, `--nutrition <basis>`, `--mise-en-place <mode>`, `--rests <choice>`.
-- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> picks which nutrition basis is shown (default `auto`: per portion when the recipe declares `portions:`, otherwise the whole recipe). `per-100g` is reported per 100 g of the raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
-- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> picks when the mise en place is planned (default `per-section`), which changes the total and idle times in the exported header. In HTML, `per-section` also puts a "Mise en place" label on each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
-- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> picks how long a rest written as a range (`~_{12-24h}`) lasts: the shortest (the default), the middle or the longest. An exact rest and an active timer are not affected. Changes the same times as `--mise-en-place`.
-- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> put the recipe on the calendar, as in `gram plan`: the recipe then says when each step happens (a time next to every step, the day when it changes, the rests, and at the top when it is served and what could not be fixed), and the total time is the plan's. Without `--serve`, nothing changes. They are refused without `--serve`, rather than silently ignored.
-- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): also writes the production sheet after the recipe, in the same document.
+- `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe).
+- `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> selects the mise en place schedule (default `per-section`), updating total and idle times in the exported header. In HTML, `per-section` also places a "Mise en place" heading above each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+- `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> selects the resolution for range-based passive timers (`~_{12-24h}`).
+- `--serve`, `--tz`, `--available` <Since v="1.4.0" /> project the schedule onto the real calendar using the same retro-planning engine as `gram plan`. Strictly requires `--serve`.
+- `--with-sheet` <Since v="1.4.0" /> (with `--serve`): appends the production sheet after the recipe in the exported document.
 
 #### `gram plan <file>` <Since v="1.4.0" />
-Plans a recipe backward from the time it is served, and writes a production sheet: when to start each task, given when you can cook.
+Plans a recipe backward from the target serving time and generates a production sheet indicating when to start each task based on your real availability windows.
 ```bash
 gram plan bread.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
 gram plan bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --available sat=09:00-23:00 --available 2026-10-09=none
-gram plan bread.gram --serve "2026-10-11 13:00" --format md        # Markdown instead of text
-gram plan bread.gram --serve "2026-10-11 13:00" --ics bread.ics    # also write a calendar file
+gram plan bread.gram --serve "2026-10-11 13:00" --format md        # Markdown output instead of text
+gram plan bread.gram --serve "2026-10-11 13:00" --ics bread.ics    # Also generates an iCalendar file
 ```
-- `--serve "<date> <time>"` (required): when it is served, a local date and time in the time zone below.
-- `--tz <zone>`: an IANA time zone like `Europe/Paris`. Default: the `timezone` setting of your project (or of your global config), else this machine's. It is where the serving time and your availability are read, and where daylight saving applies.
-- `--available <range>`, repeatable: when you can work. `08:00-22:00` is every day, `fri=18:00-22:00` a day of the week (`mon` … `sun`), `2026-10-09=none` a date (`none` means not available at all). Several ranges go after one key, separated by commas (`sat=08:00-09:00,18:00-22:00`), and a range that ends before it starts runs past midnight. Without any, you are available all day.
-- A rest written as a range (`~_{8-16h}`) is made longer or shorter to keep your own work out of the hours you are not available; the sheet says which one and why, and lists what could not be fixed. See [Planning in real time](/docs/explanation/planning-in-real-time/).
-- `--format text|md|html|json`: the output (default `text`). `json` prints `{ plan, runSheet }`.
-- `--ics <file>`: also writes an iCalendar file with an event for every task (in UTC, your calendar shows them in its own zone) and an alarm 5 minutes before every task that needs your hands. The confirmation goes to stderr, so `--format json --ics …` stays pipeable.
-- `--mise-en-place`, `--rests`, `--scale` and `--stock` work as in `gram view`. `--now <instant>` sets the present for the warning about a first task that should already have started (default: now).
+- `--serve "<date> <time>"` (required): target serving time, specified as a local date and time in the configured time zone.
+- `--tz <zone>`: an IANA time zone identifier (e.g. `Europe/Paris`). Default: the `timezone` setting of your project (or global config), falling back to the system time zone. Used to interpret serving times, evaluate availability intervals, and handle daylight saving shifts.
+- `--available <range>`, repeatable: defines working availability windows for active kitchen tasks. `08:00-22:00` applies to all days; a day-of-week prefix (`fri=18:00-22:00`, from `mon` to `sun`) restricts the rule to that day; a specific date prefix (`2026-10-09=none`) overrides a calendar date (`none` indicating complete unavailability). Multiple intervals can follow a single key separated by commas (`sat=08:00-09:00,18:00-22:00`), and an interval whose end time precedes its start time spans across midnight. In the absence of flags, availability is treated as continuous (24/7).
+- Range-based passive timers (`~_{8-16h}`) are automatically adjusted (extended or shortened) by the scheduler to align active tasks within your availability windows; the production sheet documents all adjustments made and lists any unresolved constraints. See [Planning in real time](/docs/explanation/planning-in-real-time/).
+- `--format text|md|html|json`: output format (default `text`). `json` outputs the structured `{ plan, runSheet }` object.
+- `--ics <file>`: also generates an iCalendar (`.ics`) file containing one event per scheduled task (timestamped in UTC, rendered in the user's local zone by their calendar client) with an alarm reminder 5 minutes before every hands-on task. The confirmation notice is printed to `stderr`, keeping piping via `--format json --ics …` fully usable.
+- `--mise-en-place`, `--rests`, `--scale`, and `--stock` function identically to `gram view`. `--now <instant>` sets the reference time (default: current execution time) used to raise a warning if the initial task should already have begun in the past.
 
 #### `gram format [pattern]`
-Auto-formats `.gram` files applying 13 canonical rules in-place via `@gram-lang/format`.
+Auto-formats `.gram` files in-place applying 13 canonical rules from `@gram-lang/format`.
 ```bash
 gram format                              # Format all *.gram files
 gram format brioche.gram                 # Format a single file
-gram format "recipes/**/*.gram" --check  # CI check — exit 1 if any file needs formatting
+gram format "recipes/**/*.gram" --check  # CI check — exit code 1 if any file requires formatting
 ```
-**13 Canonical rules applied:**
+**13 canonical rules applied:**
 1. **Frontmatter formatting** — delimiter normalization and whitespace cleanup
 2. **Section header titles** — single space after `##`
 3. **Step indexing** — normalized step prefixes (`1. `)
 4. **Action blocks** — normalized action prefixes (`[Mix]`)
 5. **Ingredient tokens** — `@ingredient{qty}` spacing and bracket syntax
 6. **Cookware tokens** — `#cookware{qty}` spacing and bracket syntax
-7. **Timer tokens** — `~timer{duration}` and passive `~_timer{duration}` spacing
+7. **Timer tokens** — `~timer{duration}` active and `~_timer{duration}` passive spacing
 8. **Temperature tokens** — `^temp{value}` formatting
-9. **Intermediate declarations & references** — `->&dough` and `&dough` spacing
+9. **Intermediate declarations & references** — `->&dough` and `&dough` canonical spacing
 10. **Composite syntax** — `<@parent` composite ingredient syntax
-11. **Trailing decimal zeros** — `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
+11. **Trailing decimal zeros** — numerical cleanup `{500.0g}` → `{500g}`, `{1.50g}` → `{1.5g}`
 12. **Comment formatting** — clean spacing after comment sigils (`//`)
 13. **Whitespace cleanup & single trailing EOF newline**
 
 Output per file: `✔ brioche.gram  2 IDs lowercased · 1 trailing zero removed`
-The formatter is idempotent — running it twice produces no further changes.
+The formatter is strictly idempotent: running it repeatedly produces no further alterations after the first run.
 - Options: `--check`.
 
 ### Configuration
 
-Commands nested under `gram config` to read and write project (or global) configuration.
+Commands nested under `gram config` to inspect and modify local project settings or global user configuration.
 
 #### `gram config list`
 Displays all configuration values from both the local project config and the global config.
@@ -337,7 +334,7 @@ gram config list
 ```
 
 #### `gram config get <key>`
-Prints a single config value to stdout.
+Prints a single configuration value to standard output.
 ```bash
 gram config get ai.provider      # → google
 gram config get database         # → .gram/ingredients.yaml
@@ -345,129 +342,125 @@ gram config get ai.provider --global
 ```
 
 #### `gram config set <key> <value>`
-Sets a configuration value.
+Sets a configuration parameter value.
 ```bash
 gram config set database ./my-db.yaml
 gram config set ai.provider google
 gram config set ai.apiKey AIza...           # Writes GEMINI_API_KEY to .env
 gram config set database ./global-db.yaml --global
 ```
-- Values are written to `.gram/config.yaml` by default; use `--global` for `~/.config/gram/config.yaml`.
-- Sensitive keys (`ai.apiKey`) are always written to the project `.env` file. The env var name is derived from the configured provider (e.g. `google` → `GEMINI_API_KEY`).
-- Numbers and booleans are coerced automatically (`"2"` → `2`, `"true"` → `true`).
+- Values are written to `.gram/config.yaml` by default; pass `--global` to target `~/.config/gram/config.yaml`.
+- Sensitive keys (`ai.apiKey`) are always written to the project `.env` file. The environment variable name is derived from the active provider (e.g. `google` → `GEMINI_API_KEY`).
+- Numeric and boolean strings are coerced automatically (`"2"` → `2`, `"true"` → `true`).
 
 #### `gram config unset <key>`
-Removes a configuration value.
+Removes a configuration parameter.
 ```bash
 gram config unset ai.model
-gram config unset ai.apiKey         # Removes the API key env var from .env
+gram config unset ai.apiKey         # Removes the API key environment variable from .env
 ```
-
----
 
 ### Database management
 
-Commands nested under `gram db` to manage your `ingredients.yaml`.
+Commands nested under `gram db` to manage your `ingredients.yaml` repository.
 
 :::tip[Recommended Workflow]
-Always run in this order:
+Always follow this execution sequence:
 ```
 gram db sync → gram db lint → gram db enrich
 ```
-Running `lint` before `enrich` avoids wasting AI calls enriching ingredients that will later be merged as duplicates.
-Use `gram db search` at any time to inspect entries and audit completeness. Use `gram db merge` to incorporate an external database into your own.
+Running `lint` before `enrich` prevents wasting AI tokens enriching duplicate entries destined to be merged.
+Use `gram db search` at any time to audit completeness, and `gram db merge` to incorporate an external database.
 :::
 
 <Steps>
 1. #### `gram db sync [pattern]`
-   Scans your recipes to find undocumented ingredients and adds them to your database.
-   - Interactive fuzzy matching (Levenshtein) helps you avoid duplicates for plurals or typos.
+   Scans your recipes to identify undocumented ingredients and adds them to the database.
+   - Interactive fuzzy matching (Levenshtein distance) helps prevent duplicates from typos and plural forms.
    - Options: `--dry-run/-n` (preview without writing), `--db <path>`.
 
 2. #### `gram db lint`
-   Uses AI to detect and resolve semantic duplicates and plurals in your database.
+   Uses AI to detect and resolve semantic duplicates and plural forms in your database.
    - Detects cross-language duplicates (e.g. `sucre` / `sugar`) and plural forms (e.g. `eggs` → `egg`).
-   - For each duplicate, lets you choose which key to keep — the removed key is automatically added as an alias.
-   - Displays a nutrition diff (only differing fields) when both entries have conflicting nutrition data, so you can make an informed choice.
-   - Reports ingredients whose names or aliases would be confused with each other once normalized (e.g. `Huile d'olive` and `huile-dolive`), so a recipe never silently resolves to the wrong entry.
-   - Options: `--report/-r` (show issues without applying fixes), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
+   - For each conflict, you decide which canonical key to keep. The discarded term is automatically retained as an alias.
+   - Displays a targeted nutrition diff (only differing fields) when conflicting nutritional data exists, enabling informed arbitration.
+   - Flags ingredients whose names or aliases would collide once normalized (e.g. `Huile d'olive` and `huile-dolive`), ensuring no recipe silently resolves to the wrong entry.
+   - Options: `--report/-r` (display issues without writing fixes), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 
 3. #### `gram db enrich`
    <Since v="1.1.0" type="changed" />
-   Uses AI to propose missing data for your database, then walks you through an interactive review before writing anything.
-   - Proposes `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches (`unit_weight` is filled alongside `density`). `category` is a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
-   - `nutrition` covers every nutrient the database accepts, including the fat subtypes (`sat_fat`, `mono_fat`, `poly_fat`) and `alcohol`.
-   - `category`/`tags` are written automatically; `density`/`unit_weight`/`nutrition` are reviewed one entry at a time (accept, edit, or skip) since they're product-specific — only you know what's actually in your kitchen.
-   - Values accepted as-is are tagged `# [LLM]` in `ingredients.yaml`, marking them as AI estimates that haven't been human-reviewed.
-   - Safely re-runnable: only proposes fields that are still missing.
-   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip the review, accept everything — for scripting), `--report/-r` (preview what needs review without writing), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
+   Uses AI to propose missing data across your database, walking you through an interactive review before writing changes to disk.
+   - Proposes `density`, `unit_weight`, `nutrition`, `category`, and `tags` fields in batches (`unit_weight` is filled alongside `density`). `category` denotes a culinary family (e.g. Vegetables, Dairy, Grains) — distinct from free-form `tags`.
+   - `nutrition` covers every nutrient accepted by the database schema, including fat subtypes (`sat_fat`, `mono_fat`, `poly_fat`) and `alcohol`.
+   - `category` and `tags` are applied automatically; `density`, `unit_weight`, and `nutrition` are reviewed entry-by-entry (accept, edit, or skip) because they depend on the specific physical products in your kitchen.
+   - Values accepted without edits are tagged `# [LLM]` in `ingredients.yaml`, distinguishing unreviewed AI estimates from human-verified entries.
+   - Safely re-runnable: only fields that remain vacant are submitted for enrichment.
+   - Options: `--ingredient <slug>` (enrich a single entry), `--field density|nutrition|tags|category|all` (default `all`), `--yes/-y` (skip manual review and accept all — for automated scripts), `--report/-r` (preview proposals without writing), `--db <path>`, plus the [shared AI options](#choosing-the-ai-model).
 </Steps>
 
 #### `gram db validate`
 <Since v="1.1.0" />
 
-Validates the integrity of your `ingredients.yaml`.
-- Checks for schema errors, duplicated aliases, and incoherent values (e.g., density > 2.5).
-- A malformed entry doesn't stop the rest from being checked: every entry is validated independently, and the report lists every issue found across the whole file in one pass.
-- Options: `--strict` (exit 1 on warnings, useful in CI).
+Validates the structural integrity of your `ingredients.yaml` file.
+- Checks for schema errors, duplicate aliases, and incoherent values (e.g. density > 2.5).
+- A malformed entry does not stop validation: every record is evaluated independently, and the final report summarizes all issues in a single pass.
+- Options: `--strict` (exit code 1 on warnings, suited for CI).
 
 #### `gram db search [query]`
 Searches and displays ingredient entries in full detail.
 ```bash
-gram db search butter            # Partial match on id, name, or any alias
-gram db search --tag dairy       # All dairy-tagged ingredients
-gram db search --category Grains # All ingredients in the Grains category
-gram db search --missing nutrition  # Entries that have no nutrition data yet
+gram db search butter            # Partial match on id, name, or alias
+gram db search --tag dairy       # Ingredients tagged 'dairy'
+gram db search --category Grains # Ingredients in the Grains category
+gram db search --missing nutrition  # Entries lacking nutritional data
 gram db search --exact butter --count  # Print only the match count
 ```
-Every field is displayed for each match: name, aliases, tags, category, and full nutrition (calories, protein, carbs, fat, saturated/monounsaturated/polyunsaturated fat, sugar, fiber, sodium, alcohol per 100g) and physical data (density, yield, unit weight).
+Every field is displayed for each match: name, aliases, tags, category, complete nutrition (calories, protein, carbohydrates, fats, saturated/monounsaturated/polyunsaturated fats, sugar, fiber, sodium, alcohol per 100g) and physical metrics (density, yield, unit weight).
 - Options: `--tag <tag>`, `--category/-c <category>`, `--missing nutrition|physical|aliases`, `--exact`, `--count`, `--json`, `--db <path>`.
 
 #### `gram db merge <source.yaml>`
-Merges an external ingredient database into your local one.
+Merges an external ingredient database into your local repository.
 ```bash
 gram db merge ~/shared-ingredients.yaml          # Interactive conflict resolution
-gram db merge community.yaml --prefer remote     # Always use remote values on conflict
-gram db merge community.yaml --only-new          # Only add new entries, skip conflict resolution
+gram db merge community.yaml --prefer remote     # Always prefer remote values upon conflict
+gram db merge community.yaml --only-new          # Add new entries only, skip conflict resolution
 ```
-The merge is **alias-aware**: if your database has `butter` with alias `beurre`, and the source has a `beurre` entry, they are recognized as the same ingredient.
+The merge is **alias-aware**: if your database contains `butter` with alias `beurre`, and the source file contains `beurre`, they are recognized as referring to the same ingredient.
 - Options: `--prefer local|remote` (default `local`), `--dry-run`, `--only-new`, `--db <path>`.
-
----
 
 ## Configuration file details
 
-The CLI merges configuration from `~/.config/gram/config.yaml` (global) and `.gram/config.yaml` (project).
+The CLI merges configuration from `~/.config/gram/config.yaml` (global level) and `.gram/config.yaml` (project level).
 
 ### Choosing the AI model
 
 <Since v="1.1.0" />
 
-Every AI-backed command — `gram import`, `gram db lint` and `gram db enrich` — accepts the same three options and prints the model it is about to call, so an unexpected choice is visible before it costs you anything:
+Every AI-backed command — `gram import`, `gram db lint`, and `gram db enrich` — accepts the same options and prints the targeted model before running, ensuring that no unexpected token consumption occurs:
 
 ```bash
-gram import recipe.json --model gemini-3.1-pro   # this run only
-gram db enrich --provider anthropic              # this run only
-gram db lint --pick-model                        # choose interactively
+gram import recipe.json --model gemini-3.1-pro   # This run only
+gram db enrich --provider anthropic              # This run only
+gram db lint --pick-model                        # Interactive menu
 ```
 
-- `--model <name>` — use a different model for this run. The provider is unchanged.
-- `--provider <google|openai|anthropic|ollama>` — use a different provider for this run. The provider is never guessed from the model name.
-- `--pick-model` — pick provider and model from a menu. Requires a terminal; in a script, use `--provider`/`--model` instead.
+- `--model <name>` — use a specific model for this execution without altering the provider.
+- `--provider <google|openai|anthropic|ollama>` — select a specific provider for this execution. The provider is never guessed from the model name.
+- `--pick-model` — pick provider and model from an interactive menu. Requires a terminal; in automated scripts, use `--provider`/`--model` instead.
 
-Neither flag writes anything to your config. To change the default for good, use `gram config set ai.model <name>` or re-run `gram init`.
+Neither flag writes anything to your configuration files. To change defaults permanently, use `gram config set ai.model <name>` or re-run `gram init`.
 
-When `--provider` (or `--pick-model`) selects a provider your config did not name, the `model`, `apiKey` and `baseUrl` written under `ai:` are **not** carried over — they belong to the provider they were written for. You will be asked for the new provider's own environment variable instead. This holds whether your `ai:` block names a different provider or names none at all: a block with no `provider:` belongs to whichever provider Gram would have auto-detected, not to one you picked by hand.
+When `--provider` (or `--pick-model`) selects a provider not declared in your configuration, the `model`, `apiKey`, and `baseUrl` parameters under `ai:` are **not** carried over: they belong strictly to the provider they were written for. Gram will request the new provider's dedicated environment variable. This holds whether your `ai:` block names a different provider or none at all: a block without `provider:` belongs to whichever provider Gram would have auto-detected, not to the one specified manually via CLI flags.
 
 ### Cascading AI configuration
-Gram uses a cascading fallback hierarchy for sensitive credentials like AI API keys:
-1. **Environment Variables**: The variable belonging to the provider in use — `GEMINI_API_KEY`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (from the system or a `.env` file) — takes absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD environments.
-2. **`config.yaml` Fallback**: If that variable is missing, Gram falls back to the `ai.apiKey` field in your `config.yaml` — but only when it was written for the provider being called.
+Gram uses a cascading fallback hierarchy for sensitive API credentials:
+1. **Environment Variables**: The variable assigned to the active provider — `GEMINI_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY` (from the system environment or a `.env` file) — takes absolute precedence. This is the **recommended** way to store secrets locally and in CI/CD pipelines.
+2. **`config.yaml` Fallback**: If that variable is missing, Gram falls back to the `ai.apiKey` field in `config.yaml` — but only when it was defined for the provider being called.
 
-A key is never reused across providers. If you have configured `provider: openai` and only `GEMINI_API_KEY` is exported, Gram stops and asks for `OPENAI_API_KEY` rather than sending your Google key to OpenAI. The same rule applies across config layers: a global `ai:` block is ignored entirely when your project selects a different provider.
+An API key is never forwarded across different providers. If you configured `provider: openai` and only `GEMINI_API_KEY` is present, Gram stops and requests `OPENAI_API_KEY` rather than sending your Google key to OpenAI. The same isolation applies across configuration layers: a global `ai:` block is ignored entirely if the local project selects a different provider.
 
 :::caution[Protect your Keys!]
-Storing your `apiKey` in `config.yaml` is highly discouraged if you version control your `.gram` directory with Git, as it will expose your secret key.
+Storing your `apiKey` in plaintext inside `config.yaml` is strongly discouraged if your `.gram` directory is version-controlled with Git, as it exposes your secret key.
 :::
 
 ### `config.yaml` settings
@@ -475,15 +468,13 @@ Storing your `apiKey` in `config.yaml` is highly discouraged if you version cont
 Here is the complete reference of all available settings in `config.yaml`:
 
 ```yaml
-version: 1                     # Reserved for future config migrations — currently unused by the CLI
-database: ".gram/ingredients.yaml" # Relative or absolute path to the database
-language: "en"                 # Language for all AI-generated content (categories, tags, imported recipes)
+version: 1                     # Reserved for future config schema migrations — currently unused
+database: ".gram/ingredients.yaml" # Relative or absolute path to the database file
+language: "en"                 # Target language for all AI-generated content (categories, tags, imported recipes)
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
-                               # (the `gram init` interactive prompt currently only offers en/fr;
-                               # other codes must be set manually with `gram config set language <code>`)
-timezone: "Europe/Paris"       # IANA time zone of your kitchen: the default of `gram plan --tz` (default: this machine's).
-                               # Only `gram plan` reads it, and only complains if it is not a zone: `gram config set timezone <zone>`
-updateCheck: true             # Set to false to silence the "update available" notice printed after each command
+timezone: "Europe/Paris"       # IANA time zone of your kitchen: default for `gram plan --tz` (default: machine time zone)
+                               # Only read by `gram plan`. Update via: `gram config set timezone <zone>`
+updateCheck: true             # Set to false to silence the update notice printed after each command
 
 # Named `@use` specifier aliases — `@use "@bases/pate.gram"` resolves to
 # "<project root>/shared/bases/pate.gram". See the Module Imports reference.
@@ -495,18 +486,44 @@ ai:
   # Supported providers: "google", "openai", "anthropic", "ollama"
   provider: "google"
 
-  # Specific model string (defaults to 'gemini-3.5-flash' for google,
+  # Specific model identifier (defaults to 'gemini-3.5-flash' for google,
   # 'gpt-4.1-nano' for openai, 'claude-haiku-4-5-20251001' for anthropic, 'llama4' for ollama)
   model: "gemini-3.5-flash"
 
-  # API key. Prefer the ENV variable of the provider above: GEMINI_API_KEY (google),
-  # OPENAI_API_KEY (openai), ANTHROPIC_API_KEY (anthropic). This field is only read
-  # for the provider declared above — it is ignored under --provider or a project
-  # that selects a different one. The "ollama" provider reads no API key at all.
-  # WARNING: Prefer using a .env file instead of committing this file with your key.
+  # API key. Always prefer the dedicated environment variable:
+  # GEMINI_API_KEY (google), OPENAI_API_KEY (openai), ANTHROPIC_API_KEY (anthropic).
+  # This field is only read for the provider declared above — it is ignored under
+  # the --provider flag or when another provider is selected. Ollama requires no key.
+  # WARNING: Prefer using a .env file instead of committing keys in this file.
   apiKey: "YOUR_API_KEY"
 
-  # Custom base URL — only read for the "ollama" provider (ignored for openai/anthropic/google).
+  # Custom base URL — read exclusively for the "ollama" provider.
   # Defaults to "http://localhost:11434/v1" (or the OLLAMA_BASE_URL env var) when unset.
   baseUrl: "http://localhost:11434/v1"
 ```
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Configure AI for the CLI"
+    description="Set up API keys, LLM models, and providers to power gram import and db enrich."
+    href="/docs/how-to/configure-ai/"
+  />
+  <LinkCard
+    title="Plan a meal"
+    description="Tutorial on orchestrating multi-recipe prep timelines using gram plan."
+    href="/docs/how-to/plan-a-meal/"
+  />
+  <LinkCard
+    title="Manage ingredient database"
+    description="Sync, enrich, and lint your local ingredient database with CLI commands."
+    href="/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Language server"
+    description="Integrate diagnostics, autocompletion, and hover hints into your editor."
+    href="/docs/reference/tooling/language-server/"
+  />
+</CardGrid>
+

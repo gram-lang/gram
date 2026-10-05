@@ -1,0 +1,120 @@
+---
+title: "Quantités relatives"
+description: "Définissez la quantité d'un ingrédient en pourcentage d'un autre ingrédient ou d'une variable pour équilibrer la recette."
+---
+
+import { Badge, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+En cuisine, et plus encore en pâtisserie, la précision est fondamentale. S'appuyer sur des quantités fixes mène parfois à des déséquilibres lorsque le rendement des produits bruts fluctue (par exemple, lorsqu'un agrume s'avère nettement plus juteux que la moyenne).
+
+Gram résout cette contrainte en permettant de définir la quantité d'un `@ingrédient` de manière dynamique, sous forme d'un pourcentage calculé sur un autre `@ingrédient` ou sur une `&variable` intermédiaire. Cette approche préserve l'équilibre gustatif et textural de vos réalisations.
+
+## Syntaxe
+
+Vous pouvez cibler soit un ingrédient de base, soit une variable intermédiaire :
+
+<Tabs>
+  <TabItem label="Cibler un ingrédient de base (@&)">
+Préfixez le nom de l'ingrédient cible avec `@&` :
+
+```gram
+Ajouter la @farine{100g} dans le cul-de-poule.
+
+Puis incorporer l'@eau{70% @&farine}. // 70g d'eau
+```
+
+**Schéma :** `@nom{ pourcentage% @&IngredientCible }`
+  </TabItem>
+  <TabItem label="Cibler une variable intermédiaire (&)">
+Faites référence à la variable intermédiaire avec le sigle `&` :
+
+```gram
+Mélanger les ingrédients pour former la pâte. ->&pâte
+
+Ajouter le @sel{2% &pâte}. // 2% de la masse totale de la variable &pâte
+```
+
+**Schéma :** `@nom{ pourcentage% &VariableCible }`
+  </TabItem>
+</Tabs>
+
+## Règles de résolution
+
+Lors de l'évaluation d'une quantité relative, le compilateur observe trois règles de portée et de calcul :
+
+| Règle | Portée | Description |
+| :--- | :--- | :--- |
+| **Portée de section** | Section courante uniquement | Il n'est pas possible de cibler directement un ingrédient brut déclaré dans une autre section. Pour traverser les sections, capturez le résultat dans une `&variable` intermédiaire globale. |
+| **Accumulation** | Somme des occurrences | Si le même `@ingrédient` cible apparaît plusieurs fois dans la section, le pourcentage est appliqué sur la **somme totale cumulée** de ces quantités. |
+| **Calcul en masse** | Évalué en grammes | Les calculs reposent invariablement sur la **masse physique en grammes**. Par exemple, 50% de « 2 œufs » (calibrés à 50g l'unité) produira **50g**, et non 1 œuf. |
+
+## Règles de calcul des masses
+
+Puisque les pourcentages s'appliquent sur des masses physiques, l'analyseur (`@gram-lang/analyzer`) standardise les quantités cibles avant de procéder au calcul :
+
+| Type d'unité cible | Méthode | Logique de normalisation | Exemple |
+| :--- | :--- | :--- | :--- |
+| **Masse explicite** | <Badge text="Direct" variant="tip" /> | Calcul direct sans conversion intermédiaire. | `50%` de `500g` = **250g** |
+| **Volume** | <Badge text="Densité" variant="note" /> | Convertit le volume en grammes selon la densité (`physical.density`) de l'ingrédient en base. | `500ml` d'eau ➔ 500g.<br/>`50%` = **250g** |
+| **Comptage** | <Badge text="Poids unitaire" variant="note" /> | Multiplie le nombre par le poids unitaire moyen (`physical.unit_weight`). | 2 œufs (50g pièce) ➔ 100g.<br/>`50%` = **50g** |
+| **Unité inconnue** | <Badge text="Non résolu" variant="caution" /> | Impossible d'estimer la masse. Déclenche l'avertissement `RELATIVE_QUANTITY_UNKNOWN_MASS`. | Conserve la formule brute en repli. |
+
+## Comportement de la liste de courses
+
+Étant donné que les quantités relatives représentent des formules calculées (ex. `125% du jus de citron`), le compilateur adapte leur transcription dans la liste de courses finale :
+
+<Tabs>
+  <TabItem label="Résolution complète (standard)">
+Lorsque la masse physique de la cible est connue, la formule est évaluée à la compilation. Le poids résultant s'agrège de façon transparente avec les autres achats du même ingrédient :
+
+```text
+- Sucre : 156g
+```
+  </TabItem>
+  <TabItem label="Sortie hybride de repli">
+Si la standardisation est désactivée ou si l'ingrédient cible ne peut être converti (absence dans `ingredients.yaml`), Gram génère une présentation hybride associant les quantités fixes connues et la formule brute :
+
+```text
+- Sucre : 20g + (125% du jus de citron)
+```
+
+Cette précaution garantit qu'aucune mention d'achat n'est omise, même lorsque les conversions sont incomplètes.
+  </TabItem>
+</Tabs>
+
+## Gestion des erreurs
+
+Le compilateur prévient les incohérences de calcul via des diagnostics explicites :
+
+- **`RELATIVE_QUANTITY_UNRESOLVED`** : émis lorsque l'ingrédient ou la variable cible n'a pas été déclaré(e) en amont dans la section, affichant `(20% de manquant ❓)`.
+- **`CIRCULAR_REFERENCE`** : émis lorsqu'un ingrédient tente de calculer un pourcentage de lui-même (ex. `@farine{10% @&farine}`), affichant `(10% de lui-même) ⚠️`.
+- **`RELATIVE_QUANTITY_UNKNOWN_MASS`** : signale que la masse physique de la cible n'a pas pu être déduite de la base de données d'ingrédients.
+
+:::tip[Limites des quantités relatives]
+Puisque sa valeur découle d'un autre ingrédient, une quantité relative ne peut pas servir de cible de référence pour le recalcul des portions (`--scale`) ni de base à 100% pour les pourcentages de boulanger (`*`). Consultez l'explication [Ajustement des proportions](/fr/docs/explanation/scaling) pour en savoir plus.
+:::
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Ajustement dynamique des proportions"
+    description="Guide pratique d'utilisation des quantités relatives et du pourcentage du boulanger."
+    href="/fr/docs/how-to/scale-recipes/"
+  />
+  <LinkCard
+    title="Comprendre l'ajustement des proportions"
+    description="Comment le moteur résout les quantités relatives et l'ajustement par ingrédient repère."
+    href="/fr/docs/explanation/scaling/"
+  />
+  <LinkCard
+    title="Variables intermédiaires"
+    description="Comment déclarer des sous-composants (&pâte) servant de cible pour vos pourcentages."
+    href="/fr/docs/reference/syntax/intermediate-variables/"
+  />
+  <LinkCard
+    title="Syntaxe des ingrédients"
+    description="Syntaxe complète pour déclarer ingrédients bruts, unités, quantités et préparations."
+    href="/fr/docs/reference/syntax/ingredients/"
+  />
+</CardGrid>

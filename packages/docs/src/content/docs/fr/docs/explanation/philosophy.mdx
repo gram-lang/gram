@@ -1,13 +1,13 @@
 ---
 title: "C'est quoi Gram ?"
-description: "Pourquoi Gram traite les recettes comme du code, avec une logique relationnelle et une intégrité stricte des données."
+description: "Pourquoi Gram traite les recettes comme du code, avec une logique relationnelle, un ordonnancement déterministe et une intégrité stricte des données."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Gram est un DSL (*Domain-Specific Language*) déclaratif open-source pour les recettes de cuisine, pensé pour les développeurs.
+Gram est un DSL (*Domain-Specific Language*) déclaratif open-source pour les recettes de cuisine, pensé pour les développeurs et les passionnés d'art culinaire.
 
-La plupart des formats de recettes ne sont que des blocs de texte statiques. Gram propose une approche différente : il prend vos instructions rédigées en texte brut et les compile en données structurées, calculées et relationnelles.
+La plupart des formats de recettes ne sont que des blocs de texte statiques. Gram propose une approche fondamentalement différente : il prend vos instructions rédigées en texte brut et les compile en données structurées, calculées, relationnelles et planifiables.
 
 ## La philosophie
 
@@ -15,18 +15,19 @@ Cuisiner, c'est un peu comme exécuter un algorithme : on prend des ingrédients
 
 J'ai toujours aimé l'idée d'écrire des recettes en texte brut (*plain text*), en m'inspirant de projets pionniers comme l'excellent [Cooklang](https://cooklang.org) (idéal pour des recettes maison simples et rapides). Mais dès que les choses se compliquent (comme en pâtisserie, avec ses multiples préparations, le « pourcentage du boulanger » ou des plannings complexes) s'appuyer uniquement sur le langage naturel montre vite ses limites.
 
-Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, cela ouvre la voie au développement de rendus visuels avancés (diagrammes de Gantt, flux tabulaires, etc.).
+Structurellement, Gram s'inspire beaucoup du célèbre site [Cooking for Engineers](http://www.cookingforengineers.com/) et de ses recettes présentées sous forme de tableaux. Puisque Gram compile les recettes en un arbre JSON déterministe, il permet de générer automatiquement des rendus visuels avancés : plannings de production, diagrammes de Gantt interactifs, fiches de déroulé opérationnel et exports de calendrier.
 
-J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle**, une **précision physique** et une **composition modulaire** dans la rédaction de vos recettes :
+J'ai créé Gram comme une alternative pour ces scénarios plus exigeants. Il introduit une **logique relationnelle**, une **précision physique**, une **composition modulaire** et un **ordonnancement prédictif** dans la rédaction de vos recettes :
 
-- **Variables relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez l'utiliser comme ingrédient à l'étape 5. Fini les duplications.
+- **Variables relationnelles** : Si vous préparez une pâte à l'étape 1, vous pouvez l'utiliser comme ingrédient à l'étape 5. Fini les duplications d'ingrédients ou les ambiguïtés de manipulation.
 - **Précision physique & Calculs** : Gram comprend la différence entre « le zeste d'un citron » et « le jus de 2 citrons », s'assurant que votre liste de courses agrège précisément « Acheter 2 citrons » au lieu de 3. Il calcule aussi les masses réelles et les ratios relatifs (`70% @&farine`).
-- **Contrats de données stricts** : Grâce à des tags explicites (`@`, `~`, `^`, `#`), Gram garantit que l'analyseur syntaxique ne confondra jamais les températures, les temps, les ingrédients et le matériel.
-- **Modularité et Réutilisation (`@use`)** : Découpez vos composants réutilisables (pâtes, bouillons, sauces) dans leurs propres fichiers `.gram`. Gram intègre leurs étapes, adapte automatiquement leurs proportions aux quantités requises et fusionne leurs ingrédients sur la liste de courses globale.
+- **Contrats de données stricts** : Grâce à des tags explicites (`@`, `~`, `^`, `#`), Gram garantit que l'analyseur syntaxique ne confondra jamais les températures, les durées, les ingrédients et le matériel.
+- **Modularité et Réutilisation (`@use`)** : Découpez vos préparations de base réutilisables (pâtes, bouillons, sauces) dans leurs propres fichiers `.gram`. Gram intègre leurs étapes, adapte automatiquement leurs proportions aux quantités requises et fusionne leurs ingrédients sur la liste de courses globale.
+- **Ordonnancement ALAP & Rétro-planning** : Calculez l'instant exact où lancer chaque étape pour que l'ensemble converge à l'heure du service, optimisez le temps masqué pendant les cuissons ou les refroidissements passifs, et anticipez les goulets d'étranglement de vos équipements.
 
 :::tip[L'approche par écosystème]
 Gram n'est pas juste une syntaxe ; c'est un écosystème complet pour construire des applications culinaires.
-Que vous conceviez une application de recettes, un planificateur de repas ou un tableau de bord pour la cuisine, vous n'avez plus besoin d'analyser du texte brut à la main. Le **Moteur Gram** transforme votre texte en un arbre syntaxique abstrait (AST) riche, y injecte des propriétés physiques (comme la normalisation des masses ou le calcul nutritionnel), et génère une structure JSON sur laquelle vous pouvez bâtir en toute confiance.
+Que vous conceviez une application de recettes, un planificateur de repas ou un tableau de bord pour la cuisine professionnelle, vous n'avez plus besoin d'analyser du texte brut à la main. Le **Moteur Gram** transforme votre texte en un arbre syntaxique abstrait (AST) riche, y injecte des propriétés physiques (comme la normalisation des masses ou le calcul nutritionnel), planifie les flux de travail et génère une structure JSON sur laquelle vous pouvez bâtir en toute confiance.
 :::
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
@@ -37,7 +38,10 @@ L'écosystème Gram met à votre disposition tout le nécessaire pour concevoir 
 
 <CardGrid>
   <Card title="Analyse syntaxique & Compilation" icon="setting">
-    **`@gram-lang/kitchen`** : Simule la chronologie de la recette, agrège les listes d'ingrédients et gère l'ajustement dynamique des quantités.
+    **`@gram-lang/kitchen`** : Simule la chronologie de la recette, compose les modules `@use`, agrège les listes d'ingrédients et gère l'ajustement dynamique des quantités.
+  </Card>
+  <Card title="Moteur d'ordonnancement" icon="clock">
+    **`@gram-lang/scheduler`** : Calcule le rétro-planning ALAP, optimise le placement de la mise en place, résout l'occupation des équipements et projette les recettes sur un calendrier réel.
   </Card>
   <Card title="Analyseur sémantique" icon="magnifier">
     **`@gram-lang/analyzer`** : Gère la normalisation des masses, le calcul des rendements, l'estimation nutritionnelle et l'agrégation avancée des courses via votre base de données locale.
@@ -46,10 +50,10 @@ L'écosystème Gram met à votre disposition tout le nécessaire pour concevoir 
     **`@gram-lang/language-server`** : Apporte un véritable support d'édition pour vos recettes (autocomplétion, diagnostics en temps réel, infobulles).
   </Card>
   <Card title="Interface CLI" icon="window">
-    **`@gram-lang/cli`** : Permet de compiler, d'ajuster les proportions, de comparer les révisions (diff) et de gérer votre base d'ingrédients depuis le terminal.
+    **`@gram-lang/cli`** : Permet de compiler, d'ajuster les proportions, d'ordonnancer, de comparer les révisions (diff) et de gérer votre base d'ingrédients depuis le terminal.
   </Card>
   <Card title="Moteur de rendu" icon="document">
-    **`@gram-lang/renderer`** : Génère instantanément du HTML sémantique ou du Markdown à partir du JSON compilé.
+    **`@gram-lang/renderer`** : Génère instantanément du HTML sémantique, des diagrammes de Gantt, des fiches de production et du Markdown à partir du JSON compilé.
   </Card>
 </CardGrid>
 
@@ -74,7 +78,7 @@ portions: 10
 
 [Incorporer] Ajouter les @jaunes d'œufs{6}<@œufs{6} et le @rhum{100 ml}.
 
-[Repos] Couvrir de #film alimentaire{} au contact et réfrigérer pendant au moins ~_réfrigérateur{24 h}.
+[Réfrigérer] Couvrir de #film alimentaire{} au contact et laisser maturer au frais pendant au moins ~_réfrigérateur{24 h}.
 ```
 ```json title="Aperçu de la Sortie"
 {

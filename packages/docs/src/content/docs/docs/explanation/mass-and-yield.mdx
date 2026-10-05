@@ -7,7 +7,7 @@ Gram is deeply rooted in physical reality. Unlike basic markdown parsers that ju
 
 This page explains the physics engine behind Gram's mass and yield calculations.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## The three pillars of physics
 
@@ -70,3 +70,23 @@ Let's look at two scenarios for an avocado (`unit_weight: 150g`, `yield: 0.70`):
 </Steps>
 
 This ensures you never end up short on ingredients after prepping them.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Manage an ingredient database"
+    description="Learn how to populate and maintain density, unit weights, and yield in ingredients.yaml."
+    href="/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Nutritional calculation"
+    description="How standardized mass feeds directly into macronutrient and caloric totals."
+    href="/docs/explanation/nutrition/"
+  />
+  <LinkCard
+    title="Analyzer API reference"
+    description="Explore the analyzer pipeline, mass standardization functions, and result schemas."
+    href="/docs/reference/api/analyzer/"
+  />
+</CardGrid>

@@ -16,7 +16,7 @@ Dégainez la commande CLI `gram shop` et passez-lui un chemin générique (un *g
 gram shop "menus/semaine-1/*.gram"
 ```
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ### Sous le capot de l'agrégation
 
@@ -52,3 +52,18 @@ gram shop "menus/*.gram" --format md --output liste-de-courses.md
 # Exporter en JSON
 gram shop "menus/*.gram" --format json --output liste-de-courses.json
 ```
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Agrégation de la liste de courses"
+    description="Plongez dans les détails de la normalisation des unités, des alias et du tri par rayons."
+    href="/fr/docs/explanation/shopping-list-aggregation/"
+  />
+  <LinkCard
+    title="Organiser des recettes modulaires"
+    description="Découvrez comment les sous-recettes fusionnent automatiquement leurs ingrédients dans la liste de courses."
+    href="/fr/docs/how-to/organize-modular-recipes/"
+  />
+</CardGrid>

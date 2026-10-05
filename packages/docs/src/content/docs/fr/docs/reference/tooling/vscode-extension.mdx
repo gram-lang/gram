@@ -1,0 +1,121 @@
+---
+title: "Extension VS Code"
+description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, diagramme de Gantt et correspondance d'ingrédients."
+---
+
+import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+L'extension officielle Gram pour VS Code transforme votre éditeur en un véritable environnement de développement dédié aux recettes. Propulsée par `@gram-lang/language-server`, elle offre des diagnostics en temps réel, une assistance à la saisie avancée et un rendu dynamique en direct.
+
+## Capacités principales
+
+### 1. Aperçu en direct dynamique & nutrition
+- **Rendu côte à côte** : Au fil de votre frappe, l'extension compile à la volée votre `.gram` en HTML dans un panneau WebView dédié. Elle embarque les styles officiels du Playground, garantissant un rendu fidèle au pixel près par rapport à la production.
+- **Résilience aux erreurs** : Si votre recette contient des erreurs de syntaxe bloquant la compilation, l'aperçu affiche le message d'erreur correspondant pour vous guider, sans jamais interrompre le fonctionnement de l'extension.
+
+:::note[📊 CodeLens nutritionnel]
+Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'aperçu. Il met également en surbrillance les ingrédients introuvables dans votre base de données.
+:::
+
+### 2. Vue diagramme de Gantt
+- **Panneau chronologique** : Lancez la commande `Gram: Gantt Chart` (ou cliquez sur l'icône de chronogramme dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, minuteurs passifs et compression visuelle des plages d'attente. Le tout au sein d'une WebView dédiée, indépendante de l'aperçu en direct.
+- **Modes horaires** : Depuis le menu du panneau, basculez selon vos besoins entre le temps écoulé (chronomètre, T+), le compte à rebours (T-) et le rétro-planning calé sur l'heure cible du service.
+- **Vue compacte** : Pour les recettes complexes comportant de nombreuses étapes simultanées, activez la disposition densifiée.
+- **Mise en place** : La préparation de chaque section est représentée sous la forme d'un bloc en pointillés adoptant la teinte de la section, ordonnancé par défaut immédiatement avant celle-ci, au tout début de la recette ou à l'ouverture de chaque session de travail (voir le réglage `gram.miseEnPlace` ci-dessous).
+
+#### Le réglage `gram.miseEnPlace` <Since v="1.4.0" />
+
+| Valeur | Effet |
+|---|---|
+| `perSection` (par défaut) | La mise en place de chaque section est planifiée immédiatement avant cette section. |
+| `upfront` | L'intégralité de la mise en place est ordonnancée au début de la recette. |
+| `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les journées découlant des ancres temporelles de section, `~{-Nd}`). |
+
+Ce réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+
+#### Le réglage `gram.rests` <Since v="1.4.0" />
+
+| Valeur | Effet |
+|---|---|
+| `shortest` (par défaut) | Un minuteur passif formulé avec une fourchette (`~_{12-24h}`) est résolu sur sa durée minimale. |
+| `balanced` | Le minuteur passif est résolu sur la valeur médiane de sa fourchette. |
+| `longest` | Le minuteur passif est résolu sur sa durée maximale. |
+
+Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le diagramme de Gantt et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+
+Une session de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`SESSION_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
+
+### 3. Gestion intelligente des ingrédients
+- **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.
+- **Appariement flou (*Fuzzy Matching*)** : En cas de faute de frappe sur un ingrédient, un algorithme basé sur la distance de Levenshtein suggère la correspondance la plus probable via les actions de code (*Quick Fixes*).
+- **Informations au survol** : Survolez n'importe quel ingrédient pour inspecter ses valeurs nutritionnelles. Si la base lui associe une masse volumique, le survol convertit instantanément les volumes en masse physique (ex. `1 c.à.s → 15 g`).
+
+:::tip[Détection automatique de la base de données]
+L'extension détecte automatiquement le fichier `.gram/ingredients.yaml` présent à la racine de votre espace de travail. Pour les arborescences spécifiques, personnalisez le chemin via `gram.ingredientDatabase.path` dans vos paramètres VS Code.
+:::
+
+### 4. Assistance à l'édition & navigation
+- **Jetons sémantiques (*Semantic Tokens*)** : La coloration syntaxique s'appuie directement sur l'AST produit par le compilateur plutôt que sur de simples expressions régulières. Les modificateurs, les unités imbriquées et les ingrédients composites (`<@`) sont colorés avec précision selon leur fonction syntaxique.
+- **Autocomplétion intelligente** :
+  - `@` suggère les ingrédients déclarés dans votre base, en encapsulant automatiquement les dénominations composées entre accolades `{}`.
+  - `&` suggère les variables intermédiaires déclarées en amont (ex. `->&pâte`).
+  - `{}` contextuelles suggère les unités canoniques (masse, volume, temps) et leurs alias dès la saisie d'un chiffre.
+
+#### Raccourcis de navigation
+
+| Raccourci | Commande | Comportement |
+|---|---|---|
+| `F12` | Aller à la définition | Navigue depuis une référence (`&ref`) vers sa déclaration d'origine (`->&ref`). |
+| `Maj+F12` | Rechercher toutes les références | Répertorie toutes les occurrences d'une variable intermédiaire. |
+| `F2` | Renommer le symbole | Renomme de manière atomique et sûre une variable sur l'ensemble du document. |
+
+### 5. Diagnostics & refactorisation
+- **Validation en temps réel** : Le serveur de langage signale instantanément les références orphelines, les déclarations inutilisées et les anomalies d'ordonnancement.
+- **Actions de code 💡** :
+  - Insérer la propriété `title:` manquante dans le frontmatter.
+  - Supprimer les déclarations intermédiaires inutilisées.
+  - Déclarer une variable manquante pour une référence orpheline.
+  - Convertir une quantité volumique en masse directement dans le code source (si la densité est connue).
+
+### 6. Formatage automatique
+Déclenchez le formatage du document (`Alt+Maj+F` ou `Maj+Option+F` sous macOS) pour normaliser la syntaxe en appliquant les règles canoniques :
+
+```diff
+- ##    Pâte   ->&pâte
+- Ajouter le @zeste de citron{1} < @citron et le @sel{ 15 g }.
++ ## Pâte ->&pâte
++ Ajouter le @zeste de citron{1}<@citron et le @sel{15g}.
+```
+
+## Améliorations de l'interface de l'éditeur
+- **Indications contextuelles (*Inlay Hints*)** : Affiche la durée totale estimée de la recette en fin de ligne `title:`, permettant d'évaluer la durée d'ensemble d'un coup d'œil. Elle s'actualise en temps réel selon les réglages `gram.miseEnPlace` et `gram.rests`.
+- **Vue Plan (*Outline*)** : Le panneau natif *Outline* de VS Code restitue la hiérarchie des sections et des variables intermédiaires, facilitant la navigation dans les recettes volumineuses.
+- **Repliage de code (*Folding*)** : Le frontmatter et le contenu de chaque section peuvent être repliés pour aérer la zone d'édition.
+- **Extraits de code (*Snippets*)** : Utilisez des déclencheurs rapides comme `recipe`, `##`, `step`, `@ing` ou `#cw` pour générer instantanément des structures de recette complètes.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Serveur de langage"
+    description="Découvrez comment le processus LSP alimente l'autocomplétion, les diagnostics et les infobulles."
+    href="/fr/docs/reference/tooling/language-server/"
+  />
+  <LinkCard
+    title="Référence du CLI"
+    description="Exploitez l'interface en ligne de commande pour compiler, comparer et planifier en dehors de l'éditeur."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="API Format"
+    description="Explorez les 13 règles canoniques de mise en page appliquées au formatage de document."
+    href="/fr/docs/reference/api/format/"
+  />
+  <LinkCard
+    title="Aide-mémoire syntaxique"
+    description="Gardez sous la main la référence exhaustive de la notation Gram pendant la rédaction."
+    href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>
+

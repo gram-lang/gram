@@ -1,0 +1,123 @@
+---
+title: "Rendu et formats de sortie (@gram-lang/renderer)"
+description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, document d'impression et diagramme de Gantt."
+---
+
+import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Une fois la recette analysée par `@gram-lang/parser`, ordonnancée par `@gram-lang/kitchen` et enrichie physiquement par `@gram-lang/analyzer`, vient l'étape de restitution visuelle et textuelle.
+
+Le paquet `@gram-lang/renderer` prend en charge cet objet JSON complet pour le restituer sous forme de document Markdown ou de balisage HTML sémantique.
+
+## Formats de rendu
+
+Le moteur de rendu propose cinq cibles d'export :
+
+### 1. Markdown (`toMarkdown`)
+Génère un document Markdown conforme à la spécification GitHub Flavored Markdown (GFM), comprenant la liste des ingrédients, le matériel requis, les étapes numérotées, les notes de bas de page (`[^1]`), les étiquettes de masse brute et le bloc nutritionnel (`## 🥗 Nutrition`). Ce format est idéal pour alimenter des générateurs de sites statiques (Astro, VitePress, Hugo) ou des applications de prise de notes (Obsidian).
+
+### 2. HTML sémantique (`toHTML`)
+Produit un balisage HTML sémantique et accessible. L'export HTML repose sur un principe d'**inversion de contrôle** : vous pouvez injecter vos propres classes CSS (ex. Tailwind CSS) et vos jeux d'icônes SVG pour adapter le rendu à l'identité visuelle de votre application hôte.
+
+### 3. HTML pour impression (`toPrintHTML`)
+Génère un document HTML complet (`<!DOCTYPE html>`) autonome, intégrant sa propre feuille de style CSS optimisée pour l'impression (format A4, contrôle des sauts de page) et ses icônes SVG vectorielles. Conçu pour être ouvert dans un navigateur et imprimé directement sans aucune dépendance réseau externe. Contrairement à `toHTML`, les classes CSS et icônes sont verrouillées, mais les filtres de mise en forme (`formatDuration`, `formatFraction`, `hideStepQty`) restent entièrement configurables.
+
+### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
+Génère une chronologie interactive matérialisant les étapes actives, les minuteurs passifs et la compression des temps masqués sous forme de fragment HTML. L'intégration s'effectue en deux temps : `toGanttHTML` produit le balisage statique, tandis que la fonction `attachGanttInteractivity(container, options)` attache les écouteurs d'événements, les infobulles de survol et les bascules de mode côté navigateur via délégation DOM. Consultez la [référence de l'API renderer](/fr/docs/reference/api/renderer) pour le détail de `GanttRenderOptions` et `GanttInteractivityOptions`.
+
+L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) détermine le positionnement de la mise en place, et l'option `rests` (`"shortest"` par défaut, `"balanced"` ou `"longest"`) fixe la durée des temps passifs exprimés en fourchette : le graphique trace la chronologie calculée par le graphe de tâches pour cette configuration (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)). La préparation de chaque section est représentée par un bloc en pointillés aux couleurs de la section (J-1, Jour J). Ces options pilotent également les durées totales et passives affichées dans les en-têtes HTML, Markdown et impression.
+
+Le diagramme de Gantt peut également projeter la recette sur le calendrier réel via l'option `projection` (alimentée par `project()` de `@gram-lang/scheduler`). Le graphique trace alors les blocs réels du plan (les durées passives ajustées apparaissent avec une bordure distinctive et une note explicative), gradue son axe temporel selon l'horloge murale locale et masque les plages d'indisponibilité de l'utilisateur. Consultez [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+
+### 5. Fiche de production (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
+Formate le plan de production issu de `project()` sous forme de feuille de route opérationnelle : découpage par journées de travail relatives au service (J-1, Jour J), étapes ordonnancées chronologiquement avec horaires arrondis à cinq minutes, annotations sur les durées passives ajustées et récapitulatif des contraintes non résolues. Les libellés respectent l'option linguistique `lang`. La fonction `describeRunSheet()` fournit cette même fiche sous forme d'objets de données structurés, facilitant l'export vers des formats tiers (comme le calendrier iCalendar de la CLI).
+
+## Traversée unifiée (`RenderBackend`)
+
+En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le diagramme de Gantt fait exception à cette règle puisqu'il modélise une chronologie graphique plutôt qu'un document textuel séquentiel.
+
+## Exemple d'utilisation
+
+```typescript
+import { toMarkdown, toHTML } from '@gram-lang/renderer';
+
+// En supposant que `recipe` provienne de @gram-lang/kitchen ou @gram-lang/analyzer
+const recipe = {
+  title: "Crêpes simples",
+  metrics: { preparationTime: 5, activeTime: 10 },
+  // Chronologie de référence lue par le renderer
+  schedule: {
+    miseEnPlace: "perSection",
+    rests: "shortest",
+    totalTime: 30,
+    idleTime: 15,
+    blocks: [],
+    sessions: [],
+  },
+  shopping_list: [
+    { id: "farine", qty: 200, unit: "g" }
+  ],
+  sections: [
+    {
+      title: "Préparation",
+      steps: [
+        { type: "text", value: "Tout mélanger au fouet." }
+      ]
+    }
+  ]
+};
+
+// 1. Rendu Markdown standard
+const markdown = toMarkdown(recipe);
+
+// 2. Rendu HTML personnalisé (Inversion de contrôle)
+const html = toHTML(recipe, {
+  icons: {
+    clock: '<svg class="icon-clock">...</svg>',
+    fire: '<svg class="icon-fire">...</svg>'
+  },
+  classes: {
+    recipeTitle: "text-2xl font-bold custom-title",
+    recipeMeta: "flex gap-2 text-gray-500"
+  }
+});
+```
+
+L'objet `RendererOptions` propose également les options `bakersReference`/`bakersMathOnly` (calculs de panification), `hideStepQty` (masquage des quantités au sein du texte des étapes) et `renderId`. Cette dernière option préfixe les identifiants d'ancres (ex. `"note-1"`) pour prévenir les collisions d'ID HTML lorsque plusieurs recettes coexistent sur la même page.
+
+## Fonctionnalités transversales
+
+- **Formatage des fractions** : Convertit les valeurs décimales en fractions culinaires usuelles (`0.5` → `"1/2"`, `0.33` → `"1/3"`). Il s'agit de chaînes de caractères ASCII standards (`1/2`) et non de glyphes Unicode isolés.
+- **Échappement et sécurité** : Tous les contenus saisis par l'utilisateur sont échappés. Les sorties de `toHTML` et `toPrintHTML` sont sécurisées pour une injection directe dans le DOM. Le formateur `toMarkdown` neutralise spécifiquement les caractères `<` et `&` (en `&lt;` et `&amp;`), évitant qu'une charge HTML malveillante ne soit interprétée lors de la conversion ultérieure du Markdown.
+  :::caution[Sécurité du contenu externe]
+  Bien que cet échappement neutralise les injections HTML brutes, `toMarkdown` n'effectue pas d'assainissement complet sur les schémas d'URL (ex. liens `javascript:`). Si vous affichez des recettes issues de sources non fiables, appliquez un assainisseur dédié (`DOMPurify` ou `rehype-sanitize`) sur le balisage final.
+  :::
+- **Formatage des durées** : Convertit les durées brutes exprimées en minutes en libellés temporels fluides (`90` → `1h 30m`).
+- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (tokens clair/sombre pour l'ensemble des éléments) ainsi que `gantt.css` pour le diagramme temporel. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
+
+## Consommation directe du JSON
+
+Si vous développez une application front-end moderne (React, Vue, Svelte, mobile), l'utilisation de `@gram-lang/renderer` reste facultative.
+
+Le JSON produit par `@gram-lang/analyzer` est typé et directement itérable : parcourir `recipe.sections` et `recipe.shopping_list` suffit dans la plupart des cas. Pour les scénarios avancés (ingrédients alternatifs, composites, pourcentages du boulanger ou masses d'achat `purchasingMass`), l'implémentation de `@gram-lang/renderer` constitue une référence d'architecture recommandée.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Référence de l'API Renderer"
+    description="Documentation complète de toMarkdown, toHTML, toPrintHTML et des diagrammes de Gantt."
+    href="/fr/docs/reference/api/renderer/"
+  />
+  <LinkCard
+    title="Créer une interface sur mesure"
+    description="Guide pratique pour consommer le JSON compilé dans vos frameworks web."
+    href="/fr/docs/how-to/build-custom-ui/"
+  />
+  <LinkCard
+    title="Formats de données"
+    description="Structure détaillée et annotée du JSON produit par Kitchen et l'Analyseur."
+    href="/fr/docs/reference/api/data-formats/"
+  />
+</CardGrid>

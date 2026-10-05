@@ -1,13 +1,13 @@
 ---
 title: "What is Gram?"
-description: "Why Gram treats recipes as code: the developer-first principles behind deterministic cooking logic."
+description: "Why Gram treats recipes as code: relational logic, deterministic scheduling, and strict data integrity."
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
 
-Gram is an open-source declarative DSL (*Domain-Specific Language*) for cooking recipes, built for developers.
+Gram is an open-source declarative DSL (*Domain-Specific Language*) for cooking recipes, built for developers and culinary craftsmen.
 
-Most recipe formats are just static blocks of text. Gram takes a different approach: it takes your instructions written in plain text and compiles them into structured, calculated, and relational data.
+Most recipe formats are just static blocks of text. Gram takes a fundamentally different approach: it takes your instructions written in plain text and compiles them into structured, calculated, relational, and schedulable data.
 
 ## The philosophy
 
@@ -15,18 +15,19 @@ Cooking is a bit like an algorithm: you take raw ingredients as input and output
 
 I've always loved the idea of writing recipes in plain text, heavily inspired by pioneering projects like the excellent [Cooklang](https://cooklang.org). Cooklang is fantastic for quick, straightforward home recipes. But when things get a bit more complex—like professional pastry formulas with multiple sub-components, baker's math, or tricky scheduling—relying entirely on natural language can get messy. 
 
-Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a predictable JSON tree, the door is wide open for developers to build advanced visual renderers in the future, like Gantt schedules or tabular flowcharts.
+Gram also draws structural inspiration from the classic [Cooking for Engineers](http://www.cookingforengineers.com/) tabular format. Because Gram compiles recipes into a deterministic JSON tree, it natively unlocks advanced visual presentations: production run sheets, interactive Gantt timelines, tabular flowcharts, and calendar exports.
 
-I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, and **modular composition** into your recipe writing:
+I created Gram as an alternative for these more demanding scenarios. It introduces **relational logic**, **physical accuracy**, **modular composition**, and **predictive scheduling** into your recipe writing:
 
-- **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication.
+- **Relational Variables**: If you make a dough in step 1, you can reference it as an ingredient in step 5, cleanly preventing duplication or manipulation ambiguity.
 - **Physical Accuracy & Calculations**: Gram understands the difference between the "zest of 1 lemon" and "juice of 2 lemons", ensuring your shopping list accurately aggregates to "Buy 2 lemons" instead of 3. It also computes real physical mass and relative ingredient ratios (`70% @&flour`).
-- **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, times, ingredients, and cookware are never confused by the parser.
+- **Strict Data Contracts**: By using explicit tags (`@`, `~`, `^`, `#`), Gram ensures that temperatures, durations, ingredients, and cookware are never confused by the parser.
 - **Modularity & Reusability (`@use`)**: Split shared bases (pastries, stocks, sauces) into their own `.gram` files. Gram seamlessly inlines their steps, automatically scales their quantities to match what your dish asks for (it measures the base's own mass — no manual scaling to declare or keep in sync), and merges their raw ingredients onto your unified shopping list.
+- **ALAP Scheduling & Retro-planning**: Calculate the exact moment to start each step so everything converges at service time, optimize masked time during passive cooking or chilling, and anticipate cookware bottlenecks.
 
 :::tip[The Ecosystem Approach]
 Gram isn't just a syntax; it's a complete ecosystem for building culinary applications.
-If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), and outputs a reliable JSON structure you can actually work with.
+If you're building a recipe app, a meal planner, or a smart kitchen dashboard, you shouldn't have to parse raw text manually. The **Gram Engine** processes your text into a rich Abstract Syntax Tree (AST), enriches it with physical properties (like mass standardization and nutrition), schedules production workflows, and outputs a reliable JSON structure you can actually work with.
 :::
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
@@ -37,7 +38,10 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
 
 <CardGrid>
   <Card title="Parser & Compiler" icon="setting">
-    **`@gram-lang/kitchen`**: Simulates the execution timeline, aggregates base shopping lists, and scales dynamic quantities.
+    **`@gram-lang/kitchen`**: Simulates the execution timeline, composes `@use` modules, aggregates base shopping lists, and scales dynamic quantities.
+  </Card>
+  <Card title="Scheduling Engine" icon="clock">
+    **`@gram-lang/scheduler`**: Computes ALAP retro-planning, optimizes mise en place placement, resolves equipment contention, and projects recipes onto a real-world calendar.
   </Card>
   <Card title="Semantic Analyzer" icon="magnifier">
     **`@gram-lang/analyzer`**: Handles mass standardization, yield calculation, nutritional estimation, and advanced shopping list aggregation based on your local database.
@@ -46,10 +50,10 @@ The Gram ecosystem gives you everything you need to treat recipes like software:
     **`@gram-lang/language-server`**: Brings proper editor support to recipes (autocompletion, diagnostics, hover tooltips).
   </Card>
   <Card title="CLI" icon="window">
-    **`@gram-lang/cli`**: Compile, scale, diff, and manage your ingredient database straight from your terminal.
+    **`@gram-lang/cli`**: Compile, scale, schedule, diff, and manage your ingredient database straight from your terminal.
   </Card>
   <Card title="Renderer" icon="document">
-    **`@gram-lang/renderer`**: Instantly generate Semantic HTML or Markdown from your compiled JSON.
+    **`@gram-lang/renderer`**: Instantly generate Semantic HTML, Gantt charts, production run sheets, and Markdown from your compiled JSON.
   </Card>
 </CardGrid>
 
@@ -74,7 +78,7 @@ portions: 10
 
 [Incorporate] Add the @egg yolks{6}<@eggs{6} and the @rum{100 ml}.
 
-[Rest] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
+[Chill] Cover with #plastic wrap{} touching the surface and chill in the refrigerator for at least ~_refrigerator{24 h}.
 ```
 ```json title="Output Glimpse"
 {

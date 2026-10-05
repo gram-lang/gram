@@ -9,7 +9,7 @@ Néanmoins, les données nutritionnelles étant particulièrement sensibles (ave
 
 ## Le flux de calcul
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
 
 <Steps>
@@ -74,3 +74,23 @@ Les modificateurs de syntaxe de Gram ont un impact sur les calculs nutritionnels
 - **Ingrédients Optionnels (`?`)** : Les ingrédients marqués comme optionnels (ex : `@?crème chantilly`) sont **exclus** des totaux nutritionnels de base. L'Analyseur suppose le profil diététique le plus conservateur.
 - **Alternatives (`|`)** : Lorsqu'une recette propose des alternatives (ex : `@beurre{50 g} | @huile{40 g}`), l'Analyseur ne calcule la nutrition que pour la **première option (préférée)**. Il ne fait pas la moyenne entre elles.
 - **Ingrédients Composites (`<@`)** : La nutrition d'un composite est calculée strictement à partir de ses enfants. Chacun est recherché indépendamment dans la base de données via son propre identifiant (ex : `jus de citron` et `zeste de citron` sont deux entrées distinctes avec des macros spécifiques). Il n'y a pas de système de repli (*fallback*) vers les macros du parent : si un enfant n'a pas de bloc `nutrition`, il est traité comme n'importe quel ingrédient manquant, lève un avertissement `MISSING_MACROS` et ampute la `coverage`, plutôt que d'être grossièrement estimé depuis son parent.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Masse et rendement"
+    description="Comprenez comment l'analyseur standardise les quantités en grammes avant de calculer les macros."
+    href="/fr/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Gérer sa base de données d'ingrédients"
+    description="Renseignez et enrichissez ingredients.yaml avec les valeurs nutritionnelles et l'aide de l'IA."
+    href="/fr/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Référence de l'API Analyzer"
+    description="Découvrez les types du profil nutritionnel, les taux de couverture et les diagnostics de l'analyseur."
+    href="/fr/docs/reference/api/analyzer/"
+  />
+</CardGrid>

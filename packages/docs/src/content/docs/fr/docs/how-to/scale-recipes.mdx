@@ -27,7 +27,7 @@ Certaines préparations reposent fondamentalement sur des relations mathématiqu
 
 Gram permet d'exprimer ces relations directement dans le code source via des **Quantités Relatives** (`% @&cible` pour un ingrédient, ou `% &cible` pour une variable intermédiaire). La recette devient alors capable de se recalculer dynamiquement à la volée dès que vous tweakez un seul pourcentage.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. ### Définir l'ancre (la cible)
@@ -63,7 +63,7 @@ Et Gram s'occupe du reste. Fini le calcul mental fastidieux des poids absolus po
 
 ### Ajustement universel des proportions
 
-Vous pouvez ajuster les proportions des recettes visuellement dans le Playground, ou depuis le CLI en utilisant le paramètre `--scale` (disponible sur `view`, `build`, `print`, et `export`) :
+Vous pouvez ajuster les proportions des recettes visuellement dans le Playground, ou depuis le CLI en utilisant le paramètre `--scale` (disponible sur `view`, `build`, `print`, `export`, `cook`, et `plan`) :
 
 ```bash
 gram view pain.gram --scale farine=400g
@@ -141,3 +141,18 @@ Si vous exécutez `gram build --scale 2`, l'`huile de friture` restera à `1 L`.
 
 ## Résumé
 En combinant les **Quantités Relatives** pour les ratios et les **Quantités Fixes** pour les constantes immuables, vous pouvez écrire des recettes qui s'adaptent parfaitement à n'importe quelle contrainte de votre garde-manger ou taille de portion.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Syntaxe des quantités relatives"
+    description="Spécification détaillée des pourcentages, ancres et recalculs dynamiques de ratios."
+    href="/fr/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Comprendre l'ajustement des proportions"
+    description="Comment le compilateur calcule l'ajustement linéaire, par ingrédient repère et les ingrédients fixes."
+    href="/fr/docs/explanation/scaling/"
+  />
+</CardGrid>

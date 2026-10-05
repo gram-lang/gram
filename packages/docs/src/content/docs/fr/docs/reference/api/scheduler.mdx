@@ -1,0 +1,327 @@
+---
+title: "@gram-lang/scheduler"
+description: "Moteur d'ordonnancement : calcule la chronologie d'un graphe de tâches, le projette sur le calendrier selon l'heure de service et les disponibilités, et génère une fiche de production."
+---
+
+import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+<Since v="1.4.0" />
+
+Le moteur d'ordonnancement de Gram prend en entrée un **graphe de tâches** agnostique (le champ `tasks` d'une recette compilée) et répond à deux questions fondamentales : comment ces tâches s'articulent-elles chronologiquement (`layout`), et à quel moment précis démarrer chaque tâche compte tenu de l'heure de service visée et des disponibilités de l'utilisateur (`project`).
+
+Le scheduler ne possède aucune connaissance de l'AST ou de la syntaxe `.gram` : il opère exclusivement sur le graphe de tâches. Consultez [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/) pour approfondir son architecture interne et [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/) pour ses cas d'usage pratiques.
+
+:::note[Fonctions pures et déterminisme]
+Chaque fonction du moteur est pure : à entrées identiques correspondent toujours des sorties strictement identiques. Aucune donnée n'est lue sur l'environnement d'exécution (ni horloge système, ni fuseau horaire local), et les objets passés en paramètre ne sont jamais mutés.
+:::
+
+```bash
+npm install @gram-lang/scheduler
+```
+
+Le compilateur `@gram-lang/kitchen` réexporte déjà `layout`, `LayoutOptions` et les constantes associées (`MISE_EN_PLACE_MODES`, `REST_CHOICES`...) : les applications n'utilisant que Kitchen n'ont pas besoin d'installer directement ce paquet.
+
+## `layout`
+
+```typescript
+function layout(graph: TaskGraph, options?: LayoutOptions): LayoutResult
+
+interface LayoutOptions {
+  miseEnPlace?: MiseEnPlaceMode; // "perSection" (défaut) | "upfront" | "perSession"
+  rests?: RestChoice;            // "shortest" (défaut) | "balanced" | "longest"
+  restOverrides?: Record<string, number>; // durées passives cibles en minutes, par identifiant de tâche (utilisé par project())
+}
+
+interface LayoutResult {
+  schedule: Schedule;
+  diagnostics: SchedulingDiagnostic[];
+}
+```
+
+Positionne le graphe de tâches sur une chronologie relative, exprimée en minutes à partir de l'instant 0 (démarrage de la première tâche).
+
+Le travail actif est systématiquement planifié sur sa durée nominale (`nominal`), indépendamment de l'option `rests`. Pour les durées passives exprimées sous forme de fourchette, l'option `rests` sélectionne la borne minimale (`shortest`), la valeur médiane (`balanced`) ou la borne maximale (`longest`). Les temps passifs à durée fixe ainsi que les minuteurs actifs ne sont pas modifiés.
+
+Toute valeur passée dans `restOverrides` qui excèderait la fourchette autorisée d'un temps passif est ignorée : aucune durée passive n'est étirée ou compressée au-delà des limites définies par la recette.
+
+```typescript
+import { compile } from '@gram-lang/kitchen';
+import { layout } from '@gram-lang/scheduler';
+
+const { tasks } = compile(ast);
+
+const { schedule, diagnostics } = layout(tasks, {
+  miseEnPlace: 'upfront',
+  rests: 'longest',
+});
+// schedule.totalTime, schedule.blocks, schedule.sessions...
+```
+
+Par défaut, la propriété `compiled.schedule` d'une recette compilée correspond exactement à `layout(compiled.tasks).schedule`.
+
+### `Schedule`
+
+```typescript
+interface Schedule {
+  miseEnPlace: MiseEnPlaceMode;
+  rests: RestChoice;
+  totalTime: number;       // fin la plus tardive parmi l'ensemble des blocs
+  activeTime: number;      // durée totale du travail actif, mise en place exclue
+  preparationTime: number; // durée de la mise en place (somme des tâches `prep`)
+  idleTime: number;        // temps d'inactivité global : totalTime - activeTime - preparationTime
+  blocks: ScheduleBlock[]; // triés par heure de début, puis par heure de fin
+  sessions: ScheduleSession[]; // une par journée de travail, de la plus lointaine au jour J
+}
+
+type ScheduleBlock =
+  | { kind: "prep"; task: string; section: number; start: number; end: number; deferred?: true; items?: MiseEnPlaceItem[] }
+  | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
+  | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
+
+interface ScheduleSession {
+  day: number;      // 0 = jour de service (J), 1 = veille (J-1, ~{-1d})...
+  start: number;    // bornes de début et fin du travail actif de la session
+  end: number;
+  sections: number[];
+}
+```
+
+Lorsqu'un bloc `prep` regroupe plusieurs préparations partageant les mêmes bornes de début et de fin, son champ `task` reçoit l'identifiant de la première tâche du groupe.
+
+### `SchedulingDiagnostic`
+
+Diagnostics structurels émis par `layout()` sous forme de données neutres (Kitchen les convertit ensuite en avertissements utilisateur) :
+
+```typescript
+type SchedulingDiagnostic =
+  | { code: "TIME_PARADOX"; section: number; pulledTo: number }
+  | { code: "TRACK_CONTENTION"; section: number; trackName: string; delay: number }
+  | { code: "SESSION_OVERFLOW"; section: number; day: number; overflowMinutes: number };
+```
+
+Le code `SESSION_OVERFLOW` signale que le travail actif d'une session déborde en amont de la fenêtre de 24 heures allouée à cette journée de travail (repoussé par l'enchaînement des étapes). Seul le travail actif est pris en compte dans cette limite, et non les temps passifs franchissant la nuit.
+
+## Le graphe de tâches
+
+```typescript
+interface TaskGraph {
+  tasks: Task[];                // ordonnancées par sections puis étapes, la tâche prep en tête de section
+  sections: TaskGraphSection[]; // structure parallèle aux sections de la recette
+}
+
+type Task = PrepTask | StepTask | TimerTask;
+
+interface TaskDuration {
+  nominal: number; // durée de référence utilisée par défaut
+  min?: number;    // uniquement pour un temps passif exprimé en fourchette
+  max?: number;
+}
+
+interface PrepTask {
+  id: string;
+  kind: "prep";
+  section: number;
+  intermediate?: string; // défini pour la préparation d'un intermédiaire (&pâte)
+  duration: TaskDuration;
+  items: MiseEnPlaceItem[];
+  after: string[];       // étape produisant l'intermédiaire (si déjà résolue)
+}
+
+interface StepTask {
+  id: string;
+  kind: "step";
+  section: number;
+  step: number;          // indice de l'étape au sein de la section (commentaires inclus)
+  duration: TaskDuration;
+  produces?: string[];   // intermédiaires déclarés dans la recette
+  consumes?: string[];
+  after: string[];
+}
+
+interface TimerTask {
+  id: string;
+  kind: "passive";
+  section: number;
+  step: number;
+  track?: string;        // piste d'équipement dédiée (~_four{})
+  offset: number;        // décalage en minutes par rapport au début de l'étape
+  duration: TaskDuration;
+  after: string[];
+}
+
+interface TaskGraphSection {
+  day: number;           // 0 = jour de service ; une ancre en jours initie une nouvelle journée
+  deadline?: number;     // ancre temporelle, en minutes avant l'échéance finale
+  intermediate?: string; // intermédiaire produit par la section entière
+}
+```
+
+Les identifiants de tâches sont stables et explicites : `s0.prep`, `s1.prep.pâte`, `s0.3`, `s0.3.t0`.
+
+## `project`
+
+```typescript
+function project(recipes: ProjectionInput[], context: ProjectionContext): ProjectedPlan
+
+interface ProjectionInput {
+  graph: TaskGraph;
+  title?: string;
+  options?: LayoutOptions;
+}
+
+interface ProjectionContext {
+  serveAt: string;        // date-heure locale cible ("2026-10-11T13:00") dans timeZone
+  timeZone: string;       // identifiant de fuseau IANA ("Europe/Paris")
+  availability: Availability;
+  now?: string;           // instant ISO ou heure locale de référence pour START_IN_PAST (par défaut, aucune vérification relative à l'horloge)
+}
+
+interface Availability {
+  daily: TimeRange[];                               // plage quotidienne par défaut
+  weekdays?: Partial<Record<Weekday, TimeRange[]>>; // "mon" … "sun" ; [] indique une indisponibilité complète
+  dates?: Record<string, TimeRange[]>;              // "2026-10-09" ; surcharge prioritaire sur weekdays
+}
+
+interface TimeRange {
+  start: string;
+  end: string;            // "08:00"–"22:00" ; une heure de fin antérieure au début traverse minuit
+}
+```
+
+Positionne l'ordonnancement d'une recette sur le calendrier réel afin d'achever la préparation à l'heure de service cible. Les durées passives élastiques sont ajustées pour que le travail actif s'insère dans les plages de disponibilité de l'utilisateur.
+
+L'algorithme de résolution des conflits est glouton et déterministe (sans recherche d'optimum global). Bien qu'il accepte en entrée une liste de recettes, seule la première est planifiée actuellement (les recettes supplémentaires déclenchent le diagnostic `MULTI_RECIPE_UNSUPPORTED`). Un fuseau horaire IANA invalide ou une heure de service mal formée lève une exception `RangeError`.
+
+```typescript
+const plan = project(
+  [{ graph: tasks, title: 'Pain de campagne' }],
+  {
+    serveAt: '2026-10-11T13:00',
+    timeZone: 'Europe/Paris',
+    availability: {
+      daily: [{ start: '08:00', end: '22:00' }],
+      weekdays: { sun: [{ start: '09:00', end: '20:00' }] },
+    },
+  },
+);
+```
+
+### `ProjectedPlan`
+
+```typescript
+interface ProjectedPlan {
+  serveAt: string;
+  timeZone: string;
+  recipes: {
+    title?: string;
+    blocks: ProjectedBlock[];     // blocs planifiés avec start/end au format ISO 8601 (UTC)
+    sessions: ProjectedSession[]; // et startLocal/endLocal : heure locale dans le fuseau ("2026-10-10T21:40")
+  }[];
+  adjustments: RestAdjustment[];  // ajustements appliqués aux temps passifs élastiques
+  unavailable: { start: string; end: string }[]; // périodes d'indisponibilité intersectant la plage du plan
+  diagnostics: ProjectionDiagnostic[];
+}
+
+interface RestAdjustment {
+  task: string;
+  from: number; // minutes
+  to: number;
+  reason: "avoid-unavailable";
+}
+
+type ProjectionDiagnostic =
+  | { code: "ACTIVE_OUTSIDE_AVAILABILITY"; task: string; local: string; rest?: string }
+  | { code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY"; tasks: string[]; minutes: number; largest: number }
+  | { code: "SESSION_DAY_MISMATCH"; day: number; expected: string; actual: string }
+  | { code: "START_IN_PAST"; start: string; now: string }
+  | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
+```
+
+Ces diagnostics dépendent du contexte d'exécution et des disponibilités de l'utilisateur : ils sont portés par le résultat de `project()` et ne constituent pas des avertissements de compilation. Consultez [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/#diagnostics-et-contraintes-non-résolues) pour le détail de chaque diagnostic.
+
+## `runSheet`
+
+```typescript
+function runSheet(plan: ProjectedPlan): RunSheet
+
+interface RunSheet {
+  serveAt: string;
+  timeZone: string;
+  recipes: { title?: string; days: RunSheetDay[] }[];
+  diagnostics: ProjectionDiagnostic[];
+}
+
+interface RunSheetDay {
+  date: string;             // "2026-10-10"
+  daysBefore: number;       // 0 pour le jour J, 1 pour la veille...
+  entries: RunSheetEntry[]; // ordonnées chronologiquement
+}
+
+interface RunSheetEntry {
+  task: string;
+  kind: "prep" | "step" | "passive";
+  active: boolean;
+  section: number;
+  step?: number;
+  track?: string;
+  start: string;            // horodatages ISO 8601 (UTC)
+  end: string;
+  startLocal: string;       // horodatages locaux exacts à la minute
+  endLocal: string;
+  minutes: number;
+  adjustment?: RestAdjustment; // défini si ce temps passif a été ajusté
+}
+```
+
+Représente la structure de données d'une fiche de production opérationnelle. Le formatage textuel et le rendu visuel sont assurés par le moteur de rendu `@gram-lang/renderer` (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet` ; voir la [référence du renderer](/fr/docs/reference/api/renderer/)).
+
+## Options et utilitaires
+
+```typescript
+type MiseEnPlaceMode = "perSection" | "upfront" | "perSession";
+const MISE_EN_PLACE_MODES: readonly MiseEnPlaceMode[];
+const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode; // "perSection"
+function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode;
+
+type RestChoice = "shortest" | "balanced" | "longest";
+const REST_CHOICES: readonly RestChoice[];
+const DEFAULT_REST_CHOICE: RestChoice; // "shortest"
+function isRestChoice(value: unknown): value is RestChoice;
+
+const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+// Manipulation de dates sans dépendance tierce, adossée à un fuseau explicite
+function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T13:00" → minutes depuis l'époque Unix (UTC)
+function parseInstant(value: string, timeZone: string): number;  // instant ISO (avec 'Z' ou décalage UTC) ou heure locale
+function toLocalIso(utcMinutes: number, timeZone: string): string; // → "2026-10-11T13:00"
+function toUtcIso(utcMinutes: number): string;                    // → "2026-10-11T11:00:00Z"
+```
+
+Lors du passage à l'heure d'été, une heure locale inexistante (par exemple 02:30 lors de l'avance des horloges) est automatiquement décalée vers la première heure valide suivante ; lors du passage à l'heure d'hiver, une heure ambiguë (apparaissant deux fois lors du recul) est résolue sur sa première occurrence.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Planifier en heures réelles"
+    description="Comprenez l'articulation entre heure de service, fenêtres de disponibilité et rétroplanning."
+    href="/fr/docs/explanation/planning-in-real-time/"
+  />
+  <LinkCard
+    title="Le moteur d'ordonnancement"
+    description="Plongez dans l'algorithme à deux passes et la résolution ALAP des tâches culinaires."
+    href="/fr/docs/explanation/engine/scheduler/"
+  />
+  <LinkCard
+    title="API Renderer"
+    description="Générez des fiches de production textuelles, Markdown ou HTML prêtes à l'impression."
+    href="/fr/docs/reference/api/renderer/"
+  />
+  <LinkCard
+    title="Planifier un repas complet"
+    description="Guide pas à pas pour synchroniser plusieurs préparations culinaires sur un même calendrier."
+    href="/fr/docs/how-to/plan-a-meal/"
+  />
+</CardGrid>
+

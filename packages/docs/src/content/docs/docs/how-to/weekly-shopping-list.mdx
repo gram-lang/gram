@@ -16,7 +16,7 @@ Use the CLI `gram shop` command and pass a glob pattern targeting your recipes.
 gram shop "menus/week-1/*.gram"
 ```
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ### What happens during aggregation?
 
@@ -52,3 +52,18 @@ gram shop "menus/*.gram" --format md --output shopping-list.md
 # Export to JSON
 gram shop "menus/*.gram" --format json --output shopping-list.json
 ```
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Shopping list aggregation"
+    description="Deep dive into unit normalization, alias resolution, and category ordering."
+    href="/docs/explanation/shopping-list-aggregation/"
+  />
+  <LinkCard
+    title="Organize modular recipes"
+    description="Learn how multi-file recipes automatically merge their ingredients into a single list."
+    href="/docs/how-to/organize-modular-recipes/"
+  />
+</CardGrid>

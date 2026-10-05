@@ -1,0 +1,176 @@
+---
+title: "@gram-lang/renderer"
+description: "Rendering compiled recipes to Markdown, HTML, print-ready documents, and interactive Gantt chart timelines."
+---
+
+import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Handles rendering of a `CompilationResult` (or `AnalyzedCompilationResult`) to Markdown, HTML, or a standalone print-ready HTML document. If you are building a custom frontend UI in a component framework (React, Vue, Svelte, etc.), you will typically consume the JSON object directly rather than using this package. See the [Building a custom UI](/docs/how-to/build-custom-ui) guide.
+
+## `toMarkdown` / `toHTML` / `toPrintHTML`
+
+```typescript
+type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
+
+function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
+function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+```
+
+```typescript
+import { compile } from '@gram-lang/kitchen';
+import { toHTML } from '@gram-lang/renderer';
+
+const compiled = compile(ast);
+const html = toHTML(compiled, { lang: 'en' });
+```
+
+`toPrintHTML` produces a complete, standalone HTML document (with inline `<style>`, A4 `@page` rules, and no external dependencies), suitable for PDF export or paper printing. `toHTML` produces an HTML fragment intended to be embedded in an existing page layout.
+
+All three formatters use the same underlying traversal (`RenderBackend`). This guarantees that nutrition summaries, footnotes, gross purchasing mass badges, and unit warning indicators appear consistently whether targeting Markdown, HTML, or print.
+
+### `RendererOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `icons` | `RendererIcons` | Overrides default icons (see `DEFAULT_ICONS` below). |
+| `classes` | `RendererClasses` | Overrides CSS class names applied to generated HTML elements (HTML/print only). |
+| `formatFraction` | `(value: number) => string` | Custom decimal-to-fraction formatter (defaults to common kitchen fractions, e.g. `0.5` → `"1/2"`). |
+| `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30m"`). |
+| `hideStepQty` | `boolean` | Suppresses ingredient quantities within step instruction text (shopping list and section ingredient lists remain unchanged). |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Controls preparation placement: immediately before each section (`'perSection'`, default), upfront at recipe start (`'upfront'`), or at the start of each working day (`'perSession'`). Determines header total and idle times. With `'perSection'`, HTML outputs a "Mise en place" badge on each section's ingredient list (duration and tooltip details). In the other two modes, each session opens with an explicit preparation block (`D-3`, `D-1`, `Day D`...), and HTML badges are reserved for deferred intermediate preparations. Ingredient lists are identical across modes. The timeline is laid out from `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
+| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Real-calendar projection computed via `project()` from `@gram-lang/scheduler`. Adds wall-clock timestamps next to steps ("around 21:40"), target serving time and constraint notices in the header, day transitions (`D-1`, `Day D`), and notes on stretched/shortened passive durations. Header times reflect the real calendar plan. Without this option, recipes render with relative elapsed times. |
+| `runSheet` | `boolean` | <Since v="1.4.0" /> When `projection` is supplied: appends the operational production sheet after the recipe in the same document (under a dedicated Markdown heading, or formatted with print styles). Recipe and run sheet present the same operations under two complementary lenses: section grouping versus chronological execution. |
+| `bakersMathOnly` | `boolean` | Shows only baker's percentages, hiding absolute ingredient quantities. |
+| `interactiveScaling` | `boolean` | Emits interactive scaling controls for yield and ingredient adjustments (HTML only). |
+| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) uses per-portion if portions are declared, otherwise whole recipe. |
+| `interactiveNutrition` | `boolean` | HTML only: emits all available nutrition bases under a pure CSS interactive selector. Requires the renderer stylesheet; ignored if `nutritionBasis` locks a specific basis. |
+| `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
+| `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
+
+## Gantt charts (`toGanttHTML` & `attachGanttInteractivity`)
+
+Renders an interactive timeline visualizing active steps, passive equipment/rest periods, and idle-time compression.
+
+```typescript
+import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
+
+// 1. Generate static HTML fragment
+const ganttHtml = toGanttHTML(compiled, { lang: 'en' });
+container.innerHTML = ganttHtml;
+
+// 2. Attach interactivity and hover tooltips
+const handle = attachGanttInteractivity(container, {
+  timeMode: 'forward',   // 'forward' (stopwatch T+), 'reverse' (countdown T-), or 'target' (serve time)
+  targetTime: '19:30',   // Target serve time (HH:MM)
+  isCompactMode: false   // Compact row height
+});
+
+// Update options dynamically
+handle.setOptions({ isCompactMode: true });
+
+// Teardown event listeners on unmount
+handle.dispose();
+```
+
+### `GanttRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Language code (e.g. `'en'`, `'fr'`) for localized UI strings via `@gram-lang/i18n`. |
+| `gapThresholdMinutes` | `number` | Minimum idle period before visual compression applies (default: `60`). `Infinity` disables compression. |
+| `compressedGapSize` | `number` | Virtual minute width to which compressed idle gaps are shrunk (default: `20`). |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Preparation placement strategy (default: `'perSection'`). Section preparation appears as a dashed block in the section's color; with `'perSession'`, day markers identify each working session. Computed from `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Elasticity for range-based passive timers (default: `'shortest'`). |
+| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Calendar projection computed via `project()` from `@gram-lang/scheduler`. The chart plots plan blocks directly (stretched or shortened passive durations appear at their actual scheduled span with dashed borders and notes), displays a time axis in local date and wall-clock times, shades unavailable intervals, and locks out the relative time-mode toggle. `miseEnPlace` and `rests` are inherited from the plan. |
+
+### `GanttInteractivityOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `timeMode` | `'forward' \| 'reverse' \| 'target'` | Timeline display mode: elapsed time (T+), countdown (T-), or clock time anchored to serve time. |
+| `targetTime` | `string` | Target serve time in `"HH:MM"` format. |
+| `isCompactMode` | `boolean` | Toggles compact vertical row height. |
+
+## Icons
+
+```typescript
+import { DEFAULT_ICONS, toHTML } from '@gram-lang/renderer';
+
+const html = toHTML(compiled, {
+  icons: { ...DEFAULT_ICONS.html, clock: '<svg class="my-clock-icon">...</svg>' },
+});
+```
+
+`DEFAULT_ICONS` provides two full icon sets: `DEFAULT_ICONS.html` (inline Phosphor SVG elements) and `DEFAULT_ICONS.md` (emojis). They cover all identifiers in `RendererIcons` (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Any icon can be overridden individually via `options.icons`.
+
+## Formatting utilities
+
+Low-level utilities used internally by formatters are exported to support building custom renderers adhering to language conventions:
+
+```typescript
+function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
+function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
+function formatQuantityValue(q: any): string                // Timer/temperature quantity -> display string
+function formatDuration(minutes: number): string            // 90 -> "1h 30m"; minute precision at >=1h, seconds below (64.5 -> "1h 5m", 0.33 -> "20s")
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
+function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
+function escapeHtml(unsafe: string | null | undefined): string
+function escapeMarkdownHtml(unsafe: string | null | undefined): string   // escapes `<`/`&` for downstream markdown-to-HTML safety
+function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
+```
+
+## Production run sheet <Since v="1.4.0" />
+
+From a plan generated by `project()` and the corresponding compiled recipe, the renderer produces operational production sheets across four formats, along with a structured descriptive model for custom UI development:
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+import { runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML, describeRunSheet } from '@gram-lang/renderer';
+
+const sheet = runSheet(project([{ graph: compiled.tasks }], context));
+
+runSheetToText(sheet, compiled, { lang: 'en' });      // plain text
+runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown document
+runSheetToHTML(sheet, compiled, { lang: 'en' });      // styled HTML fragment
+runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print-ready HTML
+const model = describeRunSheet(sheet, compiled);       // { title, servedAt, days: [{ heading, lines }], problems }
+```
+
+### `RunSheetRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Language code (`'en'`, `'fr'`) for labels and date formatting. |
+| `roundTo` | `number` | Display only: visual rounding of timestamps to minute intervals (default: `5`). Internal computations remain exact. |
+| `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
+
+Each run sheet entry lists estimated start time ("around 21:40"), task label, active work duration, and target completion time for passive phases. Tasks with zero active time are merged with their triggered passive phase. Stretched or shortened passive durations carry explanatory annotations, and unresolved scheduling constraints are summarized at the end of the sheet.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Build a custom UI"
+    description="Render recipe components natively with React, Vue, Svelte, or vanilla DOM."
+    href="/docs/how-to/build-custom-ui/"
+  />
+  <LinkCard
+    title="Scheduler API"
+    description="Generate project plans and run sheets that feed into the renderer."
+    href="/docs/reference/api/scheduler/"
+  />
+  <LinkCard
+    title="Kitchen API"
+    description="Understand the upstream CompilationResult that provides renderable recipe data."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="Examine JSON output specifications and token trees for custom templates."
+    href="/docs/reference/api/data-formats/"
+  />
+</CardGrid>
+

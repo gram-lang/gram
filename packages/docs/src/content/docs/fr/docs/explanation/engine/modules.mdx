@@ -4,6 +4,7 @@ description: "Comment @gram-lang/modules résout les graphes de dépendances, is
 ---
 
 import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.2.0" />
 
@@ -88,3 +89,23 @@ Gram propose deux approches complémentaires pour cuisiner avec des sous-recette
 | **Calcul Nutritionnel** | Somme des ingrédients bruts individuels. | Calculé via un ingrédient synthétique pondéré selon la masse réelle et les macros du sous-module. |
 
 En mode stock, `composeRecipe()` crée à la volée un ingrédient synthétique (`syntheticIngredients`) porteur du profil nutritionnel et de la masse unitaire exacte de la sous-recette. Transmis à `@gram-lang/analyzer`, il assure que le total calorique et les macronutriments de votre plat restent mathématiquement rigoureux, même quand vous gagnez du temps en cuisine en achetant une base toute prête.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Syntaxe des modules"
+    description="Syntaxe des directives @use, espaces de noms, renommages et décalages ALAP."
+    href="/fr/docs/reference/syntax/modules/"
+  />
+  <LinkCard
+    title="Organiser des recettes modulaires"
+    description="Guide pratique pour structurer des collections multi-fichiers et bases culinaires."
+    href="/fr/docs/how-to/organize-modular-recipes/"
+  />
+  <LinkCard
+    title="Référence de l'API Modules"
+    description="Documentation complète de loadModuleGraph(), composeRecipe() et ModuleHost."
+    href="/fr/docs/reference/api/modules/"
+  />
+</CardGrid>

@@ -27,7 +27,7 @@ flowchart TD
     DensityCheck -- Non --> MultiUnit["Fallback : multiUnit=true<br/>(Regroupement sous un titre unique)"]
 ```
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. ### Normalisation des ID et alias
@@ -75,4 +75,24 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## Le résultat final
 En sortie, vous obtenez un tableau d'objets `ShoppingItem` hautement optimisé, dédupliqué et mathématiquement rigoureux. Il est regroupé par clés de catégories culinaires stables (`CATEGORY_KEYS` issues de `@gram-lang/i18n`) et trié selon les règles de traduction locales (`getCategoryLabels(lang)`), prêt à être injecté dans votre terminal ou votre interface web.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Générer une liste de courses consolidée"
+    description="Générez des listes d'achats groupées à partir de plusieurs recettes .gram via le CLI."
+    href="/fr/docs/how-to/weekly-shopping-list/"
+  />
+  <LinkCard
+    title="Syntaxe des ingrédients composites"
+    description="Comment les relations parent-enfant (<@) sont déclarées et interprétées dans les recettes."
+    href="/fr/docs/reference/syntax/composite-ingredients/"
+  />
+  <LinkCard
+    title="Référence de l'API Kitchen"
+    description="Découvrez les types de la liste de courses, buildShoppingList() et les options d'agrégation."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+</CardGrid>
 

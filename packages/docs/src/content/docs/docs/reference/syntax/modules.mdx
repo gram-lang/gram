@@ -11,9 +11,7 @@ import Since from '../../../../../components/Since.astro';
 A recipe can `@use` another `.gram` file as a reusable sub-component — a shortcrust pastry, a stock, a batch of egg whites — instead of copy-pasting its steps into every recipe that needs it.
 
 ```gram
----
 title: 'Lemon Meringue Tart'
----
 
 @use "./bases/shortcrust-pastry.gram" as &shortcrust
 
@@ -26,7 +24,6 @@ title: 'Lemon Meringue Tart'
 
 The imported recipe's steps are seamlessly inlined into the timeline: a base's resting time interleaves with the host's steps, and its raw ingredients merge directly onto the unified shopping list.
 
----
 
 ## Syntax
 
@@ -54,7 +51,6 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
 * Supported formats: relative path (`./`, `../`), project root (`@/`), or custom alias (`@alias/`).
 * Paths are strictly confined to the project root containing `.gram/` — absolute paths or URLs are rejected.
 
----
 
 ## Project-root & aliased paths
 
@@ -88,16 +84,13 @@ The imported recipe's steps are seamlessly inlined into the timeline: a base's r
   </TabItem>
 </Tabs>
 
----
 
 ## What a module exports
 
 Only **section-level** intermediate variables (`->&` on a `## Section` header) are exported. Step-level intermediates (`->&` inside a step) remain private to the module. See [Intermediate Variables](/docs/reference/syntax/intermediate-variables).
 
 ```gram title="bases/tart-elements.gram"
----
 title: 'Tart Elements'
----
 
 ## Sweet Pastry ->&crust
 
@@ -114,16 +107,13 @@ title: 'Tart Elements'
 * **No Implicit Re-exports**: If `sauce.gram` imports `&stock` from `stock.gram`, importing `sauce.gram` only provides `&sauce`, not `&stock`. Re-exporting must be explicit via a dedicated section.
 :::
 
----
 
 ## Scaling
 
 Gram measures a module's own output from its ingredients — nothing to declare:
 
 ```gram title="bases/shortcrust.gram"
----
 title: 'Shortcrust Pastry'
----
 
 ## Pastry
 
@@ -141,9 +131,7 @@ If working out a module's mass depends on an estimated density or a default unit
 When importing multiple components from the same module, each component is measured on its own — from its own section's ingredients, plus anything that section itself references. If different ratios are requested, the **largest ratio** applies to the entire module, and Gram reports the extra production:
 
 ```gram title="bases/tart-elements.gram"
----
 title: 'Tart Elements'
----
 
 ## Sweet Pastry ->&crust
 
@@ -176,7 +164,6 @@ When asymmetrical ingredient demands force Gram to apply the higher multiplier a
 
 When a discrete count is requested against a module's measured mass (`&cookies{2}` against a module that measures out to 500g), Gram interprets the request as *2 full batches* and emits `MODULE_BATCH_INTERPRETATION`.
 
----
 
 ## Chained imports & transitivity
 
@@ -189,7 +176,6 @@ recipe.gram ──▶ @use "./sauce.gram" ──▶ @use "./stock.gram"
 * **Encapsulation**: `recipe.gram` interacts only with `&sauce`. Private steps and local variables of `stock.gram` remain isolated.
 * **Unified Schedule & Shopping List**: Raw ingredients (carrots, aromatics, bones) and simmering steps from `stock.gram` automatically bubble up into the main recipe.
 
----
 
 ## Diamond dependencies & cycle prevention
 
@@ -206,14 +192,12 @@ When a menu imports multiple dishes sharing a common base (e.g. an entrée and a
 If Recipe A imports B which imports A (directly or indirectly), Gram detects the circular dependency, cuts off that one import branch, and reports a `MODULE_CYCLE` error diagnostic displaying the full dependency loop (`A -> B -> A`). The rest of the recipe still compiles — the cyclic binding is left unresolved rather than crashing the whole build — but `gram check` (and any `--strict` run) fails on it, since `MODULE_CYCLE` is error-severity.
 :::
 
----
 
 ## Encapsulation
 
 * **Section Scoping**: Relative quantities (`@water{70% @&flour}`) and ingredient checks resolve only within the module's own sections. Host recipes using identical ingredient names never cause conflicts.
 * **Headless Modules**: A module without section headers (`##`) is isolated into its own dedicated section upon import — it never merges into the host's untitled section.
 
----
 
 ## Frontmatter inheritance
 
@@ -223,7 +207,6 @@ Informational metadata (`title`, `description`, `author`, `tags`, `category`) be
 * `densities:` merges into the host (host values take precedence on conflict).
 * Baker's percentage references (`*`) inside imported modules are stripped on import.
 
----
 
 ## Stocking an import (`--stock`)
 
@@ -240,7 +223,6 @@ gram cook dinner.gram --stock @bases/bouillon.gram
 
 Supported by all CLI commands resolving `@use` (`build`, `check`, `view`, `export`, `cook`, `print`, `watch`, `shop`, `scale`).
 
----
 
 ## Anchoring an import in time (`~{-2d}`)
 
@@ -259,7 +241,6 @@ When a fresh preparation must be started in advance (e.g. a sourdough starter or
 * Combining `--stock` with `~{...}` on the same import causes the time anchor to be ignored, triggering a `STOCKED_RETRO_PLANNING_IGNORED` diagnostic.
 :::
 
----
 
 ## Editor & language server support
 
@@ -270,7 +251,6 @@ The Gram Language Server resolves `@use` directives in real time:
 * **Go to Definition**: Jumping to `&pate` opens the source module at the exact exported section.
 * **Auto-completion**: Typing `@use "` completes `./`, `../`, `@/`, and configured `paths:` aliases.
 
----
 
 ## Related documentation
 

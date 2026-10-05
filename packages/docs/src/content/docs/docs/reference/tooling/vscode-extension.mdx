@@ -1,0 +1,121 @@
+---
+title: "VS Code extension"
+description: "Overview of the Gram VS Code extension: live preview, nutrition panel, Gantt chart view, and smart ingredient matching."
+---
+
+import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+The official Gram VS Code extension turns your editor into a dedicated recipe development environment. Powered by `@gram-lang/language-server`, it provides real-time diagnostics, advanced editing assistance, and dynamic live rendering.
+
+## Core capabilities
+
+### 1. Dynamic live preview & nutrition
+- **Side-by-side rendering**: As you type, the extension compiles your `.gram` file into HTML within a dedicated WebView panel. It uses the official Playground styles, ensuring a 1:1 match with production output.
+- **Syntax error fallbacks**: If your recipe contains syntax errors that prevent compilation, the preview panel displays the corresponding error message, keeping you informed without interrupting editor operation.
+
+:::note[📊 Nutrition CodeLens]
+A dedicated `CodeLens` button appears above the recipe title. Clicking it reveals a complete nutrition breakdown (calories, protein, carbohydrates, fat) within the live preview. It also flags ingredients missing from your database.
+:::
+
+### 2. Gantt chart view
+- **Timeline panel**: Run `Gram: Gantt Chart` (or click the timeline icon in the editor toolbar) to open a dedicated chronological view — active preparation steps, passive timers, and visual idle-time compression — in its own WebView panel, independent from the live preview.
+- **Time modes**: Switch between elapsed time (stopwatch, T+), countdown (T-), and retro-planning anchored to a target serving time via the panel dropdown.
+- **Compact view**: Toggle a denser row layout for complex recipes with many concurrent steps.
+- **Mise en place**: Each section's preparation is rendered as a dashed block in the section's color, scheduled by default immediately before that section, upfront at the start of the recipe, or at the start of each working session (see the `gram.miseEnPlace` setting below).
+
+#### The `gram.miseEnPlace` setting <Since v="1.4.0" />
+
+| Value | Effect |
+|---|---|
+| `perSection` (default) | Each section's mise en place is scheduled immediately before that section. |
+| `upfront` | All mise en place tasks are scheduled at the start of the recipe. |
+| `perSession` | The mise en place of each working day is scheduled at the start of that day (days derive from section day anchors, `~{-Nd}`). |
+
+The setting drives the live preview, the Gantt chart, and the total time hint displayed next to the recipe title. It adjusts computed total and idle times without altering ingredient lists, and applies immediately to all open documents without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+
+#### The `gram.rests` setting <Since v="1.4.0" />
+
+| Value | Effect |
+|---|---|
+| `shortest` (default) | A range-based passive timer (`~_{12-24h}`) is resolved to its minimum duration. |
+| `balanced` | The passive timer is resolved to the midpoint of its range. |
+| `longest` | The passive timer is resolved to its maximum duration. |
+
+Fixed passive timers and active timers with ranges (`~{20-25min}`, always planned using their upper bound) are unaffected. Like `gram.miseEnPlace`, this setting drives the live preview, the Gantt chart, and the total time hint, applying immediately to all open files. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+
+A working session pushed beyond 24 hours by a prolonged passive phase triggers an explicit warning on its section (`SESSION_OVERFLOW`), matching compiler diagnostics.
+
+### 3. Smart ingredient management
+- **Silent plural management**: The extension automatically maps common plural nouns in your recipe (e.g. `@carrots`) to singular entries in your YAML database (`carrot`), maintaining natural language without raising false errors.
+- **Fuzzy matching**: If you misspell an ingredient, a Levenshtein distance algorithm suggests the closest known match via Code Actions (Quick Fixes).
+- **Hover insights**: Hover over any ingredient to inspect its full nutritional profile. If the database specifies a density, the hover display instantly converts volume measurements to physical mass (e.g. `1 tbsp → 15g`).
+
+:::tip[Automatic database discovery]
+The extension automatically detects the `.gram/ingredients.yaml` file located at the workspace root. For custom folder layouts, specify `gram.ingredientDatabase.path` in your VS Code settings.
+:::
+
+### 4. Editing assistance & navigation
+- **Semantic tokens**: Highlighting is driven directly by the compiler AST rather than regular expressions. Modifiers, nested units, and composite ingredients (`<@`) are colored accurately according to their syntactic role.
+- **Intelligent autocomplete**:
+  - `@` suggests ingredients declared in your database, automatically enclosing multi-word names in `{}` brackets.
+  - `&` suggests available intermediate declarations (e.g. `->&dough`).
+  - `{}` contextually suggests canonical units (mass, volume, time) and their aliases as soon as a digit is typed.
+
+#### Navigation shortcuts
+
+| Shortcut | Command | Behavior |
+|---|---|---|
+| `F12` | Go to Definition | Jumps from a reference (`&ref`) to its original declaration (`->&ref`). |
+| `Shift+F12` | Find All References | Locates every usage of a specific intermediate variable across the document. |
+| `F2` | Rename Symbol | Safely and atomically renames an intermediate variable across the entire document. |
+
+### 5. Diagnostics & refactoring
+- **Real-time validation**: The language server immediately flags orphaned references, unused declarations, and scheduling conflicts.
+- **Code Actions 💡**:
+  - Add missing `title:` frontmatter property.
+  - Remove unused intermediate declarations.
+  - Declare a missing intermediate for an orphaned reference.
+  - Convert volume measurements to mass directly in code (if density is known).
+
+### 6. Auto-formatting
+Trigger document formatting (`Alt+Shift+F` or `Shift+Option+F` on macOS) to instantly normalize syntax using the 13 canonical rules:
+
+```diff
+- ##    Dough   ->&dough
+- Add @lemon zest{1} < @lemon and @salt{ 15 g }.
++ ## Dough ->&dough
++ Add @lemon zest{1}<@lemon and @salt{15g}.
+```
+
+## Editor UI enhancements
+- **Inlay hints**: Displays estimated total recipe time at the end of the `title:` line, allowing you to assess duration at a glance. It updates dynamically according to `gram.miseEnPlace` and `gram.rests`.
+- **Outline view**: The native VS Code Outline panel populates with a clean hierarchy of sections and intermediate variables, making large recipes easy to navigate.
+- **Gutter folding**: Frontmatter blocks and section bodies can be folded to maximize screen space.
+- **Rich snippets**: Use trigger prefixes like `recipe`, `##`, `step`, `@ing`, or `#cw` to rapidly scaffold complete recipe structures.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Language server"
+    description="Learn how the underlying LSP process powers completions, diagnostics, and hover."
+    href="/docs/reference/tooling/language-server/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Use the command-line interface to compile, diff, and plan outside the editor."
+    href="/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Format API"
+    description="Explore the 13 canonical formatting rules applied by format-on-save."
+    href="/docs/reference/api/format/"
+  />
+  <LinkCard
+    title="Syntax cheatsheet"
+    description="Keep the complete syntax reference handy while editing recipes."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>
+

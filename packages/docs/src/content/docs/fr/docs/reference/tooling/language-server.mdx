@@ -1,43 +1,69 @@
 ---
-title: "Serveur de langage (Language Server)"
+title: "Serveur de langage (LSP)"
 description: "Comment le Serveur de Langage Gram implémente le LSP pour les diagnostics, jetons sémantiques et fonctionnalités d'IDE."
 ---
 
-Le Serveur de Langage Gram (`@gram-lang/language-server`) est le cerveau derrière l'intégration de Gram dans vos éditeurs. En implémentant le standard **Language Server Protocol (LSP)**, il déploie des fonctionnalités d'IDE avancées pour les fichiers `.gram` sur une multitude d'éditeurs (et pas uniquement VS Code).
+Le Serveur de Langage Gram (`@gram-lang/language-server`) est le moteur d'analyse sous-jacent de l'intégration de Gram dans vos éditeurs de code. En implémentant le standard **Language Server Protocol (LSP)**, il fournit des fonctionnalités d'IDE avancées pour les fichiers `.gram` sur une multitude d'éditeurs (VS Code, Neovim, Helix, etc.).
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Architecture
 
-Le serveur agit comme un processus de fond persistant, qui analyse vos fichiers `.gram` à l'aide des paquets `@gram-lang/parser` et `@gram-lang/kitchen`. 
+Le serveur s'exécute comme un processus persistant en arrière-plan qui analyse vos fichiers `.gram` à l'aide des paquets `@gram-lang/parser`, `@gram-lang/kitchen` et `@gram-lang/scheduler`.
 
-**Le workflow en temps réel :**
+**Flux de traitement en temps réel :**
 <Steps>
-1. **Éditeur** ➔ Dispatche les modifications du fichier à chaque frappe au clavier.
+1. **Éditeur** ➔ Transmet les modifications du document à chaque frappe au clavier.
 
-2. **Serveur de Langage** ➔ Intercepte les *diffs* et demande au Compilateur Gram de réévaluer l'AST en mémoire.
+2. **Serveur de langage** ➔ Intercepte les deltas et sollicite la recompilation en mémoire de l'AST par le compilateur Kitchen.
 
-3. **Compilateur Gram** ➔ Analyse la nouvelle structure et émet les avertissements, les macros, et les dépendances.
+3. **Compilateur Gram** ➔ Analyse la structure, résout les dépendances, ordonnance le rétro-planning ALAP et émet les diagnostics d'intégrité et de planification.
 
-4. **Serveur de Langage** ➔ Traduit ces données en requêtes LSP standards (Diagnostics, Jetons sémantiques, Inlay Hints) et les renvoie à l'éditeur.
+4. **Serveur de langage** ➔ Traduit ces données en charges utiles LSP standardisées (Diagnostics, Jetons sémantiques, Inlay Hints) et les renvoie à l'éditeur.
 </Steps>
 
 ## Fonctionnalités LSP supportées
 
-Le Serveur de Langage Gram couvre les capacités standards suivantes :
+Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 
 | Capacité LSP | Implémentation Gram |
 |---|---|
-| **Diagnostics** | Remontée en temps réel des erreurs de syntaxe et de structure (ex : dépendances circulaires). |
-| **Semantic Tokens** | Coloration syntaxique pilotée par l'AST, idéale pour différencier les modificateurs, unités et ingrédients composites. |
-| **Completion** | Autocomplétion intelligente pour les ingrédients, les unités et les variables. |
-| **Hover** | Affiche les macros nutritionnels et les conversions volume-masse au survol de la souris. |
-| **Go to Definition** | Navigue d'une référence intermédiaire directement vers sa déclaration initiale. |
-| **Find References** | Localiser toutes les utilisations d'une variable intermédiaire spécifique. |
-| **Rename** | Renomme de manière sûre et atomique une variable intermédiaire (partout où elle est utilisée). |
-| **Code Actions** | Suggestions de corrections rapides (*quick fixes* : déclarer une variable manquante, convertir un volume en masse). |
-| **Document Formatting**| Nettoie les espaces, la syntaxe des composites et les en-têtes via `@gram-lang/format` (13 règles canoniques). |
-| **Inlay Hints** | Affiche le temps total de la recette en fin de ligne `title:`, selon le planning de mise en place choisi (les réglages `gram.miseEnPlace` et `gram.rests`). |
-| **Code Lens** | Injecte des boutons d'action interactifs (comme le calcul des Macros). |
-| **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour naviguer dans la structure de la recette. |
-| **Folding Range** | Permet de replier proprement le frontmatter YAML et les `## Sections` de la recette. |
+| **Diagnostics** | Remontée en temps réel des erreurs de syntaxe, des incohérences structurelles (dépendances circulaires) et des avertissements d'ordonnancement (`SESSION_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
+| **Semantic Tokens** | Coloration sémantique pilotée par l'AST, permettant de distinguer avec précision les modificateurs, unités, températures et ingrédients composites. |
+| **Completion** | Autocomplétion contextuelle pour les ingrédients de la base de données, les unités canoniques et les variables intermédiaires. |
+| **Hover** | Affiche la composition nutritionnelle et les conversions automatiques volume-masse au survol des ingrédients. |
+| **Go to Definition** | Navigation directe depuis une référence intermédiaire (`&ref`) vers sa déclaration source (`->&ref`). |
+| **Find References** | Inventaire exhaustif de toutes les utilisations d'une variable intermédiaire donnée à travers la recette. |
+| **Rename** | Renommage atomique et sécurisé d'une variable intermédiaire sur l'ensemble du document. |
+| **Code Actions** | Suggestions de corrections rapides (*quick fixes* : déclaration d'une variable manquante, conversion d'un volume en masse). |
+| **Document Formatting** | Normalisation syntaxique complète en appliquant les 13 règles canoniques via `@gram-lang/format`. |
+| **Inlay Hints** | Affiche la durée totale de la recette en fin de ligne `title:`, calculée selon le planning de mise en place et la résolution des temps passifs (réglages `gram.miseEnPlace` et `gram.rests`). |
+| **Code Lens** | Injecte des actions interactives contextuelles au-dessus du document (affichage du panneau nutritionnel). |
+| **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
+| **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Extension VS Code"
+    description="Installez l'extension officielle pour profiter de la coloration, de la prévisualisation et du LSP."
+    href="/fr/docs/reference/tooling/vscode-extension/"
+  />
+  <LinkCard
+    title="Référence du CLI"
+    description="Vérifiez la conformité, compilez vos recettes et formatez vos sources en ligne de commande."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="API Format"
+    description="Le moteur sous-jacent de 13 règles qui opère le formatage automatique de document."
+    href="/fr/docs/reference/api/format/"
+  />
+  <LinkCard
+    title="Avertissements du compilateur"
+    description="Consultez la signification de l'ensemble des diagnostics affichés en temps réel par le LSP."
+    href="/fr/docs/reference/api/warnings/"
+  />
+</CardGrid>
+

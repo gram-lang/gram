@@ -1,53 +1,58 @@
 ---
 title: "Deprecated features"
-description: "What is deprecated in Gram, the version that will remove it, and what to use instead, with before and after code."
+description: "Inventory of deprecated features in Gram, scheduled removal milestones, migration alternatives, and before/after code examples."
 ---
 
 import Since from '../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-This page lists what is deprecated in Gram, grouped by the version that will remove it, and it grows with each release that deprecates something. **A deprecated feature keeps working, with the same values, until that version**, and has a replacement you can switch to right now, so you can move over step by step instead of all at once.
+This page documents all features currently deprecated across Gram, categorized by their target major removal milestone. **A deprecated feature remains fully operational and maintains its exact behavior until that version**. Each element provides an immediate modern replacement, enabling smooth incremental migration without sudden breaking changes.
 
-## Do you need to do anything?
+## Do you need to take action?
 
-| You… | What to do |
+| Usage scenario | Recommended action |
 |---|---|
-| Write `.gram` recipes and use the CLI, the renderer or the playground | Nothing. No syntax is deprecated. |
-| Read the compiled JSON (`gram build`, a custom UI, a script) | Check [the compiled JSON](#the-compiled-json) and [JSON from an older version](#json-from-an-older-version). |
-| Call `@gram-lang/kitchen` or `@gram-lang/analyzer` from your own code | Check [the compiled JSON](#the-compiled-json), [`calculatePreparationTime`](#the-calculatepreparationtime-function) and [JSON from an older version](#json-from-an-older-version). |
+| Authoring `.gram` recipes via CLI, renderer, or playground | **None**. The recipe language syntax contains zero deprecations. |
+| Consuming compiled JSON (`gram build`, custom UI applications, scripts) | See [Compiled JSON fields](#compiled-json-fields) and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
+| Programmatic integration of `@gram-lang/kitchen` or `@gram-lang/analyzer` | See [Compiled JSON fields](#compiled-json-fields), [`calculatePreparationTime`](#the-calculatepreparationtime-function), and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 
-Not sure what your code uses? [Search it for the deprecated names](#find-what-you-use-today).
+To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
 
-## Removed in 2.0.0
+## Deprecations scheduled for 2.0.0
 
-### The compiled JSON
+### Compiled JSON fields
 
 <Since v="1.4.0" type="deprecated" />
 
-Since 1.4.0 a compiled recipe carries `miseEnPlace` (what preparing each section costs), `tasks` (everything there is to do and what each task waits for) and `schedule`, the default timeline laid out from them (each section's preparation right before it, the shortest rests). Any other timeline (all the preparation first, the preparation of each working day at the start of that day, longer rests) comes from `layout(recipe.tasks, options)` or `scheduleFor(recipe, mode, rests)`, without compiling again. They replace the fields below. See the [Kitchen API reference](/docs/reference/api/kitchen) for every field.
+Starting with version 1.4.0, a compiled recipe object exposes `miseEnPlace` (estimated preparation cost per section), `tasks` (neutral task dependency graph), and `schedule` (the default timeline laid out from tasks: mise en place by section, shortest passive durations).
 
-| Deprecated | Use instead |
+Any alternative timeline (upfront preparation, per working day, or longest passive durations) is computed dynamically from `tasks` via `layout(recipe.tasks, options)` or `scheduleFor(recipe, mode, rests)`, without requiring recompilation. These new properties supersede the legacy fields below:
+
+| Deprecated field | Replacement property |
 |---|---|
-| [`steps[].timings`](#step-timings-and-background-tasks) | The `step` blocks of `schedule.blocks` |
-| [`steps[].backgroundTasks`](#step-timings-and-background-tasks) | The `passive` blocks of `schedule.blocks` |
+| [`steps[].timings`](#step-timings-and-passive-tasks) | `step` blocks in `schedule.blocks` |
+| [`steps[].backgroundTasks`](#step-timings-and-passive-tasks) | `passive` blocks in `schedule.blocks` |
 | `metrics.totalTime` | `schedule.totalTime` |
 | `metrics.idleTime` | `schedule.idleTime` |
 | `metrics.activeTime` | `schedule.activeTime` |
-| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#time-breakdowns) | `miseEnPlace` and `schedule` |
+| [`metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown`](#time-breakdowns) | Structured properties `miseEnPlace` and `schedule` |
 
-`metrics.preparationTime` is **not** deprecated: it is the same in every timeline.
+:::note[Retention of metrics.preparationTime]
+The `metrics.preparationTime` metric is **not** deprecated: its value remains identical across all scheduling strategies.
+:::
 
-`metrics.activeTime` counts a timer written as a range (`~{20-25min}`) as its average, as it always did; `schedule.activeTime` plans it on its longest figure, so dinner is never late. The two are the same for a recipe without ranges.
+`metrics.activeTime` evaluated active timers specified as ranges (`~{20-25min}`) at their midpoint value, matching historical behavior. Conversely, `schedule.activeTime` plans them using their maximum bound to ensure dinner is never late. The two values are strictly identical for recipes without ranges.
 
-The old `metrics.totalTime` is the total with every preparation first. Gram's own tools show `perSection` by default, so use `scheduleFor(recipe, 'upfront')` if you want the closest number to the one you had before: it is the same unless the recipe has intermediates, which `upfront` prepares once they exist, so it can be shorter.
+The legacy `metrics.totalTime` metric calculated total time assuming all preparations took place upfront. Gram tools now default to `perSection`: use `scheduleFor(recipe, 'upfront')` to obtain a value comparable to earlier behavior. Results will match unless the recipe includes intermediate ingredients (which upfront mode gathers only once produced).
 
-### Step timings and background tasks
+### Step timings and passive tasks
 
-Before, each step carried its own timing and its waiting tasks:
+Previously, each step encapsulated its own timing data and passive background tasks:
 
 ```typescript
 for (const section of recipe.sections) {
   for (const step of section.steps) {
-    if (step.type !== 'step') continue; // comments have no timings
+    if (step.type !== 'step') continue; // comments have no timing data
     draw(step.action, step.timings.start, step.timings.end);
     for (const task of step.backgroundTasks) {
       const start = step.timings.start + task.startOffset;
@@ -57,7 +62,7 @@ for (const section of recipe.sections) {
 }
 ```
 
-Now, read the blocks of one timeline. Every time is in minutes from `0` and includes the mise en place, so it depends on the timeline you choose: do not mix these blocks with `timings` in the same chart.
+Now, read scheduled blocks directly from the chosen timeline. All durations are expressed in minutes from 0 and include mise en place: they depend on the selected scheduling mode and should not be combined with legacy `timings` within the same chart.
 
 ```typescript
 import { scheduleFor } from '@gram-lang/kitchen';
@@ -65,29 +70,29 @@ import { scheduleFor } from '@gram-lang/kitchen';
 const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' or 'perSession'
 
 for (const block of schedule.blocks) {
-  if (block.kind === 'prep') continue; // a section's mise en place (new)
+  if (block.kind === 'prep') continue; // section mise en place (new block kind)
   const step = recipe.sections[block.section].steps[block.step];
   const label = block.kind === 'passive' ? (block.track ?? 'Timer') : step.action;
   draw(label, block.start, block.end);
 }
 ```
 
-[Drawing the timeline](/docs/how-to/build-custom-ui) shows a complete example.
+The [Build a custom UI](/docs/how-to/build-custom-ui) guide provides a complete implementation example.
 
 ### Time breakdowns
 
-`metrics.activeBreakdown`, `metrics.prepBreakdown` and `metrics.totalBreakdown` listed labelled durations. The same information is now in the data they were computed from:
+The `metrics.activeBreakdown`, `metrics.prepBreakdown`, and `metrics.totalBreakdown` fields provided lists of labeled durations. This information is now directly accessible from source data:
 
-- what the preparation is made of: the `items` of each entry of `miseEnPlace`;
-- when and for how long each step runs: the blocks of `schedule.blocks` (`end - start` is the duration of a block).
+- **Preparation details**: inspect the `items` array of each section in `miseEnPlace`;
+- **Step execution timelines**: inspect blocks in `schedule.blocks` (block duration is computed as `end - start`).
 
 ### The `calculatePreparationTime` function
 
 <Since v="1.4.0" type="deprecated" />
 
-**Deprecated:** the `breakdown` of the result. **Use instead:** the items of `computeMiseEnPlace`.
+**Deprecated:** the `breakdown` property in the return object. **Recommended replacement:** structured items from `computeMiseEnPlace`.
 
-`calculatePreparationTime(sections, registry)` from `@gram-lang/kitchen` returns `{ total, breakdown }`. Its `breakdown` is a list of labelled durations whose labels encode data as text (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). It is removed in 2.0.0, when the function returns `{ total }` only: code that reads `total` keeps working unchanged.
+`calculatePreparationTime(sections, registry)` in `@gram-lang/kitchen` returns `{ total, breakdown }`. The `breakdown` array contains composite string labels (`ingredients_overhead`, `cookware_overhead`, `prep_<id>`). This property will be removed in 2.0.0, with the function returning `{ total }` only. Code consuming `total` will continue to work unchanged.
 
 Before:
 
@@ -96,7 +101,7 @@ const { total, breakdown } = calculatePreparationTime(sections, registry);
 for (const item of breakdown) show(item.label, item.duration);
 ```
 
-Now, read the structured items of the mise en place instead:
+Now, inspect structured mise en place items instead:
 
 ```typescript
 import { calculatePreparationTime, computeMiseEnPlace } from '@gram-lang/kitchen';
@@ -111,29 +116,39 @@ for (const entry of computeMiseEnPlace(sections, registry)) {
 }
 ```
 
-A compiled recipe already carries the same split in its `miseEnPlace` field.
+A compiled recipe carries this identical breakdown inside its `miseEnPlace` field.
 
-### JSON from an older version
+### Backwards compatibility with older JSON
 
 <Since v="1.4.0" type="deprecated" />
 
-**Deprecated:** reading the old `metrics` fields as a fallback. **Use instead:** compile your recipes again with 1.4.0 or later.
+**Deprecated:** fallback resolution reading legacy `metrics` fields. **Recommended replacement:** recompile stored recipes with `@gram-lang/kitchen` ≥ 1.4.0.
 
-JSON compiled by kitchen 1.3.0 or earlier has no `tasks` and no `schedule`. Until 2.0.0, `scheduleTimes(compiled, mode, rests)` from `@gram-lang/kitchen` still reads the total and idle time from the old `metrics` fields, and returns the new ones when they exist. That fallback is removed in 2.0.0.
+JSON compiled with Kitchen 1.3.0 or earlier contains neither `tasks` nor `schedule`. Until version 2.0.0, `scheduleTimes(compiled, mode, rests)` continues to fall back to legacy `metrics` fields. This transition fallback will be removed in version 2.0.0.
 
-To tell the two apart, look at `generator`: a recipe compiled with 1.4.0 or later says which compiler wrote it (`"@gram-lang/kitchen@1.4.0"`), an older one has no such field. Compile your stored recipes again with 1.4.0 or later before upgrading to 2.0.0.
+To differentiate formats, inspect the `generator` metadata: recipes compiled with Kitchen ≥ 1.4.0 declare the emitting compiler (`"@gram-lang/kitchen@1.4.0"`), whereas older exports omit this field. Recompile stored recipes before upgrading to 2.0.0.
 
-## Find what you use today
+## Identify deprecated usages in your codebase
 
-Search your code for the deprecated names. Destructuring such as `const { totalTime } = recipe.metrics` is caught too, and so are unrelated words like `timings`, so read the matches:
+Search your source code for deprecated identifier names. Object destructuring (`const { totalTime } = recipe.metrics`) is also detected:
 
 ```bash
 grep -rnE "\b(timings|backgroundTasks|totalTime|idleTime|activeTime|activeBreakdown|prepBreakdown|totalBreakdown|calculatePreparationTime)\b" src/
 ```
 
-If you use TypeScript, the deprecated fields and functions of `@gram-lang/kitchen` 1.4.0 and later are struck through in your editor, with the replacement in the tooltip.
+When writing TypeScript, deprecated properties and functions from `@gram-lang/kitchen` are automatically struck through in modern IDEs, with the recommended replacement indicated in hover tooltips.
 
-## Where to look next
+## Related resources
 
-- [Changelog](/docs/changelog) for each release.
-- [Data formats](/docs/reference/api/data-formats) for an annotated example of the compiled JSON.
+<CardGrid>
+  <LinkCard
+    title="Changelog"
+    description="Full release history, migration notes, and version changes."
+    href="/docs/changelog/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="Annotated overview of compiled recipe JSON schemas and properties."
+    href="/docs/reference/api/data-formats/"
+  />
+</CardGrid>

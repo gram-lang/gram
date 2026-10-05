@@ -1,0 +1,393 @@
+---
+title: "Data formats"
+description: "Reference JSON shapes for the AST, compiled and analyzed recipes, plus the YAML schema for the ingredient database."
+---
+
+import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The JSON shapes that flow between pipeline stages, and the YAML schema for the ingredient database. This page complements the per-package references — it illustrates what the data concretely looks like when processed by Gram functions.
+
+## 1. The AST (`@gram-lang/parser`)
+
+The parser transforms raw recipe text into an Abstract Syntax Tree:
+
+<Tabs>
+  <TabItem label="Source .gram">
+```gram
+---
+title: 'Crepes'
+---
+
+## Batter
+
+Mix @flour{200g} and @milk{200ml}.
+```
+  </TabItem>
+  <TabItem label="RecipeAST (JSON)">
+```json
+{
+  "type": "Recipe",
+  "meta": { "title": "Crepes" },
+  "children": [
+    {
+      "type": "Section",
+      "title": "Batter",
+      "retroPlanning": null,
+      "intermediateDecl": null,
+      "children": [
+        {
+          "type": "Step",
+          "action": null,
+          "children": [
+            { "type": "Text", "value": "Mix " },
+            {
+              "type": "Ingredient",
+              "name": "flour",
+              "modifiers": [],
+              "alias": null,
+              "preparation": null,
+              "composite": null,
+              "quantity": {
+                "type": "Quantity",
+                "value": { "type": "single", "value": 200, "text": "200" },
+                "unit": "g",
+                "fixed": false
+              }
+            },
+            { "type": "Text", "value": " and " },
+            {
+              "type": "Ingredient",
+              "name": "milk",
+              "modifiers": [],
+              "quantity": {
+                "type": "Quantity",
+                "value": { "type": "single", "value": 200, "text": "200" },
+                "unit": "ml",
+                "fixed": false
+              }
+            },
+            { "type": "Text", "value": "." }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+  </TabItem>
+</Tabs>
+
+`getAST()` returns this structure. Byte offsets (`loc`) are omitted above for brevity — every node except `RecipeAST` carries a `loc` object. See the [parser API reference](/docs/reference/api/parser) for the complete list of node interfaces and the `ASTNodeType` enum.
+
+## 2. Compiled & analyzed recipes (`@gram-lang/kitchen`, `@gram-lang/analyzer`)
+
+`compile()` produces a `CompilationResult`; `analyze()` returns that same base shape enriched with physical mass conversions, baker's percentages, and nutritional metrics (`AnalyzedCompilationResult`).
+
+<Tabs>
+  <TabItem label="Compiled recipe (Kitchen)">
+```json
+{
+  "generator": "@gram-lang/kitchen@1.4.0",
+  "title": "Crepes",
+  "slug": "crepes",
+  "meta": { "title": "Crepes" },
+  "registry": {
+    "ingredients": {
+      "flour": { "id": "flour", "name": "flour" },
+      "milk": { "id": "milk", "name": "milk" }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "qty": 200,
+      "unit": "g",
+      "_usageIds": ["1"]
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "qty": 200,
+      "unit": "ml",
+      "_usageIds": ["2"]
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Batter",
+      "retro_planning": null,
+      "ingredients": [
+        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"] },
+        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g" },
+            " and ",
+            { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml" },
+            "."
+          ]
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "preparationTime": 2,
+    "activeTime": 2
+  },
+  "miseEnPlace": [
+    { "section": 0, "duration": 2, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ] }
+  ],
+  "tasks": {
+    "tasks": [
+      { "id": "s0.prep", "kind": "prep", "section": 0, "duration": { "nominal": 2 }, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ], "after": [] },
+      { "id": "s0.0", "kind": "step", "section": 0, "step": 0, "duration": { "nominal": 2 }, "after": [] }
+    ],
+    "sections": [ { "day": 0 } ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 4,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "idleTime": 0,
+    "blocks": [
+      { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
+      { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
+    ],
+    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+  }
+}
+```
+  </TabItem>
+  <TabItem label="Analyzed recipe (Analyzer)">
+```json
+{
+  "generator": "@gram-lang/kitchen@1.4.0",
+  "title": "Crepes",
+  "slug": "crepes",
+  "meta": { "title": "Crepes" },
+  "registry": {
+    "ingredients": {
+      "flour": { "id": "flour", "name": "flour" },
+      "milk": { "id": "milk", "name": "milk" }
+    },
+    "cookware": {}
+  },
+  "shopping_list": [
+    {
+      "id": "flour",
+      "name": "flour",
+      "qty": 200,
+      "unit": "g",
+      "_usageIds": ["1"],
+      "normalizedMass": 200,
+      "conversionMethod": "physical",
+      "isEstimate": false,
+      "bakersPercentage": 100
+    },
+    {
+      "id": "milk",
+      "name": "milk",
+      "qty": 200,
+      "unit": "ml",
+      "_usageIds": ["2"],
+      "normalizedMass": 206,
+      "conversionMethod": "density",
+      "isEstimate": true
+    }
+  ],
+  "cookware": [],
+  "sections": [
+    {
+      "title": "Batter",
+      "retro_planning": null,
+      "ingredients": [
+        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"], "normalizedMass": 200 },
+        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"], "normalizedMass": 206 }
+      ],
+      "cookware": [],
+      "steps": [
+        {
+          "type": "step",
+          "content": [
+            "Mix ",
+            { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g", "normalizedMass": 200 },
+            " and ",
+            { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml", "normalizedMass": 206 },
+            "."
+          ]
+        }
+      ],
+      "metrics": {
+        "totalMass": 406,
+        "massStatus": "estimated",
+        "missingMassIngredients": []
+      }
+    }
+  ],
+  "warnings": [],
+  "metrics": {
+    "preparationTime": 2,
+    "activeTime": 2,
+    "totalMass": 406,
+    "massStatus": "estimated",
+    "missingMassIngredients": [],
+    "nutrition": {
+      "total": { "calories": 748, "protein": 27.7, "carbs": 130.4, "fat": 11.4 },
+      "isEstimate": true,
+      "coverage": 1
+    }
+  },
+  "miseEnPlace": [
+    { "section": 0, "duration": 2, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ] }
+  ],
+  "tasks": {
+    "tasks": [
+      { "id": "s0.prep", "kind": "prep", "section": 0, "duration": { "nominal": 2 }, "items": [ { "kind": "gather", "target": "ingredient", "count": 2, "duration": 2 } ], "after": [] },
+      { "id": "s0.0", "kind": "step", "section": 0, "step": 0, "duration": { "nominal": 2 }, "after": [] }
+    ],
+    "sections": [ { "day": 0 } ]
+  },
+  "schedule": {
+    "miseEnPlace": "perSection",
+    "rests": "shortest",
+    "totalTime": 4,
+    "activeTime": 2,
+    "preparationTime": 2,
+    "idleTime": 0,
+    "blocks": [
+      { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
+      { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
+    ],
+    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+  }
+}
+```
+  </TabItem>
+</Tabs>
+
+<Since v="1.4.0" /> The compiled recipe exposes `generator` (which compiler generated it), `miseEnPlace` (operational prep tasks and durations per section), `tasks` (the neutral task graph), and `schedule` (the default theoretical schedule laid out from it; alternative schedules are generated via `layout(tasks, options)`).
+
+:::note[Deprecated timing fields]
+<Since type="deprecated" v="1.4.0" /> Legacy per-step `timings` and `backgroundTasks`, along with `metrics.totalTime`, `metrics.idleTime`, and time breakdowns are deprecated: they remain populated until removed in version 2.0.0, but are omitted from the example above for clarity. The [Kitchen API reference](/docs/reference/api/kitchen) documents each field and its modern counterpart.
+:::
+
+Note the compiler's `StepToken` vocabulary inside `content`: narrative text is a bare `string`; ingredients, cookware, and intermediate references share the `Usage` structure (no `type` field, identified by the presence of an `id`); timers, temperatures, comments, and declarations each carry an explicit lowercase `type`. This distinction from the parser's PascalCase `ASTNodeType` is intentional: it describes compiled *output*, not parsed source syntax. See [How to build a custom UI](/docs/how-to/build-custom-ui) for a tutorial on consuming this structure in frontend frameworks.
+
+## 3. Composed recipes (`@gram-lang/modules`)
+
+When a recipe imports sub-modules via the `@use` directive, `finalizeComposed()` decorates the standard `CompilationResult` into a `ComposedCompilationResult`. It adds module metadata to both the root payload and individual spliced sections:
+
+```json
+{
+  "title": "Lemon Tart",
+  "modules": [
+    {
+      "binding": "dough",
+      "uri": "/bases/sweet-pastry-dough.gram",
+      "title": "Sweet Pastry Dough",
+      "meta": { "title": "Sweet Pastry Dough" },
+      "scaleFactor": 1.5,
+      "mode": "inline"
+    }
+  ],
+  "sections": [
+    {
+      "title": "Sweet Pastry Dough",
+      "module": {
+        "binding": "dough",
+        "uri": "/bases/sweet-pastry-dough.gram",
+        "title": "Sweet Pastry Dough",
+        "mode": "inline"
+      },
+      "steps": [ "/* spliced steps from the imported module */" ]
+    },
+    {
+      "title": "Assembly",
+      "steps": [ "/* host steps */" ]
+    }
+  ]
+}
+```
+
+- **`modules`**: Array of all imported module contributors (`ModuleInfo`), detailing local binding name, source URI, resolved scale factor, and execution mode (`"inline"` or `"stocked"`).
+- **`section.module`**: Present on any section spliced in from an import (`ComposedSection`), preserving traceability for user interfaces and custom renderers.
+
+## 4. Ingredient database (YAML)
+
+The database passed to `validateIngredientDatabase()` or `analyze()` is a flat `Record<string, IngredientData>` keyed by ingredient slug. The `gram` CLI additionally accepts (and unwraps) an optional top-level `ingredients:` key:
+
+<Tabs>
+  <TabItem label="Wrapped format (gram init)">
+```yaml
+# With the optional wrapper (scaffolded by default via gram init)
+ingredients:
+  flour:
+    name: "All-purpose flour"
+    aliases: ["farine"]
+    category: "Grains"
+    physical:
+      density: 0.59       # g/mL — bridges volume units ("1 cup") to mass in grams
+      yield: 1.0          # fraction (0, 1] — net/gross ratio after peeling or trimming
+      unit_weight: 120    # grams per "unit" (e.g. "1 flour" if used bare)
+    nutrition:            # all values per 100 g of raw ingredient
+      calories: 364       # in kcal
+      protein: 10.3       # in grams
+      carbs: 76.3         # in grams
+      fat: 1.0            # in grams
+      sugar: 0.3          # in grams
+      fiber: 2.7          # in grams
+      sodium: 2           # in milligrams (mg)
+```
+  </TabItem>
+  <TabItem label="Flat format (analyze)">
+```yaml
+# Flat form (accepted directly by validateIngredientDatabase() and analyze())
+flour:
+  name: "All-purpose flour"
+  physical:
+    density: 0.59
+```
+  </TabItem>
+</Tabs>
+
+`physical` and `nutrition` blocks are both optional — an entry without either remains valid (it simply contributes no mass or nutritional data, surfacing as `missingMassIngredients` or a `MISSING_MACROS` warning). Only `name` is strictly required. The sub-fields `nutrition.calories`, `protein`, `carbs`, and `fat` are required whenever `nutrition` is declared; `sugar`, `fiber`, `sodium`, `sat_fat`, `mono_fat`, `poly_fat`, and `alcohol` are optional.
+
+**Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Parser API"
+    description="Explore how RecipeAST is constructed and inspect type guards."
+    href="/docs/reference/api/parser/"
+  />
+  <LinkCard
+    title="Kitchen API"
+    description="Inspect the compiler that generates CompilationResult and its schedule."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Analyzer API"
+    description="See how AnalyzedCompilationResult is enriched with mass and nutrition."
+    href="/docs/reference/api/analyzer/"
+  />
+  <LinkCard
+    title="Build a custom UI"
+    description="Tutorial on binding these JSON payloads to native frontend components."
+    href="/docs/how-to/build-custom-ui/"
+  />
+</CardGrid>
+

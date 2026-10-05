@@ -7,7 +7,7 @@ Gram est profondément ancré dans la réalité physique. Contrairement aux *par
 
 Cette page explique le moteur physique derrière les calculs de masse et de rendement de Gram.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Les trois piliers de la physique
 
@@ -68,3 +68,23 @@ Regardons deux scénarios pour un avocat (`unit_weight: 150g`, `yield: 0.70`) :
 </Steps>
 
 Cela garantit que vous ne vous retrouverez jamais à court d'ingrédients après les avoir préparés.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Gérer sa base de données d'ingrédients"
+    description="Apprenez à renseigner et maintenir densités, masses unitaires et rendements dans ingredients.yaml."
+    href="/fr/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Calcul nutritionnel"
+    description="Comment la masse standardisée alimente directement les calculs de calories et macronutriments."
+    href="/fr/docs/explanation/nutrition/"
+  />
+  <LinkCard
+    title="Référence de l'API Analyzer"
+    description="Découvrez le pipeline d'analyse, les fonctions de standardisation et les schémas de résultat."
+    href="/fr/docs/reference/api/analyzer/"
+  />
+</CardGrid>

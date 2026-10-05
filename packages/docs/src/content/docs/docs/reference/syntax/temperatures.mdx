@@ -1,0 +1,74 @@
+---
+title: "Temperatures"
+description: "Define exact or semantic ^temperatures in Celsius or Fahrenheit, with optional names for key steps."
+---
+
+import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+You can declare thermal instructions in your recipes using the `^` symbol.
+
+Gram supports two formats to accommodate both precise baking requirements and qualitative stovetop cooking: **Exact temperatures** and **Semantic temperatures**.
+
+## Exact temperatures
+
+Exact temperatures specify a numeric value accompanied by a recognized unit: `C` or `F`, case-insensitive, with or without a degree symbol (`°C`/`°F`). The compiler normalizes all valid variations to the canonical `°C`/`°F` format in its output.
+
+<Tabs>
+  <TabItem label="Standard exact temperature">
+```gram
+Preheat the #oven to ^{180°C}.
+
+Bake at ^{350°F} until golden brown.
+```
+  </TabItem>
+  <TabItem label="Appliance-labeled temperature">
+Just like with `~timers`, you can assign an appliance or process name to a temperature to help renderers and tools highlight equipment setup at a glance:
+
+```gram
+Preheat the #oven to ^oven{180°C}.
+```
+  </TabItem>
+</Tabs>
+
+## Semantic temperatures
+
+For stovetop cooking, searing, or subjective heat levels where exact degree values are impractical, you can write qualitative free-text strings:
+
+```gram
+Cook on ^stove{high heat} for ~{2min}.
+
+Turn down to ^{low heat} and let simmer.
+```
+
+:::note[Parsing distinction]
+When the Gram compiler inspects a `^temperature` token:
+- If the text inside the braces starts with a digit, it is parsed as an **Exact temperature** and validated against recognized temperature units.
+- If it starts with non-numeric text, it is treated as a **Semantic temperature** string.
+:::
+
+## Error handling
+
+Only Celsius and Fahrenheit temperature scales are supported. The compiler emits structured warnings when encountering malformed temperature values:
+
+- **`MISSING_UNIT`**: Triggered when a numeric temperature is given without an explicit unit (e.g. `^{200}`).
+- **`INVALID_UNIT`**: Triggered when an unsupported unit is provided (e.g. `^{200K}`). The compiler preserves the raw input as written.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Times and scheduling"
+    description="Declare active work, passive timers, and appliance names with ~timer."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Cookware syntax"
+    description="Learn how to declare appliances like ovens, pans, and pans with #cookware."
+    href="/docs/reference/syntax/cookware/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for all temperature, timer, and ingredient markers."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

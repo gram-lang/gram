@@ -19,7 +19,7 @@ Un fichier `.gram` élégamment généré comporte souvent **moins d'étapes** q
 
 Pour transformer une recette existante en `.gram`, parcourir ces cinq points dans l'ordre évite la plupart des erreurs de structure :
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. **Structure** — Identifier les phases distinctes (pâte, garniture, sauce, montage…). Chaque phase avec sa propre liste d'ingrédients est une candidate pour une `## Section`. Tout ce qui doit être préparé à l'avance reçoit un délai de rétroplanning (voir [Structure du Document](/fr/docs/reference/syntax/document-structure#rétroplanning-ordonnancement)).
@@ -164,3 +164,24 @@ avertissement, en étant simplement amputé.
 À l'intérieur d'une étape, utilisez un commentaire bloc. Réservez `//` à la
 toute fin d'une ligne, ou à une ligne entière. `gram import` détecte
 spécifiquement cette perte et refuse un résultat où elle s'est produite.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Configurer l'IA pour le CLI"
+    description="Configurez vos fournisseurs LLM et clés API pour alimenter gram import."
+    href="/fr/docs/how-to/configure-ai/"
+  />
+  <LinkCard
+    title="Référence du CLI"
+    description="Découvrez comment utiliser gram import avec des URL web ou des fichiers JSON-LD."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Aide-mémoire syntaxique"
+    description="Référence visuelle rapide de l'ensemble des marqueurs, symboles et annotations."
+    href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>
+

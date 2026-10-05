@@ -5,8 +5,9 @@ description: "Enrichit les recettes compilées avec masses standardisées, rende
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { unitConversionsTable } from '../../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Enrichit un `CompilationResult` (issu de `@gram-lang/kitchen`) avec des propriétés physiques (masse standardisée, rendement d'achat, estimations nutritionnelles et % du boulanger) en les croisant avec une base de données d'ingrédients. C'est la seule étape qui requiert une base de données : le *parsing* et la compilation fonctionnent sur n'importe quelle recette, sans la moindre donnée externe.
+Enrichit un `CompilationResult` (issu de `@gram-lang/kitchen`) avec des propriétés physiques (masse standardisée, rendement d'achat, estimations nutritionnelles et pourcentages du boulanger) en les croisant avec une base de données d'ingrédients. Il s'agit de la seule étape du pipeline qui requiert une base de données : l'analyse syntaxique et la compilation fonctionnent de manière pure sur n'importe quel texte `.gram`, sans la moindre dépendance externe.
 
 ## `analyze`
 
@@ -19,7 +20,7 @@ function analyze(
 
 interface AnalysisResult {
   result: AnalyzedCompilationResult;
-  missingIngredients: string[]; // ids présents dans la recette mais absents de `database`
+  missingIngredients: string[]; // identifiants présents dans la recette mais absents de `database`
 }
 ```
 
@@ -31,23 +32,23 @@ const compiled = compile(ast);
 const { result: analyzed, missingIngredients } = analyze(compiled, myIngredientDatabase);
 ```
 
-> La base de données d'ingrédients est le **deuxième argument positionnel**, pas un champ de `options` — `analyze(compiled, database, options?)`.
+> La base de données d'ingrédients est le **deuxième argument positionnel**, et non une propriété de l'objet `options` : `analyze(compiled, database, options?)`.
 
-`analyze()` est une fonction pure et ne mute jamais `result`. `AnalyzedCompilationResult` étend `CompilationResult` (même forme) en y ajoutant les champs `normalizedMass`/`conversionMethod`/`isEstimate`/`purchasingMass`/`bakersPercentage` pour chaque ingrédient, ainsi qu'un bloc `metrics.nutrition`. Voir [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté.
+`analyze()` est une fonction pure qui ne modifie jamais son argument `result`. L'objet `AnalyzedCompilationResult` étend `CompilationResult` en y intégrant les propriétés physiques pour chaque utilisation d'ingrédient (`normalizedMass`, `conversionMethod`, `isEstimate`, `purchasingMass`, `bakersPercentage`), ainsi qu'un bloc de métriques `metrics.nutrition`. Consultez la page [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple entièrement annoté.
 
 ### `AnalyzerOptions`
 
-Tous les *flags* d'enrichissement sont activés par défaut (via des vérifications internes `!== false`). Il suffit de passer `false` pour désactiver l'enrichissement correspondant.
+Toutes les options d'enrichissement sont activées par défaut (via des vérifications internes `!== false`). Il suffit de transmettre la valeur explicite `false` pour désactiver une passe de calcul spécifique.
 
 | Option | Type | Description |
 |---|---|---|
-| `enableMassStandardization` | `boolean` | Convertit les quantités d'ingrédients en grammes standardisés. |
-| `enableYieldCalculation` | `boolean` | Applique le `physical.yield` (facteur de perte) de la base de données lors de la standardisation de la masse. |
-| `enableNutritionalEstimation` | `boolean` | Calcule `metrics.nutrition` (calories, macros, éventuellement par portion). |
+| `enableMassStandardization` | `boolean` | Convertit les quantités d'ingrédients en masses standardisées en grammes. |
+| `enableYieldCalculation` | `boolean` | Applique le facteur de rendement d'épluchage/parage `physical.yield` de la base de données. |
+| `enableNutritionalEstimation` | `boolean` | Calcule les macronutriments et calories de `metrics.nutrition` (au global et par portion). |
 | `enableBakersMath` | `boolean` | Calcule `bakersPercentage` par rapport à l'ingrédient marqué `*` (ou `bakersReference`). |
-| `bakersReference` | `string` | Id d'ingrédient explicite à utiliser comme base 100% du pourcentage boulanger, au lieu du modificateur `*`. |
-| `portions` | `number` | Nombre de portions utilisé pour calculer `metrics.nutrition.perPortion`. |
-| `lang` | `string` | Code de langue optionnel (ex : `'en'`, `'fr'`) pour la normalisation d'unités et le tri des catégories par langue. |
+| `bakersReference` | `string` | Identifiant explicite de l'ingrédient servant de base 100 % au pourcentage du boulanger. |
+| `portions` | `number` | Remplace le nombre de portions du frontmatter pour le diviseur de `metrics.nutrition.perPortion`. |
+| `lang` | `string` | Code de langue (ex. : `'en'`, `'fr'`) pour la normalisation des unités et le tri des catégories. |
 
 ## `validateIngredientDatabase`
 
@@ -58,7 +59,7 @@ function validateIngredientDatabase(rawDb: unknown): {
 }
 ```
 
-Valide la base entrée par entrée plutôt qu'en bloc : un ingrédient malformé ne fera pas planter le chargement des autres. Utilisez `data` pour la compilation/analyse, et remontez `rejected` à l'utilisateur (ex : `gram db validate`). Voir [Formats de données](/fr/docs/reference/api/data-formats) pour le schéma YAML de `IngredientData`.
+Valide la base entrée par entrée plutôt que selon une approche tout-ou-rien : une entrée malformée n'interrompt pas le chargement des autres ingrédients valides. Transmettez `data` au pipeline et remontez les anomalies du tableau `rejected` à l'utilisateur (par exemple via la commande `gram db validate`). Consultez [Formats de données](/fr/docs/reference/api/data-formats) pour le schéma YAML détaillé de `IngredientData`.
 
 ## Utilitaires de masse
 
@@ -81,13 +82,13 @@ function applyYield(
 ): { normalizedMass: number; purchasingMass?: number }
 ```
 
-`standardizeMass` résout une quantité en grammes selon l'ordre suivant : (1) une unité de masse directe (`g`, `kg`, `oz`...), (2) une unité de volume convertie grâce à la densité de l'ingrédient, (3) une unité non reconnue (`gousse`, `tranche`...) traitée comme un comptage via le `unit_weight` de l'ingrédient. La fonction retourne `null` (elle ne devine jamais) lorsqu'une unité de volume n'a aucune densité résolue.
+`standardizeMass` résout une quantité en grammes selon la cascade de priorité suivante : (1) conversion directe si l'unité est une masse (`g`, `kg`, `oz`...), (2) conversion volumétrique via la densité volumique résolue de l'ingrédient, (3) conversion de comptage si l'unité est une pièce (`gousse`, `tranche`...) via le poids unitaire `unit_weight`. La fonction retourne `null` (sans jamais extrapoler à l'aveugle) lorsqu'une unité de volume ne dispose d'aucune densité connue.
 
-`convertUnit` convertit entre deux chaînes d'unités arbitraires, et jette un pont masse↔volume si une `density` (g/mL) est fournie. Retourne `null` lorsqu'une conversion inter-famille est impossible faute de densité.
+`convertUnit` convertit une valeur entre deux unités arbitraires et permet le passage masse↔volume dès qu'une `density` (exprimée en g/mL) est fournie. Elle renvoie `null` lorsque la conversion inter-famille est impossible faute de densité.
 
 ### Table de conversion masse & volume
 
-Voici les facteurs de conversion par défaut employés par `standardizeMass` et `convertUnit` pour les conversions intra-famille (masse↔masse, volume↔volume), c'est-à-dire avant même de requérir une densité :
+Facteurs de conversion par défaut employés par `standardizeMass` et `convertUnit` pour les conversions intra-famille (masse↔masse, volume↔volume), avant application de toute densité spécifique :
 
 <GeneratedTable table={unitConversionsTable("fr")} />
 
@@ -98,10 +99,30 @@ function calculateNutrition(
   ingredients: AnalyzedUsage[],
   database: Record<string, IngredientData>,
   portions?: number,
+  massStatus?: 'precise' | 'estimated' | 'incomplete',
 ): NutritionMetrics
 ```
 
-Aplatit les composites et les alternatives (en conservant la première option), ignore les ingrédients marqués `optional` et les quantités nulles, puis fait la somme des champs `nutrition` (déclarés **pour 100g** dans la base de données — voir [Formats de données](/fr/docs/reference/api/data-formats)) ajustés (*scale*) via la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si au moins une masse contributrice était déjà une estimation, ainsi qu'un taux de `coverage` de 0 à 1 (fraction d'ingrédients possédant des données nutritionnelles).
+Aplatit les ingrédients composites et les alternatives (en retenant la première option), ignore les ingrédients facultatifs (`optional`) et les quantités nulles, puis cumule les valeurs nutritionnelles (déclarées **pour 100 g** dans la base de données — voir [Formats de données](/fr/docs/reference/api/data-formats)) proportionnées à la masse standardisée de chaque ingrédient. Retourne `isEstimate: true` si au moins une masse contributrice reposait sur une estimation, ainsi qu'un taux de couverture `coverage` de 0 à 1 (fraction d'ingrédients documentés).
+
+La structure `NutritionMetrics` expose le profil nutritionnel sous trois référentiels complémentaires :
+
+```typescript
+interface NutritionMetrics {
+  total: Macros;          // l'ensemble de la recette, selon ses proportions compilées ou mises à l'échelle
+  perPortion?: Macros;    // calculé dès que le nombre de portions est renseigné
+  per100g?: Macros;       // pour 100 g de préparation ayant contribué aux macros
+  portions?: number;      // le diviseur appliqué pour calculer perPortion
+  basis?: { mass: number; massStatus?: 'precise' | 'estimated' | 'incomplete' };
+  isEstimate: boolean;
+  coverage: number;
+  warnings?: Warning[];
+}
+```
+
+Chaque référentiel est calculé directement à partir des sommes non arrondies et fait l'objet d'un arrondi indépendant, évitant ainsi toute accumulation d'erreurs d'arrondi entre le total et la portion individuelle. La propriété `basis` représente le dénominateur de masse utilisé pour le calcul `per100g` — consultez le guide [Estimation nutritionnelle](/fr/docs/explanation/nutrition/) pour comprendre sa méthode de calcul en l'absence de perte hydrique à la cuisson.
+
+L'inventaire des nutriments gérés, leurs unités et leurs règles d'arrondi proviennent d'une table unique exportée `NUTRIENTS`, assurant une parité stricte entre `gram db enrich`, `gram db lint`, `gram db search`, l'infobulle du serveur LSP et l'ensemble des moteurs de rendu.
 
 ## `diffRecipes`
 
@@ -109,8 +130,34 @@ Aplatit les composites et les alternatives (en conservant la première option), 
 function diffRecipes(a: CompilationResult, b: CompilationResult): DiffResult
 ```
 
-Calcule le diff structurel entre deux recettes compilées (ex : deux versions d'un même fichier, ou la version de base contre la version *scalée*). Il gère les changements de quantité/unité des ingrédients (incluant un `percentChange` pertinent), de préparation, d'écarts de durée (`totalTime`, `idleTime`, `activeTime`, `preparationTime`), les ajouts/modifications/suppressions de sections, les variations de température et de minuteur, ainsi que les altérations du *frontmatter* (`meta`). `hasChanges` vaut `true` dès qu'une catégorie n'est pas vide.
+Calcule le diff structurel entre deux recettes compilées (par exemple deux révisions d'un même fichier, ou la version de base comparée à sa version ajustée). Il détecte les variations de quantités ou d'unités d'ingrédients (avec calcul de `percentChange`), les modifications de préparation, les deltas d'ordonnancement (`totalTime`, `idleTime`, `activeTime`, `preparationTime`), les ajouts, suppressions ou remaniements de sections, les variations de température et de durée, ainsi que les modifications du frontmatter (`meta`). La propriété `hasChanges` vaut `true` dès qu'un écart est identifié.
 
-Les écarts de durée comparent les temps du planning par défaut (mise en place juste avant chaque section) : `totalTime`, `idleTime`, `activeTime` et `preparationTime` viennent tous de `schedule` : un minuteur actif écrit en fourchette (`~{20-25min}`) compte donc sur son chiffre le plus long. Ce sont les mêmes des deux côtés de la comparaison, et ils correspondent à ce que `gram view` affiche par défaut. *(Depuis la 1.4.0. Les versions précédentes lisaient les champs dépréciés `metrics.totalTime` et `metrics.idleTime`, qui décrivent le plan « tout au début ».)*
+Les écarts de durée comparent les temps de l'ordonnancement théorique par défaut (`schedule`) : `totalTime`, `idleTime`, `activeTime` et `preparationTime` proviennent tous de `schedule`. Un minuteur actif défini par un intervalle (`~{20-25min}`) retient sa borne maximale par sécurité. Ces repères temporels sont rigoureusement identiques des deux côtés de la comparaison et correspondent à la vue par défaut générée par `gram view`. *(Depuis la 1.4.0. Les versions antérieures lisaient les champs dépréciés `metrics.totalTime` et `metrics.idleTime`, qui décrivaient la stratégie historique où toute la préparation était placée au démarrage).*
 
-Une section importée via `@use` (`ProcessedSection.module` renseigné) est exclue des comparaisons de sections/préparations/températures/minuteurs — sans quoi l'ajout d'un simple import décalerait la position de toutes les autres sections et ferait croire que toute la recette a changé. Son propre import est comparé séparément, par `(uri, binding, facteur d'échelle)`, dans `modules: ModuleDelta[]` — un import re-scalé ou re-lié est signalé comme `"changed"`.
+Une section importée via une directive modulaire `@use` (marquée par `ProcessedSection.module`) est isolée des comparaisons d'étapes : cela évite qu'un simple import additionnel ne décale l'index de toutes les sections subséquentes et ne produise un diff artificiel. Son import fait l'objet d'une comparaison autonome par triplet `(uri, binding, facteur d'échelle)` dans le tableau `modules: ModuleDelta[]` — tout import réassigné ou dont le multiplicateur varie est signalé avec le statut `"changed"`.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Masse et rendement"
+    description="Découvrez comment fonctionnent les conversions d'unités, la masse volumique et le rendement d'achat."
+    href="/fr/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Estimation nutritionnelle"
+    description="Explorez le calcul des macronutriments et micronutriments sur trois référentiels complémentaires."
+    href="/fr/docs/explanation/nutrition/"
+  />
+  <LinkCard
+    title="Gérer la base d'ingrédients"
+    description="Synchronisez, enrichissez et validez votre base locale d'ingrédients avec le CLI."
+    href="/fr/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="API Kitchen"
+    description="Comprenez la structure CompilationResult en amont qui alimente l'analyseur."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+</CardGrid>
+

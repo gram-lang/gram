@@ -11,7 +11,7 @@ This is where the physical world meets the digital code. The analyzer executes a
 
 Gram is designed to unify and normalize masses across recipes, calculating the true Total Mass of a dish even if ingredients are written in volumes (cups) or units (eggs).
 
-import { Steps, LinkCard } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 The **standardizeMass** algorithm follows a strict priority order:
 
@@ -83,3 +83,23 @@ Unlike a strict all-or-nothing model, the analyzer always returns whatever nutri
 The `@gram-lang/analyzer` is designed for open ecosystems. It **does not** read files directly from the filesystem. Instead, the host application (like the CLI or the Playground) loads the database and passes it as a parameter to the `analyze(compilationResult, database, options?)` function, where `options` lets the caller toggle each feature set on or off and configure things like the baker's-percentage reference or the portion count.
 
 This means you can easily plug in a custom database from a REST API, a local JSON file, or any other source, as long as it conforms to Gram's data schema.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Analyzer API reference"
+    description="Full API signature, options, and TypeScript types for @gram-lang/analyzer."
+    href="/docs/reference/api/analyzer/"
+  />
+  <LinkCard
+    title="Mass standardization & yield"
+    description="Explore how density, unit weights, and yield loss factor into recipe calculations."
+    href="/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Nutritional estimation"
+    description="Understand how Gram calculates energy and macronutrient profiles from ingredient data."
+    href="/docs/explanation/nutrition/"
+  />
+</CardGrid>

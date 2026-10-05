@@ -1,10 +1,10 @@
 ---
 title: "Planning in real time"
-description: "How Gram puts a recipe on the calendar: a serving time, a time zone and your availability turn a timeline into a production sheet, with rests stretched or shortened to keep your work out of the night."
+description: "How Gram puts a recipe on the calendar: a serving time, a time zone and your availability turn a timeline into a production sheet, with waits stretched or shortened to keep your work out of the night."
 ---
 
 import Since from '../../../../components/Since.astro';
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.4.0" />
 
@@ -32,23 +32,23 @@ The recipe's theoretical timeline (see [Mise en place and planning](/docs/explan
 
 <Steps>
 1. **Grouping uninterrupted stretches**  
-   Tasks that cannot be interrupted are grouped into a continuous block. For example, a preparation followed immediately by the step it prepares, with no rest between them, forms a single indivisible block: Gram cannot assume you can pause a kneading step halfway through to go to sleep.
+   Tasks that cannot be interrupted are grouped into a continuous block. For example, a preparation followed immediately by the step it prepares, with no wait between them, forms a single indivisible block: Gram cannot assume you can pause a kneading step halfway through to go to sleep.
 
 2. **Validating compatible stretches**  
    Any continuous stretch that fits entirely within your availability windows remains unchanged.
 
 3. **Adjusting conflicting stretches**  
-   Any stretch that overlaps with an unavailable period is shifted by adjusting the **nearest elastic rest (defined with a range) downstream**:
-   - **lengthening** the rest moves preceding work earlier (e.g. to the evening before);
-   - **shortening** the rest shifts preceding work later (e.g. to the next morning).
+   Any stretch that overlaps with an unavailable period is shifted by adjusting the **nearest flexible wait (defined with a range) downstream**:
+   - **lengthening** the wait moves preceding work earlier (e.g. to the evening before);
+   - **shortening** the wait shifts preceding work later (e.g. to the next morning).
 
-   Gram favors the direction preferred by your rest strategy (shortest duration by default, hence shortening first), and selects the smaller shift when both are equal. It never exceeds the bounds of the range and never alters a fixed-duration rest.
+   Gram favors the direction preferred by your wait strategy (shortest duration by default, hence shortening first), and selects the smaller shift when both are equal. It never exceeds the bounds of the range and never alters a fixed-duration wait.
 
 4. **Propagation and traceability**  
-   Each adjustment cascades to all tasks scheduled before that rest. The plan explicitly logs every change: which rest was adjusted, the initial and updated duration, and the reason for the change.
+   Each adjustment cascades to all tasks scheduled before that wait. The plan explicitly logs every change: which wait was adjusted, the initial and updated duration, and the reason for the change.
 </Steps>
 
-A rest assigned to a named track (`~_oven{40min}`) is only stretched if that track remains unoccupied throughout the extended duration. The scheduler recomputes the entire timeline on every adjustment: dependencies and track allocations are verified on the concrete layout rather than guessed.
+A wait assigned to a named track (`~_oven{40min}`) is only stretched if that track remains unoccupied throughout the extended duration. The scheduler recomputes the entire timeline on every adjustment: dependencies and track allocations are verified on the concrete layout rather than guessed.
 
 ### Concrete example
 
@@ -71,10 +71,10 @@ Saturday, October 10 · D-1
   around 21:40      Dough — Knead (20m)
   around 22:00      Rise — Dough (14h 30m, until around Sun 12:30)
   
-                    ! Rest stretched from 8h to 14h 30m to stay out of your unavailable hours
+                    ! Wait stretched from 8h to 14h 30m to stay out of your unavailable hours
 ```
 
-If the rest were exact (`~_{8h}`), or if the range was too narrow to absorb the offset (`~_{8-10h}`), no adjustment could be made: the scheduler leaves the kneading at 04:10 and logs the diagnostic.
+If the rise were exact (`~_{8h}`), or if the range was too narrow to absorb the offset (`~_{8-10h}`), no adjustment could be made: the scheduler leaves the kneading at 04:10 and logs the diagnostic.
 
 ## Diagnostics and unresolved constraints
 
@@ -82,27 +82,27 @@ Gram never conceals a scheduling conflict it cannot resolve. Any remaining issue
 
 | Diagnostic | Meaning | Recommended action |
 |---|---|---|
-| `ACTIVE_OUTSIDE_AVAILABILITY` | Active hands-on work falls during unavailable hours, and no rest can move it (fixed rest, insufficient range, or no rest downstream). | Widen your availability windows or provide an elastic rest range. |
-| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | An uninterrupted block of hands-on work is longer than your longest continuous availability window. | Widen your availability window (no rest adjustment can split this block). |
-| `SESSION_DAY_MISMATCH` | A work session falls on a different calendar day than intended (work tagged with `~{-1d}` landing two days prior). | Anchor the section explicitly or adjust intermediate rests. |
-| `START_IN_PAST` | The first task should have started before the current planning time. | Set a later serving time or shorten rests. |
+| `ACTIVE_OUTSIDE_AVAILABILITY` | Active hands-on work falls during unavailable hours, and no wait can move it (fixed wait, insufficient range, or no wait downstream). | Widen your availability windows or provide a flexible wait range. |
+| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | An uninterrupted block of hands-on work is longer than your longest continuous availability window. | Widen your availability window (no wait adjustment can split this block). |
+| `SESSION_DAY_MISMATCH` | A work session falls on a different calendar day than intended (work tagged with `~{-1d}` landing two days prior). | Anchor the section explicitly or adjust intermediate waits. |
+| `START_IN_PAST` | The first task should have started before the current planning time. | Set a later serving time or shorten waits. |
 | `MULTI_RECIPE_UNSUPPORTED` | Multiple recipes were supplied; only the first was planned. | Plan recipes individually. |
 
 :::note[Planning diagnostics vs Compiler warnings]
-These diagnostics are specific to calendar projection: they depend directly on **your** availability constraints rather than recipe defects. Compiler warnings inherent to the recipe code itself (such as `SESSION_OVERFLOW`, when an excessive rest pushes a session out of its 24-hour day) are documented in [Times and durations](/docs/reference/syntax/times/#error-handling).
+These diagnostics are specific to calendar projection: they depend directly on **your** availability constraints rather than recipe defects. Compiler warnings inherent to the recipe code itself (such as `SESSION_OVERFLOW`, when an excessive wait pushes a session out of its 24-hour day) are documented in [Times and durations](/docs/reference/syntax/times/#error-handling).
 :::
 
 ## Time zones and daylight saving
 
-Calculations take place in absolute minutes along a continuous timeline; conversion to local wall-clock time occurs only during final output rendering. A 24-hour rest spanning the autumn daylight saving transition lasts 24 true hours: if it begins at 13:30 on the clock the day before, it ends at 12:30 local time. Non-existent local times (e.g. 02:30 during the spring forward transition) are shifted to the next valid time; repeated times in autumn resolve to the first occurrence.
+Calculations take place in absolute minutes along a continuous timeline; conversion to local wall-clock time occurs only during final output rendering. A 24-hour wait (a dough in the fridge, say) spanning the autumn daylight saving transition lasts 24 true hours: if it begins at 13:30 on the clock the day before, it ends at 12:30 local time. Non-existent local times (e.g. 02:30 during the spring forward transition) are shifted to the next valid time; repeated times in autumn resolve to the first occurrence.
 
 ## The production sheet
 
-The plan is rendered as an actionable production sheet: days are ordered chronologically, detailing the sequence of tasks for each session. Timestamps are rounded to the nearest five minutes ("around 21:40") to match kitchen realities; internal calculations remain accurate to the minute. Every adjusted rest carries an explanatory note, and unresolved constraints are summarized at the end.
+The plan is rendered as an actionable production sheet: days are ordered chronologically, detailing the sequence of tasks for each session. Timestamps are rounded to the nearest five minutes ("around 21:40") to match kitchen realities; internal calculations remain accurate to the minute. Every adjusted wait carries an explanatory note, and unresolved constraints are summarized at the end.
 
 This sheet can be exported in multiple formats: plain text, Markdown, standalone HTML, a print-optimized document, or an iCalendar (`.ics`) file containing task events with alarms for active steps. See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end guide.
 
-The plan can also be written into the recipe itself: a time next to each step, the day when it changes, the rests, and the sheet after the recipe if you want both in one document (`gram view`, `gram export` and `gram print` with `--serve`, and the preview of the playground). The two orders differ: the recipe follows its sections, the sheet follows the time, and a step can come back to a day already seen.
+The schedule can also be embedded directly within the recipe: target timestamps are annotated alongside each step, calendar days are indicated as they change, waits are contextualized, and the full production sheet can be appended after the recipe to produce a unified document (`gram view`, `gram export`, and `gram print` with the `--serve` flag, as well as the Playground preview). The two presentations follow complementary orders: the recipe preserves its logical structure by culinary sections, whereas the production sheet follows a strict linear timeline (meaning steps in the recipe view may span across different days from one section to another).
 
 ## Available integrations
 
@@ -118,3 +118,23 @@ The plan can also be written into the recipe itself: a time next to each step, t
 - **Single recipe scheduling**: planning a complete menu (synchronizing starter, main, and dessert for the same service while sharing a single cook and oven) will be supported in a future release; the API already accepts a list of recipes.
 - **Shared resources**: equipment (oven preheating time, refrigerator space) does not yet act as globally pooled resources beyond explicit named tracks.
 - **Heuristic approach**: the scheduling algorithm is greedy and deterministic (designed to be explainable and predictable rather than optimal in a mathematical programming sense): it resolves conflicts starting from the latest event and works backward in time.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Plan a meal"
+    description="Step-by-step practical guide to generating production sheets with the CLI and TypeScript API."
+    href="/docs/how-to/plan-a-meal/"
+  />
+  <LinkCard
+    title="Mise en place and planning"
+    description="How the compiler infers task dependencies, durations, and preparation costs."
+    href="/docs/explanation/mise-en-place-and-planning/"
+  />
+  <LinkCard
+    title="Scheduler API reference"
+    description="Complete documentation for project(), layout(), runSheet(), and calendar options."
+    href="/docs/reference/api/scheduler/"
+  />
+</CardGrid>

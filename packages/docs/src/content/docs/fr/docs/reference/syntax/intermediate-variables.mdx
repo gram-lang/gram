@@ -1,0 +1,120 @@
+---
+title: "Variables intermédiaires"
+description: "Déclarez des sous-composants réutilisables comme une pâte ou une sauce en tant que &variables intermédiaires."
+---
+
+import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+Dans les recettes élaborées, on prépare fréquemment des sous-composants (une pâte, une sauce, une garniture ou un appareil) destinés à être assemblés plus tard. Gram permet de formaliser ces sous-composants sous forme de **variables intermédiaires**.
+
+Une fois déclarée, une variable intermédiaire `&nom` peut être référencée, pesée ou employée comme base de calcul pour des pourcentages de masse.
+
+## Cycle de vie d'une variable
+
+<Steps>
+1. **Déclaration (`->&nom`)**
+   Vous déclarez la variable intermédiaire en fin d'étape ou dans un titre de section à l'aide de l'opérateur flèche `->&`.
+
+2. **Enregistrement et graphe des symboles**
+   Le compilateur enregistre la variable dans la table des symboles globale, calcule sa masse cumulée produite et établit les dépendances pour la planification ALAP.
+
+3. **Consommation en aval (`&nom`)**
+   Les étapes suivantes font appel à la variable avec la syntaxe `&nom`, en indiquant éventuellement une quantité extraite (ex. `&pâte feuilletée{200g}`) ou un calcul relatif (`@sel{2% &pâte}`).
+
+4. **Décomposition automatique pour les courses**
+   Le sous-composant reste présent dans la liste des ingrédients de l'étape pour guider le cuisinier, mais est automatiquement écarté de la liste de courses globale : seuls les ingrédients bruts constitutifs sont achetés.
+</Steps>
+
+## Déclarer une variable
+
+### Déclaration au niveau de l'étape
+
+Placée à la toute fin d'un paragraphe d'étape, la variable capture l'ensemble des éléments produits au cours de cette étape spécifique :
+
+```gram
+[Ajouter] La @farine{200g} et l'@eau{100ml}. Mélanger jusqu'à formation d'une pâte. ->&pâte
+
+[Repos] Laisser reposer la &pâte pendant ~_{1h}.
+```
+
+### Déclaration au niveau de la section
+
+Placée à la fin d'un en-tête de section `## Titre`, la variable capture le résultat combiné de l'ensemble des étapes de la section :
+
+```gram
+## Pâte feuilletée ->&pâte feuilletée{}
+
+[Mélanger] La @farine{250g}, l'@eau{120ml} et le @sel{5g}.
+
+[Repos] Placer au #réfrigérateur pendant ~_{1h}.
+
+[Incorporer] Le @beurre{200g} par pliages et tours successifs.
+
+// La variable &pâte feuilletée représente le résultat achevé de toutes les étapes de la section.
+```
+
+## Utiliser une variable
+
+Pour exploiter une variable préalablement déclarée, préfixez simplement son nom avec `&` :
+
+```gram
+Utiliser la &pâte feuilletée{} pour foncer le moule à tarte.
+```
+
+Vous pouvez également lui assigner une quantité pour l'affichage dans la recette rendue :
+
+```gram
+Prendre de la &pâte feuilletée{200g} et l'abaisser.
+```
+
+:::note[Liste de courses vs ingrédients d'étape]
+Lorsqu'elle est consommée dans une étape, une variable intermédiaire `&nom` **apparaît** dans la liste des ingrédients de cette section pour accompagner la réalisation.
+
+En revanche, elle **n'apparaît jamais** dans la **liste de courses globale**. Le compilateur Gram décompose automatiquement le sous-composant en ses ingrédients bruts d'origine (farine, beurre, sel) pour consolider les quantités totales à acheter.
+:::
+
+## Mécanismes avancés
+
+### Portée globale
+Lorsqu'une variable est déclarée au niveau d'une section, elle intègre la **portée globale** (*global scope*). Vous pouvez la déclarer dans la première section de votre recette et la réutiliser en toute sécurité dans les étapes finales.
+
+### Quantités relatives
+Vous pouvez calculer la quantité d'un ingrédient en pourcentage de la masse d'une variable intermédiaire (voir [Quantités relatives](/fr/docs/reference/syntax/relative-quantities)) :
+
+```gram
+[Mélanger] Les ingrédients pour former la pâte. ->&pâte
+
+[Ajouter] Le @sel{2% &pâte}.
+```
+
+## Diagnostics du compilateur
+
+Le compilateur s'assure de la cohérence de vos variables en émettant des diagnostics ciblés :
+
+- **`SCOPE_CONFLICT`** : émis lorsqu'un même nom de variable intermédiaire est déclaré plusieurs fois au sein de sections différentes.
+- **`UNUSED_VARIABLE`** : émis lorsqu'une variable déclarée avec `->&` n'est jamais consommée dans les étapes suivantes de la recette.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Syntaxe des quantités relatives"
+    description="Calculez des ratios d'ingrédients et pourcentages basés sur des variables intermédiaires."
+    href="/fr/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Imports de modules"
+    description="Exportez des variables entre plusieurs fichiers via @use et les liaisons déstructurées."
+    href="/fr/docs/reference/syntax/modules/"
+  />
+  <LinkCard
+    title="Ordonnancement ALAP"
+    description="Comprenez comment les variables intermédiaires créent des dépendances rétrogrades."
+    href="/fr/docs/explanation/alap-scheduling/"
+  />
+  <LinkCard
+    title="Moteur de compilation Kitchen"
+    description="Comment le compilateur résout les portées, déploie les listes de courses et les tâches."
+    href="/fr/docs/explanation/engine/kitchen/"
+  />
+</CardGrid>

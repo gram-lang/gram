@@ -3,17 +3,17 @@ title: "Créer une interface (UI) personnalisée à partir du JSON"
 description: "Consommez le JSON compilé par Gram directement dans React, Vue ou Svelte pour concevoir votre propre interface."
 ---
 
-Si vous construisez une application web moderne (avec React, Vue, Svelte ou Next.js, par exemple), vous avez tout intérêt à consommer directement le **JSON** compilé par Gram et à le *mapper* sur vos propres composants d'interface utilisateur (UI).
+Si vous développez une application web moderne (avec React, Vue, Svelte ou Next.js, par exemple), vous avez tout intérêt à consommer directement les données **JSON** compilées par Gram et à les relier à vos propres composants d'interface utilisateur (UI).
 
-Bien que le *parser* produise d'abord un Arbre Syntaxique Abstrait (AST) brut, les *packages* `@gram-lang/kitchen` et `@gram-lang/analyzer` transforment cet AST en un JSON hyper-structuré, prêt à l'emploi. Ce guide vous montre comment l'extraire programmatiquement et comment il est architecturé, afin que vous puissiez l'exploiter librement.
+Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) brut, les packages `@gram-lang/kitchen` et `@gram-lang/analyzer` le transforment en un objet JSON hautement structuré et prêt à l'affichage. Ce guide vous montre comment extraire ces données programmatiquement et comment exploiter leur architecture en toute simplicité.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
 
 <Steps>
 1. ### Récupérer le JSON
    
-   Gram est conçu pour s'exécuter n'importe où (Node.js, environnements Edge ou directement dans le navigateur). Pour récupérer le JSON intégralement enrichi d'une recette, vous devez combiner ses trois *packages* fondamentaux :
+   Gram est conçu pour s'exécuter dans n'importe quel environnement (Node.js, runtimes Edge ou directement dans le navigateur). Pour obtenir la représentation JSON complète et enrichie d'une recette, combinez ses trois packages fondamentaux :
    
    ```typescript
    import { getAST } from '@gram-lang/parser';
@@ -21,21 +21,21 @@ import Since from '../../../../../components/Since.astro';
    import { analyze } from '@gram-lang/analyzer';
    
    function getRecipeData(sourceCode: string) {
-     // 1. Parser le texte en arbre syntaxique
+     // 1. Parser le texte en arbre syntaxique abstrait
      const ast = getAST(sourceCode);
      
-     // 2. Compiler en sections structurées
+     // 2. Compiler en sections structurées et calculer l'ordonnancement par défaut
      const compiled = compile(ast);
    
-     // 3. Enrichir avec les calculs culinaires (rendements, % du boulanger, ajustement des proportions)
+     // 3. Enrichir avec les calculs culinaires (masses physiques, rendements, nutrition)
      const analyzed = analyze(compiled, myDatabase);
    
      return analyzed.result;
    }
    ```
    
-   :::tip[Raccourci Node uniquement]
-   Si vous tournez exclusivement côté serveur sous Node.js (via un CLI ou un backend Next.js), le *package* `@gram-lang/cli` exporte un utilitaire `runPipeline(filePath, options?)`. Il orchestre les trois étapes ci-dessus et se charge même de la lecture du fichier à votre place :
+   :::tip[Raccourci pour environnement Node.js]
+   Si vous travaillez exclusivement côté serveur sous Node.js (via une CLI ou une route d'API Next.js), le package `@gram-lang/cli` exporte l'utilitaire `runPipeline(filePath, options?)`. Il orchestre l'ensemble du pipeline et prend en charge la lecture du fichier :
    
    ```typescript
    import { runPipeline, GramCLIError } from '@gram-lang/cli';
@@ -45,39 +45,38 @@ import Since from '../../../../../components/Since.astro';
      return analyzed ? analyzed.result : compiled;
    } catch (err) {
      if (err instanceof GramCLIError) {
-       console.error(err.message); // ex : "File not found: recette.gram"
+       console.error(err.message); // ex. : "File not found: recette.gram"
      }
      throw err;
    }
    ```
    
-   Si vous omettez `db`, l'étape d'analyse est totalement ignorée (`analyzed` vaudra `null`). Jetez un œil à la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-langcli) pour découvrir la liste exhaustive des options (ajustement des proportions, % du boulanger, etc.).
+   Si vous omettez `db`, l'étape d'analyse physique est ignorée (`analyzed` vaut `null`). Consultez la [référence de l'API de `@gram-lang/cli`](/fr/docs/reference/api/#raccourci-optionnel-node-uniquement-gram-langcli) pour découvrir la liste des options (ajustement des proportions, pourcentages du boulanger, etc.).
    :::
    
    :::note
-   Voir la [Référence API](/fr/docs/reference/api/) pour la signature complète de `getAST`, `compile`, et `analyze`, ainsi que tout ce que le pipeline expose (ajustement des proportions, diff, avertissements, i18n).
+   Consultez la [Référence API](/fr/docs/reference/api/) pour la signature détaillée de `getAST`, `compile`, et `analyze`, ainsi que l'ensemble des fonctionnalités exposées (mise à l'échelle, diff sémantique, diagnostics d'avertissement, i18n).
    :::
 
-2. ### Comprendre la Structure du JSON
+2. ### Comprendre la structure du JSON
    
-   L'objet JSON retourné encapsule toute la recette de manière structurée. C'est votre matière première pour bâtir votre UI.
+   L'objet JSON retourné encapsule l'intégralité de la recette sous une forme déterministe. Il constitue le socle complet de votre interface :
    
-   Voici les champs les plus importants dans l'objet racine :
-   - `title` *(string)* : Le nom de la recette (issu du `# Titre`).
-   - `meta` *(object)* : Paires clé-valeur pour les métadonnées (ex : `author`, `yield`).
-   - `shopping_list` *(array)* : Une liste agrégée de tous les ingrédients de toutes les sections.
-   - `sections` *(array)* : Les instructions elles-mêmes, découpées par section de recette.
-   - `metrics` *(object)* : `preparationTime` et `activeTime` en minutes, plus la masse et la nutrition quand la recette est passée par l'analyzer.
-   - `miseEnPlace` *(array)* : Ce que coûte la préparation de chaque section, une entrée par section qui a une préparation.
-   - `tasks` *(object)* : Tout ce qu'il y a à faire, avec sa durée et ce que chaque tâche attend. Tous les plannings se posent à partir de lui.
-   - `schedule` *(object)* : Le planning par défaut posé à partir de `tasks`, avec un `totalTime`, un `idleTime`, une liste de `blocks` et ses `sessions` (une par journée de travail).
-   - `generator` *(string)* : La version du compilateur qui a écrit ce JSON.
+   - `title` *(string)* : Le nom de la recette (défini par l'en-tête `# Titre`).
+   - `meta` *(object)* : Paires clé-valeur de métadonnées (ex. : `author`, `portions`, `yield`).
+   - `shopping_list` *(array)* : La liste agrégée de tous les ingrédients de la recette, prête pour l'approvisionnement.
+   - `sections` *(array)* : Les instructions culinaires découpées par section autonome.
+   - `metrics` *(object)* : Métriques globales (`preparationTime`, `activeTime` en minutes, ainsi que la masse et la nutrition après analyse).
+   - `miseEnPlace` *(array)* : Détail opérationnel et durées de préparation pour chaque section requérant une mise en place.
+   - `tasks` *(object)* : Le graphe de tâches complet avec durées et dépendances, servant de base de calcul à tous les ordonnancements.
+   - `schedule` *(object)* : L'ordonnancement théorique calculé à partir de `tasks`, comprenant `totalTime`, `idleTime`, les blocs ordonnancés (`blocks`) et le découpage par journée de travail (`sessions`).
+   - `generator` *(string)* : La version du compilateur ayant généré le document.
    
-   Ignorez les champs inconnus et les valeurs de `kind` de bloc que vous ne connaissez pas : votre interface continuera de fonctionner quand une version mineure en ajoutera.
+   Pour garantir la compatibilité ascendante de votre interface lors des mises à jour mineures, ignorez gracieusement les propriétés non reconnues ou les nouvelles variantes de `kind` de blocs.
    
-   #### À l'intérieur d'une Section
+   #### Au cœur d'une section
    
-   Chaque `section` dans le tableau `sections` possède ses propres `ingredients`, `cookware` (matériel), et `steps` (étapes).
+   Chaque entrée du tableau `sections` regroupe ses propres listes d'ingrédients (`ingredients`), de matériel (`cookware`) et d'étapes (`steps`).
    
    ```json
    {
@@ -111,19 +110,19 @@ import Since from '../../../../../components/Since.astro';
    }
    ```
    
-   Une étape ne porte plus son propre début et sa propre fin. Sa place dans le temps dépend du moment où se fait la mise en place, elle vit donc dans `schedule` (voir « Dessiner la chronologie » plus bas).
+   Une étape ne porte plus de créneau temporel intrinsèque. Son calage dépend de la stratégie de mise en place retenue : les créneaux réels sont donc portés par l'objet `schedule` (voir « Dessiner la chronologie » ci-dessous).
 
-3. ### Logique de Rendu
+3. ### Logique de rendu
    
-   Puisque le JSON de Gram est hautement prévisible, générer l'UI n'est souvent qu'une affaire de simples boucles ou de `.map()` dans votre *framework* front-end.
+   Puisque la structure du JSON de Gram est hautement régulière, la génération de votre vue consiste simplement à itérer sur les tableaux d'éléments via les méthodes standard de votre framework front-end.
    
-   #### Exemple : Rendu des Étapes en React
+   #### Exemple : rendu des étapes en React
    
-   Voici une implémentation théorique illustrant comment itérer sur le tableau `steps` avec React :
+   Voici une implémentation illustrant le rendu récursif du tableau `steps` et de ses jetons inline avec React :
    
    ```tsx
    function RecipeStep({ step }) {
-     // Si c'est un simple nœud de commentaire
+     // Si c'est un nœud de commentaire
      if (step.type === 'comment') {
        return <p className="text-gray-500 italic">{step.value}</p>;
      }
@@ -141,15 +140,15 @@ import Since from '../../../../../components/Since.astro';
      }
    }
    
-   // Un composant polymorphe pour afficher les tokens en ligne
+   // Un composant polymorphe pour afficher les jetons inline
    function StepToken({ token, cookwareRegistry }) {
-     // 1. Les chaînes de caractères (strings) sont du simple texte brut
+     // 1. Les chaînes de caractères représentent du texte brut
      if (typeof token === 'string') {
        return <span>{token}</span>;
      }
    
-     // 2. Les Ingrédients et le Matériel sont des objets optimisés sans champ 'type', mais avec un 'id'.
-     // On déduit le type en vérifiant si l'ID existe dans notre registre de matériel.
+     // 2. Les Ingrédients et le Matériel sont des objets optimisés sans champ 'type', identifiés par leur 'id'.
+     // On distingue le matériel en vérifiant si l'identifiant figure dans notre registre de matériel.
      if (!token.type && token.id) {
        const isCookware = !!cookwareRegistry[token.id];
        
@@ -160,12 +159,12 @@ import Since from '../../../../../components/Since.astro';
        }
      }
    
-     // 3. Les autres tokens (minuteurs, températures) ont des champs 'type' explicites
+     // 3. Les autres jetons (minuteurs, températures) portent un discriminant 'type' explicite
      switch (token.type) {
        case 'timer':
          return <span className="bg-yellow-100 px-1 rounded">{token.quantity?.value}{token.unit}</span>;
        case 'temperature':
-         // l'unité est déjà normalisée en °C/°F — pas de ° supplémentaire à ajouter ici
+         // L'unité est déjà normalisée en °C/°F
          return <span className="text-red-600">{token.quantity?.value}{token.unit}</span>;
        default:
          return null;
@@ -173,44 +172,70 @@ import Since from '../../../../../components/Since.astro';
    }
    ```
    
-   En mappant intelligemment la propriété `type` sur vos propres composants, vous gardez un **contrôle total** sur le design, l'interactivité et l'accessibilité de votre application !
+   En reliant chaque discriminant `type` à vos propres composants, vous conservez un **contrôle total** sur le design system, l'interactivité et l'accessibilité de votre interface.
 
 4. ### Dessiner la chronologie
    
    <Since v="1.4.0" />
    
-   Pour dessiner un diagramme de Gantt ou un planning, lisez les blocs d'un planning. `recipe.schedule` est celui par défaut ; tout autre sort des mêmes `tasks` avec `layout()`, sans recompiler. Tous les temps sont en minutes depuis `0` et incluent déjà la préparation :
+   Pour construire un diagramme de Gantt ou une chronologie d'exécution, exploitez les blocs temporels d'un ordonnancement. La propriété `recipe.schedule` fournit le planning standard ; toute autre variante se calcule directement à partir du graphe `recipe.tasks` via la fonction `layout()`, sans avoir à recompiler la recette. Toutes les durées sont exprimées en minutes relatives depuis `t = 0` et incluent le temps nécessaire à la mise en place :
    
    ```typescript
-   import { layout } from '@gram-lang/scheduler'; // ou scheduleFor() de '@gram-lang/kitchen'
+   import { layout } from '@gram-lang/scheduler'; // ou scheduleFor() depuis '@gram-lang/kitchen'
 
-   // miseEnPlace : 'perSection' (la préparation de chaque section juste avant elle, par défaut),
-   //   'upfront' (toute la préparation au début) ou 'perSession' (la préparation de chaque
-   //   journée de travail au début de cette journée).
-   // rests : la durée d'un repos écrit en fourchette : 'shortest' (par défaut), 'balanced', 'longest'.
-   const { schedule } = layout(recipe.tasks, { miseEnPlace: modeChoisi, rests: reposChoisis });
-   // Pour le choix par défaut, recipe.schedule est la même chose, déjà calculée.
+   // miseEnPlace : 'perSection' (préparation de chaque section immédiatement avant son exécution, par défaut),
+   //   'upfront' (toute la préparation regroupée au démarrage) ou 'perSession' (préparation regroupée
+   //   au début de chaque journée de travail).
+   // rests : élasticité accordée aux minuteurs passifs déclarés sous forme de fourchette
+   //   (ex. fermentation, repos, cuisson lente) : 'shortest' (par défaut), 'balanced' ou 'longest'.
+   const { schedule } = layout(recipe.tasks, { miseEnPlace: modeChoisi, rests: elasticiteChoisie });
+   // Pour la configuration par défaut, recipe.schedule contient déjà ce résultat calculé.
    
    for (const block of schedule.blocks) {
      if (block.kind === 'prep') {
-       // La mise en place d'une section. `miseEnPlace` dit de quoi elle est faite.
+       // Mise en place d'une section : recipe.miseEnPlace détaille les opérations associées
        const prep = recipe.miseEnPlace.find((m) => m.section === block.section);
        draw('Mise en place', block.start, block.end, prep?.items);
      } else {
-       // 'step' ou 'passive' : `block.step` est l'indice dans `sections[block.section].steps`,
-       // commentaires compris.
+       // 'step' (action active) ou 'passive' (minuteur passif) :
+       // block.step correspond à l'index de l'étape dans sections[block.section].steps
        const step = recipe.sections[block.section].steps[block.step];
-       const label = block.kind === 'passive' ? (block.track ?? 'Minuteur') : step.action;
+       const label = block.kind === 'passive' ? (block.track ?? 'Minuteur passif') : step.action;
        draw(label, block.start, block.end);
      }
    }
    ```
    
-   Laissez votre lecteur choisir : le temps total et le temps d'attente diffèrent d'un choix à l'autre (`schedule.totalTime`, `schedule.idleTime`), pas `schedule.preparationTime`. Le moteur de rendu Gram, le playground, l'extension VS Code et la CLI offrent tous ce choix.
+   Offrez à vos utilisateurs le choix de la stratégie : le temps total de réalisation et les périodes de battement varient selon le mode retenu (`schedule.totalTime`, `schedule.idleTime`), tandis que le temps de préparation active reste invariant (`schedule.preparationTime`). Le moteur de rendu de Gram, le Playground, l'extension VS Code et la CLI intègrent tous ce sélecteur de stratégie.
    
-   Pour dessiner sur le calendrier plutôt, avec de vrais jours et de vraies heures et des repos étirés pour que le cuisinier évite la nuit, donnez les mêmes `tasks` à `project()` avec une heure de service, un fuseau horaire et des disponibilités. Chaque bloc du plan porte `start` et `end` en instants (UTC) et `startLocal` et `endLocal` en heure du cadran du fuseau. Voir [Planifier un repas](/fr/docs/how-to/plan-a-meal/) et la [référence du scheduler](/fr/docs/reference/api/scheduler/).
+   Pour projeter la production sur un calendrier réel (avec dates réelles, heures horloge murale, et adaptation des temps passifs pour respecter les plages de repos nocturnes), transmettez ces mêmes `tasks` à la fonction `project()` avec une heure de service cible, un fuseau horaire et les plages de disponibilité de la brigade. Chaque bloc du plan fournit `start` et `end` sous forme d'instants absolus (UTC) ainsi que `startLocal` et `endLocal` en heure locale du fuseau cible. Pour plus de détails, consultez le guide [Planifier un repas](/fr/docs/how-to/plan-a-meal/) et la [référence de l'API du scheduler](/fr/docs/reference/api/scheduler/).
    
    :::caution[Champs dépréciés]
-   Du code plus ancien peut lire `step.timings`, `step.backgroundTasks` ou `metrics.totalTime`. Ils fonctionnent encore et seront retirés en 2.0.0 : lisez plutôt `schedule`. Voir [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) et la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
+   Les applications antérieures à la version 1.4.0 lisaient parfois `step.timings`, `step.backgroundTasks` ou `metrics.totalTime`. Bien que maintenus pour assurer la rétrocompatibilité jusqu'à la version 2.0.0, ces champs sont obsolètes : consommez désormais la structure `schedule`. Pour en savoir plus, consultez la page [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) et la [référence de l'API Kitchen](/fr/docs/reference/api/kitchen).
    :::
 </Steps>
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Formats de données"
+    description="Explorez les schémas complets TypeScript et JSON des recettes compilées et analysées."
+    href="/fr/docs/reference/api/data-formats"
+  />
+  <LinkCard
+    title="Référence de l'API Kitchen"
+    description="Découvrez compile(), les avertissements et l'ensemble des options du compilateur @gram-lang/kitchen."
+    href="/fr/docs/reference/api/kitchen"
+  />
+  <LinkCard
+    title="Planifier un repas"
+    description="Apprenez à générer des rétroplannings sur calendrier réel et des fiches de production."
+    href="/fr/docs/how-to/plan-a-meal/"
+  />
+  <LinkCard
+    title="Fonctionnalités dépréciées"
+    description="Passez en revue les anciens champs temporels et migrez vers le modèle moderne schedule."
+    href="/fr/docs/how-to/deprecations"
+  />
+</CardGrid>
