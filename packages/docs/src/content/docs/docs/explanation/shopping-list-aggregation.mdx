@@ -27,7 +27,7 @@ flowchart TD
     DensityCheck -- No --> MultiUnit["Fallback: multiUnit=true<br/>(Cluster Entries Under Single Heading)"]
 ```
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. ### ID normalization and aliasing
@@ -75,4 +75,24 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## The final output
 The result is a highly optimized, deduplicated, and mathematically sound array of `ShoppingItem` objects, grouped by stable culinary categories (`CATEGORY_KEYS` from `@gram-lang/i18n`) and sorted according to localized category rules (`getCategoryLabels(lang)`), ready to be rendered in the terminal or a web UI.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Weekly shopping list guide"
+    description="Generate consolidated shopping lists from multiple .gram recipes using the CLI."
+    href="/docs/how-to/weekly-shopping-list/"
+  />
+  <LinkCard
+    title="Composite ingredients syntax"
+    description="How parent-child relationships (<@) are authored and parsed in recipes."
+    href="/docs/reference/syntax/composite-ingredients/"
+  />
+  <LinkCard
+    title="Kitchen API reference"
+    description="Explore shopping list schemas, buildShoppingList(), and aggregation options."
+    href="/docs/reference/api/kitchen/"
+  />
+</CardGrid>
 

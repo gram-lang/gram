@@ -69,7 +69,7 @@ describe("runSheetToText", () => {
 	it("shows a rest with how long it lasts and until when, and why it was stretched", () => {
 		expect(text).toMatch(/Rise — Dough \(14h 30m, until around Sun 12:30\)/);
 		expect(text).toContain(
-			"! Rest stretched from 8h to 14h 30m to stay out of your unavailable hours",
+			"! Wait stretched from 8h to 14h 30m to stay out of your unavailable hours",
 		);
 	});
 
@@ -94,7 +94,7 @@ describe("runSheetToText in French", () => {
 		expect(text).toContain("samedi 10 octobre · J-1");
 		expect(text).toContain("dimanche 11 octobre · Jour J");
 		expect(text).toMatch(/vers 21:40/);
-		expect(text).toContain("Repos allongé de");
+		expect(text).toContain("Attente allongée de");
 	});
 });
 
@@ -105,7 +105,7 @@ describe("what could not be fixed", () => {
 	it("is listed after the days", () => {
 		expect(text).toContain("To fix");
 		expect(text).toMatch(
-			/Mise en place — Dough, around Sun 04:10, falls when you are not available, and no rest can be moved to fix it/,
+			/Mise en place — Dough, around Sun 04:10, falls when you are not available, and no wait can be moved to fix it/,
 		);
 		expect(text.indexOf("To fix")).toBeGreaterThan(text.indexOf("Day D"));
 	});
@@ -143,7 +143,7 @@ describe("runSheetToMarkdown", () => {
 
 	it("puts a rest in italics, with its adjustment under it", () => {
 		expect(md).toMatch(/\*Rise — Dough\* \(14h 30m, until around Sun 12:30\)/);
-		expect(md).toContain("⚠️ Rest stretched");
+		expect(md).toContain("⚠️ Wait stretched");
 	});
 });
 

@@ -16,7 +16,7 @@ export const en = {
 		miseEnPlace: "Mise en place",
 		miseEnPlaceTooltip: "Mise en place for this section",
 		scheduleLabel: "Mise en place",
-		restsLabel: "Rests",
+		restsLabel: "Waits",
 		restsShortest: "Shortest",
 		restsBalanced: "Middle",
 		restsLongest: "Longest",
@@ -30,15 +30,15 @@ export const en = {
 		runSheetAround: "around {time}",
 		runSheetUntil: "until around {time}",
 		runSheetStep: "Step {n}",
-		runSheetRest: "Rest",
+		runSheetRest: "Wait",
 		runSheetUnnamedSection: "Recipe",
 		runSheetStretched:
-			"Rest stretched from {from} to {to} to stay out of your unavailable hours",
+			"Wait stretched from {from} to {to} to stay out of your unavailable hours",
 		runSheetShortened:
-			"Rest shortened from {from} to {to} to stay out of your unavailable hours",
+			"Wait shortened from {from} to {to} to stay out of your unavailable hours",
 		runSheetProblems: "To fix",
 		runSheetOutside:
-			"{task}, around {time}, falls when you are not available, and no rest can be moved to fix it.",
+			"{task}, around {time}, falls when you are not available, and no wait can be moved to fix it.",
 		runSheetExceeds:
 			"{task} takes {duration} without a break, more than your longest availability ({largest}): widen it.",
 		runSheetDayMismatch:
@@ -169,7 +169,7 @@ export const en = {
 			gantt_target_time_label: "Serve at:",
 			gantt_unavailable: "Not available",
 			gantt_rest_adjusted:
-				"Rest changed from {from} to {to} to stay out of unavailable hours",
+				"Wait changed from {from} to {to} to stay out of unavailable hours",
 		},
 		options: {
 			scaleTitle: "Modify Quantities",

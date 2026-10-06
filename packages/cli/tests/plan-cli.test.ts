@@ -69,7 +69,7 @@ describe("gram plan", () => {
 	it("stretches the rest to keep the kneading out of the night, and says so", () => {
 		const { out } = gram(...PLAN, "--available", "08:00-22:00");
 		expect(out).toMatch(/around 21:\d\d\s+Dough — Mix/);
-		expect(out).toContain("Rest stretched from 8h to 14h 30m");
+		expect(out).toContain("Wait stretched from 8h to 14h 30m");
 	});
 
 	it("starts in the night when nothing says otherwise, and does not stretch", () => {
@@ -305,7 +305,7 @@ describe("a recipe on the calendar in view, export and print", () => {
 		expect(out).toContain("Saturday, October 10 · D-1");
 		expect(out).toMatch(/\[Mix\].*— around 21:40/);
 		expect(out).toContain("Rise: 14h 30m, until around Sun 12:30");
-		expect(out).toContain("Rest stretched from 8h to 14h 30m");
+		expect(out).toContain("Wait stretched from 8h to 14h 30m");
 		// The total is the plan's (21:38 to 13:00), not the default timeline's.
 		expect(out).toContain("Total: 15h 22m");
 	});

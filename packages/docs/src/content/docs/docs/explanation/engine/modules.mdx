@@ -4,6 +4,7 @@ description: "How @gram-lang/modules resolves dependency graphs, isolates interm
 ---
 
 import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.2.0" />
 
@@ -88,3 +89,23 @@ Gram supports two execution modes for modular dependencies:
 | **Nutritional Profile** | Aggregated from individual raw ingredients. | Calculated via synthetic ingredient records weighted by `accountedMass / yieldBasisMass`. |
 
 In stock mode, `composeRecipe()` generates synthetic ingredient definitions (`syntheticIngredients`) carrying the module's real nutritional profile and unit weight. When passed to `@gram-lang/analyzer`, the host recipe maintains complete nutritional accuracy even though preparation steps were skipped.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Modules syntax reference"
+    description="Syntax for @use imports, namespacing, renaming, and retro-planning offsets."
+    href="/docs/reference/syntax/modules/"
+  />
+  <LinkCard
+    title="Organize modular recipes"
+    description="Practical guide to structuring multi-file recipe repositories and base components."
+    href="/docs/how-to/organize-modular-recipes/"
+  />
+  <LinkCard
+    title="Modules API reference"
+    description="Complete documentation for loadModuleGraph(), composeRecipe(), and ModuleHost."
+    href="/docs/reference/api/modules/"
+  />
+</CardGrid>

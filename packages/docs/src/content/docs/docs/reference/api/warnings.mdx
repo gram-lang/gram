@@ -6,6 +6,7 @@ description: "Full reference of Warning codes, severities, and the --strict flag
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import Since from '../../../../../components/Since.astro';
 import { warningCodesTable } from '../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 A malformed or incomplete recipe still compiles — the compiler and analyzer collect structured `Warning` objects instead of throwing, so callers can render a recipe and surface what's wrong at the same time. `WarningCode` and friends are exported from `@gram-lang/kitchen`.
 
@@ -94,3 +95,43 @@ A short composite child name (e.g. `@juice`) is drawn from two different parent 
 <Since v="1.2.0" />
 
 An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.
+
+### `SESSION_OVERFLOW`
+
+<Since v="1.4.0" />
+
+A working day (derived from a section's `~{-Nd}` anchor) starts before its 24-hour window opens because a long passive rest pushes it backward. **Fix**: anchor the section further back (for example `~{-2d}` instead of `~{-1d}`), or shorten the rest duration.
+
+### `TIME_PARADOX`
+
+During ALAP reverse scheduling, a producing task is pulled earlier than the beginning of the recipe to satisfy an intermediate consumption deadline or serving time. Gram rebases the timeline to start at zero. **Fix**: check whether active steps and rest intervals before the deadline fit realistically within the available timeframe.
+
+### `TRACK_CONTENTION`
+
+Multiple passive timers share the same equipment track (e.g. `~_oven`) and cannot execute simultaneously. The scheduler serializes them sequentially to prevent equipment collision, delaying the second task. **Fix**: this is an informational notice; if you have access to multiple appliances, assign them distinct track names (e.g. `~_oven1` and `~_oven2`).
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Kitchen API"
+    description="Learn how the compiler emits warnings while processing steps and ingredients."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Scheduler API"
+    description="See diagnostics emitted during ALAP layout, track collision, and run sheets."
+    href="/docs/reference/api/scheduler/"
+  />
+  <LinkCard
+    title="Modules API"
+    description="Inspect warnings emitted during multi-file import resolution and composition."
+    href="/docs/reference/api/modules/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Use gram check with --strict to enforce zero-warning quality gates in CI."
+    href="/docs/reference/tooling/cli/"
+  />
+</CardGrid>
+

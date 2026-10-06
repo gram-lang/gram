@@ -66,7 +66,7 @@ describe("annotateRecipe", () => {
 		expect(rise.rests).toEqual([
 			{
 				text: "Rise: 14h 30m, until around Sun 12:30",
-				note: "Rest stretched from 8h to 14h 30m to stay out of your unavailable hours",
+				note: "Wait stretched from 8h to 14h 30m to stay out of your unavailable hours",
 			},
 		]);
 		expect(notes.steps.get(stepKey(0, 0))?.rests).toEqual([]);
@@ -140,7 +140,7 @@ describe("toMarkdown with a projection", () => {
 
 	it("lists a rest under its step, with its note", () => {
 		expect(md).toContain("   - ⏳ Rise: 14h 30m, until around Sun 12:30");
-		expect(md).toContain("   - ⚠️ *Rest stretched from 8h to 14h 30m");
+		expect(md).toContain("   - ⚠️ *Wait stretched from 8h to 14h 30m");
 	});
 
 	it("shows the total time of the plan, not of the default timeline", () => {
@@ -174,7 +174,7 @@ describe("toHTML and toPrintHTML with a projection", () => {
 			expect(html).toContain(
 				'<span class="step-rest">Rise: 14h 30m, until around Sun 12:30</span>',
 			);
-			expect(html).toContain('<em class="step-note">Rest stretched');
+			expect(html).toContain('<em class="step-note">Wait stretched');
 		}
 	});
 
@@ -190,7 +190,7 @@ describe("toHTML and toPrintHTML with a projection", () => {
 		const html = toHTML(compiled, { projection: plan, lang: "fr" });
 		expect(html).toContain("Servi le dimanche 11 octobre à 13:00");
 		expect(html).toContain("vers 21:40");
-		expect(html).toContain("Repos allongé de");
+		expect(html).toContain("Attente allongée de");
 	});
 
 	it("escape everything that comes from the recipe", () => {

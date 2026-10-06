@@ -31,15 +31,15 @@ const PAGES: [string, string][] = [
 	["explanation/philosophy.mdx", "/docs/explanation/philosophy"],
 	["reference/syntax/document-structure.mdx", "/docs/reference/syntax/document-structure"],
 	["reference/syntax/ingredients.mdx", "/docs/reference/syntax/ingredients"],
-	["reference/syntax/cookware.md", "/docs/reference/syntax/cookware"],
+	["reference/syntax/cookware.mdx", "/docs/reference/syntax/cookware"],
 	["reference/syntax/times.mdx", "/docs/reference/syntax/times"],
-	["reference/syntax/temperatures.md", "/docs/reference/syntax/temperatures"],
-	["reference/syntax/intermediate-variables.md", "/docs/reference/syntax/intermediate-variables"],
-	["reference/syntax/relative-quantities.md", "/docs/reference/syntax/relative-quantities"],
+	["reference/syntax/temperatures.mdx", "/docs/reference/syntax/temperatures"],
+	["reference/syntax/intermediate-variables.mdx", "/docs/reference/syntax/intermediate-variables"],
+	["reference/syntax/relative-quantities.mdx", "/docs/reference/syntax/relative-quantities"],
 	["reference/syntax/composite-ingredients.mdx", "/docs/reference/syntax/composite-ingredients"],
-	["reference/syntax/cheatsheet.md", "/docs/reference/syntax/cheatsheet"],
+	["reference/syntax/cheatsheet.mdx", "/docs/reference/syntax/cheatsheet"],
 	["reference/syntax/ai-generation-notes.mdx", "/docs/reference/syntax/ai-generation-notes"],
-	["reference/api/data-formats.md", "/docs/reference/api/data-formats"],
+	["reference/api/data-formats.mdx", "/docs/reference/api/data-formats"],
 	["reference/api/warnings.mdx", "/docs/reference/api/warnings"],
 ];
 
@@ -88,9 +88,18 @@ function stripTabs(content: string): string {
 
 function stripSinceBadges(content: string): string {
 	return content.replace(
-		/<Since\s+v="([^"]+)"(?:\s+[^>]+)?\s*\/>/g,
+		/<Since(?:\s+[^>]*)?\s+v="([^"]+)"(?:\s+[^>]*)?\s*\/>/g,
 		"*(since v$1)*",
 	);
+}
+
+function stripStarlightComponents(content: string): string {
+	return content
+		.replace(/<\/?CardGrid>/g, "")
+		.replace(/<Card\s+title="([^"]+)"(?:\s+[^>]*)?>/g, "### $1\n")
+		.replace(/<\/Card>/g, "")
+		.replace(/<\/?Steps>/g, "")
+		.replace(/<Badge\s+text="([^"]+)"(?:\s+[^>]*)?\s*\/>/g, "[$1]");
 }
 
 const sections = PAGES.map(([relPath, urlPath]) => {
@@ -101,6 +110,7 @@ const sections = PAGES.map(([relPath, urlPath]) => {
 	content = resolveGeneratedTables(content);
 	content = stripTabs(content);
 	content = stripSinceBadges(content);
+	content = stripStarlightComponents(content);
 	content = content.trim();
 	return `<!-- Source: ${SITE_ORIGIN}${urlPath} -->\n\n${content}`;
 });

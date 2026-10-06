@@ -4,6 +4,7 @@ description: "Group related ingredient parts like zest and juice under one paren
 ---
 
 import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 In real-world cooking, recipes often require specific parts of an `@ingredient`—like the **zest** and **juice** of a lemon. 
 
@@ -136,3 +137,23 @@ If the parent itself also has a `()` preparation (e.g. `@lemon juice{150ml}<@lem
 ```
 
 The parent's preparation never appears in the shopping list — like any other preparation note, it's instructional context for the recipe, not a shopping-list attribute.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Shopping list aggregation"
+    description="Deep dive into how the compiler evaluates MAX and SUM rules for composites."
+    href="/docs/explanation/shopping-list-aggregation/"
+  />
+  <LinkCard
+    title="Ingredients syntax"
+    description="Full syntax for declaring raw ingredients, units, quantities, and preparation notes."
+    href="/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Weekly shopping list guide"
+    description="How multi-recipe shopping lists resolve and consolidate composite ingredients."
+    href="/docs/how-to/weekly-shopping-list/"
+  />
+</CardGrid>

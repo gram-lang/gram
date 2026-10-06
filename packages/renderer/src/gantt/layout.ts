@@ -431,7 +431,7 @@ export function buildTracks(
 			tooltip: adjustment
 				? `${trackName}. ${(
 						t.playground?.views?.gantt_rest_adjusted ||
-						"Rest changed from {from} to {to} to stay out of unavailable hours"
+						"Wait changed from {from} to {to} to stay out of unavailable hours"
 					)
 						.replace("{from}", formatTime(adjustment.from))
 						.replace("{to}", formatTime(adjustment.to))}`

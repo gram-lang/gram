@@ -1,0 +1,176 @@
+---
+title: "@gram-lang/renderer"
+description: "Rendu des recettes compilées en Markdown, HTML, document PDF-ready ou frise chronologique interactive (Gantt)."
+---
+
+import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Gère le rendu d'un `CompilationResult` (ou d'un `AnalyzedCompilationResult`) en Markdown, en HTML, ou en un document HTML autonome optimisé pour l'impression. Si vous construisez une interface front-end native (React, Vue, Svelte, etc.), vous consommerez le plus souvent le JSON directement. Consultez le guide [Créer une UI personnalisée](/fr/docs/how-to/build-custom-ui).
+
+## `toMarkdown` / `toHTML` / `toPrintHTML`
+
+```typescript
+type RenderableCompilationResult = CompilationResult | AnalyzedCompilationResult;
+
+function toMarkdown(data: RenderableCompilationResult, options?: RendererOptions): string
+function toHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+function toPrintHTML(data: RenderableCompilationResult, options?: RendererOptions): string
+```
+
+```typescript
+import { compile } from '@gram-lang/kitchen';
+import { toHTML } from '@gram-lang/renderer';
+
+const compiled = compile(ast);
+const html = toHTML(compiled, { lang: 'fr' });
+```
+
+`toPrintHTML` génère un document HTML complet et autonome (`<style>` inline, règles `@page` A4, aucune dépendance externe), idéal pour les fonctionnalités d'export PDF ou d'impression papier. À l'inverse, `toHTML` retourne un fragment HTML conçu pour s'intégrer discrètement dans une mise en page existante.
+
+Ces trois formateurs partagent la même architecture de traversée (`RenderBackend`). Cela garantit que les résumés nutritionnels, les notes de bas de page, les badges de masse brute ou les avertissements d'unités incompatibles sont restitués de manière rigoureusement homogène, que vous cibliez du Markdown, du HTML ou du Print.
+
+### `RendererOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `icons` | `RendererIcons` | Surcharge tout ou partie des icônes par défaut (voir `DEFAULT_ICONS` ci-dessous). |
+| `classes` | `RendererClasses` | Surcharge les noms de classes CSS appliquées aux éléments générés (HTML/print uniquement). |
+| `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (gère par défaut les fractions courantes, ex. : `0.5` → `"1/2"`). |
+| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30m"`). |
+| `hideStepQty` | `boolean` | Masque les quantités d'ingrédients au sein du texte narratif des étapes (la liste de courses et les listes d'ingrédients de section restent intactes). |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Stratégie de placement de la mise en place : immédiatement avant chaque section (`'perSection'`, par défaut), regroupée au démarrage (`'upfront'`) ou au début de chaque journée de travail (`'perSession'`). Détermine les durées totale et d'inactivité de l'en-tête. Avec `'perSection'`, le HTML affiche un badge « Mise en place » sur chaque liste d'ingrédients (durée et détail au survol). Avec les deux autres modes, chaque session s'ouvre par un bloc de mise en place explicite (`J-3`, `J-1`, `Jour J`...), et le HTML ne conserve un badge de section que pour les préparations intermédiaires différées. Les listes d'ingrédients demeurent identiques. L'ordonnancement est calculé à partir de `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (`~_{12-24h}`) : borne la plus courte (`'shortest'`, par défaut), médiane (`'balanced'`) ou borne la plus longue (`'longest'`). Les minuteurs passifs à durée fixe et les minuteurs actifs ne sont pas affectés. Pilote les mêmes durées que `miseEnPlace`. |
+| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Projection calendaire réelle calculée via `project()` de `@gram-lang/scheduler`. La recette s'enrichit alors de repères temporels concrets : heure de service cible et alertes de contraintes en en-tête, heure locale estimée à côté de chaque étape (« vers 21:40 »), transitions de journées (`J-1`, `Jour J`), et indication des temps passifs en cours avec mention des étirements ou compressions appliqués. Les durées d'en-tête reflètent le plan réel. Sans cette option, la recette conserve sa présentation relative classique. |
+| `runSheet` | `boolean` | <Since v="1.4.0" /> Lorsqu'une `projection` est fournie : adjoint la fiche de production opérationnelle à la suite de la recette dans le même document (en Markdown sous un titre dédié, en impression avec ses styles propres). La recette et la fiche présentent les mêmes opérations selon deux logiques complémentaires : l'ordre des sections culinaires et l'ordre chronologique d'exécution. |
+| `bakersMathOnly` | `boolean` | N'affiche que les pourcentages du boulanger, en masquant les quantités absolues. |
+| `interactiveScaling` | `boolean` | Génère des contrôles interactifs d'ajustement des portions et ingrédients (HTML uniquement). |
+| `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Référentiel nutritionnel affiché. `'auto'` (par défaut) sélectionne la portion si le nombre de portions est renseigné, sinon la recette entière. |
+| `interactiveNutrition` | `boolean` | HTML uniquement : génère toutes les bases nutritionnelles disponibles sous un sélecteur interactif en CSS pur. Requiert la feuille de style du renderer ; ignoré si `nutritionBasis` force une base spécifique. |
+| `lang` | `string` | Code de langue (ex. : `'en'`, `'fr'`) pour la traduction des libellés UI via `@gram-lang/i18n`. |
+| `renderId` | `string` | Préfixe pour les identifiants d'ancres de notes de bas de page — utile pour éviter les collisions lors du rendu de plusieurs recettes sur une même page. |
+
+## Diagramme de Gantt (`toGanttHTML` & `attachGanttInteractivity`)
+
+Génère une chronologie interactive (diagramme de Gantt) pour visualiser fidèlement le déroulement de la recette (étapes actives, temps passifs sur équipement ou au repos, périodes de battement).
+
+```typescript
+import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
+
+// 1. Génère le fragment HTML statique
+const ganttHtml = toGanttHTML(compiled, { lang: 'fr' });
+container.innerHTML = ganttHtml;
+
+// 2. Attache les interactions et les infobulles au survol
+const handle = attachGanttInteractivity(container, {
+  timeMode: 'forward',   // 'forward' (chronomètre T+), 'reverse' (compte à rebours T-), ou 'target' (heure de service)
+  targetTime: '19:30',   // Heure de service cible (HH:MM)
+  isCompactMode: false   // Active ou désactive la vue compacte
+});
+
+// Met à jour dynamiquement les options
+handle.setOptions({ isCompactMode: true });
+
+// Nettoie les écouteurs d'événements au démontage du composant
+handle.dispose();
+```
+
+### `GanttRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Code de langue (ex. : `'en'`, `'fr'`) pour traduire les chaînes d'interface via `@gram-lang/i18n`. |
+| `gapThresholdMinutes` | `number` | Période d'inactivité minimale en minutes avant application de la compression visuelle (par défaut : `60`). `Infinity` désactive la compression. |
+| `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle une période d'inactivité compressée est réduite (par défaut : `20`). |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Stratégie de placement de la mise en place (par défaut : `'perSection'`). La mise en place de chaque section apparaît sous forme de bloc en pointillés à la couleur de la section ; avec `'perSession'`, des repères identifient chaque journée de travail. L'ordonnancement est déduit du graphe `tasks`. |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (par défaut : `'shortest'`). |
+| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Projection calendaire calculée via `project()` de `@gram-lang/scheduler`. Le graphique représente directement les blocs du plan (un temps passif étiré ou compressé apparaît à sa durée effective, souligné d'un contour pointillé avec annotation), affiche un axe en dates et heures locales du fuseau, grise les plages d'indisponibilité de la brigade et désactive le sélecteur de mode temporel relatif. `miseEnPlace` et `rests` sont alors hérités du plan. |
+
+### `GanttInteractivityOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `timeMode` | `'forward' \| 'reverse' \| 'target'` | Mode d'affichage de l'axe temporel : temps écoulé (T+), compte à rebours (T-), ou heure réelle basée sur l'objectif de service. |
+| `targetTime` | `string` | Heure de service cible au format `"HH:MM"`. |
+| `isCompactMode` | `boolean` | Bascule le composant en vue compacte pour optimiser la hauteur verticale. |
+
+## Icônes
+
+```typescript
+import { DEFAULT_ICONS, toHTML } from '@gram-lang/renderer';
+
+const html = toHTML(compiled, {
+  icons: { ...DEFAULT_ICONS.html, clock: '<svg class="my-clock-icon">...</svg>' },
+});
+```
+
+`DEFAULT_ICONS` propose deux variantes complètes : `DEFAULT_ICONS.html` (éléments SVG Phosphor autonomes intégrés en ligne) et `DEFAULT_ICONS.md` (emojis). Elles couvrent l'intégralité des identifiants de `RendererIcons` (`hourglass`, `timer`, `thermometer`, `caretRight`, `arrowRight`, `arrowUDownLeft`, `arrowElbowDownRight`, `warning`, `pencilSimple`, `minus`, `plus`, `clock`, `clockCounterClockwise`, `fire`, `knife`, `scales`, `package`, `info`). Chaque glyphe peut être personnalisé individuellement via `options.icons`.
+
+## Utilitaires de formatage
+
+Une série d'utilitaires de bas niveau (exploités en interne par les moteurs de rendu) est exportée pour faciliter la conception de moteurs de rendu personnalisés conformes aux conventions du langage :
+
+```typescript
+function formatDecimalToFraction(value: unknown): string   // 0.5 -> "1/2"
+function getQty(item: Record<string, unknown>): { value: number | string | null; text?: string; isRelative?: boolean } | undefined
+function formatQuantityValue(q: any): string                // Quantité de minuteur/température -> chaîne d'affichage
+function formatDuration(minutes: number): string            // 90 -> "1h 30m" ; arrondi à la minute dès 1h, à la seconde en dessous (64.5 -> "1h 5m", 0.33 -> "20s")
+function formatTimer(item: { quantity?: unknown; unit?: string | null }, separator?: string): string   // { quantity: 1, unit: "h" } -> "1h"
+function toCommonFraction(value: number): string | undefined   // 0.25 -> "1/4", 0.3 -> undefined
+function escapeHtml(unsafe: string | null | undefined): string
+function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neutralise `<`/`&` pour un rendu Markdown vers HTML sûr en aval
+function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
+```
+
+## Fiche de production <Since v="1.4.0" />
+
+À partir du plan généré par `project()` et de la recette compilée correspondante, le moteur de rendu produit la fiche de production opérationnelle en quatre formats, ainsi qu'un modèle descriptif structuré permettant de bâtir une interface personnalisée :
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+import { runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML, describeRunSheet } from '@gram-lang/renderer';
+
+const sheet = runSheet(project([{ graph: compiled.tasks }], context));
+
+runSheetToText(sheet, compiled, { lang: 'fr' });      // texte brut
+runSheetToMarkdown(sheet, compiled, { lang: 'fr' });  // document Markdown
+runSheetToHTML(sheet, compiled, { lang: 'fr' });      // fragment HTML mis en forme par gram.css
+runSheetToPrintHTML(sheet, compiled, { lang: 'fr' }); // document HTML complet prêt à imprimer
+const model = describeRunSheet(sheet, compiled);       // { title, servedAt, days: [{ heading, lines }], problems }
+```
+
+### `RunSheetRenderOptions`
+
+| Option | Type | Description |
+|---|---|---|
+| `lang` | `string` | Code de langue (`'en'`, `'fr'`) pour les libellés et le formatage des dates. |
+| `roundTo` | `number` | Affichage uniquement : arrondi visuel des horaires par pas de minutes (par défaut : `5`). Les calculs internes restent exacts à la minute. |
+| `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé. |
+
+Chaque entrée de la fiche indique l'heure de démarrage estimée (« vers 21:40 »), l'opération concernée, sa durée active et, pour un temps passif, l'heure d'échéance. Une étape sans temps actif propre est fusionnée : le minuteur passif qu'elle déclenche reprend son intitulé. Tout temps passif réaménagé par le plan fait l'objet d'une annotation, et les contraintes non résolues sont récapitulées en fin de document.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Créer une interface sur-mesure"
+    description="Rendez les recettes directement dans React, Vue, Svelte ou avec le DOM natif."
+    href="/fr/docs/how-to/build-custom-ui/"
+  />
+  <LinkCard
+    title="API Scheduler"
+    description="Générez les plans d'ordonnancement et les fiches de production en amont."
+    href="/fr/docs/reference/api/scheduler/"
+  />
+  <LinkCard
+    title="API Kitchen"
+    description="Comprenez la structure CompilationResult qui fournit les données de recette."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Formats de données"
+    description="Consultez les schémas JSON et la hiérarchie des tokens textuels."
+    href="/fr/docs/reference/api/data-formats/"
+  />
+</CardGrid>
+

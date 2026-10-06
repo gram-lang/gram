@@ -5,8 +5,9 @@ description: "Normalisation partagée des unités et du temps, et chaînes UI lo
 
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import { unitsTable, timeUnitsTable, categoriesTable } from '../../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Ce *package* centralise la normalisation des unités/du temps et les dictionnaires de chaînes UI, exploités en interne par tout le *pipeline* (le *parser* ne normalise pas les unités : cela se fait lors du *scaling* dans `@gram-lang/kitchen` et de la standardisation des masses dans `@gram-lang/analyzer`). Le but : que `"càs"`, `"tbsp"` et `"cuillère à soupe"` soient toujours reconnus comme la même unité, peu importe la *locale* utilisée pour rédiger la recette ou la base de données.
+Ce package centralise la normalisation des unités, des durées et les dictionnaires de chaînes d'interface, exploités en interne par tout le pipeline (le parseur ne normalise pas les unités : cette étape a lieu lors du redimensionnement dans `@gram-lang/kitchen` et de la standardisation des masses dans `@gram-lang/analyzer`). Le but : que `"càs"`, `"tbsp"` et `"cuillère à soupe"` soient toujours reconnus comme la même unité, quelle que soit la langue de rédaction de la recette ou de la base de données.
 
 ## Unités canoniques & alias
 
@@ -23,10 +24,11 @@ import { normalizeUnit } from '@gram-lang/i18n';
 
 normalizeUnit('càs');              // "tbsp"
 normalizeUnit('Tablespoons');      // "tbsp"
-normalizeUnit('kilo', 'fr');       // "kg" (recherche scopée par langue, avec fallback sur le global)
+normalizeUnit('kilo', 'fr');       // "kg" (recherche ciblée par langue, avec repli sur le dictionnaire global)
 ```
 
-Une unité non reconnue est simplement retournée en minuscules, expurgée de ses espaces superflus (*trim*).
+Une unité non reconnue est simplement retournée en minuscules, sans ses espaces superflus.
+
 
 ## Unités de temps
 
@@ -76,4 +78,30 @@ UNIT_CONVERSIONS.mass.map.kg; // 1000 (grammes)
 UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
 TIME_TO_MINUTES.h; // 60 (minutes)
 ```
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="API Kitchen"
+    description="Découvrez comment la conversion d'unités s'opère durant la compilation de la recette."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="API Analyzer"
+    description="Observez comment les unités normalisées font le pont entre volume et masse via les densités."
+    href="/fr/docs/reference/api/analyzer/"
+  />
+  <LinkCard
+    title="API Renderer"
+    description="Apprenez comment les chaînes localisées, fractions et durées sont mises en page."
+    href="/fr/docs/reference/api/renderer/"
+  />
+  <LinkCard
+    title="Masse et rendement"
+    description="Référence détaillée des tables de conversion d'unités et des règles de calcul de rendement."
+    href="/fr/docs/explanation/mass-and-yield/"
+  />
+</CardGrid>
+
 

@@ -7,7 +7,7 @@ The Gram CLI (`@gram-lang/cli`) can leverage Large Language Models (LLMs) to aut
 
 This guide explains how to set up and configure your preferred AI provider step by step.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
 
 ## What AI powers in the Gram CLI
@@ -18,7 +18,6 @@ Configuring an AI provider unlocks three powerful CLI features:
 2. **Database Deduplication & Linting (`gram db lint`)**: Uses AI to detect semantic duplicates, singular/plural mismatches, and multi-language entries in `ingredients.yaml`, interactively merging them into primary keys and aliases.
 3. **Database Enrichment (`gram db enrich`)**: Queries nutritional values (calories, macros, micronutrients) and physical properties (densities, yields, unit weights) to propose fills for incomplete entries in `ingredients.yaml` — density/nutrition proposals go through an interactive review before being written, since they're product-specific (see [Where the Numbers Come From](/docs/explanation/nutrition#where-the-numbers-come-from) for why Gram doesn't ship a reference database instead).
 
----
 
 ## Why AI? Restructuring vs. transliteration
 
@@ -27,7 +26,7 @@ Gram is not just a markup format; it is a domain-specific model for recipes. Con
 Traditional recipes contain many steps that exist only because unstructured text has no other way to express them:
 - *"Cut 1 lemon in half"* → In Gram, this dissolves into an inline preparation annotation on the ingredient: `@lemon{1}(cut in half)`.
 - *"In a small bowl, combine salt and pepper and set aside"* → In Gram, this becomes an intermediate variable reference (`&seasoning`).
-- *"Remove from heat and let cool for 30 minutes"* → In Gram, this is a passive rest timer annotation (`~_{30min}`).
+- *"Remove from heat and let cool for 30 minutes"* → In Gram, this is a passive timer annotation (`~_{30min}`).
 
 A mechanical scraper or simple JSON parser cannot perform this culinary restructuring. It would generate verbose, imperative steps that miss Gram's core features (mass standardization, dynamic scaling, ingredient reuse with `@&`, and composite ingredients like `@lemon juice{}<@lemon{1}`).
 
@@ -37,7 +36,6 @@ Similarly, for database management:
 - **`gram db lint`**: AI detects semantic equivalence across phrasings and languages (e.g. knowing that `softened butter`, `butter`, `unsalted butter`, and `beurre` refer to the same canonical ingredient).
 - **`gram db enrich`**: AI proposes standardized physical densities (volume-to-mass conversion) and nutritional facts from culinary domain knowledge, without requiring manual lookup — but you still review and approve each proposal before it's written.
 
----
 
 ## Configuration methods
 
@@ -59,7 +57,6 @@ During initialization, the CLI will ask:
 4. **Save API key in `.env`?**: Confirm to save your key securely. The CLI will automatically create/update your `.env` file and append `.env` to your project's `.gitignore` file to prevent accidental credential leaks.
 </Steps>
 
----
 
 ### Method 2: Environment variables (recommended)
 
@@ -106,7 +103,6 @@ If no explicit `ai.provider` is defined in your `.gram/config.yaml`, the CLI aut
 Never commit your `.env` file or API keys to version control. Make sure `.env` is listed in your `.gitignore` file.
 :::
 
----
 
 ### Method 3: Configuration files (`config.yaml`)
 
@@ -128,7 +124,6 @@ ai:
 - **Global Config (`~/.config/gram/config.yaml`)**: Applies system-wide for all Gram projects on your machine.
 - **Project Config (`.gram/config.yaml`)**: Overrides global settings for the current project.
 
----
 
 ### Method 4: Running local AI with Ollama
 
@@ -156,7 +151,6 @@ If you prefer running AI models locally without sending data to external APIs, y
 Ollama requires no API key. You can also specify a custom base URL via the `OLLAMA_BASE_URL` environment variable.
 :::
 
----
 
 ### Dynamic overrides via flags
 
@@ -172,7 +166,6 @@ gram db lint --pick-model                        # Interactive model picker
 
 See [Choosing the AI model](/docs/reference/tooling/cli#choosing-the-ai-model) for full details.
 
----
 
 ## Verifying your setup
 
@@ -189,7 +182,6 @@ To test if your AI setup is working properly:
    gram import https://example.com/recipe --output recipe.gram
    ```
 
----
 
 ## Troubleshooting
 
@@ -206,3 +198,18 @@ Export an environment variable:
 - Ensure your `.env` file is in the project root directory where you run `gram`.
 - If using environment variables directly in terminal, export the variable beforehand (`export GEMINI_API_KEY=...`).
 - Verify that your API key matches the provider configured in `.gram/config.yaml`.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="CLI reference"
+    description="Full documentation for gram import, gram db commands, and AI CLI flags."
+    href="/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Manage an ingredient database"
+    description="The complete sync, lint, and enrich workflow using your configured AI model."
+    href="/docs/how-to/manage-database/"
+  />
+</CardGrid>

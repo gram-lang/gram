@@ -7,7 +7,7 @@ Gram uses a local `ingredients.yaml` file to store physical and nutritional data
 
 This guide explains the standard workflow for maintaining your database using the Gram CLI.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
 
 ## The database workflow
@@ -89,3 +89,23 @@ gram db merge ~/Downloads/community-db.yaml
 ```
 
 If there are conflicts (e.g., the community database says butter has 717 kcal, but yours says 740 kcal), the CLI will ask you interactively how to resolve them.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Configure AI"
+    description="Set up your LLM provider and API keys for ingredient enrichment and duplicate detection."
+    href="/docs/how-to/configure-ai/"
+  />
+  <LinkCard
+    title="Mass & yield"
+    description="Learn how density, piece mass, and yield loss factor into recipe calculations."
+    href="/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Nutritional calculation"
+    description="Understand how Gram calculates energy and macronutrient profiles from ingredient data."
+    href="/docs/explanation/nutrition/"
+  />
+</CardGrid>

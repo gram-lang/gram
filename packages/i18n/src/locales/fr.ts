@@ -19,10 +19,10 @@ export const fr: GramLocale = {
 		miseEnPlace: "Mise en place",
 		miseEnPlaceTooltip: "Mise en place de cette section",
 		scheduleLabel: "Mise en place",
-		restsLabel: "Repos",
-		restsShortest: "Les plus courts",
+		restsLabel: "Attentes",
+		restsShortest: "Les plus courtes",
 		restsBalanced: "Au milieu",
-		restsLongest: "Les plus longs",
+		restsLongest: "Les plus longues",
 		schedulePerSection: "Par section",
 		scheduleUpfront: "Tout au début",
 		schedulePerSession: "Par journée de travail",
@@ -33,15 +33,15 @@ export const fr: GramLocale = {
 		runSheetAround: "vers {time}",
 		runSheetUntil: "jusqu'à vers {time}",
 		runSheetStep: "Étape {n}",
-		runSheetRest: "Repos",
+		runSheetRest: "Attente",
 		runSheetUnnamedSection: "Recette",
 		runSheetStretched:
-			"Repos allongé de {from} à {to} pour éviter vos heures d'indisponibilité",
+			"Attente allongée de {from} à {to} pour éviter vos heures d'indisponibilité",
 		runSheetShortened:
-			"Repos raccourci de {from} à {to} pour éviter vos heures d'indisponibilité",
+			"Attente raccourcie de {from} à {to} pour éviter vos heures d'indisponibilité",
 		runSheetProblems: "À régler",
 		runSheetOutside:
-			"{task}, vers {time}, tombe quand vous n'êtes pas disponible, et aucun repos ne peut bouger pour arranger ça.",
+			"{task}, vers {time}, tombe quand vous n'êtes pas disponible, et aucune attente ne peut bouger pour arranger ça.",
 		runSheetExceeds:
 			"{task} dure {duration} sans pause, plus que votre plus longue disponibilité ({largest}) : élargissez-la.",
 		runSheetDayMismatch:
@@ -159,7 +159,7 @@ export const fr: GramLocale = {
 			gantt_target_time_label: "Servir à :",
 			gantt_unavailable: "Indisponible",
 			gantt_rest_adjusted:
-				"Repos modifié de {from} à {to} pour éviter les heures d'indisponibilité",
+				"Attente modifiée de {from} à {to} pour éviter les heures d'indisponibilité",
 		},
 		options: {
 			scaleTitle: "Modifier les quantités",

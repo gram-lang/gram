@@ -5,6 +5,7 @@ description: "Shared unit and time normalization plus localized UI strings used 
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import { unitsTable, timeUnitsTable, categoriesTable } from '../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Shared unit/time normalization and UI-string dictionaries, used internally across the pipeline (the parser doesn't normalize units — that happens in `@gram-lang/kitchen`'s scaling engine and `@gram-lang/analyzer`'s mass standardization) so `"càs"`, `"tbsp"`, and `"cuillère à soupe"` are all recognized as the same unit regardless of which locale a recipe or a database entry was written in.
 
@@ -76,4 +77,30 @@ UNIT_CONVERSIONS.mass.map.kg; // 1000 (grams)
 UNIT_CONVERSIONS.volume.map.tbsp; // 14.7868 (mL)
 TIME_TO_MINUTES.h; // 60 (minutes)
 ```
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Kitchen API"
+    description="Explore how unit scaling and conversion work during recipe compilation."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Analyzer API"
+    description="See how normalized units bridge volumes to grams using ingredient densities."
+    href="/docs/reference/api/analyzer/"
+  />
+  <LinkCard
+    title="Renderer API"
+    description="Learn how localized strings, fractions, and durations are rendered."
+    href="/docs/reference/api/renderer/"
+  />
+  <LinkCard
+    title="Mass and yield"
+    description="Detailed reference on unit conversion tables and yield calculation rules."
+    href="/docs/explanation/mass-and-yield/"
+  />
+</CardGrid>
+
 

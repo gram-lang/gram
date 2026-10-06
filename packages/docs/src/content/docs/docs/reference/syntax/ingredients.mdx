@@ -4,6 +4,7 @@ description: "How to declare ingredients with the @ symbol, specify quantities a
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Ingredients are the core building blocks of any Gram recipe.
 
@@ -199,3 +200,28 @@ The compiler checks for semantic errors in your `@ingredient` declarations and w
 - **Database Missing**: If you compile with a database and the `@ingredient` is not found, it warns `MISSING_INGREDIENT`.
 - **Missing Macros**: If the database lacks nutritional information for the `@ingredient`, it warns `MISSING_MACROS`.
 - **Unknown Mass**: If it cannot convert a volume or count into grams to estimate nutrition, it warns `UNKNOWN_MASS`.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Relative quantities syntax"
+    description="Express ingredients as percentages of an anchor (% @&flour) for ratio-based cooking."
+    href="/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Composite ingredients syntax"
+    description="Declare parent-child relationships (<@lemon) for ingredients like zest and juice."
+    href="/docs/reference/syntax/composite-ingredients/"
+  />
+  <LinkCard
+    title="Mass standardization & yield"
+    description="How the compiler converts volumes and counts to grams using density and unit weight."
+    href="/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Compiler warnings reference"
+    description="Catalog of warnings emitted when ingredient references or mass conversions fail."
+    href="/docs/reference/api/warnings/"
+  />
+</CardGrid>

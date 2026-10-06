@@ -9,7 +9,7 @@ However, because nutritional data is highly sensitive and impacts dietary choice
 
 ## The calculation flow
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../components/Since.astro';
 
 <Steps>
@@ -74,3 +74,23 @@ Gram's syntax modifiers impact nutritional calculations in specific ways:
 - **Optional Ingredients (`?`)**: Ingredients marked as optional (e.g., `@?whipped cream`) are **excluded** from the base nutritional totals. The Analyzer assumes the most conservative dietary baseline.
 - **Alternatives (`|`)**: When a recipe provides alternatives (e.g., `@butter{50g} | @oil{40g}`), the Analyzer only calculates the nutrition for the **first (preferred) option**. It does not average them.
 - **Composite Ingredients (`<@`)**: The nutrition of a composite ingredient is calculated purely from its children, each looked up independently in the database by its own id (e.g., `lemon juice` and `lemon zest` are two distinct entries with different macros). There is no fallback to the parent's own nutritional data — if a child ingredient has no `nutrition` block, it is treated the same as any other missing ingredient: it contributes to the `MISSING_MACROS` warning and lowers `coverage`, rather than being estimated from the parent.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Mass standardization & yield"
+    description="Understand how the analyzer standardizes raw ingredient quantities into grams before computing macros."
+    href="/docs/explanation/mass-and-yield/"
+  />
+  <LinkCard
+    title="Manage an ingredient database"
+    description="Populate and enrich ingredients.yaml with nutrition facts and AI-assisted data."
+    href="/docs/how-to/manage-database/"
+  />
+  <LinkCard
+    title="Analyzer API reference"
+    description="Inspect nutritional profile types, coverage ratios, and analyzer diagnostics."
+    href="/docs/reference/api/analyzer/"
+  />
+</CardGrid>

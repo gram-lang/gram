@@ -6,6 +6,7 @@ description: "Référence complète des codes de Warning, de leur sévérité, e
 import GeneratedTable from '../../../../../../components/GeneratedTable.astro';
 import Since from '../../../../../../components/Since.astro';
 import { warningCodesTable } from '../../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Une recette malformée ou incomplète finit quand même de compiler : le compilateur et l'Analyseur collectent des objets `Warning` structurés au lieu de lever des exceptions. Cela permet d'afficher la recette tout en signalant visuellement les avertissements. L'énumération `WarningCode` et ses utilitaires sont exportés par `@gram-lang/kitchen`.
 
@@ -30,7 +31,8 @@ type WarningSeverity = "error" | "warning" | "info";
 const warningSeverity: Record<WarningCode, WarningSeverity>;
 ```
 
-Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, un module introuvable, etc.) sont de sévérité `error`. Les lacunes récupérables (estimations, annotations incomplètes) sont catégorisées en `warning`, et les simples notifications contextuelles (surplus, calcul par fournées, contention de ressources) sont en `info`. Ainsi, une unité de minuteur manquante ne fera pas crasher un *build* au même titre qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` et `info` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
+Les problèmes d'intégrité structurelle (une référence vers un élément fantôme, une collision de noms, un module introuvable, etc.) sont de sévérité `error`. Les lacunes récupérables (estimations, annotations incomplètes) sont catégorisées en `warning`, et les simples notifications contextuelles (surplus, calcul par fournées, contention de ressources) sont en `info`. Ainsi, une unité de minuteur manquante n'interrompra pas l'exécution de la même façon qu'une référence indéfinie. C'est exactement sur cette distinction que repose l'option `--strict` de la commande CLI `gram check` : sans `--strict`, seuls les codes de sévérité `error` font échouer la commande ; avec, chaque `warning` et `info` est promu en `error`. Vous pouvez facilement coder votre propre logique de mode strict en vous appuyant sur le dictionnaire `warningSeverity[code]`.
+
 
 ## Codes
 
@@ -94,3 +96,43 @@ Un nom court d'ingrédient composite (ex : `@jus`) est extrait de deux parents d
 <Since v="1.2.0" />
 
 Un module importé via une directive `@use` n'a pas pu être résolu ou trouvé sur le système de fichiers. **Correction** : vérifiez le chemin du fichier, l'extension (`.gram`) ou les alias configurés dans `config.yaml`.
+
+### `SESSION_OVERFLOW`
+
+<Since v="1.4.0" />
+
+Une journée de travail (définie par l'ancre `~{-Nd}` d'une section) débute avant l'ouverture de sa fenêtre de 24 heures en raison d'un temps de repos passif prolongé. **Correction** : ancrez la section un jour plus tôt (par exemple `~{-2d}` au lieu de `~{-1d}`), ou réduisez la durée du repos.
+
+### `TIME_PARADOX`
+
+Lors de la planification inverse ALAP, une tâche de production est tirée avant l'instant initial de la recette pour honorer l'échéance de consommation d'un intermédiaire ou le service. Gram translate l'ensemble de la chronologie pour la faire débuter à zéro. **Correction** : vérifiez que les étapes actives et les temps de repos prévus laissent un délai réaliste avant l'échéance.
+
+### `TRACK_CONTENTION`
+
+Plusieurs minuteurs passifs partagent la même piste d'équipement matériel (ex. `~_four`) et ne peuvent pas se dérouler en simultané. L'ordonnanceur les sérialise l'un après l'autre pour éviter toute collision matérielle, retardant la seconde tâche. **Correction** : il s'agit d'une notification informative ; si vous disposez de plusieurs équipements distincts, assignez-leur des noms de pistes différenciés (ex. `~_four1` et `~_four2`).
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="API Kitchen"
+    description="Découvrez comment le compilateur émet des avertissements au fil des étapes et ingrédients."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="API Scheduler"
+    description="Consultez les diagnostics émis lors de la planification ALAP et la détection de conflits."
+    href="/fr/docs/reference/api/scheduler/"
+  />
+  <LinkCard
+    title="API Modules"
+    description="Inspectez les avertissements levés lors de l'import et de la composition multi-recettes."
+    href="/fr/docs/reference/api/modules/"
+  />
+  <LinkCard
+    title="Référence du CLI"
+    description="Utilisez gram check avec l'option --strict pour verrouiller vos intégrations CI."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+</CardGrid>
+

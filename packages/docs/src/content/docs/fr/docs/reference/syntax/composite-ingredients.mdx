@@ -4,6 +4,7 @@ description: "Regroupez les parties d'un même ingrédient, comme le zeste et le
 ---
 
 import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 En cuisine, les recettes réclament souvent des parties spécifiques d'un même `@ingrédient` (ex : le **zeste** et le **jus** d'un citron).
 
@@ -136,3 +137,23 @@ Si le parent lui-même a aussi une préparation `()` (ex : `@jus de citron{150 m
 ```
 
 Notez que la préparation du parent n'apparaîtra **jamais** dans la liste de courses globale : au même titre que n'importe quelle autre note de préparation, il s'agit d'une consigne de recette, et non d'un attribut d'achat.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Agrégation de la liste de courses"
+    description="Plongez dans les détails de l'évaluation des règles MAX et SUM pour les composites."
+    href="/fr/docs/explanation/shopping-list-aggregation/"
+  />
+  <LinkCard
+    title="Syntaxe des ingrédients"
+    description="Syntaxe complète pour déclarer ingrédients bruts, unités, quantités et préparations."
+    href="/fr/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Générer une liste de courses consolidée"
+    description="Comment les listes de courses multi-recettes consolident les ingrédients composites."
+    href="/fr/docs/how-to/weekly-shopping-list/"
+  />
+</CardGrid>

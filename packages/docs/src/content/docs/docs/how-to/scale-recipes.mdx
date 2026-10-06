@@ -27,7 +27,7 @@ Some recipes are fundamentally built around the mathematical relationship betwee
 
 In Gram, you can express these relationships directly in the source code using **Relative Quantities** (`% @&target` for ingredients, or `% &target` for intermediate variables). This allows the recipe to recalculate itself dynamically when you tweak a single percentage.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. ### Define the anchor (target)
@@ -63,7 +63,7 @@ Gram handles the math. You never have to manually calculate absolute weights aga
 
 ### Universal scaling
 
-You can scale recipes visually in the Playground, or from the CLI using the `--scale` flag (available on `view`, `build`, `print`, and `export`):
+You can scale recipes visually in the Playground, or from the CLI using the `--scale` flag (available on `view`, `build`, `print`, `export`, `cook`, and `plan`):
 
 ```bash
 gram view bread.gram --scale flour=400g
@@ -141,3 +141,18 @@ If you run `gram build --scale 2`, the `frying oil` will remain at `1L`.
 
 ## Summary
 By combining **Relative Quantities** for ratios and **Fixed Quantities** for non-scaling constants, you can write recipes that adapt perfectly to any pantry constraint or portion size.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Relative quantities syntax"
+    description="Full syntax specification for relative quantities, anchor modifiers, and ratio recalculation."
+    href="/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Understanding scaling"
+    description="How the compiler calculates linear scaling, reference multipliers, and fixed items."
+    href="/docs/explanation/scaling/"
+  />
+</CardGrid>

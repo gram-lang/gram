@@ -1,63 +1,67 @@
 ---
 title: "The Gram lifecycle"
-description: "An overview of Gram's parser-to-renderer pipeline and how its packages fit together."
+description: "An overview of Gram's compilation pipeline from parser to renderer, and the modular architecture of its packages."
 ---
 
-Under the hood, Gram is not a single monolith. It is composed of a series of specific packages that process a recipe step-by-step. 
+import Since from '../../../../../components/Since.astro';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Understanding this lifecycle is crucial if you want to integrate Gram deeply into your own applications or build new tools on top of it.
+Far from being a monolith, Gram's architecture is built on a suite of highly focused packages working along a strict, unidirectional pipeline.
 
-## The pipeline
+Understanding this lifecycle is essential whether you intend to embed Gram within application code or build custom tooling on top of it.
 
-The compilation of a Gram recipe follows a strict, one-way pipeline:
+## The compilation pipeline
 
-import { Steps } from '@astrojs/starlight/components';
+Compiling a Gram recipe flows through a deterministic, one-way pipeline:
 
 <Steps>
 
 1. ### Parsing (`@gram-lang/parser`)
-   The journey begins here. The Parser takes a raw string of text (your `.gram` file) and uses an OhmJS grammar to validate the syntax. 
-   If the syntax is valid, it generates an **Abstract Syntax Tree (AST)**. This AST contains zero logic—it is merely a structured representation of the text.
+   The process begins here. The Parser accepts raw source text (a `.gram` file) and uses an Ohm.js grammar to validate syntax.
+   If valid, it produces an **Abstract Syntax Tree (AST)**. This AST contains zero domain logic—it is purely a structured syntactic representation of the recipe document.
 
-2. ### Module Resolution & Composition (`@gram-lang/modules`)
-   If the recipe contains `@use` import directives, `@gram-lang/modules` traverses the dependency graph (detecting cycles, measuring sub-recipe yields, and scoping intermediate variables) and splices the modules into a single, self-contained **composed AST**. A single-file recipe with no imports passes straight through.
+2. ### Module resolution and composition (`@gram-lang/modules`)
+   When a recipe includes `@use` import directives, `@gram-lang/modules` traverses the dependency graph, resolves cyclic references, tracks sub-recipe yields, and scopes variables to merge all components into a single, self-contained **composed AST**. A single-file recipe with no imports passes straight through without alteration.
 
-3. ### Compilation (`@gram-lang/kitchen`)
-   The composed AST is handed off to the Kitchen. The Kitchen is responsible for the structural logic of the recipe:
-   - **Scoping & Scheduling**: Resolving intermediate variables and computing optimized execution timelines with **ALAP (As Late As Possible)** scheduling.
-   - **Time Metrics**: Computing `activeTime` and `preparationTime` by mapping all timers, and how the preparation is split per section (`miseEnPlace`).
-   - **Task graph**: Everything there is to do, with its duration (a range stays a range) and what each task waits for (`tasks`).
-   - **Default schedule**: The timeline laid out from that graph by `@gram-lang/scheduler` (`schedule`): each section's preparation right before it, the shortest rests. Every other combination (all preparation first, each working day's preparation at the start of that day, longer rests) is laid out from the same graph on demand, without compiling again.
-   - **Shopping List Generation**: Aggregating ingredients, summing quantities, and resolving composite ingredients (e.g., combining zest and juice into whole lemons).
+3. ### Structural compilation (`@gram-lang/kitchen`)
+   The composed AST is passed to the Kitchen compiler, which owns the structural domain logic of the recipe:
+   - **Variables and dependencies**: Registers intermediate declarations (`->&name`) and resolves downstream references (`&name`).
+   - **Core time metrics**: Computes active cooking time (`activeTime`), baseline mise en place (`preparationTime`), and section-level allocation (`miseEnPlace`).
+   - **Agnostic task graph**: Formalizes each task (`prep`, `step`, `passive`), its nominal durations and elasticity bounds, and its scheduling dependencies (`tasks`).
+   - **Default schedule**: Calculates the reference timeline via `@gram-lang/scheduler` (`schedule`: mise en place by section, shortest passive durations). Alternative schedules (upfront prep, per working day, longer passive durations) are evaluated on demand from this same graph without recompilation.
+   - **Initial shopping list**: Aggregates ingredients by raw text identifier and resolves composite ingredient relationships.
 
-   The output is a logically sound, compiled recipe — a `CompilationResult` (or `ComposedCompilationResult`) object.
+   The stage produces a `CompilationResult` (or `ComposedCompilationResult`) object.
 
-4. ### Enrichment (`@gram-lang/analyzer`)
-   The Analyzer takes the compiled recipe and cross-references it with your project's `ingredients.yaml` database. This is where the physical world meets the digital code:
-   - **Mass Standardization**: Converts volumes (cups, tbsp) into accurate gram weights using specific ingredient densities.
-   - **Yield Calculation**: Calculates purchasing weight versus edible weight.
-   - **Shopping List Aggregation**: Resolves database aliases (e.g. `beurre`/`butter`) and merges cross-unit quantities into a single gram total when possible, so Kitchen's raw per-unit grouping becomes the final, deduplicated list.
-   - **Nutritional Estimation**: Computes calories and macronutrients based on the standardized masses.
-   - **Baker's Percentages**: Expresses every ingredient's mass as a percentage of a reference ingredient (typically flour).
+4. ### Physical enrichment (`@gram-lang/analyzer`)
+   The Analyzer receives the compiled recipe and cross-references it with your `ingredients.yaml` database. This is where physical realities enrich the data model:
+   - **Mass standardization**: Converts volumetric measurements (cups, tablespoons) into accurate gram weights using specific ingredient densities.
+   - **Yield calculations**: Computes gross purchasing mass based on edible net mass.
+   - **Consolidated shopping list**: Resolves canonical aliases (e.g. `beurre` = `butter`) and merges cross-unit amounts into unified gram totals.
+   - **Nutritional estimation**: Calculates caloric values and macronutrient distributions from standardized masses.
+   - **Baker's percentages**: Computes ingredient ratios relative to the reference base (typically flour).
 
-   Each of these feature sets can be individually enabled or disabled by the host application.
+   Every feature in this pass can be enabled or disabled individually by the host application.
 
-5. ### Presentation (`@gram-lang/renderer` or custom)
-   Finally, the fully enriched recipe is ready to be displayed. You can use the official `@gram-lang/renderer` to generate Markdown, a standard web view, or a self-contained print-ready HTML document — or you can consume the JSON directly in your own React, Vue, or Mobile frontend.
+5. ### Presentation and rendering (`@gram-lang/renderer` or custom UI)
+   The enriched recipe is ready for presentation. You can use `@gram-lang/renderer` to generate Markdown, an interactive web view, or a print-optimized HTML layout—or consume the structured JSON directly within your own frontend application (React, Vue, or mobile).
+
 </Steps>
 
 ### The scheduling engine (`@gram-lang/scheduler`)
-`@gram-lang/scheduler` sits beneath the Kitchen: the Kitchen depends on it, never the other way round. It knows nothing about the AST or the compiled recipe, only about a neutral graph of tasks. It does two things:
-- **`layout()`** turns the graph into a timeline, for any choice of mise en place and rests.
-- **`project()`** places that timeline on the calendar, from a serving time, a time zone and your availability, and `runSheet()` turns the result into a production sheet. See [Planning in real time](/docs/explanation/planning-in-real-time/) and [The scheduling engine](/docs/explanation/engine/scheduler/).
+<Since v="1.4.0" />
 
-### Supporting infrastructure (`@gram-lang/i18n` & `@gram-lang/format`)
-- **`@gram-lang/i18n`**: Serves as the single source of truth for unit and time normalization dictionaries, unit conversion tables (`UNIT_CONVERSIONS`), duration multipliers (`TIME_TO_MINUTES`), and stable category keys (`CATEGORY_KEYS`).
-- **`@gram-lang/format`**: Provides the canonical code formatting engine (13 deterministic rules) shared across the CLI and Language Server.
+`@gram-lang/scheduler` sits beneath the Kitchen: Kitchen depends on it, never the reverse. The scheduler operates without knowledge of the AST or `.gram` syntax, processing only an agnostic task graph. It fulfills two primary roles:
+- **`layout()`** arranges the task graph along a relative timeline, tailored to chosen mise en place placement and passive duration elasticity.
+- **`project()`** projects this schedule onto the real calendar given a target serving time, time zone, and availability windows, while `runSheet()` formats the operational production sheet. See [Planning in real time](/docs/explanation/planning-in-real-time/) and [The scheduling engine](/docs/explanation/engine/scheduler/).
+
+### Cross-cutting infrastructure (`@gram-lang/i18n` and `@gram-lang/format`)
+- **`@gram-lang/i18n`**: Serves as the single source of truth for language normalization dictionaries, unit conversion tables (`UNIT_CONVERSIONS`), duration multipliers (`TIME_TO_MINUTES`), and category keys (`CATEGORY_KEYS`).
+- **`@gram-lang/format`**: Powers the canonical code formatter (13 deterministic rules) shared across the CLI and Language Server.
 
 ## Package architecture
 
-This separation of concerns ensures that each package is highly focused and reusable. For example, if you are building an editor extension that only needs to highlight syntax, you only need to import `@gram-lang/parser`.
+This strict separation of concerns ensures that individual packages remain lightweight, focused, and independently reusable. For instance, an editor extension focused strictly on syntax highlighting only needs to import `@gram-lang/parser`.
 
 ```mermaid
 flowchart LR
@@ -70,12 +74,12 @@ flowchart LR
         Parser["⚡ <b>@gram-lang/parser</b><br/>AST & Grammar"]
         Modules["📦 <b>@gram-lang/modules</b><br/>Graph & Composition"]
         Kitchen["⚙️ <b>@gram-lang/kitchen</b><br/>Task graph & compilation"]
-        Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physics & DB"]
+        Analyzer["🔬 <b>@gram-lang/analyzer</b><br/>Physics & Database"]
 
         Parser --> Modules --> Kitchen --> Analyzer
     end
 
-    Scheduler["⏱️ <b>@gram-lang/scheduler</b><br/>Timelines & plans"]
+    Scheduler["⏱️ <b>@gram-lang/scheduler</b><br/>Relative timeline & calendar"]
     Kitchen -. lays out with .-> Scheduler
 
     subgraph Output ["Presentation"]
@@ -83,7 +87,7 @@ flowchart LR
     end
 
     subgraph Infra ["Infrastructure"]
-        Format["✍️ <b>@gram-lang/format</b><br/>Code Formatting"]
+        Format["✍️ <b>@gram-lang/format</b><br/>Canonical Formatting"]
         I18n["🌐 <b>@gram-lang/i18n</b><br/>Units & Dictionaries"]
     end
 
@@ -94,3 +98,23 @@ flowchart LR
     I18n -. Dictionaries .-> Kitchen
     I18n -. Conversions .-> Analyzer
 ```
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="API packages overview"
+    description="Explore the architecture, imports, and roles of each @gram-lang package."
+    href="/docs/reference/api/"
+  />
+  <LinkCard
+    title="Philosophy of Gram"
+    description="The foundational principles behind recipes as code, physics, and determinism."
+    href="/docs/explanation/philosophy/"
+  />
+  <LinkCard
+    title="Build a custom UI"
+    description="How to integrate the pipeline packages to render recipes in custom applications."
+    href="/docs/how-to/build-custom-ui/"
+  />
+</CardGrid>

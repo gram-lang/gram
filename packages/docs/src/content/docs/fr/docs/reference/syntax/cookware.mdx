@@ -1,0 +1,109 @@
+---
+title: "Matériel"
+description: "Comment déclarer le matériel de cuisine avec le symbole #, entre nombre d'unités et dimensions physiques."
+---
+
+import { Badge, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Le matériel, les ustensiles et l'équipement requis par une recette se déclarent à l'aide du symbole `#`.
+
+## Déclaration de base
+
+À l'instar d'un `@ingrédient`, si le nom du `#matériel` tient en un seul mot et qu'un seul exemplaire est requis, les accolades `{}` sont facultatives :
+
+```gram
+Faire chauffer la #poêle.
+```
+
+Si le nom contient des espaces ou si vous souhaitez préciser une quantité, les accolades `{}` deviennent nécessaires :
+
+```gram
+Prendre une #plaque de cuisson{}.
+```
+
+## Quantités vs dimensions
+
+Contrairement à un `@ingrédient` (qui accepte des unités continues comme des grammes ou des millilitres), le `#matériel` applique une distinction syntaxique stricte entre son **nombre d'unités** et sa **description physique**.
+
+<Tabs>
+  <TabItem label="Quantités (décomptes entiers)">
+Les accolades `{}` sont strictement réservées au nombre d'ustensiles nécessaires. Il doit obligatoirement s'agir d'un entier :
+
+```gram
+#poêle              // Vaut 1 poêle par défaut
+#ramequins{4}       // 4 ramequins
+```
+  </TabItem>
+  <TabItem label="Dimensions & matériaux">
+Pour préciser la taille, le diamètre, le matériau ou un qualificatif d'usage, utilisez des parenthèses `()` :
+
+```gram
+#poêle(20cm)                        // 1 poêle de 20cm
+#plaque de cuisson{2}(antiadhésive) // 2 plaques de cuisson antiadhésives
+```
+  </TabItem>
+</Tabs>
+
+:::caution
+Ne placez jamais les dimensions à l'intérieur des accolades de quantité (ex. : ❌ `#poêle{20cm}`). Gram attend un entier strict à l'intérieur de `{}`. Utilisez des parenthèses : ✅ `#poêle(20cm)`.
+:::
+
+## Ajustement selon les portions
+
+Contrairement à un `@ingrédient` dont les quantités sont proportionnelles par défaut, le comportement du `#matériel` lors d'un changement de portions dépend de la manière dont la quantité a été formulée :
+
+| Forme | Exemple | Type de redimensionnement | Description |
+| :--- | :--- | :--- | :--- |
+| **Sans quantité** | `#poêle` | <Badge text="Fixe" variant="note" /> | Ne varie pas lors d'un changement de portions. |
+| **Avec quantité** | `#poêle{1}` ou `#ramequins{4}` | <Badge text="Évolutif" variant="tip" /> | Doubler les portions demandera 2 poêles ou 8 ramequins. |
+| **Fixe explicite** | `#=poêle{2}` | <Badge text="Fixe" variant="note" /> | Reste fixé à 2 poêles même si la recette est multipliée. |
+
+## Modificateurs et syntaxe avancée
+
+Le `#matériel` prend en charge plusieurs mécanismes avancés identiques à ceux des ingrédients :
+
+<Tabs>
+  <TabItem label="Modificateurs">
+Vous pouvez appliquer les modificateurs Optionnel (`?`), Masqué (`-`), Fixe (`=`) et Référence (`&`) directement après le `#` :
+
+```gram
+Utiliser un #?wok si vous en avez un, sinon une #-grande poêle conviendra.
+
+Revenir au #&wok pour terminer la sauce.
+```
+  </TabItem>
+  <TabItem label="Alias de composant">
+Vous pouvez renommer un équipement pour l'affichage tout en conservant un identifiant canonique grâce à l'opérateur `:` :
+
+```gram
+Utiliser la #poêle en fonte:poêle{}.
+```
+  </TabItem>
+  <TabItem label="Alternatives">
+Vous pouvez définir des alternatives d'ustensiles interchangeables avec l'opérateur `|` :
+
+```gram
+Cuire dans une #poêle|#wok.
+```
+  </TabItem>
+</Tabs>
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Syntaxe des ingrédients"
+    description="Syntaxe complète pour déclarer ingrédients bruts, unités, quantités et préparations."
+    href="/fr/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Structure du document"
+    description="Comprenez l'intégration du matériel au sein des sections et des étapes de travail."
+    href="/fr/docs/reference/syntax/document-structure/"
+  />
+  <LinkCard
+    title="Aide-mémoire syntaxique"
+    description="Référence visuelle rapide de l'ensemble des marqueurs de matériel, ingrédients et temps."
+    href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

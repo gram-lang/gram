@@ -84,7 +84,7 @@ Lorsqu'une recette importe une sous-base via `@use` (ex : `@use "./bases/pate.gr
 
 ## Consommer ceci depuis un nouveau frontend
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 
@@ -93,3 +93,23 @@ import { Steps } from '@astrojs/starlight/components';
 3. Appelez `resolveScaleFactor(compiled, request, convertUnit?)`. Attrapez l'erreur `ScaleError` et faites un switch sur `.code` pour des messages spécifiques à l'interface utilisateur — chaque erreur porte déjà un message complet `.message` destiné à l'utilisateur.
 4. Appelez `applyScale(compiled, resolution.factor)` pour obtenir le résultat recalculé. Gardez le `compiled` d'origine de côté si vous devez réajuster les proportions plus tard (ex : un curseur en direct) — n'ajustez jamais un résultat déjà recalculé.
 </Steps>
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Ajustement dynamique des recettes"
+    description="Apprenez à utiliser les quantités relatives, les modificateurs d'ancre et le pourcentage du boulanger."
+    href="/fr/docs/how-to/scale-recipes/"
+  />
+  <LinkCard
+    title="Syntaxe des quantités relatives"
+    description="Spécification détaillée des pourcentages (% @&farine) et des ingrédients fixes."
+    href="/fr/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Référence de l'API Kitchen"
+    description="Découvrez resolveScaleFactor(), applyScale() et les options de scaling du compilateur."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+</CardGrid>

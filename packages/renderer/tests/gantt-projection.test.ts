@@ -46,7 +46,7 @@ describe("a projected chart", () => {
 		// 8 h stretched to 14 h 30: 870 minutes, plus the preparation before it.
 		expect(html).toMatch(/data-duration="870"/);
 		expect(html).toContain("adjusted");
-		expect(html).toContain("Rest changed from 8h to 14h30");
+		expect(html).toContain("Wait changed from 8h to 14h30");
 	});
 
 	it("reads the axis in days and clock times of the plan's zone", () => {
@@ -76,7 +76,7 @@ describe("a projected chart", () => {
 	it("speaks the language asked for", () => {
 		const fr = toGanttHTML(compiled, { projection: plan(), lang: "fr" });
 		expect(fr).toContain('title="Indisponible"');
-		expect(fr).toMatch(/Repos modifié de 8h à 14h30/);
+		expect(fr).toMatch(/Attente modifiée de 8h à 14h30/);
 		expect(fr).toMatch(/sam\.? 21:\d\d/);
 	});
 

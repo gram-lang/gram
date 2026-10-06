@@ -1,0 +1,90 @@
+---
+title: "Cheatsheet"
+description: "A quick reference table of Gram's syntax: ingredients, cookware, timers, temperatures, and their modifiers."
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+A concise reference guide to the Gram syntax and notation.
+
+## Basic elements
+
+Essential markup tokens used directly inside recipe steps:
+
+| Element | Prefix | Syntax | Example | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Ingredient** | `@` | `@name[{quantity}]` | `@flour{200g}` | Declares an ingredient. Omitting `{}` indicates no specific quantity (e.g. `@salt`). |
+| **Cookware** | `#` | `#name[{quantity}]` | `#pan{2}`, `#whisk` | Specifies kitchen equipment. Omitting `{}` defaults to a single item (`1`). |
+| **Timer** | `~` | `~{time}` | `~{30min}` | Defines an active cooking or preparation duration. |
+| **Temperature** | `^` | `^{temperature}` | `^{180°C}`, `^{350°F}` | Declares an exact heat setting (`C` or `F`, case-insensitive). |
+
+## Modifiers
+
+Modifiers are placed immediately after the `@` or `#` symbol to alter behavior:
+
+| Modifier | Meaning | Example | Effect |
+| :--- | :--- | :--- | :--- |
+| `&` | **Reference** | `@&flour` | References an ingredient declared earlier without adding it again to the shopping list. |
+| `=` | **Fixed quantity** | `@=salt{1 tsp}` | Marks the quantity as fixed: it will **not** scale when portions change. |
+| `?` | **Optional** | `@?thyme` | Flags the item as optional for the cook. |
+| `-` | **Hidden** | `@-sugar` | Suppresses the ingredient from the generated shopping list. |
+| `*` | **Baker's base** | `@*flour{500g}` | Sets the reference ingredient (100%) for baker's percentage calculations. |
+
+## Advanced syntax
+
+Specialized patterns for flexible culinary instructions:
+
+| Feature | Syntax pattern | Example | Description |
+| :--- | :--- | :--- | :--- |
+| **Quantity range** | `min-max` | `@eggs{2-4}` | Averaged as `3` for metrics while preserving display text. |
+| **Substitutions** | `item\|alt` | `@milk{100ml}\|@water{95ml}` | Declares interchangeable alternatives. |
+| **Short-hand prep** | `(...)` | `@butter{10g}(room temp)` | Notes prep techniques without cluttering names. |
+| **Component alias** | `:slug` | `@dry white wine:wine{10ml}` | Displays user-friendly text while mapping to a canonical ID. |
+| **Relative quantity** | `% @&target` | `@water{70% @&flour}` | Computes amount relative to a reference ingredient mass. |
+| **Composite child** | `<@parent` | `@lemon zest{1}<@lemon` | Bundles parts (zest, juice) into a single shopping item. |
+| **Passive timer** | `~_` | `~_{1h}` | Represents resting/rising time without blocking the cook. |
+| **Named timer** | `~name{...}` | `~eggs{3min}`, `~_oven{45min}` | Queues resource-constrained steps (named tracks). |
+| **Semantic temperature** | `^{text}` | `^{medium heat}`, `^{simmer}` | Expresses qualitative stove settings. |
+| **Fractions** | `n/d` or Unicode | `@flour{1 1/2 cups}`, `@sugar{½ cup}` | Fully supported across imperial and metric systems. |
+
+## Intermediate variables
+
+Intermediate variables capture sub-components (such as doughs, sauces, or garnishes) for later assembly:
+
+| Target | Syntax | Example | Scope |
+| :--- | :--- | :--- | :--- |
+| **Step-level** | `->&name` at end of step | `Mix until smooth. ->&dough` | Captures the output of that single step. |
+| **Section-level** | `->&name` in section title | `## Puff Pastry ->&pastry` | Captures the combined output of the entire section. |
+
+## Section scheduling
+
+Retro-planning anchors schedule preparations in advance:
+
+| Syntax | Example | Purpose |
+| :--- | :--- | :--- |
+| `~{-time}` | `## Preferment ~{-1d}` | Tells the scheduler this section must be completed 1 day before serving. |
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Document structure"
+    description="Full syntax for frontmatter metadata, sections, steps, and comments."
+    href="/docs/reference/syntax/document-structure/"
+  />
+  <LinkCard
+    title="Ingredients syntax"
+    description="Detailed guide for units, quantities, preparation notes, and alternatives."
+    href="/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Write your first recipe"
+    description="Step-by-step tutorial taking you through authoring a complete .gram file."
+    href="/docs/tutorials/first-recipe/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Explore all gram CLI commands for building, checking, and cooking recipes."
+    href="/docs/reference/tooling/cli/"
+  />
+</CardGrid>

@@ -19,7 +19,7 @@ A well-generated `.gram` file often has **fewer steps** than its source, differe
 
 When turning an existing recipe into `.gram`, working through these five points in order catches most structural mistakes before they happen:
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Steps>
 1. **Structure** — Identify distinct phases (dough, filling, sauce, assembly…). Each phase with its own ingredient list is a candidate for a `## Section`. Anything that must be prepared in advance gets a retro-planning lead time (see [Document Structure](/docs/reference/syntax/document-structure#retro-planning-scheduling)).
@@ -164,3 +164,23 @@ is simply missing them.
 Inside a step, use a block comment. Keep `//` at the very end of a line, or on
 a line of its own. `gram import` checks for this specific loss and refuses a
 result where it happened.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Configure AI for the CLI"
+    description="Set up LLM providers and API keys to power gram import and database maintenance."
+    href="/docs/how-to/configure-ai/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Learn how to run gram import on web URLs, JSON-LD files, and local recipe documents."
+    href="/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for all syntax markers, symbols, and annotations."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

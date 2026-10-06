@@ -1,38 +1,39 @@
 ---
-title: "Times & scheduling"
-description: "Define ~timer durations and units in your recipes, and how Gram schedules active versus passive time."
+title: "Times and scheduling"
+description: "Define ~timer durations and units in your recipes, and learn how Gram schedules active versus passive time."
 ---
 
 import GeneratedTable from '../../../../../components/GeneratedTable.astro';
 import Since from '../../../../../components/Since.astro';
 import { timeUnitsTable } from '../../../../../data/api-reference';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 You can define `~timer` declarations and durations in your recipes using the `~` symbol.
 
 ## Basic declaration
 
-A `~timer` **must** specify a unit inside the braces. Fuzzy text like `~{about 10 minutes}` is invalid.
+A `~timer` **must** specify an explicit unit inside the braces. Fuzzy prose such as `~{about 10 minutes}` is invalid and rejected by the parser.
 
 ```gram
 Bake for ~{25min}.
 ```
 
 **Supported units:**
-- `min` (minutes) - Preferred standard.
+- `min` (minutes) - Canonical preferred standard.
 - `h` (hours).
 - `d` (days).
 - `s` (seconds).
 
 :::note
-`m` or `minutes` will be automatically corrected to `min` by the compiler.
+Shorthand `m` or the word `minutes` are automatically normalized to `min` by the compiler.
 :::
 
-These units are resolved through Gram's multi-language time dictionary: the localized aliases below are also recognized for a `~timer`, regardless of the language the recipe is written in (e.g. in a French recipe, `~{2j}` works exactly like `~{2d}`).
+These units are resolved through Gram's multi-language time dictionary: localized aliases below are recognized natively regardless of the recipe language (e.g. in a French recipe, `~{2j}` resolves identically to `~{2d}`).
 
 <GeneratedTable table={timeUnitsTable("en")} />
 
 ### Timer names
-You can assign a specific name to a `~timer`. This is especially useful for passive tasks: when multiple `~timer` declarations run in parallel (like a dough resting while a sauce simmers), names allow tools and renderers to clearly identify and track them simultaneously.
+You can assign an explicit name to a `~timer`. This is especially useful for passive background tasks: when multiple timers run concurrently (like a dough fermenting while a stock simmers), named timers allow user interfaces and production run sheets to track each process simultaneously without confusion.
 
 ```gram
 Boil @eggs{2} for ~eggs{3min}.
@@ -41,7 +42,7 @@ Boil @eggs{2} for ~eggs{3min}.
 ### Exact times and ranges
 <Since v="1.4.0" />
 
-A timer is **exact**: `~_{12h}` lasts exactly 12 hours. When the duration really varies, write a range, and only then does Gram have some slack to play with:
+By default, a timer is **exact**: `~_{12h}` lasts exactly 12 hours. When an operation has variable or flexible duration, specify an interval: this provides official elasticity for Gram's scheduling engine.
 
 ```gram
 Let the dough rest in the fridge ~_{12-24h}.
@@ -49,50 +50,50 @@ Let the dough rest in the fridge ~_{12-24h}.
 Roast the chicken for ~{40-50min}.
 ```
 
-A range does not mean the same thing on a passive and on an active timer:
+The interpretation of a range differs fundamentally based on timer type:
 
-- **A passive range is slack.** `~_{12-24h}` says "ready from 12 hours, still good at 24". The timeline is planned on the shortest figure by default, and you pick another one when you read it (`shortest`, `balanced` for the middle, or `longest`): the `--rests` option of the CLI, the `gram.rests` setting of VS Code, the `rests` option of the renderer. When you give Gram a serving time and your availability, it also uses this slack to keep your work out of the night (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
-- **An active range is uncertainty.** `~{40-50min}` is how long the chicken takes to cook, not a choice. The timeline is always planned on the longest figure (50 minutes), so that dinner is never late. The choice of rests doesn't apply to it.
+- **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
+- **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
-The deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks` and `metrics`) keep counting a range as its average, as they always did, until 2.0.0. Read the schedule instead.
+Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].backgroundTasks`, and `metrics`) continue to evaluate ranges as their average value until version 2.0.0. Consume the modern `schedule` blocks instead.
 :::
 
 ## Active vs passive
 
-The Gram compiler builds a complete execution timeline (similar to a Gantt chart) of your recipe. To do this accurately, it needs to know if a `~timer` requires your full attention or if it runs in the background.
+The Gram compiler builds a complete execution timeline (similar to a Gantt chart) for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
 
 :::tip[💡 The Golden Rule: Does this step block YOU from starting the next step?]
 
-| Your Status | Timer Type | Syntax | Examples |
+| Cook Status | Timer Type | Syntax | Culinary Examples |
 | :--- | :--- | :--- | :--- |
-| **YES** (Manual attention required) | **Active** | `~` | *Whisking by hand, stirring a risotto* |
-| **NO** (A machine/time does the work) | **Passive** | `~_` | *Oven baking, resting, stand mixer* |
+| **YES** (Exclusive manual attention required) | **Active** | `~` | *Whisking by hand, stirring risotto, plating* |
+| **NO** (Equipment or time does the work) | **Passive** | `~_` | *Oven baking, fermentation, simmering, chilling* |
 
 :::
 
 ### Active (default)
-By default, a `~timer` is active. This implies you are actively working and **blocks** the workflow. You must finish this before doing anything else.
+By default, a `~timer` is active. It requires direct hands-on involvement: the step is **blocking** and demands undivided attention before moving on to subsequent operations.
 
 ```gram
 Whisk the @heavy cream{} continuously for ~{5min}.
 ```
-> ⏱️ **Result:** Adds 5 minutes to the **active time**.
+> ⏱️ **Result:** Adds 5 minutes to **active time**.
 
 ### Passive (`_`)
-Use the `_` modifier to make a `~timer` passive. This is a **background task**. You start the `~timer` (e.g., putting a dish in the oven) and immediately move on to the next step.
+Add the `_` modifier to designate a passive `~timer`. This represents a **background task**. You initiate the timer (e.g. putting a dish into the oven) and can immediately proceed with subsequent steps.
 
 ```gram
 Bake in the #oven for ~_{45min}.
 
 Meanwhile, prepare the glaze...
 ```
-> ⏱️ **Result:** Adds 0 minutes to the active time, but extends the **idle time** to cover this 45-minute wait.
+> ⏱️ **Result:** Adds 0 minutes to active time, but extends **idle / passive duration** to ensure these 45 minutes elapse before removing the dish.
 
 ### Sequential passive timers (named tracks)
-By default, passive timers run in parallel with the rest of your recipe. However, some background tasks cannot physically run at the same time (e.g. baking something for 10 minutes, then lowering the temperature and baking it for another 30 minutes). 
+By default, passive timers run concurrently with the rest of the recipe. However, certain background operations sharing equipment cannot physically overlap (e.g. blind-baking a crust for 10 minutes, then lowering the heat and continuing baking for 30 minutes in the same oven).
 
-If you want passive timers to run **sequentially** (one after the other), simply give them the **same name**:
+To enforce **sequential** execution of passive timers, assign them the **same track name**:
 
 ```gram
 Bake in the #oven at 240°C for ~_baking{10min}.
@@ -100,109 +101,134 @@ Bake in the #oven at 240°C for ~_baking{10min}.
 Lower the heat to 180°C and bake for ~_baking{30min}.
 ```
 
-> ⏱️ **Result:** Because both timers share the name `baking`, Gram places them on the same background track. The 30-minute timer will automatically start *after* the 10-minute timer finishes. The idle time increases by 40 minutes, but your active time remains untouched.
+> ⏱️ **Result:** Because both timers share the track name `baking`, Gram places them on the same background track. The 30-minute timer will only start *after* the 10-minute timer completes. Idle waiting time increases by 40 minutes, while active hands-on time remains zero.
 
 ## How time is calculated
 
-Behind the scenes, Gram computes four distinct time metrics to give you a realistic cooking schedule.
+Behind the scenes, Gram tracks four distinct time metrics to establish realistic schedules:
 
 :::note[⏱️ The 4 time metrics]
-1. **Preparation time** (mise en place): Time spent gathering and preparing ingredients and cookware (fetching, weighing, peeling, chopping).
-2. **Active time**: Time spent actively working during the cooking steps (hands busy).
-3. **Idle time**: Time spent waiting, with nothing to do (resting dough, baking, a long simmer).
-4. **Total time**: Preparation time + active time + idle time. This is the realistic "time in the kitchen".
+1. **Preparation time** (mise en place): Time spent gathering and preparing raw ingredients and cookware (fetching, weighing, peeling, chopping).
+2. **Active time**: Cumulative hands-on duration spent executing culinary steps.
+3. **Passive time**: Autonomous baking, resting, fermentation, or idle waiting time.
+4. **Total time**: Preparation time + active time + passive time. Represents the overall recipe span from initial mise en place to plating.
 :::
 
 ### Cheat sheet: what adds time?
 
-Here is a concrete breakdown of how the compiler automatically calculates minutes based on your syntax:
+Here is how the compiler converts syntax elements into working minutes:
 
-| Syntax / Scenario | Adds to preparation time | Adds to active time | Adds to idle time |
+| Syntax / Scenario | Adds to preparation time | Adds to active time | Adds to passive time |
 | :--- | :--- | :--- | :--- |
-| **New ingredient** (`@flour`) | **+ 1 min** (to fetch it) | - | - |
-| **Intermediate** (`&dough`) | **+ 1 min** (to weigh it out, where it is used, or where it is made if nothing reuses it) | - | - |
+| **New ingredient** (`@flour`) | **+ 1 min** (to fetch) | - | - |
+| **Intermediate** (`&dough`) | **+ 1 min** (to weigh where consumed) | - | - |
 | **Prep shorthand** (`@onion(peeled)`) | **+ 2 min** | - | - |
-| **Cookware** (`#pan`) | **+ 1 min** (to fetch it) | - | - |
+| **Cookware** (`#pan`) | **+ 1 min** (to fetch) | - | - |
 | **Active timer** (`~{10min}`) | - | **+ 10 min** | - |
-| **Passive timer** (`~_{1h}`) | - | - | **+ 1 hour** (in the background) |
+| **Passive timer** (`~_{1h}`) | - | - | **+ 1 hour** (background) |
 | **Step without any timer** | - | **+ 2 min** (default fallback) | - |
 
 ### When the mise en place happens
 <Since v="1.4.0" />
 
-Each section has its own mise en place: gathering and preparing its ingredients and cookware. Gram can plan it in three ways, and the recipe reads the same either way:
+Each section has its own mise en place (gathering and preparing ingredients and cookware). Gram supports three layout strategies without requiring any changes to the recipe source text:
 
-- **By section** (the default): the preparation of a section is scheduled right before that section. An ingredient that is only needed two days later isn't gathered now, and a preparation can overlap the resting time of an earlier step.
-- **All at the start**: the preparations are done first, then the cooking starts. Except for an intermediate (see below), which can't be prepared before it exists.
-- **By working day**: for a recipe over several days, the preparation of each day is gathered at the start of that day. The days come from the section anchors **in days** (`~{-1d}`, `~{-2d}`): a section without an anchor takes the day of the furthest anchor in days among the sections after it, and the sections after the last one are on the day itself. A recipe without any anchor in days is a single day, the same as "all at the start".
+- **By section** (`perSection`, default): mise en place is scheduled immediately prior to that section. An ingredient needed two days later is not fetched prematurely, and preparation can occur during passive waiting times of earlier steps (masked time).
+- **All at the start** (`upfront`): all prep tasks are grouped at the beginning before active cooking starts. Except for intermediate preparations, which cannot be weighed before they are produced.
+- **By working day** (`perSession`): for multi-day recipes, preparation tasks for each day are grouped at the start of that day's session. Days are determined by section anchors **in days** (`~{-1d}`, `~{-2d}`). Recipes without day anchors execute in a single working day session, identical to `upfront`.
 
-  Two traps when you write a recipe over several days:
-  - **A long passive timer isn't an anchor.** A `~_{48h}` rest makes the timeline start two days earlier, but only a section anchor opens a working day: without `## Cream ~{-2d}` on the section, it is placed on the day itself.
-  - **An anchor in hours never opens a day.** `~{-18h}` (a poolish kneaded the evening before) and `~{-36h}` are deadlines inside the day the section falls on, not days of their own. To open the day before, write `~{-1d}`. See [Days and hours](#days-and-hours).
+Two considerations for multi-day recipes:
+- **A long passive timer is not an anchor.** A `~_{48h}` passive duration shifts the timeline two days earlier, but only an explicit section anchor formally opens a separate working day (e.g. `## Cream ~{-2d}`).
+- **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent daily session. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
 
-This is a reading choice, not something the recipe declares: the playground has a selector for it, VS Code a `gram.miseEnPlace` setting, the CLI a `--mise-en-place` option (`per-section`, `upfront` or `per-session`) and the renderer a `miseEnPlace` option. It only changes the **total** and **idle** times, and where the preparations sit on the Gantt chart. Preparation time and active time are the same in all three, and the ingredient lists don't change.
+Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as block positioning on the Gantt chart, while keeping active preparation and hands-on cooking times invariant.
 
-An intermediate (`&dough`) is weighed in the section that uses it, however it is declared, and never before it is made: even when everything else is prepared at the start, it is planned right before the section that uses it. That minute is an approximation: it can fall while the intermediate is still resting, so a preparation may appear to happen just before the dough is ready. The total time stays right to within a minute.
+An intermediate preparation (`&dough`) is weighed in the section that consumes it and never before it is produced: even in `upfront` mode, it is scheduled as a deferred block immediately before the consuming section.
 
 ### Smart dependency tracking (ALAP)
-You don't need to do complex math! Gram uses an **As Late As Possible (ALAP)** scheduling algorithm. If you declare a dough that rests for `~_{1h}` in the background, and a later step requires that `&dough`, the compiler automatically pushes the dough preparation back as late as possible. The dough will finish resting *exactly* when the later step begins, preventing it from sitting idle on the counter!
+Gram natively implements an **As Late As Possible (ALAP)** scheduling algorithm. If a dough requires `~_{1h}` passive fermentation in the background and a subsequent step depends on it, the compiler plans its kneading at the latest possible moment: fermentation finishes *exactly* when the next step begins, preventing dough from sitting over-proofed on the counter.
 
-For a more detailed explanation of how the timeline is optimized, check out the [ALAP Scheduling Deep Dive](/docs/explanation/alap-scheduling).
+For a deeper architectural exploration, see the [ALAP scheduling deep dive](/docs/explanation/alap-scheduling/).
 
 ## Section retro-planning
 
-You can assign a preparation offset to a `## Section` by adding a `~{...}` annotation to its title. This allows you to indicate to the compiler when that section must end relative to its final use.
+Adding a `~{...}` annotation to a `## Section` header defines an anticipation deadline. This tells the compiler when the section must conclude relative to the final step where it is consumed.
 
-**This acts as a time anchor**. If you add `~{-2d}` to a section, you are telling the compiler to schedule this preparation **2 days before** it is actually needed. 
+**This acts as a temporal anchor.** An annotation like `~{-2d}` instructs the compiler to complete this section **2 full days before** it is needed in subsequent steps.
 
-To ensure the generated timeline remains coherent and all absolute times are positive (starting at `0`), the compiler automatically resets the time calculations: this early preparation becomes the new starting point (Time 0) of the recipe, and everything after it is shifted proportionally. The section's mise en place follows it: it is planned right before the section, two days before the end. It is the perfect tool for managing multi-day recipes while keeping the output data easily consumable by user interfaces.
+To ensure positive relative timestamps starting at `0`, the compiler normalizes the timeline: this anticipated section becomes the new start point (Time 0), and all subsequent operations are shifted proportionally. Its mise en place moves accordingly, scheduled immediately before the section, two days prior to service.
 
 ```gram
-## Puff Pastry ~{-2d}
+## Puff pastry ~{-2d}
 ```
 
-This means the "Puff Pastry" section should be prepared **2 days in advance**.
+The puff pastry must be completed **2 days** before final assembly.
 
 ### Days and hours
 <Since v="1.4.0" />
 
-The unit of an anchor says what it means:
+The chosen unit defines the anchor's semantics:
 
-- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a working day: the section belongs to the day before, two days before. This is what the "by working day" plan and the day labels (D-1, D-2) are made of.
-- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) is a finer deadline inside the day the section falls on. It never opens a day, however far back it goes.
+- **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
+- **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
 
-Each working day is meant to fit in the 24 hours that end the day after: if a long rest pushes a day's work out of its window (a `~{-1d}` dough that ferments for 50 hours, or a section anchored at `~{-36h}`), the compiler raises `SESSION_OVERFLOW` and suggests anchoring the section further back.
+Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `SESSION_OVERFLOW` and recommends anchoring the section further back.
 
 ### Strict syntax
 
-Unlike free text, `~{...}` on a section header requires a **strictly negative** signed number followed by a unit — since this annotation is specifically used to indicate how much time *in advance* the section must be prepared, a zero or positive offset has no meaningful interpretation here:
+Section header retro-planning annotations require a **strictly negative** signed number followed by a valid unit:
 
-- A **required** leading `-` (anticipation is the whole point of retro-planning).
-- A non-zero number.
-- A unit: `d` (days), `h` (hours), or `min` (minutes).
+- A **required** leading `-` sign.
+- A non-zero numeric value.
+- A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
 
 ```gram
-## Puff Pastry ~{-2d}     <!-- 2 days before -->
+## Puff pastry ~{-2d}     <!-- 2 days before -->
 ## Ganache ~{-30min}      <!-- 30 minutes before -->
 ```
 
-Free text (e.g. `~{the day before}`/`~{la veille}`), an unsigned or positive value (e.g. `~{2h}`), and a zero value (e.g. `~{0h}` or `~{-0h}`) are all **no longer valid** for this annotation — write `~{-1d}` instead. Existing recipes using any of these still compile, but the compiler now flags them as described below.
+Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
 
-The unit is resolved through the same multi-language time dictionary used by `~timer` (see [Basic Declaration](#basic-declaration)), so localized words work here too — e.g. in a French recipe, `~{-2j}` resolves the same as `~{-2d}`.
+Units resolve through the multi-language time dictionary used by `~timer`: `j`, `jour`, and `jours` are recognized aliases for `d`.
 
 See also: [Retro-planning (Scheduling)](/docs/reference/syntax/document-structure#retro-planning-scheduling) in the document structure reference.
 
 ## Error handling
 
-The compiler validates `~timer` declarations and section retro-planning annotations to ensure precise scheduling, and will output specific warnings for malformed data:
+The compiler validates `~timer` declarations and section retro-planning annotations, emitting typed warnings for malformed data:
 
-- **Missing Unit** (`~timer`): If you write `~{30}` without specifying minutes or hours, the compiler warns `MISSING_UNIT`.
-- **Invalid Unit** (`~timer`): If you provide a unit the compiler doesn't understand (e.g., `~{30 lightyears}`), it warns `INVALID_UNIT`.
-- **Missing Unit** (section retro-planning): `~{-2}`, free text like `~{la veille}`, an unsigned/positive value (`~{2h}`), or a zero value (`~{0h}`, `~{-0h}`) all trigger `MISSING_UNIT` — none of them are a strictly negative signed duration.
-- **Invalid Unit** (section retro-planning): an unrecognized unit (e.g. `~{-2fortnights}`) triggers `INVALID_UNIT`.
-- **Time Paradox**: If a section retro-planning anchor conflicts with an earlier required dependency (e.g., a section anchored at `-10 min` but used in a section anchored at `-1 h`), the compiler warns `TIME_PARADOX`.
-- **Track Contention**: If you use named passive timers (e.g. `~_oven{30min}`) and the ALAP algorithm is forced to delay them due to crowding (multiple timers on the same track at the same time), the compiler warns `TRACK_CONTENTION`.
-- **Session overflow** *(Since 1.4.0)*: If a long rest pushes the work of a working day before the 24 hours that day is meant to fit in (a `~{-1d}` section whose dough ferments for 50 hours, or a section anchored at `~{-36h}`, which never opens a day of its own), the compiler warns `SESSION_OVERFLOW`. Anchor the section further back, for example `~{-2d}`, or shorten the rest.
-- **Duration out of range**: A timer or a retro-planning offset longer than 1000 years is capped at 1000 years and the compiler warns `DURATION_OUT_OF_RANGE`. It is a technical limit, far beyond any real recipe, that keeps the timeline finite when a number has a stray digit.
+- **Missing Unit** (`~timer`): `~{30}` without units triggers `MISSING_UNIT`.
+- **Invalid Unit** (`~timer`): Unrecognized units (e.g. `~{30 lightyears}`) trigger `INVALID_UNIT`.
+- **Missing Unit** (section retro-planning): `~{-2}`, free text, positive (`~{2h}`), or zero values (`~{0h}`) trigger `MISSING_UNIT`.
+- **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
+- **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
+- **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
+- **Session Overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `SESSION_OVERFLOW`.
+- **Duration Out Of Range**: Durations exceeding 1,000 years are capped and trigger `DURATION_OUT_OF_RANGE`.
 
-For section retro-planning, the original annotation is still displayed as-is even when it triggers a warning. In every case, these are non-blocking by default, but are promoted to hard errors by `gram check --strict`.
+Warnings are non-blocking by default, but can be enforced as errors via `gram check --strict`.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="ALAP scheduling"
+    description="Understand how Gram places active tasks and passive timers into an optimized timeline."
+    href="/docs/explanation/alap-scheduling/"
+  />
+  <LinkCard
+    title="Planning in real time"
+    description="How the scheduler projects tasks onto clock times and user availability windows."
+    href="/docs/explanation/planning-in-real-time/"
+  />
+  <LinkCard
+    title="Mise en place and planning"
+    description="Explore how preparation costs, section day anchors, and multi-day sessions interact."
+    href="/docs/explanation/mise-en-place-and-planning/"
+  />
+  <LinkCard
+    title="Compiler warnings reference"
+    description="Details on TIME_PARADOX, TRACK_CONTENTION, and SESSION_OVERFLOW warning codes."
+    href="/docs/reference/api/warnings/"
+  />
+</CardGrid>

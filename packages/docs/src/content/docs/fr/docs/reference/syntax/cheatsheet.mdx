@@ -1,0 +1,90 @@
+---
+title: "Antisèche"
+description: "Référence rapide de la syntaxe Gram : ingrédients, matériel, minuteurs, températures et modificateurs."
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Un guide de référence rapide de la syntaxe et des notations du langage Gram.
+
+## Éléments de base
+
+Les marqueurs essentiels utilisés directement au fil des étapes :
+
+| Élément | Préfixe | Syntaxe | Exemple | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Ingrédient** | `@` | `@nom[{quantité}]` | `@farine{200g}` | Déclare un ingrédient. Omettre `{}` indique une absence de quantité explicite (ex. `@sel`). |
+| **Matériel** | `#` | `#nom[{quantité}]` | `#poêle{2}`, `#fouet` | Indique un ustensile ou équipement requis. Omettre `{}` équivaut à `1`. |
+| **Minuteur** | `~` | `~{temps}` | `~{30min}` | Définit la durée d'une action active en cuisine. |
+| **Température** | `^` | `^{température}` | `^{180°C}`, `^{350°F}` | Indique une consigne thermique précise (`C` ou `F`, insensible à la casse). |
+
+## Modificateurs
+
+Les modificateurs se placent immédiatement après le symbole `@` ou `#` pour en ajuster le comportement :
+
+| Modificateur | Rôle | Exemple | Effet |
+| :--- | :--- | :--- | :--- |
+| `&` | **Référence** | `@&farine` | Référence un ingrédient déjà déclaré sans l'ajouter à nouveau à la liste de courses. |
+| `=` | **Quantité fixe** | `@=sel{1 c.à.c}` | Fixe la quantité : elle **ne variera pas** lors d'un recalcul du nombre de portions. |
+| `?` | **Optionnel** | `@?thym` | Signale un ingrédient facultatif pour le cuisinier. |
+| `-` | **Masqué** | `@-sucre` | Exclut l'ingrédient de la liste de courses générée. |
+| `*` | **Base du boulanger** | `@*farine{500g}` | Définit l'ingrédient de référence (100 %) pour les ratios de boulangerie. |
+
+## Syntaxe avancée
+
+Formulations complémentaires pour enrichir la description des étapes :
+
+| Fonctionnalité | Schéma | Exemple | Description |
+| :--- | :--- | :--- | :--- |
+| **Plage de quantités** | `min-max` | `@œufs{2-4}` | Moyennée à `3` pour les métriques tout en conservant le texte d'origine à l'affichage. |
+| **Alternatives** | `choix\|alt` | `@lait{100ml}\|@eau{95ml}` | Énonce des ingrédients interchangeables. |
+| **Préparation courte** | `(...)` | `@beurre{10g}(pommade)` | Précise l'état ou la découpe sans surcharger l'identifiant. |
+| **Alias de composant** | `:identifiant` | `@vin blanc sec:vin{10ml}` | Affiche un libellé clair tout en reliant l'ingrédient à un identifiant canonique. |
+| **Quantité relative** | `% @&cible` | `@eau{70% @&farine}` | Calcule la quantité par rapport à la masse d'un ingrédient pivot. |
+| **Ingrédient composite** | `<@parent` | `@zeste de citron{1}<@citron` | Rapproche des éléments (zeste, jus) sous un même article d'achat parent. |
+| **Minuteur passif** | `~_` | `~_{1h}` | Modélise un repos ou une pousse sans monopoliser le cuisinier. |
+| **Minuteur nommé** | `~nom{...}` | `~œufs{3min}`, `~_four{45min}` | Linéarise l'accès à un équipement partagé (piste dédiée). |
+| **Température sémantique** | `^{texte}` | `^{feu moyen}`, `^{frémissement}` | Exprime une intensité de chauffe qualitative. |
+| **Fractions** | `n/d` ou Unicode | `@farine{1 1/2 tasse}`, `@sucre{½ tasse}` | Prises en charge complètes en système métrique comme impérial. |
+
+## Variables intermédiaires
+
+Les variables intermédiaires capturent un sous-composant (pâte, sauce, appareil) pour une réutilisation ultérieure :
+
+| Emplacement | Syntaxe | Exemple | Portée |
+| :--- | :--- | :--- | :--- |
+| **Fin d'étape** | `->&nom` en fin de paragraphe | `Mélanger intimement. ->&pâte` | Capture le produit de cette seule étape. |
+| **Titre de section** | `->&nom` dans l'en-tête | `## Pâte feuilletée ->&feuilletage` | Capture l'ensemble des étapes de la section. |
+
+## Ordonnancement de section
+
+Les ancres de rétroplanning programment des préparations à l'avance :
+
+| Syntaxe | Exemple | Rôle |
+| :--- | :--- | :--- |
+| `~{-temps}` | `## Levain-chef ~{-1d}` | Indique au planificateur que cette section doit être achevée 1 jour avant le service. |
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Structure du document"
+    description="Syntaxe complète pour le frontmatter, les sections, les étapes et les commentaires."
+    href="/fr/docs/reference/syntax/document-structure/"
+  />
+  <LinkCard
+    title="Syntaxe des ingrédients"
+    description="Guide détaillé pour les unités, quantités, notes de préparation et alternatives."
+    href="/fr/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Écrire sa première recette"
+    description="Tutoriel pas à pas pour apprendre à rédiger une recette .gram complète."
+    href="/fr/docs/tutorials/first-recipe/"
+  />
+  <LinkCard
+    title="Référence du CLI"
+    description="Explorez toutes les commandes du CLI pour compiler, vérifier et cuisiner vos recettes."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+</CardGrid>

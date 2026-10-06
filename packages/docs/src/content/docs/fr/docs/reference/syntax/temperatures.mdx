@@ -1,0 +1,74 @@
+---
+title: "Températures"
+description: "Définissez des ^températures exactes ou sémantiques en Celsius ou Fahrenheit, avec des noms pour les étapes clés."
+---
+
+import { CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Les consignes thermiques de cuisson se déclarent au sein des étapes de recette à l'aide du symbole `^`.
+
+Afin de répondre aussi bien à la rigueur d'une cuisson au four qu'à la souplesse d'un réglage sur table de cuisson, Gram propose deux formulations : les **températures exactes** et les **températures sémantiques**.
+
+## Températures exactes
+
+Les températures exactes précisent une valeur numérique suivie d'une unité reconnue : `C` ou `F` (insensible à la casse, avec ou sans le signe degré `°`). Le compilateur harmonise automatiquement toutes les variantes sous la forme canonique `°C`/`°F` dans ses données de sortie.
+
+<Tabs>
+  <TabItem label="Température exacte standard">
+```gram
+Préchauffer le #four à ^{180°C}.
+
+Cuire à ^{350°F} jusqu'à coloration bien dorée.
+```
+  </TabItem>
+  <TabItem label="Température associée à un appareil">
+À l'instar des `~minuteurs`, vous pouvez qualifier une température en lui associant un nom d'appareil ou d'usage, permettant aux interfaces de mettre en valeur les réglages nécessaires :
+
+```gram
+Préchauffer le #four à ^four{180°C}.
+```
+  </TabItem>
+</Tabs>
+
+## Températures sémantiques
+
+Pour les cuissons sur le feu ou les indications qualitatives où une mesure précise en degrés n'est pas adaptée, vous pouvez saisir un texte descriptif libre :
+
+```gram
+Saisir sur la ^plaque{feu vif} pendant ~{2min}.
+
+Baisser à ^{feu doux} et laisser mijoter.
+```
+
+:::note[Distinction lors de l'analyse]
+Lorsque le compilateur Gram traite un élément `^température` :
+- Si le texte entre accolades débute par un chiffre, il est analysé comme une **température exacte** et son unité est validée.
+- S'il commence par une lettre ou un mot, l'ensemble du contenu est traité comme une **température sémantique**.
+:::
+
+## Gestion des erreurs
+
+Seules les échelles Celsius et Fahrenheit sont prises en charge. Le compilateur émet des avertissements structurés en présence de formats inattendus :
+
+- **`MISSING_UNIT`** : déclenché lorsqu'une température numérique est écrite sans unité explicite (ex. `^{200}`).
+- **`INVALID_UNIT`** : déclenché lorsqu'une unité non reconnue est employée (ex. `^{200K}`). Le compilateur conserve alors le texte brut d'origine.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Temps et planification"
+    description="Déclarez durées actives, minuteurs passifs et noms d'appareils avec ~minuteur."
+    href="/fr/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="Matériel de cuisine"
+    description="Apprenez à déclarer les appareils comme le four ou la poêle avec #matériel."
+    href="/fr/docs/reference/syntax/cookware/"
+  />
+  <LinkCard
+    title="Aide-mémoire syntaxique"
+    description="Référence visuelle rapide de l'ensemble des marqueurs de température, temps et matériel."
+    href="/fr/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

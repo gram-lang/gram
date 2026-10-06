@@ -463,3 +463,19 @@ div[data-nova-code-container] > div:first-child:not(pre) {
 .sl-markdown-content a:not(:where(.not-content *)):hover {
 	color: var(--sl-color-accent);
 }
+
+/*
+ * Typography Polish
+ * Prevents single-word orphan wrapping on headings and markdown text.
+ */
+.sl-markdown-content p,
+.sl-markdown-content li {
+	text-wrap: pretty;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+	text-wrap: balance;
+}

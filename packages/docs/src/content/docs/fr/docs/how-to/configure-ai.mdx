@@ -7,7 +7,7 @@ Le CLI de Gram (`@gram-lang/cli`) peut s'appuyer sur des modèles de langage (LL
 
 Ce guide explique pas à pas comment configurer votre fournisseur d'IA préféré.
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Since from '../../../../../components/Since.astro';
 
 ## Ce que permet l'IA dans le CLI Gram
@@ -18,7 +18,6 @@ Configurer un fournisseur d'IA débloque trois fonctionnalités majeures du CLI 
 2. **Nettoyage et déduplication (`gram db lint`)** : Détecte les doublons sémantiques, les variations singulier/pluriel et les termes multilingues dans `ingredients.yaml`, et vous propose de les fusionner sous une clé principale avec des alias.
 3. **Enrichissement (`gram db enrich`)** : Recherche des valeurs nutritionnelles (calories, macros, micronutriments) et des caractéristiques physiques (densité, rendement, poids unitaire) à proposer pour les ingrédients incomplets de votre base — les propositions de densité/nutrition passent par une revue interactive avant d'être écrites, car ce sont des données propres à un produit précis (voir [D'où viennent les valeurs](/fr/docs/explanation/nutrition#doù-viennent-les-valeurs) pour comprendre pourquoi Gram ne fournit pas de base de référence à la place).
 
----
 
 ## Pourquoi l'IA ? Restructuration vs transcription mécanique
 
@@ -27,7 +26,7 @@ Gram n'est pas un simple format de balisage texte ; c'est un modèle sémantique
 Les recettes traditionnelles contiennent de nombreuses étapes qui n'existent que parce que le texte brut n'a pas d'autre moyen d'exprimer l'information :
 - *"Couper 1 citron en deux"* → Dans Gram, cette étape s'efface au profit d'une annotation de préparation intégrée directement à la déclaration de l'ingrédient : `@citron{1}(coupé en deux)`.
 - *"Dans un ramequin, mélanger le sel et le poivre et réserver"* → Dans Gram, cela devient une référence à une variable intermédiaire (`&assaisonnement`).
-- *"Retirer du feu et laisser reposer 30 minutes"* → Dans Gram, c'est une annotation de minuteur passif de repos (`~_{30min}`).
+- *"Retirer du feu et laisser reposer 30 minutes"* → Dans Gram, c'est une annotation de minuteur passif (`~_{30min}`).
 
 Un script d'importation classique ou un convertisseur JSON rigide est incapable d'effectuer cette restructuration culinaire. Il générerait des étapes verbeuses sans profiter de la puissance de Gram (standardisation des masses, ajustement dynamique des proportions, réutilisation d'ingrédients avec `@&`, ingrédients composites comme `@jus de citron{}<@citron{1}`).
 
@@ -37,7 +36,6 @@ De la même manière pour la gestion de votre base d'ingrédients :
 - **`gram db lint`** : L'IA détecte les équivalences sémantiques entre tournures et langues (ex : comprendre que `beurre ramolli`, `beurre doux` et `butter` font référence à la même entité).
 - **`gram db enrich`** : L'IA propose les densités physiques (conversion volume/masse) et les valeurs nutritionnelles standards sans recherche manuelle fastidieuse — mais vous validez chaque proposition avant qu'elle soit écrite.
 
----
 
 ## Méthodes de configuration
 
@@ -59,7 +57,6 @@ Pendant l'initialisation, le CLI vous demandera :
 4. **Enregistrer la clé d'API dans un fichier `.env` ?** : Confirmez pour sauvegarder la clé en toute sécurité. Le CLI créera/mettra à jour automatiquement votre fichier `.env` et ajoutera `.env` au fichier `.gitignore` de votre projet pour éviter toute fuite accidentelle.
 </Steps>
 
----
 
 ### Méthode 2 : variables d'environnement (recommandé)
 
@@ -106,7 +103,6 @@ Si aucun `ai.provider` n'est défini explicitement dans `.gram/config.yaml`, le 
 Ne versionnez jamais votre fichier `.env` ni vos clés d'API. Assurez-vous que `.env` figure bien dans votre fichier `.gitignore`.
 :::
 
----
 
 ### Méthode 3 : fichiers de configuration (`config.yaml`)
 
@@ -128,7 +124,6 @@ ai:
 - **Configuration globale (`~/.config/gram/config.yaml`)** : S'applique à l'ensemble des projets Gram sur votre machine.
 - **Configuration projet (`.gram/config.yaml`)** : Remplace les paramètres globaux pour le projet courant.
 
----
 
 ### Méthode 4 : utiliser une IA locale avec Ollama
 
@@ -156,7 +151,6 @@ Si vous préférez exécuter vos modèles en local sans envoyer de données à d
 Ollama ne nécessite aucune clé d'API. Vous pouvez aussi spécifier l'URL de base via la variable d'environnement `OLLAMA_BASE_URL`.
 :::
 
----
 
 ### Surcharges dynamiques en ligne de commande
 
@@ -172,7 +166,6 @@ gram db lint --pick-model                         # Sélecteur interactif de mod
 
 Consultez [Choisir le modèle IA](/fr/docs/reference/tooling/cli#choisir-le-modèle-ia) pour tous les détails.
 
----
 
 ## Vérifier la configuration
 
@@ -189,7 +182,6 @@ Pour vérifier que votre IA est opérationnelle :
    gram import https://exemple.com/recette --output recette.gram
    ```
 
----
 
 ## Dépannage
 
@@ -206,3 +198,18 @@ Export an environment variable:
 - Vérifiez que le fichier `.env` se trouve bien dans le dossier racine à partir duquel vous lancez `gram`.
 - Si vous définissez la variable d'environnement directement dans le terminal, pensez à l'exporter au préalable (`export GEMINI_API_KEY=...`).
 - Vérifiez que votre clé d'API correspond au fournisseur indiqué dans `.gram/config.yaml`.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Référence du CLI"
+    description="Documentation complète pour gram import, les commandes gram db et les options IA."
+    href="/fr/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Gérer sa base de données d'ingrédients"
+    description="Le workflow complet de synchronisation, nettoyage et enrichissement assisté par l'IA."
+    href="/fr/docs/how-to/manage-database/"
+  />
+</CardGrid>

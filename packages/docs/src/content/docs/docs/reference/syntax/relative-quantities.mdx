@@ -1,0 +1,120 @@
+---
+title: "Relative quantities"
+description: "Define an ingredient's quantity as a percentage of another ingredient or variable to keep recipes balanced."
+---
+
+import { Badge, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+In cooking, and especially in baking, precision is essential. Relying on fixed quantities can lead to unbalanced outcomes when raw produce yields vary (for example, when a single lemon yields more juice than expected).
+
+Gram solves this by allowing you to define an `@ingredient`'s quantity dynamically as a percentage of another `@ingredient` or an intermediate `&variable`. This ensures that your recipe remains balanced regardless of real-life ingredient variations.
+
+## Syntax
+
+You can target either a base ingredient or an intermediate variable:
+
+<Tabs>
+  <TabItem label="Targeting a base ingredient (@&)">
+Prefix the target ingredient's name with `@&`:
+
+```gram
+Add @flour{100g} to the bowl.
+
+Then mix in @water{70% @&flour}. // 70g of water
+```
+
+**Pattern:** `@name{ percentage% @&TargetIngredient }`
+  </TabItem>
+  <TabItem label="Targeting an intermediate variable (&)">
+Reference the target intermediate variable with `&`:
+
+```gram
+Mix the ingredients to form the dough. ->&dough
+
+Add @salt{2% &dough}. // 2% of the total mass of the &dough variable
+```
+
+**Pattern:** `@name{ percentage% &TargetVariable }`
+  </TabItem>
+</Tabs>
+
+## Resolution rules
+
+When the compiler resolves a relative quantity, it follows three strict scoping and calculation principles:
+
+| Rule | Behavior | Description |
+| :--- | :--- | :--- |
+| **Section scoping** | Current section only | You cannot directly target a base `@ingredient` declared in a different section. To bridge sections, capture the result into a globally scoped `&variable`. |
+| **Accumulation** | Sums all occurrences | If the target `@ingredient` appears multiple times within the same section, the percentage applies to their **cumulative total**. |
+| **Mass-based** | Evaluated in grams | Calculations are always performed against **physical mass in grams**. For example, 50% of "2 eggs" (each standardized at 50g) produces **50g**, not 1 egg. |
+
+## Mass calculation rules
+
+Because relative percentages compute ratios of physical mass, the analyzer (`@gram-lang/analyzer`) standardizes target quantities before applying the percentage:
+
+| Target unit type | Classification | Pre-calculation logic | Example |
+| :--- | :--- | :--- | :--- |
+| **Explicit mass** | <Badge text="Direct" variant="tip" /> | Direct computation without conversion. | `50%` of `500g` = **250g** |
+| **Volume** | <Badge text="Density" variant="note" /> | Converts volume to grams using `physical.density` from the ingredient database. | `500ml` water ➔ 500g.<br/>`50%` = **250g** |
+| **Count** | <Badge text="Unit weight" variant="note" /> | Multiplies count by average `physical.unit_weight` from the ingredient database. | 2 eggs (50g ea) ➔ 100g.<br/>`50%` = **50g** |
+| **Unknown unit** | <Badge text="Unresolved" variant="caution" /> | Cannot infer mass. Emits a `RELATIVE_QUANTITY_UNKNOWN_MASS` warning. | Preserves formula as fallback. |
+
+## Shopping list behavior
+
+Because relative quantities are mathematical expressions (e.g. `125% of lemon juice`), the compiler decides how to represent them on the generated shopping list:
+
+<Tabs>
+  <TabItem label="Fully resolved (standard)">
+When the physical mass of the target is known, the formula is evaluated completely. The resulting weight is merged seamlessly with other purchases of the same ingredient:
+
+```text
+- Sugar: 156g
+```
+  </TabItem>
+  <TabItem label="Unresolved fallback (hybrid)">
+If mass standardization is disabled or the target item cannot be converted (e.g. missing from `ingredients.yaml`), Gram outputs a hybrid representation combining any fixed amounts with the unresolved formula:
+
+```text
+- Sugar: 20g + (125% of lemon juice)
+```
+
+This guarantees no shopping requirements are lost, even when unit data is incomplete.
+  </TabItem>
+</Tabs>
+
+## Error handling
+
+The compiler flags logical inconsistencies in relative definitions:
+
+- **`RELATIVE_QUANTITY_UNRESOLVED`**: Triggered when the target ingredient or variable has not been declared earlier in the section, displaying `(20% of missing ❓)`.
+- **`CIRCULAR_REFERENCE`**: Triggered if an ingredient attempts to compute a percentage of itself (e.g. `@flour{10% @&flour}`), displaying `(10% of self) ⚠️`.
+- **`RELATIVE_QUANTITY_UNKNOWN_MASS`**: Emitted when the target item's physical weight cannot be determined from unit conversions or the database.
+
+:::tip[Limits of relative quantities]
+Because a relative quantity's value is derived dynamically from another ingredient, it cannot serve as a reference target for portion scaling (`--scale`) or as the 100% base for Baker's Percentages (`*`). See [Deep dive: scaling](/docs/explanation/scaling) for full details.
+:::
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="How to scale recipes"
+    description="Hands-on guide to using relative quantities and baker's math in daily cooking."
+    href="/docs/how-to/scale-recipes/"
+  />
+  <LinkCard
+    title="Deep dive: scaling"
+    description="Understand how the ScaleEngine resolves relative quantities and reference scaling."
+    href="/docs/explanation/scaling/"
+  />
+  <LinkCard
+    title="Intermediate variables"
+    description="How to declare intermediate components (&dough) to serve as targets for percentages."
+    href="/docs/reference/syntax/intermediate-variables/"
+  />
+  <LinkCard
+    title="Ingredients syntax"
+    description="Full syntax for declaring raw ingredients, units, quantities, and preparation notes."
+    href="/docs/reference/syntax/ingredients/"
+  />
+</CardGrid>

@@ -3,23 +3,23 @@ title: "Language server"
 description: "How the Gram Language Server implements the LSP to power diagnostics, semantic tokens, and IDE features."
 ---
 
-The Gram Language Server (`@gram-lang/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, making it possible to provide advanced IDE features for Gram files across multiple editors, not just VS Code.
+The Gram Language Server (`@gram-lang/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, providing advanced IDE features for Gram files across multiple editors, not just VS Code.
+
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 ## Architecture
 
-The server acts as a persistent background process that analyzes your `.gram` files using the `@gram-lang/parser` and `@gram-lang/kitchen` packages. 
+The server acts as a persistent background process that analyzes your `.gram` files using the `@gram-lang/parser`, `@gram-lang/kitchen`, and `@gram-lang/scheduler` packages.
 
-import { Steps } from '@astrojs/starlight/components';
-
-**The real-time workflow:**
+**Real-time workflow:**
 <Steps>
 1. **Editor** ➔ Sends file changes on every keystroke.
 
-2. **Language Server** ➔ Intercepts changes and asks the Gram Compiler to re-evaluate the AST in memory.
+2. **Language Server** ➔ Intercepts document deltas and asks the Kitchen compiler to re-evaluate the AST in memory.
 
-3. **Gram Compiler**  ➔ Analyzes the new structure and emits warnings, macros, and dependencies.
-   
-4. **Language Server** ➔ Translates these into standard LSP payloads (Diagnostics, Semantic Tokens, Inlay Hints) and pushes them back to the editor.
+3. **Gram Compiler** ➔ Analyzes the structure, resolves dependencies, computes the ALAP schedule, and emits integrity and scheduling diagnostics.
+
+4. **Language Server** ➔ Translates these results into standard LSP payloads (Diagnostics, Semantic Tokens, Inlay Hints) and pushes them back to the editor.
 </Steps>
 
 ## Supported LSP features
@@ -28,16 +28,42 @@ The Gram Language Server implements the following standard capabilities:
 
 | LSP Capability | Gram Implementation |
 |---|---|
-| **Diagnostics** | Real-time syntax and structural error reporting (e.g., circular dependencies). |
-| **Semantic Tokens** | AST-driven highlighting for modifiers, units, and composite ingredients. |
-| **Completion** | Intelligent autocomplete for ingredients, units, and variables. |
-| **Hover** | Shows nutritional breakdowns and volume-to-mass conversions. |
-| **Go to Definition** | Navigate from an intermediate reference directly to its declaration. |
-| **Find References** | Locate all usages of a specific intermediate variable. |
-| **Rename** | Safely and atomically rename intermediate variables. |
-| **Code Actions** | Quick fixes (declaring missing variables, converting volume to mass). |
-| **Document Formatting**| Cleans up spacing, composite syntax, and aligns headers via `@gram-lang/format` (13 canonical rules). |
-| **Inlay Hints** | Displays the recipe's total time at the end of the `title:` line, following the chosen timeline (the `gram.miseEnPlace` and `gram.rests` settings). |
-| **Code Lens** | Injects interactive action buttons (like Macros calculation). |
-| **Document Symbol** | Populates the editor's Outline view for structural navigation. |
-| **Folding Range** | Allows collapsing of recipe `## Sections` and YAML frontmatter. |
+| **Diagnostics** | Real-time reporting of syntax errors, structural defects (circular dependencies), and scheduling warnings (`SESSION_OVERFLOW`, `DURATION_OUT_OF_RANGE`, `TRACK_CONTENTION`). |
+| **Semantic Tokens** | AST-driven highlighting for modifiers, units, temperatures, and composite ingredients. |
+| **Completion** | Contextual autocomplete for database ingredients, canonical units, and intermediate variables. |
+| **Hover** | Displays nutritional breakdowns and real-time volume-to-mass conversions on ingredient hover. |
+| **Go to Definition** | Direct navigation from an intermediate reference (`&ref`) to its original declaration (`->&ref`). |
+| **Find References** | Locates every usage of a specific intermediate variable across the document. |
+| **Rename** | Safely and atomically renames intermediate variables throughout the file. |
+| **Code Actions** | Quick fixes (declaring missing intermediate variables, converting volume to mass). |
+| **Document Formatting** | Normalizes syntax in-place applying the 13 canonical formatting rules via `@gram-lang/format`. |
+| **Inlay Hints** | Displays the recipe's total time at the end of the `title:` line, following mise en place placement and passive timer resolution (the `gram.miseEnPlace` and `gram.rests` settings). |
+| **Code Lens** | Injects interactive action buttons above the document (such as nutrition calculation). |
+| **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
+| **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="VS Code extension"
+    description="Install the official extension for syntax highlighting, live preview, and LSP tooling."
+    href="/docs/reference/tooling/vscode-extension/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Run verification checks, compile recipes, and format code from the command line."
+    href="/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Format API"
+    description="The underlying 13-rule formatting engine that powers document formatting."
+    href="/docs/reference/api/format/"
+  />
+  <LinkCard
+    title="Compiler warnings"
+    description="Understand the diagnostics surfaced in real time by the language server."
+    href="/docs/reference/api/warnings/"
+  />
+</CardGrid>
+

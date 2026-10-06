@@ -1,0 +1,114 @@
+---
+title: "@gram-lang/format"
+description: "The canonical code formatter for .gram files, applying 13 deterministic formatting rules used by the CLI and editor tooling."
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The canonical code formatter for `.gram` files, powering both the `gram format` CLI command and the VS Code extension Language Server. It unifies 13 formatting rules into a single deterministic pass.
+
+## `formatGram`
+
+```typescript
+function formatGram(source: string, options?: FormatterOptions): string
+```
+
+Formats a `.gram` source string according to Gram's 13 canonical formatting rules.
+
+<Tabs>
+  <TabItem label="Unformatted input">
+```gram
+---
+title: 'Crepes'
+---
+## Batter
+Mix  @flour{200.00g}   and   @milk{200ml}.  ->&batter
+```
+  </TabItem>
+  <TabItem label="Formatted output">
+```gram
+---
+title: 'Crepes'
+---
+
+## Batter
+
+Mix @flour{200g} and @milk{200ml}. ->&batter
+```
+  </TabItem>
+</Tabs>
+
+## `FormatterOptions`
+
+```typescript
+interface FormatterOptions {
+  tabSize?: number;       // Number of spaces per tab level (default: 2)
+  insertSpaces?: boolean; // Use spaces instead of tabs (default: true)
+}
+```
+
+## Canonical formatting rules
+
+`formatGram` applies 13 deterministic formatting rules, categorized into four core passes:
+
+<CardGrid>
+  <Card title="Document & sections" icon="document">
+    - **1. Frontmatter**: Preserves frontmatter delimiters (`---`) and cleans whitespace around YAML metadata.
+    - **2. Section headings**: Ensures a single space after `##` section title markers.
+    - **13. Whitespace cleanup**: Trims trailing whitespace on all lines and ensures a single trailing newline.
+  </Card>
+  <Card title="Steps & actions" icon="list-format">
+    - **3. Step indexing**: Cleans and formats numbered step prefixes (`1. `).
+    - **4. Action tags**: Normalizes step action tags (`[Mix] `).
+  </Card>
+  <Card title="Culinary tokens" icon="star">
+    - **5. Ingredients**: Normalizes `@ingredient{qty}` spacing and bracket syntax.
+    - **6. Cookware**: Normalizes `#cookware{qty}` spacing and bracket syntax.
+    - **7. Timers**: Normalizes active `~timer{duration}` and passive `~_timer{duration}` spacing.
+    - **8. Temperatures**: Normalizes `^temp{value}` syntax.
+    - **11. Decimal quantities**: Trims redundant trailing decimal zeros (`1.50` ➔ `1.5`).
+  </Card>
+  <Card title="Intermediates & comments" icon="pencil">
+    - **9. Intermediate variables**: Normalizes `->&name` declarations and `&name` references.
+    - **10. Composite items**: Normalizes `<@parent` composite reference syntax.
+    - **12. Comments**: Ensures clean spacing after comment sigils (`// comment`).
+  </Card>
+</CardGrid>
+
+## `FormatterChanges`
+
+Returns structured metrics on formatting edits made (useful for editor extensions and reporting):
+
+```typescript
+interface FormatterChanges {
+  formatted: string;
+  hasChanges: boolean;
+  rulesApplied: string[];
+}
+```
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="CLI reference"
+    description="Learn how to run gram format from the terminal with dry-run and fix options."
+    href="/docs/reference/tooling/cli/"
+  />
+  <LinkCard
+    title="Language server"
+    description="Explore how formatting and diagnostics integrate into LSP-compliant editors."
+    href="/docs/reference/tooling/language-server/"
+  />
+  <LinkCard
+    title="VS Code extension"
+    description="Setup format-on-save and syntax highlighting in your local editor."
+    href="/docs/reference/tooling/vscode-extension/"
+  />
+  <LinkCard
+    title="Syntax cheatsheet"
+    description="Visual overview of the canonical formatting syntax across all token types."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>
+

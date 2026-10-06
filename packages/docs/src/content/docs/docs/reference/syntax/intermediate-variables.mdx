@@ -1,0 +1,120 @@
+---
+title: "Intermediate variables"
+description: "Declare reusable sub-components like dough or sauce as intermediate &variables at the step or section level."
+---
+
+import { CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+
+In complex recipes, you often create sub-components (like a dough, a sauce, or a filling) that are assembled in later stages. Gram allows you to declare these sub-components as **intermediate variables**.
+
+Once declared, an intermediate `&variable` can be referenced, measured, or used as a baseline for relative percentage calculations.
+
+## Variable lifecycle
+
+<Steps>
+1. **Declaration (`->&name`)**
+   You declare the intermediate variable at the end of a step or in a section header using the `->&` arrow operator.
+
+2. **Scoping and graph registration**
+   The compiler registers the variable in the global symbol scope, calculates its cumulative produced mass, and sets up dependency links for ALAP scheduling.
+
+3. **Downstream consumption (`&name`)**
+   Subsequent steps reference the variable using `&name`, optionally specifying an extracted quantity (e.g. `&puff pastry{200g}`) or computing relative ratios (`@salt{2% &dough}`).
+
+4. **Automatic shopping list unwrapping**
+   The intermediate item is kept on the step ingredient list for cooking guidance, but automatically excluded from the shopping list — only its raw constituent ingredients are purchased.
+</Steps>
+
+## Declaring a variable
+
+### Step-level declaration
+
+When placed at the very end of a step paragraph, the variable captures everything produced in that specific step:
+
+```gram
+[Add] @flour{200g} and @water{100ml}. Mix until combined. ->&dough
+
+[Rest] Let the &dough rest for ~_{1h}.
+```
+
+### Section-level declaration
+
+When placed at the end of a `## Section` title, the variable captures the cumulative output of the entire section:
+
+```gram
+## Puff pastry ->&puff pastry{}
+
+[Mix] @flour{250g}, @water{120ml}, and @salt{5g}.
+
+[Rest] In the #fridge for ~_{1h}.
+
+[Incorporate] The @butter{200g} by folding the dough multiple times.
+
+// The &puff pastry variable now represents the final output of the entire section.
+```
+
+## Using a variable
+
+To use a previously declared variable, prefix its name with `&`:
+
+```gram
+Use the &puff pastry{} to line the tart tin.
+```
+
+You can also assign a quantity to it for display purposes in the rendered recipe:
+
+```gram
+Take &puff pastry{200g} and roll it out.
+```
+
+:::note[Shopping list vs recipe ingredients]
+When you use an intermediate `&variable` in a later step, it **will** appear in the recipe's ingredient list for that section, guiding the cook during execution.
+
+However, it **will not** appear in the consolidated **shopping list**. The Gram compiler automatically unpacks the intermediate into its raw constituent ingredients (such as flour and butter) and counts those toward your grocery totals.
+:::
+
+## Advanced mechanics
+
+### Global scoping
+When a variable is declared at the section level, it enters the recipe's **global symbol scope**. You can declare a variable in the very first section and safely reference it across any subsequent section.
+
+### Relative quantities
+You can calculate an ingredient's mass as a percentage of an intermediate variable's total weight (see [Relative quantities](/docs/reference/syntax/relative-quantities)):
+
+```gram
+[Mix] The ingredients to form the dough. ->&dough
+
+[Add] @salt{2% &dough}.
+```
+
+## Compiler diagnostics
+
+The compiler helps you maintain clean and conflict-free code by checking variable usage:
+
+- **`SCOPE_CONFLICT`**: Triggered if the same intermediate variable name is declared multiple times across different sections.
+- **`UNUSED_VARIABLE`**: Triggered if an intermediate variable is declared with `->&` but never referenced in any downstream step.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Relative quantities syntax"
+    description="Calculate ingredient ratios and baker's percentages based on intermediate variables."
+    href="/docs/reference/syntax/relative-quantities/"
+  />
+  <LinkCard
+    title="Modular recipe imports"
+    description="Export variables across multi-file recipes using @use and destructured bindings."
+    href="/docs/reference/syntax/modules/"
+  />
+  <LinkCard
+    title="ALAP scheduling"
+    description="Understand how intermediate variables create backwards dependencies in timelines."
+    href="/docs/explanation/alap-scheduling/"
+  />
+  <LinkCard
+    title="Kitchen compiler engine"
+    description="How the compiler resolves scopes, unwraps shopping lists, and builds task graphs."
+    href="/docs/explanation/engine/kitchen/"
+  />
+</CardGrid>

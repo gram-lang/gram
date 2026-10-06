@@ -4,6 +4,7 @@ description: "Référence de l'API de @gram-lang/modules : loadModuleGraph, comp
 ---
 
 import Since from '../../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.2.0" />
 
@@ -25,8 +26,9 @@ function loadModuleGraph(
 
 Explore et charge l'intégralité du graphe d'importation transitif en partant du document racine `entryUri`. L'analyse s'effectue en une seule passe en profondeur (DFS) :
 - **Déduplication** : Chaque fichier `.gram` n'est lu et parsé qu'une seule fois, même en cas de dépendances en diamant (ex : deux sauces partageant le même bouillon).
-- **Tolérance aux pannes** : Les cycles d'importation (`A → B → A`) sont interceptés et consignés dans les diagnostics sous le code non fatal `MODULE_CYCLE` au lieu de faire planter le processus.
+- **Tolérance aux pannes** : Les cycles d'importation (`A → B → A`) sont interceptés et consignés dans les diagnostics sous le code non fatal `MODULE_CYCLE` au lieu d'interrompre brutalement le processus.
 - **Contrôle de profondeur** : Dépasser `maxDepth` (fixé par défaut à `32`) émet une alerte `MODULE_DEPTH_EXCEEDED`.
+
 - **Ordre topologique** : Le tableau `order` classe les modules feuilles en premier, garantissant que chaque sous-recette est mesurée et composée avant d'être injectée dans son importateur.
 
 ```typescript
@@ -206,3 +208,29 @@ function pushModuleWarning<K extends ModuleWarningCode>(
 
 - **`warningSeverityOf(code)`** : Résout la sévérité d'un code (`"error" | "warning" | "info"`) de manière unifiée sur l'ensemble des codes de `@gram-lang/kitchen` et `@gram-lang/modules`.
 - **`allWarningInfo`** : Liste exhaustive des codes de diagnostic, sévérités et modèles de messages prêts pour l'affichage.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Organiser des recettes modulaires"
+    description="Guide pratique pour découper vos préparations en modules réutilisables et versionnés."
+    href="/fr/docs/how-to/organize-modular-recipes/"
+  />
+  <LinkCard
+    title="Le moteur de modules"
+    description="Dans les coulisses du graphe de dépendances, de l'échelle par rendement et du tri topologique."
+    href="/fr/docs/explanation/engine/modules/"
+  />
+  <LinkCard
+    title="API Kitchen"
+    description="Compilez les AST composés en listes de courses unifiées et graphes de tâches."
+    href="/fr/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Avertissements du compilateur"
+    description="Inventaire détaillé des codes d'avertissement propres aux imports et à la composition."
+    href="/fr/docs/reference/api/warnings/"
+  />
+</CardGrid>
+

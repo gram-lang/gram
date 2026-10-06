@@ -1,0 +1,109 @@
+---
+title: "Cookware"
+description: "How to declare cookware with the # symbol, including quantity counts and physical dimensions."
+---
+
+import { Badge, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+You can define the tools and equipment needed for a recipe using the `#` symbol.
+
+## Basic declaration
+
+Like an `@ingredient`, if the `#cookware` name is a single word and you only need one of it, you can omit the braces `{}`.
+
+```gram
+Heat the #pan.
+```
+
+If the name contains spaces or you want to specify a quantity, you must use braces `{}`.
+
+```gram
+Take a #baking sheet{}.
+```
+
+## Quantities vs dimensions
+
+Unlike an `@ingredient` (which supports continuous units such as grams or milliliters), `#cookware` maintains a strict syntactic separation between its **count** and its **physical description**.
+
+<Tabs>
+  <TabItem label="Quantities (counts)">
+The braces `{}` are strictly reserved for the number of items needed. This must be an integer count:
+
+```gram
+#pan              // Defaults to 1 pan
+#ramekins{4}      // 4 ramekins
+```
+  </TabItem>
+  <TabItem label="Dimensions & materials">
+To specify size, diameter, material, or surface characteristics, use parentheses `()`:
+
+```gram
+#pan(20cm)                  // 1 pan, sized 20cm
+#baking sheet{2}(non-stick) // 2 baking sheets, non-stick
+```
+  </TabItem>
+</Tabs>
+
+:::caution
+Do not put dimensions inside quantity braces (e.g. ❌ `#pan{20cm}`). Gram expects a pure integer inside `{}`. Use parentheses instead: ✅ `#pan(20cm)`.
+:::
+
+## Scaling behavior
+
+Unlike an `@ingredient` which scales proportionally by default, `#cookware` scaling depends on whether an explicit quantity was declared:
+
+| Format | Example | Scaling type | Description |
+| :--- | :--- | :--- | :--- |
+| **No quantity** | `#pan` | <Badge text="Fixed" variant="note" /> | Does not change when portions increase. |
+| **With quantity** | `#pan{1}` or `#ramekins{4}` | <Badge text="Scalable" variant="tip" /> | Doubling portions asks for 2 pans or 8 ramekins. |
+| **Explicit fixed** | `#=pan{2}` | <Badge text="Fixed" variant="note" /> | Stays fixed at 2 pans even if the recipe is scaled up. |
+
+## Modifiers and advanced syntax
+
+`#cookware` supports several of the advanced syntax mechanisms available for ingredients:
+
+<Tabs>
+  <TabItem label="Modifiers">
+You can apply Optional (`?`), Hidden (`-`), Fixed (`=`), and Reference (`&`) modifiers directly after `#`:
+
+```gram
+Use a #?wok if you have one, otherwise a #-large pan will do.
+
+Return to the #&wok to finish the sauce.
+```
+  </TabItem>
+  <TabItem label="Component alias">
+You can rename an equipment item for display while keeping a clean canonical slug using the `:` operator:
+
+```gram
+Use the #cast iron skillet:skillet{}.
+```
+  </TabItem>
+  <TabItem label="Alternatives">
+You can declare acceptable equipment substitutions using the pipe `|` operator:
+
+```gram
+Cook in a #pan|#wok.
+```
+  </TabItem>
+</Tabs>
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Ingredients syntax"
+    description="Full syntax for declaring raw ingredients, units, quantities, and preparation notes."
+    href="/docs/reference/syntax/ingredients/"
+  />
+  <LinkCard
+    title="Document structure"
+    description="Understand how cookware items are placed within sections and step instructions."
+    href="/docs/reference/syntax/document-structure/"
+  />
+  <LinkCard
+    title="Gram syntax cheatsheet"
+    description="Quick visual reference for all cookware, ingredient, timer, and variable markers."
+    href="/docs/reference/syntax/cheatsheet/"
+  />
+</CardGrid>

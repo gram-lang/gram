@@ -1,0 +1,246 @@
+---
+title: "@gram-lang/kitchen"
+description: "The compiler: transforms a parsed recipe AST into structured JSON with shopping lists, default scheduling, and warning diagnostics."
+---
+
+import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+This is the compiler. It accepts a `RecipeAST` (from `@gram-lang/parser`) and produces a `CompilationResult`: a clean, structured JSON object ready for rendering (unified shopping list, section-sliced instructions with scheduling metadata, global registries of ingredients and cookware, and structural warnings). No ingredient database is required at this stage: physical enrichment is handled by `@gram-lang/analyzer`.
+
+## `compile`
+
+```typescript
+function compile(ast: RecipeAST, options?: CompilerOptions): CompilationResult
+```
+
+```typescript
+import { getAST } from '@gram-lang/parser';
+import { compile } from '@gram-lang/kitchen';
+
+const ast = getAST(source);
+const compiled = compile(ast);
+// compiled.shopping_list, compiled.sections, compiled.metrics, compiled.schedule, compiled.warnings, ...
+```
+
+This function throws a JavaScript `Error` for structural violations that cannot be represented as recoverable warnings (for example, multiple ingredients annotated with the baker's percentage reference marker `*`).
+
+### `CompilerOptions`
+
+```typescript
+interface CompilerOptions {
+  scaleFactor?: number; // applies a fixed multiplier to the compiled output
+}
+```
+
+### `CompilationResult`
+
+```typescript
+interface CompilationResult {
+  generator: string;                 // "@gram-lang/kitchen@<version>": compiler version that generated this JSON
+  title: string | null;
+  slug: string | null;
+  meta: Meta;                        // parsed frontmatter metadata
+  scaleFactor?: number;              // present whenever a scale factor was applied
+  registry: {
+    ingredients: Record<string, RegistryEntry>;
+    cookware: Record<string, { id: string; name: string }>;
+  };
+  shopping_list: (ShoppingListItem | CompositeItem | Usage)[];
+  cookware: Usage[];
+  sections: ProcessedSection[];
+  warnings: Warning[];
+  metrics: {
+    preparationTime: number;         // sum of miseEnPlace[].duration (minutes)
+    activeTime: number;              // sum of brigade active hands-on work (minutes)
+    // Deprecated since 1.4.0, removed in 2.0.0 (see below):
+    totalTime: number;
+    idleTime: number;
+    activeBreakdown: TimeBreakdownItem[];
+    prepBreakdown: TimeBreakdownItem[];
+    totalBreakdown: TimeBreakdownItem[];
+  };
+  miseEnPlace: SectionMiseEnPlace[]; // required preparation tasks and durations per section
+  tasks: TaskGraph;                  // neutral task graph with durations and dependencies
+  schedule: Schedule;                // default theoretical schedule laid out from `tasks`
+}
+
+interface SectionMiseEnPlace {
+  section: number;                   // index in `sections`
+  duration: number;                  // == sum of items[].duration
+  items: MiseEnPlaceItem[];
+}
+
+type MiseEnPlaceItem =
+  | { kind: "gather"; target: "ingredient" | "cookware"; count: number; duration: number; intermediates?: number }
+  | { kind: "prepare"; ref: { type: "ingredient" | "cookware"; id: string }; duration: number; intermediate?: true };
+
+interface Schedule {
+  miseEnPlace: MiseEnPlaceMode;      // preparation placement strategy: "perSection" by default
+  rests: RestChoice;                 // passive timer elasticity: "shortest" by default
+  totalTime: number;                 // max(end) across all scheduled blocks, relative to t = 0
+  activeTime: number;                // hands-on kitchen work, excluding preparation
+  preparationTime: number;           // cumulative preparation duration (sum of prep tasks)
+  idleTime: number;                  // total idle duration: totalTime - activeTime - preparationTime
+  blocks: ScheduledBlock[];          // complete timeline blocks (prep, step, passive)
+  sessions: ScheduleSession[];       // plan breakdown by working day relative to service
+}
+```
+
+:::note[Source vs Derived Properties]
+Not all properties on `CompilationResult` share the same status:
+
+| Property | Nature | Source |
+|---|---|---|
+| `generator`, `miseEnPlace[].items`, `tasks` | Source | Emitted directly by the compiler. |
+| `miseEnPlace[].duration` | Derived | Sum of individual `items` durations. |
+| `metrics.preparationTime`, `schedule.preparationTime` | Derived | Global sum of all `miseEnPlace[].duration`. |
+| `schedule` | Derived | Direct output of `layout(tasks)`: the task graph is sufficient to recompute it identically. |
+| `schedule.totalTime` | Derived | Latest `end` timestamp across all blocks. |
+| `schedule.idleTime` | Derived | Computed via `totalTime - activeTime - preparationTime`. |
+
+To ensure forward compatibility, consumers should ignore unknown properties and block `kind` variants: new types may appear in minor releases.
+:::
+
+:::caution[Deprecated in 1.4.0, Removed in 2.0.0]
+<Since type="deprecated" v="1.4.0" /> These fields retain their values and semantics until 2.0.0, but should be replaced now:
+
+| Deprecated field | Replacement property |
+|---|---|
+| `steps[].timings` | `step` blocks in `schedule.blocks` |
+| `steps[].backgroundTasks` | `passive` blocks in `schedule.blocks` |
+| `metrics.totalTime` | `schedule.totalTime` |
+| `metrics.idleTime` | `schedule.idleTime` |
+| `metrics.activeTime` | `schedule.activeTime` (a range counted as its average in the legacy field, and as its upper bound in the schedule) |
+| `metrics.activeBreakdown`, `metrics.prepBreakdown`, `metrics.totalBreakdown` | `miseEnPlace` and `schedule` |
+| `calculatePreparationTime().breakdown` | `items` from `computeMiseEnPlace()` (`calculatePreparationTime()` still returns `total`) |
+
+The `metrics.preparationTime` metric is **not** deprecated: it remains invariant regardless of the selected scheduling strategy. Note that the legacy `metrics.totalTime` field represented total duration with all preparation upfront, corresponding to `layout(tasks, { miseEnPlace: "upfront" })` unless the recipe contains intermediates (since upfront gathers them once ready, its duration may be shorter).
+
+The [Deprecated features](/docs/how-to/deprecations) guide provides before/after code migration examples for each of these fields.
+:::
+
+:::note[Pre-1.4.0 Compiled JSON Documents]
+JSON files produced by Kitchen 1.3.0 or earlier lack `tasks` and `schedule`. They remain renderable: `scheduleTimes` reads total and idle durations from legacy `metrics.totalTime` and `metrics.idleTime`, and semantic diffing compares them accurately instead of returning zero. However, Gantt charts cannot be drawn without task graph data. Recompile with Gram 1.4.0 or later to benefit from timelines. This transition fallback will be removed in 2.0.0.
+:::
+
+See [Data formats](/docs/reference/api/data-formats) for an annotated example of this structure, and the [Warnings reference](/docs/reference/api/warnings) for diagnostics emitted in `warnings`.
+
+## Scaling
+
+Recipes are compiled initially at baseline quantities. Scaling is a pure, composable operation: client interfaces (such as an interactive portion slider) can recalculate quantities instantly without reparsing or recompiling.
+
+```typescript
+function resolveScaleFactor(
+  compiled: CompilationResult | null,
+  request: ScaleRequest,
+  convertUnit?: UnitConverter,
+): ScaleResolution
+
+function applyScale(result: CompilationResult, factor: number): CompilationResult
+```
+
+The `ScaleRequest` structure accepts a fixed multiplier or a target quantity for a specific shopping list ingredient:
+
+```typescript
+type ScaleRequest =
+  | { type: "factor"; value: number }
+  | { type: "target"; id: string; qty: number; unit: string | null };
+```
+
+```typescript
+import { resolveScaleFactor, applyScale } from '@gram-lang/kitchen';
+
+// "I want 300g flour total" -> derives factor from compiled shopping list
+const { factor } = resolveScaleFactor(compiled, { type: 'target', id: 'flour', qty: 300, unit: 'g' });
+const scaled = applyScale(compiled, factor);
+```
+
+`resolveScaleFactor` throws a typed subclass of `ScaleError` (carrying a specific `.code`) when the request cannot be resolved: `InvalidFactorError` (non-positive factor or infinite quantity), `IngredientNotFoundError`, `NestedOnlyTargetError` (ingredient only used inside a sub-recipe), `AlternativeTargetError` (ingredient inside an alternative group `@a|@b`), `FixedIngredientError` (fixed `@=` or non-numeric quantity), `RelativeTargetError` (percentage-derived quantity `%`), `AmbiguousMultiUnitError` (incompatible units across recipe), `NonNumericTargetError`, `UnitMismatchError`.
+
+The `applyScale` function is pure: it never mutates its input. The same `CompilationResult` can be scaled repeatedly without drift. It guarantees the mathematical invariant: `applyScale(compile(ast), factor) ≡ compile(ast, { scaleFactor: factor })`.
+
+## Shopping list & scheduling (low-level)
+
+The `compile()` function orchestrates these utilities internally. They are exposed for specialized use cases (e.g. recalculating a shopping list from a programmatically synthesized `ProcessedSection[]` array).
+
+```typescript
+function generateShoppingList(
+  sections: ProcessedSection[],
+  registry: Registry,
+  options?: CompilerOptions,
+): (ShoppingListItem | CompositeItem | Usage)[]
+
+function calculatePreparationTime(
+  sections: ProcessedSection[],
+  registry: Registry,
+  mise?: SectionMiseEnPlace[],
+): { total: number; breakdown: TimeBreakdownItem[] } // `breakdown` is deprecated
+
+function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
+
+type MiseEnPlaceMode = "perSection" | "upfront" | "perSession"
+const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perSession"]
+const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode // "perSection"
+function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode
+
+type RestChoice = "shortest" | "balanced" | "longest"
+const REST_CHOICES: readonly ["shortest", "balanced", "longest"]
+const DEFAULT_REST_CHOICE: RestChoice // "shortest"
+function isRestChoice(value: unknown): value is RestChoice
+
+function scheduleFor(compiled: CompilationResult, mode?: MiseEnPlaceMode, rests?: RestChoice): Schedule | undefined
+function scheduleTimes(compiled: CompilationResult, mode?: MiseEnPlaceMode, rests?: RestChoice): { totalTime: number; idleTime: number }
+
+function layout(graph: TaskGraph, options?: LayoutOptions): { schedule: Schedule; diagnostics: SchedulingDiagnostic[] }
+
+const MAX_DURATION_MINUTES: number // 525_600_000 (1000 years)
+function quantityToMinutes(qty: { value: number; unit: string }): number
+function isDurationTooLong(qty: { value: number; unit: string }): boolean
+function maxDurationIn(unit: string): number
+```
+
+## `RecipeRegistry`
+
+The mutable registry of ingredients and cookware built during compilation, keyed by `slugify(name)`. It implements the `Registry` interface (`ingredients: Map`, `cookware: Map`, `warnings: Warning[]`).
+
+```typescript
+class RecipeRegistry implements Registry {
+  registerIngredient(name: string, data?: Partial<Omit<RegistryEntry, "id" | "name">>): string; // returns id
+  registerCookware(name: string): string;                                                        // returns id
+  getIngredientId(name: string): string;
+  toPlainObject(): { ingredients: Record<string, RegistryEntry>; cookware: Record<string, {...}> };
+}
+```
+
+The `RegistryEntry` structure exposes `id`, `name`, and optionally `default_unit`, `is_composite`, `parent` (for composite sub-ingredients), and `is_intermediate`.
+
+## Warnings
+
+The `CompilationResult.warnings` property is an array of `Warning[]` objects listing all structural defects detected during compilation (missing references, scope conflicts, invalid timer units, circular dependencies...). See the [Warnings reference](/docs/reference/api/warnings) for codes, severity levels, and helper functions (`WarningCode`, `pushWarning`).
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Scheduler API"
+    description="Compute ALAP schedules, tracks, and calendar projections for prep timelines."
+    href="/docs/reference/api/scheduler/"
+  />
+  <LinkCard
+    title="Analyzer API"
+    description="Standardize volumes into grams, calculate nutrition, and compute baker's percentages."
+    href="/docs/reference/api/analyzer/"
+  />
+  <LinkCard
+    title="Compiler warnings"
+    description="Catalogue of warning codes emitted by the kitchen compiler and scheduler."
+    href="/docs/reference/api/warnings/"
+  />
+  <LinkCard
+    title="Data formats"
+    description="Explore the exact JSON structure of CompilationResult and its child objects."
+    href="/docs/reference/api/data-formats/"
+  />
+</CardGrid>
+

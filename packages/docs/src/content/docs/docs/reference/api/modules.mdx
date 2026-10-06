@@ -4,6 +4,7 @@ description: "Reference for loadModuleGraph, composeRecipe, ModuleHost, and util
 ---
 
 import Since from '../../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.2.0" />
 
@@ -204,3 +205,29 @@ function pushModuleWarning<K extends ModuleWarningCode>(
 
 - **`warningSeverityOf(code)`**: Unified lookup resolving severity (`"error" | "warning" | "info"`) across both `@gram-lang/kitchen` and `@gram-lang/modules` warning codes.
 - **`allWarningInfo`**: Full list of diagnostic codes, severities, and message templates.
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Organize modular recipes"
+    description="Hands-on guide to splitting base recipes into reusable, versioned building blocks."
+    href="/docs/how-to/organize-modular-recipes/"
+  />
+  <LinkCard
+    title="The modules engine"
+    description="Under the hood of the dependency graph, yield scaling, and topological sorting."
+    href="/docs/explanation/engine/modules/"
+  />
+  <LinkCard
+    title="Kitchen API"
+    description="Compile composed ASTs into unified shopping lists and task graphs."
+    href="/docs/reference/api/kitchen/"
+  />
+  <LinkCard
+    title="Compiler warnings"
+    description="Detailed breakdown of module warning codes, severity levels, and diagnostics."
+    href="/docs/reference/api/warnings/"
+  />
+</CardGrid>
+

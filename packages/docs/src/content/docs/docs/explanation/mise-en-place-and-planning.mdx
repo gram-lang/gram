@@ -1,158 +1,237 @@
 ---
 title: "Ingredients, mise en place and planning"
-description: "How Gram tells apart what a recipe needs, the work of preparing it, and when that work happens, and what each choice changes."
+description: "How Gram distinguishes what a recipe needs, the preparation work, and temporal scheduling, and the impact of each configuration."
 ---
 
 import Since from '../../../../components/Since.astro';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.4.0" />
 
-Three different things are easy to mix up when you read a recipe: **what you need**, **the work of getting it ready**, and **when you do that work**. Gram keeps them apart on purpose, and only the last one is a choice.
+When reading a recipe, three distinct concepts are often conflated: **raw ingredient requirements**, **prior preparation work**, and **temporal scheduling**. Gram explicitly separates these three dimensions, with only the last being subject to user preference.
 
-If you cook a simple recipe, you can stop here: nothing to configure, the defaults do what you expect. The rest of this page is for those who want to plan a complex recipe, with several components or several days.
+For a straightforward recipe, default settings handle scheduling automatically without extra configuration. The following sections are intended for those orchestrating multi-component recipes or preparations spanning several days.
 
-## Three ideas, one choice
+## Three concepts, one choice
 
-| | What it is | Does the planning choice change it? |
+| | Definition | Affected by scheduling choice? |
 |---|---|---|
-| **Ingredients** | What the recipe needs: the ingredient list of each section, the shopping list | No |
-| **Mise en place** | The work of getting it ready: fetching, weighing, peeling, chopping. Each section reports its own cost (`miseEnPlace`) | No |
-| **Planning** | When that work happens: the timeline, the total time, the idle time and the Gantt chart | **Yes**, this is the only thing it changes |
+| **Ingredients** | Material requirements: section ingredient lists, consolidated shopping list | No |
+| **Mise en place** | Preparation work: fetching, weighing, washing, peeling, chopping. Each section reports its own preparation cost (`miseEnPlace`) | No |
+| **Planning** | Temporal scheduling: relative timeline, total duration, overall passive duration, and Gantt chart | **Yes**, this is the only dimension modified |
 
-The recipe never declares how it should be planned. It states facts (what you need, what preparing it costs), and **you** choose how to lay them out in time, depending on how you work.
+A recipe never imposes its own schedule. It declares culinary facts (required ingredients and estimated preparation time); it is up to the **user** to decide how to organize this work along the timeline.
 
-This gives one rule that is easy to remember: choosing a planning never changes the ingredient lists, the shopping list, the preparation time or the active time. It only moves the work along the timeline.
+A straightforward rule to remember: switching scheduling strategies never changes the ingredients, the shopping list, the preparation time, or the active work. It solely shifts work blocks across the timeline.
 
-## The three plannings
+## The three mise en place strategies
 
-Gram plans the mise en place in three ways. Take this recipe:
+Gram provides three strategies to schedule mise en place. Consider this recipe:
 
 ```gram
 ## Dough ->&dough
 
-Mix @flour{500g} and @water{300ml} in a #bowl.
+[Mix] Mix @flour{500g} and @water{300ml} in a #bowl.
 
-[Rest] Let it rest ~_{2h}.
+[Rise] Let it rise ~_{30min}.
 
-## Filling
+## Filling ->&filling
 
-Slice @onions{200g}(finely sliced).
+[Slice] Slice @onions{200g}(finely sliced).
 
 ## Assembly
 
-Combine &dough and the filling, then bake for ~{25min}.
+[Combine] Combine &dough and the &filling, then bake ~{25min}.
 ```
 
-Its preparation costs 7 minutes in all (3 for the dough, 3 for the filling, 1 for the assembly) and its active time is 29 minutes, whichever way it is planned.
+Gram automatically calculates preparation time for each section based on ingredients to weigh or chop and cookware required (here: 3 min for dough, 3 min for filling, 1 min for assembly, totaling 7 min). Cumulative active cooking work is 29 minutes across all scheduling choices.
 
-**By section** (the default) puts each section's mise en place right before that section, and lets it overlap the resting time of an earlier step:
+### By section (default)
 
-- The dough is prepared at minute 0, then rests until minute 125.
-- The filling's mise en place happens at the end of the rest, at minute 119, so the onions don't wait on the counter.
-- The total time is 2 h 30 (150 min).
+This mode schedules each section's preparation as close as possible to its execution. Whenever a passive duration occurs (fermentation, oven baking, cooling), Gram inserts the preparation of subsequent steps.
 
-**All at the start** does all the mise en place first, then starts cooking:
+In culinary and manufacturing operations, this is known as working in **masked time**: active work performed *during* a passive wait adds zero extra minutes to the recipe's total duration.
 
-- The dough's and the filling's mise en place both happen from minute 0, before the first step.
-- The total time is 2 h 33 (153 min): the filling's preparation is no longer absorbed by the dough's rest.
+```mermaid
+gantt
+    title By section — Masked time execution (1 h 01)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Dough
+    Mise en place                     : p1, 00:00, 3m
+    Mix                               : active, a1, 00:03, 2m
+    Rise (passive)                    : r1, 00:05, 30m
+    section Filling
+    Mise en place                     : p2, 00:30, 3m
+    Slice                             : active, a2, 00:33, 2m
+    section Assembly
+    Mise en place                     : p3, 00:35, 1m
+    Combine and bake                  : active, a3, 00:36, 25m
+```
 
-**By working day** groups the mise en place by day of work. The recipe above has no section anchored a day or more back (`~{-1d}`, `~{-2d}`...), so it is a single day, and this planning is the same as "all at the start". It only differs for a recipe over several days, see below.
+- Dough is prepared at 00:00, then rises for 30 minutes (from 00:05 to 00:35).
+- Filling mise en place occurs in masked time toward the end of the rise (starting at 00:30): chopped onions stay fresh rather than lingering on the counter.
+- Overall total duration is optimized to **1 h 01** (61 min).
 
-None is "right". The first reads like cooking one component after the other; the second reads like a working session where everything is laid out before you start; the third, like one production sheet per day.
+### All at the start
 
-### An intermediate is never prepared before it exists
+This mode groups all ingredient weighing and chopping before beginning the first step:
 
-An intermediate (`&dough`) is made during the recipe, so it can't be fetched or weighed before the section that makes it has run. This holds in all three plannings:
+```mermaid
+gantt
+    title All at the start — Upfront preparation (1 h 04)
+    dateFormat  HH:mm
+    axisFormat %H:%M
+    todayMarker off
+    section Mise en place
+    Dough                             : p1, 00:00, 3m
+    Filling                           : p2, 00:03, 3m
+    section Dough
+    Mix                               : active, a1, 00:06, 2m
+    Rise (passive)                    : r1, 00:08, 30m
+    section Filling
+    Slice                             : active, a2, 00:36, 2m
+    section Assembly
+    Retrieve dough                    : p3, 00:38, 1m
+    Combine and bake                  : active, a3, 00:39, 25m
+```
 
-- It is counted in the mise en place of the section that **uses** it, not the one that makes it.
-- Even when everything else is prepared at the start, it is planned right before the section that uses it. In the example, `&dough` is gathered at minute 127, just after it has rested, in the "all at the start" planning.
+- Dough and filling ingredients are prepared upfront starting at 00:00 (until 00:06).
+- Total duration increases to **1 h 04** (64 min), as filling prep is no longer absorbed in masked time during the rise.
 
-So a recipe planned "all at the start" is really a mix: the raw ingredients and the cookware first, and the intermediates as they become available. That is also how a kitchen works.
+### By session (or working day)
 
-:::note
-That one minute to gather an intermediate is an approximation: it can fall while the intermediate is still resting. The total time stays right to within a minute.
+This mode consolidates preparation by working day. When a recipe fits within a single day (with no past day anchors like `~{-1d}`), this mode yields results identical to "All at the start". Its primary purpose is structuring multi-day production schedules (see below).
+
+No single mode is universally superior: the first optimizes total duration and ingredient freshness; the second suits cooks who prefer gathering all ingredients beforehand; the third organizes complex multi-day workflows.
+
+:::note[Special case: intermediates are never prepared before they exist]
+An intermediate ingredient (`&dough`) is produced during recipe execution: it cannot be retrieved or measured before its producing section completes. This rule applies across all scheduling modes:
+
+- **Accounting**: an intermediate is counted in the mise en place of the section that **consumes** it, not the one that produces it.
+- **In "All at the start" mode**: raw ingredients are gathered upfront, but the intermediate is retrieved only when downstream steps require it (in our example, `&dough` is retrieved after rising, right before assembly).
 :::
 
-## Rests written as a range
+## Elastic passive durations written as ranges
 
-A rest can be exact (`~_{12h}`) or written as a range (`~_{12-24h}`: ready from 12 hours, still good at 24). An exact rest is never moved. A range is slack, and you choose how to read it, the same way you choose where the mise en place goes:
+A passive duration can be fixed (`~_{12h}`) or specified as a range (`~_{12-24h}`: ready after 12 hours, viable up to 24 hours). A fixed passive duration never shifts. In contrast, a range introduces temporal elasticity, and you decide how to interpret it via the `rests` option, just as you choose mise en place placement:
 
-- **`shortest`** (the default): every such rest lasts the shortest of its range.
-- **`balanced`**: the middle.
-- **`longest`**: the longest.
+- **`shortest`** (default): selects the range's minimum duration;
+- **`balanced`**: selects the median duration;
+- **`longest`**: selects the maximum duration.
 
-This changes the total and idle times, and the Gantt chart, and nothing else. An active timer written as a range (`~{40-50min}`) is a cooking uncertainty, not slack: it is always planned on its longest figure, so dinner is never late, whatever you choose.
+This selection affects total duration, idle passive time, and the Gantt chart, while leaving active cooking work unchanged. Conversely, an active timer specified as a range (`~{40-50min}`) reflects cooking uncertainty rather than elasticity: it is always scheduled using its maximum duration to ensure service is never delayed.
 
-When you also tell Gram when you serve and when you can cook, it uses this slack to keep your own work out of the night: see [Planning in real time](/docs/explanation/planning-in-real-time/).
+When a target serving time and cooking availability are provided, Gram utilizes this elasticity to shift active work away from overnight hours: see [Planning in real time](/docs/explanation/planning-in-real-time/).
 
-## Where to choose
+## Scheduling configuration
 
-The choice is made by the person reading the recipe, in the tool they use:
+A cornerstone of Gram's architecture is that **a recipe contains no syntax to dictate its schedule**. It describes purely culinary facts (ingredients, cookware, actions, and durations).
 
-| Tool | Where the mise en place goes | How long the rests last |
+During compilation, Kitchen preserves data neutrality. The compiled recipe output carries raw facts (`miseEnPlace`, and `tasks`: the neutral dependency graph) alongside a single default schedule in `schedule` (mise en place by section, shortest passive durations):
+
+```json
+{
+  "miseEnPlace": { /* raw facts: estimated durations per section */ },
+  "tasks":       { /* neutral task graph */ },
+  "schedule":    { /* default schedule laid out from tasks */ }
+}
+```
+
+Any alternative configuration (upfront, per-session, longest passive durations...) is computed on demand from `tasks` using the pure `layout()` function of `@gram-lang/scheduler`, **without recompiling**. The scheduling choice occurs **at rendering, export, or display time**:
+
+| Tool | Mise en place placement | Passive duration selection |
 |---|---|---|
-| CLI (`gram view`, `gram export`, `gram print`, `gram cook`, `gram plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
-| VS Code | the `gram.miseEnPlace` setting | the `gram.rests` setting |
-| Playground | the "Mise en place" selector | the "Rests" selector |
-| Renderer (`@gram-lang/renderer`) | the `miseEnPlace` option (`"perSection"`, `"upfront"` or `"perSession"`) | the `rests` option |
+| **CLI** (`gram view`, `export`, `print`, `plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
+| **VS Code** | `gram.miseEnPlace` setting | `gram.rests` setting |
+| **Playground** | "Mise en place" selector | "Rests" selector |
+| **Renderer** (`@gram-lang/renderer`) | `miseEnPlace: "perSection" \| "upfront" \| "perSession"` | `rests` option |
 
-If you use the compiler directly, the compiled recipe holds the facts (`miseEnPlace`, and `tasks`, the list of everything there is to do and what each task waits for) and one default timeline, `schedule` (mise en place by section, shortest rests). Every other combination is laid out from `tasks` with `layout()` from `@gram-lang/scheduler`, without compiling again, and never from `miseEnPlace` by hand. See the [kitchen API reference](/docs/reference/api/kitchen/) and the [scheduler API reference](/docs/reference/api/scheduler/) for the exact shapes.
+For application developers building custom interfaces, this separation eliminates the need to reimplement scheduling logic: read `schedule` for default planning, or invoke `layout()` for customized projections (see the [kitchen API reference](/docs/reference/api/kitchen/) and the [scheduler API reference](/docs/reference/api/scheduler/)).
 
 ## Recipes over several days
 
-A recipe over several days is worked in sessions: on each day you prepare what that day needs. The **by working day** planning gives one production sheet per day, with no new syntax and nothing to configure beyond the retro-planning anchors you already write.
+Lengthy recipes (**sourdough bread**, **marinated meats**, **croissants**, or **gravlax**) naturally break down into sessions: each day, one prepares only what that specific day requires. The **by session** strategy (`per-session`) generates a daily production roadmap based on the retro-planning day anchors (`~{-1d}`, `~{-2d}`) declared in the recipe.
 
 ```gram
+---
+title: Filled tart
+---
+
 ## Cream ~{-3d} ->&cream
 
-Whisk @milk{500ml} and @eggs{4}.
+[Whisk] Whisk @milk{500ml} and @eggs{4}.
 
-[Chill] Let it set ~_{24h}.
+[Chill] Let it set at ^{4C} for ~_{24h}.
 
 ## Crust ->&crust
 
-Work &cream{150g} with @flour{300g} and @butter{150g}.
+[Work] Work &cream{150g} with @flour{300g} and @butter{150g}.
 
-## Pie ~{-1d}
+## Tart ~{-1d}
 
-Fill with &crust{400g} and bake ~{30min}.
+[Fill] Fill with &crust{400g}.
+
+[Bake] Bake for ~{30min}.
 
 ## Serve
 
-Dust with @sugar{10g}.
+[Dust] Dust with @sugar{10g}.
 ```
 
-### Where the days come from
+### Working day segmentation
 
-The days come from the section anchors **in days**, nothing else:
+To structure a recipe into daily sessions, the scheduling engine relies exclusively on section anchors specified **in days** (`~{-1d}`, `~{-2d}`, `~{-3d}`):
 
-- A section anchored `~{-1d}`, `~{-2d}`... sits on that day.
-- A section without an anchor sits on the day of the **furthest anchor in days among the sections after it**: in the example, the crust has no anchor of its own, so it falls on D-1 with the pie. This matches [ALAP scheduling](/docs/explanation/alap-scheduling/), which places it as late as it can, right before the pie.
-- Sections after the last anchor sit on the day itself.
+- **`~{-Nd}` (days) = a distinct working day.** This conveys explicit human intent (*"prepare the day before (D-1)"*, *"two days prior (D-2)"*). Gram then groups the mise en place of those sections into a dedicated session.
+- **`~{-Nh}` (hours) = a relative deadline within a day.** An anchor such as `~{-2h}` or `~{-36h}` indicates that a step must complete 2 hours (or 36 hours) before serving, but **never** initiates a new working day on its own. Because a `.gram` recipe has no knowledge of actual meal timing, converting hours into calendar days would introduce meal-dependent ambiguity (`~{-12h}` lands in the morning for an 8 p.m. dinner, but at midnight the day before for a noon lunch).
 
-Two things don't open a day, and trip people up:
+An unanchored section inherits the day of the **furthest day anchor among downstream sections**, or serving day (Day D) by default. In the example, the crust has no anchor of its own: it is assigned to D-1 alongside the tart, and ALAP scheduling places it as late as possible, immediately prior to assembly.
 
-- **A long passive timer.** A `~_{48h}` rest in a step makes [ALAP scheduling](/docs/explanation/alap-scheduling/) start the step two days earlier on the Gantt, but the days only read section anchors: without a `~{-2d}` on the section's title, the section is on the day itself. Anchor the section (`## Cream ~{-2d}`).
-- **An anchor in hours.** `~{-18h}` and `~{-36h}` are deadlines inside the day a section falls on, never days of their own: a poolish kneaded the evening before is not on D-1 just because it was written in hours. To open the day before, use `~{-1d}`.
+:::caution[Common pitfalls]
+Two frequent patterns do **not** initiate a new working day:
 
-In the example: the cream is on D-3, the crust and the pie on D-1, and the last section on the day itself. Without any anchor in days, there is a single session, like "all at the start".
-
-Each day is meant to fit in the 24 hours that end the day after. If a long rest pushes a day's work out of that window (a `~{-1d}` dough that ferments for 50 hours), Gram warns with `SESSION_OVERFLOW` and suggests anchoring the section further back.
-
-### What each day gathers
-
-At the start of each day, the mise en place of that day's sections is gathered: ingredients, cookware and preparations. For an intermediate:
-
-- made on an **earlier day**, it is gathered at the start of the day that uses it (the cream, on D-1);
-- made **the same day**, it waits until right before the section that uses it (the crust, for the pie), because it doesn't exist yet when the day starts.
-
-The preparation time and the active time stay the same as in the other plannings.
-
-:::tip
-When several sections follow each other on the same day, anchor only the last one (`## Pie ~{-1d}`) and leave the others without an anchor, like the crust above: they take its day and are placed right before it. Giving them all `~{-1d}` makes each a deadline at the same moment, and where one needs the other, a time paradox warning.
+1. **A long passive timer without section anchor**: a step with `~_{48h}` pushes the step two days backward on the Gantt chart, but does not create a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
+2. **An anchor in hours**: a value like `~{-18h}` or `~{-36h}` remains a deadline within that section's assigned day. To trigger a genuine session the previous day, use `~{-1d}` explicitly.
 :::
 
-## Going further
+In the example above:
+- **Cream** is prepared on **D-3**;
+- **Crust** and **tart** are executed on **D-1**;
+- **Serving** occurs on **Day D**.
 
-- [Times and durations](/docs/reference/syntax/times/#when-the-mise-en-place-happens) for the three kinds of time of a recipe.
-- [ALAP scheduling](/docs/explanation/alap-scheduling/) for how the steps themselves are placed on the timeline.
+Each working day is designed to fit within the 24 hours preceding the next. If an extensive passive duration forces active work outside this window, Gram emits a `SESSION_OVERFLOW` diagnostic and recommends anchoring the section further back.
+
+### Mise en place aggregation per session
+
+At the start of each working day, Gram consolidates the mise en place required for that day's steps:
+
+- An intermediate **produced on an earlier day** (the cream, prepared on D-3) is retrieved at the opening of the session where it is consumed (on D-1).
+- An intermediate **produced on the same day** (the crust for the tart) is prepared immediately prior to assembly, as it does not yet exist at the start of the day.
+
+Cumulative preparation time and active cooking work remain strictly identical across all scheduling strategies.
+
+:::tip[Chaining sections]
+When several sections follow each other on the same day, anchor only the final one (`## Tart ~{-1d}`) and leave upstream sections unanchored (like the crust above): they automatically inherit its day and sequence immediately before it. Assigning `~{-1d}` to each creates concurrent deadlines at the exact same moment, causing a time paradox warning when dependencies exist between them.
+:::
+
+## Related resources
+
+<CardGrid>
+  <LinkCard
+    title="Times and durations syntax"
+    description="Learn how to declare active durations, passive rests, and section day anchors."
+    href="/docs/reference/syntax/times/"
+  />
+  <LinkCard
+    title="ALAP scheduling"
+    description="How the compiler calculates backwards timeline alignment and named track contention."
+    href="/docs/explanation/alap-scheduling/"
+  />
+  <LinkCard
+    title="Planning in real time"
+    description="Project recipe timelines onto actual clock times and availability windows."
+    href="/docs/explanation/planning-in-real-time/"
+  />
+</CardGrid>

@@ -4,23 +4,22 @@ description: "Vue d'ensemble des packages composables de Gram (parser, modules, 
 ---
 
 import { CodeTabs } from 'starlight-theme-nova/components';
-
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-Gram n'est pas qu'un simple format de fichier : c'est un *pipeline* de petites bibliothèques composables. Chaque *package* accomplit une seule tâche et transmet un objet JSON au suivant. Vous pouvez utiliser le pipeline complet, ou piocher uniquement la brique dont vous avez besoin (ex : utiliser juste le *parser* pour construire un linter).
+Gram n'est pas qu'un simple format de fichier : c'est un pipeline de petites bibliothèques modulaires et composables. Chaque package accomplit une tâche précise et transmet un objet JSON déterministe au suivant. Vous pouvez utiliser le pipeline de bout en bout, ou exploiter uniquement la brique dont vous avez besoin (par exemple, uniquement le parseur pour concevoir un linter).
 
 ## Installation
 
 <CodeTabs>
   ```bash title="npm"
-  npm install @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
+  npm install @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/scheduler @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
   ```bash title="bun"
-  bun add @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
+  bun add @gram-lang/parser @gram-lang/modules @gram-lang/kitchen @gram-lang/scheduler @gram-lang/analyzer @gram-lang/renderer @gram-lang/format
 ```
 </CodeTabs>
 
-Tous ces *packages* sont `ESM only`, *side-effect free*, et tournent partout où du JavaScript s'exécute : Node.js, Deno, Bun, environnements Edge, ou directement dans le navigateur (voir le [Playground](/fr/play) pour une démo 100 % côté client).
+Tous ces packages sont distribués exclusivement en ESM (`ESM only`), sans effets de bord (*side-effect free*), et s'exécutent dans n'importe quel environnement JavaScript : Node.js, Deno, Bun, runtimes Edge ou directement dans le navigateur (voir le [Playground](/fr/play) pour une démonstration 100 % côté client).
 
 ## Matrice des packages
 
@@ -28,18 +27,18 @@ Tous ces *packages* sont `ESM only`, *side-effect free*, et tournent partout où
 |---|---|---|
 | [`@gram-lang/parser`](/fr/docs/reference/api/parser) | Transforme le texte source `.gram` en Arbre Syntaxique Abstrait (AST) | `getAST(source)` |
 | [`@gram-lang/modules`](/fr/docs/reference/api/modules) | Résout les imports `@use`, suit les dépendances, ajuste les sous-bases et compose un AST unifié | `loadModuleGraph(entry, host)`, `composeRecipe(graph, opts)` |
-| [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée, prête au rendu (liste de courses, graphe de tâches, planning, registre) | `compile(ast, options?)` |
-| [`@gram-lang/scheduler`](/fr/docs/reference/api/scheduler) | Pose le graphe de tâches sur un planning, puis sur le calendrier à partir d'une heure de service et de vos disponibilités | `layout(graph, options?)`, `project(recipes, context)` |
-| [`@gram-lang/analyzer`](/fr/docs/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
-| [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML | `toMarkdown` / `toHTML` / `toPrintHTML` |
-| [`@gram-lang/format`](/fr/docs/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles unifiées) | `formatGram(source, options?)` |
-| [`@gram-lang/i18n`](/fr/docs/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires de chaînes UI utilisés en interne par les paquets ci-dessus | `normalizeUnit`, `getDictionary` |
+| [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée (liste de courses, graphe de tâches, ordonnancement par défaut, registre de matériel) | `compile(ast, options?)` |
+| [`@gram-lang/scheduler`](/fr/docs/reference/api/scheduler) | Ordonnance le graphe de tâches (rétro-planning ALAP) et projette les recettes sur un calendrier réel selon l'heure de service et vos disponibilités | `layout(graph, options?)`, `project(recipes, context)`, `runSheet(plan)` |
+| [`@gram-lang/analyzer`](/fr/docs/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages du boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
+| [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown, HTML ou fiche de production | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/format`](/fr/docs/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles de style unifiées) | `formatGram(source, options?)` |
+| [`@gram-lang/i18n`](/fr/docs/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires bilingues utilisés en interne par les paquets du pipeline | `normalizeUnit`, `getDictionary` |
 
-L'étape d'analyse est purement optionnelle : `compile()` fournit à lui seul une recette structurée et prête au rendu (bien qu'avec des quantités brutes). `@gram-lang/analyzer` n'est requis que si vous avez besoin de la conversion de masse, des estimations nutritionnelles, ou du % du boulanger — opérations qui exigent une base de données d'ingrédients.
+L'étape d'analyse est purement optionnelle : `compile()` fournit à lui seul une recette structurée et prête à l'emploi (avec des quantités brutes). `@gram-lang/analyzer` n'est requis que si vous avez besoin de la conversion volumétrique vers les masses en grammes, des estimations nutritionnelles ou des calculs de boulangerie, qui exigent une base de données d'ingrédients.
 
 ## Raccourci optionnel Node uniquement (`@gram-lang/cli`)
 
-Si vous évoluez sous Node.js et n'avez pas besoin d'un contrôle granulaire, le *package* `@gram-lang/cli` (celui-là même qui propulse le binaire `gram`) expose également une petite API très pratique :
+Si vous évoluez sous Node.js et ne nécessitez pas un contrôle étape par étape, le package `@gram-lang/cli` (qui propulse la commande terminal `gram`) expose une API programmatique compacte :
 
 ```typescript
 import { runPipeline, GramCLIError } from '@gram-lang/cli';
@@ -51,13 +50,14 @@ const { content, compiled, analyzed } = await runPipeline('recette.gram', {
 });
 ```
 
-`runPipeline(filePath, options?)` lit le fichier, puis enchaîne automatiquement `getAST` → `compile` → `analyze` (si la `db` est fournie) et vous renvoie un objet `{ content, compiled, analyzed }`. Elle *throw* une `GramCLIError` (sous-classe d'`Error` portant un `.exitCode` via l'énumération exportée `ExitCode`) au lieu d'une erreur standard, ce qui facilite le *mapping* avec vos propres codes de retour CLI. Attention, cette fonction est réservée à Node.js (elle tape sur le disque via `node:fs`) : pour les navigateurs ou les environnements *Edge*, vous devrez brancher les *packages* manuellement comme illustré ci-dessous.
+`runPipeline(filePath, options?)` lit le fichier depuis le système de fichiers, puis enchaîne automatiquement `getAST` → `compile` → `analyze` (si `db` est fournie) et renvoie un objet `{ content, compiled, analyzed }`. Elle lève une `GramCLIError` (sous-classe d'`Error` portant une propriété `.exitCode` alignée sur l'énumération exportée `ExitCode`) au lieu d'une erreur générique, ce qui simplifie la gestion des codes de retour de votre application. Cette fonction est réservée à l'environnement Node.js (`node:fs`) : pour les navigateurs ou les environnements Edge, composez directement les packages individuels comme illustré ci-après.
 
 ## Le pipeline complet
 
 ```typescript
 import { getAST, GramParseError } from '@gram-lang/parser';
 import { compile } from '@gram-lang/kitchen';
+import { layout } from '@gram-lang/scheduler';
 import { analyze, validateIngredientDatabase } from '@gram-lang/analyzer';
 import { toHTML } from '@gram-lang/renderer';
 
@@ -73,8 +73,11 @@ function renderRecipe(source: string, rawIngredientDb: unknown) {
     throw err;
   }
 
-  // 2. Compiler l'AST en une recette structurée (liste de courses, minutages, registre)
+  // 2. Compiler l'AST en une recette structurée (liste de courses, graphe de tâches, ordonnancement par défaut)
   const compiled = compile(ast);
+
+  // 2 bis. Optionnel : recalculer un ordonnancement personnalisé à partir du graphe de tâches
+  // const { schedule } = layout(compiled.tasks, { miseEnPlace: 'upfront' });
 
   // 3. Charger et valider la base de données d'ingrédients, puis enrichir avec les données physiques/nutritionnelles
   const { data: database, rejected } = validateIngredientDatabase(rawIngredientDb);
@@ -89,12 +92,12 @@ function renderRecipe(source: string, rawIngredientDb: unknown) {
 ```
 
 :::note
-l'appel `analyze()` ci-dessus prend la base de données d'ingrédients comme **deuxième argument positionnel** — `analyze(compiled, database, options?)` — pas comme un champ d'un objet d'options.
+L'appel à `analyze()` prend la base de données d'ingrédients validée comme **deuxième argument positionnel** — `analyze(compiled, database, options?)` — et non comme une propriété d'un objet d'options.
 :::
 
 ### Recettes modulaires avec `@gram-lang/modules`
 
-Lorsque vous manipulez des recettes composées de directives `@use` réparties sur plusieurs fichiers, insérez `@gram-lang/modules` entre l'analyseur syntaxique et le compilateur :
+Lorsque vous manipulez des recettes composées de directives `@use` réparties sur plusieurs fichiers, insérez `@gram-lang/modules` entre le parseur et le compilateur :
 
 ```typescript
 import { loadModuleGraph, composeRecipe, finalizeComposed, createMemoryHost } from '@gram-lang/modules';
@@ -103,7 +106,7 @@ import { analyze } from '@gram-lang/analyzer';
 import { toHTML } from '@gram-lang/renderer';
 
 async function renderModularRecipe(entryUri: string, host: ModuleHost, rawIngredientDb: unknown) {
-  // 1. Résoudre et charger le graphe complet d'importation (DFS, détection de cycles)
+  // 1. Résoudre et charger le graphe complet d'importation (DFS, détection des cycles)
   const graph = await loadModuleGraph(entryUri, host);
 
   // 2. Composer en un AST unique avec calcul des proportions et renommage hygiénique
@@ -113,7 +116,7 @@ async function renderModularRecipe(entryUri: string, host: ModuleHost, rawIngred
   const compiled = compile(composed.ast);
   const result = finalizeComposed(compiled, composed);
 
-  // 4. Enrichir avec la base physique + ingrédients synthétiques pour le stock
+  // 4. Enrichir avec la base physique et les ingrédients synthétiques pour les préparations intermédiaires
   const enrichedDb = { ...database, ...composed.syntheticIngredients };
   const { result: analyzed } = analyze(result, enrichedDb);
 
@@ -124,10 +127,10 @@ async function renderModularRecipe(entryUri: string, host: ModuleHost, rawIngred
 
 ### Gérer les erreurs de parsing et les avertissements
 
-`getAST()` est la seule fonction du pipeline qui **throw une exception** : s'il y a une erreur de syntaxe, l'AST ne peut tout simplement pas être généré. Toutes les étapes ultérieures se contentent de **collecter des avertissements** (*warnings*) : une recette bancale finira toujours de compiler, pour vous laisser l'opportunité de l'afficher et de remonter visuellement le problème à l'utilisateur.
+`getAST()` est la seule fonction du pipeline qui **lève une exception** : s'il y a une erreur de syntaxe non récupérable, l'AST ne peut pas être généré. Toutes les étapes ultérieures privilégient la **collecte d'avertissements** (*warnings*) : une recette contenant des imprécisions ou des variables non résolues compile toujours, afin de vous permettre de l'afficher et de remonter visuellement le diagnostic à l'utilisateur.
 
-- `GramParseError` (levée par `getAST`) : transporte `.message` (le log lisible renvoyé par ohm-js, extrait de source inclus), `.offset` (la position du curseur dans la chaîne d'entrée), et `.expected` (ce que le *parser* attendait à cet endroit).
-- `CompilationResult.warnings` / `AnalyzedCompilationResult.warnings` (retournés par `compile()` et propagés par `analyze()`) : un tableau d'objets [`Warning`](/fr/docs/reference/api/warnings) — jamais de simples chaînes. Voir la [référence des avertissements](/fr/docs/reference/api/warnings) pour la liste complète des codes et comment les traiter comme des erreurs façon `--strict`.
+- `GramParseError` (levée par `getAST`) : expose `.message` (diagnostic détaillé généré par Ohm.js, extrait de code source inclus), `.offset` (position du curseur dans la chaîne d'entrée), et `.expected` (règle ou jeton attendu).
+- `CompilationResult.warnings` / `AnalyzedCompilationResult.warnings` (retournés par `compile()` et propagés par `analyze()`) : un tableau d'objets [`Warning`](/fr/docs/reference/api/warnings) structurés. Consultez la [référence des avertissements](/fr/docs/reference/api/warnings) pour la liste exhaustive des codes et la méthode pour les traiter comme des erreurs bloquantes façon `--strict`.
 
 <CardGrid>
   <LinkCard

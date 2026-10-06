@@ -1,10 +1,10 @@
 ---
 title: "Planifier en heures réelles"
-description: "Comment Gram projette une recette sur le calendrier : une heure de service, un fuseau horaire et vos disponibilités transforment le planning en fiche de production, avec des repos ajustés pour préserver vos nuits."
+description: "Comment Gram projette une recette sur le calendrier : une heure de service, un fuseau horaire et vos disponibilités transforment le planning en fiche de production, avec des attentes ajustées pour préserver vos nuits."
 ---
 
 import Since from '../../../../../components/Since.astro';
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 <Since v="1.4.0" />
 
@@ -38,26 +38,26 @@ Le planning théorique de la recette (voir [Mise en place et planning](/fr/docs/
    Tout bloc continu qui s'insère intégralement dans vos plages de disponibilité reste inchangé.
 
 3. **Déplacement des blocs en conflit**  
-   Tout bloc qui déborde sur une période d'indisponibilité est déplacé en ajustant le **repos élastique (défini par une fourchette de durée) le plus proche en aval** :
-   - **allonger** le repos avance le travail antérieur (par exemple vers la veille au soir) ;
-   - **raccourcir** le repos décale le travail antérieur plus tard (par exemple vers le lendemain matin).
+   Tout bloc qui déborde sur une période d'indisponibilité est déplacé en ajustant l'**attente flexible (définie par une fourchette de durée) la plus proche en aval** :
+   - **allonger** l'attente avance le travail antérieur (par exemple vers la veille au soir) ;
+   - **raccourcir** l'attente décale le travail antérieur plus tard (par exemple vers le lendemain matin).
 
-   Gram privilégie la direction dictée par votre stratégie de repos (les durées minimales par défaut, donc un raccourcissement préalable), et retient le plus petit ajustement en cas d'équivalence. Il ne sort jamais des bornes de la fourchette et ne modifie aucun repos à durée fixe.
+   Gram privilégie la direction dictée par votre stratégie d'attente (les durées minimales par défaut, donc un raccourcissement préalable), et retient le plus petit ajustement en cas d'équivalence. Il ne sort jamais des bornes de la fourchette et ne modifie aucune attente à durée fixe.
 
 4. **Propagation et traçabilité**  
-   Chaque ajustement répercute le décalage sur toutes les tâches en amont de ce repos. Le plan détaille explicitement chaque modification : le repos concerné, la durée initiale et finale, ainsi que le motif du réajustement.
+   Chaque ajustement répercute le décalage sur toutes les tâches en amont de cette attente. Le plan détaille explicitement chaque modification : l'attente concernée, la durée initiale et finale, ainsi que le motif du réajustement.
 </Steps>
 
-Un repos affecté à une piste nommée (`~_four{40min}`) n'est allongé que si cette piste demeure inoccupée sur toute la nouvelle durée. Le planificateur recalcule l'ordonnancement complet à chaque itération : les dépendances et la disponibilité des pistes sont validées sur le résultat effectif, sans approximation.
+Une attente affectée à une piste nommée (`~_four{40min}`) n'est allongée que si cette piste demeure inoccupée sur toute la nouvelle durée. Le planificateur recalcule l'ordonnancement complet à chaque itération : les dépendances et la disponibilité des pistes sont validées sur le résultat effectif, sans approximation.
 
 ### Exemple concret
 
 ```gram
 ## Pâte ->&pâte
 
-[Pétrir] Pétrir la @farine{500g} avec l'@eau{350ml}, ~{20min}.
+[Pétrir] La @farine{500g} avec l'@eau{350ml} pendant ~{20min}.
 
-[Pointer] Laisser pousser ~_{8-16h}.
+[Pointer] Laisser reposer ~_{8-16h}.
 
 ## Cuisson
 
@@ -70,11 +70,10 @@ Pour un service fixé le dimanche à 13 h, avec une disponibilité quotidienne d
 samedi 10 octobre · J-1
   vers 21:40        Pâte — Pétrir (20m)
   vers 22:00        Pointer — Pâte (14h 30m, jusqu'à vers dim. 12:30)
-  
-                     ! Repos allongé de 8h à 14h 30m pour éviter vos heures d'indisponibilité
+                    ! Attente allongée de 8h à 14h 30m pour éviter vos heures d'indisponibilité
 ```
 
-Si le repos avait été fixé de manière stricte (`~_{8h}`), ou si la plage était trop resserrée pour absorber le décalage (`~_{8-10h}`), aucun ajustement n'aurait été possible : le planificateur maintient le pétrissage à 4 h 10 et consigne l'anomalie.
+Si la pousse avait été fixée de manière stricte (`~_{8h}`), ou si la plage était trop resserrée pour absorber le décalage (`~_{8-10h}`), aucun ajustement n'aurait été possible : le planificateur maintient le pétrissage à 4 h 10 et consigne l'anomalie.
 
 ## Diagnostics et contraintes non résolues
 
@@ -82,27 +81,27 @@ Gram ne dissimule jamais un conflit qu'il ne peut pas résoudre. Toute anomalie 
 
 | Diagnostic | Signification | Action recommandée |
 |---|---|---|
-| `ACTIVE_OUTSIDE_AVAILABILITY` | Du travail actif tombe hors de vos disponibilités, sans qu'aucun repos ne puisse le déplacer (repos fixe, fourchette insuffisante ou absence de repos ultérieur). | Élargir vos plages de disponibilité ou autoriser une fourchette de repos plus souple. |
-| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | Un bloc de travail continu ininterruptible dépasse la durée de votre plus grande plage de disponibilité continue. | Augmenter la durée de votre plage de disponibilité (aucun ajustement de repos ne peut scinder ce bloc). |
-| `SESSION_DAY_MISMATCH` | Une session de travail journalière tombe sur une date calendaire différente de celle prévue (du travail `~{-1d}` se retrouvant deux jours avant). | Ancrer explicitement la section ou ajuster les repos intermédiaires. |
-| `START_IN_PAST` | La première tâche aurait dû débuter avant l'instant présent ou la date de planification. | Décaler l'heure de service plus tard ou raccourcir les durées de repos. |
+| `ACTIVE_OUTSIDE_AVAILABILITY` | Du travail actif tombe hors de vos disponibilités, sans qu'aucune attente ne puisse le déplacer (attente de durée fixe, fourchette insuffisante ou absence d'attente ultérieure). | Élargir vos plages de disponibilité ou autoriser une fourchette d'attente plus souple. |
+| `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | Un bloc de travail continu ininterruptible dépasse la durée de votre plus grande plage de disponibilité continue. | Augmenter la durée de votre plage de disponibilité (aucun ajustement d'attente ne peut scinder ce bloc). |
+| `SESSION_DAY_MISMATCH` | Une session de travail journalière tombe sur une date calendaire différente de celle prévue (du travail `~{-1d}` se retrouvant deux jours avant). | Ancrer explicitement la section ou ajuster les attentes intermédiaires. |
+| `START_IN_PAST` | La première tâche aurait dû débuter avant l'instant présent ou la date de planification. | Décaler l'heure de service plus tard ou raccourcir les durées d'attente. |
 | `MULTI_RECIPE_UNSUPPORTED` | Plusieurs recettes ont été fournies simultanément ; seule la première a été planifiée. | Planifier chaque recette individuellement. |
 
 :::note[Diagnostics de planification vs Avertissements de compilation]
-Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent directement de **vos** contraintes de disponibilité et ne constituent pas des erreurs de la recette elle-même. Les avertissements propres au code de la recette (comme `SESSION_OVERFLOW`, lorsqu'un repos excessif pousse une session hors de sa journée de 24 heures) sont détaillés dans la référence [Temps et durées](/fr/docs/reference/syntax/times/#gestion-des-erreurs).
+Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent directement de **vos** contraintes de disponibilité et ne constituent pas des erreurs de la recette elle-même. Les avertissements propres au code de la recette (comme `SESSION_OVERFLOW`, lorsqu'une attente excessive pousse une session hors de sa journée de 24 heures) sont détaillés dans la référence [Temps et durées](/fr/docs/reference/syntax/times/#gestion-des-erreurs).
 :::
 
 ## Fuseaux et changements d'heure
 
-Les calculs internes s'effectuent en minutes absolues sur une échelle continue, la conversion en heure locale n'intervenant qu'à la restitution finale. Un repos de 24 heures traversant la nuit du passage à l'heure d'hiver dure 24 heures réelles : s'il débute à 13 h 30 la veille, il s'achèvera donc à 12 h 30 sur l'horloge locale. Si une heure théorique n'existe pas (ex. 2 h 30 lors de l'avance d'une heure au printemps), elle est recalée sur la première heure valide suivante ; lorsqu'une heure se répète en automne, la première occurrence est retenue.
+Les calculs internes s'effectuent en minutes absolues sur une échelle continue, la conversion en heure locale n'intervenant qu'à la restitution finale. Une attente de 24 heures (une pâte au réfrigérateur, par exemple) traversant la nuit du passage à l'heure d'hiver dure 24 heures réelles : s'il débute à 13 h 30 la veille, il s'achèvera donc à 12 h 30 sur l'horloge locale. Si une heure théorique n'existe pas (ex. 2 h 30 lors de l'avance d'une heure au printemps), elle est recalée sur la première heure valide suivante ; lorsqu'une heure se répète en automne, la première occurrence est retenue.
 
 ## La fiche de production
 
-Le plan génère une fiche de production opérationnelle : les journées sont ordonnées chronologiquement, accompagnées du déroulé précis de leurs tâches. Les horaires sont arrondis aux cinq minutes les plus proches (« vers 21:40 ») afin de refléter la réalité de la cuisine ; les calculs internes demeurent quant à eux exacts à la minute près. Chaque repos modifié porte une annotation explicative, et les contraintes non résolues sont récapitulées en fin de document.
+Le plan génère une fiche de production opérationnelle : les journées sont ordonnées chronologiquement, accompagnées du déroulé précis de leurs tâches. Les horaires sont arrondis aux cinq minutes les plus proches (« vers 21:40 ») afin de refléter la réalité de la cuisine ; les calculs internes demeurent quant à eux exacts à la minute près. Chaque attente modifiée porte une annotation explicative, et les contraintes non résolues sont récapitulées en fin de document.
 
 Cette fiche est exportable sous de multiples formats : texte brut, Markdown, HTML autonome, version imprimable dédiée, ou fichier iCalendar (`.ics`) intégrant chaque tâche sous forme d'événement avec alarme sur les étapes actives. Consultez le guide [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour découvrir la mise en pratique complète.
 
-Le plan peut aussi s'écrire dans la recette elle-même : une heure à côté de chaque étape, le jour quand il change, les repos, et la fiche après la recette si vous voulez les deux dans un seul document (`gram view`, `gram export` et `gram print` avec `--serve`, et l'aperçu du playground). Les deux ordres diffèrent : la recette suit ses sections, la fiche suit le temps, et une étape peut revenir à un jour déjà vu.
+La projection calendaire peut également s'intégrer directement au cœur de la recette : un horaire précis est annoté en regard de chaque étape, le jour calendaire est signalé dès qu'il change, les attentes sont contextualisées, et la fiche de production complète peut être annexée à la suite de la recette pour obtenir un document unique (`gram view`, `gram export` et `gram print` avec l'option `--serve`, ainsi que dans l'aperçu du Playground). Ces deux vues adoptent une logique complémentaire : la recette conserve sa structure par sections culinaires tandis que la fiche de production déroule une chronologie strictement linéaire (au sein de la recette, les étapes peuvent ainsi basculer d'une journée à une autre au fil des préparations).
 
 ## Intégrations disponibles
 
@@ -118,3 +117,23 @@ Le plan peut aussi s'écrire dans la recette elle-même : une heure à côté de
 - **Ordonnancement mono-recette** : la planification coordonnée d'un menu complet (entrée, plat et dessert synchronisés sur un même service, avec partage d'un cuisinier et d'un four unique) fera l'objet d'une évolution ultérieure ; l'API accepte néanmoins déjà une collection de recettes.
 - **Ressources partagées** : les équipements (temps de préchauffage du four, capacité du réfrigérateur) ne constituent pas encore des ressources partagées globales, en dehors des pistes nommées explicites.
 - **Approche heuristique** : l'algorithme est glouton et déterministe (conçu pour être explicable et prévisible plutôt qu'optimal au sens de la programmation mathématique) : il résout les conflits en partant de l'événement le plus tardif et remonte dans le temps.
+
+## Ressources associées
+
+<CardGrid>
+  <LinkCard
+    title="Planifier un repas"
+    description="Guide pratique pas à pas pour générer des fiches de production avec le CLI et l'API TypeScript."
+    href="/fr/docs/how-to/plan-a-meal/"
+  />
+  <LinkCard
+    title="Mise en place et planification"
+    description="Comment le compilateur déduit les dépendances, durées et coûts de préparation des tâches."
+    href="/fr/docs/explanation/mise-en-place-and-planning/"
+  />
+  <LinkCard
+    title="Référence de l'API Scheduler"
+    description="Documentation complète de project(), layout(), runSheet() et des options calendaires."
+    href="/fr/docs/reference/api/scheduler/"
+  />
+</CardGrid>
