@@ -108,18 +108,18 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 				link: "/docs/how-to/organize-modular-recipes",
 			},
 			{
+				title: "Retro-planning & timelines",
+				icon: "clock",
+				details:
+					"Gram analyzes passive cooking, chilling, and prep times to calculate the exact moment to start each step. Everything converges hot and ready at serving time.",
+				link: "/docs/explanation/alap-scheduling",
+			},
+			{
 				title: "Dedicated IDE Support",
 				icon: "laptop",
 				details:
 					"Powered by a dedicated Language Server (LSP) giving you real-time diagnostics, semantic highlighting, and autocomplete directly in your IDE.",
 				link: "/docs/reference/tooling/vscode-extension",
-			},
-			{
-				title: "Universal Export",
-				icon: "puzzle",
-				details:
-					"Gram parses your recipes into a rich AST. Easily export them to JSON, Markdown, render them as HTML, or feed them into your favorite static site generator to build your own custom cookbook.",
-				link: "/docs/reference/api/kitchen",
 			},
 			{
 				title: "Powerful CLI",
@@ -138,7 +138,7 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 		tabNutritionDesc:
 			"Standardize measurements and calculate nutrition using a local database generated automatically from your workspace.",
 		tabNutritionLink: "/docs/how-to/manage-database/",
-		tabScheduleTitle: "ALAP Scheduling",
+		tabScheduleTitle: "Smart scheduling (ALAP)",
 		tabScheduleDesc:
 			"Extracts duration metadata to build an execution timeline, scheduling passive tasks 'As Late As Possible'.",
 		tabScheduleLink: "/docs/explanation/alap-scheduling",
@@ -432,18 +432,18 @@ export const homepageCopy: Record<"en" | "fr", HomepageCopy> = {
 				link: "/fr/docs/how-to/organize-modular-recipes",
 			},
 			{
+				title: "Rétroplanning & synchronisation",
+				icon: "clock",
+				details:
+					"Gram analyse les temps de repos, cuissons et préparations pour calculer l'instant idéal où démarrer chaque étape. Fini le stress : tout converge à l'heure du service.",
+				link: "/fr/docs/explanation/alap-scheduling",
+			},
+			{
 				title: "Support IDE dédié",
 				icon: "laptop",
 				details:
 					"Grâce à son serveur de langage (LSP) dédié, profitez de l'autocomplétion, de la coloration sémantique et des diagnostics en temps réel, directement dans votre éditeur favori.",
 				link: "/fr/docs/reference/tooling/vscode-extension",
-			},
-			{
-				title: "Export universel",
-				icon: "puzzle",
-				details:
-					"Gram compile vos recettes en un arbre syntaxique (AST) complet. Générez du JSON ou du Markdown pour alimenter le générateur de site statique de votre choix et créer le carnet de recettes ultime.",
-				link: "/fr/docs/reference/api/kitchen",
 			},
 			{
 				title: "CLI puissante",
