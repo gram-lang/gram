@@ -63,7 +63,7 @@ gantt
     Pousse de la pâte (temps passif)    : b2, after b1, 60m
     
     section Sauce
-    Mélanger (travail actif)            : active, b3, 50, 10m
+    Mélanger (travail actif)            : active, b3, 52, 10m
     
     section Cuisson
     Cuire au four (temps passif)        : b4, after b2, 30m
@@ -162,11 +162,11 @@ gantt
     Cuire la tarte (~_four)           : p2, after p1, 20m
     
     section Piste Pain (intercalé par ALAP)
-    Préparer le pain (actif)          : active, b1, 15, 5m
+    Préparer le pain (actif)          : active, b1, 20, 5m
     Cuire le pain (~_four)            : b2, after p2, 30m
 ```
 
-L'étape `Préparer le pain` est automatiquement programmée pendant la cuisson de la tarte (entre la 15e et la 20e minute) : le pain est ainsi prêt à enfourner dès que la tarte libère le four à la 25e minute.
+L'étape `Préparer le pain` est automatiquement programmée pendant la cuisson de la tarte (entre la 20e et la 25e minute) : le pain est ainsi prêt à enfourner dès que la tarte libère le four à la 25e minute.
 
 ## Ancres temporelles, sessions et dépendances
 

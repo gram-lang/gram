@@ -63,7 +63,7 @@ gantt
     Dough rise (passive timer)          : b2, after b1, 60m
     
     section Sauce
-    Mix (active work)                   : active, b3, 50, 10m
+    Mix (active work)                   : active, b3, 52, 10m
     
     section Bake
     Oven baking (passive timer)         : b4, after b2, 30m
@@ -162,11 +162,11 @@ gantt
     Bake tart (~_oven)                : p2, after p1, 20m
     
     section Bread Track (interleaved by ALAP)
-    Prep bread (active)               : active, b1, 15, 5m
+    Prep bread (active)               : active, b1, 20, 5m
     Bake bread (~_oven)               : b2, after p2, 30m
 ```
 
-`Prep bread` is automatically scheduled during tart baking (minutes 15 to 20): bread is ready to bake the exact moment the tart leaves the oven at minute 25.
+`Prep bread` is automatically scheduled during tart baking (minutes 20 to 25): bread is ready to bake the exact moment the tart leaves the oven at minute 25.
 
 ## Time anchors, working days, and dependencies
 
