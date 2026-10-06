@@ -14,7 +14,9 @@ import GramEditor from "./GramEditor.vue";
 // biome-ignore lint/style/useImportType: GramFileTabs is used as a component in the <template> block below.
 import GramFileTabs from "./GramFileTabs.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
-import GramOptions from "./GramOptions.vue";
+import GramOptions, { type PlanSettings } from "./GramOptions.vue";
+// biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
+import GramDrawer from "./GramDrawer.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
 import GramWarnings from "./GramWarnings.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below, which Biome's Vue support doesn't see.
@@ -166,16 +168,6 @@ watch(schedule, (value) => {
 	trackEvent("playground-change-schedule", { schedule: value });
 });
 
-// biome-ignore lint/correctness/noUnusedVariables: scheduleOptions is used in the <template> block below, which Biome's Vue support doesn't see.
-const scheduleOptions = computed(() => [
-	{
-		label: t.value.renderer.schedulePerSection,
-		value: "perSection",
-	},
-	{ label: t.value.renderer.scheduleUpfront, value: "upfront" },
-	{ label: t.value.renderer.schedulePerSession, value: "perSession" },
-]);
-
 // How long a rest written as a range lasts: the other half of what a view
 // follows, shared and remembered the same way.
 const RESTS_STORAGE_KEY = "gram-playground-rests";
@@ -201,33 +193,11 @@ watch(rests, (value) => {
 	trackEvent("playground-change-rests", { rests: value });
 });
 
-// biome-ignore lint/correctness/noUnusedVariables: restsOptions is used in the <template> block below, which Biome's Vue support doesn't see.
-const restsOptions = computed(() =>
-	REST_CHOICES.map((value) => ({
-		label:
-			t.value.renderer[
-				value === "shortest"
-					? "restsShortest"
-					: value === "balanced"
-						? "restsBalanced"
-						: "restsLongest"
-			],
-		value,
-	})),
-);
-
 // The plan: when it is served and when the cook is available. Setting a serving
 // time puts the recipe on the calendar (the Gantt chart reads in real dates,
 // the production sheet appears); clearing it goes back to a plain timeline.
 // Remembered in the browser like the other choices.
 const PLAN_STORAGE_KEY = "gram-playground-plan";
-
-interface PlanSettings {
-	serveAt: string;
-	timeZone: string;
-	from: string;
-	to: string;
-}
 
 function defaultTimeZone(): string {
 	try {
@@ -280,37 +250,77 @@ watch(
 	{ deep: true },
 );
 
-// biome-ignore lint/correctness/noUnusedVariables: timeZones is used in the <template> block below, which Biome's Vue support doesn't see.
-const timeZones: string[] = (() => {
-	try {
-		return (
-			(
-				Intl as unknown as { supportedValuesOf?: (k: string) => string[] }
-			).supportedValuesOf?.("timeZone") ?? []
-		);
-	} catch {
-		return [];
-	}
-})();
-
 // biome-ignore lint/correctness/noUnusedVariables: clearPlan is used in the <template> block below, which Biome's Vue support doesn't see.
 function clearPlan() {
 	plan.value = { ...plan.value, serveAt: "" };
 }
 
-// Only the views that draw a timeline or a mise en place depend on it: the
-// JSON, AST and tree views always carry the task graph, not one timeline.
-// biome-ignore lint/correctness/noUnusedVariables: showScheduleSelector is used in the <template> block below, which Biome's Vue support doesn't see.
-const showScheduleSelector = computed(() =>
-	["preview", "gantt", "markdown", "runsheet"].includes(viewMode.value),
-);
+// Studio Drawer state
+const isDrawerOpen = ref(false);
+const drawerInitialSection = ref<string | undefined>(undefined);
 
-// The plan also puts a time next to each step of the preview and of the
-// Markdown, so its settings are there too.
-// biome-ignore lint/correctness/noUnusedVariables: showPlanControls is used in the <template> block below, which Biome's Vue support doesn't see.
-const showPlanControls = computed(() =>
-	["preview", "gantt", "markdown", "runsheet"].includes(viewMode.value),
-);
+// biome-ignore lint/correctness/noUnusedVariables: openStudio is used in the <template> block below, which Biome's Vue support doesn't see.
+function openStudio(section?: string) {
+	drawerInitialSection.value = section;
+	isDrawerOpen.value = true;
+	trackEvent("playground-open-studio", { section: section || "all" });
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: closeStudio is used in the <template> block below, which Biome's Vue support doesn't see.
+function closeStudio() {
+	isDrawerOpen.value = false;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: isPlanActive is used in the <template> block below, which Biome's Vue support doesn't see.
+const isPlanActive = computed(() => plan.value.serveAt !== "");
+
+// biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
+const activeModifiersCount = computed(() => {
+	let count = 0;
+	if (
+		plan.value.serveAt !== "" ||
+		schedule.value !== "perSection" ||
+		rests.value !== "shortest"
+	) {
+		count++;
+	}
+	if (scaleFactorString.value !== "100" || scaleTargetId.value !== null) {
+		count++;
+	}
+	if (options.value.bakersMath) {
+		count++;
+	}
+	if (
+		!options.value.enableMassStandardization ||
+		options.value.enableYieldCalculation ||
+		!options.value.enableNutritionalEstimation
+	) {
+		count++;
+	}
+	if (stockedUris.value.size > 0) {
+		count++;
+	}
+	return count;
+});
+
+// biome-ignore lint/correctness/noUnusedVariables: resetAllStudioOptions is used in the <template> block below, which Biome's Vue support doesn't see.
+function resetAllStudioOptions() {
+	schedule.value = DEFAULT_MISE_EN_PLACE_MODE;
+	rests.value = DEFAULT_REST_CHOICE;
+	clearPlan();
+	scaleFactorString.value = "100";
+	clearTarget();
+	options.value = {
+		enableMassStandardization: true,
+		enableYieldCalculation: false,
+		enableNutritionalEstimation: true,
+		bakersMath: false,
+		bakersMathOnly: false,
+		bakersReference: undefined,
+	};
+	stockedUris.value = new Set();
+	trackEvent("playground-reset-studio-options");
+}
 
 const options = ref({
 	enableMassStandardization: true,
@@ -938,26 +948,28 @@ onUnmounted(() => {
           />
         </div>
         
-         <details class="options-dropdown">
-          <summary class="playground-options-summary" :title="t.playground.analysisOptions">
-           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 11.9998C2 11.1353 2.1097 10.2964 2.31595 9.49631C3.40622 9.55283 4.48848 9.01015 5.0718 7.99982C5.65467 6.99025 5.58406 5.78271 4.99121 4.86701C6.18354 3.69529 7.66832 2.82022 9.32603 2.36133C9.8222 3.33385 10.8333 3.99982 12 3.99982C13.1667 3.99982 14.1778 3.33385 14.674 2.36133C16.3317 2.82022 17.8165 3.69529 19.0088 4.86701C18.4159 5.78271 18.3453 6.99025 18.9282 7.99982C19.5115 9.01015 20.5938 9.55283 21.6841 9.49631C21.8903 10.2964 22 11.1353 22 11.9998C22 12.8643 21.8903 13.7032 21.6841 14.5033C20.5938 14.4468 19.5115 14.9895 18.9282 15.9998C18.3453 17.0094 18.4159 18.2169 19.0088 19.1326C17.8165 20.3043 16.3317 21.1794 14.674 21.6383C14.1778 20.6658 13.1667 19.9998 12 19.9998C10.8333 19.9998 9.8222 20.6658 9.32603 21.6383C7.66832 21.1794 6.18354 20.3043 4.99121 19.1326C5.58406 18.2169 5.65467 17.0094 5.0718 15.9998C4.48848 14.9895 3.40622 14.4468 2.31595 14.5033C2.1097 13.7032 2 12.8643 2 11.9998ZM6.80385 14.9998C7.43395 16.0912 7.61458 17.3459 7.36818 18.5236C7.77597 18.8138 8.21005 19.0652 8.66489 19.2741C9.56176 18.4712 10.7392 17.9998 12 17.9998C13.2608 17.9998 14.4382 18.4712 15.3351 19.2741C15.7899 19.0652 16.224 18.8138 16.6318 18.5236C16.3854 17.3459 16.566 16.0912 17.1962 14.9998C17.8262 13.9085 18.8225 13.1248 19.9655 12.7493C19.9884 12.5015 20 12.2516 20 11.9998C20 11.7481 19.9884 11.4981 19.9655 11.2504C18.8225 10.8749 17.8262 10.0912 17.1962 8.99982C16.566 7.90845 16.3854 6.65378 16.6318 5.47605C16.224 5.18588 15.7899 4.93447 15.3351 4.72552C14.4382 5.52844 13.2608 5.99982 12 5.99982C10.7392 5.99982 9.56176 5.52844 8.66489 4.72552C8.21005 4.93447 7.77597 5.18588 7.36818 5.47605C7.61458 6.65378 7.43395 7.90845 6.80385 8.99982C6.17376 10.0912 5.17754 10.8749 4.03451 11.2504C4.01157 11.4981 4 11.7481 4 11.9998C4 12.2516 4.01157 12.5015 4.03451 12.7493C5.17754 13.1248 6.17376 13.9085 6.80385 14.9998ZM12 14.9998C10.3431 14.9998 9 13.6567 9 11.9998C9 10.343 10.3431 8.99982 12 8.99982C13.6569 8.99982 15 10.343 15 11.9998C15 13.6567 13.6569 14.9998 12 14.9998ZM12 12.9998C12.5523 12.9998 13 12.5521 13 11.9998C13 11.4475 12.5523 10.9998 12 10.9998C11.4477 10.9998 11 11.4475 11 11.9998C11 12.5521 11.4477 12.9998 12 12.9998Z"></path></svg>
-          </summary>
-          <div class="playground-options-dropdown-content">
-            <GramOptions
-              v-model:options="options"
-              :shopping-list="jsonData?.shopping_list || []"
-              :available-imports="availableImports"
-              :stocked-uris="stockedUris"
-              v-model:scale-factor-string="scaleFactorString"
-              v-model:scale-target-id="scaleTargetId"
-              v-model:scale-target-qty="scaleTargetQty"
-              v-model:scale-target-unit="scaleTargetUnit"
-              @clear-target="clearTarget"
-              @scale-apply="handleScaleApply"
-              @toggle-stock="toggleStock"
-            />
-          </div>
-        </details>
+        <button
+          type="button"
+          class="toolbar-studio-btn"
+          :aria-expanded="isDrawerOpen"
+          :aria-label="t.playground.studioTitle"
+          :title="t.playground.studioTitle"
+          @click="openStudio()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+          <span class="toolbar-studio-label">{{ t.playground.studioTitle }}</span>
+          <span v-if="activeModifiersCount > 0" class="active-badge">{{ activeModifiersCount }}</span>
+        </button>
         
         <button class="toolbar-icon-btn" @click="toggleFullscreen" :title="isFullscreen ? (t.playground.exitFullscreen || 'Exit Fullscreen') : (t.playground.fullscreen || 'Fullscreen')">
           <svg v-if="!isFullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M21 3H13.5L16.5429 6.04289L13.2929 9.29289L14.7071 10.7071L17.9571 7.45711L21 10.5V3ZM3 21H10.5L7.45711 17.9571L10.7071 14.7071L9.29289 13.2929L6.04289 16.5429L3 13.5V21Z"></path></svg>
@@ -1064,52 +1076,20 @@ onUnmounted(() => {
                       class="header-view-selector"
                     />
                   </div>
-                  <div v-if="showScheduleSelector" class="header-view-wrapper">
-                    <span class="toolbar-label">{{ t.renderer.scheduleLabel }}</span>
-                    <PlaygroundDropdown
-                      v-model="schedule"
-                      :options="scheduleOptions"
-                      :aria-label="t.renderer.scheduleLabel"
-                      class="header-view-selector"
-                    />
-                  </div>
-                  <div v-if="showScheduleSelector" class="header-view-wrapper">
-                    <span class="toolbar-label">{{ t.renderer.restsLabel }}</span>
-                    <PlaygroundDropdown
-                      v-model="rests"
-                      :options="restsOptions"
-                      :aria-label="t.renderer.restsLabel"
-                      class="header-view-selector"
-                    />
-                  </div>
-                  <details v-if="showPlanControls" class="plan-controls">
-                    <summary :class="{ 'is-active': plan.serveAt !== '' }">{{ t.playground.views.planSummary }}</summary>
-                    <div class="plan-popover">
-                      <label>
-                        <span>{{ t.playground.views.planServeAt }}</span>
-                        <input v-model="plan.serveAt" type="datetime-local" />
-                      </label>
-                      <label>
-                        <span>{{ t.playground.views.planTimeZone }}</span>
-                        <input v-model="plan.timeZone" type="text" list="plan-time-zones" spellcheck="false" />
-                        <datalist id="plan-time-zones">
-                          <option v-for="zone in timeZones" :key="zone" :value="zone"></option>
-                        </datalist>
-                      </label>
-                      <label class="plan-range">
-                        <span>{{ t.playground.views.planAvailableFrom }}</span>
-                        <input v-model="plan.from" type="time" />
-                        <span>{{ t.playground.views.planAvailableTo }}</span>
-                        <input v-model="plan.to" type="time" />
-                      </label>
-                      <p v-if="planError" class="plan-error" role="alert">
-                        {{ t.playground.views.planInvalid.replace('{message}', planError) }}
-                      </p>
-                      <button type="button" class="plan-clear" :disabled="plan.serveAt === ''" @click="clearPlan">
-                        {{ t.playground.views.planClear }}
-                      </button>
-                    </div>
-                  </details>
+                  <button
+                    v-if="['gantt', 'runsheet', 'preview'].includes(viewMode)"
+                    type="button"
+                    class="header-quick-action"
+                    :title="t.playground.openScheduleSettings"
+                    @click="openStudio('schedule')"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>{{ t.playground.scheduleButton }}</span>
+                    <span v-if="isPlanActive" class="status-indicator"></span>
+                  </button>
                 </div>
               </template>
             </GramOutput>
@@ -1125,6 +1105,38 @@ onUnmounted(() => {
         @jump="handleJump"
       />
     </div>
+
+    <!-- Recipe Studio Drawer -->
+    <GramDrawer
+      :is-open="isDrawerOpen"
+      :title="t.playground.studioTitle"
+      :active-count="activeModifiersCount"
+      @close="closeStudio"
+      @reset="resetAllStudioOptions"
+    >
+      <GramOptions
+        v-model:options="options"
+        :shopping-list="jsonData?.shopping_list || []"
+        :available-imports="availableImports"
+        :stocked-uris="stockedUris"
+        v-model:scale-factor-string="scaleFactorString"
+        v-model:scale-target-id="scaleTargetId"
+        v-model:scale-target-qty="scaleTargetQty"
+        v-model:scale-target-unit="scaleTargetUnit"
+        :schedule="schedule"
+        :rests="rests"
+        :plan="plan"
+        :plan-error="planError"
+        :initial-section="drawerInitialSection"
+        @update:schedule="(val) => (schedule = val)"
+        @update:rests="(val) => (rests = val)"
+        @update:plan="(val) => (plan = val)"
+        @clear-plan="clearPlan"
+        @clear-target="clearTarget"
+        @scale-apply="handleScaleApply"
+        @toggle-stock="toggleStock"
+      />
+    </GramDrawer>
   </div>
 </template>
 
@@ -1151,83 +1163,74 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-.plan-controls {
-  position: relative;
-}
-
-.plan-controls summary {
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--sl-color-gray-3);
-  padding: 4px 8px;
-  border: 1px solid var(--sl-color-border);
-  list-style: none;
-}
-
-.plan-controls summary.is-active {
-  color: var(--sl-color-white);
-  border-color: var(--sl-color-accent);
-}
-
-.plan-popover {
-  position: absolute;
-  right: 0;
-  z-index: 20;
-  margin-top: 4px;
-  min-width: 260px;
+.toolbar-studio-btn {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
-  padding: 12px;
-  background: var(--sl-color-bg);
+  height: 40px;
+  padding: 0 12px;
+  background-color: var(--sl-color-bg);
   border: 1px solid var(--sl-color-border);
+  color: var(--sl-color-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.plan-popover label {
+.toolbar-studio-btn:hover {
+  border-color: var(--sl-color-gray-3);
+  background-color: var(--sl-color-gray-7);
+}
+
+.toolbar-studio-btn[aria-expanded="true"] {
+  border-color: var(--sl-color-accent);
+  background-color: var(--sl-color-gray-7);
+}
+
+.toolbar-studio-label {
+  display: inline;
+}
+
+.active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 0;
+  background-color: var(--sl-color-accent);
+  color: #1a1613;
+  line-height: 1;
+}
+
+.header-quick-action {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--sl-color-gray-2);
-}
-
-.plan-popover .plan-range {
-  flex-direction: row;
   align-items: center;
   gap: 6px;
-}
-
-.plan-popover input {
-  font: inherit;
-  color: var(--sl-color-white);
-  background: var(--sl-color-bg-nav);
+  height: 28px;
+  padding: 0 10px;
+  background-color: transparent;
   border: 1px solid var(--sl-color-border);
-  padding: 4px 6px;
-}
-
-.plan-error {
-  margin: 0;
-  font-size: 12px;
-  color: var(--sl-color-red);
-}
-
-.plan-clear {
-  align-self: flex-start;
-  font: inherit;
-  font-size: 12px;
+  color: var(--sl-color-text);
   cursor: pointer;
-  color: var(--sl-color-gray-2);
-  background: transparent;
-  border: 1px solid var(--sl-color-border);
-  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.plan-clear:disabled {
-  opacity: 0.5;
-  cursor: default;
+.header-quick-action:hover {
+  border-color: var(--sl-color-gray-3);
+  background-color: var(--sl-color-gray-6);
+}
+
+.header-quick-action .status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--sl-color-accent);
 }
 
 .playground-toolbar {
@@ -1314,34 +1317,6 @@ onUnmounted(() => {
   justify-content: flex-end;
 }
 
-.options-dropdown {
-  position: relative;
-}
-
-.playground-options-summary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--sl-color-border);
-  background-color: var(--sl-color-bg);
-  cursor: pointer;
-  list-style: none; 
-  color: var(--sl-color-gray-3); 
-  padding: 8px;
-  box-sizing: border-box;
-}
-
-.playground-options-summary::-webkit-details-marker {
-  display: none;
-}
-
-.playground-options-summary:hover {
-  border-color: var(--sl-color-gray-3);
-  background-color: var(--sl-color-gray-7);
-}
-
 .toolbar-icon-btn {
   display: flex;
   align-items: center;
@@ -1358,17 +1333,6 @@ onUnmounted(() => {
   border-color: var(--sl-color-gray-3);
   background-color: var(--sl-color-gray-7);
   color: var(--sl-color-text);
-}
-
-.playground-options-dropdown-content {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 50;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  box-sizing: border-box;
-  border: 1px solid var(--sl-color-border);
 }
 
 .playground-main-frame {
@@ -1597,9 +1561,15 @@ onUnmounted(() => {
     width: 100%;
   }
 
-  .toolbar-right .options-dropdown,
+  .toolbar-right .toolbar-studio-btn,
   .toolbar-right .toolbar-icon-btn {
     flex-shrink: 0;
+  }
+
+  @media (max-width: 600px) {
+    .toolbar-studio-label {
+      display: none;
+    }
   }
 
   .playground-workspace {
