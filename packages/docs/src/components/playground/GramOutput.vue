@@ -206,13 +206,18 @@ function handlePreviewClick(e: MouseEvent) {
 <template>
   <div class="gram-output">
     <div class="output-header">
-      <slot name="view-selector">
-        <span class="output-title">{{ viewMode.replace('-', ' ') }}</span>
-      </slot>
-      <button v-if="!hasBlocking && ['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
-        <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
-      </button>
+      <div class="output-header-left">
+        <slot name="view-selector">
+          <span class="output-title">{{ viewMode.replace('-', ' ') }}</span>
+        </slot>
+      </div>
+      <div class="output-header-actions">
+        <slot name="actions"></slot>
+        <button v-if="!hasBlocking && ['json', 'ast', 'markdown'].includes(viewMode)" class="copy-btn" @click="copyOutput" :title="t.playground.output.copy">
+          <svg v-if="!copied" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--sl-color-green)"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </button>
+      </div>
     </div>
     <div class="output-container">
       <!-- Unified Error State (Blocking Errors) -->
@@ -272,21 +277,36 @@ function handlePreviewClick(e: MouseEvent) {
 }
 
 .output-header {
-  padding-inline:12px;
+  padding-inline: 12px;
   background-color: var(--sl-color-gray-7);
   border-bottom: 1px solid var(--sl-color-border);
   height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.output-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.output-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 767px) {
-  /* Room for a second selector line instead of clipping it. */
   .output-header {
-    height: auto;
-    min-height: 42px;
-    padding-block: 4px;
+    height: 42px;
+    padding-inline: 8px;
     gap: 8px;
   }
 }
