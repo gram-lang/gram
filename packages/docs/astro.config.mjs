@@ -8,6 +8,7 @@ import vue from '@astrojs/vue';
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkMermaid } from './src/plugins/remark-mermaid.ts';
+import { remarkFrenchTypography } from './src/plugins/remark-french-typography.ts';
 import gramGrammar from '@gram-lang/parser/textmate';
 import { UMAMI_WEBSITE_ID, UMAMI_SCRIPT_SRC, FR_REDIRECT_SCRIPT, GLOBAL_TRACKING_SCRIPT } from './src/lib/head-scripts.ts';
 
@@ -21,7 +22,7 @@ export default defineConfig({
     enabled: false
   },
   markdown: {
-    processor: unified({ remarkPlugins: [remarkMermaid] }),
+    processor: unified({ remarkPlugins: [remarkMermaid, remarkFrenchTypography] }),
     shikiConfig: {
       langs: [{ ...gramGrammar, name: 'gram' }]
     }
