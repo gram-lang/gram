@@ -4,7 +4,6 @@ import type {
 	ScheduleBlock,
 	ScheduleSession,
 } from "@gram-lang/kitchen";
-import type { ProjectedPlan } from "@gram-lang/scheduler";
 import type { RenderContext, RenderableCompilationResult } from "../types";
 import {
 	type TimelineChoice,
@@ -16,7 +15,6 @@ import {
 import { formatDuration, joinStepTokens } from "../utils";
 import { formatElement } from "../formatters/element";
 import type {
-	GanttCalendar,
 	GanttGap,
 	GanttLegendItem,
 	GanttTimeTick,
@@ -59,6 +57,7 @@ export function resolveGapOptions(options: GapOptions = {}): {
 	};
 }
 
+/** @deprecated Since 1.4.0, will be removed in 2.0.0. Build a planning view from the data of `runSheet()` (`@gram-lang/scheduler`), or use `runSheetToHTML`. (Ref: renderer-gantt) */
 export function formatTime(minutes: number): string {
 	const h = Math.floor(minutes / 60);
 	const m = Math.floor(minutes % 60);
@@ -68,6 +67,7 @@ export function formatTime(minutes: number): string {
 	return `${m}m`;
 }
 
+/** @deprecated Since 1.4.0, will be removed in 2.0.0. Build a planning view from the data of `runSheet()` (`@gram-lang/scheduler`), or use `runSheetToHTML`. (Ref: renderer-gantt) */
 export function formatAxisTime(
 	realTime: number,
 	opts: { timeMode: GanttTimeMode; targetTime: string; maxRealTime: number },
@@ -106,54 +106,20 @@ export function formatAxisTime(
 	return formatTime(realTime);
 }
 
-/** What decides which timeline a chart draws: a choice laid out from the graph, or a plan placed on the calendar. */
-export interface GanttTimelineOptions extends TimelineChoice {
-	projection?: ProjectedPlan;
-}
+/** What decides which timeline a chart draws: where the mise en place goes, and how long the rests last. */
+export type GanttTimelineOptions = TimelineChoice;
 
-/** The blocks and sessions to draw, and where they sit on the calendar, for a projected chart. */
+/** The blocks and sessions to draw. */
 interface Timeline {
 	blocks: ScheduleBlock[];
 	sessions: ScheduleSession[];
-	calendar?: Omit<GanttCalendar, "unavailable">;
 }
 
-const MS_PER_MINUTE = 60_000;
-
-/**
- * The timeline to draw. A projection brings its own blocks (a stretched rest is
- * longer than the layout's), turned back into minutes from the first of them,
- * so the rest of the chart works the same on both.
- */
+/** The timeline to draw: the choice of the options, laid out from the recipe's task graph. */
 export function resolveTimeline(
 	data: RenderableCompilationResult,
 	options: GanttTimelineOptions,
 ): Timeline | undefined {
-	const recipe = options.projection?.recipes[0];
-	if (options.projection && recipe) {
-		const instants = recipe.blocks.map(
-			(b) => Date.parse(b.start) / MS_PER_MINUTE,
-		);
-		const origin = instants.length > 0 ? Math.min(...instants) : 0;
-		const minutes = (iso: string) => Date.parse(iso) / MS_PER_MINUTE - origin;
-		return {
-			blocks: recipe.blocks.map((b) => {
-				const { start, end, startLocal: _a, endLocal: _b, ...rest } = b;
-				return {
-					...rest,
-					start: minutes(start),
-					end: minutes(end),
-				} as ScheduleBlock;
-			}),
-			sessions: recipe.sessions.map((s) => ({
-				day: s.day,
-				start: minutes(s.start),
-				end: minutes(s.end),
-				sections: s.sections,
-			})),
-			calendar: { origin, timeZone: options.projection.timeZone },
-		};
-	}
 	const schedule = timelineOf(data, options);
 	return schedule && { blocks: schedule.blocks, sessions: schedule.sessions };
 }
@@ -327,14 +293,6 @@ export function buildTracks(
 	const t = getDictionary(opts.lang);
 	const { gapThreshold, compressedGapSize } = resolveGapOptions(opts);
 	const gaps = computeGaps(data, gapThreshold, opts);
-	const calendar = timeline.calendar;
-	const adjustments = new Map(
-		(opts.projection?.adjustments ?? []).map((a) => [a.task, a]),
-	);
-	const clock = (minutes: number) =>
-		calendar
-			? formatWallClock(calendar.origin + minutes, calendar.timeZone, opts.lang)
-			: undefined;
 	const registry = data.registry;
 
 	const cookTrack: GanttTrack = {
@@ -421,29 +379,14 @@ export function buildTracks(
 				type: "passive",
 			});
 		}
-		const adjustment = adjustments.get(b.task);
 		passiveTracksMap.get(trackName)?.blocks.push({
 			id: `task_${b.start}_${b.track}`,
 			start: b.start,
 			end: b.end,
 			duration,
 			label: formatTime(duration),
-			tooltip: adjustment
-				? `${trackName}. ${(
-						t.playground?.views?.gantt_rest_adjusted ||
-						"Wait changed from {from} to {to} to stay out of unavailable hours"
-					)
-						.replace("{from}", formatTime(adjustment.from))
-						.replace("{to}", formatTime(adjustment.to))}`
-				: trackName,
+			tooltip: trackName,
 			temperature,
-			...(adjustment && {
-				adjusted: { from: adjustment.from, to: adjustment.to },
-			}),
-			...(calendar && {
-				startLabel: clock(b.start),
-				endLabel: clock(b.end),
-			}),
 		});
 		maxRealTime = Math.max(maxRealTime, b.end);
 	}
@@ -458,50 +401,7 @@ export function buildTracks(
 		totalVirtualTime,
 		maxRealTime,
 		gaps,
-		...(calendar && {
-			calendar: {
-				...calendar,
-				unavailable: unavailableOn(
-					opts.projection?.unavailable ?? [],
-					calendar.origin,
-					maxRealTime,
-				),
-			},
-		}),
 	};
-}
-
-/** The wall-clock reading of an instant, "Sat 21:40", in a zone, for the language. */
-export function formatWallClock(
-	utcMinutes: number,
-	timeZone: string,
-	lang?: string,
-): string {
-	return new Intl.DateTimeFormat(lang || "en", {
-		timeZone,
-		weekday: "short",
-		hour: "2-digit",
-		minute: "2-digit",
-		hourCycle: "h23",
-	}).format(new Date(Math.round(utcMinutes) * MS_PER_MINUTE));
-}
-
-/** The hours the cook is not available, as axis minutes, clipped to the chart. */
-function unavailableOn(
-	intervals: { start: string; end: string }[],
-	origin: number,
-	maxRealTime: number,
-): GanttGap[] {
-	const out: GanttGap[] = [];
-	for (const i of intervals) {
-		const start = Math.max(0, Date.parse(i.start) / MS_PER_MINUTE - origin);
-		const end = Math.min(
-			maxRealTime,
-			Date.parse(i.end) / MS_PER_MINUTE - origin,
-		);
-		if (end > start) out.push({ start, end });
-	}
-	return out;
 }
 
 /** Axis tick calculation. Ported 1:1 from GramGantt.vue's `timeTicks` computed. */

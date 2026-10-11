@@ -45,6 +45,8 @@ function getMaxRealTime(container: HTMLElement): number {
  * event delegation on `container`, so it survives `container.innerHTML`
  * being replaced by a fresh server/render push — call `setOptions` again
  * afterwards to reassert the user's last choices onto the new DOM.
+ *
+ * @deprecated Since 1.4.0, will be removed in 2.0.0. Build a planning view from the data of `runSheet()` (`@gram-lang/scheduler`), or use `runSheetToHTML`. (Ref: renderer-gantt)
  */
 export function attachGanttInteractivity(
 	container: HTMLElement,
@@ -86,9 +88,9 @@ export function attachGanttInteractivity(
 
 		return `${header}
       <div class="tooltip-time">
-        <span class="time-badge">${escapeHtml(block.dataset.startLabel ?? formatAxisTime(start, axisOpts))}</span>
+        <span class="time-badge">${formatAxisTime(start, axisOpts)}</span>
         <span class="time-arrow">→</span>
-        <span class="time-badge">${escapeHtml(block.dataset.endLabel ?? formatAxisTime(end, axisOpts))}</span>
+        <span class="time-badge">${formatAxisTime(end, axisOpts)}</span>
         <span class="time-duration">(${duration}m)</span>
       </div>
       ${body}`;
@@ -147,8 +149,6 @@ export function attachGanttInteractivity(
 		};
 
 		container.querySelectorAll<HTMLElement>(".axis-tick").forEach((tick) => {
-			// A projected chart reads in real dates and times: nothing to recompute.
-			if (tick.dataset.fixedLabel) return;
 			const label = tick.querySelector<HTMLElement>(".tick-label");
 			const realTime = Number(tick.dataset.realTime ?? 0);
 			if (label) label.textContent = formatAxisTime(realTime, axisOpts);

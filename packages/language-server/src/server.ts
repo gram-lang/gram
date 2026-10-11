@@ -373,6 +373,8 @@ function renderViews(uri: string, state: DocumentState): void {
 			const ganttHtml = toGanttHTML(state.compilation, {
 				miseEnPlace,
 				rests,
+				// Rendered for clients that read it, not by choice of this server.
+				quiet: true,
 			});
 			connection.sendNotification("gram/ganttUpdated", {
 				uri,

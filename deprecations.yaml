@@ -104,6 +104,30 @@ deprecations:
     files:
       - "packages/kitchen/src/metrics.ts"
 
+  - id: renderer-gantt
+    layer: renderer
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The Gantt chart (toGanttHTML, attachGanttInteractivity, formatTime, formatAxisTime, the Gantt* types and gantt.css) is replaced by the work plan: no surface of Gram draws it any more"
+    replacement: "runSheetToHTML / runSheetToText / runSheetToMarkdown on the RunSheet of runSheet() (@gram-lang/scheduler), or a view of your own built from that data (how-to/build-custom-ui)"
+    files:
+      - "packages/renderer/src/gantt/render.ts"
+      - "packages/renderer/src/gantt/interactivity.ts"
+      - "packages/renderer/src/gantt/layout.ts"
+      - "packages/renderer/src/gantt/types.ts"
+
+  - id: i18n-gantt-keys
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The gantt_* strings of playground.views, used only by the Gantt chart"
+    replacement: "None: the work plan uses the workPlan* strings of the renderer dictionary"
+    files:
+      - "packages/i18n/src/locales/en.ts"
+      - "packages/i18n/src/locales/fr.ts"
+
   - id: lsp-gantt-notification
     layer: api
     deprecatedIn: "1.4.0"

@@ -210,6 +210,7 @@ export const en = {
 			planAvailableTo: "to",
 			planClear: "Clear the plan",
 			planInvalid: "This plan can't be made: {message}",
+			// @remove-in: 2.0.0 [i18n-gantt-keys]
 			gantt_active: "Active Task",
 			gantt_passive: "Background Task",
 			gantt_compact: "Compact View",
@@ -227,9 +228,6 @@ export const en = {
 			gantt_mode_reverse: "Countdown (T-)",
 			gantt_mode_target: "Target Time",
 			gantt_target_time_label: "Serve at:",
-			gantt_unavailable: "Not available",
-			gantt_rest_adjusted:
-				"Wait changed from {from} to {to} to stay out of unavailable hours",
 		},
 		options: {
 			scaleTitle: "Modify Quantities",

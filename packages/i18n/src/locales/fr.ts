@@ -203,6 +203,7 @@ export const fr: GramLocale = {
 			planAvailableTo: "à",
 			planClear: "Effacer le plan",
 			planInvalid: "Ce plan est impossible à faire : {message}",
+			// @remove-in: 2.0.0 [i18n-gantt-keys]
 			gantt_active: "Tâche active",
 			gantt_passive: "Tâche de fond",
 			gantt_compact: "Vue compacte",
@@ -220,9 +221,6 @@ export const fr: GramLocale = {
 			gantt_mode_reverse: "Compte à rebours (T-)",
 			gantt_mode_target: "Heure cible",
 			gantt_target_time_label: "Servir à :",
-			gantt_unavailable: "Indisponible",
-			gantt_rest_adjusted:
-				"Attente modifiée de {from} à {to} pour éviter les heures d'indisponibilité",
 		},
 		options: {
 			scaleTitle: "Modifier les quantités",
