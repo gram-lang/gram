@@ -110,6 +110,18 @@ export function passageKit(
 			const id = String(usage.id ?? "");
 			if (usage.type === "reference") {
 				const maker = makers.get(normalize(id));
+				const entry = registry?.ingredients?.[id];
+				if (maker === undefined && entry?.is_module_synthetic) {
+					// A base kept in stock: nothing makes it in this recipe.
+					if (preparedSeen.has(id)) continue;
+					preparedSeen.add(id);
+					prepared.push({
+						kind: "prepared",
+						name: String(usage.name ?? entry.name ?? id),
+						note: t.workPlanInStock,
+					});
+					continue;
+				}
 				if (maker === undefined || here.has(maker)) continue;
 				if (preparedSeen.has(id)) continue;
 				preparedSeen.add(id);

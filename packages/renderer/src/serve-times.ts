@@ -66,7 +66,15 @@ function candidateLine(
 	const reason =
 		past && c.startsAt
 			? fill(t.workPlanFindStart, { start: startOf(c.startsAt, lang) })
-			: describeProblems(c.reasons, data, options, options.timeZone).join(" ");
+			: describeProblems(c.reasons, data, options, options.timeZone).reduce(
+					(text, line, i, all) =>
+						i > 0
+							? text
+							: all.length > 1
+								? `${line} (+${all.length - 1})`
+								: line,
+					"",
+				);
 	return fill(t.workPlanFindRejected, { when, reason });
 }
 

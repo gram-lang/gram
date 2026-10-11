@@ -238,6 +238,24 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 		);
 	});
 
+	it("lists a stocked base used as a preparation, in stock", () => {
+		const stocked = structuredClone(entremets);
+		stocked.registry.ingredients.glaze = {
+			id: "glaze",
+			name: "Glaze",
+			is_module_synthetic: true,
+		};
+		delete (stocked.registry.ingredients.glaze as { is_intermediate?: boolean })
+			.is_intermediate;
+		// The section that made it is gone: the glaze is only used.
+		stocked.sections[2]!.intermediate_preparation = undefined;
+		const model = describeRunSheet(entremetsSheet, stocked);
+		const texts = model.days
+			.flatMap((d) => d.passages)
+			.flatMap((p) => p.kit.map((k) => k.text));
+		expect(texts).toContain("glaze, in stock");
+	});
+
 	it("marks an ingredient that stands for a stocked import", () => {
 		expect(model.days[1]!.passages[0]!.kit.map((k) => k.text)).toContain(
 			"cream 250 g, in stock",

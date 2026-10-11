@@ -387,7 +387,7 @@ export function describeRunSheet(
 					reference: prog.origin ? `${prog.origin}, ${range}` : range,
 					steps: prog.steps
 						.map((st) =>
-							[st.action, ...st.temperatures, ...st.timers]
+							[st.action, ...st.temperatures, st.timers.join(" · ")]
 								.filter(Boolean)
 								.join(" "),
 						)
