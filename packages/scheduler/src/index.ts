@@ -40,11 +40,13 @@ export {
 } from "./mode";
 export { project } from "./project";
 export { PASSAGE_GAP_MINUTES, runSheet } from "./runsheet";
+export { WINDOW_MIN_MINUTES, passageWindows } from "./windows";
 export type {
 	RunSheet,
 	RunSheetAdjustment,
 	RunSheetDay,
 	RunSheetEntry,
+	RunSheetFixedBy,
 	RunSheetOptions,
 	RunSheetPassage,
 	RunSheetThread,
@@ -62,3 +64,16 @@ export type {
 } from "./projection";
 export { WEEKDAYS, type Weekday } from "./time";
 export { parseInstant, parseLocalIso, toLocalIso, toUtcIso } from "./time";
+export {
+	DEFAULT_MEAL_TIMES,
+	EARLIEST_SERVE_HORIZON_DAYS,
+	earliestServe,
+	findServeTimes,
+	tryServeAt,
+} from "./serve";
+export type {
+	EarliestServe,
+	FindServeOptions,
+	ServeCandidate,
+	ServeSearch,
+} from "./serve";
