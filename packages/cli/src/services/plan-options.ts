@@ -1,5 +1,5 @@
-import type { Availability, ProjectedPlan } from "@gram-lang/scheduler";
-import { project } from "@gram-lang/scheduler";
+import type { Availability, RunSheet } from "@gram-lang/scheduler";
+import { project, runSheet } from "@gram-lang/scheduler";
 import type {
 	CompilationResult,
 	MiseEnPlaceMode,
@@ -15,8 +15,8 @@ import {
 
 /**
  * The flags that put a recipe on the calendar, shared by `gram plan` and by the
- * commands that show a recipe (`view`, `export`, `print`), where they add the
- * time of each step to the recipe. Spread them into a command's `args`.
+ * commands that write a recipe (`export`, `print`), where they let `--with-sheet`
+ * add the work plan after it. Spread them into a command's `args`.
  */
 export const PLAN_FLAG_ARGS = {
 	serve: {
@@ -81,13 +81,19 @@ export function resolvePlanContext(
 	};
 }
 
-/** Places a compiled recipe on the calendar, ending when it is served. */
-export function placeOnCalendar(
+/** The work plan of a compiled recipe, ending when it is served. */
+export function workPlanFor(
 	compiled: CompilationResult,
 	context: PlanContext,
 	choice: { miseEnPlace?: MiseEnPlaceMode; rests?: RestChoice } = {},
-): ProjectedPlan {
-	return project(
+): RunSheet {
+	const projection = {
+		serveAt: context.serveAt,
+		timeZone: context.timeZone,
+		availability: context.availability,
+		now: context.now,
+	};
+	const plan = project(
 		[
 			{
 				graph: compiled.tasks,
@@ -95,11 +101,7 @@ export function placeOnCalendar(
 				options: choice,
 			},
 		],
-		{
-			serveAt: context.serveAt,
-			timeZone: context.timeZone,
-			availability: context.availability,
-			now: context.now,
-		},
+		projection,
 	);
+	return runSheet(plan, { graph: compiled.tasks, context: projection });
 }

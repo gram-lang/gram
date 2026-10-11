@@ -286,7 +286,7 @@ describe("the timezone setting", () => {
 	});
 });
 
-describe("a recipe on the calendar in view, export and print", () => {
+describe("the work plan with the recipe, in export and print", () => {
 	const SERVE = [
 		"--serve",
 		"2026-10-11 13:00",
@@ -298,40 +298,20 @@ describe("a recipe on the calendar in view, export and print", () => {
 		"2026-10-01T09:00:00Z",
 	];
 
-	it("gram view adds a time to every step, the day, the rests and the plan's total", () => {
-		const { code, out } = gram("view", "bread.gram", ...SERVE, "--no-pager");
-		expect(code).toBe(0);
-		expect(out).toContain("Served Sunday, October 11 at 13:00");
-		expect(out).toContain("Saturday, October 10 · D-1");
-		expect(out).toMatch(/\[Mix\].*— around 21:40/);
-		expect(out).toContain("Rise: 14h 30m, until around Sun 12:30");
-		expect(out).toContain("Wait stretched from 8h to 14h 30m");
-		// The total is the plan's (21:38 to 13:00), not the default timeline's.
-		expect(out).toContain("Total: 15h 22m");
-	});
-
-	it("gram view is the recipe as it was without --serve", () => {
+	it("gram view reads the recipe at any time: no hour, no day, no plan", () => {
 		const { out } = gram("view", "bread.gram", "--no-pager");
 		expect(out).not.toContain("around");
 		expect(out).not.toContain("Served");
+		expect(out).not.toContain("Work plan");
 	});
 
-	it("gram export writes the same words in Markdown, and the sheet after it with --with-sheet", async () => {
+	it("gram export writes the recipe alone, or the work plan after it with --with-sheet", async () => {
 		const path = join(dir, "annotated.md");
-		const a = gram(
-			"export",
-			"bread.gram",
-			"--format",
-			"md",
-			"-o",
-			path,
-			...SERVE,
-		);
+		const a = gram("export", "bread.gram", "--format", "md", "-o", path);
 		expect(a.code).toBe(0);
-		const md = await readFile(path, "utf-8");
-		expect(md).toContain("> **Served Sunday, October 11 at 13:00**");
-		expect(md).toMatch(/knead.*— \*around 21:40\*/);
-		expect(md).not.toContain("Work plan");
+		const alone = await readFile(path, "utf-8");
+		expect(alone).not.toContain("Work plan");
+		expect(alone).not.toContain("around");
 
 		const b = gram(
 			"export",
@@ -344,9 +324,11 @@ describe("a recipe on the calendar in view, export and print", () => {
 			...SERVE,
 		);
 		expect(b.code).toBe(0);
-		expect(await readFile(path, "utf-8")).toContain(
-			"## Work plan — Country bread",
-		);
+		const withSheet = await readFile(path, "utf-8");
+		expect(withSheet).toContain("## Work plan — Country bread");
+		expect(withSheet).toContain("- [ ] flour 500 g");
+		// The recipe part is the same as without the plan.
+		expect(withSheet.startsWith(alone.trimEnd())).toBe(true);
 	});
 
 	it("gram export writes the print document with the plan's styles", async () => {
@@ -363,25 +345,31 @@ describe("a recipe on the calendar in view, export and print", () => {
 		);
 		expect(code).toBe(0);
 		const html = await readFile(path, "utf-8");
-		expect(html).toContain('<aside class="plan-summary">');
 		expect(html).toContain('<section class="gram-run-sheet">');
-		expect(html).toContain(".plan-summary");
+		expect(html).toContain(".work-plan-day");
 	});
 
 	it("gram print writes it too (without opening a browser)", async () => {
-		const { code, out } = gram("print", "bread.gram", "--no-open", ...SERVE);
+		const { code, out } = gram(
+			"print",
+			"bread.gram",
+			"--no-open",
+			"--with-sheet",
+			...SERVE,
+		);
 		expect(code).toBe(0);
 		const path = /(\/\S*gram_print_\d+\.html)/.exec(out)![1]!;
 		const html = await readFile(path, "utf-8");
-		expect(html).toContain('<span class="step-when">around 21:40</span>');
+		expect(html).toContain("Work plan — Country bread");
 	});
 
-	it("refuses a plan flag without --serve, and --with-sheet without it", () => {
+	it("refuses the plan flags without --with-sheet, and --with-sheet without --serve", () => {
 		for (const args of [
-			["view", "bread.gram", "--tz", "Europe/Paris"],
 			["export", "bread.gram", "--format", "md", "--available", "08:00-22:00"],
+			["export", "bread.gram", "--format", "md", "--serve", "2026-10-11 13:00"],
 			["export", "bread.gram", "--format", "md", "--with-sheet"],
 			["print", "bread.gram", "--no-open", "--with-sheet"],
+			["print", "bread.gram", "--no-open", "--serve", "2026-10-11 13:00"],
 		]) {
 			expect(gram(...args).code).toBe(1);
 		}
@@ -400,20 +388,22 @@ describe("a recipe on the calendar in view, export and print", () => {
 				[
 					process.execPath,
 					ENTRY,
-					"view",
+					"export",
 					"bread.gram",
+					"--format",
+					"md",
+					"-o",
+					join(project, "out.md"),
+					"--with-sheet",
 					"--serve",
 					"2026-10-11 13:00",
-					"--no-pager",
 				],
 				{ cwd: project },
 			);
-			const out = new TextDecoder()
-				.decode(run.stdout)
-				.replace(/\x1b\[[0-9;]*m/g, "");
-			// Tokyo, one hour on from the serving time's wall clock: served 13:00 there.
-			expect(out).toContain("Served Sunday, October 11 at 13:00");
-			expect(out).toMatch(/around 0[0-9]:|around 1[0-2]:/);
+			expect(run.exitCode).toBe(0);
+			const md = await readFile(join(project, "out.md"), "utf-8");
+			// Served 13:00 on the wall clock of Tokyo, whatever this machine's zone.
+			expect(md).toContain("For Sunday, October 11 at 13:00");
 		} finally {
 			await rm(project, { recursive: true, force: true });
 		}

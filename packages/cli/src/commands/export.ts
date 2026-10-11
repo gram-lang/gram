@@ -133,6 +133,12 @@ export default defineCommand({
 			log.error("--with-sheet needs --serve (when it is served).");
 			process.exit(ExitCode.Error);
 		}
+		if (plan && !args["with-sheet"]) {
+			log.error(
+				"--serve only applies with --with-sheet: the recipe itself reads the same at any time.",
+			);
+			process.exit(ExitCode.Error);
+		}
 		const stock = resolveStockFromConfig(args.stock, config);
 
 		const outputPath = args.output
