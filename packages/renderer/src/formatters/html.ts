@@ -23,15 +23,9 @@ import {
 	nutritionGroups,
 	resolveNutritionBasis,
 } from "../nutrition";
-import {
-	describeMiseEnPlaceItem,
-	ownMiseEnPlace,
-	sessionMiseEnPlace,
-	timesOf,
-} from "../mise-en-place";
+import { describeMiseEnPlaceItem, timesOf } from "../mise-en-place";
 import { formatElement, DEFAULT_ICONS } from "./element";
-import { runSheetToHTML, stepKey } from "../run-sheet";
-import { dayHTML, stepHTML, summaryHTML } from "./annotations";
+import { runSheetToHTML } from "../run-sheet";
 import { moduleLabel } from "./shared";
 import {
 	aggregateSectionIngredients,
@@ -385,54 +379,9 @@ const htmlBackend: RenderBackend = {
 		let html = "";
 		const instructionsClass = options.classes?.instructions || "instructions";
 		html += `<div class="${instructionsClass}">\n`;
-		const annotations = context._annotations;
-		if (annotations) html += summaryHTML(annotations, options.lang);
-		const fmtDuration = context.formatDuration ?? defaultFormatDuration;
-		const knife = options.icons?.knife ?? DEFAULT_ICONS.html.knife;
-		const sessionBlocks = sessionMiseEnPlace(
-			data,
-			options,
-			t.renderer,
-			fmtDuration,
-		);
-		data.sections.forEach((sec: any, sectionIdx: number) => {
-			// The mise en place gathered at the start of a working day, before the
-			// first section of that day.
-			const session = sessionBlocks.get(sectionIdx);
-			if (session) {
-				html += `  <section class="mise-en-place-session">\n`;
-				html += `    <p>${knife} <strong>${escapeHtml(session.heading)}</strong> <small>(${escapeHtml(fmtDuration(session.duration))})</small></p>\n    <ul>\n`;
-				for (const line of session.lines) {
-					const prefix = line.title
-						? `<em>${escapeHtml(line.title)}</em>${escapeHtml(t.renderer.colon)}`
-						: "";
-					html += `      <li>${prefix}${escapeHtml(line.text)}</li>\n`;
-				}
-				html += `    </ul>\n  </section>\n`;
-			}
+		data.sections.forEach((sec: any) => {
 			html += `  <section>\n`;
 
-			// This section's own mise en place, when preparation follows the sections.
-			// Shown as the caption of the section's ingredient list, duration on hover
-			// only: it covers gathering and preparing the ingredients, not doing the
-			// steps, so it must not read as the section's total time next to the title
-			// badges. A `p` (not an `h4`, which gram.css hides, nor a nested `div`,
-			// which would break the `</div>` split of the output).
-			const mise = ownMiseEnPlace(data, options, sectionIdx);
-			let prepLabel = "";
-			if (mise) {
-				const detail = mise.items
-					.map((item) =>
-						describeMiseEnPlaceItem(
-							item,
-							data.registry,
-							t.renderer,
-							fmtDuration,
-						),
-					)
-					.join(" · ");
-				prepLabel = `<span data-tooltip="${escapeHtml(`${t.renderer.miseEnPlaceTooltip}${t.renderer.colon}${fmtDuration(mise.duration)} — ${detail}`)}">${knife} ${escapeHtml(t.renderer.miseEnPlace)}</span>`;
-			}
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
 				if (sec.retro_planning) {
@@ -494,18 +443,10 @@ const htmlBackend: RenderBackend = {
 				sec.ingredients ?? [],
 			).map(aggToRendererItem);
 
-			// No ingredient list of its own: the label stands alone above the steps.
-			if (prepLabel && sectionItems.length === 0) {
-				html += `    <div class="section-prep">${prepLabel}</div>\n`;
-			}
-
 			if (sectionItems.length > 0) {
 				const sIngredientsClass =
 					options.classes?.sectionIngredients || "section-ingredients";
 				html += `    <div class="${sIngredientsClass}">\n`;
-				if (prepLabel) {
-					html += `      <p class="section-prep">${prepLabel}</p>\n`;
-				}
 				html += `      <ul>\n`;
 				sectionItems.forEach((item: any) => {
 					html += `        <li>${formatElement(item, "html", { ...context, formatMode: "mise-en-place" })}</li>\n`;
@@ -517,7 +458,7 @@ const htmlBackend: RenderBackend = {
 			const stepsListClass = options.classes?.stepsList || "steps";
 			html += `    <ol class="${stepsListClass}">\n`;
 			let stepCounter = 0;
-			sec.steps.forEach((step: any, stepIdx: number) => {
+			sec.steps.forEach((step: any) => {
 				if (step.type === "comment") {
 					const stepCommentClass = options.classes?.stepComment
 						? ` class="${options.classes.stepComment}"`
@@ -531,8 +472,6 @@ const htmlBackend: RenderBackend = {
 				}
 
 				stepCounter++;
-				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
-				if (note) html += `      ${dayHTML(note)}`;
 				const stepItemClass = options.classes?.stepItem
 					? ` class="${options.classes.stepItem}"`
 					: "";
@@ -565,7 +504,6 @@ const htmlBackend: RenderBackend = {
 
 				const stepContent = renderGroup(inlineItems) + renderGroup(declItems);
 				html += `        ${stepContent}\n`;
-				if (note) html += `        ${stepHTML(note)}\n`;
 				html += `      </li>\n`;
 			});
 			html += `    </ol>\n`;

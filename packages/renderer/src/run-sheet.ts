@@ -1,6 +1,5 @@
 import { getDictionary } from "@gram-lang/i18n";
 import type {
-	ProjectedPlan,
 	ProjectionDiagnostic,
 	RunSheet,
 	RunSheetDay,
@@ -156,19 +155,6 @@ const fill = (template: string, values: Record<string, string>) =>
 
 const plural = (n: number, one: string, many: string) =>
 	fill(n === 1 ? one : many, { n: String(n) });
-
-/** "Served Sunday, October 11 at 13:00": the line the recipe carries once it is on the calendar. */
-function servedAtText(
-	plan: { serveAt?: string },
-	options: RunSheetRenderOptions,
-): string {
-	const t = getDictionary(options.lang).renderer;
-	const serveAt = plan.serveAt ?? "";
-	return fill(t.runSheetServedAt, {
-		date: longDate(serveAt.slice(0, 10), options.lang),
-		time: serveAt.slice(11, 16),
-	});
-}
 
 /** What the plan could not fix, one sentence each. */
 function problemsText(
@@ -770,116 +756,4 @@ export function runSheetToHTML(
 		html += `  </section>\n`;
 	}
 	return `${html}</section>\n`;
-}
-
-/** What the recipe says next to one of its steps once it is on the calendar. */
-export interface StepNote {
-	/**
-	 * The day, "Saturday, October 10 · D-1", set when the step falls on another
-	 * date than the step shown before it: the order of the recipe is not the
-	 * order of the time, so it can come back to a day already seen.
-	 */
-	day?: string;
-	/** "around 21:40" */
-	when: string;
-	/** The rests the step starts, each with how long and until when. */
-	rests: { text: string; note?: string }[];
-}
-
-/** A recipe on the calendar: what to say at the top, and next to each step. */
-export interface RecipeAnnotations {
-	/** "Served Sunday, October 11 at 13:00" */
-	servedAt: string;
-	/** What the plan could not fix, in words. */
-	problems: string[];
-	/** By `stepKey(section, step)`; a step the plan has no block for has no note. */
-	steps: Map<string, StepNote>;
-}
-
-/** The key of a step in `RecipeAnnotations.steps`: its section and its index in the section, comments included. */
-export const stepKey = (section: number, step: number) => `${section}:${step}`;
-
-const MS_PER_DAY = 86_400_000;
-const dayOf = (date: string) =>
-	Date.UTC(
-		Number(date.slice(0, 4)),
-		Number(date.slice(5, 7)) - 1,
-		Number(date.slice(8, 10)),
-	) / MS_PER_DAY;
-
-/**
- * The words to put next to each step of a recipe whose plan is known: when it
- * starts, on which day, and what it leaves resting. The same words and the same
- * rounding as the production sheet, so the two never disagree. The sheet covers
- * the first recipe of the plan, and so does this.
- */
-export function annotateRecipe(
-	plan: ProjectedPlan,
-	data: RenderableCompilationResult,
-	options: RunSheetRenderOptions = {},
-): RecipeAnnotations {
-	const t = getDictionary(options.lang).renderer;
-	const lang = options.lang;
-	const round = options.roundTo && options.roundTo > 0 ? options.roundTo : 5;
-	const fmt = options.formatDuration ?? formatDuration;
-	const blocks = plan.recipes[0]?.blocks ?? [];
-	const adjustments = new Map(plan.adjustments.map((a) => [a.task, a]));
-	const serveDay = dayOf(plan.serveAt.slice(0, 10));
-
-	const steps = new Map<string, StepNote>();
-	let previous: string | undefined;
-	data.sections?.forEach((section, s) => {
-		section.steps.forEach((step, i) => {
-			if (step.type !== "step") return;
-			const block = blocks.find(
-				(b) => b.kind === "step" && b.section === s && b.step === i,
-			);
-			if (!block) return;
-			const date = block.startLocal.slice(0, 10);
-			const note: StepNote = {
-				...(date !== previous && {
-					day: `${longDate(date, lang)} · ${sessionDayLabel(serveDay - dayOf(date), t)}`,
-				}),
-				when: fill(t.runSheetAround, {
-					time: roundedClock(block.startLocal, round),
-				}),
-				rests: [],
-			};
-			previous = date;
-			for (const rest of blocks) {
-				if (rest.kind !== "passive" || rest.section !== s || rest.step !== i) {
-					continue;
-				}
-				const minutes = (Date.parse(rest.end) - Date.parse(rest.start)) / 60000;
-				const endDate = rest.endLocal.slice(0, 10);
-				const until = roundedClock(rest.endLocal, round);
-				const adjustment = adjustments.get(rest.task);
-				note.rests.push({
-					text: `${restName(t.runSheetRest, rest.track, step.action)}: ${fmt(minutes)}, ${fill(
-						t.runSheetUntil,
-						{
-							time:
-								endDate === date
-									? until
-									: `${shortDay(endDate, lang)} ${until}`,
-						},
-					)}`,
-					...(adjustment && {
-						note: fill(
-							adjustment.to > adjustment.from
-								? t.runSheetStretched
-								: t.runSheetShortened,
-							{ from: fmt(adjustment.from), to: fmt(adjustment.to) },
-						),
-					}),
-				});
-			}
-			steps.set(stepKey(s, i), note);
-		});
-	});
-	return {
-		servedAt: servedAtText(plan, options),
-		problems: problemsText(plan.diagnostics, data, options, plan.timeZone),
-		steps,
-	};
 }

@@ -47,51 +47,15 @@ describe("compiled data used below", () => {
 describe("HTML — perSection (default)", () => {
 	const html = toHTML(compiled);
 
-	it("captions the ingredient list of each section that has a mise en place", () => {
-		expect(countOf(html, '<p class="section-prep">')).toBe(3);
-		const boxes = html.match(
-			/<div class="section-ingredients">[\s\S]*?<\/div>/g,
-		)!;
-		expect(boxes).toHaveLength(3);
-		// The caption is the first thing in the box, before the list.
-		for (const box of boxes) {
-			expect(box.indexOf("section-prep")).toBeGreaterThan(-1);
-			expect(box.indexOf("section-prep")).toBeLessThan(box.indexOf("<ul>"));
-			expect(box).toContain("Mise en place</span>");
-		}
-	});
-
-	it("shows the duration only on hover, never as visible text", () => {
-		const tips = [
-			...html.matchAll(
-				/<p class="section-prep"><span data-tooltip="([^"]*)">([\s\S]*?)<\/span>/g,
-			),
-		];
-		expect(tips).toHaveLength(3);
-		tips.forEach((m, i) => {
-			const minutes = fmt(compiled.miseEnPlace[i]!.duration);
-			expect(m[1]).toContain(`: ${minutes} —`);
-			expect(m[2]).not.toMatch(/\d+\s?m\b|\d+\s?min/);
-		});
-	});
-
-	it("keeps the duration out of the section title, where it would read as the section's total time", () => {
-		for (const h3 of html.match(/<h3 class="section-header[\s\S]*?<\/h3>/g)!) {
-			expect(h3).not.toContain("Mise en place");
-			expect(h3).not.toContain("gicon-knife");
-		}
+	it("shows no mise en place label: the work plan says what to take out", () => {
+		expect(html).not.toContain("section-prep");
+		expect(html).not.toContain("mise-en-place-session");
+		expect(html).not.toContain("Mise en place for this section");
 	});
 
 	it("never uses an h4 (gram.css hides it) nor a nested div (it would cut a </div> split)", () => {
-		const out = toHTML(compiled);
-		expect(out).not.toContain("<h4");
-		expect(out).not.toMatch(/<div class="section-ingredients">\s*<div/);
-	});
-
-	it("lets a section without an ingredient list carry the label on its own", () => {
-		const out = toHTML(compile(getAST("## Heat\n\nHeat a #pan.\n")));
-		expect(out).toContain('<div class="section-prep"><span data-tooltip=');
-		expect(out).not.toContain("section-ingredients");
+		expect(html).not.toContain("<h4");
+		expect(html).not.toMatch(/<div class="section-ingredients">\s*<div/);
 	});
 
 	it("has no up-front block", () => {
@@ -112,24 +76,9 @@ describe("HTML — perSection (default)", () => {
 describe("HTML — upfront", () => {
 	const html = toHTML(compiled, { miseEnPlace: "upfront" });
 
-	it("gathers the mise en place in one block before the first section", () => {
-		expect(countOf(html, 'class="mise-en-place-session"')).toBe(1);
-		expect(html.indexOf('class="mise-en-place-session"')).toBeLessThan(
-			html.indexOf("<section>"),
-		);
-		// One session: nothing to tell days apart.
-		expect(html).not.toContain("D-");
-		// Each section's own line.
-		const block = html.match(
-			/<section class="mise-en-place-session">[\s\S]*?<\/section>/,
-		)![0];
-		expect(block).toContain("<em>Dough</em>: ");
-		expect(block).toContain("Preparation: onions");
-	});
-
-	it("keeps a per-section label only for what has to wait (the intermediates)", () => {
-		// Assembly weighs out &filling and &dough, which don't exist at the start.
-		expect(countOf(html, '<p class="section-prep">')).toBe(1);
+	it("writes no block of mise en place before the first section", () => {
+		expect(html).not.toContain("mise-en-place-session");
+		expect(html).not.toContain("section-prep");
 	});
 
 	it("reads total and idle time from the upfront schedule", () => {
@@ -306,58 +255,13 @@ describe("perSession", () => {
 	const multi = compile(getAST(MULTI_DAY));
 	const options = { miseEnPlace: "perSession" } as const;
 
-	it("opens each working day with its mise en place, labelled D-N", () => {
+	it("leaves the working days to the work plan: no block in the recipe", () => {
 		const html = toHTML(multi, options);
-		expect(countOf(html, 'class="mise-en-place-session"')).toBe(3);
-		expect(html).toContain("Mise en place — D-3");
-		expect(html).toContain("Mise en place — D-1");
-		expect(html).toContain("Mise en place — Day D");
-		expect(html.indexOf("D-3")).toBeLessThan(html.indexOf("D-1"));
-		expect(html.indexOf("D-1")).toBeLessThan(html.indexOf("Day D"));
-	});
-
-	it("says Jour J in French for the day itself", () => {
-		const html = toHTML(
-			compile(
-				getAST(
-					"## Prep ~{-2d}\n\nChop @onions{1}.\n\n## Cook\n\nFry @butter{10g}.\n",
-				),
-			),
-			{ ...options, lang: "fr" },
-		);
-		expect(html).toContain("Mise en place — J-2");
-		expect(html).toContain("Mise en place — Jour J");
-	});
-
-	it("gathers on day D-1 what the crust needs from D-3, and defers the same-day intermediate", () => {
-		const html = toHTML(multi, options);
-		const day1 = html.slice(html.indexOf("D-1"), html.indexOf("Day D"));
-		expect(day1).toContain("<em>Crust</em>");
-		// &crust is made on D-1 and used by the pie: not gathered at the head of
-		// the day, but labelled in the pie's own section.
-		expect(day1).not.toContain("<em>Pie</em>");
-		expect(countOf(html, '<p class="section-prep">')).toBe(1);
-	});
-
-	it("writes the same blocks in markdown and print", () => {
-		const md = toMarkdown(multi, options);
-		expect(md).toContain("**Mise en place — D-3**");
-		expect(md).toContain("**Mise en place — D-1**");
-		expect(md).toContain("**Mise en place — Day D**");
-		const print = toPrintHTML(multi, options);
-		expect(print).toContain("Mise en place — D-3");
-		expect(print).toContain("Mise en place — D-1");
-	});
-
-	it("escapes a section title written in the block", () => {
-		const evil = compile(
-			getAST(
-				"## <img src=x onerror=alert(1)> ~{-1d}\n\nChop @onions{1}.\n\n## Cook\n\nFry @butter{10g}.\n",
-			),
-		);
-		for (const out of [toHTML(evil, options), toPrintHTML(evil, options)]) {
-			expect(out).not.toContain("<img src=x");
-		}
+		expect(html).not.toContain("mise-en-place-session");
+		expect(html).not.toContain("Mise en place — D-");
+		expect(html).not.toContain("section-prep");
+		expect(toMarkdown(multi, options)).not.toContain("Mise en place — D-");
+		expect(toPrintHTML(multi, options)).not.toContain("Mise en place — D-");
 	});
 
 	it("marks each day on the Gantt and keeps block ids unique", () => {
@@ -370,12 +274,6 @@ describe("perSession", () => {
 		);
 		expect(ids.some((id) => id.endsWith("_later"))).toBe(true);
 		expect(new Set(ids).size).toBe(ids.length);
-	});
-
-	it("is a single session, without day labels, when no section is anchored a day back", () => {
-		const html = toHTML(compiled, options);
-		expect(countOf(html, 'class="mise-en-place-session"')).toBe(1);
-		expect(html).not.toContain("D-");
 	});
 });
 
@@ -415,9 +313,8 @@ describe("mise en place wording", () => {
 	it("puts no space before the colon in English, one in French", () => {
 		const en = toHTML(compiled, { lang: "en" });
 		const fr = toHTML(compiled, { lang: "fr" });
-		expect(en).toContain("Mise en place for this section: ");
-		expect(fr).toContain("Mise en place de cette section : ");
-		expect(fr).toContain("Préparation : ");
+		expect(en).toContain("Preparation: onions");
+		expect(fr).toContain("Préparation : onions");
 		expect(en).not.toContain("Preparation : ");
 	});
 

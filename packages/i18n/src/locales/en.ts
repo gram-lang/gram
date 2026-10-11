@@ -14,7 +14,6 @@ export const en = {
 		prepTimeTooltip:
 			"Prep Time = Time to gather and prepare ingredients and cookware",
 		miseEnPlace: "Mise en place",
-		miseEnPlaceTooltip: "Mise en place for this section",
 		scheduleLabel: "Mise en place",
 		restsLabel: "Waits",
 		restsShortest: "Shortest",
@@ -26,16 +25,9 @@ export const en = {
 		sessionDay: "D-",
 		sessionToday: "Day D",
 		runSheetTitle: "Production sheet",
-		runSheetServedAt: "Served {date} at {time}",
-		runSheetAround: "around {time}",
-		runSheetUntil: "until around {time}",
 		runSheetStep: "Step {n}",
 		runSheetRest: "Wait",
 		runSheetUnnamedSection: "Recipe",
-		runSheetStretched:
-			"Wait stretched from {from} to {to} to stay out of your unavailable hours",
-		runSheetShortened:
-			"Wait shortened from {from} to {to} to stay out of your unavailable hours",
 		runSheetProblems: "To fix",
 		runSheetOutside:
 			"{task}, around {time}, falls when you are not available, and no wait can be moved to fix it.",

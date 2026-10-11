@@ -17,9 +17,7 @@ export { toMarkdown } from "./formatters/markdown";
 export { toHTML } from "./formatters/html";
 export { toPrintHTML } from "./formatters/print";
 export {
-	annotateRecipe,
 	describeRunSheet,
-	stepKey,
 	runSheetToHTML,
 	runSheetToMarkdown,
 	runSheetToText,
@@ -31,11 +29,9 @@ export type {
 	RunSheetKitLine,
 	RunSheetPassageModel,
 	RunSheetProgramLine,
-	RecipeAnnotations,
 	RunSheetModel,
 	RunSheetRenderOptions,
 	RunSheetScheduleRow,
-	StepNote,
 } from "./run-sheet";
 export {
 	intermediateMakers,

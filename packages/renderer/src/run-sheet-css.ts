@@ -21,10 +21,4 @@ export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .work-plan-program li { margin-bottom: 4pt; page-break-inside: avoid; }
   .gram-run-sheet .program-steps { display: block; color: var(--dark-grey); font-size: 9pt; }
   .gram-run-sheet .work-plan-problems li { margin-left: 1em; list-style: disc; }
-  .plan-summary { border: 1px solid var(--light-grey); padding: 6pt 10pt; margin: 0 0 12pt; }
-  .plan-summary .plan-served { font-weight: 700; }
-  .plan-summary .plan-problems li { margin-left: 1em; list-style: disc; }
-  .steps li.step-day { list-style: none; font-weight: 700; margin: 10pt 0 4pt -1.5em; }
-  .step-plan { margin: 2pt 0 0; color: var(--grey); font-size: 9pt; }
-  .step-plan .step-note { color: var(--dark-grey); font-weight: 700; }
 `;

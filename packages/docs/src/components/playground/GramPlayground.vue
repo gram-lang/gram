@@ -681,7 +681,6 @@ async function updateGram() {
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
-				projection: projection.value ?? undefined,
 			});
 		} else if (viewMode.value === "preview") {
 			htmlPreview.value = toHTML(result, {
@@ -691,7 +690,6 @@ async function updateGram() {
 				lang: currentLang.value,
 				miseEnPlace: schedule.value,
 				rests: rests.value,
-				projection: projection.value ?? undefined,
 			});
 		}
 		trackPlaygroundRun(true, codeLength);

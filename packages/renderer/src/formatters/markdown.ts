@@ -25,14 +25,8 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { sessionMiseEnPlace, timesOf } from "../mise-en-place";
-import { runSheetToMarkdown, stepKey } from "../run-sheet";
-import {
-	dayMarkdown,
-	restsMarkdown,
-	summaryMarkdown,
-	whenMarkdown,
-} from "./annotations";
+import { timesOf } from "../mise-en-place";
+import { runSheetToMarkdown } from "../run-sheet";
 
 const markdownBackend: RenderBackend = {
 	buildContext(data, options) {
@@ -161,29 +155,7 @@ const markdownBackend: RenderBackend = {
 			: context;
 
 		let md = `## 👨‍🍳 Instructions\n\n`;
-		const annotations = context._annotations;
-		if (annotations) md += summaryMarkdown(annotations, options.lang);
-		const t = getDictionary(options.lang);
-		const formatDuration = options.formatDuration || defaultFormatDuration;
-		const sessionBlocks = sessionMiseEnPlace(
-			data,
-			options,
-			t.renderer,
-			formatDuration,
-		);
-		data.sections.forEach((sec: any, sectionIdx: number) => {
-			// The mise en place gathered at the start of a working day.
-			const session = sessionBlocks.get(sectionIdx);
-			if (session) {
-				md += `**${escapeMarkdownHtml(session.heading)}** (${escapeMarkdownHtml(formatDuration(session.duration))})\n\n`;
-				for (const line of session.lines) {
-					const prefix = line.title
-						? `*${escapeMarkdownHtml(line.title)}*${t.renderer.colon}`
-						: "";
-					md += `- ${prefix}${escapeMarkdownHtml(line.text)}\n`;
-				}
-				md += "\n";
-			}
+		data.sections.forEach((sec: any) => {
 			if (sec.title) {
 				md += `### ${escapeMarkdownHtml(sec.title)}`;
 				if (sec.retro_planning)
@@ -207,7 +179,7 @@ const markdownBackend: RenderBackend = {
 			}
 
 			let stepCounter = 0;
-			sec.steps.forEach((step: any, stepIdx: number) => {
+			sec.steps.forEach((step: any) => {
 				if (step.type === "comment") {
 					const commentText = step.value ? step.value.trim() : "";
 					md += `> *${escapeMarkdownHtml(commentText)}*\n\n`;
@@ -226,10 +198,7 @@ const markdownBackend: RenderBackend = {
 					(c) => formatElement(c, "md", stepContext),
 					(c) => typeof c !== "string" && c.type !== "comment",
 				);
-				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
-				if (note) md += dayMarkdown(note);
-				md += `${stepNum}. ${stepText}${note ? whenMarkdown(note) : ""}\n`;
-				if (note) md += restsMarkdown(note);
+				md += `${stepNum}. ${stepText}\n`;
 			});
 			md += "\n";
 		});

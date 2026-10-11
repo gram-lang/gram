@@ -26,10 +26,9 @@ import { formatElement } from "./element";
 import { moduleLabel } from "./shared";
 import { aggregateSectionIngredients } from "@gram-lang/kitchen";
 import { getDictionary } from "@gram-lang/i18n";
-import { sessionMiseEnPlace, timesOf } from "../mise-en-place";
-import { runSheetToHTML, stepKey } from "../run-sheet";
+import { timesOf } from "../mise-en-place";
+import { runSheetToHTML } from "../run-sheet";
 import { RUN_SHEET_PRINT_CSS } from "../run-sheet-css";
-import { dayHTML, stepHTML, summaryHTML } from "./annotations";
 
 export const PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap');
@@ -544,29 +543,7 @@ const printBackend: RenderBackend = {
 			: context;
 
 		let body = `<div class="instructions">\n<h2>Instructions</h2>\n`;
-		const annotations = context._annotations;
-		if (annotations) body += summaryHTML(annotations, options.lang);
-		const t = getDictionary(options.lang);
-		const formatDuration = options.formatDuration || defaultFormatDuration;
-		const sessionBlocks = sessionMiseEnPlace(
-			data,
-			options,
-			t.renderer,
-			formatDuration,
-		);
-		for (const [sectionIdx, sec] of data.sections.entries()) {
-			// The mise en place gathered at the start of a working day.
-			const session = sessionBlocks.get(sectionIdx);
-			if (session) {
-				body += `<section class="mise-en-place-session">\n  <p><strong>${escapeHtml(session.heading)}</strong> <small>(${escapeHtml(formatDuration(session.duration))})</small></p>\n  <ul>\n`;
-				for (const line of session.lines) {
-					const prefix = line.title
-						? `<em>${escapeHtml(line.title)}</em>${escapeHtml(t.renderer.colon)}`
-						: "";
-					body += `    <li>${prefix}${escapeHtml(line.text)}</li>\n`;
-				}
-				body += `  </ul>\n</section>\n`;
-			}
+		for (const sec of data.sections) {
 			body += `<section>\n`;
 			if (sec.title) {
 				let titleHtml = escapeHtml(sec.title);
@@ -592,15 +569,13 @@ const printBackend: RenderBackend = {
 
 			body += `  <ol class="steps">\n`;
 			let stepCounter = 0;
-			for (const [stepIdx, stepItem] of (sec.steps ?? []).entries()) {
+			for (const stepItem of sec.steps ?? []) {
 				if (!stepItem) continue;
 				if (stepItem.type === "comment") {
 					body += `    <li class="comment-step"><em>${escapeHtml(stepItem.value ?? "")}</em></li>\n`;
 					continue;
 				}
 				stepCounter++;
-				const note = annotations?.steps.get(stepKey(sectionIdx, stepIdx));
-				if (note) body += `    ${dayHTML(note)}`;
 				body += `    <li value="${stepCounter}">\n`;
 
 				if (stepItem.action) {
@@ -614,7 +589,6 @@ const printBackend: RenderBackend = {
 				);
 
 				body += stepContent ? `      ${stepContent}\n` : "";
-				if (note) body += `      ${stepHTML(note)}\n`;
 				body += `    </li>\n`;
 			}
 			body += `  </ol>\n</section>\n`;
@@ -701,7 +675,7 @@ const printBackend: RenderBackend = {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   ${titleTag}
-  <style>${PRINT_CSS}${options.projection ? RUN_SHEET_PRINT_CSS : ""}</style>
+  <style>${PRINT_CSS}${options.runSheet ? RUN_SHEET_PRINT_CSS : ""}</style>
 </head>
 <body>
 ${body}</body>

@@ -17,7 +17,6 @@ export const fr: GramLocale = {
 		prepTimeTooltip:
 			"Préparation = Temps pour rassembler et préparer ingrédients et ustensiles",
 		miseEnPlace: "Mise en place",
-		miseEnPlaceTooltip: "Mise en place de cette section",
 		scheduleLabel: "Mise en place",
 		restsLabel: "Attentes",
 		restsShortest: "Les plus courtes",
@@ -29,16 +28,9 @@ export const fr: GramLocale = {
 		sessionDay: "J-",
 		sessionToday: "Jour J",
 		runSheetTitle: "Fiche de production",
-		runSheetServedAt: "Servi le {date} à {time}",
-		runSheetAround: "vers {time}",
-		runSheetUntil: "jusqu'à vers {time}",
 		runSheetStep: "Étape {n}",
 		runSheetRest: "Attente",
 		runSheetUnnamedSection: "Recette",
-		runSheetStretched:
-			"Attente allongée de {from} à {to} pour éviter vos heures d'indisponibilité",
-		runSheetShortened:
-			"Attente raccourcie de {from} à {to} pour éviter vos heures d'indisponibilité",
 		runSheetProblems: "À régler",
 		runSheetOutside:
 			"{task}, vers {time}, tombe quand vous n'êtes pas disponible, et aucune attente ne peut bouger pour arranger ça.",

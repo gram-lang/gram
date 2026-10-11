@@ -3,8 +3,7 @@ import type {
 	MiseEnPlaceMode,
 	RestChoice,
 } from "@gram-lang/kitchen";
-import type { ProjectedPlan } from "@gram-lang/scheduler";
-import type { RecipeAnnotations } from "./run-sheet";
+import type { RunSheet } from "@gram-lang/scheduler";
 import type {
 	AnalyzedCompilationResult,
 	MassMetrics,
@@ -135,10 +134,8 @@ export interface RendererOptions {
 	 * Which timeline to follow: mise en place right before each section
 	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
 	 * the start of each working day (`"perSession"`). Drives the total and idle
-	 * times, and where the mise en place is shown: on each section's ingredient
-	 * list by section; otherwise in a block at the start of each session, a
-	 * section keeping its own label only for what has to wait for an
-	 * intermediate made the same day.
+	 * times of the recipe; what to take out, and when, is the work plan's
+	 * (`runSheet`).
 	 */
 	miseEnPlace?: MiseEnPlaceMode;
 	/**
@@ -150,20 +147,11 @@ export interface RendererOptions {
 	bakersMathOnly?: boolean;
 	interactiveScaling?: boolean;
 	/**
-	 * The recipe placed on the calendar by `project()` (`@gram-lang/scheduler`).
-	 * The recipe then says when each step happens: a time next to every step, the
-	 * day when it changes, what the step leaves resting (with the note of a rest
-	 * the plan stretched or shortened), and at the top when it is served and what
-	 * could not be fixed. The words follow `lang`, and are those of the
-	 * production sheet. Without it, the recipe reads as it always did.
+	 * A work plan (`runSheet()` of `@gram-lang/scheduler`) to write after the
+	 * recipe, the two in one document: the recipe says how, the plan says when
+	 * to come and what to take out. The words follow `lang`.
 	 */
-	projection?: ProjectedPlan;
-	/**
-	 * With a `projection`: also write the production sheet after the recipe, the
-	 * two in one document. The recipe and the sheet say the same things in two
-	 * orders: the sections, and the time.
-	 */
-	runSheet?: boolean;
+	runSheet?: RunSheet;
 	/**
 	 * Which nutrition basis to display. The analyzer computes all of them;
 	 * picking one is presentation. "auto" keeps the historical behaviour —
@@ -213,9 +201,6 @@ export interface RenderContext {
 
 	/** Controls the display style of elements like ingredient preparations. Default is 'inline'. */
 	formatMode?: "inline" | "mise-en-place" | "shopping-list";
-
-	/** What to say next to each step, when the recipe is on the calendar. */
-	_annotations?: RecipeAnnotations;
 
 	// State for footnotes
 	_inlineComments?: string[];
