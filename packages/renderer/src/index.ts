@@ -27,12 +27,27 @@ export {
 export { runSheetToPrintHTML } from "./run-sheet-print";
 export type {
 	RunSheetDayModel,
-	RunSheetLine,
+	RunSheetEvent,
+	RunSheetKitLine,
+	RunSheetPassageModel,
+	RunSheetProgramLine,
 	RecipeAnnotations,
 	RunSheetModel,
 	RunSheetRenderOptions,
+	RunSheetScheduleRow,
 	StepNote,
 } from "./run-sheet";
+export {
+	intermediateMakers,
+	passageKit,
+	sectionProgram,
+} from "./work-plan-parts";
+export type {
+	KitItem,
+	PassageKitOptions,
+	ProgramStep,
+	SectionProgram,
+} from "./work-plan-parts";
 export {
 	formatDecimalToFraction,
 	getQty,

@@ -215,11 +215,11 @@ describe("toHTML and toPrintHTML with a projection", () => {
 describe("the production sheet after the recipe", () => {
 	it("is written after the nutrition, one heading level down in Markdown", () => {
 		const md = toMarkdown(compiled, { projection: plan, runSheet: true });
-		expect(md.indexOf("## Production sheet — Country bread")).toBeGreaterThan(
+		expect(md.indexOf("## Work plan — Country bread")).toBeGreaterThan(
 			md.indexOf("## 👨‍🍳 Instructions"),
 		);
-		expect(md).toContain("### Saturday, October 10 · D-1");
-		expect(md).toContain("### To fix");
+		expect(md).toContain("### Saturday, October 10 · ");
+		expect(md).toContain("> **To fix**");
 		expect(md.match(/^# /gm)).toHaveLength(1); // only the recipe's own title
 	});
 
@@ -230,7 +230,7 @@ describe("the production sheet after the recipe", () => {
 		);
 		const print = toPrintHTML(compiled, { projection: plan, runSheet: true });
 		expect(print).toContain('<section class="gram-run-sheet">');
-		expect(print).toContain(".run-sheet-entry");
+		expect(print).toContain(".work-plan-day");
 		expect(print).toContain(".plan-summary");
 	});
 
@@ -241,7 +241,7 @@ describe("the production sheet after the recipe", () => {
 
 	it("is not written unless asked for", () => {
 		expect(toMarkdown(compiled, { projection: plan })).not.toContain(
-			"Production sheet",
+			"Work plan",
 		);
 	});
 });

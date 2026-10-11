@@ -1283,55 +1283,128 @@ flex-direction: column;
 .gram-preview .scale-input-inline[type=number] {
   -moz-appearance: textfield;
 }
-/* The production sheet (runSheetToHTML). */
-.gram-run-sheet .run-sheet-served {
+/* The work plan (runSheetToHTML): a planning of the days, then a block per day. */
+.gram-run-sheet .work-plan-subtitle,
+.gram-run-sheet .work-plan-summary {
+  margin: 0.15em 0;
   color: var(--color-text-muted);
 }
 
-.gram-run-sheet .run-sheet-day h3 {
-  margin-top: 1.5em;
-  padding-bottom: 0.25em;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.gram-run-sheet ul {
+.gram-run-sheet ul,
+.gram-run-sheet ol {
   list-style: none;
   padding: 0;
 }
 
-.gram-run-sheet .run-sheet-entry {
-  margin: 0.6em 0;
+.gram-run-sheet .work-plan-schedule {
+  margin: 1em 0 0;
 }
 
-.gram-run-sheet .run-sheet-when {
-  display: inline-block;
-  min-width: 9em;
-  color: var(--color-text-muted);
+.gram-run-sheet .work-plan-schedule li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em 0.9em;
+  margin: 0.25em 0;
 }
 
-.gram-run-sheet .run-sheet-entry.active .run-sheet-title {
+.gram-run-sheet .schedule-day {
+  min-width: 4.5em;
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
-.gram-run-sheet .run-sheet-entry.passive .run-sheet-title {
+.gram-run-sheet .schedule-time {
+  min-width: 7.5em;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .schedule-thread {
+  padding-left: 5.4em;
   font-style: italic;
+  color: var(--color-text-muted);
+  border-left: 1px dotted var(--color-border);
 }
 
-.gram-run-sheet .run-sheet-detail,
-.gram-run-sheet .run-sheet-note {
-  margin: 0.1em 0 0 9em;
-  font-size: 0.9em;
-  color: var(--color-text);
-}
-
-.gram-run-sheet .run-sheet-note {
+.gram-run-sheet .schedule-serve .schedule-text {
   font-weight: 600;
 }
 
-.gram-run-sheet .run-sheet-problems li {
+.gram-run-sheet .work-plan-day h3 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.2em 1em;
+  margin-top: 1.8em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--color-border);
+  text-transform: capitalize;
+}
+
+.gram-run-sheet .work-plan-day .day-slot {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .work-plan-notice {
+  margin: 0.6em 0;
+  font-weight: 600;
+}
+
+.gram-run-sheet .work-plan-notice::before {
+  content: "⚠ ";
+}
+
+.gram-run-sheet .work-plan-margin {
+  margin: 0.4em 0;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .work-plan-passage {
+  margin: 0.8em 0 1.2em;
+}
+
+.gram-run-sheet .work-plan-passage h4 {
+  margin: 0.8em 0 0.3em;
+  font-size: 0.8em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.gram-run-sheet .work-plan-kit li {
+  margin: 0.2em 0;
+}
+
+.gram-run-sheet .work-plan-kit label {
+  cursor: pointer;
+}
+
+.gram-run-sheet .work-plan-program li {
+  margin: 0.3em 0;
+}
+
+.gram-run-sheet .program-steps {
+  display: block;
+  color: var(--color-text);
+}
+
+.gram-run-sheet .work-plan-problems li {
   list-style: disc;
   margin-left: 1.2em;
+}
+
+@media (min-width: 720px) {
+  .gram-run-sheet .work-plan-passage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2em;
+  }
+
+  .gram-run-sheet .work-plan-passage > h4,
+  .gram-run-sheet .work-plan-passage > .work-plan-margin,
+  .gram-run-sheet .work-plan-leaving {
+    grid-column: 1 / -1;
+  }
 }
 
 /* A recipe placed on the calendar (the `projection` option): the plan's summary
