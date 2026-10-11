@@ -37,19 +37,20 @@ const compact = (iso: string) => iso.replace(/[-:]/g, "");
 export interface IcsOptions {
 	/** DTSTAMP of every event, an ISO instant in UTC. */
 	stamp: string;
-	/** Minutes before an active task at which its alarm rings. Default 5. */
+	/** Minutes before a passage at which its alarm rings. Default 10. */
 	alarmMinutes?: number;
-	/** Words for the alarm text of a task that is not named in a way a reminder can use. */
+	/** The name of the calendar. Default: the title of the work plan. */
 	calendarName?: string;
 }
 
 /**
- * The production sheet as an iCalendar file: one event per task, in UTC (the
- * calendar shows it in its own zone), and an alarm on the tasks that need the
- * cook's hands. Nothing here reads the clock: the stamp is given.
+ * The work plan as an iCalendar file: one event per passage in the kitchen, in
+ * UTC (the calendar shows it in its own zone), with an alarm before it. The
+ * title is the recipe and its sections; the description lists what to take
+ * out and the programme. Nothing here reads the clock: the stamp is given.
  */
 export function buildICS(model: RunSheetModel, options: IcsOptions): string {
-	const alarm = options.alarmMinutes ?? 5;
+	const alarm = options.alarmMinutes ?? 10;
 	const lines: string[] = [
 		"BEGIN:VCALENDAR",
 		"VERSION:2.0",
@@ -58,36 +59,23 @@ export function buildICS(model: RunSheetModel, options: IcsOptions): string {
 		"METHOD:PUBLISH",
 		`X-WR-CALNAME:${escapeText(options.calendarName ?? model.title)}`,
 	];
-	const seen = new Map<string, number>();
-	for (const day of model.days) {
-		for (const line of day.lines) {
-			// A merged mise en place keeps the id of its first task: two events can share one.
-			const n = (seen.get(line.task) ?? 0) + 1;
-			seen.set(line.task, n);
-			const description = [line.detail, line.length, line.note]
-				.filter(Boolean)
-				.join("\n");
-			lines.push(
-				"BEGIN:VEVENT",
-				`UID:${compact(line.start)}-${line.task}${n > 1 ? `-${n}` : ""}@gram-lang.org`,
-				`DTSTAMP:${compact(options.stamp)}`,
-				`DTSTART:${compact(line.start)}`,
-				`DTEND:${compact(line.end)}`,
-				`SUMMARY:${escapeText(line.title)}`,
-				`DESCRIPTION:${escapeText(description)}`,
-			);
-			if (line.active) {
-				lines.push(
-					"BEGIN:VALARM",
-					"ACTION:DISPLAY",
-					`DESCRIPTION:${escapeText(line.title)}`,
-					`TRIGGER:-PT${alarm}M`,
-					"END:VALARM",
-				);
-			}
-			lines.push("END:VEVENT");
-		}
-	}
+	model.events.forEach((event, index) => {
+		lines.push(
+			"BEGIN:VEVENT",
+			`UID:${compact(event.start)}-${index + 1}@gram-lang.org`,
+			`DTSTAMP:${compact(options.stamp)}`,
+			`DTSTART:${compact(event.start)}`,
+			`DTEND:${compact(event.end)}`,
+			`SUMMARY:${escapeText(event.title)}`,
+			`DESCRIPTION:${escapeText(event.description)}`,
+			"BEGIN:VALARM",
+			"ACTION:DISPLAY",
+			`DESCRIPTION:${escapeText(event.title)}`,
+			`TRIGGER:-PT${alarm}M`,
+			"END:VALARM",
+			"END:VEVENT",
+		);
+	});
 	lines.push("END:VCALENDAR");
 	return `${lines.map(fold).join("\r\n")}\r\n`;
 }

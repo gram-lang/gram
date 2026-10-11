@@ -61,6 +61,12 @@ export async function planRecipe(
 		paths: options.paths,
 		stock: options.stock,
 	});
+	const context = {
+		serveAt: options.serveAt,
+		timeZone: options.timeZone,
+		availability: options.availability,
+		...(options.now !== undefined && { now: options.now }),
+	};
 	const plan = project(
 		[
 			{
@@ -69,14 +75,10 @@ export async function planRecipe(
 				options: { miseEnPlace: options.miseEnPlace, rests: options.rests },
 			},
 		],
-		{
-			serveAt: options.serveAt,
-			timeZone: options.timeZone,
-			availability: options.availability,
-			...(options.now !== undefined && { now: options.now }),
-		},
+		context,
 	);
-	return { compiled, plan, sheet: runSheet(plan), usedStock };
+	const sheet = runSheet(plan, { graph: compiled.tasks, context });
+	return { compiled, plan, sheet, usedStock };
 }
 
 /** The sheet in one of the formats `--format` offers. */

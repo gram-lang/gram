@@ -60,22 +60,22 @@ describe("gram plan", () => {
 	it("prints the sheet in the language of the project, backward from the service", () => {
 		const { code, out } = gram(...PLAN, "--available", "08:00-22:00");
 		expect(code).toBe(0);
-		expect(out).toContain("Production sheet — Country bread");
-		expect(out).toContain("Served Sunday, October 11 at 13:00");
-		expect(out).toContain("Saturday, October 10 · D-1");
-		expect(out).toMatch(/around 12:30\s+Bake — Bake/);
+		expect(out).toContain("Work plan — Country bread");
+		expect(out).toContain("For Sunday, October 11 at 13:00");
+		expect(out).toContain("SATURDAY, OCTOBER 10");
+		expect(out).toMatch(/SUN 11\s+▮ 12:30 – 13:00\s+Bake/);
 	});
 
 	it("stretches the rest to keep the kneading out of the night, and says so", () => {
 		const { out } = gram(...PLAN, "--available", "08:00-22:00");
-		expect(out).toMatch(/around 21:\d\d\s+Dough — Mix/);
-		expect(out).toContain("Wait stretched from 8h to 14h 30m");
+		expect(out).toMatch(/SAT 10\s+▮ 21:\d\d – 22:\d\d\s+Dough/);
+		expect(out).toContain("Dough : Rise extended to 14h 30m");
 	});
 
 	it("starts in the night when nothing says otherwise, and does not stretch", () => {
 		const { out } = gram(...PLAN);
-		expect(out).toMatch(/around 04:\d\d\s+Dough — Mix/);
-		expect(out).not.toContain("stretched");
+		expect(out).toMatch(/SUN 11\s+▮ 04:\d\d – 04:\d\d\s+Dough/);
+		expect(out).not.toContain("extended");
 	});
 
 	it("reads availability by weekday: Saturday ending at 20:00 leaves no way to fit the kneading", () => {
@@ -114,7 +114,7 @@ describe("gram plan", () => {
 
 	it("writes markdown, html or json", () => {
 		expect(gram(...PLAN, "--format", "md").out).toContain(
-			"# Production sheet — Country bread",
+			"# Work plan — Country bread",
 		);
 		expect(gram(...PLAN, "--format", "html").out).toContain(
 			'<section class="gram-run-sheet">',
@@ -127,8 +127,8 @@ describe("gram plan", () => {
 	it("follows --rests", () => {
 		const shortest = gram(...PLAN, "--rests", "shortest").out;
 		const longest = gram(...PLAN, "--rests", "longest").out;
-		expect(shortest).toMatch(/\(8h, until around 12:30\)/);
-		expect(longest).toMatch(/\(16h, until around Sun 12:30\)/);
+		expect(shortest).toMatch(/Dough : Rise 8h to 16h/);
+		expect(longest).toMatch(/Dough : Rise 16h \(8h to 16h\)/);
 	});
 
 	it("writes a calendar, in UTC, stamped from --now, with the status on stderr", async () => {
@@ -331,7 +331,7 @@ describe("a recipe on the calendar in view, export and print", () => {
 		const md = await readFile(path, "utf-8");
 		expect(md).toContain("> **Served Sunday, October 11 at 13:00**");
 		expect(md).toMatch(/knead.*— \*around 21:40\*/);
-		expect(md).not.toContain("Production sheet");
+		expect(md).not.toContain("Work plan");
 
 		const b = gram(
 			"export",
@@ -345,7 +345,7 @@ describe("a recipe on the calendar in view, export and print", () => {
 		);
 		expect(b.code).toBe(0);
 		expect(await readFile(path, "utf-8")).toContain(
-			"## Production sheet — Country bread",
+			"## Work plan — Country bread",
 		);
 	});
 

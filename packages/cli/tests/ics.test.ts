@@ -1,65 +1,66 @@
 import { describe, expect, it } from "bun:test";
-import type { RunSheetModel } from "@gram-lang/renderer";
+import type { RunSheetEvent, RunSheetModel } from "@gram-lang/renderer";
 import { buildICS } from "../src/services/ics";
 
-const line = (over: Partial<RunSheetModel["days"][0]["lines"][0]> = {}) => ({
-	task: "s0.0",
-	kind: "step" as const,
+const event = (over: Partial<RunSheetEvent> = {}): RunSheetEvent => ({
 	start: "2026-10-10T19:40:00Z",
 	end: "2026-10-10T20:00:00Z",
-	when: "around 21:40",
-	title: "Dough — Mix",
-	detail: "Mix flour, then knead; rest.",
-	length: "20m",
-	active: true,
+	title: "Bread · Dough",
+	description:
+		"To take out :\n- flour 500 g, water\n\nTo do :\n- Dough (steps 1 to 2)",
 	...over,
 });
 
-const model = (...lines: ReturnType<typeof line>[]): RunSheetModel => ({
-	title: "Production sheet — Bread",
-	servedAt: "Served Sunday, October 11 at 13:00",
-	days: [{ heading: "Saturday · D-1", lines }],
+const model = (...events: RunSheetEvent[]): RunSheetModel => ({
+	title: "Work plan — Bread",
+	subtitle: "For Sunday, October 11 at 13:00",
+	summary: "2 days",
 	problems: [],
+	schedule: [],
+	days: [],
+	events,
 });
 
 const STAMP = { stamp: "2026-10-01T09:00:00Z" };
 
 describe("buildICS", () => {
-	const ics = buildICS(model(line()), STAMP);
+	const ics = buildICS(model(event()), STAMP);
 
-	it("is a calendar with CRLF line ends", () => {
+	it("is a calendar with CRLF line ends, named after the plan", () => {
 		expect(ics.startsWith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n")).toBe(true);
 		expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
 		expect(ics.replace(/\r\n/g, "")).not.toContain("\n");
+		expect(ics).toContain("X-WR-CALNAME:Work plan — Bread");
 	});
 
-	it("writes an event in UTC, stamped as asked, with a stable id", () => {
+	it("writes an event per passage in UTC, stamped as asked, with a stable id", () => {
 		expect(ics).toContain("DTSTART:20261010T194000Z");
 		expect(ics).toContain("DTEND:20261010T200000Z");
 		expect(ics).toContain("DTSTAMP:20261001T090000Z");
-		expect(ics).toContain("UID:20261010T194000Z-s0.0@gram-lang.org");
-		expect(buildICS(model(line()), STAMP)).toBe(ics);
+		expect(ics).toContain("SUMMARY:Bread · Dough");
+		expect(ics).toContain("UID:20261010T194000Z-1@gram-lang.org");
+		expect(buildICS(model(event()), STAMP)).toBe(ics);
 	});
 
-	it("escapes commas, semicolons and newlines in the text", () => {
-		expect(ics).toContain("DESCRIPTION:Mix flour\\, then knead; rest.\\n20m");
-	});
-
-	it("rings an alarm before a task that needs the hands, and not before a rest", () => {
-		expect(ics).toContain("BEGIN:VALARM");
-		expect(ics).toContain("TRIGGER:-PT5M");
-		const rest = buildICS(
-			model(line({ active: false, kind: "passive" })),
-			STAMP,
+	it("puts the lists in the description, escaped", () => {
+		expect(ics.replace(/\r\n /g, "")).toContain(
+			"DESCRIPTION:To take out :\\n- flour 500 g\\, water\\n\\nTo do :\\n- Dough (steps 1 to 2)",
 		);
-		expect(rest).not.toContain("VALARM");
 	});
 
-	it("keeps ids unique when two events share a task", () => {
+	it("rings an alarm before each passage", () => {
+		expect(ics).toContain("BEGIN:VALARM");
+		expect(ics).toContain("TRIGGER:-PT10M");
+		expect(buildICS(model(event()), { ...STAMP, alarmMinutes: 30 })).toContain(
+			"TRIGGER:-PT30M",
+		);
+	});
+
+	it("keeps ids unique across the passages", () => {
 		const two = buildICS(
 			model(
-				line(),
-				line({ start: "2026-10-10T21:00:00Z", end: "2026-10-10T21:10:00Z" }),
+				event(),
+				event({ start: "2026-10-10T19:40:00Z", end: "2026-10-10T21:10:00Z" }),
 			),
 			STAMP,
 		);
@@ -67,9 +68,13 @@ describe("buildICS", () => {
 		expect(new Set(uids).size).toBe(2);
 	});
 
+	it("is empty of events for a plan with no passage", () => {
+		expect(buildICS(model(), STAMP)).not.toContain("BEGIN:VEVENT");
+	});
+
 	it("folds long lines at 75 octets without cutting a character", () => {
 		const long = buildICS(
-			model(line({ title: `${"é".repeat(60)} ⏲️ end` })),
+			model(event({ title: `${"é".repeat(60)} ⏲️ end` })),
 			STAMP,
 		);
 		for (const physical of long.split("\r\n")) {
