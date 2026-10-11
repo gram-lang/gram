@@ -388,20 +388,47 @@ describe("passage windows (property)", () => {
 				});
 				return k;
 			};
-			const endsIn = (to: number) =>
-				passages.findIndex((p) => p.start - 1e-6 <= to && to <= p.end + 1e-6);
+			const passageAt = (at: number) =>
+				passages.findIndex((p) => p.start - 1e-6 <= at && at <= p.end + 1e-6);
+			const startOf = new Map(
+				recipe.days.flatMap((d) =>
+					d.entries
+						.filter((e) => e.kind !== "passive")
+						.map((e) => [e.task, e.from] as const),
+				),
+			);
+			// A wait is needed by the first task that depends on its step, else
+			// by the service: the written range bounds the span up to then.
+			const neededAt = (w: (typeof waits)[number]) => {
+				const parent = graph.tasks.find((t) => t.id === w.task)?.after[0];
+				let at = Infinity;
+				for (const t of graph.tasks) {
+					if (t.kind === "passive" || !parent || !t.after.includes(parent))
+						continue;
+					const f = startOf.get(t.id);
+					if (f !== undefined) at = Math.min(at, f);
+				}
+				return Number.isFinite(at) ? Math.max(at, w.to) : 0;
+			};
 			for (const w of waits) {
+				const need = neededAt(w);
 				const s = startsIn(w.from);
-				const e = endsIn(w.to);
-				// Held at its end by a passage or the service, or free and moving
-				// with its start.
-				const pinned = e !== -1 || w.to >= -1e-6;
-				const length = pinned
-					? w.to - w.from + shift[s]! - (e === -1 ? 0 : shift[e]!)
-					: w.to - w.from;
+				const e = passageAt(need);
+				const before = need - w.from;
+				const after = before + shift[s]! - (e === -1 ? 0 : shift[e]!);
 				const range = ranges.get(w.task)!;
-				expect(length).toBeGreaterThanOrEqual(range.min - 1e-6);
-				expect(length).toBeLessThanOrEqual(range.max + 1e-6);
+				const planned = w.to - w.from;
+				const written = range.min < range.max;
+				// Never made worse than it was, and inside the range when it was. An
+				// exact wait is a minimum, and a ceiling only where it is tight.
+				const max = written
+					? range.max
+					: before > planned + 1e-6
+						? Infinity
+						: planned;
+				const min = written ? range.min : planned;
+				expect(after <= max + 1e-6 || after <= before + 1e-6).toBe(true);
+				expect(after >= min - 1e-6 || after >= before - 1e-6).toBe(true);
 			}
 			passages.forEach((p, i) => {
 				if (i === 0) return;

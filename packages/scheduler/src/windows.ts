@@ -55,6 +55,7 @@ export function passageWindows(
 			max: max ?? task.duration.nominal,
 		});
 	}
+	const graphTasks = new Map(graph.tasks.map((t) => [t.id, t]));
 	const now =
 		context.now === undefined ? undefined : parseInstant(context.now, timeZone);
 
@@ -84,8 +85,31 @@ export function passageWindows(
 			});
 			return k;
 		};
-		const endsIn = (w: RunSheetEntry) =>
-			passages.findIndex((p) => p.start - EPS <= w.to && w.to <= p.end + EPS);
+		// Where a wait is needed: at the start of the first task that depends on
+		// its step, else at the service. The wait itself ends sooner when the
+		// dish just sits afterwards; what the written range bounds is the whole
+		// span from its start to that need.
+		const startOfTask = new Map<string, number>();
+		for (const day of recipe.days) {
+			for (const e of day.entries) {
+				if (e.kind !== "passive") startOfTask.set(e.task, e.from);
+			}
+		}
+		const neededAt = (w: RunSheetEntry): number => {
+			const parent = graphTasks.get(w.task)?.after[0];
+			if (parent === undefined) return Math.max(w.to, 0);
+			let at = Infinity;
+			for (const t of graph.tasks) {
+				if (t.kind === "passive" || !t.after.includes(parent)) continue;
+				const from = startOfTask.get(t.id);
+				if (from !== undefined) at = Math.min(at, from);
+			}
+			return Number.isFinite(at) ? Math.max(at, w.to) : 0;
+		};
+		const passageAt = (minutes: number) =>
+			passages.findIndex(
+				(p) => p.start - EPS <= minutes && minutes <= p.end + EPS,
+			);
 
 		passages.forEach((p, k) => {
 			const constraints: Constraint[] = [];
@@ -94,13 +118,22 @@ export function passageWindows(
 
 			for (const w of waits) {
 				const from = startsIn(w);
-				const to = endsIn(w);
+				const need = neededAt(w);
+				const to = passageAt(need);
 				const range = ranges.get(w.task);
+				const span = need - w.from;
 				const planned = w.to - w.from;
-				// A wait is held at its end by what needs it: a passage, or the
-				// service. One that ends in the middle of nothing (the dish just
-				// waits afterwards) moves with its start and is never stretched.
-				const pinned = to >= 0 || w.to >= -EPS;
+				// A written range bounds the whole span. An exact wait holds the
+				// span where it is when it is tight (a thaw that ends at the
+				// service), and is only a minimum when the plan already leaves the
+				// dish sitting afterwards (a sponge baked a day ahead).
+				const written = range !== undefined && range.min < range.max;
+				const maxSpan = written
+					? range.max
+					: span > planned + EPS
+						? Infinity
+						: planned;
+				const minSpan = written ? range.min : planned;
 				const fixed = (): RunSheetFixedBy => ({
 					task: w.task,
 					section: w.section,
@@ -110,17 +143,17 @@ export function passageWindows(
 					before: to >= 0 ? "passage" : "service",
 					...(to >= 0 && { sections: passages[to]!.sections }),
 				});
-				if (from === k && to !== k && pinned) {
-					// The passage moves, the wait's end stays: the wait grows.
+				if (from === k && to !== k) {
+					// The passage moves, the need stays: the span grows.
 					constraints.push({
-						slack: (range?.max ?? planned) - planned,
+						slack: Math.max(0, maxSpan - span),
 						wait: fixed(),
 					});
 				}
 				if (to === k && from !== k) {
 					// Bounds the margin, but it is not what holds the passage "fixed":
 					// that is the wait it leads to.
-					constraints.push({ slack: planned - (range?.min ?? planned) });
+					constraints.push({ slack: Math.max(0, span - minSpan) });
 				}
 				if (w.track !== undefined && from === k) {
 					// Starting earlier must not run into the track's previous use.
