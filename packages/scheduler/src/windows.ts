@@ -97,16 +97,20 @@ export function passageWindows(
 				const to = endsIn(w);
 				const range = ranges.get(w.task);
 				const planned = w.to - w.from;
+				// A wait is held at its end by what needs it: a passage, or the
+				// service. One that ends in the middle of nothing (the dish just
+				// waits afterwards) moves with its start and is never stretched.
+				const pinned = to >= 0 || w.to >= -EPS;
 				const fixed = (): RunSheetFixedBy => ({
 					task: w.task,
 					section: w.section,
 					...(w.step !== undefined && { step: w.step }),
 					...(w.track !== undefined && { track: w.track }),
 					planned,
-					before: to === -1 ? "service" : "passage",
+					before: to >= 0 ? "passage" : "service",
 					...(to >= 0 && { sections: passages[to]!.sections }),
 				});
-				if (from === k && to !== k) {
+				if (from === k && to !== k && pinned) {
 					// The passage moves, the wait's end stays: the wait grows.
 					constraints.push({
 						slack: (range?.max ?? planned) - planned,

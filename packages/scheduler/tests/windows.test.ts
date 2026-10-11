@@ -186,6 +186,70 @@ describe("passage windows", () => {
 		expect(only!.window!.advance).toBe(30);
 	});
 
+	it("does not hold a passage by a wait that ends in the middle of nothing", () => {
+		// The rest ends hours before anything needs it: it moves with its start.
+		const graph: TaskGraph = {
+			tasks: [
+				{
+					id: "s0.0",
+					kind: "step",
+					section: 0,
+					step: 0,
+					duration: { nominal: 20 },
+					produces: ["a"],
+					after: [],
+				},
+				{
+					id: "s0.0.t0",
+					kind: "passive",
+					section: 0,
+					step: 0,
+					offset: 20,
+					duration: { nominal: 30 },
+					after: ["s0.0"],
+				},
+				{
+					id: "s1.0",
+					kind: "step",
+					section: 1,
+					step: 0,
+					duration: { nominal: 15 },
+					consumes: ["a"],
+					produces: ["b"],
+					after: ["s0.0"],
+				},
+				{
+					id: "s1.0.t0",
+					kind: "passive",
+					section: 1,
+					step: 0,
+					offset: 15,
+					duration: { nominal: 600, min: 600, max: 1500 },
+					after: ["s1.0"],
+				},
+				{
+					id: "s2.0",
+					kind: "step",
+					section: 2,
+					step: 0,
+					duration: { nominal: 10 },
+					consumes: ["b"],
+					after: ["s1.0"],
+				},
+			],
+			sections: [
+				{ day: 1, intermediate: "a" },
+				{ day: 1, intermediate: "b" },
+				{ day: 0 },
+			],
+		};
+		const passages = passagesOf(sheetOf(graph, context()));
+		for (const p of passages) {
+			expect(p.fixedBy?.before).not.toBe("service");
+		}
+		expect(passages[0]!.window).toBeDefined();
+	});
+
 	it("leaves the sheet alone without the graph or the context", () => {
 		const plan = project([{ graph: entremets }], context());
 		for (const sheet of [
@@ -329,7 +393,12 @@ describe("passage windows (property)", () => {
 			for (const w of waits) {
 				const s = startsIn(w.from);
 				const e = endsIn(w.to);
-				const length = w.to - w.from + shift[s]! - (e === -1 ? 0 : shift[e]!);
+				// Held at its end by a passage or the service, or free and moving
+				// with its start.
+				const pinned = e !== -1 || w.to >= -1e-6;
+				const length = pinned
+					? w.to - w.from + shift[s]! - (e === -1 ? 0 : shift[e]!)
+					: w.to - w.from;
 				const range = ranges.get(w.task)!;
 				expect(length).toBeGreaterThanOrEqual(range.min - 1e-6);
 				expect(length).toBeLessThanOrEqual(range.max + 1e-6);
