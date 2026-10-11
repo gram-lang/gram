@@ -307,7 +307,15 @@ export function project(
 	});
 
 	plan.diagnostics.push(
-		...sessionMismatches(schedule, offset, serve, timeZone),
+		...sessionMismatches(
+			schedule,
+			offset,
+			serve,
+			timeZone,
+			// `upfront` is one session for the whole recipe, rests included: it
+			// starts on its day and is meant to run on, so only its start counts.
+			options.miseEnPlace === "upfront",
+		),
 	);
 
 	if (context.now !== undefined && schedule.blocks.length > 0) {
@@ -341,12 +349,13 @@ function sessionMismatches(
 	offset: number,
 	serve: number,
 	timeZone: string,
+	startOnly = false,
 ): ProjectionDiagnostic[] {
 	const serveDate = toLocal(serve, timeZone).date;
 	const out: ProjectionDiagnostic[] = [];
 	for (const s of schedule.sessions) {
 		const expected = addDays(serveDate, -s.day);
-		const dates = [s.start, s.end].map(
+		const dates = (startOnly ? [s.start] : [s.start, s.end]).map(
 			(t) => toLocal(t + offset, timeZone).date,
 		);
 		const actual = dates.find((d) => d !== expected);
