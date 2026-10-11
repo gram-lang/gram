@@ -58,6 +58,10 @@ Contrairement à un `@ingrédient` dont les quantités sont proportionnelles par
 | **Avec quantité** | `#poêle{1}` ou `#ramequins{4}` | <Badge text="Évolutif" variant="tip" /> | Doubler les portions demandera 2 poêles ou 8 ramequins. |
 | **Fixe explicite** | `#=poêle{2}` | <Badge text="Fixe" variant="note" /> | Reste fixé à 2 poêles même si la recette est multipliée. |
 
+## Ustensiles et plan de travail
+
+Les ustensiles d'une section sont listés dans « À sortir » pour le passage où la section est faite (une fois par passage). Deux minuteurs passifs qui se chevauchent dans des étapes citant le même ustensile, sans piste nommée commune, sont signalés par [`PASSIVE_OVERLAP_SAME_COOKWARE`](/fr/docs/reference/api/warnings/#passive_overlap_same_cookware), avec une piste nommée comme correction suggérée.
+
 ## Modificateurs et syntaxe avancée
 
 Le `#matériel` prend en charge plusieurs mécanismes avancés identiques à ceux des ingrédients :

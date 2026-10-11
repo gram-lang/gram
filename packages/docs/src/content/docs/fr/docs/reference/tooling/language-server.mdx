@@ -6,6 +6,7 @@ description: "Comment le Serveur de Langage Gram implémente le LSP pour les dia
 Le Serveur de Langage Gram (`@gram-lang/language-server`) est le moteur d'analyse sous-jacent de l'intégration de Gram dans vos éditeurs de code. En implémentant le standard **Language Server Protocol (LSP)**, il fournit des fonctionnalités d'IDE avancées pour les fichiers `.gram` sur une multitude d'éditeurs (VS Code, Neovim, Helix, etc.).
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../../components/Since.astro';
 
 ## Architecture
 
@@ -41,6 +42,16 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 | **Code Lens** | Injecte des actions interactives contextuelles au-dessus du document (affichage du panneau nutritionnel). |
 | **Document Symbol** | Alimente la vue Plan (*Outline*) de l'éditeur pour une navigation fluide au sein des sections de la recette. |
 | **Folding Range** | Permet de replier proprement le frontmatter YAML et les blocs de sections `##`. |
+
+## Notifications vers le client
+
+En plus du protocole standard, le serveur envoie à l'éditeur les vues rendues d'une recette. Elles portent `{ uri, html }` :
+
+| Notification | Contenu |
+|---|---|
+| `gram/previewUpdated` | L'aperçu en direct (HTML), ou le panneau d'erreur quand la recette ne compile pas. |
+| `gram/runSheetUpdated` | <Since v="1.4.0" /> Le plan de travail en jours avant le service (`J-2`, `J-1`, `Jour J`), en HTML. Le panneau `Gram: Work Plan` de VS Code le lit. |
+| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Le diagramme de Gantt (HTML). Toujours envoyée jusqu'en 2.0.0 pour les clients qui la lisent ; l'extension VS Code ne la lit plus. |
 
 ## Ressources associées
 

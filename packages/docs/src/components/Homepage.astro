@@ -268,82 +268,39 @@ const mockBases = [
               >
                 <div class="sr-only">
                   {lang === "fr"
-                    ? "Rétro-planning : Temps total 17 minutes, temps actif 7 minutes. Déroulé : 0 à 5m : Mise en place ; 5 à 15m : Ébullition ; 10 à 15m : Sauter ; 15 à 17m : Mélanger."
-                    : "Timeline schedule: Total time 17 minutes, active time 7 minutes. Steps: 0 to 5m: Mise en place; 5 to 15m: Boiling; 10 to 15m: Sauté; 15 to 17m: Toss."}
+                    ? "Plan de travail pour le samedi 17 octobre à 20 h : un passage en cuisine de 19 h 40 à 20 h. À sortir : pâtes, tomates cerises, ail, huile d'olive, basilic. Au programme : cuire 10 minutes, sauter 5 minutes, mélanger."
+                    : "Work plan for Saturday, October 17 at 8 p.m.: one visit to the kitchen from 7:40 to 8 p.m. To take out: pasta, cherry tomatoes, garlic, olive oil, basil. To do: boil 10 minutes, sauté 5 minutes, toss."}
                 </div>
-                <div aria-hidden="true">
-                  <div class="gantt-header-mock">
-                    <span
-                      >{lang === "fr" ? "Temps Total" : "Total Time"}: <strong
-                        >17m</strong
-                      ></span
-                    >
-                    <span
-                      >{lang === "fr" ? " · Actif" : " · Active"}: <strong>7m</strong
-                      ></span
-                    >
+                <div class="plan-mock" aria-hidden="true">
+                  <div class="plan-mock-header">
+                    <strong>{lang === "fr" ? "Plan de travail" : "Work plan"}</strong>
+                    <span>{lang === "fr" ? "Pour le samedi 17 octobre à 20:00" : "For Saturday, October 17 at 20:00"}</span>
                   </div>
-                  <div class="gantt-tracks-container">
-                    <div class="gantt-track-mock" style="height: 120px;">
-                      <div class="track-label-mock">
-                        {lang === "fr" ? "Actions" : "Actions"}
-                      </div>
-                      <div class="track-content-mock">
-                        <div
-                          class="time-block-mock passive-mock"
-                          style="width: 26%; left: 0; top: 8px; border: none;"
-                        >
-                          <span
-                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                            >Mise en place</span
-                          >
-                        </div>
-                        <div
-                          class="time-block-mock active-mock"
-                          style="width: 26%; left: 52%; top: 44px;"
-                        >
-                          <span
-                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                            >{lang === "fr" ? "Sauter" : "Sauté"}</span
-                          >
-                        </div>
-                        <div
-                          class="time-block-mock active-mock"
-                          style="width: 10%; left: 78%; top: 80px;"
-                        >
-                          <span
-                            style="position: absolute; left: calc(100% + 10px); color: var(--sl-color-white); font-size: 0.85rem; font-weight: 600; white-space: nowrap;"
-                            >↳ {lang === "fr" ? "Mélanger" : "Toss"}</span
-                          >
-                        </div>
-                      </div>
+                  <div class="plan-mock-row">
+                    <span class="plan-mock-day">{lang === "fr" ? "SAM. 17" : "SAT 17"}</span>
+                    <span class="plan-mock-time">19:40 – 20:00</span>
+                    <span>Tomato Basil Pasta</span>
+                  </div>
+                  <div class="plan-mock-row plan-mock-serve">
+                    <span class="plan-mock-day"></span>
+                    <span class="plan-mock-time">★ 20:00</span>
+                    <span>{lang === "fr" ? "Servir" : "Serve"}</span>
+                  </div>
+                  <div class="plan-mock-lists">
+                    <div>
+                      <div class="plan-mock-label">{lang === "fr" ? "À sortir" : "To take out"}</div>
+                      <ul>
+                        <li>pasta 200 g</li>
+                        <li>cherry tomatoes 200 g</li>
+                        <li>garlic 2 cloves</li>
+                        <li>olive oil</li>
+                        <li>fresh basil 1 handful</li>
+                      </ul>
                     </div>
-                    <div class="gantt-track-mock">
-                      <div class="track-label-mock">
-                        {lang === "fr" ? "Ébullition" : "Boiling"}
-                      </div>
-                      <div class="track-content-mock">
-                        <div
-                          class="time-block-mock passive-mock"
-                          style="width: 52%; left: 26%;"
-                        >
-                          <span class="block-label-mock">10m</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      class="gantt-track-mock"
-                      style="height: 36px; border-bottom: none;"
-                    >
-                      <div class="track-label-mock" style="border-right: none;">
-                      </div>
-                      <div class="track-content-mock" style="position: relative;">
-                        <div class="gantt-tick" style="left: 0%;">0m</div>
-                        <div class="gantt-tick" style="left: 26%;">5m</div>
-                        <div class="gantt-tick" style="left: 52%;">10m</div>
-                        <div class="gantt-tick" style="left: 78%;">15m</div>
-                        <div class="gantt-tick" style="left: 88%;">17m</div>
-                      </div>
+                    <div>
+                      <div class="plan-mock-label">{lang === "fr" ? "Au programme" : "To do"}</div>
+                      <p>Tomato Basil Pasta <small>({lang === "fr" ? "étapes 1 à 3" : "steps 1 to 3"})</small></p>
+                      <p class="plan-mock-steps">Boil 10 min › Sauté 5 min › Toss</p>
                     </div>
                   </div>
                 </div>
@@ -1153,89 +1110,79 @@ const mockBases = [
     white-space: nowrap;
   }
 
-  /* Gantt Timeline Mockup */
+  /* Work plan mockup */
   .timeline-mockup-card {
     padding: 1rem 0;
   }
-  .gantt-header-mock {
+  .plan-mock {
+    padding: 0 1.5rem;
+    font-size: 0.9rem;
+    color: var(--sl-color-gray-2);
+  }
+  .plan-mock-header {
     display: flex;
-    padding: 0 1.5rem 1rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
     border-bottom: 1px solid var(--sl-color-border);
     font-size: 0.85rem;
     color: var(--sl-color-gray-3);
   }
-  .gantt-header-mock strong {
+  .plan-mock-header strong {
     color: var(--sl-color-white);
   }
-  .gantt-track-mock {
+  .plan-mock-row {
     display: flex;
-    height: 48px;
-    align-items: center;
-    border-bottom: 1px solid var(--sl-color-border);
-    padding-right: 1rem;
+    flex-wrap: wrap;
+    gap: 0.15rem 1rem;
+    margin: 0.35rem 0;
   }
-  .track-label-mock {
-    width: 80px;
-    font-size: 0.9rem;
+  .plan-mock-day {
+    min-width: 4.5rem;
     font-weight: 600;
     color: var(--sl-color-white);
-    border-right: 1px solid var(--sl-color-border);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding-left: 1.5rem;
   }
-  .track-content-mock {
-    flex-grow: 1;
-    position: relative;
-    height: 100%;
-  }
-  .gantt-tick {
-    position: absolute;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: var(--sl-color-gray-3);
-    font-size: 0.75rem;
+  .plan-mock-time {
+    min-width: 7rem;
     font-family: var(--sl-font-mono);
     font-variant-ligatures: none;
-    transform: translateX(-50%);
+    color: var(--sl-color-gray-3);
   }
-  .gantt-tick::before {
-    content: "";
-    width: 1px;
-    height: 6px;
-    background-color: var(--sl-color-border);
-    margin-bottom: 4px;
-  }
-  .track-content-mock {
-    margin-left: 0.5rem;
-  }
-  .time-block-mock {
-    position: absolute;
-    top: 8px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
+  .plan-mock-serve {
     font-weight: 600;
-  }
-  .active-mock {
-    background-color: var(--sl-color-accent);
     color: var(--sl-color-white);
   }
-  .passive-mock {
-    background-color: var(--sl-color-gray-5);
-    border: 1px solid var(--sl-color-accent);
-    color: var(--sl-color-accent);
+  .plan-mock-lists {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem 2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sl-color-border);
   }
-  .block-label-mock {
-    padding: 0 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .plan-mock-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+    margin-bottom: 0.4rem;
+  }
+  .plan-mock-lists ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .plan-mock-lists li::before {
+    content: "☐ ";
+    color: var(--sl-color-gray-3);
+  }
+  .plan-mock-lists p {
+    margin: 0;
+  }
+  .plan-mock-steps {
+    color: var(--sl-color-accent-high);
+    margin-top: 0.25rem !important;
   }
 
   /* Tabular Mockup */

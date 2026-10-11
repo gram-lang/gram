@@ -175,7 +175,7 @@ L'ancre de rétroplanning d'une section (`~{-2d}`) exprime une **échéance imp�
 Quelques règles essentielles pour modéliser des recettes s'étendant sur plusieurs jours :
 
 - **Ancrez en jours calendaires (`~{-Nd}`)** : le découpage en journées de travail repose exclusivement sur les ancres exprimées en jours (`~{-1d}`, `~{-2d}`). Une section sans ancre est rattachée au jour de l'ancre en jours la plus lointaine parmi les sections avales.
-- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur le diagramme de Gantt, mais ne crée pas de session J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
+- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur la chronologie, mais ne crée pas de session J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
 - **Une ancre en heures (`~{-Nh}`) ne découpe pas de session** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de session autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
 - **Sections successives au cours du même jour** : ancrez uniquement la dernière section (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre. Assigner la même ancre à deux sections interdépendantes générerait un diagnostic de paradoxe temporel.
 
@@ -214,7 +214,11 @@ Pour exploiter toute la puissance de l'ordonnancement ALAP de Gram, appliquez ce
 
 Grâce au calcul déterministe des bornes temporelles `start` et `end` par le moteur ALAP, les interfaces utilisateur n'ont aucune logique de calcul de dates à implémenter : elles exploitent directement les données du graphe planifié.
 
-La représentation par diagramme de Gantt met en relief la synchronisation des tâches passives et l'imbrication du travail actif. Vous pouvez explorer cette dynamique en temps réel dans le **[Playground officiel de Gram](/fr/play/)** en activant la vue chronologique.
+Une chronologie (les schémas ci-dessus sont des diagrammes `gantt` Mermaid) met bien en relief la synchronisation des tâches passives et l'imbrication du travail actif ; ce sont les mêmes données que montre le [plan de travail](/fr/docs/how-to/plan-a-meal/). Vous pouvez explorer cette dynamique en temps réel dans le **[Playground officiel de Gram](/fr/play/)**.
+
+### Ce que l'ALAP implique pour la marge
+
+Tout est planifié **au plus tard** : un passage en cuisine ne peut donc être déplacé qu'**en avance**, jamais plus tard, sous peine de retarder le service. La marge du plan de travail (« Possible dès 18:00 ») dit de combien un passage peut avancer tant que les attentes autour de lui restent dans leur fourchette écrite. Une recette écrite avec des fourchettes a des marges ; une recette aux attentes exactes n'en a pas. Voir [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail).
 
 ## Ressources associées
 

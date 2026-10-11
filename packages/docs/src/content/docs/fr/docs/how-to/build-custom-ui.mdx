@@ -215,6 +215,50 @@ import Since from '../../../../../components/Since.astro';
    :::
 </Steps>
 
+## Construire sa propre vue planning
+
+Le plan de travail de Gram est une vue des données du scheduler, pas la seule. `runSheet()` donne les jours, les passages en cuisine et les fils qui continuent sans vous ; `gram plan --format json` écrit la même structure. Voici un petit calendrier par jour, en une trentaine de lignes, à partir de ce JSON :
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+
+// `recipe` is the compiled recipe; `context` holds serveAt, timeZone and availability.
+const plan = project([{ graph: recipe.tasks, title: recipe.title }], context);
+const sheet = runSheet(plan, { graph: recipe.tasks, context });
+
+const clock = (local?: string) => local?.slice(11, 16) ?? '';
+const hours = (minutes: number) => `${Math.round(minutes / 60)} h`;
+
+function planningView(sheet: ReturnType<typeof runSheet>, recipe: { sections: { title: string | null }[] }): string {
+  const [planned] = sheet.recipes;
+  return planned.days
+    .map((day) => {
+      const visits = day.passages
+        .map((visit, k) => {
+          const sections = visit.sections.map((s) => recipe.sections[s].title).join(', ');
+          const threads = day.threads
+            .filter((t) => t.passage === k)
+            .map((t) => `<li>${t.task} : ${hours(t.planned)} sans vous</li>`)
+            .join('');
+          const margin = visit.window ? ` (pourrait commencer à ${clock(visit.window.earliestLocal)})` : '';
+          return `<li><b>${clock(visit.startLocal)}–${clock(visit.endLocal)}</b> ${sections}${margin}<ul>${threads}</ul></li>`;
+        })
+        .join('');
+      return `<section><h3>${day.date ?? `J-${day.daysBefore}`}</h3><ul>${visits}</ul></section>`;
+    })
+    .join('');
+}
+```
+
+Ce que donne chaque champ :
+
+- `day.passages[]` : `start` / `end` (minutes avant le service, exactes), `startLocal` / `endLocal` avec une heure de service, `sections` (indices dans la recette), `tasks`, et `window` / `fixedBy` quand la marge est connue (donnez à `runSheet()` le `graph` et le `context`).
+- `day.threads[]` : les attentes qui continuent après un passage (`passage` est son indice dans le jour), avec `planned`, `range` et `toLocal`.
+- `day.entries[]` : chaque bloc du jour dans l'ordre, si vous préférez dessiner une chronologie vous-même, diagramme de Gantt compris : les données pour le reconstruire sont toutes là.
+- `sheet.adjustments[]` et `sheet.diagnostics[]` : les attentes allongées ou raccourcies, et ce qui n'a pas pu être réglé.
+
+Pour les mots (quoi sortir, ce que chaque section vous demande), vous pouvez réutiliser les fonctions dont est fait le plan de travail plutôt que les réécrire : `passageKit()` et `sectionProgram()` de `@gram-lang/renderer`. Voir [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail) pour les termes.
+
 ## Ressources associées
 
 <CardGrid>

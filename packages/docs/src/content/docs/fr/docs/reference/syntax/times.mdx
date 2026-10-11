@@ -53,6 +53,7 @@ Rôtir le poulet pendant ~{40-50 min}.
 L'interprétation d'une fourchette diffère fondamentalement selon la nature du minuteur :
 
 - **Une fourchette passive est une marge d'élasticité.** L'annotation `~_{12-24h}` signifie : « prête dès 12 heures, optimale jusqu'à 24 heures ». Par défaut, l'ordonnancement retient la borne la plus courte (`'shortest'`). Lors de la consultation, vous pouvez choisir la stratégie d'élasticité (`'shortest'`, la médiane `'balanced'`, ou la borne la plus longue `'longest'`) via l'option `--rests` de la CLI, le réglage `gram.rests` dans VS Code ou l'option `rests` du moteur de rendu. Lorsque vous spécifiez une heure de service et des disponibilités, le scheduler exploite cette élasticité pour franchir les plages de repos nocturnes sans solliciter le cuisinier (voir [Planification en temps réel](/fr/docs/explanation/planning-in-real-time/)).
+- **Ce que le plan de travail fait d'une fourchette.** Le plan montre une attente avec sa durée prévue et, quand elle diffère, la fourchette que vous avez écrite (« 15 h 50 (12 à 48 h) »). Une fourchette est aussi ce qui donne sa marge à un passage en cuisine (« Possible dès 18:00 »), puisqu'une attente qui peut s'allonger laisse le travail qui la précède avancer. Une attente exacte le tient en place (« Heures fixes »). Voir [le plan de travail](/fr/docs/how-to/plan-a-meal/).
 - **Une fourchette active est une incertitude de cuisson.** L'annotation `~{40-50 min}` représente la plage de temps nécessaire pour cuire le poulet. L'ordonnancement retient systématiquement la borne maximale (50 minutes) afin de garantir qu'aucun retard ne vienne décaler l'heure de service. L'option d'élasticité passive `rests` ne s'y applique pas.
 
 :::note
@@ -61,7 +62,7 @@ Les champs dépréciés de la recette compilée (`steps[].timings`, `steps[].bac
 
 ## Actif vs passif
 
-Le compilateur Gram construit une chronologie d'exécution complète (assimilable à un diagramme de Gantt) pour chaque recette. Afin d'établir un ordonnancement réaliste, il distingue le travail mobilisant activement la brigade des opérations s'exécutant en tâche de fond.
+Le compilateur Gram construit une chronologie d'exécution complète pour chaque recette. Afin d'établir un ordonnancement réaliste, il distingue le travail mobilisant activement la brigade des opérations s'exécutant en tâche de fond.
 
 :::tip[💡 Règle d'or : l'étape m'empêche-t-elle de démarrer la suivante ?]
 
@@ -103,6 +104,10 @@ Baisser la température à 180°C et poursuivre la cuisson pendant ~_cuisson{30 
 
 > ⏱️ **Résultat :** En partageant la piste `cuisson`, Gram ordonnance ces deux minuteurs l'un après l'autre. Le second minuteur de 30 minutes ne démarrera qu'une fois les 10 premières minutes achevées. L'amplitude temporelle augmente de 40 minutes, sans impacter le temps actif.
 
+:::tip[Sans piste, les attentes qui se chevauchent sont signalées]
+Deux minuteurs passifs qui se chevauchent dans des étapes citant le **même ustensile** (`#four` dans les deux), sans piste en commun, sont signalés par `PASSIVE_OVERLAP_SAME_COOKWARE` : le message suggère une piste nommée. C'est seulement informatif, puisque deux plaques peuvent partager un four. Voir [Avertissements](/fr/docs/reference/api/warnings/#passive_overlap_same_cookware).
+:::
+
 ## Comment le temps est calculé
 
 En coulisses, Gram calcule quatre grandeurs temporelles distinctes pour établir une planification rigoureuse :
@@ -141,7 +146,7 @@ Deux points d'attention pour les recettes pluri-journalières :
 - **Un long minuteur passif n'est pas une ancre.** Un temps passif de `~_{48h}` fait démarrer la chronologie deux jours plus tôt, mais seule l'ancre explicite d'une section ouvre formellement une journée de travail (ex. : `## Crème ~{-2d}`).
 - **Une ancre en heures n'ouvre jamais de journée.** Une ancre telle que `~{-18h}` (un levain pétri la veille au soir) ou `~{-36h}` constitue une échéance précise au sein de la journée où s'exécute la section, et non une session journalière autonome. Pour ouvrir la veille, employez `~{-1d}` (voir [Jours et heures](#jours-et-heures)).
 
-Le choix de la stratégie s'effectue à l'affichage : le Playground propose un sélecteur interactif, VS Code fournit le paramètre `gram.miseEnPlace`, la CLI expose l'option `--mise-en-place` et le moteur de rendu accepte `miseEnPlace`. Cette option influe sur le **temps total** et le **temps d'inactivité**, ainsi que sur la disposition des blocs sur le diagramme de Gantt, mais préserve strictement le temps de préparation cumulé et le temps actif.
+Le choix de la stratégie s'effectue à l'affichage : le Playground propose un sélecteur interactif, VS Code fournit le paramètre `gram.miseEnPlace`, la CLI expose l'option `--mise-en-place` et le moteur de rendu accepte `miseEnPlace`. Cette option influe sur le **temps total** et le **temps d'inactivité**, ainsi que sur la place de la mise en place dans l'ordonnancement, mais préserve strictement le temps de préparation cumulé et le temps actif.
 
 Une préparation intermédiaire (`&pâte`) est pesée dans la section qui la consomme et jamais avant d'avoir été confectionnée : même en mode `upfront`, cette opération spécifique est planifiée sous forme d'un bloc différé juste avant la section consommatrice.
 

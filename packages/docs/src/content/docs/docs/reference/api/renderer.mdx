@@ -1,6 +1,6 @@
 ---
 title: "@gram-lang/renderer"
-description: "Rendering compiled recipes to Markdown, HTML, print-ready documents, and interactive Gantt chart timelines."
+description: "Rendering compiled recipes to Markdown, HTML and print-ready documents, and the work plan of a schedule."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -39,10 +39,9 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `formatFraction` | `(value: number) => string` | Custom decimal-to-fraction formatter (defaults to common kitchen fractions, e.g. `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter (defaults to e.g. `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Suppresses ingredient quantities within step instruction text (shopping list and section ingredient lists remain unchanged). |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Controls preparation placement: immediately before each section (`'perSection'`, default), upfront at recipe start (`'upfront'`), or at the start of each working day (`'perSession'`). Determines header total and idle times. With `'perSection'`, HTML outputs a "Mise en place" badge on each section's ingredient list (duration and tooltip details). In the other two modes, each session opens with an explicit preparation block (`D-3`, `D-1`, `Day D`...), and HTML badges are reserved for deferred intermediate preparations. Ingredient lists are identical across modes. The timeline is laid out from `tasks`. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Which timeline the document follows: preparation immediately before each section (`'perSection'`, default), upfront at recipe start (`'upfront'`), or at the start of each working day (`'perSession'`). Determines the total and idle times of the header. The recipe itself shows no schedule: what to take out, and when, is in the work plan (`runSheet`). The timeline is laid out from `tasks`. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Controls resolution for passive timers defined as ranges (`~_{12-24h}`): minimum duration (`'shortest'`, default), midpoint (`'balanced'`), or maximum duration (`'longest'`). Exact passive timers and active timers are unaffected. Governs the same computed times as `miseEnPlace`. |
-| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Real-calendar projection computed via `project()` from `@gram-lang/scheduler`. Adds wall-clock timestamps next to steps ("around 21:40"), target serving time and constraint notices in the header, day transitions (`D-1`, `Day D`), and notes on stretched/shortened passive durations. Header times reflect the real calendar plan. Without this option, recipes render with relative elapsed times. |
-| `runSheet` | `boolean` | <Since v="1.4.0" /> When `projection` is supplied: appends the operational production sheet after the recipe in the same document (under a dedicated Markdown heading, or formatted with print styles). Recipe and run sheet present the same operations under two complementary lenses: section grouping versus chronological execution. |
+| `runSheet` | `RunSheet` | <Since v="1.4.0" /> A work plan (`runSheet()` from `@gram-lang/scheduler`) to write after the recipe, in the same document (under a dedicated Markdown heading, or formatted with print styles). The recipe says how, the plan says when: the recipe itself reads the same with or without it. |
 | `bakersMathOnly` | `boolean` | Shows only baker's percentages, hiding absolute ingredient quantities. |
 | `interactiveScaling` | `boolean` | Emits interactive scaling controls for yield and ingredient adjustments (HTML only). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Selects the nutrition calculation basis. `'auto'` (default) uses per-portion if portions are declared, otherwise whole recipe. |
@@ -50,28 +49,23 @@ All three formatters use the same underlying traversal (`RenderBackend`). This g
 | `lang` | `string` | BCP-47 language tag (e.g. `'en'`, `'fr'`) for UI string localization via `@gram-lang/i18n`. |
 | `renderId` | `string` | Prefix for footnote anchor IDs — prevents ID collisions when rendering multiple recipes on one page. |
 
-## Gantt charts (`toGanttHTML` & `attachGanttInteractivity`)
+## Gantt chart (`toGanttHTML` & `attachGanttInteractivity`) <Since type="deprecated" v="1.4.0" />
 
-Renders an interactive timeline visualizing active steps, passive equipment/rest periods, and idle-time compression.
+:::caution[Deprecated, removed in 2.0.0]
+The Gantt chart is replaced by the [work plan](#the-work-plan). No Gram surface (CLI, playground, VS Code) draws it any more. `toGanttHTML`, `attachGanttInteractivity`, `formatTime`, `formatAxisTime`, the `Gantt*` types and `gantt.css` stay until 2.0.0; `toGanttHTML` warns once on the console (`quiet: true` silences it for a host that renders the chart for others). To draw a timeline yourself, build it from the data of `runSheet()`: see [Build a custom UI](/docs/how-to/build-custom-ui/#build-your-own-planning-view). See [Deprecations](/docs/how-to/deprecations/).
+:::
 
 ```typescript
 import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
 
-// 1. Generate static HTML fragment
 const ganttHtml = toGanttHTML(compiled, { lang: 'en' });
 container.innerHTML = ganttHtml;
 
-// 2. Attach interactivity and hover tooltips
 const handle = attachGanttInteractivity(container, {
   timeMode: 'forward',   // 'forward' (stopwatch T+), 'reverse' (countdown T-), or 'target' (serve time)
-  targetTime: '19:30',   // Target serve time (HH:MM)
-  isCompactMode: false   // Compact row height
+  targetTime: '19:30',
+  isCompactMode: false
 });
-
-// Update options dynamically
-handle.setOptions({ isCompactMode: true });
-
-// Teardown event listeners on unmount
 handle.dispose();
 ```
 
@@ -79,12 +73,12 @@ handle.dispose();
 
 | Option | Type | Description |
 |---|---|---|
-| `lang` | `string` | Language code (e.g. `'en'`, `'fr'`) for localized UI strings via `@gram-lang/i18n`. |
+| `lang` | `string` | Language code for localized UI strings. |
 | `gapThresholdMinutes` | `number` | Minimum idle period before visual compression applies (default: `60`). `Infinity` disables compression. |
 | `compressedGapSize` | `number` | Virtual minute width to which compressed idle gaps are shrunk (default: `20`). |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Preparation placement strategy (default: `'perSection'`). Section preparation appears as a dashed block in the section's color; with `'perSession'`, day markers identify each working session. Computed from `tasks`. |
-| `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Elasticity for range-based passive timers (default: `'shortest'`). |
-| `projection` | `ProjectedPlan` | <Since v="1.4.0" /> Calendar projection computed via `project()` from `@gram-lang/scheduler`. The chart plots plan blocks directly (stretched or shortened passive durations appear at their actual scheduled span with dashed borders and notes), displays a time axis in local date and wall-clock times, shades unavailable intervals, and locks out the relative time-mode toggle. `miseEnPlace` and `rests` are inherited from the plan. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | Preparation placement strategy (default: `'perSection'`). |
+| `rests` | `'shortest' \| 'balanced' \| 'longest'` | Elasticity for range-based passive timers (default: `'shortest'`). |
+| `quiet` | `boolean` | Skips the one-time deprecation notice. |
 
 ### `GanttInteractivityOptions`
 
@@ -122,32 +116,65 @@ function escapeMarkdownHtml(unsafe: string | null | undefined): string   // esca
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
 
-## Production run sheet <Since v="1.4.0" />
+## The work plan
 
-From a plan generated by `project()` and the corresponding compiled recipe, the renderer produces operational production sheets across four formats, along with a structured descriptive model for custom UI development:
+<Since v="1.4.0" />
+
+From the `RunSheet` of `runSheet()` (`@gram-lang/scheduler`) and the compiled recipe, the renderer writes the work plan in four formats, and exposes the pieces it is made of:
 
 ```typescript
 import { project, runSheet } from '@gram-lang/scheduler';
-import { runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML, describeRunSheet } from '@gram-lang/renderer';
+import {
+  runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML,
+  describeRunSheet, passageKit, sectionProgram,
+} from '@gram-lang/renderer';
 
-const sheet = runSheet(project([{ graph: compiled.tasks }], context));
+const context = { serveAt: '2026-10-17T20:00', timeZone: 'Europe/Paris', availability };
+const sheet = runSheet(project([{ graph: compiled.tasks }], context), { graph: compiled.tasks, context });
 
 runSheetToText(sheet, compiled, { lang: 'en' });      // plain text
-runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown document
-runSheetToHTML(sheet, compiled, { lang: 'en' });      // styled HTML fragment
-runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print-ready HTML
-const model = describeRunSheet(sheet, compiled);       // { title, servedAt, days: [{ heading, lines }], problems }
+runSheetToMarkdown(sheet, compiled, { lang: 'en' });  // Markdown, check lists as - [ ]
+runSheetToHTML(sheet, compiled, { lang: 'en' });      // HTML fragment, no script
+runSheetToPrintHTML(sheet, compiled, { lang: 'en' }); // standalone print document, one day per page
+const model = describeRunSheet(sheet, compiled);       // the plan in words, as data
 ```
+
+The sheet of a recipe with no serving time comes from `runSheet(compiled.schedule, { graph: compiled.tasks })` (or `layout(...).schedule`): days are `D-2`, `D-1`, `Day D`, slots are durations, and there is no margin.
 
 ### `RunSheetRenderOptions`
 
 | Option | Type | Description |
 |---|---|---|
 | `lang` | `string` | Language code (`'en'`, `'fr'`) for labels and date formatting. |
-| `roundTo` | `number` | Display only: visual rounding of timestamps to minute intervals (default: `5`). Internal computations remain exact. |
+| `roundTo` | `number` | Display only: rounding of times to minute intervals (default: `5`). Internal computations remain exact. |
 | `formatDuration` | `(minutes: number) => string` | Custom duration formatter. |
+| `headingLevel` | `1 \| 2` | Markdown only: level of the plan's own heading (`2` when it follows a recipe). |
 
-Each run sheet entry lists estimated start time ("around 21:40"), task label, active work duration, and target completion time for passive phases. Tasks with zero active time are merged with their triggered passive phase. Stretched or shortened passive durations carry explanatory annotations, and unresolved scheduling constraints are summarized at the end of the sheet.
+### `RunSheetModel`
+
+`describeRunSheet()` returns:
+
+| Field | Description |
+|---|---|
+| `title`, `subtitle`, `summary` | "Work plan — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
+| `problems` | What the plan could not make work, one sentence each. |
+| `schedule[]` | The planning of the days: a row per visit (`kind: 'passage'`), per thread (`'thread'`) and the service (`'serve'`), with `day`, `time` and `text`. |
+| `days[]` | Per day: `heading`, `slot`, `notices` (adjusted waits) and `passages[]`, each with `slot`, `margin`, `kit[]` (to take out), `program[]` (to do) and `leaving[]`. |
+| `events[]` | One calendar event per visit (`start`, `end` in UTC, `title`, `description`), for a plan with a serving time. |
+
+### `passageKit()` and `sectionProgram()`
+
+The two extractions that a plan view needs and that read the compiled recipe, exported so that another interface does not rewrite them:
+
+```typescript
+passageKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
+// { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, note? }
+
+sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
+// { section, title, origin?, from, to, steps: [{ n, action?, temperatures, timers }] }
+```
+
+Nothing is invented: names, quantities, actions, temperatures and timers (with their written range) are those of the `.gram` file. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
 ## Related resources
 
@@ -159,7 +186,7 @@ Each run sheet entry lists estimated start time ("around 21:40"), task label, ac
   />
   <LinkCard
     title="Scheduler API"
-    description="Generate project plans and run sheets that feed into the renderer."
+    description="Generate project plans, work plans and serving time searches that feed into the renderer."
     href="/docs/reference/api/scheduler/"
   />
   <LinkCard

@@ -243,38 +243,98 @@ Ces diagnostics dépendent du contexte d'exécution et des disponibilités de l'
 ## `runSheet`
 
 ```typescript
-function runSheet(plan: ProjectedPlan): RunSheet
+function runSheet(
+  source: ProjectedPlan | Schedule,
+  options?: { graph?: TaskGraph; title?: string; context?: ProjectionContext },
+): RunSheet
+```
 
+La structure du plan de travail : pour chaque recette, ses jours ; pour chaque jour, les **passages en cuisine** et les **fils** qui continuent sans vous. Un `ProjectedPlan` donne un plan avec dates (`mode: "calendar"`) ; un `Schedule` seul donne la même structure en jours avant le service, sans dates (`mode: "relative"`). Avec `graph` et `context` (un plan calendaire), chaque passage reçoit sa marge. Les termes sont définis dans [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail).
+
+```typescript
 interface RunSheet {
-  serveAt: string;
-  timeZone: string;
-  recipes: { title?: string; days: RunSheetDay[] }[];
+  mode: "calendar" | "relative";
+  serveAt?: string;            // plans calendaires uniquement
+  timeZone?: string;
+  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork : minutes de votre propre travail
+  adjustments: RunSheetAdjustment[]; // attentes allongées ou raccourcies, avec leur section et leur jour
   diagnostics: ProjectionDiagnostic[];
 }
 
 interface RunSheetDay {
-  date: string;             // "2026-10-10"
-  daysBefore: number;       // 0 pour le jour J, 1 pour la veille...
-  entries: RunSheetEntry[]; // ordonnées chronologiquement
+  date?: string;               // "2026-10-10", avec une heure de service
+  daysBefore: number;          // 0 le jour du service, 1 la veille...
+  passages: RunSheetPassage[]; // les passages en cuisine, dans l'ordre
+  threads: RunSheetThread[];   // ce qui continue sans vous après un passage
+  entries: RunSheetEntry[];    // chaque bloc du jour, dans l'ordre
 }
 
-interface RunSheetEntry {
+interface RunSheetPassage {
+  start: number;               // minutes avant le service (<= 0), exactes
+  end: number;
+  startLocal?: string;         // "2026-10-10T21:40", avec une heure de service
+  endLocal?: string;
+  sections: number[];          // sections avec du travail dans le passage, dans l'ordre de la recette
+  tasks: string[];             // identifiants des préparations et étapes du graphe
+  window?: { advance: number; earliest: number; earliestLocal: string }; // marge >= 15 min
+  fixedBy?: { task: string; section: number; planned: number; before: "service" | "passage"; sections?: number[] };
+}
+
+interface RunSheetThread {
+  passage: number;             // indice dans les passages du jour
   task: string;
-  kind: "prep" | "step" | "passive";
-  active: boolean;
   section: number;
   step?: number;
   track?: string;
-  start: string;            // horodatages ISO 8601 (UTC)
-  end: string;
-  startLocal: string;       // horodatages locaux exacts à la minute
-  endLocal: string;
-  minutes: number;
-  adjustment?: RestAdjustment; // défini si ce temps passif a été ajusté
+  from: number;                // minutes avant le service
+  to: number;
+  planned: number;             // minutes, ajustements compris
+  fromLocal?: string;
+  toLocal?: string;
+  range?: { min: number; max: number }; // la fourchette écrite (avec `graph`)
 }
 ```
 
-Représente la structure de données d'une fiche de production opérationnelle. Le formatage textuel et le rendu visuel sont assurés par le moteur de rendu `@gram-lang/renderer` (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet` ; voir la [référence du renderer](/fr/docs/reference/api/renderer/)).
+Un **jour** est une session de la recette ; avec une heure de service, une session qui s'étale sur plusieurs dates est racontée un jour par date, et un passage qui franchit minuit reste entier à la date où il commence. `RunSheetEntry` est l'enregistrement par bloc (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
+
+Les mots et la mise en page n'y sont **pas** : `@gram-lang/renderer` les écrit (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet` ; voir la [référence du renderer](/fr/docs/reference/api/renderer/)).
+
+## `findServeTimes` et `earliestServe` <Since v="1.4.0" />
+
+Les deux reposent sur `project()` : elles essaient des heures de service et gardent celles qui peuvent être suivies. Une heure est rejetée quand le plan a un problème non résolu, un début déjà passé compris, et chaque rejet porte ses raisons.
+
+```typescript
+function tryServeAt(input: ProjectionInput, context: ProjectionContext, serveAt: string): ServeCandidate;
+
+function findServeTimes(
+  input: ProjectionInput,
+  context: ProjectionContext,        // demande `now` pour rejeter les débuts passés
+  options: {
+    from: string;                    // "2026-10-12" ou "2026-10-12T08:00", local
+    to: string;                      // une simple date désigne sa journée entière
+    mealTimes?: string[];            // par défaut DEFAULT_MEAL_TIMES = ["12:30", "20:00"]
+    limit?: number;                  // par défaut 5
+  },
+): { candidates: ServeCandidate[]; rejected: ServeCandidate[] };
+
+function earliestServe(
+  input: ProjectionInput,
+  context: ProjectionContext,        // `now` requis (ou `options.from`)
+  options?: { from?: string },
+): { found?: ServeCandidate; searchedUntil: string };
+
+interface ServeCandidate {
+  serveAt: string;                   // local
+  ok: boolean;
+  reasons: ProjectionDiagnostic[];
+  adjustments: number;               // attentes allongées ou raccourcies
+  passages: number;                  // passages en cuisine
+  startsAt?: string;                 // local, première tâche
+  plan: ProjectedPlan;
+}
+```
+
+Les `candidates` sont classés : moins d'ajustements, puis moins de passages, puis le plus tôt. `earliestServe()` part de la durée la plus courte de la recette après le présent et avance par pas de cinq minutes pendant `EARLIEST_SERVE_HORIZON_DAYS` jours (14). Les mots pour les deux sont `describeServeTimes()` et `describeEarliestServe()` du renderer ; `gram plan --find` est la même recherche.
 
 ## Options et utilitaires
 
@@ -290,6 +350,11 @@ const DEFAULT_REST_CHOICE: RestChoice; // "shortest"
 function isRestChoice(value: unknown): value is RestChoice;
 
 const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+const PASSAGE_GAP_MINUTES = 60;          // une attente de cette durée termine un passage en cuisine
+const WINDOW_MIN_MINUTES = 15;          // une marge plus courte n'est pas dite
+const DEFAULT_MEAL_TIMES: string[];     // ["12:30", "20:00"]
+const EARLIEST_SERVE_HORIZON_DAYS = 14;
 
 // Manipulation de dates sans dépendance tierce, adossée à un fuseau explicite
 function parseLocalIso(value: string, timeZone: string): number; // "2026-10-11T13:00" → minutes depuis l'époque Unix (UTC)
@@ -315,7 +380,7 @@ Lors du passage à l'heure d'été, une heure locale inexistante (par exemple 02
   />
   <LinkCard
     title="API Renderer"
-    description="Générez des fiches de production textuelles, Markdown ou HTML prêtes à l'impression."
+    description="Écrivez des plans de travail en texte, Markdown, HTML ou document imprimable."
     href="/fr/docs/reference/api/renderer/"
   />
   <LinkCard

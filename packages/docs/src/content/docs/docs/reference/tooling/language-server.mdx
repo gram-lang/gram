@@ -6,6 +6,7 @@ description: "How the Gram Language Server implements the LSP to power diagnosti
 The Gram Language Server (`@gram-lang/language-server`) is the intelligence engine behind editor integrations. It implements the standard **Language Server Protocol (LSP)**, providing advanced IDE features for Gram files across multiple editors, not just VS Code.
 
 import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import Since from '../../../../../components/Since.astro';
 
 ## Architecture
 
@@ -41,6 +42,16 @@ The Gram Language Server implements the following standard capabilities:
 | **Code Lens** | Injects interactive action buttons above the document (such as nutrition calculation). |
 | **Document Symbol** | Populates the editor's Outline view for clean structural navigation across recipe sections. |
 | **Folding Range** | Enables folding of YAML frontmatter blocks and `##` section headings. |
+
+## Notifications to the client
+
+Besides the standard protocol, the server sends the editor the rendered views of a recipe. They carry `{ uri, html }`:
+
+| Notification | Content |
+|---|---|
+| `gram/previewUpdated` | The live preview (HTML), or the error panel when the recipe does not compile. |
+| `gram/runSheetUpdated` | <Since v="1.4.0" /> The work plan in days before the service (`D-2`, `D-1`, `Day D`), as HTML. The VS Code `Gram: Work Plan` panel reads it. |
+| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> The Gantt chart (HTML). Still sent until 2.0.0 for clients that read it; the VS Code extension no longer does. |
 
 ## Related resources
 

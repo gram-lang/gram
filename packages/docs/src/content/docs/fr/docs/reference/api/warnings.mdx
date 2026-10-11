@@ -111,6 +111,12 @@ Lors de la planification inverse ALAP, une tâche de production est tirée avant
 
 Plusieurs minuteurs passifs partagent la même piste d'équipement matériel (ex. `~_four`) et ne peuvent pas se dérouler en simultané. L'ordonnanceur les sérialise l'un après l'autre pour éviter toute collision matérielle, retardant la seconde tâche. **Correction** : il s'agit d'une notification informative ; si vous disposez de plusieurs équipements distincts, assignez-leur des noms de pistes différenciés (ex. `~_four1` et `~_four2`).
 
+### `PASSIVE_OVERLAP_SAME_COOKWARE`
+
+<Since v="1.4.0" />
+
+Deux minuteurs passifs se recouvrent dans le temps, dans des étapes qui citent le même ustensile (`#four` dans les deux), sans piste nommée commune. Si l'un doit suivre l'autre, ils sont probablement dans un seul four : le plan les montre côte à côte. **Correction** : donnez-leur la même piste nommée (`~_four{30min}` puis `~_four{20min}`) pour qu'ils passent à tour de rôle ; si les deux tiennent dans le four en même temps, ce n'est qu'une information. Seuls les noms sont comparés (`#four` avec `#four`), donc cela marche quelle que soit la langue de la recette, et le recouvrement est lu sur la chronologie par défaut.
+
 ## Ressources associées
 
 <CardGrid>

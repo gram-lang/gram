@@ -14,6 +14,7 @@ Cette page répertorie l'ensemble des éléments dépréciés dans Gram, organis
 |---|---|
 | Rédaction de recettes `.gram` via le CLI, le moteur de rendu ou le playground | **Aucune**. La syntaxe du langage ne comporte aucune dépréciation. |
 | Consommation du JSON compilé (`gram build`, interface web personnalisée, scripts) | Consultez les sections [Champs du JSON compilé](#champs-du-json-compilé) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
+| Dessin d'un diagramme de Gantt, ou lecture de `gram/ganttUpdated` ou `gram.showGantt` | Voir [Le diagramme de Gantt et ses surfaces](#le-diagramme-de-gantt-et-ses-surfaces). |
 | Intégration programmatique de `@gram-lang/kitchen` ou `@gram-lang/analyzer` | Consultez [Champs du JSON compilé](#champs-du-json-compilé), [`calculatePreparationTime`](#la-fonction-calculatepreparationtime) et [Compatibilité avec les versions antérieures](#compatibilité-avec-les-versions-antérieures). |
 
 Pour vérifier l'état de votre code applicatif, reportez-vous à la section [Identifier les usages dépréciés dans votre code](#identifier-les-usages-dépréciés-dans-votre-code).
@@ -117,6 +118,40 @@ for (const entry of computeMiseEnPlace(sections, registry)) {
 ```
 
 Une recette compilée porte déjà cette décomposition au sein de son champ `miseEnPlace`.
+
+### Le diagramme de Gantt et ses surfaces
+
+<Since v="1.4.0" type="deprecated" />
+
+Le diagramme de Gantt est remplacé par le [plan de travail](/fr/docs/how-to/plan-a-meal/) : plus aucune surface de Gram (CLI, playground, VS Code) ne le dessine, et son code est figé jusqu'en 2.0.0.
+
+| Déprécié | Remplacement |
+|---|---|
+| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()` et les types `Gantt*` (`@gram-lang/renderer`) | `runSheetToHTML()` (et `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) sur le `RunSheet` de `runSheet()`, ou une vue de votre cru construite à partir de ces données |
+| `@gram-lang/renderer/gantt.css` | Rien : le plan de travail est stylé par `gram.css` |
+| Les clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Aucune : le plan de travail utilise les clés `workPlan*` du dictionnaire du renderer |
+| La commande `gram.showGantt`, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet`, `Gram: Work Plan`. L'ancienne commande l'ouvre et le dit une fois |
+| La notification `gram/ganttUpdated` (serveur de langage) | `gram/runSheetUpdated`, ou les données de la recette compilée |
+
+`toGanttHTML()` avertit une fois dans la console. Avant :
+
+```typescript
+import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
+container.innerHTML = toGanttHTML(compiled);
+attachGanttInteractivity(container, { timeMode: 'forward', targetTime: '', isCompactMode: false });
+```
+
+Après :
+
+```typescript
+import { runSheet } from '@gram-lang/scheduler';
+import { runSheetToHTML } from '@gram-lang/renderer';
+
+const sheet = runSheet(compiled.schedule, { graph: compiled.tasks }); // ou project(...) avec une heure de service
+container.innerHTML = runSheetToHTML(sheet, compiled);
+```
+
+Si vous voulez un graphique, `sheet.recipes[0].days[].entries[]` porte chaque bloc avec ses minutes avant le service : voir [Construire sa propre vue planning](/fr/docs/how-to/build-custom-ui/#construire-sa-propre-vue-planning).
 
 ### Compatibilité avec les versions antérieures
 

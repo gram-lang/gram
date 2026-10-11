@@ -1,6 +1,6 @@
 ---
 title: "Extension VS Code"
-description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, diagramme de Gantt et correspondance d'ingrédients."
+description: "Aperçu de l'extension VS Code Gram : aperçu en direct, panneau nutritionnel, plan de travail et correspondance d'ingrédients."
 ---
 
 import Since from '../../../../../../components/Since.astro';
@@ -18,11 +18,11 @@ L'extension officielle Gram pour VS Code transforme votre éditeur en un vérita
 Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un clic révèle un panneau nutritionnel complet (calories, protéines, glucides, lipides) directement dans l'aperçu. Il met également en surbrillance les ingrédients introuvables dans votre base de données.
 :::
 
-### 2. Vue diagramme de Gantt
-- **Panneau chronologique** : Lancez la commande `Gram: Gantt Chart` (ou cliquez sur l'icône de chronogramme dans la barre d'outils) pour ouvrir une vue chronologique complète — étapes actives, minuteurs passifs et compression visuelle des plages d'attente. Le tout au sein d'une WebView dédiée, indépendante de l'aperçu en direct.
-- **Modes horaires** : Depuis le menu du panneau, basculez selon vos besoins entre le temps écoulé (chronomètre, T+), le compte à rebours (T-) et le rétro-planning calé sur l'heure cible du service.
-- **Vue compacte** : Pour les recettes complexes comportant de nombreuses étapes simultanées, activez la disposition densifiée.
-- **Mise en place** : La préparation de chaque section est représentée sous la forme d'un bloc en pointillés adoptant la teinte de la section, ordonnancé par défaut immédiatement avant celle-ci, au tout début de la recette ou à l'ouverture de chaque session de travail (voir le réglage `gram.miseEnPlace` ci-dessous).
+### 2. Vue plan de travail
+- **Panneau du plan de travail** : Lancez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste à cocher dans la barre d'outils) pour ouvrir le plan de la recette dans une WebView dédiée, indépendante de l'aperçu en direct : pour chaque jour, quand vous êtes en cuisine, quoi sortir, ce que chaque section vous demande et ce qui continue ensuite.
+- **Jours avant le service** : sans heure de service dans l'éditeur, le plan compte à rebours depuis elle (`J-2`, `J-1`, `Jour J`) et donne des durées (« environ 55 min »). Pour des dates et des marges, donnez une heure de service avec `gram plan --serve` ou dans le playground.
+- **Suit les réglages** : `gram.miseEnPlace` et `gram.rests` choisissent la chronologie dont il est fait (voir ci-dessous).
+- **Le diagramme de Gantt a disparu** : `Gram: Gantt Chart` est déprécié depuis la 1.4.0, fonctionne encore et ouvre le plan de travail (avec un avis unique), et sera retiré en 2.0.0.
 
 #### Le réglage `gram.miseEnPlace` <Since v="1.4.0" />
 
@@ -32,7 +32,7 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 | `upfront` | L'intégralité de la mise en place est ordonnancée au début de la recette. |
 | `perSession` | La mise en place de chaque journée de travail est planifiée au début de cette journée (les journées découlant des ancres temporelles de section, `~{-Nd}`). |
 
-Ce réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
+Ce réglage pilote l'aperçu en direct, le plan de travail et l'indication du temps total affichée en regard du titre de la recette. Il ajuste la durée totale et le temps d'attente passif sans altérer les listes d'ingrédients, et s'applique instantanément à l'ensemble des documents ouverts sans rechargement de fenêtre. Voir [Quand se fait la mise en place](/fr/docs/reference/syntax/times#quand-se-fait-la-mise-en-place).
 
 #### Le réglage `gram.rests` <Since v="1.4.0" />
 
@@ -42,7 +42,7 @@ Ce réglage pilote l'aperçu en direct, le diagramme de Gantt et l'indication du
 | `balanced` | Le minuteur passif est résolu sur la valeur médiane de sa fourchette. |
 | `longest` | Le minuteur passif est résolu sur sa durée maximale. |
 
-Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le diagramme de Gantt et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
+Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le plan de travail et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
 
 Une session de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`SESSION_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 

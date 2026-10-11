@@ -121,7 +121,7 @@ The [Deprecated features](/docs/how-to/deprecations) guide provides before/after
 :::
 
 :::note[Pre-1.4.0 Compiled JSON Documents]
-JSON files produced by Kitchen 1.3.0 or earlier lack `tasks` and `schedule`. They remain renderable: `scheduleTimes` reads total and idle durations from legacy `metrics.totalTime` and `metrics.idleTime`, and semantic diffing compares them accurately instead of returning zero. However, Gantt charts cannot be drawn without task graph data. Recompile with Gram 1.4.0 or later to benefit from timelines. This transition fallback will be removed in 2.0.0.
+JSON files produced by Kitchen 1.3.0 or earlier lack `tasks` and `schedule`. They remain renderable: `scheduleTimes` reads total and idle durations from legacy `metrics.totalTime` and `metrics.idleTime`, and semantic diffing compares them accurately instead of returning zero. However, the work plan cannot be computed without task graph data. Recompile with Gram 1.4.0 or later to benefit from timelines. This transition fallback will be removed in 2.0.0.
 :::
 
 See [Data formats](/docs/reference/api/data-formats) for an annotated example of this structure, and the [Warnings reference](/docs/reference/api/warnings) for diagnostics emitted in `warnings`.

@@ -14,6 +14,7 @@ This page documents all features currently deprecated across Gram, categorized b
 |---|---|
 | Authoring `.gram` recipes via CLI, renderer, or playground | **None**. The recipe language syntax contains zero deprecations. |
 | Consuming compiled JSON (`gram build`, custom UI applications, scripts) | See [Compiled JSON fields](#compiled-json-fields) and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
+| Drawing a Gantt chart, or reading `gram/ganttUpdated` or `gram.showGantt` | See [The Gantt chart and its surfaces](#the-gantt-chart-and-its-surfaces). |
 | Programmatic integration of `@gram-lang/kitchen` or `@gram-lang/analyzer` | See [Compiled JSON fields](#compiled-json-fields), [`calculatePreparationTime`](#the-calculatepreparationtime-function), and [Backwards compatibility with older JSON](#backwards-compatibility-with-older-json). |
 
 To audit your application code, see [Identify deprecated usages in your codebase](#identify-deprecated-usages-in-your-codebase).
@@ -117,6 +118,40 @@ for (const entry of computeMiseEnPlace(sections, registry)) {
 ```
 
 A compiled recipe carries this identical breakdown inside its `miseEnPlace` field.
+
+### The Gantt chart and its surfaces
+
+<Since v="1.4.0" type="deprecated" />
+
+The Gantt chart is replaced by the [work plan](/docs/how-to/plan-a-meal/): no Gram surface (CLI, playground, VS Code) draws it any more, and its code is frozen until 2.0.0.
+
+| Deprecated | Replacement |
+|---|---|
+| `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()` and the `Gantt*` types (`@gram-lang/renderer`) | `runSheetToHTML()` (and `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) on the `RunSheet` of `runSheet()`, or a view of your own built from that data |
+| `@gram-lang/renderer/gantt.css` | Nothing: the work plan is styled by `gram.css` |
+| The `gantt_*` keys of `playground.views` (`@gram-lang/i18n`) | None: the work plan uses the `workPlan*` keys of the renderer dictionary |
+| The `gram.showGantt` command, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet`, `Gram: Work Plan`. The old command opens it and says so once |
+| The `gram/ganttUpdated` notification (language server) | `gram/runSheetUpdated`, or the data of the compiled recipe |
+
+`toGanttHTML()` warns once on the console. Before:
+
+```typescript
+import { toGanttHTML, attachGanttInteractivity } from '@gram-lang/renderer';
+container.innerHTML = toGanttHTML(compiled);
+attachGanttInteractivity(container, { timeMode: 'forward', targetTime: '', isCompactMode: false });
+```
+
+After:
+
+```typescript
+import { runSheet } from '@gram-lang/scheduler';
+import { runSheetToHTML } from '@gram-lang/renderer';
+
+const sheet = runSheet(compiled.schedule, { graph: compiled.tasks }); // or project(...) with a serving time
+container.innerHTML = runSheetToHTML(sheet, compiled);
+```
+
+If you need a chart, `sheet.recipes[0].days[].entries[]` has every block with its minutes from the service: see [Build your own planning view](/docs/how-to/build-custom-ui/#build-your-own-planning-view).
 
 ### Backwards compatibility with older JSON
 

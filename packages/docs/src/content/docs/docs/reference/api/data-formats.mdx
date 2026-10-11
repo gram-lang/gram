@@ -366,6 +366,52 @@ flour:
 
 **Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
 
+## 5. The run sheet
+
+The data of the work plan (`@gram-lang/scheduler`), as `runSheet()` returns it and as `gram plan --format json` writes it under `runSheet`. A recipe with a serving time:
+
+```json
+{
+  "mode": "calendar",
+  "serveAt": "2026-10-17T20:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Pistachio raspberry entremets",
+      "totalWork": 45,
+      "days": [
+        {
+          "date": "2026-10-16",
+          "daysBefore": 1,
+          "passages": [
+            {
+              "start": -1585, "end": -1560,
+              "startLocal": "2026-10-16T13:35", "endLocal": "2026-10-16T14:00",
+              "sections": [2],
+              "tasks": ["s2.prep", "s2.0", "s2.1"],
+              "window": { "advance": 335, "earliest": -1920, "earliestLocal": "2026-10-16T08:00" }
+            }
+          ],
+          "threads": [
+            { "passage": 0, "task": "s2.1.t0", "section": 2, "step": 1,
+              "from": -1560, "to": -840, "planned": 720,
+              "range": { "min": 720, "max": 2880 } }
+          ],
+          "entries": ["…every block of the day…"]
+        }
+      ]
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": []
+}
+```
+
+- Times `start`, `end`, `from` and `to` are **minutes from the service** (negative before it), exact, in a plan with a serving time or without. `*Local` fields (minute-exact wall clock) and `date` come with a serving time only.
+- `mode: "relative"` is the same structure for a recipe with no serving time: no `serveAt`, no `date`, no `window`.
+- `totalWork` is the minutes of your own work, mise en place included.
+- Types and the meaning of each field: [`runSheet` in the scheduler reference](/docs/reference/api/scheduler/#runsheet).
+
 ## Related resources
 
 <CardGrid>

@@ -31,7 +31,8 @@ Because this graph does not depend on user options, every combination of mise en
 |---|---|---|---|
 | **1. Relative timeline** | `layout(graph, options)` | The task graph, and optionally `{ miseEnPlace, rests }` | A `Schedule` (ordered blocks, relative working days, time totals) and diagnostics intrinsic to the recipe |
 | **2. Calendar projection** | `project(recipes, context)` | One or more graphs, a serving time, a time zone, and availability | A timestamped plan: each block with its local date and time, adjusted waits, unavailable periods, and unresolved conflicts |
-| | `runSheet(plan)` | The projected plan | The hierarchical structure of a production sheet |
+| | `runSheet(plan \| schedule, options)` | The projected plan, or a bare `Schedule` | The days, visits to the kitchen and threads of a work plan (see below) |
+| | `findServeTimes()`, `earliestServe()` | A graph, a context, a range of dates or "now" | The serving times that work, and the earliest one |
 
 Both functions are **strictly pure**: identical inputs always yield identical outputs, no system clock or implicit time zone is read, and the input graph remains immutable. `project()` accepts a list of recipes by design, but currently plans only the first one while emitting the `MULTI_RECIPE_UNSUPPORTED` diagnostic.
 
@@ -68,6 +69,29 @@ Waits written as a range follow the strategy specified via `rests` (`"shortest"`
 
 Internal time is counted in continuous absolute minutes since the POSIX epoch. Local time display relies on `Intl.DateTimeFormat` with an explicit time zone. No third-party date library or implicit system clock is involved: the plan remains byte-for-byte identical regardless of host environment, and a 23-hour or 25-hour daylight saving transition day counts for its actual duration.
 
+## From the schedule to the work plan
+
+The engine produces **data**; the work plan is one way to show it. `runSheet()` turns a schedule or a projected plan into a structure that any interface can draw, with these terms, defined once here and used everywhere else:
+
+| Term | What it is |
+|---|---|
+| **Session** | A working day of the recipe. Only a day anchor (`~{-2d}`, on a section or on a `@use`) opens one; without any, the recipe is a single session. |
+| **Visit** (*passage*) | A moment in the kitchen: stretches of your own work that follow each other, with no wait of an hour or more between them (`PASSAGE_GAP_MINUTES`). A day can have several. |
+| **Thread** (*fil*) | A wait that starts in a visit and goes on after it, without you. |
+| **Adjustment** | A wait that the projection made longer or shorter, within its written range, so that the work falls in your availability. The only reason is `avoid-unavailable`. |
+| **Unresolved problem** | A diagnostic of the projection: something the plan could not make work. |
+| **Margin** | How early a visit could be done if every other visit stays where it is planned. |
+
+Every figure is computed by the engine: minutes from the service, in a plan with a serving time or not. A visit's margin is safe by construction. Everything is planned as late as possible, so a visit can only move earlier; moving it earlier shortens the wait before it and lengthens the one after it, and each of those is checked against the written range and the **planned** time of the neighbouring visits. Moving one visit, several or none never breaks the margin of another. A margin is sometimes cautious, never wrong. What does break it is being late: a visit done after its planned time. The plan has to be made again; the engine does not replan on its own.
+
+Which of this to say, and in which words, is a choice of the view. The [work plan](/docs/how-to/plan-a-meal/) of Gram splits a day at a wait of an hour, shows a margin from 15 minutes (`WINDOW_MIN_MINUTES`), and reads "To take out" and "To do" from the compiled recipe: another interface is free to make other choices from the same data. [Build a custom UI](/docs/how-to/build-custom-ui/) shows one.
+
+### What the engine does not do
+
+- It plans **one recipe**. A menu of several recipes, with shared tracks, is not planned (`MULTI_RECIPE_UNSUPPORTED`).
+- It does not **replan** after a delay: a plan is a function of its inputs, run it again.
+- It does not choose when you cook: it tries the serving times you give it (`findServeTimes()` at your meal times, `earliestServe()` from now) and tells which work and why the others do not.
+
 ## Two diagnostic families
 
 The engine strictly separates two categories of issues:
@@ -85,14 +109,14 @@ flowchart LR
     Project --> Sheet["📋 runSheet()<br/><i>production sheet</i>"]
 ```
 
-See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
+The views (the work plan, a Gantt chart you may want to draw yourself) sit **after** the engine and read its data. See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
 
 ## Related resources
 
 <CardGrid>
   <LinkCard
     title="Scheduler API reference"
-    description="Function signatures, options, and TypeScript types for layout(), project(), and runSheet()."
+    description="Function signatures, options, and TypeScript types for layout(), project(), runSheet() and the serving time search."
     href="/docs/reference/api/scheduler/"
   />
   <LinkCard

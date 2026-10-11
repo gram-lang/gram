@@ -1,6 +1,6 @@
 ---
 title: "VS Code extension"
-description: "Overview of the Gram VS Code extension: live preview, nutrition panel, Gantt chart view, and smart ingredient matching."
+description: "Overview of the Gram VS Code extension: live preview, nutrition panel, work plan view, and smart ingredient matching."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -18,11 +18,11 @@ The official Gram VS Code extension turns your editor into a dedicated recipe de
 A dedicated `CodeLens` button appears above the recipe title. Clicking it reveals a complete nutrition breakdown (calories, protein, carbohydrates, fat) within the live preview. It also flags ingredients missing from your database.
 :::
 
-### 2. Gantt chart view
-- **Timeline panel**: Run `Gram: Gantt Chart` (or click the timeline icon in the editor toolbar) to open a dedicated chronological view — active preparation steps, passive timers, and visual idle-time compression — in its own WebView panel, independent from the live preview.
-- **Time modes**: Switch between elapsed time (stopwatch, T+), countdown (T-), and retro-planning anchored to a target serving time via the panel dropdown.
-- **Compact view**: Toggle a denser row layout for complex recipes with many concurrent steps.
-- **Mise en place**: Each section's preparation is rendered as a dashed block in the section's color, scheduled by default immediately before that section, upfront at the start of the recipe, or at the start of each working session (see the `gram.miseEnPlace` setting below).
+### 2. Work plan view
+- **Work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to open the plan of the recipe in its own WebView panel, independent from the live preview: for each day, when you are in the kitchen, what to take out, what each section asks of you and what goes on afterwards.
+- **Days before the service**: with no serving time in the editor, the plan counts back from it (`D-2`, `D-1`, `Day D`) and gives durations ("about 55 min"). For dates and margins, give a serving time with `gram plan --serve` or in the playground.
+- **Follows the settings**: `gram.miseEnPlace` and `gram.rests` choose the timeline it is made from (see below).
+- **The Gantt chart is gone**: `Gram: Gantt Chart` is deprecated since 1.4.0, still works and opens the work plan (with a one-time notice), and will be removed in 2.0.0.
 
 #### The `gram.miseEnPlace` setting <Since v="1.4.0" />
 
@@ -32,7 +32,7 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 | `upfront` | All mise en place tasks are scheduled at the start of the recipe. |
 | `perSession` | The mise en place of each working day is scheduled at the start of that day (days derive from section day anchors, `~{-Nd}`). |
 
-The setting drives the live preview, the Gantt chart, and the total time hint displayed next to the recipe title. It adjusts computed total and idle times without altering ingredient lists, and applies immediately to all open documents without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
+The setting drives the live preview, the work plan, and the total time hint displayed next to the recipe title. It adjusts computed total and idle times without altering ingredient lists, and applies immediately to all open documents without reloading the window. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 
 #### The `gram.rests` setting <Since v="1.4.0" />
 
@@ -42,7 +42,7 @@ The setting drives the live preview, the Gantt chart, and the total time hint di
 | `balanced` | The passive timer is resolved to the midpoint of its range. |
 | `longest` | The passive timer is resolved to its maximum duration. |
 
-Fixed passive timers and active timers with ranges (`~{20-25min}`, always planned using their upper bound) are unaffected. Like `gram.miseEnPlace`, this setting drives the live preview, the Gantt chart, and the total time hint, applying immediately to all open files. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
+Fixed passive timers and active timers with ranges (`~{20-25min}`, always planned using their upper bound) are unaffected. Like `gram.miseEnPlace`, this setting drives the live preview, the work plan, and the total time hint, applying immediately to all open files. See [Exact times and ranges](/docs/reference/syntax/times/#exact-times-and-ranges).
 
 A working session pushed beyond 24 hours by a prolonged passive phase triggers an explicit warning on its section (`SESSION_OVERFLOW`), matching compiler diagnostics.
 

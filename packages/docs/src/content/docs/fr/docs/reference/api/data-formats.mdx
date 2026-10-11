@@ -366,6 +366,52 @@ Les blocs `physical` et `nutrition` sont tous deux optionnels. Une entrée dépo
 
 **Les unités doivent être scrupuleusement respectées** : `calories` est exprimé en kcal, `sodium` en **milligrammes (mg)**, et tous les autres nutriments en grammes (g) — l'ensemble étant rapporté à 100 g d'ingrédient brut. L'inventaire complet des nutriments gérés, leurs unités et leur ordre d'affichage proviennent de la constante canonique `NUTRIENTS` exportée par `@gram-lang/analyzer`.
 
+## 5. Le plan de travail
+
+Les données du plan de travail (`@gram-lang/scheduler`), telles que les retourne `runSheet()` et que `gram plan --format json` les écrit sous `runSheet`. Une recette avec une heure de service :
+
+```json
+{
+  "mode": "calendar",
+  "serveAt": "2026-10-17T20:00",
+  "timeZone": "Europe/Paris",
+  "recipes": [
+    {
+      "title": "Entremets pistache framboise",
+      "totalWork": 45,
+      "days": [
+        {
+          "date": "2026-10-16",
+          "daysBefore": 1,
+          "passages": [
+            {
+              "start": -1585, "end": -1560,
+              "startLocal": "2026-10-16T13:35", "endLocal": "2026-10-16T14:00",
+              "sections": [2],
+              "tasks": ["s2.prep", "s2.0", "s2.1"],
+              "window": { "advance": 335, "earliest": -1920, "earliestLocal": "2026-10-16T08:00" }
+            }
+          ],
+          "threads": [
+            { "passage": 0, "task": "s2.1.t0", "section": 2, "step": 1,
+              "from": -1560, "to": -840, "planned": 720,
+              "range": { "min": 720, "max": 2880 } }
+          ],
+          "entries": ["…chaque bloc du jour…"]
+        }
+      ]
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": []
+}
+```
+
+- Les temps `start`, `end`, `from` et `to` sont des **minutes avant le service** (négatives avant lui), exactes, dans un plan avec ou sans heure de service. Les champs `*Local` (heure murale à la minute) et `date` n'existent qu'avec une heure de service.
+- `mode: "relative"` est la même structure pour une recette sans heure de service : ni `serveAt`, ni `date`, ni `window`.
+- `totalWork` est le nombre de minutes de votre propre travail, mise en place comprise.
+- Les types et le sens de chaque champ : [`runSheet` dans la référence du scheduler](/fr/docs/reference/api/scheduler/#runsheet).
+
 ## Ressources associées
 
 <CardGrid>

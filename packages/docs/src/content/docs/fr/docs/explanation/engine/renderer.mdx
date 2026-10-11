@@ -1,6 +1,6 @@
 ---
 title: "Rendu et formats de sortie (@gram-lang/renderer)"
-description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, document d'impression et diagramme de Gantt."
+description: "Comment @gram-lang/renderer transforme le JSON compilé en Markdown, HTML, document d'impression et plan de travail : des vues des données du moteur."
 ---
 
 import Since from '../../../../../../components/Since.astro';
@@ -23,19 +23,26 @@ Produit un balisage HTML sémantique et accessible. L'export HTML repose sur un 
 ### 3. HTML pour impression (`toPrintHTML`)
 Génère un document HTML complet (`<!DOCTYPE html>`) autonome, intégrant sa propre feuille de style CSS optimisée pour l'impression (format A4, contrôle des sauts de page) et ses icônes SVG vectorielles. Conçu pour être ouvert dans un navigateur et imprimé directement sans aucune dépendance réseau externe. Contrairement à `toHTML`, les classes CSS et icônes sont verrouillées, mais les filtres de mise en forme (`formatDuration`, `formatFraction`, `hideStepQty`) restent entièrement configurables.
 
-### 4. Diagramme de Gantt (`toGanttHTML` + `attachGanttInteractivity`)
-Génère une chronologie interactive matérialisant les étapes actives, les minuteurs passifs et la compression des temps masqués sous forme de fragment HTML. L'intégration s'effectue en deux temps : `toGanttHTML` produit le balisage statique, tandis que la fonction `attachGanttInteractivity(container, options)` attache les écouteurs d'événements, les infobulles de survol et les bascules de mode côté navigateur via délégation DOM. Consultez la [référence de l'API renderer](/fr/docs/reference/api/renderer) pour le détail de `GanttRenderOptions` et `GanttInteractivityOptions`.
+### 4. Le plan de travail (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
+La **vue de référence de l'ordonnancement**, comme la vue Recette est la vue de référence de la recette. Elle montre ce que le moteur a calculé (`runSheet()` de `@gram-lang/scheduler`) : le planning des jours, puis, pour chaque jour et chaque passage en cuisine, quoi sortir, ce que chaque section vous demande et ce qui continue ensuite, avec la marge du passage et les attentes que le plan a ajustées. Les libellés suivent l'option `lang`.
 
-L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) détermine le positionnement de la mise en place, et l'option `rests` (`"shortest"` par défaut, `"balanced"` ou `"longest"`) fixe la durée des temps passifs exprimés en fourchette : le graphique trace la chronologie calculée par le graphe de tâches pour cette configuration (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)). La préparation de chaque section est représentée par un bloc en pointillés aux couleurs de la section (J-1, Jour J). Ces options pilotent également les durées totales et passives affichées dans les en-têtes HTML, Markdown et impression.
+C'est une démonstration, pas *la* façon de montrer les données. Les règles qui lui sont propres sont des choix de la vue : un passage s'arrête à une attente d'une heure (`PASSAGE_GAP_MINUTES`, dans le scheduler, parce qu'elle façonne les données), une marge s'affiche à partir de 15 minutes, et « À sortir » et « Au programme » sont lus dans la recette compilée. Ces deux-là sont exportés pour qu'une autre interface les réutilise plutôt que de les réécrire :
 
-Le diagramme de Gantt peut également projeter la recette sur le calendrier réel via l'option `projection` (alimentée par `project()` de `@gram-lang/scheduler`). Le graphique trace alors les blocs réels du plan (les durées passives ajustées apparaissent avec une bordure distinctive et une note explicative), gradue son axe temporel selon l'horloge murale locale et masque les plages d'indisponibilité de l'utilisateur. Consultez [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
+- **`passageKit(data, sections, options)`** : les ingrédients des sections (additionnés, avec le détail de la somme), les préparations d'un passage précédent, les bases en stock et les ustensiles.
+- **`sectionProgram(data, section, stepIndexes)`** : les étapes qu'une section a dans un passage, avec leur action, leurs températures et leurs minuteurs tels qu'écrits, et le fichier d'où vient une section importée.
+- **`describeRunSheet()`** retourne le plan entier en mots sous forme de structure (`RunSheetModel`), dont sont faits les quatre formateurs et l'export calendrier de la CLI.
 
-### 5. Fiche de production (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
-Formate le plan de production issu de `project()` sous forme de feuille de route opérationnelle : découpage par journées de travail relatives au service (J-1, Jour J), étapes ordonnancées chronologiquement avec horaires arrondis à cinq minutes, annotations sur les durées passives ajustées et récapitulatif des contraintes non résolues. Les libellés respectent l'option linguistique `lang`. La fonction `describeRunSheet()` fournit cette même fiche sous forme d'objets de données structurés, facilitant l'export vers des formats tiers (comme le calendrier iCalendar de la CLI).
+Les vues Recette (`toHTML`, `toMarkdown`, `toPrintHTML`) ne montrent aucun ordonnancement : elles disent comment. Avec l'option `runSheet`, elles écrivent un plan de travail après la recette, dans un seul document. Voir [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) pour dessiner une vue planning directement à partir des données.
+
+L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) et l'option `rests` (`"shortest"` par défaut, `"balanced"`, `"longest"`) choisissent la chronologie dont les en-têtes des documents montrent les durées totale et passive (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)).
+
+:::note[Le diagramme de Gantt]
+`toGanttHTML` et `attachGanttInteractivity` sont dépréciés depuis la 1.4.0 et seront retirés en 2.0.0 : plus aucune surface de Gram ne dessine de diagramme de Gantt. Voir [Dépréciations](/fr/docs/how-to/deprecations/).
+:::
 
 ## Traversée unifiée (`RenderBackend`)
 
-En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le diagramme de Gantt fait exception à cette règle puisqu'il modélise une chronologie graphique plutôt qu'un document textuel séquentiel.
+En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le plan de travail a sa propre traversée, puisqu'il suit le temps plutôt que les sections de la recette.
 
 ## Exemple d'utilisation
 
@@ -94,7 +101,7 @@ L'objet `RendererOptions` propose également les options `bakersReference`/`bake
   Bien que cet échappement neutralise les injections HTML brutes, `toMarkdown` n'effectue pas d'assainissement complet sur les schémas d'URL (ex. liens `javascript:`). Si vous affichez des recettes issues de sources non fiables, appliquez un assainisseur dédié (`DOMPurify` ou `rehype-sanitize`) sur le balisage final.
   :::
 - **Formatage des durées** : Convertit les durées brutes exprimées en minutes en libellés temporels fluides (`90` → `1h 30m`).
-- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (tokens clair/sombre pour l'ensemble des éléments) ainsi que `gantt.css` pour le diagramme temporel. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
+- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (tokens clair/sombre pour l'ensemble des éléments) dont le plan de travail, et, jusqu'en 2.0.0, `gantt.css` pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
 
 ## Consommation directe du JSON
 
@@ -107,7 +114,7 @@ Le JSON produit par `@gram-lang/analyzer` est typé et directement itérable : p
 <CardGrid>
   <LinkCard
     title="Référence de l'API Renderer"
-    description="Documentation complète de toMarkdown, toHTML, toPrintHTML et des diagrammes de Gantt."
+    description="Documentation complète de toMarkdown, toHTML, toPrintHTML et du plan de travail."
     href="/fr/docs/reference/api/renderer/"
   />
   <LinkCard

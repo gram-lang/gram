@@ -53,6 +53,7 @@ Roast the chicken for ~{40-50min}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
+- **What the work plan makes of a range.** The plan shows a wait with its planned length and, when it differs, the range you wrote ("15 h 50 (12 to 48 h)"). A range is also what gives a visit to the kitchen its margin ("Possible from 18:00"), since a wait that can stretch lets the work before it move earlier. An exact wait holds it in place ("Fixed times"). See [the work plan](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -61,7 +62,7 @@ Deprecated fields of the compiled recipe (`steps[].timings`, `steps[].background
 
 ## Active vs passive
 
-The Gram compiler builds a complete execution timeline (similar to a Gantt chart) for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
+The Gram compiler builds a complete execution timeline for each recipe. To achieve realistic scheduling, it distinguishes hands-on kitchen work from autonomous background tasks.
 
 :::tip[💡 The Golden Rule: Does this step block YOU from starting the next step?]
 
@@ -103,6 +104,10 @@ Lower the heat to 180°C and bake for ~_baking{30min}.
 
 > ⏱️ **Result:** Because both timers share the track name `baking`, Gram places them on the same background track. The 30-minute timer will only start *after* the 10-minute timer completes. Idle waiting time increases by 40 minutes, while active hands-on time remains zero.
 
+:::tip[Without a track, overlapping waits are flagged]
+Two passive timers that overlap in steps citing the **same cookware** (`#oven` in both) with no track in common are reported by `PASSIVE_OVERLAP_SAME_COOKWARE`: the message suggests a named track. It is only informational, since two trays can share an oven. See [Warnings](/docs/reference/api/warnings/#passive_overlap_same_cookware).
+:::
+
 ## How time is calculated
 
 Behind the scenes, Gram tracks four distinct time metrics to establish realistic schedules:
@@ -141,7 +146,7 @@ Two considerations for multi-day recipes:
 - **A long passive timer is not an anchor.** A `~_{48h}` passive duration shifts the timeline two days earlier, but only an explicit section anchor formally opens a separate working day (e.g. `## Cream ~{-2d}`).
 - **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent daily session. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
 
-Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as block positioning on the Gantt chart, while keeping active preparation and hands-on cooking times invariant.
+Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as the placement of the preparation in the schedule, while keeping active preparation and hands-on cooking times invariant.
 
 An intermediate preparation (`&dough`) is weighed in the section that consumes it and never before it is produced: even in `upfront` mode, it is scheduled as a deferred block immediately before the consuming section.
 

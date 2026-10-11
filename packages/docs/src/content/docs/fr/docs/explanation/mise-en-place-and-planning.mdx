@@ -18,7 +18,7 @@ Pour une recette simple, la configuration par défaut planifie l'ensemble sans r
 |---|---|---|
 | **Ingrédients** | Besoins matériels : la liste d'ingrédients de chaque section, la liste de courses consolidée | Non |
 | **Mise en place** | Travail de préparation amont : pesée, lavage, épluchage, découpe. Chaque section annonce son propre coût (`miseEnPlace`) | Non |
-| **Planning** | Ordonnancement temporel : chronologie relative, temps total, durée passive globale et diagramme de Gantt | **Oui**, c'est l'unique dimension modifiée |
+| **Planning** | Ordonnancement temporel : chronologie relative, temps total, durée passive globale et plan de travail | **Oui**, c'est l'unique dimension modifiée |
 
 La recette ne dicte jamais son propre ordonnancement. Elle énonce des faits culinaires (les ingrédients requis et le temps estimé pour les préparer) ; il revient à **l'utilisateur** de décider comment organiser ce travail dans le temps.
 
@@ -121,7 +121,7 @@ Une durée passive peut être exacte (`~_{12h}`) ou exprimée sous forme de four
 - **`balanced`** : retient la valeur médiane ;
 - **`longest`** : retient la borne supérieure.
 
-Ce choix influe sur le temps total, le temps passif global et le diagramme de Gantt, sans modifier le travail actif. À l'inverse, un minuteur actif écrit en fourchette (`~{40-50min}`) exprime une incertitude de cuisson et non une marge d'élasticité : il est systématiquement planifié sur sa durée maximale, garantissant ainsi de ne jamais servir en retard.
+Ce choix influe sur le temps total, le temps passif global et le plan de travail, sans modifier le travail actif. À l'inverse, un minuteur actif écrit en fourchette (`~{40-50min}`) exprime une incertitude de cuisson et non une marge d'élasticité : il est systématiquement planifié sur sa durée maximale, garantissant ainsi de ne jamais servir en retard.
 
 Lorsque vous fournissez une heure de service et vos disponibilités, Gram utilise cette marge élastique pour ajuster l'ordonnancement et éviter le travail actif nocturne : voir [Planifier en heures réelles](/fr/docs/explanation/planning-in-real-time/).
 
@@ -192,7 +192,7 @@ Une section sans ancre hérite du jour de **l'ancre en jours la plus lointaine p
 :::caution[Points d'attention]
 Deux situations courantes n'ouvrent **pas** de nouvelle journée de travail :
 
-1. **Un temps passif long sans ancre de section** : une étape comportant `~_{48h}` décale l'étape de deux jours vers l'amont sur le diagramme de Gantt, mais ne crée pas de session J-2 sans ancre de section explicite (`## Crème ~{-2d}`).
+1. **Un temps passif long sans ancre de section** : une étape comportant `~_{48h}` décale l'étape de deux jours vers l'amont sur la chronologie, mais ne crée pas de session J-2 sans ancre de section explicite (`## Crème ~{-2d}`).
 2. **Une ancre exprimée en heures** : une valeur comme `~{-18h}` ou `~{-36h}` demeure une échéance interne au jour de la section. Pour déclencher une véritable session la veille, utilisez l'ancre en jours `~{-1d}`.
 :::
 
@@ -211,6 +211,8 @@ Au début de chaque journée de travail, Gram rassemble la mise en place requise
 - Un intermédiaire **confectionné le jour même** (le fond pour la tarte) est préparé immédiatement avant l'étape de montage, puisqu'il n'existe pas encore au démarrage de la journée.
 
 Le temps de préparation cumulé et le travail actif demeurent strictement identiques entre toutes les stratégies d'ordonnancement.
+
+La recette elle-même ne montre pas ces blocs : la mise en place est un coût dans les cartouches de temps de la recette et dans son ordonnancement. Quoi sortir, et quand, c'est la liste **« À sortir »** de chaque passage du [plan de travail](/fr/docs/how-to/plan-a-meal/), calculée pour chaque stratégie.
 
 :::tip[Enchaînement de sections]
 Lorsque plusieurs sections se succèdent au cours de la même journée, ancrez uniquement la dernière (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre (comme le fond ci-dessus) : elles héritent naturellement de son jour et s'insèrent immédiatement avant elle. Assigner `~{-1d}` à chacune créerait des échéances concurrentes au même instant, déclenchant un avertissement de paradoxe temporel en présence de dépendances.

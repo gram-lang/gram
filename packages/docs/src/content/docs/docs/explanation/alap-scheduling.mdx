@@ -175,7 +175,7 @@ A section's retro-planning anchor (`~{-2d}`) defines a **strict completion deadl
 Key guidelines for multi-day recipes:
 
 - **Anchor using calendar days (`~{-Nd}`)**: working day segmentation relies exclusively on day anchors (`~{-1d}`, `~{-2d}`). Unanchored sections inherit the day of the furthest downstream day anchor.
-- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the Gantt chart, but does not initiate a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
+- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the timeline, but does not initiate a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
 - **Hour anchors (`~{-Nh}`) do not create working days**: values like `~{-18h}` or `~{-36h}` establish intra-day deadlines without opening a separate daily session. To initiate the previous day's session, use `~{-1d}`.
 - **Successive sections on the same day**: anchor only the final section (`## Tart ~{-1d}`) and leave preceding sections unanchored. Assigning the same anchor to interdependent sections triggers a time paradox warning.
 
@@ -214,7 +214,11 @@ To maximize the efficiency of Gram's ALAP scheduling engine, follow these practi
 
 Because Gram's ALAP engine deterministically computes minute-accurate `start` and `end` bounds, client applications require zero custom date calculation: they directly consume the planned task graph.
 
-Gantt charts provide an ideal visual representation of passive task overlap and active task interleaving. You can interact with this engine in real time using the **[Official Gram Playground](/play/)** under the timeline view.
+A timeline (the diagrams above are Mermaid `gantt` charts) is an ideal way to picture passive task overlap and active task interleaving; the same data is what the [work plan](/docs/how-to/plan-a-meal/) shows. You can try this engine in real time in the **[Official Gram Playground](/play/)**.
+
+### What ALAP means for the margin
+
+Everything is planned **as late as possible**, so a visit to the kitchen can only be moved **earlier**, never later: it would delay the service. The margin the work plan shows ("Possible from 18:00") is how far a visit can be advanced while the waits around it stay within their written range. A recipe written with ranges has margins; one written with exact waits has none. See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
 
 ## Related resources
 

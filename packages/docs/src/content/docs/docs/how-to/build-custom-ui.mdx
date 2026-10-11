@@ -215,6 +215,50 @@ import Since from '../../../../components/Since.astro';
    :::
 </Steps>
 
+## Build your own planning view
+
+The work plan of Gram is one view of the scheduler's data, not the only one. `runSheet()` gives the days, the visits to the kitchen and the threads that go on without you; `gram plan --format json` writes the same structure. Here is a small calendar by day, in about thirty lines, from that JSON:
+
+```typescript
+import { project, runSheet } from '@gram-lang/scheduler';
+
+// `recipe` is the compiled recipe; `context` holds serveAt, timeZone and availability.
+const plan = project([{ graph: recipe.tasks, title: recipe.title }], context);
+const sheet = runSheet(plan, { graph: recipe.tasks, context });
+
+const clock = (local?: string) => local?.slice(11, 16) ?? '';
+const hours = (minutes: number) => `${Math.round(minutes / 60)} h`;
+
+function planningView(sheet: ReturnType<typeof runSheet>, recipe: { sections: { title: string | null }[] }): string {
+  const [planned] = sheet.recipes;
+  return planned.days
+    .map((day) => {
+      const visits = day.passages
+        .map((visit, k) => {
+          const sections = visit.sections.map((s) => recipe.sections[s].title).join(', ');
+          const threads = day.threads
+            .filter((t) => t.passage === k)
+            .map((t) => `<li>${t.task}: ${hours(t.planned)} on its own</li>`)
+            .join('');
+          const margin = visit.window ? ` (could start at ${clock(visit.window.earliestLocal)})` : '';
+          return `<li><b>${clock(visit.startLocal)}–${clock(visit.endLocal)}</b> ${sections}${margin}<ul>${threads}</ul></li>`;
+        })
+        .join('');
+      return `<section><h3>${day.date ?? `D-${day.daysBefore}`}</h3><ul>${visits}</ul></section>`;
+    })
+    .join('');
+}
+```
+
+What each field gives you:
+
+- `day.passages[]`: `start` / `end` (minutes before the service, exact), `startLocal` / `endLocal` with a serving time, `sections` (indexes in the recipe), `tasks`, and `window` / `fixedBy` when the margin is known (give `runSheet()` the `graph` and the `context`).
+- `day.threads[]`: the waits that go on after a visit (`passage` is its index in the day), with `planned`, `range` and `toLocal`.
+- `day.entries[]`: every block of the day in order, if you would rather draw a timeline yourself, Gantt chart included: the data to rebuild it is all there.
+- `sheet.adjustments[]` and `sheet.diagnostics[]`: the waits that were stretched or shortened, and what could not be fixed.
+
+For the words (what to take out, what each section asks of you) you can reuse the helpers the work plan is made of rather than rewrite them: `passageKit()` and `sectionProgram()` from `@gram-lang/renderer`. See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) for the terms.
+
 ## Related resources
 
 <CardGrid>

@@ -1,6 +1,6 @@
 ---
 title: "Planifier en heures réelles"
-description: "Comment Gram projette une recette sur le calendrier : une heure de service, un fuseau horaire et vos disponibilités transforment le planning en fiche de production, avec des attentes ajustées pour préserver vos nuits."
+description: "Comment Gram projette une recette sur le calendrier : une heure de service, un fuseau horaire et vos disponibilités transforment le planning en passages datés en cuisine, avec des attentes ajustées pour préserver vos nuits."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -10,7 +10,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Une recette décrit sa propre temporalité : la liste des tâches, leur durée et leurs dépendances. Cela suffit pour déterminer une métrique globale — par exemple « cette recette nécessite 17 heures au total, dont 50 minutes de travail actif ». En revanche, cela ne suffit pas pour déterminer **à quel moment précis commencer**. Pour cela, Gram a besoin de trois paramètres que vous seul connaissez : votre heure de service cible, votre fuseau horaire et vos plages réelles de disponibilité.
 
-Une fois ces trois données renseignées, Gram positionne chaque tâche de la recette sur le calendrier à rebours depuis le service, puis génère une fiche de production horodatée pour chaque étape.
+Une fois ces trois données renseignées, Gram positionne chaque tâche de la recette sur le calendrier à rebours depuis le service, puis calcule les jours, les passages en cuisine et ce qui se passe entre eux. Le [plan de travail](/fr/docs/how-to/plan-a-meal/) est une façon de le montrer.
 
 ## Paramètres d'entrée
 
@@ -95,26 +95,32 @@ Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent d
 
 Les calculs internes s'effectuent en minutes absolues sur une échelle continue, la conversion en heure locale n'intervenant qu'à la restitution finale. Une attente de 24 heures (une pâte au réfrigérateur, par exemple) traversant la nuit du passage à l'heure d'hiver dure 24 heures réelles : s'il débute à 13 h 30 la veille, il s'achèvera donc à 12 h 30 sur l'horloge locale. Si une heure théorique n'existe pas (ex. 2 h 30 lors de l'avance d'une heure au printemps), elle est recalée sur la première heure valide suivante ; lorsqu'une heure se répète en automne, la première occurrence est retenue.
 
-## La fiche de production
+## Le plan de travail
 
-Le plan génère une fiche de production opérationnelle : les journées sont ordonnées chronologiquement, accompagnées du déroulé précis de leurs tâches. Les horaires sont arrondis aux cinq minutes les plus proches (« vers 21:40 ») afin de refléter la réalité de la cuisine ; les calculs internes demeurent quant à eux exacts à la minute près. Chaque attente modifiée porte une annotation explicative, et les contraintes non résolues sont récapitulées en fin de document.
+La projection donne des données : pour chaque bloc, sa date et son heure ; les attentes qu'elle a allongées ou raccourcies ; les heures où vous n'êtes pas disponible ; ce qu'elle n'a pas pu régler. [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail) les regroupe en jours, en **passages en cuisine** et en **fils** qui continuent sans vous, et calcule de combien chaque passage pourrait avancer.
 
-Cette fiche est exportable sous de multiples formats : texte brut, Markdown, HTML autonome, version imprimable dédiée, ou fichier iCalendar (`.ics`) intégrant chaque tâche sous forme d'événement avec alarme sur les étapes actives. Consultez le guide [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour découvrir la mise en pratique complète.
+Le plan de travail est une vue de ces données. Pour chaque jour, il dit quand vous êtes en cuisine, ce qu'il faut sortir à chaque passage, ce que chaque section vous demande (avec les étapes de la recette qu'elle couvre) et ce qui continue ensuite. Les heures sont arrondies aux cinq minutes pour coller à la cuisine ; le calcul reste exact à la minute. Une attente que le plan a allongée est signalée en haut de son jour, et ce qui n'a pas pu être réglé en haut du plan. Les règles de la vue (un passage s'arrête à une attente d'une heure, une marge s'affiche à partir de 15 minutes) sont des choix de la vue, pas du moteur.
 
-La projection calendaire peut également s'intégrer directement au cœur de la recette : un horaire précis est annoté en regard de chaque étape, le jour calendaire est signalé dès qu'il change, les attentes sont contextualisées, et la fiche de production complète peut être annexée à la suite de la recette pour obtenir un document unique (`gram view`, `gram export` et `gram print` avec l'option `--serve`, ainsi que dans l'aperçu du Playground). Ces deux vues adoptent une logique complémentaire : la recette conserve sa structure par sections culinaires tandis que la fiche de production déroule une chronologie strictement linéaire (au sein de la recette, les étapes peuvent ainsi basculer d'une journée à une autre au fil des préparations).
+Il existe en texte brut, Markdown, HTML autonome, document imprimable (un jour par page, avec des cases à cocher) ou fichier iCalendar avec un événement par passage. Il peut suivre la recette dans un seul document (`--with-sheet`). La recette elle-même se lit pareil à toute heure : elle dit comment, le plan dit quand.
+
+Sans heure de service, les mêmes données sont racontées en jours avant le service (J-2, J-1, jour J) et en durées (« environ 55 min »), avec le plus tôt où ce sera prêt. Pas de marges ni d'ajustements : ils demandent vos disponibilités.
+
+Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide complet.
 
 ## Intégrations disponibles
 
 | Outil | Commande ou méthode |
 |---|---|
-| CLI | `gram plan recette.gram --serve "2026-10-11 13:00" --available 08:00-22:00` (option `--tz` facultative si configurée dans le projet) |
-| Playground | Volet de configuration « Planifier » du diagramme de Gantt et vue « Fiche de production » |
-| `@gram-lang/scheduler` | Fonctions `project()` et `runSheet()` (voir la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/)) |
-| `@gram-lang/renderer` | Option `projection` pour le diagramme de Gantt, et fonctions `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML` |
+| CLI | `gram plan recette.gram --serve "2026-10-11 13:00" --available 08:00-22:00` (option `--tz` facultative si configurée dans le projet) ; `--find` pour chercher une heure de service |
+| Playground | La vue « Plan de travail » et le volet « Planifier », avec « Quand servir ? » |
+| VS Code | `Gram: Work Plan`, en jours avant le service |
+| `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` et `earliestServe()` (voir la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/)) |
+| `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, et les pièces dont ils sont faits (`passageKit`, `sectionProgram`) |
 
 ## Limites actuelles
 
-- **Ordonnancement mono-recette** : la planification coordonnée d'un menu complet (entrée, plat et dessert synchronisés sur un même service, avec partage d'un cuisinier et d'un four unique) fera l'objet d'une évolution ultérieure ; l'API accepte néanmoins déjà une collection de recettes.
+- **Ordonnancement mono-recette** : la planification coordonnée d'un menu complet (entrée, plat et dessert synchronisés sur un même service, avec partage d'un cuisinier et d'un four unique) fera l'objet d'une évolution ultérieure ; l'API accepte néanmoins déjà une collection de recettes, et signale `MULTI_RECIPE_UNSUPPORTED` au-delà d'une.
+- **Pas de replanification après un retard** : le plan reste vrai tant que vous le suivez. Un passage fait après son heure prévue l'invalide : relancez-le.
 - **Ressources partagées** : les équipements (temps de préchauffage du four, capacité du réfrigérateur) ne constituent pas encore des ressources partagées globales, en dehors des pistes nommées explicites.
 - **Approche heuristique** : l'algorithme est glouton et déterministe (conçu pour être explicable et prévisible plutôt qu'optimal au sens de la programmation mathématique) : il résout les conflits en partant de l'événement le plus tardif et remonte dans le temps.
 

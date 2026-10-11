@@ -31,7 +31,8 @@ Ce graphe étant totalement indépendant des choix de l'utilisateur, toute combi
 |---|---|---|---|
 | **1. Chronologie théorique** | `layout(graph, options)` | Le graphe de tâches, et optionnellement `{ miseEnPlace, rests }` | Un `Schedule` (blocs ordonnancés, journées relatives, cumuls de temps) et les diagnostics intrinsèques à la recette |
 | **2. Projection calendaire** | `project(recipes, context)` | Le ou les graphes, une heure de service, un fuseau horaire et les disponibilités | Un plan horodaté : chaque bloc avec sa date et heure locales, les attentes ajustées, les plages d'indisponibilité et les conflits non résolus |
-| | `runSheet(plan)` | Le plan projeté | La structure arborescente d'une fiche de production |
+| | `runSheet(plan \| schedule, options)` | Le plan projeté, ou un `Schedule` seul | Les jours, passages en cuisine et fils d'un plan de travail (voir ci-dessous) |
+| | `findServeTimes()`, `earliestServe()` | Un graphe, un contexte, un intervalle de dates ou « maintenant » | Les heures de service qui conviennent, et la plus tôt |
 
 Ces fonctions sont **strictement pures** : une même entrée produit toujours la même sortie, aucune horloge système ni fuseau implicite n'est consulté, et le graphe d'origine demeure immuable. `project()` accepte par conception une collection de recettes, mais ne planifie pour le moment que la première en signalant le diagnostic `MULTI_RECIPE_UNSUPPORTED`.
 
@@ -68,6 +69,29 @@ Les attentes écrites sous forme de fourchette adoptent la stratégie spécifié
 
 Le temps interne est compté en minutes continues absolues depuis l'époque POSIX. La restitution en heure locale s'appuie sur `Intl.DateTimeFormat` avec un fuseau horaire explicite. Aucun recours à une bibliothèque tierce ou à une horloge système implicite n'est nécessaire : le plan reste strictement identique quel que soit l'environnement hôte, et une journée de 23 ou 25 heures (changement d'heure) est restituée avec sa durée réelle.
 
+## De la chronologie au plan de travail
+
+Le moteur produit des **données** ; le plan de travail est une façon de les montrer. `runSheet()` transforme une chronologie ou un plan projeté en une structure que n'importe quelle interface peut dessiner, avec ces termes, définis ici une fois et repris partout ailleurs :
+
+| Terme | Ce que c'est |
+|---|---|
+| **Session** | Un jour de travail de la recette. Seule une ancre en jours (`~{-2j}`, sur une section ou un `@use`) en ouvre une ; sans ancre, la recette tient en une session. |
+| **Passage** | Un moment en cuisine : des plages de votre propre travail qui s'enchaînent, sans attente d'une heure ou plus entre elles (`PASSAGE_GAP_MINUTES`). Un jour peut en compter plusieurs. |
+| **Fil** | Une attente qui commence pendant un passage et continue après lui, sans vous. |
+| **Ajustement** | Une attente que la projection a allongée ou raccourcie, dans sa fourchette écrite, pour que le travail tombe dans vos disponibilités. La seule raison est `avoid-unavailable`. |
+| **Problème non résolu** | Un diagnostic de la projection : ce que le plan n'a pas pu rendre faisable. |
+| **Marge** | De combien un passage pourrait avancer si tous les autres restent à leur heure prévue. |
+
+Chaque chiffre est calculé par le moteur : en minutes avant le service, dans un plan avec heure de service ou sans. La marge d'un passage est sûre par construction. Tout est prévu au plus tard, donc un passage ne peut qu'avancer ; l'avancer raccourcit l'attente qui le précède et allonge celle qui le suit, et chacune est vérifiée contre sa fourchette écrite et l'heure **prévue** des passages voisins. Avancer un passage, plusieurs ou aucun ne casse jamais la marge d'un autre. Une marge est parfois prudente, jamais fausse. Ce qui la casse, c'est le retard : un passage fait après son heure prévue. Il faut alors refaire le plan ; le moteur ne replanifie pas tout seul.
+
+Quoi en dire, et avec quels mots, est un choix de la vue. Le [plan de travail](/fr/docs/how-to/plan-a-meal/) de Gram coupe un jour à une attente d'une heure, montre une marge à partir de 15 minutes (`WINDOW_MIN_MINUTES`) et lit « À sortir » et « Au programme » dans la recette compilée : une autre interface est libre de faire d'autres choix avec les mêmes données. [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) en montre une.
+
+### Ce que le moteur ne fait pas
+
+- Il planifie **une seule recette**. Un menu de plusieurs recettes, avec des pistes partagées, n'est pas planifié (`MULTI_RECIPE_UNSUPPORTED`).
+- Il ne **replanifie** pas après un retard : un plan est une fonction de ses entrées, relancez-le.
+- Il ne choisit pas quand vous cuisinez : il essaie les heures de service que vous lui donnez (`findServeTimes()` à vos heures de repas, `earliestServe()` à partir de maintenant) et dit lesquelles conviennent et pourquoi les autres non.
+
 ## Deux familles de diagnostics
 
 Le moteur distingue rigoureusement deux catégories d'anomalies :
@@ -92,7 +116,7 @@ Pour explorer les signatures de fonctions et leurs types TypeScript, consultez l
 <CardGrid>
   <LinkCard
     title="Référence de l'API Scheduler"
-    description="Signatures de fonctions, options et types TypeScript pour layout(), project() et runSheet()."
+    description="Signatures de fonctions, options et types TypeScript pour layout(), project(), runSheet() et la recherche d'heure de service."
     href="/fr/docs/reference/api/scheduler/"
   />
   <LinkCard

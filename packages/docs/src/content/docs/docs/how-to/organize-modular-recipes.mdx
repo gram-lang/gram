@@ -86,7 +86,7 @@ If you followed [Your First Recipe](/docs/tutorials/first-recipe), the **Lemon M
     [Pour] The &curd into the &baked shell{}. Chill in the fridge for ~_{2h}.
     ```
 
-    Downstream tools — the Gantt timeline, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule. The same goes for the mise en place: the base's own preparations are planned with its sections, so they can fall while something else is resting.
+    Downstream tools — the work plan, shopping list, and nutritional analysis — work seamlessly. The dough's `~_{1h}` passive rest interleaves with making the lemon curd because `@use` inlines the steps into the global schedule. The same goes for the mise en place: the base's own preparations are planned with its sections, so they can fall while something else is resting.
 
 3.  **Reuse the base across multiple recipes**
 
@@ -229,7 +229,7 @@ graph LR
 ```
 
 * **Encapsulation:** `dinner.gram` only interacts with `&veloute`. Internal variables within `chicken-stock.gram` remain completely private.
-* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and Gantt schedule, along with their mise en place.
+* **Unified shopping list & timeline:** Raw ingredients (chicken, celery, carrots) and simmering steps from `chicken-stock.gram` bubble up into the main dinner shopping list and work plan, along with their mise en place.
 
 ### Diamond dependencies
 When a menu imports multiple dishes that share a common foundation (e.g. an entrée and a dessert that both import `shortcrust.gram`):
@@ -277,7 +277,7 @@ gram shop dinner.gram --stock @bases/shortcrust.gram
 gram cook dinner.gram --stock @bases/shortcrust.gram,@sauces/bechamel.gram
 ```
 
-* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and Gantt schedule, and nothing inside the module is prepared. The only cost left is one minute of mise en place where your recipe takes the stocked item off the shelf.
+* **Zero timeline overhead:** All preparation and cooking steps for stocked items are omitted from the interactive cooking guide and the work plan, and nothing inside the module is prepared. The only cost left is one minute of mise en place where your recipe takes the stocked item off the shelf.
 * **Simplified shopping list:** Aggregates as a single purchasable unit (e.g., `1 shortcrust pastry`) rather than listing raw ingredients like flour and butter.
 * **Accurate nutritional totals:** Calories and macronutrients remain fully accurate, derived directly from the base module's nutritional profile.
 
@@ -290,6 +290,10 @@ This strict section-scoping guarantees that splitting a recipe into files never 
 ## Try it in the playground
 
 The web-based [Playground](/play) supports editing multi-file recipes: open the **Lemon Tart (multi-file, @use)** example from the recipe dropdown to explore a host recipe and its imported base side by side in separate tabs.
+
+## Planning with imports
+
+In the [work plan](/docs/how-to/plan-a-meal/), an imported base is part of the recipe's visits to the kitchen: its steps and its mise en place are planned with the rest, and a day anchor on its `@use` (`@use "./bases/sponge.gram" as &sponge ~{-2d}`) opens a day for it. A base kept **in stock** (`--stock ./bases/sponge.gram`) opens no visit at all: it is listed "in stock" under "To take out", in the visit that uses it. The steps of an imported section are referred to by the name of their file ("sponge.gram, steps 1 to 2").
 
 ## Related resources
 

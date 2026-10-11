@@ -58,6 +58,10 @@ Unlike an `@ingredient` which scales proportionally by default, `#cookware` scal
 | **With quantity** | `#pan{1}` or `#ramekins{4}` | <Badge text="Scalable" variant="tip" /> | Doubling portions asks for 2 pans or 8 ramekins. |
 | **Explicit fixed** | `#=pan{2}` | <Badge text="Fixed" variant="note" /> | Stays fixed at 2 pans even if the recipe is scaled up. |
 
+## Cookware and the work plan
+
+The cookware of a section is listed in "To take out" for the visit where the section is done (once per visit). Two passive timers that overlap in steps citing the same cookware, with no named track in common, are flagged by [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware), with a named track as the suggested fix.
+
 ## Modifiers and advanced syntax
 
 `#cookware` supports several of the advanced syntax mechanisms available for ingredients:
