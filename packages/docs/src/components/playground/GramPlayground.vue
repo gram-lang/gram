@@ -29,13 +29,19 @@ import {
 	applyScale,
 	DEFAULT_MISE_EN_PLACE_MODE,
 	DEFAULT_REST_CHOICE,
+	scheduleFor,
 	REST_CHOICES,
 	isMiseEnPlaceMode,
 	isRestChoice,
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "@gram-lang/kitchen";
-import { project, runSheet, type ProjectedPlan } from "@gram-lang/scheduler";
+import {
+	earliestServe,
+	findServeTimes,
+	project,
+	runSheet,
+} from "@gram-lang/scheduler";
 import {
 	analyze,
 	convertUnit,
@@ -55,9 +61,14 @@ import {
 	enrichWarning,
 	sortDiagnostics,
 } from "./diagnostics";
-import { toMarkdown, toHTML, runSheetToHTML } from "@gram-lang/renderer";
+import {
+	describeEarliestServe,
+	describeServeTimes,
+	toMarkdown,
+	toHTML,
+	runSheetToHTML,
+} from "@gram-lang/renderer";
 import "@gram-lang/renderer/gram.css";
-import "@gram-lang/renderer/gantt.css";
 import { DEFAULT_SOURCES } from "./db";
 import { DEFAULT_ENTRY_URI, createPlaygroundHost } from "./vfsHost";
 import { getDictionary } from "@gram-lang/i18n";
@@ -140,11 +151,11 @@ const errorFiles = computed(() => {
 });
 
 const viewMode = ref<
-	"preview" | "gantt" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
+	"preview" | "runsheet" | "json" | "ast" | "markdown" | "json-tree"
 >("preview");
 // Which complete timeline the views follow: mise en place right before each
 // section, or all of it at the start. A reading choice, shared by the preview,
-// the Gantt and the Markdown views, and remembered in the browser.
+// the work plan and the Markdown views, and remembered in the browser.
 const SCHEDULE_STORAGE_KEY = "gram-playground-schedule";
 
 function loadSchedule(): MiseEnPlaceMode {
@@ -194,8 +205,8 @@ watch(rests, (value) => {
 });
 
 // The plan: when it is served and when the cook is available. Setting a serving
-// time puts the recipe on the calendar (the Gantt chart reads in real dates,
-// the production sheet appears); clearing it goes back to a plain timeline.
+// time puts the work plan on the calendar (dates, margins, rests stretched to
+// your availability); clearing it goes back to the days before the service.
 // Remembered in the browser like the other choices.
 const PLAN_STORAGE_KEY = "gram-playground-plan";
 
@@ -232,10 +243,20 @@ function loadPlan(): PlanSettings {
 }
 
 const plan = ref<PlanSettings>(loadPlan());
-// The plan of the last run, for the Gantt chart; null without a serving time.
-const projection = shallowRef<ProjectedPlan | null>(null);
+// The work plan of the last run, as HTML: with dates when a serving time is
+// set, in days before the service otherwise.
 const runSheetHtml = ref("");
 const planError = ref("");
+
+interface ServeSuggestions {
+	/** Serving times that work, best first. */
+	candidates: { serveAt: string; label: string; title: string }[];
+	/** Why the others don't, in words. */
+	rejected: string[];
+	/** The first time it can be ready if the cook starts now. */
+	earliest: { serveAt: string; label: string; text: string } | null;
+}
+const serveSuggestions = shallowRef<ServeSuggestions | null>(null);
 
 watch(
 	plan,
@@ -362,7 +383,6 @@ const scaleTargetUnit = ref("");
 // biome-ignore lint/correctness/noUnusedVariables: viewModeOptions is used in the <template> block below, which Biome's Vue support doesn't see.
 const viewModeOptions = computed(() => [
 	{ label: t.value.playground.views.preview, value: "preview" },
-	{ label: t.value.playground.views.gantt, value: "gantt" },
 	{ label: t.value.playground.views.runSheet, value: "runsheet" },
 	{ label: t.value.playground.views.jsonTree, value: "json-tree" },
 	{ label: t.value.playground.views.json, value: "json" },
@@ -706,40 +726,136 @@ async function updateGram() {
 }
 
 /**
- * Places the compiled recipe on the calendar when a serving time is set, for
- * the Gantt chart and the production sheet. A plan that can't be made (an
+ * The work plan of the compiled recipe: on the calendar when a serving time is
+ * set, in days before the service otherwise. A plan that can't be made (an
  * unknown time zone, a half-typed time) is reported next to the controls, not
- * as a problem of the recipe.
+ * as a problem of the recipe; what could not be fixed is at the top of the plan.
  */
 function placeOnCalendar(result: any) {
-	projection.value = null;
 	runSheetHtml.value = "";
 	planError.value = "";
+	if (!result?.tasks) return;
 	const { serveAt, timeZone, from, to } = plan.value;
-	if (!serveAt) return;
 	try {
-		const projected = project(
-			[
-				{
-					graph: result.tasks,
-					title: result.title ?? undefined,
-					options: { miseEnPlace: schedule.value, rests: rests.value },
-				},
-			],
-			{
+		const title = result.title ?? undefined;
+		let sheet: ReturnType<typeof runSheet>;
+		if (serveAt) {
+			const context = {
 				serveAt,
 				timeZone,
 				availability: { daily: [{ start: from, end: to }] },
-			},
-		);
-		projection.value = projected;
-		runSheetHtml.value = runSheetToHTML(runSheet(projected), result, {
+				// Without the present, a serving time too close for the rests is
+				// drawn as if starting in the past were fine.
+				now: new Date().toISOString(),
+			};
+			const projected = project(
+				[
+					{
+						graph: result.tasks,
+						title,
+						options: { miseEnPlace: schedule.value, rests: rests.value },
+					},
+				],
+				context,
+			);
+			sheet = runSheet(projected, { graph: result.tasks, context });
+		} else {
+			const timeline = scheduleFor(result, schedule.value, rests.value);
+			if (!timeline) return;
+			sheet = runSheet(timeline, { graph: result.tasks, title });
+		}
+		runSheetHtml.value = runSheetToHTML(sheet, result, {
 			lang: currentLang.value,
 		});
 	} catch (e: any) {
 		planError.value = e?.message ?? String(e);
 	}
 }
+
+/**
+ * "When to serve?" and "Ready as early as": tried with the same engine as the
+ * plan, over the next week at 12:30 and 20:00, and from now on. Only worked out
+ * while the studio is open: it plans a few dozen times.
+ */
+function computeServeSuggestions() {
+	const result = jsonData.value;
+	if (!isDrawerOpen.value || !result?.tasks) {
+		serveSuggestions.value = null;
+		return;
+	}
+	try {
+		const { timeZone, from, to } = plan.value;
+		const now = new Date();
+		const context = {
+			serveAt: "1970-01-01T00:00",
+			timeZone,
+			availability: { daily: [{ start: from, end: to }] },
+			now: now.toISOString(),
+		};
+		const input = {
+			graph: result.tasks,
+			title: result.title ?? undefined,
+			options: { miseEnPlace: schedule.value, rests: rests.value },
+		};
+		const localDay = (offset: number) =>
+			new Intl.DateTimeFormat("en-CA", {
+				timeZone,
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+			}).format(new Date(now.getTime() + offset * 86_400_000));
+		const range = { from: localDay(0), to: localDay(7) };
+		const search = findServeTimes(input, context, { ...range, limit: 6 });
+		const words = describeServeTimes(search, result, {
+			...range,
+			timeZone,
+			lang: currentLang.value,
+		});
+		const label = (serveAt: string) =>
+			new Intl.DateTimeFormat(currentLang.value || "en", {
+				timeZone: "UTC",
+				weekday: "short",
+				day: "numeric",
+				month: "short",
+				hour: "2-digit",
+				minute: "2-digit",
+				hourCycle: "h23",
+			}).format(new Date(`${serveAt}:00Z`));
+		const earliest = earliestServe(input, context);
+		serveSuggestions.value = {
+			candidates: search.candidates.map((c, i) => ({
+				serveAt: c.serveAt,
+				label: label(c.serveAt),
+				title: words[i] ?? "",
+			})),
+			rejected: words.slice(search.candidates.length),
+			earliest: earliest.found
+				? {
+						serveAt: earliest.found.serveAt,
+						label: label(earliest.found.serveAt),
+						text: describeEarliestServe(earliest, {
+							lang: currentLang.value,
+						}),
+					}
+				: null,
+		};
+	} catch {
+		serveSuggestions.value = null;
+	}
+}
+
+watch(
+	[
+		isDrawerOpen,
+		jsonData,
+		schedule,
+		rests,
+		() => plan.value.timeZone,
+		() => plan.value.from,
+		() => plan.value.to,
+	],
+	computeServeSuggestions,
+);
 
 // biome-ignore lint/correctness/noUnusedVariables: handleScaleUpdate is used in the <template> block below, which Biome's Vue support doesn't see.
 function handleScaleUpdate(factor: number) {
@@ -1055,9 +1171,6 @@ onUnmounted(() => {
               :content="content" 
               :html-preview="htmlPreview" 
               :json-data="jsonData" 
-              :schedule="schedule"
-              :rests="rests"
-              :projection="projection"
               :run-sheet-html="runSheetHtml"
               :blocking-diagnostics="blockingDiagnostics"
               @scale-update="handleScaleUpdate"
@@ -1075,7 +1188,7 @@ onUnmounted(() => {
                     />
                   </div>
                   <button
-                    v-if="['gantt', 'runsheet', 'preview'].includes(viewMode)"
+                    v-if="['runsheet', 'preview'].includes(viewMode)"
                     type="button"
                     class="header-quick-action"
                     :title="t.playground.openScheduleSettings"
@@ -1125,6 +1238,7 @@ onUnmounted(() => {
         :rests="rests"
         :plan="plan"
         :plan-error="planError"
+        :serve-suggestions="serveSuggestions"
         :initial-section="drawerInitialSection"
         @update:schedule="(val) => (schedule = val)"
         @update:rests="(val) => (rests = val)"

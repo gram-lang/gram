@@ -49,6 +49,12 @@ const props = defineProps<{
 	rests?: RestChoice;
 	plan?: PlanSettings;
 	planError?: string;
+	/** Serving times that work, why the others don't, and the earliest from now. */
+	serveSuggestions?: {
+		candidates: { serveAt: string; label: string; title: string }[];
+		rejected: string[];
+		earliest: { serveAt: string; label: string; text: string } | null;
+	} | null;
 	initialSection?: string;
 }>();
 
@@ -156,6 +162,11 @@ function updatePlanField(field: keyof PlanSettings, value: string) {
 		...props.plan,
 		[field]: value,
 	});
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: pickServeAt is used in the <template> block below, which Biome's Vue support doesn't see.
+function pickServeAt(serveAt: string) {
+	updatePlanField("serveAt", serveAt);
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: scheduleBadge is used in the <template> block below, which Biome's Vue support doesn't see.
@@ -523,6 +534,41 @@ function resetStockSection() {
             :value="props.plan?.serveAt || ''"
             @input="updatePlanField('serveAt', ($event.target as HTMLInputElement).value)"
           />
+        </div>
+
+        <div v-if="props.serveSuggestions" class="studio-field serve-suggestions">
+          <span class="studio-label">{{ t.playground.views.serveWhenTitle }}</span>
+          <div v-if="props.serveSuggestions.candidates.length > 0" class="serve-pills">
+            <button
+              v-for="c in props.serveSuggestions.candidates"
+              :key="c.serveAt"
+              type="button"
+              class="serve-pill"
+              :class="{ 'is-selected': props.plan?.serveAt === c.serveAt }"
+              :title="c.title"
+              @click="pickServeAt(c.serveAt)"
+            >
+              {{ c.label }}
+            </button>
+          </div>
+          <p v-else class="serve-none">{{ t.playground.views.serveWhenNone }}</p>
+          <details v-if="props.serveSuggestions.rejected.length > 0" class="serve-why-not">
+            <summary>{{ t.playground.views.serveWhenWhyNot }}</summary>
+            <ul>
+              <li v-for="line in props.serveSuggestions.rejected" :key="line">{{ line }}</li>
+            </ul>
+          </details>
+          <p v-if="props.serveSuggestions.earliest" class="serve-earliest">
+            <span>{{ props.serveSuggestions.earliest.text }}</span>
+            <button
+              type="button"
+              class="serve-pill"
+              @click="pickServeAt(props.serveSuggestions.earliest.serveAt)"
+            >
+              {{ t.playground.views.earliestUse }}
+            </button>
+          </p>
+          <p v-else class="serve-none">{{ t.playground.views.earliestNone }}</p>
         </div>
 
         <div class="studio-field">
@@ -937,6 +983,49 @@ function resetStockSection() {
 .range-separator {
   color: var(--sl-color-gray-3);
   font-size: 12px;
+}
+
+.serve-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.serve-pill {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  background: var(--sl-color-bg-nav);
+  color: var(--sl-color-text);
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.serve-pill:hover,
+.serve-pill.is-selected {
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-accent-high);
+}
+
+.serve-none,
+.serve-why-not,
+.serve-earliest {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--sl-color-gray-2);
+}
+
+.serve-why-not ul {
+  margin: 4px 0 0;
+  padding-left: 1.2em;
+}
+
+.serve-earliest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .plan-error {

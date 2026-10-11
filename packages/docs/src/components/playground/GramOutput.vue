@@ -1,47 +1,21 @@
 <script setup lang="ts">
-import {
-	ref,
-	computed,
-	watch,
-	nextTick,
-	inject,
-	defineAsyncComponent,
-	type Ref,
-} from "vue";
+import { ref, computed, watch, nextTick, inject, type Ref } from "vue";
 
 import { useI18n } from "./useI18n";
 import { getHighlighter, SHIKI_THEMES } from "./shikiHighlighter";
 import { trackEvent } from "../../lib/umami";
-import type { MiseEnPlaceMode, RestChoice } from "@gram-lang/kitchen";
-import type { ProjectedPlan } from "@gram-lang/scheduler";
 import type { PlaygroundDiagnostic } from "./diagnostics";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import JsonNode from "./JsonNode.vue";
 // biome-ignore lint/correctness/noUnusedImports: used as a component in the <template> block below
 import GramErrorState from "./GramErrorState.vue";
 
-// Only rendered when the user switches to the Gantt tab: load it on demand
-// so its code doesn't inflate the initial GramPlayground bundle.
-// biome-ignore lint/correctness/noUnusedVariables: used as a component in the <template> block below
-const GramGantt = defineAsyncComponent(() => import("./GramGantt.vue"));
-
 const props = defineProps<{
-	viewMode:
-		| "json"
-		| "ast"
-		| "markdown"
-		| "json-tree"
-		| "preview"
-		| "gantt"
-		| "runsheet";
+	viewMode: "json" | "ast" | "markdown" | "json-tree" | "preview" | "runsheet";
 	content: string; // JSON string, AST string, or Markdown string
 	htmlPreview: string;
 	jsonData: any;
-	schedule?: MiseEnPlaceMode;
-	rests?: RestChoice;
-	/** The recipe placed on the calendar, when a serving time is set. */
-	projection?: ProjectedPlan | null;
-	/** The production sheet of that plan, as HTML. */
+	/** The work plan, as HTML: with dates when a serving time is set, in days before the service otherwise. */
 	runSheetHtml?: string;
 	blockingDiagnostics?: PlaygroundDiagnostic[];
 }>();
@@ -240,16 +214,8 @@ function handlePreviewClick(e: MouseEvent) {
           <JsonNode :data="jsonData" :is-last="true" :initial-expanded="true" />
         </div>
 
-        <!-- Gantt Chart -->
-        <div v-else-if="viewMode === 'gantt'" class="output-gantt">
-          <GramGantt :json-data="jsonData" :schedule="schedule" :rests="rests" :projection="projection ?? undefined" />
-        </div>
-
-        <!-- Production sheet -->
-        <div v-else-if="viewMode === 'runsheet'" class="output-preview gram-preview vp-doc">
-          <div v-if="runSheetHtml" v-html="runSheetHtml"></div>
-          <p v-else class="run-sheet-hint">{{ t.playground.views.runSheetHint }}</p>
-        </div>
+        <!-- Work plan -->
+        <div v-else-if="viewMode === 'runsheet'" class="output-preview gram-preview vp-doc" v-html="runSheetHtml"></div>
         
         <!-- HTML Preview -->
         <div 
@@ -378,15 +344,6 @@ function handlePreviewClick(e: MouseEvent) {
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-}
-
-.run-sheet-hint {
-  color: var(--sl-color-gray-3);
-}
-
-.output-gantt{
-	  background-color: var(--sl-color-bg);
-  min-height: 100%;
 }
 
 .loading-editor {

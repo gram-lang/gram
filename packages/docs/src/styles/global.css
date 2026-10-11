@@ -244,7 +244,7 @@ pre[data-language="markdown"] code {
  * @gram-lang/renderer's gram.css derives its dark-mode preview palette from
  * --bg-dark-anchor: var(--vp-c-bg, #1a1a1a) — a generic host-site theming hook,
  * not VitePress-specific. Feed it Starlight's own background so the recipe
- * preview/Gantt chart track the site's dark theme instead of its hardcoded
+ * preview and the work plan track the site's dark theme instead of its hardcoded
  * fallback.
  */
 :root {
