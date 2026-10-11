@@ -121,7 +121,7 @@ La page [Fonctionnalités dépréciées](/fr/docs/how-to/deprecations) détaille
 :::
 
 :::note[Documents JSON compilés avant la version 1.4.0]
-Un fichier JSON produit par Kitchen en version 1.3.0 ou antérieure ne comporte ni `tasks` ni `schedule`. Il reste affichable : la fonction `scheduleTimes` lit le temps total et le temps d'attente dans les champs hérités `metrics.totalTime` et `metrics.idleTime`, et le moteur de diff sémantique les compare fidèlement au lieu de retourner zéro. En revanche, l'absence de données de mise en place et de chronologie empêche le calcul du plan de travail. Recompilez la recette avec Gram 1.4.0 ou supérieur pour en bénéficier. Ce repli transitoire sera supprimé avec les champs dépréciés lors de la version 2.0.0.
+Un fichier JSON produit par Kitchen en version 1.3.0 ou antérieure ne comporte ni `tasks` ni `schedule`. Il reste affichable : la fonction `scheduleTimes` lit le temps total et le temps d'attente dans les champs hérités `metrics.totalTime` et `metrics.idleTime`, et le moteur de diff sémantique les compare fidèlement au lieu de retourner zéro. En revanche, l'absence de données de mise en place et de chronologie empêche le calcul du planning de préparation. Recompilez la recette avec Gram 1.4.0 ou supérieur pour en bénéficier. Ce repli transitoire sera supprimé avec les champs dépréciés lors de la version 2.0.0.
 :::
 
 Consultez la page [Formats de données](/fr/docs/reference/api/data-formats) pour un exemple annoté de cette structure, et la [référence des avertissements](/fr/docs/reference/api/warnings) pour l'inventaire des diagnostics émis dans `warnings`.

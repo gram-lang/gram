@@ -123,13 +123,13 @@ Une recette compilée porte déjà cette décomposition au sein de son champ `mi
 
 <Since v="1.4.0" type="deprecated" />
 
-Le diagramme de Gantt est remplacé par le [plan de travail](/fr/docs/how-to/plan-a-meal/) : plus aucune surface de Gram (CLI, playground, VS Code) ne le dessine, et son code est figé jusqu'en 2.0.0.
+Le diagramme de Gantt est remplacé par le [planning de préparation](/fr/docs/how-to/plan-a-meal/) : plus aucune surface de Gram (CLI, playground, VS Code) ne le dessine, et son code est figé jusqu'en 2.0.0.
 
 | Déprécié | Remplacement |
 |---|---|
 | `toGanttHTML()`, `attachGanttInteractivity()`, `formatTime()`, `formatAxisTime()` et les types `Gantt*` (`@gram-lang/renderer`) | `runSheetToHTML()` (et `runSheetToText()`, `runSheetToMarkdown()`, `runSheetToPrintHTML()`) sur le `RunSheet` de `runSheet()`, ou une vue de votre cru construite à partir de ces données |
-| `@gram-lang/renderer/gantt.css` | Rien : le plan de travail est stylé par `gram.css` |
-| Les clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Aucune : le plan de travail utilise les clés `workPlan*` du dictionnaire du renderer |
+| `@gram-lang/renderer/gantt.css` | Rien : le planning de préparation est stylé par `gram.css` |
+| Les clés `gantt_*` de `playground.views` (`@gram-lang/i18n`) | Aucune : le planning de préparation utilise les clés `workPlan*` du dictionnaire du renderer |
 | La commande `gram.showGantt`, `Gram: Gantt Chart` (VS Code) | `gram.showRunSheet`, `Gram: Work Plan`. L'ancienne commande l'ouvre et le dit une fois |
 | La notification `gram/ganttUpdated` (serveur de langage) | `gram/runSheetUpdated`, ou les données de la recette compilée |
 

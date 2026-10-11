@@ -1,6 +1,6 @@
 ---
 title: "Planifier un repas"
-description: "Choisir l'heure du service, obtenir le plan de travail d'une recette (les jours, les passages en cuisine, ce qu'il faut sortir), l'imprimer avec la recette et l'envoyer dans votre agenda."
+description: "Choisir l'heure du service, obtenir le planning de préparation d'une recette (les jours, les passages en cuisine, ce qu'il faut sortir), l'imprimer avec la recette et l'envoyer dans votre agenda."
 ---
 
 import Since from '../../../../../components/Since.astro';
@@ -10,7 +10,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Vous voulez servir un entremets pistache framboise samedi à 20 h. Il demande trois jours de travail, un biscuit et un insert faits deux jours avant, un glaçage que vous avez peut-être déjà au congélateur, et vous ne cuisinez qu'entre 8 h et 22 h. Ce guide va de la recette à un plan que vous pouvez suivre en cuisine et mettre dans votre agenda.
 
-La recette dit **comment** faire. Le plan de travail dit **quand venir** et **quoi sortir**. Gram le calcule à partir de la recette : rien à écrire deux fois.
+La recette dit **comment** faire. Le planning de préparation dit **quand venir** et **quoi sortir**. Gram le calcule à partir de la recette : rien à écrire deux fois.
 
 Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git.gram-lang.org/gram-lang/gram/src/branch/main/packages/docs/public/examples/work-plan-fr) : `entremets.gram` importe trois bases avec `@use`.
 
@@ -66,7 +66,7 @@ Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git
 
    Sans heure de service du tout, `gram plan entremets.gram` indique le plus tôt où ce sera prêt si vous commencez maintenant.
 
-3. ### Obtenir le plan de travail
+3. ### Obtenir le planning de préparation
 
    ```bash
    gram plan entremets.gram --serve "2026-10-17 20:00" --tz Europe/Paris --available 08:00-22:00 \
@@ -76,7 +76,7 @@ Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git
    `--serve` est la date et l'heure locales, `--tz` le fuseau IANA (à régler une fois avec `gram config set timezone Europe/Paris`), `--available` vos heures de cuisine (répétable : `sat=09:00-23:00`, `2026-10-09=none`). `--stock` dit que le glaçage est déjà au congélateur : il n'est pas planifié et apparaît « en stock ».
 
    ```text
-   Plan de travail — Entremets pistache framboise
+   Planning de préparation — Entremets pistache framboise
    Pour le samedi 17 octobre à 20:00 · 6 parts
    3 jours · 3 passages en cuisine · 45m de travail en tout
 
@@ -90,7 +90,7 @@ Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git
             ★ 20:00         Servir
    ```
 
-4. ### La lire
+4. ### Le lire
 
    Le haut est le **planning des jours** : une ligne par passage en cuisine (`▮`), avec ce qui continue sans vous dessous (`┆`), puis le service (`★`). Chaque jour a ensuite son bloc :
 
@@ -128,7 +128,7 @@ Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git
    gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
-   `--with-sheet` écrit le plan de travail après la recette, dans un seul document (un jour par page à l'impression, avec des cases à cocher). `--ics` écrit un événement par passage en cuisine, avec une alarme avant et les listes dans sa description. Les événements sont en UTC : votre agenda les affiche dans son propre fuseau.
+   `--with-sheet` écrit le planning de préparation après la recette, dans un seul document (un jour par page à l'impression, avec des cases à cocher). `--ics` écrit un événement par passage en cuisine, avec une alarme avant et les listes dans sa description. Les événements sont en UTC : votre agenda les affiche dans son propre fuseau.
 
 6. ### Si vous prenez du retard
 
@@ -136,13 +136,13 @@ Les fichiers de ce guide sont dans [`public/examples/work-plan-fr/`](https://git
 
 7. ### Autres formats
 
-   `--format md` pour du Markdown, `--format html` pour un fragment, `--format json` pour les données (`plan` et `runSheet`, voir [Formats de données](/fr/docs/reference/api/data-formats/#5-le-plan-de-travail)). Les mots suivent la `language` de votre projet.
+   `--format md` pour du Markdown, `--format html` pour un fragment, `--format json` pour les données (`plan` et `runSheet`, voir [Formats de données](/fr/docs/reference/api/data-formats/#5-le-planning-de-préparation)). Les mots suivent la `language` de votre projet.
 
 </Steps>
 
 ## Dans le playground
 
-Ouvrez le studio (bouton « Plan »), indiquez une heure de service, un fuseau et vos heures : la vue **Plan de travail** montre le plan avec ses dates. Les boutons « Quand servir ? » règlent l'heure pour vous, et « Prêt dès » donne le plus tôt possible à partir de maintenant.
+Ouvrez le studio (bouton « Plan »), indiquez une heure de service, un fuseau et vos heures : la vue **Planning** montre le plan avec ses dates. Les boutons « Quand servir ? » règlent l'heure pour vous, et « Prêt dès » donne le plus tôt possible à partir de maintenant.
 
 ## Depuis le code
 
@@ -171,7 +171,7 @@ Ce sont les données qui comptent : le texte ci-dessus n'est qu'une façon de le
 <CardGrid>
   <LinkCard
     title="L'ordonnanceur"
-    description="Sessions, passages, fils, marges : ce que calcule le moteur et ce que montre le plan de travail."
+    description="Sessions, passages, fils, marges : ce que calcule le moteur et ce que montre le planning de préparation."
     href="/fr/docs/explanation/engine/scheduler/"
   />
   <LinkCard

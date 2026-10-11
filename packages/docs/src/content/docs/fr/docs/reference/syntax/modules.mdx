@@ -215,7 +215,7 @@ gram shop diner.gram --stock @bases/bouillon.gram
 gram cook diner.gram --stock @bases/bouillon.gram
 ```
 
-* **Planning et plan de travail :** les étapes de confection de la base sont masquées, et la base n'ouvre aucun passage ; elle est listée « en stock » dans le passage qui l'utilise.
+* **Planning de préparation :** les étapes de confection de la base sont masquées, et la base n'ouvre aucun passage ; elle est listée « en stock » dans le passage qui l'utilise.
 * **Liste de courses :** le composant apparaît comme un article unique à acheter (ex. `1 bouillon`) au lieu d'énumérer ses ingrédients élémentaires.
 * **Valeurs nutritionnelles :** le profil calorique et nutritionnel reste parfaitement exact, calculé à partir de la composition réelle du module.
 
@@ -245,7 +245,7 @@ Certaines préparations doivent être démarrées bien avant le reste du plat (r
 Le serveur de langage Gram (LSP) interprète les directives `@use` en continu pendant que vous écrivez vos recettes :
 
 * **Contrôle en temps réel :** vérification instantanée des liens entre fichiers et signalement des erreurs de syntaxe.
-* **Aperçu et plan de travail dynamiques :** mise à jour en direct, en tenant compte des étapes imbriquées et de l'ajustement des quantités. Une base importée participe aux passages en cuisine, et une ancre `~{-2d}` sur son `@use` lui ouvre un jour.
+* **Aperçu et planning dynamiques :** mise à jour en direct, en tenant compte des étapes imbriquées et de l'ajustement des quantités. Une base importée participe aux passages en cuisine, et une ancre `~{-2d}` sur son `@use` lui ouvre un jour.
 * **Navigation rapide (« Aller à la définition ») :** un simple clic sur une variable comme `&pâte` ouvre directement le fichier source à la section correspondante.
 * **Autocomplétion intelligente :** dès que vous tapez `@use "`, l'éditeur vous propose les chemins relatifs (`./`, `../`), la racine (`@/`) ainsi que vos alias `paths:`.
 

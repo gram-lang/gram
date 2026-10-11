@@ -31,7 +31,7 @@ Ce graphe étant totalement indépendant des choix de l'utilisateur, toute combi
 |---|---|---|---|
 | **1. Chronologie théorique** | `layout(graph, options)` | Le graphe de tâches, et optionnellement `{ miseEnPlace, rests }` | Un `Schedule` (blocs ordonnancés, journées relatives, cumuls de temps) et les diagnostics intrinsèques à la recette |
 | **2. Projection calendaire** | `project(recipes, context)` | Le ou les graphes, une heure de service, un fuseau horaire et les disponibilités | Un plan horodaté : chaque bloc avec sa date et heure locales, les attentes ajustées, les plages d'indisponibilité et les conflits non résolus |
-| | `runSheet(plan \| schedule, options)` | Le plan projeté, ou un `Schedule` seul | Les jours, passages en cuisine et fils d'un plan de travail (voir ci-dessous) |
+| | `runSheet(plan \| schedule, options)` | Le plan projeté, ou un `Schedule` seul | Les jours, passages en cuisine et fils d'un planning de préparation (voir ci-dessous) |
 | | `findServeTimes()`, `earliestServe()` | Un graphe, un contexte, un intervalle de dates ou « maintenant » | Les heures de service qui conviennent, et la plus tôt |
 
 Ces fonctions sont **strictement pures** : une même entrée produit toujours la même sortie, aucune horloge système ni fuseau implicite n'est consulté, et le graphe d'origine demeure immuable. `project()` accepte par conception une collection de recettes, mais ne planifie pour le moment que la première en signalant le diagnostic `MULTI_RECIPE_UNSUPPORTED`.
@@ -69,9 +69,9 @@ Les attentes écrites sous forme de fourchette adoptent la stratégie spécifié
 
 Le temps interne est compté en minutes continues absolues depuis l'époque POSIX. La restitution en heure locale s'appuie sur `Intl.DateTimeFormat` avec un fuseau horaire explicite. Aucun recours à une bibliothèque tierce ou à une horloge système implicite n'est nécessaire : le plan reste strictement identique quel que soit l'environnement hôte, et une journée de 23 ou 25 heures (changement d'heure) est restituée avec sa durée réelle.
 
-## De la chronologie au plan de travail
+## De la chronologie au planning de préparation
 
-Le moteur produit des **données** ; le plan de travail est une façon de les montrer. `runSheet()` transforme une chronologie ou un plan projeté en une structure que n'importe quelle interface peut dessiner, avec ces termes, définis ici une fois et repris partout ailleurs :
+Le moteur produit des **données** ; le planning de préparation est une façon de les montrer. `runSheet()` transforme une chronologie ou un plan projeté en une structure que n'importe quelle interface peut dessiner, avec ces termes, définis ici une fois et repris partout ailleurs :
 
 | Terme | Ce que c'est |
 |---|---|
@@ -84,7 +84,7 @@ Le moteur produit des **données** ; le plan de travail est une façon de les mo
 
 Chaque chiffre est calculé par le moteur : en minutes avant le service, dans un plan avec heure de service ou sans. La marge d'un passage est sûre par construction. Tout est prévu au plus tard, donc un passage ne peut qu'avancer ; l'avancer raccourcit l'attente qui le précède et allonge celle qui le suit, et chacune est vérifiée contre sa fourchette écrite et l'heure **prévue** des passages voisins. Avancer un passage, plusieurs ou aucun ne casse jamais la marge d'un autre. Une marge est parfois prudente, jamais fausse. Ce qui la casse, c'est le retard : un passage fait après son heure prévue. Il faut alors refaire le plan ; le moteur ne replanifie pas tout seul.
 
-Quoi en dire, et avec quels mots, est un choix de la vue. Le [plan de travail](/fr/docs/how-to/plan-a-meal/) de Gram coupe un jour à une attente d'une heure, montre une marge à partir de 15 minutes (`WINDOW_MIN_MINUTES`) et lit « À sortir » et « Au programme » dans la recette compilée : une autre interface est libre de faire d'autres choix avec les mêmes données. [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) en montre une.
+Quoi en dire, et avec quels mots, est un choix de la vue. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) de Gram coupe un jour à une attente d'une heure, montre une marge à partir de 15 minutes (`WINDOW_MIN_MINUTES`) et lit « À sortir » et « Au programme » dans la recette compilée : une autre interface est libre de faire d'autres choix avec les mêmes données. [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) en montre une.
 
 ### Ce que le moteur ne fait pas
 

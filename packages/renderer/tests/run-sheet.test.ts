@@ -293,7 +293,7 @@ describe("runSheetToText", () => {
 
 	it("speaks French, dates included", () => {
 		const fr = runSheetToText(sheet, compiled, { lang: "fr" });
-		expect(fr).toContain("Plan de travail — Country bread");
+		expect(fr).toContain("Planning de préparation — Country bread");
 		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 parts");
 		expect(fr).toContain("SAMEDI 10 OCTOBRE");
 		expect(fr).toContain("À sortir");
@@ -404,7 +404,9 @@ describe("runSheetToPrintHTML", () => {
 	it("is a complete document with the plan inside and the language set", () => {
 		expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
 		expect(html).toContain('<html lang="fr">');
-		expect(html).toContain("<title>Plan de travail — Country bread</title>");
+		expect(html).toContain(
+			"<title>Planning de préparation — Country bread</title>",
+		);
 		expect(html).toContain('<section class="gram-run-sheet">');
 		expect(html).toContain("page-break-before: always");
 	});

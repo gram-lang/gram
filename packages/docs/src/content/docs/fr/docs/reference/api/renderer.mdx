@@ -1,6 +1,6 @@
 ---
 title: "@gram-lang/renderer"
-description: "Rendu des recettes compilées en Markdown, HTML et documents imprimables, et plan de travail d'un ordonnancement."
+description: "Rendu des recettes compilées en Markdown, HTML et documents imprimables, et planning de préparation d'un ordonnancement."
 ---
 
 import Since from '../../../../../../components/Since.astro';
@@ -39,9 +39,9 @@ Ces trois formateurs partagent la même architecture de traversée (`RenderBacke
 | `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (gère par défaut les fractions courantes, ex. : `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Masque les quantités d'ingrédients au sein du texte narratif des étapes (la liste de courses et les listes d'ingrédients de section restent intactes). |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> La chronologie que suit le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), tout au début de la recette (`'upfront'`) ou au début de chaque journée de travail (`'perSession'`). Détermine les temps total et passif de l'en-tête. La recette elle-même ne montre aucun ordonnancement : quoi sortir, et quand, est dans le plan de travail (`runSheet`). La chronologie est calculée à partir de `tasks`. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> La chronologie que suit le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), tout au début de la recette (`'upfront'`) ou au début de chaque journée de travail (`'perSession'`). Détermine les temps total et passif de l'en-tête. La recette elle-même ne montre aucun ordonnancement : quoi sortir, et quand, est dans le planning de préparation (`runSheet`). La chronologie est calculée à partir de `tasks`. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (`~_{12-24h}`) : borne la plus courte (`'shortest'`, par défaut), médiane (`'balanced'`) ou borne la plus longue (`'longest'`). Les minuteurs passifs à durée fixe et les minuteurs actifs ne sont pas affectés. Pilote les mêmes durées que `miseEnPlace`. |
-| `runSheet` | `RunSheet` | <Since v="1.4.0" /> Un plan de travail (`runSheet()` de `@gram-lang/scheduler`) à écrire après la recette, dans le même document (sous un titre Markdown dédié, ou mis en forme avec les styles d'impression). La recette dit comment, le plan dit quand : la recette elle-même se lit pareil avec ou sans lui. |
+| `runSheet` | `RunSheet` | <Since v="1.4.0" /> Un planning de préparation (`runSheet()` de `@gram-lang/scheduler`) à écrire après la recette, dans le même document (sous un titre Markdown dédié, ou mis en forme avec les styles d'impression). La recette dit comment, le plan dit quand : la recette elle-même se lit pareil avec ou sans lui. |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages du boulanger, en masquant les quantités absolues. |
 | `interactiveScaling` | `boolean` | Génère des contrôles interactifs d'ajustement des portions et ingrédients (HTML uniquement). |
 | `nutritionBasis` | `'auto' \| 'total' \| 'perPortion' \| 'per100g'` | Référentiel nutritionnel affiché. `'auto'` (par défaut) sélectionne la portion si le nombre de portions est renseigné, sinon la recette entière. |
@@ -52,7 +52,7 @@ Ces trois formateurs partagent la même architecture de traversée (`RenderBacke
 ## Diagramme de Gantt (`toGanttHTML` & `attachGanttInteractivity`) <Since type="deprecated" v="1.4.0" />
 
 :::caution[Déprécié, retiré en 2.0.0]
-Le diagramme de Gantt est remplacé par le [plan de travail](#le-plan-de-travail). Plus aucune surface de Gram (CLI, playground, VS Code) ne le dessine. `toGanttHTML`, `attachGanttInteractivity`, `formatTime`, `formatAxisTime`, les types `Gantt*` et `gantt.css` restent jusqu'en 2.0.0 ; `toGanttHTML` avertit une fois dans la console (`quiet: true` le fait taire pour un hôte qui dessine le graphique pour d'autres). Pour dessiner une chronologie vous-même, construisez-la à partir des données de `runSheet()` : voir [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/#construire-sa-propre-vue-planning). Voir [Dépréciations](/fr/docs/how-to/deprecations/).
+Le diagramme de Gantt est remplacé par le [planning de préparation](#le-planning-de-préparation). Plus aucune surface de Gram (CLI, playground, VS Code) ne le dessine. `toGanttHTML`, `attachGanttInteractivity`, `formatTime`, `formatAxisTime`, les types `Gantt*` et `gantt.css` restent jusqu'en 2.0.0 ; `toGanttHTML` avertit une fois dans la console (`quiet: true` le fait taire pour un hôte qui dessine le graphique pour d'autres). Pour dessiner une chronologie vous-même, construisez-la à partir des données de `runSheet()` : voir [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/#construire-sa-propre-vue-planning). Voir [Dépréciations](/fr/docs/how-to/deprecations/).
 :::
 
 ```typescript
@@ -116,11 +116,11 @@ function escapeMarkdownHtml(unsafe: string | null | undefined): string   // neut
 function joinStepTokens(tokens: StepToken[], renderToken: (token: StepToken) => string, isSpaceable: (token: StepToken) => boolean): string
 ```
 
-## Le plan de travail
+## Le planning de préparation
 
 <Since v="1.4.0" />
 
-À partir du `RunSheet` de `runSheet()` (`@gram-lang/scheduler`) et de la recette compilée, le renderer écrit le plan de travail en quatre formats, et expose les pièces dont il est fait :
+À partir du `RunSheet` de `runSheet()` (`@gram-lang/scheduler`) et de la recette compilée, le renderer écrit le planning de préparation en quatre formats, et expose les pièces dont il est fait :
 
 ```typescript
 import { project, runSheet } from '@gram-lang/scheduler';
@@ -156,7 +156,7 @@ Le plan d'une recette sans heure de service vient de `runSheet(compiled.schedule
 
 | Champ | Description |
 |---|---|
-| `title`, `subtitle`, `summary` | « Plan de travail — Entremets », « Pour le samedi 17 octobre à 20:00 · 6 parts », « 3 jours · 3 passages en cuisine · 45m de travail en tout ». |
+| `title`, `subtitle`, `summary` | « Planning de préparation — Entremets », « Pour le samedi 17 octobre à 20:00 · 6 parts », « 3 jours · 3 passages en cuisine · 45m de travail en tout ». |
 | `problems` | Ce que le plan n'a pas pu rendre faisable, une phrase chacun. |
 | `schedule[]` | Le planning des jours : une ligne par passage (`kind: 'passage'`), par fil (`'thread'`) et le service (`'serve'`), avec `day`, `time` et `text`. |
 | `days[]` | Par jour : `heading`, `slot`, `notices` (attentes ajustées) et `passages[]`, chacun avec `slot`, `margin`, `kit[]` (à sortir), `program[]` (au programme) et `leaving[]`. |

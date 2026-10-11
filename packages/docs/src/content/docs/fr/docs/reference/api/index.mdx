@@ -30,7 +30,7 @@ Tous ces packages sont distribués exclusivement en ESM (`ESM only`), sans effet
 | [`@gram-lang/kitchen`](/fr/docs/reference/api/kitchen) | Compile l'AST en une charge utile structurée (liste de courses, graphe de tâches, ordonnancement par défaut, registre de matériel) | `compile(ast, options?)` |
 | [`@gram-lang/scheduler`](/fr/docs/reference/api/scheduler) | Ordonnance le graphe de tâches (rétro-planning ALAP) et projette les recettes sur un calendrier réel selon l'heure de service et vos disponibilités | `layout(graph, options?)`, `project(recipes, context)`, `runSheet(plan)`, `findServeTimes()`, `earliestServe()` |
 | [`@gram-lang/analyzer`](/fr/docs/reference/api/analyzer) | Enrichit une recette compilée avec des propriétés physiques (masse, rendement, nutrition, pourcentages du boulanger) via une base de données d'ingrédients | `analyze(compiled, database, options?)` |
-| [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML, et le plan de travail d'un ordonnancement | `toMarkdown` / `toHTML` / `toPrintHTML` |
+| [`@gram-lang/renderer`](/fr/docs/reference/api/renderer) | Effectue le rendu d'une recette (compilée ou analysée) en Markdown ou HTML, et le planning de préparation d'un ordonnancement | `toMarkdown` / `toHTML` / `toPrintHTML` |
 | [`@gram-lang/format`](/fr/docs/reference/api/format) | Formateur de code canonique pour fichiers `.gram` (13 règles de style unifiées) | `formatGram(source, options?)` |
 | [`@gram-lang/i18n`](/fr/docs/reference/api/i18n) | Normalisation partagée des unités/du temps et dictionnaires bilingues utilisés en interne par les paquets du pipeline | `normalizeUnit`, `getDictionary` |
 

@@ -249,7 +249,7 @@ function runSheet(
 ): RunSheet
 ```
 
-La structure du plan de travail : pour chaque recette, ses jours ; pour chaque jour, les **passages en cuisine** et les **fils** qui continuent sans vous. Un `ProjectedPlan` donne un plan avec dates (`mode: "calendar"`) ; un `Schedule` seul donne la même structure en jours avant le service, sans dates (`mode: "relative"`). Avec `graph` et `context` (un plan calendaire), chaque passage reçoit sa marge. Les termes sont définis dans [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail).
+La structure du planning de préparation : pour chaque recette, ses jours ; pour chaque jour, les **passages en cuisine** et les **fils** qui continuent sans vous. Un `ProjectedPlan` donne un plan avec dates (`mode: "calendar"`) ; un `Schedule` seul donne la même structure en jours avant le service, sans dates (`mode: "relative"`). Avec `graph` et `context` (un plan calendaire), chaque passage reçoit sa marge. Les termes sont définis dans [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
 
 ```typescript
 interface RunSheet {

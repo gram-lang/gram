@@ -40,7 +40,7 @@ export const fr: GramLocale = {
 		runSheetPast:
 			"La première tâche aurait dû commencer {start}, et nous sommes déjà {now}.",
 		runSheetMulti: "Seule la première des {count} recettes est planifiée.",
-		workPlanTitle: "Plan de travail",
+		workPlanTitle: "Planning de préparation",
 		workPlanFor: "Pour le {date} à {time}",
 		workPlanServings: "{count} parts",
 		workPlanScaled: "{count} parts (×{factor})",
@@ -189,7 +189,7 @@ export const fr: GramLocale = {
 			jsonTree: "Arbre Interactif",
 			markdown: "Markdown",
 			preview: "Aperçu (HTML)",
-			runSheet: "Plan de travail",
+			runSheet: "Planning",
 			serveWhenTitle: "Quand servir ?",
 			serveWhenNone:
 				"Aucune heure de service ne convient dans les sept prochains jours.",

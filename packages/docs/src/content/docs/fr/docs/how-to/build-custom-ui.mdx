@@ -217,7 +217,7 @@ import Since from '../../../../../components/Since.astro';
 
 ## Construire sa propre vue planning
 
-Le plan de travail de Gram est une vue des données du scheduler, pas la seule. `runSheet()` donne les jours, les passages en cuisine et les fils qui continuent sans vous ; `gram plan --format json` écrit la même structure. Voici un petit calendrier par jour, en une trentaine de lignes, à partir de ce JSON :
+Le planning de préparation de Gram est une vue des données du scheduler, pas la seule. `runSheet()` donne les jours, les passages en cuisine et les fils qui continuent sans vous ; `gram plan --format json` écrit la même structure. Voici un petit calendrier par jour, en une trentaine de lignes, à partir de ce JSON :
 
 ```typescript
 import { project, runSheet } from '@gram-lang/scheduler';
@@ -257,7 +257,7 @@ Ce que donne chaque champ :
 - `day.entries[]` : chaque bloc du jour dans l'ordre, si vous préférez dessiner une chronologie vous-même, diagramme de Gantt compris : les données pour le reconstruire sont toutes là.
 - `sheet.adjustments[]` et `sheet.diagnostics[]` : les attentes allongées ou raccourcies, et ce qui n'a pas pu être réglé.
 
-Pour les mots (quoi sortir, ce que chaque section vous demande), vous pouvez réutiliser les fonctions dont est fait le plan de travail plutôt que les réécrire : `passageKit()` et `sectionProgram()` de `@gram-lang/renderer`. Voir [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-plan-de-travail) pour les termes.
+Pour les mots (quoi sortir, ce que chaque section vous demande), vous pouvez réutiliser les fonctions dont est fait le planning de préparation plutôt que les réécrire : `passageKit()` et `sectionProgram()` de `@gram-lang/renderer`. Voir [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) pour les termes.
 
 ## Ressources associées
 
