@@ -2,9 +2,11 @@ import type { TaskGraph } from "./graph";
 import type {
 	ProjectedBlock,
 	ProjectedPlan,
+	ProjectionContext,
 	ProjectionDiagnostic,
 	RestAdjustment,
 } from "./projection";
+import { passageWindows } from "./windows";
 import type { Schedule, ScheduleBlock } from "./types";
 import { daysBetween, parseInstant, parseLocalIso, toLocalIso } from "./time";
 
@@ -61,6 +63,33 @@ export interface RunSheetPassage {
 	sections: number[];
 	/** The tasks of the passage: preparations and steps, in the order they start. */
 	tasks: string[];
+	/**
+	 * How early the passage could happen with every other one where it is
+	 * planned, when that is at least `WINDOW_MIN_MINUTES`. Needs `graph` and
+	 * `context` in the options.
+	 */
+	window?: {
+		/** Minutes the passage could move earlier. */
+		advance: number;
+		/** Minutes from the service. */
+		earliest: number;
+		earliestLocal: string;
+	};
+	/** The wait that holds the passage in place, when there is no margin. */
+	fixedBy?: RunSheetFixedBy;
+}
+
+/** A wait that cannot give: the passage can't move without stretching or shrinking it. */
+export interface RunSheetFixedBy {
+	task: string;
+	section: number;
+	step?: number;
+	track?: string;
+	/** The planned minutes of the wait. */
+	planned: number;
+	/** What the wait leads to: the service or the next passage of `sections`. */
+	before: "service" | "passage";
+	sections?: number[];
 }
 
 /** What goes on without the cook after a passage: a timer that outlasts it. */
@@ -123,6 +152,11 @@ export interface RunSheetOptions {
 	graph?: TaskGraph;
 	/** The title of a recipe laid out without a serving time. */
 	title?: string;
+	/**
+	 * With `graph`, a plan with a serving time gets the margin of each passage
+	 * (`window`, `fixedBy`): the availability and the present bound it.
+	 */
+	context?: ProjectionContext;
 }
 
 interface SourceBlock {
@@ -250,7 +284,7 @@ export function runSheet(
 			adjustments,
 		),
 	);
-	return {
+	const sheet: RunSheet = {
 		mode: "calendar",
 		serveAt: plan.serveAt,
 		timeZone,
@@ -258,6 +292,9 @@ export function runSheet(
 		adjustments: built.flatMap((b) => b.adjustments),
 		diagnostics: plan.diagnostics,
 	};
+	return options.graph && options.context
+		? passageWindows(sheet, options.graph, options.context)
+		: sheet;
 }
 
 interface Calendar {
