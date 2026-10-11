@@ -66,6 +66,7 @@ export const fr: GramLocale = {
 		workPlanFixedPassage:
 			"Heures fixes : {wait}, avant le passage de {sections}.",
 		workPlanNextVisit: "Prochain passage : {when}",
+		workPlanNextVisitSameDay: "Prochain passage : plus tard le même jour",
 		workPlanServeAt: "Servir à {time}",
 		workPlanStretchedTo:
 			"{wait} prolongé à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
@@ -74,8 +75,8 @@ export const fr: GramLocale = {
 		workPlanUntilClock: "jusqu'à {time}",
 		workPlanNothing: "Rien à planifier.",
 		workPlanFindOk: "{when} — début {start} · {visits} · {adjusted}",
-		workPlanFindRejected: "{when} — impossible : {reason}",
-		workPlanFindStart: "il faudrait commencer {start}, c'est déjà passé",
+		workPlanFindRejected: "{when} — impossible. {reason}",
+		workPlanFindStart: "Il faudrait commencer {start}, c'est déjà passé.",
 		workPlanFindNone:
 			"Aucune heure de service ne convient entre {from} et {to}.",
 		workPlanAdjusted: "{n} attente ajustée",

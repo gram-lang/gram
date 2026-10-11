@@ -56,6 +56,17 @@ export function passageWindows(
 		});
 	}
 	const graphTasks = new Map(graph.tasks.map((t) => [t.id, t]));
+	// What needs each task: built once, so that finding where a wait is needed
+	// is a lookup and not a walk of the whole graph for every wait.
+	const dependents = new Map<string, string[]>();
+	for (const t of graph.tasks) {
+		if (t.kind === "passive") continue;
+		for (const id of t.after) {
+			const list = dependents.get(id);
+			if (list) list.push(t.id);
+			else dependents.set(id, [t.id]);
+		}
+	}
 	const now =
 		context.now === undefined ? undefined : parseInstant(context.now, timeZone);
 
@@ -99,9 +110,8 @@ export function passageWindows(
 			const parent = graphTasks.get(w.task)?.after[0];
 			if (parent === undefined) return Math.max(w.to, 0);
 			let at = Infinity;
-			for (const t of graph.tasks) {
-				if (t.kind === "passive" || !t.after.includes(parent)) continue;
-				const from = startOfTask.get(t.id);
+			for (const id of dependents.get(parent) ?? []) {
+				const from = startOfTask.get(id);
 				if (from !== undefined) at = Math.min(at, from);
 			}
 			return Number.isFinite(at) ? Math.max(at, w.to) : 0;

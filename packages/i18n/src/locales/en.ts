@@ -62,6 +62,7 @@ export const en = {
 		workPlanFixedService: "Fixed times: {wait}, before serving.",
 		workPlanFixedPassage: "Fixed times: {wait}, before {sections}.",
 		workPlanNextVisit: "Next visit: {when}",
+		workPlanNextVisitSameDay: "Next visit: later the same day",
 		workPlanServeAt: "Serve at {time}",
 		workPlanStretchedTo:
 			"{wait} extended to {to} (planned {range}) so the work falls within your availability.",
@@ -70,8 +71,8 @@ export const en = {
 		workPlanUntilClock: "until {time}",
 		workPlanNothing: "Nothing to plan.",
 		workPlanFindOk: "{when} — start {start} · {visits} · {adjusted}",
-		workPlanFindRejected: "{when} — not possible: {reason}",
-		workPlanFindStart: "you would have to start {start}, which has passed",
+		workPlanFindRejected: "{when} — not possible. {reason}",
+		workPlanFindStart: "You would have to start {start}, which has passed.",
 		workPlanFindNone: "No serving time works between {from} and {to}.",
 		workPlanAdjusted: "{n} wait adjusted",
 		workPlanAdjustedMany: "{n} waits adjusted",

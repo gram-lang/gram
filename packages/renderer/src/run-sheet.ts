@@ -415,10 +415,14 @@ export function describeRunSheet(
 						date === day.date
 							? clock(nextPassage.startLocal)
 							: `${weekdayName(date, lang)} ${clock(nextPassage.startLocal)}`;
+				} else if (nextDay === day) {
+					// No clock without a serving time: say it is the same day.
+					leaving.push(t.workPlanNextVisitSameDay);
+					when = "";
 				} else {
 					when = nextDay ? dayLabel(nextDay) : "";
 				}
-				leaving.push(fill(t.workPlanNextVisit, { when }));
+				if (when) leaving.push(fill(t.workPlanNextVisit, { when }));
 			} else if (calendar && sheet.serveAt) {
 				leaving.push(
 					fill(t.workPlanServeAt, { time: sheet.serveAt.slice(11, 16) }),

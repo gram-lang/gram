@@ -49,7 +49,7 @@ describe("describeServeTimes", () => {
 
 	it("says why a time does not work, in the words of the plan", () => {
 		expect(
-			lines.some((l) => l.includes("not possible: you would have to start")),
+			lines.some((l) => l.includes("not possible. You would have to start")),
 		).toBe(true);
 	});
 
@@ -61,7 +61,7 @@ describe("describeServeTimes", () => {
 			lang: "fr",
 		});
 		expect(
-			fr.some((l) => l.includes("impossible : il faudrait commencer")),
+			fr.some((l) => l.includes("impossible. Il faudrait commencer")),
 		).toBe(true);
 	});
 

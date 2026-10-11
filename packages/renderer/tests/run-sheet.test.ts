@@ -216,6 +216,14 @@ describe("a plan of several days", () => {
 		);
 		const last = relative.days.at(-1)!.passages.at(-1)!;
 		expect(last.leaving).toEqual(["Serve"]);
+		// Two visits on the same day: no clock to give, so it says so.
+		const sameDay = relative.days
+			.flatMap((d) => d.passages)
+			.filter((p) => p.leaving.includes("Next visit: later the same day"));
+		expect(sameDay.length).toBeGreaterThan(0);
+		expect(relative.days[0]!.passages[0]!.leaving.at(-1)).toBe(
+			"Next visit: D-1",
+		);
 		expect(relative.events).toEqual([]);
 	});
 });

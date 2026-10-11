@@ -80,7 +80,7 @@ function candidateLine(
 
 /**
  * The result of `findServeTimes` in words: the serving times that work, best
- * first, then those that don't, each with why ("you would have to start
+ * first, then those that don't, each with why ("You would have to start
  * Thursday").
  */
 export function describeServeTimes(

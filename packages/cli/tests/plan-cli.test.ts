@@ -229,7 +229,7 @@ describe("gram plan --find", () => {
 		expect(out).toMatch(
 			/Sunday, October 11 20:00 — start .* · \d visits? to the kitchen/,
 		);
-		expect(out).toContain("not possible: you would have to start");
+		expect(out).toContain("not possible. You would have to start");
 	});
 
 	it("tries the meal times it is given", () => {
@@ -510,5 +510,85 @@ describe("the work plan with the recipe, in export and print", () => {
 		} finally {
 			await rm(project, { recursive: true, force: true });
 		}
+	});
+});
+
+describe("a recipe that imports bases, planned for real", () => {
+	const BASE = (title: string, body: string) =>
+		`---\ntitle: ${title}\n---\n\n## ${title} ->&${title.toLowerCase()}\n\n${body}\n`;
+	const SPONGE = BASE(
+		"Sponge",
+		"[Whisk] Whisk @eggs{3} with @sugar{60g}.\n\n[Bake] Bake at ^{180C} ~_{12min}.",
+	);
+	const GLAZE = BASE(
+		"Glaze",
+		"[Heat] Heat @cream{100g} for ~{5min}.\n\n[Cool] Cool ~_{90min}.",
+	);
+	const CAKE = `---
+title: Layer cake
+portions: 6
+---
+
+@use "./bases/sponge.gram" as &sponge ~{-1d}
+@use "./bases/glaze.gram" as &glaze
+
+## Assemble
+
+[Layer] Layer &sponge and cover it with &glaze ~{10min}.
+`;
+	let project: string;
+
+	beforeAll(async () => {
+		project = await mkdtemp(join(tmpdir(), "gram-cli-use-plan-"));
+		await mkdir(join(project, ".gram"), { recursive: true });
+		await mkdir(join(project, "bases"), { recursive: true });
+		await writeFile(join(project, ".gram", "config.yaml"), "language: en\n");
+		await writeFile(join(project, "bases", "sponge.gram"), SPONGE);
+		await writeFile(join(project, "bases", "glaze.gram"), GLAZE);
+		await writeFile(join(project, "cake.gram"), CAKE);
+	});
+
+	afterAll(async () => {
+		await rm(project, { recursive: true, force: true });
+	});
+
+	const planIn = (...extra: string[]) => {
+		const run = Bun.spawnSync(
+			[
+				process.execPath,
+				ENTRY,
+				"plan",
+				"cake.gram",
+				"--serve",
+				"2026-10-17 20:00",
+				"--tz",
+				"Europe/Paris",
+				"--now",
+				"2026-10-10T10:00",
+				...extra,
+			],
+			{ cwd: project },
+		);
+		return {
+			code: run.exitCode,
+			out: new TextDecoder().decode(run.stdout),
+		};
+	};
+
+	it("takes an imported base into the visits and names its file", () => {
+		const { code, out } = planIn();
+		expect(code).toBe(0);
+		expect(out).toContain("Sponge (sponge.gram, steps 1 to 2)");
+		expect(out).toContain("Glaze (glaze.gram, steps 1 to 2)");
+		// The sponge is made a day before it is used.
+		expect(out).toMatch(/Sponge, made \w+day/);
+	});
+
+	it("lists a base kept in stock, and plans no visit for it", () => {
+		const { code, out } = planIn("--stock", "./bases/glaze.gram");
+		expect(code).toBe(0);
+		expect(out).toContain("glaze, in stock");
+		expect(out).not.toContain("glaze.gram, steps");
+		expect(out).toContain("Sponge (sponge.gram, steps 1 to 2)");
 	});
 });
