@@ -171,6 +171,20 @@ class Client {
 			.map((n) => n.params.html ?? "");
 	}
 
+	/** Resolves with the first notification of `method` whose html matches. */
+	async htmlOf(method: string, test: (html: string) => boolean, ms = 8000) {
+		const started = Date.now();
+		while (Date.now() - started < ms) {
+			const hit = this.notes
+				.filter((n) => n.method === method)
+				.map((n) => n.params.html ?? "")
+				.find(test);
+			if (hit) return hit;
+			await new Promise((r) => setTimeout(r, 25));
+		}
+		throw new Error(`no ${method} matching in ${ms}ms`);
+	}
+
 	/** Resolves as soon as a preview matches; fails with what it saw otherwise. */
 	async previewMatching(test: (html: string) => boolean, ms = 8000) {
 		const started = Date.now();
@@ -344,5 +358,45 @@ describe("gram.rests in the language server", () => {
 		client.open(RANGED("Bread"));
 		const html = await client.previewMatching((h) => totalOf(h) !== undefined);
 		expect(totalOf(html)).toBe(REST_TOTAL.shortest);
+	}, 20_000);
+});
+
+describe("the work plan in the language server", () => {
+	it("sends the work plan next to the preview, in days before the service", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		expect(html).toContain("work-plan-day");
+		expect(html).toContain("To take out");
+		// No serving time in the editor: the days are counted back from it.
+		expect(html).toContain("D-2");
+		expect(html).not.toContain("<script");
+	}, 20_000);
+
+	it("keeps sending the Gantt chart notification until 2.0.0", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const html = await client.htmlOf("gram/ganttUpdated", (h) =>
+			h.includes("gantt"),
+		);
+		expect(html.length).toBeGreaterThan(0);
+	}, 20_000);
+
+	it("says what is wrong instead of leaving the plan stale", async () => {
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		client.change("## Broken\n\n@flour{", 2);
+		const html = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Syntax Error"),
+		);
+		expect(html).toContain("gram-preview-error-state");
 	}, 20_000);
 });

@@ -104,6 +104,26 @@ deprecations:
     files:
       - "packages/kitchen/src/metrics.ts"
 
+  - id: lsp-gantt-notification
+    layer: api
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The language server still sends the gram/ganttUpdated notification (the Gantt chart as HTML); the VS Code extension no longer reads it"
+    replacement: "The gram/runSheetUpdated notification, which carries the work plan as HTML, or the data of the compiled recipe (schedule, tasks) for a view of your own"
+    files:
+      - "packages/language-server/src/server.ts"
+
+  - id: vscode-show-gantt
+    layer: cli
+    deprecatedIn: "1.4.0"
+    targetRemoval: "2.0.0"
+    status: active
+    description: "The gram.showGantt command (Gram: Gantt Chart) now opens the work plan and says so once"
+    replacement: "The gram.showRunSheet command (Gram: Work Plan)"
+    files:
+      - "packages/vscode-extension/src/extension.ts"
+
   - id: json-snake-case-keys
     layer: compiled-json
     targetRemoval: "2.0.0"
