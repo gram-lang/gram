@@ -45,8 +45,13 @@
         "icon": "$(symbol-numeric)"
       },
       {
+        "command": "gram.showRunSheet",
+        "title": "Gram: Work Plan",
+        "icon": "$(checklist)"
+      },
+      {
         "command": "gram.showGantt",
-        "title": "Gram: Gantt Chart",
+        "title": "Gram: Gantt Chart (deprecated, opens the work plan)",
         "icon": "$(graph)"
       }
     ],
@@ -58,7 +63,7 @@
           "group": "navigation@1"
         },
         {
-          "command": "gram.showGantt",
+          "command": "gram.showRunSheet",
           "when": "resourceLangId == gram",
           "group": "navigation@2"
         },
@@ -116,7 +121,7 @@
             "The mise en place of each working day happens at the start of that day (days come from the sections' ~{-Nd} anchors)."
           ],
           "default": "perSection",
-          "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the Gantt chart and the title hint."
+          "description": "When the mise en place (gathering and preparing ingredients and cookware) is planned. Drives the total time in the preview, the work plan and the title hint."
         },
         "gram.rests": {
           "type": "string",
@@ -131,7 +136,7 @@
             "A rest written as a range lasts the longest of it."
           ],
           "default": "shortest",
-          "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the Gantt chart and the title hint."
+          "description": "How long a rest written as a range lasts. An exact rest and an active timer (~{20-25min}, planned on its longest figure) are not affected. Drives the total time in the preview, the work plan and the title hint."
         }
       }
     },

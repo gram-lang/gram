@@ -1,9 +1,9 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
 
-export class GanttPanel {
-	public static readonly viewType = "gramGantt";
-	public static currentPanel: GanttPanel | undefined;
+export class WorkPlanPanel {
+	public static readonly viewType = "gramWorkPlan";
+	public static currentPanel: WorkPlanPanel | undefined;
 
 	private readonly _panel: vscode.WebviewPanel;
 	private _disposables: vscode.Disposable[] = [];
@@ -63,15 +63,15 @@ export class GanttPanel {
 			? vscode.ViewColumn.Beside
 			: vscode.ViewColumn.One;
 
-		if (GanttPanel.currentPanel) {
-			GanttPanel.currentPanel.setUriAndHTML(uri, initialHtml);
-			GanttPanel.currentPanel._panel.reveal(column, true);
+		if (WorkPlanPanel.currentPanel) {
+			WorkPlanPanel.currentPanel.setUriAndHTML(uri, initialHtml);
+			WorkPlanPanel.currentPanel._panel.reveal(column, true);
 			return;
 		}
 
 		const panel = vscode.window.createWebviewPanel(
-			GanttPanel.viewType,
-			"Gantt Chart",
+			WorkPlanPanel.viewType,
+			"Work Plan",
 			{ viewColumn: column, preserveFocus: true },
 			{
 				enableScripts: true,
@@ -79,7 +79,7 @@ export class GanttPanel {
 			},
 		);
 
-		GanttPanel.currentPanel = new GanttPanel(
+		WorkPlanPanel.currentPanel = new WorkPlanPanel(
 			panel,
 			extensionUri,
 			uri,
@@ -95,7 +95,7 @@ export class GanttPanel {
 
 	private _updateTitle(uri: string): void {
 		const filename = uri ? path.basename(vscode.Uri.parse(uri).fsPath) : "";
-		this._panel.title = filename ? `Gantt: ${filename}` : "Gantt Chart";
+		this._panel.title = filename ? `Work plan: ${filename}` : "Work Plan";
 	}
 
 	public updateHTML(html: string): void {
@@ -103,7 +103,7 @@ export class GanttPanel {
 	}
 
 	public dispose(): void {
-		GanttPanel.currentPanel = undefined;
+		WorkPlanPanel.currentPanel = undefined;
 		this._panel.dispose();
 		while (this._disposables.length) {
 			const disposable = this._disposables.pop();
@@ -119,12 +119,6 @@ export class GanttPanel {
 		const previewCssUri = this._panel.webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionUri, "media", "preview.css"),
 		);
-		const ganttCssUri = this._panel.webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "gantt.css"),
-		);
-		const scriptUri = this._panel.webview.asWebviewUri(
-			vscode.Uri.joinPath(this._extensionUri, "media", "gantt-webview.js"),
-		);
 
 		return `<!DOCTYPE html>
 <html lang="en">
@@ -132,10 +126,9 @@ export class GanttPanel {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${this._panel.webview.cspSource} https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'nonce-${nonce}';">
-    <title>Gram Gantt Chart</title>
+    <title>Gram Work Plan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="${previewCssUri}" rel="stylesheet">
-    <link href="${ganttCssUri}" rel="stylesheet">
     <style nonce="${nonce}">
         :root, body.vscode-light, body.vscode-dark, body.vscode-high-contrast {
             /* Override gram.css colors to seamlessly blend with VSCode theme */
@@ -152,9 +145,6 @@ export class GanttPanel {
 
             --gram-font-sans: 'Inter', var(--vscode-font-family);
             --gram-font-mono: var(--vscode-editor-font-family);
-
-            --gantt-accent: var(--vscode-charts-blue);
-            --gantt-accent-soft: color-mix(in srgb, var(--vscode-charts-blue) 20%, transparent);
         }
         html, body {
             height: 100%;
@@ -168,6 +158,14 @@ export class GanttPanel {
     <div id="content">${initialHtml}</div>
     <script nonce="${nonce}">
         const vscode = acquireVsCodeApi();
+        // The plan is replaced as the recipe is edited; the language server
+        // sends the whole plan each time.
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.command === 'updateContent') {
+                document.getElementById('content').innerHTML = message.html;
+            }
+        });
         document.addEventListener('click', event => {
             const btn = event.target.closest('.gram-goto-btn');
             if (btn) {
@@ -176,7 +174,6 @@ export class GanttPanel {
             }
         });
     </script>
-    <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
 	}

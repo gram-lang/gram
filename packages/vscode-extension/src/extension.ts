@@ -2,7 +2,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import type { ExtensionContext } from "vscode";
 import { PreviewPanel } from "./preview";
-import { GanttPanel } from "./gantt-panel";
+import { WorkPlanPanel } from "./work-plan-panel";
 import { createClientOptions } from "./client-options";
 import {
 	LanguageClient,
@@ -27,7 +27,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	const clientOptions = createClientOptions();
 
 	const previewHtmlCache = new Map<string, string>();
-	const ganttHtmlCache = new Map<string, string>();
+	const workPlanHtmlCache = new Map<string, string>();
+	let warnedGanttCommand = false;
 
 	client = new LanguageClient(
 		"gramLanguageServer",
@@ -53,14 +54,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		);
 
 		client.onNotification(
-			"gram/ganttUpdated",
+			"gram/runSheetUpdated",
 			(params: { uri: string; html: string }) => {
-				ganttHtmlCache.set(params.uri, params.html);
+				workPlanHtmlCache.set(params.uri, params.html);
 				if (
-					GanttPanel.currentPanel &&
-					GanttPanel.currentPanel.uri === params.uri
+					WorkPlanPanel.currentPanel &&
+					WorkPlanPanel.currentPanel.uri === params.uri
 				) {
-					GanttPanel.currentPanel.updateHTML(params.html);
+					WorkPlanPanel.currentPanel.updateHTML(params.html);
 				}
 			},
 		);
@@ -88,10 +89,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
 						previewHtmlCache.get(uri) ?? "",
 					);
 				}
-				if (GanttPanel.currentPanel) {
-					GanttPanel.currentPanel.setUriAndHTML(
+				if (WorkPlanPanel.currentPanel) {
+					WorkPlanPanel.currentPanel.setUriAndHTML(
 						uri,
-						ganttHtmlCache.get(uri) ?? "",
+						workPlanHtmlCache.get(uri) ?? "",
 					);
 				}
 			}
@@ -114,11 +115,26 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				"Panneau des macros ouvert dans l'Aperçu.",
 			);
 		}),
+		vscode.commands.registerCommand("gram.showRunSheet", () => {
+			const uri = getActiveGramUri();
+			if (!uri) return;
+			const html = workPlanHtmlCache.get(uri) ?? "";
+			WorkPlanPanel.createOrShow(context.extensionUri, uri, html);
+		}),
+		// The Gantt chart is gone from the editor: the command still works for
+		// anyone who bound a key to it, and opens the work plan.
+		// @remove-in: 2.0.0 [vscode-show-gantt]
 		vscode.commands.registerCommand("gram.showGantt", () => {
 			const uri = getActiveGramUri();
 			if (!uri) return;
-			const html = ganttHtmlCache.get(uri) ?? "";
-			GanttPanel.createOrShow(context.extensionUri, uri, html);
+			if (!warnedGanttCommand) {
+				warnedGanttCommand = true;
+				vscode.window.showInformationMessage(
+					"The Gantt chart has been replaced by the work plan. `Gram: Gantt Chart` opens it for now and will be removed in 2.0.0: use `Gram: Work Plan`.",
+				);
+			}
+			const html = workPlanHtmlCache.get(uri) ?? "";
+			WorkPlanPanel.createOrShow(context.extensionUri, uri, html);
 		}),
 	);
 }

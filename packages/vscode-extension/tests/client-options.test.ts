@@ -10,7 +10,7 @@ describe("language client options", () => {
 	it("tells the server when a gram.* setting changes", () => {
 		// Without `synchronize.configurationSection` the client never sends
 		// workspace/didChangeConfiguration, so changing gram.miseEnPlace in the
-		// settings left the preview and the Gantt chart untouched.
+		// settings left the preview and the work plan untouched.
 		expect(createClientOptions().synchronize?.configurationSection).toBe(
 			"gram",
 		);
