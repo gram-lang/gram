@@ -190,9 +190,9 @@ function buildModel(
 		}).format(new Date(iso));
 
 	const lineOf = (entry: RunSheetEntry): RunSheetLine => {
-		const startDate = entry.startLocal.slice(0, 10);
+		const startDate = (entry.startLocal ?? "").slice(0, 10);
 		const when = fill(t.runSheetAround, {
-			time: roundedClock(entry.startLocal, step),
+			time: roundedClock(entry.startLocal ?? "", step),
 		});
 		const duration = fmt(entry.minutes);
 		let title: string;
@@ -223,8 +223,8 @@ function buildModel(
 			// rest it starts carries what it says.
 			const text = s ? serializeStepContent(s.content, registry, lang) : "";
 			detail = text.length > 200 ? `${text.slice(0, 200)}…` : text || undefined;
-			const endDate = entry.endLocal.slice(0, 10);
-			const until = roundedClock(entry.endLocal, step);
+			const endDate = (entry.endLocal ?? "").slice(0, 10);
+			const until = roundedClock(entry.endLocal ?? "", step);
 			length = `${duration}, ${fill(t.runSheetUntil, {
 				time:
 					endDate === startDate ? until : `${shortDay(endDate, lang)} ${until}`,
@@ -240,8 +240,8 @@ function buildModel(
 		return {
 			task: entry.task,
 			kind: entry.kind,
-			start: entry.start,
-			end: entry.end,
+			start: entry.start ?? "",
+			end: entry.end ?? "",
 			when,
 			title,
 			detail,
@@ -252,13 +252,13 @@ function buildModel(
 	};
 
 	const daysOut: RunSheetDayModel[] = (recipe?.days ?? []).map((day) => ({
-		heading: `${longDate(day.date, lang)} · ${sessionDayLabel(day.daysBefore, t)}`,
+		heading: `${longDate(day.date ?? "", lang)} · ${sessionDayLabel(day.daysBefore, t)}`,
 		lines: day.entries
 			.filter((entry) => entry.kind !== "step" || entry.minutes > 0)
 			.map(lineOf),
 	}));
 
-	const when = (iso: string) => local(iso, sheet.timeZone);
+	const when = (iso: string) => local(iso, sheet.timeZone ?? "UTC");
 	const problems = sheet.diagnostics.map((d: ProjectionDiagnostic): string => {
 		switch (d.code) {
 			case "ACTIVE_OUTSIDE_AVAILABILITY":
@@ -294,7 +294,7 @@ function buildModel(
 		}
 	});
 
-	const serveDate = sheet.serveAt.slice(0, 10);
+	const serveDate = (sheet.serveAt ?? "").slice(0, 10);
 	const recipeTitle = recipe?.title ?? data.title ?? undefined;
 	return {
 		title: recipeTitle
@@ -302,7 +302,7 @@ function buildModel(
 			: t.runSheetTitle,
 		servedAt: fill(t.runSheetServedAt, {
 			date: longDate(serveDate, lang),
-			time: sheet.serveAt.slice(11, 16),
+			time: (sheet.serveAt ?? "").slice(11, 16),
 		}),
 		days: daysOut,
 		problems,

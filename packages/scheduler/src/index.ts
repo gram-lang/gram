@@ -39,8 +39,16 @@ export {
 	isRestChoice,
 } from "./mode";
 export { project } from "./project";
-export { runSheet } from "./runsheet";
-export type { RunSheet, RunSheetDay, RunSheetEntry } from "./runsheet";
+export { PASSAGE_GAP_MINUTES, runSheet } from "./runsheet";
+export type {
+	RunSheet,
+	RunSheetAdjustment,
+	RunSheetDay,
+	RunSheetEntry,
+	RunSheetOptions,
+	RunSheetPassage,
+	RunSheetThread,
+} from "./runsheet";
 export type {
 	Availability,
 	ProjectedBlock,
