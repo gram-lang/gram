@@ -51,6 +51,30 @@ export interface PlanContext {
 	now: string;
 }
 
+/** What the plan flags say about the cook, without a serving time. */
+export interface KitchenContext {
+	timeZone: string;
+	availability: Availability;
+	now: string;
+}
+
+/**
+ * The time zone, availability and present of the plan flags. `--tz`,
+ * `--available` and `--now` are read with or without `--serve`: the earliest
+ * time and the search of serving times need them too.
+ */
+export function resolveKitchenContext(
+	args: Record<string, unknown>,
+	rawArgs: string[] | undefined,
+	config: { timezone?: string },
+): KitchenContext {
+	return {
+		timeZone: parseTimeZone(args.tz, config.timezone),
+		availability: parseAvailability(collectFlag(rawArgs ?? [], "available")),
+		now: (args.now as string | undefined) ?? new Date().toISOString(),
+	};
+}
+
 /**
  * Reads the plan flags. Without `--serve` there is no plan: `undefined`, unless
  * the command needs one (`required`), or another plan flag was given, which would
@@ -62,8 +86,7 @@ export function resolvePlanContext(
 	config: { timezone?: string },
 	{ required = false }: { required?: boolean } = {},
 ): PlanContext | undefined {
-	const raw = rawArgs ?? [];
-	const available = collectFlag(raw, "available");
+	const available = collectFlag(rawArgs ?? [], "available");
 	if (args.serve === undefined || args.serve === "") {
 		if (!required && (args.tz || available.length > 0 || args.now)) {
 			throw new GramCLIError(
@@ -75,9 +98,7 @@ export function resolvePlanContext(
 	}
 	return {
 		serveAt: parseServe(args.serve),
-		timeZone: parseTimeZone(args.tz, config.timezone),
-		availability: parseAvailability(available),
-		now: (args.now as string | undefined) ?? new Date().toISOString(),
+		...resolveKitchenContext(args, rawArgs, config),
 	};
 }
 

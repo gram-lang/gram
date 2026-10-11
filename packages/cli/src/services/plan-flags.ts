@@ -143,3 +143,51 @@ export function parseAvailability(entries: string[]): Availability {
 		...(Object.keys(dates).length > 0 && { dates }),
 	};
 }
+
+const MEAL = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+
+/**
+ * `--meal-times 12:30,20:00`, else the `mealTimes` of the config, else none
+ * (the scheduler's defaults, 12:30 and 20:00).
+ */
+export function parseMealTimes(
+	value: unknown,
+	configured?: string[],
+): string[] | undefined {
+	const raw =
+		typeof value === "string" && value !== ""
+			? value.split(",").map((v) => v.trim())
+			: configured;
+	if (raw === undefined || raw.length === 0) return undefined;
+	return raw.map((time) => {
+		if (!MEAL.test(time)) {
+			return fail(
+				`Expected --meal-times like 12:30,20:00 (the \`mealTimes\` setting is a list of "HH:MM"), got "${time}".`,
+			);
+		}
+		const [h, m] = time.split(":") as [string, string];
+		return `${h.padStart(2, "0")}:${m}`;
+	});
+}
+
+const LOCAL_BOUND = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{1,2}:\d{2})?$/;
+
+/**
+ * `--find 2026-10-12/2026-10-15`: the two local bounds of the search, each a
+ * date or a date and time. A bare date as the end means the whole day.
+ */
+export function parseFindRange(value: unknown): { from: string; to: string } {
+	const text = String(value ?? "").trim();
+	const parts = text.split("/");
+	if (
+		parts.length !== 2 ||
+		!parts.every((p) => LOCAL_BOUND.test(p.trim())) ||
+		parts[0]!.trim() > parts[1]!.trim()
+	) {
+		return fail(
+			`Expected --find like "2026-10-12/2026-10-15" (a start and an end, local dates or date and time, in that order), got "${text}".`,
+		);
+	}
+	const norm = (p: string) => p.trim().replace(" ", "T");
+	return { from: norm(parts[0]!), to: norm(parts[1]!) };
+}

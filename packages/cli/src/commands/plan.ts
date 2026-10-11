@@ -15,19 +15,28 @@ import { RESTS_FLAG_DESCRIPTION, parseRests } from "../services/rests-flag";
 import {
 	PLAN_FORMATS,
 	type PlanFormat,
+	findPlan,
 	formatPlan,
 	planRecipe,
 	planToICS,
 } from "../services/planner";
 import { ExitCode, GramCLIError } from "../errors";
-import { PLAN_FLAG_ARGS, resolvePlanContext } from "../services/plan-options";
+import {
+	PLAN_FLAG_ARGS,
+	resolveKitchenContext,
+} from "../services/plan-options";
+import {
+	parseFindRange,
+	parseMealTimes,
+	parseServe,
+} from "../services/plan-flags";
 
 export default defineCommand({
 	meta: {
 		name: "plan",
 		version,
 		description:
-			"Plan a recipe backward from the time it is served: when to start each task, given when you are available",
+			"Plan a recipe: the days, the visits to the kitchen and what to take out. With --serve, backward from the time it is served; without, the earliest it could be ready",
 	},
 	args: {
 		file: {
@@ -36,7 +45,16 @@ export default defineCommand({
 			description: "Path to a .gram recipe file",
 		},
 		...PLAN_FLAG_ARGS,
-		serve: { ...PLAN_FLAG_ARGS.serve, required: true },
+		find: {
+			type: "string",
+			description:
+				'List the serving times that work between two local moments, e.g. "2026-10-12/2026-10-15", instead of writing the plan',
+		},
+		"meal-times": {
+			type: "string",
+			description:
+				"Times of day --find tries, comma-separated (default: the `mealTimes` setting, else 12:30,20:00)",
+		},
 		format: {
 			type: "string",
 			description: `Output format: ${PLAN_FORMATS.join(" | ")} (default: text)`,
@@ -44,7 +62,7 @@ export default defineCommand({
 		ics: {
 			type: "string",
 			description:
-				"Also write the plan as an iCalendar file (events in UTC, an alarm on every task that needs your hands)",
+				"Also write the plan as an iCalendar file, one event per visit to the kitchen, in UTC, with an alarm before it (needs --serve)",
 		},
 		scale: {
 			type: "string",
@@ -77,10 +95,24 @@ export default defineCommand({
 					ExitCode.Error,
 				);
 			}
-			const context = resolvePlanContext(args, rawArgs, config, {
-				required: true,
-			})!;
-			const { serveAt, timeZone, availability, now } = context;
+			const kitchen = resolveKitchenContext(args, rawArgs, config);
+			const { timeZone, availability, now } = kitchen;
+			const serveAt =
+				args.serve === undefined || args.serve === ""
+					? undefined
+					: parseServe(args.serve);
+			if (args.ics && serveAt === undefined) {
+				throw new GramCLIError(
+					"--ics needs --serve (when it is served): a calendar event needs a date.",
+					ExitCode.Error,
+				);
+			}
+			if (args.find && serveAt !== undefined) {
+				throw new GramCLIError(
+					"--find looks for the serving time: it doesn't go with --serve.",
+					ExitCode.Error,
+				);
+			}
 			const miseEnPlace = parseMiseEnPlace(args["mise-en-place"]);
 			const rests = parseRests(args.rests);
 			const stock = resolveStockFromConfig(args.stock, config);
@@ -106,6 +138,24 @@ export default defineCommand({
 				stock,
 			});
 			reportUnusedStock("gram plan", "planned", stock, [result]);
+
+			if (args.find !== undefined && args.find !== "") {
+				if (format === "html") {
+					throw new GramCLIError(
+						"--find writes text, md or json, not html.",
+						ExitCode.Error,
+					);
+				}
+				const range = parseFindRange(args.find);
+				const mealTimes = parseMealTimes(args["meal-times"], config.mealTimes);
+				process.stdout.write(
+					findPlan(result, range, format, {
+						mealTimes,
+						lang: config.language,
+					}),
+				);
+				process.exit(ExitCode.Ok);
+			}
 
 			process.stdout.write(formatPlan(result, format, config.language));
 

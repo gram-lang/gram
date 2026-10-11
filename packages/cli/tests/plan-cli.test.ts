@@ -171,9 +171,112 @@ describe("gram plan", () => {
 			expect(code).toBe(1);
 		}
 	});
+});
 
-	it("needs --serve", () => {
-		expect(gram("plan", "bread.gram").code).not.toBe(0);
+describe("gram plan without a serving time", () => {
+	const RELATIVE = [
+		"plan",
+		"bread.gram",
+		"--tz",
+		"Europe/Paris",
+		"--available",
+		"08:00-22:00",
+		"--now",
+		"2026-10-10T10:00",
+	];
+
+	it("writes the days before the service, with no date, and the earliest it could be ready", () => {
+		const { code, out } = gram(...RELATIVE);
+		expect(code).toBe(0);
+		expect(out).toContain("Work plan — Country bread");
+		expect(out).toMatch(/Day D\s+▮ about/);
+		expect(out).not.toContain("For Sunday");
+		expect(out).toContain("Ready as early as");
+		expect(out).toContain("if you start now.");
+	});
+
+	it("gives the earliest in JSON too, next to the sheet", () => {
+		const json = JSON.parse(gram(...RELATIVE, "--format", "json").out);
+		expect(json.plan).toBeUndefined();
+		expect(json.runSheet.mode).toBe("relative");
+		expect(json.earliest.serveAt).toMatch(/^2026-10-/);
+	});
+
+	it("needs --serve for a calendar", () => {
+		const { code, out, err } = gram(...RELATIVE, "--ics", join(dir, "x.ics"));
+		expect(code).toBe(1);
+		expect(`${out}${err}`).toContain("--ics needs --serve");
+	});
+});
+
+describe("gram plan --find", () => {
+	const FIND = [
+		"plan",
+		"bread.gram",
+		"--tz",
+		"Europe/Paris",
+		"--available",
+		"08:00-22:00",
+		"--now",
+		"2026-10-10T10:00",
+		"--find",
+		"2026-10-10/2026-10-12",
+	];
+
+	it("lists the serving times that work, then those that don't, with why", () => {
+		const { code, out } = gram(...FIND);
+		expect(code).toBe(0);
+		expect(out).toMatch(
+			/Sunday, October 11 20:00 — start .* · \d visits? to the kitchen/,
+		);
+		expect(out).toContain("not possible: you would have to start");
+	});
+
+	it("tries the meal times it is given", () => {
+		const { out } = gram(...FIND, "--meal-times", "19:00");
+		expect(out).toContain("October 11 19:00");
+		expect(out).not.toContain("12:30");
+		expect(out).not.toContain("20:00");
+	});
+
+	it("takes the meal times from the project setting", async () => {
+		const project = await mkdtemp(join(tmpdir(), "gram-cli-meals-"));
+		try {
+			await mkdir(join(project, ".gram"), { recursive: true });
+			await writeFile(
+				join(project, ".gram", "config.yaml"),
+				"mealTimes:\n  - '18:30'\n",
+			);
+			await writeFile(join(project, "bread.gram"), BREAD);
+			const run = Bun.spawnSync([process.execPath, ENTRY, ...FIND], {
+				cwd: project,
+			});
+			const out = new TextDecoder().decode(run.stdout);
+			expect(out).toContain("18:30");
+			expect(out).not.toContain("12:30");
+		} finally {
+			await rm(project, { recursive: true, force: true });
+		}
+	});
+
+	it("writes JSON candidates and rejections", () => {
+		const json = JSON.parse(gram(...FIND, "--format", "json").out);
+		expect(json.candidates.length).toBeGreaterThan(0);
+		expect(json.rejected.length).toBeGreaterThan(0);
+		expect(json.rejected[0].reasons.length).toBeGreaterThan(0);
+		expect(json.candidates[0].plan).toBeUndefined();
+	});
+
+	it("refuses a bad range, a bad meal time, --serve and html", () => {
+		for (const args of [
+			["--find", "tomorrow"],
+			["--find", "2026-10-12/2026-10-10"],
+			["--meal-times", "noon"],
+			["--serve", "2026-10-11 13:00"],
+			["--format", "html"],
+		]) {
+			expect(gram(...FIND, ...args).code).toBe(1);
+		}
 	});
 });
 

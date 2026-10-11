@@ -293,6 +293,11 @@ export const GramConfigFileSchema = z.object({
 	 * `gram view` or `gram build`, only the command that needs a zone.
 	 */
 	timezone: z.string().optional(),
+	/**
+	 * The times of day `gram plan --find` tries a serving time at, "12:30" and
+	 * "20:00" by default. Like `timezone`, only checked by the command that uses it.
+	 */
+	mealTimes: z.array(z.string()).optional(),
 	/** Set to `false` to disable the passive "update available" notice printed after a command finishes. */
 	updateCheck: z.boolean().optional(),
 	/** Named `@use` specifier aliases (module-imports RFC §B.1/§F.1): `paths: { bases: "./shared/bases" }` lets `@use "@bases/pate.gram"` resolve to `<projectRoot>/shared/bases/pate.gram`. The bare `@/` prefix (project root itself) needs no entry here. */
