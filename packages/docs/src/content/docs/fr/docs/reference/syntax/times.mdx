@@ -53,7 +53,7 @@ Rôtir le poulet pendant ~{40-50 min}.
 L'interprétation d'une fourchette diffère fondamentalement selon la nature du minuteur :
 
 - **Une fourchette passive est une marge d'élasticité.** L'annotation `~_{12-24h}` signifie : « prête dès 12 heures, optimale jusqu'à 24 heures ». Par défaut, l'ordonnancement retient la borne la plus courte (`'shortest'`). Lors de la consultation, vous pouvez choisir la stratégie d'élasticité (`'shortest'`, la médiane `'balanced'`, ou la borne la plus longue `'longest'`) via l'option `--rests` de la CLI, le réglage `gram.rests` dans VS Code ou l'option `rests` du moteur de rendu. Lorsque vous spécifiez une heure de service et des disponibilités, le scheduler exploite cette élasticité pour franchir les plages de repos nocturnes sans solliciter le cuisinier (voir [Planification en temps réel](/fr/docs/explanation/planning-in-real-time/)).
-- **Ce que le planning de préparation fait d'une fourchette.** Le plan montre une attente avec sa durée prévue et, quand elle diffère, la fourchette que vous avez écrite (« 15 h 50 (12 à 48 h) »). Une fourchette est aussi ce qui donne sa marge à un passage en cuisine (« Possible dès 18:00 »), puisqu'une attente qui peut s'allonger laisse le travail qui la précède avancer. Une attente exacte le tient en place (« Heures fixes »). Voir [le planning de préparation](/fr/docs/how-to/plan-a-meal/).
+- **Restitution au sein du planning de préparation.** Le planning affiche chaque temps passif avec sa durée nominale prévue et, lorsque celle-ci a été ajustée, rappelle la fourchette initiale définie dans la recette (ex. : `15 h 50 (12 à 48 h)`). C'est précisément cette élasticité qui confère une marge d'anticipation aux passages en cuisine (« Possible dès 18:00 ») : un temps d'attente extensible permet d'effectuer les opérations amont plus tôt sans impacter la suite. À l'inverse, une durée passive exacte verrouille l'horaire de passage (« Heures fixes »). Consultez le guide [Planifier un repas](/fr/docs/how-to/plan-a-meal/).
 - **Une fourchette active est une incertitude de cuisson.** L'annotation `~{40-50 min}` représente la plage de temps nécessaire pour cuire le poulet. L'ordonnancement retient systématiquement la borne maximale (50 minutes) afin de garantir qu'aucun retard ne vienne décaler l'heure de service. L'option d'élasticité passive `rests` ne s'y applique pas.
 
 :::note
@@ -188,8 +188,9 @@ L'annotation temporelle `~{...}` d'un titre de section exige obligatoirement un 
 - Une unité canonique : `d` (jours), `h` (heures) ou `min` (minutes), ou leurs alias localisés.
 
 ```gram
-## Pâte feuilletée ~{-2j}   <!-- 2 jours avant -->
-## Ganache ~{-30min}        <!-- 30 minutes avant -->
+## Pâte feuilletée ~{-2j}
+
+## Ganache ~{-30min}
 ```
 
 Les mentions en texte libre (`~{la veille}`), les valeurs positives (`~{2h}`) ou nulles (`~{0h}`) ne sont pas permises. Pour préserver la compatibilité ascendante, les recettes existantes comportant ces formes compilent toujours, mais font l'objet d'un avertissement structurel.

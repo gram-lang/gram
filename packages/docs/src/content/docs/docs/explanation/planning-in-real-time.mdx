@@ -10,7 +10,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 A recipe describes its own timing: tasks, how long they last, and what dependencies they wait for. That is enough to calculate an overall metric—such as "this recipe takes 17 hours, 50 minutes of it in active work". It is not enough to say **when to start**. For that, Gram needs three inputs that only you know: when you serve, in which time zone, and when you can actually cook.
 
-Provide those three parameters, and Gram places every task of the recipe on the calendar, backward from the service, and works out the days, the visits to the kitchen and what goes on between them. The [work plan](/docs/how-to/plan-a-meal/) is one way to show it.
+Provide those three parameters, and Gram positions each task along a backward calendar schedule from the serving time, organizing work days, active kitchen visits, and background resting intervals. The [work plan](/docs/how-to/plan-a-meal/) provides the operational presentation of this data.
 
 ## Inputs
 
@@ -67,11 +67,14 @@ A wait assigned to a named track (`~_oven{40min}`) is only stretched if that tra
 Served on Sunday at 13:00, with `08:00-22:00` daily availability, an 8-hour rise would place the kneading at 04:10. Gram automatically stretches the rise to 14 h 30 so that the kneading finishes at 22:00 on Saturday evening:
 
 ```text
-Saturday, October 10 · D-1
-  around 21:40      Dough — Knead (20m)
-  around 22:00      Rise — Dough (14h 30m, until around Sun 12:30)
-  
-                    ! Wait stretched from 8h to 14h 30m to stay out of your unavailable hours
+SAT 10   ▮ 21:40 – 22:00 Dough
+         ┆ Dough : Rise 14h 30m (8h to 16h)
+SUN 11   ▮ 12:30 – 13:00 Bake
+         ★ 13:00         Serve
+
+SATURDAY, OCTOBER 10  21:40 → 22:00
+  ! Dough : Rise extended to 14h 30m (planned 8h to 16h) so the work falls within your availability.
+  Possible from 20:10.
 ```
 
 If the rise were exact (`~_{8h}`), or if the range was too narrow to absorb the offset (`~_{8-10h}`), no adjustment could be made: the scheduler leaves the kneading at 04:10 and logs the diagnostic.
@@ -98,15 +101,15 @@ Calculations take place in absolute minutes along a continuous timeline; convers
 
 ## The work plan
 
-The projection gives data: for each block, its date and time; the waits it lengthened or shortened; the hours you are not available; what it could not fix. [`runSheet()`](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) groups it into days, **visits to the kitchen** and the **threads** that go on without you, and computes how early each visit could be done.
+Calendar projection produces a comprehensive data model: exact timestamps for each block, adjusted passive rests, non-working intervals, and diagnostics for unresolved constraints. The [`runSheet()`](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) function organizes this data into work days, **active kitchen visits**, and **background resting threads** (proofing, chilling, resting), while calculating the scheduling margin available for each intervention.
 
-The work plan is a view of that data. For each day it says when you are in the kitchen, what to take out for each visit, what each section asks of you (with the steps of the recipe it covers), and what goes on afterwards. Times are rounded to the nearest five minutes to match the kitchen; the calculation stays exact to the minute. A wait the plan stretched is reported at the top of its day, and what could not be made right at the top of the plan. The rules of the view (a visit ends at a wait of an hour, a margin shows from 15 minutes) are choices of the view, not of the engine.
+The **work plan** is the operational view built on top of this model. For each day, it outlines required kitchen presence, equipment and ingredients to take out, actionable steps to execute alongside recipe sections, and unattended processes that continue in the background. To reflect culinary practice, displayed times are rounded to the nearest five minutes (while internal engine calculations remain accurate to the minute). Rest adjustments are highlighted at the top of the relevant day, and unresolved constraints are grouped at the top of the document. These presentation rules (grouping tasks into a single visit across rests under one hour, displaying margins starting at 15 minutes) belong to the rendering layer rather than rigid engine constraints.
 
-It comes as plain text, Markdown, standalone HTML, a print document (one day per page, with check boxes) or an iCalendar file with one event per visit. It can follow the recipe in a single document (`--with-sheet`). The recipe itself reads the same at any time: it says how, the plan says when.
+The plan can be generated as plain text, Markdown, standalone HTML, a print-ready document (one day per page with check boxes), or exported to an iCalendar file (`.ics`). The `--with-sheet` option appends it directly to the recipe in a single document. While the recipe describes **how** to cook, the work plan specifies **when** to take action.
 
-Without a serving time, the same data is told in days before the service (D-2, D-1, day D) and in durations ("about 55 min"), with the earliest time it could be ready. There are no margins or adjustments: they need your availability.
+Without a target serving time, this same data is displayed as a relative countdown (`D-2`, `D-1`, `Day D`) with estimated session durations (e.g. "about 55 min") and the earliest achievable serving time. Scheduling margins and rest adjustments are calculated only when real calendar availability is provided.
 
-See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end guide.
+See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end practical guide.
 
 ## Available integrations
 
@@ -116,12 +119,12 @@ See [Plan a meal](/docs/how-to/plan-a-meal/) for an end-to-end guide.
 | Playground | The "Work plan" view and the "Plan" panel, with "When to serve?" |
 | VS Code | `Gram: Work Plan`, in days before the service |
 | `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` and `earliestServe()` (see the [scheduler API reference](/docs/reference/api/scheduler/)) |
-| `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, and the pieces they are made of (`passageKit`, `sectionProgram`) |
+| `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, and associated modular helpers (`passageKit`, `sectionProgram`) |
 
 ## Current limitations
 
 - **Single recipe scheduling**: planning a complete menu (synchronizing starter, main, and dessert for the same service while sharing a single cook and oven) will be supported in a future release; the API already accepts a list of recipes, and reports `MULTI_RECIPE_UNSUPPORTED` for more than one.
-- **No replanning after a delay**: the plan stays true while you keep to it. A visit done after its planned time invalidates it: run it again.
+- **No live state tracking**: the schedule is purely deterministic and maintains no persistent live runtime state. If a visit is delayed, simply run `gram plan` again to recalculate viable slots from the new time.
 - **Shared resources**: equipment (oven preheating time, refrigerator space) does not yet act as globally pooled resources beyond explicit named tracks.
 - **Heuristic approach**: the scheduling algorithm is greedy and deterministic (designed to be explainable and predictable rather than optimal in a mathematical programming sense): it resolves conflicts starting from the latest event and works backward in time.
 

@@ -214,11 +214,11 @@ To maximize the efficiency of Gram's ALAP scheduling engine, follow these practi
 
 Because Gram's ALAP engine deterministically computes minute-accurate `start` and `end` bounds, client applications require zero custom date calculation: they directly consume the planned task graph.
 
-A timeline (the diagrams above are Mermaid `gantt` charts) is an ideal way to picture passive task overlap and active task interleaving; the same data is what the [work plan](/docs/how-to/plan-a-meal/) shows. You can try this engine in real time in the **[Official Gram Playground](/play/)**.
+A timeline representation (such as the Mermaid `gantt` charts above) clearly highlights passive task overlap and active task interleaving in masked time. These are the exact same data points that the [work plan](/docs/how-to/plan-a-meal/) visualizes. You can test and inspect this scheduling behavior interactively in the **[Gram Playground](/play/)**.
 
 ### What ALAP means for the margin
 
-Everything is planned **as late as possible**, so a visit to the kitchen can only be moved **earlier**, never later: it would delay the service. The margin the work plan shows ("Possible from 18:00") is how far a visit can be advanced while the waits around it stay within their written range. A recipe written with ranges has margins; one written with exact waits has none. See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
+Because planning operates strictly **as late as possible**, a kitchen visit can only be moved **earlier**, never later: delaying it would inevitably push back serving time. The anticipation margin shown in the work plan ("Possible from 18:00") indicates how far a visit can be shifted forward as long as adjacent passive rests remain within their declared ranges. A recipe with elastic rest ranges yields anticipation margins, whereas one with fixed passive waits offers none. See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
 
 ## Related resources
 

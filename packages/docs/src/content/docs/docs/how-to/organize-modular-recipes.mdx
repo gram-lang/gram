@@ -210,10 +210,7 @@ In your main recipe, destructured imports let you bind both components cleanly i
 :::tip[Local renaming]
 If a module's export names clash with variables in your own recipe, rename them with `as`:
 ```gram
-@use "@/components/bases/tart-elements.gram" as {
-  &crust as &sweet dough{},
-  &frangipane as &almond cream{}
-}
+@use "@/components/bases/tart-elements.gram" as { &crust as &sweet dough{}, &frangipane as &almond cream{} }
 ```
 :::
 
@@ -293,7 +290,11 @@ The web-based [Playground](/play) supports editing multi-file recipes: open the 
 
 ## Planning with imports
 
-In the [work plan](/docs/how-to/plan-a-meal/), an imported base is part of the recipe's visits to the kitchen: its steps and its mise en place are planned with the rest, and a day anchor on its `@use` (`@use "./bases/sponge.gram" as &sponge ~{-2d}`) opens a day for it. A base kept **in stock** (`--stock ./bases/sponge.gram`) opens no visit at all: it is listed "in stock" under "To take out", in the visit that uses it. The steps of an imported section are referred to by the name of their file ("sponge.gram, steps 1 to 2").
+When generating a [work plan](/docs/how-to/plan-a-meal/), every base imported via `@use` is fully integrated into the global schedule: its preparation steps and mise en place are coordinated alongside the host recipe.
+
+- **Multi-day scheduling:** Adding a day anchor to an import directive (for example `@use "./bases/sponge.gram" as &sponge ~{-2d}`) automatically schedules the preparation of that sub-recipe two days before the service.
+- **Stocked bases (`--stock`):** If you mark a base as already on hand in your freezer or pantry (`--stock ./bases/sponge.gram`), no cooking visit is scheduled for it. It simply appears annotated as "in stock" under "To take out" during the visit where the host recipe needs it.
+- **Step traceability:** In the action checklist ("To do"), steps originating from an imported module explicitly display their source file name (for example: `sponge.gram (steps 1 to 2)`).
 
 ## Related resources
 

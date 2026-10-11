@@ -60,7 +60,7 @@ Unlike an `@ingredient` which scales proportionally by default, `#cookware` scal
 
 ## Cookware and the work plan
 
-The cookware of a section is listed in "To take out" for the visit where the section is done (once per visit). Two passive timers that overlap in steps citing the same cookware, with no named track in common, are flagged by [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware), with a named track as the suggested fix.
+Cookware items required by a section are inventoried under the "To take out" block at the start of the kitchen visit where that section is executed (once per visit). If two passive timers overlap across steps that cite the same cookware without a shared named track, the compiler reports the [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware) warning and suggests assigning a dedicated track to serialize equipment access.
 
 ## Modifiers and advanced syntax
 

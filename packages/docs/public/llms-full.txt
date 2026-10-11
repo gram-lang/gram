@@ -249,7 +249,7 @@ Steps can optionally start with an **Action** enclosed in brackets `[]`. This hi
 ```
 
 :::tip[Write the action]
-The action is what the [work plan](/docs/how-to/plan-a-meal/) says of a step: its "To do" line for a visit lists each step as its action, then its temperatures and timers (`Mix › Bake 230 °C 30 min`). A step without an action only brings its temperatures and timers, and nothing at all if it has neither.
+The action verb identifies the step within the [work plan](/docs/how-to/plan-a-meal/): the "To do" line for each visit summarizes steps by their action, followed by any temperatures and timers (e.g. `Mix › Bake 230 °C 30 min`). A step without an action only displays its thermal and time parameters, and is omitted from the summary entirely if it contains neither.
 :::
 
 ## 4. Sections
@@ -607,7 +607,7 @@ Unlike an `@ingredient` which scales proportionally by default, `#cookware` scal
 
 ## Cookware and the work plan
 
-The cookware of a section is listed in "To take out" for the visit where the section is done (once per visit). Two passive timers that overlap in steps citing the same cookware, with no named track in common, are flagged by [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware), with a named track as the suggested fix.
+Cookware items required by a section are inventoried under the "To take out" block at the start of the kitchen visit where that section is executed (once per visit). If two passive timers overlap across steps that cite the same cookware without a shared named track, the compiler reports the [`PASSIVE_OVERLAP_SAME_COOKWARE`](/docs/reference/api/warnings/#passive_overlap_same_cookware) warning and suggests assigning a dedicated track to serialize equipment access.
 
 ## Modifiers and advanced syntax
 
@@ -710,7 +710,7 @@ Roast the chicken for ~{40-50min}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
-- **What the work plan makes of a range.** The plan shows a wait with its planned length and, when it differs, the range you wrote ("15 h 50 (12 to 48 h)"). A range is also what gives a visit to the kitchen its margin ("Possible from 18:00"), since a wait that can stretch lets the work before it move earlier. An exact wait holds it in place ("Fixed times"). See [the work plan](/docs/how-to/plan-a-meal/).
+- **How the work plan reflects ranges.** The work plan displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Fixed times"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -845,8 +845,9 @@ Section header retro-planning annotations require a **strictly negative** signed
 - A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
 
 ```gram
-## Puff pastry ~{-2d}     <!-- 2 days before -->
-## Ganache ~{-30min}      <!-- 30 minutes before -->
+## Puff pastry ~{-2d}
+
+## Ganache ~{-30min}
 ```
 
 Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.
@@ -1646,6 +1647,7 @@ Mix @flour{200g} and @milk{200ml}.
 {
   "type": "Recipe",
   "meta": { "title": "Crepes" },
+  "imports": [],
   "children": [
     {
       "type": "Section",
@@ -1736,8 +1738,8 @@ Mix @flour{200g} and @milk{200ml}.
       "title": "Batter",
       "retro_planning": null,
       "ingredients": [
-        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"] },
-        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+        { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g" },
+        { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml" }
       ],
       "cookware": [],
       "steps": [
@@ -1977,9 +1979,11 @@ flour:
 
 **Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
 
-## 5. The run sheet
+<span id="5-the-run-sheet"></span>
 
-The data of the work plan (`@gram-lang/scheduler`), as `runSheet()` returns it and as `gram plan --format json` writes it under `runSheet`. A recipe with a serving time:
+## 5. The work plan
+
+Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
 
 ```json
 {

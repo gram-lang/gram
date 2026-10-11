@@ -249,34 +249,38 @@ function runSheet(
 ): RunSheet
 ```
 
-The structure of the work plan: for each recipe, its days; for each day, the **visits to the kitchen** and the **threads** that go on without you. A `ProjectedPlan` gives a plan with dates (`mode: "calendar"`); a bare `Schedule` gives the same structure in days before the service, with no dates (`mode: "relative"`). With `graph` and `context` (a calendar plan), each visit gets its margin. The terms are defined in [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
+Generates the data structure powering the work plan: day-by-day breakdowns for each recipe, detailing active **kitchen visits** and passive **threads** that proceed unattended.
+- A `ProjectedPlan` produces a concrete timestamped calendar schedule (`mode: "calendar"`);
+- A bare `Schedule` produces a relative temporal structure measured in days before serving (`mode: "relative"`).
+
+When `graph` and `context` are provided (in calendar plans), each visit receives its calculated anticipation margin. Key terms are defined in [The scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan).
 
 ```typescript
 interface RunSheet {
   mode: "calendar" | "relative";
   serveAt?: string;            // calendar plans only
   timeZone?: string;
-  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork: minutes of your own work
-  adjustments: RunSheetAdjustment[]; // waits made longer or shorter, with their section and day
+  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork: cumulative active hands-on minutes
+  adjustments: RunSheetAdjustment[]; // waits lengthened or shortened, with their section and day
   diagnostics: ProjectionDiagnostic[];
 }
 
 interface RunSheetDay {
-  date?: string;               // "2026-10-10", with a serving time
+  date?: string;               // "2026-10-10", with a target serving time
   daysBefore: number;          // 0 on serving day, 1 on the day before...
-  passages: RunSheetPassage[]; // the visits to the kitchen, in order
-  threads: RunSheetThread[];   // what goes on without you after a visit
-  entries: RunSheetEntry[];    // every block of the day, in order
+  passages: RunSheetPassage[]; // kitchen visits in chronological order
+  threads: RunSheetThread[];   // passive processes continuing after a visit
+  entries: RunSheetEntry[];    // all day blocks in order
 }
 
 interface RunSheetPassage {
-  start: number;               // minutes from the service (<= 0), exact
+  start: number;               // exact minutes before serving (<= 0)
   end: number;
-  startLocal?: string;         // "2026-10-10T21:40", with a serving time
+  startLocal?: string;         // "2026-10-10T21:40", with a target serving time
   endLocal?: string;
-  sections: number[];          // sections with work in the visit, in recipe order
-  tasks: string[];             // ids of the graph's preparations and steps
-  window?: { advance: number; earliest: number; earliestLocal: string }; // margin >= 15 min
+  sections: number[];          // section indices with work in this visit, in recipe order
+  tasks: string[];             // task IDs for prep and step blocks from graph
+  window?: { advance: number; earliest: number; earliestLocal: string }; // anticipation margin (computed when >= 15 min)
   fixedBy?: { task: string; section: number; planned: number; before: "service" | "passage"; sections?: number[] };
 }
 

@@ -260,7 +260,7 @@ gram print brioche.gram --no-open         # Generate only, print file path to st
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the displayed nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe). `per-100g` is calculated per 100 g of raw assembled mixture — see [Nutritional Estimation](/docs/explanation/nutrition).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> sets the mise en place schedule (default `per-section`), updating total and idle times printed in the header. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> sets the resolution for range-based passive timers (`~_{12-24h}`): shortest duration (`shortest`, default), midpoint (`balanced`), or longest duration (`longest`). Exact durations and active timers are unaffected.
-- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the same document (one day per page, with check boxes). It needs `--serve`, `--tz` and `--available` as in `gram plan`; they are refused without it.
+- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the printed document (with one day per page and check boxes). This option requires specifying a serving time via `--serve` (alongside context options `--tz` and `--available`).
 
 #### `gram export <file>`
 Exports a recipe to Markdown or print-ready HTML.
@@ -277,27 +277,27 @@ gram export brioche.gram --format html --scale 2       # Export at double quanti
 - `--nutrition <auto|total|per-portion|per-100g>` <Since v="1.1.0" /> selects the nutrition basis (default `auto`: per portion when `portions:` is declared, otherwise for the whole recipe).
 - `--mise-en-place <per-section|upfront|per-session>` <Since v="1.4.0" /> selects the mise en place schedule (default `per-section`), updating total and idle times in the exported header. In HTML, `per-section` also places a "Mise en place" heading above each section's ingredient list. See [When the mise en place happens](/docs/reference/syntax/times#when-the-mise-en-place-happens).
 - `--rests <shortest|balanced|longest>` <Since v="1.4.0" /> selects the resolution for range-based passive timers (`~_{12-24h}`).
-- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the exported document. It needs `--serve` (and `--tz`, `--available`, `--now`, as in `gram plan`); they are refused without `--with-sheet`.
+- `--with-sheet` <Since v="1.4.0" /> appends the work plan after the recipe in the exported document. This option requires specifying a serving time via `--serve` (alongside context options `--tz`, `--available`, and `--now`).
 
 #### `gram plan <file>` <Since v="1.4.0" />
-Plans a recipe: the days of work, the visits to the kitchen, what to take out and what each section asks of you. With `--serve`, backward from the time it is served and given when you are available; without it, in days before the service, with the earliest it could be ready.
+Computes the operational schedule of a recipe: daily breakdown, active kitchen visits, items to take out, and tasks to perform. With `--serve`, the backward schedule is calculated from meal time against your availability. Without a serving time, the schedule is presented in relative days (`D-2`, `D-1`, `Day D`) and indicates the earliest possible serving time starting immediately.
 ```bash
 gram plan bread.gram --serve "2026-10-11 13:00" --tz Europe/Paris --available 08:00-22:00
 gram plan bread.gram --serve "2026-10-11 13:00" --available 08:00-22:00 --available sat=09:00-23:00 --available 2026-10-09=none
 gram plan bread.gram --serve "2026-10-11 13:00" --format md        # Markdown output instead of text
 gram plan bread.gram --serve "2026-10-11 13:00" --ics bread.ics    # Also generates an iCalendar file
-gram plan bread.gram                                                # In days before the service, and the earliest it could be ready
-gram plan bread.gram --find 2026-10-10/2026-10-14 --available 08:00-22:00   # Which serving times work
+gram plan bread.gram                                                # Relative schedule and earliest serving time
+gram plan bread.gram --find 2026-10-10/2026-10-14 --available 08:00-22:00   # Find viable serving times
 ```
-- `--serve "<date> <time>"`: target serving time, specified as a local date and time in the configured time zone. Optional: without it, the plan has no dates (`D-2`, `D-1`, `Day D`), no margins and no adjustments, and ends with "Ready as early as … if you start now" (searched over 14 days from `--now`).
+- `--serve "<date> <time>"`: target serving time in the configured time zone. Optional: without it, the schedule is displayed in relative days (`D-2`, `D-1`, `Day D`) without calendar dates, concluding with the earliest serving time calculated across a 14-day window from `--now`.
 - `--tz <zone>`: an IANA time zone identifier (e.g. `Europe/Paris`). Default: the `timezone` setting of your project (or global config), falling back to the system time zone. Used to interpret serving times, evaluate availability intervals, and handle daylight saving shifts.
 - `--available <range>`, repeatable: defines working availability windows for active kitchen tasks. `08:00-22:00` applies to all days; a day-of-week prefix (`fri=18:00-22:00`, from `mon` to `sun`) restricts the rule to that day; a specific date prefix (`2026-10-09=none`) overrides a calendar date (`none` indicating complete unavailability). Multiple intervals can follow a single key separated by commas (`sat=08:00-09:00,18:00-22:00`), and an interval whose end time precedes its start time spans across midnight. In the absence of flags, availability is treated as continuous (24/7).
-- `--find <from>/<to>`: instead of the plan, lists the serving times that work between two local moments (`2026-10-12/2026-10-15`, dates or date and time) at your meal times, best first, and why each of the others does not. Text, `md` or `json`; not with `--serve`.
-- `--meal-times <HH:MM,HH:MM>`: the times of day `--find` tries. Default: the `mealTimes` setting, else `12:30,20:00`.
-- Range-based passive timers (`~_{8-16h}`) are automatically adjusted (extended or shortened) by the scheduler to align active tasks within your availability windows; the plan documents all adjustments made and lists any unresolved constraints. See [Planning in real time](/docs/explanation/planning-in-real-time/).
-- `--format text|md|html|json`: output format (default `text`). `json` outputs the structured `{ plan, runSheet }` object (`runSheet` only, plus `earliest`, without a serving time; the candidates and rejections with `--find`). See [the run sheet](/docs/reference/api/data-formats/#5-the-run-sheet).
-- `--ics <file>`: also generates an iCalendar (`.ics`) file with one event per visit to the kitchen (timestamped in UTC, rendered in the user's local zone by their calendar client), an alarm 10 minutes before it, and the "To take out" and "To do" lists in its description. Needs `--serve`. The confirmation notice is printed to `stderr`, keeping piping via `--format json --ics …` fully usable.
-- `--mise-en-place`, `--rests`, `--scale`, and `--stock` function identically to `gram view`. `--now <instant>` sets the reference time (default: current execution time) used to raise a warning if the initial task should already have begun in the past.
+- `--find <from>/<to>`: scans a time range (e.g. `2026-10-12/2026-10-15`, dates or full timestamps) to identify viable meal times, ranked by preference (best options first), explaining the blocking constraints for each rejected slot. Formats: `text`, `md`, `json`. Incompatible with `--serve`.
+- `--meal-times <HH:MM,HH:MM>`: candidate meal times evaluated by `--find` (default: value from `mealTimes` config, otherwise `12:30,20:00`).
+- Range-based passive timers (`~_{8-16h}`) are automatically adjusted (extended or shortened) by the scheduler to align active tasks within your availability windows; the schedule documents all adjustments made and lists any unresolved constraints. See [Planning in real time](/docs/explanation/planning-in-real-time/).
+- `--format text|md|html|json`: output format (default `text`). `json` outputs the structured `{ plan, runSheet }` object (or `runSheet` only alongside the `earliest` field when no serving time is given, or candidate and rejection lists with `--find`). See [the run sheet](/docs/reference/api/data-formats/#5-the-run-sheet).
+- `--ics <file>`: generates an iCalendar (`.ics`) file with one event per kitchen visit (timestamped in UTC and automatically displayed in your local time zone by your calendar client), a 10-minute reminder alarm, and the checklists in its description. Requires `--serve`. The confirmation message is printed to `stderr`, keeping piping via `--format json --ics …` fully usable.
+- `--mise-en-place`, `--rests`, `--scale`, and `--stock` function identically to `gram view`. `--now <instant>` sets the reference time (default: current execution time) used to raise a warning if the initial visit should already have started in the past.
 
 #### `gram format [pattern]`
 Auto-formats `.gram` files in-place applying 13 canonical rules from `@gram-lang/format`.
@@ -476,7 +476,7 @@ language: "en"                 # Target language for all AI-generated content (c
                                # Supported: en, fr, de, es, it, pt, nl, ja, zh — default: en
 timezone: "Europe/Paris"       # IANA time zone of your kitchen: default for `gram plan --tz` (default: machine time zone)
                                # Only read by `gram plan`, `export` and `print` with --with-sheet. Update via: `gram config set timezone <zone>`
-mealTimes: ["12:30", "20:00"]  # Times of day `gram plan --find` tries a serving time at (default: 12:30 and 20:00)
+mealTimes: ["12:30", "20:00"]  # Candidate meal times evaluated by `gram plan --find` (default: 12:30 and 20:00)
 updateCheck: true             # Set to false to silence the update notice printed after each command
 
 # Named `@use` specifier aliases — `@use "@bases/pate.gram"` resolves to

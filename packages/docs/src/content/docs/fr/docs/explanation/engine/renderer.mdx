@@ -24,25 +24,25 @@ Produit un balisage HTML sémantique et accessible. L'export HTML repose sur un 
 Génère un document HTML complet (`<!DOCTYPE html>`) autonome, intégrant sa propre feuille de style CSS optimisée pour l'impression (format A4, contrôle des sauts de page) et ses icônes SVG vectorielles. Conçu pour être ouvert dans un navigateur et imprimé directement sans aucune dépendance réseau externe. Contrairement à `toHTML`, les classes CSS et icônes sont verrouillées, mais les filtres de mise en forme (`formatDuration`, `formatFraction`, `hideStepQty`) restent entièrement configurables.
 
 ### 4. Le planning de préparation (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
-La **vue de référence de l'ordonnancement**, comme la vue Recette est la vue de référence de la recette. Elle montre ce que le moteur a calculé (`runSheet()` de `@gram-lang/scheduler`) : le planning des jours, puis, pour chaque jour et chaque passage en cuisine, quoi sortir, ce que chaque section vous demande et ce qui continue ensuite, avec la marge du passage et les attentes que le plan a ajustées. Les libellés suivent l'option `lang`.
+Constitue la **vue de référence de l'ordonnancement**, au même titre que la vue Recette constitue celle des instructions culinaires. Elle restitue fidèlement les structures calculées par le moteur (`runSheet()` de `@gram-lang/scheduler`) : le calendrier des journées, puis, pour chaque session active en cuisine, les éléments à sortir, les actions demandées par chaque section et les processus passifs en cours, en intégrant la marge d'anticipation et les temps d'attente ajustés. Les intitulés sont traduits selon l'option linguistique `lang`.
 
-C'est une démonstration, pas *la* façon de montrer les données. Les règles qui lui sont propres sont des choix de la vue : un passage s'arrête à une attente d'une heure (`PASSAGE_GAP_MINUTES`, dans le scheduler, parce qu'elle façonne les données), une marge s'affiche à partir de 15 minutes, et « À sortir » et « Au programme » sont lus dans la recette compilée. Ces deux-là sont exportés pour qu'une autre interface les réutilise plutôt que de les réécrire :
+Cette restitution sert d'implémentation de référence sans prétendre imposer une interface unique. Certains choix de présentation lui sont propres : une session active s'interrompt lors d'une attente d'au moins une heure (`PASSAGE_GAP_MINUTES`, défini dans le planificateur car il structure les données), une marge d'anticipation n'apparaît qu'à partir de 15 minutes, et les blocs « À sortir » ainsi que « Au programme » sont extraits directement de la recette compilée. Pour permettre à une interface personnalisée de réutiliser cette logique sans la réécrire, deux fonctions utilitaires sont exposées :
 
-- **`passageKit(data, sections, options)`** : les ingrédients des sections (additionnés, avec le détail de la somme), les préparations d'un passage précédent, les bases en stock et les ustensiles.
-- **`sectionProgram(data, section, stepIndexes)`** : les étapes qu'une section a dans un passage, avec leur action, leurs températures et leurs minuteurs tels qu'écrits, et le fichier d'où vient une section importée.
-- **`describeRunSheet()`** retourne le plan entier en mots sous forme de structure (`RunSheetModel`), dont sont faits les quatre formateurs et l'export calendrier de la CLI.
+- **`passageKit(data, sections, options)`** : extrait et agrège les ingrédients requis par les sections (avec le détail des cumuls), les préparations issues d'un passage antérieur, les bases en stock et les ustensiles nécessaires.
+- **`sectionProgram(data, section, stepIndexes)`** : isole les étapes à exécuter pour une section donnée lors d'un passage, en conservant leurs actions, températures et durées telles que rédigées, ainsi que le fichier source pour les sections importées.
+- **`describeRunSheet()`** : convertit l'intégralité du planning en une structure textuelle (`RunSheetModel`), exploitée par les quatre formateurs ainsi que par l'export iCalendar de la CLI.
 
-Les vues Recette (`toHTML`, `toMarkdown`, `toPrintHTML`) ne montrent aucun ordonnancement : elles disent comment. Avec l'option `runSheet`, elles écrivent un planning de préparation après la recette, dans un seul document. Voir [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) pour dessiner une vue planning directement à partir des données.
+Les vues de recette standard (`toHTML`, `toMarkdown`, `toPrintHTML`) se concentrent sur la réalisation culinaire (le *comment*) sans exposer l'ordonnancement temporel. En activant l'option `runSheet`, elles ajoutent le planning de préparation à la suite de la recette au sein d'un document unique. Consultez le guide [Créer une interface sur mesure](/fr/docs/how-to/build-custom-ui/) pour concevoir une vue planning personnalisée directement à partir des données.
 
 L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) et l'option `rests` (`"shortest"` par défaut, `"balanced"`, `"longest"`) choisissent la chronologie dont les en-têtes des documents montrent les durées totale et passive (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)).
 
-:::note[Le diagramme de Gantt]
-`toGanttHTML` et `attachGanttInteractivity` sont dépréciés depuis la 1.4.0 et seront retirés en 2.0.0 : plus aucune surface de Gram ne dessine de diagramme de Gantt. Voir [Dépréciations](/fr/docs/how-to/deprecations/).
+:::note[Remplacement du diagramme de Gantt]
+Les fonctions `toGanttHTML` et `attachGanttInteractivity` sont dépréciées depuis la version 1.4.0 et seront retirées en 2.0.0 : plus aucune surface de Gram n'utilise de diagramme de Gantt. Consultez la page [Dépréciations](/fr/docs/how-to/deprecations/) pour plus de détails.
 :::
 
 ## Traversée unifiée (`RenderBackend`)
 
-En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le planning de préparation a sa propre traversée, puisqu'il suit le temps plutôt que les sections de la recette.
+En interne, les formateurs Markdown, HTML et Print HTML délèguent le parcours des données à une fonction orchestratrice centrale (`renderRecipe` dans `traversal.ts`), qui interagit avec l'interface `RenderBackend` propre à chaque format. Cette architecture garantit une parité absolue : titre, métadonnées, ingrédients, matériel, étapes d'instructions, notes et informations nutritionnelles sont systématiquement traités dans le même ordre. Le planning de préparation dispose de sa propre logique de traversée, puisqu'il s'articule autour de l'axe temporel plutôt que de l'ordre séquentiel des sections.
 
 ## Exemple d'utilisation
 
@@ -63,13 +63,15 @@ const recipe = {
     sessions: [],
   },
   shopping_list: [
-    { id: "farine", qty: 200, unit: "g" }
+    { id: "farine", name: "farine", qty: 200, unit: "g" }
   ],
   sections: [
     {
       title: "Préparation",
+      ingredients: [],
+      cookware: [],
       steps: [
-        { type: "text", value: "Tout mélanger au fouet." }
+        { type: "step", content: ["Tout mélanger au fouet."] }
       ]
     }
   ]
@@ -101,7 +103,7 @@ L'objet `RendererOptions` propose également les options `bakersReference`/`bake
   Bien que cet échappement neutralise les injections HTML brutes, `toMarkdown` n'effectue pas d'assainissement complet sur les schémas d'URL (ex. liens `javascript:`). Si vous affichez des recettes issues de sources non fiables, appliquez un assainisseur dédié (`DOMPurify` ou `rehype-sanitize`) sur le balisage final.
   :::
 - **Formatage des durées** : Convertit les durées brutes exprimées en minutes en libellés temporels fluides (`90` → `1h 30m`).
-- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (tokens clair/sombre pour l'ensemble des éléments) dont le planning de préparation, et, jusqu'en 2.0.0, `gantt.css` pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
+- **Styles CSS intégrés** : Le paquet fournit la feuille de style `gram.css` (définissant les tokens clairs et sombres pour l'ensemble des composants, y compris le planning de préparation), ainsi que `gantt.css`, maintenue jusqu'à la version 2.0.0 pour le diagramme de Gantt déprécié. L'export pour impression intègre directement ses styles dans l'en-tête HTML, sans feuille de style externe requise.
 
 ## Consommation directe du JSON
 

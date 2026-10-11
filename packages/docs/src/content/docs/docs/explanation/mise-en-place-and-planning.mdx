@@ -44,7 +44,7 @@ Gram provides three strategies to schedule mise en place. Consider this recipe:
 [Combine] Combine &dough and the &filling, then bake ~{25min}.
 ```
 
-Gram automatically calculates preparation time for each section based on ingredients to weigh or chop and cookware required (here: 3 min for dough, 3 min for filling, 1 min for assembly, totaling 7 min). Cumulative active cooking work is 29 minutes across all scheduling choices.
+Gram automatically calculates preparation time for each section based on ingredients to weigh or chop and cookware required (here: 3 min for dough, 3 min for filling, 2 min for assembly, totaling 8 min). Cumulative active cooking work is 29 minutes across all scheduling choices.
 
 ### By section (default)
 
@@ -54,7 +54,7 @@ In culinary and manufacturing operations, this is known as working in **masked t
 
 ```mermaid
 gantt
-    title By section — Masked time execution (1 h 01)
+    title By section — Masked time execution (1 h 00)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -63,16 +63,16 @@ gantt
     Mix                               : active, a1, 00:03, 2m
     Rise (passive)                    : r1, 00:05, 30m
     section Filling
-    Mise en place                     : p2, 00:30, 3m
-    Slice                             : active, a2, 00:33, 2m
+    Mise en place                     : p2, 00:28, 3m
+    Slice                             : active, a2, 00:31, 2m
     section Assembly
-    Mise en place                     : p3, 00:35, 1m
-    Combine and bake                  : active, a3, 00:36, 25m
+    Mise en place                     : p3, 00:33, 2m
+    Combine and bake                  : active, a3, 00:35, 25m
 ```
 
 - Dough is prepared at 00:00, then rises for 30 minutes (from 00:05 to 00:35).
-- Filling mise en place occurs in masked time toward the end of the rise (starting at 00:30): chopped onions stay fresh rather than lingering on the counter.
-- Overall total duration is optimized to **1 h 01** (61 min).
+- Filling and assembly preparations occur in masked time toward the end of the rise (starting at 00:28): chopped onions stay fresh rather than lingering on the counter.
+- Overall total duration is optimized to **1 h 00** (60 min).
 
 ### All at the start
 
@@ -80,7 +80,7 @@ This mode groups all ingredient weighing and chopping before beginning the first
 
 ```mermaid
 gantt
-    title All at the start — Upfront preparation (1 h 04)
+    title All at the start — Upfront preparation (1 h 03)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -91,14 +91,14 @@ gantt
     Mix                               : active, a1, 00:06, 2m
     Rise (passive)                    : r1, 00:08, 30m
     section Filling
-    Slice                             : active, a2, 00:36, 2m
+    Slice                             : active, a2, 00:34, 2m
     section Assembly
-    Retrieve dough                    : p3, 00:38, 1m
-    Combine and bake                  : active, a3, 00:39, 25m
+    Retrieve intermediates            : p3, 00:36, 2m
+    Combine and bake                  : active, a3, 00:38, 25m
 ```
 
 - Dough and filling ingredients are prepared upfront starting at 00:00 (until 00:06).
-- Total duration increases to **1 h 04** (64 min), as filling prep is no longer absorbed in masked time during the rise.
+- Total duration increases to **1 h 03** (63 min), as filling prep is no longer absorbed in masked time during the rise.
 
 ### By session (or working day)
 
@@ -212,7 +212,7 @@ At the start of each working day, Gram consolidates the mise en place required f
 
 Cumulative preparation time and active cooking work remain strictly identical across all scheduling strategies.
 
-The recipe itself does not show these blocks: the mise en place is a cost in the time boxes of the recipe and in its schedule. What to take out, and when, is the **"To take out"** list of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy.
+The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy.
 
 :::tip[Chaining sections]
 When several sections follow each other on the same day, anchor only the final one (`## Tart ~{-1d}`) and leave upstream sections unanchored (like the crust above): they automatically inherit its day and sequence immediately before it. Assigning `~{-1d}` to each creates concurrent deadlines at the exact same moment, causing a time paradox warning when dependencies exist between them.

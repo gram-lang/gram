@@ -60,7 +60,7 @@ Contrairement à un `@ingrédient` dont les quantités sont proportionnelles par
 
 ## Ustensiles et planning de préparation
 
-Les ustensiles d'une section sont listés dans « À sortir » pour le passage où la section est faite (une fois par passage). Deux minuteurs passifs qui se chevauchent dans des étapes citant le même ustensile, sans piste nommée commune, sont signalés par [`PASSIVE_OVERLAP_SAME_COOKWARE`](/fr/docs/reference/api/warnings/#passive_overlap_same_cookware), avec une piste nommée comme correction suggérée.
+Les ustensiles requis par une section sont inventoriés dans le bloc « À sortir » au début du passage en cuisine où cette section est exécutée (une seule fois par passage). Si deux minuteurs passifs se chevauchent au sein d'étapes mobilisant le même ustensile sans piste nommée partagée, le compilateur émet l'avertissement [`PASSIVE_OVERLAP_SAME_COOKWARE`](/fr/docs/reference/api/warnings/#passive_overlap_same_cookware) et suggère l'usage d'une piste dédiée pour sérialiser l'accès à l'équipement.
 
 ## Modificateurs et syntaxe avancée
 

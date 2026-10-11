@@ -53,7 +53,7 @@ Roast the chicken for ~{40-50min}.
 The interpretation of a range differs fundamentally based on timer type:
 
 - **A passive range represents elasticity.** The declaration `~_{12-24h}` states: "ready from 12 hours, optimal up to 24 hours". By default, the timeline lays out the shortest bound (`'shortest'`). You can select alternative elasticity strategies (`'shortest'`, median `'balanced'`, or longest `'longest'`) via the `--rests` CLI option, the `gram.rests` VS Code setting, or the `rests` renderer option. When provided with a target serving time and kitchen availability, the scheduler uses this elasticity to bridge overnight non-working hours without requiring cook intervention (see [Planning in real time](/docs/explanation/planning-in-real-time/)).
-- **What the work plan makes of a range.** The plan shows a wait with its planned length and, when it differs, the range you wrote ("15 h 50 (12 to 48 h)"). A range is also what gives a visit to the kitchen its margin ("Possible from 18:00"), since a wait that can stretch lets the work before it move earlier. An exact wait holds it in place ("Fixed times"). See [the work plan](/docs/how-to/plan-a-meal/).
+- **How the work plan reflects ranges.** The work plan displays each passive wait with its scheduled duration and, when adjusted, reminds you of the original range specified in the recipe (e.g. `15 h 50 (12 to 48 h)`). This elasticity is what grants an anticipation margin to a kitchen visit ("Possible from 18:00"), since a stretchable wait allows upstream tasks to be performed earlier. Conversely, an exact passive duration fixes the visit time in place ("Fixed times"). See [Plan a meal](/docs/how-to/plan-a-meal/).
 - **An active range represents operational uncertainty.** The declaration `~{40-50min}` represents how long the chicken takes to roast. The schedule always defaults to the longest bound (50 minutes) so that service is never delayed. Passive elasticity settings (`rests`) do not apply to active timers.
 
 :::note
@@ -188,8 +188,9 @@ Section header retro-planning annotations require a **strictly negative** signed
 - A canonical unit: `d` (days), `h` (hours), or `min` (minutes), or recognized localized aliases.
 
 ```gram
-## Puff pastry ~{-2d}     <!-- 2 days before -->
-## Ganache ~{-30min}      <!-- 30 minutes before -->
+## Puff pastry ~{-2d}
+
+## Ganache ~{-30min}
 ```
 
 Free prose (`~{the day before}`), positive values (`~{2h}`), and zero values (`~{0h}`) are invalid. Existing recipes using legacy formats still compile for backward compatibility, but produce compiler warnings.

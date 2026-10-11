@@ -19,10 +19,10 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 :::
 
 ### 2. Vue planning de préparation
-- **Panneau du planning** : Lancez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste à cocher dans la barre d'outils) pour ouvrir le plan de la recette dans une WebView dédiée, indépendante de l'aperçu en direct : pour chaque jour, quand vous êtes en cuisine, quoi sortir, ce que chaque section vous demande et ce qui continue ensuite.
-- **Jours avant le service** : sans heure de service dans l'éditeur, le plan compte à rebours depuis elle (`J-2`, `J-1`, `Jour J`) et donne des durées (« environ 55 min »). Pour des dates et des marges, donnez une heure de service avec `gram plan --serve` ou dans le playground.
-- **Suit les réglages** : `gram.miseEnPlace` et `gram.rests` choisissent la chronologie dont il est fait (voir ci-dessous).
-- **Le diagramme de Gantt a disparu** : `Gram: Gantt Chart` est déprécié depuis la 1.4.0, fonctionne encore et ouvre le planning de préparation (avec un avis unique), et sera retiré en 2.0.0.
+- **Panneau dédié au planning** : Exécutez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le planning complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
+- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : En l'absence d'heure de service configurée dans l'éditeur, le planning est projeté sous forme de compte à rebours relatif et affiche des durées estimées par session (ex. : « environ 55 min »). Pour obtenir des horodatages précis avec dates et marges réelles, utilisez la commande `gram plan --serve` ou le studio interactif en ligne.
+- **Prise en compte des réglages de projet** : La vue s'adapte instantanément aux paramètres d'ordonnancement `gram.miseEnPlace` et `gram.rests` (détaillés ci-dessous).
+- **Remplacement du diagramme de Gantt** : La commande historique `Gram: Gantt Chart` est dépréciée depuis la version 1.4.0 (elle ouvre désormais le planning de préparation avec un avertissement informatif) et sera définitivement retirée en version 2.0.0.
 
 #### Le réglage `gram.miseEnPlace` <Since v="1.4.0" />
 

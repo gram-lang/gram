@@ -249,14 +249,18 @@ function runSheet(
 ): RunSheet
 ```
 
-La structure du planning de préparation : pour chaque recette, ses jours ; pour chaque jour, les **passages en cuisine** et les **fils** qui continuent sans vous. Un `ProjectedPlan` donne un plan avec dates (`mode: "calendar"`) ; un `Schedule` seul donne la même structure en jours avant le service, sans dates (`mode: "relative"`). Avec `graph` et `context` (un plan calendaire), chaque passage reçoit sa marge. Les termes sont définis dans [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
+Génère la structure de données du planning de préparation : découpage par journée pour chaque recette, puis, au sein de chaque journée, identification des **passages en cuisine** actifs et des **fils** passifs qui se poursuivent de façon autonome.
+- Un `ProjectedPlan` produit une planification calendaire horodatée (`mode: "calendar"`) ;
+- Un `Schedule` seul produit une structure temporelle relative exprimée en jours avant le service (`mode: "relative"`).
+
+Lorsque les options `graph` et `context` sont fournies (dans le cas d'une projection calendaire), chaque passage se voit attribuer sa marge d'anticipation. Les définitions des termes clés sont détaillées dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
 
 ```typescript
 interface RunSheet {
   mode: "calendar" | "relative";
   serveAt?: string;            // plans calendaires uniquement
   timeZone?: string;
-  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork : minutes de votre propre travail
+  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork : durée totale de travail actif (en minutes)
   adjustments: RunSheetAdjustment[]; // attentes allongées ou raccourcies, avec leur section et leur jour
   diagnostics: ProjectionDiagnostic[];
 }
@@ -265,7 +269,7 @@ interface RunSheetDay {
   date?: string;               // "2026-10-10", avec une heure de service
   daysBefore: number;          // 0 le jour du service, 1 la veille...
   passages: RunSheetPassage[]; // les passages en cuisine, dans l'ordre
-  threads: RunSheetThread[];   // ce qui continue sans vous après un passage
+  threads: RunSheetThread[];   // processus passifs se poursuivant après un passage
   entries: RunSheetEntry[];    // chaque bloc du jour, dans l'ordre
 }
 
@@ -276,7 +280,7 @@ interface RunSheetPassage {
   endLocal?: string;
   sections: number[];          // sections avec du travail dans le passage, dans l'ordre de la recette
   tasks: string[];             // identifiants des préparations et étapes du graphe
-  window?: { advance: number; earliest: number; earliestLocal: string }; // marge >= 15 min
+  window?: { advance: number; earliest: number; earliestLocal: string }; // fenêtre d'anticipation (calculée dès 15 min)
   fixedBy?: { task: string; section: number; planned: number; before: "service" | "passage"; sections?: number[] };
 }
 

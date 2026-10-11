@@ -214,11 +214,11 @@ Pour exploiter toute la puissance de l'ordonnancement ALAP de Gram, appliquez ce
 
 Grâce au calcul déterministe des bornes temporelles `start` et `end` par le moteur ALAP, les interfaces utilisateur n'ont aucune logique de calcul de dates à implémenter : elles exploitent directement les données du graphe planifié.
 
-Une chronologie (les schémas ci-dessus sont des diagrammes `gantt` Mermaid) met bien en relief la synchronisation des tâches passives et l'imbrication du travail actif ; ce sont les mêmes données que montre le [planning de préparation](/fr/docs/how-to/plan-a-meal/). Vous pouvez explorer cette dynamique en temps réel dans le **[Playground officiel de Gram](/fr/play/)**.
+Une représentation chronologique (à l'image des diagrammes `gantt` Mermaid ci-dessus) met parfaitement en évidence le chevauchement des temps passifs et l'insertion du travail actif en temps masqué. Ce sont exactement ces mêmes données que met en scène le [planning de préparation](/fr/docs/how-to/plan-a-meal/). Vous pouvez tester et visualiser cet ordonnancement en direct dans le **[Playground de Gram](/fr/play/)**.
 
 ### Ce que l'ALAP implique pour la marge
 
-Tout est planifié **au plus tard** : un passage en cuisine ne peut donc être déplacé qu'**en avance**, jamais plus tard, sous peine de retarder le service. La marge du planning de préparation (« Possible dès 18:00 ») dit de combien un passage peut avancer tant que les attentes autour de lui restent dans leur fourchette écrite. Une recette écrite avec des fourchettes a des marges ; une recette aux attentes exactes n'en a pas. Voir [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
+Puisque la planification s'effectue **au plus tard**, un passage en cuisine ne peut qu'être **avancé**, jamais différé sans repousser directement l'heure de service. L'indication de marge du planning de préparation (« Possible dès 18:00 ») quantifie ainsi l'anticipation maximale admissible pour un passage tant que les temps d'attente qui l'encadrent respectent leurs fourchettes de durée. Une recette modélisée avec des durées passives flexibles bénéficie de marges d'anticipation, tandis qu'une recette aux attentes strictement figées n'en dispose d'aucune. Pour approfondir le calcul de ces fenêtres, consultez la section dédiée dans [Le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
 
 ## Ressources associées
 

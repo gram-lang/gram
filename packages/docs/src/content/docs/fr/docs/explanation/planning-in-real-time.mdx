@@ -10,7 +10,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Une recette décrit sa propre temporalité : la liste des tâches, leur durée et leurs dépendances. Cela suffit pour déterminer une métrique globale — par exemple « cette recette nécessite 17 heures au total, dont 50 minutes de travail actif ». En revanche, cela ne suffit pas pour déterminer **à quel moment précis commencer**. Pour cela, Gram a besoin de trois paramètres que vous seul connaissez : votre heure de service cible, votre fuseau horaire et vos plages réelles de disponibilité.
 
-Une fois ces trois données renseignées, Gram positionne chaque tâche de la recette sur le calendrier à rebours depuis le service, puis calcule les jours, les passages en cuisine et ce qui se passe entre eux. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) est une façon de le montrer.
+Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le calendrier en rétroplanning depuis l'heure de service, puis organise les journées de travail, les sessions actives en cuisine et les processus passifs intermédiaires. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) constitue la restitution opérationnelle de ces données.
 
 ## Paramètres d'entrée
 
@@ -67,10 +67,14 @@ Une attente affectée à une piste nommée (`~_four{40min}`) n'est allongée que
 Pour un service fixé le dimanche à 13 h, avec une disponibilité quotidienne de `08:00-22:00`, une pousse minimale de 8 heures placerait le pétrissage en pleine nuit à 4 h 10. Gram allonge automatiquement la pousse à 14 h 30 pour positionner le pétrissage le samedi soir, s'achevant à 22 h :
 
 ```text
-samedi 10 octobre · J-1
-  vers 21:40        Pâte — Pétrir (20m)
-  vers 22:00        Pointer — Pâte (14h 30m, jusqu'à vers dim. 12:30)
-                    ! Attente allongée de 8h à 14h 30m pour éviter vos heures d'indisponibilité
+SAM. 10  ▮ 21:40 – 22:00 Pâte
+         ┆ Pâte : Pointer 14h 30m (8h à 16h)
+DIM. 11  ▮ 12:30 – 13:00 Cuisson
+         ★ 13:00         Servir
+
+SAMEDI 10 OCTOBRE  21:40 → 22:00
+  ! Pâte : Pointer prolongé à 14h 30m (prévu 8h à 16h) pour que le travail tombe dans vos disponibilités.
+  Possible dès 20:10.
 ```
 
 Si la pousse avait été fixée de manière stricte (`~_{8h}`), ou si la plage était trop resserrée pour absorber le décalage (`~_{8-10h}`), aucun ajustement n'aurait été possible : le planificateur maintient le pétrissage à 4 h 10 et consigne l'anomalie.
@@ -97,15 +101,15 @@ Les calculs internes s'effectuent en minutes absolues sur une échelle continue,
 
 ## Le planning de préparation
 
-La projection donne des données : pour chaque bloc, sa date et son heure ; les attentes qu'elle a allongées ou raccourcies ; les heures où vous n'êtes pas disponible ; ce qu'elle n'a pas pu régler. [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) les regroupe en jours, en **passages en cuisine** et en **fils** qui continuent sans vous, et calcule de combien chaque passage pourrait avancer.
+La projection calendaire produit un modèle de données complet : horodatages précis de chaque bloc, temps de repos passifs ajustés, périodes d'indisponibilité et diagnostics des contraintes non résolues. La fonction [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) structure ces données en journées de travail, en **sessions actives en cuisine** (passages) et en **processus passifs d'arrière-plan** (repos, fermentation, refroidissement), tout en calculant la marge d'anticipation disponible pour chaque intervention.
 
-Le planning de préparation est une vue de ces données. Pour chaque jour, il dit quand vous êtes en cuisine, ce qu'il faut sortir à chaque passage, ce que chaque section vous demande (avec les étapes de la recette qu'elle couvre) et ce qui continue ensuite. Les heures sont arrondies aux cinq minutes pour coller à la cuisine ; le calcul reste exact à la minute. Une attente que le plan a allongée est signalée en haut de son jour, et ce qui n'a pas pu être réglé en haut du plan. Les règles de la vue (un passage s'arrête à une attente d'une heure, une marge s'affiche à partir de 15 minutes) sont des choix de la vue, pas du moteur.
+Le **planning de préparation** constitue la vue opérationnelle de ce modèle. Pour chaque journée, il récapitule les heures de présence requises en cuisine, le matériel et les ingrédients à sortir, les actions clés à réaliser au regard des étapes de la recette, ainsi que les processus qui continuent sans surveillance. Afin de refléter la réalité de la pratique culinaire, les horaires affichés sont arrondis aux cinq minutes les plus proches (alors que les calculs internes demeurent exacts à la minute près). Les ajustements de repos sont mentionnés en tête de la journée concernée, et les alertes d'ordonnancement regroupées en tête de document. Ces règles d'affichage (regroupement des sessions au-delà d'une heure de repos passif, affichage des marges à partir de 15 minutes) relèvent de la couche de rendu et non de contraintes rigides du moteur.
 
-Il existe en texte brut, Markdown, HTML autonome, document imprimable (un jour par page, avec des cases à cocher) ou fichier iCalendar avec un événement par passage. Il peut suivre la recette dans un seul document (`--with-sheet`). La recette elle-même se lit pareil à toute heure : elle dit comment, le plan dit quand.
+Le planning peut être généré en texte brut, Markdown, fragment HTML, version imprimable dédiée (un jour par page avec cases à cocher) ou exporté vers un fichier iCalendar (`.ics`). L'option `--with-sheet` permet de l'annexer directement à la suite de la recette au sein d'un document unique. Tandis que la recette décrit **comment** cuisiner, le planning précise **quand** intervenir.
 
-Sans heure de service, les mêmes données sont racontées en jours avant le service (J-2, J-1, jour J) et en durées (« environ 55 min »), avec le plus tôt où ce sera prêt. Pas de marges ni d'ajustements : ils demandent vos disponibilités.
+En l'absence d'heure de service cible, ces mêmes données sont présentées sous forme de décompte relatif (`J-2`, `J-1`, `Jour J`) avec des durées estimées par session (ex. : « environ 55 min ») et l'indication de l'heure de dégustation la plus précoce. Les marges d'anticipation et les ajustements de repos ne sont calculés que lorsque vous définissez vos disponibilités calendaires réelles.
 
-Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide complet.
+Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide pratique complet.
 
 ## Intégrations disponibles
 
@@ -115,12 +119,12 @@ Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide compl
 | Playground | La vue « Planning » et le volet « Planifier », avec « Quand servir ? » |
 | VS Code | `Gram: Work Plan`, en jours avant le service |
 | `@gram-lang/scheduler` | `project()`, `runSheet()`, `findServeTimes()` et `earliestServe()` (voir la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/)) |
-| `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, et les pièces dont ils sont faits (`passageKit`, `sectionProgram`) |
+| `@gram-lang/renderer` | `runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, et les utilitaires modulaires associés (`passageKit`, `sectionProgram`) |
 
 ## Limites actuelles
 
 - **Ordonnancement mono-recette** : la planification coordonnée d'un menu complet (entrée, plat et dessert synchronisés sur un même service, avec partage d'un cuisinier et d'un four unique) fera l'objet d'une évolution ultérieure ; l'API accepte néanmoins déjà une collection de recettes, et signale `MULTI_RECIPE_UNSUPPORTED` au-delà d'une.
-- **Pas de replanification après un retard** : le plan reste vrai tant que vous le suivez. Un passage fait après son heure prévue l'invalide : relancez-le.
+- **Absence de suivi d'état en direct** : le planning est une projection purement déterministe et ne conserve aucun état persistant en cours d'exécution. Si une session prend du retard, relancez simplement la commande `gram plan` pour recalculer les créneaux viables à partir du nouvel horaire.
 - **Ressources partagées** : les équipements (temps de préchauffage du four, capacité du réfrigérateur) ne constituent pas encore des ressources partagées globales, en dehors des pistes nommées explicites.
 - **Approche heuristique** : l'algorithme est glouton et déterministe (conçu pour être explicable et prévisible plutôt qu'optimal au sens de la programmation mathématique) : il résout les conflits en partant de l'événement le plus tardif et remonte dans le temps.
 

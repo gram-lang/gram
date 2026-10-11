@@ -71,26 +71,33 @@ Internal time is counted in continuous absolute minutes since the POSIX epoch. L
 
 ## From the schedule to the work plan
 
-The engine produces **data**; the work plan is one way to show it. `runSheet()` turns a schedule or a projected plan into a structure that any interface can draw, with these terms, defined once here and used everywhere else:
+The engine produces **pure structural data**; the work plan is one way to display it. The `runSheet()` function turns a relative timeline or a calendar plan into a tree structure ready for rendering by any user interface, built around a standardized vocabulary:
 
-| Term | What it is |
+| Term | Definition |
 |---|---|
-| **Session** | A working day of the recipe. Only a day anchor (`~{-2d}`, on a section or on a `@use`) opens one; without any, the recipe is a single session. |
-| **Visit** (*passage*) | A moment in the kitchen: stretches of your own work that follow each other, with no wait of an hour or more between them (`PASSAGE_GAP_MINUTES`). A day can have several. |
-| **Thread** (*fil*) | A wait that starts in a visit and goes on after it, without you. |
-| **Adjustment** | A wait that the projection made longer or shorter, within its written range, so that the work falls in your availability. The only reason is `avoid-unavailable`. |
-| **Unresolved problem** | A diagnostic of the projection: something the plan could not make work. |
-| **Margin** | How early a visit could be done if every other visit stays where it is planned. |
+| **Session** | A working day dedicated to the recipe. Only a day anchor (`~{-2d}`, declared on a section or an imported `@use` module) creates a distinct session. In the absence of day anchors, the recipe fits in a single session. |
+| **Visit** (*passage*) | An active cooking period: a continuous sequence of manual hands-on steps unbroken by substantial idle periods (any passive rest of 60 minutes or longer, controlled by `PASSAGE_GAP_MINUTES`, marks the end of a visit). A session may contain several visits. |
+| **Thread** (*fil*) | A passive process (baking, resting, proofing) initiated during a visit and continuing unattended after you leave the kitchen. |
+| **Adjustment** | A rest period lengthened or shortened during projection, within its declared range, to align active hands-on blocks with your available hours (`avoid-unavailable`). |
+| **Unresolved problem** | A diagnostic emitted during projection when a timing constraint cannot be satisfied. |
+| **Margin** | The window of anticipation by which a visit can be executed early, assuming all other visits are performed at their nominal scheduled times. |
 
-Every figure is computed by the engine: minutes from the service, in a plan with a serving time or not. A visit's margin is safe by construction. Everything is planned as late as possible, so a visit can only move earlier; moving it earlier shortens the wait before it and lengthens the one after it, and each of those is checked against the written range and the **planned** time of the neighbouring visits. Moving one visit, several or none never breaks the margin of another. A margin is sometimes cautious, never wrong. What does break it is being late: a visit done after its planned time. The plan has to be made again; the engine does not replan on its own.
+Every metric is calculated by the engine as relative minutes from serving time, whether in an abstract schedule or a concrete timestamped calendar.
 
-Which of this to say, and in which words, is a choice of the view. The [work plan](/docs/how-to/plan-a-meal/) of Gram splits a day at a wait of an hour, shows a margin from 15 minutes (`WINDOW_MIN_MINUTES`), and reads "To take out" and "To do" from the compiled recipe: another interface is free to make other choices from the same data. [Build a custom UI](/docs/how-to/build-custom-ui/) shows one.
+A visit's anticipation margin is guaranteed safe by construction:
+- Planning is computed as late as possible (ALAP), meaning a visit can only ever be shifted earlier;
+- Shifting it earlier shortens the preceding passive rest and lengthens the succeeding one;
+- Both bounds are strictly checked against their declared ranges and the nominal scheduled time of neighboring visits.
 
-### What the engine does not do
+Advancing one or several visits never invalidates the margin of another visit. The calculated margin is occasionally conservative, but mathematically always safe. Conversely, an actual execution delay (starting a visit after its scheduled time) invalidates the downstream schedule: because the engine does not automatically recalculate schedules in the background, you must run projection again with an updated serving target or starting time.
 
-- It plans **one recipe**. A menu of several recipes, with shared tracks, is not planned (`MULTI_RECIPE_UNSUPPORTED`).
-- It does not **replan** after a delay: a plan is a function of its inputs, run it again.
-- It does not choose when you cook: it tries the serving times you give it (`findServeTimes()` at your meal times, `earliestServe()` from now) and tells which work and why the others do not.
+How these details are presented, and with what editorial tone, is entirely up to the viewing layer. Gram's default [work plan](/docs/how-to/plan-a-meal/) splits a day whenever a passive rest reaches one hour, displays margins starting at 15 minutes (`WINDOW_MIN_MINUTES`), and reads equipment ("To take out") and tasks ("To do") directly from the compiled recipe. Custom applications are free to adopt different visual conventions using the exact same underlying data (see [Build a custom UI](/docs/how-to/build-custom-ui/)).
+
+### What the engine does not support
+
+- **One recipe at a time**: Planning a multi-recipe menu simultaneously with shared physical tracks is not yet supported (`MULTI_RECIPE_UNSUPPORTED`).
+- **No background live replanning**: Because scheduling is a deterministic, pure function of its inputs, an actual delay requires invoking the engine again with updated parameters.
+- **No arbitrary schedule decisions**: The engine evaluates candidate serving times provided by the user (`findServeTimes()` targeting usual meal times, or `earliestServe()` starting right now), reporting which slots succeed and why others fail.
 
 ## Two diagnostic families
 
@@ -109,7 +116,7 @@ flowchart LR
     Project --> Sheet["📋 runSheet()<br/><i>production sheet</i>"]
 ```
 
-The views (the work plan, a Gantt chart you may want to draw yourself) sit **after** the engine and read its data. See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
+Downstream views (the default work plan or custom UI components) sit **after** the engine and consume its data structures directly. See the [scheduler API reference](/docs/reference/api/scheduler/) for complete function signatures and TypeScript types.
 
 ## Related resources
 

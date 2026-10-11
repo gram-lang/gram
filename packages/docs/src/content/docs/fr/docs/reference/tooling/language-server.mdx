@@ -45,13 +45,13 @@ Le Serveur de Langage Gram implémente les capacités standardisées suivantes :
 
 ## Notifications vers le client
 
-En plus du protocole standard, le serveur envoie à l'éditeur les vues rendues d'une recette. Elles portent `{ uri, html }` :
+En complément des requêtes standardisées du protocole LSP, le serveur émet des notifications asynchrones contenant les vues pré-rendues d'une recette sous la forme d'un objet `{ uri, html }` :
 
 | Notification | Contenu |
 |---|---|
-| `gram/previewUpdated` | L'aperçu en direct (HTML), ou le panneau d'erreur quand la recette ne compile pas. |
-| `gram/runSheetUpdated` | <Since v="1.4.0" /> Le planning de préparation en jours avant le service (`J-2`, `J-1`, `Jour J`), en HTML. Le panneau `Gram: Work Plan` de VS Code le lit. |
-| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Le diagramme de Gantt (HTML). Toujours envoyée jusqu'en 2.0.0 pour les clients qui la lisent ; l'extension VS Code ne la lit plus. |
+| `gram/previewUpdated` | Rendu HTML de l'aperçu en direct, ou panneau d'erreur lorsque la recette ne compile pas. |
+| `gram/runSheetUpdated` | <Since v="1.4.0" /> Rendu HTML du planning de préparation découpé en jours relatifs (`J-2`, `J-1`, `Jour J`), consommé par la vue `Gram: Work Plan` de VS Code. |
+| `gram/ganttUpdated` | <Since type="deprecated" v="1.4.0" /> Rendu HTML du diagramme de Gantt historique. Émis jusqu'en version 2.0.0 pour préserver la compatibilité avec les clients tiers (l'extension officielle VS Code ne l'écoute plus). |
 
 ## Ressources associées
 

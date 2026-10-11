@@ -24,25 +24,25 @@ Produces clean, semantic HTML markup. The HTML formatter employs an **inversion 
 Generates a complete, self-contained `<!DOCTYPE html>` document featuring an inlined print stylesheet (A4 format, page-break-aware sections) and standalone vector icons. Designed for direct browser printing without external stylesheet or asset dependencies. While custom classes cannot be injected into `toPrintHTML`, formatting helpers (`formatDuration`, `formatFraction`, `hideStepQty`) remain fully supported.
 
 ### 4. The work plan (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`) <Since v="1.4.0" />
-The reference **view of the schedule**, as the recipe view is the reference view of the recipe. It shows what the engine computed (`runSheet()` of `@gram-lang/scheduler`): the planning of the days, then for each day and each visit to the kitchen what to take out, what each section asks of you and what goes on afterwards, with the margin of the visit and the waits the plan adjusted. Labels follow the `lang` option.
+The canonical **view of the schedule**, just as the recipe view is the canonical view of cooking instructions. It faithfully presents the structures computed by the engine (`runSheet()` from `@gram-lang/scheduler`): the calendar breakdown of days, and for each active kitchen visit, the required items to take out, the tasks demanded by each section, and ongoing passive processes, alongside anticipation margins and adjusted rest periods. Text labels follow the configured `lang` option.
 
-It is a demonstration, not *the* way to show the data. The rules that belong to it are choices of the view: a visit ends at a wait of an hour (`PASSAGE_GAP_MINUTES`, in the scheduler, because it shapes the data), a margin shows from 15 minutes, and "To take out" and "To do" are read from the compiled recipe. Those two are exported so another interface can reuse them rather than rewrite them:
+This renderer serves as a reference implementation without prescribing a single UI approach. Some display rules are view-level choices: a visit ends when a passive rest reaches at least one hour (`PASSAGE_GAP_MINUTES`, defined in the scheduler because it shapes schedule data), an anticipation margin is displayed only when reaching at least 15 minutes, and the "To take out" and "To do" blocks are extracted directly from the compiled recipe. To allow custom interfaces to reuse this logic without duplicating it, two helper utilities are exported:
 
-- **`passageKit(data, sections, options)`**: the ingredients of the sections (summed, with the detail of the sum), the preparations an earlier visit made, the bases in stock and the cookware.
-- **`sectionProgram(data, section, stepIndexes)`**: the steps a section has in a visit, with their action, temperatures and timers as written, and the file an imported section comes from.
-- **`describeRunSheet()`** returns the whole plan in words as a structure (`RunSheetModel`), which the four formatters and the CLI's calendar export are made from.
+- **`passageKit(data, sections, options)`**: extracts and aggregates ingredients required by the sections (with sum breakdowns), preparations from earlier visits, in-stock bases, and necessary cookware.
+- **`sectionProgram(data, section, stepIndexes)`**: extracts the steps to execute for a given section during a visit, preserving their actions, temperatures, and timers as written, as well as the source file for imported sections.
+- **`describeRunSheet()`**: converts the complete schedule into a structured text representation (`RunSheetModel`), powering the four formatters and the CLI calendar export.
 
-The recipe views (`toHTML`, `toMarkdown`, `toPrintHTML`) show no schedule: they say how. With the `runSheet` option they write a work plan after the recipe, in one document. See [Build a custom UI](/docs/how-to/build-custom-ui/) to draw a planning view from the data directly.
+Standard recipe views (`toHTML`, `toMarkdown`, `toPrintHTML`) focus exclusively on culinary execution (the *how*) without exposing the timeline. With the `runSheet` option enabled, they append the work plan right after the recipe in a single unified document. See [Build a custom UI](/docs/how-to/build-custom-ui/) to render a custom planning view directly from the underlying data.
 
 The `miseEnPlace` option (`"perSection"` by default, `"upfront"`, or `"perSession"`) and the `rests` option (`"shortest"` by default, `"balanced"`, `"longest"`) choose the timeline whose total and idle durations the document headers show (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)).
 
-:::note[The Gantt chart]
-`toGanttHTML` and `attachGanttInteractivity` are deprecated since 1.4.0 and will be removed in 2.0.0: no Gram surface draws a Gantt chart any more. See [Deprecations](/docs/how-to/deprecations/).
+:::note[Gantt chart deprecation]
+The `toGanttHTML` and `attachGanttInteractivity` functions are deprecated since version 1.4.0 and will be removed in 2.0.0: no Gram surface renders a Gantt chart any more. See [Deprecations](/docs/how-to/deprecations/).
 :::
 
 ## Unified traversal (`RenderBackend`)
 
-Internally, document formatters (Markdown, HTML, Print HTML) delegate content iteration to a central orchestrator (`renderRecipe` in `traversal.ts`), which interfaces with each format's `RenderBackend` implementation. This architecture guarantees strict structural parity: titles, metadata, ingredient lists, cookware, instructions, footnotes, and nutritional breakdowns are traversed in the exact same sequence across all output targets. The work plan has its own traversal, as it follows the time rather than the sections of the recipe.
+Internally, document formatters (Markdown, HTML, Print HTML) delegate content iteration to a central orchestrator (`renderRecipe` in `traversal.ts`), which interfaces with each format's `RenderBackend` implementation. This architecture guarantees strict structural parity: titles, metadata, ingredient lists, cookware, instructions, footnotes, and nutritional breakdowns are traversed in the exact same sequence across all output targets. The work plan has its own dedicated traversal, as it follows chronological time rather than the recipe's section sequence.
 
 ## Usage example
 
@@ -63,13 +63,15 @@ const recipe = {
     sessions: [],
   },
   shopping_list: [
-    { id: "flour", qty: 200, unit: "g" }
+    { id: "flour", name: "flour", qty: 200, unit: "g" }
   ],
   sections: [
     {
       title: "Preparation",
+      ingredients: [],
+      cookware: [],
       steps: [
-        { type: "text", value: "Whisk everything together." }
+        { type: "step", content: ["Whisk everything together."] }
       ]
     }
   ]

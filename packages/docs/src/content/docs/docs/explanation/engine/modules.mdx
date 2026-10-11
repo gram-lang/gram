@@ -84,7 +84,7 @@ Gram supports two execution modes for modular dependencies:
 
 | Feature | Inline Mode (Default) | Stock Mode (`--stock`) |
 |---|---|---|
-| **Timeline / work plan** | All sub-recipe steps are spliced into the host schedule and interleaved via ALAP, and their mise en place is planned with their sections. | **Zero timeline cost**: steps are omitted entirely, and there is no preparation inside the module. Taking the stocked base off the shelf still counts as one minute where the host uses it. In the work plan, an imported base takes part in the visits (its `@use` anchor included), and a stocked base opens no visit: it is listed "in stock" in the visit that uses it. |
+| **Timeline / work plan** | All sub-recipe steps are spliced into the host schedule and interleaved via ALAP, and their mise en place is planned with their sections. | **Zero timeline cost**: steps are omitted entirely, and there is no preparation inside the module. Taking the stocked base off the shelf still counts as one minute where the host uses it. In the work plan, an imported base takes part fully in kitchen visits (including its `@use` anchor), whereas a stocked base opens no dedicated visit: it is simply listed "in stock" within the visit using it. |
 | **Shopping List** | Raw ingredients (flour, butter) bubble up to the master shopping list. | Appears as a single purchasable unit (e.g., `1 pastry dough`). |
 | **Nutritional Profile** | Aggregated from individual raw ingredients. | Calculated via synthetic ingredient records weighted by `accountedMass / yieldBasisMass`. |
 

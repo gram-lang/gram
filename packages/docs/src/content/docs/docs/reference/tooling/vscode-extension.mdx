@@ -19,10 +19,10 @@ A dedicated `CodeLens` button appears above the recipe title. Clicking it reveal
 :::
 
 ### 2. Work plan view
-- **Work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to open the plan of the recipe in its own WebView panel, independent from the live preview: for each day, when you are in the kitchen, what to take out, what each section asks of you and what goes on afterwards.
-- **Days before the service**: with no serving time in the editor, the plan counts back from it (`D-2`, `D-1`, `Day D`) and gives durations ("about 55 min"). For dates and margins, give a serving time with `gram plan --serve` or in the playground.
-- **Follows the settings**: `gram.miseEnPlace` and `gram.rests` choose the timeline it is made from (see below).
-- **The Gantt chart is gone**: `Gram: Gantt Chart` is deprecated since 1.4.0, still works and opens the work plan (with a one-time notice), and will be removed in 2.0.0.
+- **Dedicated work plan panel**: Run `Gram: Work Plan` (or click the checklist icon in the editor toolbar) to display the full schedule in a dedicated WebView independent of the live preview. It details daily kitchen presence, items to take out, tasks to perform, and background passive rests.
+- **Relative countdown (`D-2`, `D-1`, `Day D`)**: Without a serving time configured in the editor, the schedule is presented as a relative countdown with estimated session durations (e.g. "about 55 min"). For exact dates, clock times, and scheduling margins, run `gram plan --serve` or open the online playground.
+- **Setting synchronization**: The view adapts dynamically to the `gram.miseEnPlace` and `gram.rests` configuration settings (detailed below).
+- **Gantt chart replacement**: The legacy `Gram: Gantt Chart` command is deprecated since version 1.4.0 (it redirects to the work plan with a one-time notice) and will be removed in version 2.0.0.
 
 #### The `gram.miseEnPlace` setting <Since v="1.4.0" />
 

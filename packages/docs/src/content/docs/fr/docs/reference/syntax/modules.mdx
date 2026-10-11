@@ -11,7 +11,9 @@ import Since from '../../../../../../components/Since.astro';
 Plutôt que de recopier les mêmes étapes d'une recette à l'autre, vous pouvez factoriser vos préparations de base (pâte sablée, bouillon maison, œufs séparés...) dans des fichiers autonomes et les inclure grâce à la directive `@use`.
 
 ```gram
+---
 title: 'Tarte au Citron Meringuée'
+---
 
 @use "./bases/pate-sablee.gram" as &pâte
 
@@ -30,19 +32,18 @@ Le compilateur se charge d'harmoniser l'ensemble : les temps de repos d'une base
 Les directives `@use` se placent en tête de fichier, immédiatement après le frontmatter et avant la première section ou étape de préparation — voir [Structure du document](/fr/docs/reference/syntax/document-structure#2-imports-de-modules).
 
 ```gram title="Variantes de la directive @use"
-# 1. Import simple (lie la préparation par défaut)
 @use "./bases/pate-sablee.gram" as &pâte
 
-# 2. Déstructuration (récupère plusieurs préparations)
+// 2. Déstructuration (récupère plusieurs préparations)
 @use "./bases/elements-feuilletage-inverse.gram" as { &détrempe, &beurre manié{} }
 
-# 3. Renommage local (évite les conflits de noms)
+// 3. Renommage local (évite les conflits de noms)
 @use "./bases/creme.gram" as { &crème as &crémeux }
 
-# 4. Noms composés (entourés d'accolades pour les espaces ou accents)
+// 4. Noms composés (entourés d'accolades pour les espaces ou accents)
 @use "./bases/feuilletage.gram" as &pâte feuilletée{}
 
-# 5. Décalage temporel (programme le démarrage 2 jours plus tôt)
+// 5. Décalage temporel (programme le démarrage 2 jours plus tôt)
 @use "./bases/levain-chef.gram" as &levain ~{-2d}
 ```
 
@@ -167,7 +168,7 @@ Si vous demandez une quantité sans unité (`&cookies{2}`) pour un module dont l
 
 Vous pouvez imbriquer des modules les uns dans les autres sans restriction :
 
-```gram
+```text
 recette.gram ──▶ @use "./sauce.gram" ──▶ @use "./bouillon.gram"
 ```
 
@@ -215,7 +216,7 @@ gram shop diner.gram --stock @bases/bouillon.gram
 gram cook diner.gram --stock @bases/bouillon.gram
 ```
 
-* **Planning de préparation :** les étapes de confection de la base sont masquées, et la base n'ouvre aucun passage ; elle est listée « en stock » dans le passage qui l'utilise.
+* **Planning de préparation :** les étapes de préparation de la base sont masquées et n'ouvrent aucun passage en cuisine dédié ; la base figure simplement comme « en stock » dans le passage qui la mobilise.
 * **Liste de courses :** le composant apparaît comme un article unique à acheter (ex. `1 bouillon`) au lieu d'énumérer ses ingrédients élémentaires.
 * **Valeurs nutritionnelles :** le profil calorique et nutritionnel reste parfaitement exact, calculé à partir de la composition réelle du module.
 
@@ -245,7 +246,7 @@ Certaines préparations doivent être démarrées bien avant le reste du plat (r
 Le serveur de langage Gram (LSP) interprète les directives `@use` en continu pendant que vous écrivez vos recettes :
 
 * **Contrôle en temps réel :** vérification instantanée des liens entre fichiers et signalement des erreurs de syntaxe.
-* **Aperçu et planning dynamiques :** mise à jour en direct, en tenant compte des étapes imbriquées et de l'ajustement des quantités. Une base importée participe aux passages en cuisine, et une ancre `~{-2d}` sur son `@use` lui ouvre un jour.
+* **Aperçu et planning dynamiques :** mise à jour en direct prenant en compte les étapes imbriquées et le recalage des quantités. Une base importée s'intègre harmonieusement aux passages en cuisine, et une ancre temporelle (ex. : `~{-2d}`) sur sa directive `@use` génère automatiquement une session de travail dédiée.
 * **Navigation rapide (« Aller à la définition ») :** un simple clic sur une variable comme `&pâte` ouvre directement le fichier source à la section correspondante.
 * **Autocomplétion intelligente :** dès que vous tapez `@use "`, l'éditeur vous propose les chemins relatifs (`./`, `../`), la racine (`@/`) ainsi que vos alias `paths:`.
 

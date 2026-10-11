@@ -71,26 +71,33 @@ Le temps interne est compté en minutes continues absolues depuis l'époque POSI
 
 ## De la chronologie au planning de préparation
 
-Le moteur produit des **données** ; le planning de préparation est une façon de les montrer. `runSheet()` transforme une chronologie ou un plan projeté en une structure que n'importe quelle interface peut dessiner, avec ces termes, définis ici une fois et repris partout ailleurs :
+Le moteur génère des **données structurelles pures** ; le planning de préparation constitue l'une des manières de les mettre en scène. La fonction `runSheet()` convertit une chronologie relative ou un plan calendaire en une structure arborescente prête à être restituée par une interface utilisateur, en s'appuyant sur un vocabulaire standardisé :
 
-| Terme | Ce que c'est |
+| Terme | Définition |
 |---|---|
-| **Session** | Un jour de travail de la recette. Seule une ancre en jours (`~{-2j}`, sur une section ou un `@use`) en ouvre une ; sans ancre, la recette tient en une session. |
-| **Passage** | Un moment en cuisine : des plages de votre propre travail qui s'enchaînent, sans attente d'une heure ou plus entre elles (`PASSAGE_GAP_MINUTES`). Un jour peut en compter plusieurs. |
-| **Fil** | Une attente qui commence pendant un passage et continue après lui, sans vous. |
-| **Ajustement** | Une attente que la projection a allongée ou raccourcie, dans sa fourchette écrite, pour que le travail tombe dans vos disponibilités. La seule raison est `avoid-unavailable`. |
-| **Problème non résolu** | Un diagnostic de la projection : ce que le plan n'a pas pu rendre faisable. |
-| **Marge** | De combien un passage pourrait avancer si tous les autres restent à leur heure prévue. |
+| **Session** | Une journée de travail dédiée à la recette. Seule une ancre temporelle en jours calendaires (`~{-2j}`, déclarée sur une section ou un module `@use`) ouvre une session distincte. En l'absence d'ancre, la recette se déroule sur une session unique. |
+| **Passage** | Un moment actif en cuisine : une séquence d'étapes de travail manuel ininterrompues par une attente significative (toute pause passive d'au moins 60 minutes, fixée par `PASSAGE_GAP_MINUTES`, marque la fin du passage). Une session peut ainsi comporter plusieurs passages. |
+| **Fil** | Un processus passif (cuisson, repos, pousse) initié durant un passage et qui se poursuit de manière autonome après votre départ de la cuisine. |
+| **Ajustement** | Une durée d'attente allongée ou raccourcie lors de la projection, dans les limites de la fourchette déclarée, afin que les étapes actives coïncident avec vos plages de disponibilité (`avoid-unavailable`). |
+| **Problème non résolu** | Un diagnostic émis lors de la projection lorsqu'une contrainte horaire ne peut être satisfaite. |
+| **Marge** | La fenêtre temporelle d'anticipation dont dispose un passage s'il est exécuté en avance, en supposant que tous les autres passages soient réalisés aux horaires nominaux prévus. |
 
-Chaque chiffre est calculé par le moteur : en minutes avant le service, dans un plan avec heure de service ou sans. La marge d'un passage est sûre par construction. Tout est prévu au plus tard, donc un passage ne peut qu'avancer ; l'avancer raccourcit l'attente qui le précède et allonge celle qui le suit, et chacune est vérifiée contre sa fourchette écrite et l'heure **prévue** des passages voisins. Avancer un passage, plusieurs ou aucun ne casse jamais la marge d'un autre. Une marge est parfois prudente, jamais fausse. Ce qui la casse, c'est le retard : un passage fait après son heure prévue. Il faut alors refaire le plan ; le moteur ne replanifie pas tout seul.
+Chaque indicateur est calculé par le moteur, sous forme de minutes relatives avant le service, qu'il s'agisse d'une chronologie abstraite ou d'un calendrier horodaté.
 
-Quoi en dire, et avec quels mots, est un choix de la vue. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) de Gram coupe un jour à une attente d'une heure, montre une marge à partir de 15 minutes (`WINDOW_MIN_MINUTES`) et lit « À sortir » et « Au programme » dans la recette compilée : une autre interface est libre de faire d'autres choix avec les mêmes données. [Construire sa propre interface](/fr/docs/how-to/build-custom-ui/) en montre une.
+La marge d'anticipation d'un passage est garantie par construction :
+- La planification étant calée au plus tard (ALAP), un passage ne peut qu'être avancé ;
+- L'avancer réduit l'attente passive qui le précède et allonge celle qui lui succède ;
+- Chaque borne est validée par rapport à la fourchette autorisée et à l'horaire nominal des passages adjacents.
 
-### Ce que le moteur ne fait pas
+Avancer un ou plusieurs passages ne remet donc jamais en cause la marge d'un autre passage. La marge calculée est parfois prudente, mais mathématiquement toujours sûre. En revanche, un retard d'exécution (un passage démarré après son heure planifiée) invalide la chronologie aval : le moteur ne réajustant pas automatiquement les horaires en cours de route, il convient alors de relancer une projection avec une nouvelle heure cible ou un point de départ réactualisé.
 
-- Il planifie **une seule recette**. Un menu de plusieurs recettes, avec des pistes partagées, n'est pas planifié (`MULTI_RECIPE_UNSUPPORTED`).
-- Il ne **replanifie** pas après un retard : un plan est une fonction de ses entrées, relancez-le.
-- Il ne choisit pas quand vous cuisinez : il essaie les heures de service que vous lui donnez (`findServeTimes()` à vos heures de repas, `earliestServe()` à partir de maintenant) et dit lesquelles conviennent et pourquoi les autres non.
+Le choix de la restitution et des termes éditoriaux relève entièrement de la vue. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) par défaut de Gram découpe une journée dès qu'une pause passive atteint une heure, signale les marges dès 15 minutes (`WINDOW_MIN_MINUTES`), et extrait le matériel (« À sortir ») ainsi que les tâches (« Au programme ») depuis la recette compilée. Une interface tierce est libre d'adopter des règles de présentation différentes à partir de ces mêmes données (voir le guide [Créer une interface sur mesure](/fr/docs/how-to/build-custom-ui/)).
+
+### Ce que le moteur ne prend pas en charge
+
+- **Une seule recette à la fois** : La planification simultanée d'un menu complet multi-recettes partageant des ressources matérielles n'est pas encore gérée (`MULTI_RECIPE_UNSUPPORTED`).
+- **Pas de replanification automatique en direct** : Une planification étant une fonction déterministe et pure de ses entrées, tout retard réel nécessite d'invoquer à nouveau le moteur avec des paramètres actualisés.
+- **Aucune décision arbitraire sur vos horaires** : Le moteur évalue les créneaux de service que vous lui soumettez (`findServeTimes()` calé sur vos heures de repas habituelles, ou `earliestServe()` calculé dès maintenant), en indiquant rigoureusement lesquels sont réalisables et les motifs d'incompatibilité pour les autres.
 
 ## Deux familles de diagnostics
 
@@ -109,7 +116,7 @@ flowchart LR
     Project --> Sheet["📋 runSheet()<br/><i>fiche de production</i>"]
 ```
 
-Pour explorer les signatures de fonctions et leurs types TypeScript, consultez la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/).
+Les vues de restitution (le planning de préparation ou vos composants d'interface personnalisés) se situent **en aval** du moteur et consomment directement ses structures de données. Pour explorer les signatures de fonctions et leurs types TypeScript, consultez la [référence de l'API scheduler](/fr/docs/reference/api/scheduler/).
 
 ## Ressources associées
 

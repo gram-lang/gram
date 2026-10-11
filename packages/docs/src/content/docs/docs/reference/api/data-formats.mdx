@@ -29,6 +29,7 @@ Mix @flour{200g} and @milk{200ml}.
 {
   "type": "Recipe",
   "meta": { "title": "Crepes" },
+  "imports": [],
   "children": [
     {
       "type": "Section",
@@ -121,8 +122,8 @@ Mix @flour{200g} and @milk{200ml}.
       "title": "Batter",
       "retro_planning": null,
       "ingredients": [
-        { "id": "flour", "name": "flour", "qty": 200, "unit": "g", "_usageIds": ["1"] },
-        { "id": "milk", "name": "milk", "qty": 200, "unit": "ml", "_usageIds": ["2"] }
+        { "id": "flour", "_usageId": "1", "qty": 200, "unit": "g" },
+        { "id": "milk", "_usageId": "2", "qty": 200, "unit": "ml" }
       ],
       "cookware": [],
       "steps": [
@@ -366,9 +367,11 @@ flour:
 
 **Units matter and must be strictly observed**: `calories` is kcal, `sodium` is in **milligrams (mg)**, and every other nutrient is in grams (g) — all evaluated per 100 g of the raw ingredient. The canonical set, units, and ordering are governed by the `NUTRIENTS` table exported by `@gram-lang/analyzer`.
 
-## 5. The run sheet
+<span id="5-the-run-sheet"></span>
 
-The data of the work plan (`@gram-lang/scheduler`), as `runSheet()` returns it and as `gram plan --format json` writes it under `runSheet`. A recipe with a serving time:
+## 5. The work plan
+
+Data structure of the work plan (`@gram-lang/scheduler`), as returned by `runSheet()` and emitted by `gram plan --format json` under the `runSheet` property. Example for a recipe scheduled with a target serving time:
 
 ```json
 {

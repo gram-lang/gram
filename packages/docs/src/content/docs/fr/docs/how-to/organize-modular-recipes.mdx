@@ -212,10 +212,7 @@ Dans votre recette principale, la syntaxe de déstructuration vous permet de ré
 :::tip[Renommage local]
 Si un nom exporté entre en conflit avec une variable de votre recette, renommez-le à la volée avec le mot-clé `as` :
 ```gram
-@use "@/composants/bases/elements-feuilletage-inverse.gram" as {
-  &détrempe as &pâte de base{},
-  &beurre manié{} as &beurre de tourage{}
-}
+@use "@/composants/bases/elements-feuilletage-inverse.gram" as { &détrempe as &pâte de base{}, &beurre manié{} as &beurre de tourage{} }
 ```
 :::
 
@@ -296,7 +293,11 @@ Le [Playground](/fr/play) en ligne prend en charge l'édition de recettes multi-
 
 ## Planifier avec des imports
 
-Dans le [planning de préparation](/fr/docs/how-to/plan-a-meal/), une base importée fait partie des passages en cuisine de la recette : ses étapes et sa mise en place sont planifiées avec le reste, et une ancre de jour sur son `@use` (`@use "./bases/biscuit.gram" as &biscuit ~{-2d}`) lui ouvre un jour. Une base **en stock** (`--stock ./bases/biscuit.gram`) n'ouvre aucun passage : elle est listée « en stock » dans « À sortir », au passage qui l'utilise. Les étapes d'une section importée sont désignées par le nom de leur fichier (« biscuit.gram, étapes 1 à 2 »).
+Lors de la génération d'un [planning de préparation](/fr/docs/how-to/plan-a-meal/), chaque base importée via `@use` est pleinement intégrée à l'ordonnancement global : ses étapes de confection et sa mise en place sont coordonnées avec le reste de la recette.
+
+- **Anticipation sur plusieurs jours :** L'ajout d'une ancre temporelle sur la directive d'importation (par exemple `@use "./bases/biscuit.gram" as &biscuit ~{-2d}`) programme automatiquement la confection de cette sous-recette deux jours avant le service.
+- **Bases déjà prêtes (`--stock`) :** Si vous déclarez une préparation comme étant déjà disponible au congélateur ou en réserve (`--stock ./bases/biscuit.gram`), aucune session de confection n'est planifiée. Elle apparaît simplement annotée « en stock » dans la liste « À sortir » lors de la session où la recette principale en a besoin.
+- **Traçabilité des étapes :** Dans le déroulé opérationnel (« Au programme »), les actions issues d'un module importé mentionnent explicitement leur fichier d'origine (par exemple : `biscuit.gram (étapes 1 à 2)`).
 
 ## Ressources associées
 

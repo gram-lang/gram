@@ -44,7 +44,7 @@ Gram propose trois stratégies pour organiser la mise en place. Prenons cette re
 [Assembler] La &pâte et la &garniture, puis cuire ~{25min}.
 ```
 
-Gram estime automatiquement un temps de préparation pour chaque section selon les ingrédients à peser ou découper et le matériel requis (ici : 3 min pour la pâte, 3 min pour la garniture, 1 min pour le montage, soit 7 min au total). Le travail actif cumulé est de 29 minutes, quelle que soit la stratégie retenue.
+Gram estime automatiquement un temps de préparation pour chaque section selon les ingrédients à peser ou découper et le matériel requis (ici : 3 min pour la pâte, 3 min pour la garniture, 2 min pour le montage, soit 8 min au total). Le travail actif cumulé est de 29 minutes, quelle que soit la stratégie retenue.
 
 ### Par section (défaut)
 
@@ -54,7 +54,7 @@ En cuisine professionnelle comme en gestion de production, c'est ce que l'on nom
 
 ```mermaid
 gantt
-    title Par section — Travail en temps masqué (1 h 01)
+    title Par section — Travail en temps masqué (1 h 00)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -63,16 +63,16 @@ gantt
     Mélanger                          : active, a1, 00:03, 2m
     Repos (passif)                    : r1, 00:05, 30m
     section Garniture
-    Mise en place                     : p2, 00:30, 3m
-    Émincer                           : active, a2, 00:33, 2m
+    Mise en place                     : p2, 00:28, 3m
+    Émincer                           : active, a2, 00:31, 2m
     section Montage
-    Mise en place                     : p3, 00:35, 1m
-    Assembler et cuire                : active, a3, 00:36, 25m
+    Mise en place                     : p3, 00:33, 2m
+    Assembler et cuire                : active, a3, 00:35, 25m
 ```
 
 - La pâte est préparée à 00:00, puis fermente pendant 30 minutes (de 00:05 à 00:35).
-- La garniture est préparée en temps masqué vers la fin de la pousse de la pâte (à partir de 00:30) : les ingrédients découpés restent frais sans encombrer inutilement le plan de travail.
-- La durée totale est optimisée à **1 h 01** (61 min).
+- La garniture et le montage sont préparés en temps masqué vers la fin de la pousse de la pâte (à partir de 00:28) : les ingrédients découpés restent frais sans encombrer inutilement le plan de travail.
+- La durée totale est optimisée à **1 h 00** (60 min).
 
 ### Tout au début
 
@@ -80,7 +80,7 @@ Ce mode rassemble l'ensemble des pesées et découpes des ingrédients bruts ava
 
 ```mermaid
 gantt
-    title Tout au début — Préparation groupée (1 h 04)
+    title Tout au début — Préparation groupée (1 h 03)
     dateFormat  HH:mm
     axisFormat %H:%M
     todayMarker off
@@ -91,20 +91,20 @@ gantt
     Mélanger                          : active, a1, 00:06, 2m
     Repos (passif)                    : r1, 00:08, 30m
     section Garniture
-    Émincer                           : active, a2, 00:36, 2m
+    Émincer                           : active, a2, 00:34, 2m
     section Montage
-    Sortir la pâte                    : p3, 00:38, 1m
-    Assembler et cuire                : active, a3, 00:39, 25m
+    Récupérer les préparations        : p3, 00:36, 2m
+    Assembler et cuire                : active, a3, 00:38, 25m
 ```
 
 - La pâte et la garniture sont préparées dès 00:00 (jusqu'à 00:06).
-- La durée totale passe à **1 h 04** (64 min), la préparation de la garniture n'étant plus réalisée en temps masqué pendant la pousse de la pâte.
+- La durée totale passe à **1 h 03** (63 min), la préparation de la garniture n'étant plus réalisée en temps masqué pendant la pousse de la pâte.
 
 ### Par session (ou par journée de travail)
 
 Ce mode regroupe la préparation par journée de travail. Lorsque la recette s'exécute sur une seule journée (sans ancre temporelle passée comme `~{-1d}`), ce mode produit un résultat strictement identique à « Tout au début ». Il prend tout son sens pour les recettes planifiées sur plusieurs jours (voir ci-après).
 
-Aucun mode n'est intrinsèquement supérieur : le premier optimise le temps global et la fraîcheur des préparations ; le deuxième convient aux cuisiniers préférant rassembler tous leurs ingrédients avant de cuisiner ; le troisième structure les plannings de production étalés dans le temps.
+Aucune stratégie n'est intrinsèquement supérieure aux autres : la première optimise la durée totale et la fraîcheur des découpes en exploitant les temps masqués ; la deuxième convient aux personnes préférant réunir et peser l'ensemble des ingrédients avant d'allumer le feu ; la troisième structure les feuilles de route de production réparties sur plusieurs jours.
 
 :::note[Cas particulier : un intermédiaire n'est jamais préparé avant d'exister]
 Un ingrédient intermédiaire (`&pâte`) est produit au cours de la recette : il ne peut être mobilisé ou pesé avant que la section qui le fabrique ne soit achevée. Cette règle s'applique à toutes les stratégies d'ordonnancement :
@@ -115,7 +115,7 @@ Un ingrédient intermédiaire (`&pâte`) est produit au cours de la recette : il
 
 ## Durées passives élastiques en fourchette
 
-Une durée passive peut être exacte (`~_{12h}`) ou exprimée sous forme de fourchette (`~_{12-24h}` : prête dès 12 heures, encore viable à 24). Un temps passif fixe ne subit aucun ajustement. Une fourchette offre en revanche une élasticité temporelle dont vous choisissez l'interprétation via l'option `rests`, tout comme vous sélectionnez le positionnement de la mise en place :
+Une durée passive peut être fixe (`~_{12h}`) ou spécifiée sous forme de fourchette (`~_{12-24h}` : résultat optimal dès 12 heures, préservé jusqu'à 24 heures). Une durée passive fixe ne subit aucun ajustement. Une fourchette offre en revanche une marge d'élasticité dont vous déterminez le comportement par défaut via l'option `rests`, tout comme vous choisissez la stratégie de mise en place :
 
 - **`shortest`** (par défaut) : retient la borne inférieure de la fourchette ;
 - **`balanced`** : retient la valeur médiane ;
@@ -212,7 +212,7 @@ Au début de chaque journée de travail, Gram rassemble la mise en place requise
 
 Le temps de préparation cumulé et le travail actif demeurent strictement identiques entre toutes les stratégies d'ordonnancement.
 
-La recette elle-même ne montre pas ces blocs : la mise en place est un coût dans les cartouches de temps de la recette et dans son ordonnancement. Quoi sortir, et quand, c'est la liste **« À sortir »** de chaque passage du [planning de préparation](/fr/docs/how-to/plan-a-meal/), calculée pour chaque stratégie.
+Le texte de la recette ne matérialise pas directement ces blocs d'étapes : la mise en place est comptabilisée comme une charge dans les indicateurs temporels de la recette et dans le calcul de son ordonnancement. La liste concrète des éléments requis et leur moment exact d'utilisation correspondent au bloc **« À sortir »** présenté au début de chaque passage du [planning de préparation](/fr/docs/how-to/plan-a-meal/), calculé pour chaque stratégie.
 
 :::tip[Enchaînement de sections]
 Lorsque plusieurs sections se succèdent au cours de la même journée, ancrez uniquement la dernière (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre (comme le fond ci-dessus) : elles héritent naturellement de son jour et s'insèrent immédiatement avant elle. Assigner `~{-1d}` à chacune créerait des échéances concurrentes au même instant, déclenchant un avertissement de paradoxe temporel en présence de dépendances.
