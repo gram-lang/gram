@@ -157,7 +157,7 @@ const plural = (n: number, one: string, many: string) =>
 	fill(n === 1 ? one : many, { n: String(n) });
 
 /** What the plan could not fix, one sentence each. */
-function problemsText(
+export function describeProblems(
 	diagnostics: ProjectionDiagnostic[],
 	data: RenderableCompilationResult,
 	options: RunSheetRenderOptions,
@@ -564,7 +564,7 @@ export function describeRunSheet(
 			: t.workPlanTitle,
 		subtitle,
 		summary,
-		problems: problemsText(
+		problems: describeProblems(
 			sheet.diagnostics,
 			data,
 			options,

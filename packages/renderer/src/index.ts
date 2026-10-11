@@ -23,6 +23,7 @@ export {
 	runSheetToText,
 } from "./run-sheet";
 export { runSheetToPrintHTML } from "./run-sheet-print";
+export { describeEarliestServe, describeServeTimes } from "./serve-times";
 export type {
 	RunSheetDayModel,
 	RunSheetEvent,

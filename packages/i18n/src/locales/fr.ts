@@ -74,6 +74,17 @@ export const fr: GramLocale = {
 			"{wait} raccourci à {to} (prévu {range}) pour que le travail tombe dans vos disponibilités.",
 		workPlanUntilClock: "jusqu'à {time}",
 		workPlanNothing: "Rien à planifier.",
+		workPlanFindOk: "{when} — début {start} · {visits} · {adjusted}",
+		workPlanFindRejected: "{when} — impossible : {reason}",
+		workPlanFindStart: "il faudrait commencer {start}, c'est déjà passé",
+		workPlanFindNone:
+			"Aucune heure de service ne convient entre {from} et {to}.",
+		workPlanAdjusted: "{n} attente ajustée",
+		workPlanAdjustedMany: "{n} attentes ajustées",
+		workPlanNoAdjustment: "aucune attente ajustée",
+		workPlanEarliest: "Prêt dès {when} si vous commencez maintenant.",
+		workPlanEarliestNone:
+			"Rien ne convient dans les {days} prochains jours (cherché jusqu'au {until}).",
 		est: "(est.)",
 		passiveTimeTooltip: "Temps passif (Repos, attente...)",
 		activeTimeTooltip: "Temps actif",
