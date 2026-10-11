@@ -1,14 +1,7 @@
 {
+  "mode": "calendar",
   "serveAt": "2026-10-11T13:00",
   "timeZone": "Europe/Paris",
-  "diagnostics": [
-    {
-      "code": "SESSION_DAY_MISMATCH",
-      "day": 1,
-      "expected": "2026-10-10",
-      "actual": "2026-10-09"
-    }
-  ],
   "recipes": [
     {
       "days": [
@@ -21,11 +14,13 @@
               "kind": "prep",
               "active": true,
               "section": 0,
+              "from": -2444,
+              "to": -2442,
+              "minutes": 2,
               "start": "2026-10-09T18:16:00Z",
               "end": "2026-10-09T18:18:00Z",
               "startLocal": "2026-10-09T20:16",
-              "endLocal": "2026-10-09T20:18",
-              "minutes": 2
+              "endLocal": "2026-10-09T20:18"
             },
             {
               "task": "s0.0",
@@ -33,11 +28,13 @@
               "active": true,
               "section": 0,
               "step": 0,
+              "from": -2442,
+              "to": -2440,
+              "minutes": 2,
               "start": "2026-10-09T18:18:00Z",
               "end": "2026-10-09T18:20:00Z",
               "startLocal": "2026-10-09T20:18",
-              "endLocal": "2026-10-09T20:20",
-              "minutes": 2
+              "endLocal": "2026-10-09T20:20"
             },
             {
               "task": "s0.1",
@@ -45,11 +42,13 @@
               "active": true,
               "section": 0,
               "step": 1,
+              "from": -2440,
+              "to": -2440,
+              "minutes": 0,
               "start": "2026-10-09T18:20:00Z",
               "end": "2026-10-09T18:20:00Z",
               "startLocal": "2026-10-09T20:20",
-              "endLocal": "2026-10-09T20:20",
-              "minutes": 0
+              "endLocal": "2026-10-09T20:20"
             },
             {
               "task": "s0.1.t0",
@@ -57,11 +56,42 @@
               "active": false,
               "section": 0,
               "step": 1,
+              "from": -2440,
+              "to": -40,
+              "minutes": 2400,
               "start": "2026-10-09T18:20:00Z",
               "end": "2026-10-11T10:20:00Z",
               "startLocal": "2026-10-09T20:20",
-              "endLocal": "2026-10-11T12:20",
-              "minutes": 2400
+              "endLocal": "2026-10-11T12:20"
+            }
+          ],
+          "passages": [
+            {
+              "start": -2444,
+              "end": -2440,
+              "sections": [
+                0
+              ],
+              "tasks": [
+                "s0.prep",
+                "s0.0",
+                "s0.1"
+              ],
+              "startLocal": "2026-10-09T20:16",
+              "endLocal": "2026-10-09T20:20"
+            }
+          ],
+          "threads": [
+            {
+              "passage": 0,
+              "task": "s0.1.t0",
+              "section": 0,
+              "step": 1,
+              "from": -2440,
+              "to": -40,
+              "planned": 2400,
+              "fromLocal": "2026-10-09T20:20",
+              "toLocal": "2026-10-11T12:20"
             }
           ]
         },
@@ -74,11 +104,13 @@
               "kind": "prep",
               "active": true,
               "section": 1,
+              "from": -41,
+              "to": -40,
+              "minutes": 1,
               "start": "2026-10-11T10:19:00Z",
               "end": "2026-10-11T10:20:00Z",
               "startLocal": "2026-10-11T12:19",
-              "endLocal": "2026-10-11T12:20",
-              "minutes": 1
+              "endLocal": "2026-10-11T12:20"
             },
             {
               "task": "s1.0",
@@ -86,15 +118,43 @@
               "active": true,
               "section": 1,
               "step": 0,
+              "from": -40,
+              "to": 0,
+              "minutes": 40,
               "start": "2026-10-11T10:20:00Z",
               "end": "2026-10-11T11:00:00Z",
               "startLocal": "2026-10-11T12:20",
-              "endLocal": "2026-10-11T13:00",
-              "minutes": 40
+              "endLocal": "2026-10-11T13:00"
             }
-          ]
+          ],
+          "passages": [
+            {
+              "start": -41,
+              "end": 0,
+              "sections": [
+                1
+              ],
+              "tasks": [
+                "s1.prep.cream",
+                "s1.0"
+              ],
+              "startLocal": "2026-10-11T12:19",
+              "endLocal": "2026-10-11T13:00"
+            }
+          ],
+          "threads": []
         }
-      ]
+      ],
+      "totalWork": 45
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": [
+    {
+      "code": "SESSION_DAY_MISMATCH",
+      "day": 1,
+      "expected": "2026-10-10",
+      "actual": "2026-10-09"
     }
   ]
 }

@@ -1,14 +1,7 @@
 {
+  "mode": "calendar",
   "serveAt": "2026-10-11T13:00",
   "timeZone": "Europe/Paris",
-  "diagnostics": [
-    {
-      "code": "SESSION_DAY_MISMATCH",
-      "day": 0,
-      "expected": "2026-10-11",
-      "actual": "2026-10-10"
-    }
-  ],
   "recipes": [
     {
       "days": [
@@ -21,11 +14,13 @@
               "kind": "prep",
               "active": true,
               "section": 0,
+              "from": -921,
+              "to": -920,
+              "minutes": 1,
               "start": "2026-10-10T19:39:00Z",
               "end": "2026-10-10T19:40:00Z",
               "startLocal": "2026-10-10T21:39",
-              "endLocal": "2026-10-10T21:40",
-              "minutes": 1
+              "endLocal": "2026-10-10T21:40"
             },
             {
               "task": "s0.0",
@@ -33,11 +28,13 @@
               "active": true,
               "section": 0,
               "step": 0,
+              "from": -920,
+              "to": -900,
+              "minutes": 20,
               "start": "2026-10-10T19:40:00Z",
               "end": "2026-10-10T20:00:00Z",
               "startLocal": "2026-10-10T21:40",
-              "endLocal": "2026-10-10T22:00",
-              "minutes": 20
+              "endLocal": "2026-10-10T22:00"
             },
             {
               "task": "s0.0.t0",
@@ -46,17 +43,48 @@
               "section": 0,
               "step": 0,
               "track": "fridge",
+              "from": -900,
+              "to": -30,
+              "minutes": 870,
               "start": "2026-10-10T20:00:00Z",
               "end": "2026-10-11T10:30:00Z",
               "startLocal": "2026-10-10T22:00",
               "endLocal": "2026-10-11T12:30",
-              "minutes": 870,
               "adjustment": {
                 "task": "s0.0.t0",
                 "from": 480,
                 "to": 870,
                 "reason": "avoid-unavailable"
               }
+            }
+          ],
+          "passages": [
+            {
+              "start": -921,
+              "end": -900,
+              "sections": [
+                0
+              ],
+              "tasks": [
+                "s0.prep",
+                "s0.0"
+              ],
+              "startLocal": "2026-10-10T21:39",
+              "endLocal": "2026-10-10T22:00"
+            }
+          ],
+          "threads": [
+            {
+              "passage": 0,
+              "task": "s0.0.t0",
+              "section": 0,
+              "step": 0,
+              "track": "fridge",
+              "from": -900,
+              "to": -30,
+              "planned": 870,
+              "fromLocal": "2026-10-10T22:00",
+              "toLocal": "2026-10-11T12:30"
             }
           ]
         },
@@ -69,11 +97,13 @@
               "kind": "prep",
               "active": true,
               "section": 1,
+              "from": -31,
+              "to": -30,
+              "minutes": 1,
               "start": "2026-10-11T10:29:00Z",
               "end": "2026-10-11T10:30:00Z",
               "startLocal": "2026-10-11T12:29",
-              "endLocal": "2026-10-11T12:30",
-              "minutes": 1
+              "endLocal": "2026-10-11T12:30"
             },
             {
               "task": "s1.0",
@@ -81,15 +111,54 @@
               "active": true,
               "section": 1,
               "step": 0,
+              "from": -30,
+              "to": 0,
+              "minutes": 30,
               "start": "2026-10-11T10:30:00Z",
               "end": "2026-10-11T11:00:00Z",
               "startLocal": "2026-10-11T12:30",
-              "endLocal": "2026-10-11T13:00",
-              "minutes": 30
+              "endLocal": "2026-10-11T13:00"
             }
-          ]
+          ],
+          "passages": [
+            {
+              "start": -31,
+              "end": 0,
+              "sections": [
+                1
+              ],
+              "tasks": [
+                "s1.prep.dough",
+                "s1.0"
+              ],
+              "startLocal": "2026-10-11T12:29",
+              "endLocal": "2026-10-11T13:00"
+            }
+          ],
+          "threads": []
         }
-      ]
+      ],
+      "totalWork": 52
+    }
+  ],
+  "adjustments": [
+    {
+      "task": "s0.0.t0",
+      "from": 480,
+      "to": 870,
+      "reason": "avoid-unavailable",
+      "section": 0,
+      "step": 0,
+      "track": "fridge",
+      "day": 1
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "SESSION_DAY_MISMATCH",
+      "day": 0,
+      "expected": "2026-10-11",
+      "actual": "2026-10-10"
     }
   ]
 }

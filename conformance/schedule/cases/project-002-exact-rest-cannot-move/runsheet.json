@@ -1,14 +1,7 @@
 {
+  "mode": "calendar",
   "serveAt": "2026-10-11T13:00",
   "timeZone": "Europe/Paris",
-  "diagnostics": [
-    {
-      "code": "ACTIVE_OUTSIDE_AVAILABILITY",
-      "task": "s0.prep",
-      "local": "2026-10-11T04:08",
-      "rest": "s0.1.t0"
-    }
-  ],
   "recipes": [
     {
       "days": [
@@ -21,11 +14,13 @@
               "kind": "prep",
               "active": true,
               "section": 0,
+              "from": -532,
+              "to": -530,
+              "minutes": 2,
               "start": "2026-10-11T02:08:00Z",
               "end": "2026-10-11T02:10:00Z",
               "startLocal": "2026-10-11T04:08",
-              "endLocal": "2026-10-11T04:10",
-              "minutes": 2
+              "endLocal": "2026-10-11T04:10"
             },
             {
               "task": "s0.0",
@@ -33,11 +28,13 @@
               "active": true,
               "section": 0,
               "step": 0,
+              "from": -530,
+              "to": -510,
+              "minutes": 20,
               "start": "2026-10-11T02:10:00Z",
               "end": "2026-10-11T02:30:00Z",
               "startLocal": "2026-10-11T04:10",
-              "endLocal": "2026-10-11T04:30",
-              "minutes": 20
+              "endLocal": "2026-10-11T04:30"
             },
             {
               "task": "s0.1",
@@ -45,11 +42,13 @@
               "active": true,
               "section": 0,
               "step": 1,
+              "from": -510,
+              "to": -510,
+              "minutes": 0,
               "start": "2026-10-11T02:30:00Z",
               "end": "2026-10-11T02:30:00Z",
               "startLocal": "2026-10-11T04:30",
-              "endLocal": "2026-10-11T04:30",
-              "minutes": 0
+              "endLocal": "2026-10-11T04:30"
             },
             {
               "task": "s0.1.t0",
@@ -57,22 +56,26 @@
               "active": false,
               "section": 0,
               "step": 1,
+              "from": -510,
+              "to": -30,
+              "minutes": 480,
               "start": "2026-10-11T02:30:00Z",
               "end": "2026-10-11T10:30:00Z",
               "startLocal": "2026-10-11T04:30",
-              "endLocal": "2026-10-11T12:30",
-              "minutes": 480
+              "endLocal": "2026-10-11T12:30"
             },
             {
               "task": "s1.prep.dough",
               "kind": "prep",
               "active": true,
               "section": 1,
+              "from": -31,
+              "to": -30,
+              "minutes": 1,
               "start": "2026-10-11T10:29:00Z",
               "end": "2026-10-11T10:30:00Z",
               "startLocal": "2026-10-11T12:29",
-              "endLocal": "2026-10-11T12:30",
-              "minutes": 1
+              "endLocal": "2026-10-11T12:30"
             },
             {
               "task": "s1.0",
@@ -80,15 +83,69 @@
               "active": true,
               "section": 1,
               "step": 0,
+              "from": -30,
+              "to": 0,
+              "minutes": 30,
               "start": "2026-10-11T10:30:00Z",
               "end": "2026-10-11T11:00:00Z",
               "startLocal": "2026-10-11T12:30",
-              "endLocal": "2026-10-11T13:00",
-              "minutes": 30
+              "endLocal": "2026-10-11T13:00"
+            }
+          ],
+          "passages": [
+            {
+              "start": -532,
+              "end": -510,
+              "sections": [
+                0
+              ],
+              "tasks": [
+                "s0.prep",
+                "s0.0",
+                "s0.1"
+              ],
+              "startLocal": "2026-10-11T04:08",
+              "endLocal": "2026-10-11T04:30"
+            },
+            {
+              "start": -31,
+              "end": 0,
+              "sections": [
+                1
+              ],
+              "tasks": [
+                "s1.prep.dough",
+                "s1.0"
+              ],
+              "startLocal": "2026-10-11T12:29",
+              "endLocal": "2026-10-11T13:00"
+            }
+          ],
+          "threads": [
+            {
+              "passage": 0,
+              "task": "s0.1.t0",
+              "section": 0,
+              "step": 1,
+              "from": -510,
+              "to": -30,
+              "planned": 480,
+              "fromLocal": "2026-10-11T04:30",
+              "toLocal": "2026-10-11T12:30"
             }
           ]
         }
-      ]
+      ],
+      "totalWork": 53
+    }
+  ],
+  "adjustments": [],
+  "diagnostics": [
+    {
+      "code": "ACTIVE_OUTSIDE_AVAILABILITY",
+      "task": "s0.prep",
+      "local": "2026-10-11T04:08",
+      "rest": "s0.1.t0"
     }
   ]
 }

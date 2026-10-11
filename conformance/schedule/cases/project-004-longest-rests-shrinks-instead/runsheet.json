@@ -1,7 +1,7 @@
 {
+  "mode": "calendar",
   "serveAt": "2026-10-11T20:00",
   "timeZone": "Europe/Paris",
-  "diagnostics": [],
   "recipes": [
     {
       "days": [
@@ -14,11 +14,13 @@
               "kind": "prep",
               "active": true,
               "section": 0,
+              "from": -720,
+              "to": -718,
+              "minutes": 2,
               "start": "2026-10-11T06:00:00Z",
               "end": "2026-10-11T06:02:00Z",
               "startLocal": "2026-10-11T08:00",
-              "endLocal": "2026-10-11T08:02",
-              "minutes": 2
+              "endLocal": "2026-10-11T08:02"
             },
             {
               "task": "s0.0",
@@ -26,11 +28,13 @@
               "active": true,
               "section": 0,
               "step": 0,
+              "from": -718,
+              "to": -698,
+              "minutes": 20,
               "start": "2026-10-11T06:02:00Z",
               "end": "2026-10-11T06:22:00Z",
               "startLocal": "2026-10-11T08:02",
-              "endLocal": "2026-10-11T08:22",
-              "minutes": 20
+              "endLocal": "2026-10-11T08:22"
             },
             {
               "task": "s0.1",
@@ -38,11 +42,13 @@
               "active": true,
               "section": 0,
               "step": 1,
+              "from": -698,
+              "to": -698,
+              "minutes": 0,
               "start": "2026-10-11T06:22:00Z",
               "end": "2026-10-11T06:22:00Z",
               "startLocal": "2026-10-11T08:22",
-              "endLocal": "2026-10-11T08:22",
-              "minutes": 0
+              "endLocal": "2026-10-11T08:22"
             },
             {
               "task": "s0.1.t0",
@@ -50,11 +56,13 @@
               "active": false,
               "section": 0,
               "step": 1,
+              "from": -698,
+              "to": -30,
+              "minutes": 668,
               "start": "2026-10-11T06:22:00Z",
               "end": "2026-10-11T17:30:00Z",
               "startLocal": "2026-10-11T08:22",
               "endLocal": "2026-10-11T19:30",
-              "minutes": 668,
               "adjustment": {
                 "task": "s0.1.t0",
                 "from": 960,
@@ -67,11 +75,13 @@
               "kind": "prep",
               "active": true,
               "section": 1,
+              "from": -31,
+              "to": -30,
+              "minutes": 1,
               "start": "2026-10-11T17:29:00Z",
               "end": "2026-10-11T17:30:00Z",
               "startLocal": "2026-10-11T19:29",
-              "endLocal": "2026-10-11T19:30",
-              "minutes": 1
+              "endLocal": "2026-10-11T19:30"
             },
             {
               "task": "s1.0",
@@ -79,15 +89,72 @@
               "active": true,
               "section": 1,
               "step": 0,
+              "from": -30,
+              "to": 0,
+              "minutes": 30,
               "start": "2026-10-11T17:30:00Z",
               "end": "2026-10-11T18:00:00Z",
               "startLocal": "2026-10-11T19:30",
-              "endLocal": "2026-10-11T20:00",
-              "minutes": 30
+              "endLocal": "2026-10-11T20:00"
+            }
+          ],
+          "passages": [
+            {
+              "start": -720,
+              "end": -698,
+              "sections": [
+                0
+              ],
+              "tasks": [
+                "s0.prep",
+                "s0.0",
+                "s0.1"
+              ],
+              "startLocal": "2026-10-11T08:00",
+              "endLocal": "2026-10-11T08:22"
+            },
+            {
+              "start": -31,
+              "end": 0,
+              "sections": [
+                1
+              ],
+              "tasks": [
+                "s1.prep.dough",
+                "s1.0"
+              ],
+              "startLocal": "2026-10-11T19:29",
+              "endLocal": "2026-10-11T20:00"
+            }
+          ],
+          "threads": [
+            {
+              "passage": 0,
+              "task": "s0.1.t0",
+              "section": 0,
+              "step": 1,
+              "from": -698,
+              "to": -30,
+              "planned": 668,
+              "fromLocal": "2026-10-11T08:22",
+              "toLocal": "2026-10-11T19:30"
             }
           ]
         }
-      ]
+      ],
+      "totalWork": 53
     }
-  ]
+  ],
+  "adjustments": [
+    {
+      "task": "s0.1.t0",
+      "from": 960,
+      "to": 668,
+      "reason": "avoid-unavailable",
+      "section": 0,
+      "step": 1,
+      "day": 0
+    }
+  ],
+  "diagnostics": []
 }
