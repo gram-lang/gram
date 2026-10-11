@@ -14,7 +14,7 @@ A clear and concise description of the proposed feature or improvement.
 
 - [ ] CLI (`packages/cli`)
 - [ ] Analyzer / Physical database (`packages/analyzer`)
-- [ ] Renderer (`packages/renderer` — HTML, Markdown, Gantt)
+- [ ] Renderer (`packages/renderer` — HTML, Markdown, work plan)
 - [ ] Language server / VS Code extension (`packages/language-server`, `packages/vscode-extension`)
 - [ ] Documentation / Playground (`packages/docs`)
 - [ ] Other (please specify)

@@ -32,9 +32,10 @@ import {
   toMarkdown,
   toHTML,
   toPrintHTML,
-  toGanttHTML,
-  attachGanttInteractivity
+  runSheetToText,
+  runSheetToHTML
 } from '@gram-lang/renderer';
+import { project, runSheet } from '@gram-lang/scheduler';
 
 const recipe = {
   title: "Simple Crepes",
@@ -77,16 +78,19 @@ const html = toHTML(recipe, {
 // 3. Print-optimized HTML rendering (self-contained, single-page layout)
 const printHtml = toPrintHTML(recipe);
 
-// 4. Gantt Chart timeline rendering (HTML fragment + client-side interactivity)
-const ganttHtml = toGanttHTML(recipe, { lang: 'en' });
-const container = document.getElementById('gantt-container');
-container.innerHTML = ganttHtml;
+// 4. The work plan of a schedule: the days, the visits to the kitchen, what to take out.
+// `runSheet()` (from @gram-lang/scheduler) computes it; the renderer writes it.
+const context = {
+  serveAt: '2026-10-17T20:00',
+  timeZone: 'Europe/Paris',
+  availability: { daily: [{ start: '08:00', end: '22:00' }] }
+};
+const sheet = runSheet(project([{ graph: recipe.tasks }], context), { graph: recipe.tasks, context });
+const text = runSheetToText(sheet, recipe, { lang: 'en' });  // plain text
+const fragment = runSheetToHTML(sheet, recipe);              // HTML fragment, no script
 
-const handle = attachGanttInteractivity(container, {
-  timeMode: 'forward',   // 'forward' (T+), 'reverse' (T-), or 'target'
-  targetTime: '19:30',   // Target serve time when timeMode is 'target'
-  isCompactMode: false   // Toggle compact row height
-});
+// 5. Or write it after the recipe, in one document
+const document = toHTML(recipe, { runSheet: sheet });
 ```
 
 ---
@@ -96,12 +100,14 @@ const handle = attachGanttInteractivity(container, {
 *   `src/index.ts`: The main entry point exporting public APIs.
 *   `src/types.ts`: TypeScript interfaces for `RendererOptions`, `RendererIcons`, and `RendererClasses`.
 *   `src/utils.ts`: Common helpers (decimal-to-fraction formatting, HTML escaping, duration formatting).
-*   `src/gantt/`: Gantt chart layout computation, HTML fragment rendering, and event delegation interactivity (`layout.ts`, `render.ts`, `interactivity.ts`, `types.ts`).
+*   `src/run-sheet.ts`, `src/work-plan-parts.ts`, `src/serve-times.ts`: The work plan in words (`describeRunSheet`, `runSheetTo*`), what to take out and what to do (`passageKit`, `sectionProgram`), and the serving time search in words.
+*   `src/gantt/`: The deprecated Gantt chart (removed in 2.0.0): layout computation, HTML fragment rendering, and event delegation interactivity.
 *   `src/formatters/element.ts`: Universal formatter for individual AST nodes (ingredients, cookware, timers, alternative groups).
 *   `src/formatters/markdown.ts`: Orchestrates Markdown generation for full recipes.
 *   `src/formatters/html.ts`: Orchestrates HTML generation for full recipes using classes and icons injection.
 *   `src/formatters/print.ts`: Orchestrates self-contained, print-optimized HTML generation (`toPrintHTML`).
-*   `gantt.css`: Stylesheet for the Gantt chart timeline component.
+*   `gram.css`: Stylesheet of the recipe and the work plan.
+*   `gantt.css`: Stylesheet of the deprecated Gantt chart.
 
 ---
 

@@ -6,4 +6,5 @@ The scheduling engine behind Gram recipes. It lays tasks out on a timeline (as-l
 
 - `layout(tasks, { miseEnPlace, rests })` lays a task graph out on a timeline, in minutes from the start.
 - `project([{ graph }], { serveAt, timeZone, availability })` places that timeline on the calendar, ending at the serving time, and moves the rests written as a range so the cook's own work falls when they are available. It reads no clock and no time zone of the machine: the same input always gives the same plan.
-- `runSheet(plan)` gives the structure of a production sheet from a plan.
+- `runSheet(plan | schedule, { graph, context })` groups a plan (or a bare schedule, in days before the service) into the days, the visits to the kitchen and the threads that go on without the cook, with the margin of each visit.
+- `findServeTimes()` and `earliestServe()` try serving times with `project()` and tell which can be followed, and why the others cannot.
