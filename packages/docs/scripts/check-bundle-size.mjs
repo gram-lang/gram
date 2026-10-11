@@ -13,6 +13,13 @@
 // external CDN round-trip. Shiki's oniguruma WASM regex engine is a separate
 // lazy-loaded chunk (not counted here) — it's fetched once and doesn't grow
 // with this component's own code.
+//
+// The budget counts the playground chunk alone, so it moves when code changes
+// chunk, not only when it grows. It was 800 KB while a 338 KB module shared
+// with the (lazy) Gantt chart sat in a chunk of its own; once the playground
+// stopped loading the Gantt chart, that module was folded back in. The total
+// shipped (this chunk plus that one) went from 849 KB to 847 KB when the work
+// plan replaced the Gantt chart: the budget follows the move, not a growth.
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -22,7 +29,7 @@ const ASSETS_DIR = join(import.meta.dirname, "..", "dist", "_astro");
 const BUDGETS_KB = {
 	"playground chunk (client:only, but should not balloon)": {
 		pattern: /^GramPlayground\..*\.js$/,
-		maxKb: 800,
+		maxKb: 900,
 	},
 };
 
