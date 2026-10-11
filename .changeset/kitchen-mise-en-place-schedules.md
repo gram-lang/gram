@@ -16,7 +16,7 @@
 - An ingredient, a piece of cookware and an alternative (`a|b`) that share a name are no longer mixed up when splitting the preparation by section
 - New `computeMiseEnPlace(sections, registry)` gives the same split as the `miseEnPlace` field for sections you built yourself, and `calculatePreparationTime` can take its result as an optional third argument
 - New `MiseEnPlaceMode`, `MISE_EN_PLACE_MODES`, `DEFAULT_MISE_EN_PLACE_MODE`, `isMiseEnPlaceMode`, `RestChoice`, `REST_CHOICES`, `scheduleFor` and `scheduleTimes` to choose between the timelines the same way everywhere (the renderer keeps re-exporting `MiseEnPlaceMode`)
-- JSON compiled before 1.4.0, which has no `tasks`, still gets a total and idle time, read from its old `metrics` fields, in the renderer outputs, the editor hint and `gram diff` (its Gantt chart has nothing to draw)
+- JSON compiled before 1.4.0, which has no `tasks`, still gets a total and idle time, read from its old `metrics` fields, in the renderer outputs, the editor hint and `gram diff`
 - The compiled recipe now says which version produced it (new `generator` field)
 
 **Deprecated**
