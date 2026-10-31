@@ -451,8 +451,9 @@ onUnmounted(() => {
 .gram-drawer-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
+  flex: 1;
 }
 
 .gram-drawer-title {
@@ -461,6 +462,9 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--sl-color-text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .gram-drawer-active-badge {
@@ -471,6 +475,7 @@ onUnmounted(() => {
   background-color: var(--sl-color-accent);
   color: #1a1613;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .gram-drawer-header-actions {
@@ -572,6 +577,26 @@ onUnmounted(() => {
 
   .gram-drawer-drag-handle-area {
     display: flex;
+  }
+
+  .gram-drawer-header {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .gram-drawer-title {
+    font-size: 14px;
+  }
+
+  .gram-drawer-reset-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .gram-drawer-close-btn {
+    width: 28px;
+    height: 28px;
   }
 
   .gram-drawer-anim-enter-from .gram-drawer-panel,
