@@ -787,6 +787,9 @@ export function runSheetToText(
 			);
 		}
 	}
+	if (model.schedule.length > 0) {
+		out.push("", `▮ ${t.workPlanLegendCook}   ┆ ${t.workPlanLegendThread}`);
+	}
 	for (const day of model.days) {
 		out.push("", `${day.heading.toUpperCase()}  ${day.slot}`);
 		for (const n of day.notices) out.push(`  ! ${n}`);
@@ -811,8 +814,15 @@ export function runSheetToText(
 					}
 				}
 			}
-			out.push(`  ${t.workPlanLeaving}`);
-			for (const l of p.leaving) out.push(`    ${l}`);
+			// Like the HTML view: the heading only for what goes on without the cook.
+			if (p.waits.length > 0) {
+				out.push(`  ${t.workPlanLeaving}`);
+				for (const l of p.next === undefined
+					? p.leaving
+					: p.leaving.slice(0, -1))
+					out.push(`    ${l}`);
+			}
+			if (p.next !== undefined) out.push(`  ${p.next}`);
 		}
 	}
 	return `${out.join("\n").trimEnd()}\n`;
@@ -879,9 +889,16 @@ export function runSheetToMarkdown(
 				}
 				out.push("");
 			}
-			out.push(`**${md(t.workPlanLeaving)}**`, "");
-			for (const l of p.leaving) out.push(`- ${md(l)}`);
-			out.push("");
+			// Like the HTML view: the heading only for what goes on without the cook.
+			if (p.waits.length > 0) {
+				out.push(`**${md(t.workPlanLeaving)}**`, "");
+				for (const l of p.next === undefined
+					? p.leaving
+					: p.leaving.slice(0, -1))
+					out.push(`- ${md(l)}`);
+				out.push("");
+			}
+			if (p.next !== undefined) out.push(md(p.next), "");
 		}
 	}
 	return `${out.join("\n").trimEnd()}\n`;

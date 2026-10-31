@@ -309,6 +309,28 @@ describe("runSheetToText", () => {
 	});
 });
 
+describe("text, Markdown and HTML say the same", () => {
+	const visits = describeRunSheet(sheet, compiled).days.flatMap(
+		(d) => d.visits,
+	);
+	const withWaits = visits.filter((p) => p.waits.length > 0).length;
+	const count = (s: string) => s.split("Before leaving").length - 1;
+
+	it("heads the lists of what goes on only for a visit that has some", () => {
+		expect(withWaits).toBeLessThan(visits.length);
+		expect(count(runSheetToText(sheet, compiled))).toBe(withWaits);
+		expect(count(runSheetToMarkdown(sheet, compiled))).toBe(withWaits);
+		expect(count(runSheetToHTML(sheet, compiled))).toBe(withWaits);
+	});
+
+	it("still tells when to come back", () => {
+		for (const p of visits) {
+			expect(runSheetToText(sheet, compiled)).toContain(p.next!);
+			expect(runSheetToMarkdown(sheet, compiled)).toContain(p.next!);
+		}
+	});
+});
+
 describe("what could not be fixed", () => {
 	const exact = compile(getAST(BREAD.replace("~_{8-16h}", "~_{8h}")));
 	const text = runSheetToText(planOf(exact), exact);
