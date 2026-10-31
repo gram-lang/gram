@@ -279,6 +279,24 @@ function clearPlan() {
 // Studio Drawer state
 const isDrawerOpen = ref(false);
 const drawerInitialSection = ref<string | undefined>(undefined);
+const isWideScreen = ref(false);
+let wideMql: MediaQueryList | undefined;
+
+function handleWideMqlChange(e: MediaQueryListEvent | MediaQueryList) {
+	isWideScreen.value = e.matches;
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: toggleStudio is used in the <template> block below, which Biome's Vue support doesn't see.
+function toggleStudio(section?: string) {
+	if (
+		isDrawerOpen.value &&
+		(!section || drawerInitialSection.value === section)
+	) {
+		closeStudio();
+	} else {
+		openStudio(section);
+	}
+}
 
 // biome-ignore lint/correctness/noUnusedVariables: openStudio is used in the <template> block below, which Biome's Vue support doesn't see.
 function openStudio(section?: string) {
@@ -291,9 +309,6 @@ function openStudio(section?: string) {
 function closeStudio() {
 	isDrawerOpen.value = false;
 }
-
-// biome-ignore lint/correctness/noUnusedVariables: isPlanActive is used in the <template> block below, which Biome's Vue support doesn't see.
-const isPlanActive = computed(() => plan.value.serveAt !== "");
 
 // biome-ignore lint/correctness/noUnusedVariables: activeModifiersCount is used in the <template> block below, which Biome's Vue support doesn't see.
 const activeModifiersCount = computed(() => {
@@ -438,6 +453,13 @@ onMounted(() => {
 			}
 		})
 		.catch((err) => console.error("Manifest Error:", err));
+
+	// Track viewport width for docked (>= 1200px) vs overlay drawer (< 1200px)
+	if (typeof window !== "undefined" && window.matchMedia) {
+		wideMql = window.matchMedia("(min-width: 1200px)");
+		isWideScreen.value = wideMql.matches;
+		wideMql.addEventListener("change", handleWideMqlChange);
+	}
 
 	updateGram();
 });
@@ -998,11 +1020,9 @@ function startDrag(_e: MouseEvent) {
 
 function onDrag(e: MouseEvent) {
 	if (!isDragging.value) return;
-	const workspace = document.querySelector(
-		".playground-workspace",
-	) as HTMLElement;
-	if (!workspace) return;
-	const rect = workspace.getBoundingClientRect();
+	const mainArea = document.querySelector(".workspace-main") as HTMLElement;
+	if (!mainArea) return;
+	const rect = mainArea.getBoundingClientRect();
 	const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
 	leftPanelWidth.value = Math.min(Math.max(newWidth, 20), 80);
 }
@@ -1026,6 +1046,7 @@ function toggleFullscreen() {
 }
 
 onUnmounted(() => {
+	wideMql?.removeEventListener("change", handleWideMqlChange);
 	document.removeEventListener("mousemove", onDrag);
 	document.removeEventListener("mouseup", stopDrag);
 	document.body.style.overflow = "";
@@ -1068,7 +1089,7 @@ onUnmounted(() => {
           :aria-expanded="isDrawerOpen"
           :aria-label="t.playground.studioTitle"
           :title="t.playground.studioTitle"
-          @click="openStudio()"
+          @click="toggleStudio()"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
             <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -1123,132 +1144,127 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div class="playground-workspace" :class="{ 'is-dragging': isDragging }" :style="{ '--left-width': leftPanelWidth + '%' }">
-        <!-- Left Column: Editor & Options -->
-        <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
-          <GramFileTabs
-            ref="fileTabsRef"
-            :files="[...files.keys()]"
-            :active-file="activeFile"
-            :entry-file="entryFile"
-            :error-files="errorFiles"
-            :editor-panel-id="EDITOR_PANEL_ID"
-            @select="selectFile"
-            @add="addFile"
-            @rename="renameFile"
-            @remove="removeFile"
-            @done-rename="handleDoneRename"
+      <div
+        class="playground-workspace"
+        :class="{
+          'is-dragging': isDragging,
+        }"
+      >
+        <!-- Main Workspace Area: Editor + Splitter + Output (+ Diagnostics) -->
+        <div class="workspace-main">
+          <div class="workspace-panes" :style="{ '--left-width': leftPanelWidth + '%' }">
+            <!-- Left Column: Editor & Options -->
+            <div class="playground-col left-col" :class="{ 'is-mobile-active': mobileTab === 'editor' }">
+              <GramFileTabs
+                ref="fileTabsRef"
+                :files="[...files.keys()]"
+                :active-file="activeFile"
+                :entry-file="entryFile"
+                :error-files="errorFiles"
+                :editor-panel-id="EDITOR_PANEL_ID"
+                @select="selectFile"
+                @add="addFile"
+                @rename="renameFile"
+                @remove="removeFile"
+                @done-rename="handleDoneRename"
+              />
+              <div
+                class="editor-wrapper"
+                :id="EDITOR_PANEL_ID"
+                role="tabpanel"
+                :aria-labelledby="activeTabId"
+                tabindex="-1"
+              >
+                <GramEditor
+                  ref="editorRef"
+                  :files="files"
+                  :active-file="activeFile"
+                  @update:files="(path, val) => files.set(path, val)"
+                />
+              </div>
+            </div>
+            
+            <!-- Splitter -->
+            <div class="playground-splitter" @mousedown.prevent="startDrag">
+              <div class="splitter-handle"></div>
+            </div>
+
+            <!-- Right Column: Output -->
+            <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
+              <div v-if="activeFile !== entryFile" class="preview-scope-banner">
+                {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
+              </div>
+              <div class="output-wrapper">
+                <GramOutput 
+                  :view-mode="viewMode as any" 
+                  :content="content" 
+                  :html-preview="htmlPreview" 
+                  :json-data="jsonData" 
+                  :run-sheet-html="runSheetHtml"
+                  :blocking-diagnostics="blockingDiagnostics"
+                  @scale-update="handleScaleUpdate"
+                  @jump="handleJump"
+                >
+                  <template #view-selector>
+                    <div class="header-view-wrapper">
+                      <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
+                      <PlaygroundDropdown
+                        v-model="viewMode"
+                        :options="viewModeOptions"
+                        :aria-label="t.playground.viewLabel"
+                        class="header-view-selector"
+                      />
+                    </div>
+                  </template>
+                </GramOutput>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Diagnostics Console inside Input/Output Workspace -->
+          <GramWarnings
+            v-if="diagnostics.length > 0"
+            :warnings="diagnostics"
+            v-model:collapsed="isConsoleCollapsed"
+            @jump="handleJump"
           />
-          <div
-            class="editor-wrapper"
-            :id="EDITOR_PANEL_ID"
-            role="tabpanel"
-            :aria-labelledby="activeTabId"
-            tabindex="-1"
-          >
-            <GramEditor
-              ref="editorRef"
-              :files="files"
-              :active-file="activeFile"
-              @update:files="(path, val) => files.set(path, val)"
-            />
-          </div>
-        </div>
-        
-        <!-- Splitter -->
-        <div class="playground-splitter" @mousedown.prevent="startDrag">
-          <div class="splitter-handle"></div>
         </div>
 
-        <!-- Right Column: Output -->
-        <div class="playground-col right-col" :class="{ 'is-mobile-active': mobileTab === 'preview' }">
-          <div v-if="activeFile !== entryFile" class="preview-scope-banner">
-            {{ t.playground.tabs.previewingStandalone }} <code>{{ activeFile.slice(1) }}</code>
-          </div>
-          <div class="output-wrapper">
-            <GramOutput 
-              :view-mode="viewMode as any" 
-              :content="content" 
-              :html-preview="htmlPreview" 
-              :json-data="jsonData" 
-              :run-sheet-html="runSheetHtml"
-              :blocking-diagnostics="blockingDiagnostics"
-              @scale-update="handleScaleUpdate"
-              @jump="handleJump"
-            >
-              <template #view-selector>
-                <div class="header-view-controls">
-                  <div class="header-view-wrapper">
-                    <span class="toolbar-label">{{ t.playground.viewLabel }}</span>
-                    <PlaygroundDropdown
-                      v-model="viewMode"
-                      :options="viewModeOptions"
-                      :aria-label="t.playground.viewLabel"
-                      class="header-view-selector"
-                    />
-                  </div>
-                  <button
-                    v-if="['runsheet', 'preview'].includes(viewMode)"
-                    type="button"
-                    class="header-quick-action"
-                    :title="t.playground.openScheduleSettings"
-                    @click="openStudio('schedule')"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>{{ t.playground.scheduleButton }}</span>
-                    <span v-if="isPlanActive" class="status-indicator"></span>
-                  </button>
-                </div>
-              </template>
-            </GramOutput>
-          </div>
-        </div>
+        <!-- Recipe Studio Docked / Drawer -->
+        <GramDrawer
+          :is-open="isDrawerOpen"
+          :docked="isWideScreen"
+          :title="t.playground.studioTitle"
+          :active-count="activeModifiersCount"
+          @close="closeStudio"
+          @reset="resetAllStudioOptions"
+        >
+          <GramOptions
+            v-model:options="options"
+            :shopping-list="jsonData?.shopping_list || []"
+            :available-imports="availableImports"
+            :stocked-uris="stockedUris"
+            v-model:scale-factor-string="scaleFactorString"
+            v-model:scale-target-id="scaleTargetId"
+            v-model:scale-target-qty="scaleTargetQty"
+            v-model:scale-target-unit="scaleTargetUnit"
+            :schedule="schedule"
+            :rests="rests"
+            :plan="plan"
+            :plan-error="planError"
+            :serve-suggestions="serveSuggestions"
+            :initial-section="drawerInitialSection"
+            @update:schedule="(val) => (schedule = val)"
+            @update:rests="(val) => (rests = val)"
+            @update:plan="(val) => (plan = val)"
+            @clear-plan="clearPlan"
+            @clear-target="clearTarget"
+            @scale-apply="handleScaleApply"
+            @toggle-stock="toggleStock"
+          />
+        </GramDrawer>
       </div>
-
-      <!-- Full-Width Bottom Diagnostics Console -->
-      <GramWarnings
-        v-if="diagnostics.length > 0"
-        :warnings="diagnostics"
-        v-model:collapsed="isConsoleCollapsed"
-        @jump="handleJump"
-      />
     </div>
-
-    <!-- Recipe Studio Drawer -->
-    <GramDrawer
-      :is-open="isDrawerOpen"
-      :title="t.playground.studioTitle"
-      :active-count="activeModifiersCount"
-      @close="closeStudio"
-      @reset="resetAllStudioOptions"
-    >
-      <GramOptions
-        v-model:options="options"
-        :shopping-list="jsonData?.shopping_list || []"
-        :available-imports="availableImports"
-        :stocked-uris="stockedUris"
-        v-model:scale-factor-string="scaleFactorString"
-        v-model:scale-target-id="scaleTargetId"
-        v-model:scale-target-qty="scaleTargetQty"
-        v-model:scale-target-unit="scaleTargetUnit"
-        :schedule="schedule"
-        :rests="rests"
-        :plan="plan"
-        :plan-error="planError"
-        :serve-suggestions="serveSuggestions"
-        :initial-section="drawerInitialSection"
-        @update:schedule="(val) => (schedule = val)"
-        @update:rests="(val) => (rests = val)"
-        @update:plan="(val) => (plan = val)"
-        @clear-plan="clearPlan"
-        @clear-target="clearTarget"
-        @scale-apply="handleScaleApply"
-        @toggle-stock="toggleStock"
-      />
-    </GramDrawer>
   </div>
 </template>
 
@@ -1316,33 +1332,6 @@ onUnmounted(() => {
   background-color: var(--sl-color-accent);
   color: #1a1613;
   line-height: 1;
-}
-
-.header-quick-action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px;
-  background-color: transparent;
-  border: 1px solid var(--sl-color-border);
-  color: var(--sl-color-text);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.header-quick-action:hover {
-  border-color: var(--sl-color-gray-3);
-  background-color: var(--sl-color-gray-6);
-}
-
-.header-quick-action .status-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--sl-color-accent);
 }
 
 .playground-toolbar {
@@ -1454,68 +1443,68 @@ onUnmounted(() => {
   min-height: 0;
 }
 
-/* Mobile Pane Switcher */
+/* Mobile / Medium Pane Switcher */
 .mobile-pane-switcher {
   display: none;
+  background-color: var(--sl-color-bg-sidebar);
+  border: 1px solid var(--sl-color-border);
+  margin-bottom: 8px;
+}
+
+.mobile-pane-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--sl-color-gray-3);
+  background: var(--sl-color-gray-7);
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-pane-btn:first-child {
+  border-right: 1px solid var(--sl-color-border);
+}
+
+.mobile-pane-btn.active {
+  background-color: var(--sl-color-bg);
+  color: var(--sl-color-text);
+  font-weight: 600;
+}
+
+.mobile-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.mobile-tab-dot.dot-error {
+  background-color: var(--sl-color-red);
+}
+
+.mobile-tab-dot.dot-warning {
+  background-color: var(--sl-color-orange);
 }
 
 @media (max-width: 767px) {
   .mobile-pane-switcher {
     display: flex;
-    background-color: var(--sl-color-bg-sidebar);
-    border: 1px solid var(--sl-color-border);
-    margin-bottom: 8px;
-  }
-
-  .mobile-pane-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--sl-color-gray-3);
-    background: var(--sl-color-gray-7);
-    border: none;
-    cursor: pointer;
-  }
-
-  .mobile-pane-btn:first-child{
-		border-right: 1px solid var(--sl-color-border);
-  }
-
-  .mobile-pane-btn.active {
-    background-color: var(--sl-color-bg);
-    color: var(--sl-color-text);
-	font-weight: 600;
-  }
-
-  .mobile-tab-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-  }
-
-  .mobile-tab-dot.dot-error {
-    background-color: var(--sl-color-red);
-  }
-
-  .mobile-tab-dot.dot-warning {
-    background-color: var(--sl-color-orange);
   }
 }
+
 
 /* Workspace & Split Pane */
 .playground-workspace {
   display: flex;
   height: calc(100vh - 200px);
   min-height: 520px;
-  border: 1px solid var(--sl-color-border);
-  background-color: var(--sl-color-bg);
   position: relative;
   min-width: 0;
   max-width: 100%;
+  gap: 8px;
 }
 
 .gram-playground.is-fullscreen .playground-workspace {
@@ -1527,6 +1516,26 @@ onUnmounted(() => {
 .playground-workspace.is-dragging {
   cursor: col-resize;
   user-select: none;
+}
+
+.workspace-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  border: 1px solid var(--sl-color-border);
+  background-color: var(--sl-color-bg);
+  overflow: hidden;
+}
+
+.workspace-panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  position: relative;
 }
 
 .playground-col {
@@ -1613,19 +1622,6 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-/* The view selector and the schedule selector: at the two ends on a wide
-   header, wrapping onto two lines when the header is too narrow for both. */
-.header-view-controls {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 16px;
-  row-gap: 2px;
-}
-
 .header-view-selector :deep(.dropdown-header) {
   border-color: transparent;
   padding-left: 0;
@@ -1688,6 +1684,21 @@ onUnmounted(() => {
     height: calc(100dvh - 180px);
     min-height: 440px;
     flex-direction: column;
+  }
+
+  .workspace-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .workspace-panes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
   }
 
   .playground-splitter {
