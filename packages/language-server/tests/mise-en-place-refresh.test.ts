@@ -370,10 +370,30 @@ describe("the work plan in the language server", () => {
 			h.includes("Work plan — Tart"),
 		);
 		expect(html).toContain("work-plan-day");
-		expect(html).toContain("To take out");
+		// By section (the default), the things to take out sit with their section.
+		expect(html).toContain("program-kit");
 		// No serving time in the editor: the days are counted back from it.
 		expect(html).toContain("D-2");
 		expect(html).not.toContain("<script");
+	}, 20_000);
+
+	it("takes its kit from gram.miseEnPlace: the filling is taken out at the first visit in upfront only", async () => {
+		const firstDay = (html: string) =>
+			html.split('class="work-plan-day"')[1] ?? "";
+		client = new Client();
+		await client.start();
+		client.open(RECIPE("Tart"));
+		const bySection = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			h.includes("Work plan — Tart"),
+		);
+		expect(firstDay(bySection)).not.toContain("filling");
+
+		client.setting = "upfront";
+		client.settingChanged();
+		const upfront = await client.htmlOf("gram/runSheetUpdated", (h) =>
+			firstDay(h).includes("filling"),
+		);
+		expect(firstDay(upfront)).toContain("flour");
 	}, 20_000);
 
 	it("keeps sending the Gantt chart notification until 2.0.0", async () => {

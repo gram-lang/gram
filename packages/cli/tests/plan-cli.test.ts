@@ -154,6 +154,44 @@ describe("gram plan", () => {
 		expect(out).toContain("The first task should have started");
 	});
 
+	it("takes its kit from --mise-en-place in text, Markdown, HTML and the calendar", async () => {
+		// The glaze is asked for at the second section: by section it is taken out
+		// on the day of the glaze, upfront on the first visit.
+		await writeFile(
+			join(dir, "tart.gram"),
+			"---\ntitle: Tart\n---\n\n## Pastry ->&pastry ~{-1d}\n\n[Mix] Mix @flour{200g}.\n\n## Glaze\n\n[Cover] Cover &pastry with @jam{80g}.\n",
+			"utf-8",
+		);
+		const args = (mode: string, ...more: string[]) => [
+			"plan",
+			"tart.gram",
+			"--serve",
+			"2026-10-11 13:00",
+			"--tz",
+			"Europe/Paris",
+			"--now",
+			"2026-10-01T09:00:00Z",
+			"--mise-en-place",
+			mode,
+			...more,
+		];
+		const firstVisit = (out: string, marker: RegExp) =>
+			(out.split(marker)[1] ?? "").split(/Before leaving|En partant/)[0] ?? "";
+		for (const [format, marker] of [
+			["text", /To take out/],
+			["md", /\*\*To take out\*\*/],
+			["html", /work-plan-kit/],
+		] as const) {
+			const by = gram(...args("per-section", "--format", format)).out;
+			const up = gram(...args("upfront", "--format", format)).out;
+			expect(firstVisit(by, marker)).not.toContain("jam");
+			expect(firstVisit(up, marker)).toContain("jam");
+		}
+		const ics = join(dir, "tart.ics");
+		gram(...args("upfront", "--ics", ics));
+		expect(await Bun.file(ics).text()).toContain("jam 80 g");
+	});
+
 	it("refuses a bad serving time, zone, availability or format", () => {
 		for (const bad of [
 			["--serve", "sunday"],
