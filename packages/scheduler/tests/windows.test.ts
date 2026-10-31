@@ -158,6 +158,24 @@ describe("visit windows", () => {
 		expect(only!.fixedBy).toMatchObject({ before: "service", planned: 120 });
 	});
 
+	it("says nothing when only the start of the day bounds a visit", () => {
+		// Available all day, "possible from 00:00" is true of any visit.
+		const allDay = context({
+			availability: { daily: [{ start: "00:00", end: "24:00" }] },
+		});
+		for (const p of visitsOf(sheetOf(entremets, allDay))) {
+			expect(p.window?.earliestLocal.endsWith("T00:00")).not.toBe(true);
+		}
+		const [first] = visitsOf(sheetOf(entremets, allDay));
+		expect(first!.window).toBeUndefined();
+		// A declared availability, or the present, is worth telling.
+		expect(visitsOf(sheetOf(entremets, context()))[0]!.window).toBeDefined();
+		expect(
+			visitsOf(sheetOf(entremets, { ...allDay, now: "2026-10-15T17:50" }))[0]!
+				.window,
+		).toMatchObject({ earliestLocal: "2026-10-15T17:50" });
+	});
+
 	it("keeps a stretchable wait from holding anything, within what it allows", () => {
 		const graph: TaskGraph = {
 			tasks: [

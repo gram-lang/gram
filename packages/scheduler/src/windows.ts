@@ -181,10 +181,12 @@ export function visitWindows(
 			// The service itself is the end of the last visit: nothing earlier.
 			if (p.end >= -EPS) constraints.push({ slack: 0 });
 			const date = p.startLocal?.slice(0, 10);
+			// The start of the day only bounds a window with nothing else to say:
+			// "possible from 00:00" is true of any visit and tells the cook nothing.
+			let midnight: Constraint | undefined;
 			if (date !== undefined) {
-				constraints.push({
-					slack: start - localDateTime(date, 0, timeZone),
-				});
+				midnight = { slack: start - localDateTime(date, 0, timeZone) };
+				constraints.push(midnight);
 			}
 			if (now !== undefined) constraints.push({ slack: start - now });
 			const room = intervals.find(
@@ -194,6 +196,12 @@ export function visitWindows(
 			else constraints.push({ slack: 0 });
 
 			const advance = Math.max(0, Math.min(...constraints.map((c) => c.slack)));
+			const onlyMidnight =
+				midnight !== undefined &&
+				constraints.every(
+					(c) => c === midnight || c.slack > midnight.slack + EPS,
+				);
+			if (onlyMidnight) return;
 			if (advance >= WINDOW_MIN_MINUTES - EPS) {
 				p.window = {
 					advance,
