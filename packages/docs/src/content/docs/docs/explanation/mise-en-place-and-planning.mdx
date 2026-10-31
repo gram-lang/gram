@@ -212,7 +212,7 @@ At the start of each working day, Gram consolidates the mise en place required f
 
 Cumulative preparation time and active cooking work remain strictly identical across all scheduling strategies.
 
-The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy.
+The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy: by section, each section carries its own raw ingredients, right before its steps; per session, they are listed together at the top of the visit with the quantities summed; upfront, they are all listed at the first visit. A preparation is always listed at the visit of the first step that uses it.
 
 :::tip[Chaining sections]
 When several sections follow each other on the same day, anchor only the final one (`## Tart ~{-1d}`) and leave upstream sections unanchored (like the crust above): they automatically inherit its day and sequence immediately before it. Assigning `~{-1d}` to each creates concurrent deadlines at the exact same moment, causing a time paradox warning when dependencies exist between them.

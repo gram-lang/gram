@@ -159,7 +159,7 @@ The work plan for a recipe without an explicit target serving time is obtained v
 | `title`, `subtitle`, `summary` | "Work plan — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
 | `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
 | `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'passage'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
-| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`passages[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`), action tasks (`program[]`), and unattended background tasks (`leaving[]`). |
+| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`passages[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perSession` and `upfront` modes), the steps to read (`program[]`: a section, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` of things to take out), and unattended background tasks (`leaving[]`). |
 | `events[]` | One calendar event per visit (`start`, `end` in UTC, `title`, `description`), for a plan with a serving time. |
 
 ### `passageKit()` and `sectionProgram()`
@@ -171,10 +171,10 @@ passageKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
 // { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, note? }
 
 sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
-// { section, title, origin?, from, to, steps: [{ n, action?, temperatures, timers }] }
+// { section, title, origin?, from, to }
 ```
 
-Nothing is invented: names, quantities, actions, temperatures and timers (with their written range) are those of the `.gram` file. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
+Nothing is invented: names and quantities are those of the `.gram` file, and the work plan points to the steps rather than summarizing them. The mode of the kit (`perSection`, `perSession`, `upfront`) is read from `RunSheet.recipes[].miseEnPlace`: the renderer has no option for it. `describeServeTimes()` and `describeEarliestServe()` put the result of `findServeTimes()` and `earliestServe()` in words the same way.
 
 ## Related resources
 

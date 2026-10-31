@@ -159,7 +159,7 @@ Le planning d'une recette sans heure de service cible s'obtient via `runSheet(co
 | `title`, `subtitle`, `summary` | « Planning de préparation — Entremets », « Pour le samedi 17 octobre à 20:00 · 6 parts », « 3 jours · 3 passages en cuisine · 45m de travail en tout ». |
 | `problems` | Diagnostics contextuels émis si des contraintes de calendrier n'ont pas pu être respectées (une phrase explicative par problème). |
 | `schedule[]` | Synthèse des journées : une ligne par passage actif (`kind: 'passage'`), par processus passif en continu (`'thread'`) et pour le service final (`'serve'`), avec les propriétés `day`, `time` et `text`. |
-| `days[]` | Détail par journée : en-tête (`heading`), créneau horaire (`slot`), avertissements de repos ajustés (`notices`) et liste des passages (`passages[]`), chacun détaillant son créneau (`slot`), sa marge d'anticipation (`margin`), ses ingrédients et matériel (`kit[]`), son programme d'action (`program[]`) et les tâches poursuivies en tâche de fond (`leaving[]`). |
+| `days[]` | Détail par journée : en-tête (`heading`), créneau horaire (`slot`), avertissements de repos ajustés (`notices`) et liste des passages (`passages[]`), chacun détaillant son créneau (`slot`), sa marge d'anticipation (`margin`), ses ingrédients et matériel (`kit[]`, regroupé par catégories, renseigné dans les modes `perSession` et `upfront`), les étapes à relire (`program[]` : une section, un renvoi comme `étapes 1 à 3` et, en mode `perSection`, son propre `kit[]` d'éléments à sortir) et les tâches poursuivies en tâche de fond (`leaving[]`). |
 | `events[]` | Un événement d'agenda par passage (`start`, `end` en UTC, `title`, `description`), pour un plan avec heure de service. |
 
 ### `passageKit()` et `sectionProgram()`
@@ -171,10 +171,10 @@ passageKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
 // { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, note? }
 
 sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined
-// { section, title, origin?, from, to, steps: [{ n, action?, temperatures, timers }] }
+// { section, title, origin?, from, to }
 ```
 
-Rien n'est inventé : noms, quantités, actions, températures et minuteurs (avec leur fourchette écrite) sont ceux du fichier `.gram`. `describeServeTimes()` et `describeEarliestServe()` mettent de la même façon en mots le résultat de `findServeTimes()` et `earliestServe()`.
+Rien n'est inventé : noms et quantités sont ceux du fichier `.gram`, et le planning renvoie aux étapes au lieu de les résumer. Le mode du kit (`perSection`, `perSession`, `upfront`) se lit dans `RunSheet.recipes[].miseEnPlace` : le moteur de rendu ne propose pas d'option dédiée pour ce réglage. `describeServeTimes()` et `describeEarliestServe()` mettent de la même façon en mots le résultat de `findServeTimes()` et `earliestServe()`.
 
 ## Ressources associées
 

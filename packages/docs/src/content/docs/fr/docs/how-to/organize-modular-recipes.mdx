@@ -297,7 +297,7 @@ Lors de la génération d'un [planning de préparation](/fr/docs/how-to/plan-a-m
 
 - **Anticipation sur plusieurs jours :** L'ajout d'une ancre temporelle sur la directive d'importation (par exemple `@use "./bases/biscuit.gram" as &biscuit ~{-2d}`) programme automatiquement la confection de cette sous-recette deux jours avant le service.
 - **Bases déjà prêtes (`--stock`) :** Si vous déclarez une préparation comme étant déjà disponible au congélateur ou en réserve (`--stock ./bases/biscuit.gram`), aucune session de confection n'est planifiée. Elle apparaît simplement annotée « en stock » dans la liste « À sortir » lors de la session où la recette principale en a besoin.
-- **Traçabilité des étapes :** Dans le déroulé opérationnel (« Au programme »), les actions issues d'un module importé mentionnent explicitement leur fichier d'origine (par exemple : `biscuit.gram (étapes 1 à 2)`).
+- **Traçabilité des étapes :** Dans les renvois « Au programme », une section issue d'un module importé mentionne explicitement son fichier d'origine (par exemple : `biscuit.gram, étapes 1 à 2`).
 
 ## Ressources associées
 

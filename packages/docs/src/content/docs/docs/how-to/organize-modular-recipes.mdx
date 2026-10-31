@@ -294,7 +294,7 @@ When generating a [work plan](/docs/how-to/plan-a-meal/), every base imported vi
 
 - **Multi-day scheduling:** Adding a day anchor to an import directive (for example `@use "./bases/sponge.gram" as &sponge ~{-2d}`) automatically schedules the preparation of that sub-recipe two days before the service.
 - **Stocked bases (`--stock`):** If you mark a base as already on hand in your freezer or pantry (`--stock ./bases/sponge.gram`), no cooking visit is scheduled for it. It simply appears annotated as "in stock" under "To take out" during the visit where the host recipe needs it.
-- **Step traceability:** In the action checklist ("To do"), steps originating from an imported module explicitly display their source file name (for example: `sponge.gram (steps 1 to 2)`).
+- **Step traceability:** In the steps to read ("To do"), a section that comes from an imported module explicitly displays its source file name (for example: `sponge.gram, steps 1 to 2`).
 
 ## Related resources
 

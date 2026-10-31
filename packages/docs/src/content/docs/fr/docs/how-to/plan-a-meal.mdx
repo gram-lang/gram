@@ -46,7 +46,7 @@ Les fichiers complets de cet exemple sont disponibles dans le dossier [`public/e
    Pour approfondir la syntaxe des durées et des ancres, consultez [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes) ainsi que [Jours et heures](/fr/docs/reference/syntax/times/#jours-et-heures).
 
    > [!TIP]
-   > **Nommez vos étapes avec une `[Action]`** : Le planning de préparation nomme les étapes et les fils d'attente d'après leur verbe d'action (ex. : `Mousse (étapes 1 à 2) : Monter 10 min › Monter l'entremets 10 min` dans le programme du jour, et `Mousse : Monter l'entremets 12h à 48h` dans la vue chronologique). Préfixer chaque étape minutée d'une `[Action]` garantit des intitulés explicites et parlants partout dans le planning, plutôt que des durées isolées ou des libellés génériques comme `Repos`.
+   > **Nommez vos étapes avec une `[Action]`** : Le planning de préparation nomme les étapes et les fils d'attente d'après leur verbe d'action (ex. : `Mousse : Monter l'entremets 12h à 48h` dans la vue chronologique et pour les temps d'attente qui se poursuivent sans vous). Préfixer chaque étape minutée d'une `[Action]` garantit des intitulés explicites et parlants à ces endroits, plutôt que des durées isolées ou des libellés génériques comme `Repos`.
 
 2. ### Déterminer l'heure du service
 
@@ -111,8 +111,8 @@ Les fichiers complets de cet exemple sont disponibles dans le dossier [`public/e
    #### Le détail jour par jour
    Chaque journée de préparation dispose ensuite de sa propre fiche d'action :
 
-   - **À sortir** : les ingrédients requis (automatiquement regroupés et cumulés lorsque plusieurs sections utilisent le même produit, ex. `sucre 90 g (60 + 30)`), les préparations issues d'une session précédente (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire. Cochez-les au fur et à mesure de votre mise en place.
-   - **Au programme** : une synthèse par section rappelant les étapes concernées (`étapes 1 à 2`, ainsi que le fichier source pour un import) et résumant les gestes, températures et minuteurs. Cette vue ne recopie pas la recette : elle vous indique exactement où vous reporter.
+   - **À sortir** : les ingrédients requis, les préparations issues d'un passage précédent (`Biscuit, fait jeudi`), les éléments préexistants (`glaçage, en stock`) et le matériel nécessaire, mentionné une seule fois par passage. Cochez-les au fur et à mesure de votre mise en place. Leur disposition varie selon votre [mode de mise en place](/fr/docs/explanation/mise-en-place-and-planning/) : par section (mode par défaut), il n'y a pas de liste en haut du passage — chaque section regroupe ses propres éléments à sortir juste avant ses étapes, et le matériel n'est mentionné qu'une fois, lors de la première section qui l'utilise ; par session, un bloc en haut de passage cumule les ingrédients bruts (ex. `sucre 90 g (60 + 30)`) ; en amont (`upfront`), ce bloc rassemble tous les ingrédients bruts dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle est utilisée.
+   - **Au programme** : une ligne par section qui renvoie aux étapes de ce passage (`étapes 1 à 2`, avec le fichier source pour un import), complétée par les éléments à sortir correspondants lorsque vous planifiez par section. Cette vue ne recopie pas la recette : elle vous indique exactement où vous reporter.
    - **En partant** : les processus passifs qui continuent sans surveillance et l'horaire précis de votre prochaine session en cuisine.
    - **Possible dès... / Heures fixes** : indique la marge d'anticipation possible pour ce passage sans perturber le reste de la recette, ou nomme le temps d'attente incompressible qui bloque son horaire.
    - **Ajustements de repos** : tout temps d'attente passif que le moteur a dû prolonger ou raccourcir pour respecter vos plages disponibles est signalé en tête de la journée concernée.
@@ -129,7 +129,7 @@ Les fichiers complets de cet exemple sont disponibles dans le dossier [`public/e
        [ ] batteur
        [ ] cercle de 20 cm
      Au programme
-       Mousse (étapes 1 à 2) : Monter 10 min › Monter l'entremets 10 min · 12 à 48 h
+       Mousse (étapes 1 à 2)
      En partant
        Mousse : Monter l'entremets 12h à 48h, jusqu'à 02:00
        Prochain passage : samedi 13:55
