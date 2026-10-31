@@ -213,7 +213,7 @@ const entremetsPlan = project([{ graph: entremets, title: "Entremets" }], {
 });
 
 describe("runSheet days, passages and threads", () => {
-	it("opens a day per working session, with the passages of the kitchen", () => {
+	it("opens a day per working day, with the passages of the kitchen", () => {
 		const [recipe] = runSheet(entremetsPlan, { graph: entremets }).recipes;
 		expect(recipe!.days.map((d) => d.daysBefore)).toEqual([2, 1, 0]);
 		expect(recipe!.days.map((d) => d.passages.length)).toEqual([1, 1, 2]);
@@ -353,7 +353,7 @@ describe("runSheet days, passages and threads", () => {
 		});
 	}
 
-	it("tells a single session that runs over several dates one day per date", () => {
+	it("tells a single working day that runs over several dates one day per date", () => {
 		const upfront = runSheet(
 			project([{ graph, options: { miseEnPlace: "upfront" } }], {
 				serveAt: "2026-10-11T13:00",

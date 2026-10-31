@@ -1,7 +1,7 @@
 {
   "type": "Recipe",
   "meta": {
-    "title": "Anchors in hours stay in one session"
+    "title": "Anchors in hours stay in one working day"
   },
   "imports": [],
   "children": [
@@ -24,8 +24,8 @@
               "type": "Text",
               "value": "Mix ",
               "loc": {
-                "start": 85,
-                "end": 89
+                "start": 89,
+                "end": 93
               }
             },
             {
@@ -42,24 +42,24 @@
                 "unit": "kg",
                 "fixed": false,
                 "loc": {
-                  "start": 98,
-                  "end": 101
+                  "start": 102,
+                  "end": 105
                 }
               },
               "alias": null,
               "preparation": null,
               "composite": null,
               "loc": {
-                "start": 89,
-                "end": 102
+                "start": 93,
+                "end": 106
               }
             },
             {
               "type": "Text",
               "value": "with ",
               "loc": {
-                "start": 103,
-                "end": 108
+                "start": 107,
+                "end": 112
               }
             },
             {
@@ -76,24 +76,24 @@
                 "unit": "g",
                 "fixed": false,
                 "loc": {
-                  "start": 116,
-                  "end": 120
+                  "start": 120,
+                  "end": 124
                 }
               },
               "alias": null,
               "preparation": null,
               "composite": null,
               "loc": {
-                "start": 108,
-                "end": 121
+                "start": 112,
+                "end": 125
               }
             },
             {
               "type": "Text",
               "value": "and ",
               "loc": {
-                "start": 122,
-                "end": 126
+                "start": 126,
+                "end": 130
               }
             },
             {
@@ -110,24 +110,24 @@
                 "unit": "g",
                 "fixed": false,
                 "loc": {
-                  "start": 134,
-                  "end": 137
+                  "start": 138,
+                  "end": 141
                 }
               },
               "alias": null,
               "preparation": null,
               "composite": null,
               "loc": {
-                "start": 126,
-                "end": 138
+                "start": 130,
+                "end": 142
               }
             },
             {
               "type": "Text",
               "value": ", then rest ",
               "loc": {
-                "start": 138,
-                "end": 150
+                "start": 142,
+                "end": 154
               }
             },
             {
@@ -143,34 +143,34 @@
                 "unit": "h",
                 "fixed": false,
                 "loc": {
-                  "start": 153,
-                  "end": 156
+                  "start": 157,
+                  "end": 160
                 }
               },
               "isPassive": true,
               "loc": {
-                "start": 150,
-                "end": 157
+                "start": 154,
+                "end": 161
               }
             },
             {
               "type": "Text",
               "value": ".",
               "loc": {
-                "start": 157,
-                "end": 158
+                "start": 161,
+                "end": 162
               }
             }
           ],
           "loc": {
-            "start": 74,
-            "end": 160
+            "start": 78,
+            "end": 164
           }
         }
       ],
       "loc": {
-        "start": 53,
-        "end": 160
+        "start": 57,
+        "end": 164
       }
     },
     {
@@ -192,8 +192,8 @@
               "type": "Text",
               "value": "Fry the chicken in ",
               "loc": {
-                "start": 182,
-                "end": 201
+                "start": 186,
+                "end": 205
               }
             },
             {
@@ -210,24 +210,24 @@
                 "unit": "ml",
                 "fixed": false,
                 "loc": {
-                  "start": 206,
-                  "end": 210
+                  "start": 210,
+                  "end": 214
                 }
               },
               "alias": null,
               "preparation": null,
               "composite": null,
               "loc": {
-                "start": 201,
-                "end": 211
+                "start": 205,
+                "end": 215
               }
             },
             {
               "type": "Text",
               "value": "for ",
               "loc": {
-                "start": 212,
-                "end": 216
+                "start": 216,
+                "end": 220
               }
             },
             {
@@ -243,34 +243,34 @@
                 "unit": "min",
                 "fixed": false,
                 "loc": {
-                  "start": 218,
-                  "end": 223
+                  "start": 222,
+                  "end": 227
                 }
               },
               "isPassive": false,
               "loc": {
-                "start": 216,
-                "end": 224
+                "start": 220,
+                "end": 228
               }
             },
             {
               "type": "Text",
               "value": ".",
               "loc": {
-                "start": 224,
-                "end": 225
+                "start": 228,
+                "end": 229
               }
             }
           ],
           "loc": {
-            "start": 176,
-            "end": 227
+            "start": 180,
+            "end": 231
           }
         }
       ],
       "loc": {
-        "start": 160,
-        "end": 227
+        "start": 164,
+        "end": 231
       }
     },
     {
@@ -287,8 +287,8 @@
               "type": "Text",
               "value": "Plate with ",
               "loc": {
-                "start": 245,
-                "end": 256
+                "start": 249,
+                "end": 260
               }
             },
             {
@@ -305,36 +305,36 @@
                 "unit": "g",
                 "fixed": false,
                 "loc": {
-                  "start": 262,
-                  "end": 266
+                  "start": 266,
+                  "end": 270
                 }
               },
               "alias": null,
               "preparation": null,
               "composite": null,
               "loc": {
-                "start": 256,
-                "end": 267
+                "start": 260,
+                "end": 271
               }
             },
             {
               "type": "Text",
               "value": ".",
               "loc": {
-                "start": 267,
-                "end": 268
+                "start": 271,
+                "end": 272
               }
             }
           ],
           "loc": {
-            "start": 237,
-            "end": 269
+            "start": 241,
+            "end": 273
           }
         }
       ],
       "loc": {
-        "start": 227,
-        "end": 269
+        "start": 231,
+        "end": 273
       }
     }
   ]

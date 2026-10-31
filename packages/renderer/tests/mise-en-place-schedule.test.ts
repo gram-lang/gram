@@ -268,7 +268,7 @@ describe("perDay", () => {
 		const html = toGanttHTML(multi, options);
 		expect(html).toContain(">D-3<");
 		expect(html).toContain(">D-1<");
-		expect(countOf(html, 'class="gantt-marker session-marker"')).toBe(2);
+		expect(countOf(html, 'class="gantt-marker day-marker"')).toBe(2);
 		const ids = buildTracks(multi, options).tracks.flatMap((t) =>
 			t.blocks.map((b) => b.id),
 		);

@@ -10,7 +10,7 @@ import { Steps, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 Une recette décrit sa propre temporalité : la liste des tâches, leur durée et leurs dépendances. Cela suffit pour déterminer une métrique globale — par exemple « cette recette nécessite 17 heures au total, dont 50 minutes de travail actif ». En revanche, cela ne suffit pas pour déterminer **à quel moment précis commencer**. Pour cela, Gram a besoin de trois paramètres que vous seul connaissez : votre heure de service cible, votre fuseau horaire et vos plages réelles de disponibilité.
 
-Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le calendrier en rétroplanning depuis l'heure de service, puis organise les journées de travail, les sessions actives en cuisine et les processus passifs intermédiaires. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) constitue la restitution opérationnelle de ces données.
+Une fois ces trois paramètres définis, Gram positionne chaque tâche sur le calendrier en rétroplanning depuis l'heure de service, puis organise les journées de travail, les passages en cuisine et les processus passifs intermédiaires. Le [planning de préparation](/fr/docs/how-to/plan-a-meal/) constitue la restitution opérationnelle de ces données.
 
 ## Paramètres d'entrée
 
@@ -87,12 +87,12 @@ Gram ne dissimule jamais un conflit qu'il ne peut pas résoudre. Toute anomalie 
 |---|---|---|
 | `ACTIVE_OUTSIDE_AVAILABILITY` | Du travail actif tombe hors de vos disponibilités, sans qu'aucune attente ne puisse le déplacer (attente de durée fixe, fourchette insuffisante ou absence d'attente ultérieure). | Élargir vos plages de disponibilité ou autoriser une fourchette d'attente plus souple. |
 | `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | Un bloc de travail continu ininterruptible dépasse la durée de votre plus grande plage de disponibilité continue. | Augmenter la durée de votre plage de disponibilité (aucun ajustement d'attente ne peut scinder ce bloc). |
-| `SESSION_DAY_MISMATCH` | Une session de travail journalière tombe sur une date calendaire différente de celle prévue (du travail `~{-1d}` se retrouvant deux jours avant). | Ancrer explicitement la section ou ajuster les attentes intermédiaires. |
+| `DAY_MISMATCH` | Une journée de travail tombe sur une date calendaire différente de celle prévue (du travail `~{-1d}` se retrouvant deux jours avant). | Ancrer explicitement la section ou ajuster les attentes intermédiaires. |
 | `START_IN_PAST` | La première tâche aurait dû débuter avant l'instant présent ou la date de planification. | Décaler l'heure de service plus tard ou raccourcir les durées d'attente. |
 | `MULTI_RECIPE_UNSUPPORTED` | Plusieurs recettes ont été fournies simultanément ; seule la première a été planifiée. | Planifier chaque recette individuellement. |
 
 :::note[Diagnostics de planification vs Avertissements de compilation]
-Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent directement de **vos** contraintes de disponibilité et ne constituent pas des erreurs de la recette elle-même. Les avertissements propres au code de la recette (comme `SESSION_OVERFLOW`, lorsqu'une attente excessive pousse une session hors de sa journée de 24 heures) sont détaillés dans la référence [Temps et durées](/fr/docs/reference/syntax/times/#gestion-des-erreurs).
+Ces diagnostics sont spécifiques à la projection calendaire : ils dépendent directement de **vos** contraintes de disponibilité et ne constituent pas des erreurs de la recette elle-même. Les avertissements propres au code de la recette (comme `DAY_OVERFLOW`, lorsqu'une attente excessive pousse du travail hors de sa journée de 24 heures) sont détaillés dans la référence [Temps et durées](/fr/docs/reference/syntax/times/#gestion-des-erreurs).
 :::
 
 ## Fuseaux et changements d'heure
@@ -101,9 +101,9 @@ Les calculs internes s'effectuent en minutes absolues sur une échelle continue,
 
 ## Le planning de préparation
 
-La projection calendaire produit un modèle de données complet : horodatages précis de chaque bloc, temps de repos passifs ajustés, périodes d'indisponibilité et diagnostics des contraintes non résolues. La fonction [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) structure ces données en journées de travail, en **sessions actives en cuisine** (passages) et en **processus passifs d'arrière-plan** (repos, fermentation, refroidissement), tout en calculant la marge d'anticipation disponible pour chaque intervention.
+La projection calendaire produit un modèle de données complet : horodatages précis de chaque bloc, temps de repos passifs ajustés, périodes d'indisponibilité et diagnostics des contraintes non résolues. La fonction [`runSheet()`](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation) structure ces données en journées de travail, en **passages en cuisine** et en **processus passifs d'arrière-plan** (repos, fermentation, refroidissement), tout en calculant la marge d'anticipation disponible pour chaque intervention.
 
-Le **planning de préparation** constitue la vue opérationnelle de ce modèle. Pour chaque journée, il récapitule les heures de présence requises en cuisine, le matériel et les ingrédients à sortir, les actions clés à réaliser au regard des étapes de la recette, ainsi que les processus qui continuent sans surveillance. Afin de refléter la réalité de la pratique culinaire, les horaires affichés sont arrondis aux cinq minutes les plus proches (alors que les calculs internes demeurent exacts à la minute près). Les ajustements de repos sont mentionnés en tête de la journée concernée, et les alertes d'ordonnancement regroupées en tête de document. Ces règles d'affichage (regroupement des sessions au-delà d'une heure de repos passif, affichage des marges à partir de 15 minutes) relèvent de la couche de rendu et non de contraintes rigides du moteur.
+Le **planning de préparation** constitue la vue opérationnelle de ce modèle. Pour chaque journée, il récapitule les heures de présence requises en cuisine, le matériel et les ingrédients à sortir, les actions clés à réaliser au regard des étapes de la recette, ainsi que les processus qui continuent sans surveillance. Afin de refléter la réalité de la pratique culinaire, les horaires affichés sont arrondis aux cinq minutes les plus proches (alors que les calculs internes demeurent exacts à la minute près). Les ajustements de repos sont mentionnés en tête de la journée concernée, et les alertes d'ordonnancement regroupées en tête de document. Ces règles d'affichage (regroupement des passages au-delà d'une heure de repos passif, affichage des marges à partir de 15 minutes) relèvent de la couche de rendu et non de contraintes rigides du moteur.
 
 Le planning peut être généré en texte brut, Markdown, fragment HTML, version imprimable dédiée (un jour par page avec cases à cocher) ou exporté vers un fichier iCalendar (`.ics`). L'option `--with-sheet` permet de l'annexer directement à la suite de la recette au sein d'un document unique. Tandis que la recette décrit **comment** cuisiner, le planning précise **quand** intervenir.
 
@@ -124,7 +124,7 @@ Consultez [Planifier un repas](/fr/docs/how-to/plan-a-meal/) pour le guide prati
 ## Limites actuelles
 
 - **Ordonnancement mono-recette** : la planification coordonnée d'un menu complet (entrée, plat et dessert synchronisés sur un même service, avec partage d'un cuisinier et d'un four unique) fera l'objet d'une évolution ultérieure ; l'API accepte néanmoins déjà une collection de recettes, et signale `MULTI_RECIPE_UNSUPPORTED` au-delà d'une.
-- **Absence de suivi d'état en direct** : le planning est une projection purement déterministe et ne conserve aucun état persistant en cours d'exécution. Si une session prend du retard, relancez simplement la commande `gram plan` pour recalculer les créneaux viables à partir du nouvel horaire.
+- **Absence de suivi d'état en direct** : le planning est une projection purement déterministe et ne conserve aucun état persistant en cours d'exécution. Si un passage prend du retard, relancez simplement la commande `gram plan` pour recalculer les créneaux viables à partir du nouvel horaire.
 - **Ressources partagées** : les équipements (temps de préchauffage du four, capacité du réfrigérateur) ne constituent pas encore des ressources partagées globales, en dehors des pistes nommées explicites.
 - **Approche heuristique** : l'algorithme est glouton et déterministe (conçu pour être explicable et prévisible plutôt qu'optimal au sens de la programmation mathématique) : il résout les conflits en partant de l'événement le plus tardif et remonte dans le temps.
 

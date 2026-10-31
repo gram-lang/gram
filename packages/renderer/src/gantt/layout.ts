@@ -2,14 +2,14 @@ import { getDictionary } from "@gram-lang/i18n";
 import type {
 	ProcessedStep,
 	ScheduleBlock,
-	ScheduleSession,
+	ScheduleDay,
 } from "@gram-lang/kitchen";
 import type { RenderContext, RenderableCompilationResult } from "../types";
 import {
 	type TimelineChoice,
 	describeMiseEnPlaceItem,
 	prepItems,
-	sessionDayLabel,
+	workingDayLabel,
 	timelineOf,
 } from "../mise-en-place";
 import { formatDuration, joinStepTokens } from "../utils";
@@ -109,10 +109,10 @@ export function formatAxisTime(
 /** What decides which timeline a chart draws: where the mise en place goes, and how long the rests last. */
 export type GanttTimelineOptions = TimelineChoice;
 
-/** The blocks and sessions to draw. */
+/** The blocks and working days to draw. */
 interface Timeline {
 	blocks: ScheduleBlock[];
-	sessions: ScheduleSession[];
+	days: ScheduleDay[];
 }
 
 /** The timeline to draw: the choice of the options, laid out from the recipe's task graph. */
@@ -121,7 +121,7 @@ export function resolveTimeline(
 	options: GanttTimelineOptions,
 ): Timeline | undefined {
 	const schedule = timelineOf(data, options);
-	return schedule && { blocks: schedule.blocks, sessions: schedule.sessions };
+	return schedule && { blocks: schedule.blocks, days: schedule.days };
 }
 
 /**
@@ -324,7 +324,7 @@ export function buildTracks(
 				)
 				.join(" · ");
 			cookTrack.blocks.push({
-				// A section can have a part gathered at the head of its session and one
+				// A section can have a part gathered at the head of its working day and one
 				// left for later: the two must not share an id.
 				id: `prep_${b.section}${b.deferred ? "_later" : ""}`,
 				start: b.start,
@@ -492,10 +492,10 @@ export function computeVisualGaps(
 }
 
 /** Where a working day starts on the axis, with its label ("D-3"). */
-export interface GanttSessionMarker {
+export interface GanttDayMarker {
 	leftPercent: number;
 	label: string;
-	/** The first session starts at the chart's own start: no line to draw. */
+	/** The first working day starts at the chart's own start: no line to draw. */
 	line: boolean;
 }
 
@@ -503,23 +503,23 @@ export interface GanttSessionMarker {
  * One marker per working day, when the schedule spans several. Positions go
  * through `getVirtualTime`, so they stay right when long waits are compressed.
  */
-export function computeSessionMarkers(
+export function computeDayMarkers(
 	data: RenderableCompilationResult,
 	gaps: GanttGap[],
 	totalVirtualTime: number,
 	compressedGapSize: number | undefined,
 	options: GanttTimelineOptions,
 	lang?: string,
-): GanttSessionMarker[] {
-	const sessions = resolveTimeline(data, options)?.sessions ?? [];
-	if (sessions.length < 2) return [];
+): GanttDayMarker[] {
+	const workingDays = resolveTimeline(data, options)?.days ?? [];
+	if (workingDays.length < 2) return [];
 	const t = getDictionary(lang);
-	return sessions.map((session, i) => ({
+	return workingDays.map((workingDay, i) => ({
 		leftPercent:
-			(getVirtualTime(session.start, gaps, compressedGapSize) /
+			(getVirtualTime(workingDay.start, gaps, compressedGapSize) /
 				totalVirtualTime) *
 			100,
-		label: sessionDayLabel(session.day, t.renderer),
+		label: workingDayLabel(workingDay.day, t.renderer),
 		line: i > 0,
 	}));
 }

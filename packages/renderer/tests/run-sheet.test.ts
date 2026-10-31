@@ -549,7 +549,7 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 		expect(runSheetToPrintHTML(sheet, tart)).toContain(".program-kit");
 		const [event] = describeRunSheet(sheet, tart).events;
 		expect(event!.description).toContain("- Pastry (step 1)\n  - flour 200 g");
-		// Per session, one block at the top of the visit and nothing on the lines.
+		// Per working day, one block at the top of the visit and nothing on the lines.
 		const one = planIn(tart, "perDay");
 		expect(runSheetToHTML(one, tart)).toContain('class="work-plan-kit"');
 		expect(runSheetToHTML(one, tart)).not.toContain('class="program-kit"');

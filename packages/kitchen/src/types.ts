@@ -204,7 +204,7 @@ import type {
 	MiseEnPlaceItem,
 	Schedule,
 	ScheduleBlock,
-	ScheduleSession,
+	ScheduleDay,
 	SectionMiseEnPlace,
 	TaskGraph,
 	TimeBreakdownItem,
@@ -215,7 +215,7 @@ export type {
 	MiseEnPlaceItem,
 	Schedule,
 	ScheduleBlock,
-	ScheduleSession,
+	ScheduleDay,
 	SectionMiseEnPlace,
 	TimeBreakdownItem,
 };

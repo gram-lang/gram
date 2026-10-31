@@ -13,7 +13,7 @@ export type {
 	Schedule,
 	ScheduleBlock,
 	ScheduledPassiveTask,
-	ScheduleSession,
+	ScheduleDay,
 	SchedulingDiagnostic,
 	SchedulingSection,
 	SectionMiseEnPlace,
@@ -27,7 +27,7 @@ export { serializeTracks } from "./tracks";
 export { computeTimeline } from "./rebase";
 export { cloneSchedules } from "./build";
 export { addToBreakdown, sumDuration } from "./breakdown";
-export { MINUTES_PER_DAY } from "./sessions";
+export { MINUTES_PER_DAY } from "./days";
 export {
 	DEFAULT_MISE_EN_PLACE_MODE,
 	DEFAULT_REST_CHOICE,
@@ -55,7 +55,7 @@ export type {
 	Availability,
 	ProjectedBlock,
 	ProjectedPlan,
-	ProjectedSession,
+	ProjectedDay,
 	ProjectionContext,
 	ProjectionDiagnostic,
 	ProjectionInput,

@@ -170,7 +170,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    Gram propose deux approches complémentaires pour visualiser le temps, selon les besoins de votre application :
    1. **La chronologie d'exécution relative** : exprime le déroulement en minutes depuis le départ ($t = 0$). Idéale pour un guidage pas-à-pas en cours de préparation ou une frise linéaire de cuisson.
-   2. **Le planning de préparation calendaire** : projette les étapes sur des dates, des heures d'horloge murale et des sessions de travail réelles. Idéale pour l'organisation logistique d'un repas.
+   2. **Le planning de préparation calendaire** : projette les étapes sur des dates, des heures d'horloge murale et des passages en cuisine réels. Idéale pour l'organisation logistique d'un repas.
 
    #### Option A : La chronologie relative (en minutes depuis le début)
 
@@ -210,7 +210,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    <Since v="1.4.0" />
 
-   Lorsque vous disposez d'une heure de service cible et de contraintes de disponibilité (par exemple : cuisiner uniquement entre 8 h et 22 h), le moteur projette la recette sur un calendrier réel via `project()`, puis structure les interventions par session via `runSheet()` :
+   Lorsque vous disposez d'une heure de service cible et de contraintes de disponibilité (par exemple : cuisiner uniquement entre 8 h et 22 h), le moteur projette la recette sur un calendrier réel via `project()`, puis structure les interventions par passage via `runSheet()` :
 
    ```typescript
    import { project, runSheet } from '@gram-lang/scheduler';
@@ -224,7 +224,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
    // 1. Projeter le graphe de tâches sur le calendrier
    const plan = project([{ graph: recipe.tasks, title: recipe.title }], context);
 
-   // 2. Structurer le planning opérationnel par jour et session
+   // 2. Structurer le planning opérationnel par jour et passage
    const sheet = runSheet(plan, { graph: recipe.tasks, context });
    ```
 
@@ -257,8 +257,8 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    ##### Propriétés clés de la structure de données
 
-   - `day.passages[]` : liste des sessions actives en cuisine. Chaque élément fournit les bornes `start` et `end` (en minutes relatives avant le service), `startLocal` et `endLocal` (horodatages dans le fuseau horaire cible), les indices des sections concernées (`sections`), les identifiants de tâches (`tasks`), ainsi que `window` et `fixedBy` indiquant la marge d'anticipation disponible.
-   - `day.threads[]` : processus passifs (fermentation, repos, refroidissement) qui se poursuivent sans intervention après une session (`passage` correspond à l'index de la session dans la journée), avec leur durée planifiée (`planned`), leur plage de tolérance (`range`) et leur fin estimée (`toLocal`).
+   - `day.passages[]` : liste des passages en cuisine. Chaque élément fournit les bornes `start` et `end` (en minutes relatives avant le service), `startLocal` et `endLocal` (horodatages dans le fuseau horaire cible), les indices des sections concernées (`sections`), les identifiants de tâches (`tasks`), ainsi que `window` et `fixedBy` indiquant la marge d'anticipation disponible.
+   - `day.threads[]` : processus passifs (fermentation, repos, refroidissement) qui se poursuivent sans intervention après un passage (`passage` correspond à l'index du passage dans la journée), avec leur durée planifiée (`planned`), leur plage de tolérance (`range`) et leur fin estimée (`toLocal`).
    - `day.entries[]` : séquence chronologique ordonnée de tous les blocs de la journée (actifs et passifs), utile pour tracer un graphique ou une frise journalière détaillée.
    - `sheet.adjustments[]` et `sheet.diagnostics[]` : récapitulent respectivement les durées de repos passif adaptées pour respecter vos disponibilités, et les contraintes insolubles ayant généré des alertes.
 

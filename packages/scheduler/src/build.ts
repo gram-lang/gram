@@ -2,16 +2,11 @@ import { sumDuration } from "./breakdown";
 import { scheduleALAP } from "./alap";
 import type { MiseEnPlaceMode } from "./mode";
 import { computeTimeline, type Timeline } from "./rebase";
-import {
-	type SessionPlan,
-	sessionPlan,
-	sessionsOf,
-	singleSessionPlan,
-} from "./sessions";
+import { type DayPlan, dayPlan, daysOf, singleDayPlan } from "./days";
 import { serializeTracks } from "./tracks";
 import type {
 	MiseEnPlaceItem,
-	ScheduleSession,
+	ScheduleDay,
 	SchedulingDiagnostic,
 	SchedulingSection,
 	StepSchedule,
@@ -201,11 +196,11 @@ function scheduleWithGroups(
 	};
 }
 
-/** How a mode groups the mise en place, and the days its sessions fall on. */
+/** How a mode groups the mise en place, and the working days it falls on. */
 interface ModePlan {
 	/** Sections whose mise en place is gathered together, in order. */
 	groups: number[][];
-	sessions: SessionPlan;
+	dayPlan: DayPlan;
 	/** Whether an intermediate made within its group waits until it exists. */
 	defer: boolean;
 }
@@ -218,29 +213,29 @@ const MODE_PLANS: Record<MiseEnPlaceMode, (days: number[]) => ModePlan> = {
 	// time. One section per group: nothing to defer.
 	perSection: (days) => ({
 		groups: days.map((_, i) => [i]),
-		sessions: sessionPlan(days),
+		dayPlan: dayPlan(days),
 		defer: false,
 	}),
-	// All the mise en place gathered first, in one session. An intermediate
+	// All the mise en place gathered first, in one working day. An intermediate
 	// can't be gathered before it exists, so its share is planned right before
 	// the section that uses it instead.
 	upfront: (days) => {
-		const sessions = singleSessionPlan(days);
-		return { groups: sessions.groups, sessions, defer: true };
+		const plan = singleDayPlan(days);
+		return { groups: plan.groups, dayPlan: plan, defer: true };
 	},
 	// The mise en place of each working day gathered at the start of that day:
 	// what a section needs from an earlier day is gathered at the head of its
 	// own day, what is made the same day waits until right before the section
 	// that uses it. Without an anchor of a day or more, the recipe is a single
-	// session, like `upfront`.
+	// working day, like `upfront`.
 	perDay: (days) => {
-		const sessions = sessionPlan(days);
-		return { groups: sessions.groups, sessions, defer: true };
+		const plan = dayPlan(days);
+		return { groups: plan.groups, dayPlan: plan, defer: true };
 	},
 };
 
 /**
- * The blocks and sessions of `mode`. Runs on a clone of the schedules and with
+ * The blocks and working days of `mode`. Runs on a clone of the schedules and with
  * its own diagnostics array — it must never touch the caller's records.
  */
 export function buildSchedule(
@@ -248,13 +243,13 @@ export function buildSchedule(
 	pristine: StepSchedule[],
 	preps: PrepWork[],
 	sections: SchedulingSection[],
-	days: number[],
+	sectionDays: number[],
 ): {
 	blocks: Timeline["blocks"];
-	sessions: ScheduleSession[];
+	days: ScheduleDay[];
 	diagnostics: SchedulingDiagnostic[];
 } {
-	const plan = MODE_PLANS[mode](days);
+	const plan = MODE_PLANS[mode](sectionDays);
 	const { timeline, diagnostics } = scheduleWithGroups(
 		pristine,
 		preps,
@@ -264,11 +259,7 @@ export function buildSchedule(
 	);
 	return {
 		blocks: timeline.blocks,
-		sessions: sessionsOf(
-			timeline.blocks,
-			plan.sessions.groups,
-			plan.sessions.days,
-		),
+		days: daysOf(timeline.blocks, plan.dayPlan.groups, plan.dayPlan.days),
 		diagnostics,
 	};
 }

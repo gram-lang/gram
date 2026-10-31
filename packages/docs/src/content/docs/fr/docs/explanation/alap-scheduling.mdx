@@ -168,15 +168,15 @@ gantt
 
 L'étape `Préparer le pain` est automatiquement programmée pendant la cuisson de la tarte (entre la 20e et la 25e minute) : le pain est ainsi prêt à enfourner dès que la tarte libère le four à la 25e minute.
 
-## Ancres temporelles, sessions et dépendances
+## Ancres temporelles, journées de travail et dépendances
 
 L'ancre de rétroplanning d'une section (`~{-2d}`) exprime une **échéance impérative** : le travail de cette section doit être achevé à ce moment précis, compté à rebours depuis l'heure de service. Entre deux sections ancrées, les étapes intermédiaires s'alignent automatiquement par rétro-propagation.
 
 Quelques règles essentielles pour modéliser des recettes s'étendant sur plusieurs jours :
 
 - **Ancrez en jours calendaires (`~{-Nd}`)** : le découpage en journées de travail repose exclusivement sur les ancres exprimées en jours (`~{-1d}`, `~{-2d}`). Une section sans ancre est rattachée au jour de l'ancre en jours la plus lointaine parmi les sections avales.
-- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur la chronologie, mais ne crée pas de session J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
-- **Une ancre en heures (`~{-Nh}`) ne découpe pas de session** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de session autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
+- **Un temps passif long n'initie pas de nouvelle journée** : une étape comportant `~_{48h}` décale bien l'étape vers l'amont sur la chronologie, mais ne crée pas de journée J-2 en l'absence d'une ancre de section explicite (`## Crème ~{-2d}`).
+- **Une ancre en heures (`~{-Nh}`) n'ouvre pas de journée de travail** : une valeur comme `~{-18h}` ou `~{-36h}` fixe une échéance stricte au sein de la journée, mais n'ouvre pas de journée autonome. Pour débuter formellement la veille, utilisez l'ancre `~{-1d}`.
 - **Sections successives au cours du même jour** : ancrez uniquement la dernière section (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre. Assigner la même ancre à deux sections interdépendantes générerait un diagnostic de paradoxe temporel.
 
 ## Ancrage modulaire (`@use ... ~{-1d}`)

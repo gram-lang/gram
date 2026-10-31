@@ -55,7 +55,7 @@ const { schedule, diagnostics } = layout(tasks, {
   miseEnPlace: 'upfront',
   rests: 'longest',
 });
-// schedule.totalTime, schedule.blocks, schedule.sessions...
+// schedule.totalTime, schedule.blocks, schedule.days...
 ```
 
 For default options, `compiled.schedule` matches `layout(compiled.tasks).schedule` exactly.
@@ -71,7 +71,7 @@ interface Schedule {
   preparationTime: number; // mise en place duration (sum of `prep` tasks)
   idleTime: number;        // overall inactive time: totalTime - activeTime - preparationTime
   blocks: ScheduleBlock[]; // sorted by start time, then end time
-  sessions: ScheduleSession[]; // one per working day, ordered from furthest day to serving day
+  days: ScheduleDay[]; // one per working day, ordered from furthest day to serving day
 }
 
 type ScheduleBlock =
@@ -79,9 +79,9 @@ type ScheduleBlock =
   | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
   | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
 
-interface ScheduleSession {
+interface ScheduleDay {
   day: number;      // 0 = serving day (day 0), 1 = day before (day -1, ~{-1d})...
-  start: number;    // start and end bounds of the session's active work
+  start: number;    // start and end bounds of the working day's active work
   end: number;
   sections: number[];
 }
@@ -97,10 +97,10 @@ Structural diagnostics emitted by `layout()` as neutral data (the Kitchen compil
 type SchedulingDiagnostic =
   | { code: "TIME_PARADOX"; section: number; pulledTo: number }
   | { code: "TRACK_CONTENTION"; section: number; trackName: string; delay: number }
-  | { code: "SESSION_OVERFLOW"; section: number; day: number; overflowMinutes: number };
+  | { code: "DAY_OVERFLOW"; section: number; day: number; overflowMinutes: number };
 ```
 
-`SESSION_OVERFLOW` indicates that a session's active work starts before the 24-hour window allocated to that working day (pushed back by upstream task sequences). Only active work is counted against this threshold; passive durations spanning overnight are excluded.
+`DAY_OVERFLOW` indicates that a working day's active work starts before the 24-hour window allocated to that working day (pushed back by upstream task sequences). Only active work is counted against this threshold; passive durations spanning overnight are excluded.
 
 ## The task graph
 
@@ -217,7 +217,7 @@ interface ProjectedPlan {
     title?: string;
     miseEnPlace: 'perSection' | 'upfront' | 'perDay'; // the mode this plan was made in
     blocks: ProjectedBlock[];     // scheduled blocks with start/end as ISO 8601 UTC timestamps
-    sessions: ProjectedSession[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
+    days: ProjectedDay[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
   }[];
   adjustments: RestAdjustment[];  // adjustments applied to elastic passive durations
   unavailable: { start: string; end: string }[]; // unavailable windows overlapping the plan duration
@@ -234,7 +234,7 @@ interface RestAdjustment {
 type ProjectionDiagnostic =
   | { code: "ACTIVE_OUTSIDE_AVAILABILITY"; task: string; local: string; rest?: string }
   | { code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY"; tasks: string[]; minutes: number; largest: number }
-  | { code: "SESSION_DAY_MISMATCH"; day: number; expected: string; actual: string }
+  | { code: "DAY_MISMATCH"; day: number; expected: string; actual: string }
   | { code: "START_IN_PAST"; start: string; now: string }
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
@@ -300,7 +300,7 @@ interface RunSheetThread {
 }
 ```
 
-A **day** is a session of the recipe; with a serving time, a session that runs over several dates is told one day per date, and a visit that crosses midnight stays whole on the date it starts. `RunSheetEntry` is the block-level record (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
+A **day** is a working day of the recipe; with a serving time, a working day that runs over several dates is told one day per date, and a visit that crosses midnight stays whole on the date it starts. `RunSheetEntry` is the block-level record (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
 
 What is **not** here are words and layout: `@gram-lang/renderer` writes them (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
 

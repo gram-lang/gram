@@ -87,12 +87,12 @@ Gram never conceals a scheduling conflict it cannot resolve. Any remaining issue
 |---|---|---|
 | `ACTIVE_OUTSIDE_AVAILABILITY` | Active hands-on work falls during unavailable hours, and no wait can move it (fixed wait, insufficient range, or no wait downstream). | Widen your availability windows or provide a flexible wait range. |
 | `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY` | An uninterrupted block of hands-on work is longer than your longest continuous availability window. | Widen your availability window (no wait adjustment can split this block). |
-| `SESSION_DAY_MISMATCH` | A work session falls on a different calendar day than intended (work tagged with `~{-1d}` landing two days prior). | Anchor the section explicitly or adjust intermediate waits. |
+| `DAY_MISMATCH` | A working day falls on a different calendar day than intended (work tagged with `~{-1d}` landing two days prior). | Anchor the section explicitly or adjust intermediate waits. |
 | `START_IN_PAST` | The first task should have started before the current planning time. | Set a later serving time or shorten waits. |
 | `MULTI_RECIPE_UNSUPPORTED` | Multiple recipes were supplied; only the first was planned. | Plan recipes individually. |
 
 :::note[Planning diagnostics vs Compiler warnings]
-These diagnostics are specific to calendar projection: they depend directly on **your** availability constraints rather than recipe defects. Compiler warnings inherent to the recipe code itself (such as `SESSION_OVERFLOW`, when an excessive wait pushes a session out of its 24-hour day) are documented in [Times and durations](/docs/reference/syntax/times/#error-handling).
+These diagnostics are specific to calendar projection: they depend directly on **your** availability constraints rather than recipe defects. Compiler warnings inherent to the recipe code itself (such as `DAY_OVERFLOW`, when an excessive wait pushes a working day out of its 24-hour day) are documented in [Times and durations](/docs/reference/syntax/times/#error-handling).
 :::
 
 ## Time zones and daylight saving

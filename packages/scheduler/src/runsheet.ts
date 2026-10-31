@@ -180,7 +180,7 @@ interface Source {
 	title?: string;
 	miseEnPlace: MiseEnPlaceMode;
 	blocks: SourceBlock[];
-	sessions: { day: number; sections: number[] }[];
+	days: { day: number; sections: number[] }[];
 }
 
 const meta = (b: {
@@ -203,7 +203,7 @@ function fromSchedule(schedule: Schedule, title?: string): Source {
 			from: b.start - schedule.totalTime,
 			to: b.end - schedule.totalTime,
 		})),
-		sessions: schedule.sessions.map((s) => ({
+		days: schedule.days.map((s) => ({
 			day: s.day,
 			sections: s.sections,
 		})),
@@ -231,7 +231,7 @@ function fromPlan(
 			startLocal: b.startLocal,
 			endLocal: b.endLocal,
 		})),
-		sessions: recipe.sessions.map((s) => ({
+		days: recipe.days.map((s) => ({
 			day: s.day,
 			sections: s.sections,
 		})),
@@ -319,16 +319,16 @@ function buildRecipe(
 	const local = (minutes: number) =>
 		calendar && toLocalIso(calendar.serve + minutes, calendar.timeZone);
 
-	const sessionOf = new Map<number, number>();
-	source.sessions.forEach((s, i) => {
-		for (const section of s.sections) sessionOf.set(section, i);
+	const dayOf = new Map<number, number>();
+	source.days.forEach((s, i) => {
+		for (const section of s.sections) dayOf.set(section, i);
 	});
-	const perDay: SourceBlock[][] = source.sessions.map(() => []);
+	const perDay: SourceBlock[][] = source.days.map(() => []);
 	for (const block of source.blocks) {
-		let index = sessionOf.get(block.section);
+		let index = dayOf.get(block.section);
 		if (index === undefined) {
-			// A section with no work of its own has no session: its waits follow
-			// the session that starts last before them.
+			// A section with no work of its own has no working day of its own: its
+			// waits follow the day that starts last before them.
 			index = 0;
 			for (let i = 0; i < perDay.length; i++) {
 				const first = perDay[i]![0];
@@ -340,7 +340,7 @@ function buildRecipe(
 
 	const adjustments: RunSheetAdjustment[] = [];
 	const days: RunSheetDay[] = [];
-	source.sessions.forEach((session, i) => {
+	source.days.forEach((workingDay, i) => {
 		const blocks = perDay[i]!.sort((a, b) => a.from - b.from || a.to - b.to);
 		if (blocks.length === 0) return;
 
@@ -411,7 +411,7 @@ function buildRecipe(
 			});
 		}
 
-		// A session is a day of the recipe; on the calendar, a day is a date.
+		// A working day is a day of the recipe; on the calendar, a day is a date.
 		// One that runs on past midnight (everything in one go) is told per date,
 		// and a passage that crosses midnight stays whole on the date it starts.
 		const groups: number[][] = [];
@@ -435,7 +435,7 @@ function buildRecipe(
 			const daysBefore =
 				calendar && date !== undefined
 					? daysBetween(date, calendar.serveDate)
-					: session.day;
+					: workingDay.day;
 			const own = entries.filter(
 				(e) => e.from >= lower - EPS && e.from < until - EPS,
 			);

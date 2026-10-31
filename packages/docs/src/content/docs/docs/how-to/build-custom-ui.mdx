@@ -66,7 +66,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
    - `metrics` *(object)*: Overall metrics (`preparationTime`, `activeTime` in minutes, as well as mass and nutrition when analyzed).
    - `miseEnPlace` *(array)*: Operational preparation breakdown and durations for each section.
    - `tasks` *(object)*: Complete task dependency graph with durations, used by the scheduler.
-   - `schedule` *(object)*: Default schedule calculated from `tasks` (`totalTime`, `idleTime`, scheduled blocks, and session breakdown).
+   - `schedule` *(object)*: Default schedule calculated from `tasks` (`totalTime`, `idleTime`, scheduled blocks, and working-day breakdown).
 
    :::note
    To ensure forward compatibility as Gram evolves, gracefully ignore unrecognised properties or unknown block kinds.
@@ -170,7 +170,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
 
    Gram offers two complementary approaches to represent time depending on your application's user experience:
    1. **The relative execution timeline**: expresses time in minutes starting from $t = 0$. Ideal for an in-kitchen live cooking mode or a continuous step timeline.
-   2. **The calendar work plan**: projects steps onto concrete dates, wall-clock times, and distinct kitchen work sessions. Ideal for meal planning and production organization.
+   2. **The calendar work plan**: projects steps onto concrete dates, wall-clock times, and distinct kitchen visits. Ideal for meal planning and production organization.
 
    #### Option A: Relative timeline (minutes from start)
 
@@ -210,7 +210,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
 
    <Since v="1.4.0" />
 
-   When you have a target serving time and cooking availability (such as cooking only between 8 a.m. and 10 p.m.), the engine projects the recipe onto a real-world calendar using `project()`, then organizes visits by day and session using `runSheet()` :
+   When you have a target serving time and cooking availability (such as cooking only between 8 a.m. and 10 p.m.), the engine projects the recipe onto a real-world calendar using `project()`, then organizes visits by day and visit using `runSheet()` :
 
    ```typescript
    import { project, runSheet } from '@gram-lang/scheduler';

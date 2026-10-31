@@ -93,7 +93,7 @@ export function prepItems(
 }
 
 /** The label of a working day: "D-3", or "Day D" for the day itself. */
-export const sessionDayLabel = (
+export const workingDayLabel = (
 	day: number,
-	labels: { sessionDay: string; sessionToday: string },
-): string => (day === 0 ? labels.sessionToday : `${labels.sessionDay}${day}`);
+	labels: { dayBefore: string; dayToday: string },
+): string => (day === 0 ? labels.dayToday : `${labels.dayBefore}${day}`);

@@ -75,8 +75,8 @@ Le moteur génère des **données structurelles pures** ; le planning de prépar
 
 | Terme | Définition |
 |---|---|
-| **Session** | Une journée de travail dédiée à la recette. Seule une ancre temporelle en jours calendaires (`~{-2j}`, déclarée sur une section ou un module `@use`) ouvre une session distincte. En l'absence d'ancre, la recette se déroule sur une session unique. |
-| **Passage** | Un moment actif en cuisine : une séquence d'étapes de travail manuel ininterrompues par une attente significative (toute pause passive d'au moins 60 minutes, fixée par `PASSAGE_GAP_MINUTES`, marque la fin du passage). Une session peut ainsi comporter plusieurs passages. |
+| **Journée de travail** | Une journée de travail dédiée à la recette. Seule une ancre temporelle en jours calendaires (`~{-2j}`, déclarée sur une section ou un module `@use`) ouvre une journée distincte. En l'absence d'ancre, la recette se déroule sur une seule journée. |
+| **Passage** | Un moment actif en cuisine : une séquence d'étapes de travail manuel ininterrompues par une attente significative (toute pause passive d'au moins 60 minutes, fixée par `PASSAGE_GAP_MINUTES`, marque la fin du passage). Une journée peut ainsi comporter plusieurs passages. |
 | **Fil** | Un processus passif (cuisson, repos, pousse) initié durant un passage et qui se poursuit de manière autonome après votre départ de la cuisine. |
 | **Ajustement** | Une durée d'attente allongée ou raccourcie lors de la projection, dans les limites de la fourchette déclarée, afin que les étapes actives coïncident avec vos plages de disponibilité (`avoid-unavailable`). |
 | **Problème non résolu** | Un diagnostic émis lors de la projection lorsqu'une contrainte horaire ne peut être satisfaite. |
@@ -103,8 +103,8 @@ Le choix de la restitution et des termes éditoriaux relève entièrement de la 
 
 Le moteur distingue rigoureusement deux catégories d'anomalies :
 
-- **Diagnostics intrinsèques à la recette** : identifiés dès la phase d'ordonnancement par `layout()` (`TIME_PARADOX`, `TRACK_CONTENTION`, `SESSION_OVERFLOW`). Kitchen les transforme en avertissements de compilation (`WarningCode`), enrichis du titre de la section et de son emplacement dans le code source pour l'affichage dans l'éditeur.
-- **Diagnostics contextuels de projection** : ils n'apparaissent qu'une fois l'heure de service et les disponibilités utilisateur confrontées à la recette (`ACTIVE_OUTSIDE_AVAILABILITY`, `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY`, `SESSION_DAY_MISMATCH`, `START_IN_PAST`, `MULTI_RECIPE_UNSUPPORTED`). Ils font partie du résultat retourné par `project()` et ne constituent pas des erreurs de compilation.
+- **Diagnostics intrinsèques à la recette** : identifiés dès la phase d'ordonnancement par `layout()` (`TIME_PARADOX`, `TRACK_CONTENTION`, `DAY_OVERFLOW`). Kitchen les transforme en avertissements de compilation (`WarningCode`), enrichis du titre de la section et de son emplacement dans le code source pour l'affichage dans l'éditeur.
+- **Diagnostics contextuels de projection** : ils n'apparaissent qu'une fois l'heure de service et les disponibilités utilisateur confrontées à la recette (`ACTIVE_OUTSIDE_AVAILABILITY`, `ACTIVE_BLOCK_EXCEEDS_AVAILABILITY`, `DAY_MISMATCH`, `START_IN_PAST`, `MULTI_RECIPE_UNSUPPORTED`). Ils font partie du résultat retourné par `project()` et ne constituent pas des erreurs de compilation.
 
 ## Intégration dans le pipeline
 
@@ -138,7 +138,7 @@ Les vues de restitution (le planning de préparation ou vos composants d'interfa
   />
   <LinkCard
     title="Mise en place et planification"
-    description="Comment les coûts de préparation et les sessions sur plusieurs jours interagissent."
+    description="Comment les coûts de préparation et les recettes sur plusieurs jours interagissent."
     href="/fr/docs/explanation/mise-en-place-and-planning/"
   />
 </CardGrid>

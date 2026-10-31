@@ -156,7 +156,7 @@
   ],
   "diagnostics": [
     {
-      "code": "SESSION_DAY_MISMATCH",
+      "code": "DAY_MISMATCH",
       "day": 0,
       "expected": "2026-10-11",
       "actual": "2026-10-10"

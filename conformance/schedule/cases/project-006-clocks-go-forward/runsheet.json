@@ -152,7 +152,7 @@
   "adjustments": [],
   "diagnostics": [
     {
-      "code": "SESSION_DAY_MISMATCH",
+      "code": "DAY_MISMATCH",
       "day": 0,
       "expected": "2026-03-29",
       "actual": "2026-03-28"

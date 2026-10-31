@@ -83,7 +83,7 @@ interface Schedule {
   preparationTime: number;           // durée cumulée de la mise en place (somme des tâches prep)
   idleTime: number;                  // temps d'inactivité global : totalTime - activeTime - preparationTime
   blocks: ScheduledBlock[];          // chronologie complète des blocs (préparation, actif, passif)
-  sessions: ScheduleSession[];       // découpage du plan par journées de travail relatives au service
+  days: ScheduleDay[];       // découpage du plan par journées de travail relatives au service
 }
 ```
 

@@ -216,7 +216,7 @@
   ],
   "warnings": [
     {
-      "code": "SESSION_OVERFLOW",
+      "code": "DAY_OVERFLOW",
       "message": "Working day 1 (from section 'Dough') starts 2.6 h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-2d}, or shorten the rest.",
       "loc": {
         "start": 48,
@@ -478,7 +478,7 @@
         "end": 3034
       }
     ],
-    "sessions": [
+    "days": [
       {
         "day": 1,
         "start": 0,

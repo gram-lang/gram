@@ -37,8 +37,8 @@ export function pushSchedulingWarnings(
 					loc,
 				});
 				break;
-			case "SESSION_OVERFLOW":
-				pushWarning(target, WarningCode.SESSION_OVERFLOW, {
+			case "DAY_OVERFLOW":
+				pushWarning(target, WarningCode.DAY_OVERFLOW, {
 					section: section?.title ?? null,
 					day: d.day,
 					overflowMinutes: d.overflowMinutes,

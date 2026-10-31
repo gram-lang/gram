@@ -55,7 +55,7 @@ const { schedule, diagnostics } = layout(tasks, {
   miseEnPlace: 'upfront',
   rests: 'longest',
 });
-// schedule.totalTime, schedule.blocks, schedule.sessions...
+// schedule.totalTime, schedule.blocks, schedule.days...
 ```
 
 Par défaut, la propriété `compiled.schedule` d'une recette compilée correspond exactement à `layout(compiled.tasks).schedule`.
@@ -71,7 +71,7 @@ interface Schedule {
   preparationTime: number; // durée de la mise en place (somme des tâches `prep`)
   idleTime: number;        // temps d'inactivité global : totalTime - activeTime - preparationTime
   blocks: ScheduleBlock[]; // triés par heure de début, puis par heure de fin
-  sessions: ScheduleSession[]; // une par journée de travail, de la plus lointaine au jour J
+  days: ScheduleDay[]; // une par journée de travail, de la plus lointaine au jour J
 }
 
 type ScheduleBlock =
@@ -79,9 +79,9 @@ type ScheduleBlock =
   | { kind: "step"; task: string; section: number; step: number; start: number; end: number }
   | { kind: "passive"; task: string; section: number; step: number; track?: string; start: number; end: number };
 
-interface ScheduleSession {
+interface ScheduleDay {
   day: number;      // 0 = jour de service (J), 1 = veille (J-1, ~{-1d})...
-  start: number;    // bornes de début et fin du travail actif de la session
+  start: number;    // bornes de début et fin du travail actif de la journée
   end: number;
   sections: number[];
 }
@@ -97,10 +97,10 @@ Diagnostics structurels émis par `layout()` sous forme de données neutres (Kit
 type SchedulingDiagnostic =
   | { code: "TIME_PARADOX"; section: number; pulledTo: number }
   | { code: "TRACK_CONTENTION"; section: number; trackName: string; delay: number }
-  | { code: "SESSION_OVERFLOW"; section: number; day: number; overflowMinutes: number };
+  | { code: "DAY_OVERFLOW"; section: number; day: number; overflowMinutes: number };
 ```
 
-Le code `SESSION_OVERFLOW` signale que le travail actif d'une session déborde en amont de la fenêtre de 24 heures allouée à cette journée de travail (repoussé par l'enchaînement des étapes). Seul le travail actif est pris en compte dans cette limite, et non les temps passifs franchissant la nuit.
+Le code `DAY_OVERFLOW` signale que le travail actif d'une journée de travail déborde en amont de la fenêtre de 24 heures allouée à cette journée de travail (repoussé par l'enchaînement des étapes). Seul le travail actif est pris en compte dans cette limite, et non les temps passifs franchissant la nuit.
 
 ## Le graphe de tâches
 
@@ -217,7 +217,7 @@ interface ProjectedPlan {
     title?: string;
     miseEnPlace: 'perSection' | 'upfront' | 'perDay'; // le mode dans lequel ce plan a été établi
     blocks: ProjectedBlock[];     // blocs planifiés avec start/end au format ISO 8601 (UTC)
-    sessions: ProjectedSession[]; // et startLocal/endLocal : heure locale dans le fuseau ("2026-10-10T21:40")
+    days: ProjectedDay[]; // et startLocal/endLocal : heure locale dans le fuseau ("2026-10-10T21:40")
   }[];
   adjustments: RestAdjustment[];  // ajustements appliqués aux temps passifs élastiques
   unavailable: { start: string; end: string }[]; // périodes d'indisponibilité intersectant la plage du plan
@@ -234,7 +234,7 @@ interface RestAdjustment {
 type ProjectionDiagnostic =
   | { code: "ACTIVE_OUTSIDE_AVAILABILITY"; task: string; local: string; rest?: string }
   | { code: "ACTIVE_BLOCK_EXCEEDS_AVAILABILITY"; tasks: string[]; minutes: number; largest: number }
-  | { code: "SESSION_DAY_MISMATCH"; day: number; expected: string; actual: string }
+  | { code: "DAY_MISMATCH"; day: number; expected: string; actual: string }
   | { code: "START_IN_PAST"; start: string; now: string }
   | { code: "MULTI_RECIPE_UNSUPPORTED"; recipes: number };
 ```
@@ -300,7 +300,7 @@ interface RunSheetThread {
 }
 ```
 
-Un **jour** est une session de la recette ; avec une heure de service, une session qui s'étale sur plusieurs dates est racontée un jour par date, et un passage qui franchit minuit reste entier à la date où il commence. `RunSheetEntry` est l'enregistrement par bloc (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
+Un **jour** est une journée de travail de la recette ; avec une heure de service, une journée qui s'étale sur plusieurs dates est racontée un jour par date, et un passage qui franchit minuit reste entier à la date où il commence. `RunSheetEntry` est l'enregistrement par bloc (`kind`, `active`, `from`, `to`, `minutes`, `startLocal`, `adjustment?`…).
 
 Les mots et la mise en page n'y sont **pas** : `@gram-lang/renderer` les écrit (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet` ; voir la [référence du renderer](/fr/docs/reference/api/renderer/)).
 

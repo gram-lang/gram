@@ -45,7 +45,7 @@ const recipe = {
   // you render is read. `metrics.totalTime` is deprecated: it is only read when
   // `schedules` is missing.
   schedules: {
-    perSection: { totalTime: 30, idleTime: 20, blocks: [], sessions: [] }
+    perSection: { totalTime: 30, idleTime: 20, blocks: [], days: [] }
   },
   shopping_list: [
     { id: "flour", qty: 200, unit: "g" }

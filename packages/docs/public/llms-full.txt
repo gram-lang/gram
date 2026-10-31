@@ -801,7 +801,7 @@ Each section has its own mise en place (gathering and preparing ingredients and 
 
 Two considerations for multi-day recipes:
 - **A long passive timer is not an anchor.** A `~_{48h}` passive duration shifts the timeline two days earlier, but only an explicit section anchor formally opens a separate working day (e.g. `## Cream ~{-2d}`).
-- **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent daily session. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
+- **An anchor in hours never opens a day.** An anchor such as `~{-18h}` or `~{-36h}` represents an explicit deadline within that section's day, not an independent working day. To schedule a previous working day, use `~{-1d}` (see [Days and hours](#days-and-hours)).
 
 Strategy selection happens at render time: the Playground features a dropdown selector, VS Code provides the `gram.miseEnPlace` setting, the CLI exposes the `--mise-en-place` flag, and the renderer accepts `miseEnPlace`. This setting influences **total duration** and **idle time**, as well as the placement of the preparation in the schedule, while keeping active preparation and hands-on cooking times invariant.
 
@@ -834,7 +834,7 @@ The chosen unit defines the anchor's semantics:
 - **An anchor in days** (`~{-1d}`, `~{-2d}`) opens a distinct working day (day before, two days before), anchoring the "by working day" strategy and day labels (D-1, D-2).
 - **An anchor in hours or minutes** (`~{-18h}`, `~{-90min}`) specifies a precise deadline within that section's scheduled day, without opening a new working day.
 
-Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `SESSION_OVERFLOW` and recommends anchoring the section further back.
+Working days are designed to fit within a 24-hour span: if a long passive duration pushes a day's work out of its window (such as a `~{-1d}` dough fermenting for 50 hours), the compiler emits `DAY_OVERFLOW` and recommends anchoring the section further back.
 
 ### Strict syntax
 
@@ -866,7 +866,7 @@ The compiler validates `~timer` declarations and section retro-planning annotati
 - **Invalid Unit** (section retro-planning): Unrecognized units trigger `INVALID_UNIT`.
 - **Time Paradox**: Anchors conflicting with dependency order (e.g. an ingredient anchored at `-10 min` needed by a section anchored at `-1 h`) trigger `TIME_PARADOX`.
 - **Track Contention**: Concurrent passive timers delayed on the same named track trigger `TRACK_CONTENTION`.
-- **Session Overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `SESSION_OVERFLOW`.
+- **Day overflow** *(Since 1.4.0)*: Passive durations pushing working day tasks beyond the 24-hour window trigger `DAY_OVERFLOW`.
 - **Duration Out Of Range**: Durations exceeding 1,000 years are capped and trigger `DURATION_OUT_OF_RANGE`.
 
 Warnings are non-blocking by default, but can be enforced as errors via `gram check --strict`.
@@ -886,12 +886,12 @@ Warnings are non-blocking by default, but can be enforced as errors via `gram ch
   />
   <LinkCard
     title="Mise en place and planning"
-    description="Explore how preparation costs, section day anchors, and multi-day sessions interact."
+    description="Explore how preparation costs, section day anchors, and multi-day recipes interact."
     href="/docs/explanation/mise-en-place-and-planning/"
   />
   <LinkCard
     title="Compiler warnings reference"
-    description="Details on TIME_PARADOX, TRACK_CONTENTION, and SESSION_OVERFLOW warning codes."
+    description="Details on TIME_PARADOX, TRACK_CONTENTION, and DAY_OVERFLOW warning codes."
     href="/docs/reference/api/warnings/"
   />
 
@@ -1782,7 +1782,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -1887,7 +1887,7 @@ Mix @flour{200g} and @milk{200ml}.
       { "kind": "prep", "task": "s0.prep", "section": 0, "start": 0, "end": 2 },
       { "kind": "step", "task": "s0.0", "section": 0, "step": 0, "start": 2, "end": 4 }
     ],
-    "sessions": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
+    "days": [ { "day": 0, "start": 0, "end": 4, "sections": [0] } ]
   }
 }
 ```
@@ -2103,7 +2103,7 @@ Structural integrity issues — a reference to something that doesn't exist, a n
 | `NO_BAKERS_REFERENCE` | warning | `Baker's percentages (%) are used but no base flour (*) was designated.` |
 | `TIME_PARADOX` | warning | `Timeline conflict: {cause} is pulled earlier than recipe start to satisfy {conflict}.` |
 | `TRACK_CONTENTION` | info | `Resource contention on track '{trackName}': delayed by {delay} min for '{item}'.` |
-| `SESSION_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
+| `DAY_OVERFLOW` | warning | `Working day {day} (from section '{section}') starts NaN h before its 24 h window opens: a long rest pushes it back. Anchor the section further back, for example ~{-{day}1d}, or shorten the rest.` |
 | `PASSIVE_OVERLAP_SAME_COOKWARE` | info | `Two passive timers overlap and both use #{cookware}: {item} and {other}. If one is meant to follow the other, give them the same named track, for example ~_{cookware}{…}, so they take turns.` |
 | `DURATION_OUT_OF_RANGE` | warning | `Timer "{item}" is longer than 1000 years, the longest duration Gram plans with: it was capped at 1000 years.` |
 | `MODULE_NOT_FOUND` | error | `Module "{specifier}" could not be found or resolved.` |
@@ -2185,7 +2185,7 @@ A short composite child name (e.g. `@juice`) is drawn from two different parent 
 
 An imported module specified in a `@use` directive could not be resolved or found on the filesystem. **Fix**: verify the module path, file extension (`.gram`), or configured path aliases in `config.yaml`.
 
-### `SESSION_OVERFLOW`
+### `DAY_OVERFLOW`
 
 *(since v1.4.0)*
 

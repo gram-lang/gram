@@ -107,11 +107,11 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    Summarizes the entire schedule: each active visit to the kitchen (`▮`), the underlying passive resting times (`┆`), and the service moment (`★`).
 
    #### Day-by-day detail
-   Each work session has its own actionable checklist:
+   Each visit has its own actionable checklist:
 
-   - **To take out**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit. Check them off during your mise en place. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), there is no list at the top of the visit: each section carries its own things to take out, right before its steps, and the cookware is named once, at the first section that uses it; per session, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
+   - **To take out**: the required ingredients, preparations made during an earlier visit (`Sponge, made Thursday`), stocked items (`glaze, in stock`), and cookware, which is listed once per visit. Check them off during your mise en place. Where it goes follows your [mise en place mode](/docs/explanation/mise-en-place-and-planning/): by section (the default), there is no list at the top of the visit: each section carries its own things to take out, right before its steps, and the cookware is named once, at the first section that uses it; per working day, one block at the top of the visit sums the raw ingredients (e.g. `sugar 90 g (60 + 30)`); upfront, that block holds everything raw at the first visit. A preparation is always listed at the visit of the first step that uses it.
    - **To do**: one line per section giving the steps this visit covers (`steps 1 to 2`, as well as the source file for imports), with the section's things to take out under it when you plan by section. This view does not repeat the recipe text: it points you directly to where you need to look.
-   - **Before leaving**: passive processes that continue unattended, and the exact time of your next kitchen session.
+   - **Before leaving**: passive processes that continue unattended, and the exact time of your next kitchen visit.
    - **Possible from... / Fixed times**: shows how early this visit could start without affecting the rest of the schedule, or names the fixed wait holding it in place.
    - **Adjusted waits**: any passive rest that the scheduler shortened or lengthened to fit your available hours is reported at the top of that day.
 
@@ -146,7 +146,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
    # Export to Markdown with the work plan
    gram export entremets.gram --format md --serve "2026-10-17 20:00" --with-sheet
 
-   # Export sessions to an iCalendar file
+   # Export visits to an iCalendar file
    gram plan entremets.gram --serve "2026-10-17 20:00" --available 08:00-22:00 --ics entremets.ics
    ```
 
@@ -160,7 +160,7 @@ The recipe says **how** to do things. The work plan says **when to come** and **
 
 A schedule is not a frozen state: it is dynamically computed from the constraints you provide.
 
-If a session takes longer than expected or your day gets shifted, simply run `gram plan` again with a slightly later serving time, or use `--find` to re-evaluate viable slots starting from the current moment.
+If a visit takes longer than expected or your day gets shifted, simply run `gram plan` again with a slightly later serving time, or use `--find` to re-evaluate viable slots starting from the current moment.
 
 ## In the playground
 
@@ -198,7 +198,7 @@ The plain text output above is only one presentation layer: the scheduler produc
 <CardGrid>
   <LinkCard
     title="The scheduler"
-    description="Sessions, visits, threads, margins: what the engine computes and what the work plan shows."
+    description="Days, visits, threads, margins: what the engine computes and what the work plan shows."
     href="/docs/explanation/engine/scheduler/"
   />
   <LinkCard

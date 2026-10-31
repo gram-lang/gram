@@ -208,17 +208,17 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 				}
 			}
 		}
-		// Sessions come furthest day first, within the timeline.
-		for (let i = 0; i < s.sessions.length; i++) {
-			const session = s.sessions[i] as (typeof s.sessions)[number];
-			if (i > 0 && (s.sessions[i - 1]?.day ?? 0) <= session.day) {
-				bad.push(`${mode}: sessions not ordered by day`);
+		// Working days come furthest day first, within the timeline.
+		for (let i = 0; i < s.days.length; i++) {
+			const workingDay = s.days[i] as (typeof s.days)[number];
+			if (i > 0 && (s.days[i - 1]?.day ?? 0) <= workingDay.day) {
+				bad.push(`${mode}: days not ordered by day`);
 			}
 			if (
-				session.start > session.end + EPS ||
-				session.end > s.totalTime + EPS
+				workingDay.start > workingDay.end + EPS ||
+				workingDay.end > s.totalTime + EPS
 			) {
-				bad.push(`${mode}: session outside the timeline`);
+				bad.push(`${mode}: working day outside the timeline`);
 			}
 		}
 		// ...and, by section, a preparation never overlaps a step either.
@@ -278,13 +278,13 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 		}
 	}
 
-	// A recipe on a single working day plans per session exactly like upfront.
+	// A recipe on a single working day plans per working day exactly like upfront.
 	if (
-		schedules.perDay.sessions.length <= 1 &&
+		schedules.perDay.days.length <= 1 &&
 		JSON.stringify(schedules.perDay.blocks) !==
 			JSON.stringify(schedules.upfront.blocks)
 	) {
-		bad.push("single-session perDay != upfront");
+		bad.push("single-day perDay != upfront");
 	}
 
 	// Compiling is deterministic, scaling never moves a duration, and scaling a

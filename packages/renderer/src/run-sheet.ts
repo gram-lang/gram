@@ -7,7 +7,7 @@ import {
 	type RunSheetPassage,
 	type RunSheetThread,
 } from "@gram-lang/scheduler";
-import { sessionDayLabel } from "./mise-en-place";
+import { workingDayLabel } from "./mise-en-place";
 import type { RenderableCompilationResult } from "./types";
 import {
 	type KitItem,
@@ -243,9 +243,9 @@ export function describeProblems(
 					duration: fmt(d.minutes),
 					largest: fmt(d.largest),
 				});
-			case "SESSION_DAY_MISMATCH":
+			case "DAY_MISMATCH":
 				return fill(t.runSheetDayMismatch, {
-					day: sessionDayLabel(d.day, t),
+					day: workingDayLabel(d.day, t),
 					actual: longDate(d.actual, lang),
 					expected: longDate(d.expected, lang),
 				});
@@ -294,7 +294,7 @@ export function describeRunSheet(
 	const clock = (local: string) => roundedClock(local, step);
 	const rounded = (minutes: number) =>
 		Math.max(step, Math.round(minutes / step) * step);
-	const dayLabel = (day: RunSheetDay) => sessionDayLabel(day.daysBefore, t);
+	const dayLabel = (day: RunSheetDay) => workingDayLabel(day.daysBefore, t);
 	const rangeOf = (id: string) => {
 		const task = tasks.get(id);
 		if (task?.kind !== "passive") return undefined;
@@ -652,7 +652,7 @@ export function describeRunSheet(
 		schedule.push({
 			kind: "serve",
 			...(!calendar &&
-				days.at(-1)?.daysBefore !== 0 && { day: sessionDayLabel(0, t) }),
+				days.at(-1)?.daysBefore !== 0 && { day: workingDayLabel(0, t) }),
 			...(calendar && sheet.serveAt && { time: sheet.serveAt.slice(11, 16) }),
 			text: t.workPlanServe,
 		});

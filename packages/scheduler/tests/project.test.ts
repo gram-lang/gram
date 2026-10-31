@@ -333,7 +333,7 @@ describe("project and the days of a recipe", () => {
 			context({ availability: { daily: [{ start: "00:00", end: "24:00" }] } }),
 		);
 		expect(plan.diagnostics).toContainEqual({
-			code: "SESSION_DAY_MISMATCH",
+			code: "DAY_MISMATCH",
 			day: 1,
 			expected: "2026-10-10",
 			actual: "2026-10-11",
@@ -345,9 +345,9 @@ describe("project and the days of a recipe", () => {
 			[{ graph: twoDays() }],
 			context({ availability: { daily: [{ start: "00:00", end: "24:00" }] } }),
 		);
-		expect(
-			plan.diagnostics.filter((d) => d.code === "SESSION_DAY_MISMATCH"),
-		).toEqual([]);
+		expect(plan.diagnostics.filter((d) => d.code === "DAY_MISMATCH")).toEqual(
+			[],
+		);
 	});
 });
 

@@ -3,7 +3,7 @@ import type { RenderableCompilationResult } from "../types";
 import { escapeHtml } from "../utils";
 import {
 	buildTracks,
-	computeSessionMarkers,
+	computeDayMarkers,
 	computeSectionLegendItems,
 	computeTimeTicks,
 	computeVisualGaps,
@@ -72,7 +72,7 @@ export function toGanttHTML(
 		"",
 		compressedGapSize,
 	);
-	const sessionMarkers = computeSessionMarkers(
+	const dayMarkers = computeDayMarkers(
 		data,
 		gaps,
 		totalVirtualTime,
@@ -186,17 +186,17 @@ ${overflowLegend
 		)
 		.join("\n");
 
-	const sessionLabelsHtml = sessionMarkers
+	const dayLabelsHtml = dayMarkers
 		.map(
 			(m) =>
-				`          <div class="session-label" style="position:absolute;left:${m.leftPercent}%;top:0;font-size:0.75em;font-weight:600;white-space:nowrap">${escapeHtml(m.label)}</div>`,
+				`          <div class="day-label" style="position:absolute;left:${m.leftPercent}%;top:0;font-size:0.75em;font-weight:600;white-space:nowrap">${escapeHtml(m.label)}</div>`,
 		)
 		.join("\n");
-	const sessionLinesHtml = sessionMarkers
+	const dayLinesHtml = dayMarkers
 		.filter((m) => m.line)
 		.map(
 			(m) =>
-				`          <div class="gantt-marker session-marker" style="left:${m.leftPercent}%"><div class="marker-line"></div></div>`,
+				`          <div class="gantt-marker day-marker" style="left:${m.leftPercent}%"><div class="marker-line"></div></div>`,
 		)
 		.join("\n");
 
@@ -275,7 +275,7 @@ ${blocksHtml}
           <div class="gantt-axis-gaps">
 ${axisGapsHtml}
           </div>
-${sessionLabelsHtml}
+${dayLabelsHtml}
 ${ticksHtml}
         </div>
       </div>
@@ -284,7 +284,7 @@ ${ticksHtml}
           <div class="gantt-marker start-marker" style="left:0%"><div class="marker-line"></div></div>
           <div class="gantt-marker end-marker" style="left:100%"><div class="marker-line"></div></div>
 ${trackOverlayGapsHtml}
-${sessionLinesHtml}
+${dayLinesHtml}
         </div>
 ${tracksHtml}
       </div>

@@ -206,14 +206,12 @@ function checkSchedules(compiled: CompilationResult): void {
 		expect(mode).toMatch(/perSection|upfront|perDay/);
 
 		// Sessions: one per working day, furthest day first, each within the timeline.
-		for (let i = 1; i < schedule.sessions.length; i++) {
-			expect(schedule.sessions[i - 1].day).toBeGreaterThan(
-				schedule.sessions[i].day,
-			);
+		for (let i = 1; i < schedule.days.length; i++) {
+			expect(schedule.days[i - 1].day).toBeGreaterThan(schedule.days[i].day);
 		}
-		for (const session of schedule.sessions) {
-			expect(session.start).toBeLessThanOrEqual(session.end);
-			expect(session.end).toBeLessThanOrEqual(schedule.totalTime);
+		for (const workingDay of schedule.days) {
+			expect(workingDay.start).toBeLessThanOrEqual(workingDay.end);
+			expect(workingDay.end).toBeLessThanOrEqual(schedule.totalTime);
 		}
 	}
 

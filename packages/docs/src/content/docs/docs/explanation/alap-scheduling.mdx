@@ -175,8 +175,8 @@ A section's retro-planning anchor (`~{-2d}`) defines a **strict completion deadl
 Key guidelines for multi-day recipes:
 
 - **Anchor using calendar days (`~{-Nd}`)**: working day segmentation relies exclusively on day anchors (`~{-1d}`, `~{-2d}`). Unanchored sections inherit the day of the furthest downstream day anchor.
-- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the timeline, but does not initiate a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
-- **Hour anchors (`~{-Nh}`) do not create working days**: values like `~{-18h}` or `~{-36h}` establish intra-day deadlines without opening a separate daily session. To initiate the previous day's session, use `~{-1d}`.
+- **Long passive timers do not create working days**: a step with `~_{48h}` shifts steps backwards on the timeline, but does not initiate a D-2 working day without an explicit section day anchor (`## Cream ~{-2d}`).
+- **Hour anchors (`~{-Nh}`) do not create working days**: values like `~{-18h}` or `~{-36h}` establish intra-day deadlines without opening a separate working day. To open the previous working day, use `~{-1d}`.
 - **Successive sections on the same day**: anchor only the final section (`## Tart ~{-1d}`) and leave preceding sections unanchored. Assigning the same anchor to interdependent sections triggers a time paradox warning.
 
 ## Modular anchoring (`@use ... ~{-1d}`)

@@ -83,7 +83,7 @@ interface Schedule {
   preparationTime: number;           // cumulative preparation duration (sum of prep tasks)
   idleTime: number;                  // total idle duration: totalTime - activeTime - preparationTime
   blocks: ScheduledBlock[];          // complete timeline blocks (prep, step, passive)
-  sessions: ScheduleSession[];       // plan breakdown by working day relative to service
+  days: ScheduleDay[];       // plan breakdown by working day relative to service
 }
 ```
 

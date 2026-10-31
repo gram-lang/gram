@@ -56,7 +56,7 @@ type Dated<B> = B extends ScheduleBlock
 
 export type ProjectedBlock = Dated<ScheduleBlock>;
 
-export interface ProjectedSession {
+export interface ProjectedDay {
 	day: number;
 	start: string;
 	end: string;
@@ -94,7 +94,7 @@ export type ProjectionDiagnostic =
 			largest: number;
 	  }
 	| {
-			code: "SESSION_DAY_MISMATCH";
+			code: "DAY_MISMATCH";
 			day: number;
 			/** The calendar date the day is meant to fall on. */
 			expected: string;
@@ -120,7 +120,7 @@ export interface ProjectedPlan {
 		/** Where the mise en place goes in this plan. */
 		miseEnPlace: MiseEnPlaceMode;
 		blocks: ProjectedBlock[];
-		sessions: ProjectedSession[];
+		days: ProjectedDay[];
 	}[];
 	adjustments: RestAdjustment[];
 	/** When the cook is not available, within the plan: to grey it out on a chart. */

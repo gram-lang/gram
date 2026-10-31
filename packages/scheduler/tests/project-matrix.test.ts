@@ -69,9 +69,9 @@ describe("project matrix (modes x rests x serving time)", () => {
 		expect(preps.filter((b) => "deferred" in b && b.deferred)).toHaveLength(2);
 	});
 
-	it("upfront does not report a day mismatch for its single long session", () => {
+	it("upfront does not report a day mismatch for its single long working day", () => {
 		const plan = run("2026-10-12T19:00", "upfront", "shortest");
-		expect(codes(plan)).not.toContain("SESSION_DAY_MISMATCH");
+		expect(codes(plan)).not.toContain("DAY_MISMATCH");
 	});
 
 	it("the longest rest cannot be served tomorrow; the shortest can", () => {

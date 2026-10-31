@@ -144,7 +144,7 @@ Chaque section dispose de sa propre mise en place (rassemblement et préparation
 
 Deux points d'attention pour les recettes pluri-journalières :
 - **Un long minuteur passif n'est pas une ancre.** Un temps passif de `~_{48h}` fait démarrer la chronologie deux jours plus tôt, mais seule l'ancre explicite d'une section ouvre formellement une journée de travail (ex. : `## Crème ~{-2d}`).
-- **Une ancre en heures n'ouvre jamais de journée.** Une ancre telle que `~{-18h}` (un levain pétri la veille au soir) ou `~{-36h}` constitue une échéance précise au sein de la journée où s'exécute la section, et non une session journalière autonome. Pour ouvrir la veille, employez `~{-1d}` (voir [Jours et heures](#jours-et-heures)).
+- **Une ancre en heures n'ouvre jamais de journée.** Une ancre telle que `~{-18h}` (un levain pétri la veille au soir) ou `~{-36h}` constitue une échéance précise au sein de la journée où s'exécute la section, et non une journée de travail autonome. Pour ouvrir la veille, employez `~{-1d}` (voir [Jours et heures](#jours-et-heures)).
 
 Le choix de la stratégie s'effectue à l'affichage : le Playground propose un sélecteur interactif, VS Code fournit le paramètre `gram.miseEnPlace`, la CLI expose l'option `--mise-en-place` et le moteur de rendu accepte `miseEnPlace`. Cette option influe sur le **temps total** et le **temps d'inactivité**, ainsi que sur la place de la mise en place dans l'ordonnancement, mais préserve strictement le temps de préparation cumulé et le temps actif.
 
@@ -175,9 +175,9 @@ La pâte feuilletée devra être prête **2 jours** avant le dressage final.
 L'unité choisie dans l'ancre porte une sémantique précise :
 
 - **Une ancre en jours** (`~{-1d}`, `~{-2d}`) ouvre une journée de travail distincte (veille, avant-veille), servant de pivot au mode « par journée de travail » et aux libellés d'étapes (J-1, J-2).
-- **Une ancre en heures ou en minutes** (`~{-18h}`, `~{-90min}`) représente une échéance fine à l'intérieur de la journée où la section s'exécute, sans ouvrir de session journalière supplémentaire.
+- **Une ancre en heures ou en minutes** (`~{-18h}`, `~{-90min}`) représente une échéance fine à l'intérieur de la journée où la section s'exécute, sans ouvrir de journée de travail supplémentaire.
 
-Chaque journée de travail est conçue pour s'inscrire dans une amplitude de 24 heures : si un long temps passif repousse le travail d'une journée hors de sa fenêtre (par exemple une pâte `~{-1d}` qui fermente pendant 50 heures), le compilateur émet l'avertissement `SESSION_OVERFLOW` et préconise d'ancrer la section plus en amont.
+Chaque journée de travail est conçue pour s'inscrire dans une amplitude de 24 heures : si un long temps passif repousse le travail d'une journée hors de sa fenêtre (par exemple une pâte `~{-1d}` qui fermente pendant 50 heures), le compilateur émet l'avertissement `DAY_OVERFLOW` et préconise d'ancrer la section plus en amont.
 
 ### Syntaxe stricte
 
@@ -209,7 +209,7 @@ Pour garantir un ordonnancement déterministe, le compilateur valide minutieusem
 - **Unité invalide (*Invalid Unit*)** (rétroplanning de section) : Une unité non reconnue déclenche `INVALID_UNIT`.
 - **Paradoxe temporel (*Time Paradox*)** : Si une ancre de rétroplanning entre en contradiction avec l'ordre logique d'une dépendance (ex. : une section ancrée à `-10 min` requise par une section ancrée à `-1 h`), le compilateur émet `TIME_PARADOX`.
 - **Embouteillage (*Track Contention*)** : Si des minuteurs passifs concurrents sur une même piste nommée ne peuvent être ordonnancés sans décalage temporel, le compilateur prévient de ce réaménagement via `TRACK_CONTENTION`.
-- **Journée qui déborde (*Session Overflow*)** *(Depuis la 1.4.0)* : Si un long temps passif repousse le travail d'une journée au-delà de sa fenêtre maximale de 24 heures, le compilateur signale un `SESSION_OVERFLOW` (suggérant d'ancrer la section un jour plus tôt ou d'ajuster la durée).
+- **Journée qui déborde (*Day overflow*)** *(Depuis la 1.4.0)* : Si un long temps passif repousse le travail d'une journée au-delà de sa fenêtre maximale de 24 heures, le compilateur signale un `DAY_OVERFLOW` (suggérant d'ancrer la section un jour plus tôt ou d'ajuster la durée).
 - **Durée hors limites (*Duration Out Of Range*)** : Tout minuteur ou décalage supérieur à 1000 ans est plafonné à cette limite technique et émet `DURATION_OUT_OF_RANGE`.
 
 Ces avertissements n'interrompent pas la compilation par défaut, mais peuvent être transformés en erreurs bloquantes strictes via la commande `gram check --strict`.
@@ -229,12 +229,12 @@ Ces avertissements n'interrompent pas la compilation par défaut, mais peuvent �
   />
   <LinkCard
     title="Mise en place et planification"
-    description="Découvrez l'articulation entre coûts de préparation, ancres journalières et sessions."
+    description="Découvrez l'articulation entre coûts de préparation, ancres journalières et journées de travail."
     href="/fr/docs/explanation/mise-en-place-and-planning/"
   />
   <LinkCard
     title="Référence des avertissements"
-    description="Détails des codes TIME_PARADOX, TRACK_CONTENTION et SESSION_OVERFLOW."
+    description="Détails des codes TIME_PARADOX, TRACK_CONTENTION et DAY_OVERFLOW."
     href="/fr/docs/reference/api/warnings/"
   />
 </CardGrid>

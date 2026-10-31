@@ -205,10 +205,10 @@ describe("layout (upfront)", () => {
 		expect(preps.at(-1)!.end).toBe(firstStep.start);
 	});
 
-	it("is a single session, with the same preparation and active time", () => {
+	it("is a single working day, with the same preparation and active time", () => {
 		const upfront = layout(graph(), { miseEnPlace: "upfront" }).schedule;
 		const perSection = layout(graph()).schedule;
-		expect(upfront.sessions).toHaveLength(1);
+		expect(upfront.days).toHaveLength(1);
 		expect(upfront.preparationTime).toBe(perSection.preparationTime);
 		expect(upfront.activeTime).toBe(perSection.activeTime);
 	});
@@ -271,7 +271,7 @@ describe("layout and intermediates", () => {
 		expect(preps.some((b) => "deferred" in b)).toBe(false);
 		const day0 = layout(g, {
 			miseEnPlace: "perDay",
-		}).schedule.sessions.find((s) => s.day === 0)!;
+		}).schedule.days.find((s) => s.day === 0)!;
 		expect(Math.min(...preps.map((b) => b.start))).toBe(day0.start);
 	});
 
@@ -341,7 +341,7 @@ describe("layout and rests", () => {
 });
 
 describe("layout diagnostics", () => {
-	it("reports a session whose work would start before its 24 h window", () => {
+	it("reports a working day whose work would start before its 24 h window", () => {
 		// `## Dough ~{-1d}` makes a dough that rests 50 h: the kneading is more
 		// than the 2 days before the end that day 1 is meant to fit in.
 		const graph: TaskGraph = {
@@ -353,10 +353,10 @@ describe("layout diagnostics", () => {
 			sections: [{ day: 1, deadline: 1440, intermediate: "dough" }, { day: 0 }],
 		};
 		const { schedule, diagnostics } = layout(graph);
-		const overflow = diagnostics.find((d) => d.code === "SESSION_OVERFLOW");
-		const day1 = schedule.sessions.find((s) => s.day === 1)!;
+		const overflow = diagnostics.find((d) => d.code === "DAY_OVERFLOW");
+		const day1 = schedule.days.find((s) => s.day === 1)!;
 		expect(overflow).toEqual({
-			code: "SESSION_OVERFLOW",
+			code: "DAY_OVERFLOW",
 			section: 0,
 			day: 1,
 			overflowMinutes: schedule.totalTime - 2 * 1440 - day1.start,

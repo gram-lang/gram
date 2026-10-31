@@ -308,18 +308,18 @@ Fill with &crust{300g} and bake ~{30min}.
 
 	const compiled = () => schedulesOf(compile(getAST(SOURCE))).perDay;
 
-	it("makes one session per anchored day, furthest first", () => {
-		const { sessions } = compiled();
-		expect(sessions.map((s) => [s.day, s.sections])).toEqual([
+	it("makes one working day per anchored day, furthest first", () => {
+		const { days } = compiled();
+		expect(days.map((s) => [s.day, s.sections])).toEqual([
 			[3, [0]],
 			[1, [1, 2]],
 		]);
-		expect(sessions[0]!.end).toBeLessThanOrEqual(sessions[1]!.start);
+		expect(days[0]!.end).toBeLessThanOrEqual(days[1]!.start);
 	});
 
 	it("gathers an intermediate made on an earlier day at the head of the day that uses it", () => {
-		const { blocks, sessions } = compiled();
-		const day1 = sessions[1]!;
+		const { blocks, days } = compiled();
+		const day1 = days[1]!;
 		const gathered = blocks.filter(
 			(b) => b.kind === "prep" && b.section === 1 && !b.deferred,
 		);
@@ -348,9 +348,9 @@ Fill with &crust{300g} and bake ~{30min}.
 		expect(crust.start).toBeGreaterThanOrEqual(crustEnd);
 	});
 
-	it("is one session, like upfront, without an anchor of a day or more", () => {
+	it("is one working day, like upfront, without an anchor of a day or more", () => {
 		const schedules = schedulesOf(compile(getAST(RECIPE)));
-		expect(schedules.perDay.sessions).toHaveLength(1);
+		expect(schedules.perDay.days).toHaveLength(1);
 		expect(schedules.perDay.blocks).toEqual(schedules.upfront.blocks);
 	});
 
@@ -362,8 +362,8 @@ Fill with &crust{300g} and bake ~{30min}.
 				),
 			),
 		);
-		expect(schedules.perDay.sessions).toHaveLength(1);
-		expect(schedules.perDay.sessions[0]!.day).toBe(0);
+		expect(schedules.perDay.days).toHaveLength(1);
+		expect(schedules.perDay.days[0]!.day).toBe(0);
 	});
 
 	it("keeps a section anchored under 24 hours on the day itself", () => {
@@ -374,7 +374,7 @@ Fill with &crust{300g} and bake ~{30min}.
 				),
 			),
 		);
-		expect(schedules.perDay.sessions.map((s) => s.day)).toEqual([0]);
+		expect(schedules.perDay.days.map((s) => s.day)).toEqual([0]);
 	});
 
 	it("keeps the same preparation and active time as the other schedules", () => {

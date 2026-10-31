@@ -20,7 +20,7 @@ Un bouton `CodeLens` apparaît juste au-dessus du titre de votre recette. Un cli
 
 ### 2. Vue planning de préparation
 - **Panneau dédié au planning** : Exécutez la commande `Gram: Work Plan` (ou cliquez sur l'icône de liste de tâches dans la barre d'outils de l'éditeur) pour afficher le planning complet dans une WebView dédiée, indépendante de l'aperçu standard. Il détaille pour chaque journée les plages de présence en cuisine, les ingrédients et le matériel à sortir, les tâches à réaliser et les temps de repos passifs.
-- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : En l'absence d'heure de service configurée dans l'éditeur, le planning est projeté sous forme de compte à rebours relatif et affiche des durées estimées par session (ex. : « environ 55 min »). Pour obtenir des horodatages précis avec dates et marges réelles, utilisez la commande `gram plan --serve` ou le studio interactif en ligne.
+- **Décompte relatif (`J-2`, `J-1`, `Jour J`)** : En l'absence d'heure de service configurée dans l'éditeur, le planning est projeté sous forme de compte à rebours relatif et affiche des durées estimées par journée (ex. : « environ 55 min »). Pour obtenir des horodatages précis avec dates et marges réelles, utilisez la commande `gram plan --serve` ou le studio interactif en ligne.
 - **Prise en compte des réglages de projet** : La vue s'adapte instantanément aux paramètres d'ordonnancement `gram.miseEnPlace` et `gram.rests` (détaillés ci-dessous).
 - **Remplacement du diagramme de Gantt** : La commande historique `Gram: Gantt Chart` est dépréciée depuis la version 1.4.0 (elle ouvre désormais le planning de préparation avec un avertissement informatif) et sera définitivement retirée en version 2.0.0.
 
@@ -44,7 +44,7 @@ Ce réglage pilote l'aperçu en direct, le planning de préparation et l'indicat
 
 Les durées passives fixes et les minuteurs actifs définis par une plage (`~{20-25min}`, systématiquement planifiés sur leur borne supérieure) ne sont pas affectés. À l'instar de `gram.miseEnPlace`, ce paramètre pilote l'aperçu, le planning de préparation et l'indication du temps total, et s'applique immédiatement à l'ensemble des fichiers ouverts. Voir [Durées exactes et fourchettes](/fr/docs/reference/syntax/times/#durées-exactes-et-fourchettes).
 
-Une session de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`SESSION_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
+Une journée de travail qu'une phase passive prolongée repousse au-delà du cycle normal de 24 heures déclenche un avertissement explicite sur la section concernée (`DAY_OVERFLOW`), affiché au même titre que les diagnostics du compilateur.
 
 ### 3. Gestion intelligente des ingrédients
 - **Gestion transparente des pluriels** : L'extension associe automatiquement les formes plurielles courantes de votre recette (ex. `@carottes`) aux entrées singulières correspondantes de votre référentiel YAML (`carotte`). Vous conservez ainsi une rédaction naturelle sans générer de faux avertissements.

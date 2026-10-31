@@ -61,7 +61,7 @@
         "end": 2163
       }
     ],
-    "sessions": [
+    "days": [
       {
         "day": 0,
         "start": 0,
@@ -76,7 +76,7 @@
   },
   "diagnostics": [
     {
-      "code": "SESSION_OVERFLOW",
+      "code": "DAY_OVERFLOW",
       "section": 0,
       "day": 0,
       "overflowMinutes": 723

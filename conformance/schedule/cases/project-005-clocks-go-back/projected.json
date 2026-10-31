@@ -64,7 +64,7 @@
           "endLocal": "2026-10-25T13:00"
         }
       ],
-      "sessions": [
+      "days": [
         {
           "day": 0,
           "start": "2026-10-24T11:26:00Z",
@@ -83,7 +83,7 @@
   "unavailable": [],
   "diagnostics": [
     {
-      "code": "SESSION_DAY_MISMATCH",
+      "code": "DAY_MISMATCH",
       "day": 0,
       "expected": "2026-10-25",
       "actual": "2026-10-24"
