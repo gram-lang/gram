@@ -29,21 +29,25 @@ export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .work-plan-notice { font-weight: 700; margin: 6pt 0; }
   .gram-run-sheet .work-plan-notice::before { content: "⚠ "; }
   .gram-run-sheet .work-plan-margin { color: var(--grey); }
-  .gram-run-sheet .work-plan-kit { border: 0.75pt solid #000; padding: 4pt 8pt 6pt; page-break-inside: avoid; }
+  .gram-run-sheet .work-plan-kit, .gram-run-sheet .program-kit { border: 0.75pt solid #000; padding: 4pt 8pt 6pt; page-break-inside: avoid; }
   .gram-run-sheet .work-plan-kit h4 { margin-top: 0; }
+  .gram-run-sheet .kit-group { page-break-inside: avoid; }
+  .gram-run-sheet .kit-group + .kit-group { margin-top: 5pt; padding-top: 5pt; border-top: 0.5pt dotted #000; }
+  .gram-run-sheet .kit-section-title { margin: 0 0 3pt; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: var(--grey); }
   .gram-run-sheet .kit-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16pt; }
-  .gram-run-sheet .kit-list.kit-tools { margin-top: 5pt; padding-top: 5pt; border-top: 0.5pt dotted #000; }
-  .gram-run-sheet .work-plan-kit li { margin-bottom: 2pt; page-break-inside: avoid; }
-  .gram-run-sheet .work-plan-kit label > span { display: inline-flex; justify-content: space-between; width: calc(100% - 14pt); gap: 6pt; }
-  .gram-run-sheet .work-plan-kit input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 8pt; height: 8pt; border: 1pt solid #000; border-radius: 1pt; margin-right: 6pt; vertical-align: -1pt; }
+  .gram-run-sheet .kit-list + .kit-list.kit-tools { margin-top: 5pt; padding-top: 5pt; border-top: 0.5pt dotted #000; }
+  .gram-run-sheet .work-plan-kit li, .gram-run-sheet .program-kit li { margin-bottom: 2pt; page-break-inside: avoid; }
+  .gram-run-sheet .work-plan-kit label > span, .gram-run-sheet .program-kit label > span { display: inline-flex; justify-content: space-between; width: calc(100% - 14pt); gap: 6pt; }
+  .gram-run-sheet .work-plan-kit input[type="checkbox"], .gram-run-sheet .program-kit input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 8pt; height: 8pt; border: 1pt solid #000; border-radius: 1pt; margin-right: 6pt; vertical-align: -1pt; }
   .gram-run-sheet .kit-qty::before, .gram-run-sheet .kit-note::before, .gram-run-sheet .kit-tools label > span::after { content: ""; flex: 1; align-self: flex-end; min-width: 8pt; margin-bottom: 2pt; border-bottom: 1pt dotted #000; }
-  .gram-run-sheet .work-plan-program ul { border: 0.75pt solid #000; }
-  .gram-run-sheet .work-plan-program li { display: grid; grid-template-columns: 9em 1fr; column-gap: 10pt; padding: 4pt 6pt; border-bottom: 0.75pt solid #000; page-break-inside: avoid; }
-  .gram-run-sheet .work-plan-program li:last-child { border-bottom: 0; }
+  .gram-run-sheet .work-plan-program > ul { border: 0.75pt solid #000; }
+  .gram-run-sheet .work-plan-program > ul > li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2pt 10pt; padding: 4pt 6pt; border-bottom: 0.75pt solid #000; page-break-inside: avoid; }
+  .gram-run-sheet .work-plan-program > ul > li:last-child { border-bottom: 0; }
   .gram-run-sheet .program-section { font-weight: 700; text-transform: uppercase; }
-  .gram-run-sheet .program-section small { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--grey); font-size: 7.5pt; font-weight: 400; text-transform: none; }
-  .gram-run-sheet .program-step + .program-step::before { content: " › "; color: var(--grey); font-weight: 700; }
-  .gram-run-sheet .step-temp, .gram-run-sheet .step-time { margin-left: 3pt; padding: 0 3pt; border: 0.75pt solid #000; border-radius: 1pt; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8pt; font-weight: 600; }
+  .gram-run-sheet .program-by-section > ul { border: 0; }
+  .gram-run-sheet .program-by-section > ul > li { padding: 0 0 6pt; border: 0; }
+  .gram-run-sheet .program-by-section .program-kit { flex-basis: 100%; margin-top: 3pt; }
+  .gram-run-sheet .program-ref { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--grey); font-size: 7.5pt; }
   .gram-run-sheet .kit-qty, .gram-run-sheet .kit-note { display: flex; flex: 1; justify-content: flex-end; gap: 4pt; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; color: var(--grey); }
   .gram-run-sheet .work-plan-leaving { border: 1pt dashed #000; padding: 5pt 8pt; page-break-inside: avoid; }
   .gram-run-sheet .work-plan-leaving h4 { margin-top: 0; }

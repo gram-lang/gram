@@ -135,7 +135,7 @@ export interface RendererOptions {
 	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
 	 * the start of each working day (`"perSession"`). Drives the total and idle
 	 * times of the recipe; what to take out, and when, is the work plan's
-	 * (`runSheet`).
+	 * (`runSheet`), which follows the mode of the sheet it is given.
 	 */
 	miseEnPlace?: MiseEnPlaceMode;
 	/**

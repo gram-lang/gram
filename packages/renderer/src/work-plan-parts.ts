@@ -1,5 +1,4 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type { ProcessedStep } from "@gram-lang/kitchen";
 import type { RenderableCompilationResult } from "./types";
 import { formatDecimalToFraction, getQty } from "./utils";
 
@@ -68,26 +67,21 @@ const SUM_EPS = 1e-9;
 
 const unitSuffix = (unit?: string | null) => (unit ? ` ${unit}` : "");
 
+const sortedSections = (sections: Iterable<number>) =>
+	[...new Set(sections)].sort((a, b) => a - b);
+
 /**
- * What to take out for a passage, from the sections that have work in it:
- * the ingredients (the same one asked by two sections is summed, with the
- * detail of the sum), then the preparations an earlier passage made (named by
- * the section that makes them), then the cookware, without duplicates.
- *
- * An intermediate made inside the passage is not listed: it is not taken from
- * anywhere. An ingredient standing for a `--stock`ed import is marked "in
- * stock". Everything is read from the compiled recipe: nothing is invented.
+ * The raw ingredients the given sections use, the same one asked twice summed
+ * with the detail of the sum. A preparation (`&dough`) is not an ingredient
+ * here: `kitPrepared` lists it.
  */
-export function passageKit(
+export function kitIngredients(
 	data: RenderableCompilationResult,
 	sections: number[],
-	options: PassageKitOptions = {},
+	options: { lang?: string } = {},
 ): KitItem[] {
 	const t = getDictionary(options.lang).renderer;
 	const registry = data.registry;
-	const makers = intermediateMakers(data);
-	const here = new Set(sections);
-
 	interface Line {
 		id: string;
 		unit: string;
@@ -96,48 +90,16 @@ export function passageKit(
 	}
 	const lines: Line[] = [];
 	const byKey = new Map<string, Line>();
-	const prepared: KitItem[] = [];
-	const preparedSeen = new Set<string>();
-	const cookwareIds: string[] = [];
-
-	for (const index of [...sections].sort((a, b) => a - b)) {
+	for (const index of sortedSections(sections)) {
 		const section = data.sections?.[index];
 		if (!section) continue;
 		for (const usage of section.ingredients as unknown as Record<
 			string,
 			unknown
 		>[]) {
+			if (usage.type === "reference") continue;
 			const id = String(usage.id ?? "");
-			if (usage.type === "reference") {
-				const maker = makers.get(normalize(id));
-				const entry = registry?.ingredients?.[id];
-				if (maker === undefined && entry?.is_module_synthetic) {
-					// A base kept in stock: nothing makes it in this recipe.
-					if (preparedSeen.has(id)) continue;
-					preparedSeen.add(id);
-					prepared.push({
-						kind: "prepared",
-						name: String(usage.name ?? entry.name ?? id),
-						note: t.workPlanInStock,
-					});
-					continue;
-				}
-				if (maker === undefined || here.has(maker)) continue;
-				if (preparedSeen.has(id)) continue;
-				preparedSeen.add(id);
-				const title =
-					data.sections?.[maker]?.title ||
-					String(usage.name ?? registry?.ingredients?.[id]?.name ?? id);
-				const note = options.madeBefore?.(id, maker);
-				prepared.push({
-					kind: "prepared",
-					name: title,
-					...(note !== undefined && { note }),
-				});
-				continue;
-			}
 			const unit = typeof usage.unit === "string" ? usage.unit : "";
-			const qty = getQty(usage);
 			if (typeof usage.qty === "number") {
 				const key = `${id}|${unit}`;
 				let line = byKey.get(key);
@@ -148,6 +110,7 @@ export function passageKit(
 				}
 				line.numbers.push(usage.qty);
 			} else {
+				const qty = getQty(usage);
 				lines.push({
 					id,
 					unit,
@@ -156,12 +119,8 @@ export function passageKit(
 				});
 			}
 		}
-		for (const usage of section.cookware) {
-			if (!cookwareIds.includes(usage.id)) cookwareIds.push(usage.id);
-		}
 	}
-
-	const ingredients: KitItem[] = lines.map((line) => {
+	return lines.map((line) => {
 		const entry = registry?.ingredients?.[line.id];
 		const name = entry?.name ?? line.id;
 		const total = line.numbers.reduce((sum, n) => sum + n, 0);
@@ -184,47 +143,121 @@ export function passageKit(
 			...(entry?.is_module_synthetic && { note: t.workPlanInStock }),
 		};
 	});
+}
 
-	const cookware: KitItem[] = cookwareIds.map((id) => ({
+/**
+ * The preparations the given sections use, each once: an intermediate made by
+ * another section (named by the section that makes it) or a base kept in stock.
+ * One that a section in `present` makes is left out: it is not taken from
+ * anywhere.
+ */
+export function kitPrepared(
+	data: RenderableCompilationResult,
+	sections: number[],
+	options: PassageKitOptions & { present?: Iterable<number> } = {},
+): KitItem[] {
+	const t = getDictionary(options.lang).renderer;
+	const registry = data.registry;
+	const makers = intermediateMakers(data);
+	const present = new Set(options.present ?? sections);
+	const seen = new Set<string>();
+	const prepared: KitItem[] = [];
+	for (const index of sortedSections(sections)) {
+		const section = data.sections?.[index];
+		if (!section) continue;
+		for (const usage of section.ingredients as unknown as Record<
+			string,
+			unknown
+		>[]) {
+			if (usage.type !== "reference") continue;
+			const id = String(usage.id ?? "");
+			const maker = makers.get(normalize(id));
+			const entry = registry?.ingredients?.[id];
+			if (maker === undefined && entry?.is_module_synthetic) {
+				// A base kept in stock: nothing makes it in this recipe.
+				if (seen.has(id)) continue;
+				seen.add(id);
+				prepared.push({
+					kind: "prepared",
+					name: String(usage.name ?? entry.name ?? id),
+					note: t.workPlanInStock,
+				});
+				continue;
+			}
+			if (maker === undefined || present.has(maker)) continue;
+			if (seen.has(id)) continue;
+			seen.add(id);
+			const title =
+				data.sections?.[maker]?.title ||
+				String(usage.name ?? registry?.ingredients?.[id]?.name ?? id);
+			const note = options.madeBefore?.(id, maker);
+			prepared.push({
+				kind: "prepared",
+				name: title,
+				...(note !== undefined && { note }),
+			});
+		}
+	}
+	return prepared;
+}
+
+/** The cookware the given sections use, without duplicates. */
+export function kitCookware(
+	data: RenderableCompilationResult,
+	sections: number[],
+): KitItem[] {
+	const ids: string[] = [];
+	for (const index of sortedSections(sections)) {
+		for (const usage of data.sections?.[index]?.cookware ?? []) {
+			if (!ids.includes(usage.id)) ids.push(usage.id);
+		}
+	}
+	return ids.map((id) => ({
 		kind: "cookware",
-		name: registry?.cookware?.[id]?.name ?? id,
+		name: data.registry?.cookware?.[id]?.name ?? id,
 	}));
-
-	return [...ingredients, ...prepared, ...cookware];
 }
 
-/** One step of a section's programme: only what it brings to the plan. */
-export interface ProgramStep {
-	/** Its number in the section, as the recipe view numbers it (comments excluded). */
-	n: number;
-	action?: string;
-	/** "180 °C", "medium heat". */
-	temperatures: string[];
-	/** "12 to 48 h": the written range, not what the plan chose. */
-	timers: string[];
+/**
+ * What to take out for a passage, from the sections that have work in it:
+ * the ingredients (the same one asked by two sections is summed, with the
+ * detail of the sum), then the preparations an earlier passage made (named by
+ * the section that makes them), then the cookware, without duplicates.
+ *
+ * An intermediate made inside the passage is not listed: it is not taken from
+ * anywhere. An ingredient standing for a `--stock`ed import is marked "in
+ * stock". Everything is read from the compiled recipe: nothing is invented.
+ */
+export function passageKit(
+	data: RenderableCompilationResult,
+	sections: number[],
+	options: PassageKitOptions = {},
+): KitItem[] {
+	return [
+		...kitIngredients(data, sections, options),
+		...kitPrepared(data, sections, { ...options, present: sections }),
+		...kitCookware(data, sections),
+	];
 }
 
-/** What one section asks for in a passage, in a few words, and where to read the rest. */
+/** What one section asks for in a passage: where to read it in the recipe. */
 export interface SectionProgram {
 	section: number;
 	title: string;
 	/** The file an imported section comes from, "biscuit-pistache.gram". */
 	origin?: string;
-	/** First and last step number the passage covers, and how many steps. */
+	/** First and last step number the passage covers, as the recipe view numbers them. */
 	from: number;
 	to: number;
-	/** The steps that bring an action, a temperature or a timer; the others only count in `from`..`to`. */
-	steps: ProgramStep[];
 }
 
 const baseName = (uri: string) => uri.split(/[\\/]/).pop() || uri;
 
 /**
- * The programme of a section for a passage: for each of the steps it has
- * there, in order, the action in brackets, the temperatures and the timers,
- * as written in the recipe. A step with none of the three is left out of the
- * list but stays counted in `from`..`to`, so the renvoi to the recipe is exact.
- * An imported section carries the name of its file.
+ * The programme of a section for a passage: its title and the range of steps
+ * the passage covers, from the first to the last, numbered as the recipe view
+ * numbers them (comments excluded). An imported section carries the name of
+ * its file.
  *
  * `stepIndexes` are indexes in the section's `steps`, comments included.
  */
@@ -242,53 +275,10 @@ export function sectionProgram(
 	source.steps.forEach((s, i) => {
 		if (s.type === "step") numbering.set(i, ++n);
 	});
-	const picked = [...new Set(stepIndexes)]
+	const numbers = [...new Set(stepIndexes)]
 		.filter((i) => numbering.has(i))
-		.sort((a, b) => a - b);
-	const steps: ProgramStep[] = [];
-	for (const index of picked) {
-		const step = source.steps[index] as ProcessedStep;
-		const temperatures: string[] = [];
-		const timers: string[] = [];
-		for (const raw of step.content) {
-			if (typeof raw !== "object" || raw === null || !("type" in raw)) {
-				continue;
-			}
-			const token = raw as Record<string, any>;
-			if (token.type === "temperature") {
-				const q = token.quantity;
-				if (q && q.value !== undefined) {
-					temperatures.push(`${q.text ?? q.value}${unitSuffix(token.unit)}`);
-				} else if (token.text) temperatures.push(token.text);
-			} else if (token.type === "timer") {
-				const q = token.quantity as
-					| {
-							type?: string;
-							text?: string;
-							value?: unknown;
-							range?: { min: number; max: number };
-					  }
-					| undefined;
-				const value =
-					q?.type === "range" && q.range
-						? t.workPlanRange
-								.replace("{min}", String(q.range.min))
-								.replace("{max}", String(q.range.max))
-						: String(q?.text ?? q?.value ?? "");
-				if (value) timers.push(`${value}${unitSuffix(token.unit)}`);
-			}
-		}
-		if (!step.action && temperatures.length === 0 && timers.length === 0) {
-			continue;
-		}
-		steps.push({
-			n: numbering.get(index)!,
-			...(step.action && { action: step.action }),
-			temperatures,
-			timers,
-		});
-	}
-	const numbers = picked.map((i) => numbering.get(i)!);
+		.sort((a, b) => a - b)
+		.map((i) => numbering.get(i)!);
 	if (numbers.length === 0) return undefined;
 	return {
 		section,
@@ -296,6 +286,5 @@ export function sectionProgram(
 		...(source.module && { origin: baseName(source.module.uri) }),
 		from: numbers[0]!,
 		to: numbers.at(-1)!,
-		steps,
 	};
 }

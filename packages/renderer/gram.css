@@ -1471,13 +1471,34 @@ flex-direction: column;
 }
 
 /* What to take out */
-.gram-run-sheet .work-plan-kit {
+.gram-run-sheet .work-plan-kit,
+.gram-run-sheet .program-kit {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   padding: 1rem 1.25rem;
   border: 1px solid var(--color-border);
   background: var(--color-bg-subtle);
+}
+
+.gram-run-sheet .kit-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gram-run-sheet .kit-group + .kit-group {
+  padding-top: 0.85rem;
+  border-top: 1px dotted var(--color-border);
+}
+
+.gram-run-sheet .kit-section-title {
+  margin: 0;
+  font-family: var(--gram-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .gram-run-sheet .kit-list {
@@ -1487,7 +1508,7 @@ flex-direction: column;
   margin-top: 0 !important;
 }
 
-.gram-run-sheet .kit-list.kit-tools {
+.gram-run-sheet .kit-list + .kit-list.kit-tools {
   margin-top: 0.65rem;
   padding-top: 0.85rem;
   border-top: 1px dotted var(--color-border);
@@ -1599,21 +1620,22 @@ flex-direction: column;
   gap: 0.65rem;
 }
 
-.gram-run-sheet .work-plan-program ul {
+.gram-run-sheet .work-plan-program > ul {
   border: 1px solid var(--color-border);
 }
 
-.gram-run-sheet .work-plan-program li {
-  display: grid;
-  grid-template-columns: 10.5rem minmax(0, 1fr);
-  column-gap: 1.25rem;
+.gram-run-sheet .work-plan-program > ul > li {
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.25rem;
   margin: 0;
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--color-border);
 }
 
-.gram-run-sheet .work-plan-program li:last-child {
+.gram-run-sheet .work-plan-program > ul > li:last-child {
   border-bottom: 0;
 }
 
@@ -1624,55 +1646,29 @@ flex-direction: column;
   color: var(--color-text-strong);
 }
 
-.gram-run-sheet .program-section small {
-  display: block;
-  margin-top: 0.15rem;
-  font-family: var(--gram-font-mono);
-  font-size: 0.72rem;
-  font-weight: 400;
-  text-transform: none;
-  color: var(--color-text-muted);
-}
-
-.gram-run-sheet .program-steps {
+/* By section: no table, each section is a title line over its own kit box, like the one at the top of a visit. */
+.gram-run-sheet .program-by-section > ul {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.6rem;
-  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  border: 0;
 }
 
-.gram-run-sheet .program-step {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  font-size: 0.88rem;
+.gram-run-sheet .program-by-section > ul > li {
+  padding: 0;
+  border: 0;
 }
 
-.gram-run-sheet .program-step + .program-step::before {
-  content: "›";
-  margin-right: 0.6rem;
-  font-weight: bold;
+.gram-run-sheet .program-by-section .program-kit {
+  flex-basis: 100%;
+  margin-top: 0.35rem;
+}
+
+.gram-run-sheet .program-ref {
+  font-family: var(--gram-font-mono);
+  font-size: 0.78rem;
   color: var(--color-text-muted);
 }
-
-
-.gram-run-sheet .step-temp,
-.gram-run-sheet .step-time {
-  margin-left: 0.35rem;
-  padding: 0.12rem 0.38rem;
-  border: 1px solid var(--color-text);
-  white-space: nowrap;
-  font-family: var(--gram-font-mono);
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--color-text-strong);
-}
-
-.gram-run-sheet .step-time{
-  background-color: var(--color-text);
-  color: var(--color-bg);
-}
-
 
 /* What goes on without the cook, then when to come back */
 .gram-run-sheet .work-plan-leaving {
@@ -1764,8 +1760,4 @@ flex-direction: column;
     grid-template-columns: 1fr;
   }
 
-  .gram-run-sheet .work-plan-program li {
-    grid-template-columns: 1fr;
-    row-gap: 0.4rem;
-  }
 }

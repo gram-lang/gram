@@ -1,14 +1,21 @@
 import { getDictionary } from "@gram-lang/i18n";
-import type {
-	ProjectionDiagnostic,
-	RunSheet,
-	RunSheetDay,
-	RunSheetPassage,
-	RunSheetThread,
+import {
+	DEFAULT_MISE_EN_PLACE_MODE,
+	type ProjectionDiagnostic,
+	type RunSheet,
+	type RunSheetDay,
+	type RunSheetPassage,
+	type RunSheetThread,
 } from "@gram-lang/scheduler";
 import { sessionDayLabel } from "./mise-en-place";
 import type { RenderableCompilationResult } from "./types";
-import { type KitItem, passageKit, sectionProgram } from "./work-plan-parts";
+import {
+	type KitItem,
+	kitCookware,
+	kitIngredients,
+	kitPrepared,
+	sectionProgram,
+} from "./work-plan-parts";
 import { escapeHtml, escapeMarkdownHtml, formatDuration } from "./utils";
 
 export interface RunSheetRenderOptions {
@@ -48,16 +55,25 @@ export interface RunSheetKitLine {
 	note?: string;
 }
 
-/** What a passage asks of one section. */
+/**
+ * Things to take out together, at the top of a visit (`perSession`, `upfront`).
+ * In `perSection` mode they are on the programme lines instead; a group with a
+ * `section` is only left for a section that has no step of its own in the visit.
+ */
+export interface RunSheetKitGroup {
+	/** The section the things are for. */
+	section?: string;
+	items: RunSheetKitLine[];
+}
+
+/** What a passage asks of one section: where to read it in the recipe. */
 export interface RunSheetProgramLine {
 	/** "Mousse" */
 	section: string;
 	/** "steps 1 to 3", "sponge.gram, steps 1 to 3" */
 	reference: string;
-	/** "Heat 5 min › Cool 30 °C 15 min": empty when no step brings anything. */
-	steps: string;
-	/** The same steps, one by one, for a view that shows them as a sequence. */
-	sequence: { action?: string; temperatures: string[]; timers: string[] }[];
+	/** In `perSection` mode, what to take out for this section, right before its steps. */
+	kit?: RunSheetKitLine[];
 }
 
 /** One moment in the kitchen, in words. */
@@ -66,7 +82,7 @@ export interface RunSheetPassageModel {
 	slot: string;
 	/** "Possible from 18:00." or the fixed times that hold it. */
 	margin?: string;
-	kit: RunSheetKitLine[];
+	kit: RunSheetKitGroup[];
 	program: RunSheetProgramLine[];
 	/** What continues without the cook, then when to come back. */
 	leaving: string[];
@@ -324,6 +340,24 @@ export function describeRunSheet(
 		}
 	});
 
+	// The mode comes from the sheet: the plan and its kit cannot disagree.
+	const mode = recipe?.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE;
+	const allPassages = days.flatMap((day) => day.passages);
+	const stepSection = (id: string) => {
+		const task = tasks.get(id);
+		return task?.kind === "step" ? task.section : undefined;
+	};
+	// Where a section is first seen, and where its first step is: a preparation
+	// is needed at the step, not at the mise en place that may come before.
+	const firstSeen = new Map<number, RunSheetPassage>();
+	const firstWork = new Map<number, RunSheetPassage>();
+	for (const p of allPassages) {
+		for (const s of p.sections) if (!firstSeen.has(s)) firstSeen.set(s, p);
+		for (const id of p.tasks) {
+			const s = stepSection(id);
+			if (s !== undefined && !firstWork.has(s)) firstWork.set(s, p);
+		}
+	}
 	const claimed = new Set<number>();
 	const schedule: RunSheetScheduleRow[] = [];
 	const events: RunSheetEvent[] = [];
@@ -358,28 +392,26 @@ export function describeRunSheet(
 				schedule.push({ kind: "thread", text: threadText(th) });
 			}
 
-			// To take out: sections whose work starts here, once.
-			const own = p.sections.filter((s) => !claimed.has(s));
-			for (const s of own) claimed.add(s);
-			const kit = passageKit(data, own, {
-				lang,
-				madeBefore: (_id, maker) => {
-					const made = lastPassage.get(maker);
-					if (!made || made.passage === p) return undefined;
-					if (made.day === d) {
-						return calendar && made.passage.startLocal
-							? fill(t.workPlanMadeAt, { time: clock(made.passage.startLocal) })
-							: t.workPlanMadeEarlier;
-					}
-					const madeDay = days[made.day]!;
-					return fill(t.workPlanMadeOn, {
-						day:
-							calendar && madeDay.date
-								? weekdayName(madeDay.date, lang)
-								: dayLabel(madeDay),
-					});
-				},
-			}).map((item): RunSheetKitLine => {
+			// To take out: the raw things of a section once, at its first passage
+			// (all of them at the first visit in `upfront`); a preparation at the
+			// visit of its first step, whatever the mode.
+			const present = new Set(
+				p.tasks.flatMap((id) => {
+					const s = stepSection(id);
+					return s === undefined ? [] : [s];
+				}),
+			);
+			const rawSections =
+				mode === "upfront"
+					? p === allPassages[0]
+						? [...new Set(allPassages.flatMap((x) => x.sections))]
+						: []
+					: p.sections.filter((s) => !claimed.has(s));
+			for (const s of rawSections) claimed.add(s);
+			const preparedSections = [...firstSeen.keys()].filter(
+				(s) => (firstWork.get(s) ?? firstSeen.get(s)) === p,
+			);
+			const line = (item: KitItem): RunSheetKitLine => {
 				const text = [
 					item.quantity ? `${item.name} ${item.quantity}` : item.name,
 					item.note,
@@ -394,10 +426,33 @@ export function describeRunSheet(
 					...(item.note && { note: item.note }),
 					...(item.detail && { detail: item.detail }),
 				};
-			});
-
-			// The programme: the steps of each section that fall in the passage.
+			};
+			const prepared = (sections: number[]) =>
+				kitPrepared(data, sections, {
+					lang,
+					present,
+					madeBefore: (_id, maker) => {
+						const made = lastPassage.get(maker);
+						if (!made || made.passage === p) return undefined;
+						if (made.day === d) {
+							return calendar && made.passage.startLocal
+								? fill(t.workPlanMadeAt, {
+										time: clock(made.passage.startLocal),
+									})
+								: t.workPlanMadeEarlier;
+						}
+						const madeDay = days[made.day]!;
+						return fill(t.workPlanMadeOn, {
+							day:
+								calendar && madeDay.date
+									? weekdayName(madeDay.date, lang)
+									: dayLabel(madeDay),
+						});
+					},
+				});
+			// The programme: where to read each section in the recipe.
 			const program: RunSheetProgramLine[] = [];
+			const programOf = new Map<number, RunSheetProgramLine>();
 			for (const s of p.sections) {
 				const indexes = p.tasks.flatMap((id) => {
 					const task = tasks.get(id);
@@ -412,22 +467,50 @@ export function describeRunSheet(
 								from: String(prog.from),
 								to: String(prog.to),
 							});
-				program.push({
+				const entry: RunSheetProgramLine = {
 					section: prog.title,
 					reference: prog.origin ? `${prog.origin}, ${range}` : range,
-					steps: prog.steps
-						.map((st) =>
-							[st.action, ...st.temperatures, st.timers.join(" · ")]
-								.filter(Boolean)
-								.join(" "),
-						)
-						.join(" › "),
-					sequence: prog.steps.map((st) => ({
-						...(st.action && { action: st.action }),
-						temperatures: st.temperatures,
-						timers: st.timers,
-					})),
-				});
+				};
+				program.push(entry);
+				programOf.set(s, entry);
+			}
+
+			// By section, what to take out sits with its section, right before the
+			// steps that need it; the cookware is told once, at the first section that
+			// uses it. Otherwise it is one block at the top of the visit.
+			const kit: RunSheetKitGroup[] = [];
+			if (mode === "perSection") {
+				const own = [...new Set([...rawSections, ...preparedSections])].sort(
+					(a, b) => a - b,
+				);
+				const seenCookware = new Set<string>();
+				for (const s of own) {
+					const lines = [
+						...(rawSections.includes(s)
+							? kitIngredients(data, [s], { lang })
+							: []),
+						...(preparedSections.includes(s) ? prepared([s]) : []),
+						...(rawSections.includes(s)
+							? kitCookware(data, [s]).filter((c) => {
+									if (seenCookware.has(c.name)) return false;
+									seenCookware.add(c.name);
+									return true;
+								})
+							: []),
+					];
+					if (lines.length === 0) continue;
+					const entry = programOf.get(s);
+					if (entry) entry.kit = lines.map(line);
+					// A section with no step in this visit has no line to hold its things.
+					else kit.push({ section: sectionTitle(s), items: lines.map(line) });
+				}
+			} else {
+				const items = [
+					...kitIngredients(data, rawSections, { lang }),
+					...prepared(preparedSections),
+					...kitCookware(data, rawSections),
+				];
+				if (items.length > 0) kit.push({ items: items.map(line) });
 			}
 
 			// Leaving: what goes on, then when to come back.
@@ -511,15 +594,22 @@ export function describeRunSheet(
 				if (start?.start && last?.end) {
 					const lines = [
 						...(kit.length > 0
-							? [`${t.workPlanKit} :`, ...kit.map((l) => `- ${l.text}`), ""]
+							? [
+									`${t.workPlanKit} :`,
+									...kitLines(kit, {
+										title: (section) => `${section} :`,
+										item: (l) => `- ${l.text}`,
+									}),
+									"",
+								]
 							: []),
 						...(program.length > 0
 							? [
 									`${t.workPlanProgram} :`,
-									...program.map(
-										(l) =>
-											`- ${l.section} (${l.reference})${l.steps ? ` : ${l.steps}` : ""}`,
-									),
+									...program.flatMap((l) => [
+										`- ${l.section} (${l.reference})`,
+										...(l.kit ?? []).map((k) => `  - ${k.text}`),
+									]),
 								]
 							: []),
 					];
@@ -622,6 +712,57 @@ export function describeRunSheet(
 	};
 }
 
+/**
+ * The lines of a kit, group by group: a title above the lines of a group that
+ * has one. `gap` goes between a title and what follows it, when it is needed.
+ */
+function kitLines(
+	kit: RunSheetKitGroup[],
+	format: {
+		title: (section: string) => string;
+		item: (line: RunSheetKitLine) => string;
+		gap?: string;
+	},
+): string[] {
+	const out: string[] = [];
+	kit.forEach((group, i) => {
+		if (group.section) {
+			if (i > 0 && format.gap !== undefined) out.push(format.gap);
+			out.push(format.title(group.section));
+			if (format.gap !== undefined) out.push(format.gap);
+		} else if (i > 0 && format.gap !== undefined) {
+			out.push(format.gap);
+		}
+		for (const l of group.items) out.push(format.item(l));
+	});
+	return out;
+}
+
+/** The things of a group as a checklist, the cookware set apart in a list of its own. */
+function kitListsHtml(
+	items: RunSheetKitLine[],
+	e: (value: string) => string,
+): string {
+	const things = items.filter((l) => l.kind !== "cookware");
+	const tools = items.filter((l) => l.kind === "cookware");
+	let html = "";
+	if (things.length > 0) {
+		html += `          <ul class="kit-list">\n`;
+		for (const l of things) {
+			html += `            <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+		}
+		html += `          </ul>\n`;
+	}
+	if (tools.length > 0) {
+		html += `          <ul class="kit-list kit-tools">\n`;
+		for (const l of tools) {
+			html += `            <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
+		}
+		html += `          </ul>\n`;
+	}
+	return html;
+}
+
 /** The work plan as plain text. */
 export function runSheetToText(
 	sheet: RunSheet,
@@ -657,16 +798,20 @@ export function runSheetToText(
 			if (p.margin) out.push(`  ${p.margin}`);
 			if (p.kit.length > 0) {
 				out.push(`  ${t.workPlanKit}`);
-				for (const l of p.kit) {
-					out.push(`    [ ] ${l.text}${l.detail ? ` (${l.detail})` : ""}`);
-				}
+				out.push(
+					...kitLines(p.kit, {
+						title: (section) => `    ${section} :`,
+						item: (l) => `    [ ] ${l.text}${l.detail ? ` (${l.detail})` : ""}`,
+					}),
+				);
 			}
 			if (p.program.length > 0) {
 				out.push(`  ${t.workPlanProgram}`);
 				for (const l of p.program) {
-					out.push(
-						`    ${l.section} (${l.reference})${l.steps ? ` : ${l.steps}` : ""}`,
-					);
+					out.push(`    ${l.section} (${l.reference})`);
+					for (const k of l.kit ?? []) {
+						out.push(`      [ ] ${k.text}${k.detail ? ` (${k.detail})` : ""}`);
+					}
 				}
 			}
 			out.push(`  ${t.workPlanLeaving}`);
@@ -715,19 +860,25 @@ export function runSheetToMarkdown(
 			if (p.margin) out.push(md(p.margin), "");
 			if (p.kit.length > 0) {
 				out.push(`**${md(t.workPlanKit)}**`, "");
-				for (const l of p.kit) {
-					out.push(
-						`- [ ] ${md(l.text)}${l.detail ? ` (${md(l.detail)})` : ""}`,
-					);
-				}
+				out.push(
+					...kitLines(p.kit, {
+						title: (section) => `*${md(section)}*`,
+						item: (l) =>
+							`- [ ] ${md(l.text)}${l.detail ? ` (${md(l.detail)})` : ""}`,
+						gap: "",
+					}),
+				);
 				out.push("");
 			}
 			if (p.program.length > 0) {
 				out.push(`**${md(t.workPlanProgram)}**`, "");
 				for (const l of p.program) {
-					out.push(
-						`- **${md(l.section)}** (${md(l.reference)})${l.steps ? ` : ${md(l.steps)}` : ""}`,
-					);
+					out.push(`- **${md(l.section)}** (${md(l.reference)})`);
+					for (const k of l.kit ?? []) {
+						out.push(
+							`  - [ ] ${md(k.text)}${k.detail ? ` (${md(k.detail)})` : ""}`,
+						);
+					}
 				}
 				out.push("");
 			}
@@ -805,44 +956,21 @@ export function runSheetToHTML(
 				html += `      <p class="work-plan-margin">${e(p.margin)}</p>\n`;
 			}
 			if (p.kit.length > 0) {
-				const things = p.kit.filter((l) => l.kind !== "cookware");
-				const tools = p.kit.filter((l) => l.kind === "cookware");
 				html += `      <div class="work-plan-kit">\n        <h4>${e(t.workPlanKit)}${where}</h4>\n`;
-				if (things.length > 0) {
-					html += `        <ul class="kit-list">\n`;
-					for (const l of things) {
-						html += `          <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+				for (const group of p.kit) {
+					html += `        <div class="kit-group">\n`;
+					if (group.section) {
+						html += `          <h5 class="kit-section-title">${e(group.section)}</h5>\n`;
 					}
-					html += `        </ul>\n`;
-				}
-				if (tools.length > 0) {
-					html += `        <ul class="kit-list kit-tools">\n`;
-					for (const l of tools) {
-						html += `          <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
-					}
-					html += `        </ul>\n`;
+					html += kitListsHtml(group.items, e);
+					html += `        </div>\n`;
 				}
 				html += `      </div>\n`;
 			}
 			if (p.program.length > 0) {
-				html += `      <div class="work-plan-program">\n        <h4>${e(t.workPlanProgram)}${where}</h4>\n        <ul>\n`;
+				html += `      <div class="work-plan-program${p.program.some((l) => l.kit?.length) ? " program-by-section" : ""}">\n        <h4>${e(t.workPlanProgram)}${where}</h4>\n        <ul>\n`;
 				for (const l of p.program) {
-					html += `          <li><span class="program-section">${e(l.section)}<small>${e(l.reference)}</small></span>`;
-					if (l.sequence.length > 0) {
-						html += `<span class="program-steps">`;
-						for (const st of l.sequence) {
-							html += `<span class="program-step">${st.action ? e(st.action) : ""}`;
-							for (const x of st.temperatures) {
-								html += `<span class="step-temp">${e(x)}</span>`;
-							}
-							for (const x of st.timers) {
-								html += `<span class="step-time">${e(x)}</span>`;
-							}
-							html += `</span>`;
-						}
-						html += `</span>`;
-					}
-					html += `</li>\n`;
+					html += `          <li><span class="program-section">${e(l.section)}</span><span class="program-ref">${e(l.reference)}</span>${l.kit?.length ? `\n            <div class="program-kit">\n${kitListsHtml(l.kit, e)}            </div>\n          ` : ""}</li>\n`;
 				}
 				html += `        </ul>\n      </div>\n`;
 			}

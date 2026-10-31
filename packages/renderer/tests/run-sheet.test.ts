@@ -2,12 +2,14 @@ import { describe, expect, it } from "bun:test";
 import { compile } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
 import { project, runSheet } from "@gram-lang/scheduler";
+import type { MiseEnPlaceMode } from "@gram-lang/scheduler";
 import {
 	describeRunSheet,
 	runSheetToHTML,
 	runSheetToMarkdown,
 	runSheetToPrintHTML,
 	runSheetToText,
+	sectionProgram,
 } from "../src/index";
 
 const BREAD = `---
@@ -69,6 +71,17 @@ const planOf = (c: ReturnType<typeof compile>, patch = {}) =>
 		},
 	);
 
+type Kitted = {
+	kit: { items: { text: string; kind: string }[] }[];
+	program: { kit?: { text: string; kind: string }[] }[];
+};
+/** Every line to take out in a passage: at the top, or with its section. */
+const kitOf = (p: Kitted) => [
+	...p.kit.flatMap((g) => g.items),
+	...p.program.flatMap((l) => l.kit ?? []),
+];
+const kitTexts = (p: Kitted) => kitOf(p).map((l) => l.text);
+
 const compiled = compile(getAST(BREAD));
 const sheet = planOf(compiled);
 
@@ -104,33 +117,21 @@ describe("the model of the work plan", () => {
 
 	it("says what to take out, and what an earlier passage made", () => {
 		const [saturday, sunday] = model.days;
-		expect(saturday!.passages[0]!.kit.map((k) => k.text)).toEqual([
+		expect(kitTexts(saturday!.passages[0]!)).toEqual([
 			"flour 500 g",
 			"water 350 ml",
 		]);
-		expect(sunday!.passages[0]!.kit.map((k) => k.text)).toEqual([
-			"Dough, made Saturday",
-		]);
+		expect(kitTexts(sunday!.passages[0]!)).toEqual(["Dough, made Saturday"]);
 	});
 
 	it("gives the programme of each section with the steps it covers", () => {
 		const [saturday, sunday] = model.days;
 		expect(saturday!.passages[0]!.program).toEqual([
-			{
-				section: "Dough",
-				reference: "steps 1 to 2",
-				steps: "Mix 20 min › Rise 8 to 16 h",
-				sequence: [
-					{ action: "Mix", temperatures: [], timers: ["20 min"] },
-					{ action: "Rise", temperatures: [], timers: ["8 to 16 h"] },
-				],
-			},
+			expect.objectContaining({ section: "Dough", reference: "steps 1 to 2" }),
 		]);
-		expect(sunday!.passages[0]!.program[0]).toMatchObject({
-			section: "Bake",
-			reference: "step 1",
-			steps: "Bake 230 °C 30 min",
-		});
+		expect(sunday!.passages[0]!.program).toEqual([
+			expect.objectContaining({ section: "Bake", reference: "step 1" }),
+		]);
 	});
 
 	it("says what continues and when to come back", () => {
@@ -163,8 +164,8 @@ describe("the model of the work plan", () => {
 			start: "2026-10-10T19:38:00Z",
 			title: "Country bread · Dough",
 		});
-		expect(model.events[0]!.description).toContain("To take out :");
-		expect(model.events[0]!.description).toContain("- flour 500 g");
+		expect(model.events[0]!.description).toContain("- Dough (steps 1 to 2)");
+		expect(model.events[0]!.description).toContain("  - flour 500 g");
 	});
 });
 
@@ -187,17 +188,15 @@ describe("a plan of several days", () => {
 
 	it("names preparations by the section that makes them, with when", () => {
 		const [, friday, saturday] = model.days;
-		expect(friday!.passages[0]!.kit.map((k) => k.text)).toContain(
-			"Sponge, made Thursday",
-		);
-		expect(saturday!.passages[1]!.kit.map((k) => k.text)).toEqual([
+		expect(kitTexts(friday!.passages[0]!)).toContain("Sponge, made Thursday");
+		expect(kitTexts(saturday!.passages[1]!)).toEqual([
 			"Mousse, made Friday",
 			"Glaze, made at 18:25",
 		]);
 	});
 
 	it("lists the cookware once", () => {
-		const friday = model.days[1]!.passages[0]!.kit;
+		const friday = kitOf(model.days[1]!.passages[0]!);
 		expect(
 			friday.filter((k) => k.kind === "cookware").map((k) => k.text),
 		).toEqual(["whisk", "bowl"]);
@@ -264,12 +263,12 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 		const model = describeRunSheet(entremetsSheet, stocked);
 		const texts = model.days
 			.flatMap((d) => d.passages)
-			.flatMap((p) => p.kit.map((k) => k.text));
+			.flatMap((p) => kitTexts(p));
 		expect(texts).toContain("glaze, in stock");
 	});
 
 	it("marks an ingredient that stands for a stocked import", () => {
-		expect(model.days[1]!.passages[0]!.kit.map((k) => k.text)).toContain(
+		expect(kitTexts(model.days[1]!.passages[0]!)).toContain(
 			"cream 250 g, in stock",
 		);
 	});
@@ -289,9 +288,8 @@ describe("runSheetToText", () => {
 	it("gives a block per day with its three lists", () => {
 		expect(text).toContain("SATURDAY, OCTOBER 10  21:40 → 22:00");
 		expect(text).toContain("[ ] flour 500 g");
-		expect(text).toContain(
-			"Dough (steps 1 to 2) : Mix 20 min › Rise 8 to 16 h",
-		);
+		expect(text).toContain("Dough (steps 1 to 2)");
+		expect(text).not.toContain("Mix 20 min");
 		expect(text).toContain("Next visit: Sunday 12:30");
 	});
 
@@ -300,7 +298,12 @@ describe("runSheetToText", () => {
 		expect(fr).toContain("Planning de préparation — Country bread");
 		expect(fr).toContain("Pour le dimanche 11 octobre à 13:00 · 4 parts");
 		expect(fr).toContain("SAMEDI 10 OCTOBRE");
-		expect(fr).toContain("À sortir");
+		expect(runSheetToText(planOf(compiled), compiled)).not.toContain(
+			"To take out",
+		);
+		expect(
+			runSheetToText(planIn(compiled, "perSession"), compiled, { lang: "fr" }),
+		).toContain("À sortir");
 		expect(fr).toContain("Au programme");
 		expect(fr).toContain("En partant");
 		expect(fr).toContain("Dough, fait samedi");
@@ -348,9 +351,7 @@ describe("runSheetToMarkdown", () => {
 	it("has a title, a heading per day and checklists", () => {
 		expect(md).toContain("# Work plan — Country bread");
 		expect(md).toContain("## Saturday, October 10 · 21:40 → 22:00");
-		expect(md).toContain("- [ ] flour 500 g");
-		expect(md).toContain("**To take out**");
-		expect(md).toMatch(/- \*\*Dough\*\* \(steps 1 to 2\) : Mix 20 min › Rise/);
+		expect(md).toContain("- **Dough** (steps 1 to 2)\n  - [ ] flour 500 g");
 	});
 
 	it("puts the adjustment under its day", () => {
@@ -418,5 +419,174 @@ describe("runSheetToPrintHTML", () => {
 		);
 		expect(html).toContain('<section class="gram-run-sheet">');
 		expect(html).toContain("page-break-before: always");
+	});
+});
+
+const TART = `---
+title: Tart
+---
+
+## Pastry ->&pastry
+
+Rub @flour{200g} with @butter{100g} in the #bowl{}.
+
+## Filling
+
+Mix &pastry{} with @flour{20g} and @sugar{50g} in the #bowl{}.
+`;
+
+/** A plan in the given mode, with a serving time. */
+const planIn = (
+	c: ReturnType<typeof compile>,
+	miseEnPlace: MiseEnPlaceMode,
+	patch = {},
+) => {
+	const ctx = context({
+		serveAt: "2026-10-17T20:00",
+		availability: { daily: [{ start: "08:00", end: "23:00" }] },
+		...patch,
+	});
+	return runSheet(
+		project([{ graph: c.tasks, options: { miseEnPlace } }], ctx),
+		{ graph: c.tasks, context: ctx },
+	);
+};
+/** The groups of each visit, as [section, lines]. */
+const visits = (
+	sheet: ReturnType<typeof runSheet>,
+	c: ReturnType<typeof compile>,
+) =>
+	describeRunSheet(sheet, c).days.flatMap((d) =>
+		d.passages.map((p) =>
+			p.kit.map((g) => [
+				g.section,
+				g.items.map((l) => l.text + (l.detail ? ` (${l.detail})` : "")),
+			]),
+		),
+	);
+
+describe("the kit follows the mise en place mode of the sheet", () => {
+	it("upfront: every raw thing at the first visit, preparations at their first step", () => {
+		const v = visits(planIn(entremets, "upfront"), entremets);
+		expect(v[0]).toEqual([
+			[
+				undefined,
+				[
+					"flour 60 g",
+					"sugar 80 g (30 + 30 + 20)",
+					"cream 250 g",
+					"bowl",
+					"whisk",
+				],
+			],
+		]);
+		expect(v[1]).toEqual([[undefined, ["Sponge, made Thursday"]]]);
+		expect(v[2]).toEqual([]);
+		expect(v[3]).toEqual([
+			[undefined, ["Mousse, made Friday", "Glaze, made at 18:25"]],
+		]);
+	});
+
+	it("perSession: raw things at each section's first visit, preparations at the first step", () => {
+		const v = visits(planIn(entremets, "perSession"), entremets);
+		expect(v[2]).toEqual([[undefined, ["sugar 20 g"]]]);
+		expect(v[3]?.[0]?.[1]).toEqual([
+			"Mousse, made Friday",
+			expect.stringMatching(/^Glaze, made at/),
+		]);
+	});
+
+	it("is the same without a serving time, the mode read from the schedule", () => {
+		const sheet = runSheet(
+			{ ...entremets.schedule, miseEnPlace: "upfront" },
+			{ title: "Entremets" },
+		);
+		expect(sheet.recipes[0]!.miseEnPlace).toBe("upfront");
+		expect(visits(sheet, entremets)[0]?.[0]?.[1]).toContain(
+			"sugar 80 g (30 + 30 + 20)",
+		);
+	});
+
+	it("perSection: what to take out sits with its section, the cookware once at the first", () => {
+		const tart = compile(getAST(TART));
+		const [passage] = describeRunSheet(planIn(tart, "perSection"), tart)
+			.days[0]!.passages;
+		expect(passage!.kit).toEqual([]);
+		expect(
+			passage!.program.map((l) => [l.section, l.kit?.map((k) => k.text)]),
+		).toEqual([
+			["Pastry", ["flour 200 g", "butter 100 g", "bowl"]],
+			["Filling", ["flour 20 g", "sugar 50 g"]],
+		]);
+	});
+
+	it("perSession and upfront: one group, the quantities summed", () => {
+		const tart = compile(getAST(TART));
+		for (const mode of ["perSession", "upfront"] as const) {
+			expect(visits(planIn(tart, mode), tart)).toEqual([
+				[
+					[
+						undefined,
+						["flour 220 g (200 + 20)", "butter 100 g", "sugar 50 g", "bowl"],
+					],
+				],
+			]);
+		}
+	});
+
+	it("shows the things under their section in text, Markdown, HTML, print and the calendar", () => {
+		const tart = compile(getAST(TART));
+		const sheet = planIn(tart, "perSection");
+		expect(runSheetToText(sheet, tart)).toContain(
+			"    Pastry (step 1)\n      [ ] flour 200 g",
+		);
+		expect(runSheetToMarkdown(sheet, tart)).toContain(
+			"- **Filling** (step 1)\n  - [ ] flour 20 g",
+		);
+		const html = runSheetToHTML(sheet, tart);
+		expect(html).toContain('<div class="program-kit">');
+		expect(html).not.toContain('class="work-plan-kit"');
+		expect(runSheetToPrintHTML(sheet, tart)).toContain(".program-kit");
+		const [event] = describeRunSheet(sheet, tart).events;
+		expect(event!.description).toContain("- Pastry (step 1)\n  - flour 200 g");
+		// Per session, one block at the top of the visit and nothing on the lines.
+		const one = planIn(tart, "perSession");
+		expect(runSheetToHTML(one, tart)).toContain('class="work-plan-kit"');
+		expect(runSheetToHTML(one, tart)).not.toContain('class="program-kit"');
+		expect(runSheetToText(one, tart)).toContain("To take out");
+	});
+});
+
+describe("the programme only points to the recipe", () => {
+	it("has no step summary in the HTML", () => {
+		const html = runSheetToHTML(sheet, compiled);
+		expect(html).toContain('<span class="program-section">Dough</span>');
+		expect(html).toContain('<span class="program-ref">steps 1 to 2</span>');
+		for (const gone of ["program-step", "step-temp", "step-time"]) {
+			expect(html).not.toContain(gone);
+		}
+	});
+
+	it("keeps the section and the range for a recipe with no [Action]", () => {
+		const bare = compile(
+			getAST(
+				"## Bake\n\nHeat the oven to ^{180C}.\n\nBake ~{20min}.\n\nServe.\n",
+			),
+		);
+		const model = describeRunSheet(planOf(bare), bare);
+		expect(model.days[0]!.passages[0]!.program).toEqual([
+			{ section: "Bake", reference: "steps 1 to 3" },
+		]);
+	});
+
+	it("sectionProgram counts steps as the recipe does, from the first to the last", () => {
+		const c = compile(getAST("## A\n\nOne.\n\nTwo.\n\nThree.\n"));
+		expect(sectionProgram(c, 0, [0, 2])).toEqual({
+			section: 0,
+			title: "A",
+			from: 1,
+			to: 3,
+		});
+		expect(sectionProgram(c, 0, [])).toBeUndefined();
 	});
 });

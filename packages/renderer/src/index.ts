@@ -27,12 +27,14 @@ export { describeEarliestServe, describeServeTimes } from "./serve-times";
 export type {
 	RunSheetDayModel,
 	RunSheetEvent,
+	RunSheetKitGroup,
 	RunSheetKitLine,
 	RunSheetPassageModel,
 	RunSheetProgramLine,
 	RunSheetModel,
 	RunSheetRenderOptions,
 	RunSheetScheduleRow,
+	RunSheetWaitLine,
 } from "./run-sheet";
 export {
 	intermediateMakers,
@@ -42,7 +44,6 @@ export {
 export type {
 	KitItem,
 	PassageKitOptions,
-	ProgramStep,
 	SectionProgram,
 } from "./work-plan-parts";
 export {
