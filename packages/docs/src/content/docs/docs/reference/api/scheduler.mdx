@@ -215,6 +215,7 @@ interface ProjectedPlan {
   timeZone: string;
   recipes: {
     title?: string;
+    miseEnPlace: 'perSection' | 'upfront' | 'perSession'; // the mode this plan was made in
     blocks: ProjectedBlock[];     // scheduled blocks with start/end as ISO 8601 UTC timestamps
     sessions: ProjectedSession[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
   }[];
@@ -260,7 +261,7 @@ interface RunSheet {
   mode: "calendar" | "relative";
   serveAt?: string;            // calendar plans only
   timeZone?: string;
-  recipes: { title?: string; days: RunSheetDay[]; totalWork: number }[]; // totalWork: cumulative active hands-on minutes
+  recipes: { title?: string; miseEnPlace: MiseEnPlaceMode; days: RunSheetDay[]; totalWork: number }[]; // totalWork: cumulative active hands-on minutes
   adjustments: RunSheetAdjustment[]; // waits lengthened or shortened, with their section and day
   diagnostics: ProjectionDiagnostic[];
 }

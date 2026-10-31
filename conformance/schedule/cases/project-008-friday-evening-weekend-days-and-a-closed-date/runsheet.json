@@ -5,6 +5,7 @@
   "recipes": [
     {
       "title": "Folded bread",
+      "miseEnPlace": "perSection",
       "days": [
         {
           "date": "2026-10-10",

@@ -1,7 +1,11 @@
 import { type Interval, availableIntervals, gapsBetween } from "./availability";
 import type { TimerTask } from "./graph";
 import { type LayoutResult, layout } from "./layout";
-import { DEFAULT_REST_CHOICE, type RestChoice } from "./mode";
+import {
+	DEFAULT_MISE_EN_PLACE_MODE,
+	DEFAULT_REST_CHOICE,
+	type RestChoice,
+} from "./mode";
 import type {
 	ProjectedBlock,
 	ProjectedPlan,
@@ -302,6 +306,7 @@ export function project(
 	}));
 	plan.recipes.push({
 		...(input.title !== undefined && { title: input.title }),
+		miseEnPlace: options.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE,
 		blocks: schedule.blocks.map(dated),
 		sessions,
 	});

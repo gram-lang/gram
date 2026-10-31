@@ -4,6 +4,7 @@
   "recipes": [
     {
       "title": "Folded bread",
+      "miseEnPlace": "perSection",
       "blocks": [
         {
           "kind": "prep",

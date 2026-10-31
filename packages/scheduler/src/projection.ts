@@ -1,4 +1,5 @@
 import type { LayoutOptions } from "./layout";
+import type { MiseEnPlaceMode } from "./mode";
 import type { TaskGraph } from "./graph";
 import type { ScheduleBlock } from "./types";
 import type { Weekday } from "./time";
@@ -116,6 +117,8 @@ export interface ProjectedPlan {
 	timeZone: string;
 	recipes: {
 		title?: string;
+		/** Where the mise en place goes in this plan. */
+		miseEnPlace: MiseEnPlaceMode;
 		blocks: ProjectedBlock[];
 		sessions: ProjectedSession[];
 	}[];

@@ -299,7 +299,11 @@ describe("runSheet days, passages and threads", () => {
 
 	it("has nothing to show for a recipe with no task", () => {
 		const empty = layout({ tasks: [], sections: [] }).schedule;
-		expect(runSheet(empty).recipes[0]).toEqual({ days: [], totalWork: 0 });
+		expect(runSheet(empty).recipes[0]).toEqual({
+			days: [],
+			miseEnPlace: "perSection",
+			totalWork: 0,
+		});
 	});
 
 	it("works without a serving time: no date, a service at zero", () => {
@@ -380,5 +384,35 @@ describe("runSheet days, passages and threads", () => {
 				day: 1,
 			},
 		]);
+	});
+});
+
+describe("runSheet mise en place mode", () => {
+	const ctx = {
+		serveAt: "2026-10-11T13:00",
+		timeZone: "Europe/Paris",
+		availability: { daily: [{ start: "08:00", end: "22:00" }] },
+	};
+
+	it("carries the mode of the plan, the default included", () => {
+		expect(runSheet(project([{ graph }], ctx)).recipes[0]?.miseEnPlace).toBe(
+			"perSection",
+		);
+		for (const miseEnPlace of MISE_EN_PLACE_MODES) {
+			const projected = project([{ graph, options: { miseEnPlace } }], ctx);
+			expect(runSheet(projected).recipes[0]?.miseEnPlace).toBe(miseEnPlace);
+		}
+	});
+
+	it("carries the mode of a bare schedule", () => {
+		for (const miseEnPlace of MISE_EN_PLACE_MODES) {
+			expect(
+				runSheet(layout(graph, { miseEnPlace }).schedule).recipes[0]
+					?.miseEnPlace,
+			).toBe(miseEnPlace);
+		}
+		expect(runSheet(layout(graph).schedule).recipes[0]?.miseEnPlace).toBe(
+			"perSection",
+		);
 	});
 });

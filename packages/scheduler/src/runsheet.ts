@@ -1,4 +1,5 @@
 import type { TaskGraph } from "./graph";
+import type { MiseEnPlaceMode } from "./mode";
 import type {
 	ProjectedBlock,
 	ProjectedPlan,
@@ -138,6 +139,8 @@ export interface RunSheet {
 	timeZone?: string;
 	recipes: {
 		title?: string;
+		/** Where the mise en place goes in this plan. */
+		miseEnPlace: MiseEnPlaceMode;
 		days: RunSheetDay[];
 		/** Minutes of the cook's own work, mise en place included. Waiting is not counted. */
 		totalWork: number;
@@ -175,6 +178,7 @@ interface SourceBlock {
 
 interface Source {
 	title?: string;
+	miseEnPlace: MiseEnPlaceMode;
 	blocks: SourceBlock[];
 	sessions: { day: number; sections: number[] }[];
 }
@@ -190,6 +194,7 @@ const meta = (b: {
 function fromSchedule(schedule: Schedule, title?: string): Source {
 	return {
 		...(title !== undefined && { title }),
+		miseEnPlace: schedule.miseEnPlace,
 		blocks: schedule.blocks.map((b) => ({
 			task: b.task,
 			kind: b.kind,
@@ -213,6 +218,7 @@ function fromPlan(
 	const rel = (iso: string) => parseInstant(iso, timeZone) - serve;
 	return {
 		...(recipe.title !== undefined && { title: recipe.title }),
+		miseEnPlace: recipe.miseEnPlace,
 		blocks: recipe.blocks.map((b) => ({
 			task: b.task,
 			kind: b.kind,
@@ -462,6 +468,7 @@ function buildRecipe(
 	return {
 		recipe: {
 			...(source.title !== undefined && { title: source.title }),
+			miseEnPlace: source.miseEnPlace,
 			days,
 			totalWork,
 		},

@@ -3,6 +3,7 @@
   "timeZone": "Europe/Paris",
   "recipes": [
     {
+      "miseEnPlace": "perSection",
       "blocks": [
         {
           "kind": "prep",
