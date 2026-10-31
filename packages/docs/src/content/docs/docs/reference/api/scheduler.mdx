@@ -246,8 +246,14 @@ These diagnostics depend on the user's execution context: they are included dire
 ```typescript
 function runSheet(
   source: ProjectedPlan | Schedule,
-  options?: { graph?: TaskGraph; title?: string; context?: ProjectionContext },
+  options?: RunSheetOptions,
 ): RunSheet
+
+interface RunSheetOptions {
+  graph?: TaskGraph;           // gives each timer its written range
+  title?: string;              // the title of a recipe laid out without a serving time
+  context?: ProjectionContext; // with `graph`, a calendar plan gets the margin of each visit
+}
 ```
 
 Generates the data structure powering the work plan: day-by-day breakdowns for each recipe, detailing active **kitchen visits** and passive **threads** that proceed unattended.
@@ -282,7 +288,17 @@ interface RunSheetPassage {
   sections: number[];          // section indices with work in this visit, in recipe order
   tasks: string[];             // task IDs for prep and step blocks from graph
   window?: { advance: number; earliest: number; earliestLocal: string }; // anticipation margin (computed when >= 15 min)
-  fixedBy?: { task: string; section: number; planned: number; before: "service" | "passage"; sections?: number[] };
+  fixedBy?: RunSheetFixedBy;   // the wait that holds this visit in place
+}
+
+interface RunSheetFixedBy {
+  task: string;
+  section: number;
+  step?: number;
+  track?: string;
+  planned: number;             // the planned minutes of the wait
+  before: "service" | "passage"; // what the wait leads to: the service or the next visit of `sections`
+  sections?: number[];
 }
 
 interface RunSheetThread {
@@ -304,6 +320,16 @@ A **day** is a working day of the recipe; with a serving time, a working day tha
 
 What is **not** here are words and layout: `@gram-lang/renderer` writes them (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
 
+## `passageWindows`
+
+```typescript
+function passageWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
+```
+
+Gives each visit of a calendar work plan its anticipation margin (`window`), or names the wait that holds it in place (`fixedBy`). The margin of a visit assumes every other visit stays at its planned time, so it is always safe to use: moving several visits, or none, never breaks another margin. A margin is sometimes cautious, never wrong, and one shorter than `WINDOW_MIN_MINUTES` is not told.
+
+`runSheet()` already calls it when you pass `graph` and `context`, so you only need it to add margins to a sheet you built without them. A relative sheet, or one with no serving time, is returned as it is.
+
 ## `findServeTimes` and `earliestServe` <Since v="1.4.0" />
 
 Both are built on `project()`: they try serving times and keep those that can be followed. A time is rejected when the plan has an unresolved problem, a start already in the past included, and each rejection carries its reasons.
@@ -314,13 +340,20 @@ function tryServeAt(input: ProjectionInput, context: ProjectionContext, serveAt:
 function findServeTimes(
   input: ProjectionInput,
   context: ProjectionContext,        // needs `now` to reject starts in the past
-  options: {
-    from: string;                    // "2026-10-12" or "2026-10-12T08:00", local
-    to: string;                      // a bare date means its whole day
-    mealTimes?: string[];            // default DEFAULT_MEAL_TIMES = ["12:30", "20:00"]
-    limit?: number;                  // default 5
-  },
-): { candidates: ServeCandidate[]; rejected: ServeCandidate[] };
+  options: FindServeOptions,
+): ServeSearch;
+
+interface FindServeOptions {
+  from: string;                      // "2026-10-12" or "2026-10-12T08:00", local
+  to: string;                        // a bare date means its whole day
+  mealTimes?: string[];              // default DEFAULT_MEAL_TIMES = ["12:30", "20:00"]
+  limit?: number;                    // default 5
+}
+
+interface ServeSearch {
+  candidates: ServeCandidate[];      // feasible times, best first
+  rejected: ServeCandidate[];        // every time tried and failed, with its reasons, in time order
+}
 
 function earliestServe(
   input: ProjectionInput,
@@ -356,6 +389,7 @@ function isRestChoice(value: unknown): value is RestChoice;
 
 const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
+const MINUTES_PER_DAY = 1440;
 const PASSAGE_GAP_MINUTES = 60;          // a wait this long ends a visit to the kitchen
 const WINDOW_MIN_MINUTES = 15;          // a margin shorter than this is not told
 const DEFAULT_MEAL_TIMES: string[];     // ["12:30", "20:00"]
