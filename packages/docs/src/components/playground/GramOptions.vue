@@ -7,6 +7,8 @@ import {
 	type MiseEnPlaceMode,
 	type RestChoice,
 } from "@gram-lang/kitchen";
+// biome-ignore lint/correctness/noUnusedImports: PlaygroundTooltip is used in the <template> block below
+import PlaygroundTooltip from "./PlaygroundTooltip.vue";
 import { useI18n } from "./useI18n";
 
 export interface PlanSettings {
@@ -155,7 +157,6 @@ const timeZoneOptions = computed(() => {
 	return Array.from(set);
 });
 
-// biome-ignore lint/correctness/noUnusedVariables: updatePlanField is used in the <template> block below, which Biome's Vue support doesn't see.
 function updatePlanField(field: keyof PlanSettings, value: string) {
 	if (!props.plan) return;
 	emit("update:plan", {
@@ -501,7 +502,10 @@ function resetStockSection() {
 
       <div v-show="openSections.schedule" class="studio-section-body">
         <div class="studio-field">
-          <label class="studio-label">{{ t.renderer.scheduleLabel }}</label>
+          <div class="studio-label-row">
+            <label class="studio-label">{{ t.renderer.scheduleLabel }}</label>
+            <PlaygroundTooltip :text="t.playground.help.schedule" />
+          </div>
           <select
             class="studio-select"
             :value="props.schedule || 'perSection'"
@@ -514,7 +518,10 @@ function resetStockSection() {
         </div>
 
         <div class="studio-field">
-          <label class="studio-label">{{ t.renderer.restsLabel }}</label>
+          <div class="studio-label-row">
+            <label class="studio-label">{{ t.renderer.restsLabel }}</label>
+            <PlaygroundTooltip :text="t.playground.help.rests" />
+          </div>
           <select
             class="studio-select"
             :value="props.rests || 'shortest'"
@@ -527,7 +534,10 @@ function resetStockSection() {
         </div>
 
         <div class="studio-field">
-          <label class="studio-label">{{ t.playground.views.planServeAt }}</label>
+          <div class="studio-label-row">
+            <label class="studio-label">{{ t.playground.views.planServeAt }}</label>
+            <PlaygroundTooltip :text="t.playground.help.serveAt" />
+          </div>
           <input
             class="studio-input"
             type="datetime-local"
@@ -537,7 +547,10 @@ function resetStockSection() {
         </div>
 
         <div v-if="props.serveSuggestions" class="studio-field serve-suggestions">
-          <span class="studio-label">{{ t.playground.views.serveWhenTitle }}</span>
+          <div class="studio-label-row">
+            <span class="studio-label">{{ t.playground.views.serveWhenTitle }}</span>
+            <PlaygroundTooltip :text="t.playground.help.serveSuggestions" />
+          </div>
           <div v-if="props.serveSuggestions.candidates.length > 0" class="serve-pills">
             <button
               v-for="c in props.serveSuggestions.candidates"
@@ -572,7 +585,10 @@ function resetStockSection() {
         </div>
 
         <div class="studio-field">
-          <label class="studio-label">{{ t.playground.views.planTimeZone }}</label>
+          <div class="studio-label-row">
+            <label class="studio-label">{{ t.playground.views.planTimeZone }}</label>
+            <PlaygroundTooltip :text="t.playground.help.timeZone" />
+          </div>
           <select
             class="studio-select"
             :value="props.plan?.timeZone || 'UTC'"
@@ -585,7 +601,10 @@ function resetStockSection() {
         </div>
 
         <div class="studio-field">
-          <label class="studio-label">{{ t.playground.views.planAvailableFrom }} / {{ t.playground.views.planAvailableTo }}</label>
+          <div class="studio-label-row">
+            <label class="studio-label">{{ t.playground.views.planAvailableFrom }} / {{ t.playground.views.planAvailableTo }}</label>
+            <PlaygroundTooltip :text="t.playground.help.availability" />
+          </div>
           <div class="studio-time-range">
             <input
               class="studio-input"
@@ -637,7 +656,10 @@ function resetStockSection() {
 
       <div v-show="openSections.scale" class="studio-section-body">
         <div class="studio-field">
-          <span class="studio-label">{{ t.playground.options.scaleGlobal }}</span>
+          <div class="studio-label-row">
+            <span class="studio-label">{{ t.playground.options.scaleGlobal }}</span>
+            <PlaygroundTooltip :text="t.playground.help.scaleGlobal" />
+          </div>
           <div class="scale-factor-wrapper">
             <input
               type="number"
@@ -651,7 +673,10 @@ function resetStockSection() {
         </div>
 
         <div class="studio-field">
-          <span class="studio-label">{{ t.playground.options.scaleByIngredient }}</span>
+          <div class="studio-label-row">
+            <span class="studio-label">{{ t.playground.options.scaleByIngredient }}</span>
+            <PlaygroundTooltip :text="t.playground.help.scaleByIngredient" />
+          </div>
           <select class="studio-select" v-model="targetId">
             <option value="">{{ t.playground.options.selectIngredient }}</option>
             <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
@@ -710,7 +735,10 @@ function resetStockSection() {
         <label class="option-item">
           <input type="checkbox" v-model="bakersMath" />
           <div class="option-text">
-            <span class="option-name">{{ t.playground.options.enableBakersMath }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.enableBakersMath }}</span>
+              <PlaygroundTooltip :text="t.playground.help.bakersMath" />
+            </div>
             <span class="option-desc">{{ t.playground.options.bakersMathDesc }}</span>
           </div>
         </label>
@@ -718,12 +746,18 @@ function resetStockSection() {
         <label class="option-item child-option" :class="{ disabled: !bakersMath }">
           <input type="checkbox" v-model="bakersMathOnly" :disabled="!bakersMath" />
           <div class="option-text">
-            <span class="option-name">{{ t.playground.options.hideAbsolute }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.hideAbsolute }}</span>
+              <PlaygroundTooltip :text="t.playground.help.bakersMathOnly" />
+            </div>
           </div>
         </label>
 
         <div class="child-option select-wrapper" :class="{ disabled: !bakersMath }" v-if="bakersMath">
-          <span class="studio-label">{{ t.playground.options.forceReference }}</span>
+          <div class="studio-label-row">
+            <span class="studio-label">{{ t.playground.options.forceReference }}</span>
+            <PlaygroundTooltip :text="t.playground.help.bakersReference" />
+          </div>
           <select class="studio-select" v-model="bakersReference" :disabled="!bakersMath">
             <option value="">{{ t.playground.options.autoDetect }}</option>
             <option v-for="item in props.shoppingList" :key="item.id" :value="item.id">
@@ -761,10 +795,22 @@ function resetStockSection() {
       </div>
 
       <div v-show="openSections.physics" class="studio-section-body">
+        <p class="studio-section-note">
+          <svg class="note-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span>{{ t.playground.help.physicsDisclaimer }}</span>
+        </p>
+
         <label class="option-item">
           <input type="checkbox" v-model="massEnabled" />
           <div class="option-text">
-            <span class="option-name">{{ t.playground.options.massStandardization }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.massStandardization }}</span>
+              <PlaygroundTooltip :text="t.playground.help.massStandardization" />
+            </div>
             <span class="option-desc">{{ t.playground.options.massDesc }}</span>
           </div>
         </label>
@@ -772,14 +818,20 @@ function resetStockSection() {
         <label class="option-item child-option" :class="{ disabled: !massEnabled }">
           <input type="checkbox" v-model="yieldEnabled" :disabled="!massEnabled" />
           <div class="option-text">
-            <span class="option-name">{{ t.playground.options.yieldManagement }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.yieldManagement }}</span>
+              <PlaygroundTooltip :text="t.playground.help.yieldManagement" />
+            </div>
           </div>
         </label>
 
         <label class="option-item">
           <input type="checkbox" v-model="nutritionEnabled" />
           <div class="option-text">
-            <span class="option-name">{{ t.playground.options.nutrition }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ t.playground.options.nutrition }}</span>
+              <PlaygroundTooltip :text="t.playground.help.nutrition" />
+            </div>
           </div>
         </label>
       </div>
@@ -823,7 +875,10 @@ function resetStockSection() {
             @change="emit('toggle-stock', imp.uri)"
           />
           <div class="option-text">
-            <span class="option-name">{{ imp.specifier }}</span>
+            <div class="studio-label-row">
+              <span class="option-name">{{ imp.specifier }}</span>
+              <PlaygroundTooltip :text="t.playground.help.stockItem" />
+            </div>
             <span class="option-desc">{{ t.playground.options.stockDesc }}</span>
           </div>
         </label>
@@ -943,9 +998,35 @@ function resetStockSection() {
   background-color: var(--sl-color-bg);
 }
 
+.studio-section-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0 0 2px;
+  padding: 8px 10px;
+  background-color: var(--sl-color-gray-7, #24201c);
+  border: 1px solid var(--sl-color-gray-6, #36302a);
+  border-radius: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--sl-color-gray-2, #c4bebb);
+}
+
+.note-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--sl-color-gray-3, #9e948f);
+}
+
 .studio-field {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.studio-label-row {
+  display: flex;
+  align-items: center;
   gap: 6px;
 }
 

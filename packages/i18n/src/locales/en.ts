@@ -255,6 +255,40 @@ export const en = {
 			stockDesc:
 				"Treat as already on hand — collapses to one shopping-list line, no timeline steps.",
 		},
+		help: {
+			schedule:
+				"Controls when ingredient prep and weighing take place in the schedule: right before each section, all upfront at the start of the recipe, or at the beginning of each working day.",
+			rests:
+				"Sets the target duration for steps with a flexible time range (e.g. 2h to 12h): the minimum required time, the maximum allowed time, or a balanced midpoint.",
+			serveAt:
+				"Target meal date and time. The schedule is calculated backwards from this deadline to tell you when to start and be ready right on time.",
+			serveSuggestions:
+				"Recommended serving times. Gram evaluates rest ranges and your kitchen hours to suggest feasible meal times that require no overnight work.",
+			timeZone:
+				"Sets the time zone used to display exact clock times on the work plan and accurately handle day transitions.",
+			availability:
+				"Your daily kitchen hours. The schedule organizes tasks so you never have to cook outside this window (such as overnight).",
+			scaleGlobal:
+				"Adjusts all ingredient quantities and servings according to the specified percentage (e.g. 200% to double, 50% to halve).",
+			scaleByIngredient:
+				"Proportionally recalculates the entire recipe to match the exact quantity you have on hand for a specific ingredient (e.g. only 3 eggs or 250g of butter).",
+			bakersMath:
+				"Expresses each ingredient as a percentage of a base ingredient set at 100% (typically flour, or any chosen ingredient), making ratios and formulation easy to evaluate.",
+			bakersMathOnly:
+				"Hides gram weights to display only relative percentages, turning the recipe into a pure ratio formula.",
+			bakersReference:
+				"Manually selects which ingredient serves as the 100% baseline, overriding automatic detection of the @* ingredient in the recipe.",
+			massStandardization:
+				"Converts volume measurements (spoons, cups, ml) into grams according to the database densities.",
+			yieldManagement:
+				"Calculates gross purchasing weight to obtain the desired net quantity, accounting for peeling and trimming waste in the database.",
+			nutrition:
+				"Estimates calories and macronutrients (protein, carbs, fat, fiber) per serving or per 100g via the nutritional tables in the database.",
+			physicsDisclaimer:
+				"In this playground, physical and nutritional calculations rely on an ingredient database limited to example recipes.",
+			stockItem:
+				"Marks this imported preparation as already on hand in your kitchen. Its prep steps are removed from the schedule, keeping only its final use.",
+		},
 		output: {
 			copy: "Copy to clipboard",
 			loading: "Loading viewer...",

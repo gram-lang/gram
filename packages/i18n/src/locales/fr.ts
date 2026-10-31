@@ -248,6 +248,40 @@ export const fr: GramLocale = {
 			stockDesc:
 				"Considéré comme déjà disponible — se réduit à une ligne d'achat, sans étapes sur la frise.",
 		},
+		help: {
+			schedule:
+				"Détermine à quel moment préparer et peser les ingrédients dans le planning : au fur et à mesure de chaque section, regroupé tout au début de la recette, ou au démarrage de chaque journée de travail.",
+			rests:
+				"Détermine la durée retenue pour les étapes qui acceptent une plage de temps (ex. 2h à 12h) : la durée minimale requise, la durée maximale autorisée, ou une valeur médiane équilibrée.",
+			serveAt:
+				"Date et heure souhaitées du repas. Le planning est calculé à rebours à partir de cette échéance pour vous indiquer quand démarrer et être prêt pile à l'heure.",
+			serveSuggestions:
+				"Horaires recommandés pour passer à table. Gram explore les plages de repos et vos disponibilités pour vous proposer des créneaux réalistes sans action nocturne.",
+			timeZone:
+				"Définit le fuseau horaire utilisé pour afficher les heures exactes sur le planning et gérer correctement les passages de journée.",
+			availability:
+				"Vos horaires de disponibilité en cuisine. Le planning s'organise pour que vous n'ayez rien à faire en dehors de cette plage (la nuit par exemple).",
+			scaleGlobal:
+				"Ajuste les quantités de tous les ingrédients et le nombre de portions selon le pourcentage indiqué (ex. 200 % pour doubler, 50 % pour diviser par deux).",
+			scaleByIngredient:
+				"Recalcule proportionnellement toute la recette pour l'ajuster à la quantité exacte dont vous disposez pour un ingrédient donné (ex. seulement 3 œufs ou 250 g de beurre).",
+			bakersMath:
+				"Exprime chaque ingrédient en pourcentage d'un ingrédient de base fixé à 100 % (par défaut la farine, ou l'ingrédient de votre choix), facilitant l'évaluation des équilibres et des ratios.",
+			bakersMathOnly:
+				"Masque les poids en grammes pour n'afficher que les pourcentages relatifs, transformant la recette en une formule de proportions pure.",
+			bakersReference:
+				"Choisit manuellement l'ingrédient qui sert de base à 100 %, à la place de la détection automatique de l'ingrédient annoté @* dans la recette.",
+			massStandardization:
+				"Convertit les mesures de volume (cuillères, tasses, ml) en grammes selon les densités renseignées en base.",
+			yieldManagement:
+				"Calcule le poids brut à acheter pour obtenir la quantité nette voulue, en tenant compte des pertes à l'épluchage ou au parage renseignées en base.",
+			nutrition:
+				"Estime les calories et les macronutriments (protéines, glucides, lipides, fibres) par portion ou pour 100 g via les tables de composition en base.",
+			physicsDisclaimer:
+				"Dans ce playground, les calculs physiques et nutritionnels reposent sur une base restreinte aux recettes d'exemple.",
+			stockItem:
+				"Déclare cette préparation importée comme déjà prête dans votre cuisine. Ses étapes de fabrication sont masquées du planning pour ne garder que son utilisation finale.",
+		},
 		output: {
 			copy: "Copier dans le presse-papier",
 			loading: "Chargement du lecteur...",
