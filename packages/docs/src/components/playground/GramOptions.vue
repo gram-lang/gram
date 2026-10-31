@@ -1573,13 +1573,11 @@ function resetStockSection() {
 
 .serve-pill {
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 999px;
   background: var(--sl-color-bg-nav);
   color: var(--sl-color-text);
-  padding: 3px 10px;
+  padding: 3px 6px;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
 .serve-pill:hover {
@@ -1588,9 +1586,9 @@ function resetStockSection() {
 
 .serve-pill.is-selected {
   border-color: var(--sl-color-accent);
-  color: var(--sl-color-accent-high);
-  background-color: var(--sl-color-gray-6);
-  font-weight: 600;
+  color: #1a1613;
+  background-color: var(--sl-color-accent);
+  font-weight: 600; 
 }
 
 .earliest-pill {
@@ -1615,15 +1613,14 @@ function resetStockSection() {
 
 .earliest-pill.is-selected {
   border-color: var(--sl-color-accent);
-  background-color: var(--sl-color-gray-6);
-  color: var(--sl-color-accent-high);
-  font-weight: 600;
+  color: #1a1613;
+  background-color: var(--sl-color-accent);
+  font-weight: 600; 
 }
 
 .rejected-info-wrapper {
   display: inline-flex;
   align-items: center;
-  margin-left: 2px;
 }
 
 .rejected-chip {
@@ -1631,14 +1628,12 @@ function resetStockSection() {
   align-items: center;
   gap: 5px;
   border: 1px dashed var(--sl-color-gray-5);
-  border-radius: 999px;
   background-color: var(--sl-color-bg-nav);
   color: var(--sl-color-gray-3);
-  padding: 3px 9px;
-  font-size: 11.5px;
+  padding: 3px 6px;
+  font-size: 12px;
   cursor: pointer;
   user-select: none;
-  transition: all 0.15s ease;
 }
 
 .rejected-chip-icon {

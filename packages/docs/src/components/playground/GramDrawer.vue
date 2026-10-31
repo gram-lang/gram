@@ -466,8 +466,8 @@ onUnmounted(() => {
 .gram-drawer-active-badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 2px;
-  border-radius: 50px;
+  padding: 2px 8px;
+  border-radius: 0;
   background-color: var(--sl-color-accent);
   color: #1a1613;
   white-space: nowrap;

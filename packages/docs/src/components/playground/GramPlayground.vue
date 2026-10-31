@@ -1151,7 +1151,7 @@ onUnmounted(() => {
             <line x1="9" y1="8" x2="15" y2="8"></line>
             <line x1="17" y1="16" x2="23" y2="16"></line>
           </svg>
-          <span class="toolbar-studio-label">{{ t.playground.studioTitle }}</span>
+          <span class="toolbar-studio-label">{{ t.playground.settingsButton }}</span>
           <span v-if="activeModifiersCount > 0" class="active-badge">{{ activeModifiersCount }}</span>
         </button>
         
@@ -1279,7 +1279,7 @@ onUnmounted(() => {
           />
         </div>
 
-        <!-- Recipe Studio Docked / Drawer -->
+        <!-- Recipe settings Docked / Drawer -->
         <GramDrawer
           :is-open="isDrawerOpen"
           :docked="isWideScreen"
@@ -1374,13 +1374,12 @@ onUnmounted(() => {
   justify-content: center;
   min-width: 15px;
   height: 15px;
-  padding: 0 3px;
+  padding: 2px;
   font-size: 10px;
   font-weight: 700;
-  border-radius: 0;
+  border-radius: 50px;
   background-color: var(--sl-color-accent);
   color: #1a1613;
-  line-height: 1;
 }
 
 .playground-toolbar {
