@@ -4,7 +4,7 @@ import {
 	type ProjectionDiagnostic,
 	type RunSheet,
 	type RunSheetDay,
-	type RunSheetPassage,
+	type RunSheetVisit,
 	type RunSheetThread,
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "./mise-en-place";
@@ -31,14 +31,14 @@ export interface RunSheetRenderOptions {
 	headingLevel?: 1 | 2;
 }
 
-/** One line of the planning of the days: a passage, what continues without the cook, or the service. */
+/** One line of the planning of the days: a visit, what continues without the cook, or the service. */
 export interface RunSheetScheduleRow {
-	kind: "passage" | "thread" | "serve";
+	kind: "visit" | "thread" | "serve";
 	/** "THU 15", "D-2": set on the first row of a day only. */
 	day?: string;
 	/** "21:00 – 21:55", "about 55 min", "20:00". */
 	time?: string;
-	/** The sections of a passage, the wait of a thread, "Serve". */
+	/** The sections of a visit, the wait of a thread, "Serve". */
 	text: string;
 }
 
@@ -66,7 +66,7 @@ export interface RunSheetKitGroup {
 	items: RunSheetKitLine[];
 }
 
-/** What a passage asks of one section: where to read it in the recipe. */
+/** What a visit asks of one section: where to read it in the recipe. */
 export interface RunSheetProgramLine {
 	/** "Mousse" */
 	section: string;
@@ -77,7 +77,7 @@ export interface RunSheetProgramLine {
 }
 
 /** One moment in the kitchen, in words. */
-export interface RunSheetPassageModel {
+export interface RunSheetVisitModel {
 	/** "21:20 → 22:00", "about 40 min". */
 	slot: string;
 	/** "Possible from 18:00." or the fixed times that hold it. */
@@ -105,11 +105,11 @@ export interface RunSheetWaitLine {
 export interface RunSheetDayModel {
 	/** "Friday, October 16" in a plan with a serving time, "D-1" without. */
 	heading: string;
-	/** The slots of the day's passages, "21:20 → 22:00". */
+	/** The slots of the day's visits, "21:20 → 22:00". */
 	slot: string;
 	/** Rests the plan stretched or shortened. */
 	notices: string[];
-	passages: RunSheetPassageModel[];
+	visits: RunSheetVisitModel[];
 }
 
 /** The work plan in words: what every output (text, Markdown, HTML, calendar) is made from. */
@@ -124,11 +124,11 @@ export interface RunSheetModel {
 	problems: string[];
 	schedule: RunSheetScheduleRow[];
 	days: RunSheetDayModel[];
-	/** The calendar events, one per passage: when and what, ready for a calendar. */
+	/** The calendar events, one per visit: when and what, ready for a calendar. */
 	events: RunSheetEvent[];
 }
 
-/** A passage as a calendar event, in UTC. Only for a plan with a serving time. */
+/** A visit as a calendar event, in UTC. Only for a plan with a serving time. */
 export interface RunSheetEvent {
 	/** "2026-10-16T19:20:00Z" */
 	start: string;
@@ -330,28 +330,25 @@ export function describeRunSheet(
 	};
 
 	// Where each section's work ends, to say when a preparation was made.
-	const lastPassage = new Map<
-		number,
-		{ day: number; passage: RunSheetPassage }
-	>();
+	const lastVisit = new Map<number, { day: number; visit: RunSheetVisit }>();
 	days.forEach((day, d) => {
-		for (const p of day.passages) {
-			for (const s of p.sections) lastPassage.set(s, { day: d, passage: p });
+		for (const p of day.visits) {
+			for (const s of p.sections) lastVisit.set(s, { day: d, visit: p });
 		}
 	});
 
 	// The mode comes from the sheet: the plan and its kit cannot disagree.
 	const mode = recipe?.miseEnPlace ?? DEFAULT_MISE_EN_PLACE_MODE;
-	const allPassages = days.flatMap((day) => day.passages);
+	const allVisits = days.flatMap((day) => day.visits);
 	const stepSection = (id: string) => {
 		const task = tasks.get(id);
 		return task?.kind === "step" ? task.section : undefined;
 	};
 	// Where a section is first seen, and where its first step is: a preparation
 	// is needed at the step, not at the mise en place that may come before.
-	const firstSeen = new Map<number, RunSheetPassage>();
-	const firstWork = new Map<number, RunSheetPassage>();
-	for (const p of allPassages) {
+	const firstSeen = new Map<number, RunSheetVisit>();
+	const firstWork = new Map<number, RunSheetVisit>();
+	for (const p of allVisits) {
 		for (const s of p.sections) if (!firstSeen.has(s)) firstSeen.set(s, p);
 		for (const id of p.tasks) {
 			const s = stepSection(id);
@@ -367,7 +364,7 @@ export function describeRunSheet(
 	days.forEach((day, d) => {
 		const heading =
 			calendar && day.date ? longDate(day.date, lang) : dayLabel(day);
-		const slotOf = (p: RunSheetPassage) =>
+		const slotOf = (p: RunSheetVisit) =>
 			calendar && p.startLocal && p.endLocal
 				? `${clock(p.startLocal)} → ${clock(p.endLocal)}`
 				: fill(t.workPlanAbout, { duration: fmt(rounded(p.end - p.start)) });
@@ -376,14 +373,14 @@ export function describeRunSheet(
 				? `${shortDay(day.date, lang)} ${Number(day.date.slice(8, 10))}`.toUpperCase()
 				: dayLabel(day);
 
-		const passageModels: RunSheetPassageModel[] = [];
-		day.passages.forEach((p, k) => {
-			const nextPassage =
-				day.passages[k + 1] ?? days[d + 1]?.passages[0] ?? undefined;
-			const threads = day.threads.filter((th) => th.passage === k);
+		const visitModels: RunSheetVisitModel[] = [];
+		day.visits.forEach((p, k) => {
+			const nextVisit =
+				day.visits[k + 1] ?? days[d + 1]?.visits[0] ?? undefined;
+			const threads = day.threads.filter((th) => th.visit === k);
 
 			schedule.push({
-				kind: "passage",
+				kind: "visit",
 				...(k === 0 && { day: rowLabel }),
 				time: slotOf(p).replace(" → ", " – "),
 				text: p.sections.map(sectionTitle).join(", "),
@@ -392,7 +389,7 @@ export function describeRunSheet(
 				schedule.push({ kind: "thread", text: threadText(th) });
 			}
 
-			// To take out: the raw things of a section once, at its first passage
+			// To take out: the raw things of a section once, at its first visit
 			// (all of them at the first visit in `upfront`); a preparation at the
 			// visit of its first step, whatever the mode.
 			const present = new Set(
@@ -403,8 +400,8 @@ export function describeRunSheet(
 			);
 			const rawSections =
 				mode === "upfront"
-					? p === allPassages[0]
-						? [...new Set(allPassages.flatMap((x) => x.sections))]
+					? p === allVisits[0]
+						? [...new Set(allVisits.flatMap((x) => x.sections))]
 						: []
 					: p.sections.filter((s) => !claimed.has(s));
 			for (const s of rawSections) claimed.add(s);
@@ -432,12 +429,12 @@ export function describeRunSheet(
 					lang,
 					present,
 					madeBefore: (_id, maker) => {
-						const made = lastPassage.get(maker);
-						if (!made || made.passage === p) return undefined;
+						const made = lastVisit.get(maker);
+						if (!made || made.visit === p) return undefined;
 						if (made.day === d) {
-							return calendar && made.passage.startLocal
+							return calendar && made.visit.startLocal
 								? fill(t.workPlanMadeAt, {
-										time: clock(made.passage.startLocal),
+										time: clock(made.visit.startLocal),
 									})
 								: t.workPlanMadeEarlier;
 						}
@@ -518,7 +515,7 @@ export function describeRunSheet(
 			const waits: RunSheetWaitLine[] = [];
 			for (const th of threads) {
 				const endsEarly =
-					nextPassage && th.to < nextPassage.start - 1
+					nextVisit && th.to < nextVisit.start - 1
 						? th.toLocal
 							? fill(t.workPlanUntilClock, { time: clock(th.toLocal) })
 							: undefined
@@ -529,15 +526,15 @@ export function describeRunSheet(
 					...(endsEarly && { until: endsEarly }),
 				});
 			}
-			if (nextPassage) {
-				const nextDay = days.find((x) => x.passages.includes(nextPassage));
+			if (nextVisit) {
+				const nextDay = days.find((x) => x.visits.includes(nextVisit));
 				let when: string;
-				if (calendar && nextPassage.startLocal) {
-					const date = nextPassage.startLocal.slice(0, 10);
+				if (calendar && nextVisit.startLocal) {
+					const date = nextVisit.startLocal.slice(0, 10);
 					when =
 						date === day.date
-							? clock(nextPassage.startLocal)
-							: `${weekdayName(date, lang)} ${clock(nextPassage.startLocal)}`;
+							? clock(nextVisit.startLocal)
+							: `${weekdayName(date, lang)} ${clock(nextVisit.startLocal)}`;
 				} else if (nextDay === day) {
 					// No clock without a serving time: say it is the same day.
 					leaving.push(t.workPlanNextVisitSameDay);
@@ -554,7 +551,7 @@ export function describeRunSheet(
 				leaving.push(t.workPlanServe);
 			}
 
-			// The margin, or what holds the passage.
+			// The margin, or what holds the visit.
 			let margin: string | undefined;
 			if (p.window) {
 				margin = fill(t.workPlanPossibleFrom, {
@@ -565,7 +562,7 @@ export function describeRunSheet(
 				margin =
 					p.fixedBy.before === "service"
 						? fill(t.workPlanFixedService, { wait })
-						: fill(t.workPlanFixedPassage, {
+						: fill(t.workPlanFixedVisit, {
 								wait,
 								sections: (p.fixedBy.sections ?? [])
 									.map(sectionTitle)
@@ -573,7 +570,7 @@ export function describeRunSheet(
 							});
 			}
 
-			passageModels.push({
+			visitModels.push({
 				slot: slotOf(p),
 				...(margin !== undefined && { margin }),
 				kit,
@@ -583,7 +580,7 @@ export function describeRunSheet(
 				...(leaving.length > 0 && { next: leaving.at(-1) }),
 			});
 
-			// One calendar event per passage, in UTC, with the lists as plain lines.
+			// One calendar event per visit, in UTC, with the lists as plain lines.
 			if (calendar && p.startLocal && p.endLocal && sheet.timeZone) {
 				const start = day.entries.find(
 					(e) => e.start && e.from >= p.start - 1e-6,
@@ -641,9 +638,9 @@ export function describeRunSheet(
 
 		dayModels.push({
 			heading,
-			slot: passageModels.map((p) => p.slot).join(" · "),
+			slot: visitModels.map((p) => p.slot).join(" · "),
 			notices,
-			passages: passageModels,
+			visits: visitModels,
 		});
 	});
 
@@ -658,7 +655,7 @@ export function describeRunSheet(
 		});
 	}
 
-	const visits = days.reduce((n, d) => n + d.passages.length, 0);
+	const visits = days.reduce((n, d) => n + d.visits.length, 0);
 	const portions = (data.meta as Record<string, unknown> | undefined)?.portions;
 	const scale = data.scaleFactor;
 	const servings =
@@ -793,8 +790,8 @@ export function runSheetToText(
 	for (const day of model.days) {
 		out.push("", `${day.heading.toUpperCase()}  ${day.slot}`);
 		for (const n of day.notices) out.push(`  ! ${n}`);
-		for (const p of day.passages) {
-			if (day.passages.length > 1) out.push("", `  ${p.slot}`);
+		for (const p of day.visits) {
+			if (day.visits.length > 1) out.push("", `  ${p.slot}`);
 			if (p.margin) out.push(`  ${p.margin}`);
 			if (p.kit.length > 0) {
 				out.push(`  ${t.workPlanKit}`);
@@ -855,8 +852,8 @@ export function runSheetToMarkdown(
 	for (const day of model.days) {
 		out.push(`${h2} ${md(day.heading)} · ${md(day.slot)}`, "");
 		for (const n of day.notices) out.push(`> ⚠️ ${md(n)}`, "");
-		for (const p of day.passages) {
-			if (day.passages.length > 1) out.push(`${h3} ${md(p.slot)}`, "");
+		for (const p of day.visits) {
+			if (day.visits.length > 1) out.push(`${h3} ${md(p.slot)}`, "");
 			if (p.margin) out.push(md(p.margin), "");
 			if (p.kit.length > 0) {
 				out.push(`**${md(t.workPlanKit)}**`, "");
@@ -949,9 +946,9 @@ export function runSheetToHTML(
 		for (const n of day.notices) {
 			html += `    <p class="work-plan-notice">${e(n)}</p>\n`;
 		}
-		for (const p of day.passages) {
-			html += `    <div class="work-plan-passage">\n`;
-			const where = day.passages.length > 1 ? ` · ${e(p.slot)}` : "";
+		for (const p of day.visits) {
+			html += `    <div class="work-plan-visit">\n`;
+			const where = day.visits.length > 1 ? ` · ${e(p.slot)}` : "";
 			if (p.margin) {
 				html += `      <p class="work-plan-margin">${e(p.margin)}</p>\n`;
 			}

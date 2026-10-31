@@ -37,14 +37,14 @@ const compact = (iso: string) => iso.replace(/[-:]/g, "");
 export interface IcsOptions {
 	/** DTSTAMP of every event, an ISO instant in UTC. */
 	stamp: string;
-	/** Minutes before a passage at which its alarm rings. Default 10. */
+	/** Minutes before a visit at which its alarm rings. Default 10. */
 	alarmMinutes?: number;
 	/** The name of the calendar. Default: the title of the work plan. */
 	calendarName?: string;
 }
 
 /**
- * The work plan as an iCalendar file: one event per passage in the kitchen, in
+ * The work plan as an iCalendar file: one event per visit in the kitchen, in
  * UTC (the calendar shows it in its own zone), with an alarm before it. The
  * title is the recipe and its sections; the description lists what to take
  * out and the programme. Nothing here reads the clock: the stamp is given.

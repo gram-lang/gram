@@ -33,7 +33,7 @@ describe("buildICS", () => {
 		expect(ics).toContain("X-WR-CALNAME:Work plan — Bread");
 	});
 
-	it("writes an event per passage in UTC, stamped as asked, with a stable id", () => {
+	it("writes an event per visit in UTC, stamped as asked, with a stable id", () => {
 		expect(ics).toContain("DTSTART:20261010T194000Z");
 		expect(ics).toContain("DTEND:20261010T200000Z");
 		expect(ics).toContain("DTSTAMP:20261001T090000Z");
@@ -48,7 +48,7 @@ describe("buildICS", () => {
 		);
 	});
 
-	it("rings an alarm before each passage", () => {
+	it("rings an alarm before each visit", () => {
 		expect(ics).toContain("BEGIN:VALARM");
 		expect(ics).toContain("TRIGGER:-PT10M");
 		expect(buildICS(model(event()), { ...STAMP, alarmMinutes: 30 })).toContain(
@@ -56,7 +56,7 @@ describe("buildICS", () => {
 		);
 	});
 
-	it("keeps ids unique across the passages", () => {
+	it("keeps ids unique across the visits", () => {
 		const two = buildICS(
 			model(
 				event(),
@@ -68,7 +68,7 @@ describe("buildICS", () => {
 		expect(new Set(uids).size).toBe(2);
 	});
 
-	it("is empty of events for a plan with no passage", () => {
+	it("is empty of events for a plan with no visit", () => {
 		expect(buildICS(model(), STAMP)).not.toContain("BEGIN:VEVENT");
 	});
 

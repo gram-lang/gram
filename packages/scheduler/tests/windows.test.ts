@@ -15,10 +15,10 @@ const context = (over: Partial<ProjectionContext> = {}): ProjectionContext => ({
 const sheetOf = (graph: TaskGraph, ctx: ProjectionContext) =>
 	runSheet(project([{ graph }], ctx), { graph, context: ctx });
 
-const passagesOf = (sheet: ReturnType<typeof runSheet>) =>
-	sheet.recipes[0]!.days.flatMap((d) => d.passages);
+const visitsOf = (sheet: ReturnType<typeof runSheet>) =>
+	sheet.recipes[0]!.days.flatMap((d) => d.visits);
 
-// A base two days before, an insert the day before, then two passages on the
+// A base two days before, an insert the day before, then two visits on the
 // day, with an exact 90 min wait between.
 const entremets: TaskGraph = {
 	tasks: [
@@ -96,9 +96,9 @@ const entremets: TaskGraph = {
 	],
 };
 
-describe("passage windows", () => {
-	it("tells how early a passage could happen, up to when the cook is available", () => {
-		const [first] = passagesOf(sheetOf(entremets, context()));
+describe("visit windows", () => {
+	it("tells how early a visit could happen, up to when the cook is available", () => {
+		const [first] = visitsOf(sheetOf(entremets, context()));
 		expect(first!.window).toMatchObject({
 			advance: 710,
 			earliestLocal: "2026-10-15T08:00",
@@ -106,7 +106,7 @@ describe("passage windows", () => {
 	});
 
 	it("never goes before the present", () => {
-		const [first] = passagesOf(
+		const [first] = visitsOf(
 			sheetOf(entremets, context({ now: "2026-10-15T17:50" })),
 		);
 		expect(first!.window).toMatchObject({
@@ -116,22 +116,22 @@ describe("passage windows", () => {
 	});
 
 	it("gives no margin when the wait before it cannot get shorter", () => {
-		const [, second] = passagesOf(sheetOf(entremets, context()));
+		const [, second] = visitsOf(sheetOf(entremets, context()));
 		expect(second!.window).toBeUndefined();
 		expect(second!.fixedBy).toBeUndefined();
 	});
 
-	it("names the exact wait that holds a passage before the next one", () => {
-		const passages = passagesOf(sheetOf(entremets, context()));
-		expect(passages[2]!.fixedBy).toMatchObject({
+	it("names the exact wait that holds a visit before the next one", () => {
+		const visits = visitsOf(sheetOf(entremets, context()));
+		expect(visits[2]!.fixedBy).toMatchObject({
 			task: "s2.0.t0",
 			planned: 90,
-			before: "passage",
+			before: "visit",
 			sections: [3],
 		});
 	});
 
-	it("holds a passage before the service by its exact wait", () => {
+	it("holds a visit before the service by its exact wait", () => {
 		const graph: TaskGraph = {
 			tasks: [
 				{
@@ -154,7 +154,7 @@ describe("passage windows", () => {
 			],
 			sections: [{ day: 0 }],
 		};
-		const [only] = passagesOf(sheetOf(graph, context()));
+		const [only] = visitsOf(sheetOf(graph, context()));
 		expect(only!.fixedBy).toMatchObject({ before: "service", planned: 120 });
 	});
 
@@ -181,12 +181,12 @@ describe("passage windows", () => {
 			],
 			sections: [{ day: 0 }],
 		};
-		// 30 min of stretch: the passage may start that much earlier, no more.
-		const [only] = passagesOf(sheetOf(graph, context()));
+		// 30 min of stretch: the visit may start that much earlier, no more.
+		const [only] = visitsOf(sheetOf(graph, context()));
 		expect(only!.window!.advance).toBe(30);
 	});
 
-	it("does not hold a passage by a wait that ends in the middle of nothing", () => {
+	it("does not hold a visit by a wait that ends in the middle of nothing", () => {
 		// The rest ends hours before anything needs it: it moves with its start.
 		const graph: TaskGraph = {
 			tasks: [
@@ -243,11 +243,11 @@ describe("passage windows", () => {
 				{ day: 0 },
 			],
 		};
-		const passages = passagesOf(sheetOf(graph, context()));
-		for (const p of passages) {
+		const visits = visitsOf(sheetOf(graph, context()));
+		for (const p of visits) {
 			expect(p.fixedBy?.before).not.toBe("service");
 		}
-		expect(passages[0]!.window).toBeDefined();
+		expect(visits[0]!.window).toBeDefined();
 	});
 
 	it("leaves the sheet alone without the graph or the context", () => {
@@ -256,7 +256,7 @@ describe("passage windows", () => {
 			runSheet(plan),
 			runSheet(plan, { graph: entremets }),
 		]) {
-			for (const p of passagesOf(sheet)) {
+			for (const p of visitsOf(sheet)) {
 				expect(p.window).toBeUndefined();
 				expect(p.fixedBy).toBeUndefined();
 			}
@@ -287,7 +287,7 @@ describe("passage windows", () => {
 			],
 			sections: [{ day: 0 }],
 		};
-		const [only] = passagesOf(sheetOf(graph, context()));
+		const [only] = visitsOf(sheetOf(graph, context()));
 		expect(only!.window).toBeUndefined();
 	});
 });
@@ -341,8 +341,8 @@ function generate(random: () => number): TaskGraph {
 	return { tasks, sections: meta };
 }
 
-describe("passage windows (property)", () => {
-	it("moving any passages by up to their margin breaks no wait and no order", () => {
+describe("visit windows (property)", () => {
+	it("moving any visits by up to their margin breaks no wait and no order", () => {
 		const random = rng(42);
 		let withWindow = 0;
 		for (let n = 0; n < 60; n++) {
@@ -356,7 +356,7 @@ describe("passage windows (property)", () => {
 				context: ctx,
 			});
 			const recipe = sheet.recipes[0]!;
-			const passages = recipe.days.flatMap((d) => d.passages);
+			const visits = recipe.days.flatMap((d) => d.visits);
 			const waits = recipe.days.flatMap((d) =>
 				d.entries.filter((e) => e.kind === "passive"),
 			);
@@ -375,21 +375,21 @@ describe("passage windows (property)", () => {
 						: [],
 				),
 			);
-			// Each passage moves a random share of its margin, or not at all.
-			const shift = passages.map((p) => {
+			// Each visit moves a random share of its margin, or not at all.
+			const shift = visits.map((p) => {
 				if (!p.window) return 0;
 				withWindow++;
 				return random() < 0.3 ? 0 : p.window.advance * random();
 			});
 			const startsIn = (from: number) => {
 				let k = 0;
-				passages.forEach((p, i) => {
+				visits.forEach((p, i) => {
 					if (p.start <= from + 1e-6) k = i;
 				});
 				return k;
 			};
-			const passageAt = (at: number) =>
-				passages.findIndex((p) => p.start - 1e-6 <= at && at <= p.end + 1e-6);
+			const visitAt = (at: number) =>
+				visits.findIndex((p) => p.start - 1e-6 <= at && at <= p.end + 1e-6);
 			const startOf = new Map(
 				recipe.days.flatMap((d) =>
 					d.entries
@@ -413,7 +413,7 @@ describe("passage windows (property)", () => {
 			for (const w of waits) {
 				const need = neededAt(w);
 				const s = startsIn(w.from);
-				const e = passageAt(need);
+				const e = visitAt(need);
 				const before = need - w.from;
 				const after = before + shift[s]! - (e === -1 ? 0 : shift[e]!);
 				const range = ranges.get(w.task)!;
@@ -430,9 +430,9 @@ describe("passage windows (property)", () => {
 				expect(after <= max + 1e-6 || after <= before + 1e-6).toBe(true);
 				expect(after >= min - 1e-6 || after >= before - 1e-6).toBe(true);
 			}
-			passages.forEach((p, i) => {
+			visits.forEach((p, i) => {
 				if (i === 0) return;
-				const before = passages[i - 1]!;
+				const before = visits[i - 1]!;
 				expect(p.start - shift[i]!).toBeGreaterThanOrEqual(
 					before.end - shift[i - 1]! - 1e-6,
 				);

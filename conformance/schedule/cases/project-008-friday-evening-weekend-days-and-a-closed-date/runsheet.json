@@ -73,7 +73,7 @@
               }
             }
           ],
-          "passages": [
+          "visits": [
             {
               "start": -2842,
               "end": -2820,
@@ -91,7 +91,7 @@
           ],
           "threads": [
             {
-              "passage": 0,
+              "visit": 0,
               "task": "s0.1.t0",
               "section": 0,
               "step": 1,
@@ -196,7 +196,7 @@
               "endLocal": "2026-10-12T19:00"
             }
           ],
-          "passages": [
+          "visits": [
             {
               "start": -646,
               "end": -630,
@@ -227,7 +227,7 @@
           ],
           "threads": [
             {
-              "passage": 0,
+              "visit": 0,
               "task": "s1.1.t0",
               "section": 1,
               "step": 1,

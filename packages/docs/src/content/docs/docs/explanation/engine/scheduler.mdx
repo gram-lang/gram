@@ -76,7 +76,7 @@ The engine produces **pure structural data**; the work plan is one way to displa
 | Term | Definition |
 |---|---|
 | **Working day** | A working day dedicated to the recipe. Only a day anchor (`~{-2d}`, declared on a section or an imported `@use` module) creates a distinct working day. In the absence of day anchors, the recipe fits in a single working day. |
-| **Visit** (*passage*) | An active cooking period: a continuous sequence of manual hands-on steps unbroken by substantial idle periods (any passive rest of 60 minutes or longer, controlled by `PASSAGE_GAP_MINUTES`, marks the end of a visit). A working day may contain several visits. |
+| **Visit** | An active cooking period: a continuous sequence of manual hands-on steps unbroken by substantial idle periods (any passive rest of 60 minutes or longer, controlled by `VISIT_GAP_MINUTES`, marks the end of a visit). A working day may contain several visits. |
 | **Thread** (*fil*) | A passive process (baking, resting, proofing) initiated during a visit and continuing unattended after you leave the kitchen. |
 | **Adjustment** | A rest period lengthened or shortened during projection, within its declared range, to align active hands-on blocks with your available hours (`avoid-unavailable`). |
 | **Unresolved problem** | A diagnostic emitted during projection when a timing constraint cannot be satisfied. |

@@ -15,8 +15,8 @@ export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .schedule-row { display: grid; grid-template-columns: 8em 1fr; column-gap: 6pt; padding: 1.5pt 0; border-bottom: 0.5pt dotted #999; }
   .gram-run-sheet .schedule-row:last-child { border-bottom: 0; }
   .gram-run-sheet .schedule-time { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; font-weight: 600; }
-  .gram-run-sheet .schedule-passage .schedule-time::before { content: ""; display: inline-block; width: 5pt; height: 5pt; background: #000; margin-right: 4pt; }
-  .gram-run-sheet .schedule-passage .schedule-text { font-weight: 600; }
+  .gram-run-sheet .schedule-visit .schedule-time::before { content: ""; display: inline-block; width: 5pt; height: 5pt; background: #000; margin-right: 4pt; }
+  .gram-run-sheet .schedule-visit .schedule-text { font-weight: 600; }
   .gram-run-sheet .schedule-line { border-left: 1.5pt dotted var(--grey); margin-left: 2pt; min-height: 10pt; }
   .gram-run-sheet .schedule-thread { font-style: italic; color: var(--grey); }
   .gram-run-sheet .schedule-serve .schedule-text { font-weight: 800; text-transform: uppercase; }
@@ -25,7 +25,7 @@ export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .work-plan-day { border: 1pt solid #000; padding: 10pt 12pt; margin-bottom: 12pt; page-break-before: always; page-break-inside: avoid; }
   .gram-run-sheet .work-plan-day h3 { font-size: 13pt; font-weight: 800; margin: 0 0 8pt; border-bottom: 1.5pt solid #000; padding-bottom: 3pt; display: block; text-transform: uppercase; }
   .gram-run-sheet .work-plan-day .day-slot { float: right; text-transform: none; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; font-weight: 700; color: var(--grey); }
-  .gram-run-sheet .work-plan-passage h4 { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: var(--grey); margin: 10pt 0 3pt; }
+  .gram-run-sheet .work-plan-visit h4 { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: var(--grey); margin: 10pt 0 3pt; }
   .gram-run-sheet .work-plan-notice { font-weight: 700; margin: 6pt 0; }
   .gram-run-sheet .work-plan-notice::before { content: "⚠ "; }
   .gram-run-sheet .work-plan-margin { color: var(--grey); }

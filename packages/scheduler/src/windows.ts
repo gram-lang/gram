@@ -5,39 +5,39 @@ import type {
 	RunSheet,
 	RunSheetEntry,
 	RunSheetFixedBy,
-	RunSheetPassage,
+	RunSheetVisit,
 } from "./runsheet";
 import { localDateTime, parseInstant, parseLocalIso, toLocalIso } from "./time";
 
 const EPS = 1e-6;
 
-/** A margin shorter than this is not worth telling: the passage is where it should be. */
+/** A margin shorter than this is not worth telling: the visit is where it should be. */
 export const WINDOW_MIN_MINUTES = 15;
 
 interface Ref {
-	passage: RunSheetPassage;
+	visit: RunSheetVisit;
 	day: number;
 }
 
 interface Constraint {
 	slack: number;
-	/** Set for a wait after the passage that cannot stretch: it holds the passage in place. */
+	/** Set for a wait after the visit that cannot stretch: it holds the visit in place. */
 	wait?: RunSheetFixedBy;
 }
 
 /**
- * How early each passage could happen, for a recipe laid out with a serving
- * time. The answer for a passage assumes every other passage stays at its
+ * How early each visit could happen, for a recipe laid out with a serving
+ * time. The answer for a visit assumes every other visit stays at its
  * planned time, which is why it is always safe: everything is planned as late
- * as it can be, so a passage can only move earlier, and moving it earlier
+ * as it can be, so a visit can only move earlier, and moving it earlier
  * shortens the wait before it and stretches the one after it, both checked
- * against the neighbours' planned times. Moving several passages, or none,
+ * against the neighbours' planned times. Moving several visits, or none,
  * never breaks another window. A window is sometimes cautious, never wrong.
  *
  * Needs the graph (the written ranges of the waits). A recipe with no graph,
  * or a sheet with no serving time, is returned as it is.
  */
-export function passageWindows(
+export function visitWindows(
 	sheet: RunSheet,
 	graph: TaskGraph,
 	context: ProjectionContext,
@@ -74,14 +74,14 @@ export function passageWindows(
 		const refs: Ref[] = [];
 		const waits: RunSheetEntry[] = [];
 		for (const day of recipe.days) {
-			for (const passage of day.passages) {
-				refs.push({ passage, day: day.daysBefore });
+			for (const visit of day.visits) {
+				refs.push({ visit, day: day.daysBefore });
 			}
 			waits.push(...day.entries.filter((e) => e.kind === "passive"));
 		}
 		if (refs.length === 0) continue;
-		const passages = refs.map((r) => r.passage);
-		const first = Math.min(...passages.map((p) => p.start));
+		const visits = refs.map((r) => r.visit);
+		const first = Math.min(...visits.map((p) => p.start));
 		const intervals = availableIntervals(
 			context.availability,
 			timeZone,
@@ -91,7 +91,7 @@ export function passageWindows(
 
 		const startsIn = (w: RunSheetEntry) => {
 			let k = 0;
-			passages.forEach((p, i) => {
+			visits.forEach((p, i) => {
 				if (p.start <= w.from + EPS) k = i;
 			});
 			return k;
@@ -116,20 +116,20 @@ export function passageWindows(
 			}
 			return Number.isFinite(at) ? Math.max(at, w.to) : 0;
 		};
-		const passageAt = (minutes: number) =>
-			passages.findIndex(
+		const visitAt = (minutes: number) =>
+			visits.findIndex(
 				(p) => p.start - EPS <= minutes && minutes <= p.end + EPS,
 			);
 
-		passages.forEach((p, k) => {
+		visits.forEach((p, k) => {
 			const constraints: Constraint[] = [];
-			const previous = passages[k - 1];
+			const previous = visits[k - 1];
 			if (previous) constraints.push({ slack: p.start - previous.end });
 
 			for (const w of waits) {
 				const from = startsIn(w);
 				const need = neededAt(w);
-				const to = passageAt(need);
+				const to = visitAt(need);
 				const range = ranges.get(w.task);
 				const span = need - w.from;
 				const planned = w.to - w.from;
@@ -150,18 +150,18 @@ export function passageWindows(
 					...(w.step !== undefined && { step: w.step }),
 					...(w.track !== undefined && { track: w.track }),
 					planned,
-					before: to >= 0 ? "passage" : "service",
-					...(to >= 0 && { sections: passages[to]!.sections }),
+					before: to >= 0 ? "visit" : "service",
+					...(to >= 0 && { sections: visits[to]!.sections }),
 				});
 				if (from === k && to !== k) {
-					// The passage moves, the need stays: the span grows.
+					// The visit moves, the need stays: the span grows.
 					constraints.push({
 						slack: Math.max(0, maxSpan - span),
 						wait: fixed(),
 					});
 				}
 				if (to === k && from !== k) {
-					// Bounds the margin, but it is not what holds the passage "fixed":
+					// Bounds the margin, but it is not what holds the visit "fixed":
 					// that is the wait it leads to.
 					constraints.push({ slack: Math.max(0, span - minSpan) });
 				}
@@ -178,7 +178,7 @@ export function passageWindows(
 
 			const start = serve + p.start;
 			const end = serve + p.end;
-			// The service itself is the end of the last passage: nothing earlier.
+			// The service itself is the end of the last visit: nothing earlier.
 			if (p.end >= -EPS) constraints.push({ slack: 0 });
 			const date = p.startLocal?.slice(0, 10);
 			if (date !== undefined) {

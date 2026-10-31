@@ -238,11 +238,11 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
      const [planned] = sheet.recipes;
      return planned.days
        .map((day) => {
-         const visits = day.passages
+         const visits = day.visits
            .map((visit, k) => {
              const sections = visit.sections.map((s) => recipe.sections[s].title).join(', ');
              const threads = day.threads
-               .filter((t) => t.passage === k)
+               .filter((t) => t.visit === k)
                .map((t) => `<li>${t.task} : ${hours(t.planned)} de repos passif</li>`)
                .join('');
              const margin = visit.window ? ` (anticipation possible dès ${clock(visit.window.earliestLocal)})` : '';
@@ -257,13 +257,13 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
 
    ##### Propriétés clés de la structure de données
 
-   - `day.passages[]` : liste des passages en cuisine. Chaque élément fournit les bornes `start` et `end` (en minutes relatives avant le service), `startLocal` et `endLocal` (horodatages dans le fuseau horaire cible), les indices des sections concernées (`sections`), les identifiants de tâches (`tasks`), ainsi que `window` et `fixedBy` indiquant la marge d'anticipation disponible.
-   - `day.threads[]` : processus passifs (fermentation, repos, refroidissement) qui se poursuivent sans intervention après un passage (`passage` correspond à l'index du passage dans la journée), avec leur durée planifiée (`planned`), leur plage de tolérance (`range`) et leur fin estimée (`toLocal`).
+   - `day.visits[]` : liste des passages en cuisine. Chaque élément fournit les bornes `start` et `end` (en minutes relatives avant le service), `startLocal` et `endLocal` (horodatages dans le fuseau horaire cible), les indices des sections concernées (`sections`), les identifiants de tâches (`tasks`), ainsi que `window` et `fixedBy` indiquant la marge d'anticipation disponible.
+   - `day.threads[]` : processus passifs (fermentation, repos, refroidissement) qui se poursuivent sans intervention après un passage (`visit` correspond à l'index du passage dans la journée), avec leur durée planifiée (`planned`), leur plage de tolérance (`range`) et leur fin estimée (`toLocal`).
    - `day.entries[]` : séquence chronologique ordonnée de tous les blocs de la journée (actifs et passifs), utile pour tracer un graphique ou une frise journalière détaillée.
    - `sheet.adjustments[]` et `sheet.diagnostics[]` : récapitulent respectivement les durées de repos passif adaptées pour respecter vos disponibilités, et les contraintes insolubles ayant généré des alertes.
 
    > [!TIP]
-   > **Réutiliser les générateurs d'intitulés :** Pour formater les listes de courses, le matériel à sortir ou les renvois aux étapes sans réécrire la logique métier, vous pouvez directement importer les utilitaires modulaires du package `@gram-lang/renderer`, notamment `passageKit()` (ingrédients et matériel à sortir) et `sectionProgram()` (la section et la plage d'étapes d'un passage). Pour en savoir plus, consultez [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
+   > **Réutiliser les générateurs d'intitulés :** Pour formater les listes de courses, le matériel à sortir ou les renvois aux étapes sans réécrire la logique métier, vous pouvez directement importer les utilitaires modulaires du package `@gram-lang/renderer`, notamment `visitKit()` (ingrédients et matériel à sortir) et `sectionProgram()` (la section et la plage d'étapes d'un passage). Pour en savoir plus, consultez [le moteur d'ordonnancement](/fr/docs/explanation/engine/scheduler/#de-la-chronologie-au-planning-de-préparation).
 
 </Steps>
 

@@ -3,7 +3,7 @@ import type { TaskGraph } from "../src/graph";
 import { project } from "../src/project";
 import { layout } from "../src/layout";
 import { MISE_EN_PLACE_MODES } from "../src/mode";
-import { PASSAGE_GAP_MINUTES, runSheet } from "../src/runsheet";
+import { VISIT_GAP_MINUTES, runSheet } from "../src/runsheet";
 import canneles from "./fixtures/canneles-graph.json";
 
 const graph: TaskGraph = {
@@ -212,14 +212,14 @@ const entremetsPlan = project([{ graph: entremets, title: "Entremets" }], {
 	availability: { daily: [{ start: "00:00", end: "23:59" }] },
 });
 
-describe("runSheet days, passages and threads", () => {
-	it("opens a day per working day, with the passages of the kitchen", () => {
+describe("runSheet days, visits and threads", () => {
+	it("opens a day per working day, with the visits of the kitchen", () => {
 		const [recipe] = runSheet(entremetsPlan, { graph: entremets }).recipes;
 		expect(recipe!.days.map((d) => d.daysBefore)).toEqual([2, 1, 0]);
-		expect(recipe!.days.map((d) => d.passages.length)).toEqual([1, 1, 2]);
+		expect(recipe!.days.map((d) => d.visits.length)).toEqual([1, 1, 2]);
 		const [, , last] = recipe!.days;
-		expect(last!.passages.map((p) => p.sections)).toEqual([[2], [3]]);
-		expect(last!.passages[0]!.end - last!.passages[0]!.start).toBe(15);
+		expect(last!.visits.map((p) => p.sections)).toEqual([[2], [3]]);
+		expect(last!.visits[0]!.end - last!.visits[0]!.start).toBe(15);
 	});
 
 	it("gives dates and local times on the calendar", () => {
@@ -229,21 +229,21 @@ describe("runSheet days, passages and threads", () => {
 			"2026-10-16",
 			"2026-10-17",
 		]);
-		expect(days[2]!.passages[1]!.endLocal).toBe("2026-10-17T20:00");
+		expect(days[2]!.visits[1]!.endLocal).toBe("2026-10-17T20:00");
 	});
 
 	it("counts the minutes from the service and the cook's own work only", () => {
 		const sheet = runSheet(entremetsPlan);
 		const last = sheet.recipes[0]!.days[2]!;
-		expect(last.passages[1]).toMatchObject({ start: -15, end: 0 });
+		expect(last.visits[1]).toMatchObject({ start: -15, end: 0 });
 		expect(sheet.recipes[0]!.totalWork).toBe(30 + 40 + 15 + 15);
 	});
 
-	it("tells what goes on without the cook after a passage, with the written range", () => {
+	it("tells what goes on without the cook after a visit, with the written range", () => {
 		const { days } = runSheet(entremetsPlan, { graph: entremets }).recipes[0]!;
 		expect(days[1]!.threads).toEqual([
 			expect.objectContaining({
-				passage: 0,
+				visit: 0,
 				task: "s1.0.t0",
 				section: 1,
 				planned: 1300,
@@ -255,7 +255,7 @@ describe("runSheet days, passages and threads", () => {
 	});
 
 	it("splits a day at a wait of an hour or more and not before", () => {
-		expect(PASSAGE_GAP_MINUTES).toBe(60);
+		expect(VISIT_GAP_MINUTES).toBe(60);
 		const short: TaskGraph = {
 			...entremets,
 			tasks: entremets.tasks.map((t) =>
@@ -263,13 +263,13 @@ describe("runSheet days, passages and threads", () => {
 			),
 		};
 		const day = runSheet(layout(short).schedule).recipes[0]!.days[2]!;
-		expect(day.passages).toHaveLength(1);
-		expect(day.passages[0]!.sections).toEqual([2, 3]);
-		// A wait inside a passage is not a thread.
+		expect(day.visits).toHaveLength(1);
+		expect(day.visits[0]!.sections).toEqual([2, 3]);
+		// A wait inside a visit is not a thread.
 		expect(day.threads).toEqual([]);
 	});
 
-	it("keeps a passage that crosses midnight whole, on the date it starts", () => {
+	it("keeps a visit that crosses midnight whole, on the date it starts", () => {
 		const night: TaskGraph = {
 			tasks: [
 				{
@@ -290,8 +290,8 @@ describe("runSheet days, passages and threads", () => {
 		});
 		const [day] = runSheet(plan).recipes[0]!.days;
 		expect(day!.date).toBe("2026-10-10");
-		expect(day!.passages).toHaveLength(1);
-		expect(day!.passages[0]).toMatchObject({
+		expect(day!.visits).toHaveLength(1);
+		expect(day!.visits[0]).toMatchObject({
 			startLocal: "2026-10-10T23:30",
 			endLocal: "2026-10-11T00:10",
 		});
@@ -313,16 +313,16 @@ describe("runSheet days, passages and threads", () => {
 		const { days, title } = sheet.recipes[0]!;
 		expect(title).toBe("Entremets");
 		expect(days.map((d) => d.date)).toEqual([undefined, undefined, undefined]);
-		expect(days.map((d) => d.passages.length)).toEqual([1, 1, 2]);
-		expect(days[2]!.passages[1]!.end).toBe(0);
-		expect(days[0]!.passages[0]!.startLocal).toBeUndefined();
+		expect(days.map((d) => d.visits.length)).toEqual([1, 1, 2]);
+		expect(days[2]!.visits[1]!.end).toBe(0);
+		expect(days[0]!.visits[0]!.startLocal).toBeUndefined();
 	});
 
 	it("tells the same days with and without a serving time", () => {
 		const shape = (s: ReturnType<typeof runSheet>) =>
 			s.recipes[0]!.days.map((d) => ({
 				daysBefore: d.daysBefore,
-				passages: d.passages.map((p) => [p.start, p.end, p.sections]),
+				visits: d.visits.map((p) => [p.start, p.end, p.sections]),
 			}));
 		// The plan moved nothing here: same days, same minutes from the service.
 		expect(shape(runSheet(entremetsPlan))).toEqual(
@@ -336,7 +336,7 @@ describe("runSheet days, passages and threads", () => {
 			const { schedule } = layout(graph, { miseEnPlace: mode });
 			const sheet = runSheet(schedule);
 			const { days, totalWork } = sheet.recipes[0]!;
-			const tasks = days.flatMap((d) => d.passages.flatMap((p) => p.tasks));
+			const tasks = days.flatMap((d) => d.visits.flatMap((p) => p.tasks));
 			const active = schedule.blocks
 				.filter((b) => b.kind !== "passive")
 				.map((b) => b.task);
@@ -346,7 +346,7 @@ describe("runSheet days, passages and threads", () => {
 			);
 			for (const d of days) {
 				for (const t of d.threads) {
-					const home = d.passages[t.passage]!;
+					const home = d.visits[t.visit]!;
 					expect(t.to).toBeGreaterThan(home.end);
 				}
 			}

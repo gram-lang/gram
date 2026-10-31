@@ -29,7 +29,7 @@ export type {
 	RunSheetEvent,
 	RunSheetKitGroup,
 	RunSheetKitLine,
-	RunSheetPassageModel,
+	RunSheetVisitModel,
 	RunSheetProgramLine,
 	RunSheetModel,
 	RunSheetRenderOptions,
@@ -38,12 +38,12 @@ export type {
 } from "./run-sheet";
 export {
 	intermediateMakers,
-	passageKit,
+	visitKit,
 	sectionProgram,
 } from "./work-plan-parts";
 export type {
 	KitItem,
-	PassageKitOptions,
+	VisitKitOptions,
 	SectionProgram,
 } from "./work-plan-parts";
 export {

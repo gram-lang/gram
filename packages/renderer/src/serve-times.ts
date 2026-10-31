@@ -45,8 +45,8 @@ function candidateLine(
 	const when = whenOf(c.serveAt, lang);
 	if (c.ok) {
 		const visits = fill(
-			c.passages === 1 ? t.workPlanVisits : t.workPlanVisitsMany,
-			{ n: String(c.passages) },
+			c.visits === 1 ? t.workPlanVisits : t.workPlanVisitsMany,
+			{ n: String(c.visits) },
 		);
 		const adjusted =
 			c.adjustments === 0

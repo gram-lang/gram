@@ -76,7 +76,7 @@ Le moteur génère des **données structurelles pures** ; le planning de prépar
 | Terme | Définition |
 |---|---|
 | **Journée de travail** | Une journée de travail dédiée à la recette. Seule une ancre temporelle en jours calendaires (`~{-2j}`, déclarée sur une section ou un module `@use`) ouvre une journée distincte. En l'absence d'ancre, la recette se déroule sur une seule journée. |
-| **Passage** | Un moment actif en cuisine : une séquence d'étapes de travail manuel ininterrompues par une attente significative (toute pause passive d'au moins 60 minutes, fixée par `PASSAGE_GAP_MINUTES`, marque la fin du passage). Une journée peut ainsi comporter plusieurs passages. |
+| **Passage** | Un moment actif en cuisine : une séquence d'étapes de travail manuel ininterrompues par une attente significative (toute pause passive d'au moins 60 minutes, fixée par `VISIT_GAP_MINUTES`, marque la fin du passage). Une journée peut ainsi comporter plusieurs passages. |
 | **Fil** | Un processus passif (cuisson, repos, pousse) initié durant un passage et qui se poursuit de manière autonome après votre départ de la cuisine. |
 | **Ajustement** | Une durée d'attente allongée ou raccourcie lors de la projection, dans les limites de la fourchette déclarée, afin que les étapes actives coïncident avec vos plages de disponibilité (`avoid-unavailable`). |
 | **Problème non résolu** | Un diagnostic émis lors de la projection lorsqu'une contrainte horaire ne peut être satisfaite. |

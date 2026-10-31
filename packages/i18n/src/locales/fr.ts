@@ -65,7 +65,7 @@ export const fr: GramLocale = {
 		workPlanRange: "{min} à {max}",
 		workPlanPossibleFrom: "Possible dès {time}.",
 		workPlanFixedService: "Heures fixes : {wait}, avant le service.",
-		workPlanFixedPassage:
+		workPlanFixedVisit:
 			"Heures fixes : {wait}, avant le passage de {sections}.",
 		workPlanNextVisit: "Prochain passage : {when}",
 		workPlanNextVisitSameDay: "Prochain passage : plus tard le même jour",

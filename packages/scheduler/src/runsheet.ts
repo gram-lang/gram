@@ -7,7 +7,7 @@ import type {
 	ProjectionDiagnostic,
 	RestAdjustment,
 } from "./projection";
-import { passageWindows } from "./windows";
+import { visitWindows } from "./windows";
 import type { Schedule, ScheduleBlock } from "./types";
 import { daysBetween, parseInstant, parseLocalIso, toLocalIso } from "./time";
 
@@ -15,10 +15,10 @@ const EPS = 1e-6;
 
 /**
  * A wait of at least this many minutes between two stretches of the cook's
- * own work ends a passage: the cook leaves the kitchen, or at least is free
- * to. A shorter wait is part of the passage and is not told.
+ * own work ends a visit: the cook leaves the kitchen, or at least is free
+ * to. A shorter wait is part of the visit and is not told.
  */
-export const PASSAGE_GAP_MINUTES = 60;
+export const VISIT_GAP_MINUTES = 60;
 
 /**
  * One line of the production sheet: a task, when it starts and ends, for how
@@ -52,35 +52,35 @@ export interface RunSheetEntry {
 
 /**
  * A moment in the kitchen: stretches of the cook's own work that follow each
- * other, with no wait of `PASSAGE_GAP_MINUTES` or more between them.
+ * other, with no wait of `VISIT_GAP_MINUTES` or more between them.
  */
-export interface RunSheetPassage {
+export interface RunSheetVisit {
 	/** Minutes from the service (<= 0), exact: rounding is for display. */
 	start: number;
 	end: number;
 	startLocal?: string;
 	endLocal?: string;
-	/** The sections with work in the passage, in recipe order. */
+	/** The sections with work in the visit, in recipe order. */
 	sections: number[];
-	/** The tasks of the passage: preparations and steps, in the order they start. */
+	/** The tasks of the visit: preparations and steps, in the order they start. */
 	tasks: string[];
 	/**
-	 * How early the passage could happen with every other one where it is
+	 * How early the visit could happen with every other one where it is
 	 * planned, when that is at least `WINDOW_MIN_MINUTES`. Needs `graph` and
 	 * `context` in the options.
 	 */
 	window?: {
-		/** Minutes the passage could move earlier. */
+		/** Minutes the visit could move earlier. */
 		advance: number;
 		/** Minutes from the service. */
 		earliest: number;
 		earliestLocal: string;
 	};
-	/** The wait that holds the passage in place, when there is no margin. */
+	/** The wait that holds the visit in place, when there is no margin. */
 	fixedBy?: RunSheetFixedBy;
 }
 
-/** A wait that cannot give: the passage can't move without stretching or shrinking it. */
+/** A wait that cannot give: the visit can't move without stretching or shrinking it. */
 export interface RunSheetFixedBy {
 	task: string;
 	section: number;
@@ -88,15 +88,15 @@ export interface RunSheetFixedBy {
 	track?: string;
 	/** The planned minutes of the wait. */
 	planned: number;
-	/** What the wait leads to: the service or the next passage of `sections`. */
-	before: "service" | "passage";
+	/** What the wait leads to: the service or the next visit of `sections`. */
+	before: "service" | "visit";
 	sections?: number[];
 }
 
-/** What goes on without the cook after a passage: a timer that outlasts it. */
+/** What goes on without the cook after a visit: a timer that outlasts it. */
 export interface RunSheetThread {
-	/** Index in the day's `passages`. */
-	passage: number;
+	/** Index in the day's `visits`. */
+	visit: number;
 	task: string;
 	section: number;
 	step?: number;
@@ -119,7 +119,7 @@ export interface RunSheetDay {
 	daysBefore: number;
 	/** Every task of the day, active or not, in the order they start. */
 	entries: RunSheetEntry[];
-	passages: RunSheetPassage[];
+	visits: RunSheetVisit[];
 	threads: RunSheetThread[];
 }
 
@@ -156,7 +156,7 @@ export interface RunSheetOptions {
 	/** The title of a recipe laid out without a serving time. */
 	title?: string;
 	/**
-	 * With `graph`, a plan with a serving time gets the margin of each passage
+	 * With `graph`, a plan with a serving time gets the margin of each visit
 	 * (`window`, `fixedBy`): the availability and the present bound it.
 	 */
 	context?: ProjectionContext;
@@ -252,7 +252,7 @@ function ranges(graph?: TaskGraph) {
 
 /**
  * The structure of a production sheet: for each recipe, its working days; for
- * each day, the passages in the kitchen and what goes on between them. Words
+ * each day, the visits in the kitchen and what goes on between them. Words
  * and layout belong to the renderer; nothing here is rounded or translated.
  *
  * A recipe with a serving time is read from the projected plan (`calendar`);
@@ -299,7 +299,7 @@ export function runSheet(
 		diagnostics: plan.diagnostics,
 	};
 	return options.graph && options.context
-		? passageWindows(sheet, options.graph, options.context)
+		? visitWindows(sheet, options.graph, options.context)
 		: sheet;
 }
 
@@ -360,16 +360,16 @@ function buildRecipe(
 			...(adjusted.has(b.task) && { adjustment: adjusted.get(b.task)! }),
 		}));
 
-		const passages: RunSheetPassage[] = [];
+		const visits: RunSheetVisit[] = [];
 		let reach = -Infinity;
 		for (const b of blocks.filter((x) => x.kind !== "passive")) {
-			const last = passages.at(-1);
-			if (last && b.from - reach < PASSAGE_GAP_MINUTES - EPS) {
+			const last = visits.at(-1);
+			if (last && b.from - reach < VISIT_GAP_MINUTES - EPS) {
 				last.end = Math.max(last.end, b.to);
 				last.tasks.push(b.task);
 				if (!last.sections.includes(b.section)) last.sections.push(b.section);
 			} else {
-				passages.push({
+				visits.push({
 					start: b.from,
 					end: b.to,
 					sections: [b.section],
@@ -378,7 +378,7 @@ function buildRecipe(
 			}
 			reach = Math.max(reach, b.to);
 		}
-		for (const p of passages) {
+		for (const p of visits) {
 			p.sections.sort((a, b) => a - b);
 			const startLocal = local(p.start);
 			const endLocal = local(p.end);
@@ -388,17 +388,17 @@ function buildRecipe(
 
 		const threads: RunSheetThread[] = [];
 		for (const b of blocks.filter((x) => x.kind === "passive")) {
-			let passage = 0;
-			passages.forEach((p, k) => {
-				if (p.start <= b.from + EPS) passage = k;
+			let visit = 0;
+			visits.forEach((p, k) => {
+				if (p.start <= b.from + EPS) visit = k;
 			});
-			const home = passages[passage];
+			const home = visits[visit];
 			if (!home || b.to <= home.end + EPS) continue;
 			const range = ranged.get(b.task);
 			const fromLocal = local(b.from);
 			const toLocal = local(b.to);
 			threads.push({
-				passage,
+				visit,
 				task: b.task,
 				section: b.section,
 				...meta(b),
@@ -413,23 +413,23 @@ function buildRecipe(
 
 		// A working day is a day of the recipe; on the calendar, a day is a date.
 		// One that runs on past midnight (everything in one go) is told per date,
-		// and a passage that crosses midnight stays whole on the date it starts.
+		// and a visit that crosses midnight stays whole on the date it starts.
 		const groups: number[][] = [];
-		passages.forEach((p, k) => {
+		visits.forEach((p, k) => {
 			const last = groups.at(-1);
 			const date = p.startLocal?.slice(0, 10);
 			const same =
 				last !== undefined &&
-				passages[last[0]!]!.startLocal?.slice(0, 10) === date;
+				visits[last[0]!]!.startLocal?.slice(0, 10) === date;
 			if (calendar && !same) groups.push([k]);
 			else if (last) last.push(k);
 			else groups.push([k]);
 		});
 
 		groups.forEach((group, g) => {
-			const first = passages[group[0]!]!;
+			const first = visits[group[0]!]!;
 			const next = groups[g + 1];
-			const until = next ? passages[next[0]!]!.start : Infinity;
+			const until = next ? visits[next[0]!]!.start : Infinity;
 			const lower = g === 0 ? -Infinity : first.start;
 			const date = first.startLocal?.slice(0, 10);
 			const daysBefore =
@@ -452,10 +452,10 @@ function buildRecipe(
 				...(date !== undefined && { date }),
 				daysBefore,
 				entries: own,
-				passages: group.map((k) => passages[k]!),
+				visits: group.map((k) => visits[k]!),
 				threads: threads
-					.filter((t) => group.includes(t.passage))
-					.map((t) => ({ ...t, passage: group.indexOf(t.passage) })),
+					.filter((t) => group.includes(t.visit))
+					.map((t) => ({ ...t, visit: group.indexOf(t.visit) })),
 			});
 		});
 	});

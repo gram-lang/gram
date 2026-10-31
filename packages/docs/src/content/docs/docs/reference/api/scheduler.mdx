@@ -275,12 +275,12 @@ interface RunSheet {
 interface RunSheetDay {
   date?: string;               // "2026-10-10", with a target serving time
   daysBefore: number;          // 0 on serving day, 1 on the day before...
-  passages: RunSheetPassage[]; // kitchen visits in chronological order
+  visits: RunSheetVisit[]; // kitchen visits in chronological order
   threads: RunSheetThread[];   // passive processes continuing after a visit
   entries: RunSheetEntry[];    // all day blocks in order
 }
 
-interface RunSheetPassage {
+interface RunSheetVisit {
   start: number;               // exact minutes before serving (<= 0)
   end: number;
   startLocal?: string;         // "2026-10-10T21:40", with a target serving time
@@ -297,12 +297,12 @@ interface RunSheetFixedBy {
   step?: number;
   track?: string;
   planned: number;             // the planned minutes of the wait
-  before: "service" | "passage"; // what the wait leads to: the service or the next visit of `sections`
+  before: "service" | "visit"; // what the wait leads to: the service or the next visit of `sections`
   sections?: number[];
 }
 
 interface RunSheetThread {
-  passage: number;             // index in the day's passages
+  visit: number;             // index in the day's visits
   task: string;
   section: number;
   step?: number;
@@ -320,10 +320,10 @@ A **day** is a working day of the recipe; with a serving time, a working day tha
 
 What is **not** here are words and layout: `@gram-lang/renderer` writes them (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet`; see the [renderer reference](/docs/reference/api/renderer/)).
 
-## `passageWindows`
+## `visitWindows`
 
 ```typescript
-function passageWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
+function visitWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
 ```
 
 Gives each visit of a calendar work plan its anticipation margin (`window`), or names the wait that holds it in place (`fixedBy`). The margin of a visit assumes every other visit stays at its planned time, so it is always safe to use: moving several visits, or none, never breaks another margin. A margin is sometimes cautious, never wrong, and one shorter than `WINDOW_MIN_MINUTES` is not told.
@@ -366,7 +366,7 @@ interface ServeCandidate {
   ok: boolean;
   reasons: ProjectionDiagnostic[];
   adjustments: number;               // waits made longer or shorter
-  passages: number;                  // visits to the kitchen
+  visits: number;                  // visits to the kitchen
   startsAt?: string;                 // local, first task
   plan: ProjectedPlan;
 }
@@ -390,7 +390,7 @@ function isRestChoice(value: unknown): value is RestChoice;
 const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 const MINUTES_PER_DAY = 1440;
-const PASSAGE_GAP_MINUTES = 60;          // a wait this long ends a visit to the kitchen
+const VISIT_GAP_MINUTES = 60;          // a wait this long ends a visit to the kitchen
 const WINDOW_MIN_MINUTES = 15;          // a margin shorter than this is not told
 const DEFAULT_MEAL_TIMES: string[];     // ["12:30", "20:00"]
 const EARLIEST_SERVE_HORIZON_DAYS = 14;

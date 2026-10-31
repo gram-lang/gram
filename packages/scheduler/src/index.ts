@@ -39,8 +39,8 @@ export {
 	isRestChoice,
 } from "./mode";
 export { project } from "./project";
-export { PASSAGE_GAP_MINUTES, runSheet } from "./runsheet";
-export { WINDOW_MIN_MINUTES, passageWindows } from "./windows";
+export { VISIT_GAP_MINUTES, runSheet } from "./runsheet";
+export { WINDOW_MIN_MINUTES, visitWindows } from "./windows";
 export type {
 	RunSheet,
 	RunSheetAdjustment,
@@ -48,7 +48,7 @@ export type {
 	RunSheetEntry,
 	RunSheetFixedBy,
 	RunSheetOptions,
-	RunSheetPassage,
+	RunSheetVisit,
 	RunSheetThread,
 } from "./runsheet";
 export type {

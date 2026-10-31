@@ -1342,7 +1342,7 @@ flex-direction: column;
   color: var(--color-text-muted);
 }
 
-.gram-run-sheet .schedule-passage .schedule-time::before {
+.gram-run-sheet .schedule-visit .schedule-time::before {
   content: "■";
   display: inline-block;
   margin-right: 0.5em;
@@ -1350,7 +1350,7 @@ flex-direction: column;
   color: var(--color-text-strong);
 }
 
-.gram-run-sheet .schedule-passage .schedule-text {
+.gram-run-sheet .schedule-visit .schedule-text {
   font-weight: 600;
   color: var(--color-text-strong);
 }
@@ -1406,7 +1406,7 @@ flex-direction: column;
   color: var(--color-text-muted);
 }
 
-/* One day: its passages, each with what to take out, the programme and what goes on */
+/* One day: its visits, each with what to take out, the programme and what goes on */
 .gram-run-sheet .work-plan-day {
   margin-top: 2.5rem;
   padding: 1.5rem;
@@ -1452,13 +1452,13 @@ flex-direction: column;
   content: "⚠ ";
 }
 
-.gram-run-sheet .work-plan-passage {
+.gram-run-sheet .work-plan-visit {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.gram-run-sheet .work-plan-passage + .work-plan-passage {
+.gram-run-sheet .work-plan-visit + .work-plan-visit {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border);

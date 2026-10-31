@@ -87,7 +87,7 @@ const twoDays: TaskGraph = {
 describe("tryServeAt", () => {
 	it("says a time can be followed when nothing is left unresolved", () => {
 		const c = tryServeAt({ graph: quick }, context(), "2026-10-12T20:00");
-		expect(c).toMatchObject({ ok: true, adjustments: 0, passages: 2 });
+		expect(c).toMatchObject({ ok: true, adjustments: 0, visits: 2 });
 		expect(c.startsAt).toBe("2026-10-12T17:25");
 	});
 
@@ -114,7 +114,7 @@ describe("findServeTimes", () => {
 		for (const r of rejected) expect(r.reasons.length).toBeGreaterThan(0);
 	});
 
-	it("ranks by fewer adjustments, then fewer passages, then the earliest", () => {
+	it("ranks by fewer adjustments, then fewer visits, then the earliest", () => {
 		const { candidates } = findServeTimes(input, context(), {
 			from: "2026-10-12",
 			to: "2026-10-15",
@@ -122,7 +122,7 @@ describe("findServeTimes", () => {
 		});
 		const key = (c: (typeof candidates)[number]) => [
 			c.adjustments,
-			c.passages,
+			c.visits,
 			c.serveAt,
 		];
 		const sorted = [...candidates].sort((a, b) => {

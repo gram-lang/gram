@@ -29,7 +29,7 @@ export interface ServeCandidate {
 	/** Rests the plan had to make longer or shorter. */
 	adjustments: number;
 	/** Moments in the kitchen, all days together. */
-	passages: number;
+	visits: number;
 	/** Local date-time of the first task, when there is one: "you would have to start Thursday". */
 	startsAt?: string;
 	plan: ProjectedPlan;
@@ -56,8 +56,8 @@ export function tryServeAt(
 		ok: reasons.length === 0,
 		reasons,
 		adjustments: plan.adjustments.length,
-		passages:
-			sheet.recipes[0]?.days.reduce((n, d) => n + d.passages.length, 0) ?? 0,
+		visits:
+			sheet.recipes[0]?.days.reduce((n, d) => n + d.visits.length, 0) ?? 0,
 		...(startsAt !== undefined && { startsAt }),
 		plan,
 	};
@@ -75,7 +75,7 @@ export interface FindServeOptions {
 }
 
 export interface ServeSearch {
-	/** Feasible times, best first: fewer adjustments, then fewer passages, then the earliest. */
+	/** Feasible times, best first: fewer adjustments, then fewer visits, then the earliest. */
 	candidates: ServeCandidate[];
 	/** Every time that was tried and failed, each with its reasons, in time order. */
 	rejected: ServeCandidate[];
@@ -114,7 +114,7 @@ export function findServeTimes(
 	found.sort(
 		(a, b) =>
 			a.adjustments - b.adjustments ||
-			a.passages - b.passages ||
+			a.visits - b.visits ||
 			a.serveAt.localeCompare(b.serveAt),
 	);
 	return { candidates: found.slice(0, options.limit ?? 5), rejected };

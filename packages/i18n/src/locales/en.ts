@@ -62,7 +62,7 @@ export const en = {
 		workPlanRange: "{min} to {max}",
 		workPlanPossibleFrom: "Possible from {time}.",
 		workPlanFixedService: "Fixed times: {wait}, before serving.",
-		workPlanFixedPassage: "Fixed times: {wait}, before {sections}.",
+		workPlanFixedVisit: "Fixed times: {wait}, before {sections}.",
 		workPlanNextVisit: "Next visit: {when}",
 		workPlanNextVisitSameDay: "Next visit: later the same day",
 		workPlanServeAt: "Serve at {time}",

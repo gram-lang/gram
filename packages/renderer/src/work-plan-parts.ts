@@ -40,12 +40,12 @@ export function intermediateMakers(
 	return makers;
 }
 
-/** One thing to take out before a passage. */
+/** One thing to take out before a visit. */
 export interface KitItem {
 	kind: "ingredient" | "prepared" | "cookware";
 	/** Plain text: each output escapes it its own way. */
 	name: string;
-	/** "90 g", the sum over the passage. */
+	/** "90 g", the sum over the visit. */
 	quantity?: string;
 	/** What the sum is made of, "60 + 30", when more than one section needs it. */
 	detail?: string;
@@ -53,10 +53,10 @@ export interface KitItem {
 	note?: string;
 }
 
-export interface PassageKitOptions {
+export interface VisitKitOptions {
 	lang?: string;
 	/**
-	 * What to say of an intermediate that an earlier passage makes: "made
+	 * What to say of an intermediate that an earlier visit makes: "made
 	 * Thursday". `maker` is the section that produces it. Without an answer the
 	 * preparation is listed with no note.
 	 */
@@ -154,7 +154,7 @@ export function kitIngredients(
 export function kitPrepared(
 	data: RenderableCompilationResult,
 	sections: number[],
-	options: PassageKitOptions & { present?: Iterable<number> } = {},
+	options: VisitKitOptions & { present?: Iterable<number> } = {},
 ): KitItem[] {
 	const t = getDictionary(options.lang).renderer;
 	const registry = data.registry;
@@ -219,19 +219,19 @@ export function kitCookware(
 }
 
 /**
- * What to take out for a passage, from the sections that have work in it:
+ * What to take out for a visit, from the sections that have work in it:
  * the ingredients (the same one asked by two sections is summed, with the
- * detail of the sum), then the preparations an earlier passage made (named by
+ * detail of the sum), then the preparations an earlier visit made (named by
  * the section that makes them), then the cookware, without duplicates.
  *
- * An intermediate made inside the passage is not listed: it is not taken from
+ * An intermediate made inside the visit is not listed: it is not taken from
  * anywhere. An ingredient standing for a `--stock`ed import is marked "in
  * stock". Everything is read from the compiled recipe: nothing is invented.
  */
-export function passageKit(
+export function visitKit(
 	data: RenderableCompilationResult,
 	sections: number[],
-	options: PassageKitOptions = {},
+	options: VisitKitOptions = {},
 ): KitItem[] {
 	return [
 		...kitIngredients(data, sections, options),
@@ -240,13 +240,13 @@ export function passageKit(
 	];
 }
 
-/** What one section asks for in a passage: where to read it in the recipe. */
+/** What one section asks for in a visit: where to read it in the recipe. */
 export interface SectionProgram {
 	section: number;
 	title: string;
 	/** The file an imported section comes from, "biscuit-pistache.gram". */
 	origin?: string;
-	/** First and last step number the passage covers, as the recipe view numbers them. */
+	/** First and last step number the visit covers, as the recipe view numbers them. */
 	from: number;
 	to: number;
 }
@@ -254,8 +254,8 @@ export interface SectionProgram {
 const baseName = (uri: string) => uri.split(/[\\/]/).pop() || uri;
 
 /**
- * The programme of a section for a passage: its title and the range of steps
- * the passage covers, from the first to the last, numbered as the recipe view
+ * The programme of a section for a visit: its title and the range of steps
+ * the visit covers, from the first to the last, numbered as the recipe view
  * numbers them (comments excluded). An imported section carries the name of
  * its file.
  *

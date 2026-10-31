@@ -238,11 +238,11 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
      const [planned] = sheet.recipes;
      return planned.days
        .map((day) => {
-         const visits = day.passages
+         const visits = day.visits
            .map((visit, k) => {
              const sections = visit.sections.map((s) => recipe.sections[s].title).join(', ');
              const threads = day.threads
-               .filter((t) => t.passage === k)
+               .filter((t) => t.visit === k)
                .map((t) => `<li>${t.task}: ${hours(t.planned)} unattended</li>`)
                .join('');
              const margin = visit.window ? ` (could start as early as ${clock(visit.window.earliestLocal)})` : '';
@@ -257,13 +257,13 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
 
    ##### Key data structure properties
 
-   - `day.passages[]`: active kitchen visits. Each entry provides `start` and `end` (exact minutes before service), `startLocal` and `endLocal` (wall-clock timestamps in the target time zone), recipe section indexes (`sections`), task IDs (`tasks`), and `window` / `fixedBy` indicating scheduling margins.
-   - `day.threads[]`: passive resting processes (proofing, resting, chilling) that continue unattended after a visit (`passage` is its index within the day), with their planned duration (`planned`), allowed range (`range`), and expected completion (`toLocal`).
+   - `day.visits[]`: active kitchen visits. Each entry provides `start` and `end` (exact minutes before service), `startLocal` and `endLocal` (wall-clock timestamps in the target time zone), recipe section indexes (`sections`), task IDs (`tasks`), and `window` / `fixedBy` indicating scheduling margins.
+   - `day.threads[]`: passive resting processes (proofing, resting, chilling) that continue unattended after a visit (`visit` is its index within the day), with their planned duration (`planned`), allowed range (`range`), and expected completion (`toLocal`).
    - `day.entries[]`: ordered sequence of all blocks for the day (active and passive), useful for drawing a detailed custom timeline or day view.
    - `sheet.adjustments[]` and `sheet.diagnostics[]`: lists of passive rests that were adjusted to fit your availability, and unresolved scheduling constraints that triggered warnings.
 
    > [!TIP]
-   > **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `passageKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) for terminology details.
+   > **Reuse label formatters:** To format ingredient and equipment checklists or step references without rewriting culinary logic, import the modular helper functions from `@gram-lang/renderer`, such as `visitKit()` (ingredients and cookware to take out) and `sectionProgram()` (the section and the range of steps a visit covers). See [the scheduling engine](/docs/explanation/engine/scheduler/#from-the-schedule-to-the-work-plan) for terminology details.
 
 </Steps>
 

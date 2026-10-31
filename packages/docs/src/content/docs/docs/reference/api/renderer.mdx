@@ -126,7 +126,7 @@ From the `RunSheet` object returned by `runSheet()` (`@gram-lang/scheduler`) and
 import { project, runSheet } from '@gram-lang/scheduler';
 import {
   runSheetToText, runSheetToMarkdown, runSheetToHTML, runSheetToPrintHTML,
-  describeRunSheet, passageKit, sectionProgram,
+  describeRunSheet, visitKit, sectionProgram,
 } from '@gram-lang/renderer';
 
 const context = { serveAt: '2026-10-17T20:00', timeZone: 'Europe/Paris', availability };
@@ -158,16 +158,16 @@ The work plan for a recipe without an explicit target serving time is obtained v
 |---|---|
 | `title`, `subtitle`, `summary` | "Work plan — Entremets", "For Saturday, October 17 at 20:00 · 6 servings", "3 days · 3 visits to the kitchen · 45m of work in all". |
 | `problems` | Contextual diagnostics reported when scheduling constraints could not be met (one descriptive sentence per problem). |
-| `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'passage'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
-| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`passages[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the steps to read (`program[]`: a section, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` of things to take out), and unattended background tasks (`leaving[]`). |
+| `schedule[]` | Multi-day schedule summary: one entry per active kitchen visit (`kind: 'visit'`), background thread (`'thread'`), and the final service (`'serve'`), containing `day`, `time`, and `text`. |
+| `days[]` | Per-day details: header (`heading`), time slot (`slot`), adjusted wait notices (`notices`), and visits (`visits[]`), each with `slot`, anticipation margin (`margin`), required items (`kit[]`, groups of lines, filled in `perDay` and `upfront` modes), the steps to read (`program[]`: a section, a reference such as `steps 1 to 3`, and in `perSection` mode its own `kit[]` of things to take out), and unattended background tasks (`leaving[]`). |
 | `events[]` | One calendar event per visit (`start`, `end` in UTC, `title`, `description`), for a plan with a serving time. |
 
-### `passageKit()` and `sectionProgram()`
+### `visitKit()` and `sectionProgram()`
 
 Two high-level extraction helpers used by the work plan are exported to simplify custom UI implementations:
 
 ```typescript
-passageKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
+visitKit(compiled, sections: number[], { lang?, madeBefore? }): KitItem[]
 // { kind: 'ingredient' | 'prepared' | 'cookware', name, quantity?, detail?, note? }
 
 sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): SectionProgram | undefined

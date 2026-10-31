@@ -75,7 +75,7 @@ type Kitted = {
 	kit: { items: { text: string; kind: string }[] }[];
 	program: { kit?: { text: string; kind: string }[] }[];
 };
-/** Every line to take out in a passage: at the top, or with its section. */
+/** Every line to take out in a visit: at the top, or with its section. */
 const kitOf = (p: Kitted) => [
 	...p.kit.flatMap((g) => g.items),
 	...p.program.flatMap((l) => l.kit ?? []),
@@ -106,41 +106,41 @@ describe("the model of the work plan", () => {
 		);
 	});
 
-	it("lists a row per passage, the waits that go on without the cook, and the service", () => {
+	it("lists a row per visit, the waits that go on without the cook, and the service", () => {
 		expect(model.schedule.map((r) => [r.kind, r.day, r.time, r.text])).toEqual([
-			["passage", "SAT 10", "21:40 – 22:00", "Dough"],
+			["visit", "SAT 10", "21:40 – 22:00", "Dough"],
 			["thread", undefined, undefined, "Dough : Rise 14h 30m (8h to 16h)"],
-			["passage", "SUN 11", "12:30 – 13:00", "Bake"],
+			["visit", "SUN 11", "12:30 – 13:00", "Bake"],
 			["serve", undefined, "13:00", "Serve"],
 		]);
 	});
 
-	it("says what to take out, and what an earlier passage made", () => {
+	it("says what to take out, and what an earlier visit made", () => {
 		const [saturday, sunday] = model.days;
-		expect(kitTexts(saturday!.passages[0]!)).toEqual([
+		expect(kitTexts(saturday!.visits[0]!)).toEqual([
 			"flour 500 g",
 			"water 350 ml",
 		]);
-		expect(kitTexts(sunday!.passages[0]!)).toEqual(["Dough, made Saturday"]);
+		expect(kitTexts(sunday!.visits[0]!)).toEqual(["Dough, made Saturday"]);
 	});
 
 	it("gives the programme of each section with the steps it covers", () => {
 		const [saturday, sunday] = model.days;
-		expect(saturday!.passages[0]!.program).toEqual([
+		expect(saturday!.visits[0]!.program).toEqual([
 			expect.objectContaining({ section: "Dough", reference: "steps 1 to 2" }),
 		]);
-		expect(sunday!.passages[0]!.program).toEqual([
+		expect(sunday!.visits[0]!.program).toEqual([
 			expect.objectContaining({ section: "Bake", reference: "step 1" }),
 		]);
 	});
 
 	it("says what continues and when to come back", () => {
 		const [saturday, sunday] = model.days;
-		expect(saturday!.passages[0]!.leaving).toEqual([
+		expect(saturday!.visits[0]!.leaving).toEqual([
 			"Dough : Rise 14h 30m (8h to 16h)",
 			"Next visit: Sunday 12:30",
 		]);
-		expect(sunday!.passages[0]!.leaving).toEqual(["Serve at 13:00"]);
+		expect(sunday!.visits[0]!.leaving).toEqual(["Serve at 13:00"]);
 	});
 
 	it("tells a rest the plan stretched, on the day it starts", () => {
@@ -153,12 +153,12 @@ describe("the model of the work plan", () => {
 		expect(model.days[0]!.slot).toBe("21:40 → 22:00");
 		const quarter = describeRunSheet(sheet, compiled, { roundTo: 15 });
 		expect(quarter.days[0]!.slot).toBe("21:45 → 22:00");
-		expect(sheet.recipes[0]!.days[0]!.passages[0]!.startLocal).toBe(
+		expect(sheet.recipes[0]!.days[0]!.visits[0]!.startLocal).toBe(
 			"2026-10-10T21:38",
 		);
 	});
 
-	it("makes one calendar event per passage, in UTC, with the lists as plain lines", () => {
+	it("makes one calendar event per visit, in UTC, with the lists as plain lines", () => {
 		expect(model.events).toHaveLength(2);
 		expect(model.events[0]).toMatchObject({
 			start: "2026-10-10T19:38:00Z",
@@ -172,31 +172,31 @@ describe("the model of the work plan", () => {
 describe("a plan of several days", () => {
 	const model = describeRunSheet(entremetsSheet, entremets);
 
-	it("has a block per day and a passage per moment in the kitchen", () => {
-		expect(model.days.map((d) => d.passages.length)).toEqual([1, 1, 2]);
+	it("has a block per day and a visit per moment in the kitchen", () => {
+		expect(model.days.map((d) => d.visits.length)).toEqual([1, 1, 2]);
 		expect(model.summary).toContain("3 days · 4 visits to the kitchen");
 	});
 
-	it("takes the first passage of a day for the margin and holds the next by its wait", () => {
+	it("takes the first visit of a day for the margin and holds the next by its wait", () => {
 		const [first] = model.days;
-		expect(first!.passages[0]!.margin).toBe("Possible from 08:00.");
+		expect(first!.visits[0]!.margin).toBe("Possible from 08:00.");
 		const [, , saturday] = model.days;
-		expect(saturday!.passages[0]!.margin).toBe(
+		expect(saturday!.visits[0]!.margin).toBe(
 			"Fixed times: Glaze : Cool 1h 30m, before Finish.",
 		);
 	});
 
 	it("names preparations by the section that makes them, with when", () => {
 		const [, friday, saturday] = model.days;
-		expect(kitTexts(friday!.passages[0]!)).toContain("Sponge, made Thursday");
-		expect(kitTexts(saturday!.passages[1]!)).toEqual([
+		expect(kitTexts(friday!.visits[0]!)).toContain("Sponge, made Thursday");
+		expect(kitTexts(saturday!.visits[1]!)).toEqual([
 			"Mousse, made Friday",
 			"Glaze, made at 18:25",
 		]);
 	});
 
 	it("lists the cookware once", () => {
-		const friday = kitOf(model.days[1]!.passages[0]!);
+		const friday = kitOf(model.days[1]!.visits[0]!);
 		expect(
 			friday.filter((k) => k.kind === "cookware").map((k) => k.text),
 		).toEqual(["whisk", "bowl"]);
@@ -214,19 +214,17 @@ describe("a plan of several days", () => {
 			"Day D",
 		]);
 		expect(relative.days[0]!.slot).toBe("~ 5m");
-		expect(relative.days.every((d) => d.passages.every((p) => !p.margin))).toBe(
+		expect(relative.days.every((d) => d.visits.every((p) => !p.margin))).toBe(
 			true,
 		);
-		const last = relative.days.at(-1)!.passages.at(-1)!;
+		const last = relative.days.at(-1)!.visits.at(-1)!;
 		expect(last.leaving).toEqual(["Serve"]);
 		// Two visits on the same day: no clock to give, so it says so.
 		const sameDay = relative.days
-			.flatMap((d) => d.passages)
+			.flatMap((d) => d.visits)
 			.filter((p) => p.leaving.includes("Next visit: later the same day"));
 		expect(sameDay.length).toBeGreaterThan(0);
-		expect(relative.days[0]!.passages[0]!.leaving.at(-1)).toBe(
-			"Next visit: D-1",
-		);
+		expect(relative.days[0]!.visits[0]!.leaving.at(-1)).toBe("Next visit: D-1");
 		expect(relative.events).toEqual([]);
 	});
 });
@@ -244,7 +242,7 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 	const model = describeRunSheet(entremetsSheet, imported);
 
 	it("names the file the steps are read in", () => {
-		expect(model.days[0]!.passages[0]!.program[0]!.reference).toBe(
+		expect(model.days[0]!.visits[0]!.program[0]!.reference).toBe(
 			"sponge.gram, steps 1 to 2",
 		);
 	});
@@ -262,13 +260,13 @@ describe("a section that comes from an import, and a base kept in stock", () => 
 		stocked.sections[2]!.intermediate_preparation = undefined;
 		const model = describeRunSheet(entremetsSheet, stocked);
 		const texts = model.days
-			.flatMap((d) => d.passages)
+			.flatMap((d) => d.visits)
 			.flatMap((p) => kitTexts(p));
 		expect(texts).toContain("glaze, in stock");
 	});
 
 	it("marks an ingredient that stands for a stocked import", () => {
-		expect(kitTexts(model.days[1]!.passages[0]!)).toContain(
+		expect(kitTexts(model.days[1]!.visits[0]!)).toContain(
 			"cream 250 g, in stock",
 		);
 	});
@@ -457,7 +455,7 @@ const visits = (
 	c: ReturnType<typeof compile>,
 ) =>
 	describeRunSheet(sheet, c).days.flatMap((d) =>
-		d.passages.map((p) =>
+		d.visits.map((p) =>
 			p.kit.map((g) => [
 				g.section,
 				g.items.map((l) => l.text + (l.detail ? ` (${l.detail})` : "")),
@@ -509,11 +507,11 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 
 	it("perSection: what to take out sits with its section, the cookware once at the first", () => {
 		const tart = compile(getAST(TART));
-		const [passage] = describeRunSheet(planIn(tart, "perSection"), tart)
-			.days[0]!.passages;
-		expect(passage!.kit).toEqual([]);
+		const [visit] = describeRunSheet(planIn(tart, "perSection"), tart).days[0]!
+			.visits;
+		expect(visit!.kit).toEqual([]);
 		expect(
-			passage!.program.map((l) => [l.section, l.kit?.map((k) => k.text)]),
+			visit!.program.map((l) => [l.section, l.kit?.map((k) => k.text)]),
 		).toEqual([
 			["Pastry", ["flour 200 g", "butter 100 g", "bowl"]],
 			["Filling", ["flour 20 g", "sugar 50 g"]],
@@ -574,7 +572,7 @@ describe("the programme only points to the recipe", () => {
 			),
 		);
 		const model = describeRunSheet(planOf(bare), bare);
-		expect(model.days[0]!.passages[0]!.program).toEqual([
+		expect(model.days[0]!.visits[0]!.program).toEqual([
 			{ section: "Bake", reference: "steps 1 to 3" },
 		]);
 	});

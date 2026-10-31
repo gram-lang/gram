@@ -275,12 +275,12 @@ interface RunSheet {
 interface RunSheetDay {
   date?: string;               // "2026-10-10", avec une heure de service
   daysBefore: number;          // 0 le jour du service, 1 la veille...
-  passages: RunSheetPassage[]; // les passages en cuisine, dans l'ordre
+  visits: RunSheetVisit[]; // les passages en cuisine, dans l'ordre
   threads: RunSheetThread[];   // processus passifs se poursuivant après un passage
   entries: RunSheetEntry[];    // chaque bloc du jour, dans l'ordre
 }
 
-interface RunSheetPassage {
+interface RunSheetVisit {
   start: number;               // minutes avant le service (<= 0), exactes
   end: number;
   startLocal?: string;         // "2026-10-10T21:40", avec une heure de service
@@ -297,12 +297,12 @@ interface RunSheetFixedBy {
   step?: number;
   track?: string;
   planned: number;             // les minutes prévues de l'attente
-  before: "service" | "passage"; // ce à quoi l'attente mène : le service ou le prochain passage de `sections`
+  before: "service" | "visit"; // ce à quoi l'attente mène : le service ou le prochain passage de `sections`
   sections?: number[];
 }
 
 interface RunSheetThread {
-  passage: number;             // indice dans les passages du jour
+  visit: number;             // indice dans les passages du jour
   task: string;
   section: number;
   step?: number;
@@ -320,10 +320,10 @@ Un **jour** est une journée de travail de la recette ; avec une heure de servic
 
 Les mots et la mise en page n'y sont **pas** : `@gram-lang/renderer` les écrit (`runSheetToText`, `runSheetToMarkdown`, `runSheetToHTML`, `runSheetToPrintHTML`, `describeRunSheet` ; voir la [référence du renderer](/fr/docs/reference/api/renderer/)).
 
-## `passageWindows`
+## `visitWindows`
 
 ```typescript
-function passageWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
+function visitWindows(sheet: RunSheet, graph: TaskGraph, context: ProjectionContext): RunSheet
 ```
 
 Donne à chaque passage d'un planning calendaire sa marge d'anticipation (`window`), ou nomme l'attente qui le maintient en place (`fixedBy`). La marge d'un passage suppose que tous les autres passages restent à l'heure prévue : on peut donc toujours s'y fier, et déplacer plusieurs passages, ou aucun, ne casse jamais une autre marge. Une marge est parfois prudente, jamais fausse, et une marge plus courte que `WINDOW_MIN_MINUTES` n'est pas dite.
@@ -366,7 +366,7 @@ interface ServeCandidate {
   ok: boolean;
   reasons: ProjectionDiagnostic[];
   adjustments: number;               // attentes allongées ou raccourcies
-  passages: number;                  // passages en cuisine
+  visits: number;                  // passages en cuisine
   startsAt?: string;                 // local, première tâche
   plan: ProjectedPlan;
 }
@@ -390,7 +390,7 @@ function isRestChoice(value: unknown): value is RestChoice;
 const WEEKDAYS: readonly ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 const MINUTES_PER_DAY = 1440;
-const PASSAGE_GAP_MINUTES = 60;          // une attente de cette durée termine un passage en cuisine
+const VISIT_GAP_MINUTES = 60;          // une attente de cette durée termine un passage en cuisine
 const WINDOW_MIN_MINUTES = 15;          // une marge plus courte n'est pas dite
 const DEFAULT_MEAL_TIMES: string[];     // ["12:30", "20:00"]
 const EARLIEST_SERVE_HORIZON_DAYS = 14;
