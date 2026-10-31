@@ -37,6 +37,10 @@ import {
 	type RestChoice,
 } from "@gram-lang/kitchen";
 import {
+	type Availability,
+	type TimeRange,
+	type Weekday,
+	WEEKDAYS,
 	earliestServe,
 	findServeTimes,
 	project,
@@ -219,21 +223,29 @@ function defaultTimeZone(): string {
 }
 
 function loadPlan(): PlanSettings {
-	const fallback = {
+	const fallback: PlanSettings = {
 		serveAt: "",
 		timeZone: defaultTimeZone(),
 		from: "08:00",
 		to: "22:00",
+		customWeekdays: false,
+		weekdays: undefined,
 	};
 	try {
 		const saved = JSON.parse(localStorage.getItem(PLAN_STORAGE_KEY) ?? "null");
 		if (saved && typeof saved === "object") {
 			const text = (v: unknown, d: string) => (typeof v === "string" ? v : d);
+			const bool = (v: unknown, d: boolean) => (typeof v === "boolean" ? v : d);
 			return {
 				serveAt: text(saved.serveAt, fallback.serveAt),
 				timeZone: text(saved.timeZone, fallback.timeZone),
 				from: text(saved.from, fallback.from),
 				to: text(saved.to, fallback.to),
+				customWeekdays: bool(saved.customWeekdays, false),
+				weekdays:
+					saved.weekdays && typeof saved.weekdays === "object"
+						? saved.weekdays
+						: undefined,
 			};
 		}
 	} catch {
@@ -273,7 +285,12 @@ watch(
 
 // biome-ignore lint/correctness/noUnusedVariables: clearPlan is used in the <template> block below, which Biome's Vue support doesn't see.
 function clearPlan() {
-	plan.value = { ...plan.value, serveAt: "" };
+	plan.value = {
+		...plan.value,
+		serveAt: "",
+		customWeekdays: false,
+		weekdays: undefined,
+	};
 }
 
 // Studio Drawer state
@@ -315,6 +332,7 @@ const activeModifiersCount = computed(() => {
 	let count = 0;
 	if (
 		plan.value.serveAt !== "" ||
+		plan.value.customWeekdays ||
 		schedule.value !== "perSection" ||
 		rests.value !== "shortest"
 	) {
@@ -747,6 +765,34 @@ async function updateGram() {
 	}
 }
 
+function buildAvailability(planSettings: PlanSettings): Availability {
+	const daily = [
+		{
+			start: planSettings.from || "08:00",
+			end: planSettings.to || "22:00",
+		},
+	];
+	if (!planSettings.customWeekdays || !planSettings.weekdays) {
+		return { daily };
+	}
+	const weekdays: Partial<Record<Weekday, TimeRange[]>> = {};
+	for (const day of WEEKDAYS) {
+		const setting = planSettings.weekdays[day];
+		if (!setting) continue;
+		if (!setting.enabled) {
+			weekdays[day] = [];
+		} else {
+			weekdays[day] = [
+				{
+					start: setting.from || planSettings.from || "08:00",
+					end: setting.to || planSettings.to || "22:00",
+				},
+			];
+		}
+	}
+	return { daily, weekdays };
+}
+
 /**
  * The work plan of the compiled recipe: on the calendar when a serving time is
  * set, in days before the service otherwise. A plan that can't be made (an
@@ -757,7 +803,7 @@ function placeOnCalendar(result: any) {
 	runSheetHtml.value = "";
 	planError.value = "";
 	if (!result?.tasks) return;
-	const { serveAt, timeZone, from, to } = plan.value;
+	const { serveAt, timeZone } = plan.value;
 	try {
 		const title = result.title ?? undefined;
 		let sheet: ReturnType<typeof runSheet>;
@@ -765,7 +811,7 @@ function placeOnCalendar(result: any) {
 			const context = {
 				serveAt,
 				timeZone,
-				availability: { daily: [{ start: from, end: to }] },
+				availability: buildAvailability(plan.value),
 				// Without the present, a serving time too close for the rests is
 				// drawn as if starting in the past were fine.
 				now: new Date().toISOString(),
@@ -806,12 +852,12 @@ function computeServeSuggestions() {
 		return;
 	}
 	try {
-		const { timeZone, from, to } = plan.value;
+		const { timeZone } = plan.value;
 		const now = new Date();
 		const context = {
 			serveAt: "1970-01-01T00:00",
 			timeZone,
-			availability: { daily: [{ start: from, end: to }] },
+			availability: buildAvailability(plan.value),
 			now: now.toISOString(),
 		};
 		const input = {
@@ -875,8 +921,11 @@ watch(
 		() => plan.value.timeZone,
 		() => plan.value.from,
 		() => plan.value.to,
+		() => plan.value.customWeekdays,
+		() => plan.value.weekdays,
 	],
 	computeServeSuggestions,
+	{ deep: true },
 );
 
 // biome-ignore lint/correctness/noUnusedVariables: handleScaleUpdate is used in the <template> block below, which Biome's Vue support doesn't see.

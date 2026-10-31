@@ -144,21 +144,23 @@ onUnmounted(() => {
       @blur="hide"
       @click="toggle"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="info-icon"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </svg>
+      <slot>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="info-icon"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+      </slot>
     </button>
     <Teleport to="body">
       <div
@@ -226,7 +228,9 @@ onUnmounted(() => {
   position: fixed;
   z-index: 300000;
   width: max-content;
-  max-width: 260px;
+  max-width: 280px;
+  max-height: 260px;
+  overflow-y: auto;
   padding: 7px 11px;
   background-color: var(--sl-color-bg-nav, #1a1613);
   color: var(--sl-color-text, #f5f2eb);
@@ -237,7 +241,7 @@ onUnmounted(() => {
   font-weight: 400;
   border-radius: 4px;
   pointer-events: auto;
-  white-space: normal;
+  white-space: pre-line;
   word-break: normal;
   box-sizing: border-box;
   animation: tooltip-fade-in 0.15s ease-out;

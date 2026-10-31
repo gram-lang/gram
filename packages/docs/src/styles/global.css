@@ -34,6 +34,7 @@ samp {
 }
 
 :root[data-theme="light"] {
+	color-scheme: light;
 	--sl-color-accent-low: #ffcc99;
 	--sl-color-accent: #ff8c1a;
 	--sl-color-accent-high: #cc6600;
@@ -45,6 +46,7 @@ samp {
  * Provides a cohesive warm dark brown / amber palette across the entire site and docs.
  */
 :root {
+	color-scheme: dark;
 	--sl-color-white: hsl(0, 0%, 100%);
 	--sl-color-gray-1: hsl(30, 8%, 88%);
 	--sl-color-gray-2: hsl(30, 8%, 77%);
