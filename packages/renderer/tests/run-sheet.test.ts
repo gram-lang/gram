@@ -120,6 +120,10 @@ describe("the model of the work plan", () => {
 				section: "Dough",
 				reference: "steps 1 to 2",
 				steps: "Mix 20 min › Rise 8 to 16 h",
+				sequence: [
+					{ action: "Mix", temperatures: [], timers: ["20 min"] },
+					{ action: "Rise", temperatures: [], timers: ["8 to 16 h"] },
+				],
 			},
 		]);
 		expect(sunday!.passages[0]!.program[0]).toMatchObject({
@@ -210,7 +214,7 @@ describe("a plan of several days", () => {
 			"D-1",
 			"Day D",
 		]);
-		expect(relative.days[0]!.slot).toBe("about 5m");
+		expect(relative.days[0]!.slot).toBe("~ 5m");
 		expect(relative.days.every((d) => d.passages.every((p) => !p.margin))).toBe(
 			true,
 		);
@@ -370,7 +374,12 @@ describe("runSheetToHTML", () => {
 		expect(html).toContain(
 			'<span class="day-heading">Saturday, October 10</span>',
 		);
-		expect(html).toContain('<input type="checkbox"> flour 500 g');
+		expect(html).toContain(
+			'<input type="checkbox"><span>flour <span class="kit-qty">500 g</span></span>',
+		);
+		expect(html).toContain('<li class="schedule-group">');
+		expect(html).toContain('class="work-plan-leaving"');
+		expect(html).toContain('<p class="leaving-next">Serve at 13:00</p>');
 		expect(html).toContain('class="work-plan-notice"');
 	});
 

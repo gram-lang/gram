@@ -189,7 +189,7 @@ describe("gram plan without a serving time", () => {
 		const { code, out } = gram(...RELATIVE);
 		expect(code).toBe(0);
 		expect(out).toContain("Work plan — Country bread");
-		expect(out).toMatch(/Day D\s+▮ about/);
+		expect(out).toMatch(/Day D\s+▮ ~ \d+m/);
 		expect(out).not.toContain("For Sunday");
 		expect(out).toContain("Ready as early as");
 		expect(out).toContain("if you start now.");

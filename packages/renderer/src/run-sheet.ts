@@ -42,6 +42,10 @@ export interface RunSheetKitLine {
 	text: string;
 	/** "60 + 30" when a quantity is the sum of several. */
 	detail?: string;
+	/** The parts of `text`, for a view that sets them apart: "milk", "100 g", "in stock". */
+	name: string;
+	quantity?: string;
+	note?: string;
 }
 
 /** What a passage asks of one section. */
@@ -52,6 +56,8 @@ export interface RunSheetProgramLine {
 	reference: string;
 	/** "Heat 5 min › Cool 30 °C 15 min": empty when no step brings anything. */
 	steps: string;
+	/** The same steps, one by one, for a view that shows them as a sequence. */
+	sequence: { action?: string; temperatures: string[]; timers: string[] }[];
 }
 
 /** One moment in the kitchen, in words. */
@@ -64,6 +70,20 @@ export interface RunSheetPassageModel {
 	program: RunSheetProgramLine[];
 	/** What continues without the cook, then when to come back. */
 	leaving: string[];
+	/** The last of `leaving`: when to come back, or the service. */
+	next?: string;
+	/** What continues without the cook, one by one, for a view that sets name and length apart. */
+	waits: RunSheetWaitLine[];
+}
+
+/** One thing that goes on without the cook. */
+export interface RunSheetWaitLine {
+	/** "Dough : Fridge" */
+	name: string;
+	/** "24 h", "12 h to 72 h", "1h (12 h to 72 h)" */
+	length: string;
+	/** "until 21:00", when the rest ends before the next visit. */
+	until?: string;
 }
 
 export interface RunSheetDayModel {
@@ -270,9 +290,11 @@ export function describeRunSheet(
 	const rangeText = (r: { min: number; max: number }) =>
 		fill(t.workPlanRange, { min: fmt(r.min), max: fmt(r.max) });
 
-	/** "Insert : Freeze 12 to 72 h", the planned length with the written range when it differs. */
-	const threadText = (th: RunSheetThread, until?: string) => {
-		const base = waitName(th);
+	/** The name and the planned length of a wait, with the written range when it differs. */
+	const threadParts = (
+		th: RunSheetThread,
+	): { name: string; length: string } => {
+		const name = waitName(th);
 		const planned = Math.round(th.planned);
 		const range = th.range ?? rangeOf(th.task);
 		let length: string;
@@ -283,7 +305,12 @@ export function describeRunSheet(
 		} else {
 			length = fmt(planned);
 		}
-		return `${base} ${length}${until ? `, ${until}` : ""}`;
+		return { name, length };
+	};
+	/** "Insert : Freeze 12 to 72 h" */
+	const threadText = (th: RunSheetThread, until?: string) => {
+		const { name, length } = threadParts(th);
+		return `${name} ${length}${until ? `, ${until}` : ""}`;
 	};
 
 	// Where each section's work ends, to say when a preparation was made.
@@ -362,6 +389,9 @@ export function describeRunSheet(
 				return {
 					kind: item.kind,
 					text,
+					name: item.name,
+					...(item.quantity && { quantity: item.quantity }),
+					...(item.note && { note: item.note }),
 					...(item.detail && { detail: item.detail }),
 				};
 			});
@@ -392,11 +422,17 @@ export function describeRunSheet(
 								.join(" "),
 						)
 						.join(" › "),
+					sequence: prog.steps.map((st) => ({
+						...(st.action && { action: st.action }),
+						temperatures: st.temperatures,
+						timers: st.timers,
+					})),
 				});
 			}
 
 			// Leaving: what goes on, then when to come back.
 			const leaving: string[] = [];
+			const waits: RunSheetWaitLine[] = [];
 			for (const th of threads) {
 				const endsEarly =
 					nextPassage && th.to < nextPassage.start - 1
@@ -405,6 +441,10 @@ export function describeRunSheet(
 							: undefined
 						: undefined;
 				leaving.push(threadText(th, endsEarly));
+				waits.push({
+					...threadParts(th),
+					...(endsEarly && { until: endsEarly }),
+				});
 			}
 			if (nextPassage) {
 				const nextDay = days.find((x) => x.passages.includes(nextPassage));
@@ -456,6 +496,8 @@ export function describeRunSheet(
 				kit,
 				program,
 				leaving,
+				waits,
+				...(leaving.length > 0 && { next: leaving.at(-1) }),
 			});
 
 			// One calendar event per passage, in UTC, with the lists as plain lines.
@@ -697,6 +739,12 @@ export function runSheetToMarkdown(
 	return `${out.join("\n").trimEnd()}\n`;
 }
 
+/** "THU 15" as the name of the day and its number, to set the number apart. */
+function dayParts(label: string): { name: string; number?: string } {
+	const m = /^(.*\S)\s+(\d{1,2})$/.exec(label);
+	return m ? { name: m[1]!, number: m[2]! } : { name: label };
+}
+
 /** The work plan as an HTML fragment, every word of the recipe escaped. */
 export function runSheetToHTML(
 	sheet: RunSheet,
@@ -710,22 +758,41 @@ export function runSheetToHTML(
 	if (model.subtitle) {
 		html += `    <p class="work-plan-subtitle">${e(model.subtitle)}</p>\n`;
 	}
-	html += `    <p class="work-plan-summary">${e(model.summary)}</p>\n  </header>\n`;
+	html += `    <p class="work-plan-summary">${e(model.summary)}</p>\n`;
 	if (model.problems.length > 0) {
-		html += `  <section class="run-sheet-problems work-plan-problems">\n    <h3>${e(t.runSheetProblems)}</h3>\n    <ul>\n`;
-		for (const p of model.problems) html += `      <li>${e(p)}</li>\n`;
-		html += `    </ul>\n  </section>\n`;
+		html += `    <section class="run-sheet-problems work-plan-problems">\n      <h3>${e(t.runSheetProblems)}</h3>\n      <ul>\n`;
+		for (const p of model.problems) html += `        <li>${e(p)}</li>\n`;
+		html += `      </ul>\n    </section>\n`;
 	}
 	if (model.schedule.length > 0) {
-		html += `  <ol class="work-plan-schedule">\n`;
+		// The days at a glance: the rows of a day under its name.
+		const groups: RunSheetScheduleRow[][] = [];
 		for (const row of model.schedule) {
-			html += `    <li class="schedule-${row.kind}">`;
-			if (row.day) html += `<span class="schedule-day">${e(row.day)}</span>`;
-			if (row.time) html += `<span class="schedule-time">${e(row.time)}</span>`;
-			html += `<span class="schedule-text">${e(row.text)}</span></li>\n`;
+			if (row.day || groups.length === 0) groups.push([]);
+			groups.at(-1)!.push(row);
 		}
-		html += `  </ol>\n`;
+		html += `    <ol class="work-plan-schedule">\n`;
+		for (const rows of groups) {
+			const day = rows[0]?.day;
+			html += `      <li class="schedule-group">\n        <div class="schedule-day">`;
+			if (day) {
+				const { name, number } = dayParts(day);
+				html += `${e(name)}${number ? `<small>${e(number)}</small>` : ""}`;
+			}
+			html += `</div>\n        <div class="schedule-rows">\n`;
+			for (const row of rows) {
+				if (row.kind === "thread") {
+					html += `          <div class="schedule-row schedule-thread"><span class="schedule-line"></span><span class="schedule-text">${e(row.text)}</span></div>\n`;
+				} else {
+					html += `          <div class="schedule-row schedule-${row.kind}"><span class="schedule-time">${e(row.time ?? "")}</span><span class="schedule-text">${e(row.text)}</span></div>\n`;
+				}
+			}
+			html += `        </div>\n      </li>\n`;
+		}
+		html += `    </ol>\n`;
+		html += `    <p class="work-plan-legend"><span class="legend-cook">${e(t.workPlanLegendCook)}</span><span class="legend-thread">${e(t.workPlanLegendThread)}</span></p>\n`;
 	}
+	html += `  </header>\n`;
 	for (const day of model.days) {
 		html += `  <section class="work-plan-day">\n    <h3><span class="day-heading">${e(day.heading)}</span> <span class="day-slot">${e(day.slot)}</span></h3>\n`;
 		for (const n of day.notices) {
@@ -733,29 +800,63 @@ export function runSheetToHTML(
 		}
 		for (const p of day.passages) {
 			html += `    <div class="work-plan-passage">\n`;
-			if (day.passages.length > 1) {
-				html += `      <h4>${e(p.slot)}</h4>\n`;
-			}
+			const where = day.passages.length > 1 ? ` · ${e(p.slot)}` : "";
 			if (p.margin) {
 				html += `      <p class="work-plan-margin">${e(p.margin)}</p>\n`;
 			}
 			if (p.kit.length > 0) {
-				html += `      <div class="work-plan-kit">\n        <h4>${e(t.workPlanKit)}</h4>\n        <ul>\n`;
-				for (const l of p.kit) {
-					html += `          <li class="kit-${l.kind}"><label><input type="checkbox"> ${e(l.text)}${l.detail ? ` <small>(${e(l.detail)})</small>` : ""}</label></li>\n`;
+				const things = p.kit.filter((l) => l.kind !== "cookware");
+				const tools = p.kit.filter((l) => l.kind === "cookware");
+				html += `      <div class="work-plan-kit">\n        <h4>${e(t.workPlanKit)}${where}</h4>\n`;
+				if (things.length > 0) {
+					html += `        <ul class="kit-list">\n`;
+					for (const l of things) {
+						html += `          <li class="kit-${l.kind}"><label><input type="checkbox"><span>${e(l.name)}${l.quantity ? ` <span class="kit-qty">${e(l.quantity)}${l.detail ? ` (${e(l.detail)})` : ""}</span>` : ""}${l.note ? ` <span class="kit-note">${e(l.note)}</span>` : ""}</span></label></li>\n`;
+					}
+					html += `        </ul>\n`;
 				}
-				html += `        </ul>\n      </div>\n`;
+				if (tools.length > 0) {
+					html += `        <ul class="kit-list kit-tools">\n`;
+					for (const l of tools) {
+						html += `          <li class="kit-cookware"><label><input type="checkbox"><span>${e(l.name)}</span></label></li>\n`;
+					}
+					html += `        </ul>\n`;
+				}
+				html += `      </div>\n`;
 			}
 			if (p.program.length > 0) {
-				html += `      <div class="work-plan-program">\n        <h4>${e(t.workPlanProgram)}</h4>\n        <ul>\n`;
+				html += `      <div class="work-plan-program">\n        <h4>${e(t.workPlanProgram)}${where}</h4>\n        <ul>\n`;
 				for (const l of p.program) {
-					html += `          <li><strong>${e(l.section)}</strong> <small>(${e(l.reference)})</small>${l.steps ? ` <span class="program-steps">${e(l.steps)}</span>` : ""}</li>\n`;
+					html += `          <li><span class="program-section">${e(l.section)}<small>${e(l.reference)}</small></span>`;
+					if (l.sequence.length > 0) {
+						html += `<span class="program-steps">`;
+						for (const st of l.sequence) {
+							html += `<span class="program-step">${st.action ? e(st.action) : ""}`;
+							for (const x of st.temperatures) {
+								html += `<span class="step-temp">${e(x)}</span>`;
+							}
+							for (const x of st.timers) {
+								html += `<span class="step-time">${e(x)}</span>`;
+							}
+							html += `</span>`;
+						}
+						html += `</span>`;
+					}
+					html += `</li>\n`;
 				}
 				html += `        </ul>\n      </div>\n`;
 			}
-			html += `      <div class="work-plan-leaving">\n        <h4>${e(t.workPlanLeaving)}</h4>\n        <ul>\n`;
-			for (const l of p.leaving) html += `          <li>${e(l)}</li>\n`;
-			html += `        </ul>\n      </div>\n    </div>\n`;
+			if (p.waits.length > 0) {
+				html += `      <div class="work-plan-leaving">\n        <h4>${e(t.workPlanLeaving)}</h4>\n        <ul>\n`;
+				for (const w of p.waits) {
+					html += `          <li><span class="wait-name">${e(w.name)}${w.until ? ` <span class="wait-until">${e(w.until)}</span>` : ""}</span><span class="wait-length">${e(w.length)}</span></li>\n`;
+				}
+				html += `        </ul>\n      </div>\n`;
+			}
+			if (p.next !== undefined) {
+				html += `      <p class="leaving-next">${e(p.next)}</p>\n`;
+			}
+			html += `    </div>\n`;
 		}
 		html += `  </section>\n`;
 	}

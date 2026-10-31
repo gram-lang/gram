@@ -359,6 +359,6 @@ function handlePreviewClick(e: MouseEvent) {
 /* Fix Vitepress default styles overriding some specific gram preview stuff if needed */
 .output-preview.vp-doc :deep(ul), 
 .output-preview.vp-doc :deep(ol) {
-  margin-top: 8px;
+  /* margin-top: 8px; */
 }
 </style>
