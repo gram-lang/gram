@@ -893,7 +893,21 @@ function resetStockSection() {
                 :title="earliestTooltip"
                 @click="pickServeAt(props.serveSuggestions.earliest.serveAt)"
               >
-                <span class="pill-icon">⚡</span>
+                <svg
+                  class="pill-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
                 <span class="pill-text">{{ formatEarliestLabel(props.serveSuggestions.earliest.label) }}</span>
               </button>
 
@@ -1464,7 +1478,6 @@ function resetStockSection() {
   padding: 8px 10px;
   background-color: var(--sl-color-gray-7, #24201c);
   border: 1px solid var(--sl-color-gray-6, #36302a);
-  border-radius: 4px;
   font-size: 11.5px;
   line-height: 1.45;
   color: var(--sl-color-gray-2, #c4bebb);
@@ -1602,8 +1615,14 @@ function resetStockSection() {
 }
 
 .earliest-pill .pill-icon {
-  font-size: 12px;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
   color: var(--sl-color-accent);
+}
+
+.earliest-pill.is-selected .pill-icon {
+  color: currentColor;
 }
 
 .earliest-pill:hover {
