@@ -28,7 +28,7 @@ The `@gram-lang/kitchen` compiler already re-exports `layout`, `LayoutOptions`, 
 function layout(graph: TaskGraph, options?: LayoutOptions): LayoutResult
 
 interface LayoutOptions {
-  miseEnPlace?: MiseEnPlaceMode; // "perSection" (default) | "upfront" | "perSession"
+  miseEnPlace?: MiseEnPlaceMode; // "perSection" (default) | "upfront" | "perDay"
   rests?: RestChoice;            // "shortest" (default) | "balanced" | "longest"
   restOverrides?: Record<string, number>; // target passive durations in minutes, by task id (used by project())
 }
@@ -215,7 +215,7 @@ interface ProjectedPlan {
   timeZone: string;
   recipes: {
     title?: string;
-    miseEnPlace: 'perSection' | 'upfront' | 'perSession'; // the mode this plan was made in
+    miseEnPlace: 'perSection' | 'upfront' | 'perDay'; // the mode this plan was made in
     blocks: ProjectedBlock[];     // scheduled blocks with start/end as ISO 8601 UTC timestamps
     sessions: ProjectedSession[]; // and startLocal/endLocal: local wall-clock time in the target zone ("2026-10-10T21:40")
   }[];
@@ -344,7 +344,7 @@ interface ServeCandidate {
 ## Constants and helpers
 
 ```typescript
-type MiseEnPlaceMode = "perSection" | "upfront" | "perSession";
+type MiseEnPlaceMode = "perSection" | "upfront" | "perDay";
 const MISE_EN_PLACE_MODES: readonly MiseEnPlaceMode[];
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode; // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode;

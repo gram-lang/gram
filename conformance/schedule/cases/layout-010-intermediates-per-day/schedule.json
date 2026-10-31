@@ -1,6 +1,6 @@
 {
   "schedule": {
-    "miseEnPlace": "perSession",
+    "miseEnPlace": "perDay",
     "rests": "shortest",
     "totalTime": 4327,
     "activeTime": 45,

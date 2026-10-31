@@ -150,7 +150,7 @@ function checkSchedules(compiled: CompilationResult): void {
 	const schedules = {
 		perSection: scheduleFor(compiled, "perSection")!,
 		upfront: scheduleFor(compiled, "upfront")!,
-		perSession: scheduleFor(compiled, "perSession")!,
+		perDay: scheduleFor(compiled, "perDay")!,
 	};
 	const preparation = metrics.preparationTime;
 	// A range in a timer makes the legacy fields (the average) and the timelines
@@ -166,7 +166,7 @@ function checkSchedules(compiled: CompilationResult): void {
 
 	for (const [mode, schedule] of Object.entries(schedules)) {
 		// Invariant 3: prep blocks for each mise en place entry, of its length in
-		// all (two in `upfront` and `perSession` when the section also gathers an intermediate).
+		// all (two in `upfront` and `perDay` when the section also gathers an intermediate).
 		const prep = schedule.blocks.filter((b) => b.kind === "prep");
 		expect(
 			[...new Set(prep.map((b) => b.section))].sort((a, b) => a - b),
@@ -203,7 +203,7 @@ function checkSchedules(compiled: CompilationResult): void {
 			if (b.kind === "prep") continue;
 			expect(sections[b.section].steps[b.step]?.type).toBe("step");
 		}
-		expect(mode).toMatch(/perSection|upfront|perSession/);
+		expect(mode).toMatch(/perSection|upfront|perDay/);
 
 		// Sessions: one per working day, furthest day first, each within the timeline.
 		for (let i = 1; i < schedule.sessions.length; i++) {

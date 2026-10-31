@@ -140,7 +140,7 @@ Each section has its own mise en place (gathering and preparing ingredients and 
 
 - **By section** (`perSection`, default): mise en place is scheduled immediately prior to that section. An ingredient needed two days later is not fetched prematurely, and preparation can occur during passive waiting times of earlier steps (masked time).
 - **All at the start** (`upfront`): all prep tasks are grouped at the beginning before active cooking starts. Except for intermediate preparations, which cannot be weighed before they are produced.
-- **By working day** (`perSession`): for multi-day recipes, preparation tasks for each day are grouped at the start of that day's session. Days are determined by section anchors **in days** (`~{-1d}`, `~{-2d}`). Recipes without day anchors execute in a single working day session, identical to `upfront`.
+- **By working day** (`perDay`): for multi-day recipes, preparation tasks for each day are grouped at the start of that day, even if you cook in several visits. To take things out right before each visit, use `perSection`. Days are determined by section anchors **in days** (`~{-1d}`, `~{-2d}`). Recipes without day anchors execute as a single working day, identical to `upfront`.
 
 Two considerations for multi-day recipes:
 - **A long passive timer is not an anchor.** A `~_{48h}` passive duration shifts the timeline two days earlier, but only an explicit section anchor formally opens a separate working day (e.g. `## Cream ~{-2d}`).

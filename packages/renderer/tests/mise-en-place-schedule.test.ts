@@ -8,7 +8,7 @@ import { toGanttHTML, toHTML, toMarkdown, toPrintHTML } from "../src/index";
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 const SOURCE = `## Dough ->&dough
@@ -251,9 +251,9 @@ Fill with &crust{300g} and bake ~{30min}.
 Dust with @sugar{10g}.
 `;
 
-describe("perSession", () => {
+describe("perDay", () => {
 	const multi = compile(getAST(MULTI_DAY));
-	const options = { miseEnPlace: "perSession" } as const;
+	const options = { miseEnPlace: "perDay" } as const;
 
 	it("leaves the working days to the work plan: no block in the recipe", () => {
 		const html = toHTML(multi, options);

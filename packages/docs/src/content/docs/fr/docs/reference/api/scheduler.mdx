@@ -28,7 +28,7 @@ Le compilateur `@gram-lang/kitchen` réexporte déjà `layout`, `LayoutOptions` 
 function layout(graph: TaskGraph, options?: LayoutOptions): LayoutResult
 
 interface LayoutOptions {
-  miseEnPlace?: MiseEnPlaceMode; // "perSection" (défaut) | "upfront" | "perSession"
+  miseEnPlace?: MiseEnPlaceMode; // "perSection" (défaut) | "upfront" | "perDay"
   rests?: RestChoice;            // "shortest" (défaut) | "balanced" | "longest"
   restOverrides?: Record<string, number>; // durées passives cibles en minutes, par identifiant de tâche (utilisé par project())
 }
@@ -215,7 +215,7 @@ interface ProjectedPlan {
   timeZone: string;
   recipes: {
     title?: string;
-    miseEnPlace: 'perSection' | 'upfront' | 'perSession'; // le mode dans lequel ce plan a été établi
+    miseEnPlace: 'perSection' | 'upfront' | 'perDay'; // le mode dans lequel ce plan a été établi
     blocks: ProjectedBlock[];     // blocs planifiés avec start/end au format ISO 8601 (UTC)
     sessions: ProjectedSession[]; // et startLocal/endLocal : heure locale dans le fuseau ("2026-10-10T21:40")
   }[];
@@ -344,7 +344,7 @@ Les `candidates` sont classés : moins d'ajustements, puis moins de passages, pu
 ## Options et utilitaires
 
 ```typescript
-type MiseEnPlaceMode = "perSection" | "upfront" | "perSession";
+type MiseEnPlaceMode = "perSection" | "upfront" | "perDay";
 const MISE_EN_PLACE_MODES: readonly MiseEnPlaceMode[];
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode; // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode;

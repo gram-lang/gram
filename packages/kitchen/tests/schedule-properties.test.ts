@@ -115,7 +115,7 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 	const schedules = {
 		perSection: scheduleFor(result, "perSection")!,
 		upfront: scheduleFor(result, "upfront")!,
-		perSession: scheduleFor(result, "perSession")!,
+		perDay: scheduleFor(result, "perDay")!,
 	};
 	const prep = metrics.preparationTime;
 	const active = metrics.activeTime;
@@ -280,11 +280,11 @@ function violationsOf(result: CompilationResult, source: string): string[] {
 
 	// A recipe on a single working day plans per session exactly like upfront.
 	if (
-		schedules.perSession.sessions.length <= 1 &&
-		JSON.stringify(schedules.perSession.blocks) !==
+		schedules.perDay.sessions.length <= 1 &&
+		JSON.stringify(schedules.perDay.blocks) !==
 			JSON.stringify(schedules.upfront.blocks)
 	) {
-		bad.push("single-session perSession != upfront");
+		bad.push("single-session perDay != upfront");
 	}
 
 	// Compiling is deterministic, scaling never moves a duration, and scaling a

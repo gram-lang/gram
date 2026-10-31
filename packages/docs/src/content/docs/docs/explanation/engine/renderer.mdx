@@ -34,7 +34,7 @@ This renderer serves as a reference implementation without prescribing a single 
 
 Standard recipe views (`toHTML`, `toMarkdown`, `toPrintHTML`) focus exclusively on culinary execution (the *how*) without exposing the timeline. With the `runSheet` option enabled, they append the work plan right after the recipe in a single unified document. See [Build a custom UI](/docs/how-to/build-custom-ui/) to render a custom planning view directly from the underlying data.
 
-The `miseEnPlace` option (`"perSection"` by default, `"upfront"`, or `"perSession"`) and the `rests` option (`"shortest"` by default, `"balanced"`, `"longest"`) choose the timeline whose total and idle durations the document headers show (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)).
+The `miseEnPlace` option (`"perSection"` by default, `"upfront"`, or `"perDay"`) and the `rests` option (`"shortest"` by default, `"balanced"`, `"longest"`) choose the timeline whose total and idle durations the document headers show (see [Scheduling the mise en place](/docs/explanation/alap-scheduling#scheduling-the-mise-en-place)).
 
 :::note[Gantt chart deprecation]
 The `toGanttHTML` and `attachGanttInteractivity` functions are deprecated since version 1.4.0 and will be removed in 2.0.0: no Gram surface renders a Gantt chart any more. See [Deprecations](/docs/how-to/deprecations/).

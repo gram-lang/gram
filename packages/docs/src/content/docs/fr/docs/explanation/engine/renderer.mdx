@@ -34,7 +34,7 @@ Cette restitution sert d'implémentation de référence sans prétendre imposer 
 
 Les vues de recette standard (`toHTML`, `toMarkdown`, `toPrintHTML`) se concentrent sur la réalisation culinaire (le *comment*) sans exposer l'ordonnancement temporel. En activant l'option `runSheet`, elles ajoutent le planning de préparation à la suite de la recette au sein d'un document unique. Consultez le guide [Créer une interface sur mesure](/fr/docs/how-to/build-custom-ui/) pour concevoir une vue planning personnalisée directement à partir des données.
 
-L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perSession"`) et l'option `rests` (`"shortest"` par défaut, `"balanced"`, `"longest"`) choisissent la chronologie dont les en-têtes des documents montrent les durées totale et passive (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)).
+L'option `miseEnPlace` (`"perSection"` par défaut, `"upfront"` ou `"perDay"`) et l'option `rests` (`"shortest"` par défaut, `"balanced"`, `"longest"`) choisissent la chronologie dont les en-têtes des documents montrent les durées totale et passive (voir [Planifier la mise en place](/fr/docs/explanation/alap-scheduling#planifier-la-mise-en-place)).
 
 :::note[Remplacement du diagramme de Gantt]
 Les fonctions `toGanttHTML` et `attachGanttInteractivity` sont dépréciées depuis la version 1.4.0 et seront retirées en 2.0.0 : plus aucune surface de Gram n'utilise de diagramme de Gantt. Consultez la page [Dépréciations](/fr/docs/how-to/deprecations/) pour plus de détails.

@@ -56,7 +56,7 @@ export interface RunSheetKitLine {
 }
 
 /**
- * Things to take out together, at the top of a visit (`perSession`, `upfront`).
+ * Things to take out together, at the top of a visit (`perDay`, `upfront`).
  * In `perSection` mode they are on the programme lines instead; a group with a
  * `section` is only left for a section that has no step of its own in the visit.
  */

@@ -68,7 +68,7 @@ Désormais, exploitez les blocs de l'ordonnancement retenu. Toutes les durées s
 ```typescript
 import { scheduleFor } from '@gram-lang/kitchen';
 
-const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' ou 'perSession'
+const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' ou 'perDay'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // mise en place de section (nouveau type de bloc)

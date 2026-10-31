@@ -39,7 +39,7 @@ Ces trois formateurs partagent la même architecture de traversée (`RenderBacke
 | `formatFraction` | `(value: number) => string` | Fonction de formatage décimal → fraction personnalisée (gère par défaut les fractions courantes, ex. : `0.5` → `"1/2"`). |
 | `formatDuration` | `(minutes: number) => string` | Formateur de durée personnalisé (par défaut, ex. : `90` → `"1h 30m"`). |
 | `hideStepQty` | `boolean` | Masque les quantités d'ingrédients au sein du texte narratif des étapes (la liste de courses et les listes d'ingrédients de section restent intactes). |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | <Since v="1.4.0" /> Stratégie d'ordonnancement suivie par le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), regroupée tout au début de la recette (`'upfront'`) ou au début de chaque session quotidienne (`'perSession'`). Détermine les durées totale et passive affichées en en-tête. Le texte de la recette n'expose aucun ordonnancement temporel : la planification détaillée et la liste des éléments à mobiliser figurent dans le planning de préparation (`runSheet`). La chronologie est déduite à la volée depuis le graphe `tasks`. |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | <Since v="1.4.0" /> Stratégie d'ordonnancement suivie par le document : préparation immédiatement avant chaque section (`'perSection'`, par défaut), regroupée tout au début de la recette (`'upfront'`) ou au début de chaque session quotidienne (`'perDay'`). Détermine les durées totale et passive affichées en en-tête. Le texte de la recette n'expose aucun ordonnancement temporel : la planification détaillée et la liste des éléments à mobiliser figurent dans le planning de préparation (`runSheet`). La chronologie est déduite à la volée depuis le graphe `tasks`. |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | <Since v="1.4.0" /> Élasticité appliquée aux minuteurs passifs définis par un intervalle (`~_{12-24h}`) : borne la plus courte (`'shortest'`, par défaut), médiane (`'balanced'`) ou borne la plus longue (`'longest'`). Les minuteurs passifs à durée fixe et les minuteurs actifs ne sont pas affectés. Pilote les mêmes durées que `miseEnPlace`. |
 | `runSheet` | `RunSheet` | <Since v="1.4.0" /> Planning de préparation optionnel (généré par `runSheet()` de `@gram-lang/scheduler`) à insérer à la suite de la recette au sein du même document (sous un titre Markdown dédié ou intégré aux feuilles de style pour impression). La recette décrit le mode opératoire culinaire, le planning structure le calendrier d'exécution : le corps de la recette reste inchangé. |
 | `bakersMathOnly` | `boolean` | N'affiche que les pourcentages du boulanger, en masquant les quantités absolues. |
@@ -76,7 +76,7 @@ handle.dispose();
 | `lang` | `string` | Code de langue pour les chaînes d'interface localisées. |
 | `gapThresholdMinutes` | `number` | Durée d'inactivité minimale avant compression visuelle (par défaut : `60`). `Infinity` désactive la compression. |
 | `compressedGapSize` | `number` | Largeur en minutes virtuelles à laquelle les creux compressés sont réduits (par défaut : `20`). |
-| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perSession'` | Stratégie de placement de la mise en place (par défaut : `'perSection'`). |
+| `miseEnPlace` | `'perSection' \| 'upfront' \| 'perDay'` | Stratégie de placement de la mise en place (par défaut : `'perSection'`). |
 | `rests` | `'shortest' \| 'balanced' \| 'longest'` | Élasticité des minuteurs passifs en fourchette (par défaut : `'shortest'`). |
 | `quiet` | `boolean` | Évite l'avertissement de dépréciation, émis une seule fois. |
 
@@ -159,7 +159,7 @@ Le planning d'une recette sans heure de service cible s'obtient via `runSheet(co
 | `title`, `subtitle`, `summary` | « Planning de préparation — Entremets », « Pour le samedi 17 octobre à 20:00 · 6 parts », « 3 jours · 3 passages en cuisine · 45m de travail en tout ». |
 | `problems` | Diagnostics contextuels émis si des contraintes de calendrier n'ont pas pu être respectées (une phrase explicative par problème). |
 | `schedule[]` | Synthèse des journées : une ligne par passage actif (`kind: 'passage'`), par processus passif en continu (`'thread'`) et pour le service final (`'serve'`), avec les propriétés `day`, `time` et `text`. |
-| `days[]` | Détail par journée : en-tête (`heading`), créneau horaire (`slot`), avertissements de repos ajustés (`notices`) et liste des passages (`passages[]`), chacun détaillant son créneau (`slot`), sa marge d'anticipation (`margin`), ses ingrédients et matériel (`kit[]`, regroupé par catégories, renseigné dans les modes `perSession` et `upfront`), les étapes à relire (`program[]` : une section, un renvoi comme `étapes 1 à 3` et, en mode `perSection`, son propre `kit[]` d'éléments à sortir) et les tâches poursuivies en tâche de fond (`leaving[]`). |
+| `days[]` | Détail par journée : en-tête (`heading`), créneau horaire (`slot`), avertissements de repos ajustés (`notices`) et liste des passages (`passages[]`), chacun détaillant son créneau (`slot`), sa marge d'anticipation (`margin`), ses ingrédients et matériel (`kit[]`, regroupé par catégories, renseigné dans les modes `perDay` et `upfront`), les étapes à relire (`program[]` : une section, un renvoi comme `étapes 1 à 3` et, en mode `perSection`, son propre `kit[]` d'éléments à sortir) et les tâches poursuivies en tâche de fond (`leaving[]`). |
 | `events[]` | Un événement d'agenda par passage (`start`, `end` en UTC, `title`, `description`), pour un plan avec heure de service. |
 
 ### `passageKit()` et `sectionProgram()`
@@ -174,7 +174,7 @@ sectionProgram(compiled, section: number, stepIndexes: number[], { lang? }): Sec
 // { section, title, origin?, from, to }
 ```
 
-Rien n'est inventé : noms et quantités sont ceux du fichier `.gram`, et le planning renvoie aux étapes au lieu de les résumer. Le mode du kit (`perSection`, `perSession`, `upfront`) se lit dans `RunSheet.recipes[].miseEnPlace` : le moteur de rendu ne propose pas d'option dédiée pour ce réglage. `describeServeTimes()` et `describeEarliestServe()` mettent de la même façon en mots le résultat de `findServeTimes()` et `earliestServe()`.
+Rien n'est inventé : noms et quantités sont ceux du fichier `.gram`, et le planning renvoie aux étapes au lieu de les résumer. Le mode du kit (`perSection`, `perDay`, `upfront`) se lit dans `RunSheet.recipes[].miseEnPlace` : le moteur de rendu ne propose pas d'option dédiée pour ce réglage. `describeServeTimes()` et `describeEarliestServe()` mettent de la même façon en mots le résultat de `findServeTimes()` et `earliestServe()`.
 
 ## Ressources associées
 

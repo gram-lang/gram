@@ -21,7 +21,7 @@ export const en = {
 		restsLongest: "Longest",
 		schedulePerSection: "By section",
 		scheduleUpfront: "All at the start",
-		schedulePerSession: "By working day",
+		schedulePerDay: "By working day",
 		sessionDay: "D-",
 		sessionToday: "Day D",
 		runSheetStep: "Step {n}",

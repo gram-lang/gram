@@ -7,7 +7,7 @@ import { provideInlayHints } from "../src/features/inlay-hints";
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 const SOURCE = `---

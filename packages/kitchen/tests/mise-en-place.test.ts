@@ -13,7 +13,7 @@ import { KITCHEN_VERSION } from "../src/version";
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 const RECIPE = `## Dough ->&dough
@@ -289,7 +289,7 @@ Spread &filling{100g} over &dough{200g}.
 	});
 });
 
-describe("mise en place per working day (perSession)", () => {
+describe("mise en place per working day (perDay)", () => {
 	// Day -3: a cream that rests; day -1: a crust made from it, then assembly.
 	const SOURCE = `## Cream ->&cream ~{-3d}
 
@@ -306,7 +306,7 @@ Mix &cream{100g} and @flour{200g}.
 Fill with &crust{300g} and bake ~{30min}.
 `;
 
-	const compiled = () => schedulesOf(compile(getAST(SOURCE))).perSession;
+	const compiled = () => schedulesOf(compile(getAST(SOURCE))).perDay;
 
 	it("makes one session per anchored day, furthest first", () => {
 		const { sessions } = compiled();
@@ -350,8 +350,8 @@ Fill with &crust{300g} and bake ~{30min}.
 
 	it("is one session, like upfront, without an anchor of a day or more", () => {
 		const schedules = schedulesOf(compile(getAST(RECIPE)));
-		expect(schedules.perSession.sessions).toHaveLength(1);
-		expect(schedules.perSession.blocks).toEqual(schedules.upfront.blocks);
+		expect(schedules.perDay.sessions).toHaveLength(1);
+		expect(schedules.perDay.blocks).toEqual(schedules.upfront.blocks);
 	});
 
 	it("does not open a day for a long passive timer without a section anchor", () => {
@@ -362,8 +362,8 @@ Fill with &crust{300g} and bake ~{30min}.
 				),
 			),
 		);
-		expect(schedules.perSession.sessions).toHaveLength(1);
-		expect(schedules.perSession.sessions[0]!.day).toBe(0);
+		expect(schedules.perDay.sessions).toHaveLength(1);
+		expect(schedules.perDay.sessions[0]!.day).toBe(0);
 	});
 
 	it("keeps a section anchored under 24 hours on the day itself", () => {
@@ -374,14 +374,14 @@ Fill with &crust{300g} and bake ~{30min}.
 				),
 			),
 		);
-		expect(schedules.perSession.sessions.map((s) => s.day)).toEqual([0]);
+		expect(schedules.perDay.sessions.map((s) => s.day)).toEqual([0]);
 	});
 
 	it("keeps the same preparation and active time as the other schedules", () => {
 		const compiled = compile(getAST(SOURCE));
 		const schedules = schedulesOf(compiled);
 		const { metrics } = compiled;
-		for (const mode of ["perSection", "upfront", "perSession"] as const) {
+		for (const mode of ["perSection", "upfront", "perDay"] as const) {
 			const s = schedules[mode];
 			const prep = s.blocks
 				.filter((b) => b.kind === "prep")

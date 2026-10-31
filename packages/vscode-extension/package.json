@@ -113,7 +113,7 @@
           "enum": [
             "perSection",
             "upfront",
-            "perSession"
+            "perDay"
           ],
           "enumDescriptions": [
             "Each section's mise en place happens right before that section.",

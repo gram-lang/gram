@@ -323,27 +323,25 @@ function buildRecipe(
 	source.sessions.forEach((s, i) => {
 		for (const section of s.sections) sessionOf.set(section, i);
 	});
-	const perSession: SourceBlock[][] = source.sessions.map(() => []);
+	const perDay: SourceBlock[][] = source.sessions.map(() => []);
 	for (const block of source.blocks) {
 		let index = sessionOf.get(block.section);
 		if (index === undefined) {
 			// A section with no work of its own has no session: its waits follow
 			// the session that starts last before them.
 			index = 0;
-			for (let i = 0; i < perSession.length; i++) {
-				const first = perSession[i]![0];
+			for (let i = 0; i < perDay.length; i++) {
+				const first = perDay[i]![0];
 				if (first && first.from <= block.from + EPS) index = i;
 			}
 		}
-		perSession[index]?.push(block);
+		perDay[index]?.push(block);
 	}
 
 	const adjustments: RunSheetAdjustment[] = [];
 	const days: RunSheetDay[] = [];
 	source.sessions.forEach((session, i) => {
-		const blocks = perSession[i]!.sort(
-			(a, b) => a.from - b.from || a.to - b.to,
-		);
+		const blocks = perDay[i]!.sort((a, b) => a.from - b.from || a.to - b.to);
 		if (blocks.length === 0) return;
 
 		const entries: RunSheetEntry[] = blocks.map((b) => ({

@@ -181,7 +181,7 @@ While the parser initially produces a raw Abstract Syntax Tree (AST), `@gram-lan
    ```typescript
    import { layout } from '@gram-lang/scheduler';
 
-   // miseEnPlace: 'perSection' (default), 'upfront' (at the start), or 'perSession' (per day).
+   // miseEnPlace: 'perSection' (default), 'upfront' (at the start), or 'perDay' (per day).
    // rests: 'shortest' (default), 'balanced', or 'longest' for passive ranges.
    const { schedule } = layout(recipe.tasks, { miseEnPlace: 'perSection', rests: 'shortest' });
 

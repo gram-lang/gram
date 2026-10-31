@@ -179,8 +179,8 @@ function calculatePreparationTime(
 
 function computeMiseEnPlace(sections: ProcessedSection[], registry: Registry): SectionMiseEnPlace[]
 
-type MiseEnPlaceMode = "perSection" | "upfront" | "perSession"
-const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perSession"]
+type MiseEnPlaceMode = "perSection" | "upfront" | "perDay"
+const MISE_EN_PLACE_MODES: readonly ["perSection", "upfront", "perDay"]
 const DEFAULT_MISE_EN_PLACE_MODE: MiseEnPlaceMode // "perSection"
 function isMiseEnPlaceMode(value: unknown): value is MiseEnPlaceMode
 

@@ -144,11 +144,7 @@ describe("layout (perSection)", () => {
 	it("never modifies the graph it is given", () => {
 		const graph = doughGraph();
 		const before = JSON.stringify(graph);
-		for (const miseEnPlace of [
-			"perSection",
-			"upfront",
-			"perSession",
-		] as const) {
+		for (const miseEnPlace of ["perSection", "upfront", "perDay"] as const) {
 			for (const rests of ["shortest", "balanced", "longest"] as const) {
 				layout(graph, { miseEnPlace, rests });
 			}
@@ -263,18 +259,18 @@ describe("layout and intermediates", () => {
 		);
 	});
 
-	it("gathers an intermediate made on an earlier day at the head of its own day (perSession)", () => {
+	it("gathers an intermediate made on an earlier day at the head of its own day (perDay)", () => {
 		const g = graph();
 		g.sections = [
 			{ day: 1, deadline: 1440, intermediate: "dough" },
 			{ day: 0 },
 		];
-		const preps = blocksOf(g, { miseEnPlace: "perSession" }).filter(
+		const preps = blocksOf(g, { miseEnPlace: "perDay" }).filter(
 			(b) => b.kind === "prep" && b.section === 1,
 		);
 		expect(preps.some((b) => "deferred" in b)).toBe(false);
 		const day0 = layout(g, {
-			miseEnPlace: "perSession",
+			miseEnPlace: "perDay",
 		}).schedule.sessions.find((s) => s.day === 0)!;
 		expect(Math.min(...preps.map((b) => b.start))).toBe(day0.start);
 	});

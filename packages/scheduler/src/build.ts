@@ -95,7 +95,7 @@ export function mergeItems(parts: MiseEnPlaceItem[][]): MiseEnPlaceItem[] {
  * the group's first section; the preparation of an intermediate made within the
  * group is inserted at the head of its own section, so it is never planned
  * before it exists. One group per section gives `perSection`, one group for the
- * whole recipe gives `upfront`, one per working day gives `perSession`.
+ * whole recipe gives `upfront`, one per working day gives `perDay`.
  *
  * With `defer` off nothing waits, whichever section makes it.
  */
@@ -233,7 +233,7 @@ const MODE_PLANS: Record<MiseEnPlaceMode, (days: number[]) => ModePlan> = {
 	// own day, what is made the same day waits until right before the section
 	// that uses it. Without an anchor of a day or more, the recipe is a single
 	// session, like `upfront`.
-	perSession: (days) => {
+	perDay: (days) => {
 		const sessions = sessionPlan(days);
 		return { groups: sessions.groups, sessions, defer: true };
 	},

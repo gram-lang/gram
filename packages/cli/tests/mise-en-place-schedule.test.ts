@@ -12,7 +12,7 @@ import { cleanupTmpFile, writeTmpFile } from "./helpers";
 const schedulesOf = (c: Parameters<typeof scheduleFor>[0]) => ({
 	perSection: scheduleFor(c, "perSection")!,
 	upfront: scheduleFor(c, "upfront")!,
-	perSession: scheduleFor(c, "perSession")!,
+	perDay: scheduleFor(c, "perDay")!,
 });
 
 // A section with a retro-planning offset makes the two timelines differ.

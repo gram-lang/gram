@@ -41,7 +41,7 @@ const recipe = {
   title: "Simple Crepes",
   metrics: { activeTime: 10 },
   // The timelines a compiled recipe carries, one per mode (`perSection`,
-  // `upfront`, `perSession`; `compile()` produces them for you): only the one
+  // `upfront`, `perDay`; `compile()` produces them for you): only the one
   // you render is read. `metrics.totalTime` is deprecated: it is only read when
   // `schedules` is missing.
   schedules: {

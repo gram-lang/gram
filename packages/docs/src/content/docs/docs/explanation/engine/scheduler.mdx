@@ -54,7 +54,7 @@ The engine implements the as-late-as-possible algorithm described in [ALAP sched
    Preparation work for each group of sections is inserted as dedicated tasks, and the backward pass runs again so that each preparation finishes precisely when the first step requiring it begins. Depending on the chosen strategy:
    - `"perSection"` places preparation right before each section;
    - `"upfront"` groups all preparations at the very start of the recipe;
-   - `"perSession"` places preparations at the beginning of each working day.
+   - `"perDay"` places preparations at the beginning of each working day.
 </Steps>
 
 Waits written as a range follow the strategy specified via `rests` (`"shortest"`, `"balanced"`, or `"longest"`). Active timers always take their nominal maximum duration, ensuring cooking uncertainties never delay the service.

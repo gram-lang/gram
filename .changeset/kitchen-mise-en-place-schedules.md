@@ -6,7 +6,7 @@
 
 - Each section reports how long its own preparation takes (new `miseEnPlace` field)
 - A recipe carries its list of tasks and what each one waits for (new `tasks` field), and a default timeline laid out from it (new `schedule` field): the preparation right before each section, the shortest rests
-- Any other timeline comes from the same list, without compiling again: all the preparation at the start (`upfront`), or the preparation of each working day gathered at the start of that day (`perSession`, for recipes over several days), with the shortest, middle or longest of every rest written as a range (new `layout()`, from `@gram-lang/scheduler`)
+- Any other timeline comes from the same list, without compiling again: all the preparation at the start (`upfront`), or the preparation of each working day gathered at the start of that day (`perDay`, for recipes over several days), with the shortest, middle or longest of every rest written as a range (new `layout()`, from `@gram-lang/scheduler`)
 - A timer is exact: `~_{12h}` lasts exactly 12 hours. A rest written as a range (`~_{12-24h}`) is planned on its shortest figure unless you pick another; an active timer written as a range (`~{20-25min}`) is always planned on its longest, so dinner is never late
 - Only an anchor in days (`~{-1d}`, `~{-2d}`) opens a working day; an anchor in hours (`~{-18h}`, `~{-36h}`) is a deadline inside the day the section falls on. A section without an anchor takes the day of the furthest anchor in days after it, and a recipe with no anchor in days is a single session, like `upfront`
 - A new `SESSION_OVERFLOW` warning flags a working day pushed before its 24 hours by a long rest, and suggests anchoring the section further back

@@ -68,7 +68,7 @@ Now, read scheduled blocks directly from the chosen timeline. All durations are 
 ```typescript
 import { scheduleFor } from '@gram-lang/kitchen';
 
-const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' or 'perSession'
+const schedule = scheduleFor(recipe, chosenMode); // 'perSection', 'upfront' or 'perDay'
 
 for (const block of schedule.blocks) {
   if (block.kind === 'prep') continue; // section mise en place (new block kind)

@@ -181,7 +181,7 @@ Bien que le parseur produise initialement un Arbre Syntaxique Abstrait (AST) bru
    ```typescript
    import { layout } from '@gram-lang/scheduler';
 
-   // miseEnPlace : 'perSection' (par défaut), 'upfront' (au démarrage) ou 'perSession' (par journée).
+   // miseEnPlace : 'perSection' (par défaut), 'upfront' (au démarrage) ou 'perDay' (par journée).
    // rests : 'shortest' (par défaut), 'balanced' ou 'longest' pour les fourchettes passives.
    const { schedule } = layout(recipe.tasks, { miseEnPlace: 'perSection', rests: 'shortest' });
 

@@ -24,7 +24,7 @@ export const fr: GramLocale = {
 		restsLongest: "Les plus longues",
 		schedulePerSection: "Par section",
 		scheduleUpfront: "Tout au début",
-		schedulePerSession: "Par journée de travail",
+		schedulePerDay: "Par journée de travail",
 		sessionDay: "J-",
 		sessionToday: "Jour J",
 		runSheetStep: "Étape {n}",

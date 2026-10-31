@@ -302,7 +302,7 @@ describe("runSheetToText", () => {
 			"To take out",
 		);
 		expect(
-			runSheetToText(planIn(compiled, "perSession"), compiled, { lang: "fr" }),
+			runSheetToText(planIn(compiled, "perDay"), compiled, { lang: "fr" }),
 		).toContain("À sortir");
 		expect(fr).toContain("Au programme");
 		expect(fr).toContain("En partant");
@@ -487,8 +487,8 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 		]);
 	});
 
-	it("perSession: raw things at each section's first visit, preparations at the first step", () => {
-		const v = visits(planIn(entremets, "perSession"), entremets);
+	it("perDay: raw things at each section's first visit, preparations at the first step", () => {
+		const v = visits(planIn(entremets, "perDay"), entremets);
 		expect(v[2]).toEqual([[undefined, ["sugar 20 g"]]]);
 		expect(v[3]?.[0]?.[1]).toEqual([
 			"Mousse, made Friday",
@@ -520,9 +520,9 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 		]);
 	});
 
-	it("perSession and upfront: one group, the quantities summed", () => {
+	it("perDay and upfront: one group, the quantities summed", () => {
 		const tart = compile(getAST(TART));
-		for (const mode of ["perSession", "upfront"] as const) {
+		for (const mode of ["perDay", "upfront"] as const) {
 			expect(visits(planIn(tart, mode), tart)).toEqual([
 				[
 					[
@@ -550,7 +550,7 @@ describe("the kit follows the mise en place mode of the sheet", () => {
 		const [event] = describeRunSheet(sheet, tart).events;
 		expect(event!.description).toContain("- Pastry (step 1)\n  - flour 200 g");
 		// Per session, one block at the top of the visit and nothing on the lines.
-		const one = planIn(tart, "perSession");
+		const one = planIn(tart, "perDay");
 		expect(runSheetToHTML(one, tart)).toContain('class="work-plan-kit"');
 		expect(runSheetToHTML(one, tart)).not.toContain('class="program-kit"');
 		expect(runSheetToText(one, tart)).toContain("To take out");

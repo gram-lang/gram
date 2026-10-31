@@ -100,9 +100,9 @@ gantt
 - Dough and filling ingredients are prepared upfront starting at 00:00 (until 00:06).
 - Total duration increases to **1 h 03** (63 min), as filling prep is no longer absorbed in masked time during the rise.
 
-### By session (or working day)
+### By working day
 
-This mode consolidates preparation by working day. When a recipe fits within a single day (with no past day anchors like `~{-1d}`), this mode yields results identical to "All at the start". Its primary purpose is structuring multi-day production schedules (see below).
+This mode consolidates preparation by working day. When a recipe fits within a single day (with no past day anchors like `~{-1d}`), this mode yields results identical to "All at the start". Its primary purpose is structuring multi-day production schedules (see below). A working day is not a single visit to the kitchen: if a day holds a morning visit and an evening one, its mise en place is still gathered once, before the first visit. To take things out right before each visit instead, use "By section".
 
 No single mode is universally superior: the first optimizes total duration and ingredient freshness; the second suits cooks who prefer gathering all ingredients beforehand; the third organizes complex multi-day workflows.
 
@@ -139,20 +139,20 @@ During compilation, Kitchen preserves data neutrality. The compiled recipe outpu
 }
 ```
 
-Any alternative configuration (upfront, per-session, longest passive durations...) is computed on demand from `tasks` using the pure `layout()` function of `@gram-lang/scheduler`, **without recompiling**. The scheduling choice occurs **at rendering, export, or display time**:
+Any alternative configuration (upfront, per-day, longest passive durations...) is computed on demand from `tasks` using the pure `layout()` function of `@gram-lang/scheduler`, **without recompiling**. The scheduling choice occurs **at rendering, export, or display time**:
 
 | Tool | Mise en place placement | Passive duration selection |
 |---|---|---|
-| **CLI** (`gram view`, `export`, `print`, `plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
+| **CLI** (`gram view`, `export`, `print`, `plan`) | `--mise-en-place <per-section\|upfront\|per-day>` | `--rests <shortest\|balanced\|longest>` |
 | **VS Code** | `gram.miseEnPlace` setting | `gram.rests` setting |
 | **Playground** | "Mise en place" selector | "Rests" selector |
-| **Renderer** (`@gram-lang/renderer`) | `miseEnPlace: "perSection" \| "upfront" \| "perSession"` | `rests` option |
+| **Renderer** (`@gram-lang/renderer`) | `miseEnPlace: "perSection" \| "upfront" \| "perDay"` | `rests` option |
 
 For application developers building custom interfaces, this separation eliminates the need to reimplement scheduling logic: read `schedule` for default planning, or invoke `layout()` for customized projections (see the [kitchen API reference](/docs/reference/api/kitchen/) and the [scheduler API reference](/docs/reference/api/scheduler/)).
 
 ## Recipes over several days
 
-Lengthy recipes (**sourdough bread**, **marinated meats**, **croissants**, or **gravlax**) naturally break down into sessions: each day, one prepares only what that specific day requires. The **by session** strategy (`per-session`) generates a daily production roadmap based on the retro-planning day anchors (`~{-1d}`, `~{-2d}`) declared in the recipe.
+Lengthy recipes (**sourdough bread**, **marinated meats**, **croissants**, or **gravlax**) naturally break down into working days: each day, one prepares only what that specific day requires. The **by working day** strategy (`per-day`) generates a daily production roadmap based on the retro-planning day anchors (`~{-1d}`, `~{-2d}`) declared in the recipe.
 
 ```gram
 ---
@@ -182,9 +182,9 @@ title: Filled tart
 
 ### Working day segmentation
 
-To structure a recipe into daily sessions, the scheduling engine relies exclusively on section anchors specified **in days** (`~{-1d}`, `~{-2d}`, `~{-3d}`):
+To structure a recipe into working days, the scheduling engine relies exclusively on section anchors specified **in days** (`~{-1d}`, `~{-2d}`, `~{-3d}`):
 
-- **`~{-Nd}` (days) = a distinct working day.** This conveys explicit human intent (*"prepare the day before (D-1)"*, *"two days prior (D-2)"*). Gram then groups the mise en place of those sections into a dedicated session.
+- **`~{-Nd}` (days) = a distinct working day.** This conveys explicit human intent (*"prepare the day before (D-1)"*, *"two days prior (D-2)"*). Gram then groups the mise en place of those sections into a dedicated working day.
 - **`~{-Nh}` (hours) = a relative deadline within a day.** An anchor such as `~{-2h}` or `~{-36h}` indicates that a step must complete 2 hours (or 36 hours) before serving, but **never** initiates a new working day on its own. Because a `.gram` recipe has no knowledge of actual meal timing, converting hours into calendar days would introduce meal-dependent ambiguity (`~{-12h}` lands in the morning for an 8 p.m. dinner, but at midnight the day before for a noon lunch).
 
 An unanchored section inherits the day of the **furthest day anchor among downstream sections**, or serving day (Day D) by default. In the example, the crust has no anchor of its own: it is assigned to D-1 alongside the tart, and ALAP scheduling places it as late as possible, immediately prior to assembly.
@@ -192,8 +192,8 @@ An unanchored section inherits the day of the **furthest day anchor among downst
 :::caution[Common pitfalls]
 Two frequent patterns do **not** initiate a new working day:
 
-1. **A long passive timer without section anchor**: a step with `~_{48h}` pushes the step two days backward on the timeline, but does not create a D-2 session without an explicit section day anchor (`## Cream ~{-2d}`).
-2. **An anchor in hours**: a value like `~{-18h}` or `~{-36h}` remains a deadline within that section's assigned day. To trigger a genuine session the previous day, use `~{-1d}` explicitly.
+1. **A long passive timer without section anchor**: a step with `~_{48h}` pushes the step two days backward on the timeline, but does not create a D-2 working day without an explicit section day anchor (`## Cream ~{-2d}`).
+2. **An anchor in hours**: a value like `~{-18h}` or `~{-36h}` remains a deadline within that section's assigned day. To open a genuine working day the previous day, use `~{-1d}` explicitly.
 :::
 
 In the example above:
@@ -203,16 +203,16 @@ In the example above:
 
 Each working day is designed to fit within the 24 hours preceding the next. If an extensive passive duration forces active work outside this window, Gram emits a `SESSION_OVERFLOW` diagnostic and recommends anchoring the section further back.
 
-### Mise en place aggregation per session
+### Mise en place aggregation per working day
 
 At the start of each working day, Gram consolidates the mise en place required for that day's steps:
 
-- An intermediate **produced on an earlier day** (the cream, prepared on D-3) is retrieved at the opening of the session where it is consumed (on D-1).
+- An intermediate **produced on an earlier day** (the cream, prepared on D-3) is retrieved at the start of the working day where it is consumed (on D-1).
 - An intermediate **produced on the same day** (the crust for the tart) is prepared immediately prior to assembly, as it does not yet exist at the start of the day.
 
 Cumulative preparation time and active cooking work remain strictly identical across all scheduling strategies.
 
-The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy: by section, each section carries its own raw ingredients, right before its steps; per session, they are listed together at the top of the visit with the quantities summed; upfront, they are all listed at the first visit. A preparation is always listed at the visit of the first step that uses it.
+The recipe text does not directly materialize these step blocks: mise en place is accounted for as an overhead in the recipe's time badges and schedule calculation. The concrete list of items required and their exact moment of use correspond to the **"To take out"** list displayed at the start of each visit in the [work plan](/docs/how-to/plan-a-meal/), computed for every strategy: by section, each section carries its own raw ingredients, right before its steps; per working day, they are listed together at the top of the visit with the quantities summed; upfront, they are all listed at the first visit. A preparation is always listed at the visit of the first step that uses it.
 
 :::tip[Chaining sections]
 When several sections follow each other on the same day, anchor only the final one (`## Tart ~{-1d}`) and leave upstream sections unanchored (like the crust above): they automatically inherit its day and sequence immediately before it. Assigning `~{-1d}` to each creates concurrent deadlines at the exact same moment, causing a time paradox warning when dependencies exist between them.

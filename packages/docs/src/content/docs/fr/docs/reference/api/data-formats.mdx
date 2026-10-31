@@ -414,7 +414,7 @@ Structure de données du planning de préparation (`@gram-lang/scheduler`), tell
 - Les temps `start`, `end`, `from` et `to` sont des **minutes avant le service** (négatives avant lui), exactes, dans un plan avec ou sans heure de service. Les champs `*Local` (heure murale à la minute) et `date` n'existent qu'avec une heure de service.
 - `mode: "relative"` est la même structure pour une recette sans heure de service : ni `serveAt`, ni `date`, ni `window`.
 - `totalWork` est le nombre de minutes de votre propre travail, mise en place comprise.
-- `miseEnPlace` est le mode dans lequel le plan a été établi (`perSection`, `perSession` ou `upfront`) : le planning de préparation s'en sert pour décider de ce qui figure dans « À sortir » à chaque passage.
+- `miseEnPlace` est le mode dans lequel le plan a été établi (`perSection`, `perDay` ou `upfront`) : le planning de préparation s'en sert pour décider de ce qui figure dans « À sortir » à chaque passage.
 - Les types et le sens de chaque champ : [`runSheet` dans la référence du scheduler](/fr/docs/reference/api/scheduler/#runsheet).
 
 ## Ressources associées

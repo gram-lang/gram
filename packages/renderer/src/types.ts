@@ -118,7 +118,7 @@ export interface RendererClasses {
 /**
  * Which complete timeline a view follows: preparation right before each
  * section (`perSection`, the default), all of it at the start (`upfront`), or
- * at the start of each working day (`perSession`).
+ * at the start of each working day (`perDay`).
  * Owned by `@gram-lang/kitchen`, re-exported so this import path keeps working.
  */
 export type { MiseEnPlaceMode, RestChoice };
@@ -133,7 +133,7 @@ export interface RendererOptions {
 	/**
 	 * Which timeline to follow: mise en place right before each section
 	 * (`"perSection"`, the default), all of it at the start (`"upfront"`), or at
-	 * the start of each working day (`"perSession"`). Drives the total and idle
+	 * the start of each working day (`"perDay"`). Drives the total and idle
 	 * times of the recipe; what to take out, and when, is the work plan's
 	 * (`runSheet`), which follows the mode of the sheet it is given.
 	 */

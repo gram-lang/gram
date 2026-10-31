@@ -47,7 +47,7 @@ describe("project matrix (modes x rests x serving time)", () => {
 	}
 
 	it("a deferred preparation never starts before the section that makes its intermediate ends", () => {
-		// Only `upfront` defers it: `perSession` gathers it with the day it is used.
+		// Only `upfront` defers it: `perDay` gathers it with the day it is used.
 		const blocks = run("2026-10-12T19:00", "upfront", "shortest").recipes[0]!
 			.blocks;
 		const batter = blocks.find((b) => b.task === "s1.prep.batter")!;

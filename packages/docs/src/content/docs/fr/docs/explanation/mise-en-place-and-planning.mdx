@@ -100,9 +100,9 @@ gantt
 - La pâte et la garniture sont préparées dès 00:00 (jusqu'à 00:06).
 - La durée totale passe à **1 h 03** (63 min), la préparation de la garniture n'étant plus réalisée en temps masqué pendant la pousse de la pâte.
 
-### Par session (ou par journée de travail)
+### Par journée de travail
 
-Ce mode regroupe la préparation par journée de travail. Lorsque la recette s'exécute sur une seule journée (sans ancre temporelle passée comme `~{-1d}`), ce mode produit un résultat strictement identique à « Tout au début ». Il prend tout son sens pour les recettes planifiées sur plusieurs jours (voir ci-après).
+Ce mode regroupe la préparation par journée de travail. Lorsque la recette s'exécute sur une seule journée (sans ancre temporelle passée comme `~{-1d}`), ce mode produit un résultat strictement identique à « Tout au début ». Il prend tout son sens pour les recettes planifiées sur plusieurs jours (voir ci-après). Une journée de travail n'est pas une seule visite en cuisine : si elle compte un passage le matin et un autre le soir, la mise en place est tout de même réunie une seule fois, avant le premier passage. Pour sortir les choses juste avant chaque passage, choisissez plutôt « Par section ».
 
 Aucune stratégie n'est intrinsèquement supérieure aux autres : la première optimise la durée totale et la fraîcheur des découpes en exploitant les temps masqués ; la deuxième convient aux personnes préférant réunir et peser l'ensemble des ingrédients avant d'allumer le feu ; la troisième structure les feuilles de route de production réparties sur plusieurs jours.
 
@@ -143,16 +143,16 @@ Toute autre configuration (tout au début, par journée, durées passives maxima
 
 | Outil | Positionnement de la mise en place | Choix des durées passives |
 |---|---|---|
-| **CLI** (`gram view`, `export`, `print`, `plan`) | `--mise-en-place <per-section\|upfront\|per-session>` | `--rests <shortest\|balanced\|longest>` |
+| **CLI** (`gram view`, `export`, `print`, `plan`) | `--mise-en-place <per-section\|upfront\|per-day>` | `--rests <shortest\|balanced\|longest>` |
 | **VS Code** | Réglage `gram.miseEnPlace` | Réglage `gram.rests` |
 | **Playground** | Sélecteur « Mise en place » | Sélecteur « Repos » |
-| **Moteur de rendu** (`@gram-lang/renderer`) | Option `miseEnPlace: "perSection" \| "upfront" \| "perSession"` | Option `rests` |
+| **Moteur de rendu** (`@gram-lang/renderer`) | Option `miseEnPlace: "perSection" \| "upfront" \| "perDay"` | Option `rests` |
 
 Pour les développeurs concevant une interface personnalisée, cette séparation évite de réécrire un algorithme d'ordonnancement : lisez `schedule` pour le planning par défaut, ou appelez `layout()` pour une variante sur mesure (voir la [référence de l'API kitchen](/fr/docs/reference/api/kitchen/) et celle de l'[API scheduler](/fr/docs/reference/api/scheduler/)).
 
 ## Les recettes sur plusieurs jours
 
-Une recette longue (**pain au levain**, **viande marinée**, **croissants** ou **saumon gravlax**) s'organise naturellement par sessions : chaque jour, on prépare uniquement ce dont la journée a besoin. La stratégie **par session** (`per-session`) génère une feuille de route quotidienne, en se basant sur les ancres de rétroplanning (`~{-1d}`, `~{-2d}`) déclarées dans la recette.
+Une recette longue (**pain au levain**, **viande marinée**, **croissants** ou **saumon gravlax**) s'organise naturellement par journées de travail : chaque jour, on prépare uniquement ce dont la journée a besoin. La stratégie **par journée de travail** (`per-day`) génère une feuille de route quotidienne, en se basant sur les ancres de rétroplanning (`~{-1d}`, `~{-2d}`) déclarées dans la recette.
 
 ```gram
 ---
@@ -182,9 +182,9 @@ title: Tarte garnie
 
 ### Découpage des journées de travail
 
-Pour structurer une recette en sessions quotidiennes, le moteur d'ordonnancement s'appuie exclusivement sur des ancres exprimées **en jours** (`~{-1d}`, `~{-2d}`, `~{-3d}`) :
+Pour structurer une recette en journées de travail, le moteur d'ordonnancement s'appuie exclusivement sur des ancres exprimées **en jours** (`~{-1d}`, `~{-2d}`, `~{-3d}`) :
 
-- **`~{-Nd}` (jours) = une journée de travail.** Cela exprime une intention explicite (*« préparation réalisée la veille (J-1) »*, *« deux jours avant (J-2) »*). Gram regroupe alors la mise en place de ces sections dans une session dédiée.
+- **`~{-Nd}` (jours) = une journée de travail.** Cela exprime une intention explicite (*« préparation réalisée la veille (J-1) »*, *« deux jours avant (J-2) »*). Gram regroupe alors la mise en place de ces sections dans une journée de travail dédiée.
 - **`~{-Nh}` (heures) = une échéance relative au sein de la journée.** Une ancre telle que `~{-2h}` ou `~{-36h}` indique que l'étape doit s'achever 2 heures (ou 36 heures) avant le service, mais n'ouvre **jamais** de nouvelle journée à elle seule. Une recette `.gram` ne connaissant pas l'heure réelle de votre repas, convertir des heures en jours introduirait des ambiguïtés dépendantes de l'heure du repas (`~{-12h}` tombe le matin pour un dîner à 20 h, mais la veille à minuit pour un déjeuner à 12 h).
 
 Une section sans ancre hérite du jour de **l'ancre en jours la plus lointaine parmi les sections qui lui succèdent**, ou du jour J par défaut. Dans l'exemple, le fond ne possède pas d'ancre propre : il est affecté à J-1 avec la tarte, et l'ordonnancement ALAP le planifie au plus tard, immédiatement avant elle.
@@ -192,8 +192,8 @@ Une section sans ancre hérite du jour de **l'ancre en jours la plus lointaine p
 :::caution[Points d'attention]
 Deux situations courantes n'ouvrent **pas** de nouvelle journée de travail :
 
-1. **Un temps passif long sans ancre de section** : une étape comportant `~_{48h}` décale l'étape de deux jours vers l'amont sur la chronologie, mais ne crée pas de session J-2 sans ancre de section explicite (`## Crème ~{-2d}`).
-2. **Une ancre exprimée en heures** : une valeur comme `~{-18h}` ou `~{-36h}` demeure une échéance interne au jour de la section. Pour déclencher une véritable session la veille, utilisez l'ancre en jours `~{-1d}`.
+1. **Un temps passif long sans ancre de section** : une étape comportant `~_{48h}` décale l'étape de deux jours vers l'amont sur la chronologie, mais ne crée pas de journée J-2 sans ancre de section explicite (`## Crème ~{-2d}`).
+2. **Une ancre exprimée en heures** : une valeur comme `~{-18h}` ou `~{-36h}` demeure une échéance interne au jour de la section. Pour ouvrir une véritable journée de travail la veille, utilisez l'ancre en jours `~{-1d}`.
 :::
 
 Dans l'exemple ci-dessus :
@@ -203,16 +203,16 @@ Dans l'exemple ci-dessus :
 
 Chaque journée est conçue pour s'inscrire dans les 24 heures précédant la suivante. Si un long temps passif repousse le travail d'une journée hors de cette fenêtre, Gram émet le diagnostic `SESSION_OVERFLOW` et suggère d'ancrer la section plus en amont.
 
-### Agrégation de la mise en place par session
+### Agrégation de la mise en place par journée de travail
 
 Au début de chaque journée de travail, Gram rassemble la mise en place requise pour les étapes du jour :
 
-- Un ingrédient intermédiaire **confectionné lors d'un jour antérieur** (la crème, préparée à J-3) est sorti dès l'ouverture de la session où il est consommé (à J-1).
+- Un ingrédient intermédiaire **confectionné lors d'un jour antérieur** (la crème, préparée à J-3) est sorti dès le début de la journée où il est consommé (à J-1).
 - Un intermédiaire **confectionné le jour même** (le fond pour la tarte) est préparé immédiatement avant l'étape de montage, puisqu'il n'existe pas encore au démarrage de la journée.
 
 Le temps de préparation cumulé et le travail actif demeurent strictement identiques entre toutes les stratégies d'ordonnancement.
 
-Le texte de la recette ne matérialise pas directement ces blocs d'étapes : la mise en place est comptabilisée comme une charge dans les indicateurs temporels de la recette et dans le calcul de son ordonnancement. La liste concrète des éléments requis et leur moment exact d'utilisation correspondent au bloc **« À sortir »** présenté au début de chaque passage du [planning de préparation](/fr/docs/how-to/plan-a-meal/), calculé pour chaque stratégie : par section, chaque section intègre ses propres ingrédients bruts juste avant ses étapes ; par session, ils sont réunis en tête de passage avec les quantités cumulées ; en amont (`upfront`), ils sont tous rassemblés dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle intervient.
+Le texte de la recette ne matérialise pas directement ces blocs d'étapes : la mise en place est comptabilisée comme une charge dans les indicateurs temporels de la recette et dans le calcul de son ordonnancement. La liste concrète des éléments requis et leur moment exact d'utilisation correspondent au bloc **« À sortir »** présenté au début de chaque passage du [planning de préparation](/fr/docs/how-to/plan-a-meal/), calculé pour chaque stratégie : par section, chaque section intègre ses propres ingrédients bruts juste avant ses étapes ; par journée de travail, ils sont réunis en tête de passage avec les quantités cumulées ; en amont (`upfront`), ils sont tous rassemblés dès le premier passage. Une préparation, quant à elle, est toujours listée lors du premier passage où elle intervient.
 
 :::tip[Enchaînement de sections]
 Lorsque plusieurs sections se succèdent au cours de la même journée, ancrez uniquement la dernière (`## Tarte ~{-1d}`) et laissez les sections amont sans ancre (comme le fond ci-dessus) : elles héritent naturellement de son jour et s'insèrent immédiatement avant elle. Assigner `~{-1d}` à chacune créerait des échéances concurrentes au même instant, déclenchant un avertissement de paradoxe temporel en présence de dépendances.

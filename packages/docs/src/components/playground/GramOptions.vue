@@ -107,7 +107,7 @@ const scheduleOptions = computed(() => [
 		value: "perSection",
 	},
 	{ label: t.value.renderer.scheduleUpfront, value: "upfront" },
-	{ label: t.value.renderer.schedulePerSession, value: "perSession" },
+	{ label: t.value.renderer.schedulePerDay, value: "perDay" },
 ]);
 
 // biome-ignore lint/correctness/noUnusedVariables: restsOptions is used in the <template> block below, which Biome's Vue support doesn't see.
