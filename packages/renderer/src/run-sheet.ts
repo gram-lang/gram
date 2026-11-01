@@ -9,6 +9,7 @@ import {
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "./mise-en-place";
 import type { RenderableCompilationResult } from "./types";
+import { HTML_ICONS } from "./icons";
 import {
 	type KitItem,
 	kitCookware,
@@ -925,7 +926,7 @@ export function runSheetToHTML(
 	}
 	html += `    <p class="work-plan-summary">${e(model.summary)}</p>\n`;
 	if (model.problems.length > 0) {
-		html += `    <section class="run-sheet-problems work-plan-problems">\n      <h3>${e(t.runSheetProblems)}</h3>\n      <ul>\n`;
+		html += `    <section class="run-sheet-problems work-plan-problems" role="alert">\n      <h3><span class="problem-icon" aria-hidden="true">${HTML_ICONS.warning}</span> <span>${e(t.runSheetProblems)}</span></h3>\n      <ul>\n`;
 		for (const p of model.problems) html += `        <li>${e(p)}</li>\n`;
 		html += `      </ul>\n    </section>\n`;
 	}

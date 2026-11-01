@@ -1,7 +1,7 @@
 /** The print styles of the work plan, added to the print stylesheet. */
 export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .work-plan-header { border-top: 2pt solid #000; page-break-after: avoid; padding-top: 8pt; }
-  .gram-run-sheet h2 { font-size: 18pt; font-weight: 800; text-transform: uppercase; margin-top: 0; margin-bottom: 4pt; }
+  .gram-run-sheet h2 { font-size: 18pt; font-weight: 800; margin-top: 0; margin-bottom: 4pt; }
   .gram-run-sheet .work-plan-subtitle { color: var(--grey); margin-bottom: 6pt; }
   .gram-run-sheet .work-plan-summary { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; border-top: 0.5pt solid #000; border-bottom: 0.5pt solid #000; padding: 4pt 0; margin-bottom: 10pt; }
   .gram-run-sheet ul, .gram-run-sheet ol { list-style: none; }
@@ -57,5 +57,10 @@ export const RUN_SHEET_PRINT_CSS = `
   .gram-run-sheet .wait-length { order: 2; padding: 0 3pt; border: 0.75pt solid #000; border-radius: 1pt; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8pt; font-weight: 600; }
   .gram-run-sheet .wait-until { font-size: 8pt; font-style: italic; color: var(--grey); }
   .gram-run-sheet .leaving-next { background: #000; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; padding: 4pt 8pt; margin: 4pt 0 0; page-break-inside: avoid; }
-  .gram-run-sheet .work-plan-problems li { margin-left: 1em; list-style: disc; }
+  .gram-run-sheet .work-plan-problems { border: 1pt solid #000; padding: 6pt 9pt; margin: 0 0 10pt; background: #fafafa; page-break-inside: avoid; }
+  .gram-run-sheet .work-plan-problems h3 { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 8.5pt; font-weight: 800; text-transform: uppercase; margin: 0 0 3pt; display: flex; align-items: center; gap: 4pt; }
+  .gram-run-sheet .work-plan-problems .problem-icon { display: inline-flex; align-items: center; }
+  .gram-run-sheet .work-plan-problems ul { margin: 0; padding: 0; }
+  .gram-run-sheet .work-plan-problems li { margin-left: 1.2em; list-style: disc; margin-bottom: 2pt; font-size: 8.5pt; }
+  .gram-run-sheet .work-plan-problems li:last-child { margin-bottom: 0; }
 `;
