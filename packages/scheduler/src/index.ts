@@ -40,6 +40,7 @@ export {
 } from "./mode";
 export { project } from "./project";
 export { VISIT_GAP_MINUTES, runSheet } from "./runsheet";
+export { visitSections } from "./visit";
 export { WINDOW_MIN_MINUTES, visitWindows } from "./windows";
 export type {
 	RunSheet,

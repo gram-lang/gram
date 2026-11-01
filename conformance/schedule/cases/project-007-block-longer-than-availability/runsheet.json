@@ -45,6 +45,9 @@
               "sections": [
                 0
               ],
+              "worked": [
+                0
+              ],
               "tasks": [
                 "s0.prep",
                 "s0.0"

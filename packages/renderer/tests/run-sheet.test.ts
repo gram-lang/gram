@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { compile } from "@gram-lang/kitchen";
+import { compile, scheduleFor } from "@gram-lang/kitchen";
 import { getAST } from "@gram-lang/parser";
-import { project, runSheet } from "@gram-lang/scheduler";
+import { project, runSheet, visitSections } from "@gram-lang/scheduler";
 import type { MiseEnPlaceMode } from "@gram-lang/scheduler";
 import {
 	describeRunSheet,
@@ -363,6 +363,21 @@ describe("what could not be fixed", () => {
 			"Roast takes 3h 1m without a break, more than your longest availability (2h)",
 		);
 	});
+
+	it("renders an alert section in HTML with problem icon and heading", () => {
+		const html = runSheetToHTML(planOf(exact), exact);
+		expect(html).toContain(
+			'class="run-sheet-problems work-plan-problems" role="alert"',
+		);
+		expect(html).toContain('class="problem-icon"');
+		expect(html).toContain("To fix");
+		expect(html).toContain("<li>Mise en place — Dough, around Sun 04:10");
+	});
+
+	it("renders the alert section in French in HTML", () => {
+		const html = runSheetToHTML(planOf(exact), exact, { lang: "fr" });
+		expect(html).toContain("À régler");
+	});
 });
 
 describe("runSheetToMarkdown", () => {
@@ -609,4 +624,118 @@ describe("the programme only points to the recipe", () => {
 		});
 		expect(sectionProgram(c, 0, [])).toBeUndefined();
 	});
+});
+
+const CANNELES = `---
+title: Cannelés
+portions: 4
+---
+
+## Batter ->&batter ~{-1d}
+
+[Mix] Mix @flour{300g} with @milk{1l}.
+
+[Chill] Chill ~_{24h}.
+
+## Bake
+
+[Bake] Bake &batter for ~{30min}.
+`;
+
+const FILLED_PIE = `---
+title: Filled pie
+portions: 4
+---
+
+## Dough ->&dough ~{-2d}
+
+[Mix] Mix @flour{300g} ~{10min}.
+
+[Rest] Rest ~_{24h}.
+
+## Filling ->&filling ~{-1d}
+
+[Chop] Chop @onion{2}(diced) with the #knife{} ~{10min}.
+
+[Rest] Rest ~_{24h}.
+
+## Assemble
+
+[Fill] Fill &dough with &filling in the #tin{} ~{10min}.
+`;
+
+const RECIPES = {
+	cannelés: CANNELES,
+	entremets: ENTREMETS,
+	"filled pie": FILLED_PIE,
+	bread: BREAD,
+};
+const MODES: MiseEnPlaceMode[] = ["perSection", "upfront", "perDay"];
+
+/** A plan in `mode`, with a serving time (calendar) or without (relative). */
+const sheetOf = (
+	c: ReturnType<typeof compile>,
+	mode: MiseEnPlaceMode,
+	calendar: boolean,
+) => {
+	if (!calendar) {
+		const schedule = scheduleFor(c, mode);
+		if (!schedule) throw new Error("no schedule");
+		return runSheet(schedule, { graph: c.tasks });
+	}
+	return planIn(c, mode);
+};
+
+describe("the work plan, whatever the mode and the clock", () => {
+	for (const [name, source] of Object.entries(RECIPES)) {
+		for (const mode of MODES) {
+			const c = compile(getAST(source));
+			const calendar = sheetOf(c, mode, true);
+			const relative = sheetOf(c, mode, false);
+			it(`${name}, ${mode}: without a clock, each visit is on the day the calendar puts it`, () => {
+				const daysOf = (sheet: ReturnType<typeof runSheet>) =>
+					sheet.recipes[0]!.days.flatMap((d) =>
+						d.visits.map(() => d.daysBefore),
+					);
+				expect(daysOf(relative)).toEqual(daysOf(calendar));
+			});
+
+			it(`${name}, ${mode}: a visit is named after the sections it works on`, () => {
+				const tasks = new Map(c.tasks.tasks.map((t) => [t.id, t]));
+				for (const sheet of [calendar, relative]) {
+					const real = sheet.recipes[0]!.days.flatMap((d) => d.visits);
+					const heads = describeRunSheet(sheet, c)
+						.schedule.filter((row) => row.kind === "visit")
+						.map((row) => row.text);
+					expect(heads).toHaveLength(real.length);
+					real.forEach((v, k) => {
+						const worked = [
+							...new Set(
+								v.tasks.flatMap((id) => {
+									const t = tasks.get(id);
+									return t?.kind === "step" ? [t.section] : [];
+								}),
+							),
+						].sort((a, b) => a - b);
+						expect(v.worked).toEqual(worked);
+						const expected = visitSections(v)
+							.map((s) => c.sections[s]?.title)
+							.join(", ");
+						expect(heads[k]).toBe(expected);
+					});
+				}
+			});
+
+			it(`${name}, ${mode}: without a clock, "later the same day" is only said inside a day`, () => {
+				for (const day of describeRunSheet(relative, c).days) {
+					day.visits.forEach((v, k) => {
+						const last = k === day.visits.length - 1;
+						expect(v.leaving.includes("Next visit: later the same day")).toBe(
+							!last,
+						);
+					});
+				}
+			});
+		}
+	}
 });

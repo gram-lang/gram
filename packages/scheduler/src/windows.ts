@@ -7,6 +7,7 @@ import type {
 	RunSheetFixedBy,
 	RunSheetVisit,
 } from "./runsheet";
+import { visitSections } from "./visit";
 import { localDateTime, parseInstant, parseLocalIso, toLocalIso } from "./time";
 
 const EPS = 1e-6;
@@ -151,7 +152,7 @@ export function visitWindows(
 					...(w.track !== undefined && { track: w.track }),
 					planned,
 					before: to >= 0 ? "visit" : "service",
-					...(to >= 0 && { sections: visits[to]!.sections }),
+					...(to >= 0 && { sections: visitSections(visits[to]!) }),
 				});
 				if (from === k && to !== k) {
 					// The visit moves, the need stays: the span grows.

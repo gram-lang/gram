@@ -6,10 +6,11 @@ import {
 	type RunSheetDay,
 	type RunSheetVisit,
 	type RunSheetThread,
+	visitSections,
 } from "@gram-lang/scheduler";
 import { workingDayLabel } from "./mise-en-place";
-import type { RenderableCompilationResult } from "./types";
 import { HTML_ICONS } from "./icons";
+import type { RenderableCompilationResult } from "./types";
 import {
 	type KitItem,
 	kitCookware,
@@ -384,7 +385,7 @@ export function describeRunSheet(
 				kind: "visit",
 				...(k === 0 && { day: rowLabel }),
 				time: slotOf(p).replace(" → ", " – "),
-				text: p.sections.map(sectionTitle).join(", "),
+				text: visitSections(p).map(sectionTitle).join(", "),
 			});
 			for (const th of threads) {
 				schedule.push({ kind: "thread", text: threadText(th) });
@@ -614,7 +615,7 @@ export function describeRunSheet(
 					events.push({
 						start: start.start,
 						end: last.end,
-						title: [recipeTitle, p.sections.map(sectionTitle).join(", ")]
+						title: [recipeTitle, visitSections(p).map(sectionTitle).join(", ")]
 							.filter(Boolean)
 							.join(" · "),
 						description: lines.join("\n").trim(),

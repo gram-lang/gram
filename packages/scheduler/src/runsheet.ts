@@ -9,6 +9,7 @@ import type {
 } from "./projection";
 import { visitWindows } from "./windows";
 import type { Schedule, ScheduleBlock } from "./types";
+import { MINUTES_PER_DAY } from "./days";
 import { daysBetween, parseInstant, parseLocalIso, toLocalIso } from "./time";
 
 const EPS = 1e-6;
@@ -60,8 +61,17 @@ export interface RunSheetVisit {
 	end: number;
 	startLocal?: string;
 	endLocal?: string;
-	/** The sections with work in the visit, in recipe order. */
+	/**
+	 * The sections with work in the visit, in recipe order: a step, or the mise
+	 * en place gathered there for a section that is cooked later.
+	 */
 	sections: number[];
+	/**
+	 * The sections with a step in the visit, in recipe order: where the cook
+	 * actually works. Empty for a visit of mise en place only; see
+	 * `visitSections`.
+	 */
+	worked: number[];
 	/** The tasks of the visit: preparations and steps, in the order they start. */
 	tasks: string[];
 	/**
@@ -368,11 +378,15 @@ function buildRecipe(
 				last.end = Math.max(last.end, b.to);
 				last.tasks.push(b.task);
 				if (!last.sections.includes(b.section)) last.sections.push(b.section);
+				if (b.kind === "step" && !last.worked.includes(b.section)) {
+					last.worked.push(b.section);
+				}
 			} else {
 				visits.push({
 					start: b.from,
 					end: b.to,
 					sections: [b.section],
+					worked: b.kind === "step" ? [b.section] : [],
 					tasks: [b.task],
 				});
 			}
@@ -380,6 +394,7 @@ function buildRecipe(
 		}
 		for (const p of visits) {
 			p.sections.sort((a, b) => a - b);
+			p.worked.sort((a, b) => a - b);
 			const startLocal = local(p.start);
 			const endLocal = local(p.end);
 			if (startLocal !== undefined) p.startLocal = startLocal;
@@ -414,15 +429,26 @@ function buildRecipe(
 		// A working day is a day of the recipe; on the calendar, a day is a date.
 		// One that runs on past midnight (everything in one go) is told per date,
 		// and a visit that crosses midnight stays whole on the date it starts.
+		// With no clock, the service is the only landmark: a visit is on the day
+		// as many whole days before it as it is far from it, never further than
+		// the working day itself. That only tells a day that spans a full day or
+		// more (`upfront`, rests included); a shorter one is a single day.
+		const spansDays =
+			visits.length > 0 &&
+			visits.at(-1)!.start - visits[0]!.start >= MINUTES_PER_DAY - EPS;
+		const dayOfVisit = (p: RunSheetVisit) =>
+			calendar
+				? p.startLocal?.slice(0, 10)
+				: spansDays
+					? Math.min(
+							workingDay.day,
+							Math.max(0, Math.floor((-p.start + EPS) / MINUTES_PER_DAY)),
+						)
+					: workingDay.day;
 		const groups: number[][] = [];
 		visits.forEach((p, k) => {
 			const last = groups.at(-1);
-			const date = p.startLocal?.slice(0, 10);
-			const same =
-				last !== undefined &&
-				visits[last[0]!]!.startLocal?.slice(0, 10) === date;
-			if (calendar && !same) groups.push([k]);
-			else if (last) last.push(k);
+			if (last && dayOfVisit(visits[last[0]!]!) === dayOfVisit(p)) last.push(k);
 			else groups.push([k]);
 		});
 
@@ -432,10 +458,11 @@ function buildRecipe(
 			const until = next ? visits[next[0]!]!.start : Infinity;
 			const lower = g === 0 ? -Infinity : first.start;
 			const date = first.startLocal?.slice(0, 10);
+			const day = dayOfVisit(first);
 			const daysBefore =
 				calendar && date !== undefined
 					? daysBetween(date, calendar.serveDate)
-					: workingDay.day;
+					: (day as number);
 			const own = entries.filter(
 				(e) => e.from >= lower - EPS && e.from < until - EPS,
 			);

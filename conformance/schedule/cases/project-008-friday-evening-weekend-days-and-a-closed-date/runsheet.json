@@ -80,6 +80,9 @@
               "sections": [
                 0
               ],
+              "worked": [
+                0
+              ],
               "tasks": [
                 "s0.prep",
                 "s0.0",
@@ -203,6 +206,9 @@
               "sections": [
                 1
               ],
+              "worked": [
+                1
+              ],
               "tasks": [
                 "s1.prep.dough",
                 "s1.0",
@@ -215,6 +221,9 @@
               "start": -31,
               "end": 0,
               "sections": [
+                2
+              ],
+              "worked": [
                 2
               ],
               "tasks": [

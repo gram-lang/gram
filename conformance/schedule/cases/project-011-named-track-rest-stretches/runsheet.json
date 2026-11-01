@@ -66,6 +66,9 @@
               "sections": [
                 0
               ],
+              "worked": [
+                0
+              ],
               "tasks": [
                 "s0.prep",
                 "s0.0"
@@ -126,6 +129,9 @@
               "start": -31,
               "end": 0,
               "sections": [
+                1
+              ],
+              "worked": [
                 1
               ],
               "tasks": [
